@@ -1,0 +1,264 @@
+---
+title: Eleventy (11ty)
+slug: /eleventy-integration
+---
+
+Integrate Swetrix with your [Eleventy (11ty)](https://www.11ty.dev/) site to track page views, monitor errors, and capture custom events — all while staying privacy-friendly and GDPR-compliant.
+
+Eleventy is a simpler static site generator that builds plain HTML pages. Since there's no client-side routing by default, Swetrix tracks each page view automatically on every navigation.
+
+## Installation
+
+The recommended approach is to add the Swetrix tracking script to a shared layout file that wraps all your pages.
+
+### 1. Add the script to your base layout
+
+Open your base layout — typically `_includes/base.njk` (Nunjucks) or `_includes/base.liquid` (Liquid). If you don't have one yet, create it.
+
+Add the Swetrix script just before the closing `</body>` tag:
+
+**Nunjucks (`_includes/base.njk`):**
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }}</title>
+  </head>
+  <body>
+    {{ content | safe }}
+
+    <script src="https://swetrix.org/swetrix.js" defer></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        swetrix.init('YOUR_PROJECT_ID')
+        swetrix.trackViews()
+      })
+    </script>
+
+    <noscript>
+      <img
+        src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+        alt=""
+        referrerpolicy="no-referrer-when-downgrade"
+      />
+    </noscript>
+  </body>
+</html>
+```
+
+:::caution
+Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
+:::
+
+### 2. Use the layout in your pages
+
+Make sure your pages reference this layout. You can set it in each page's front matter:
+
+```markdown
+---
+layout: base.njk
+title: Home
+---
+
+# Welcome to my site
+```
+
+Or set a default layout for all pages in your Eleventy config (`eleventy.config.js` or `.eleventy.js`):
+
+```js
+module.exports = function (eleventyConfig) {
+  return {
+    dir: {
+      input: 'src',
+      includes: '_includes',
+      output: '_site',
+    },
+  }
+}
+```
+
+Then use [directory-level data files](https://www.11ty.dev/docs/data-template-dir/) to set the layout for an entire folder. For example, create `src/src.json`:
+
+```json
+{
+  "layout": "base.njk"
+}
+```
+
+## Disable tracking in development
+
+Eleventy doesn't distinguish between development and production builds by default, but you can use an environment variable to conditionally include the tracking script.
+
+**1. Set the environment variable when building for production:**
+
+```bash
+ELEVENTY_ENV=production npx @11ty/eleventy
+```
+
+**2. Expose the variable to your templates** by adding it as global data. Create `_data/env.js`:
+
+```js
+module.exports = {
+  isProd: process.env.ELEVENTY_ENV === 'production',
+}
+```
+
+**3. Wrap the tracking script in a conditional** in your layout:
+
+```html
+{% if env.isProd %}
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    swetrix.init('YOUR_PROJECT_ID')
+    swetrix.trackViews()
+  })
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+{% endif %}
+```
+
+:::tip
+By default Swetrix ignores `localhost` traffic, so the environment variable approach is optional. It's useful if you want to avoid loading the script entirely during development.
+:::
+
+## Using data files for your Project ID
+
+To keep your Project ID out of template code, store it in a global data file.
+
+**1. Create `_data/swetrix.js`:**
+
+```js
+module.exports = {
+  projectId: process.env.SWETRIX_PID || 'YOUR_PROJECT_ID',
+}
+```
+
+**2. Reference it in your layout:**
+
+```html
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    swetrix.init('{{ swetrix.projectId }}')
+    swetrix.trackViews()
+  })
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid={{ swetrix.projectId }}"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+```
+
+Then set the `SWETRIX_PID` environment variable in your hosting provider or CI/CD pipeline.
+
+## Check your installation
+
+Build your site with `npx @11ty/eleventy` and deploy it (or serve locally with `npx @11ty/eleventy --serve` and `devMode: true`). Visit a few pages — within a minute you should see new pageviews appearing in your Swetrix dashboard.
+
+## Error tracking
+
+Enable automatic client-side error monitoring by adding `trackErrors()` alongside your existing initialisation. This captures unhandled JavaScript errors and reports them to Swetrix.
+
+```html
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    swetrix.init('YOUR_PROJECT_ID')
+    swetrix.trackViews()
+    swetrix.trackErrors()
+  })
+</script>
+```
+
+Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
+
+## Tracking custom events
+
+Custom events let you track specific user interactions — button clicks, form submissions, downloads, and more.
+
+Add event tracking to any page or component using inline scripts:
+
+```html
+<button id="download-btn">Download PDF</button>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('download-btn')
+    if (!btn || typeof swetrix === 'undefined') return
+
+    btn.addEventListener('click', function () {
+      swetrix.track({ ev: 'PDF_DOWNLOAD' })
+    })
+  })
+</script>
+```
+
+### Example: tracking form submissions
+
+```html
+<form id="contact-form" action="/thank-you">
+  <input type="email" placeholder="you@example.com" required />
+  <button type="submit">Subscribe</button>
+</form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('contact-form')
+    if (!form || typeof swetrix === 'undefined') return
+
+    form.addEventListener('submit', function () {
+      swetrix.track({
+        ev: 'NEWSLETTER_SIGNUP',
+        meta: { source: 'footer' },
+      })
+    })
+  })
+</script>
+```
+
+### Event naming rules
+
+Event names must:
+
+- Contain only English letters (a-Z), numbers (0-9), underscores (`_`), and dots (`.`)
+- Be fewer than 64 characters
+- Start with an English letter
+
+We recommend `UPPER_SNAKE_CASE` for consistency (e.g. `PDF_DOWNLOAD`, `NEWSLETTER_SIGNUP`).
+
+## Using Eleventy with a JavaScript framework
+
+If you're using Eleventy with a client-side JavaScript framework via [WebC](https://www.11ty.dev/docs/languages/webc/) or [Islands architecture](https://is-land.11ty.dev/), you can install the `swetrix` npm package for tighter integration:
+
+```bash
+npm install swetrix
+```
+
+Then import and use it in your client-side JavaScript:
+
+```js
+import * as Swetrix from 'swetrix'
+
+Swetrix.init('YOUR_PROJECT_ID')
+Swetrix.trackViews()
+```
+
+## Further reading
+
+- [Tracking script reference](/swetrix-js-reference) — full API documentation for `init()`, `track()`, `trackViews()`, `trackErrors()`, and more.
+- [Swetrix npm package](https://www.npmjs.com/package/swetrix) — package details and changelog.
+- [Eleventy documentation](https://www.11ty.dev/docs/) — official 11ty docs for layouts, data files, plugins, and more.

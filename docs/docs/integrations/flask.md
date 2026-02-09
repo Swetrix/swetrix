@@ -1,19 +1,19 @@
 ---
-title: Django
-slug: /django-integration
+title: Flask
+slug: /flask-integration
 ---
 
-Integrate Swetrix with your [Django](https://www.djangoproject.com/) application to track page views, monitor errors, and capture custom events — all while staying privacy-friendly and GDPR-compliant.
+Integrate Swetrix with your [Flask](https://flask.palletsprojects.com/) application to track page views, monitor errors, and capture custom events — all while staying privacy-friendly and GDPR-compliant.
 
-This guide covers traditional Django projects using the Django template engine, as well as tips for Django REST Framework setups with a JavaScript frontend.
+This guide covers both traditional multi-page Flask apps (using Jinja2 templates) and single-page setups with client-side routing.
 
 ## Installation
 
-The recommended approach is to add the Swetrix tracking script to your base template so it loads on every page.
+The recommended approach is to add the Swetrix tracking script to your base Jinja2 template so it loads on every page.
 
 ### 1. Add the tracking script to your base template
 
-Django projects typically have a base template that all other templates extend via `{% extends 'base.html' %}`. Open (or create) your `templates/base.html` and add the Swetrix script inside the `<head>` tag, and the initialisation snippet before the closing `</body>` tag:
+Flask uses Jinja2 templates, and most projects define a shared base template that other templates extend. Open (or create) your `templates/base.html` and add the Swetrix script inside the `<head>` tag, and the initialisation snippet before the closing `</body>` tag:
 
 ```html
 <!DOCTYPE html>
@@ -21,7 +21,7 @@ Django projects typically have a base template that all other templates extend v
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}My Site{% endblock %}</title>
+    <title>{% block title %}My App{% endblock %}</title>
 
     {% block styles %}{% endblock %}
 
@@ -52,18 +52,28 @@ Django projects typically have a base template that all other templates extend v
 </html>
 ```
 
+All page templates that extend this base will automatically include the tracking script:
+
+```html
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+  <h1>Welcome to my Flask app</h1>
+{% endblock %}
+```
+
 :::caution
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
 :::
 
 ### 2. Disable tracking in development (recommended)
 
-To avoid polluting your analytics with local page views, use Django's `settings.DEBUG` flag to only include the script in production. First, make sure `DEBUG` is available in your templates by adding `django.template.context_processors.debug` to your context processors (it's included by default).
-
-Then wrap the snippets:
+To avoid polluting your analytics with local page views, wrap the snippet in an environment check so it only loads in production. You can use Flask's configuration or an environment variable:
 
 ```html
-{% if not debug %}
+{% if config.ENV == 'production' or not config.DEBUG %}
     <script src="https://swetrix.org/swetrix.js" defer></script>
 {% endif %}
 ```
@@ -71,7 +81,7 @@ Then wrap the snippets:
 And for the body initialisation:
 
 ```html
-{% if not debug %}
+{% if config.ENV == 'production' or not config.DEBUG %}
     <script>
       document.addEventListener('DOMContentLoaded', function () {
         swetrix.init('YOUR_PROJECT_ID')
@@ -99,60 +109,40 @@ swetrix.init('YOUR_PROJECT_ID', { devMode: true })
 Remember to remove this before deploying.
 :::
 
-## Store your Project ID in settings (optional)
+## Store your Project ID in config (optional)
 
-Rather than hardcoding the Project ID in your template, you can manage it through Django's settings and a custom context processor. This keeps configuration in one place and makes it easy to use different IDs per environment.
+Rather than hardcoding the Project ID in your template, you can manage it through Flask's configuration system. This keeps your templates clean and makes it easy to use different IDs per environment.
 
-**1. Add to your settings (e.g. `settings.py`):**
+**1. Set an environment variable or add it to your config:**
+
+```bash
+export SWETRIX_PROJECT_ID=YOUR_PROJECT_ID
+```
+
+**2. Load it in your Flask app:**
 
 ```python
 import os
 
-SWETRIX_PROJECT_ID = os.environ.get('SWETRIX_PROJECT_ID', '')
+app = Flask(__name__)
+app.config['SWETRIX_PROJECT_ID'] = os.environ.get('SWETRIX_PROJECT_ID', '')
 ```
 
-**2. Create a context processor (e.g. `context_processors.py` in your main app):**
-
-```python
-from django.conf import settings
-
-def swetrix(request):
-    return {
-        'SWETRIX_PROJECT_ID': getattr(settings, 'SWETRIX_PROJECT_ID', ''),
-    }
-```
-
-**3. Register it in your `settings.py`:**
-
-```python
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'OPTIONS': {
-            'context_processors': [
-                # ...existing processors
-                'myapp.context_processors.swetrix',
-            ],
-        },
-    },
-]
-```
-
-**4. Reference it in your template:**
+**3. Reference it in your template:**
 
 ```html
-{% if SWETRIX_PROJECT_ID %}
+{% if config.SWETRIX_PROJECT_ID %}
     <script src="https://swetrix.org/swetrix.js" defer></script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('{{ SWETRIX_PROJECT_ID }}')
+        swetrix.init('{{ config.SWETRIX_PROJECT_ID }}')
         swetrix.trackViews()
       })
     </script>
 
     <noscript>
       <img
-        src="https://api.swetrix.com/log/noscript?pid={{ SWETRIX_PROJECT_ID }}"
+        src="https://api.swetrix.com/log/noscript?pid={{ config.SWETRIX_PROJECT_ID }}"
         alt=""
         referrerpolicy="no-referrer-when-downgrade"
       />
@@ -160,10 +150,18 @@ TEMPLATES = [
 {% endif %}
 ```
 
-Set the environment variable in production:
+If you use a `.env` file with [python-dotenv](https://pypi.org/project/python-dotenv/), add the variable there:
 
-```bash
-export SWETRIX_PROJECT_ID=YOUR_PROJECT_ID
+```
+SWETRIX_PROJECT_ID=YOUR_PROJECT_ID
+```
+
+And load it in your app:
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv()
 ```
 
 ## Check your installation
@@ -192,20 +190,20 @@ Custom events let you track specific user interactions — form submissions, but
 
 ### Example: tracking form submissions
 
-Track when users submit a contact form:
+Track when users submit a registration form:
 
 ```html
-<form id="contact-form" method="POST" action="{% url 'contact' %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Send message</button>
+<form id="register-form" method="POST" action="/register">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="email" name="email" placeholder="you@example.com">
+    <button type="submit">Register</button>
 </form>
 
 <script>
-  document.getElementById('contact-form')?.addEventListener('submit', function () {
+  document.getElementById('register-form')?.addEventListener('submit', function () {
     if (typeof swetrix !== 'undefined') {
       swetrix.track({
-        ev: 'CONTACT_FORM_SUBMITTED',
+        ev: 'REGISTER_FORM_SUBMITTED',
         meta: {
           page: window.location.pathname,
         },
@@ -246,24 +244,49 @@ Event names must:
 - Be fewer than 64 characters
 - Start with an English letter
 
-We recommend `UPPER_SNAKE_CASE` for consistency (e.g. `CONTACT_FORM_SUBMITTED`, `OUTBOUND_CLICK`).
+We recommend `UPPER_SNAKE_CASE` for consistency (e.g. `REGISTER_FORM_SUBMITTED`, `OUTBOUND_CLICK`).
 
-## Using Swetrix with HTMX
+## Using Swetrix with Flask blueprints
 
-If your Django application uses [HTMX](https://htmx.org/) for dynamic page updates, the Swetrix script loaded in your base template will still track the initial page load. For HTMX-driven navigations that change the URL (using `hx-push-url`), Swetrix's `trackViews()` automatically detects History API changes and tracks them.
+If your application is structured with [blueprints](https://flask.palletsprojects.com/en/stable/blueprints/), the Swetrix script in your base template will work across all blueprints automatically — as long as each blueprint's templates extend the same `base.html`.
 
-If you use HTMX to swap content without changing the URL and want to track those interactions, use custom events:
+If a blueprint uses its own base template, add the Swetrix snippet there as well, or create a shared partial:
 
 ```html
-<button hx-post="/api/subscribe" hx-swap="outerHTML"
-        onclick="if(typeof swetrix!=='undefined') swetrix.track({ ev: 'SUBSCRIBE_CLICKED' })">
-    Subscribe
-</button>
+{# templates/partials/swetrix.html #}
+
+{% if config.SWETRIX_PROJECT_ID %}
+    <script src="https://swetrix.org/swetrix.js" defer></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        swetrix.init('{{ config.SWETRIX_PROJECT_ID }}')
+        swetrix.trackViews()
+        swetrix.trackErrors()
+      })
+    </script>
+
+    <noscript>
+      <img
+        src="https://api.swetrix.com/log/noscript?pid={{ config.SWETRIX_PROJECT_ID }}"
+        alt=""
+        referrerpolicy="no-referrer-when-downgrade"
+      />
+    </noscript>
+{% endif %}
 ```
 
-## Using Swetrix with Django and a JavaScript frontend
+Then include it in any base template:
 
-If you use Django as an API backend (e.g. with Django REST Framework) paired with a JavaScript frontend, add the Swetrix tracking to your frontend project instead:
+```html
+{% include "partials/swetrix.html" %}
+```
+
+## Using Swetrix with Flask and a JavaScript frontend
+
+If you use Flask as an API backend with a JavaScript frontend (e.g. React, Vue, or HTMX), you have two options:
+
+1. **CDN script** — Add the Swetrix script to your frontend's HTML as shown above. This works well with HTMX or any server-rendered approach.
+2. **npm package** — Install the Swetrix npm package in your frontend project for full programmatic control:
 
 ```bash
 npm install swetrix
@@ -282,4 +305,4 @@ See the relevant frontend framework integration guide ([React](/react-integratio
 
 - [Tracking script reference](/swetrix-js-reference) — full API documentation for `init()`, `track()`, `trackViews()`, `trackErrors()`, and more.
 - [Swetrix npm package](https://www.npmjs.com/package/swetrix) — package details and changelog.
-- [Django documentation](https://docs.djangoproject.com/) — official Django docs.
+- [Flask documentation](https://flask.palletsprojects.com/) — official Flask docs.

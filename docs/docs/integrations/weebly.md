@@ -1,0 +1,89 @@
+---
+title: Weebly
+slug: /weebly-integration
+---
+
+Integrate Swetrix with your Weebly website using the built-in Header/Footer Code feature.
+
+## Prerequisites
+
+Adding custom code to Weebly requires a **paid plan** (Personal, Professional, Performance, or any Business plan). The free plan does not support custom header/footer code injection.
+
+## Installation
+
+### 1. Open your site's code settings
+
+1. Log in to your [Weebly](https://www.weebly.com) account and open the site editor.
+2. Click **Settings** in the top menu.
+3. Select the **SEO** tab.
+
+### 2. Add the Swetrix script
+
+In the **Header Code** field, paste the following:
+
+```html
+<script src="https://swetrix.org/swetrix.js" defer></script>
+```
+
+### 3. Add the initialisation snippet
+
+In the **Footer Code** field, paste the following:
+
+```html
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    swetrix.init('YOUR_PROJECT_ID')
+    swetrix.trackViews()
+  })
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+```
+
+### 4. Save and publish
+
+Click **Save**, then **Publish** your site to apply the changes.
+
+:::caution
+Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
+:::
+
+## Check your installation
+
+After publishing, open your Weebly site in a new tab (or an incognito window) and browse a few pages. Within a minute you should see new pageviews appearing in your Swetrix dashboard.
+
+:::tip
+The tracking script only runs on your published site. You won't see analytics data while previewing inside the Weebly editor.
+:::
+
+## Optional: track custom events
+
+You can use `swetrix.track()` to capture custom interactions — button clicks, form submissions, etc. Add the following in the same **Footer Code** field, after the main tracking snippet:
+
+```html
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var form = document.querySelector('form')
+    if (!form || typeof swetrix === 'undefined') return
+
+    form.addEventListener('submit', function () {
+      swetrix.track({ ev: 'form_submission' })
+    })
+  })
+</script>
+```
+
+Refer to the [tracking script reference](/swetrix-js-reference) for the full list of options and functions available.
+
+## Troubleshooting
+
+- **No Header/Footer Code option.** This feature is only available on paid Weebly plans. Upgrade from the free plan to access it.
+- **No data in dashboard.** Make sure you published the site after adding the code. Changes are not live until you publish.
+- **Check the source.** Open your published site, right-click and select "View Page Source", then search for `swetrix` to confirm the script is present.
+- **Console errors.** Open your browser's developer tools (F12) and check the Console tab for JavaScript errors. Look for network requests to `api.swetrix.com` to verify data is being sent.
