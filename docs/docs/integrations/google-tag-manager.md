@@ -8,7 +8,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 Google Tag Manager (GTM) allows you to add tracking scripts to your website without modifying your codebase directly. This guide walks you through integrating Swetrix via GTM.
 
 :::note
-GTM adds extra complexity and is blocked by many adblockers, which may reduce tracking reliability. The Swetrix tracking script is lightweight and we recommend [adding it directly](/install-script) when possible. You can also [set up a proxy](/adblockers/deal-with-adblockers) to mitigate adblocker interference.
+GTM adds extra complexity and is blocked by many adblockers, which may reduce tracking reliability. The Swetrix tracking script is lightweight and we recommend [adding it directly](/install-script) when possible. You can also [set up a proxy](/adblockers/how-to) to mitigate adblocker interference.
 :::
 
 ## Why the snippet looks different
