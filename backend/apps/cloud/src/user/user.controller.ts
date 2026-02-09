@@ -211,7 +211,6 @@ export class UserController {
 
     const user = await this.userService.findOne({
       where: { id },
-      relations: ['projects'],
       select: ['id', 'planCode'],
     })
 
@@ -224,7 +223,9 @@ export class UserController {
     }
 
     try {
-      if (!_isEmpty(user.projects)) {
+      const hasProjects = (await this.projectService.countByAdminId(id)) > 0
+
+      if (hasProjects) {
         await this.projectService.deleteProjectsForUser(id)
       }
       await this.actionTokensService.deleteMultiple({ user: { id } })

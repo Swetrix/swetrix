@@ -1018,7 +1018,6 @@ export class TaskManagerService {
           dashboardBlockReason: IsNull(),
         },
       ],
-      relations: ['projects'],
       select: ['id', 'email', 'planCode'],
     })
     const emailParams = {
@@ -1027,9 +1026,11 @@ export class TaskManagerService {
     }
 
     const promises = _map(users, async (user) => {
-      const { id, email, planCode, projects } = user
+      const { id, email, planCode } = user
 
-      if (_isEmpty(projects) || _isNull(projects)) {
+      const hasProjects = (await this.projectService.countByAdminId(id)) > 0
+
+      if (!hasProjects) {
         return
       }
 
@@ -1096,7 +1097,13 @@ export class TaskManagerService {
           },
         },
       ],
-      relations: ['admin'],
+      select: [
+        'id',
+        'paddleApiKeyEnc',
+        'stripeApiKeyEnc',
+        'revenueCurrency',
+        'revenueLastSyncAt',
+      ],
     })
 
     if (_isEmpty(projects)) {
@@ -1218,6 +1225,7 @@ export class TaskManagerService {
       where: {
         cancellationEffectiveDate: Not(IsNull()),
       },
+      select: ['id', 'cancellationEffectiveDate'],
     })
 
     const promises = _map(users, async (user) => {
@@ -1259,6 +1267,7 @@ export class TaskManagerService {
         ),
         trialReminderSent: false,
       },
+      select: ['id', 'email'],
     })
 
     const promises = _map(users, async (user) => {
@@ -1289,6 +1298,7 @@ export class TaskManagerService {
         planCode: PlanCode.trial,
         trialEndDate: IsNull(),
       },
+      select: ['id', 'created'],
     })
 
     const promises = _map(users, async (user) => {
@@ -1321,6 +1331,7 @@ export class TaskManagerService {
           trialEndDate: IsNull(),
         },
       ],
+      select: ['id', 'email'],
     })
 
     const promises = _map(users, async (user) => {
@@ -1869,7 +1880,6 @@ export class TaskManagerService {
       where: {
         reportFrequency: Not(UserReportFrequency.Never),
       },
-      relations: ['projects'],
       select: ['id'],
     })
     const now = dayjs.utc().format('YYYY-MM-DD')
@@ -1877,14 +1887,14 @@ export class TaskManagerService {
     const nineWeeksAgo = dayjs.utc().subtract(9, 'w').format('YYYY-MM-DD')
 
     await mapLimit(users, REPORTS_USERS_CONCURRENCY, async (user) => {
-      const { id, projects } = user
+      const { id } = user
 
       try {
-        if (_isEmpty(projects) || _isNull(projects)) {
+        const pids = await this.projectService.getProjectIdsByAdminId(id)
+
+        if (_isEmpty(pids)) {
           return
         }
-
-        const pids = _map(projects, (p) => p.id)
 
         // No need to check for performance activity because it's not tracked without tracking analytics
         const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`

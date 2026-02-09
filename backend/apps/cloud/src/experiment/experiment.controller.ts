@@ -189,7 +189,6 @@ export class ExperimentController {
 
     const user = await this.userService.findOne({
       where: { id: uid },
-      relations: ['projects'],
     })
 
     if (!user.isActive) {

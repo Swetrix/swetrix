@@ -137,7 +137,6 @@ export class AlertController {
 
     const user = await this.userService.findOne({
       where: { id: uid },
-      relations: ['projects'],
     })
 
     if (_isEmpty(user)) {
@@ -167,7 +166,7 @@ export class AlertController {
       'You are not allowed to add alerts to this project',
     )
 
-    const pids = _map(user.projects, (userProject) => userProject.id)
+    const pids = await this.projectService.getProjectIdsByAdminId(uid)
     const alertsCount = await this.alertService.count({
       where: { project: { id: In(pids) } },
     })

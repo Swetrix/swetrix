@@ -899,7 +899,7 @@ export class ProjectController {
 
     const organisation = await this.organisationService.findOne({
       where: { id: orgId },
-      relations: ['members', 'members.user', 'projects'],
+      relations: ['members', 'members.user'],
     })
 
     if (_isEmpty(organisation)) {
@@ -933,7 +933,7 @@ export class ProjectController {
 
     const organisation = await this.organisationService.findOne({
       where: { id: orgId },
-      relations: ['members', 'members.user', 'projects'],
+      relations: ['members', 'members.user'],
     })
 
     if (_isEmpty(organisation)) {

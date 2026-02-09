@@ -168,7 +168,6 @@ export class FeatureFlagController {
 
     const user = await this.userService.findOne({
       where: { id: uid },
-      relations: ['projects'],
     })
 
     if (!user.isActive) {

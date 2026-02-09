@@ -174,7 +174,6 @@ export class GoalController {
 
     const user = await this.userService.findOne({
       where: { id: uid },
-      relations: ['projects'],
     })
 
     if (!user.isActive) {
