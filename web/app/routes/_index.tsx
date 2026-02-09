@@ -130,7 +130,7 @@ export const FeedbackDual = () => {
   const { theme } = useTheme()
 
   return (
-    <section className='rounded-b-4xl bg-gray-100/80 py-24 sm:py-32 dark:bg-slate-800/50'>
+    <section className='rounded-b-4xl bg-gray-100/80 py-24 sm:py-32 dark:bg-slate-900'>
       <div className='mx-auto max-w-7xl px-4 lg:px-8'>
         <div className='mx-auto grid max-w-2xl grid-cols-1 lg:mx-0 lg:max-w-none lg:grid-cols-2'>
           <div className='flex flex-col pb-10 sm:pb-16 lg:pr-8 lg:pb-0 xl:pr-20'>
@@ -368,7 +368,7 @@ const Hero = () => {
   const { stats } = useLoaderData<typeof loader>()
 
   return (
-    <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-800/50'>
+    <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-900'>
       <div className='relative mx-2 overflow-hidden rounded-4xl'>
         <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
           <div className='absolute inset-0 rounded-4xl bg-linear-115 from-amber-100 from-28% via-purple-500 via-70% to-indigo-600 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-800 dark:opacity-60 dark:ring-white/10' />
@@ -1621,7 +1621,7 @@ const FEATURES_ALT = [
 const DashboardMockup = () => (
   <div className='relative mx-auto h-[440px] w-full max-w-lg select-none' aria-hidden>
     {/* Chart card */}
-    <div className='absolute top-0 right-0 w-[290px] rotate-2 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+    <div className='absolute top-0 right-0 w-[290px] rotate-2 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
       <div className='mb-1 flex items-center justify-between'>
         <span className='text-[11px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500'>
           Pageviews
@@ -1676,7 +1676,7 @@ const DashboardMockup = () => (
     </div>
 
     {/* Events card */}
-    <div className='absolute top-10 left-0 w-[260px] -rotate-3 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+    <div className='absolute top-10 left-0 w-[260px] -rotate-3 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
       <div className='mb-3 flex items-center gap-1.5'>
         <TargetIcon className='size-3.5 text-gray-400 dark:text-gray-500' />
         <span className='text-[11px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500'>
@@ -1709,7 +1709,7 @@ const DashboardMockup = () => (
     </div>
 
     {/* Metrics card */}
-    <div className='absolute bottom-4 left-6 w-[220px] rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+    <div className='absolute bottom-4 left-6 w-[220px] rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
       <div className='space-y-2.5'>
         {[
           { label: 'Unique visitors', value: '125k', up: true },
@@ -1743,7 +1743,7 @@ const DashboardMockup = () => (
     </div>
 
     {/* Traffic sources card - bottom right */}
-    <div className='absolute right-2 bottom-12 w-[200px] -rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+    <div className='absolute right-2 bottom-12 w-[200px] -rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
       <div className='mb-2.5 text-[11px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500'>
         Top Pages
       </div>
