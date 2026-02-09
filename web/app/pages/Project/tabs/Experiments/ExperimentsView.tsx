@@ -567,6 +567,9 @@ const ExperimentsView = ({
         setShouldRefreshListOnReturn(true)
         return
       }
+      if (isModalOpen) {
+        return
+      }
       loadExperiments(
         DEFAULT_EXPERIMENTS_TAKE,
         (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
@@ -575,7 +578,7 @@ const ExperimentsView = ({
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [experimentsRefreshTrigger, viewingResultsId, page])
+  }, [experimentsRefreshTrigger, viewingResultsId, isModalOpen, page])
 
   useEffect(() => {
     if (!viewingResultsId && shouldRefreshListOnReturn) {
