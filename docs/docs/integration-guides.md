@@ -3,31 +3,70 @@ title: Integration guides
 slug: /integrations
 ---
 
-Sometimes it might be easier to install Swetrix without editing the HTML code of your website and this is the case for some CMS or site builders, for example WordPress or Wix.
+Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose the guide that matches your stack to get started quickly.
 
-We support a variety of different integrations you can use.
+## Universal
 
-## Official integrations
+- [NPM package for JavaScript](/install-script#install-swetrix-via-npm) — install via npm, yarn, or pnpm for full control in any JavaScript project
+- [HTML script tag](/install-script#edit-the-websites-html-code) — add Swetrix to any website with a single line of code
 
-1. [NPM package for JavaScript](/install-script#install-swetrix-via-npm)
-2. [WordPress](/wordpress-integration)
-3. [Wix](/wix-integration)
-4. [Webflow](/webflow-integration)
-5. [Ghost](/ghost-integration)
-6. [Python Django](/django-integration)
-7. [SvelteKit](/sveltekit-integration)
-8. [Google Tag Manager](/gtm-integration)
-9. [Next.js](https://github.com/Swetrix/swetrix-nextjs)
-10. [Cloudquery](https://github.com/Swetrix/cq-source-swetrix)
-11. [HTML script integration](/install-script#edit-the-websites-html-code)
+## Frameworks & static site generators
 
-## Unofficial integrations
+- [Angular](/angular-integration)
+- [Astro](/astro-integration)
+- [Docusaurus](/docusaurus-integration)
+- [Eleventy (11ty)](/eleventy-integration)
+- [Gatsby](/gatsby-integration)
+- [Hugo](/hugo-integration)
+- [Jekyll](/jekyll-integration)
+- [Next.js](/nextjs-integration)
+- [Nuxt](/nuxt-integration)
+- [React (Vite / CRA)](/react-integration)
+- [Remix](/remix-integration)
+- [SvelteKit](/sveltekit-integration)
+- [VitePress](/vitepress-integration)
+- [Vue](/vue-integration)
 
-1. [Java SDK](https://github.com/Casterlabs/swetrix-java)
-2. [Vue](https://github.com/ansidev/swetrix-vue)
+## Backend frameworks
 
-## Swetrix API
+- [Django](/django-integration) (Python)
+- [Flask](/flask-integration) (Python)
+- [Laravel](/laravel-integration) (PHP)
+- [Ruby on Rails](/ruby-on-rails-integration)
 
-You can also pass data to Swetrix using our Events API directly. It's handy if you could not find an integration you are looking for or want to build your own.
+## CMS & website builders
 
-Learn more about the [Events API](/events-api).
+- [BigCommerce](/bigcommerce-integration)
+- [Bubble.io](/bubble-integration)
+- [Carrd](/carrd-integration)
+- [Drupal](/drupal-integration)
+- [Framer](/framer-integration)
+- [Ghost](/ghost-integration)
+- [GitBook](/gitbook-integration)
+- [Joomla](/joomla-integration)
+- [PrestaShop](/prestashop-integration)
+- [Shopify](/shopify-integration)
+- [Squarespace](/squarespace-integration)
+- [ThriveCart](/thrivecart-integration)
+- [Webflow](/webflow-integration)
+- [Weebly](/weebly-integration)
+- [Wix](/wix-integration)
+- [WooCommerce](/woocommerce-integration)
+- [WordPress](/wordpress-integration)
+
+## Google
+
+- [Google Search Console](/google-search-console)
+- [Google Tag Manager](/gtm-integration)
+
+## Other tools
+
+- [Cloudquery](https://github.com/Swetrix/cq-source-swetrix) — sync Swetrix data with any destination
+
+## Community integrations
+
+- [Java SDK](https://github.com/Casterlabs/swetrix-java)
+
+## Build your own
+
+Can't find an integration for your stack? You can pass data to Swetrix directly using the [Events API](/events-api).

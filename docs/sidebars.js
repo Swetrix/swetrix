@@ -14,6 +14,7 @@ module.exports = {
           'integrations/astro',
           'integrations/bigcommerce',
           'integrations/bubble',
+          'integrations/carrd',
           'integrations/docusaurus',
           'integrations/drupal',
           'integrations/eleventy',

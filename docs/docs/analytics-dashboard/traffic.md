@@ -70,7 +70,7 @@ Identify how visitors find your website:
   Use our free **[UTM Generator](https://swetrix.com/tools/utm-generator)** to easily build trackable URLs for your campaigns.
   :::
 - **Keywords**: If you have connected Google Search Console, this tab shows the search queries driving traffic to your site.
-  - [Learn more about Google Search Console integration](../integrations/google-search-console.md).
+  - [Learn more about Google Search Console integration](/integrations/google-search-console).
 
 ## Custom Events & Metadata
 
