@@ -27,7 +27,6 @@ import {
   UsersThreeIcon,
   CodeIcon,
   TerminalWindowIcon,
-  ChartLineUpIcon,
 } from '@phosphor-icons/react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -37,6 +36,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { getGeneralStats, serverFetch } from '~/api/api.server'
+import { getExperimentVariant } from '~/utils/analytics.server'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import FAQ from '~/components/marketing/FAQ'
@@ -105,15 +105,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  const [metainfoResult, stats] = await Promise.all([
+  const FEATURES_EXPERIMENT_ID = 'landing-page-new-features-section-ui'
+
+  const [metainfoResult, stats, featuresVariant] = await Promise.all([
     serverFetch<Metainfo>(request, 'user/metainfo', { skipAuth: true }),
     getGeneralStats(request),
+    getExperimentVariant(request, FEATURES_EXPERIMENT_ID, 'control'),
   ])
 
   return {
     deviceInfo,
     metainfo: metainfoResult.data ?? DEFAULT_METAINFO,
     stats,
+    featuresVariant,
   }
 }
 
@@ -1620,16 +1624,32 @@ const FEATURES_ALT = [
 ] as const
 
 const DashboardMockup = () => (
-  <div className='relative mx-auto h-[440px] w-full max-w-lg select-none' aria-hidden>
+  <div
+    className='relative mx-auto h-[440px] w-full max-w-lg select-none'
+    aria-hidden
+  >
     {/* Chart card */}
-    <div className='absolute -top-4 -right-4 w-[290px] rotate-2 rounded-2xl bg-white p-5 shadow-xl ring-1 border-gray-200 dark:bg-slate-900 dark:border-slate-800/20'>
+    <div className='absolute -top-4 -right-4 w-[290px] rotate-2 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
       <div className='mb-1 flex items-center justify-between'>
-        <Text size='xxs' weight='semibold' colour='muted' tracking='wide' className='uppercase'>
+        <Text
+          size='xxs'
+          weight='semibold'
+          colour='muted'
+          tracking='wide'
+          className='uppercase'
+        >
           Pageviews
         </Text>
         <div className='flex items-center gap-1.5'>
-          <Text size='xl' weight='bold'>24.5k</Text>
-          <Text size='xxs' weight='medium' colour='success' className='flex items-center'>
+          <Text size='xl' weight='bold'>
+            24.5k
+          </Text>
+          <Text
+            size='xxs'
+            weight='medium'
+            colour='success'
+            className='flex items-center'
+          >
             <CaretUpIcon weight='fill' className='size-3' />
             12%
           </Text>
@@ -1661,21 +1681,36 @@ const DashboardMockup = () => (
           strokeWidth='2'
           strokeLinecap='round'
         />
-        <circle cx='170' cy='22' r='3.5' fill='white' stroke='rgb(99 102 241)' strokeWidth='2' />
+        <circle
+          cx='170'
+          cy='22'
+          r='3.5'
+          fill='white'
+          stroke='rgb(99 102 241)'
+          strokeWidth='2'
+        />
       </svg>
       <div className='mt-1 flex justify-between'>
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-          <Text key={d} size='xxs' colour='muted'>{d}</Text>
+          <Text key={d} size='xxs' colour='muted'>
+            {d}
+          </Text>
         ))}
       </div>
     </div>
 
     {/* Events card */}
-    <div className='absolute top-6 left-0 w-[270px] -rotate-3 rounded-2xl bg-white p-5 shadow-xl ring-1 border-gray-200 dark:bg-slate-900 dark:border-slate-800/20'>
-      <Text as='h3' size='lg' weight='bold'>Events</Text>
+    <div className='absolute top-6 left-0 w-[270px] -rotate-3 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
+      <Text as='h3' size='lg' weight='bold'>
+        Events
+      </Text>
       <div className='mt-2 mb-1.5 flex items-center justify-between px-1'>
-        <Text size='xxs' weight='medium' colour='muted'>Event</Text>
-        <Text size='xxs' weight='medium' colour='muted'>Quantity</Text>
+        <Text size='xxs' weight='medium' colour='muted'>
+          Event
+        </Text>
+        <Text size='xxs' weight='medium' colour='muted'>
+          Quantity
+        </Text>
       </div>
       <div className='space-y-0.5'>
         {[
@@ -1693,11 +1728,19 @@ const DashboardMockup = () => (
               className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
               style={{ width: `${barW}%` }}
             />
-            <Text size='xs' className='relative z-10'>{name}</Text>
+            <Text size='xs' className='relative z-10'>
+              {name}
+            </Text>
             <span className='relative z-10'>
-              <Text size='xs' weight='medium'>{count}</Text>
-              <Text size='xs' colour='muted' className='mx-1.5'>|</Text>
-              <Text size='xs' colour='muted'>{pct}%</Text>
+              <Text size='xs' weight='medium'>
+                {count}
+              </Text>
+              <Text size='xs' colour='muted' className='mx-1.5'>
+                |
+              </Text>
+              <Text size='xs' colour='muted'>
+                {pct}%
+              </Text>
             </span>
           </div>
         ))}
@@ -1705,7 +1748,7 @@ const DashboardMockup = () => (
     </div>
 
     {/* Metrics card */}
-    <div className='absolute bottom-0 left-6 w-[220px] rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 border-gray-200 dark:bg-slate-900 dark:border-slate-800/20'>
+    <div className='absolute bottom-0 left-6 w-[220px] rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
       <div className='space-y-2.5'>
         {[
           { label: 'Unique visitors', value: '125k', up: true },
@@ -1714,19 +1757,20 @@ const DashboardMockup = () => (
           { label: 'Bounce rate', value: '42%', up: false },
         ].map(({ label, value, up }) => (
           <div key={label} className='flex items-center justify-between'>
-            <Text size='xs' colour='muted'>{label}</Text>
+            <Text size='xs' colour='muted'>
+              {label}
+            </Text>
             <div className='flex items-center gap-1.5'>
-              <Text size='sm' weight='semibold'>{value}</Text>
+              <Text size='sm' weight='semibold'>
+                {value}
+              </Text>
               {up ? (
                 <CaretUpIcon
                   weight='fill'
                   className='size-3 text-emerald-500'
                 />
               ) : (
-                <CaretDownIcon
-                  weight='fill'
-                  className='size-3 text-red-500'
-                />
+                <CaretDownIcon weight='fill' className='size-3 text-red-500' />
               )}
             </div>
           </div>
@@ -1735,11 +1779,17 @@ const DashboardMockup = () => (
     </div>
 
     {/* Top pages card */}
-    <div className='absolute right-0 bottom-12 w-[220px] -rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 border-gray-200 dark:bg-slate-900 dark:border-slate-800/20'>
-      <Text as='h3' size='lg' weight='bold' className='mb-2'>Pages</Text>
+    <div className='absolute right-0 bottom-12 w-[220px] -rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
+      <Text as='h3' size='lg' weight='bold' className='mb-2'>
+        Pages
+      </Text>
       <div className='mb-1 flex items-center justify-between px-1'>
-        <Text size='xs' weight='medium' colour='muted'>Page</Text>
-        <Text size='xs' weight='medium' colour='muted'>Visitors</Text>
+        <Text size='xs' weight='medium' colour='muted'>
+          Page
+        </Text>
+        <Text size='xs' weight='medium' colour='muted'>
+          Visitors
+        </Text>
       </div>
       <div className='space-y-0.5'>
         {[
@@ -1756,8 +1806,12 @@ const DashboardMockup = () => (
               className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/30'
               style={{ width: `${barW}%` }}
             />
-            <Text size='xs' className='relative z-10'>{page}</Text>
-            <Text size='xs' weight='medium' className='relative z-10'>{count}</Text>
+            <Text size='xs' className='relative z-10'>
+              {page}
+            </Text>
+            <Text size='xs' weight='medium' className='relative z-10'>
+              {count}
+            </Text>
           </div>
         ))}
       </div>
@@ -1773,7 +1827,13 @@ const FeaturesGridAlt = () => {
       <div className='grid items-center gap-10 lg:grid-cols-2 lg:gap-16'>
         <DashboardMockup />
         <div>
-          <Text as='h2' size='3xl' weight='bold' tracking='tight' className='sm:text-4xl'>
+          <Text
+            as='h2'
+            size='3xl'
+            weight='bold'
+            tracking='tight'
+            className='sm:text-4xl'
+          >
             {t('main.featuresAlt.heading')}
           </Text>
           <div className='mt-8 grid grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-2'>
@@ -1788,7 +1848,12 @@ const FeaturesGridAlt = () => {
                     {t(`main.featuresAlt.${key}.title`)}
                   </Text>
                 </div>
-                <Text as='p' size='sm' colour='muted' className='mt-1 pl-7 leading-relaxed'>
+                <Text
+                  as='p'
+                  size='sm'
+                  colour='muted'
+                  className='mt-1 pl-7 leading-relaxed'
+                >
                   {t(`main.featuresAlt.${key}.desc`)}
                 </Text>
               </div>
@@ -2099,7 +2164,7 @@ const FeaturesShowcase = () => {
 }
 
 export default function Index() {
-  const { metainfo } = useLoaderData<typeof loader>()
+  const { metainfo, featuresVariant } = useLoaderData<typeof loader>()
 
   return (
     <div className='overflow-hidden'>
@@ -2108,9 +2173,11 @@ export default function Index() {
 
         <FeedbackDual />
 
-        <FeaturesGridAlt />
-
-        <FeaturesShowcase />
+        {featuresVariant === 'control' ? (
+          <FeaturesShowcase />
+        ) : (
+          <FeaturesGridAlt />
+        )}
 
         <MarketingPricing metainfo={metainfo} />
 
