@@ -687,7 +687,42 @@
     },
     "freeToTry": "Kostenlos testen",
     "easyToUse": "Einfach zu bedienen",
-    "privacyFirst": "Datenschutz an erster Stelle"
+    "privacyFirst": "Datenschutz an erster Stelle",
+    "featuresAlt": {
+      "heading": "Die Funktionen, die Sie brauchen – ganz ohne Schulung",
+      "privacy": {
+        "title": "Datenschutzorientierte Analysen",
+        "desc": "Verfolgen Sie Besucher ohne Cookies oder personenbezogene Daten. Von Haus aus DSGVO-konform."
+      },
+      "events": {
+        "title": "Benutzerdefinierte Ereignisse & Ziele",
+        "desc": "Verfolgen Sie Registrierungen, Käufe und Button-Klicks. Legen Sie Conversion-Ziele fest, um zu messen, was zählt."
+      },
+      "campaigns": {
+        "title": "Kampagnen & UTMs",
+        "desc": "Sehen Sie, welche Kampagnen Traffic und Umsatz bringen. Verfolgen Sie UTM-Parameter und messen Sie den ROI."
+      },
+      "perf": {
+        "title": "Performance-Monitoring",
+        "desc": "Überwachen Sie echte Seitenladezeiten von realen Nutzern. Erkennen Sie Verlangsamungen, bevor sie Conversions beeinträchtigen."
+      },
+      "errors": {
+        "title": "Fehler-Tracking",
+        "desc": "Erfassen Sie JavaScript-Fehler automatisch. Sehen Sie, welche Seiten, Browser und Geräte betroffen sind."
+      },
+      "sessions": {
+        "title": "Sitzungsanalyse",
+        "desc": "Verfolgen Sie individuelle Nutzerpfade über mehrere Seiten hinweg. Verstehen Sie, wie Besucher durch Ihre Website navigieren."
+      },
+      "opensource": {
+        "title": "Open Source",
+        "desc": "Vollständig Open Source und prüfbar. Hosten Sie es auf Ihrer eigenen Infrastruktur oder nutzen Sie unsere Cloud."
+      },
+      "devs": {
+        "title": "Für Entwickler entwickelt",
+        "desc": "Leichtgewichtiges Skript, einfache API und schnelle Einrichtung. In unter 5 Minuten startklar."
+      }
+    }
   },
   "unsubscribe": {
     "success": "Sie haben sich von analytischen E-Mail-Berichten abgemeldet"
