@@ -105,9 +105,29 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   }
 
   const projectName = data?.project?.name || 'Untitled Project'
+  const searchParams = new URLSearchParams(location.search)
+  const tab = (searchParams.get('tab') ||
+    PROJECT_TABS.traffic) as (keyof typeof PROJECT_TABS) | 'settings'
+  const tabNames: Record<(keyof typeof PROJECT_TABS) | 'settings', string> = {
+    [PROJECT_TABS.traffic]: t('dashboard.traffic'),
+    [PROJECT_TABS.performance]: t('dashboard.performance'),
+    [PROJECT_TABS.profiles]: t('dashboard.profiles'),
+    [PROJECT_TABS.sessions]: t('dashboard.sessions'),
+    [PROJECT_TABS.errors]: t('dashboard.errors'),
+    [PROJECT_TABS.funnels]: t('dashboard.funnels'),
+    [PROJECT_TABS.goals]: t('dashboard.goals'),
+    [PROJECT_TABS.featureFlags]: t('dashboard.featureFlags'),
+    [PROJECT_TABS.captcha]: t('common.captcha'),
+    [PROJECT_TABS.ai]: t('dashboard.askAi'),
+    [PROJECT_TABS.alerts]: t('dashboard.alerts'),
+    [PROJECT_TABS.experiments]: t('dashboard.experiments'),
+    settings: t('common.settings'),
+  }
+  const tabName = tabNames[tab] || tabNames[PROJECT_TABS.traffic]
+  const title = `${projectName} > ${tabName}`
 
   return [
-    ...getTitle(projectName),
+    ...getTitle(title),
     ...getDescription(
       t('description.project', {
         name: projectName,
