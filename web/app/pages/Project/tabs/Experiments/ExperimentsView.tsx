@@ -28,12 +28,14 @@ import {
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
+import { Badge } from '~/ui/Badge'
 import Spin from '~/ui/icons/Spin'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
+import Tooltip from '~/ui/Tooltip'
 import routes from '~/utils/routes'
 
 import ExperimentResults from './ExperimentResults'
@@ -41,25 +43,6 @@ import ExperimentSettingsModal from './ExperimentSettingsModal'
 import { LoaderView } from '../../View/components/LoaderView'
 
 dayjs.extend(relativeTime)
-
-const STATUS_COLORS: Record<ExperimentStatus, { bg: string; text: string }> = {
-  draft: {
-    bg: 'bg-gray-100 dark:bg-gray-700',
-    text: 'text-gray-600 dark:text-gray-400',
-  },
-  running: {
-    bg: 'bg-green-100 dark:bg-green-900/30',
-    text: 'text-green-800 dark:text-green-400',
-  },
-  paused: {
-    bg: 'bg-yellow-100 dark:bg-yellow-900/30',
-    text: 'text-yellow-800 dark:text-yellow-400',
-  },
-  completed: {
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    text: 'text-blue-800 dark:text-blue-400',
-  },
-}
 
 const DEFAULT_EXPERIMENTS_TAKE = 20
 
@@ -127,10 +110,24 @@ const ExperimentRow = ({
   const [showCompleteModal, setShowCompleteModal] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
-  const statusColors = STATUS_COLORS[experiment.status]
   const variantsCount = experiment.variants?.length || 0
   const isEditDisabled =
     experiment.status === 'running' || experiment.status === 'completed'
+  const statusBadgeColour: 'slate' | 'green' | 'yellow' | 'sky' =
+    useMemo(() => {
+      if (experiment.status === 'running') return 'green'
+      if (experiment.status === 'paused') return 'yellow'
+      if (experiment.status === 'completed') return 'sky'
+      return 'slate'
+    }, [experiment.status])
+
+  const openResults = useCallback(() => {
+    onViewResults(experiment.id)
+  }, [onViewResults, experiment.id])
+
+  const stopRowClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation()
+  }
 
   const handleStart = async () => {
     setActionLoading(true)
@@ -162,7 +159,18 @@ const ExperimentRow = ({
 
   return (
     <>
-      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-900/25'>
+      <li
+        className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'
+        onClick={openResults}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            openResults()
+          }
+        }}
+        role='button'
+        tabIndex={0}
+      >
         <div className='flex justify-between gap-x-6 px-4 py-4 sm:px-6'>
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
@@ -173,23 +181,16 @@ const ExperimentRow = ({
                   truncate
                   className='flex items-center gap-x-1.5'
                 >
-                  <FlaskIcon className='size-4 text-purple-500' />
                   <span>{experiment.name}</span>
                 </Text>
-                {/* Status badge */}
-                <span
-                  className={cx(
-                    'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-                    statusColors.bg,
-                    statusColors.text,
-                  )}
-                >
-                  {t(`experiments.status.${experiment.status}`)}
-                </span>
-                {/* Variants count badge */}
-                <span className='inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400'>
-                  {variantsCount} {t('experiments.variants')}
-                </span>
+                <Badge
+                  label={t(`experiments.status.${experiment.status}`)}
+                  colour={statusBadgeColour}
+                />
+                <Badge
+                  colour='indigo'
+                  label={`${variantsCount} ${t('experiments.variants')}`}
+                />
               </div>
               {experiment.description ? (
                 <Text className='mt-1' as='p' size='sm' colour='secondary'>
@@ -218,7 +219,10 @@ const ExperimentRow = ({
               </div>
             </div>
           </div>
-          <div className='flex shrink-0 items-center gap-x-1'>
+          <div
+            className='flex shrink-0 items-center gap-x-1'
+            onClick={stopRowClick}
+          >
             {/* Action buttons based on status */}
             {experiment.status === 'draft' ? (
               <Button
@@ -298,28 +302,37 @@ const ExperimentRow = ({
 
             {/* Edit/Delete buttons */}
             <div className='flex items-center gap-1 border-l border-gray-200 pl-2 dark:border-slate-700'>
-              <button
-                type='button'
-                onClick={() =>
-                  !isEditDisabled ? onEdit(experiment.id) : undefined
-                }
-                disabled={isEditDisabled}
-                aria-label={t('common.edit')}
-                title={
-                  experiment.status === 'running'
-                    ? 'Pause this experiment to edit settings.'
-                    : experiment.status === 'completed'
-                      ? 'Completed experiments can’t be edited.'
-                      : t('common.edit')
-                }
-                className={cx(
-                  'rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300',
-                  isEditDisabled &&
-                    'cursor-not-allowed opacity-50 hover:border-transparent hover:bg-transparent',
-                )}
-              >
-                <PencilIcon className='size-4' />
-              </button>
+              {isEditDisabled ? (
+                <Tooltip
+                  text={
+                    experiment.status === 'running'
+                      ? t('experiments.editDisabledRunning')
+                      : t('experiments.editDisabledCompleted')
+                  }
+                  tooltipNode={
+                    <span className='inline-flex'>
+                      <button
+                        type='button'
+                        disabled
+                        aria-label={t('common.edit')}
+                        className='cursor-not-allowed rounded-md border border-transparent p-1.5 text-gray-800 opacity-50 dark:text-slate-400'
+                      >
+                        <PencilIcon className='size-4' />
+                      </button>
+                    </span>
+                  }
+                />
+              ) : (
+                <button
+                  type='button'
+                  onClick={() => onEdit(experiment.id)}
+                  aria-label={t('common.edit')}
+                  title={t('common.edit')}
+                  className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+                >
+                  <PencilIcon className='size-4' />
+                </button>
+              )}
               <button
                 type='button'
                 onClick={() => setShowDeleteModal(true)}

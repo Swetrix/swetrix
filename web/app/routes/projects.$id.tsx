@@ -106,9 +106,10 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 
   const projectName = data?.project?.name || 'Untitled Project'
   const searchParams = new URLSearchParams(location.search)
-  const tab = (searchParams.get('tab') ||
-    PROJECT_TABS.traffic) as (keyof typeof PROJECT_TABS) | 'settings'
-  const tabNames: Record<(keyof typeof PROJECT_TABS) | 'settings', string> = {
+  const tab = (searchParams.get('tab') || PROJECT_TABS.traffic) as
+    | keyof typeof PROJECT_TABS
+    | 'settings'
+  const tabNames: Record<keyof typeof PROJECT_TABS | 'settings', string> = {
     [PROJECT_TABS.traffic]: t('dashboard.traffic'),
     [PROJECT_TABS.performance]: t('dashboard.performance'),
     [PROJECT_TABS.profiles]: t('dashboard.profiles'),

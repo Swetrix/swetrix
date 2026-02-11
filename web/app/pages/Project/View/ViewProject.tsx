@@ -801,13 +801,7 @@ const ViewProjectContent = () => {
 
     const title = `${project.name} > ${activeTabLabel || t('dashboard.traffic')}`
     document.title = `👀 ${liveVisitors} - ${title} ${TITLE_SUFFIX}`
-  }, [
-    project,
-    user?.showLiveVisitorsInTitle,
-    liveVisitors,
-    activeTabLabel,
-    t,
-  ])
+  }, [project, user?.showLiveVisitorsInTitle, liveVisitors, activeTabLabel, t])
 
   const compareDisable = useCallback(() => {
     setIsActiveCompare(false)

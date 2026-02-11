@@ -35,6 +35,7 @@ import {
 } from '~/hooks/useAnalyticsProxy'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
+import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Select from '~/ui/Select'
@@ -494,22 +495,16 @@ const ExperimentSettingsModal = ({
 
                     {featureFlagMode === 'create' ? (
                       <div>
-                        <div className='flex items-center gap-1.5'>
-                          <Text
-                            as='label'
-                            size='sm'
-                            weight='medium'
-                            className='text-gray-700 dark:text-gray-200'
-                          >
-                            {t('experiments.featureFlagKey')}
-                          </Text>
-                          <Tooltip
-                            text={t('experiments.featureFlagKeyHint')}
-                            className='flex items-center'
-                          />
-                        </div>
-                        <input
-                          type='text'
+                        <Input
+                          label={
+                            <span className='flex items-center gap-1.5'>
+                              <span>{t('experiments.featureFlagKey')}</span>
+                              <Tooltip
+                                text={t('experiments.featureFlagKeyHint')}
+                                className='flex items-center'
+                              />
+                            </span>
+                          }
                           value={featureFlagKey}
                           onChange={(e) =>
                             setFeatureFlagKey(
@@ -522,14 +517,14 @@ const ExperimentSettingsModal = ({
                             suggestedFlagKey ||
                             t('experiments.featureFlagKeyPlaceholder')
                           }
-                          className='mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-gray-100'
+                          classes={{ input: 'font-mono px-3 py-2' }}
                         />
                         {!featureFlagKey && suggestedFlagKey ? (
                           <Text size='xs' colour='muted' className='mt-1'>
                             Will use:{' '}
-                            <code className='rounded bg-gray-100 px-1 dark:bg-slate-700'>
+                            <Text size='xs' colour='secondary' code>
                               {suggestedFlagKey}
-                            </code>
+                            </Text>
                           </Text>
                         ) : null}
                       </div>
@@ -551,13 +546,14 @@ const ExperimentSettingsModal = ({
                             className='flex items-center'
                           />
                         </div>
-                        <button
+                        <Button
                           type='button'
                           onClick={distributeEvenly}
-                          className='text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400'
+                          semiSmall
+                          secondary
                         >
                           {t('experiments.distributeEvenly')}
-                        </button>
+                        </Button>
                       </div>
 
                       {errors.variants ? (
@@ -573,24 +569,24 @@ const ExperimentSettingsModal = ({
                             className={cx(
                               'flex items-center gap-3 rounded-lg border p-3',
                               variant.isControl
-                                ? 'border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-900/20'
-                                : 'border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-900',
+                                ? 'border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-900'
+                                : 'border-gray-200 bg-gray-50 dark:border-slate-800 dark:bg-slate-950',
                             )}
                           >
                             <div
                               className={cx(
                                 'flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-semibold',
                                 variant.isControl
-                                  ? 'bg-indigo-200 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-200'
-                                  : 'bg-gray-200 text-gray-600 dark:bg-slate-600 dark:text-gray-300',
+                                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                                  : 'bg-gray-200 text-gray-600 dark:bg-slate-900 dark:text-gray-300',
                               )}
                             >
                               {String.fromCharCode(65 + index)}
                             </div>
 
                             <div className='flex flex-1 gap-2'>
-                              <input
-                                type='text'
+                              <Input
+                                className='w-32'
                                 value={variant.name}
                                 onChange={(e) =>
                                   handleVariantChange(
@@ -600,10 +596,10 @@ const ExperimentSettingsModal = ({
                                   )
                                 }
                                 placeholder='Name'
-                                className='w-32 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-700'
+                                classes={{ input: 'px-2.5 py-1.5' }}
                               />
-                              <input
-                                type='text'
+                              <Input
+                                className='w-36'
                                 value={variant.key}
                                 onChange={(e) =>
                                   handleVariantChange(
@@ -615,13 +611,13 @@ const ExperimentSettingsModal = ({
                                   )
                                 }
                                 placeholder='key'
-                                className='w-36 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 font-mono text-sm dark:border-slate-600 dark:bg-slate-700'
+                                classes={{ input: 'px-2.5 py-1.5 font-mono' }}
                               />
                             </div>
 
                             <div className='flex items-center gap-1'>
-                              <input
-                                type='text'
+                              <Input
+                                className='w-14'
                                 inputMode='numeric'
                                 value={variant.rolloutPercentage}
                                 onChange={(e) => {
@@ -636,50 +632,53 @@ const ExperimentSettingsModal = ({
                                     Math.min(100, num),
                                   )
                                 }}
-                                className='w-12 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-center text-sm dark:border-slate-600 dark:bg-slate-700'
+                                classes={{ input: 'px-2 py-1.5 text-center' }}
                               />
                               <Text size='sm' colour='muted'>
                                 %
                               </Text>
                             </div>
 
-                            <label className='flex shrink-0 cursor-pointer items-center gap-1.5'>
-                              <input
-                                type='radio'
-                                name='controlVariant'
-                                checked={variant.isControl}
-                                onChange={() =>
+                            <Checkbox
+                              label={t('experiments.control')}
+                              checked={variant.isControl}
+                              onChange={(checked) => {
+                                if (checked) {
                                   handleVariantChange(index, 'isControl', true)
                                 }
-                                className='size-3.5 text-indigo-600'
-                              />
-                              <Text size='xs' colour='muted'>
-                                {t('experiments.control')}
-                              </Text>
-                            </label>
+                              }}
+                              classes={{
+                                label:
+                                  'shrink-0 gap-1.5 [&>label]:text-xs [&>label]:font-normal [&>label]:text-gray-500 dark:[&>label]:text-gray-400',
+                              }}
+                            />
 
                             {variants.length > 2 ? (
-                              <button
+                              <Button
                                 type='button'
+                                className='p-1.5'
                                 onClick={() => handleRemoveVariant(index)}
-                                className='rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-red-500 dark:hover:bg-slate-600'
+                                semiSmall
+                                secondary
                               >
                                 <TrashIcon className='size-4' />
-                              </button>
+                              </Button>
                             ) : null}
                           </div>
                         ))}
                       </div>
 
                       <div className='mt-2 flex items-center justify-between'>
-                        <button
+                        <Button
                           type='button'
                           onClick={handleAddVariant}
-                          className='flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                          semiSmall
+                          secondary
+                          className='gap-1.5'
                         >
                           <PlusIcon className='size-4' />
                           {t('experiments.addVariant')}
-                        </button>
+                        </Button>
                         <Text
                           size='sm'
                           weight='medium'
@@ -781,7 +780,7 @@ const ExperimentSettingsModal = ({
                         onClick={() => setShowAdvanced(!showAdvanced)}
                         className='flex w-full items-center justify-between text-left'
                       >
-                        <Text size='sm' weight='medium' colour='muted'>
+                        <Text size='sm' weight='medium' colour='secondary'>
                           Advanced settings
                         </Text>
                         <CaretDownIcon
@@ -810,30 +809,26 @@ const ExperimentSettingsModal = ({
                               />
                             </div>
                             <div className='mt-1.5 flex gap-2'>
-                              <button
+                              <Button
                                 type='button'
                                 onClick={() => setFeatureFlagMode('create')}
-                                className={cx(
-                                  'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
-                                  featureFlagMode === 'create'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
-                                )}
+                                className='flex-1 justify-center'
+                                regular
+                                primary={featureFlagMode === 'create'}
+                                secondary={featureFlagMode !== 'create'}
                               >
                                 Create new
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 type='button'
                                 onClick={() => setFeatureFlagMode('link')}
-                                className={cx(
-                                  'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
-                                  featureFlagMode === 'link'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
-                                )}
+                                className='flex-1 justify-center'
+                                regular
+                                primary={featureFlagMode === 'link'}
+                                secondary={featureFlagMode !== 'link'}
                               >
                                 Link existing
-                              </button>
+                              </Button>
                             </div>
                           </div>
 
@@ -885,34 +880,30 @@ const ExperimentSettingsModal = ({
                               />
                             </div>
                             <div className='mt-1.5 flex gap-2'>
-                              <button
+                              <Button
                                 type='button'
                                 onClick={() =>
                                   setExposureTrigger('feature_flag')
                                 }
-                                className={cx(
-                                  'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
-                                  exposureTrigger === 'feature_flag'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
-                                )}
+                                className='flex-1 justify-center'
+                                regular
+                                primary={exposureTrigger === 'feature_flag'}
+                                secondary={exposureTrigger !== 'feature_flag'}
                               >
                                 Default
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 type='button'
                                 onClick={() =>
                                   setExposureTrigger('custom_event')
                                 }
-                                className={cx(
-                                  'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
-                                  exposureTrigger === 'custom_event'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
-                                )}
+                                className='flex-1 justify-center'
+                                regular
+                                primary={exposureTrigger === 'custom_event'}
+                                secondary={exposureTrigger !== 'custom_event'}
                               >
                                 Custom event
-                              </button>
+                              </Button>
                             </div>
 
                             {exposureTrigger === 'custom_event' ? (
@@ -961,34 +952,36 @@ const ExperimentSettingsModal = ({
                               />
                             </div>
                             <div className='mt-1.5 flex gap-2'>
-                              <button
+                              <Button
                                 type='button'
                                 onClick={() =>
                                   setMultipleVariantHandling('exclude')
                                 }
-                                className={cx(
-                                  'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
-                                  multipleVariantHandling === 'exclude'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
-                                )}
+                                className='flex-1 justify-center'
+                                regular
+                                primary={multipleVariantHandling === 'exclude'}
+                                secondary={
+                                  multipleVariantHandling !== 'exclude'
+                                }
                               >
                                 Exclude
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 type='button'
                                 onClick={() =>
                                   setMultipleVariantHandling('first_exposure')
                                 }
-                                className={cx(
-                                  'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
+                                className='flex-1 justify-center'
+                                regular
+                                primary={
                                   multipleVariantHandling === 'first_exposure'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
-                                )}
+                                }
+                                secondary={
+                                  multipleVariantHandling !== 'first_exposure'
+                                }
                               >
                                 First only
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         </div>

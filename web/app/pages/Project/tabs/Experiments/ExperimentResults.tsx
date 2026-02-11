@@ -46,6 +46,7 @@ import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import BillboardChart from '~/ui/BillboardChart'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
+import { Badge } from '~/ui/Badge'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
@@ -82,7 +83,7 @@ interface StatCardProps {
 }
 
 const StatCard = memo(({ icon, value, label, subValue }: StatCardProps) => (
-  <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900'>
+  <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
     <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>
       {icon}
     </div>
@@ -265,7 +266,7 @@ const WinProbabilityChart = memo(
 
     if (!chartOptions) {
       return (
-        <div className='flex h-[220px] items-center justify-center rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900'>
+        <div className='flex h-[220px] items-center justify-center rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <Text colour='muted' size='sm'>
             {t('experiments.noDataYet')}
           </Text>
@@ -274,7 +275,7 @@ const WinProbabilityChart = memo(
     }
 
     return (
-      <div className='rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900'>
+      <div className='rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
         <Text as='h3' weight='semibold' size='sm' className='mb-2'>
           {t('experiments.probabilityOfWinning')}
         </Text>
@@ -355,7 +356,7 @@ const TableHeader = ({
 }) => (
   <th
     className={cx(
-      'px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400',
+      'px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300',
       className,
     )}
   >
@@ -369,7 +370,16 @@ const TableCell = ({
 }: {
   children: React.ReactNode
   className?: string
-}) => <td className={cx('px-4 py-4', className)}>{children}</td>
+}) => (
+  <td
+    className={cx(
+      'px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100',
+      className,
+    )}
+  >
+    {children}
+  </td>
+)
 
 const ExposuresTable = memo(
   ({
@@ -382,7 +392,7 @@ const ExposuresTable = memo(
     const { t } = useTranslation()
 
     return (
-      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-900/50'>
+      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-950'>
         <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-800'>
           <Text weight='semibold' size='sm'>
             {t('experiments.totalExposures')}
@@ -390,7 +400,7 @@ const ExposuresTable = memo(
         </div>
         <div className='overflow-x-auto'>
           <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
-            <thead className='bg-gray-50 dark:bg-slate-900'>
+            <thead className='bg-gray-50 dark:bg-slate-900/60'>
               <tr>
                 <TableHeader>{t('experiments.variants')}</TableHeader>
                 <TableHeader>{t('experiments.exposures')}</TableHeader>
@@ -406,7 +416,7 @@ const ExposuresTable = memo(
                 return (
                   <tr
                     key={variant.key}
-                    className='hover:bg-gray-50 dark:hover:bg-slate-900/50'
+                    className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'
                   >
                     <TableCell>
                       <div className='flex items-center gap-2'>
@@ -414,9 +424,10 @@ const ExposuresTable = memo(
                           {variant.name}
                         </Text>
                         {variant.isControl ? (
-                          <span className='rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'>
-                            {t('experiments.control')}
-                          </span>
+                          <Badge
+                            label={t('experiments.control')}
+                            colour='indigo'
+                          />
                         ) : null}
                       </div>
                     </TableCell>
@@ -433,7 +444,7 @@ const ExposuresTable = memo(
                   </tr>
                 )
               })}
-              <tr className='bg-gray-50 dark:bg-slate-900'>
+              <tr className='bg-gray-50 dark:bg-slate-900/60'>
                 <TableCell>
                   <Text weight='semibold' size='sm'>
                     Total
@@ -476,8 +487,8 @@ const MetricsTable = memo(
     const testVariants = variants.filter((v) => !v.isControl)
 
     return (
-      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-900/50'>
-        <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-700'>
+      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-950'>
+        <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-800'>
           <div className='flex items-center gap-2'>
             <Text weight='semibold' size='sm'>
               {t('experiments.conversionRate')}
@@ -487,7 +498,7 @@ const MetricsTable = memo(
         </div>
         <div className='overflow-x-auto'>
           <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
-            <thead className='bg-gray-50 dark:bg-slate-900'>
+            <thead className='bg-gray-50 dark:bg-slate-900/60'>
               <tr>
                 <TableHeader>{t('experiments.variants')}</TableHeader>
                 <TableHeader>Value</TableHeader>
@@ -506,15 +517,13 @@ const MetricsTable = memo(
             </thead>
             <tbody className='divide-y divide-gray-200 dark:divide-slate-800'>
               {controlVariant ? (
-                <tr className='hover:bg-gray-50 dark:hover:bg-slate-900/50'>
+                <tr className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'>
                   <TableCell>
                     <div className='flex items-center gap-2'>
                       <Text weight='medium' size='sm'>
                         {controlVariant.name}
                       </Text>
-                      <span className='rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'>
-                        {t('experiments.control')}
-                      </span>
+                      <Badge label={t('experiments.control')} colour='indigo' />
                     </div>
                   </TableCell>
                   <TableCell>
@@ -568,7 +577,7 @@ const MetricsTable = memo(
                   <tr
                     key={variant.key}
                     className={cx(
-                      'hover:bg-gray-50 dark:hover:bg-slate-900/50',
+                      'bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50',
                       {
                         'bg-green-50/50 dark:bg-green-900/10': isWinner,
                       },
@@ -580,10 +589,15 @@ const MetricsTable = memo(
                           {variant.name}
                         </Text>
                         {isWinner ? (
-                          <span className='flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/50 dark:text-green-300'>
-                            <TrophyIcon className='size-3' />
-                            {t('experiments.winner')}
-                          </span>
+                          <Badge
+                            colour='green'
+                            label={
+                              <span className='flex items-center gap-1'>
+                                <TrophyIcon className='size-3' />
+                                {t('experiments.winner')}
+                              </span>
+                            }
+                          />
                         ) : null}
                       </div>
                     </TableCell>
@@ -653,9 +667,7 @@ const MetricsTable = memo(
                           {variant.probabilityOfBeingBest}%
                         </Text>
                         {variant.probabilityOfBeingBest >= 95 ? (
-                          <span className='rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/50 dark:text-green-300'>
-                            Significant
-                          </span>
+                          <Badge label='Significant' colour='green' />
                         ) : null}
                       </div>
                     </TableCell>
@@ -742,6 +754,15 @@ const ExperimentResults = ({
   const [error, setError] = useState<string | null>(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [reloadToken, setReloadToken] = useState(0)
+  const statusBadgeColour = useMemo<
+    'slate' | 'green' | 'yellow' | 'sky'
+  >(() => {
+    if (!results) return 'slate'
+    if (results.status === 'running') return 'green'
+    if (results.status === 'paused') return 'yellow'
+    if (results.status === 'completed') return 'sky'
+    return 'slate'
+  }, [results])
 
   useEffect(() => {
     isMountedRef.current = true
@@ -873,45 +894,6 @@ const ExperimentResults = ({
             }
           />
         }
-        leftContent={
-          <div className='flex items-center gap-2'>
-            <FlaskIcon className='size-5 text-purple-500' />
-            <Text as='h2' size='xl' weight='bold' truncate>
-              {experiment.name}
-            </Text>
-            <div
-              className={cx(
-                'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-                {
-                  'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400':
-                    results.status === 'draft',
-                  'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400':
-                    results.status === 'running',
-                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400':
-                    results.status === 'paused',
-                  'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400':
-                    results.status === 'completed',
-                },
-              )}
-            >
-              {t(`experiments.status.${results.status}`)}
-            </div>
-            {goal?.name ? (
-              <div className='inline-flex max-w-[240px] items-center gap-1.5 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'>
-                <TargetIcon className='size-3.5' />
-                <Text
-                  as='span'
-                  size='xs'
-                  weight='medium'
-                  colour='inherit'
-                  truncate
-                >
-                  {goal.name}
-                </Text>
-              </div>
-            ) : null}
-          </div>
-        }
       />
       <ExperimentSettingsModal
         isOpen={isSettingsOpen}
@@ -921,6 +903,36 @@ const ExperimentResults = ({
         experimentId={experiment.id}
       />
       <div className='space-y-3'>
+        <div className='flex flex-wrap items-center gap-2'>
+          <div className='flex min-w-0 items-center gap-2'>
+            <Text as='h2' size='xl' weight='bold' truncate>
+              {experiment.name}
+            </Text>
+          </div>
+          <Badge
+            label={t(`experiments.status.${results.status}`)}
+            colour={statusBadgeColour}
+          />
+          {goal?.name ? (
+            <Badge
+              colour='indigo'
+              label={
+                <span className='flex max-w-[240px] items-center gap-1.5'>
+                  <TargetIcon className='size-3.5 shrink-0' />
+                  <Text
+                    as='span'
+                    size='xs'
+                    weight='medium'
+                    colour='inherit'
+                    truncate
+                  >
+                    {goal.name}
+                  </Text>
+                </span>
+              }
+            />
+          ) : null}
+        </div>
         {results.hasWinner && results.winnerKey ? (
           <div className='flex items-center gap-4 rounded-lg border border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4 dark:border-green-700 dark:bg-green-900/20'>
             <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50'>
