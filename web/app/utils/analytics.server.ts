@@ -10,6 +10,8 @@ const swetrix = new Swetrix(SWETRIX_PID, {
   devMode: isDevelopment,
 })
 
+const EXPERIMENT_FETCH_TIMEOUT_MS = 5_000
+
 export async function getExperimentVariant(
   request: Request,
   experimentId: string,
@@ -23,13 +25,25 @@ export async function getExperimentVariant(
     const ip = getClientIP(request) || '127.0.0.1'
     const userAgent = request.headers.get('user-agent') || ''
 
-    const variant = await swetrix.getExperiment(
+    const variantPromise = swetrix.getExperiment(
       experimentId,
       ip,
       userAgent,
       undefined,
       defaultVariant,
     )
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+    const timeoutPromise = new Promise<string | null>((resolve) => {
+      timeoutId = setTimeout(
+        () => resolve(defaultVariant),
+        EXPERIMENT_FETCH_TIMEOUT_MS,
+      )
+    })
+    const variant = await Promise.race([variantPromise, timeoutPromise])
+
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
 
     return variant
   } catch (reason) {
