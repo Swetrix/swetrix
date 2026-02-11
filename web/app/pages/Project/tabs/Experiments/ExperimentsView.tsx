@@ -125,6 +125,11 @@ const ExperimentRow = ({
     onViewResults(experiment.id)
   }, [onViewResults, experiment.id])
 
+  const neutralActionButtonClass =
+    'rounded-md border border-transparent p-2 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 sm:p-1.5 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+  const positiveActionButtonClass =
+    'rounded-md border border-transparent p-2 transition-colors sm:p-1.5 text-green-600 hover:border-green-300 hover:bg-green-50 dark:text-green-400 hover:dark:border-green-700/80 dark:hover:bg-green-900/30'
+
   const stopRowClick = (e: React.MouseEvent<HTMLElement>) => {
     e.stopPropagation()
   }
@@ -171,17 +176,12 @@ const ExperimentRow = ({
         role='button'
         tabIndex={0}
       >
-        <div className='flex justify-between gap-x-6 px-4 py-4 sm:px-6'>
+        <div className='flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-x-6 sm:px-6'>
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
-              <div className='flex items-center gap-x-2'>
-                <Text
-                  as='p'
-                  weight='semibold'
-                  truncate
-                  className='flex items-center gap-x-1.5'
-                >
-                  <span>{experiment.name}</span>
+              <div className='flex flex-wrap items-center gap-2'>
+                <Text as='p' weight='semibold' truncate>
+                  {experiment.name}
                 </Text>
                 <Badge
                   label={t(`experiments.status.${experiment.status}`)}
@@ -203,7 +203,7 @@ const ExperimentRow = ({
                 </Text>
               ) : null}
               {/* Timestamps */}
-              <div className='mt-2 flex items-center gap-x-3 text-xs text-gray-500 dark:text-gray-400'>
+              <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400'>
                 {experiment.startedAt ? (
                   <span>
                     {t('experiments.startedAt')}:{' '}
@@ -220,88 +220,147 @@ const ExperimentRow = ({
             </div>
           </div>
           <div
-            className='flex shrink-0 items-center gap-x-1'
+            className='flex w-full flex-wrap items-center gap-1 pt-2 sm:w-auto sm:shrink-0 sm:justify-end sm:pt-0'
             onClick={stopRowClick}
           >
             {/* Action buttons based on status */}
             {experiment.status === 'draft' ? (
-              <Button
-                onClick={handleStart}
-                disabled={actionLoading || !experiment.goalId}
-                title={
-                  !experiment.goalId ? t('experiments.needGoal') : undefined
-                }
-                ghost
-                small
-              >
-                {actionLoading ? (
-                  <Spin className='size-4' />
+              <>
+                {!experiment.goalId ? (
+                  <Tooltip
+                    text={t('experiments.needGoal')}
+                    tooltipNode={
+                      <span className='inline-flex'>
+                        <button
+                          type='button'
+                          disabled
+                          aria-label={t('experiments.start')}
+                          className={cx(
+                            positiveActionButtonClass,
+                            'cursor-not-allowed opacity-50',
+                          )}
+                        >
+                          <PlayIcon className='size-4' />
+                        </button>
+                      </span>
+                    }
+                  />
                 ) : (
-                  <PlayIcon className='mr-1 size-4' />
+                  <Tooltip
+                    text={t('experiments.start')}
+                    tooltipNode={
+                      <span className='inline-flex'>
+                        <button
+                          type='button'
+                          onClick={handleStart}
+                          disabled={actionLoading}
+                          aria-label={t('experiments.start')}
+                          className={cx(positiveActionButtonClass, {
+                            'cursor-not-allowed opacity-50': actionLoading,
+                          })}
+                        >
+                          {actionLoading ? (
+                            <Spin className='size-4' />
+                          ) : (
+                            <PlayIcon className='size-4' />
+                          )}
+                        </button>
+                      </span>
+                    }
+                  />
                 )}
-                {t('experiments.start')}
-              </Button>
+              </>
             ) : null}
             {experiment.status === 'running' ? (
               <>
-                <Button
-                  onClick={handlePause}
-                  disabled={actionLoading}
-                  ghost
-                  small
-                >
-                  {actionLoading ? (
-                    <Spin className='size-4' />
-                  ) : (
-                    <PauseIcon className='mr-1 size-4' />
-                  )}
-                  {t('experiments.pause')}
-                </Button>
-                <Button
-                  onClick={() => onViewResults(experiment.id)}
-                  ghost
-                  small
-                >
-                  <ChartBarIcon className='mr-1 size-4' />
-                  {t('experiments.results')}
-                </Button>
+                <Tooltip
+                  text={t('experiments.pause')}
+                  tooltipNode={
+                    <span className='inline-flex'>
+                      <button
+                        type='button'
+                        onClick={handlePause}
+                        disabled={actionLoading}
+                        aria-label={t('experiments.pause')}
+                        className={cx(neutralActionButtonClass, {
+                          'cursor-not-allowed opacity-50': actionLoading,
+                        })}
+                      >
+                        {actionLoading ? (
+                          <Spin className='size-4' />
+                        ) : (
+                          <PauseIcon className='size-4' />
+                        )}
+                      </button>
+                    </span>
+                  }
+                />
               </>
             ) : null}
             {experiment.status === 'paused' ? (
               <>
-                <Button
-                  onClick={handleStart}
-                  disabled={actionLoading}
-                  ghost
-                  small
-                >
-                  {actionLoading ? (
-                    <Spin className='size-4' />
-                  ) : (
-                    <PlayIcon className='mr-1 size-4' />
-                  )}
-                  {t('experiments.resume')}
-                </Button>
-                <Button
-                  onClick={() => setShowCompleteModal(true)}
-                  disabled={actionLoading}
-                  ghost
-                  small
-                >
-                  <CheckCircleIcon className='mr-1 size-4' />
-                  {t('experiments.complete')}
-                </Button>
+                <Tooltip
+                  text={t('experiments.resume')}
+                  tooltipNode={
+                    <span className='inline-flex'>
+                      <button
+                        type='button'
+                        onClick={handleStart}
+                        disabled={actionLoading}
+                        aria-label={t('experiments.resume')}
+                        className={cx(positiveActionButtonClass, {
+                          'cursor-not-allowed opacity-50': actionLoading,
+                        })}
+                      >
+                        {actionLoading ? (
+                          <Spin className='size-4' />
+                        ) : (
+                          <PlayIcon className='size-4' />
+                        )}
+                      </button>
+                    </span>
+                  }
+                />
+                <Tooltip
+                  text={t('experiments.complete')}
+                  tooltipNode={
+                    <span className='inline-flex'>
+                      <button
+                        type='button'
+                        onClick={() => setShowCompleteModal(true)}
+                        disabled={actionLoading}
+                        aria-label={t('experiments.complete')}
+                        className={cx(neutralActionButtonClass, {
+                          'cursor-not-allowed opacity-50': actionLoading,
+                        })}
+                      >
+                        <CheckCircleIcon className='size-4' />
+                      </button>
+                    </span>
+                  }
+                />
               </>
             ) : null}
             {experiment.status === 'completed' ? (
-              <Button onClick={() => onViewResults(experiment.id)} ghost small>
-                <ChartBarIcon className='mr-1 size-4' />
-                {t('experiments.viewResults')}
-              </Button>
+              <Tooltip
+                text={t('experiments.viewResults')}
+                tooltipNode={
+                  <span className='inline-flex'>
+                    <button
+                      type='button'
+                      onClick={() => onViewResults(experiment.id)}
+                      aria-label={t('experiments.viewResults')}
+                      className={neutralActionButtonClass}
+                    >
+                      <ChartBarIcon className='size-4' />
+                    </button>
+                  </span>
+                }
+              />
             ) : null}
 
             {/* Edit/Delete buttons */}
-            <div className='flex items-center gap-1 border-l border-gray-200 pl-2 dark:border-slate-700'>
+            <div className='ml-auto flex items-center gap-1 sm:ml-0'>
               {isEditDisabled ? (
                 <Tooltip
                   text={
@@ -315,7 +374,10 @@ const ExperimentRow = ({
                         type='button'
                         disabled
                         aria-label={t('common.edit')}
-                        className='cursor-not-allowed rounded-md border border-transparent p-1.5 text-gray-800 opacity-50 dark:text-slate-400'
+                        className={cx(
+                          neutralActionButtonClass,
+                          'cursor-not-allowed opacity-50',
+                        )}
                       >
                         <PencilIcon className='size-4' />
                       </button>
@@ -323,24 +385,37 @@ const ExperimentRow = ({
                   }
                 />
               ) : (
-                <button
-                  type='button'
-                  onClick={() => onEdit(experiment.id)}
-                  aria-label={t('common.edit')}
-                  title={t('common.edit')}
-                  className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
-                >
-                  <PencilIcon className='size-4' />
-                </button>
+                <Tooltip
+                  text={t('common.edit')}
+                  tooltipNode={
+                    <span className='inline-flex'>
+                      <button
+                        type='button'
+                        onClick={() => onEdit(experiment.id)}
+                        aria-label={t('common.edit')}
+                        className={neutralActionButtonClass}
+                      >
+                        <PencilIcon className='size-4' />
+                      </button>
+                    </span>
+                  }
+                />
               )}
-              <button
-                type='button'
-                onClick={() => setShowDeleteModal(true)}
-                aria-label={t('common.delete')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
-              >
-                <TrashIcon className='size-4' />
-              </button>
+              <Tooltip
+                text={t('common.delete')}
+                tooltipNode={
+                  <span className='inline-flex'>
+                    <button
+                      type='button'
+                      onClick={() => setShowDeleteModal(true)}
+                      aria-label={t('common.delete')}
+                      className={neutralActionButtonClass}
+                    >
+                      <TrashIcon className='size-4' />
+                    </button>
+                  </span>
+                }
+              />
             </div>
           </div>
         </div>
