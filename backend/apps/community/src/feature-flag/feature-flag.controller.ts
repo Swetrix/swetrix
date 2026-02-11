@@ -44,11 +44,7 @@ import {
 } from './dto/feature-flag.dto'
 import { FeatureFlagService } from './feature-flag.service'
 import { clickhouse } from '../common/integrations/clickhouse'
-import {
-  getIPFromHeaders,
-  getGeoDetails,
-  checkRateLimit,
-} from '../common/utils'
+import { getIPFromHeaders, getGeoDetails } from '../common/utils'
 
 const FEATURE_FLAGS_MAXIMUM = 50 // Maximum feature flags per project
 const FEATURE_FLAGS_PAGINATION_MAX_TAKE = 100
@@ -216,11 +212,7 @@ export class FeatureFlagController {
   ) {
     this.logger.log({ pid: evaluateDto.pid }, 'POST /feature-flag/evaluate')
 
-    // Public endpoint: only use proxy-provided headers (see getIPFromHeaders),
-    // fallback to Nest's derived IP. This mitigates rate-limit bypass/data pollution.
     const ip = getIPFromHeaders(headers) || reqIP || ''
-
-    await checkRateLimit(ip, 'feature-flag-evaluate', 100, 1800)
 
     const project = await this.projectService.getRedisProject(evaluateDto.pid)
 

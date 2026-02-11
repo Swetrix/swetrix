@@ -222,6 +222,10 @@ body.dark .bb-ygrid {
   pointer-events: stroke;
 }
 
+.bb-ygrid-line.grid-line-95 line {
+  stroke: var(--color-slate-500);
+}
+
 .bb-xgrid-line.annotation-line text {
   font-size: 10px;
   font-weight: 600;

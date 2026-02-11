@@ -954,7 +954,7 @@ const FeatureFlagsViewInner = ({
       <div>
         {isLoading && !_isEmpty(flags) ? <LoadingBar /> : null}
         {_isEmpty(flags) && !filterQuery ? (
-          <div className='mt-5 rounded-lg bg-gray-700 p-5'>
+          <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
             <div className='flex items-center text-gray-50'>
               <ToggleRightIcon className='mr-2 h-8 w-8' />
               <p className='text-3xl font-bold'>{t('featureFlags.title')}</p>

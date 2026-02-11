@@ -52,11 +52,7 @@ import { FeatureFlagService } from './feature-flag.service'
 import { ExperimentService } from '../experiment/experiment.service'
 import { ExperimentStatus } from '../experiment/entity/experiment.entity'
 import { clickhouse } from '../common/integrations/clickhouse'
-import {
-  getIPFromHeaders,
-  getGeoDetails,
-  checkRateLimit,
-} from '../common/utils'
+import { getIPFromHeaders, getGeoDetails } from '../common/utils'
 import { getExperimentVariant } from './evaluation'
 import { trackCustom } from '../common/analytics'
 
@@ -271,8 +267,6 @@ export class FeatureFlagController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    await checkRateLimit(ip, 'feature-flag-evaluate', 100, 1800)
-
     const project = await this.projectService.findOne({
       where: { id: evaluateDto.pid },
     })
@@ -388,7 +382,23 @@ export class FeatureFlagController {
     }
 
     if (experimentVariants.size > 0) {
-      response.experiments = Object.fromEntries(experimentVariants)
+      const experimentsByIdOrFlagKey: Record<string, string> = {}
+
+      for (const [experimentId, variantKey] of experimentVariants.entries()) {
+        experimentsByIdOrFlagKey[experimentId] = variantKey
+
+        const linkedFlags = flagsWithExperiments.filter(
+          (flag) => flag.experimentId === experimentId,
+        )
+
+        for (const linkedFlag of linkedFlags) {
+          if (linkedFlag.key) {
+            experimentsByIdOrFlagKey[linkedFlag.key] = variantKey
+          }
+        }
+      }
+
+      response.experiments = experimentsByIdOrFlagKey
     }
 
     return response

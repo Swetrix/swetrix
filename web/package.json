@@ -25,6 +25,7 @@
     "@react-router/fs-routes": "^7.13.0",
     "@react-router/node": "^7.13.0",
     "@react-router/serve": "^7.13.0",
+    "@swetrix/node": "^3.1.1",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-virtual": "^3.13.18",
     "@types/leaflet": "^1.9.21",

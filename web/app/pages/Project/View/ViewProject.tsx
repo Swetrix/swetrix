@@ -691,15 +691,6 @@ const ViewProjectContent = () => {
     setItem(LS_IS_ACTIVE_COMPARE_KEY, isActiveCompare ? 'true' : 'false')
   }, [isActiveCompare])
 
-  // Only update title client-side when showLiveVisitorsInTitle is enabled
-  useEffect(() => {
-    if (!project || !user?.showLiveVisitorsInTitle) {
-      return
-    }
-
-    document.title = `👀 ${liveVisitors} - ${project.name} ${TITLE_SUFFIX}`
-  }, [project, user?.showLiveVisitorsInTitle, liveVisitors])
-
   const [showFiltersSearch, setShowFiltersSearch] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
@@ -802,6 +793,15 @@ const ViewProjectContent = () => {
     () => _find(tabs, (tab) => tab.id === activeTab)?.label,
     [tabs, activeTab],
   )
+
+  useEffect(() => {
+    if (!project || !user?.showLiveVisitorsInTitle) {
+      return
+    }
+
+    const title = `${project.name} > ${activeTabLabel || t('dashboard.traffic')}`
+    document.title = `👀 ${liveVisitors} - ${title} ${TITLE_SUFFIX}`
+  }, [project, user?.showLiveVisitorsInTitle, liveVisitors, activeTabLabel, t])
 
   const compareDisable = useCallback(() => {
     setIsActiveCompare(false)
