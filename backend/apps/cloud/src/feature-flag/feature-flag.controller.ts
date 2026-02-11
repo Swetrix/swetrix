@@ -387,11 +387,14 @@ export class FeatureFlagController {
       for (const [experimentId, variantKey] of experimentVariants.entries()) {
         experimentsByIdOrFlagKey[experimentId] = variantKey
 
-        const linkedFlag = flagsWithExperiments.find(
+        const linkedFlags = flagsWithExperiments.filter(
           (flag) => flag.experimentId === experimentId,
         )
-        if (linkedFlag?.key) {
-          experimentsByIdOrFlagKey[linkedFlag.key] = variantKey
+
+        for (const linkedFlag of linkedFlags) {
+          if (linkedFlag.key) {
+            experimentsByIdOrFlagKey[linkedFlag.key] = variantKey
+          }
         }
       }
 
