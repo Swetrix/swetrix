@@ -20,7 +20,6 @@ export default defineConfig({
       'robust-predicates',
       'marked',
       'billboard.js',
-      /^remix-utils.*/,
       /^remix-i18next.*/
     ],
   },
