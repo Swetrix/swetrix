@@ -34,6 +34,21 @@ import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { Link, redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
+import {
+  siAngular,
+  siAstro,
+  siDjango,
+  siGhost,
+  siLaravel,
+  siNextdotjs,
+  siNuxt,
+  siReact,
+  siShopify,
+  siVuedotjs,
+  siWebflow,
+  siWordpress,
+  type SimpleIcon,
+} from 'simple-icons'
 
 import { getGeneralStats, serverFetch } from '~/api/api.server'
 import { getExperimentVariant } from '~/utils/analytics.server'
@@ -1617,93 +1632,124 @@ type IntegrationCategory = 'framework' | 'cms' | 'backend'
 const FEATURED_INTEGRATIONS: {
   name: string
   category: IntegrationCategory
+  icon: SimpleIcon
+  iconClassName?: string
 }[] = [
-  { name: 'WordPress', category: 'cms' },
-  { name: 'Next.js', category: 'framework' },
-  { name: 'React', category: 'framework' },
-  { name: 'Vue', category: 'framework' },
-  { name: 'Angular', category: 'framework' },
-  { name: 'Shopify', category: 'cms' },
-  { name: 'Webflow', category: 'cms' },
-  { name: 'Django', category: 'backend' },
-  { name: 'Laravel', category: 'backend' },
-  { name: 'Astro', category: 'framework' },
-  { name: 'Nuxt', category: 'framework' },
-  { name: 'Ghost', category: 'cms' },
+  { name: 'WordPress', category: 'cms', icon: siWordpress },
+  {
+    name: 'Next.js',
+    category: 'framework',
+    icon: siNextdotjs,
+    iconClassName: 'text-white',
+  },
+  { name: 'React', category: 'framework', icon: siReact },
+  { name: 'Vue', category: 'framework', icon: siVuedotjs },
+  { name: 'Angular', category: 'framework', icon: siAngular },
+  { name: 'Shopify', category: 'cms', icon: siShopify },
+  { name: 'Webflow', category: 'cms', icon: siWebflow },
+  { name: 'Django', category: 'backend', icon: siDjango },
+  { name: 'Laravel', category: 'backend', icon: siLaravel },
+  { name: 'Astro', category: 'framework', icon: siAstro },
+  { name: 'Nuxt', category: 'framework', icon: siNuxt },
+  {
+    name: 'Ghost',
+    category: 'cms',
+    icon: siGhost,
+    iconClassName: 'text-white',
+  },
 ]
 
-const INTEGRATION_CATEGORY_DOT: Record<IntegrationCategory, string> = {
-  framework: 'bg-indigo-400',
-  cms: 'bg-emerald-400',
-  backend: 'bg-amber-400',
-}
+const IntegrationLogo = ({
+  icon,
+  className,
+  style,
+}: {
+  icon: SimpleIcon
+  className?: string
+  style?: React.CSSProperties
+}) => (
+  <svg
+    viewBox='0 0 24 24'
+    className={className}
+    style={style}
+    aria-hidden='true'
+  >
+    <path fill='currentColor' d={icon.path} />
+  </svg>
+)
 
 const Integrations = () => {
   const { t } = useTranslation('common')
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  }
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 50 } },
+  }
+
   return (
-    <section className='px-2 py-12'>
-      <div className='relative overflow-hidden rounded-3xl bg-slate-900'>
-        <div aria-hidden className='pointer-events-none absolute inset-0'>
-          <div className='absolute -top-40 -left-40 size-112 rounded-full bg-[radial-gradient(closest-side,var(--color-indigo-500),transparent)]/12 blur-2xl' />
-          <div className='absolute -right-32 -bottom-32 size-96 rounded-full bg-[radial-gradient(closest-side,var(--color-emerald-500),transparent)]/8 blur-2xl' />
+    <section className='py-24 sm:py-32'>
+      <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+        <div className='mx-auto max-w-2xl text-center'>
+          <h2 className='text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white'>
+            {t('main.integrations.title')}
+          </h2>
+          <p className='mt-6 text-lg leading-8 text-slate-600 dark:text-slate-300'>
+            {t('main.integrations.description')}
+          </p>
         </div>
 
-        <div className='relative mx-auto max-w-7xl px-6 py-20 sm:py-24 lg:px-12'>
-          <div className='grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20'>
-            <div>
-              <span className='inline-flex items-center rounded-full bg-indigo-500/10 px-3.5 py-1 text-sm font-medium text-indigo-300 ring-1 ring-indigo-400/20'>
-                {t('main.integrations.badge')}
-              </span>
-              <h2 className='mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl'>
-                {t('main.integrations.title')}
-              </h2>
-              <p className='mt-5 text-lg leading-relaxed text-slate-300'>
-                {t('main.integrations.description')}
-              </p>
-              <p className='mt-3 text-base text-slate-400'>
-                {t('main.integrations.descriptionExtra')}
-              </p>
-              <a
-                href='https://docs.swetrix.com/integrations'
-                target='_blank'
-                rel='noopener noreferrer'
-                className='mt-8 inline-flex items-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 transition-colors duration-200 hover:bg-slate-100'
-              >
-                {t('main.integrations.cta')}
-                <ArrowRightIcon className='h-4 w-4' />
-              </a>
+        <motion.div
+          variants={container}
+          initial='hidden'
+          whileInView='show'
+          viewport={{ once: true, margin: '-100px' }}
+          className='mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-3 lg:max-w-none lg:grid-cols-6'
+        >
+          {FEATURED_INTEGRATIONS.map((integration) => (
+            <motion.div
+              key={integration.name}
+              variants={item}
+              className='group relative flex flex-col items-center justify-center gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 transition-all hover:-translate-y-1 hover:shadow-md hover:ring-slate-900/10 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:ring-white/20'
+            >
+              <IntegrationLogo
+                icon={integration.icon}
+                className='size-8 text-slate-400 transition-colors duration-300 group-hover:text-(--brand-color) dark:text-slate-500'
+                style={
+                  {
+                    '--brand-color': `#${integration.icon.hex}`,
+                  } as React.CSSProperties
+                }
+              />
+              <div className='text-sm font-semibold text-slate-900 dark:text-white'>
+                {integration.name}
+              </div>
+            </motion.div>
+          ))}
+          <motion.a
+            variants={item}
+            href='https://docs.swetrix.com/integrations'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='group relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-slate-200 bg-transparent p-6 text-center transition-all hover:-translate-y-1 hover:border-indigo-500/30 hover:bg-indigo-50/30 dark:border-slate-800 dark:hover:border-indigo-400/30 dark:hover:bg-indigo-950/10'
+          >
+            <div className='flex size-8 items-center justify-center rounded-full bg-slate-50 transition-colors group-hover:bg-indigo-100 dark:bg-slate-800 dark:group-hover:bg-indigo-900/30'>
+              <ArrowRightIcon className='size-4 text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:text-slate-500 dark:group-hover:text-indigo-400' />
             </div>
-
-            <div className='grid grid-cols-2 gap-2.5 sm:grid-cols-3'>
-              {FEATURED_INTEGRATIONS.map((integration) => (
-                <div
-                  key={integration.name}
-                  className='flex items-center gap-2.5 rounded-xl bg-white/4 px-4 py-3.5 ring-1 ring-white/6 transition-colors duration-200 hover:bg-white/8'
-                >
-                  <span
-                    className={cn(
-                      'size-2 shrink-0 rounded-full',
-                      INTEGRATION_CATEGORY_DOT[integration.category],
-                    )}
-                  />
-                  <span className='text-sm font-medium text-slate-200'>
-                    {integration.name}
-                  </span>
-                </div>
-              ))}
-              <a
-                href='https://docs.swetrix.com/integrations'
-                target='_blank'
-                rel='noopener noreferrer'
-                className='flex items-center justify-center gap-1.5 rounded-xl bg-white/2 px-4 py-3.5 text-sm font-medium text-slate-400 ring-1 ring-white/4 transition-all duration-200 hover:bg-white/6 hover:text-slate-300'
-              >
-                {t('main.integrations.andMore', { count: 25 })}
-                <ArrowRightIcon className='h-3.5 w-3.5' />
-              </a>
+            <div className='text-sm font-semibold text-slate-900 dark:text-white'>
+              {t('main.integrations.andMore', { count: 25 })}
             </div>
-          </div>
-        </div>
+          </motion.a>
+        </motion.div>
       </div>
     </section>
   )
