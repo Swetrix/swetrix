@@ -1640,7 +1640,7 @@ const FEATURED_INTEGRATIONS: {
     name: 'Next.js',
     category: 'framework',
     icon: siNextdotjs,
-    iconClassName: 'text-white',
+    iconClassName: 'dark:group-hover:text-white',
   },
   { name: 'React', category: 'framework', icon: siReact },
   { name: 'Vue', category: 'framework', icon: siVuedotjs },
@@ -1655,7 +1655,7 @@ const FEATURED_INTEGRATIONS: {
     name: 'Ghost',
     category: 'cms',
     icon: siGhost,
-    iconClassName: 'text-white',
+    iconClassName: 'dark:group-hover:text-white',
   },
 ]
 
@@ -1723,7 +1723,10 @@ const Integrations = () => {
             >
               <IntegrationLogo
                 icon={integration.icon}
-                className='size-8 text-slate-400 transition-colors duration-300 group-hover:text-(--brand-color) dark:text-slate-500'
+                className={cn(
+                  'size-8 text-slate-400 transition-colors duration-300 group-hover:text-(--brand-color) dark:text-slate-500',
+                  integration.iconClassName,
+                )}
                 style={
                   {
                     '--brand-color': `#${integration.icon.hex}`,
