@@ -430,31 +430,38 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   // Render empty state
   return (
     <>
-      <div className='mt-5 rounded-xl bg-slate-700 p-5 dark:bg-slate-900'>
-        <div className='flex items-center text-gray-50'>
-          <FunnelIcon className='mr-2 h-8 w-8' />
-          <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
+        <div className='mt-5 rounded-xl bg-slate-700 p-5 dark:bg-slate-900'>
+          <div className='flex items-center text-gray-50'>
+            <FunnelIcon className='mr-2 h-8 w-8' />
+            <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
+          </div>
+          <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+            {t('dashboard.funnelsDesc')}
+          </p>
+          {isAuthenticated ? (
+            <button
+              type='button'
+              onClick={() => setIsNewFunnelOpened(true)}
+              className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
+            >
+              {t('dashboard.newFunnel')}
+            </button>
+          ) : (
+            <Link
+              to={routes.signup}
+              className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
+              aria-label={t('titles.signup')}
+            >
+              {t('header.startForFree')}
+            </Link>
+          )}
         </div>
-        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
-          {t('dashboard.funnelsDesc')}
-        </p>
-        {isAuthenticated ? (
-          <button
-            type='button'
-            onClick={() => setIsNewFunnelOpened(true)}
-            className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
-          >
-            {t('dashboard.newFunnel')}
-          </button>
-        ) : (
-          <Link
-            to={routes.signup}
-            className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
-            aria-label={t('titles.signup')}
-          >
-            {t('header.startForFree')}
-          </Link>
-        )}
       </div>
       <NewFunnel
         funnel={funnelToEdit}
