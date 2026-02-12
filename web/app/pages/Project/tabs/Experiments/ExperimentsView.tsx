@@ -706,13 +706,16 @@ const ExperimentsView = ({
     })
   }, [updateExperimentSearchParams])
 
-  const handleEditExperiment = useCallback((experimentId: string) => {
-    updateExperimentSearchParams((params) => {
-      params.set('editExperimentId', experimentId)
-      params.delete('newExperiment')
-      params.delete('experimentId')
-    })
-  }, [updateExperimentSearchParams])
+  const handleEditExperiment = useCallback(
+    (experimentId: string) => {
+      updateExperimentSearchParams((params) => {
+        params.set('editExperimentId', experimentId)
+        params.delete('newExperiment')
+        params.delete('experimentId')
+      })
+    },
+    [updateExperimentSearchParams],
+  )
 
   const handleCloseModal = useCallback(() => {
     updateExperimentSearchParams((params) => {
