@@ -17,7 +17,7 @@ import {
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher } from 'react-router'
+import { useFetcher, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
@@ -470,6 +470,8 @@ const ExperimentsView = ({
   const { experimentsRefreshTrigger } = useRefreshTriggers()
   const { timeBucket } = useViewProjectContext()
   const { t } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
   const listFetcher = useFetcher<ProjectViewActionData>()
   const actionFetcher = useFetcher<ProjectViewActionData>()
 
@@ -482,14 +484,20 @@ const ExperimentsView = ({
   const [filterQuery, setFilterQuery] = useState('')
   const processedActionRef = useRef<string | null>(null)
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingExperimentId, setEditingExperimentId] = useState<string | null>(
-    null,
-  )
-
   // Results view state
-  const [viewingResultsId, setViewingResultsId] = useState<string | null>(null)
+  const viewingResultsId = useMemo(
+    () => searchParams.get('experimentId'),
+    [searchParams],
+  )
+  const editingExperimentId = useMemo(
+    () => searchParams.get('editExperimentId'),
+    [searchParams],
+  )
+  const isCreatingExperiment = useMemo(
+    () => searchParams.get('newExperiment') === 'true',
+    [searchParams],
+  )
+  const isModalOpen = isCreatingExperiment || !!editingExperimentId
   const [resultsRefreshTrigger, setResultsRefreshTrigger] = useState(0)
   const [shouldRefreshListOnReturn, setShouldRefreshListOnReturn] =
     useState(false)
@@ -503,6 +511,15 @@ const ExperimentsView = ({
   }, [])
 
   const pageAmount = Math.ceil(total / DEFAULT_EXPERIMENTS_TAKE)
+
+  const updateExperimentSearchParams = useCallback(
+    (updater: (params: URLSearchParams) => void) => {
+      const nextSearchParams = new URLSearchParams(searchParams.toString())
+      updater(nextSearchParams)
+      setSearchParams(nextSearchParams)
+    },
+    [searchParams, setSearchParams],
+  )
 
   const loadExperiments = useCallback(
     (take: number, skip: number, showLoading = true, search?: string) => {
@@ -682,19 +699,27 @@ const ExperimentsView = ({
   }, [viewingResultsId, shouldRefreshListOnReturn, page])
 
   const handleNewExperiment = useCallback(() => {
-    setEditingExperimentId(null)
-    setIsModalOpen(true)
-  }, [])
+    updateExperimentSearchParams((params) => {
+      params.set('newExperiment', 'true')
+      params.delete('editExperimentId')
+      params.delete('experimentId')
+    })
+  }, [updateExperimentSearchParams])
 
   const handleEditExperiment = useCallback((experimentId: string) => {
-    setEditingExperimentId(experimentId)
-    setIsModalOpen(true)
-  }, [])
+    updateExperimentSearchParams((params) => {
+      params.set('editExperimentId', experimentId)
+      params.delete('newExperiment')
+      params.delete('experimentId')
+    })
+  }, [updateExperimentSearchParams])
 
   const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false)
-    setEditingExperimentId(null)
-  }, [])
+    updateExperimentSearchParams((params) => {
+      params.delete('newExperiment')
+      params.delete('editExperimentId')
+    })
+  }, [updateExperimentSearchParams])
 
   const handleModalSuccess = useCallback(() => {
     loadExperiments(
@@ -749,9 +774,22 @@ const ExperimentsView = ({
     [actionFetcher],
   )
 
-  const handleViewResults = (experimentId: string) => {
-    setViewingResultsId(experimentId)
-  }
+  const handleViewResults = useCallback(
+    (experimentId: string) => {
+      updateExperimentSearchParams((params) => {
+        params.set('experimentId', experimentId)
+        params.delete('newExperiment')
+        params.delete('editExperimentId')
+      })
+    },
+    [updateExperimentSearchParams],
+  )
+
+  const handleBackToExperiments = useCallback(() => {
+    updateExperimentSearchParams((params) => {
+      params.delete('experimentId')
+    })
+  }, [updateExperimentSearchParams])
 
   if (error && isLoading === false && _isEmpty(experiments)) {
     return (
@@ -785,7 +823,7 @@ const ExperimentsView = ({
         to={to}
         timezone={timezone}
         refreshTrigger={resultsRefreshTrigger}
-        onBack={() => setViewingResultsId(null)}
+        onBack={handleBackToExperiments}
       />
     )
   }
@@ -796,22 +834,29 @@ const ExperimentsView = ({
       <div>
         {isLoading && !_isEmpty(experiments) ? <LoadingBar /> : null}
         {_isEmpty(experiments) && !filterQuery ? (
-          <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
-            <div className='flex items-center text-gray-50'>
-              <FlaskIcon className='mr-2 h-8 w-8' />
-              <p className='text-3xl font-bold'>{t('experiments.title')}</p>
+          <div
+            className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
+              'min-h-including-header': !isEmbedded,
+              'min-h-screen': isEmbedded,
+            })}
+          >
+            <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
+              <div className='flex items-center text-gray-50'>
+                <FlaskIcon className='mr-2 h-8 w-8' />
+                <p className='text-3xl font-bold'>{t('experiments.title')}</p>
+              </div>
+              <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+                {t('experiments.description')}
+              </p>
+              <Button
+                onClick={handleNewExperiment}
+                className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
+                secondary
+                large
+              >
+                {t('experiments.create')}
+              </Button>
             </div>
-            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
-              {t('experiments.description')}
-            </p>
-            <Button
-              onClick={handleNewExperiment}
-              className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
-              secondary
-              large
-            >
-              {t('experiments.create')}
-            </Button>
           </div>
         ) : (
           <>
@@ -870,7 +915,7 @@ const ExperimentsView = ({
           onClose={handleCloseModal}
           onSuccess={handleModalSuccess}
           projectId={id}
-          experimentId={editingExperimentId}
+          experimentId={isCreatingExperiment ? null : editingExperimentId}
         />
       </div>
     </>
