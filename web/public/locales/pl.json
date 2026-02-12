@@ -687,7 +687,42 @@
     },
     "freeToTry": "Wypróbuj za darmo",
     "easyToUse": "Łatwe w użyciu",
-    "privacyFirst": "Prywatność przede wszystkim"
+    "privacyFirst": "Prywatność przede wszystkim",
+    "featuresAlt": {
+      "heading": "Funkcje, których potrzebujesz — bez konieczności szkolenia",
+      "privacy": {
+        "title": "Analityka stawiająca prywatność na pierwszym miejscu",
+        "desc": "Śledź odwiedzających bez plików cookie i danych osobowych. Zachowaj zgodność z RODO od razu po uruchomieniu."
+      },
+      "events": {
+        "title": "Niestandardowe zdarzenia i cele",
+        "desc": "Śledź rejestracje, zakupy i kliknięcia przycisków. Ustaw cele konwersji, aby mierzyć to, co najważniejsze."
+      },
+      "campaigns": {
+        "title": "Kampanie i UTM-y",
+        "desc": "Sprawdź, które kampanie generują ruch i przychody. Śledź parametry UTM i mierz ROI."
+      },
+      "perf": {
+        "title": "Monitorowanie wydajności",
+        "desc": "Monitoruj rzeczywiste czasy ładowania stron u prawdziwych użytkowników. Wykrywaj spowolnienia, zanim zaszkodzą konwersjom."
+      },
+      "errors": {
+        "title": "Śledzenie błędów",
+        "desc": "Automatycznie wyłapuj błędy JavaScript. Sprawdź, których stron, przeglądarek i urządzeń dotyczą."
+      },
+      "sessions": {
+        "title": "Analiza sesji",
+        "desc": "Śledź indywidualne ścieżki użytkowników między stronami. Zrozum, jak odwiedzający poruszają się po Twojej witrynie."
+      },
+      "opensource": {
+        "title": "Open source",
+        "desc": "W pełni open source i możliwe do audytu. Hostuj na własnej infrastrukturze albo korzystaj z naszej chmury."
+      },
+      "devs": {
+        "title": "Stworzone dla deweloperów",
+        "desc": "Lekki skrypt, proste API i szybka konfiguracja. Uruchomisz w mniej niż 5 minut."
+      }
+    }
   },
   "unsubscribe": {
     "success": "Zrezygnowałeś z otrzymywania raportów e-mailowych z analiz"

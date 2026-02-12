@@ -695,7 +695,42 @@
     },
     "freeToTry": "Free to try",
     "easyToUse": "Easy to use",
-    "privacyFirst": "Privacy-first"
+    "privacyFirst": "Privacy-first",
+    "featuresAlt": {
+      "heading": "Features you need, no training required",
+      "privacy": {
+        "title": "Privacy-first analytics",
+        "desc": "Track visitors without cookies or personal data. Stay GDPR-compliant out of the box."
+      },
+      "events": {
+        "title": "Custom events & goals",
+        "desc": "Track signups, purchases and button clicks. Set conversion goals to measure what matters."
+      },
+      "campaigns": {
+        "title": "Campaigns & UTMs",
+        "desc": "See which campaigns drive traffic and revenue. Track UTM parameters and measure ROI."
+      },
+      "perf": {
+        "title": "Performance monitoring",
+        "desc": "Monitor real page load times from actual users. Spot slowdowns before they hurt conversions."
+      },
+      "errors": {
+        "title": "Error tracking",
+        "desc": "Catch JavaScript errors automatically. See which pages, browsers and devices are affected."
+      },
+      "sessions": {
+        "title": "Session analysis",
+        "desc": "Follow individual user journeys across pages. Understand how visitors navigate your site."
+      },
+      "opensource": {
+        "title": "Open source",
+        "desc": "Fully open-source and auditable. Self-host on your own infrastructure or use our cloud."
+      },
+      "devs": {
+        "title": "Built for developers",
+        "desc": "Lightweight script, simple API and quick setup. Get running in under 5 minutes."
+      }
+    }
   },
   "unsubscribe": {
     "success": "You've unsubscribed from analytics email reports"

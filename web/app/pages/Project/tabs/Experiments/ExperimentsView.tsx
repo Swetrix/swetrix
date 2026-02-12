@@ -17,7 +17,7 @@ import {
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher } from 'react-router'
+import { useFetcher, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
@@ -28,12 +28,14 @@ import {
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
+import { Badge } from '~/ui/Badge'
 import Spin from '~/ui/icons/Spin'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
+import Tooltip from '~/ui/Tooltip'
 import routes from '~/utils/routes'
 
 import ExperimentResults from './ExperimentResults'
@@ -41,25 +43,6 @@ import ExperimentSettingsModal from './ExperimentSettingsModal'
 import { LoaderView } from '../../View/components/LoaderView'
 
 dayjs.extend(relativeTime)
-
-const STATUS_COLORS: Record<ExperimentStatus, { bg: string; text: string }> = {
-  draft: {
-    bg: 'bg-gray-100 dark:bg-gray-700',
-    text: 'text-gray-600 dark:text-gray-400',
-  },
-  running: {
-    bg: 'bg-green-100 dark:bg-green-900/30',
-    text: 'text-green-800 dark:text-green-400',
-  },
-  paused: {
-    bg: 'bg-yellow-100 dark:bg-yellow-900/30',
-    text: 'text-yellow-800 dark:text-yellow-400',
-  },
-  completed: {
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    text: 'text-blue-800 dark:text-blue-400',
-  },
-}
 
 const DEFAULT_EXPERIMENTS_TAKE = 20
 
@@ -127,10 +110,29 @@ const ExperimentRow = ({
   const [showCompleteModal, setShowCompleteModal] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
-  const statusColors = STATUS_COLORS[experiment.status]
   const variantsCount = experiment.variants?.length || 0
   const isEditDisabled =
     experiment.status === 'running' || experiment.status === 'completed'
+  const statusBadgeColour: 'slate' | 'green' | 'yellow' | 'sky' =
+    useMemo(() => {
+      if (experiment.status === 'running') return 'green'
+      if (experiment.status === 'paused') return 'yellow'
+      if (experiment.status === 'completed') return 'sky'
+      return 'slate'
+    }, [experiment.status])
+
+  const openResults = useCallback(() => {
+    onViewResults(experiment.id)
+  }, [onViewResults, experiment.id])
+
+  const neutralActionButtonClass =
+    'rounded-md border border-transparent p-2 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 sm:p-1.5 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+  const positiveActionButtonClass =
+    'rounded-md border border-transparent p-2 transition-colors sm:p-1.5 text-green-600 hover:border-green-300 hover:bg-green-50 dark:text-green-400 hover:dark:border-green-700/80 dark:hover:bg-green-900/30'
+
+  const stopRowClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation()
+  }
 
   const handleStart = async () => {
     setActionLoading(true)
@@ -162,34 +164,33 @@ const ExperimentRow = ({
 
   return (
     <>
-      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-900/25'>
-        <div className='flex justify-between gap-x-6 px-4 py-4 sm:px-6'>
+      <li
+        className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'
+        onClick={openResults}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            openResults()
+          }
+        }}
+        role='button'
+        tabIndex={0}
+      >
+        <div className='flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-x-6 sm:px-6'>
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
-              <div className='flex items-center gap-x-2'>
-                <Text
-                  as='p'
-                  weight='semibold'
-                  truncate
-                  className='flex items-center gap-x-1.5'
-                >
-                  <FlaskIcon className='size-4 text-purple-500' />
-                  <span>{experiment.name}</span>
+              <div className='flex flex-wrap items-center gap-2'>
+                <Text as='p' weight='semibold' truncate>
+                  {experiment.name}
                 </Text>
-                {/* Status badge */}
-                <span
-                  className={cx(
-                    'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-                    statusColors.bg,
-                    statusColors.text,
-                  )}
-                >
-                  {t(`experiments.status.${experiment.status}`)}
-                </span>
-                {/* Variants count badge */}
-                <span className='inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400'>
-                  {variantsCount} {t('experiments.variants')}
-                </span>
+                <Badge
+                  label={t(`experiments.status.${experiment.status}`)}
+                  colour={statusBadgeColour}
+                />
+                <Badge
+                  colour='indigo'
+                  label={`${variantsCount} ${t('experiments.variants')}`}
+                />
               </div>
               {experiment.description ? (
                 <Text className='mt-1' as='p' size='sm' colour='secondary'>
@@ -202,7 +203,7 @@ const ExperimentRow = ({
                 </Text>
               ) : null}
               {/* Timestamps */}
-              <div className='mt-2 flex items-center gap-x-3 text-xs text-gray-500 dark:text-gray-400'>
+              <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400'>
                 {experiment.startedAt ? (
                   <span>
                     {t('experiments.startedAt')}:{' '}
@@ -218,116 +219,203 @@ const ExperimentRow = ({
               </div>
             </div>
           </div>
-          <div className='flex shrink-0 items-center gap-x-1'>
+          <div
+            className='flex w-full flex-wrap items-center gap-1 pt-2 sm:w-auto sm:shrink-0 sm:justify-end sm:pt-0'
+            onClick={stopRowClick}
+          >
             {/* Action buttons based on status */}
             {experiment.status === 'draft' ? (
-              <Button
-                onClick={handleStart}
-                disabled={actionLoading || !experiment.goalId}
-                title={
-                  !experiment.goalId ? t('experiments.needGoal') : undefined
-                }
-                ghost
-                small
-              >
-                {actionLoading ? (
-                  <Spin className='size-4' />
+              <>
+                {!experiment.goalId ? (
+                  <Tooltip
+                    text={t('experiments.needGoal')}
+                    tooltipNode={
+                      <span className='inline-flex'>
+                        <button
+                          type='button'
+                          disabled
+                          aria-label={t('experiments.start')}
+                          className={cx(
+                            positiveActionButtonClass,
+                            'cursor-not-allowed opacity-50',
+                          )}
+                        >
+                          <PlayIcon className='size-4' />
+                        </button>
+                      </span>
+                    }
+                  />
                 ) : (
-                  <PlayIcon className='mr-1 size-4' />
+                  <Tooltip
+                    text={t('experiments.start')}
+                    tooltipNode={
+                      <span className='inline-flex'>
+                        <button
+                          type='button'
+                          onClick={handleStart}
+                          disabled={actionLoading}
+                          aria-label={t('experiments.start')}
+                          className={cx(positiveActionButtonClass, {
+                            'cursor-not-allowed opacity-50': actionLoading,
+                          })}
+                        >
+                          {actionLoading ? (
+                            <Spin className='size-4' />
+                          ) : (
+                            <PlayIcon className='size-4' />
+                          )}
+                        </button>
+                      </span>
+                    }
+                  />
                 )}
-                {t('experiments.start')}
-              </Button>
+              </>
             ) : null}
             {experiment.status === 'running' ? (
               <>
-                <Button
-                  onClick={handlePause}
-                  disabled={actionLoading}
-                  ghost
-                  small
-                >
-                  {actionLoading ? (
-                    <Spin className='size-4' />
-                  ) : (
-                    <PauseIcon className='mr-1 size-4' />
-                  )}
-                  {t('experiments.pause')}
-                </Button>
-                <Button
-                  onClick={() => onViewResults(experiment.id)}
-                  ghost
-                  small
-                >
-                  <ChartBarIcon className='mr-1 size-4' />
-                  {t('experiments.results')}
-                </Button>
+                <Tooltip
+                  text={t('experiments.pause')}
+                  tooltipNode={
+                    <span className='inline-flex'>
+                      <button
+                        type='button'
+                        onClick={handlePause}
+                        disabled={actionLoading}
+                        aria-label={t('experiments.pause')}
+                        className={cx(neutralActionButtonClass, {
+                          'cursor-not-allowed opacity-50': actionLoading,
+                        })}
+                      >
+                        {actionLoading ? (
+                          <Spin className='size-4' />
+                        ) : (
+                          <PauseIcon className='size-4' />
+                        )}
+                      </button>
+                    </span>
+                  }
+                />
               </>
             ) : null}
             {experiment.status === 'paused' ? (
               <>
-                <Button
-                  onClick={handleStart}
-                  disabled={actionLoading}
-                  ghost
-                  small
-                >
-                  {actionLoading ? (
-                    <Spin className='size-4' />
-                  ) : (
-                    <PlayIcon className='mr-1 size-4' />
-                  )}
-                  {t('experiments.resume')}
-                </Button>
-                <Button
-                  onClick={() => setShowCompleteModal(true)}
-                  disabled={actionLoading}
-                  ghost
-                  small
-                >
-                  <CheckCircleIcon className='mr-1 size-4' />
-                  {t('experiments.complete')}
-                </Button>
+                <Tooltip
+                  text={t('experiments.resume')}
+                  tooltipNode={
+                    <span className='inline-flex'>
+                      <button
+                        type='button'
+                        onClick={handleStart}
+                        disabled={actionLoading}
+                        aria-label={t('experiments.resume')}
+                        className={cx(positiveActionButtonClass, {
+                          'cursor-not-allowed opacity-50': actionLoading,
+                        })}
+                      >
+                        {actionLoading ? (
+                          <Spin className='size-4' />
+                        ) : (
+                          <PlayIcon className='size-4' />
+                        )}
+                      </button>
+                    </span>
+                  }
+                />
+                <Tooltip
+                  text={t('experiments.complete')}
+                  tooltipNode={
+                    <span className='inline-flex'>
+                      <button
+                        type='button'
+                        onClick={() => setShowCompleteModal(true)}
+                        disabled={actionLoading}
+                        aria-label={t('experiments.complete')}
+                        className={cx(neutralActionButtonClass, {
+                          'cursor-not-allowed opacity-50': actionLoading,
+                        })}
+                      >
+                        <CheckCircleIcon className='size-4' />
+                      </button>
+                    </span>
+                  }
+                />
               </>
             ) : null}
             {experiment.status === 'completed' ? (
-              <Button onClick={() => onViewResults(experiment.id)} ghost small>
-                <ChartBarIcon className='mr-1 size-4' />
-                {t('experiments.viewResults')}
-              </Button>
+              <Tooltip
+                text={t('experiments.viewResults')}
+                tooltipNode={
+                  <span className='inline-flex'>
+                    <button
+                      type='button'
+                      onClick={() => onViewResults(experiment.id)}
+                      aria-label={t('experiments.viewResults')}
+                      className={neutralActionButtonClass}
+                    >
+                      <ChartBarIcon className='size-4' />
+                    </button>
+                  </span>
+                }
+              />
             ) : null}
 
             {/* Edit/Delete buttons */}
-            <div className='flex items-center gap-1 border-l border-gray-200 pl-2 dark:border-slate-700'>
-              <button
-                type='button'
-                onClick={() =>
-                  !isEditDisabled ? onEdit(experiment.id) : undefined
+            <div className='ml-auto flex items-center gap-1 sm:ml-0'>
+              {isEditDisabled ? (
+                <Tooltip
+                  text={
+                    experiment.status === 'running'
+                      ? t('experiments.editDisabledRunning')
+                      : t('experiments.editDisabledCompleted')
+                  }
+                  tooltipNode={
+                    <span className='inline-flex'>
+                      <button
+                        type='button'
+                        disabled
+                        aria-label={t('common.edit')}
+                        className={cx(
+                          neutralActionButtonClass,
+                          'cursor-not-allowed opacity-50',
+                        )}
+                      >
+                        <PencilIcon className='size-4' />
+                      </button>
+                    </span>
+                  }
+                />
+              ) : (
+                <Tooltip
+                  text={t('common.edit')}
+                  tooltipNode={
+                    <span className='inline-flex'>
+                      <button
+                        type='button'
+                        onClick={() => onEdit(experiment.id)}
+                        aria-label={t('common.edit')}
+                        className={neutralActionButtonClass}
+                      >
+                        <PencilIcon className='size-4' />
+                      </button>
+                    </span>
+                  }
+                />
+              )}
+              <Tooltip
+                text={t('common.delete')}
+                tooltipNode={
+                  <span className='inline-flex'>
+                    <button
+                      type='button'
+                      onClick={() => setShowDeleteModal(true)}
+                      aria-label={t('common.delete')}
+                      className={neutralActionButtonClass}
+                    >
+                      <TrashIcon className='size-4' />
+                    </button>
+                  </span>
                 }
-                disabled={isEditDisabled}
-                aria-label={t('common.edit')}
-                title={
-                  experiment.status === 'running'
-                    ? 'Pause this experiment to edit settings.'
-                    : experiment.status === 'completed'
-                      ? 'Completed experiments can’t be edited.'
-                      : t('common.edit')
-                }
-                className={cx(
-                  'rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300',
-                  isEditDisabled &&
-                    'cursor-not-allowed opacity-50 hover:border-transparent hover:bg-transparent',
-                )}
-              >
-                <PencilIcon className='size-4' />
-              </button>
-              <button
-                type='button'
-                onClick={() => setShowDeleteModal(true)}
-                aria-label={t('common.delete')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
-              >
-                <TrashIcon className='size-4' />
-              </button>
+              />
             </div>
           </div>
         </div>
@@ -382,6 +470,8 @@ const ExperimentsView = ({
   const { experimentsRefreshTrigger } = useRefreshTriggers()
   const { timeBucket } = useViewProjectContext()
   const { t } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
   const listFetcher = useFetcher<ProjectViewActionData>()
   const actionFetcher = useFetcher<ProjectViewActionData>()
 
@@ -394,14 +484,20 @@ const ExperimentsView = ({
   const [filterQuery, setFilterQuery] = useState('')
   const processedActionRef = useRef<string | null>(null)
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingExperimentId, setEditingExperimentId] = useState<string | null>(
-    null,
-  )
-
   // Results view state
-  const [viewingResultsId, setViewingResultsId] = useState<string | null>(null)
+  const viewingResultsId = useMemo(
+    () => searchParams.get('experimentId'),
+    [searchParams],
+  )
+  const editingExperimentId = useMemo(
+    () => searchParams.get('editExperimentId'),
+    [searchParams],
+  )
+  const isCreatingExperiment = useMemo(
+    () => searchParams.get('newExperiment') === 'true',
+    [searchParams],
+  )
+  const isModalOpen = isCreatingExperiment || !!editingExperimentId
   const [resultsRefreshTrigger, setResultsRefreshTrigger] = useState(0)
   const [shouldRefreshListOnReturn, setShouldRefreshListOnReturn] =
     useState(false)
@@ -415,6 +511,15 @@ const ExperimentsView = ({
   }, [])
 
   const pageAmount = Math.ceil(total / DEFAULT_EXPERIMENTS_TAKE)
+
+  const updateExperimentSearchParams = useCallback(
+    (updater: (params: URLSearchParams) => void) => {
+      const nextSearchParams = new URLSearchParams(searchParams.toString())
+      updater(nextSearchParams)
+      setSearchParams(nextSearchParams)
+    },
+    [searchParams, setSearchParams],
+  )
 
   const loadExperiments = useCallback(
     (take: number, skip: number, showLoading = true, search?: string) => {
@@ -567,6 +672,9 @@ const ExperimentsView = ({
         setShouldRefreshListOnReturn(true)
         return
       }
+      if (isModalOpen) {
+        return
+      }
       loadExperiments(
         DEFAULT_EXPERIMENTS_TAKE,
         (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
@@ -575,7 +683,7 @@ const ExperimentsView = ({
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [experimentsRefreshTrigger, viewingResultsId, page])
+  }, [experimentsRefreshTrigger, viewingResultsId, isModalOpen, page])
 
   useEffect(() => {
     if (!viewingResultsId && shouldRefreshListOnReturn) {
@@ -591,19 +699,30 @@ const ExperimentsView = ({
   }, [viewingResultsId, shouldRefreshListOnReturn, page])
 
   const handleNewExperiment = useCallback(() => {
-    setEditingExperimentId(null)
-    setIsModalOpen(true)
-  }, [])
+    updateExperimentSearchParams((params) => {
+      params.set('newExperiment', 'true')
+      params.delete('editExperimentId')
+      params.delete('experimentId')
+    })
+  }, [updateExperimentSearchParams])
 
-  const handleEditExperiment = useCallback((experimentId: string) => {
-    setEditingExperimentId(experimentId)
-    setIsModalOpen(true)
-  }, [])
+  const handleEditExperiment = useCallback(
+    (experimentId: string) => {
+      updateExperimentSearchParams((params) => {
+        params.set('editExperimentId', experimentId)
+        params.delete('newExperiment')
+        params.delete('experimentId')
+      })
+    },
+    [updateExperimentSearchParams],
+  )
 
   const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false)
-    setEditingExperimentId(null)
-  }, [])
+    updateExperimentSearchParams((params) => {
+      params.delete('newExperiment')
+      params.delete('editExperimentId')
+    })
+  }, [updateExperimentSearchParams])
 
   const handleModalSuccess = useCallback(() => {
     loadExperiments(
@@ -658,9 +777,22 @@ const ExperimentsView = ({
     [actionFetcher],
   )
 
-  const handleViewResults = (experimentId: string) => {
-    setViewingResultsId(experimentId)
-  }
+  const handleViewResults = useCallback(
+    (experimentId: string) => {
+      updateExperimentSearchParams((params) => {
+        params.set('experimentId', experimentId)
+        params.delete('newExperiment')
+        params.delete('editExperimentId')
+      })
+    },
+    [updateExperimentSearchParams],
+  )
+
+  const handleBackToExperiments = useCallback(() => {
+    updateExperimentSearchParams((params) => {
+      params.delete('experimentId')
+    })
+  }, [updateExperimentSearchParams])
 
   if (error && isLoading === false && _isEmpty(experiments)) {
     return (
@@ -694,7 +826,7 @@ const ExperimentsView = ({
         to={to}
         timezone={timezone}
         refreshTrigger={resultsRefreshTrigger}
-        onBack={() => setViewingResultsId(null)}
+        onBack={handleBackToExperiments}
       />
     )
   }
@@ -705,22 +837,29 @@ const ExperimentsView = ({
       <div>
         {isLoading && !_isEmpty(experiments) ? <LoadingBar /> : null}
         {_isEmpty(experiments) && !filterQuery ? (
-          <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
-            <div className='flex items-center text-gray-50'>
-              <FlaskIcon className='mr-2 h-8 w-8' />
-              <p className='text-3xl font-bold'>{t('experiments.title')}</p>
+          <div
+            className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
+              'min-h-including-header': !isEmbedded,
+              'min-h-screen': isEmbedded,
+            })}
+          >
+            <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
+              <div className='flex items-center text-gray-50'>
+                <FlaskIcon className='mr-2 h-8 w-8' />
+                <p className='text-3xl font-bold'>{t('experiments.title')}</p>
+              </div>
+              <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+                {t('experiments.description')}
+              </p>
+              <Button
+                onClick={handleNewExperiment}
+                className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
+                secondary
+                large
+              >
+                {t('experiments.create')}
+              </Button>
             </div>
-            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
-              {t('experiments.description')}
-            </p>
-            <Button
-              onClick={handleNewExperiment}
-              className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
-              secondary
-              large
-            >
-              {t('experiments.create')}
-            </Button>
           </div>
         ) : (
           <>
@@ -779,7 +918,7 @@ const ExperimentsView = ({
           onClose={handleCloseModal}
           onSuccess={handleModalSuccess}
           projectId={id}
-          experimentId={editingExperimentId}
+          experimentId={isCreatingExperiment ? null : editingExperimentId}
         />
       </div>
     </>

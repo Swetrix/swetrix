@@ -687,7 +687,42 @@
     },
     "freeToTry": "Essayez gratuitement",
     "easyToUse": "Facile à utiliser",
-    "privacyFirst": "La confidentialité avant tout"
+    "privacyFirst": "La confidentialité avant tout",
+    "featuresAlt": {
+      "heading": "Les fonctionnalités dont vous avez besoin, aucune formation requise",
+      "privacy": {
+        "title": "Des analyses axées sur la confidentialité",
+        "desc": "Suivez les visiteurs sans cookies ni données personnelles. Restez conforme au RGPD dès le départ."
+      },
+      "events": {
+        "title": "Événements et objectifs personnalisés",
+        "desc": "Suivez les inscriptions, les achats et les clics sur les boutons. Définissez des objectifs de conversion pour mesurer l’essentiel."
+      },
+      "campaigns": {
+        "title": "Campagnes et paramètres UTM",
+        "desc": "Voyez quelles campagnes génèrent du trafic et des revenus. Suivez les paramètres UTM et mesurez le ROI."
+      },
+      "perf": {
+        "title": "Surveillance des performances",
+        "desc": "Surveillez les temps de chargement réels des pages chez les utilisateurs. Repérez les ralentissements avant qu’ils n’impactent les conversions."
+      },
+      "errors": {
+        "title": "Suivi des erreurs",
+        "desc": "Détectez automatiquement les erreurs JavaScript. Voyez quelles pages, quels navigateurs et quels appareils sont concernés."
+      },
+      "sessions": {
+        "title": "Analyse des sessions",
+        "desc": "Suivez les parcours individuels des utilisateurs d’une page à l’autre. Comprenez comment les visiteurs naviguent sur votre site."
+      },
+      "opensource": {
+        "title": "Open source",
+        "desc": "Entièrement open source et auditable. Hébergez-le sur votre propre infrastructure ou utilisez notre cloud."
+      },
+      "devs": {
+        "title": "Conçu pour les développeurs",
+        "desc": "Script léger, API simple et installation rapide. Fonctionnel en moins de 5 minutes."
+      }
+    }
   },
   "unsubscribe": {
     "success": "Vous vous êtes désabonné des rapports d'analyse par e-mail"

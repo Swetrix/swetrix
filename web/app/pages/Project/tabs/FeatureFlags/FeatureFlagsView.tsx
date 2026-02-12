@@ -31,6 +31,7 @@ import { useTranslation } from 'react-i18next'
 import {
   Link,
   useLocation,
+  useSearchParams,
   useFetcher,
   useLoaderData,
   useRevalidator,
@@ -531,6 +532,8 @@ const FeatureFlagsViewInner = ({
   const { featureFlagsRefreshTrigger } = useRefreshTriggers()
   const { timeFormat } = useViewProjectContext()
   const { t } = useTranslation()
+  const [searchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
 
   const listFetcher = useFetcher<ProjectViewActionData>()
   const actionFetcher = useFetcher<ProjectViewActionData>()
@@ -954,22 +957,29 @@ const FeatureFlagsViewInner = ({
       <div>
         {isLoading && !_isEmpty(flags) ? <LoadingBar /> : null}
         {_isEmpty(flags) && !filterQuery ? (
-          <div className='mt-5 rounded-lg bg-gray-700 p-5'>
-            <div className='flex items-center text-gray-50'>
-              <ToggleRightIcon className='mr-2 h-8 w-8' />
-              <p className='text-3xl font-bold'>{t('featureFlags.title')}</p>
+          <div
+            className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
+              'min-h-including-header': !isEmbedded,
+              'min-h-screen': isEmbedded,
+            })}
+          >
+            <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
+              <div className='flex items-center text-gray-50'>
+                <ToggleRightIcon className='mr-2 h-8 w-8' />
+                <p className='text-3xl font-bold'>{t('featureFlags.title')}</p>
+              </div>
+              <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+                {t('featureFlags.description')}
+              </p>
+              <Button
+                onClick={handleNewFlag}
+                className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
+                secondary
+                large
+              >
+                {t('featureFlags.add')}
+              </Button>
             </div>
-            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
-              {t('featureFlags.description')}
-            </p>
-            <Button
-              onClick={handleNewFlag}
-              className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
-              secondary
-              large
-            >
-              {t('featureFlags.add')}
-            </Button>
           </div>
         ) : (
           <>
