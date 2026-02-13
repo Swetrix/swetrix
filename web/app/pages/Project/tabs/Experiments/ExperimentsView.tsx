@@ -17,7 +17,7 @@ import {
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher, useSearchParams } from 'react-router'
+import { Link, useFetcher, useLocation, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
@@ -93,7 +93,6 @@ interface ExperimentRowProps {
   onStart: (id: string) => void
   onPause: (id: string) => void
   onComplete: (id: string) => void
-  onViewResults: (id: string) => void
 }
 
 const ExperimentRow = ({
@@ -103,9 +102,9 @@ const ExperimentRow = ({
   onStart,
   onPause,
   onComplete,
-  onViewResults,
 }: ExperimentRowProps) => {
   const { t } = useTranslation()
+  const location = useLocation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showCompleteModal, setShowCompleteModal] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
@@ -121,18 +120,18 @@ const ExperimentRow = ({
       return 'slate'
     }, [experiment.status])
 
-  const openResults = useCallback(() => {
-    onViewResults(experiment.id)
-  }, [onViewResults, experiment.id])
+  const resultsSearch = useMemo(() => {
+    const params = new URLSearchParams(location.search)
+    params.set('experimentId', experiment.id)
+    params.delete('newExperiment')
+    params.delete('editExperimentId')
+    return params.toString()
+  }, [location.search, experiment.id])
 
   const neutralActionButtonClass =
     'rounded-md border border-transparent p-2 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 sm:p-1.5 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
   const positiveActionButtonClass =
     'rounded-md border border-transparent p-2 transition-colors sm:p-1.5 text-green-600 hover:border-green-300 hover:bg-green-50 dark:text-green-400 hover:dark:border-green-700/80 dark:hover:bg-green-900/30'
-
-  const stopRowClick = (e: React.MouseEvent<HTMLElement>) => {
-    e.stopPropagation()
-  }
 
   const handleStart = async () => {
     setActionLoading(true)
@@ -164,20 +163,12 @@ const ExperimentRow = ({
 
   return (
     <>
-      <li
-        className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'
-        onClick={openResults}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            openResults()
-          }
-        }}
-        role='button'
-        tabIndex={0}
-      >
+      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
         <div className='flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-x-6 sm:px-6'>
-          <div className='flex min-w-0 gap-x-4'>
+          <Link
+            to={{ search: resultsSearch }}
+            className='flex min-w-0 flex-auto gap-x-4 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900'
+          >
             <div className='min-w-0 flex-auto'>
               <div className='flex flex-wrap items-center gap-2'>
                 <Text as='p' weight='semibold' truncate>
@@ -218,11 +209,8 @@ const ExperimentRow = ({
                 ) : null}
               </div>
             </div>
-          </div>
-          <div
-            className='flex w-full flex-wrap items-center gap-1 pt-2 sm:w-auto sm:shrink-0 sm:justify-end sm:pt-0'
-            onClick={stopRowClick}
-          >
+          </Link>
+          <div className='flex w-full flex-wrap items-center gap-1 pt-2 sm:w-auto sm:shrink-0 sm:justify-end sm:pt-0'>
             {/* Action buttons based on status */}
             {experiment.status === 'draft' ? (
               <>
@@ -346,14 +334,13 @@ const ExperimentRow = ({
                 text={t('experiments.viewResults')}
                 tooltipNode={
                   <span className='inline-flex'>
-                    <button
-                      type='button'
-                      onClick={() => onViewResults(experiment.id)}
+                    <Link
+                      to={{ search: resultsSearch }}
                       aria-label={t('experiments.viewResults')}
                       className={neutralActionButtonClass}
                     >
                       <ChartBarIcon className='size-4' />
-                    </button>
+                    </Link>
                   </span>
                 }
               />
@@ -777,17 +764,6 @@ const ExperimentsView = ({
     [actionFetcher],
   )
 
-  const handleViewResults = useCallback(
-    (experimentId: string) => {
-      updateExperimentSearchParams((params) => {
-        params.set('experimentId', experimentId)
-        params.delete('newExperiment')
-        params.delete('editExperimentId')
-      })
-    },
-    [updateExperimentSearchParams],
-  )
-
   const handleBackToExperiments = useCallback(() => {
     updateExperimentSearchParams((params) => {
       params.delete('experimentId')
@@ -890,7 +866,6 @@ const ExperimentsView = ({
                   onStart={handleStartExperiment}
                   onPause={handlePauseExperiment}
                   onComplete={handleCompleteExperiment}
-                  onViewResults={handleViewResults}
                 />
               ))}
             </ul>

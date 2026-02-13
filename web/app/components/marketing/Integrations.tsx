@@ -286,7 +286,7 @@ const Integrations = () => {
               rel='noopener noreferrer'
               className={cn(
                 'group relative flex flex-col items-center justify-center gap-4 rounded-xl p-6 transition-all',
-                'border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-slate-800 dark:hover:border-slate-700 dark:hover:bg-slate-900/50',
+                'border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-slate-900 dark:hover:border-slate-800 dark:hover:bg-slate-900/50',
               )}
             >
               {integration.customIcon ? (
