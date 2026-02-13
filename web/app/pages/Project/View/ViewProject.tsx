@@ -799,7 +799,7 @@ const ViewProjectContent = () => {
       return
     }
 
-    const title = `${project.name} > ${activeTabLabel || t('dashboard.traffic')}`
+    const title = `${activeTabLabel || t('dashboard.traffic')} > ${project.name}`
     document.title = `👀 ${liveVisitors} - ${title} ${TITLE_SUFFIX}`
   }, [project, user?.showLiveVisitorsInTitle, liveVisitors, activeTabLabel, t])
 

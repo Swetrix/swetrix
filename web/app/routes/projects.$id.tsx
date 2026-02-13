@@ -125,7 +125,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     settings: t('common.settings'),
   }
   const tabName = tabNames[tab] || tabNames[PROJECT_TABS.traffic]
-  const title = `${projectName} > ${tabName}`
+  const title = `${tabName} > ${projectName}`
 
   return [
     ...getTitle(title),
