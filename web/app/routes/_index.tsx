@@ -40,6 +40,7 @@ import { getExperimentVariant } from '~/utils/analytics.server'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import FAQ from '~/components/marketing/FAQ'
+import Integrations from '~/components/marketing/Integrations'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
 import useBreakpoint from '~/hooks/useBreakpoint'
 import {
@@ -2178,6 +2179,8 @@ export default function Index() {
         ) : (
           <FeaturesGridAlt />
         )}
+
+        <Integrations />
 
         <MarketingPricing metainfo={metainfo} />
 

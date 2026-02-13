@@ -666,6 +666,11 @@
       "title": "A/B testing & experiments",
       "description": "Run data-driven experiments to optimise conversions. Compare variants with statistical confidence, track exposures and measure the real impact of your changes."
     },
+    "integrations": {
+      "title": "Works with the tools you already use",
+      "description": "Swetrix integrates with everything. Our lightweight script is just a few kilobytes in your source code. You can add it to any CMS, framework or technology you're already using.",
+      "andMore": "+{{count}} more"
+    },
     "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",
     "whyDitch": "Tired of the frustration, complexity and privacy issues of Google Analytics? We were too. That's why we built Swetrix - the ethical, open source and fully cookieless alternative.",
     "users": "Registered users",
