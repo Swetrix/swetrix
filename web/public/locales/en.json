@@ -667,11 +667,8 @@
       "description": "Run data-driven experiments to optimise conversions. Compare variants with statistical confidence, track exposures and measure the real impact of your changes."
     },
     "integrations": {
-      "badge": "37+ Integrations",
       "title": "Works with the tools you already use",
       "description": "Swetrix integrates with everything. Our lightweight script is just a few kilobytes in your source code. You can add it to any CMS, framework or technology you're already using.",
-      "descriptionExtra": "Even if you don't see a plugin or integration here, since our embed process is so simple, you can add our analytics script to anything.",
-      "cta": "See all integrations",
       "andMore": "+{{count}} more"
     },
     "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",

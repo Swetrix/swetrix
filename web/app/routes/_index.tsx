@@ -34,27 +34,13 @@ import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { Link, redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
-import {
-  siAngular,
-  siAstro,
-  siDjango,
-  siGhost,
-  siLaravel,
-  siNextdotjs,
-  siNuxt,
-  siReact,
-  siShopify,
-  siVuedotjs,
-  siWebflow,
-  siWordpress,
-  type SimpleIcon,
-} from 'simple-icons'
 
 import { getGeneralStats, serverFetch } from '~/api/api.server'
 import { getExperimentVariant } from '~/utils/analytics.server'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import FAQ from '~/components/marketing/FAQ'
+import Integrations from '~/components/marketing/Integrations'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
 import useBreakpoint from '~/hooks/useBreakpoint'
 import {
@@ -1624,137 +1610,6 @@ const ExperimentsPreview = () => {
         </span>
       </div>
     </div>
-  )
-}
-
-type IntegrationCategory = 'framework' | 'cms' | 'backend'
-
-const FEATURED_INTEGRATIONS: {
-  name: string
-  category: IntegrationCategory
-  icon: SimpleIcon
-  iconClassName?: string
-}[] = [
-  { name: 'WordPress', category: 'cms', icon: siWordpress },
-  {
-    name: 'Next.js',
-    category: 'framework',
-    icon: siNextdotjs,
-    iconClassName: 'dark:group-hover:text-white',
-  },
-  { name: 'React', category: 'framework', icon: siReact },
-  { name: 'Vue', category: 'framework', icon: siVuedotjs },
-  { name: 'Angular', category: 'framework', icon: siAngular },
-  { name: 'Shopify', category: 'cms', icon: siShopify },
-  { name: 'Webflow', category: 'cms', icon: siWebflow },
-  { name: 'Django', category: 'backend', icon: siDjango },
-  { name: 'Laravel', category: 'backend', icon: siLaravel },
-  { name: 'Astro', category: 'framework', icon: siAstro },
-  { name: 'Nuxt', category: 'framework', icon: siNuxt },
-  {
-    name: 'Ghost',
-    category: 'cms',
-    icon: siGhost,
-    iconClassName: 'dark:group-hover:text-white',
-  },
-]
-
-const IntegrationLogo = ({
-  icon,
-  className,
-  style,
-}: {
-  icon: SimpleIcon
-  className?: string
-  style?: React.CSSProperties
-}) => (
-  <svg
-    viewBox='0 0 24 24'
-    className={className}
-    style={style}
-    aria-hidden='true'
-  >
-    <path fill='currentColor' d={icon.path} />
-  </svg>
-)
-
-const Integrations = () => {
-  const { t } = useTranslation('common')
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05,
-      },
-    },
-  }
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 50 } },
-  }
-
-  return (
-    <section className='py-24 sm:py-32'>
-      <div className='mx-auto max-w-7xl px-6 lg:px-8'>
-        <div className='mx-auto max-w-2xl text-center'>
-          <h2 className='text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white'>
-            {t('main.integrations.title')}
-          </h2>
-          <p className='mt-6 text-lg leading-8 text-slate-600 dark:text-slate-300'>
-            {t('main.integrations.description')}
-          </p>
-        </div>
-
-        <motion.div
-          variants={container}
-          initial='hidden'
-          whileInView='show'
-          viewport={{ once: true, margin: '-100px' }}
-          className='mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-3 lg:max-w-none lg:grid-cols-6'
-        >
-          {FEATURED_INTEGRATIONS.map((integration) => (
-            <motion.div
-              key={integration.name}
-              variants={item}
-              className='group relative flex flex-col items-center justify-center gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 transition-all hover:-translate-y-1 hover:shadow-md hover:ring-slate-900/10 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:ring-white/20'
-            >
-              <IntegrationLogo
-                icon={integration.icon}
-                className={cn(
-                  'size-8 text-slate-400 transition-colors duration-300 group-hover:text-(--brand-color) dark:text-slate-500',
-                  integration.iconClassName,
-                )}
-                style={
-                  {
-                    '--brand-color': `#${integration.icon.hex}`,
-                  } as React.CSSProperties
-                }
-              />
-              <div className='text-sm font-semibold text-slate-900 dark:text-white'>
-                {integration.name}
-              </div>
-            </motion.div>
-          ))}
-          <motion.a
-            variants={item}
-            href='https://docs.swetrix.com/integrations'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='group relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-slate-200 bg-transparent p-6 text-center transition-all hover:-translate-y-1 hover:border-indigo-500/30 hover:bg-indigo-50/30 dark:border-slate-800 dark:hover:border-indigo-400/30 dark:hover:bg-indigo-950/10'
-          >
-            <div className='flex size-8 items-center justify-center rounded-full bg-slate-50 transition-colors group-hover:bg-indigo-100 dark:bg-slate-800 dark:group-hover:bg-indigo-900/30'>
-              <ArrowRightIcon className='size-4 text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:text-slate-500 dark:group-hover:text-indigo-400' />
-            </div>
-            <div className='text-sm font-semibold text-slate-900 dark:text-white'>
-              {t('main.integrations.andMore', { count: 25 })}
-            </div>
-          </motion.a>
-        </motion.div>
-      </div>
-    </section>
   )
 }
 

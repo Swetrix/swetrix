@@ -666,6 +666,11 @@
       "title": "Testy A/B i eksperymenty",
       "description": "Prowadź eksperymenty oparte na danych, aby optymalizować konwersje. Porównuj warianty z istotnością statystyczną, śledź ekspozycje i mierz realny wpływ zmian."
     },
+    "integrations": {
+      "title": "Działa z narzędziami, których już używasz",
+      "description": "Swetrix integruje się ze wszystkim. Nasz lekki skrypt to zaledwie kilka kilobajtów w Twoim kodzie źródłowym. Możesz dodać go do dowolnego CMS-a, frameworka lub technologii, z których już korzystasz.",
+      "andMore": "+{{count}} więcej"
+    },
     "timeToDitchGoogleAnalytics": "Nadszedł czas, aby <colour>porzucić</colour> Google Analytics.",
     "whyDitch": "Zmęczeni frustracją, złożonością i problemami z prywatnością Google Analytics? My też. Dlatego stworzyliśmy Swetrix - etyczną, open source i całkowicie pozbawioną ciasteczek alternatywę.",
     "users": "Zarejestrowani użytkownicy",
