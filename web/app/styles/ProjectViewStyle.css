@@ -80,10 +80,9 @@ body.dark .bb-ygrid {
   stroke-width: 1.5;
 }
 
-/* Custom events stacked chart: remove outlines (dynamic series) */
+/* Custom events stacked chart: keep stronger fill for dynamic series */
 .custom-events-stacked-chart .bb-bar {
   fill-opacity: 0.85 !important;
-  stroke-width: 0 !important;
 }
 
 .bb-target-unique .bb-bar {

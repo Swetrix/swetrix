@@ -562,6 +562,19 @@ const stringToColour = (str: string) => {
   return colour
 }
 
+const CUSTOM_EVENTS_CHART_COLORS = [
+  '#7C3AED',
+  '#2563EB',
+  '#0891B2',
+  '#0D9488',
+  '#16A34A',
+  '#CA8A04',
+  '#EA580C',
+  '#DC2626',
+  '#DB2777',
+  '#7C2D12',
+]
+
 // setting the default values for the time period dropdown
 const noRegionPeriods = ['custom', 'yesterday']
 
@@ -1094,26 +1107,39 @@ const getSettingsCustomEventsStacked = (
   const types: Record<string, any> = _reduce(
     eventIds,
     (acc: Record<string, any>, id: string) => {
-      acc[id] = bar()
+      acc[id] = line()
       return acc
     },
     {},
   )
 
+  const eventSeriesStyles = _reduce(
+    eventIds,
+    (acc: Record<string, { fill: string }>, id: string, index: number) => {
+      const fill =
+        CUSTOM_EVENTS_CHART_COLORS[index % CUSTOM_EVENTS_CHART_COLORS.length]
+      acc[id] = { fill }
+      return acc
+    },
+    {},
+  )
   const colors: Record<string, string> = _reduce(
     eventIds,
     (acc: Record<string, string>, id: string) => {
-      acc[id] = stringToColour(id)
+      acc[id] = eventSeriesStyles[id].fill
       return acc
     },
     {},
   )
 
-  // Calculate optimal Y axis ticks based on all event series
-  const allYValues: number[] = []
-  eventIds.forEach((id) => {
-    allYValues.push(..._map(chart.events[id] || [], (v) => Number(v) || 0))
-  })
+  const allYValues: number[] = _reduce(
+    eventIds,
+    (acc: number[], id: string) => {
+      acc.push(..._map(chart.events[id] || [], (v) => Number(v) || 0))
+      return acc
+    },
+    [],
+  )
   const optimalTicks =
     allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
@@ -1123,9 +1149,6 @@ const getSettingsCustomEventsStacked = (
       columns,
       types,
       colors,
-      groups: [eventIds],
-      // Keep stack order stable (avoid per-x sorting)
-      order: null,
     },
     grid: {
       y: {
@@ -1211,11 +1234,12 @@ const getSettingsCustomEventsStacked = (
         },
       },
     },
-    bar: {
-      linearGradient: false,
-      radius: {
-        ratio: 0.15,
+    point: {
+      focus: {
+        only: _size(chart.x) > 1,
       },
+      pattern: ['circle'],
+      r: 2,
     },
   }
 }

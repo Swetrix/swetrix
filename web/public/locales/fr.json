@@ -1518,6 +1518,7 @@
     "noAffectedSessions": "Aucune session affectée trouvée",
     "viewSession": "Voir la session",
     "topPages": "Pages principales",
+    "topX": "Top {{x}}",
     "locationAndDevice": "Localisation et appareil",
     "sessionInfo": "Infos de session",
     "goToProfile": "Aller au profil",

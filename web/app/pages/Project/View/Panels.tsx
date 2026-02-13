@@ -61,6 +61,7 @@ import {
 
 const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
+const CUSTOM_EVENTS_TOP_LIMITS = [1, 3, 5, 10] as const
 
 const PanelEmptyState = ({ message }: { message: string }) => (
   <div className='flex flex-col items-center justify-center py-8 text-center'>
@@ -483,6 +484,8 @@ const CustomEvents = ({
     x: string[]
     events: Record<string, Array<number | string>>
   } | null>(null)
+  const [chartTopLimit, setChartTopLimit] =
+    useState<(typeof CUSTOM_EVENTS_TOP_LIMITS)[number]>(5)
 
   const keys = _keys(eventsData)
   const keysToDisplay = useMemo(
@@ -509,8 +512,8 @@ const CustomEvents = ({
       'desc',
     )
 
-    return _map(_slice(sorted, 0, 15), 'event') as string[]
-  }, [customs])
+    return _map(_slice(sorted, 0, chartTopLimit), 'event') as string[]
+  }, [customs, chartTopLimit])
 
   const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
@@ -951,7 +954,24 @@ const CustomEvents = ({
         type='customEventsChart'
         hideHeader
       >
-        {renderStackedChart()}
+        <div className='flex h-full flex-col'>
+          <div className='mb-2 flex justify-end'>
+            <Dropdown
+              title={t('project.topX', { x: chartTopLimit })}
+              items={[...CUSTOM_EVENTS_TOP_LIMITS]}
+              keyExtractor={(item) => item}
+              labelExtractor={(item) => t('project.topX', { x: item })}
+              onSelect={(item, _e, close) => {
+                setChartTopLimit(item)
+                close()
+              }}
+              chevron='mini'
+              buttonClassName='min-w-[96px] items-center px-2 py-1.5 text-sm leading-none font-medium md:px-2 [&_svg]:h-4 [&_svg]:w-4'
+              menuItemsClassName='w-24'
+            />
+          </div>
+          <div className='min-h-0 flex-1'>{renderStackedChart()}</div>
+        </div>
       </PanelContainer>
     </div>
   )

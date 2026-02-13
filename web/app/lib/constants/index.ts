@@ -346,8 +346,6 @@ export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
 export const isBrowser =
   typeof window !== 'undefined' && typeof document !== 'undefined'
 
-export const isIframe = isBrowser && window.self !== window.top
-
 export type ThemeType = 'dark' | 'light'
 export const SUPPORTED_THEMES = ['light', 'dark']
 

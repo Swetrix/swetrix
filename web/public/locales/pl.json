@@ -1518,6 +1518,7 @@
     "noAffectedSessions": "Nie znaleziono dotkniętych sesji",
     "viewSession": "Wyświetl sesję",
     "topPages": "Najpopularniejsze strony",
+    "topX": "Najlepsze {{x}}",
     "locationAndDevice": "Lokalizacja i urządzenie",
     "sessionInfo": "Informacje o sesji",
     "goToProfile": "Przejdź do profilu",
