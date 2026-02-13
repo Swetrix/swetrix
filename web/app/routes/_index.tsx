@@ -136,7 +136,7 @@ export const FeedbackDual = () => {
   const { theme } = useTheme()
 
   return (
-    <section className='rounded-b-4xl bg-gray-100/80 py-24 sm:py-32 dark:bg-slate-900'>
+    <section className='rounded-b-4xl bg-gray-100/80 py-24 sm:py-32 dark:bg-slate-900/50'>
       <div className='mx-auto max-w-7xl px-4 lg:px-8'>
         <div className='mx-auto grid max-w-2xl grid-cols-1 lg:mx-0 lg:max-w-none lg:grid-cols-2'>
           <div className='flex flex-col pb-10 sm:pb-16 lg:pr-8 lg:pb-0 xl:pr-20'>
@@ -374,7 +374,7 @@ const Hero = () => {
   const { stats } = useLoaderData<typeof loader>()
 
   return (
-    <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-900'>
+    <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-900/50'>
       <div className='relative mx-2 overflow-hidden rounded-4xl'>
         <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
           <div className='absolute inset-0 rounded-4xl bg-linear-115 from-amber-100 from-28% via-purple-500 via-70% to-indigo-600 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-800 dark:opacity-60 dark:ring-white/10' />

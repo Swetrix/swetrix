@@ -58,7 +58,7 @@ const MarketingPricing = ({
 
   return (
     <section id='pricing' className='relative p-2'>
-      <div className='rounded-xl bg-slate-900 py-16 sm:py-20'>
+      <div className='rounded-xl bg-slate-900 py-16 sm:py-20 dark:bg-slate-900/50'>
         <div className='mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:gap-10 lg:px-8'>
           <div className='col-span-12 lg:col-span-5'>
             <h2 className='text-3xl font-extrabold tracking-tight text-white sm:text-4xl'>
@@ -193,7 +193,7 @@ const MarketingPricing = ({
               {_map(plans, (tier) => (
                 <div
                   key={tier.planCode}
-                  className='flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all hover:bg-white/10 dark:bg-slate-900 dark:hover:bg-slate-800'
+                  className='flex items-center justify-between rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white backdrop-blur-sm transition-all hover:bg-slate-800 dark:bg-transparent dark:hover:bg-slate-900'
                 >
                   <div>
                     <span className='text-base font-medium'>
@@ -230,7 +230,7 @@ const MarketingPricing = ({
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label={`${t('footer.contact')} (opens in a new tab)`}
-                className='group flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all hover:bg-white/10'
+                className='group flex items-center justify-between rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white backdrop-blur-sm transition-all hover:bg-slate-800 dark:bg-transparent dark:hover:bg-slate-900'
               >
                 <span className='text-base font-medium'>
                   {t('pricing.overXEvents', {
