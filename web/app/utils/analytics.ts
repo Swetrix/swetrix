@@ -1,28 +1,11 @@
 import _includes from 'lodash/includes'
 import * as Swetrix from 'swetrix'
 
-import {
-  isBrowser,
-  isDevelopment,
-  isIframe,
-  isSelfhosted,
-} from '~/lib/constants'
+import { isBrowser, isDevelopment, isSelfhosted } from '~/lib/constants'
 
 export const SWETRIX_PID = 'STEzHcB1rALV'
 
-const REFS_TO_IGNORE = [
-  /https:\/\/swetrix.com\/projects\/(?!new$)[^/]+$/i,
-  /https:\/\/swetrix.com\/projects\/settings/i,
-  /https:\/\/swetrix.com\/verify/i,
-  /https:\/\/swetrix.com\/password-reset/i,
-  /https:\/\/swetrix.com\/change-email/i,
-  /https:\/\/swetrix.com\/share/i,
-  /https:\/\/swetrix.com\/captchas\/(?!new$)[^/]+$/i,
-  /https:\/\/swetrix.com\/captchas\/settings/i,
-  /https:\/\/swetrix.com\/organisations\/[^/]+/i,
-]
-
-const PATHS_REPLACEMENT_MAP = [
+export const PATHS_REPLACEMENT_MAP = [
   {
     regex: /^\/projects\/(?!new$)[^/]+$/i,
     replacement: '/projects/[id]',
@@ -77,20 +60,6 @@ const PATHS_REPLACEMENT_MAP = [
   },
 ]
 
-const checkIgnore = (path: string | undefined | null, ignore: RegExp[]) => {
-  if (!path) {
-    return false
-  }
-
-  for (let i = 0; i < ignore.length; ++i) {
-    if (ignore[i].test(path)) {
-      return true
-    }
-  }
-
-  return false
-}
-
 const getNewPath = (path: string | undefined | null) => {
   if (!path) {
     return path
@@ -110,49 +79,6 @@ const getNewPath = (path: string | undefined | null) => {
 Swetrix.init(SWETRIX_PID, {
   disabled: isDevelopment,
 })
-
-const BLOG_PAGE_REGEX = /^\/blog\/.+$/
-
-export const trackViews = () => {
-  if (isSelfhosted || !isBrowser || isIframe || isDevelopment) {
-    return
-  }
-
-  Swetrix.trackViews({
-    callback: ({ pg, ref }) => {
-      const locale = window?.REMIX_ENV?.LOCALE || 'N/A'
-
-      const result = {
-        pg,
-        ref,
-        meta: {
-          locale,
-        },
-      } as Swetrix.IPageViewPayload
-
-      if (pg && BLOG_PAGE_REGEX.test(pg)) {
-        return false
-      }
-
-      result.pg = getNewPath(pg)
-
-      if (checkIgnore(ref, REFS_TO_IGNORE)) {
-        result.ref = undefined
-      }
-
-      return result
-    },
-    heartbeatOnBackground: true,
-  })
-}
-
-export const trackPageview = (options: Swetrix.IPageviewOptions) => {
-  if (isSelfhosted) {
-    return
-  }
-
-  Swetrix.pageview(options)
-}
 
 export const trackErrors = () => {
   if (isSelfhosted || !isBrowser || isDevelopment) {
