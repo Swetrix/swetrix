@@ -329,7 +329,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     profileTypeFilter,
   ])
 
-  // Load single profile when profileId is set
+  // Reload active profile when query context changes (period, date range, filters, etc.)
   useEffect(() => {
     if (!activeProfileId || !project) {
       return
@@ -337,7 +337,16 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
 
     loadProfile(activeProfileId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeProfileId, project])
+  }, [
+    activeProfileId,
+    project,
+    period,
+    dateRange,
+    timezone,
+    filters,
+    projectPassword,
+    id,
+  ])
 
   // Reset profiles when navigating away from profile detail
   useEffect(() => {
