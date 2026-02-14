@@ -570,16 +570,8 @@ export async function authMeServer(
 // MARK: General Stats API
 // ============================================================================
 
-interface GeneralStats {
-  users: number
-  projects: number
-  events: number
-}
-
-export async function getGeneralStats(
-  request: Request,
-): Promise<GeneralStats | null> {
-  const result = await serverFetch<GeneralStats>(request, 'log/generalStats', {
+export async function getGeneralStats(request: Request): Promise<Stats | null> {
+  const result = await serverFetch<Stats>(request, 'log/generalStats', {
     skipAuth: true,
   })
 
@@ -2030,6 +2022,7 @@ export async function generateSSOAuthURLServer(
 export type { SSOHashSuccessResponse, SSOHashResponse } from '~/lib/models/Auth'
 
 import type { SSOHashSuccessResponse, SSOHashResponse } from '~/lib/models/Auth'
+import { Stats } from '~/lib/models/Stats'
 
 export async function getJWTBySSOHashServer(
   request: Request,

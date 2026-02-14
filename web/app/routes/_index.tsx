@@ -290,7 +290,7 @@ const Testimonials = ({
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
           <Trans
             values={{
-              amount: stats?.users || '> 1000',
+              amount: stats?.trials || '> 1000',
             }}
             t={t}
             i18nKey='main.understandTheirUsers'
