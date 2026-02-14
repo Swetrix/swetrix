@@ -127,7 +127,7 @@ interface FeedbackHighlightProps {
 }
 
 const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
-  <span className='bg-yellow-100/80 font-medium dark:bg-yellow-400/40'>
+  <span className='bg-yellow-100/80 font-medium dark:bg-yellow-900/60'>
     &nbsp;{children}&nbsp;
   </span>
 )
