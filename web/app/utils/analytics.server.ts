@@ -23,6 +23,58 @@ const REFS_TO_IGNORE = [
 ]
 
 const BLOG_PAGE_REGEX = /^\/blog\/.+$/
+const COMPARISON_PAGE_REGEX = /^\/comparison\/[^/]+\/?$/
+
+const TRACKABLE_STATIC_PATHS = new Set([
+  '/',
+  '/dashboard',
+  '/login',
+  '/signup',
+  '/onboarding',
+  '/projects',
+  '/open',
+  '/performance',
+  '/error-tracking',
+  '/contact',
+  '/socialised',
+  '/google-analytics-alternative',
+  '/for-startups',
+  '/for-small-businesses',
+  '/for-marketers',
+  '/user-settings',
+  '/billing',
+  '/blog',
+  '/tools',
+  '/tools/ip-lookup',
+  '/tools/ctr-calculator',
+  '/tools/roi-calculator',
+  '/tools/sitemap-validator',
+  '/tools/utm-generator',
+  '/captcha',
+  '/captcha/demo',
+  '/organisations',
+  '/data-policy',
+  '/cookie-policy',
+  '/privacy',
+  '/terms',
+  '/imprint',
+])
+
+const TRACKABLE_DYNAMIC_PATHS = [
+  /^\/projects\/(?!new$)[^/]+$/i,
+  /^\/projects\/[^/]+\/subscribers\/invite$/i,
+  /^\/projects\/settings\/[^/]+$/i,
+  /^\/verify\/[^/]+$/i,
+  /^\/password-reset\/[^/]+$/i,
+  /^\/change-email\/[^/]+$/i,
+  /^\/share\/[^/]+$/i,
+  /^\/reports-unsubscribe\/[^/]+$/i,
+  /^\/3rd-party-unsubscribe\/[^/]+$/i,
+  /^\/ref\/[^/]+$/i,
+  /^\/ref\/[^/]+\/[^/]+$/i,
+  /^\/organisations\/[^/]+$/i,
+  /^\/organisation\/invite\/[^/]+$/i,
+]
 
 const EXPERIMENT_FETCH_TIMEOUT_MS = 5_000
 
@@ -58,6 +110,38 @@ const getNewPath = (path: string | undefined) => {
 
 export const isBlogPostPath = (path: string) => BLOG_PAGE_REGEX.test(path)
 
+const normalizePath = (path: string) => {
+  if (path.length > 1 && path.endsWith('/')) {
+    return path.slice(0, -1)
+  }
+
+  return path
+}
+
+export const isTrackablePagePath = (path: string | undefined) => {
+  if (!path) {
+    return false
+  }
+
+  const normalizedPath = normalizePath(path)
+
+  if (
+    TRACKABLE_STATIC_PATHS.has(normalizedPath) ||
+    isBlogPostPath(normalizedPath) ||
+    COMPARISON_PAGE_REGEX.test(normalizedPath)
+  ) {
+    return true
+  }
+
+  for (let i = 0; i < TRACKABLE_DYNAMIC_PATHS.length; ++i) {
+    if (TRACKABLE_DYNAMIC_PATHS[i].test(normalizedPath)) {
+      return true
+    }
+  }
+
+  return false
+}
+
 export const trackPageview = async (
   request: Request,
   options: TrackPageViewOptions = {},
@@ -70,7 +154,13 @@ export const trackPageview = async (
     const ip = getClientIP(request) || '127.0.0.1'
     const userAgent = request.headers.get('user-agent') || ''
     const url = new URL(request.url)
-    const pg = getNewPath(options.pg || url.pathname)
+    const rawPath = options.pg || url.pathname
+
+    if (!isTrackablePagePath(rawPath)) {
+      return
+    }
+
+    const pg = getNewPath(rawPath)
     const ref = options.ref || request.headers.get('referer') || undefined
 
     await swetrix.trackPageView(ip, userAgent, {
