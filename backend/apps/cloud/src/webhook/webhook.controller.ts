@@ -215,7 +215,7 @@ export class WebhookController {
       }
 
       case 'subscription_payment_succeeded': {
-        const { subscription_id: subID } = body
+        const { subscription_id: subID, next_bill_date: nextBillDate } = body
 
         const subscriber = await this.userService.findOne({
           where: { subID },
@@ -232,13 +232,21 @@ export class WebhookController {
           return
         }
 
+        const updateParams: Record<string, any> = {}
+
+        if (nextBillDate) {
+          updateParams.nextBillDate = nextBillDate
+        }
+
         if (
           subscriber.dashboardBlockReason ===
           DashboardBlockReason.payment_failed
         ) {
-          await this.userService.updateBySubID(subID, {
-            dashboardBlockReason: null,
-          })
+          updateParams.dashboardBlockReason = null
+        }
+
+        if (Object.keys(updateParams).length > 0) {
+          await this.userService.updateBySubID(subID, updateParams)
           await this.projectService.clearProjectsRedisCacheBySubId(subID)
         }
 
