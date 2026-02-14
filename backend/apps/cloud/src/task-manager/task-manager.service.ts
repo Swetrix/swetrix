@@ -104,6 +104,7 @@ const checkQueryCondition = (
 const CHUNK_SIZE = 5000
 const REPORTS_USERS_CONCURRENCY = 3
 const REPORTS_PROJECTS_CONCURRENCY = 5
+const NO_EVENTS_REMINDER_DELAY_DAYS = 2
 
 const mapLimit = async <T, R>(
   items: T[],
@@ -499,6 +500,51 @@ export class TaskManagerService {
 
     const token = this.userService.createUnsubscribeKey(id)
     return `${this.configService.get('CLIENT_URL')}/reports-unsubscribe/${token}`
+  }
+
+  async getUserEventsCountSinceSignup(userId: string): Promise<number> {
+    const pids = await this.projectService.getProjectIdsByAdminId(userId)
+
+    if (_isEmpty(pids)) {
+      return 0
+    }
+
+    let totalEvents = 0
+
+    for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
+      const pidChunk = pids.slice(i, i + CHUNK_SIZE)
+      const query = `
+        SELECT sum(cnt) AS totalEvents
+        FROM (
+          SELECT count() AS cnt
+          FROM analytics
+          WHERE pid IN ({pids:Array(FixedString(12))})
+          UNION ALL
+          SELECT count() AS cnt
+          FROM customEV
+          WHERE pid IN ({pids:Array(FixedString(12))})
+          UNION ALL
+          SELECT count() AS cnt
+          FROM captcha
+          WHERE pid IN ({pids:Array(FixedString(12))})
+          UNION ALL
+          SELECT count() AS cnt
+          FROM errors
+          WHERE pid IN ({pids:Array(FixedString(12))})
+        )
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { pids: pidChunk },
+        })
+        .then((resultSet) => resultSet.json<{ totalEvents: any }>())
+
+      totalEvents += Number(data[0]?.totalEvents) || 0
+    }
+
+    return totalEvents
   }
 
   async handleUserReports(
@@ -1055,6 +1101,65 @@ export class TaskManagerService {
       this.logger.error(
         `[CRON WORKER](checkLeftEvents) Error occured: ${reason}`,
       )
+    })
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_10AM)
+  async remindUsersWithoutEventsAfterSignup() {
+    const weekAgo = dayjs.utc().subtract(1, 'week').toDate()
+    const twoDaysAgo = dayjs
+      .utc()
+      .subtract(NO_EVENTS_REMINDER_DELAY_DAYS, 'days')
+      .toDate()
+    const users = await this.userService.find({
+      where: {
+        isActive: true,
+        // we don't want to send the reminder for people who for example used it long time ago, then removed their projects and now are kinda counted as "new users"
+        created: Between(weekAgo, twoDaysAgo),
+        noEventsReminderSentOn: IsNull(),
+      },
+      select: ['id', 'email'],
+    })
+
+    if (_isEmpty(users)) {
+      return
+    }
+
+    const dashboardUrl = `${this.configService.get('CLIENT_URL')}/dashboard`
+    const setupGuideUrl = 'https://docs.swetrix.com/install-script'
+    const sentOn = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+    await mapLimit(users, REPORTS_USERS_CONCURRENCY, async (user) => {
+      try {
+        const hasProjects =
+          (await this.projectService.countByAdminId(user.id)) > 0
+
+        if (!hasProjects) {
+          return
+        }
+
+        const totalEvents = await this.getUserEventsCountSinceSignup(user.id)
+
+        if (totalEvents > 0) {
+          return
+        }
+
+        await this.mailerService.sendEmail(
+          user.email,
+          LetterTemplate.NoEventsAfterSignup,
+          {
+            dashboardUrl,
+            setupGuideUrl,
+          },
+        )
+        await this.userService.update(user.id, {
+          noEventsReminderSentOn: sentOn,
+        })
+      } catch (reason) {
+        this.logger.error(
+          `[CRON WORKER](remindUsersWithoutEventsAfterSignup) Failed to process user ${user.id}: ${reason}`,
+        )
+      }
     })
   }
 

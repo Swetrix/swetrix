@@ -19,4 +19,5 @@ export enum LetterTemplate {
   DashboardLockedPaymentFailure = 'dashboard-locked-payment-failure',
   OrganisationInvitation = 'organisation-invitation',
   SocialIdentityLinked = 'social-identity-linked',
+  NoEventsAfterSignup = 'no-events-after-signup',
 }

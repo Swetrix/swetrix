@@ -114,6 +114,11 @@ const metaInfoJson = {
       en: () => 'A social account has been linked to your Swetrix account',
     },
   },
+  [LetterTemplate.NoEventsAfterSignup]: {
+    subject: {
+      en: () => 'Need help setting up Swetrix?',
+    },
+  },
 }
 
 interface Params {
