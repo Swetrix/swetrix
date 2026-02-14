@@ -83,6 +83,18 @@ function formatDateForBackend(dateStr: string): string {
   return `${yyyy}-${mm}-${dd}`
 }
 
+function parseBooleanFormValue(
+  value: FormDataEntryValue | null,
+  fallback = false,
+): boolean {
+  if (value === null) {
+    return fallback
+  }
+
+  const normalised = String(value).toLowerCase()
+  return normalised === 'true' || normalised === 'on'
+}
+
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: ProjectViewStyle },
 ]
@@ -723,10 +735,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const queryTime = formData.get('queryTime')?.toString() || null
       const queryCustomEvent =
         formData.get('queryCustomEvent')?.toString() || null
-      const alertOnNewErrorsOnly =
-        formData.get('alertOnNewErrorsOnly') === 'true'
-      const alertOnEveryCustomEvent =
-        formData.get('alertOnEveryCustomEvent') === 'true'
+      const active = parseBooleanFormValue(formData.get('active'), true)
+      const alertOnNewErrorsOnly = parseBooleanFormValue(
+        formData.get('alertOnNewErrorsOnly'),
+        true,
+      )
+      const alertOnEveryCustomEvent = parseBooleanFormValue(
+        formData.get('alertOnEveryCustomEvent'),
+        false,
+      )
 
       const result = await serverFetch(request, 'alert', {
         method: 'POST',
@@ -740,7 +757,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
           queryCustomEvent,
           alertOnNewErrorsOnly,
           alertOnEveryCustomEvent,
-          active: true,
+          active,
         },
       })
 
@@ -760,7 +777,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'update-alert': {
       const alertId = formData.get('alertId')?.toString()
       const name = formData.get('name')?.toString()
-      const active = formData.get('active') === 'true'
+      const active = parseBooleanFormValue(formData.get('active'))
       const queryMetric = formData.get('queryMetric')?.toString()
       const queryCondition = formData.get('queryCondition')?.toString() || null
       const queryValue = formData.get('queryValue')
@@ -770,10 +787,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const queryCustomEvent =
         formData.get('queryCustomEvent')?.toString() || null
       const alertOnNewErrorsOnly = formData.has('alertOnNewErrorsOnly')
-        ? formData.get('alertOnNewErrorsOnly') === 'true'
+        ? parseBooleanFormValue(formData.get('alertOnNewErrorsOnly'))
         : undefined
       const alertOnEveryCustomEvent = formData.has('alertOnEveryCustomEvent')
-        ? formData.get('alertOnEveryCustomEvent') === 'true'
+        ? parseBooleanFormValue(formData.get('alertOnEveryCustomEvent'))
         : undefined
 
       const body: Record<string, unknown> = {}

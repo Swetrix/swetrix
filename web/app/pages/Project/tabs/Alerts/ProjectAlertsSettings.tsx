@@ -266,6 +266,35 @@ const ProjectAlertsSettings = ({
       form.alertOnEveryCustomEvent
     )
 
+  useEffect(() => {
+    if (!shouldIncludeQueryFields) {
+      return
+    }
+
+    if (
+      form.queryCondition !== undefined &&
+      form.queryCondition !== null &&
+      form.queryTime !== undefined &&
+      form.queryTime !== null &&
+      form.queryValue !== undefined &&
+      form.queryValue !== null
+    ) {
+      return
+    }
+
+    setForm((prevForm) => ({
+      ...prevForm,
+      queryCondition: prevForm.queryCondition ?? QUERY_CONDITION.GREATER_THAN,
+      queryValue: prevForm.queryValue ?? 10,
+      queryTime: prevForm.queryTime ?? QUERY_TIME.LAST_1_HOUR,
+    }))
+  }, [
+    shouldIncludeQueryFields,
+    form.queryCondition,
+    form.queryValue,
+    form.queryTime,
+  ])
+
   const onDeleteAlert = () => {
     if (!alertId || fetcher.state !== 'idle') return
 
@@ -390,6 +419,21 @@ const ProjectAlertsSettings = ({
           name='queryMetric'
           value={form.queryMetric || QUERY_METRIC.PAGE_VIEWS}
         />
+        <input
+          type='hidden'
+          name='active'
+          value={String(Boolean(form.active))}
+        />
+        <input
+          type='hidden'
+          name='alertOnEveryCustomEvent'
+          value={String(Boolean(form.alertOnEveryCustomEvent))}
+        />
+        <input
+          type='hidden'
+          name='alertOnNewErrorsOnly'
+          value={String(Boolean(form.alertOnNewErrorsOnly))}
+        />
         {shouldIncludeQueryFields && form.queryCondition ? (
           <input
             type='hidden'
@@ -435,7 +479,6 @@ const ProjectAlertsSettings = ({
               active: checked,
             }))
           }
-          name='active'
           classes={{
             label: 'mt-4',
           }}
@@ -490,7 +533,6 @@ const ProjectAlertsSettings = ({
                 alertOnEveryCustomEvent: checked,
               }))
             }
-            name='alertOnEveryCustomEvent'
             classes={{
               label: 'mt-4',
             }}
@@ -507,7 +549,6 @@ const ProjectAlertsSettings = ({
                 alertOnNewErrorsOnly: checked,
               }))
             }
-            name='alertOnNewErrorsOnly'
             classes={{
               label: 'mt-4',
             }}
@@ -529,7 +570,7 @@ const ProjectAlertsSettings = ({
                 title={
                   form.queryCondition
                     ? queryConditionTMapping[form.queryCondition]
-                    : ''
+                    : queryConditionTMapping[QUERY_CONDITION.GREATER_THAN]
                 }
                 onSelect={(item) => {
                   const key = _findKey(
@@ -547,14 +588,14 @@ const ProjectAlertsSettings = ({
                 selectedItem={
                   form.queryCondition
                     ? queryConditionTMapping[form.queryCondition]
-                    : undefined
+                    : queryConditionTMapping[QUERY_CONDITION.GREATER_THAN]
                 }
               />
             </div>
             <Input
               name='queryValue'
               label={t('alert.threshold')}
-              value={form.queryValue || ''}
+              value={form.queryValue ?? ''}
               placeholder='10'
               className='mt-4'
               onChange={handleInput}
@@ -565,7 +606,11 @@ const ProjectAlertsSettings = ({
                 id='queryTime'
                 label={t('alert.time')}
                 items={_values(queryTimeTMapping)}
-                title={form.queryTime ? queryTimeTMapping[form.queryTime] : ''}
+                title={
+                  form.queryTime
+                    ? queryTimeTMapping[form.queryTime]
+                    : queryTimeTMapping[QUERY_TIME.LAST_1_HOUR]
+                }
                 onSelect={(item) => {
                   const key = _findKey(
                     queryTimeTMapping,
@@ -580,7 +625,9 @@ const ProjectAlertsSettings = ({
                 }}
                 capitalise
                 selectedItem={
-                  form.queryTime ? queryTimeTMapping[form.queryTime] : undefined
+                  form.queryTime
+                    ? queryTimeTMapping[form.queryTime]
+                    : queryTimeTMapping[QUERY_TIME.LAST_1_HOUR]
                 }
               />
             </div>

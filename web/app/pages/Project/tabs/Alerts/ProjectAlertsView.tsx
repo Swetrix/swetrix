@@ -385,6 +385,24 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, canManageAlerts])
 
+  // Fallback load for client-side tab switches where deferred data is not present yet.
+  useEffect(() => {
+    if (!canManageAlerts) return
+    if (deferredData.alertsData) return
+    if (isSearchMode) return
+    if (fetcher.state !== 'idle') return
+    if (!_isEmpty(alerts)) return
+
+    loadAlerts(DEFAULT_ALERTS_TAKE, 0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    canManageAlerts,
+    deferredData.alertsData,
+    isSearchMode,
+    fetcher.state,
+    alerts,
+  ])
+
   const queryMetricTMapping: Record<string, string> = useMemo(() => {
     const values = _values(QUERY_METRIC)
 
