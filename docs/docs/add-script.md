@@ -7,6 +7,12 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 To use Swetrix on your website, you need to add a tracking script to your website and there are several ways to do this.
 
+:::tip Using a CMS or site builder?
+If your website runs on WordPress, Wix, Shopify, Webflow, or another CMS/site builder, use a dedicated integration guide instead of editing HTML manually.
+
+See [CMS & website builder integrations](/integrations#cms--website-builders).
+:::
+
 ## Edit the website's HTML code
 
 The easiest way to add the tracking script to your website is to edit the HTML code of your website.
@@ -58,9 +64,3 @@ After that you can track anything you want. For example, the following code snip
 Swetrix.init('YOUR_PROJECT_ID')
 Swetrix.trackViews()
 ```
-
-## Integration with CMS or site builders
-
-Sometimes it may be easier to install Swetrix without editing the HTML code of your website and this is the case with some CMS or site builders, for example WordPress or Wix.
-
-We support a number of different integrations and you can read more about them [here](integrations).

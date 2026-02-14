@@ -10,6 +10,26 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 - [NPM package for JavaScript](/install-script#install-swetrix-via-npm) — install via npm, yarn, or pnpm for full control in any JavaScript project
 - [HTML script tag](/install-script#edit-the-websites-html-code) — add Swetrix to any website with a single line of code
 
+## CMS & website builders
+
+- [BigCommerce](/bigcommerce-integration)
+- [Bubble.io](/bubble-integration)
+- [Carrd](/carrd-integration)
+- [Drupal](/drupal-integration)
+- [Framer](/framer-integration)
+- [Ghost](/ghost-integration)
+- [GitBook](/gitbook-integration)
+- [Joomla](/joomla-integration)
+- [PrestaShop](/prestashop-integration)
+- [Shopify](/shopify-integration)
+- [Squarespace](/squarespace-integration)
+- [ThriveCart](/thrivecart-integration)
+- [Webflow](/webflow-integration)
+- [Weebly](/weebly-integration)
+- [Wix](/wix-integration)
+- [WooCommerce](/woocommerce-integration)
+- [WordPress](/wordpress-integration)
+
 ## Frameworks & static site generators
 
 - [Angular](/angular-integration)
@@ -33,26 +53,6 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 - [Flask](/flask-integration) (Python)
 - [Laravel](/laravel-integration) (PHP)
 - [Ruby on Rails](/ruby-on-rails-integration)
-
-## CMS & website builders
-
-- [BigCommerce](/bigcommerce-integration)
-- [Bubble.io](/bubble-integration)
-- [Carrd](/carrd-integration)
-- [Drupal](/drupal-integration)
-- [Framer](/framer-integration)
-- [Ghost](/ghost-integration)
-- [GitBook](/gitbook-integration)
-- [Joomla](/joomla-integration)
-- [PrestaShop](/prestashop-integration)
-- [Shopify](/shopify-integration)
-- [Squarespace](/squarespace-integration)
-- [ThriveCart](/thrivecart-integration)
-- [Webflow](/webflow-integration)
-- [Weebly](/weebly-integration)
-- [Wix](/wix-integration)
-- [WooCommerce](/woocommerce-integration)
-- [WordPress](/wordpress-integration)
 
 ## Google
 
