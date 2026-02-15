@@ -43,6 +43,7 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 - [Jekyll](/jekyll-integration)
 - [MkDocs / Material for MkDocs](/mkdocs-integration)
 - [Next.js](/nextjs-integration)
+- [Nextra](/nextra-integration)
 - [Nuxt](/nuxt-integration)
 - [Preact](/preact-integration)
 - [Qwik / Qwik City](/qwik-integration)
