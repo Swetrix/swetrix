@@ -41,6 +41,7 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 - [Jekyll](/jekyll-integration)
 - [Next.js](/nextjs-integration)
 - [Nuxt](/nuxt-integration)
+- [Qwik / Qwik City](/qwik-integration)
 - [React (Vite / CRA)](/react-integration)
 - [Remix](/remix-integration)
 - [SolidJS / SolidStart](/solidjs-integration)

@@ -33,6 +33,7 @@ module.exports = {
             label: 'Python',
             items: ['integrations/django', 'integrations/flask'],
           },
+          'integrations/qwik',
           {
             type: 'category',
             label: 'React (Vite / CRA)',
