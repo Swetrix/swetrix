@@ -19,6 +19,7 @@ module.exports = {
           'integrations/drupal',
           'integrations/eleventy',
           'integrations/express',
+          'integrations/fastify',
           'integrations/framer',
           'integrations/ghost',
           'integrations/gitbook',
@@ -31,6 +32,7 @@ module.exports = {
           'integrations/joomla',
           'integrations/laravel',
           'integrations/mkdocs',
+          'integrations/nestjs',
           'integrations/prestashop',
           {
             type: 'category',
