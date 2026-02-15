@@ -23,6 +23,7 @@ module.exports = {
           'integrations/gitbook',
           'integrations/google-search-console',
           'integrations/google-tag-manager',
+          'integrations/htmx',
           'integrations/hugo',
           'integrations/jekyll',
           'integrations/joomla',

@@ -37,6 +37,7 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 - [Docusaurus](/docusaurus-integration)
 - [Eleventy (11ty)](/eleventy-integration)
 - [Gatsby](/gatsby-integration)
+- [htmx](/htmx-integration)
 - [Hugo](/hugo-integration)
 - [Jekyll](/jekyll-integration)
 - [Next.js](/nextjs-integration)
