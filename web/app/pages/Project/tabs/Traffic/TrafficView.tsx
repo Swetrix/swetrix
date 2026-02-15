@@ -1,4 +1,5 @@
 import cx from 'clsx'
+import dayjs from 'dayjs'
 import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
@@ -610,6 +611,23 @@ const TrafficViewInner = ({
     [activeChartMetrics, activeChartMetricsCustomEvents],
   )
 
+  // Filter annotations to only those within the chart's visible x-axis range
+  const filteredAnnotations = useMemo(() => {
+    const xAxis = (chartData as { x?: string[] })?.x
+    if (!annotations?.length || !xAxis?.length) return annotations || []
+
+    const rangeStart = dayjs(xAxis[0]).startOf('day')
+    const rangeEnd = dayjs(xAxis[xAxis.length - 1]).endOf('day')
+
+    return annotations.filter((a) => {
+      const d = dayjs(a.date)
+      return (
+        (d.isAfter(rangeStart) || d.isSame(rangeStart, 'day')) &&
+        (d.isBefore(rangeEnd) || d.isSame(rangeEnd, 'day'))
+      )
+    })
+  }, [annotations, chartData])
+
   const isConflicted = useCallback(
     (conflicts: string[] | undefined) => {
       if (!conflicts) return false
@@ -1089,7 +1107,7 @@ const TrafficViewInner = ({
                 enableZoom={shouldEnableZoom}
                 dataNames={dataNames}
                 className='mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'
-                annotations={annotations}
+                annotations={filteredAnnotations}
               />
             </div>
           ) : null}

@@ -1,4 +1,5 @@
 import cx from 'clsx'
+import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
@@ -234,6 +235,23 @@ const PerformanceViewInner = ({
   // Compare mode not implemented via SSR yet - use empty defaults
   const overallCompare: Partial<OverallPerformanceObject> = {}
   const chartDataCompare: any = {}
+
+  // Filter annotations to only those within the chart's visible x-axis range
+  const filteredAnnotations = useMemo(() => {
+    const xAxis = (chartData as { x?: string[] })?.x
+    if (!annotations?.length || !xAxis?.length) return annotations || []
+
+    const rangeStart = dayjs(xAxis[0]).startOf('day')
+    const rangeEnd = dayjs(xAxis[xAxis.length - 1]).endOf('day')
+
+    return annotations.filter((a) => {
+      const d = dayjs(a.date)
+      return (
+        (d.isAfter(rangeStart) || d.isSame(rangeStart, 'day')) &&
+        (d.isBefore(rangeEnd) || d.isSame(rangeEnd, 'day'))
+      )
+    })
+  }, [annotations, chartData])
 
   // Panel active tabs
   const [activeTabs, setActiveTabs] = useState<{
@@ -488,7 +506,7 @@ const PerformanceViewInner = ({
                 enableZoom={shouldEnableZoom}
                 dataNames={dataNames}
                 className='mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'
-                annotations={annotations}
+                annotations={filteredAnnotations}
               />
             </div>
           ) : null}
