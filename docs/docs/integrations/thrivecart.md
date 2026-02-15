@@ -120,7 +120,7 @@ Update the variables at the top of the script:
 
 | Variable | Description |
 | --- | --- |
-| `EVENT_NAME` | The custom event name (e.g. `purchase`, `checkout_complete`). Must contain only letters, numbers, underscores, and dots. |
+| `EVENT_NAME` | The custom event name (e.g. `Purchase`, `Checkout Complete`). Can contain any characters with a maximum length of 256 characters. |
 | `EVENT_META` | An object with event metadata. All values must be strings. |
 | `PROJECT_ID` | Your Swetrix Project ID. |
 

@@ -199,9 +199,8 @@ Custom events let you track specific user interactions — button clicks, form s
 
 Event names must:
 
-- Contain only English letters (a-Z), numbers (0-9), underscores (`_`), and dots (`.`)
-- Be fewer than 64 characters
-- Start with an English letter
+- Contain any characters (including spaces, unicode, etc.)
+- Be no longer than 256 characters
 
 ## Using the Swetrix npm package
 

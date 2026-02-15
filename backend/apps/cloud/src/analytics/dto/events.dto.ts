@@ -101,16 +101,13 @@ export class EventsDto {
   profileId?: string
 
   @ApiProperty({
-    example: 'user-subscribed',
+    example: 'User Subscribed',
     description: 'Event name',
-    maxLength: 64,
+    maxLength: 256,
   })
   @IsNotEmpty()
-  // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
-  @Matches(/^[a-zA-Z][\w.]{0,62}$/, {
-    message:
-      'Event name must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.). Maximum length is 63 characters.',
-  })
+  @IsString()
+  @MaxLength(256)
   ev: string
 
   @ApiProperty({

@@ -214,9 +214,8 @@ You can add event tracking to any element on a Markdown page using raw HTML:
 
 Event names must:
 
-- Contain only English letters (a-Z), numbers (0-9), underscores (`_`), and dots (`.`)
-- Be fewer than 64 characters
-- Start with an English letter
+- Contain any characters (including spaces, unicode, etc.)
+- Be no longer than 256 characters
 
 ## Check your installation
 

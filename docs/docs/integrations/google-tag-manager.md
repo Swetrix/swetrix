@@ -150,7 +150,7 @@ swetrix.track({
 ```
 
 :::tip
-Event names must contain only English letters, numbers, underscores, and dots, be under 64 characters, and start with a letter. The `meta` object supports up to 20 keys with a combined value length under 1000 characters.
+Event names can contain any characters (including spaces and unicode) with a maximum length of 256 characters. The `meta` object supports up to 20 keys with a combined value length under 1000 characters.
 :::
 
 ## Error tracking

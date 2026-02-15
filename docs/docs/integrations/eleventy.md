@@ -234,9 +234,8 @@ Add event tracking to any page or component using inline scripts:
 
 Event names must:
 
-- Contain only English letters (a-Z), numbers (0-9), underscores (`_`), and dots (`.`)
-- Be fewer than 64 characters
-- Start with an English letter
+- Contain any characters (including spaces, unicode, etc.)
+- Be no longer than 256 characters
 
 We recommend `UPPER_SNAKE_CASE` for consistency (e.g. `PDF_DOWNLOAD`, `NEWSLETTER_SIGNUP`).
 

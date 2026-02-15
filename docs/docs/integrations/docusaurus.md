@@ -266,9 +266,8 @@ Check out the <TrackedLink href="https://github.com/Swetrix/swetrix">source code
 
 When defining custom event names, keep in mind:
 
-- Names must contain only English letters (a-Z), numbers (0-9), underscores (`_`), and dots (`.`).
-- Names must be fewer than 64 characters.
-- Names must start with an English letter.
+- Names can contain any characters (including spaces, unicode, etc.).
+- Names must be no longer than 256 characters.
 
 We recommend using `UPPER_SNAKE_CASE` for consistency (e.g. `DOCS_FEEDBACK`, `CTA_CLICK`, `SEARCH_OPENED`).
 
