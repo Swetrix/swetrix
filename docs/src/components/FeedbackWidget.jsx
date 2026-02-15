@@ -188,7 +188,7 @@ export default function FeedbackWidget() {
         <span className='swx-feedback-sep'>•</span>
         <Link
           className='swx-feedback-link'
-          to='https://github.com/Swetrix/docs/issues'
+          to='https://github.com/Swetrix/swetrix/issues'
           target='_blank'
           rel='noopener noreferrer'
         >

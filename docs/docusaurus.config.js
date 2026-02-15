@@ -126,7 +126,7 @@ const config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/swetrix/docs/edit/main/',
+          editUrl: 'https://github.com/Swetrix/swetrix/edit/main/docs/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
