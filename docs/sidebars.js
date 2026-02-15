@@ -40,6 +40,7 @@ module.exports = {
             items: [
               'integrations/gatsby',
               'integrations/nextjs',
+              'integrations/preact',
               'integrations/react',
               'integrations/remix',
             ],
