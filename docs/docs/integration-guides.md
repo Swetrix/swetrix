@@ -24,6 +24,7 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 - [Shopify](/shopify-integration)
 - [Squarespace](/squarespace-integration)
 - [ThriveCart](/thrivecart-integration)
+- [Tilda](/tilda-integration)
 - [Webflow](/webflow-integration)
 - [Weebly](/weebly-integration)
 - [Wix](/wix-integration)

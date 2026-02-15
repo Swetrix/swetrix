@@ -63,6 +63,7 @@ module.exports = {
           'integrations/squarespace',
           'integrations/sveltekit',
           'integrations/thrivecart',
+          'integrations/tilda',
           {
             type: 'category',
             label: 'Vue',
