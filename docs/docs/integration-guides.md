@@ -56,8 +56,10 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 
 ## Backend frameworks
 
+- [ASP.NET](/aspnet-integration) (C#)
 - [Django](/django-integration) (Python)
 - [Express.js](/express-integration) (Node.js)
+- [FastAPI](/fastapi-integration) (Python)
 - [Fastify](/fastify-integration) (Node.js)
 - [Flask](/flask-integration) (Python)
 - [Laravel](/laravel-integration) (PHP)

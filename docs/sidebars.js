@@ -11,6 +11,7 @@ module.exports = {
         label: 'Integrations',
         items: [
           'integrations/angular',
+          'integrations/aspnet',
           'integrations/astro',
           'integrations/bigcommerce',
           'integrations/bubble',
@@ -37,7 +38,11 @@ module.exports = {
           {
             type: 'category',
             label: 'Python',
-            items: ['integrations/django', 'integrations/flask'],
+            items: [
+              'integrations/django',
+              'integrations/fastapi',
+              'integrations/flask',
+            ],
           },
           'integrations/qwik',
           {
