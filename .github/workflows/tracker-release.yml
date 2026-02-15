@@ -1,4 +1,4 @@
-name: Publish tracker package to npm
+name: Publish package to npm
 on:
   release:
     types: [published]
@@ -65,3 +65,32 @@ jobs:
       - name: Publish to npm
         run: npm publish --provenance --access public
         working-directory: packages/tracker-node
+
+  publish-captcha:
+    name: Publish captcha to npm
+    if: startsWith(github.event.release.tag_name, 'captcha@')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: packages/captcha
+
+      - name: Build
+        run: npm run build
+        working-directory: packages/captcha
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        working-directory: packages/captcha
