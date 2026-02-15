@@ -41,6 +41,7 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 - [htmx](/htmx-integration)
 - [Hugo](/hugo-integration)
 - [Jekyll](/jekyll-integration)
+- [MkDocs / Material for MkDocs](/mkdocs-integration)
 - [Next.js](/nextjs-integration)
 - [Nuxt](/nuxt-integration)
 - [Preact](/preact-integration)

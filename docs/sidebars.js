@@ -29,6 +29,7 @@ module.exports = {
           'integrations/jekyll',
           'integrations/joomla',
           'integrations/laravel',
+          'integrations/mkdocs',
           'integrations/prestashop',
           {
             type: 'category',
