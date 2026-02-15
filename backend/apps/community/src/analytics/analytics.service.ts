@@ -624,7 +624,7 @@ export class AnalyticsService {
     } else if (!_isEmpty(period)) {
       if (period === 'today') {
         groupFrom = djsNow.startOf('d')
-        groupTo = djsNow
+        groupTo = djsNow.endOf('d')
       } else if (period === 'yesterday') {
         groupFrom = djsNow.subtract(1, 'day').startOf('d')
         groupTo = djsNow.subtract(1, 'day').endOf('d')
