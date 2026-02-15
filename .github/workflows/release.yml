@@ -6,6 +6,7 @@ on:
 jobs:
   push_backend_to_registry:
     name: Push Swetrix API Docker image to Docker Hub
+    if: startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -42,6 +43,7 @@ jobs:
 
   push_web_to_registry:
     name: Push Swetrix FE Docker image to Docker Hub
+    if: startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
