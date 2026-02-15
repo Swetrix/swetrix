@@ -70,3 +70,5 @@ web/unused_keys.txt
 docs/build
 docs/.docusaurus
 docs/.cache-loader
+
+.cursor
