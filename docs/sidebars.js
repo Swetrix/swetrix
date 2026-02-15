@@ -45,6 +45,7 @@ module.exports = {
           },
           'integrations/ruby-on-rails',
           'integrations/shopify',
+          'integrations/solidjs',
           'integrations/squarespace',
           'integrations/sveltekit',
           'integrations/thrivecart',

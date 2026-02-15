@@ -43,6 +43,7 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 - [Nuxt](/nuxt-integration)
 - [React (Vite / CRA)](/react-integration)
 - [Remix](/remix-integration)
+- [SolidJS / SolidStart](/solidjs-integration)
 - [SvelteKit](/sveltekit-integration)
 - [VitePress](/vitepress-integration)
 - [Vue](/vue-integration)
