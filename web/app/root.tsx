@@ -41,12 +41,7 @@ import {
 } from '~/lib/constants'
 import mainCss from '~/styles/index.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
-import { trackErrors, trackError } from '~/utils/analytics'
-import {
-  isBlogPostPath,
-  isTrackablePagePath,
-  trackPageview,
-} from '~/utils/analytics.server'
+import { trackViews, trackErrors, trackError } from '~/utils/analytics'
 import { getCookie } from '~/utils/cookie'
 import { detectTheme, isWWW } from '~/utils/server'
 import { createHeadersWithCookies, hasAuthTokens } from '~/utils/session.server'
@@ -56,6 +51,7 @@ import { detectLanguage } from './i18n'
 import { AuthProvider } from './providers/AuthProvider'
 import { ThemeProvider, useTheme } from './providers/ThemeProvider'
 
+trackViews()
 trackErrors()
 
 declare global {
@@ -223,13 +219,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const nonWWWLink = _replace(url, 'www.', '')
     const httpToHttps = _replace(nonWWWLink, 'http://', 'https://')
     return redirect(httpToHttps, 301)
-  }
-
-  if (
-    !isBlogPostPath(urlObject.pathname) &&
-    isTrackablePagePath(urlObject.pathname)
-  ) {
-    void trackPageview(request, { pg: urlObject.pathname })
   }
 
   const locale = detectLanguage(request)

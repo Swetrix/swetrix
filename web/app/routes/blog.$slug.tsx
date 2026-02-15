@@ -13,7 +13,6 @@ import {
   API_URL,
 } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
-import { trackPageview } from '~/utils/analytics.server'
 import { getSlugFromFilename, getDateFromFilename } from '~/utils/blog'
 import { getPost } from '~/utils/getPosts.server'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -95,14 +94,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       status: 404,
     })
   }
-
-  void trackPageview(request, {
-    meta: post.author
-      ? {
-          author: post.author,
-        }
-      : undefined,
-  })
 
   return post
 }

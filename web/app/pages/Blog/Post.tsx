@@ -1,9 +1,11 @@
 import { CaretLeftIcon } from '@phosphor-icons/react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLoaderData } from 'react-router'
+import { Link, useLoaderData, useLocation } from 'react-router'
 
 import ExitIntentPopup from '~/components/ExitIntentPopup'
 import NotFound from '~/pages/NotFound'
+import { trackPageview } from '~/utils/analytics'
 
 interface Post {
   slug: string
@@ -18,8 +20,24 @@ interface Post {
 }
 
 export default function PostSlug() {
+  const location = useLocation()
   const post = useLoaderData() as Post
   const { t } = useTranslation('common')
+
+  useEffect(() => {
+    const meta = post?.author
+      ? {
+          author: post.author,
+        }
+      : undefined
+
+    trackPageview({
+      payload: {
+        pg: location.pathname,
+        meta,
+      },
+    })
+  }, [post, location])
 
   if (!post) {
     return <NotFound />
