@@ -1,0 +1,425 @@
+---
+title: Express.js
+slug: /express-integration
+---
+
+Integrate Swetrix with your [Express.js](https://expressjs.com/) application using the [`@swetrix/node`](https://github.com/swetrix/swetrix-node) server-side SDK to track page views, monitor errors, and capture custom events — all while staying privacy-friendly and GDPR-compliant.
+
+Unlike client-side integrations that inject a tracking script into the browser, `@swetrix/node` sends analytics data directly from your server. This means tracking works even when visitors have JavaScript disabled or use ad blockers, and no third-party scripts are loaded in the browser.
+
+## Installation
+
+```bash
+npm install @swetrix/node
+```
+
+## Setup
+
+Initialise the Swetrix client with your Project ID:
+
+```javascript
+const express = require('express')
+const { Swetrix } = require('@swetrix/node')
+
+const app = express()
+const swetrix = new Swetrix('YOUR_PROJECT_ID')
+```
+
+Or using ES module syntax:
+
+```javascript
+import express from 'express'
+import { Swetrix } from '@swetrix/node'
+
+const app = express()
+const swetrix = new Swetrix('YOUR_PROJECT_ID')
+```
+
+:::caution
+Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
+:::
+
+The `Swetrix` constructor accepts an optional second argument — an options object:
+
+```javascript
+const swetrix = new Swetrix('YOUR_PROJECT_ID', {
+  devMode: false,
+  disabled: process.env.NODE_ENV !== 'production',
+  apiURL: undefined, // only needed for self-hosted Swetrix
+})
+```
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `devMode` | `boolean` | When `true`, all tracking logs are printed to the console |
+| `disabled` | `boolean` | When `true`, no data is sent to the server — useful for development |
+| `apiURL` | `string` | Custom API server URL (for self-hosted Swetrix) |
+| `unique` | `boolean` | When `true`, only unique events are saved |
+| `profileId` | `string` | Optional profile ID for long-term user tracking |
+
+## Tracking pageviews
+
+To track pageviews you need to pass the visitor's **IP address** and **User-Agent** header. Without these, unique visitor counting and live visitor tracking won't work. See the [Events API docs](/events-api#unique-visitors-tracking) for details.
+
+### Basic example
+
+```javascript
+app.get('/', async (req, res) => {
+  const ip = req.ip
+  const userAgent = req.headers['user-agent']
+
+  await swetrix.trackPageView(ip, userAgent, {
+    pg: '/',
+    lc: req.headers['accept-language']?.split(',')[0],
+    ref: req.headers['referer'],
+  })
+
+  res.send('Hello World')
+})
+```
+
+### Middleware approach (recommended)
+
+For most applications, you'll want to track pageviews on every request. A middleware makes this clean and automatic:
+
+```javascript
+app.use(async (req, res, next) => {
+  const ip = req.ip
+  const userAgent = req.headers['user-agent']
+
+  // Fire-and-forget — don't block the response
+  swetrix.trackPageView(ip, userAgent, {
+    pg: req.path,
+    lc: req.headers['accept-language']?.split(',')[0],
+    ref: req.headers['referer'],
+  })
+
+  next()
+})
+```
+
+:::tip
+By not awaiting `trackPageView`, analytics calls happen in the background without adding latency to your responses. This is the recommended pattern for production.
+:::
+
+If your Express app runs behind a reverse proxy (e.g. Nginx, Cloudflare, or a load balancer), make sure to configure the [`trust proxy`](https://expressjs.com/en/guide/behind-proxies.html) setting so `req.ip` returns the real client IP:
+
+```javascript
+app.set('trust proxy', true)
+```
+
+### Pageview options
+
+The third argument to `trackPageView` is an options object:
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `pg` | `string` | Page path (e.g. `/home`) |
+| `lc` | `string` | Visitor locale (e.g. `en-US`) |
+| `ref` | `string` | Referrer URL |
+| `so` | `string` | Traffic source (e.g. `utm_source`) |
+| `me` | `string` | Traffic medium (e.g. `utm_medium`) |
+| `ca` | `string` | Campaign (e.g. `utm_campaign`) |
+| `unique` | `boolean` | Only save unique visits |
+| `meta` | `object` | Custom metadata key-value pairs |
+
+## Tracking custom events
+
+Track specific actions — API calls, form submissions, purchases, etc.:
+
+```javascript
+app.post('/api/subscribe', async (req, res) => {
+  const ip = req.ip
+  const userAgent = req.headers['user-agent']
+
+  swetrix.track(ip, userAgent, {
+    ev: 'NEWSLETTER_SUBSCRIBE',
+    page: '/subscribe',
+    meta: {
+      plan: req.body.plan,
+    },
+  })
+
+  res.json({ success: true })
+})
+```
+
+### Event naming rules
+
+Event names must:
+
+- Contain only English letters (a-Z), numbers (0-9), underscores (`_`), and dots (`.`)
+- Be fewer than 64 characters
+- Start with an English letter
+
+We recommend `UPPER_SNAKE_CASE` for consistency (e.g. `NEWSLETTER_SUBSCRIBE`, `CHECKOUT_COMPLETED`).
+
+## Error tracking
+
+Report server-side errors to Swetrix for centralised monitoring:
+
+```javascript
+app.use((err, req, res, next) => {
+  const ip = req.ip
+  const userAgent = req.headers['user-agent']
+
+  swetrix.trackError(ip, userAgent, {
+    name: err.name || 'Error',
+    message: err.message,
+    stackTrace: err.stack,
+    pg: req.path,
+  })
+
+  res.status(500).json({ error: 'Internal Server Error' })
+})
+```
+
+You can also track errors from specific routes:
+
+```javascript
+app.get('/api/data', async (req, res) => {
+  try {
+    const data = await fetchExternalData()
+    res.json(data)
+  } catch (err) {
+    swetrix.trackError(req.ip, req.headers['user-agent'], {
+      name: err.name,
+      message: err.message,
+      stackTrace: err.stack,
+      pg: req.path,
+    })
+
+    res.status(500).json({ error: 'Failed to fetch data' })
+  }
+})
+```
+
+## Heartbeat events
+
+Heartbeat events let Swetrix know a visitor's session is still active, powering the **Live Visitors** counter in your dashboard. They're most useful in long-lived connections like WebSocket sessions or polling endpoints:
+
+```javascript
+// Example: send heartbeats for active WebSocket connections
+const HEARTBEAT_INTERVAL = 30_000
+
+wss.on('connection', (ws, req) => {
+  const ip = req.socket.remoteAddress
+  const userAgent = req.headers['user-agent']
+
+  const interval = setInterval(() => {
+    swetrix.heartbeat(ip, userAgent)
+  }, HEARTBEAT_INTERVAL)
+
+  ws.on('close', () => clearInterval(interval))
+})
+```
+
+## Feature flags
+
+Evaluate feature flags server-side based on visitor context:
+
+```javascript
+app.get('/dashboard', async (req, res) => {
+  const ip = req.ip
+  const userAgent = req.headers['user-agent']
+
+  const showNewDashboard = await swetrix.getFeatureFlag(
+    'new-dashboard',
+    ip,
+    userAgent,
+    { profileId: req.user?.id },
+    false, // default value
+  )
+
+  if (showNewDashboard) {
+    res.render('dashboard-v2')
+  } else {
+    res.render('dashboard')
+  }
+})
+```
+
+You can also fetch all flags at once:
+
+```javascript
+const flags = await swetrix.getFeatureFlags(ip, userAgent)
+
+if (flags['beta-feature']) {
+  // Enable beta feature
+}
+```
+
+Feature flags are cached for 5 minutes. To force a refresh:
+
+```javascript
+swetrix.clearFeatureFlagsCache()
+```
+
+## A/B testing (experiments)
+
+Run server-side A/B tests and get the assigned variant for each visitor:
+
+```javascript
+app.get('/pricing', async (req, res) => {
+  const ip = req.ip
+  const userAgent = req.headers['user-agent']
+
+  const variant = await swetrix.getExperiment(
+    'pricing-experiment-id',
+    ip,
+    userAgent,
+    { profileId: req.user?.id },
+    null, // default variant
+  )
+
+  if (variant === 'annual-first') {
+    res.render('pricing', { showAnnualFirst: true })
+  } else {
+    res.render('pricing', { showAnnualFirst: false })
+  }
+})
+```
+
+## Revenue attribution
+
+Use profile and session IDs to connect analytics with your payment provider (e.g. Paddle, Stripe):
+
+```javascript
+app.get('/checkout', async (req, res) => {
+  const ip = req.ip
+  const userAgent = req.headers['user-agent']
+
+  const [profileId, sessionId] = await Promise.all([
+    swetrix.getProfileId(ip, userAgent),
+    swetrix.getSessionId(ip, userAgent),
+  ])
+
+  res.json({
+    checkoutConfig: {
+      customData: {
+        swetrix_profile_id: profileId,
+        swetrix_session_id: sessionId,
+      },
+    },
+  })
+})
+```
+
+## Disable tracking in development
+
+Use the `disabled` option to prevent tracking during development:
+
+```javascript
+const swetrix = new Swetrix('YOUR_PROJECT_ID', {
+  disabled: process.env.NODE_ENV !== 'production',
+})
+```
+
+Or use `devMode` to log tracking calls to the console without disabling them:
+
+```javascript
+const swetrix = new Swetrix('YOUR_PROJECT_ID', {
+  devMode: process.env.NODE_ENV === 'development',
+})
+```
+
+## Using environment variables for your Project ID
+
+Rather than hardcoding the Project ID, store it in an environment variable:
+
+```bash
+SWETRIX_PROJECT_ID=YOUR_PROJECT_ID
+```
+
+```javascript
+const swetrix = new Swetrix(process.env.SWETRIX_PROJECT_ID)
+```
+
+If you use [dotenv](https://www.npmjs.com/package/dotenv):
+
+```bash
+npm install dotenv
+```
+
+```javascript
+require('dotenv').config()
+
+const swetrix = new Swetrix(process.env.SWETRIX_PROJECT_ID)
+```
+
+## Complete example
+
+Here's a full Express application with Swetrix analytics:
+
+```javascript
+const express = require('express')
+const { Swetrix } = require('@swetrix/node')
+
+const app = express()
+const swetrix = new Swetrix(process.env.SWETRIX_PROJECT_ID, {
+  disabled: process.env.NODE_ENV !== 'production',
+})
+
+app.set('trust proxy', true)
+app.use(express.json())
+
+// Track pageviews on all requests
+app.use((req, res, next) => {
+  swetrix.trackPageView(req.ip, req.headers['user-agent'], {
+    pg: req.path,
+    lc: req.headers['accept-language']?.split(',')[0],
+    ref: req.headers['referer'],
+  })
+
+  next()
+})
+
+app.get('/', (req, res) => {
+  res.send('Hello World')
+})
+
+app.post('/api/contact', async (req, res) => {
+  swetrix.track(req.ip, req.headers['user-agent'], {
+    ev: 'CONTACT_FORM_SUBMITTED',
+    page: '/contact',
+  })
+
+  res.json({ success: true })
+})
+
+// Error tracking
+app.use((err, req, res, next) => {
+  swetrix.trackError(req.ip, req.headers['user-agent'], {
+    name: err.name || 'Error',
+    message: err.message,
+    stackTrace: err.stack,
+    pg: req.path,
+  })
+
+  res.status(500).json({ error: 'Internal Server Error' })
+})
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000')
+})
+```
+
+## Check your installation
+
+Deploy your application (or temporarily enable `devMode`) and make a few requests. Within a minute you should see new pageviews appearing in your Swetrix dashboard.
+
+## Self-hosted Swetrix
+
+If you're self-hosting the [Swetrix API](https://github.com/Swetrix/swetrix-api), point the `apiURL` option to your instance:
+
+```javascript
+const swetrix = new Swetrix('YOUR_PROJECT_ID', {
+  apiURL: 'https://your-swetrix-instance.com/log',
+})
+```
+
+## Further reading
+
+- [`@swetrix/node` source code](https://github.com/swetrix/swetrix-node) — full source and documentation for the server-side SDK.
+- [Events API](/events-api) — API documentation for direct event submission.
+- [Express.js documentation](https://expressjs.com/) — official Express.js docs.

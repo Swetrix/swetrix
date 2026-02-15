@@ -57,6 +57,7 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 ## Backend frameworks
 
 - [Django](/django-integration) (Python)
+- [Express.js](/express-integration) (Node.js)
 - [Flask](/flask-integration) (Python)
 - [Laravel](/laravel-integration) (PHP)
 - [Ruby on Rails](/ruby-on-rails-integration)

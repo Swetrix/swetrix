@@ -18,6 +18,7 @@ module.exports = {
           'integrations/docusaurus',
           'integrations/drupal',
           'integrations/eleventy',
+          'integrations/express',
           'integrations/framer',
           'integrations/ghost',
           'integrations/gitbook',
