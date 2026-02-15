@@ -56,6 +56,14 @@ const MarketingPricing = ({
     return _round(discountPercentage, 0)
   }, [plans, currencyCode])
 
+  const toggleBillingFrequency = () => {
+    setBillingFrequency((currentFrequency) =>
+      currentFrequency === BillingFrequency.yearly
+        ? BillingFrequency.monthly
+        : BillingFrequency.yearly,
+    )
+  }
+
   return (
     <section id='pricing' className='relative p-2'>
       <div className='rounded-xl bg-slate-900 py-16 sm:py-20 dark:bg-slate-900/50'>
@@ -152,7 +160,7 @@ const MarketingPricing = ({
                   ? t('main.goToBilling')
                   : t('main.startAXDayFreeTrial', { amount: TRIAL_DAYS })}
               </span>
-              <ArrowRightIcon className='mt-[1px] h-4 w-5' />
+              <ArrowRightIcon className='mt-px h-4 w-5' />
             </Link>
           </div>
 
@@ -160,13 +168,7 @@ const MarketingPricing = ({
             <div className='mb-3 flex justify-end'>
               <button
                 type='button'
-                onClick={() =>
-                  setBillingFrequency(
-                    billingFrequency === BillingFrequency.yearly
-                      ? BillingFrequency.monthly
-                      : BillingFrequency.yearly,
-                  )
-                }
+                onClick={toggleBillingFrequency}
                 className='flex cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-slate-900 px-3 py-2 transition-colors hover:bg-slate-800'
               >
                 <span className='text-sm font-medium text-gray-100'>
@@ -179,13 +181,7 @@ const MarketingPricing = ({
                 ) : null}
                 <Switch
                   checked={billingFrequency === BillingFrequency.yearly}
-                  onChange={() =>
-                    setBillingFrequency(
-                      billingFrequency === BillingFrequency.yearly
-                        ? BillingFrequency.monthly
-                        : BillingFrequency.yearly,
-                    )
-                  }
+                  visualOnly
                 />
               </button>
             </div>

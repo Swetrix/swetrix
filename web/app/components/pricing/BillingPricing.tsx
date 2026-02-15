@@ -308,6 +308,14 @@ const BillingPricing = ({
     return _round(discountPercentage, 0)
   }, [tiers, currencyCode])
 
+  const toggleBillingFrequency = () => {
+    setBillingFrequency((currentFrequency) =>
+      currentFrequency === BillingFrequency.yearly
+        ? BillingFrequency.monthly
+        : BillingFrequency.yearly,
+    )
+  }
+
   return (
     <>
       <div className='rounded-xl border border-gray-200 p-4 sm:p-6 dark:border-white/10'>
@@ -317,13 +325,7 @@ const BillingPricing = ({
           </h2>
           <button
             type='button'
-            onClick={() =>
-              setBillingFrequency(
-                billingFrequency === BillingFrequency.yearly
-                  ? BillingFrequency.monthly
-                  : BillingFrequency.yearly,
-              )
-            }
+            onClick={toggleBillingFrequency}
             className='flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:border-white/10 dark:bg-slate-950 dark:hover:bg-slate-900'
           >
             <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
@@ -336,13 +338,7 @@ const BillingPricing = ({
             ) : null}
             <Switch
               checked={billingFrequency === BillingFrequency.yearly}
-              onChange={() =>
-                setBillingFrequency(
-                  billingFrequency === BillingFrequency.yearly
-                    ? BillingFrequency.monthly
-                    : BillingFrequency.yearly,
-                )
-              }
+              visualOnly
             />
           </button>
         </div>
