@@ -1127,7 +1127,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             <button
               type='button'
               onClick={handleCopyLink}
-              className='flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-700'
+              className='flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
             >
               <LinkIcon className='h-4 w-4' />
               <span>{t('project.askAi.copyLink')}</span>

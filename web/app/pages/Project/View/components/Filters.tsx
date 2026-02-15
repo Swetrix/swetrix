@@ -228,7 +228,7 @@ export const Filter = ({
         <Link
           to={createRemoveFilterPath()}
           className={cn(
-            'ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:bg-gray-100 focus:text-gray-700 focus:outline-hidden dark:text-gray-400 dark:hover:bg-slate-700 dark:hover:text-gray-200 dark:focus:bg-slate-700 dark:focus:text-gray-200',
+            'ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:bg-gray-100 focus:text-gray-700 focus:outline-hidden dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200 dark:focus:bg-slate-700 dark:focus:text-gray-200',
             {
               'cursor-wait': dataLoading,
             },
@@ -332,7 +332,7 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
           'cursor-wait': dataLoading,
         })}
       >
-        <XIcon className='size-5 cursor-pointer rounded-md p-0.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-700 dark:hover:text-gray-200' />
+        <XIcon className='size-5 cursor-pointer rounded-md p-0.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200' />
       </Link>
     </div>
   )

@@ -426,7 +426,7 @@ const FilterValueInput = ({
                       type='button'
                       onClick={() => handleSelectItem(item)}
                       className={cx(
-                        'absolute right-0 left-0 mx-1 flex cursor-pointer items-center gap-2 rounded-md py-2 pr-4 pl-2 text-left transition-colors select-none hover:bg-gray-100 dark:hover:bg-slate-700',
+                        'absolute right-0 left-0 mx-1 flex cursor-pointer items-center gap-2 rounded-md py-2 pr-4 pl-2 text-left transition-colors select-none hover:bg-gray-100 dark:hover:bg-slate-800',
                         {
                           'bg-indigo-50 dark:bg-indigo-900/30': selected,
                           'text-gray-700 dark:text-gray-50': !selected,

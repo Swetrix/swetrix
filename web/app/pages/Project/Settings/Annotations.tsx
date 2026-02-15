@@ -241,7 +241,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                           <button
                             type='button'
                             onClick={() => openEditModal(annotation)}
-                            className='rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-700 dark:hover:text-gray-200'
+                            className='rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200'
                             title={t('common.edit')}
                           >
                             <PencilIcon className='h-4 w-4' />

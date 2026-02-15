@@ -102,7 +102,7 @@ export const SortSelector = ({
                       key={item.sort}
                       onClick={() => setActiveSort(item.sort)}
                       className={cx(
-                        'block cursor-pointer rounded-md px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
+                        'block cursor-pointer rounded-md px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800',
                         {
                           'cursor-wait': isLoading,
                         },

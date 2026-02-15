@@ -355,7 +355,7 @@ const OrganisationSettings = () => {
                 <div className='mt-8 flex flex-wrap justify-center gap-2 sm:justify-between'>
                   <div className='flex flex-wrap items-center gap-2'>
                     <Button
-                      className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
+                      className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
                       as={Link}
                       // @ts-expect-error
                       to={routes.organisations}

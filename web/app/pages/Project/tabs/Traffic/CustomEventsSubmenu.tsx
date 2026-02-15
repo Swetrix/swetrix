@@ -132,7 +132,7 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
       onMouseLeave={handleMouseLeave}
     >
       <div
-        className='w-full cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+        className='w-full cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800'
         onClick={handleClick}
       >
         <div className='flex items-center justify-between'>
@@ -173,7 +173,7 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
                       onClick={() => {
                         switchCustomEventChart(event.id)
                       }}
-                      className='block w-full cursor-pointer rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                      className='block w-full cursor-pointer rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800'
                     >
                       <div
                         className='max-w-max'

@@ -281,7 +281,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
             />
             <Button
               type='button'
-              className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
+              className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
               small
               onClick={onRemove}
             >

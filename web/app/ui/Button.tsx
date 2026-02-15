@@ -60,7 +60,7 @@ const Button = ({
           primary,
         'border border-gray-300 bg-gray-50 text-slate-900 hover:bg-slate-200 dark:border-slate-700/80 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-900':
           secondary,
-        'border-transparent bg-white text-gray-700 hover:bg-gray-50 dark:bg-slate-900 dark:text-gray-100 dark:ring-1 dark:ring-slate-700 dark:hover:bg-slate-700':
+        'border-transparent bg-white text-gray-700 hover:bg-gray-50 dark:bg-slate-900 dark:text-gray-100 dark:ring-1 dark:ring-slate-700 dark:hover:bg-slate-800':
           white,
         'border-transparent bg-red-500 text-gray-50 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500':
           danger,

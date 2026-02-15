@@ -190,7 +190,7 @@ export const MetricCardSelect = ({
                   {selectLabel}
                 </Text>
                 <button
-                  className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
+                  className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-800'
                   type='button'
                   onClick={() => setShow(!show)}
                 >
@@ -203,7 +203,7 @@ export const MetricCardSelect = ({
                     type='button'
                     key={label}
                     onClick={() => _onSelect(index)}
-                    className='w-full rounded-md p-2 text-left hover:bg-gray-200 dark:hover:bg-slate-700'
+                    className='w-full rounded-md p-2 text-left hover:bg-gray-200 dark:hover:bg-slate-800'
                   >
                     <Text size='sm' colour='secondary'>
                       {label}

@@ -221,7 +221,7 @@ const AlertRow = ({
                   openAlert(id)
                 }}
                 aria-label={t('common.edit')}
-                className='rounded-md border border-transparent p-1.5 text-gray-500 transition-colors hover:border-gray-300 hover:bg-white hover:text-gray-700 dark:text-slate-400 hover:dark:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+                className='rounded-md border border-transparent p-1.5 text-gray-500 transition-colors hover:border-gray-300 hover:bg-white hover:text-gray-700 dark:text-slate-400 hover:dark:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               >
                 <PencilIcon className='size-4' />
               </button>

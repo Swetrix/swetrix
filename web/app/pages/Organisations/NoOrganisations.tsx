@@ -29,7 +29,7 @@ export const NoOrganisations = ({ onClick }: NoOrganisationsProps) => {
       <button
         type='button'
         onClick={onClick}
-        className='mt-6 rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:border-gray-800 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
+        className='mt-6 rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:border-gray-800 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
       >
         {t('organisations.new')}
       </button>

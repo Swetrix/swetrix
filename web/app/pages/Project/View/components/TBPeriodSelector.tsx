@@ -131,7 +131,7 @@ const TBPeriodSelector = ({
                         onSelect(item, e)
                       }
                       className={cx(
-                        'flex cursor-pointer items-center justify-between space-x-1 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
+                        'flex cursor-pointer items-center justify-between space-x-1 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800',
                         {
                           'cursor-wait': dataLoading,
                         },

@@ -96,7 +96,7 @@ const LiveVisitorsDropdown = () => {
               </p>
 
               <button
-                className='-m-1 rounded-md p-1 transition-colors hover:bg-gray-200 dark:hover:bg-slate-700'
+                className='-m-1 rounded-md p-1 transition-colors hover:bg-gray-200 dark:hover:bg-slate-800'
                 type='button'
                 onClick={() => setIsDropdownVisible(false)}
               >

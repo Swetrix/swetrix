@@ -369,7 +369,7 @@ const ProjectAlertsSettings = ({
                 </button>
                 <Link
                   to={routes.contact}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:focus:ring-gray-50'
                 >
                   {t('notFoundPage.support')}
                 </Link>
@@ -643,7 +643,7 @@ const ProjectAlertsSettings = ({
             </Button>
             <div className='flex items-center justify-between'>
               <Button
-                className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
+                className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
                 onClick={onClose}
                 secondary
                 regular
@@ -658,7 +658,7 @@ const ProjectAlertsSettings = ({
         ) : (
           <div className='mt-5 flex items-center justify-between'>
             <Button
-              className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
+              className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
               onClick={onClose}
               secondary
               regular

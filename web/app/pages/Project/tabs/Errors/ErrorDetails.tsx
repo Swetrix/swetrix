@@ -382,7 +382,7 @@ export const ErrorDetails = ({
                 <button
                   type='button'
                   onClick={handleCopyEid}
-                  className='rounded-md p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-200'
+                  className='rounded-md p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-200'
                   aria-label={t('project.copy')}
                 >
                   {isCopiedEid ? (
@@ -415,7 +415,7 @@ export const ErrorDetails = ({
               <button
                 type='button'
                 onClick={handleCopyFile}
-                className='ml-1 rounded-md p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-200'
+                className='ml-1 rounded-md p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-200'
                 aria-label={t('project.copy')}
               >
                 {isCopiedFile ? (
@@ -470,7 +470,7 @@ export const ErrorDetails = ({
                 <button
                   type='button'
                   onClick={handleCopyStackTrace}
-                  className='flex items-center rounded-md border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700'
+                  className='flex items-center rounded-md border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-800'
                   aria-label={t('project.copy')}
                 >
                   {isCopiedStack ? (
@@ -488,7 +488,7 @@ export const ErrorDetails = ({
                 <button
                   type='button'
                   onClick={() => setIsStackTraceExpanded((v) => !v)}
-                  className='flex items-center rounded-md border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700'
+                  className='flex items-center rounded-md border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-800'
                   aria-expanded={isStackTraceExpanded}
                 >
                   {isStackTraceExpanded ? (

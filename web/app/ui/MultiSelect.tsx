@@ -180,7 +180,7 @@ const MultiSelect = ({
                   e.stopPropagation()
                   onRemove(item)
                 }}
-                className='inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 focus:bg-gray-300 focus:text-gray-700 focus:outline-hidden dark:text-gray-400 dark:hover:bg-slate-700 dark:hover:text-gray-200'
+                className='inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 focus:bg-gray-300 focus:text-gray-700 focus:outline-hidden dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200'
               >
                 <span className='sr-only'>Remove</span>
                 <svg

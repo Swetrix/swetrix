@@ -739,7 +739,7 @@ const ExperimentSettingsModal = ({
                                 'flex items-center gap-1 rounded-l-md px-3 py-2 text-sm transition-colors',
                                 goalDirection === 'increase'
                                   ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                  : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-slate-900 dark:text-gray-400 dark:hover:bg-slate-700',
+                                  : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-slate-900 dark:text-gray-400 dark:hover:bg-slate-800',
                               )}
                             >
                               <TrendUpIcon className='size-4' />
@@ -752,7 +752,7 @@ const ExperimentSettingsModal = ({
                                 'flex items-center gap-1 rounded-r-md border-l border-gray-300 px-3 py-2 text-sm transition-colors dark:border-slate-600',
                                 goalDirection === 'decrease'
                                   ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                  : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-slate-900 dark:text-gray-400 dark:hover:bg-slate-700',
+                                  : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-slate-900 dark:text-gray-400 dark:hover:bg-slate-800',
                               )}
                             >
                               <TrendDownIcon className='size-4' />

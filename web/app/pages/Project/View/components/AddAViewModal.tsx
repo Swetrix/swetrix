@@ -101,7 +101,7 @@ const EditMetric = ({
             <span>{t('project.customEvent')}</span>
             <button
               type='button'
-              className='-m-1 rounded-md p-1 text-gray-800 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+              className='-m-1 rounded-md p-1 text-gray-800 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               onClick={onDelete}
               aria-label='Delete custom event'
             >

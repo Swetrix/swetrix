@@ -412,7 +412,7 @@ const SearchFilters = ({
                 >
                   {({ open }) => (
                     <div className='relative w-44'>
-                      <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'>
+                      <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'>
                         <span
                           className={cx('flex items-center gap-2 truncate', {
                             'text-gray-400': !row.column,
@@ -491,7 +491,7 @@ const SearchFilters = ({
                 >
                   {({ open }) => (
                     <div className='relative w-32'>
-                      <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'>
+                      <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'>
                         <span className='block truncate'>
                           {t(
                             OPERATORS.find((o) => o.value === row.operator)
@@ -571,7 +571,7 @@ const SearchFilters = ({
                 <button
                   type='button'
                   onClick={() => removeFilterRow(row.id)}
-                  className='rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-300'
+                  className='rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-300'
                   title={t('project.removeFilter')}
                 >
                   <TrashIcon className='h-5 w-5' />
@@ -595,7 +595,7 @@ const SearchFilters = ({
               <button
                 type='button'
                 onClick={clearAllFilters}
-                className='rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-slate-700'
+                className='rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-slate-800'
               >
                 {t('project.clearAllFilters')}
               </button>

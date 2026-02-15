@@ -100,7 +100,7 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
               (project) => (
                 <li
                   key={project.id}
-                  className='cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700'
+                  className='cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800'
                   onClick={() => onSelect(project)}
                 >
                   <div className='flex items-center px-4 py-4 sm:px-6'>

@@ -464,7 +464,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                             'bg-gray-100 dark:bg-slate-900':
                               isBetween && !isStart && !isEnd,
                             'cursor-not-allowed opacity-50': disabled,
-                            'hover:bg-gray-200 dark:hover:bg-slate-700':
+                            'hover:bg-gray-200 dark:hover:bg-slate-800':
                               !disabled && !isStart && !isEnd,
                           },
                         )}
@@ -622,7 +622,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                             'bg-gray-100 dark:bg-slate-900':
                               isBetween && !isStart && !isEnd,
                             'cursor-not-allowed opacity-50': disabled,
-                            'hover:bg-gray-200 dark:hover:bg-slate-700':
+                            'hover:bg-gray-200 dark:hover:bg-slate-800':
                               !disabled && !isStart && !isEnd,
                           },
                         )}
