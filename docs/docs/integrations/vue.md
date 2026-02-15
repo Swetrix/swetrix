@@ -38,44 +38,7 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 
 ### With Vue Router
 
-Most Vue SPAs use [Vue Router](https://router.vuejs.org/) for client-side navigation. Since page transitions don't trigger full page loads, you need to call `trackViews()` on every route change.
-
-**1. Create a router plugin**
-
-Create `src/plugins/swetrix.ts`:
-
-```ts
-import type { App } from 'vue'
-import type { Router } from 'vue-router'
-import * as Swetrix from 'swetrix'
-
-export function swetrixPlugin(app: App, router: Router) {
-  Swetrix.init('YOUR_PROJECT_ID')
-  Swetrix.trackViews()
-
-  router.afterEach(() => {
-    Swetrix.trackViews()
-  })
-}
-```
-
-**2. Register it in your entry point**
-
-Update `src/main.ts`:
-
-```ts
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
-import { swetrixPlugin } from './plugins/swetrix'
-
-const app = createApp(App)
-
-app.use(router)
-swetrixPlugin(app, router)
-
-app.mount('#app')
-```
+`trackViews()` automatically detects client-side route changes (including Vue Router navigations), so you only need to call it once. The same entry point setup from above works — no router hook needed.
 
 ### Noscript fallback (optional)
 

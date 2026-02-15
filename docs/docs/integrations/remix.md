@@ -15,7 +15,7 @@ npm install swetrix
 
 ### Set up the analytics component
 
-Since Swetrix runs in the browser, you need a client-only component that initialises tracking and responds to route changes. Remix uses React Router under the hood, so you can use `useLocation()` to detect navigations.
+Since Swetrix runs in the browser, you need a client-only component that initialises tracking. `trackViews()` automatically detects client-side route changes, so you only need to call it once.
 
 **1. Create the analytics component**
 
@@ -23,20 +23,13 @@ Create `app/components/Analytics.tsx`:
 
 ```tsx
 import { useEffect } from 'react'
-import { useLocation } from '@remix-run/react'
 import * as Swetrix from 'swetrix'
 
 export default function Analytics() {
-  const location = useLocation()
-
   useEffect(() => {
     Swetrix.init('YOUR_PROJECT_ID')
     Swetrix.trackViews()
   }, [])
-
-  useEffect(() => {
-    Swetrix.trackViews()
-  }, [location])
 
   return null
 }

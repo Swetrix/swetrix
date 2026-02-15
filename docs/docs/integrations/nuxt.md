@@ -23,18 +23,12 @@ Nuxt plugins run once when your app initialises, making them the ideal place to 
 import * as Swetrix from 'swetrix'
 
 export default defineNuxtPlugin(() => {
-  const router = useRouter()
-
   Swetrix.init('YOUR_PROJECT_ID')
   Swetrix.trackViews()
-
-  router.afterEach(() => {
-    Swetrix.trackViews()
-  })
 })
 ```
 
-That's it — Nuxt auto-registers files in the `plugins/` directory. Page views are now tracked on every route change.
+That's it — Nuxt auto-registers files in the `plugins/` directory. `trackViews()` automatically detects client-side route changes, so page views are tracked on every navigation.
 
 :::caution
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -70,17 +64,12 @@ Update `plugins/swetrix.client.ts`:
 import * as Swetrix from 'swetrix'
 
 export default defineNuxtPlugin(() => {
-  const router = useRouter()
   const config = useRuntimeConfig()
 
   Swetrix.init(config.public.swetrixPid, {
     disabled: process.dev,
   })
   Swetrix.trackViews()
-
-  router.afterEach(() => {
-    Swetrix.trackViews()
-  })
 })
 ```
 
@@ -110,15 +99,9 @@ Update `plugins/swetrix.client.ts`:
 import * as Swetrix from 'swetrix'
 
 export default defineNuxtPlugin(() => {
-  const router = useRouter()
-
   Swetrix.init('YOUR_PROJECT_ID')
   Swetrix.trackViews()
   Swetrix.trackErrors()
-
-  router.afterEach(() => {
-    Swetrix.trackViews()
-  })
 })
 ```
 

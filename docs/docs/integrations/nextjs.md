@@ -17,7 +17,7 @@ npm install swetrix
 
 ### App Router (recommended)
 
-Create a client component that initialises Swetrix and tracks page views across route changes.
+Create a client component that initialises Swetrix. `trackViews()` automatically detects client-side route changes, so you only need to call it once.
 
 **1. Create the analytics component**
 
@@ -27,21 +27,13 @@ Create a new file at `src/components/Analytics.tsx` (or `src/components/Analytic
 'use client'
 
 import { useEffect } from 'react'
-import { usePathname, useSearchParams } from 'next/navigation'
 import * as Swetrix from 'swetrix'
 
 export default function Analytics() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-
   useEffect(() => {
     Swetrix.init('YOUR_PROJECT_ID')
     Swetrix.trackViews()
   }, [])
-
-  useEffect(() => {
-    Swetrix.trackViews()
-  }, [pathname, searchParams])
 
   return null
 }
@@ -49,10 +41,9 @@ export default function Analytics() {
 
 **2. Add it to your root layout**
 
-Open `src/app/layout.tsx` and render the `Analytics` component. Wrap it in `<Suspense>` because `useSearchParams()` requires it:
+Open `src/app/layout.tsx` and render the `Analytics` component:
 
 ```tsx
-import { Suspense } from 'react'
 import Analytics from '@/components/Analytics'
 
 export default function RootLayout({
@@ -64,9 +55,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
-        <Suspense fallback={null}>
-          <Analytics />
-        </Suspense>
+        <Analytics />
       </body>
     </html>
   )
@@ -79,31 +68,18 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 
 ### Pages Router
 
-If you're using the Pages Router, add Swetrix to your `_app.tsx` (or `_app.jsx`) file and listen for route changes via Next.js's router events.
+If you're using the Pages Router, add Swetrix to your `_app.tsx` (or `_app.jsx`) file. `trackViews()` automatically detects route changes, so a single call is all you need.
 
 ```tsx
 import { useEffect } from 'react'
-import { useRouter } from 'next/router'
 import type { AppProps } from 'next/app'
 import * as Swetrix from 'swetrix'
 
 export default function App({ Component, pageProps }: AppProps) {
-  const router = useRouter()
-
   useEffect(() => {
     Swetrix.init('YOUR_PROJECT_ID')
     Swetrix.trackViews()
-
-    const handleRouteChange = () => {
-      Swetrix.trackViews()
-    }
-
-    router.events.on('routeChangeComplete', handleRouteChange)
-
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChange)
-    }
-  }, [router.events])
+  }, [])
 
   return <Component {...pageProps} />
 }
@@ -197,9 +173,7 @@ useEffect(() => {
   Swetrix.init('YOUR_PROJECT_ID')
   Swetrix.trackViews()
   Swetrix.trackErrors()
-
-  // ...router event handlers
-}, [router.events])
+}, [])
 ```
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.

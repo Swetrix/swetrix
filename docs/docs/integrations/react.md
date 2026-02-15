@@ -43,55 +43,7 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 
 ### With React Router
 
-Most React SPAs use [React Router](https://reactrouter.com/) for client-side navigation. Since page transitions don't trigger full page loads, you need to call `trackViews()` on every route change.
-
-**1. Create an analytics component**
-
-Create `src/components/Analytics.tsx`:
-
-```tsx
-import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
-import * as Swetrix from 'swetrix'
-
-export default function Analytics() {
-  const location = useLocation()
-
-  useEffect(() => {
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
-  }, [])
-
-  useEffect(() => {
-    Swetrix.trackViews()
-  }, [location])
-
-  return null
-}
-```
-
-**2. Add it inside your Router**
-
-The `Analytics` component must be rendered inside the `<BrowserRouter>` (or whichever router you use) so that `useLocation()` has access to the routing context:
-
-```tsx
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Analytics from './components/Analytics'
-import Home from './pages/Home'
-import About from './pages/About'
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <Analytics />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-      </Routes>
-    </BrowserRouter>
-  )
-}
-```
+`trackViews()` automatically detects client-side route changes (including React Router navigations), so you only need to call it once. Initialise Swetrix in your entry point the same way as above — no route-change listener needed.
 
 ### Noscript fallback (optional)
 

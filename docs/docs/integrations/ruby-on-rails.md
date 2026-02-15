@@ -100,24 +100,7 @@ Remember to remove this before deploying.
 
 Rails 7 and later ship with [Turbo](https://turbo.hotwired.dev/) by default. Turbo intercepts link clicks and form submissions, performing navigations without full page reloads. This means the `DOMContentLoaded` event only fires once, on the initial page load.
 
-Swetrix's `trackViews()` listens for History API changes, so most Turbo Drive navigations are tracked automatically. If you notice any gaps, you can explicitly listen for Turbo's navigation event:
-
-```html
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
-
-  document.addEventListener('turbo:load', function () {
-    swetrix.trackViews()
-  })
-</script>
-```
-
-:::tip
-If your app does **not** use Turbo (e.g. you removed it or are on Rails 6 or earlier), you don't need the `turbo:load` listener — standard full-page navigation handles page view tracking automatically.
-:::
+Swetrix's `trackViews()` automatically detects History API changes, so Turbo Drive navigations are tracked out of the box — no extra event listeners needed.
 
 ## Store your Project ID in credentials (optional)
 

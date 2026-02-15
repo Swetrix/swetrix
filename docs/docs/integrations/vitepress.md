@@ -54,25 +54,20 @@ Then extend your VitePress theme to initialise Swetrix. Create or edit `.vitepre
 ```ts
 import DefaultTheme from 'vitepress/theme'
 import type { Theme } from 'vitepress'
-import { watch } from 'vue'
 import * as Swetrix from 'swetrix'
 
 export default {
   extends: DefaultTheme,
-  enhanceApp({ router }) {
+  enhanceApp() {
     if (typeof window === 'undefined') return
 
     Swetrix.init('YOUR_PROJECT_ID')
     Swetrix.trackViews()
-
-    watch(() => router.route.path, () => {
-      Swetrix.trackViews()
-    })
   },
 } satisfies Theme
 ```
 
-This initialises Swetrix once and re-tracks page views whenever VitePress navigates to a new route.
+`trackViews()` automatically detects client-side route changes, so you only need to call it once.
 
 ### Noscript fallback (optional)
 
@@ -93,9 +88,7 @@ export default defineConfig({
 
 ## SPA navigation
 
-VitePress uses client-side routing — clicking a link doesn't trigger a full page reload. The Swetrix tracking script detects these navigations automatically via the History API, so **no extra configuration is needed** if you're using Option A (script tag).
-
-If you're using Option B (npm package), the `watch` on `router.route.path` in the theme setup handles this for you.
+VitePress uses client-side routing — clicking a link doesn't trigger a full page reload. Swetrix's `trackViews()` detects these navigations automatically via the History API, so **no extra configuration is needed** regardless of which option you use.
 
 ## Disable tracking in development
 

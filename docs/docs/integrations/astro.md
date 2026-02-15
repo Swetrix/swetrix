@@ -139,44 +139,7 @@ Astro processes `<script>` tags — they're bundled and deduplicated automatical
 
 ## View Transitions support
 
-If you're using [Astro's View Transitions](https://docs.astro.build/en/guides/view-transitions/) for client-side navigation, page changes won't trigger full page loads. You need to tell Swetrix about these navigations so page views are tracked correctly.
-
-### CDN script approach
-
-Update your layout's inline script to listen for the `astro:after-swap` event:
-
-```html
-<script src="https://swetrix.org/swetrix.js" defer></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
-
-  document.addEventListener('astro:after-swap', function () {
-    swetrix.trackViews()
-  })
-</script>
-```
-
-### npm package approach
-
-Update your analytics script:
-
-```typescript
-import * as Swetrix from 'swetrix'
-
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
-
-document.addEventListener('astro:after-swap', () => {
-  Swetrix.trackViews()
-})
-```
-
-:::tip
-If you're **not** using View Transitions, you don't need the `astro:after-swap` listener — standard MPA navigation handles page view tracking automatically.
-:::
+If you're using [Astro's View Transitions](https://docs.astro.build/en/guides/view-transitions/) for client-side navigation, no extra configuration is needed. Swetrix's `trackViews()` automatically detects route changes via the History API, so View Transition navigations are tracked out of the box.
 
 ### Noscript fallback (optional)
 

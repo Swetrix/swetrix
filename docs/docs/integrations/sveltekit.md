@@ -14,24 +14,20 @@ After you sign up on Swetrix and create a new project, the only thing left is to
 ```html
 <script>
   import { onMount } from 'svelte'
-  import { browser, dev } from '$app/environment'
-  import { page } from '$app/stores'
+  import { dev } from '$app/environment'
   import * as Swetrix from 'swetrix'
 
   onMount(() => {
     Swetrix.init('YOUR_PROJECT_ID', { devMode: dev, disabled: dev })
     Swetrix.trackViews()
   })
-
-  // Trigger a pageview everytime the user navigates.
-  // We use the `browser` env variable to ensure that we don't try to
-  // call trackViews while the component is doing SSR.
-  $: ($page.url.pathname, browser && Swetrix.trackViews())
 </script>
 
 <!-- Your site's content gets injected here -->
 <slot />
 ```
+
+`trackViews()` automatically detects client-side route changes, so you only need to call it once.
 
 :::caution
 It's very important not to forget to replace `YOUR_PROJECT_ID` with your actual Project ID you can find in the Dashboard, otherwise tracking won't work!

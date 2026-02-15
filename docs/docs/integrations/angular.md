@@ -41,61 +41,9 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 
 ### With Angular Router
 
-Most Angular apps use the built-in [Router](https://angular.dev/guide/routing) for client-side navigation. Since route changes don't trigger full page loads, you need to notify Swetrix about each navigation so page views are tracked correctly.
+`trackViews()` automatically detects client-side route changes (including Angular Router navigations), so you only need to call it once in your root component — no router subscription needed.
 
-The recommended approach is to create a dedicated service.
-
-**1. Create an analytics service**
-
-Create `src/app/services/analytics.service.ts`:
-
-```typescript
-import { Injectable } from '@angular/core'
-import { NavigationEnd, Router } from '@angular/router'
-import { filter } from 'rxjs/operators'
-import * as Swetrix from 'swetrix'
-
-@Injectable({ providedIn: 'root' })
-export class AnalyticsService {
-  constructor(private router: Router) {}
-
-  init() {
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
-
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
-        Swetrix.trackViews()
-      })
-  }
-}
-```
-
-**2. Call it from your root component**
-
-Open `src/app/app.component.ts`:
-
-```typescript
-import { Component, OnInit } from '@angular/core'
-import { AnalyticsService } from './services/analytics.service'
-
-@Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-})
-export class AppComponent implements OnInit {
-  constructor(private analytics: AnalyticsService) {}
-
-  ngOnInit() {
-    this.analytics.init()
-  }
-}
-```
-
-:::tip
-If you're using **standalone components** (Angular 14+), the same pattern works — just make sure `AnalyticsService` is provided at the application level via `providedIn: 'root'`.
-:::
+The same `AppComponent` setup from above works for apps with routing.
 
 ### Noscript fallback (optional)
 
@@ -168,21 +116,15 @@ Build and deploy your application (or temporarily enable `devMode`) and visit a 
 
 ## Error tracking
 
-Enable automatic client-side error monitoring by adding `trackErrors()` to your analytics service. This captures unhandled JavaScript errors and reports them to Swetrix.
+Enable automatic client-side error monitoring by adding `trackErrors()` to your initialisation. This captures unhandled JavaScript errors and reports them to Swetrix.
 
-Update your `AnalyticsService`:
+Update your `AppComponent`:
 
 ```typescript
-init() {
+ngOnInit() {
   Swetrix.init('YOUR_PROJECT_ID')
   Swetrix.trackViews()
   Swetrix.trackErrors()
-
-  this.router.events
-    .pipe(filter((event) => event instanceof NavigationEnd))
-    .subscribe(() => {
-      Swetrix.trackViews()
-    })
 }
 ```
 
