@@ -230,7 +230,7 @@ const FEATURED_INTEGRATIONS: {
   },
 ]
 
-const TOTAL_INTEGRATION_GUIDES = 41
+const TOTAL_INTEGRATION_GUIDES = 50
 
 const IntegrationLogo = ({
   icon,
