@@ -590,6 +590,10 @@ const BannerManager = () => {
 
   useEffect(() => {
     const checkApiUrl = async () => {
+      if (!isSelfhosted) {
+        return
+      }
+
       const response = await fetch(`${API_URL}ping`)
       if (!response.ok) {
         setShowSelfhostedCantReachAPIBanner(true)
