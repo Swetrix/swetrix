@@ -167,7 +167,7 @@ const LiveDemoPreview = () => {
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:focus-visible:ring-slate-300 dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900 dark:focus-visible:ring-slate-300'
             aria-label={
               t('gaAlternative.hero.viewDemo') + ' (opens in a new tab)'
             }
@@ -195,7 +195,7 @@ const LiveDemoPreview = () => {
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:focus-visible:ring-slate-300 dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900 dark:focus-visible:ring-slate-300'
             aria-label={
               t('gaAlternative.hero.viewDemo') + ' (opens in a new tab)'
             }

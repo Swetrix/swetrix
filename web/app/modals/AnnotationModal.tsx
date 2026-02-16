@@ -137,7 +137,7 @@ const AnnotationModal = ({
               }}
               options={{
                 altInputClass: cn(
-                  'w-full rounded-md border-0 bg-white px-3 py-2 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-slate-900 dark:focus:ring-slate-300 dark:bg-slate-900 dark:text-gray-100 dark:ring-slate-800/50',
+                  'w-full rounded-md border-0 bg-white px-3 py-2 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-slate-900 dark:bg-slate-900 dark:text-gray-100 dark:ring-slate-800/50 dark:focus:ring-slate-300',
                   {
                     'cursor-not-allowed opacity-50': !allowedToManage,
                   },

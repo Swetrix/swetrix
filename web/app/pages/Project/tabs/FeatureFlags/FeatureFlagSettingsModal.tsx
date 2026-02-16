@@ -456,7 +456,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                               >
                                 {({ open }) => (
                                   <div className='relative w-36'>
-                                    <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:ring-offset-1 dark:focus:ring-slate-300 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'>
+                                    <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:focus:ring-slate-300'>
                                       <span className='flex items-center gap-2 truncate'>
                                         {rule.column
                                           ? filterCategoryIcons[rule.column]
@@ -542,7 +542,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                               >
                                 {({ open }) => (
                                   <div className='relative w-24'>
-                                    <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:ring-offset-1 dark:focus:ring-slate-300 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'>
+                                    <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:focus:ring-slate-300'>
                                       <span className='block truncate'>
                                         {rule.isExclusive
                                           ? t('featureFlags.isNot')
