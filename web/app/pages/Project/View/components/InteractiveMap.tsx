@@ -568,7 +568,7 @@ const InteractiveMapCore = ({
       {tooltipContent ? (
         <div
           ref={tooltipRef}
-          className='pointer-events-none fixed z-50 rounded-md border border-gray-200 bg-white/95 p-2 text-sm text-gray-900 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-950/95 dark:text-white'
+          className='pointer-events-none fixed z-50 rounded-md border border-gray-200 bg-white/95 p-2 text-sm text-gray-900 shadow-md backdrop-blur-sm dark:border-slate-700 dark:bg-slate-950/95 dark:text-white'
           style={{ left: 0, top: 0, transform: 'translate(-50%, -100%)' }}
         >
           <div className='flex items-center gap-1.5 font-medium'>

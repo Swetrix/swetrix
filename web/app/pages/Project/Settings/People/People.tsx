@@ -128,7 +128,7 @@ const TableUserRow = ({
                     static
                     anchor={{ to: 'bottom end', offset: 8 }}
                     modal={false}
-                    className='z-50 w-72 rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden dark:bg-slate-900 dark:ring-white/10'
+                    className='z-50 w-72 rounded-lg bg-white p-1 shadow-md ring-1 ring-black/5 focus:outline-hidden dark:bg-slate-900 dark:ring-white/10'
                   >
                     {_map(roles, (itRole) => (
                       <MenuItem key={itRole}>

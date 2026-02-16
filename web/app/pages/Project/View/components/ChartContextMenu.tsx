@@ -72,7 +72,7 @@ export const ChartContextMenu = ({
     return (
       <div
         ref={menuRef}
-        className='fixed z-[9999] min-w-[160px] rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900'
+        className='fixed z-[9999] min-w-[160px] rounded-md border border-gray-200 bg-white py-1 shadow-md dark:border-slate-700 dark:bg-slate-900'
         style={{
           left: x,
           top: y,
@@ -110,7 +110,7 @@ export const ChartContextMenu = ({
   return (
     <div
       ref={menuRef}
-      className='fixed z-[9999] min-w-[160px] rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900'
+      className='fixed z-[9999] min-w-[160px] rounded-md border border-gray-200 bg-white py-1 shadow-md dark:border-slate-700 dark:bg-slate-900'
       style={{
         left: x,
         top: y,

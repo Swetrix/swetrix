@@ -178,7 +178,7 @@ export const MetricCardSelect = ({
           </span>
           <div
             className={cx(
-              'absolute top-4 z-10 mt-2 min-w-[250px] origin-top transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white whitespace-normal shadow-lg transition-all duration-200 ease-out dark:border-slate-700/50 dark:bg-slate-950',
+              'absolute top-4 z-10 mt-2 min-w-[250px] origin-top transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white whitespace-normal shadow-md transition-all duration-200 ease-out dark:border-slate-700/50 dark:bg-slate-950',
               show
                 ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
                 : 'pointer-events-none -translate-y-1 scale-95 opacity-0',

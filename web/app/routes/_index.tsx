@@ -343,7 +343,7 @@ const LiveDemoPreview = () => {
   }
 
   return (
-    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-gray-50 shadow-2xl ring-1 ring-black/5 transition-shadow ease-out sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-950 dark:ring-white/10'>
+    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-gray-50 shadow-lg ring-1 ring-black/5 transition-shadow ease-out sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-950 dark:ring-white/10'>
       <div className='pointer-events-none relative h-[580px] lg:h-[640px] xl:h-[700px]'>
         <iframe
           src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
@@ -1630,7 +1630,7 @@ const DashboardMockup = () => (
     aria-hidden
   >
     {/* Chart card */}
-    <div className='absolute -top-4 -right-4 w-[290px] rotate-2 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
+    <div className='absolute -top-4 -right-4 w-[290px] rotate-2 rounded-2xl bg-white p-5 shadow-md ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
       <div className='mb-1 flex items-center justify-between'>
         <Text
           size='xxs'
@@ -1701,7 +1701,7 @@ const DashboardMockup = () => (
     </div>
 
     {/* Events card */}
-    <div className='absolute top-6 left-0 w-[270px] -rotate-3 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
+    <div className='absolute top-6 left-0 w-[270px] -rotate-3 rounded-2xl bg-white p-5 shadow-md ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
       <Text as='h3' size='lg' weight='bold'>
         Events
       </Text>
@@ -1749,7 +1749,7 @@ const DashboardMockup = () => (
     </div>
 
     {/* Metrics card */}
-    <div className='absolute bottom-0 left-6 w-[220px] rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
+    <div className='absolute bottom-0 left-6 w-[220px] rotate-1 rounded-2xl bg-white p-4 shadow-md ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
       <div className='space-y-2.5'>
         {[
           { label: 'Unique visitors', value: '125k', up: true },
@@ -1780,7 +1780,7 @@ const DashboardMockup = () => (
     </div>
 
     {/* Top pages card */}
-    <div className='absolute right-0 bottom-12 w-[220px] -rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
+    <div className='absolute right-0 bottom-12 w-[220px] -rotate-1 rounded-2xl bg-white p-4 shadow-md ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800/20'>
       <Text as='h3' size='lg' weight='bold' className='mb-2'>
         Pages
       </Text>

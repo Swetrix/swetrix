@@ -81,7 +81,7 @@ const Performance = () => {
                     </a>
                   </div>
                 </div>
-                <div className='group relative -mr-6 hidden w-[140%] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-shadow ease-out hover:ring-indigo-300/50 sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:block lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10 dark:hover:ring-indigo-400/40'>
+                <div className='group relative -mr-6 hidden w-[140%] overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/5 transition-shadow ease-out hover:ring-gray-300/80 sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:block lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10 dark:hover:ring-white/20'>
                   <div className='relative h-[580px] lg:h-[640px] xl:h-[700px]'>
                     <img
                       src={

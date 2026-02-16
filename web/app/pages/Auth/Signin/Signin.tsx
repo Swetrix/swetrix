@@ -639,7 +639,7 @@ const Signin = () => {
           </div>
 
           <div className='relative'>
-            <div className='overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/10'>
+            <div className='overflow-hidden rounded-xl shadow-lg ring-1 ring-white/10'>
               <img
                 src={
                   theme === 'dark'
