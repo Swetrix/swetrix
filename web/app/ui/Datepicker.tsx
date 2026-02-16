@@ -356,7 +356,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
             <div className='fixed inset-0 z-50 flex items-start justify-center bg-black/20 p-4'>
               <div
                 ref={popoverRef}
-                className='mt-10 w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-xl dark:border-slate-800 dark:bg-slate-950'
+                className='mt-10 w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-md dark:border-slate-800 dark:bg-slate-950'
               >
                 <div className='flex items-center justify-between'>
                   <button
@@ -459,7 +459,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                               isCurrentMonth && !disabled,
                             'text-gray-400 dark:text-gray-500':
                               !isCurrentMonth || disabled,
-                            'bg-indigo-600 text-white dark:bg-indigo-500':
+                            'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900':
                               isStart || isEnd,
                             'bg-gray-100 dark:bg-slate-900':
                               isBetween && !isStart && !isEnd,
@@ -496,7 +496,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     </button>
                     <button
                       type='button'
-                      className='rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white hover:bg-indigo-500'
+                      className='rounded-md bg-slate-900 px-2 py-1 text-xs font-semibold text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
                       disabled={!start}
                       onClick={() => {
                         if (!start) return
@@ -514,7 +514,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
             <div className='absolute top-7 right-0 z-50'>
               <div
                 ref={popoverRef}
-                className='w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-xl dark:border-slate-800 dark:bg-slate-950'
+                className='w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-md dark:border-slate-800 dark:bg-slate-950'
               >
                 <div className='flex items-center justify-between'>
                   <button
@@ -617,7 +617,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                               isCurrentMonth && !disabled,
                             'text-gray-400 dark:text-gray-500':
                               !isCurrentMonth || disabled,
-                            'bg-indigo-600 text-white dark:bg-indigo-500':
+                            'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900':
                               isStart || isEnd,
                             'bg-gray-100 dark:bg-slate-900':
                               isBetween && !isStart && !isEnd,
@@ -654,7 +654,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     </button>
                     <button
                       type='button'
-                      className='rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white hover:bg-indigo-500'
+                      className='rounded-md bg-slate-900 px-2 py-1 text-xs font-semibold text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
                       disabled={!start}
                       onClick={() => {
                         if (!start) return

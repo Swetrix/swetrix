@@ -41,7 +41,7 @@ const SwetrixLogo = ({
         <span
           className={cx(
             'text-2xl leading-5 font-bold',
-            theme === 'dark' ? 'text-white' : 'text-indigo-950',
+            theme === 'dark' ? 'text-white' : 'text-slate-900',
           )}
         >
           Swetrix
@@ -50,7 +50,7 @@ const SwetrixLogo = ({
           <span
             className={cx(
               'text-xs font-semibold',
-              theme === 'dark' ? 'text-white' : 'text-indigo-600',
+              theme === 'dark' ? 'text-white' : 'text-slate-600',
             )}
           >
             {t('common.communityEdition')}

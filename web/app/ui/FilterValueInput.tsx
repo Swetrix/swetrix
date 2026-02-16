@@ -347,7 +347,7 @@ const FilterValueInput = ({
           ref={inputRef}
           type='text'
           className={cx(
-            'w-full rounded-md border border-gray-300 bg-white py-2 pr-8 text-sm transition-colors ring-inset placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:placeholder:text-gray-500',
+            'w-full rounded-md border-0 bg-white py-2 pr-8 text-sm ring-1 ring-gray-300 transition-colors ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:placeholder:text-gray-500 dark:focus:ring-slate-300',
             {
               'cursor-not-allowed opacity-60': disabled,
               'pl-8': showIconInInput,
@@ -371,7 +371,7 @@ const FilterValueInput = ({
       </div>
 
       {isOpen && !disabled ? (
-        <div className='absolute z-50 mt-1 w-full min-w-[200px] rounded-md bg-white text-sm shadow-lg ring-1 ring-black/10 dark:bg-slate-900'>
+        <div className='absolute z-50 mt-1 w-full min-w-[200px] rounded-md bg-white text-sm ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
           {isLoading ? (
             <div className='flex items-center justify-center gap-2 px-4 py-3 text-gray-500 dark:text-gray-400'>
               <Spin className='size-4' />
@@ -394,7 +394,7 @@ const FilterValueInput = ({
                     }
                     setIsOpen(false)
                   }}
-                  className='flex w-full items-center justify-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700'
+                  className='flex w-full items-center justify-center gap-1.5 rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
                 >
                   <PlusIcon className='h-4 w-4' />
                   {t('project.filterUseValue', { value: inputValue.trim() })}
@@ -428,7 +428,7 @@ const FilterValueInput = ({
                       className={cx(
                         'absolute right-0 left-0 mx-1 flex cursor-pointer items-center gap-2 rounded-md py-2 pr-4 pl-2 text-left transition-colors select-none hover:bg-gray-100 dark:hover:bg-slate-800',
                         {
-                          'bg-indigo-50 dark:bg-indigo-900/30': selected,
+                          'bg-gray-100 dark:bg-slate-800': selected,
                           'text-gray-700 dark:text-gray-50': !selected,
                         },
                       )}
@@ -447,7 +447,7 @@ const FilterValueInput = ({
                         {labelValue}
                       </span>
                       {selected ? (
-                        <CheckIcon className='ml-auto h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400' />
+                        <CheckIcon className='ml-auto h-4 w-4 shrink-0 text-gray-600 dark:text-gray-300' />
                       ) : null}
                     </button>
                   )

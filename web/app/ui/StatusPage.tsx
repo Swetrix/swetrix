@@ -117,10 +117,10 @@ const StatusPage = ({
                   key={action.to}
                   to={action.to}
                   className={cn(
-                    'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none',
+                    'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-hidden',
                     action.primary
-                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-500 dark:bg-slate-900 dark:hover:bg-slate-800'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800',
+                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-slate-900 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900',
                   )}
                 >
                   {action.label}
@@ -131,10 +131,10 @@ const StatusPage = ({
                   type='button'
                   onClick={action.onClick}
                   className={cn(
-                    'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none',
+                    'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-hidden',
                     action.primary
-                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-500 dark:bg-slate-900 dark:hover:bg-slate-800'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800',
+                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-slate-900 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900',
                   )}
                 >
                   {action.label}

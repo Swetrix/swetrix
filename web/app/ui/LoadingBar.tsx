@@ -14,7 +14,7 @@ const LoadingBar: React.FC<LoadingBarProps> = ({ className }) => {
       )}
     >
       <div
-        className='absolute h-full rounded-full bg-gradient-to-r from-indigo-500 to-blue-600 opacity-90 shadow-sm'
+        className='absolute h-full rounded-full bg-gradient-to-r from-slate-700 to-slate-900 opacity-90 dark:from-slate-300 dark:to-white'
         style={{
           animation:
             'indeterminate1 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite',
@@ -22,7 +22,7 @@ const LoadingBar: React.FC<LoadingBarProps> = ({ className }) => {
       />
 
       <div
-        className='absolute h-full rounded-full bg-gradient-to-r from-indigo-500 to-blue-600 opacity-75 shadow-sm'
+        className='absolute h-full rounded-full bg-gradient-to-r from-slate-700 to-slate-900 opacity-75 dark:from-slate-300 dark:to-white'
         style={{
           animation:
             'indeterminate2 2.1s cubic-bezier(0.165, 0.84, 0.44, 1) infinite',
