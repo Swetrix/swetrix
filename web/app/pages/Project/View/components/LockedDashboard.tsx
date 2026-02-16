@@ -70,13 +70,13 @@ const LockedDashboard = () => {
         <div className='mt-6 flex justify-center gap-3'>
           <Link
             to={routes.billing}
-            className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
+            className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900 focus:outline-hidden'
           >
             {t('project.locked.manageSubscription')}
           </Link>
           <Link
             to={routes.contact}
-            className='inline-flex items-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
+            className='inline-flex items-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
           >
             {t('notFoundPage.support')}
           </Link>

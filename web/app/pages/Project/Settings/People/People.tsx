@@ -479,7 +479,7 @@ const People = ({ project }: PeopleProps) => {
                 >
                   <input
                     name='role'
-                    className='h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500'
+                    className='h-4 w-4 border-gray-300 text-slate-900 focus:ring-slate-900 dark:text-slate-100 dark:focus:ring-slate-300'
                     id='role_admin'
                     type='radio'
                     value='admin'
@@ -522,7 +522,7 @@ const People = ({ project }: PeopleProps) => {
                 >
                   <input
                     name='role'
-                    className='h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500'
+                    className='h-4 w-4 border-gray-300 text-slate-900 focus:ring-slate-900 dark:text-slate-100 dark:focus:ring-slate-300'
                     id='role_viewer'
                     type='radio'
                     value='viewer'

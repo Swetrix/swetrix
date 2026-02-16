@@ -167,7 +167,7 @@ const ExperimentRow = ({
         <div className='flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-x-6 sm:px-6'>
           <Link
             to={{ search: resultsSearch }}
-            className='flex min-w-0 flex-auto gap-x-4 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900'
+            className='flex min-w-0 flex-auto gap-x-4 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900'
           >
             <div className='min-w-0 flex-auto'>
               <div className='flex flex-wrap items-center gap-2'>

@@ -30,7 +30,7 @@ export const BackButton = ({
   const backLabel = label || t('common.goBack')
 
   const buttonClasses = cn(
-    'flex items-center gap-2 rounded-md border border-transparent p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200',
+    'flex items-center gap-2 rounded-md border border-transparent p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
     className,
   )
 

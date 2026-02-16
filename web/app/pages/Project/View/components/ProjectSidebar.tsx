@@ -726,7 +726,7 @@ export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({
       <button
         type='button'
         onClick={onClick}
-        className='flex items-center justify-center rounded-md border border-gray-300 p-2 text-gray-700 transition-all ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:text-gray-200 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
+        className='flex items-center justify-center rounded-md border border-gray-300 p-2 text-gray-700 transition-all ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:border-slate-700/80 dark:text-gray-200 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
         aria-label={t('common.openMenu')}
       >
         <ListIcon className='h-5 w-5' />

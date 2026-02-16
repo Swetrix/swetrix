@@ -449,7 +449,7 @@ const PerformanceViewInner = ({
               onSelect={({ id: pairID }) => {
                 setActiveChartMetrics(pairID)
               }}
-              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-950 focus:dark:ring-gray-200'
+              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-950 dark:focus:ring-slate-300'
               chevron='mini'
               headless
             />
@@ -472,7 +472,7 @@ const PerformanceViewInner = ({
               onSelect={({ id: pairID }) => {
                 setActiveMeasure(pairID)
               }}
-              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-950 focus:dark:ring-gray-200'
+              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-950 dark:focus:ring-slate-300'
               chevron='mini'
               headless
             />

@@ -174,7 +174,7 @@ const DashboardHeader = ({
             onSelect={(item) => {
               onProfileTypeFilterChange(item.value as ProfileTypeFilter)
             }}
-            buttonClassName='rounded-md border border-gray-50/0 p-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
+            buttonClassName='rounded-md border border-gray-50/0 p-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
             chevron='mini'
             headless
           />
@@ -197,7 +197,7 @@ const DashboardHeader = ({
                 setShowFiltersSearch(true)
               }}
               className={cx(
-                'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200',
+                'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
                 {
                   'cursor-not-allowed opacity-50': authLoading || dataLoading,
                 },

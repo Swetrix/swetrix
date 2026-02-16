@@ -450,7 +450,7 @@ const CommunityLinks = () => {
     <span className='flex items-center gap-2'>
       <a
         href={DISCORD_URL}
-        className='inline-flex items-center rounded-md p-1 text-indigo-600 transition-colors hover:text-indigo-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-indigo-400 dark:hover:text-indigo-100'
+        className='inline-flex items-center rounded-md p-1 text-indigo-600 transition-colors hover:text-indigo-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900/60 dark:focus-visible:ring-slate-300/60 dark:text-indigo-400 dark:hover:text-indigo-100'
         target='_blank'
         rel='noreferrer noopener'
       >
@@ -463,7 +463,7 @@ const CommunityLinks = () => {
       </a>
       <a
         href={GITHUB_URL}
-        className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-gray-200 dark:hover:text-white'
+        className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900/60 dark:focus-visible:ring-slate-300/60 dark:text-gray-200 dark:hover:text-white'
         target='_blank'
         rel='noreferrer noopener'
       >

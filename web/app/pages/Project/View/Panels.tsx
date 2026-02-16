@@ -756,7 +756,7 @@ const CustomEvents = ({
               >
                 <td className='flex items-center py-1 text-left'>
                   <button
-                    className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
+                    className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
                     type='button'
                     onClick={toggleDetails(ev)}
                   >

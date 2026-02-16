@@ -134,7 +134,7 @@ const ReportFrequencyOption = ({
     >
       <input
         name='reportFrequency'
-        className='h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500'
+        className='h-4 w-4 border-gray-300 text-indigo-600 focus:ring-slate-900 dark:focus:ring-slate-300'
         type='radio'
         value={item.value}
         onChange={handleInput}

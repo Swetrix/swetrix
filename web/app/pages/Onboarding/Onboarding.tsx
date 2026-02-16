@@ -696,7 +696,7 @@ const Onboarding = () => {
                                 type='button'
                                 onClick={() => handleLanguageSelect(lng)}
                                 className={cn(
-                                  'flex flex-col items-center justify-center rounded-xl px-4 py-5 ring-1 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800',
+                                  'flex flex-col items-center justify-center rounded-xl px-4 py-5 ring-1 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900',
                                   isSelected
                                     ? 'bg-indigo-50 ring-2 ring-indigo-500 dark:bg-slate-900 dark:ring-slate-200'
                                     : 'ring-gray-200 hover:bg-gray-50 hover:ring-gray-300 dark:ring-slate-700 dark:hover:bg-slate-700/50 dark:hover:ring-slate-600',

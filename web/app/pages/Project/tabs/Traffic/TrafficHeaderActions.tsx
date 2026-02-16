@@ -197,7 +197,7 @@ const TrafficHeaderActions = ({
           }
         }}
         chevron='mini'
-        buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200'
+        buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-slate-900 dark:focus:ring-slate-300'
         headless
       />
 
@@ -216,7 +216,7 @@ const TrafficHeaderActions = ({
           item.onClick()
         }}
         chevron='mini'
-        buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'
+        buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-slate-900 dark:focus:ring-slate-300'
         headless
       />
     </>

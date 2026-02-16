@@ -179,7 +179,7 @@ const ModalMessage = ({
             onChange={(date) => setDateRange(date)}
             options={{
               altInputClass:
-                ' focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-slate-900 rounded-md',
+                ' focus:ring-slate-900 dark:focus:ring-slate-300 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-slate-900 rounded-md',
             }}
             value={dateRange}
           />
