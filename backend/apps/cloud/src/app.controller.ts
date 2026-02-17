@@ -4,7 +4,7 @@ import { clickhouse } from './common/integrations/clickhouse'
 const DEPLOYMENT_INFORMATION = {
   name: 'Swetrix API',
   repository: 'https://github.com/swetrix/swetrix',
-  documentation: 'https://docs.swetrix.com',
+  documentation: 'https://swetrix.com/docs',
   homepage: 'https://swetrix.com',
 }
 

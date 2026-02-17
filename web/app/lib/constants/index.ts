@@ -339,9 +339,9 @@ export const BOOK_A_CALL_URL = 'https://cal.com/swetrix'
 export const PERFORMANCE_LIVE_DEMO_URL =
   '/projects/STEzHcB1rALV?tab=performance'
 export const ERROR_TRACKING_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=errors'
-export const DOCS_URL = 'https://docs.swetrix.com'
-export const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
-export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
+export const DOCS_URL = 'https://swetrix.com/docs'
+export const INTEGRATIONS_URL = 'https://swetrix.com/docs/integrations'
+export const ERROR_TRACKING_DOCS_URL = 'https://swetrix.com/docs/error-tracking'
 
 export const isBrowser =
   typeof window !== 'undefined' && typeof document !== 'undefined'

@@ -5,7 +5,7 @@ import { Link } from 'react-router'
 import { ERROR_TRACKING_DOCS_URL } from '~/lib/constants'
 import routes from '~/utils/routes'
 
-const TROUBLESHOOTING_URL = 'https://docs.swetrix.com/troubleshooting'
+const TROUBLESHOOTING_URL = 'https://swetrix.com/docs/troubleshooting'
 
 const WaitingForAnError = () => {
   const { t } = useTranslation('common')

@@ -5,9 +5,9 @@ import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
-const TROUBLESHOOTING_URL = 'https://docs.swetrix.com/troubleshooting'
+const TROUBLESHOOTING_URL = 'https://swetrix.com/docs/troubleshooting'
 const CAPTCHA_INTEGRATION_GUIDE_URL =
-  'https://docs.swetrix.com/captcha/client-side-usage'
+  'https://swetrix.com/docs/captcha/client-side-usage'
 
 const WaitingForCaptchaEvent = () => {
   const { t } = useTranslation('common')

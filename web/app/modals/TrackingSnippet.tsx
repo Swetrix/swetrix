@@ -53,7 +53,7 @@ export const getSnippet = (pid: string) => {
 </noscript>`
 }
 
-const SCRIPT_DOCS_URL = 'https://docs.swetrix.com/install-script'
+const SCRIPT_DOCS_URL = 'https://swetrix.com/docs/install-script'
 
 const TrackingSnippet = ({ onClose, isOpened }: TrackingSnippetProps) => {
   const { id } = useCurrentProject()

@@ -1126,7 +1126,7 @@ export class TaskManagerService {
     }
 
     const dashboardUrl = `${this.configService.get('CLIENT_URL')}/dashboard`
-    const setupGuideUrl = 'https://docs.swetrix.com/install-script'
+    const setupGuideUrl = 'https://swetrix.com/docs/install-script'
     const sentOn = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
 
     await mapLimit(users, REPORTS_USERS_CONCURRENCY, async (user) => {

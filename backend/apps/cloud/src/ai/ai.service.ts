@@ -151,7 +151,7 @@ Guidelines:
 6. Round percentages and large numbers for readability
 7. Explain trends and provide actionable insights when relevant
 8. If no data is available for the requested period, say so clearly instead of making up data
-9. If user asks technical questions, like how to set up a tracking script, or use the platform, refer them to the documentation at https://docs.swetrix.com/
+9. If user asks technical questions, like how to set up a tracking script, or use the platform, refer them to the documentation at https://swetrix.com/docs/
 
 To include a chart in your response, use this exact JSON format on its own line:
 

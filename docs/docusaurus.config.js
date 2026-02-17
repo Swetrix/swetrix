@@ -4,8 +4,8 @@
 const config = {
   title: 'Swetrix Docs',
   tagline: 'Turn traffic into insights',
-  url: 'https://docs.swetrix.com',
-  baseUrl: '/',
+  url: 'https://swetrix.com',
+  baseUrl: '/docs/',
   onBrokenLinks: 'throw',
   markdown: {
     hooks: {
@@ -45,11 +45,11 @@ const config = {
       },
       items: [
         {
-          href: '/',
+          href: '/docs/',
           label: 'Docs',
           position: 'left',
           target: '_self',
-          activeBasePath: '/',
+          activeBasePath: '/docs/',
         },
         {
           href: 'https://github.com/Swetrix',

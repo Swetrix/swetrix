@@ -13,16 +13,35 @@ import { createSitemapGenerator } from 'remix-sitemap'
 
 import i18n, { detectLanguage } from './i18n'
 import i18next from './i18next.server'
-import { MAIN_URL } from './lib/constants'
+import { isSelfhosted, MAIN_URL } from './lib/constants'
 
 // Reject/cancel all pending promises after 5 seconds
 const streamTimeout = 5000
 
-const { isSitemapUrl, sitemap } = createSitemapGenerator({
+const { sitemap } = createSitemapGenerator({
   siteUrl: MAIN_URL,
   autoLastmod: false,
   priority: 0.8,
 })
+
+function getSitemapIndexResponse() {
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${MAIN_URL}/sitemap-pages.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>${MAIN_URL}/docs/sitemap.xml</loc>
+  </sitemap>
+</sitemapindex>`
+
+  return new Response(xml, {
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600',
+    },
+  })
+}
 
 export default async function handleRequest(
   request: Request,
@@ -30,10 +49,19 @@ export default async function handleRequest(
   responseHeaders: Headers,
   reactRouterContext: EntryContext,
 ) {
-  if (isSitemapUrl(request)) {
+  const url = new URL(request.url)
+
+  if (!isSelfhosted && url.pathname === '/sitemap.xml') {
+    return getSitemapIndexResponse()
+  }
+
+  if (url.pathname === '/sitemap-pages.xml') {
+    const sitemapRequest = new Request(
+      request.url.replace('/sitemap-pages.xml', '/sitemap.xml'),
+      { headers: request.headers },
+    )
     // @ts-expect-error
-    const stm = await sitemap(request, reactRouterContext)
-    return stm
+    return await sitemap(sitemapRequest, reactRouterContext)
   }
 
   const instance = createInstance()

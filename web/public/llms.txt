@@ -16,10 +16,10 @@ Swetrix is built with Nest.js backend (MySQL + ClickHouse databases) and Remix f
 
 ## Documentation
 
-- [Installation Guide](https://docs.swetrix.com/install-script): Complete guide to installing Swetrix tracking script on your website
-- [Self-hosting Documentation](https://docs.swetrix.com/selfhosting/how-to): How to self-host Swetrix on your own servers
-- [Statistics API Documentation](https://docs.swetrix.com/statistics-api): Public API for data aggregation and programmatic access
-- [Error Tracking Documentation](https://docs.swetrix.com/error-tracking): Guide for setting up error monitoring
+- [Installation Guide](https://swetrix.com/docs/install-script): Complete guide to installing Swetrix tracking script on your website
+- [Self-hosting Documentation](https://swetrix.com/docs/selfhosting/how-to): How to self-host Swetrix on your own servers
+- [Statistics API Documentation](https://swetrix.com/docs/statistics-api): Public API for data aggregation and programmatic access
+- [Error Tracking Documentation](https://swetrix.com/docs/error-tracking): Guide for setting up error monitoring
 
 ## Development
 
@@ -30,10 +30,10 @@ Swetrix is built with Nest.js backend (MySQL + ClickHouse databases) and Remix f
 
 ## Integration Guides
 
-- [React Integration](https://docs.swetrix.com/integrations/react): Setting up Swetrix with React applications
-- [Vue.js Integration](https://docs.swetrix.com/integrations/vue): Vue.js setup guide
-- [WordPress Integration](https://docs.swetrix.com/integrations/wordpress): WordPress plugin and manual setup
-- [Google Tag Manager](https://docs.swetrix.com/integrations/gtm): Using Swetrix with GTM
+- [React Integration](https://swetrix.com/docs/integrations/react): Setting up Swetrix with React applications
+- [Vue.js Integration](https://swetrix.com/docs/integrations/vue): Vue.js setup guide
+- [WordPress Integration](https://swetrix.com/docs/integrations/wordpress): WordPress plugin and manual setup
+- [Google Tag Manager](https://swetrix.com/docs/integrations/gtm): Using Swetrix with GTM
 
 ## Optional
 
