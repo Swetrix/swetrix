@@ -1,3 +1,26 @@
 @import 'tailwindcss';
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
+
+@layer components {
+  .underline-animate {
+    position: relative;
+  }
+  .underline-animate::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1.5px;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 250ms ease;
+    background: currentColor;
+    opacity: 1;
+  }
+  .underline-animate:hover::after,
+  .underline-animate:focus-visible::after {
+    transform: scaleX(1);
+  }
+}

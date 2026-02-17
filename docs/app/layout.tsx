@@ -3,6 +3,7 @@ import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import type { ReactNode } from 'react';
 import { source } from '@/lib/source';
 import Script from 'next/script';
+import Footer from './components/Footer';
 import './global.css';
 
 export const metadata = {
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           >
             {children}
           </DocsLayout>
+          <Footer />
         </RootProvider>
       </body>
     </html>
