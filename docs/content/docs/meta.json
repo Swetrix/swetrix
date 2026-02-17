@@ -1,0 +1,31 @@
+{
+  "title": "Docs",
+  "pages": [
+    "---Get Started---",
+    "introduction",
+    "add-script",
+    "script-reference",
+    "error-tracking",
+    "integration-guides",
+    "integrations",
+    "troubleshooting",
+    "---Analytics Dashboard---",
+    "analytics-dashboard",
+    "---Site settings---",
+    "sitesettings",
+    "---Account settings---",
+    "accountsettings",
+    "---Billing & Subscription---",
+    "billing",
+    "---Adblockers---",
+    "adblockers",
+    "---API---",
+    "api",
+    "---CAPTCHA---",
+    "captcha",
+    "---Self-hosting---",
+    "selfhosting",
+    "---Contribute---",
+    "contribute"
+  ]
+}

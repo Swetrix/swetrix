@@ -1,0 +1,9 @@
+{
+  "title": "CAPTCHA",
+  "pages": [
+    "introduction",
+    "client-side-usage",
+    "server-side-validation",
+    "testing"
+  ]
+}

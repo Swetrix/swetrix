@@ -1,0 +1,169 @@
+---
+title: ThriveCart
+slug: /thrivecart-integration
+---
+
+Integrate Swetrix with your ThriveCart checkout pages to track cart views, purchases, and other conversion events.
+
+## Important: ThriveCart strips script attributes
+
+ThriveCart processes custom scripts and may strip attributes like `defer` from `<script>` tags. To ensure Swetrix loads reliably, use the dynamic script approach shown below instead of a plain `<script src="...">` tag.
+
+## Installation
+
+### 1. Open your checkout settings
+
+1. In your ThriveCart dashboard, navigate to the checkout page you want to track.
+2. Go to **Settings > Tracking** (or the custom scripts section, depending on your ThriveCart version).
+
+### 2. Add the tracking script
+
+Paste the following into the **header scripts** section:
+
+```html
+<script>
+  (function () {
+    var s = document.createElement('script')
+    s.src = 'https://swetrix.org/swetrix.js'
+    s.defer = true
+    s.onload = function () {
+      swetrix.init('YOUR_PROJECT_ID')
+      swetrix.trackViews()
+    }
+    document.head.appendChild(s)
+  })()
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+```
+
+### 3. Save and test
+
+Save your changes and visit your checkout page. Within a minute you should see pageviews appearing in your Swetrix dashboard.
+
+
+<Callout type="warn">
+Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
+
+</Callout>
+
+## Tracking purchase events
+
+To track completed purchases, add a separate script to your ThriveCart **success page** (the page customers see after payment). Because the success page is a different page from the checkout, the Swetrix script needs to be loaded again there.
+
+The script below includes session storage protection to prevent duplicate events if the customer refreshes the page.
+
+### 1. Open your success page settings
+
+In ThriveCart, navigate to the success page configuration for your product. Look for the custom scripts or tracking code section.
+
+### 2. Add the purchase tracking script
+
+Paste the following into the success page header scripts:
+
+```html
+<script>
+  (function () {
+    var EVENT_NAME = 'purchase'
+    var EVENT_META = {
+      product: 'Your Product Name',
+      value: '97.00',
+      currency: 'USD'
+    }
+    var PROJECT_ID = 'YOUR_PROJECT_ID'
+
+    // Prevent duplicate events on page refresh
+    var storageKey = 'swx_' + EVENT_NAME + '_sent'
+    try {
+      if (sessionStorage.getItem(storageKey) === '1') return
+    } catch (e) {}
+
+    function sendEvent() {
+      swetrix.track({ ev: EVENT_NAME, meta: EVENT_META })
+      try {
+        sessionStorage.setItem(storageKey, '1')
+      } catch (e) {}
+    }
+
+    function waitForSwetrix(timeout) {
+      var start = Date.now()
+      ;(function poll() {
+        if (typeof swetrix !== 'undefined' && typeof swetrix.track === 'function') {
+          return sendEvent()
+        }
+        if (Date.now() - start < timeout) {
+          return setTimeout(poll, 150)
+        }
+      })()
+    }
+
+    // Load the Swetrix script
+    var s = document.createElement('script')
+    s.src = 'https://swetrix.org/swetrix.js'
+    s.defer = true
+    s.onload = function () {
+      swetrix.init(PROJECT_ID)
+      waitForSwetrix(5000)
+    }
+    document.head.appendChild(s)
+  })()
+</script>
+```
+
+### 3. Configure the event
+
+Update the variables at the top of the script:
+
+| Variable | Description |
+| --- | --- |
+| `EVENT_NAME` | The custom event name (e.g. `Purchase`, `Checkout Complete`). Can contain any characters with a maximum length of 256 characters. |
+| `EVENT_META` | An object with event metadata. All values must be strings. |
+| `PROJECT_ID` | Your Swetrix Project ID. |
+
+The `EVENT_META` object can contain any key-value pairs relevant to your product. For example:
+
+```javascript
+var EVENT_META = {
+  product: 'Online Course — SEO Masterclass',
+  value: '197.00',
+  currency: 'USD',
+  plan: 'lifetime'
+}
+```
+
+Refer to the [tracking script reference](/swetrix-js-reference) for details on `swetrix.track()` and the metadata constraints (max 20 keys, values must be primitives, total value length under 1000 characters).
+
+## Tracking multiple products
+
+If you sell multiple products through ThriveCart, each product has its own checkout and success page. Add the tracking script to each success page with the appropriate product name, price, and other metadata.
+
+## Using with subdomains
+
+If your ThriveCart checkout is hosted on a subdomain (e.g. `checkout.yourdomain.com`) and your main site is on `yourdomain.com`, Swetrix will track both under the same project as long as you use the same Project ID. This lets you build funnels that follow the full user journey from your marketing site through to checkout and purchase.
+
+## Troubleshooting
+
+### Pageviews not appearing
+
+- **Check the script is loading.** Open your browser's Developer Tools (F12), go to the Network tab, and look for `swetrix.js` being loaded.
+- **Check for JavaScript errors.** In the Console tab, look for any red error messages related to Swetrix.
+- **Verify your Project ID.** Make sure you've replaced `YOUR_PROJECT_ID` with your actual ID from the Swetrix dashboard.
+- **Try the footer instead.** If ThriveCart is blocking the script in the header, try adding it to the footer scripts section instead.
+
+### Duplicate purchase events
+
+The script uses `sessionStorage` to fire the purchase event only once per browser session. If you're still seeing duplicates:
+
+- Clear your browser's session storage and test again.
+- Make sure you only have one copy of the purchase tracking script on the success page.
+
+### Script not loading at all
+
+- Confirm that custom scripts are enabled for your ThriveCart account. Some plans or configurations may restrict them.
+- Contact ThriveCart support if scripts are being stripped entirely.

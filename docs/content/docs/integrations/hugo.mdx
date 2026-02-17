@@ -1,0 +1,102 @@
+---
+title: Hugo
+slug: /hugo-integration
+---
+
+After you sign up on Swetrix and create a new project, the only thing left is to add it to your website.
+
+## Installation
+
+The recommended approach is to create a Hugo partial template for the Swetrix tracking script and include it in your site's base layout.
+
+### 1. Create a partial template
+
+In your Hugo project, create the file `layouts/partials/swetrix-analytics.html` with the following content:
+
+```html
+{{ if not .Site.IsServer }}
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    swetrix.init('YOUR_PROJECT_ID')
+    swetrix.trackViews()
+  })
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+{{ end }}
+```
+
+The `{{ if not .Site.IsServer }}` condition ensures the tracking script is only included in production builds (`hugo`) and not during local development (`hugo server`). This prevents inflating your analytics with local page views.
+
+
+<Callout type="warn">
+It's very important not to forget to replace `YOUR_PROJECT_ID` with your actual Project ID you can find in the Dashboard, otherwise tracking won't work!
+
+</Callout>
+
+### 2. Include the partial in your layout
+
+Open your base layout template — typically `layouts/_default/baseof.html`. If your theme provides one, you may need to copy it into your project's `layouts/` directory first to override it.
+
+Add the partial just before the closing `</body>` tag:
+
+```html
+    {{ partial "swetrix-analytics.html" . }}
+  </body>
+</html>
+```
+
+## Using Hugo config parameters (optional)
+
+To keep your Project ID out of the template and make it easy to manage across environments, you can use Hugo's site parameters instead.
+
+Update `layouts/partials/swetrix-analytics.html`:
+
+```html
+{{ if and (not .Site.IsServer) .Site.Params.swetrixProjectID }}
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    swetrix.init('{{ .Site.Params.swetrixProjectID }}')
+    swetrix.trackViews()
+  })
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid={{ .Site.Params.swetrixProjectID }}"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+{{ end }}
+```
+
+Then add your Project ID to your Hugo configuration file.
+
+**config.toml:**
+
+```toml
+[params]
+  swetrixProjectID = "YOUR_PROJECT_ID"
+```
+
+**config.yaml:**
+
+```yaml
+params:
+  swetrixProjectID: "YOUR_PROJECT_ID"
+```
+
+## Check your installation
+
+After installing Swetrix tracking script, build your site with `hugo` and deploy it.
+
+Visit your live website and navigate through a few pages. Within a minute you should be able to see new pageviews being added to your project's dashboard.

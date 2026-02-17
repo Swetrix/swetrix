@@ -1,0 +1,8 @@
+{
+  "title": "Proxy guides",
+  "pages": [
+    "netlify",
+    "nextjs",
+    "nginx"
+  ]
+}
