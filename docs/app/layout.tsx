@@ -1,5 +1,6 @@
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+import { GithubInfo } from 'fumadocs-ui/components/github-info';
 import type { ReactNode } from 'react';
 import { source } from '@/lib/source';
 import Script from 'next/script';
@@ -55,14 +56,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             }}
             links={[
               {
-                text: 'Swetrix',
-                url: 'https://swetrix.com',
-                external: true,
-              },
-              {
-                text: 'GitHub',
-                url: 'https://github.com/Swetrix',
-                external: true,
+                type: 'custom',
+                children: (
+                  <GithubInfo
+                    owner="Swetrix"
+                    repo="swetrix"
+                    className="lg:-mx-2"
+                  />
+                ),
               },
             ]}
           >

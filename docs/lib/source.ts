@@ -1,5 +1,7 @@
 import { docs } from 'fumadocs-mdx:collections/server';
 import { loader } from 'fumadocs-core/source';
+import { createElement } from 'react';
+import { Icon } from '@/components/Icon';
 
 const SLUG_MAP: Record<string, string[]> = {
   'introduction': [],
@@ -67,6 +69,12 @@ const SLUG_MAP: Record<string, string[]> = {
 export const source = loader({
   baseUrl: '/',
   source: docs.toFumadocsSource(),
+  icon(iconString) {
+    if (iconString) {
+      return createElement(Icon, { name: iconString });
+    }
+    return undefined;
+  },
   slugs(file) {
     const p = file.path
       .replace(/\.(mdx|md)$/, '')
