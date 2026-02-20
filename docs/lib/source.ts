@@ -2,6 +2,8 @@ import { docs } from 'fumadocs-mdx:collections/server';
 import { loader } from 'fumadocs-core/source';
 
 const SLUG_MAP: Record<string, string[]> = {
+  'introduction': [],
+
   // Root files with custom slugs
   'add-script': ['install-script'],
   'script-reference': ['swetrix-js-reference'],
