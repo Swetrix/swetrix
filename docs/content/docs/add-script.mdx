@@ -4,9 +4,7 @@ slug: /install-script
 icon: Code
 ---
 
-
 To use Swetrix on your website, you need to add a tracking script to your website and there are several ways to do this.
-
 
 <Callout type="info" title="Using a CMS or site builder?">
 
@@ -25,10 +23,10 @@ To do this, paste the following code snippet into the Body section (`<body>` tag
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -39,7 +37,6 @@ To do this, paste the following code snippet into the Body section (`<body>` tag
   />
 </noscript>
 ```
-
 
 <Callout type="warn">
 It's important to remember to replace `YOUR_PROJECT_ID` with your actual Project ID, which you can find in the Dashboard, otherwise tracking will not work!
@@ -60,6 +57,7 @@ If you are using a website based on a JavaScript framework such as React or Vue,
 ```bash
 npm install swetrix
 ```
+
 </Step>
 <Step>
 ### Import Swetrix
@@ -67,8 +65,9 @@ npm install swetrix
 Import the module into your project's root file (in React this is usually called `index.js` or `App.js`, and these files are located in the `src` folder):
 
 ```js
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 ```
+
 </Step>
 <Step>
 ### Start tracking
@@ -76,9 +75,10 @@ import * as Swetrix from 'swetrix'
 After that you can track anything you want. For example, the following code snippet will work just fine:
 
 ```js
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
 ```
+
 </Step>
 </Steps>
 

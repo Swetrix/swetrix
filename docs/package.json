@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev -p 5007",
     "build": "next build",
-    "start": "next start -p 5007 -H 0.0.0.0"
+    "start": "next start -p 5007 -H 0.0.0.0",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -24,6 +26,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.14",
+    "oxfmt": "^0.34.0",
     "postcss": "^8.5.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0"

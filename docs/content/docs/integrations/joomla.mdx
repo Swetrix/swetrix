@@ -32,10 +32,10 @@ Switch to the **Editor** tab. If the WYSIWYG editor is active, switch it to sour
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -46,7 +46,6 @@ Switch to the **Editor** tab. If the WYSIWYG editor is active, switch it to sour
   />
 </noscript>
 ```
-
 
 <Callout type="warn">
 Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
@@ -76,10 +75,10 @@ Paste the following just before the closing `</body>` tag:
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -91,14 +90,12 @@ Paste the following just before the closing `</body>` tag:
 </noscript>
 ```
 
-
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard.
 
 </Callout>
 
 3. Click **Save**.
-
 
 <Callout>
 Template updates may overwrite your changes. If you update your template, verify the Swetrix snippet is still present. Making a copy of the template before updating is a good precaution.
@@ -113,14 +110,14 @@ Example — tracking a contact form submission:
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var form = document.querySelector('#contact-form')
-    if (!form || typeof swetrix === 'undefined') return
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.querySelector("#contact-form");
+    if (!form || typeof swetrix === "undefined") return;
 
-    form.addEventListener('submit', function () {
-      swetrix.track({ ev: 'contact_form_submitted' })
-    })
-  })
+    form.addEventListener("submit", function () {
+      swetrix.track({ ev: "contact_form_submitted" });
+    });
+  });
 </script>
 ```
 

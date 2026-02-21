@@ -11,9 +11,9 @@ Astro is a web framework designed for content-rich websites that ships minimal J
 
 There are two ways to add Swetrix to your Astro site:
 
-| Approach | Best for |
-| --- | --- |
-| **CDN script** | Simple sites, blogs, and documentation — no build-time dependency required |
+| Approach        | Best for                                                                                        |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| **CDN script**  | Simple sites, blogs, and documentation — no build-time dependency required                      |
 | **npm package** | Full TypeScript support, tighter integration with island components, more configuration options |
 
 <Tabs items={["CDN script (recommended)", "npm package"]}>
@@ -32,6 +32,7 @@ export interface Props {
 
 const { title } = Astro.props;
 ---
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -42,10 +43,10 @@ const { title } = Astro.props;
     <!-- Swetrix Analytics -->
     <script src="https://swetrix.org/swetrix.js" defer></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
+      document.addEventListener("DOMContentLoaded", function () {
+        swetrix.init("YOUR_PROJECT_ID");
+        swetrix.trackViews();
+      });
     </script>
   </head>
   <body>
@@ -53,7 +54,6 @@ const { title } = Astro.props;
   </body>
 </html>
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -91,11 +91,12 @@ npm install swetrix
 Create `src/scripts/analytics.ts`:
 
 ```typescript
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
 ```
+
 </Step>
 <Step>
 ### Include it in your layout
@@ -111,6 +112,7 @@ export interface Props {
 
 const { title } = Astro.props;
 ---
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -121,23 +123,22 @@ const { title } = Astro.props;
   <body>
     <slot />
     <script>
-      import * as Swetrix from 'swetrix'
+      import * as Swetrix from "swetrix";
 
-      Swetrix.init('YOUR_PROJECT_ID')
-      Swetrix.trackViews()
+      Swetrix.init("YOUR_PROJECT_ID");
+      Swetrix.trackViews();
     </script>
   </body>
 </html>
 ```
+
 </Step>
 </Steps>
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
 
 </Callout>
-
 
 <Callout type="info">
 Astro processes `<script>` tags — they're bundled and deduplicated automatically. The script above will only be included once in the final build, even if the layout is used on every page.
@@ -192,12 +193,12 @@ Wrap the initialisation in a host check:
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var isDev = window.location.hostname === 'localhost'
+  document.addEventListener("DOMContentLoaded", function () {
+    var isDev = window.location.hostname === "localhost";
 
-    swetrix.init('YOUR_PROJECT_ID', { disabled: isDev })
-    swetrix.trackViews()
-  })
+    swetrix.init("YOUR_PROJECT_ID", { disabled: isDev });
+    swetrix.trackViews();
+  });
 </script>
 ```
 
@@ -207,25 +208,24 @@ Wrap the initialisation in a host check:
 Use `import.meta.env`:
 
 ```typescript
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   disabled: import.meta.env.DEV,
-})
-Swetrix.trackViews()
+});
+Swetrix.trackViews();
 ```
 
 </Tab>
 </Tabs>
 
-
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```typescript
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -245,11 +245,11 @@ Enable automatic client-side error monitoring to capture unhandled JavaScript er
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-    swetrix.trackErrors()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
 </script>
 ```
 
@@ -257,11 +257,11 @@ Enable automatic client-side error monitoring to capture unhandled JavaScript er
 <Tab value="npm package">
 
 ```typescript
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
-Swetrix.trackErrors()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
+Swetrix.trackErrors();
 ```
 
 </Tab>
@@ -281,14 +281,15 @@ Use a `<script>` tag with client-side JavaScript to track events from `.astro` c
 ---
 // src/components/DownloadButton.astro
 ---
+
 <button id="download-btn">Download PDF</button>
 
 <script>
-  document.getElementById('download-btn')?.addEventListener('click', () => {
+  document.getElementById("download-btn")?.addEventListener("click", () => {
     if (window.swetrix) {
-      swetrix.track({ ev: 'PDF_DOWNLOAD' })
+      swetrix.track({ ev: "PDF_DOWNLOAD" });
     }
-  })
+  });
 </script>
 ```
 
@@ -298,17 +299,18 @@ If you're using the npm package, you can import it directly:
 ---
 // src/components/DownloadButton.astro
 ---
+
 <button id="download-btn">Download PDF</button>
 
 <script>
-  import * as Swetrix from 'swetrix'
+  import * as Swetrix from "swetrix";
 
-  document.getElementById('download-btn')?.addEventListener('click', () => {
+  document.getElementById("download-btn")?.addEventListener("click", () => {
     Swetrix.track({
-      ev: 'PDF_DOWNLOAD',
-      meta: { format: 'pdf' },
-    })
-  })
+      ev: "PDF_DOWNLOAD",
+      meta: { format: "pdf" },
+    });
+  });
 </script>
 ```
 
@@ -320,26 +322,26 @@ If you're using [Astro islands](https://docs.astro.build/en/concepts/islands/) w
 
 ```tsx
 // src/components/SignUpForm.tsx
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default function SignUpForm() {
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     Swetrix.track({
-      ev: 'SIGNUP_FORM_SUBMITTED',
-      meta: { source: 'landing_page' },
-    })
+      ev: "SIGNUP_FORM_SUBMITTED",
+      meta: { source: "landing_page" },
+    });
 
     // ...submit logic
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit}>
       <input type="email" placeholder="you@example.com" required />
       <button type="submit">Sign up</button>
     </form>
-  )
+  );
 }
 ```
 
@@ -379,10 +381,10 @@ PUBLIC_SWETRIX_PID=YOUR_PROJECT_ID
 **2. Reference it in your analytics script** (npm package approach):
 
 ```typescript
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
-Swetrix.init(import.meta.env.PUBLIC_SWETRIX_PID)
-Swetrix.trackViews()
+Swetrix.init(import.meta.env.PUBLIC_SWETRIX_PID);
+Swetrix.trackViews();
 ```
 
 Astro requires client-side environment variables to be prefixed with `PUBLIC_`.

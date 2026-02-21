@@ -5,7 +5,6 @@ slug: /selfhosting/how-to
 
 Swetrix supports self-hosting via Docker. You can run Swetrix on your own server or on a cloud provider of your choice. It's easy to set up and maintain, no need to be a Docker expert.
 
-
 <Callout>
 The easiest way to get started with Swetrix is by [using our cloud service](https://swetrix.com). We do all the dirty work for you: hosting, maintenance, backups, worldwide CDN, etc. Using Cloud you still own the data, you can export it or delete it at any time you want. By using Swetrix Cloud you support maintenance and development of the product, which eventually makes it better.
 
@@ -62,6 +61,7 @@ This script will also check if you have Docker and Docker Compose installed, and
 ```
 
 The script will save the environment variables to a `.env` file in the repository directory. You can later change them manually if needed. Please refer to the [configuration section](/selfhosting/configuring) for more information.
+
 </Step>
 <Step>
 ### Run the containers
@@ -73,6 +73,7 @@ docker compose up -d
 ```
 
 After you run this command, the following containers will be started:
+
 - swetrix-fe - the frontend server (internal port 3000)
 - swetrix-api - the main API server (internal port 5005)
 - nginx-proxy - routes requests to the frontend and API (port 80 by default)
@@ -80,6 +81,7 @@ After you run this command, the following containers will be started:
 - Clickhouse server for analytics and transactional data
 
 After starting the container you can access the dashboard at `http://{host}:80` (or your configured reverse-proxy domain).
+
 </Step>
 </Steps>
 
@@ -92,6 +94,7 @@ Usually, Swetrix releases come with database migrations that you'll need to appl
 
 Swetrix v5 routes API requests through the web entrypoint. Instead of exposing 2 different services (web & backend) to the internet, you only expose one (the web endpoint) and route API requests internally.
 The default routing is:
+
 - Frontend: /
 - API: /backend/ (proxied to swetrix-api)
 
@@ -111,25 +114,27 @@ If you use another reverse proxy in front of Swetrix (for example for TLS termin
 If you are already using Traefik, you can omit the nginx-proxy service and route requests directly to the Swetrix containers by path.
 
 swetrix-fe labels:
+
 ```yaml
-  - traefik.enable=true
-  - traefik.http.routers.swetrix_fe.rule=Host(`analytics.example.com`) && PathPrefix(`/`)
-  - traefik.http.routers.swetrix_fe.entrypoints=https
-  - traefik.http.routers.swetrix_fe.tls=true
-  - traefik.http.routers.swetrix_fe.priority=1
-  - traefik.http.services.swetrix_fe.loadbalancer.server.port=3000
+- traefik.enable=true
+- traefik.http.routers.swetrix_fe.rule=Host(`analytics.example.com`) && PathPrefix(`/`)
+- traefik.http.routers.swetrix_fe.entrypoints=https
+- traefik.http.routers.swetrix_fe.tls=true
+- traefik.http.routers.swetrix_fe.priority=1
+- traefik.http.services.swetrix_fe.loadbalancer.server.port=3000
 ```
 
 swetrix-api labels:
+
 ```yaml
-  - traefik.enable=true
-  - traefik.http.routers.swetrix_be.rule=Host(`analytics.example.com`) && PathPrefix(`/backend/`)
-  - traefik.http.routers.swetrix_be.entrypoints=https
-  - traefik.http.routers.swetrix_be.tls=true
-  - traefik.http.routers.swetrix_be.priority=100
-  - traefik.http.middlewares.swetrix_be_strip.stripprefix.prefixes=/backend
-  - traefik.http.routers.swetrix_be.middlewares=swetrix_be_strip
-  - traefik.http.services.swetrix_be.loadbalancer.server.port=5005
+- traefik.enable=true
+- traefik.http.routers.swetrix_be.rule=Host(`analytics.example.com`) && PathPrefix(`/backend/`)
+- traefik.http.routers.swetrix_be.entrypoints=https
+- traefik.http.routers.swetrix_be.tls=true
+- traefik.http.routers.swetrix_be.priority=100
+- traefik.http.middlewares.swetrix_be_strip.stripprefix.prefixes=/backend
+- traefik.http.routers.swetrix_be.middlewares=swetrix_be_strip
+- traefik.http.services.swetrix_be.loadbalancer.server.port=5005
 ```
 
 </Tab>

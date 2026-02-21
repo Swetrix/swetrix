@@ -18,25 +18,25 @@ Django projects typically have a base template that all other templates extend v
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}My Site{% endblock %}</title>
 
     {% block styles %}{% endblock %}
 
     <!-- Swetrix Analytics -->
     <script src="https://swetrix.org/swetrix.js" defer></script>
-</head>
-<body>
+  </head>
+  <body>
     {% block content %}{% endblock %}
 
     <!-- Swetrix Analytics -->
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
+      document.addEventListener("DOMContentLoaded", function () {
+        swetrix.init("YOUR_PROJECT_ID");
+        swetrix.trackViews();
+      });
     </script>
 
     <noscript>
@@ -48,10 +48,9 @@ Django projects typically have a base template that all other templates extend v
     </noscript>
 
     {% block scripts %}{% endblock %}
-</body>
+  </body>
 </html>
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -66,7 +65,7 @@ Then wrap the snippets:
 
 ```html
 {% if not debug %}
-    <script src="https://swetrix.org/swetrix.js" defer></script>
+<script src="https://swetrix.org/swetrix.js" defer></script>
 {% endif %}
 ```
 
@@ -74,29 +73,28 @@ And for the body initialisation:
 
 ```html
 {% if not debug %}
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
-    </script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
+</script>
 
-    <noscript>
-      <img
-        src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
-        alt=""
-        referrerpolicy="no-referrer-when-downgrade"
-      />
-    </noscript>
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
 {% endif %}
 ```
-
 
 <Callout type="info">
 During development, Swetrix ignores `localhost` traffic by default. If you want to verify tracking locally without changing your environment, you can temporarily set `devMode: true`:
 
 ```js
-swetrix.init('YOUR_PROJECT_ID', { devMode: true })
+swetrix.init("YOUR_PROJECT_ID", { devMode: true });
 ```
 
 Remember to remove this before deploying.
@@ -146,21 +144,21 @@ TEMPLATES = [
 
 ```html
 {% if SWETRIX_PROJECT_ID %}
-    <script src="https://swetrix.org/swetrix.js" defer></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('{{ SWETRIX_PROJECT_ID }}')
-        swetrix.trackViews()
-      })
-    </script>
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("{{ SWETRIX_PROJECT_ID }}");
+    swetrix.trackViews();
+  });
+</script>
 
-    <noscript>
-      <img
-        src="https://api.swetrix.com/log/noscript?pid={{ SWETRIX_PROJECT_ID }}"
-        alt=""
-        referrerpolicy="no-referrer-when-downgrade"
-      />
-    </noscript>
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid={{ SWETRIX_PROJECT_ID }}"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
 {% endif %}
 ```
 
@@ -180,11 +178,11 @@ Enable automatic client-side error monitoring by adding `trackErrors()` to the i
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-    swetrix.trackErrors()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
 </script>
 ```
 
@@ -200,22 +198,21 @@ Track when users submit a contact form:
 
 ```html
 <form id="contact-form" method="POST" action="{% url 'contact' %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Send message</button>
+  {% csrf_token %} {{ form.as_p }}
+  <button type="submit">Send message</button>
 </form>
 
 <script>
-  document.getElementById('contact-form')?.addEventListener('submit', function () {
-    if (typeof swetrix !== 'undefined') {
+  document.getElementById("contact-form")?.addEventListener("submit", function () {
+    if (typeof swetrix !== "undefined") {
       swetrix.track({
-        ev: 'CONTACT_FORM_SUBMITTED',
+        ev: "CONTACT_FORM_SUBMITTED",
         meta: {
           page: window.location.pathname,
         },
-      })
+      });
     }
-  })
+  });
 </script>
 ```
 
@@ -225,20 +222,20 @@ Track clicks on external links across your site. Add this to your base template:
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('a[href^="http"]').forEach(function (link) {
       if (link.hostname !== window.location.hostname) {
-        link.addEventListener('click', function () {
-          if (typeof swetrix !== 'undefined') {
+        link.addEventListener("click", function () {
+          if (typeof swetrix !== "undefined") {
             swetrix.track({
-              ev: 'OUTBOUND_CLICK',
+              ev: "OUTBOUND_CLICK",
               meta: { url: link.href },
-            })
+            });
           }
-        })
+        });
       }
-    })
-  })
+    });
+  });
 </script>
 ```
 
@@ -258,9 +255,12 @@ If your Django application uses [HTMX](https://htmx.org/) for dynamic page updat
 If you use HTMX to swap content without changing the URL and want to track those interactions, use custom events:
 
 ```html
-<button hx-post="/api/subscribe" hx-swap="outerHTML"
-        onclick="if(typeof swetrix!=='undefined') swetrix.track({ ev: 'SUBSCRIBE_CLICKED' })">
-    Subscribe
+<button
+  hx-post="/api/subscribe"
+  hx-swap="outerHTML"
+  onclick="if(typeof swetrix!=='undefined') swetrix.track({ ev: 'SUBSCRIBE_CLICKED' })"
+>
+  Subscribe
 </button>
 ```
 
@@ -273,10 +273,10 @@ npm install swetrix
 ```
 
 ```javascript
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
 ```
 
 See the relevant frontend framework integration guide ([React](/react-integration), [Vue](/vue-integration), etc.) for framework-specific details.

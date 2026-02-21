@@ -23,15 +23,15 @@ Paste the following into the **header scripts** section:
 ```html
 <script>
   (function () {
-    var s = document.createElement('script')
-    s.src = 'https://swetrix.org/swetrix.js'
-    s.defer = true
+    var s = document.createElement("script");
+    s.src = "https://swetrix.org/swetrix.js";
+    s.defer = true;
     s.onload = function () {
-      swetrix.init('YOUR_PROJECT_ID')
-      swetrix.trackViews()
-    }
-    document.head.appendChild(s)
-  })()
+      swetrix.init("YOUR_PROJECT_ID");
+      swetrix.trackViews();
+    };
+    document.head.appendChild(s);
+  })();
 </script>
 
 <noscript>
@@ -46,7 +46,6 @@ Paste the following into the **header scripts** section:
 ### 3. Save and test
 
 Save your changes and visit your checkout page. Within a minute you should see pageviews appearing in your Swetrix dashboard.
-
 
 <Callout type="warn">
 Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
@@ -70,49 +69,49 @@ Paste the following into the success page header scripts:
 ```html
 <script>
   (function () {
-    var EVENT_NAME = 'purchase'
+    var EVENT_NAME = "purchase";
     var EVENT_META = {
-      product: 'Your Product Name',
-      value: '97.00',
-      currency: 'USD'
-    }
-    var PROJECT_ID = 'YOUR_PROJECT_ID'
+      product: "Your Product Name",
+      value: "97.00",
+      currency: "USD",
+    };
+    var PROJECT_ID = "YOUR_PROJECT_ID";
 
     // Prevent duplicate events on page refresh
-    var storageKey = 'swx_' + EVENT_NAME + '_sent'
+    var storageKey = "swx_" + EVENT_NAME + "_sent";
     try {
-      if (sessionStorage.getItem(storageKey) === '1') return
+      if (sessionStorage.getItem(storageKey) === "1") return;
     } catch (e) {}
 
     function sendEvent() {
-      swetrix.track({ ev: EVENT_NAME, meta: EVENT_META })
+      swetrix.track({ ev: EVENT_NAME, meta: EVENT_META });
       try {
-        sessionStorage.setItem(storageKey, '1')
+        sessionStorage.setItem(storageKey, "1");
       } catch (e) {}
     }
 
     function waitForSwetrix(timeout) {
-      var start = Date.now()
-      ;(function poll() {
-        if (typeof swetrix !== 'undefined' && typeof swetrix.track === 'function') {
-          return sendEvent()
+      var start = Date.now();
+      (function poll() {
+        if (typeof swetrix !== "undefined" && typeof swetrix.track === "function") {
+          return sendEvent();
         }
         if (Date.now() - start < timeout) {
-          return setTimeout(poll, 150)
+          return setTimeout(poll, 150);
         }
-      })()
+      })();
     }
 
     // Load the Swetrix script
-    var s = document.createElement('script')
-    s.src = 'https://swetrix.org/swetrix.js'
-    s.defer = true
+    var s = document.createElement("script");
+    s.src = "https://swetrix.org/swetrix.js";
+    s.defer = true;
     s.onload = function () {
-      swetrix.init(PROJECT_ID)
-      waitForSwetrix(5000)
-    }
-    document.head.appendChild(s)
-  })()
+      swetrix.init(PROJECT_ID);
+      waitForSwetrix(5000);
+    };
+    document.head.appendChild(s);
+  })();
 </script>
 ```
 
@@ -120,21 +119,21 @@ Paste the following into the success page header scripts:
 
 Update the variables at the top of the script:
 
-| Variable | Description |
-| --- | --- |
+| Variable     | Description                                                                                                                       |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | `EVENT_NAME` | The custom event name (e.g. `Purchase`, `Checkout Complete`). Can contain any characters with a maximum length of 256 characters. |
-| `EVENT_META` | An object with event metadata. All values must be strings. |
-| `PROJECT_ID` | Your Swetrix Project ID. |
+| `EVENT_META` | An object with event metadata. All values must be strings.                                                                        |
+| `PROJECT_ID` | Your Swetrix Project ID.                                                                                                          |
 
 The `EVENT_META` object can contain any key-value pairs relevant to your product. For example:
 
 ```javascript
 var EVENT_META = {
-  product: 'Online Course — SEO Masterclass',
-  value: '197.00',
-  currency: 'USD',
-  plan: 'lifetime'
-}
+  product: "Online Course — SEO Masterclass",
+  value: "197.00",
+  currency: "USD",
+  plan: "lifetime",
+};
 ```
 
 Refer to the [tracking script reference](/swetrix-js-reference) for details on `swetrix.track()` and the metadata constraints (max 20 keys, values must be primitives, total value length under 1000 characters).

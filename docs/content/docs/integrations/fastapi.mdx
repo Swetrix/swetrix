@@ -164,7 +164,6 @@ class SwetrixClient:
         await self._client.aclose()
 ```
 
-
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
 
@@ -250,7 +249,6 @@ async def track_pageviews(request: Request, call_next):
     return response
 ```
 
-
 <Callout type="info">
 By using `asyncio.create_task()`, the analytics call runs in the background without adding latency to your responses. This is the recommended pattern for production.
 
@@ -307,15 +305,15 @@ async def dashboard(request: Request, visitor: VisitorInfo = Depends(get_visitor
 
 The `track_pageview` method accepts the following keyword arguments:
 
-| Option | Type | Description |
-| --- | --- | --- |
-| `pg` | `str` | Page path (e.g. `/home`) |
-| `lc` | `str` | Visitor locale (e.g. `en-US`) |
-| `ref` | `str` | Referrer URL |
-| `so` | `str` | Traffic source (e.g. `utm_source`) |
-| `me` | `str` | Traffic medium (e.g. `utm_medium`) |
-| `ca` | `str` | Campaign (e.g. `utm_campaign`) |
-| `unique` | `bool` | Only save unique visits |
+| Option   | Type   | Description                        |
+| -------- | ------ | ---------------------------------- |
+| `pg`     | `str`  | Page path (e.g. `/home`)           |
+| `lc`     | `str`  | Visitor locale (e.g. `en-US`)      |
+| `ref`    | `str`  | Referrer URL                       |
+| `so`     | `str`  | Traffic source (e.g. `utm_source`) |
+| `me`     | `str`  | Traffic medium (e.g. `utm_medium`) |
+| `ca`     | `str`  | Campaign (e.g. `utm_campaign`)     |
+| `unique` | `bool` | Only save unique visits            |
 
 ## Tracking custom events
 

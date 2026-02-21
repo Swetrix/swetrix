@@ -59,11 +59,10 @@ server {
 After you updated your Nginx configuration, you need to update swetrix.js tracking script to send analytics data through your server. You can do it by setting the `apiURL` property inside the [init() function](/swetrix-js-reference#init).
 
 ```javascript
-swetrix.init('YOUR_PROJECT_ID', {
-  apiURL: 'https://<yourproxydomain>/log',
-})
+swetrix.init("YOUR_PROJECT_ID", {
+  apiURL: "https://<yourproxydomain>/log",
+});
 ```
-
 
 <Callout>
 If you are not using the [Swetrix NPM package](/install-script#install-swetrix-via-npm), don't forget to also replace `https://swetrix.org/swetrix.js` with your proxy URL in the analytics `<script>` tag.

@@ -27,20 +27,21 @@ Create a client component that initialises Swetrix. `trackViews()` automatically
 Create a new file at `src/components/Analytics.tsx` (or `src/components/Analytics.jsx` if you're not using TypeScript):
 
 ```tsx
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import * as Swetrix from 'swetrix'
+import { useEffect } from "react";
+import * as Swetrix from "swetrix";
 
 export default function Analytics() {
   useEffect(() => {
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
-  }, [])
+    Swetrix.init("YOUR_PROJECT_ID");
+    Swetrix.trackViews();
+  }, []);
 
-  return null
+  return null;
 }
 ```
+
 </Step>
 <Step>
 ### Add it to your root layout
@@ -48,13 +49,9 @@ export default function Analytics() {
 Open `src/app/layout.tsx` and render the `Analytics` component:
 
 ```tsx
-import Analytics from '@/components/Analytics'
+import Analytics from "@/components/Analytics";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
@@ -62,9 +59,10 @@ export default function RootLayout({
         <Analytics />
       </body>
     </html>
-  )
+  );
 }
 ```
+
 </Step>
 </Steps>
 
@@ -82,7 +80,6 @@ Your project structure should look like this:
   </Folder>
 </Files>
 
-
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
 
@@ -94,17 +91,17 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 If you're using the Pages Router, add Swetrix to your `_app.tsx` (or `_app.jsx`) file. `trackViews()` automatically detects route changes, so a single call is all you need.
 
 ```tsx
-import { useEffect } from 'react'
-import type { AppProps } from 'next/app'
-import * as Swetrix from 'swetrix'
+import { useEffect } from "react";
+import type { AppProps } from "next/app";
+import * as Swetrix from "swetrix";
 
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
-  }, [])
+    Swetrix.init("YOUR_PROJECT_ID");
+    Swetrix.trackViews();
+  }, []);
 
-  return <Component {...pageProps} />
+  return <Component {...pageProps} />;
 }
 ```
 
@@ -136,7 +133,7 @@ Add to `src/app/layout.tsx` inside `<body>`:
 Add to `pages/_document.tsx` inside `<body>`:
 
 ```tsx
-import { Html, Head, Main, NextScript } from 'next/document'
+import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   return (
@@ -154,7 +151,7 @@ export default function Document() {
         </noscript>
       </body>
     </Html>
-  )
+  );
 }
 ```
 
@@ -166,19 +163,18 @@ export default function Document() {
 By default, Swetrix ignores `localhost` traffic. If you want to be explicit about it, you can conditionally disable tracking based on your environment:
 
 ```tsx
-Swetrix.init('YOUR_PROJECT_ID', {
-  disabled: process.env.NODE_ENV === 'development',
-})
+Swetrix.init("YOUR_PROJECT_ID", {
+  disabled: process.env.NODE_ENV === "development",
+});
 ```
-
 
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```tsx
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -200,10 +196,10 @@ Update `src/components/Analytics.tsx`:
 
 ```tsx
 useEffect(() => {
-  Swetrix.init('YOUR_PROJECT_ID')
-  Swetrix.trackViews()
-  Swetrix.trackErrors()
-}, [])
+  Swetrix.init("YOUR_PROJECT_ID");
+  Swetrix.trackViews();
+  Swetrix.trackErrors();
+}, []);
 ```
 
 </Tab>
@@ -213,10 +209,10 @@ Update `_app.tsx`:
 
 ```tsx
 useEffect(() => {
-  Swetrix.init('YOUR_PROJECT_ID')
-  Swetrix.trackViews()
-  Swetrix.trackErrors()
-}, [])
+  Swetrix.init("YOUR_PROJECT_ID");
+  Swetrix.trackViews();
+  Swetrix.trackErrors();
+}, []);
 ```
 
 </Tab>
@@ -231,56 +227,52 @@ Custom events let you track specific user interactions — button clicks, form s
 ### Example: tracking button clicks
 
 ```tsx
-'use client'
+"use client";
 
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default function PricingCTA() {
   const handleClick = () => {
     Swetrix.track({
-      ev: 'PRICING_CTA_CLICK',
+      ev: "PRICING_CTA_CLICK",
       meta: {
-        plan: 'pro',
-        location: 'hero',
+        plan: "pro",
+        location: "hero",
       },
-    })
-  }
+    });
+  };
 
-  return (
-    <button onClick={handleClick}>
-      Upgrade to Pro
-    </button>
-  )
+  return <button onClick={handleClick}>Upgrade to Pro</button>;
 }
 ```
 
 ### Example: tracking form submissions
 
 ```tsx
-'use client'
+"use client";
 
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default function NewsletterForm() {
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     Swetrix.track({
-      ev: 'NEWSLETTER_SIGNUP',
+      ev: "NEWSLETTER_SIGNUP",
       meta: {
-        source: 'footer',
+        source: "footer",
       },
-    })
+    });
 
     // ...submit logic
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit}>
       <input type="email" placeholder="you@example.com" required />
       <button type="submit">Subscribe</button>
     </form>
-  )
+  );
 }
 ```
 
@@ -289,33 +281,33 @@ export default function NewsletterForm() {
 Create a reusable component for external links:
 
 ```tsx
-'use client'
+"use client";
 
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 interface TrackedLinkProps {
-  href: string
-  children: React.ReactNode
-  eventName?: string
+  href: string;
+  children: React.ReactNode;
+  eventName?: string;
 }
 
 export default function TrackedLink({
   href,
   children,
-  eventName = 'OUTBOUND_CLICK',
+  eventName = "OUTBOUND_CLICK",
 }: TrackedLinkProps) {
   const handleClick = () => {
     Swetrix.track({
       ev: eventName,
       meta: { url: href },
-    })
-  }
+    });
+  };
 
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={handleClick}>
       {children}
     </a>
-  )
+  );
 }
 ```
 
@@ -341,7 +333,7 @@ NEXT_PUBLIC_SWETRIX_PID=YOUR_PROJECT_ID
 **2. Reference it in your analytics component:**
 
 ```tsx
-Swetrix.init(process.env.NEXT_PUBLIC_SWETRIX_PID!)
+Swetrix.init(process.env.NEXT_PUBLIC_SWETRIX_PID!);
 ```
 
 ## Bypassing adblockers with a proxy

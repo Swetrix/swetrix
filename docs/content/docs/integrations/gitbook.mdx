@@ -28,17 +28,16 @@ GitBook's custom script injection requires:
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 ```
 
 ### 3. Save
 
 Click **Save** to apply the script to your documentation site.
-
 
 <Callout type="warn">
 Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -63,7 +62,6 @@ If the Head section supports multiple code blocks, you can also add a noscript p
 
 Open your documentation site through your custom domain in a new browser tab or incognito window. Browse through a few pages. Within a minute you should see new pageviews appearing in your Swetrix dashboard.
 
-
 <Callout type="info">
 Make sure you're accessing the site via your custom domain, not the default `*.gitbook.io` URL. Custom scripts only load on custom domains.
 
@@ -82,11 +80,11 @@ Update the script in your Head section:
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-    swetrix.trackErrors()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
 </script>
 ```
 

@@ -18,15 +18,15 @@ const config = {
   // ...your existing config
   scripts: [
     {
-      src: 'https://swetrix.org/swetrix.js',
+      src: "https://swetrix.org/swetrix.js",
       defer: true,
     },
     {
-      src: '/js/setupswetrix.js',
+      src: "/js/setupswetrix.js",
       defer: true,
     },
   ],
-}
+};
 ```
 
 ### 2. Create the setup file
@@ -34,14 +34,13 @@ const config = {
 Create a new file at `static/js/setupswetrix.js`:
 
 ```js
-document.addEventListener('DOMContentLoaded', function () {
-  swetrix.init('YOUR_PROJECT_ID')
-  swetrix.trackViews()
-})
+document.addEventListener("DOMContentLoaded", function () {
+  swetrix.init("YOUR_PROJECT_ID");
+  swetrix.trackViews();
+});
 ```
 
 That's it — Swetrix will now automatically track page views across your entire site, including client-side navigations.
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -53,7 +52,7 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 To track visitors who have JavaScript disabled, you can add a noscript image pixel. Create or edit `src/theme/Root.js` to wrap your site with the fallback:
 
 ```jsx
-import React from 'react'
+import React from "react";
 
 export default function Root({ children }) {
   return (
@@ -67,7 +66,7 @@ export default function Root({ children }) {
         />
       </noscript>
     </>
-  )
+  );
 }
 ```
 
@@ -75,14 +74,13 @@ export default function Root({ children }) {
 
 After adding the tracking script, start your Docusaurus site and visit a few pages. Within a minute you should see new pageviews appearing in your Swetrix dashboard.
 
-
 <Callout type="info">
 During development, pageviews from `localhost` are not sent by default. Set `devMode: true` in the setup file if you want to verify tracking locally:
 
 ```js
-swetrix.init('YOUR_PROJECT_ID', {
+swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -96,11 +94,11 @@ You can enable automatic client-side error monitoring by adding `trackErrors()` 
 Update `static/js/setupswetrix.js`:
 
 ```js
-document.addEventListener('DOMContentLoaded', function () {
-  swetrix.init('YOUR_PROJECT_ID')
-  swetrix.trackViews()
-  swetrix.trackErrors()
-})
+document.addEventListener("DOMContentLoaded", function () {
+  swetrix.init("YOUR_PROJECT_ID");
+  swetrix.trackViews();
+  swetrix.trackErrors();
+});
 ```
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for configuration options like `sampleRate` and `callback`.
@@ -117,11 +115,11 @@ const trackEvent = (eventName, metadata = {}) => {
     window?.swetrix?.track({
       ev: eventName,
       meta: metadata,
-    })
+    });
   } catch (error) {
-    console.error('Swetrix tracking error:', error)
+    console.error("Swetrix tracking error:", error);
   }
-}
+};
 ```
 
 ### Example: tracking button clicks
@@ -129,24 +127,24 @@ const trackEvent = (eventName, metadata = {}) => {
 A simple example — track when users click a CTA button:
 
 ```jsx
-import React from 'react'
+import React from "react";
 
 export default function SignUpButton() {
   const handleClick = () => {
     window?.swetrix?.track({
-      ev: 'CTA_CLICK',
+      ev: "CTA_CLICK",
       meta: {
-        label: 'Sign up',
-        location: 'hero',
+        label: "Sign up",
+        location: "hero",
       },
-    })
-  }
+    });
+  };
 
   return (
     <a href="https://swetrix.com/signup" onClick={handleClick}>
       Get started free
     </a>
-  )
+  );
 }
 ```
 
@@ -155,40 +153,40 @@ export default function SignUpButton() {
 A more practical example — track whether users found a docs page helpful. This is similar to what we use on the Swetrix docs site itself:
 
 ```jsx
-import React, { useState } from 'react'
-import { useLocation } from '@docusaurus/router'
+import React, { useState } from "react";
+import { useLocation } from "@docusaurus/router";
 
 export default function DocsFeedback() {
-  const { pathname } = useLocation()
-  const [submitted, setSubmitted] = useState(false)
+  const { pathname } = useLocation();
+  const [submitted, setSubmitted] = useState(false);
 
   const sendFeedback = async (answer) => {
     try {
       await window?.swetrix?.track({
-        ev: 'DOCS_FEEDBACK',
+        ev: "DOCS_FEEDBACK",
         meta: {
           answer,
           path: pathname,
         },
-      })
+      });
     } catch (error) {
-      console.error('Error tracking feedback:', error)
+      console.error("Error tracking feedback:", error);
     }
 
-    setSubmitted(true)
-  }
+    setSubmitted(true);
+  };
 
   if (submitted) {
-    return <p>Thank you for your feedback!</p>
+    return <p>Thank you for your feedback!</p>;
   }
 
   return (
     <div>
       <p>Was this page helpful?</p>
-      <button onClick={() => sendFeedback('Yes')}>Yes</button>
-      <button onClick={() => sendFeedback('No')}>No</button>
+      <button onClick={() => sendFeedback("Yes")}>Yes</button>
+      <button onClick={() => sendFeedback("No")}>No</button>
     </div>
-  )
+  );
 }
 ```
 
@@ -199,37 +197,37 @@ This sends a `DOCS_FEEDBACK` event to Swetrix with the user's answer and the cur
 If you use Docusaurus's built-in search (e.g. Algolia DocSearch), you can track when users open the search modal:
 
 ```jsx
-import React, { useEffect } from 'react'
+import React, { useEffect } from "react";
 
 export default function Root({ children }) {
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         window?.swetrix?.track({
-          ev: 'SEARCH_OPENED',
-          meta: { trigger: 'keyboard' },
-        })
+          ev: "SEARCH_OPENED",
+          meta: { trigger: "keyboard" },
+        });
       }
-    }
+    };
 
-    const searchButton = document.querySelector('.DocSearch-Button')
+    const searchButton = document.querySelector(".DocSearch-Button");
     const handleClick = () => {
       window?.swetrix?.track({
-        ev: 'SEARCH_OPENED',
-        meta: { trigger: 'click' },
-      })
-    }
+        ev: "SEARCH_OPENED",
+        meta: { trigger: "click" },
+      });
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
-    searchButton?.addEventListener('click', handleClick)
+    document.addEventListener("keydown", handleKeyDown);
+    searchButton?.addEventListener("click", handleClick);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      searchButton?.removeEventListener('click', handleClick)
-    }
-  }, [])
+      document.removeEventListener("keydown", handleKeyDown);
+      searchButton?.removeEventListener("click", handleClick);
+    };
+  }, []);
 
-  return <>{children}</>
+  return <>{children}</>;
 }
 ```
 
@@ -238,30 +236,30 @@ export default function Root({ children }) {
 Track when users click external links in your docs, useful for measuring referral traffic to third-party resources:
 
 ```jsx
-import React from 'react'
+import React from "react";
 
-export default function TrackedLink({ href, children, eventName = 'OUTBOUND_CLICK' }) {
+export default function TrackedLink({ href, children, eventName = "OUTBOUND_CLICK" }) {
   const handleClick = () => {
     window?.swetrix?.track({
       ev: eventName,
       meta: {
         url: href,
       },
-    })
-  }
+    });
+  };
 
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={handleClick}>
       {children}
     </a>
-  )
+  );
 }
 ```
 
 Usage in MDX:
 
 ```mdx
-import TrackedLink from '@site/src/components/TrackedLink'
+import TrackedLink from "@site/src/components/TrackedLink";
 
 Check out the <TrackedLink href="https://github.com/Swetrix/swetrix">source code</TrackedLink>.
 ```

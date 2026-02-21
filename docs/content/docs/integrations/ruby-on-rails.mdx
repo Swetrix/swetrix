@@ -18,39 +18,36 @@ Open `app/views/layouts/application.html.erb` and add the Swetrix script inside 
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <title><%= content_for(:title) || "My App" %></title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <%= csrf_meta_tags %>
-  <%= csp_meta_tag %>
-  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-  <%= javascript_importmap_tags %>
+  <head>
+    <title><%= content_for(:title) || "My App" %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <%= csrf_meta_tags %> <%= csp_meta_tag %> <%= stylesheet_link_tag "application",
+    "data-turbo-track": "reload" %> <%= javascript_importmap_tags %>
 
-  <!-- Swetrix Analytics -->
-  <script src="https://swetrix.org/swetrix.js" defer></script>
-</head>
-<body>
-  <%= yield %>
+    <!-- Swetrix Analytics -->
+    <script src="https://swetrix.org/swetrix.js" defer></script>
+  </head>
+  <body>
+    <%= yield %>
 
-  <!-- Swetrix Analytics -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      swetrix.init('YOUR_PROJECT_ID')
-      swetrix.trackViews()
-    })
-  </script>
+    <!-- Swetrix Analytics -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        swetrix.init("YOUR_PROJECT_ID");
+        swetrix.trackViews();
+      });
+    </script>
 
-  <noscript>
-    <img
-      src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
-      alt=""
-      referrerpolicy="no-referrer-when-downgrade"
-    />
-  </noscript>
-</body>
+    <noscript>
+      <img
+        src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+        alt=""
+        referrerpolicy="no-referrer-when-downgrade"
+      />
+    </noscript>
+  </body>
 </html>
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -88,12 +85,11 @@ And for the body initialisation:
 <% end %>
 ```
 
-
 <Callout type="info">
 During development, Swetrix ignores `localhost` traffic by default. If you want to verify tracking locally without changing your environment, you can temporarily set `devMode: true`:
 
 ```js
-swetrix.init('YOUR_PROJECT_ID', { devMode: true })
+swetrix.init("YOUR_PROJECT_ID", { devMode: true });
 ```
 
 Remember to remove this before deploying.
@@ -157,11 +153,11 @@ Enable automatic client-side error monitoring by adding `trackErrors()` to the i
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-    swetrix.trackErrors()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
 </script>
 ```
 
@@ -176,22 +172,20 @@ Custom events let you track specific user interactions — form submissions, but
 Track when users submit a sign-up form:
 
 ```html
-<%= form_with url: "/signup", id: "signup-form" do |f| %>
-  <%= f.email_field :email, placeholder: "you@example.com" %>
-  <%= f.submit "Sign up" %>
-<% end %>
+<%= form_with url: "/signup", id: "signup-form" do |f| %> <%= f.email_field :email, placeholder:
+"you@example.com" %> <%= f.submit "Sign up" %> <% end %>
 
 <script>
-  document.getElementById('signup-form')?.addEventListener('submit', function () {
-    if (typeof swetrix !== 'undefined') {
+  document.getElementById("signup-form")?.addEventListener("submit", function () {
+    if (typeof swetrix !== "undefined") {
       swetrix.track({
-        ev: 'SIGNUP_FORM_SUBMITTED',
+        ev: "SIGNUP_FORM_SUBMITTED",
         meta: {
           page: window.location.pathname,
         },
-      })
+      });
     }
-  })
+  });
 </script>
 ```
 
@@ -201,20 +195,20 @@ Track clicks on external links across your site. Add this to your layout file:
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('a[href^="http"]').forEach(function (link) {
       if (link.hostname !== window.location.hostname) {
-        link.addEventListener('click', function () {
-          if (typeof swetrix !== 'undefined') {
+        link.addEventListener("click", function () {
+          if (typeof swetrix !== "undefined") {
             swetrix.track({
-              ev: 'OUTBOUND_CLICK',
+              ev: "OUTBOUND_CLICK",
               meta: { url: link.href },
-            })
+            });
           }
-        })
+        });
       }
-    })
-  })
+    });
+  });
 </script>
 ```
 
@@ -242,10 +236,10 @@ bin/importmap pin swetrix
 Then use it in your JavaScript entry point (e.g. `app/javascript/application.js`):
 
 ```javascript
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
 ```
 
 ### With jsbundling (esbuild, webpack, rollup)
@@ -259,10 +253,10 @@ yarn add swetrix
 Then import it in your JavaScript entry point:
 
 ```javascript
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
 ```
 
 ## Further reading

@@ -11,7 +11,6 @@ We already provide several [integrations](/integrations) and a [script](/swetrix
 
 ### Unique visitors tracking
 
-
 <Callout type="warn">
 For the unique (and live) visitor functionality to work properly, each request must have the `User-Agent` and `X-Client-IP-Address` HTTP headers set. If you don't set these headers, the API will still work, but the unique visitor count will be incorrect.
 
@@ -73,7 +72,7 @@ All of the values are numbers in milliseconds.
 | Name     | Type      | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                |
 | -------- | --------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pid`    | `string`  | `true`   | A project ID to record the pageview event for                                                                                                                                                                                                                                                                                                                                                                              |
-| `ev`     | `string`  | `true`   | An event identifier you want to track. Can contain any characters (including spaces, unicode, etc.) with a maximum length of 256 characters.                                                                                                                                                                                                                                                                                |
+| `ev`     | `string`  | `true`   | An event identifier you want to track. Can contain any characters (including spaces, unicode, etc.) with a maximum length of 256 characters.                                                                                                                                                                                                                                                                               |
 | `unique` | `boolean` | `false`  | If set to true, only 1 custom event will be saved per session                                                                                                                                                                                                                                                                                                                                                              |
 | `pg`     | `string`  | `false`  | A page that user sent data from (e.g. `/home`)                                                                                                                                                                                                                                                                                                                                                                             |
 | `lc`     | `string`  | `false`  | A locale of the user (e.g. `en-US` or `uk-UA`)                                                                                                                                                                                                                                                                                                                                                                             |
@@ -171,22 +170,22 @@ For more efficient heartbeat tracking (like long-running sessions, desktop appli
 **Example (using socket.io-client):**
 
 ```javascript
-import { io } from 'socket.io-client'
+import { io } from "socket.io-client";
 
-const socket = io('https://api.swetrix.com/hb', {
+const socket = io("https://api.swetrix.com/hb", {
   query: {
-    pid: 'YOUR_PROJECT_ID',
+    pid: "YOUR_PROJECT_ID",
   },
-  transports: ['websocket'], // Optional: force WebSocket transport
-})
+  transports: ["websocket"], // Optional: force WebSocket transport
+});
 
-socket.on('connected', () => {
-  console.log('Heartbeat session established')
-})
+socket.on("connected", () => {
+  console.log("Heartbeat session established");
+});
 
-socket.on('error', (err) => {
-  console.error('Heartbeat error:', err.message)
-})
+socket.on("error", (err) => {
+  console.error("Heartbeat error:", err.message);
+});
 
 // The server automatically handles the heartbeat interval (every 60s)
 // Keep the connection open as long as the user is active on the page
@@ -253,21 +252,21 @@ Also as an example, feel free to check out the [source code](https://github.com/
 ### Recording a pageview event using JavaScript fetch API
 
 ```javascript
-fetch('https://api.swetrix.com/log', {
-  method: 'POST',
+fetch("https://api.swetrix.com/log", {
+  method: "POST",
   headers: {
-    'User-Agent': 'FORWARD_CLIENT_USER_AGENT_HERE',
-    'X-Client-IP-Address': 'FORWARD_CLIENT_IP_ADDRESS_HERE',
-    'Content-Type': 'application/json',
+    "User-Agent": "FORWARD_CLIENT_USER_AGENT_HERE",
+    "X-Client-IP-Address": "FORWARD_CLIENT_IP_ADDRESS_HERE",
+    "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    pid: 'YOUR_PROJECT_ID',
-    lc: 'en-US',
-    pg: '/',
-    tz: 'UTC',
+    pid: "YOUR_PROJECT_ID",
+    lc: "en-US",
+    pg: "/",
+    tz: "UTC",
     unique: false,
   }),
-})
+});
 ```
 
 ### Recording a custom event using Go net/http

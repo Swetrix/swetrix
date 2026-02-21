@@ -20,12 +20,12 @@ npm install swetrix
 Nuxt plugins run once when your app initialises, making them the ideal place to set up analytics. Create `plugins/swetrix.client.ts` (the `.client` suffix ensures it only runs in the browser):
 
 ```ts
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default defineNuxtPlugin(() => {
-  Swetrix.init('YOUR_PROJECT_ID')
-  Swetrix.trackViews()
-})
+  Swetrix.init("YOUR_PROJECT_ID");
+  Swetrix.trackViews();
+});
 ```
 
 That's it — Nuxt auto-registers files in the `plugins/` directory. `trackViews()` automatically detects client-side route changes, so page views are tracked on every navigation.
@@ -40,7 +40,6 @@ That's it — Nuxt auto-registers files in the `plugins/` directory. `trackViews
   <File name="app.vue" />
   <File name="nuxt.config.ts" />
 </Files>
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -74,26 +73,25 @@ By default, Swetrix ignores `localhost` traffic. If you want to be explicit abou
 Update `plugins/swetrix.client.ts`:
 
 ```ts
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default defineNuxtPlugin(() => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
 
   Swetrix.init(config.public.swetrixPid, {
     disabled: process.dev,
-  })
-  Swetrix.trackViews()
-})
+  });
+  Swetrix.trackViews();
+});
 ```
-
 
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```ts
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -111,13 +109,13 @@ Enable automatic client-side error monitoring by adding `trackErrors()` to your 
 Update `plugins/swetrix.client.ts`:
 
 ```ts
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default defineNuxtPlugin(() => {
-  Swetrix.init('YOUR_PROJECT_ID')
-  Swetrix.trackViews()
-  Swetrix.trackErrors()
-})
+  Swetrix.init("YOUR_PROJECT_ID");
+  Swetrix.trackViews();
+  Swetrix.trackErrors();
+});
 ```
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
@@ -130,15 +128,15 @@ Custom events let you track specific user interactions — button clicks, form s
 
 ```vue
 <script setup lang="ts">
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 function handleClick() {
   Swetrix.track({
-    ev: 'SIGNUP_CTA_CLICK',
+    ev: "SIGNUP_CTA_CLICK",
     meta: {
-      location: 'navbar',
+      location: "navbar",
     },
-  })
+  });
 }
 </script>
 
@@ -151,15 +149,15 @@ function handleClick() {
 
 ```vue
 <script setup lang="ts">
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 function handleSubmit() {
   Swetrix.track({
-    ev: 'CONTACT_FORM_SUBMITTED',
+    ev: "CONTACT_FORM_SUBMITTED",
     meta: {
-      source: 'support_page',
+      source: "support_page",
     },
-  })
+  });
 
   // ...submit logic
 }
@@ -180,23 +178,23 @@ Create a reusable component for external links. Save as `components/TrackedLink.
 
 ```vue
 <script setup lang="ts">
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 const props = withDefaults(
   defineProps<{
-    href: string
-    eventName?: string
+    href: string;
+    eventName?: string;
   }>(),
   {
-    eventName: 'OUTBOUND_CLICK',
+    eventName: "OUTBOUND_CLICK",
   },
-)
+);
 
 function handleClick() {
   Swetrix.track({
     ev: props.eventName,
     meta: { url: props.href },
-  })
+  });
 }
 </script>
 
@@ -228,11 +226,12 @@ Rather than hardcoding your Project ID, use Nuxt's [runtime config](https://nuxt
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
-      swetrixPid: '',
+      swetrixPid: "",
     },
   },
-})
+});
 ```
+
 </Step>
 <Step>
 ### Set the environment variable
@@ -240,14 +239,16 @@ export default defineNuxtConfig({
 ```
 NUXT_PUBLIC_SWETRIX_PID=YOUR_PROJECT_ID
 ```
+
 </Step>
 <Step>
 ### Reference it in your plugin
 
 ```ts
-const config = useRuntimeConfig()
-Swetrix.init(config.public.swetrixPid)
+const config = useRuntimeConfig();
+Swetrix.init(config.public.swetrixPid);
 ```
+
 </Step>
 </Steps>
 

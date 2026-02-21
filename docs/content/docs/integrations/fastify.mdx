@@ -18,13 +18,12 @@ npm install @swetrix/node
 Initialise the Swetrix client with your Project ID:
 
 ```javascript
-import Fastify from 'fastify'
-import { Swetrix } from '@swetrix/node'
+import Fastify from "fastify";
+import { Swetrix } from "@swetrix/node";
 
-const fastify = Fastify({ logger: true })
-const swetrix = new Swetrix('YOUR_PROJECT_ID')
+const fastify = Fastify({ logger: true });
+const swetrix = new Swetrix("YOUR_PROJECT_ID");
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -34,20 +33,20 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 The `Swetrix` constructor accepts an optional second argument — an options object:
 
 ```javascript
-const swetrix = new Swetrix('YOUR_PROJECT_ID', {
+const swetrix = new Swetrix("YOUR_PROJECT_ID", {
   devMode: false,
-  disabled: process.env.NODE_ENV !== 'production',
+  disabled: process.env.NODE_ENV !== "production",
   apiURL: undefined, // only needed for self-hosted Swetrix
-})
+});
 ```
 
-| Option | Type | Description |
-| --- | --- | --- |
-| `devMode` | `boolean` | When `true`, all tracking logs are printed to the console |
-| `disabled` | `boolean` | When `true`, no data is sent to the server — useful for development |
-| `apiURL` | `string` | Custom API server URL (for self-hosted Swetrix) |
-| `unique` | `boolean` | When `true`, only unique events are saved |
-| `profileId` | `string` | Optional profile ID for long-term user tracking |
+| Option      | Type      | Description                                                         |
+| ----------- | --------- | ------------------------------------------------------------------- |
+| `devMode`   | `boolean` | When `true`, all tracking logs are printed to the console           |
+| `disabled`  | `boolean` | When `true`, no data is sent to the server — useful for development |
+| `apiURL`    | `string`  | Custom API server URL (for self-hosted Swetrix)                     |
+| `unique`    | `boolean` | When `true`, only unique events are saved                           |
+| `profileId` | `string`  | Optional profile ID for long-term user tracking                     |
 
 ## Tracking pageviews
 
@@ -56,18 +55,18 @@ To track pageviews you need to pass the visitor's **IP address** and **User-Agen
 ### Basic example
 
 ```javascript
-fastify.get('/', async (request, reply) => {
-  const ip = request.ip
-  const userAgent = request.headers['user-agent']
+fastify.get("/", async (request, reply) => {
+  const ip = request.ip;
+  const userAgent = request.headers["user-agent"];
 
   await swetrix.trackPageView(ip, userAgent, {
-    pg: '/',
-    lc: request.headers['accept-language']?.split(',')[0],
-    ref: request.headers['referer'],
-  })
+    pg: "/",
+    lc: request.headers["accept-language"]?.split(",")[0],
+    ref: request.headers["referer"],
+  });
 
-  return { message: 'Hello World' }
-})
+  return { message: "Hello World" };
+});
 ```
 
 ### Hook approach (recommended)
@@ -75,19 +74,18 @@ fastify.get('/', async (request, reply) => {
 Fastify's lifecycle hooks let you track pageviews automatically on every request without repeating code in each route handler. The `onRequest` hook runs before the route handler:
 
 ```javascript
-fastify.addHook('onRequest', async (request, reply) => {
-  const ip = request.ip
-  const userAgent = request.headers['user-agent']
+fastify.addHook("onRequest", async (request, reply) => {
+  const ip = request.ip;
+  const userAgent = request.headers["user-agent"];
 
   // Fire-and-forget — don't block the response
   swetrix.trackPageView(ip, userAgent, {
     pg: request.url,
-    lc: request.headers['accept-language']?.split(',')[0],
-    ref: request.headers['referer'],
-  })
-})
+    lc: request.headers["accept-language"]?.split(",")[0],
+    ref: request.headers["referer"],
+  });
+});
 ```
-
 
 <Callout type="info">
 By not awaiting `trackPageView`, analytics calls happen in the background without adding latency to your responses. This is the recommended pattern for production.
@@ -99,7 +97,7 @@ If your Fastify app runs behind a reverse proxy (e.g. Nginx, Cloudflare, or a lo
 ```javascript
 const fastify = Fastify({
   trustProxy: true,
-})
+});
 ```
 
 ### Plugin approach
@@ -107,36 +105,36 @@ const fastify = Fastify({
 For a more Fastify-idiomatic solution, you can wrap the tracking logic in a plugin:
 
 ```javascript
-import fp from 'fastify-plugin'
-import { Swetrix } from '@swetrix/node'
+import fp from "fastify-plugin";
+import { Swetrix } from "@swetrix/node";
 
 export default fp(async function swetrixPlugin(fastify, opts) {
   const swetrix = new Swetrix(opts.projectId, {
     disabled: opts.disabled,
     devMode: opts.devMode,
-  })
+  });
 
-  fastify.decorate('swetrix', swetrix)
+  fastify.decorate("swetrix", swetrix);
 
-  fastify.addHook('onRequest', async (request) => {
-    swetrix.trackPageView(request.ip, request.headers['user-agent'], {
+  fastify.addHook("onRequest", async (request) => {
+    swetrix.trackPageView(request.ip, request.headers["user-agent"], {
       pg: request.url,
-      lc: request.headers['accept-language']?.split(',')[0],
-      ref: request.headers['referer'],
-    })
-  })
-})
+      lc: request.headers["accept-language"]?.split(",")[0],
+      ref: request.headers["referer"],
+    });
+  });
+});
 ```
 
 Register the plugin in your app:
 
 ```javascript
-import swetrixPlugin from './plugins/swetrix.js'
+import swetrixPlugin from "./plugins/swetrix.js";
 
 fastify.register(swetrixPlugin, {
   projectId: process.env.SWETRIX_PROJECT_ID,
-  disabled: process.env.NODE_ENV !== 'production',
-})
+  disabled: process.env.NODE_ENV !== "production",
+});
 ```
 
 After registering, you can access the Swetrix instance from any route via `fastify.swetrix` or `request.server.swetrix`.
@@ -145,33 +143,33 @@ After registering, you can access the Swetrix instance from any route via `fasti
 
 The third argument to `trackPageView` is an options object:
 
-| Option | Type | Description |
-| --- | --- | --- |
-| `pg` | `string` | Page path (e.g. `/home`) |
-| `lc` | `string` | Visitor locale (e.g. `en-US`) |
-| `ref` | `string` | Referrer URL |
-| `so` | `string` | Traffic source (e.g. `utm_source`) |
-| `me` | `string` | Traffic medium (e.g. `utm_medium`) |
-| `ca` | `string` | Campaign (e.g. `utm_campaign`) |
-| `unique` | `boolean` | Only save unique visits |
-| `meta` | `object` | Custom metadata key-value pairs |
+| Option   | Type      | Description                        |
+| -------- | --------- | ---------------------------------- |
+| `pg`     | `string`  | Page path (e.g. `/home`)           |
+| `lc`     | `string`  | Visitor locale (e.g. `en-US`)      |
+| `ref`    | `string`  | Referrer URL                       |
+| `so`     | `string`  | Traffic source (e.g. `utm_source`) |
+| `me`     | `string`  | Traffic medium (e.g. `utm_medium`) |
+| `ca`     | `string`  | Campaign (e.g. `utm_campaign`)     |
+| `unique` | `boolean` | Only save unique visits            |
+| `meta`   | `object`  | Custom metadata key-value pairs    |
 
 ## Tracking custom events
 
 Track specific actions — API calls, form submissions, purchases, etc.:
 
 ```javascript
-fastify.post('/api/subscribe', async (request, reply) => {
-  swetrix.track(request.ip, request.headers['user-agent'], {
-    ev: 'NEWSLETTER_SUBSCRIBE',
-    page: '/subscribe',
+fastify.post("/api/subscribe", async (request, reply) => {
+  swetrix.track(request.ip, request.headers["user-agent"], {
+    ev: "NEWSLETTER_SUBSCRIBE",
+    page: "/subscribe",
     meta: {
       plan: request.body.plan,
     },
-  })
+  });
 
-  return { success: true }
-})
+  return { success: true };
+});
 ```
 
 ### Event naming rules
@@ -189,37 +187,37 @@ Use Fastify's `setErrorHandler` to report errors to Swetrix automatically:
 
 ```javascript
 fastify.setErrorHandler((error, request, reply) => {
-  swetrix.trackError(request.ip, request.headers['user-agent'], {
-    name: error.name || 'Error',
+  swetrix.trackError(request.ip, request.headers["user-agent"], {
+    name: error.name || "Error",
     message: error.message,
     stackTrace: error.stack,
     pg: request.url,
-  })
+  });
 
   reply.status(error.statusCode || 500).send({
-    error: 'Internal Server Error',
-  })
-})
+    error: "Internal Server Error",
+  });
+});
 ```
 
 You can also track errors from specific routes:
 
 ```javascript
-fastify.get('/api/data', async (request, reply) => {
+fastify.get("/api/data", async (request, reply) => {
   try {
-    const data = await fetchExternalData()
-    return data
+    const data = await fetchExternalData();
+    return data;
   } catch (err) {
-    swetrix.trackError(request.ip, request.headers['user-agent'], {
+    swetrix.trackError(request.ip, request.headers["user-agent"], {
       name: err.name,
       message: err.message,
       stackTrace: err.stack,
       pg: request.url,
-    })
+    });
 
-    reply.status(500).send({ error: 'Failed to fetch data' })
+    reply.status(500).send({ error: "Failed to fetch data" });
   }
-})
+});
 ```
 
 ## Heartbeat events
@@ -227,22 +225,22 @@ fastify.get('/api/data', async (request, reply) => {
 Heartbeat events let Swetrix know a visitor's session is still active, powering the **Live Visitors** counter in your dashboard. They're most useful in long-lived connections like WebSocket sessions:
 
 ```javascript
-import websocket from '@fastify/websocket'
+import websocket from "@fastify/websocket";
 
-fastify.register(websocket)
+fastify.register(websocket);
 
-const HEARTBEAT_INTERVAL = 30_000
+const HEARTBEAT_INTERVAL = 30_000;
 
-fastify.get('/ws', { websocket: true }, (socket, request) => {
-  const ip = request.ip
-  const userAgent = request.headers['user-agent']
+fastify.get("/ws", { websocket: true }, (socket, request) => {
+  const ip = request.ip;
+  const userAgent = request.headers["user-agent"];
 
   const interval = setInterval(() => {
-    swetrix.heartbeat(ip, userAgent)
-  }, HEARTBEAT_INTERVAL)
+    swetrix.heartbeat(ip, userAgent);
+  }, HEARTBEAT_INTERVAL);
 
-  socket.on('close', () => clearInterval(interval))
-})
+  socket.on("close", () => clearInterval(interval));
+});
 ```
 
 ## Feature flags
@@ -250,29 +248,29 @@ fastify.get('/ws', { websocket: true }, (socket, request) => {
 Evaluate feature flags server-side based on visitor context:
 
 ```javascript
-fastify.get('/dashboard', async (request, reply) => {
+fastify.get("/dashboard", async (request, reply) => {
   const showNewDashboard = await swetrix.getFeatureFlag(
-    'new-dashboard',
+    "new-dashboard",
     request.ip,
-    request.headers['user-agent'],
+    request.headers["user-agent"],
     { profileId: request.user?.id },
     false, // default value
-  )
+  );
 
   if (showNewDashboard) {
-    return reply.view('dashboard-v2')
+    return reply.view("dashboard-v2");
   }
 
-  return reply.view('dashboard')
-})
+  return reply.view("dashboard");
+});
 ```
 
 You can also fetch all flags at once:
 
 ```javascript
-const flags = await swetrix.getFeatureFlags(request.ip, request.headers['user-agent'])
+const flags = await swetrix.getFeatureFlags(request.ip, request.headers["user-agent"]);
 
-if (flags['beta-feature']) {
+if (flags["beta-feature"]) {
   // Enable beta feature
 }
 ```
@@ -280,7 +278,7 @@ if (flags['beta-feature']) {
 Feature flags are cached for 5 minutes. To force a refresh:
 
 ```javascript
-swetrix.clearFeatureFlagsCache()
+swetrix.clearFeatureFlagsCache();
 ```
 
 ## A/B testing (experiments)
@@ -288,19 +286,19 @@ swetrix.clearFeatureFlagsCache()
 Run server-side A/B tests and get the assigned variant for each visitor:
 
 ```javascript
-fastify.get('/pricing', async (request, reply) => {
+fastify.get("/pricing", async (request, reply) => {
   const variant = await swetrix.getExperiment(
-    'pricing-experiment-id',
+    "pricing-experiment-id",
     request.ip,
-    request.headers['user-agent'],
+    request.headers["user-agent"],
     { profileId: request.user?.id },
     null, // default variant
-  )
+  );
 
   return {
-    showAnnualFirst: variant === 'annual-first',
-  }
-})
+    showAnnualFirst: variant === "annual-first",
+  };
+});
 ```
 
 ## Revenue attribution
@@ -308,11 +306,11 @@ fastify.get('/pricing', async (request, reply) => {
 Use profile and session IDs to connect analytics with your payment provider (e.g. Paddle, Stripe):
 
 ```javascript
-fastify.get('/checkout', async (request, reply) => {
+fastify.get("/checkout", async (request, reply) => {
   const [profileId, sessionId] = await Promise.all([
-    swetrix.getProfileId(request.ip, request.headers['user-agent']),
-    swetrix.getSessionId(request.ip, request.headers['user-agent']),
-  ])
+    swetrix.getProfileId(request.ip, request.headers["user-agent"]),
+    swetrix.getSessionId(request.ip, request.headers["user-agent"]),
+  ]);
 
   return {
     checkoutConfig: {
@@ -321,8 +319,8 @@ fastify.get('/checkout', async (request, reply) => {
         swetrix_session_id: sessionId,
       },
     },
-  }
-})
+  };
+});
 ```
 
 ## Disable tracking in development
@@ -330,17 +328,17 @@ fastify.get('/checkout', async (request, reply) => {
 Use the `disabled` option to prevent tracking during development:
 
 ```javascript
-const swetrix = new Swetrix('YOUR_PROJECT_ID', {
-  disabled: process.env.NODE_ENV !== 'production',
-})
+const swetrix = new Swetrix("YOUR_PROJECT_ID", {
+  disabled: process.env.NODE_ENV !== "production",
+});
 ```
 
 Or use `devMode` to log tracking calls to the console without disabling them:
 
 ```javascript
-const swetrix = new Swetrix('YOUR_PROJECT_ID', {
-  devMode: process.env.NODE_ENV === 'development',
-})
+const swetrix = new Swetrix("YOUR_PROJECT_ID", {
+  devMode: process.env.NODE_ENV === "development",
+});
 ```
 
 ## Using environment variables for your Project ID
@@ -352,23 +350,23 @@ SWETRIX_PROJECT_ID=YOUR_PROJECT_ID
 ```
 
 ```javascript
-const swetrix = new Swetrix(process.env.SWETRIX_PROJECT_ID)
+const swetrix = new Swetrix(process.env.SWETRIX_PROJECT_ID);
 ```
 
 With Fastify's [`@fastify/env`](https://github.com/fastify/fastify-env) plugin:
 
 ```javascript
-import fastifyEnv from '@fastify/env'
+import fastifyEnv from "@fastify/env";
 
 const schema = {
-  type: 'object',
-  required: ['SWETRIX_PROJECT_ID'],
+  type: "object",
+  required: ["SWETRIX_PROJECT_ID"],
   properties: {
-    SWETRIX_PROJECT_ID: { type: 'string' },
+    SWETRIX_PROJECT_ID: { type: "string" },
   },
-}
+};
 
-fastify.register(fastifyEnv, { schema, dotenv: true })
+fastify.register(fastifyEnv, { schema, dotenv: true });
 ```
 
 ## Complete example
@@ -376,58 +374,58 @@ fastify.register(fastifyEnv, { schema, dotenv: true })
 Here's a full Fastify application with Swetrix analytics:
 
 ```javascript
-import Fastify from 'fastify'
-import { Swetrix } from '@swetrix/node'
+import Fastify from "fastify";
+import { Swetrix } from "@swetrix/node";
 
 const fastify = Fastify({
   logger: true,
   trustProxy: true,
-})
+});
 
 const swetrix = new Swetrix(process.env.SWETRIX_PROJECT_ID, {
-  disabled: process.env.NODE_ENV !== 'production',
-})
+  disabled: process.env.NODE_ENV !== "production",
+});
 
 // Track pageviews on all requests
-fastify.addHook('onRequest', async (request) => {
-  swetrix.trackPageView(request.ip, request.headers['user-agent'], {
+fastify.addHook("onRequest", async (request) => {
+  swetrix.trackPageView(request.ip, request.headers["user-agent"], {
     pg: request.url,
-    lc: request.headers['accept-language']?.split(',')[0],
-    ref: request.headers['referer'],
-  })
-})
+    lc: request.headers["accept-language"]?.split(",")[0],
+    ref: request.headers["referer"],
+  });
+});
 
-fastify.get('/', async () => {
-  return { message: 'Hello World' }
-})
+fastify.get("/", async () => {
+  return { message: "Hello World" };
+});
 
-fastify.post('/api/contact', async (request) => {
-  swetrix.track(request.ip, request.headers['user-agent'], {
-    ev: 'CONTACT_FORM_SUBMITTED',
-    page: '/contact',
-  })
+fastify.post("/api/contact", async (request) => {
+  swetrix.track(request.ip, request.headers["user-agent"], {
+    ev: "CONTACT_FORM_SUBMITTED",
+    page: "/contact",
+  });
 
-  return { success: true }
-})
+  return { success: true };
+});
 
 // Error tracking
 fastify.setErrorHandler((error, request, reply) => {
-  swetrix.trackError(request.ip, request.headers['user-agent'], {
-    name: error.name || 'Error',
+  swetrix.trackError(request.ip, request.headers["user-agent"], {
+    name: error.name || "Error",
     message: error.message,
     stackTrace: error.stack,
     pg: request.url,
-  })
+  });
 
-  reply.status(500).send({ error: 'Internal Server Error' })
-})
+  reply.status(500).send({ error: "Internal Server Error" });
+});
 
 fastify.listen({ port: 3000 }, (err) => {
   if (err) {
-    fastify.log.error(err)
-    process.exit(1)
+    fastify.log.error(err);
+    process.exit(1);
   }
-})
+});
 ```
 
 ## Check your installation
@@ -439,9 +437,9 @@ Deploy your application (or temporarily enable `devMode`) and make a few request
 If you're self-hosting the [Swetrix API](https://github.com/Swetrix/swetrix-api), point the `apiURL` option to your instance:
 
 ```javascript
-const swetrix = new Swetrix('YOUR_PROJECT_ID', {
-  apiURL: 'https://your-swetrix-instance.com/log',
-})
+const swetrix = new Swetrix("YOUR_PROJECT_ID", {
+  apiURL: "https://your-swetrix-instance.com/log",
+});
 ```
 
 ## Further reading

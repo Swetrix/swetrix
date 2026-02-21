@@ -22,17 +22,17 @@ Swetrix must run in the browser. In Qwik, use `useVisibleTask$` to execute clien
 Open `src/routes/layout.tsx` and add Swetrix initialisation:
 
 ```tsx
-import { component$, Slot, useVisibleTask$ } from '@builder.io/qwik'
-import * as Swetrix from 'swetrix'
+import { component$, Slot, useVisibleTask$ } from "@builder.io/qwik";
+import * as Swetrix from "swetrix";
 
 export default component$(() => {
   useVisibleTask$(() => {
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
-  })
+    Swetrix.init("YOUR_PROJECT_ID");
+    Swetrix.trackViews();
+  });
 
-  return <Slot />
-})
+  return <Slot />;
+});
 ```
 
 ### Standalone Qwik (without Qwik City)
@@ -54,7 +54,6 @@ export const App = component$(() => {
   )
 })
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -80,19 +79,18 @@ To track visitors who have JavaScript disabled, add a noscript image pixel to yo
 By default, Swetrix ignores `localhost` traffic. You can also explicitly disable it in development:
 
 ```tsx
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   disabled: import.meta.env.DEV,
-})
+});
 ```
-
 
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```tsx
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -111,10 +109,10 @@ Update your root layout:
 
 ```tsx
 useVisibleTask$(() => {
-  Swetrix.init('YOUR_PROJECT_ID')
-  Swetrix.trackViews()
-  Swetrix.trackErrors()
-})
+  Swetrix.init("YOUR_PROJECT_ID");
+  Swetrix.trackViews();
+  Swetrix.trackErrors();
+});
 ```
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
@@ -126,33 +124,33 @@ Custom events let you track specific user interactions — button clicks, form s
 ### Example: tracking button clicks
 
 ```tsx
-import { component$ } from '@builder.io/qwik'
-import * as Swetrix from 'swetrix'
+import { component$ } from "@builder.io/qwik";
+import * as Swetrix from "swetrix";
 
 export const UpgradeButton = component$(() => {
   return (
     <button
       onClick$={() => {
         Swetrix.track({
-          ev: 'UPGRADE_CTA_CLICK',
+          ev: "UPGRADE_CTA_CLICK",
           meta: {
-            plan: 'pro',
-            location: 'pricing',
+            plan: "pro",
+            location: "pricing",
           },
-        })
+        });
       }}
     >
       Upgrade to Pro
     </button>
-  )
-})
+  );
+});
 ```
 
 ### Example: tracking form submissions
 
 ```tsx
-import { component$ } from '@builder.io/qwik'
-import * as Swetrix from 'swetrix'
+import { component$ } from "@builder.io/qwik";
+import * as Swetrix from "swetrix";
 
 export const ContactForm = component$(() => {
   return (
@@ -160,34 +158,34 @@ export const ContactForm = component$(() => {
       preventdefault:submit
       onSubmit$={() => {
         Swetrix.track({
-          ev: 'CONTACT_FORM_SUBMITTED',
+          ev: "CONTACT_FORM_SUBMITTED",
           meta: {
-            source: 'support_page',
+            source: "support_page",
           },
-        })
+        });
       }}
     >
       <input type="email" placeholder="you@example.com" required />
       <textarea placeholder="How can we help?" required />
       <button type="submit">Send</button>
     </form>
-  )
-})
+  );
+});
 ```
 
 ### Example: tracking outbound links
 
 ```tsx
-import { component$ } from '@builder.io/qwik'
-import * as Swetrix from 'swetrix'
+import { component$ } from "@builder.io/qwik";
+import * as Swetrix from "swetrix";
 
 interface TrackedLinkProps {
-  href: string
-  eventName?: string
+  href: string;
+  eventName?: string;
 }
 
 export const TrackedLink = component$<TrackedLinkProps>(
-  ({ href, eventName = 'OUTBOUND_CLICK' }) => {
+  ({ href, eventName = "OUTBOUND_CLICK" }) => {
     return (
       <a
         href={href}
@@ -197,14 +195,14 @@ export const TrackedLink = component$<TrackedLinkProps>(
           Swetrix.track({
             ev: eventName,
             meta: { url: href },
-          })
+          });
         }}
       >
         <Slot />
       </a>
-    )
+    );
   },
-)
+);
 ```
 
 ### Event naming rules
@@ -229,7 +227,7 @@ VITE_SWETRIX_PID=YOUR_PROJECT_ID
 **2. Use it in your layout:**
 
 ```tsx
-Swetrix.init(import.meta.env.VITE_SWETRIX_PID)
+Swetrix.init(import.meta.env.VITE_SWETRIX_PID);
 ```
 
 ## Further reading

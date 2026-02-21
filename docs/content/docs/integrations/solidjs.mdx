@@ -24,16 +24,16 @@ SolidStart is the official meta-framework for SolidJS with file-based routing an
 Create a new file at `src/components/Analytics.tsx`:
 
 ```tsx
-import { onMount } from 'solid-js'
-import * as Swetrix from 'swetrix'
+import { onMount } from "solid-js";
+import * as Swetrix from "swetrix";
 
 export default function Analytics() {
   onMount(() => {
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
-  })
+    Swetrix.init("YOUR_PROJECT_ID");
+    Swetrix.trackViews();
+  });
 
-  return null
+  return null;
 }
 ```
 
@@ -44,24 +44,25 @@ export default function Analytics() {
 Open `src/app.tsx` and render the `Analytics` component inside the `<Router>`:
 
 ```tsx
-import { Router } from '@solidjs/router'
-import { FileRoutes } from '@solidjs/start/router'
-import Analytics from '~/components/Analytics'
+import { Router } from "@solidjs/router";
+import { FileRoutes } from "@solidjs/start/router";
+import Analytics from "~/components/Analytics";
 
 export default function App() {
   return (
-    <Router root={(props) => (
-      <>
-        <Analytics />
-        {props.children}
-      </>
-    )}>
+    <Router
+      root={(props) => (
+        <>
+          <Analytics />
+          {props.children}
+        </>
+      )}
+    >
       <FileRoutes />
     </Router>
-  )
+  );
 }
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -75,14 +76,14 @@ For a standalone SolidJS SPA without SolidStart, initialise Swetrix in your entr
 Open `src/index.tsx`:
 
 ```tsx
-import { render } from 'solid-js/web'
-import * as Swetrix from 'swetrix'
-import App from './App'
+import { render } from "solid-js/web";
+import * as Swetrix from "swetrix";
+import App from "./App";
 
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
 
-render(() => <App />, document.getElementById('root')!)
+render(() => <App />, document.getElementById("root")!);
 ```
 
 ### Noscript fallback (optional)
@@ -108,19 +109,18 @@ To track visitors who have JavaScript disabled, add a noscript image pixel to yo
 By default, Swetrix ignores `localhost` traffic. You can also explicitly disable it based on your environment:
 
 ```tsx
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   disabled: import.meta.env.DEV,
-})
+});
 ```
-
 
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```tsx
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -139,10 +139,10 @@ Update your analytics component:
 
 ```tsx
 onMount(() => {
-  Swetrix.init('YOUR_PROJECT_ID')
-  Swetrix.trackViews()
-  Swetrix.trackErrors()
-})
+  Swetrix.init("YOUR_PROJECT_ID");
+  Swetrix.trackViews();
+  Swetrix.trackErrors();
+});
 ```
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
@@ -154,40 +154,40 @@ Custom events let you track specific user interactions — button clicks, form s
 ### Example: tracking button clicks
 
 ```tsx
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default function SignUpButton() {
   const handleClick = () => {
     Swetrix.track({
-      ev: 'SIGNUP_CTA_CLICK',
+      ev: "SIGNUP_CTA_CLICK",
       meta: {
-        location: 'hero',
+        location: "hero",
       },
-    })
-  }
+    });
+  };
 
-  return <button onClick={handleClick}>Sign up</button>
+  return <button onClick={handleClick}>Sign up</button>;
 }
 ```
 
 ### Example: tracking form submissions
 
 ```tsx
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default function ContactForm() {
   const handleSubmit = (e: SubmitEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     Swetrix.track({
-      ev: 'CONTACT_FORM_SUBMITTED',
+      ev: "CONTACT_FORM_SUBMITTED",
       meta: {
-        source: 'support_page',
+        source: "support_page",
       },
-    })
+    });
 
     // ...submit logic
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -195,7 +195,7 @@ export default function ContactForm() {
       <textarea placeholder="How can we help?" required />
       <button type="submit">Send</button>
     </form>
-  )
+  );
 }
 ```
 
@@ -221,7 +221,7 @@ VITE_SWETRIX_PID=YOUR_PROJECT_ID
 **2. Reference it in your analytics component:**
 
 ```tsx
-Swetrix.init(import.meta.env.VITE_SWETRIX_PID)
+Swetrix.init(import.meta.env.VITE_SWETRIX_PID);
 ```
 
 ## Further reading

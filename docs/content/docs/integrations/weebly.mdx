@@ -31,10 +31,10 @@ In the **Footer Code** field, paste the following:
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -50,7 +50,6 @@ In the **Footer Code** field, paste the following:
 
 Click **Save**, then **Publish** your site to apply the changes.
 
-
 <Callout type="warn">
 Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
 
@@ -59,7 +58,6 @@ Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the S
 ## Check your installation
 
 After publishing, open your Weebly site in a new tab (or an incognito window) and browse a few pages. Within a minute you should see new pageviews appearing in your Swetrix dashboard.
-
 
 <Callout type="info">
 The tracking script only runs on your published site. You won't see analytics data while previewing inside the Weebly editor.
@@ -72,14 +70,14 @@ You can use `swetrix.track()` to capture custom interactions — button clicks, 
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var form = document.querySelector('form')
-    if (!form || typeof swetrix === 'undefined') return
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.querySelector("form");
+    if (!form || typeof swetrix === "undefined") return;
 
-    form.addEventListener('submit', function () {
-      swetrix.track({ ev: 'form_submission' })
-    })
-  })
+    form.addEventListener("submit", function () {
+      swetrix.track({ ev: "form_submission" });
+    });
+  });
 </script>
 ```
 

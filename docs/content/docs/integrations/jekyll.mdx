@@ -17,10 +17,10 @@ In your Jekyll project, create the file `_includes/swetrix-analytics.html` with 
 {% if jekyll.environment == "production" %}
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -34,7 +34,6 @@ In your Jekyll project, create the file `_includes/swetrix-analytics.html` with 
 ```
 
 The `{% if jekyll.environment == "production" %}` condition ensures the tracking script is only included in production builds. This prevents inflating your analytics with local page views during development.
-
 
 <Callout type="warn">
 It's very important not to forget to replace `YOUR_PROJECT_ID` with your actual Project ID you can find in the Dashboard, otherwise tracking won't work!
@@ -61,7 +60,6 @@ Jekyll doesn't set the environment to `production` by default when building loca
 JEKYLL_ENV=production jekyll build
 ```
 
-
 <Callout type="info">
 If you deploy via **GitHub Pages**, the environment is automatically set to `production` — no extra configuration needed.
 
@@ -84,10 +82,10 @@ swetrix:
 {% if jekyll.environment == "production" and site.swetrix.project_id %}
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('{{ site.swetrix.project_id }}')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("{{ site.swetrix.project_id }}");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -108,11 +106,11 @@ To enable automatic client-side error monitoring, add `trackErrors()` after `ini
 {% if jekyll.environment == "production" %}
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-    swetrix.trackErrors()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
 </script>
 
 <noscript>
@@ -132,20 +130,18 @@ Errors will appear in the **Errors** tab of your project dashboard. See the [tra
 You can track custom events (button clicks, form submissions, etc.) anywhere on your site by calling `swetrix.track()`:
 
 ```html
-<button onclick="swetrix.track({ ev: 'SIGNUP_CLICK' })">
-  Sign up
-</button>
+<button onclick="swetrix.track({ ev: 'SIGNUP_CLICK' })">Sign up</button>
 ```
 
 For events with metadata:
 
 ```javascript
 swetrix.track({
-  ev: 'NEWSLETTER_SIGNUP',
+  ev: "NEWSLETTER_SIGNUP",
   meta: {
-    source: 'footer',
+    source: "footer",
   },
-})
+});
 ```
 
 ### Event naming rules

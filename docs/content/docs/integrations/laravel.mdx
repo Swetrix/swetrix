@@ -25,25 +25,21 @@ Open your layout file and add the Swetrix script just before the closing `</head
 ```html
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ config('app.name', 'Laravel') }}</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    {{-- Swetrix Analytics --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js']) {{-- Swetrix Analytics --}}
     <script src="https://swetrix.org/swetrix.js" defer></script>
-</head>
-<body>
-    @yield('content')
-
-    {{-- Swetrix Analytics --}}
+  </head>
+  <body>
+    @yield('content') {{-- Swetrix Analytics --}}
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
+      document.addEventListener("DOMContentLoaded", function () {
+        swetrix.init("YOUR_PROJECT_ID");
+        swetrix.trackViews();
+      });
     </script>
 
     <noscript>
@@ -53,10 +49,9 @@ Open your layout file and add the Swetrix script just before the closing `</head
         referrerpolicy="no-referrer-when-downgrade"
       />
     </noscript>
-</body>
+  </body>
 </html>
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -69,7 +64,7 @@ To avoid polluting your analytics with local page views, wrap the snippet in an 
 
 ```html
 @production
-    <script src="https://swetrix.org/swetrix.js" defer></script>
+<script src="https://swetrix.org/swetrix.js" defer></script>
 @endproduction
 ```
 
@@ -77,31 +72,30 @@ And for the body initialisation:
 
 ```html
 @production
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
-    </script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
+</script>
 
-    <noscript>
-      <img
-        src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
-        alt=""
-        referrerpolicy="no-referrer-when-downgrade"
-      />
-    </noscript>
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
 @endproduction
 ```
 
 The `@production` Blade directive ensures the script is only included when `APP_ENV=production`.
 
-
 <Callout type="info">
 During development, Swetrix ignores `localhost` traffic by default. If you want to verify tracking locally without changing your environment, you can temporarily set `devMode: true`:
 
 ```js
-swetrix.init('YOUR_PROJECT_ID', { devMode: true })
+swetrix.init("YOUR_PROJECT_ID", { devMode: true });
 ```
 
 Remember to remove this before deploying.
@@ -134,21 +128,21 @@ return [
 
 ```html
 @production
-    <script src="https://swetrix.org/swetrix.js" defer></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('{{ config('services.swetrix.project_id') }}')
-        swetrix.trackViews()
-      })
-    </script>
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    swetrix.init('{{ config('services.swetrix.project_id') }}')
+    swetrix.trackViews()
+  })
+</script>
 
-    <noscript>
-      <img
-        src="https://api.swetrix.com/log/noscript?pid={{ config('services.swetrix.project_id') }}"
-        alt=""
-        referrerpolicy="no-referrer-when-downgrade"
-      />
-    </noscript>
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid={{ config('services.swetrix.project_id') }}"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
 @endproduction
 ```
 
@@ -184,22 +178,21 @@ Track when users submit a contact form:
 
 ```html
 <form id="contact-form" method="POST" action="/contact">
-    @csrf
-    {{-- form fields --}}
-    <button type="submit">Send message</button>
+  @csrf {{-- form fields --}}
+  <button type="submit">Send message</button>
 </form>
 
 <script>
-  document.getElementById('contact-form')?.addEventListener('submit', function () {
-    if (typeof swetrix !== 'undefined') {
+  document.getElementById("contact-form")?.addEventListener("submit", function () {
+    if (typeof swetrix !== "undefined") {
       swetrix.track({
-        ev: 'CONTACT_FORM_SUBMITTED',
+        ev: "CONTACT_FORM_SUBMITTED",
         meta: {
           page: window.location.pathname,
         },
-      })
+      });
     }
-  })
+  });
 </script>
 ```
 
@@ -209,20 +202,20 @@ Track clicks on external links across your site. You can add this to your main l
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('a[href^="http"]').forEach(function (link) {
       if (link.hostname !== window.location.hostname) {
-        link.addEventListener('click', function () {
-          if (typeof swetrix !== 'undefined') {
+        link.addEventListener("click", function () {
+          if (typeof swetrix !== "undefined") {
             swetrix.track({
-              ev: 'OUTBOUND_CLICK',
+              ev: "OUTBOUND_CLICK",
               meta: { url: link.href },
-            })
+            });
           }
-        })
+        });
       }
-    })
-  })
+    });
+  });
 </script>
 ```
 
@@ -244,13 +237,13 @@ Swetrix's `trackViews()` function listens for History API changes, so Inertia na
 For Livewire, if you use `wire:navigate` for SPA-style navigation, Swetrix will similarly pick up the URL changes. If you experience any gaps, you can manually fire a page view after navigation:
 
 ```js
-document.addEventListener('livewire:navigated', function () {
-  if (typeof swetrix !== 'undefined') {
+document.addEventListener("livewire:navigated", function () {
+  if (typeof swetrix !== "undefined") {
     swetrix.pageview({
       payload: { pg: window.location.pathname },
-    })
+    });
   }
-})
+});
 ```
 
 ## Further reading

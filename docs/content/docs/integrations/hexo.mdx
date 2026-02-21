@@ -18,10 +18,10 @@ In your active theme's directory, create the file `themes/<your-theme>/layout/_p
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('<%= theme.swetrix_project_id || "YOUR_PROJECT_ID" %>')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init('<%= theme.swetrix_project_id || "YOUR_PROJECT_ID" %>');
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -32,7 +32,6 @@ In your active theme's directory, create the file `themes/<your-theme>/layout/_p
   />
 </noscript>
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -113,10 +112,10 @@ By default, Swetrix ignores traffic from `localhost`, so page views during `hexo
 <% if (config.env === 'production' || !config.env) { %>
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('<%= theme.swetrix_project_id || "YOUR_PROJECT_ID" %>')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init('<%= theme.swetrix_project_id || "YOUR_PROJECT_ID" %>');
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -141,7 +140,6 @@ And build for production with:
 NODE_ENV=production hexo generate
 ```
 
-
 <Callout type="info">
 Since Swetrix ignores `localhost` traffic by default, the environment-based conditional is optional. It's useful if you want to avoid loading the script entirely during development.
 
@@ -154,11 +152,11 @@ Enable automatic client-side error monitoring by adding `trackErrors()` alongsid
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-    swetrix.trackErrors()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
 </script>
 ```
 
@@ -171,9 +169,7 @@ Custom events let you track specific user interactions — button clicks, form s
 ### Inline event tracking
 
 ```html
-<button onclick="swetrix.track({ ev: 'SIGNUP_CLICK' })">
-  Sign up
-</button>
+<button onclick="swetrix.track({ ev: 'SIGNUP_CLICK' })">Sign up</button>
 ```
 
 ### Example: tracking form submissions
@@ -185,17 +181,17 @@ Custom events let you track specific user interactions — button clicks, form s
 </form>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var form = document.getElementById('contact-form')
-    if (!form || typeof swetrix === 'undefined') return
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.getElementById("contact-form");
+    if (!form || typeof swetrix === "undefined") return;
 
-    form.addEventListener('submit', function () {
+    form.addEventListener("submit", function () {
       swetrix.track({
-        ev: 'NEWSLETTER_SIGNUP',
-        meta: { source: 'footer' },
-      })
-    })
-  })
+        ev: "NEWSLETTER_SIGNUP",
+        meta: { source: "footer" },
+      });
+    });
+  });
 </script>
 ```
 
@@ -217,10 +213,10 @@ npm install swetrix
 Then use it in a client-side script bundled with your theme:
 
 ```js
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
 ```
 
 ## Check your installation

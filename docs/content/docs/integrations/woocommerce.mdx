@@ -11,7 +11,6 @@ Before adding e-commerce event tracking, make sure the Swetrix tracking script i
 
 You'll also need access to your child theme's `functions.php` file or a custom site-specific plugin. All of the PHP snippets below should be placed there.
 
-
 <Callout type="warn">
 Do **not** edit your parent theme's `functions.php` directly — those changes will be lost when the theme updates. Always use a [child theme](https://developer.wordpress.org/themes/advanced-topics/child-themes/) or a simple custom plugin.
 
@@ -26,7 +25,6 @@ After installing the base tracking script via the WordPress guide, visit your st
 Beyond basic page views, you can track key e-commerce interactions as custom events. The snippets below use WooCommerce action hooks to output small `<script>` blocks that call Swetrix's `swetrix.track()` function with contextual metadata.
 
 You can view these events and their metadata in the **Custom events** section of your Swetrix dashboard. Refer to the [tracking script reference](/swetrix-js-reference) for full API details.
-
 
 <Callout type="info">
 Always **back up your site** before editing theme files. If you're not comfortable editing PHP, consider working with a WordPress developer.
@@ -128,7 +126,6 @@ function swetrix_track_ajax_add_to_cart() {
 }
 ```
 
-
 <Callout>
 The AJAX listener above sends limited product details because full product data isn't readily available client-side on archive pages. If you need richer metadata (name, price, SKU), you can output it as `data-*` attributes on the add-to-cart button using the `woocommerce_loop_add_to_cart_link` filter, then read those attributes in the JavaScript handler.
 
@@ -213,7 +210,6 @@ function swetrix_track_purchase($order_id) {
 ```
 
 The `_swetrix_tracked` order meta flag ensures the purchase event only fires once, preventing duplicate tracking if the customer refreshes the thank-you page.
-
 
 <Callout>
 The `meta` field accepts up to 20 keys and a combined value length of 1000 characters. Because of this limit, individual item details are condensed into a single `items` string (e.g. `SKU-001 x2, SKU-002 x1`). If you only need the item count rather than a breakdown, replace the `items` field with `item_count`.

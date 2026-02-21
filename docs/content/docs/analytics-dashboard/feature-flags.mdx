@@ -3,7 +3,6 @@ title: Feature Flags
 slug: /analytics-dashboard/feature-flags
 ---
 
-
 Feature flags allow you to toggle features on and off for your users without deploying new code. This is useful for rolling out new features gradually, testing in production, or quickly disabling a feature if something goes wrong.
 
 ## Overview
@@ -21,11 +20,11 @@ To use feature flags in your application, you can use the Swetrix tracking scrip
 ### Fetching all flags
 
 ```javascript
-import { getFeatureFlags } from 'swetrix'
+import { getFeatureFlags } from "swetrix";
 
-const flags = await getFeatureFlags()
+const flags = await getFeatureFlags();
 
-if (flags['new-checkout']) {
+if (flags["new-checkout"]) {
   // Show new checkout flow
 }
 ```
@@ -33,13 +32,13 @@ if (flags['new-checkout']) {
 ### Getting a single flag
 
 ```javascript
-import { getFeatureFlag } from 'swetrix'
+import { getFeatureFlag } from "swetrix";
 
-const isEnabled = await getFeatureFlag('dark-mode', {
+const isEnabled = await getFeatureFlag("dark-mode", {
   // Optional: provide a specific profileId if known,
   // otherwise it uses the one from init() or generates an anonymous one.
-  profileId: 'user-123',
-})
+  profileId: "user-123",
+});
 
 if (isEnabled) {
   // Enable dark mode
@@ -51,10 +50,10 @@ if (isEnabled) {
 Feature flags are cached for 5 minutes by default to minimize network requests. You can force a refresh or clear the cache if needed:
 
 ```javascript
-import { clearFeatureFlagsCache } from 'swetrix'
+import { clearFeatureFlagsCache } from "swetrix";
 
 // Clear cache to force a fresh fetch on next call
-clearFeatureFlagsCache()
+clearFeatureFlagsCache();
 ```
 
 ## Managing Flags

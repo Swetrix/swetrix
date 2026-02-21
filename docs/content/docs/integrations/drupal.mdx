@@ -27,7 +27,6 @@ If your theme doesn't override this template yet, copy it from Drupal core as a 
 core/themes/stable9/templates/layout/html.html.twig
 ```
 
-
 <Callout type="info">
 Always use a **custom or sub-theme** for template overrides. Editing a contributed theme directly means your changes will be lost on the next theme update.
 
@@ -40,10 +39,10 @@ Open `html.html.twig` and paste the following just before the closing `</body>` 
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -64,7 +63,6 @@ The template usually ends with something like this:
 ```
 
 Place the Swetrix snippet between the `<js-bottom-placeholder>` line and the `</body>` tag.
-
 
 <Callout type="warn">
 Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
@@ -108,20 +106,19 @@ Or download it from [drupal.org/project/asset_injector](https://www.drupal.org/p
 
 ```javascript
 (function () {
-  var s = document.createElement('script')
-  s.src = 'https://swetrix.org/swetrix.js'
-  s.defer = true
+  var s = document.createElement("script");
+  s.src = "https://swetrix.org/swetrix.js";
+  s.defer = true;
   s.onload = function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  }
-  document.head.appendChild(s)
-})()
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  };
+  document.head.appendChild(s);
+})();
 ```
 
 4. Under **Conditions**, leave the pages field empty so the script runs on every page (or restrict it to specific paths if needed).
 5. Click **Save**.
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard.
@@ -156,14 +153,14 @@ Example — tracking a Webform submission:
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var form = document.querySelector('.webform-submission-form')
-    if (!form || typeof swetrix === 'undefined') return
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.querySelector(".webform-submission-form");
+    if (!form || typeof swetrix === "undefined") return;
 
-    form.addEventListener('submit', function () {
-      swetrix.track({ ev: 'webform_submitted' })
-    })
-  })
+    form.addEventListener("submit", function () {
+      swetrix.track({ ev: "webform_submitted" });
+    });
+  });
 </script>
 ```
 

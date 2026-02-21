@@ -29,10 +29,10 @@ In the module's configuration, add the following code to the **header** (`<head>
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -45,7 +45,6 @@ In the module's configuration, add the following code to the **header** (`<head>
 ```
 
 3. Save the module configuration.
-
 
 <Callout type="warn">
 Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
@@ -70,10 +69,10 @@ Paste the following just before the closing `</head>` section (or at the end of 
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -87,12 +86,10 @@ Paste the following just before the closing `</head>` section (or at the end of 
 
 3. Save the file.
 
-
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard.
 
 </Callout>
-
 
 <Callout>
 Always use a **child theme** when editing template files. Changes to the parent theme will be lost when you update PrestaShop or the theme. To create a child theme, copy your theme folder, rename it, and update the `theme.yml` file with the new name and parent reference.
@@ -109,7 +106,6 @@ If you don't see data, open your browser's developer tools (F12), check the **Co
 
 Beyond basic page views, you can track purchases and other e-commerce interactions as custom events using `swetrix.track()`. You can view these events and their metadata in the **Custom events** section of your Swetrix dashboard. Refer to the [tracking script reference](/swetrix-js-reference) for full API details.
 
-
 <Callout type="info">
 Always **back up your theme** before editing template files.
 
@@ -122,30 +118,29 @@ To track completed orders, add a script to PrestaShop's order confirmation page.
 ```html
 {literal}
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    if (typeof swetrix === 'undefined') return
-{/literal}
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof swetrix === 'undefined') return
+  {/literal}
 
-{if isset($order)}
-    swetrix.track({
-      ev: 'purchase',
-      meta: {
-        order_id: '{$order.details.reference}',
-        total: '{$order.totals.total.amount}',
-        currency: '{$order.totals.total.value|regex_replace:"/[^A-Z]/":""}',
-        items: '{$order.products|count}'
-      }
+  {if isset($order)}
+      swetrix.track({
+        ev: 'purchase',
+        meta: {
+          order_id: '{$order.details.reference}',
+          total: '{$order.totals.total.amount}',
+          currency: '{$order.totals.total.value|regex_replace:"/[^A-Z]/":""}',
+          items: '{$order.products|count}'
+        }
+      })
+  {/if}
+
+  {literal}
     })
-{/if}
-
-{literal}
-  })
 </script>
 {/literal}
 ```
 
 PrestaShop uses the **Smarty** templating engine. The `{$variable}` syntax is processed server-side to inject order data, while `{literal}` blocks prevent Smarty from trying to parse the JavaScript code.
-
 
 <Callout>
 The exact Smarty variables may differ depending on your PrestaShop version and theme. Check your theme's existing `order-confirmation.tpl` to see which variables are available.
@@ -159,29 +154,28 @@ To track when a visitor adds a product to their cart, add a script to your produ
 ```html
 {literal}
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var addToCartBtn = document.querySelector('.add-to-cart')
-    if (!addToCartBtn || typeof swetrix === 'undefined') return
+  document.addEventListener("DOMContentLoaded", function () {
+    var addToCartBtn = document.querySelector(".add-to-cart");
+    if (!addToCartBtn || typeof swetrix === "undefined") return;
 
-    addToCartBtn.addEventListener('click', function () {
-      var nameEl = document.querySelector('h1[itemprop="name"]')
-      var priceEl = document.querySelector('[itemprop="price"]')
-      var qtyInput = document.querySelector('#quantity_wanted')
+    addToCartBtn.addEventListener("click", function () {
+      var nameEl = document.querySelector('h1[itemprop="name"]');
+      var priceEl = document.querySelector('[itemprop="price"]');
+      var qtyInput = document.querySelector("#quantity_wanted");
 
       swetrix.track({
-        ev: 'added_to_cart',
+        ev: "added_to_cart",
         meta: {
-          name: nameEl ? nameEl.textContent.trim() : '',
-          price: priceEl ? priceEl.getAttribute('content') || priceEl.textContent.trim() : '',
-          quantity: qtyInput ? qtyInput.value : '1'
-        }
-      })
-    })
-  })
+          name: nameEl ? nameEl.textContent.trim() : "",
+          price: priceEl ? priceEl.getAttribute("content") || priceEl.textContent.trim() : "",
+          quantity: qtyInput ? qtyInput.value : "1",
+        },
+      });
+    });
+  });
 </script>
 {/literal}
 ```
-
 
 <Callout>
 The `.add-to-cart` selector is standard in PrestaShop's default themes (Classic and similar). If your theme uses a different class or structure, adjust the selector to match your "Add to Cart" button.

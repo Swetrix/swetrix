@@ -9,7 +9,6 @@ You have to validate the user's response to the CAPTCHA on your server. The toke
 
 The validation endpoint accepts the CAPTHCA token and your project-specific secret key and returns a JSON response with the validation result.
 
-
 <Callout type="info">
 Token validation can only be performed once, if you try to validate the same token twice, the second validation will fail. This is done to prevent token reuse attacks.
 
@@ -80,17 +79,17 @@ The package exports a single function `validateToken` which takes arguments list
 Here's an example of how to use the package in your project:
 
 ```js
-const { validateToken } = require('@swetrix/captcha-validator')
+const { validateToken } = require("@swetrix/captcha-validator");
 // or
-import { validateToken } from '@swetrix/captcha-validator'
+import { validateToken } from "@swetrix/captcha-validator";
 
 // somewhere inside the controller of your form where the CAPTCHA is used
-validateToken('CAPTCHA_TOKEN', 'YOUR_SECRET_KEY').then((result) => {
-  const [status, data] = result
+validateToken("CAPTCHA_TOKEN", "YOUR_SECRET_KEY").then((result) => {
+  const [status, data] = result;
   // status is a boolean, true if the token is valid, false otherwise
   // data is an error message if status is false
-  console.log(status, data)
-})
+  console.log(status, data);
+});
 ```
 
 </Tab>

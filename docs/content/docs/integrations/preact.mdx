@@ -22,16 +22,15 @@ If your app doesn't use client-side routing, you can initialise Swetrix once in 
 Open `src/index.tsx` (or `src/index.jsx`):
 
 ```tsx
-import { render } from 'preact'
-import * as Swetrix from 'swetrix'
-import App from './App'
+import { render } from "preact";
+import * as Swetrix from "swetrix";
+import App from "./App";
 
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
 
-render(<App />, document.getElementById('app')!)
+render(<App />, document.getElementById("app")!);
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -65,20 +64,19 @@ To track visitors who have JavaScript disabled, add a noscript image pixel to yo
 By default, Swetrix ignores `localhost` traffic. You can also explicitly disable it based on your environment:
 
 ```tsx
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   disabled: import.meta.env.DEV, // Vite
   // disabled: process.env.NODE_ENV === 'development', // Preact CLI / webpack
-})
+});
 ```
-
 
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```tsx
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -96,17 +94,17 @@ Enable automatic client-side error monitoring by adding `trackErrors()` to your 
 Update your analytics setup:
 
 ```tsx
-import { useEffect } from 'preact/hooks'
-import * as Swetrix from 'swetrix'
+import { useEffect } from "preact/hooks";
+import * as Swetrix from "swetrix";
 
 export default function App() {
   useEffect(() => {
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
-    Swetrix.trackErrors()
-  }, [])
+    Swetrix.init("YOUR_PROJECT_ID");
+    Swetrix.trackViews();
+    Swetrix.trackErrors();
+  }, []);
 
-  return <main>{/* your app */}</main>
+  return <main>{/* your app */}</main>;
 }
 ```
 
@@ -119,40 +117,40 @@ Custom events let you track specific user interactions — button clicks, form s
 ### Example: tracking button clicks
 
 ```tsx
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default function SignUpButton() {
   const handleClick = () => {
     Swetrix.track({
-      ev: 'SIGNUP_CTA_CLICK',
+      ev: "SIGNUP_CTA_CLICK",
       meta: {
-        location: 'navbar',
+        location: "navbar",
       },
-    })
-  }
+    });
+  };
 
-  return <button onClick={handleClick}>Sign up</button>
+  return <button onClick={handleClick}>Sign up</button>;
 }
 ```
 
 ### Example: tracking form submissions
 
 ```tsx
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default function ContactForm() {
   const handleSubmit = (e: Event) => {
-    e.preventDefault()
+    e.preventDefault();
 
     Swetrix.track({
-      ev: 'CONTACT_FORM_SUBMITTED',
+      ev: "CONTACT_FORM_SUBMITTED",
       meta: {
-        source: 'support_page',
+        source: "support_page",
       },
-    })
+    });
 
     // ...submit logic
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -160,7 +158,7 @@ export default function ContactForm() {
       <textarea placeholder="How can we help?" required />
       <button type="submit">Send</button>
     </form>
-  )
+  );
 }
 ```
 
@@ -169,32 +167,32 @@ export default function ContactForm() {
 Create a reusable component for external links:
 
 ```tsx
-import * as Swetrix from 'swetrix'
-import type { ComponentChildren } from 'preact'
+import * as Swetrix from "swetrix";
+import type { ComponentChildren } from "preact";
 
 interface TrackedLinkProps {
-  href: string
-  children: ComponentChildren
-  eventName?: string
+  href: string;
+  children: ComponentChildren;
+  eventName?: string;
 }
 
 export default function TrackedLink({
   href,
   children,
-  eventName = 'OUTBOUND_CLICK',
+  eventName = "OUTBOUND_CLICK",
 }: TrackedLinkProps) {
   const handleClick = () => {
     Swetrix.track({
       ev: eventName,
       meta: { url: href },
-    })
-  }
+    });
+  };
 
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={handleClick}>
       {children}
     </a>
-  )
+  );
 }
 ```
 
@@ -218,7 +216,7 @@ VITE_SWETRIX_PID=YOUR_PROJECT_ID
 ```
 
 ```tsx
-Swetrix.init(import.meta.env.VITE_SWETRIX_PID)
+Swetrix.init(import.meta.env.VITE_SWETRIX_PID);
 ```
 
 **Preact CLI / webpack** — prefix with `PREACT_APP_`:
@@ -228,7 +226,7 @@ PREACT_APP_SWETRIX_PID=YOUR_PROJECT_ID
 ```
 
 ```tsx
-Swetrix.init(process.env.PREACT_APP_SWETRIX_PID!)
+Swetrix.init(process.env.PREACT_APP_SWETRIX_PID!);
 ```
 
 ## Using React compat aliases

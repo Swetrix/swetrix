@@ -22,10 +22,10 @@ Scroll down to **Script/meta tags in header** and paste the following snippet. T
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -36,7 +36,6 @@ Scroll down to **Script/meta tags in header** and paste the following snippet. T
   />
 </noscript>
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -65,10 +64,10 @@ There are a few scenarios to be aware of:
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews({ hash: true })
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews({ hash: true });
+  });
 </script>
 ```
 
@@ -77,12 +76,12 @@ There are a few scenarios to be aware of:
 If your Bubble app navigates between views without changing the URL, you can fire a pageview manually when a group becomes visible. Use a **Run JavaScript** workflow action:
 
 ```javascript
-if (typeof swetrix !== 'undefined') {
+if (typeof swetrix !== "undefined") {
   swetrix.pageview({
     payload: {
-      pg: '/your-virtual-page',
+      pg: "/your-virtual-page",
     },
-  })
+  });
 }
 ```
 
@@ -95,11 +94,11 @@ Enable automatic client-side error monitoring by adding `trackErrors()` to the i
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-    swetrix.trackErrors()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
 </script>
 ```
 
@@ -124,10 +123,10 @@ Bubble doesn't include a built-in JavaScript action by default. You need the fre
 3. Add a **Run JavaScript** action and paste your tracking code:
 
 ```javascript
-if (typeof swetrix !== 'undefined') {
+if (typeof swetrix !== "undefined") {
   swetrix.track({
-    ev: 'SIGNUP_CLICKED',
-  })
+    ev: "SIGNUP_CLICKED",
+  });
 }
 ```
 
@@ -136,19 +135,18 @@ if (typeof swetrix !== 'undefined') {
 Bubble lets you insert dynamic expressions into the JavaScript action. You can use this to attach contextual metadata:
 
 ```javascript
-if (typeof swetrix !== 'undefined') {
+if (typeof swetrix !== "undefined") {
   swetrix.track({
-    ev: 'ITEM_ADDED_TO_CART',
+    ev: "ITEM_ADDED_TO_CART",
     meta: {
-      item_name: 'DYNAMIC_ITEM_NAME',
-      category: 'DYNAMIC_CATEGORY',
+      item_name: "DYNAMIC_ITEM_NAME",
+      category: "DYNAMIC_CATEGORY",
     },
-  })
+  });
 }
 ```
 
 Replace the placeholder strings with Bubble's **Insert dynamic data** feature inside the Run JavaScript editor — Bubble will substitute them with actual values at runtime.
-
 
 <Callout type="info">
 You can pass up to 20 metadata keys per event. Values are converted to strings and the combined length of all values must be under 1,000 characters. See the [tracking script reference](/swetrix-js-reference#track) for full details.
@@ -167,27 +165,27 @@ We recommend `UPPER_SNAKE_CASE` for consistency (e.g. `SIGNUP_CLICKED`, `ITEM_AD
 ### Example: tracking a form submission
 
 ```javascript
-if (typeof swetrix !== 'undefined') {
+if (typeof swetrix !== "undefined") {
   swetrix.track({
-    ev: 'CONTACT_FORM_SUBMITTED',
+    ev: "CONTACT_FORM_SUBMITTED",
     meta: {
       page: window.location.pathname,
     },
-  })
+  });
 }
 ```
 
 ### Example: tracking a purchase
 
 ```javascript
-if (typeof swetrix !== 'undefined') {
+if (typeof swetrix !== "undefined") {
   swetrix.track({
-    ev: 'PURCHASE_COMPLETED',
+    ev: "PURCHASE_COMPLETED",
     meta: {
-      plan: 'DYNAMIC_PLAN_NAME',
-      price: 'DYNAMIC_PRICE',
+      plan: "DYNAMIC_PLAN_NAME",
+      price: "DYNAMIC_PRICE",
     },
-  })
+  });
 }
 ```
 

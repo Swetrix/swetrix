@@ -20,21 +20,20 @@ If your app doesn't use the Angular Router, you can initialise Swetrix once in y
 Open `src/app/app.component.ts`:
 
 ```typescript
-import { Component, OnInit } from '@angular/core'
-import * as Swetrix from 'swetrix'
+import { Component, OnInit } from "@angular/core";
+import * as Swetrix from "swetrix";
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
+  selector: "app-root",
+  templateUrl: "./app.component.html",
 })
 export class AppComponent implements OnInit {
   ngOnInit() {
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
+    Swetrix.init("YOUR_PROJECT_ID");
+    Swetrix.trackViews();
   }
 }
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -77,7 +76,7 @@ By default, Swetrix ignores `localhost` traffic. You can also explicitly disable
 export const environment = {
   production: true,
   swetrixDisabled: false,
-}
+};
 ```
 
 `src/environments/environment.development.ts`:
@@ -86,28 +85,27 @@ export const environment = {
 export const environment = {
   production: false,
   swetrixDisabled: true,
-}
+};
 ```
 
 **2. Use it during initialisation**
 
 ```typescript
-import { environment } from '../environments/environment'
-import * as Swetrix from 'swetrix'
+import { environment } from "../environments/environment";
+import * as Swetrix from "swetrix";
 
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   disabled: environment.swetrixDisabled,
-})
+});
 ```
-
 
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```typescript
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -141,21 +139,21 @@ Custom events let you track specific user interactions — button clicks, form s
 ### Example: tracking button clicks
 
 ```typescript
-import { Component } from '@angular/core'
-import * as Swetrix from 'swetrix'
+import { Component } from "@angular/core";
+import * as Swetrix from "swetrix";
 
 @Component({
-  selector: 'app-signup-button',
+  selector: "app-signup-button",
   template: '<button (click)="onClick()">Sign up</button>',
 })
 export class SignUpButtonComponent {
   onClick() {
     Swetrix.track({
-      ev: 'SIGNUP_CTA_CLICK',
+      ev: "SIGNUP_CTA_CLICK",
       meta: {
-        location: 'navbar',
+        location: "navbar",
       },
-    })
+    });
   }
 }
 ```
@@ -163,11 +161,11 @@ export class SignUpButtonComponent {
 ### Example: tracking form submissions
 
 ```typescript
-import { Component } from '@angular/core'
-import * as Swetrix from 'swetrix'
+import { Component } from "@angular/core";
+import * as Swetrix from "swetrix";
 
 @Component({
-  selector: 'app-contact-form',
+  selector: "app-contact-form",
   template: `
     <form (ngSubmit)="onSubmit()">
       <input type="email" placeholder="you@example.com" required />
@@ -179,11 +177,11 @@ import * as Swetrix from 'swetrix'
 export class ContactFormComponent {
   onSubmit() {
     Swetrix.track({
-      ev: 'CONTACT_FORM_SUBMITTED',
+      ev: "CONTACT_FORM_SUBMITTED",
       meta: {
-        source: 'support_page',
+        source: "support_page",
       },
-    })
+    });
 
     // ...submit logic
   }
@@ -195,19 +193,19 @@ export class ContactFormComponent {
 Create a reusable directive for external links:
 
 ```typescript
-import { Directive, HostListener, Input } from '@angular/core'
-import * as Swetrix from 'swetrix'
+import { Directive, HostListener, Input } from "@angular/core";
+import * as Swetrix from "swetrix";
 
-@Directive({ selector: 'a[appTrackOutbound]' })
+@Directive({ selector: "a[appTrackOutbound]" })
 export class TrackOutboundDirective {
-  @Input() appTrackOutbound = 'OUTBOUND_CLICK'
+  @Input() appTrackOutbound = "OUTBOUND_CLICK";
 
-  @HostListener('click', ['$event.target'])
+  @HostListener("click", ["$event.target"])
   onClick(target: HTMLAnchorElement) {
     Swetrix.track({
       ev: this.appTrackOutbound,
       meta: { url: target.href },
-    })
+    });
   }
 }
 ```
@@ -243,17 +241,17 @@ Rather than hardcoding your Project ID, you can store it in Angular's environmen
 ```typescript
 export const environment = {
   production: true,
-  swetrixPid: 'YOUR_PROJECT_ID',
-}
+  swetrixPid: "YOUR_PROJECT_ID",
+};
 ```
 
 **2. Use it in your analytics service:**
 
 ```typescript
-import { environment } from '../../environments/environment'
-import * as Swetrix from 'swetrix'
+import { environment } from "../../environments/environment";
+import * as Swetrix from "swetrix";
 
-Swetrix.init(environment.swetrixPid)
+Swetrix.init(environment.swetrixPid);
 ```
 
 ## Further reading

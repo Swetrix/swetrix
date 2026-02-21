@@ -10,22 +10,23 @@ Swetrix CAPTCHA is a fully open source, cookieless, and privacy-friendly CAPTCHA
 Unlike traditional CAPTCHAs that require users to identify objects in images or solve puzzles, Swetrix CAPTCHA uses a **Proof of Work (PoW)** mechanism.
 
 <Steps>
-<Step>
-### Challenge Request
-When a user interacts with a protected form, the client requests a challenge from the Swetrix server.
-</Step>
-<Step>
-### PoW Calculation
-The client-side script performs a cryptographic calculation (Proof of Work) in the background. This requires a small amount of computational power from the user's device, which is trivial for a legitimate user but computationally expensive for bots trying to spam at scale.
-</Step>
-<Step>
-### Verification
-The solution to the PoW challenge is sent back to the server for verification.
-</Step>
+  <Step>
+    ### Challenge Request When a user interacts with a protected form, the client requests a
+    challenge from the Swetrix server.
+  </Step>
+  <Step>
+    ### PoW Calculation The client-side script performs a cryptographic calculation (Proof of Work)
+    in the background. This requires a small amount of computational power from the user's device,
+    which is trivial for a legitimate user but computationally expensive for bots trying to spam at
+    scale.
+  </Step>
+  <Step>
+    ### Verification The solution to the PoW challenge is sent back to the server for verification.
+  </Step>
 </Steps>
 
 This approach provides a seamless user experience (no more "select all traffic lights") while effectively deterring automated bots.
 
 <Callout type="info">
-You can find the demonstration of the CAPTCHA widget [here](https://captcha.swetrix.com/demo).
+  You can find the demonstration of the CAPTCHA widget [here](https://captcha.swetrix.com/demo).
 </Callout>

@@ -20,23 +20,23 @@ Open your shared layout file — typically `Views/Shared/_Layout.cshtml` (MVC) o
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - My App</title>
 
     <!-- Swetrix Analytics -->
     <script src="https://swetrix.org/swetrix.js" defer></script>
-</head>
-<body>
+  </head>
+  <body>
     @RenderBody()
 
     <!-- Swetrix Analytics -->
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
+      document.addEventListener("DOMContentLoaded", function () {
+        swetrix.init("YOUR_PROJECT_ID");
+        swetrix.trackViews();
+      });
     </script>
 
     <noscript>
@@ -48,10 +48,9 @@ Open your shared layout file — typically `Views/Shared/_Layout.cshtml` (MVC) o
     </noscript>
 
     @await RenderSectionAsync("Scripts", required: false)
-</body>
+  </body>
 </html>
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -64,7 +63,7 @@ Wrap the snippets in an environment check so they only load in production:
 
 ```html
 <environment include="Production">
-    <script src="https://swetrix.org/swetrix.js" defer></script>
+  <script src="https://swetrix.org/swetrix.js" defer></script>
 </environment>
 ```
 
@@ -72,31 +71,30 @@ And for the body initialisation:
 
 ```html
 <environment include="Production">
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
-    </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      swetrix.init("YOUR_PROJECT_ID");
+      swetrix.trackViews();
+    });
+  </script>
 
-    <noscript>
-      <img
-        src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
-        alt=""
-        referrerpolicy="no-referrer-when-downgrade"
-      />
-    </noscript>
+  <noscript>
+    <img
+      src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+      alt=""
+      referrerpolicy="no-referrer-when-downgrade"
+    />
+  </noscript>
 </environment>
 ```
 
 The `<environment>` tag helper is built into ASP.NET Core and reads from the `ASPNETCORE_ENVIRONMENT` variable.
 
-
 <Callout type="info">
 During development, Swetrix ignores `localhost` traffic by default. If you want to verify tracking locally without changing your environment, you can temporarily set `devMode: true`:
 
 ```js
-swetrix.init('YOUR_PROJECT_ID', { devMode: true })
+swetrix.init("YOUR_PROJECT_ID", { devMode: true });
 ```
 
 Remember to remove this before deploying.
@@ -112,7 +110,7 @@ Open `Views/Shared/_Layout.cshtml` and add the Swetrix script:
 ```html
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewBag.Title - My App</title>
@@ -120,16 +118,16 @@ Open `Views/Shared/_Layout.cshtml` and add the Swetrix script:
 
     <!-- Swetrix Analytics -->
     <script src="https://swetrix.org/swetrix.js" defer></script>
-</head>
-<body>
+  </head>
+  <body>
     @RenderBody()
 
     <!-- Swetrix Analytics -->
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
+      document.addEventListener("DOMContentLoaded", function () {
+        swetrix.init("YOUR_PROJECT_ID");
+        swetrix.trackViews();
+      });
     </script>
 
     <noscript>
@@ -140,9 +138,8 @@ Open `Views/Shared/_Layout.cshtml` and add the Swetrix script:
       />
     </noscript>
 
-    @Scripts.Render("~/bundles/jquery")
-    @RenderSection("scripts", required: false)
-</body>
+    @Scripts.Render("~/bundles/jquery") @RenderSection("scripts", required: false)
+  </body>
 </html>
 ```
 
@@ -151,31 +148,29 @@ Open `Views/Shared/_Layout.cshtml` and add the Swetrix script:
 ASP.NET Framework doesn't have a built-in `<environment>` tag helper. Use a conditional check in Razor instead:
 
 ```html
-@if (!HttpContext.Current.IsDebuggingEnabled)
-{
-    <script src="https://swetrix.org/swetrix.js" defer></script>
+@if (!HttpContext.Current.IsDebuggingEnabled) {
+<script src="https://swetrix.org/swetrix.js" defer></script>
 }
 ```
 
 And for the body initialisation:
 
 ```html
-@if (!HttpContext.Current.IsDebuggingEnabled)
-{
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
-    </script>
+@if (!HttpContext.Current.IsDebuggingEnabled) {
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
+</script>
 
-    <noscript>
-      <img
-        src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
-        alt=""
-        referrerpolicy="no-referrer-when-downgrade"
-      />
-    </noscript>
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
 }
 ```
 
@@ -241,10 +236,10 @@ export Swetrix__ProjectId=YOUR_PROJECT_ID
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('@System.Configuration.ConfigurationManager.AppSettings["Swetrix:ProjectId"]')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init('@System.Configuration.ConfigurationManager.AppSettings["Swetrix:ProjectId"]');
+    swetrix.trackViews();
+  });
 </script>
 ```
 
@@ -258,11 +253,11 @@ Enable automatic client-side error monitoring by adding `trackErrors()` to the i
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-    swetrix.trackErrors()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
 </script>
 ```
 
@@ -278,21 +273,21 @@ Track when users submit a contact form:
 
 ```html
 <form id="contact-form" method="post" asp-action="Contact">
-    <!-- form fields -->
-    <button type="submit">Send message</button>
+  <!-- form fields -->
+  <button type="submit">Send message</button>
 </form>
 
 <script>
-  document.getElementById('contact-form')?.addEventListener('submit', function () {
-    if (typeof swetrix !== 'undefined') {
+  document.getElementById("contact-form")?.addEventListener("submit", function () {
+    if (typeof swetrix !== "undefined") {
       swetrix.track({
-        ev: 'CONTACT_FORM_SUBMITTED',
+        ev: "CONTACT_FORM_SUBMITTED",
         meta: {
           page: window.location.pathname,
         },
-      })
+      });
     }
-  })
+  });
 </script>
 ```
 
@@ -302,20 +297,20 @@ Track clicks on external links across your site. Add this to your layout file:
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('a[href^="http"]').forEach(function (link) {
       if (link.hostname !== window.location.hostname) {
-        link.addEventListener('click', function () {
-          if (typeof swetrix !== 'undefined') {
+        link.addEventListener("click", function () {
+          if (typeof swetrix !== "undefined") {
             swetrix.track({
-              ev: 'OUTBOUND_CLICK',
+              ev: "OUTBOUND_CLICK",
               meta: { url: link.href },
-            })
+            });
           }
-        })
+        });
       }
-    })
-  })
+    });
+  });
 </script>
 ```
 
@@ -336,18 +331,18 @@ For Blazor apps that render on the server, add the Swetrix script to your host p
 
 ```html
 <head>
-    <!-- other head content -->
-    <script src="https://swetrix.org/swetrix.js" defer></script>
+  <!-- other head content -->
+  <script src="https://swetrix.org/swetrix.js" defer></script>
 </head>
 <body>
-    <!-- Blazor root component -->
+  <!-- Blazor root component -->
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
-    </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      swetrix.init("YOUR_PROJECT_ID");
+      swetrix.trackViews();
+    });
+  </script>
 </body>
 ```
 
@@ -359,18 +354,18 @@ For standalone Blazor WASM apps, add the script to `wwwroot/index.html`:
 
 ```html
 <head>
-    <script src="https://swetrix.org/swetrix.js" defer></script>
+  <script src="https://swetrix.org/swetrix.js" defer></script>
 </head>
 <body>
-    <div id="app">Loading...</div>
+  <div id="app">Loading...</div>
 
-    <script src="_framework/blazor.webassembly.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
-    </script>
+  <script src="_framework/blazor.webassembly.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      swetrix.init("YOUR_PROJECT_ID");
+      swetrix.trackViews();
+    });
+  </script>
 </body>
 ```
 
@@ -512,7 +507,6 @@ Register the middleware in `Program.cs`:
 app.UseMiddleware<SwetrixMiddleware>();
 ```
 
-
 <Callout type="info">
 By using fire-and-forget (`_ = ...`), the analytics call runs in the background without adding latency to your responses. This is the recommended pattern for production.
 
@@ -585,9 +579,9 @@ If you're self-hosting the [Swetrix API](https://github.com/Swetrix/swetrix-api)
 **Client-side:**
 
 ```js
-swetrix.init('YOUR_PROJECT_ID', {
-  apiURL: 'https://your-swetrix-instance.com/log',
-})
+swetrix.init("YOUR_PROJECT_ID", {
+  apiURL: "https://your-swetrix-instance.com/log",
+});
 ```
 
 **Server-side:**

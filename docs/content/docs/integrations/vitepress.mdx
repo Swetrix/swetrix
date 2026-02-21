@@ -14,17 +14,14 @@ There are two ways to add Swetrix to a VitePress site: via the **config file** (
 Add the Swetrix tracking script to your `.vitepress/config.ts` (or `.js` / `.mts`):
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from "vitepress";
 
 export default defineConfig({
   // ...your existing config
   head: [
+    ["script", { src: "https://swetrix.org/swetrix.js", defer: "" }],
     [
-      'script',
-      { src: 'https://swetrix.org/swetrix.js', defer: '' },
-    ],
-    [
-      'script',
+      "script",
       {},
       `document.addEventListener('DOMContentLoaded', function () {
   swetrix.init('YOUR_PROJECT_ID')
@@ -32,11 +29,10 @@ export default defineConfig({
 })`,
     ],
   ],
-})
+});
 ```
 
 The empty string for `defer` is intentional — VitePress renders it as a boolean attribute (`<script defer>`).
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -54,19 +50,19 @@ npm install swetrix
 Then extend your VitePress theme to initialise Swetrix. Create or edit `.vitepress/theme/index.ts`:
 
 ```ts
-import DefaultTheme from 'vitepress/theme'
-import type { Theme } from 'vitepress'
-import * as Swetrix from 'swetrix'
+import DefaultTheme from "vitepress/theme";
+import type { Theme } from "vitepress";
+import * as Swetrix from "swetrix";
 
 export default {
   extends: DefaultTheme,
   enhanceApp() {
-    if (typeof window === 'undefined') return
+    if (typeof window === "undefined") return;
 
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
+    Swetrix.init("YOUR_PROJECT_ID");
+    Swetrix.trackViews();
   },
-} satisfies Theme
+} satisfies Theme;
 ```
 
 `trackViews()` automatically detects client-side route changes, so you only need to call it once.
@@ -80,12 +76,12 @@ export default defineConfig({
   head: [
     // ...your script tags
     [
-      'noscript',
+      "noscript",
       {},
       `<img src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID" alt="" referrerpolicy="no-referrer-when-downgrade" />`,
     ],
   ],
-})
+});
 ```
 
 ## SPA navigation
@@ -99,19 +95,16 @@ By default, Swetrix ignores `localhost` traffic. If you want to be explicit abou
 **Option A — conditional `head` config:**
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from "vitepress";
 
-const isProd = process.env.NODE_ENV === 'production'
+const isProd = process.env.NODE_ENV === "production";
 
 export default defineConfig({
   head: isProd
     ? [
+        ["script", { src: "https://swetrix.org/swetrix.js", defer: "" }],
         [
-          'script',
-          { src: 'https://swetrix.org/swetrix.js', defer: '' },
-        ],
-        [
-          'script',
+          "script",
           {},
           `document.addEventListener('DOMContentLoaded', function () {
   swetrix.init('YOUR_PROJECT_ID')
@@ -120,25 +113,24 @@ export default defineConfig({
         ],
       ]
     : [],
-})
+});
 ```
 
 **Option B — `disabled` flag with the npm package:**
 
 ```ts
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   disabled: import.meta.env.DEV,
-})
+});
 ```
-
 
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```ts
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -156,19 +148,19 @@ Enable automatic client-side error monitoring to capture unhandled JavaScript er
 **Option A — update the inline script in your config:**
 
 ```js
-document.addEventListener('DOMContentLoaded', function () {
-  swetrix.init('YOUR_PROJECT_ID')
-  swetrix.trackViews()
-  swetrix.trackErrors()
-})
+document.addEventListener("DOMContentLoaded", function () {
+  swetrix.init("YOUR_PROJECT_ID");
+  swetrix.trackViews();
+  swetrix.trackErrors();
+});
 ```
 
 **Option B — update your theme setup:**
 
 ```ts
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
-Swetrix.trackErrors()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
+Swetrix.trackErrors();
 ```
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
@@ -183,23 +175,23 @@ Track whether visitors find a page helpful:
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRoute } from 'vitepress'
-import * as Swetrix from 'swetrix'
+import { ref } from "vue";
+import { useRoute } from "vitepress";
+import * as Swetrix from "swetrix";
 
-const route = useRoute()
-const submitted = ref(false)
+const route = useRoute();
+const submitted = ref(false);
 
 function sendFeedback(answer: string) {
   Swetrix.track({
-    ev: 'DOCS_FEEDBACK',
+    ev: "DOCS_FEEDBACK",
     meta: {
       answer,
       path: route.path,
     },
-  })
+  });
 
-  submitted.value = true
+  submitted.value = true;
 }
 </script>
 
@@ -221,23 +213,23 @@ Create a reusable component for external links. Save as `.vitepress/theme/compon
 
 ```vue
 <script setup lang="ts">
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 const props = withDefaults(
   defineProps<{
-    href: string
-    eventName?: string
+    href: string;
+    eventName?: string;
   }>(),
   {
-    eventName: 'OUTBOUND_CLICK',
+    eventName: "OUTBOUND_CLICK",
   },
-)
+);
 
 function handleClick() {
   Swetrix.track({
     ev: props.eventName,
     meta: { url: props.href },
-  })
+  });
 }
 </script>
 

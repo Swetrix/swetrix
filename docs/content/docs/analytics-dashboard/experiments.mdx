@@ -3,7 +3,6 @@ title: Experiments (A/B Testing)
 slug: /analytics-dashboard/experiments
 ---
 
-
 Experiments (A/B Testing) allow you to test different variations of your application to see which one performs better. You can use experiments to optimize conversion rates, user engagement, and other key metrics.
 
 ## Overview
@@ -21,20 +20,20 @@ To use experiments in your application, you can use the Swetrix tracking script.
 ### Fetching all experiments
 
 ```javascript
-import { getExperiments } from 'swetrix'
+import { getExperiments } from "swetrix";
 
-const experiments = await getExperiments()
+const experiments = await getExperiments();
 // Returns: { 'experiment-id-1': 'variant-a', 'experiment-id-2': 'control' }
 ```
 
 ### Getting a specific experiment variant
 
 ```javascript
-import { getExperiment } from 'swetrix'
+import { getExperiment } from "swetrix";
 
-const variant = await getExperiment('checkout-redesign')
+const variant = await getExperiment("checkout-redesign");
 
-if (variant === 'new-checkout') {
+if (variant === "new-checkout") {
   // Show new checkout flow
 } else {
   // Show control (original) checkout

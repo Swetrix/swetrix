@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   GithubLogoIcon,
@@ -22,234 +22,233 @@ import {
   WarningIcon,
   ArrowsHorizontalIcon,
   type IconProps,
-} from '@phosphor-icons/react'
-import type { FC, ReactNode } from 'react'
+} from "@phosphor-icons/react";
+import type { FC, ReactNode } from "react";
 
-const SITE = 'https://swetrix.com'
-const GITHUB_URL = 'https://github.com/Swetrix/swetrix'
-const LINKEDIN_URL = 'https://www.linkedin.com/company/swetrix/'
-const TWITTER_URL =
-  'https://twitter.com/intent/user?screen_name=swetrix'
-const DISCORD_URL = 'https://discord.gg/ZVK8Tw2E8j'
-const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
-const DOCS_URL = 'https://swetrix.com/docs'
+const SITE = "https://swetrix.com";
+const GITHUB_URL = "https://github.com/Swetrix/swetrix";
+const LINKEDIN_URL = "https://www.linkedin.com/company/swetrix/";
+const TWITTER_URL = "https://twitter.com/intent/user?screen_name=swetrix";
+const DISCORD_URL = "https://discord.gg/ZVK8Tw2E8j";
+const STATUSPAGE_URL = "https://stats.uptimerobot.com/33rvmiXXEz";
+const DOCS_URL = "https://swetrix.com/docs";
 
 interface NavItem {
-  name: string
-  href: string
-  icon: FC<IconProps>
-  iconColor: string
+  name: string;
+  href: string;
+  icon: FC<IconProps>;
+  iconColor: string;
 }
 
 interface LegalItem {
-  name: string
-  href: string
+  name: string;
+  href: string;
 }
 
 const products: NavItem[] = [
   {
-    name: 'Web Analytics',
+    name: "Web Analytics",
     href: SITE,
     icon: ChartBarIcon,
-    iconColor: 'text-indigo-400',
+    iconColor: "text-indigo-400",
   },
   {
-    name: 'Performance monitoring',
+    name: "Performance monitoring",
     href: `${SITE}/performance`,
     icon: GaugeIcon,
-    iconColor: 'text-amber-400',
+    iconColor: "text-amber-400",
   },
   {
-    name: 'Error tracking',
+    name: "Error tracking",
     href: `${SITE}/error-tracking`,
     icon: WarningIcon,
-    iconColor: 'text-rose-400',
+    iconColor: "text-rose-400",
   },
   {
-    name: 'CAPTCHA',
+    name: "CAPTCHA",
     href: `${SITE}/captcha`,
     icon: ShieldCheckIcon,
-    iconColor: 'text-emerald-400',
+    iconColor: "text-emerald-400",
   },
-]
+];
 
 const freeTools: NavItem[] = [
   {
-    name: 'UTM Generator',
+    name: "UTM Generator",
     href: `${SITE}/tools/utm-generator`,
     icon: LinkIcon,
-    iconColor: 'text-violet-400',
+    iconColor: "text-violet-400",
   },
   {
-    name: 'CTR Calculator',
+    name: "CTR Calculator",
     href: `${SITE}/tools/ctr-calculator`,
     icon: CursorClickIcon,
-    iconColor: 'text-pink-400',
+    iconColor: "text-pink-400",
   },
   {
-    name: 'ROI Calculator',
+    name: "ROI Calculator",
     href: `${SITE}/tools/roi-calculator`,
     icon: ChartPieIcon,
-    iconColor: 'text-teal-400',
+    iconColor: "text-teal-400",
   },
   {
-    name: 'IP Lookup',
+    name: "IP Lookup",
     href: `${SITE}/tools/ip-lookup`,
     icon: GlobeIcon,
-    iconColor: 'text-blue-400',
+    iconColor: "text-blue-400",
   },
   {
-    name: 'Sitemap Validator',
+    name: "Sitemap Validator",
     href: `${SITE}/tools/sitemap-validator`,
     icon: TreeStructureIcon,
-    iconColor: 'text-lime-400',
+    iconColor: "text-lime-400",
   },
-]
+];
 
 const resources: NavItem[] = [
   {
-    name: 'Documentation',
+    name: "Documentation",
     href: DOCS_URL,
     icon: BookOpenIcon,
-    iconColor: 'text-sky-400',
+    iconColor: "text-sky-400",
   },
   {
-    name: 'Pricing',
+    name: "Pricing",
     href: `${SITE}/#pricing`,
     icon: CurrencyDollarIcon,
-    iconColor: 'text-emerald-400',
+    iconColor: "text-emerald-400",
   },
-]
+];
 
 const comparisons: NavItem[] = [
   {
-    name: 'Google Analytics',
+    name: "Google Analytics",
     href: `${SITE}/comparison/google-analytics`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-amber-400',
+    iconColor: "text-amber-400",
   },
   {
-    name: 'Plausible',
+    name: "Plausible",
     href: `${SITE}/comparison/plausible`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-violet-400',
+    iconColor: "text-violet-400",
   },
   {
-    name: 'Cloudflare Analytics',
+    name: "Cloudflare Analytics",
     href: `${SITE}/comparison/cloudflare-analytics`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-orange-400',
+    iconColor: "text-orange-400",
   },
   {
-    name: 'Fathom Analytics',
+    name: "Fathom Analytics",
     href: `${SITE}/comparison/fathom-analytics`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-purple-400',
+    iconColor: "text-purple-400",
   },
   {
-    name: 'Simple Analytics',
+    name: "Simple Analytics",
     href: `${SITE}/comparison/simple-analytics`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-red-400',
+    iconColor: "text-red-400",
   },
   {
-    name: 'Vercel Web Analytics',
+    name: "Vercel Web Analytics",
     href: `${SITE}/comparison/vercel-web-analytics`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-slate-400',
+    iconColor: "text-slate-400",
   },
   {
-    name: 'Rybbit',
+    name: "Rybbit",
     href: `${SITE}/comparison/rybbit`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-emerald-400',
+    iconColor: "text-emerald-400",
   },
   {
-    name: 'Umami',
+    name: "Umami",
     href: `${SITE}/comparison/umami`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-blue-400',
+    iconColor: "text-blue-400",
   },
   {
-    name: 'Pirsch',
+    name: "Pirsch",
     href: `${SITE}/comparison/pirsch`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-emerald-400',
+    iconColor: "text-emerald-400",
   },
   {
-    name: 'Matomo',
+    name: "Matomo",
     href: `${SITE}/comparison/matomo`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-lime-400',
+    iconColor: "text-lime-400",
   },
   {
-    name: 'PostHog',
+    name: "PostHog",
     href: `${SITE}/comparison/posthog`,
     icon: ArrowsHorizontalIcon,
-    iconColor: 'text-blue-400',
+    iconColor: "text-blue-400",
   },
-]
+];
 
 const company: NavItem[] = [
   {
-    name: 'Open startup',
+    name: "Open startup",
     href: `${SITE}/open`,
     icon: LockKeyIcon,
-    iconColor: 'text-teal-400',
+    iconColor: "text-teal-400",
   },
   {
-    name: 'Blog',
+    name: "Blog",
     href: `${SITE}/blog`,
     icon: ArticleIcon,
-    iconColor: 'text-fuchsia-400',
+    iconColor: "text-fuchsia-400",
   },
   {
-    name: 'Contact',
+    name: "Contact",
     href: `${SITE}/contact`,
     icon: EnvelopeIcon,
-    iconColor: 'text-blue-400',
+    iconColor: "text-blue-400",
   },
   {
-    name: 'Status',
+    name: "Status",
     href: STATUSPAGE_URL,
     icon: PulseIcon,
-    iconColor: 'text-emerald-400',
+    iconColor: "text-emerald-400",
   },
-]
+];
 
 const communityLinks: NavItem[] = [
   {
-    name: 'GitHub',
+    name: "GitHub",
     href: GITHUB_URL,
     icon: GithubLogoIcon,
-    iconColor: 'text-gray-300',
+    iconColor: "text-gray-300",
   },
   {
-    name: 'Discord',
+    name: "Discord",
     href: DISCORD_URL,
     icon: DiscordLogoIcon,
-    iconColor: 'text-indigo-400',
+    iconColor: "text-indigo-400",
   },
   {
-    name: 'Twitter / X',
+    name: "Twitter / X",
     href: TWITTER_URL,
     icon: XLogoIcon,
-    iconColor: 'text-gray-300',
+    iconColor: "text-gray-300",
   },
   {
-    name: 'LinkedIn',
+    name: "LinkedIn",
     href: LINKEDIN_URL,
     icon: LinkedinLogoIcon,
-    iconColor: 'text-blue-400',
+    iconColor: "text-blue-400",
   },
-]
+];
 
 const legal: LegalItem[] = [
-  { name: 'Privacy', href: `${SITE}/privacy` },
-  { name: 'Terms', href: `${SITE}/terms` },
-  { name: 'Cookie Policy', href: `${SITE}/cookie-policy` },
-  { name: 'Legal notice', href: `${SITE}/imprint` },
-]
+  { name: "Privacy", href: `${SITE}/privacy` },
+  { name: "Terms", href: `${SITE}/terms` },
+  { name: "Cookie Policy", href: `${SITE}/cookie-policy` },
+  { name: "Legal notice", href: `${SITE}/imprint` },
+];
 
 function FooterLink({
   href,
@@ -257,10 +256,10 @@ function FooterLink({
   iconColor,
   children,
 }: {
-  href: string
-  icon?: FC<IconProps>
-  iconColor?: string
-  children: ReactNode
+  href: string;
+  icon?: FC<IconProps>;
+  iconColor?: string;
+  children: ReactNode;
 }) {
   return (
     <a
@@ -271,49 +270,33 @@ function FooterLink({
     >
       <span className="inline-flex items-center gap-2">
         {Icon && (
-          <Icon
-            weight="duotone"
-            className={`h-4 w-4 shrink-0 ${iconColor}`}
-            aria-hidden="true"
-          />
+          <Icon weight="duotone" className={`h-4 w-4 shrink-0 ${iconColor}`} aria-hidden="true" />
         )}
         <span>{children}</span>
       </span>
     </a>
-  )
+  );
 }
 
-function NavColumn({
-  title,
-  items,
-}: {
-  title: string
-  items: NavItem[]
-}) {
+function NavColumn({ title, items }: { title: string; items: NavItem[] }) {
   return (
     <div>
-      <h3 className="mb-4 text-sm font-semibold text-gray-200">
-        {title}
-      </h3>
+      <h3 className="mb-4 text-sm font-semibold text-gray-200">{title}</h3>
       <ul className="space-y-2.5">
         {items.map((item) => (
           <li key={item.name}>
-            <FooterLink
-              href={item.href}
-              icon={item.icon}
-              iconColor={item.iconColor}
-            >
+            <FooterLink href={item.href} icon={item.icon} iconColor={item.iconColor}>
               {item.name}
             </FooterLink>
           </li>
         ))}
       </ul>
     </div>
-  )
+  );
 }
 
 export default function Footer() {
-  const year = new Date().getFullYear()
+  const year = new Date().getFullYear();
 
   return (
     <footer
@@ -364,9 +347,7 @@ export default function Footer() {
                   alt=""
                   loading="lazy"
                 />
-                <span className="text-2xl leading-5 font-bold text-white">
-                  Swetrix
-                </span>
+                <span className="text-2xl leading-5 font-bold text-white">Swetrix</span>
               </a>
 
               <p className="mt-4 max-w-72 text-sm text-gray-200">
@@ -380,10 +361,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
                 >
-                  <GithubLogoIcon
-                    className="mr-1.5 h-4 w-4"
-                    weight="duotone"
-                  />
+                  <GithubLogoIcon className="mr-1.5 h-4 w-4" weight="duotone" />
                   <span>Star us on GitHub</span>
                 </a>
               </div>
@@ -392,9 +370,7 @@ export default function Footer() {
 
           <div className="flex flex-col items-start border-t border-white/10 pt-6 lg:pt-8">
             <div className="flex w-full flex-col items-center gap-4 text-center text-sm md:flex-row md:justify-between md:text-left">
-              <div className="text-gray-200">
-                &copy; {year} Swetrix Ltd. All rights reserved.
-              </div>
+              <div className="text-gray-200">&copy; {year} Swetrix Ltd. All rights reserved.</div>
 
               <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
                 {legal.map(({ name, href }) => (
@@ -414,5 +390,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

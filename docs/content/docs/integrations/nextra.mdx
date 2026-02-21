@@ -24,18 +24,18 @@ Nextra 4 uses the Next.js App Router. Create a client component that initialises
 Create a new file at `src/components/Analytics.tsx` (or `components/Analytics.tsx` depending on your project structure):
 
 ```tsx
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import * as Swetrix from 'swetrix'
+import { useEffect } from "react";
+import * as Swetrix from "swetrix";
 
 export default function Analytics() {
   useEffect(() => {
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
-  }, [])
+    Swetrix.init("YOUR_PROJECT_ID");
+    Swetrix.trackViews();
+  }, []);
 
-  return null
+  return null;
 }
 ```
 
@@ -44,13 +44,9 @@ export default function Analytics() {
 Open your root layout file (typically `app/layout.tsx` or `src/app/layout.tsx`) and render the `Analytics` component:
 
 ```tsx
-import Analytics from '@/components/Analytics'
+import Analytics from "@/components/Analytics";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
@@ -58,10 +54,9 @@ export default function RootLayout({
         <Analytics />
       </body>
     </html>
-  )
+  );
 }
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -73,22 +68,21 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 Nextra 2 and 3 use the Next.js Pages Router. You can initialise Swetrix in your custom `_app` file. If you don't have one yet, create `pages/_app.tsx` (or `pages/_app.jsx`):
 
 ```tsx
-import { useEffect } from 'react'
-import type { AppProps } from 'next/app'
-import * as Swetrix from 'swetrix'
+import { useEffect } from "react";
+import type { AppProps } from "next/app";
+import * as Swetrix from "swetrix";
 
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    Swetrix.init('YOUR_PROJECT_ID')
-    Swetrix.trackViews()
-  }, [])
+    Swetrix.init("YOUR_PROJECT_ID");
+    Swetrix.trackViews();
+  }, []);
 
-  return <Component {...pageProps} />
+  return <Component {...pageProps} />;
 }
 ```
 
 If your project already has a custom `_app` file, simply add the `useEffect` block to the existing component.
-
 
 <Callout type="info">
 If you're using Nextra's `_app.mdx` convention instead of `_app.tsx`, you can switch to `_app.tsx` for this setup or wrap the Swetrix initialisation in a layout component imported into your MDX app file.
@@ -114,7 +108,7 @@ To track visitors who have JavaScript disabled, add a noscript image pixel.
 **Nextra 2 / 3** — add to `pages/_document.tsx` inside `<body>`:
 
 ```tsx
-import { Html, Head, Main, NextScript } from 'next/document'
+import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   return (
@@ -132,7 +126,7 @@ export default function Document() {
         </noscript>
       </body>
     </Html>
-  )
+  );
 }
 ```
 
@@ -141,19 +135,18 @@ export default function Document() {
 By default, Swetrix ignores `localhost` traffic. If you want to be explicit about it, you can conditionally disable tracking based on your environment:
 
 ```tsx
-Swetrix.init('YOUR_PROJECT_ID', {
-  disabled: process.env.NODE_ENV === 'development',
-})
+Swetrix.init("YOUR_PROJECT_ID", {
+  disabled: process.env.NODE_ENV === "development",
+});
 ```
-
 
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```tsx
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -172,20 +165,20 @@ Enable automatic client-side error monitoring by adding `trackErrors()` to your 
 
 ```tsx
 useEffect(() => {
-  Swetrix.init('YOUR_PROJECT_ID')
-  Swetrix.trackViews()
-  Swetrix.trackErrors()
-}, [])
+  Swetrix.init("YOUR_PROJECT_ID");
+  Swetrix.trackViews();
+  Swetrix.trackErrors();
+}, []);
 ```
 
 **Nextra 2 / 3** — update `_app.tsx`:
 
 ```tsx
 useEffect(() => {
-  Swetrix.init('YOUR_PROJECT_ID')
-  Swetrix.trackViews()
-  Swetrix.trackErrors()
-}, [])
+  Swetrix.init("YOUR_PROJECT_ID");
+  Swetrix.trackViews();
+  Swetrix.trackErrors();
+}, []);
 ```
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
@@ -199,46 +192,46 @@ Custom events let you track specific user interactions — button clicks, form s
 Track whether visitors found a page helpful. Create a component at `components/DocsFeedback.tsx`:
 
 ```tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { usePathname } from 'next/navigation'
-import * as Swetrix from 'swetrix'
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import * as Swetrix from "swetrix";
 
 export default function DocsFeedback() {
-  const pathname = usePathname()
-  const [submitted, setSubmitted] = useState(false)
+  const pathname = usePathname();
+  const [submitted, setSubmitted] = useState(false);
 
   const sendFeedback = (answer: string) => {
     Swetrix.track({
-      ev: 'DOCS_FEEDBACK',
+      ev: "DOCS_FEEDBACK",
       meta: {
         answer,
         path: pathname,
       },
-    })
+    });
 
-    setSubmitted(true)
-  }
+    setSubmitted(true);
+  };
 
   if (submitted) {
-    return <p>Thank you for your feedback!</p>
+    return <p>Thank you for your feedback!</p>;
   }
 
   return (
     <div>
       <p>Was this page helpful?</p>
-      <button onClick={() => sendFeedback('Yes')}>Yes</button>
-      <button onClick={() => sendFeedback('No')}>No</button>
+      <button onClick={() => sendFeedback("Yes")}>Yes</button>
+      <button onClick={() => sendFeedback("No")}>No</button>
     </div>
-  )
+  );
 }
 ```
 
 You can then use this component in any MDX page:
 
 ```mdx
-import DocsFeedback from '@/components/DocsFeedback'
+import DocsFeedback from "@/components/DocsFeedback";
 
 # Getting started
 
@@ -252,40 +245,40 @@ Your page content here...
 Create a reusable component for external links:
 
 ```tsx
-'use client'
+"use client";
 
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 interface TrackedLinkProps {
-  href: string
-  children: React.ReactNode
-  eventName?: string
+  href: string;
+  children: React.ReactNode;
+  eventName?: string;
 }
 
 export default function TrackedLink({
   href,
   children,
-  eventName = 'OUTBOUND_CLICK',
+  eventName = "OUTBOUND_CLICK",
 }: TrackedLinkProps) {
   const handleClick = () => {
     Swetrix.track({
       ev: eventName,
       meta: { url: href },
-    })
-  }
+    });
+  };
 
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={handleClick}>
       {children}
     </a>
-  )
+  );
 }
 ```
 
 Usage in MDX:
 
 ```mdx
-import TrackedLink from '@/components/TrackedLink'
+import TrackedLink from "@/components/TrackedLink";
 
 Check out the <TrackedLink href="https://github.com/example/repo">source code</TrackedLink>.
 ```
@@ -312,7 +305,7 @@ NEXT_PUBLIC_SWETRIX_PID=YOUR_PROJECT_ID
 **2. Reference it in your analytics component:**
 
 ```tsx
-Swetrix.init(process.env.NEXT_PUBLIC_SWETRIX_PID!)
+Swetrix.init(process.env.NEXT_PUBLIC_SWETRIX_PID!);
 ```
 
 ## Further reading

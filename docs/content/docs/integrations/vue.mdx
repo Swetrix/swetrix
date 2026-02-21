@@ -22,16 +22,15 @@ If your app doesn't use client-side routing, you can initialise Swetrix once in 
 Open `src/main.ts` (or `src/main.js`):
 
 ```ts
-import { createApp } from 'vue'
-import * as Swetrix from 'swetrix'
-import App from './App.vue'
+import { createApp } from "vue";
+import * as Swetrix from "swetrix";
+import App from "./App.vue";
 
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
 
-createApp(App).mount('#app')
+createApp(App).mount("#app");
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -65,19 +64,18 @@ To track visitors who have JavaScript disabled, add a noscript image pixel to yo
 By default, Swetrix ignores `localhost` traffic. You can also explicitly disable it based on your environment:
 
 ```ts
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   disabled: import.meta.env.DEV,
-})
+});
 ```
-
 
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```ts
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -95,9 +93,9 @@ Enable automatic client-side error monitoring by adding `trackErrors()` to your 
 Update your plugin:
 
 ```ts
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
-Swetrix.trackErrors()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
+Swetrix.trackErrors();
 ```
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
@@ -110,15 +108,15 @@ Custom events let you track specific user interactions — button clicks, form s
 
 ```vue
 <script setup lang="ts">
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 function handleClick() {
   Swetrix.track({
-    ev: 'SIGNUP_CTA_CLICK',
+    ev: "SIGNUP_CTA_CLICK",
     meta: {
-      location: 'navbar',
+      location: "navbar",
     },
-  })
+  });
 }
 </script>
 
@@ -131,15 +129,15 @@ function handleClick() {
 
 ```vue
 <script setup lang="ts">
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 function handleSubmit() {
   Swetrix.track({
-    ev: 'CONTACT_FORM_SUBMITTED',
+    ev: "CONTACT_FORM_SUBMITTED",
     meta: {
-      source: 'support_page',
+      source: "support_page",
     },
-  })
+  });
 
   // ...submit logic
 }
@@ -160,23 +158,23 @@ Create a reusable component for external links. Save as `src/components/TrackedL
 
 ```vue
 <script setup lang="ts">
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 const props = withDefaults(
   defineProps<{
-    href: string
-    eventName?: string
+    href: string;
+    eventName?: string;
   }>(),
   {
-    eventName: 'OUTBOUND_CLICK',
+    eventName: "OUTBOUND_CLICK",
   },
-)
+);
 
 function handleClick() {
   Swetrix.track({
     ev: props.eventName,
     meta: { url: props.href },
-  })
+  });
 }
 </script>
 
@@ -205,7 +203,7 @@ VITE_SWETRIX_PID=YOUR_PROJECT_ID
 ```
 
 ```ts
-Swetrix.init(import.meta.env.VITE_SWETRIX_PID)
+Swetrix.init(import.meta.env.VITE_SWETRIX_PID);
 ```
 
 ## Further reading

@@ -16,10 +16,10 @@ Place the following just before the closing `</body>` tag in your base template:
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -30,7 +30,6 @@ Place the following just before the closing `</body>` tag in your base template:
   />
 </noscript>
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -62,10 +61,10 @@ Here's a complete base layout with htmx and Swetrix:
 
     <script src="https://swetrix.org/swetrix.js" defer></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
+      document.addEventListener("DOMContentLoaded", function () {
+        swetrix.init("YOUR_PROJECT_ID");
+        swetrix.trackViews();
+      });
     </script>
 
     <noscript>
@@ -91,10 +90,10 @@ Add the scripts to your base template (e.g. `templates/base.html`):
 {% if not debug %}
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 {% endif %}
 ```
@@ -105,10 +104,10 @@ Add the scripts to your base template (e.g. `templates/base.html`):
 {% if not config.DEBUG %}
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 {% endif %}
 ```
@@ -119,10 +118,10 @@ Add the scripts to your base template (e.g. `templates/base.html`):
 {{ if eq .Env "production" }}
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 {{ end }}
 ```
@@ -133,11 +132,11 @@ Enable automatic client-side error monitoring by adding `trackErrors()` alongsid
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-    swetrix.trackErrors()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
 </script>
 ```
 
@@ -150,9 +149,7 @@ Custom events let you track specific user interactions — button clicks, form s
 ### Inline event tracking
 
 ```html
-<button onclick="swetrix.track({ ev: 'SIGNUP_CLICK' })">
-  Sign up
-</button>
+<button onclick="swetrix.track({ ev: 'SIGNUP_CLICK' })">Sign up</button>
 ```
 
 ### Tracking htmx-triggered actions
@@ -167,15 +164,16 @@ You can hook into htmx events to track actions like form submissions that happen
 <div id="result"></div>
 
 <script>
-  document.querySelector('form[hx-post="/subscribe"]')
-    .addEventListener('htmx:afterRequest', function (event) {
-      if (event.detail.successful && typeof swetrix !== 'undefined') {
+  document
+    .querySelector('form[hx-post="/subscribe"]')
+    .addEventListener("htmx:afterRequest", function (event) {
+      if (event.detail.successful && typeof swetrix !== "undefined") {
         swetrix.track({
-          ev: 'NEWSLETTER_SIGNUP',
-          meta: { source: 'footer' },
-        })
+          ev: "NEWSLETTER_SIGNUP",
+          meta: { source: "footer" },
+        });
       }
-    })
+    });
 </script>
 ```
 

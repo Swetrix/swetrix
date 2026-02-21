@@ -20,17 +20,16 @@ Gatsby provides a [`gatsby-browser.js`](https://www.gatsbyjs.com/docs/reference/
 Create or update `gatsby-browser.js` in your project root:
 
 ```js
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export const onClientEntry = () => {
-  Swetrix.init('YOUR_PROJECT_ID')
-}
+  Swetrix.init("YOUR_PROJECT_ID");
+};
 
 export const onRouteUpdate = () => {
-  Swetrix.trackViews()
-}
+  Swetrix.trackViews();
+};
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -44,7 +43,7 @@ To track visitors who have JavaScript disabled, add a noscript image pixel using
 Create or update `gatsby-ssr.js` in your project root:
 
 ```jsx
-import React from 'react'
+import React from "react";
 
 export const onRenderBody = ({ setPostBodyComponents }) => {
   setPostBodyComponents([
@@ -55,8 +54,8 @@ export const onRenderBody = ({ setPostBodyComponents }) => {
         referrerPolicy="no-referrer-when-downgrade"
       />
     </noscript>,
-  ])
-}
+  ]);
+};
 ```
 
 ## Disable tracking in development
@@ -64,19 +63,18 @@ export const onRenderBody = ({ setPostBodyComponents }) => {
 By default, Swetrix ignores `localhost` traffic. If you want to be explicit about it, you can conditionally disable tracking based on your environment:
 
 ```js
-Swetrix.init('YOUR_PROJECT_ID', {
-  disabled: process.env.NODE_ENV === 'development',
-})
+Swetrix.init("YOUR_PROJECT_ID", {
+  disabled: process.env.NODE_ENV === "development",
+});
 ```
-
 
 <Callout type="info">
 If you want to verify tracking locally during development, set `devMode: true` instead:
 
 ```js
-Swetrix.init('YOUR_PROJECT_ID', {
+Swetrix.init("YOUR_PROJECT_ID", {
   devMode: true,
-})
+});
 ```
 
 Remember to remove this before deploying to production.
@@ -92,16 +90,16 @@ Build and deploy your site with `gatsby build && gatsby serve` (or deploy to you
 Enable automatic client-side error monitoring by adding `trackErrors()` to your `gatsby-browser.js`. This captures unhandled JavaScript errors and reports them to Swetrix.
 
 ```js
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export const onClientEntry = () => {
-  Swetrix.init('YOUR_PROJECT_ID')
-  Swetrix.trackErrors()
-}
+  Swetrix.init("YOUR_PROJECT_ID");
+  Swetrix.trackErrors();
+};
 
 export const onRouteUpdate = () => {
-  Swetrix.trackViews()
-}
+  Swetrix.trackViews();
+};
 ```
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
@@ -113,52 +111,48 @@ Custom events let you track specific user interactions — button clicks, form s
 ### Example: tracking button clicks
 
 ```jsx
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default function PricingCTA() {
   const handleClick = () => {
     Swetrix.track({
-      ev: 'PRICING_CTA_CLICK',
+      ev: "PRICING_CTA_CLICK",
       meta: {
-        plan: 'pro',
-        location: 'hero',
+        plan: "pro",
+        location: "hero",
       },
-    })
-  }
+    });
+  };
 
-  return (
-    <button onClick={handleClick}>
-      Upgrade to Pro
-    </button>
-  )
+  return <button onClick={handleClick}>Upgrade to Pro</button>;
 }
 ```
 
 ### Example: tracking form submissions
 
 ```jsx
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
 export default function NewsletterForm() {
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     Swetrix.track({
-      ev: 'NEWSLETTER_SIGNUP',
+      ev: "NEWSLETTER_SIGNUP",
       meta: {
-        source: 'footer',
+        source: "footer",
       },
-    })
+    });
 
     // ...submit logic
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit}>
       <input type="email" placeholder="you@example.com" required />
       <button type="submit">Subscribe</button>
     </form>
-  )
+  );
 }
 ```
 
@@ -184,7 +178,7 @@ GATSBY_SWETRIX_PID=YOUR_PROJECT_ID
 **2. Reference it in `gatsby-browser.js`:**
 
 ```js
-Swetrix.init(process.env.GATSBY_SWETRIX_PID)
+Swetrix.init(process.env.GATSBY_SWETRIX_PID);
 ```
 
 ## Further reading

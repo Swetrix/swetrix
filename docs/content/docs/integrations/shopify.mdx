@@ -22,10 +22,10 @@ Integrate Swetrix with your Shopify store to track page views, monitor user beha
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -39,12 +39,10 @@ Integrate Swetrix with your Shopify store to track page views, monitor user beha
 
 6. Click **Save**.
 
-
 <Callout type="warn">
 Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
 
 </Callout>
-
 
 <Callout>
 Theme updates may overwrite your changes. If you update your theme, check that the Swetrix snippet is still present in `theme.liquid`. Duplicating your theme before updating is a good precaution.
@@ -58,7 +56,6 @@ After adding the script, visit your store and browse a few pages. Within a minut
 ## Tracking e-commerce events
 
 Beyond basic page views, you can track key e-commerce interactions as custom events. This involves adding small Liquid and JavaScript snippets to your theme files.
-
 
 <Callout type="info">
 Always **back up your theme** before editing code. If you're not comfortable with Liquid templates, consider working with a Shopify developer.
@@ -135,7 +132,6 @@ Add this script to your product template, below the product viewed snippet:
 {% endraw %}
 ```
 
-
 <Callout>
 Many Shopify themes add items to the cart via AJAX without a full page reload. If yours does, the `submit` listener above may not fire. In that case you'll need to hook into your theme's JavaScript cart events or use a [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) to detect cart changes.
 
@@ -181,8 +177,7 @@ Track confirmed purchases on the Shopify "Thank you" (order status) page.
 3. In the **Additional scripts** box, paste:
 
 ```html
-{% raw %}
-{% if first_time_accessed %}
+{% raw %} {% if first_time_accessed %}
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
@@ -203,10 +198,8 @@ Track confirmed purchases on the Shopify "Thank you" (order status) page.
     })
   })
 </script>
-{% endif %}
-{% endraw %}
+{% endif %} {% endraw %}
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual project ID. The order status page is hosted on a different domain, so the Swetrix script needs to be loaded again here.

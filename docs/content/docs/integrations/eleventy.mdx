@@ -32,10 +32,10 @@ Add the Swetrix script just before the closing `</body>` tag:
 
     <script src="https://swetrix.org/swetrix.js" defer></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        swetrix.init('YOUR_PROJECT_ID')
-        swetrix.trackViews()
-      })
+      document.addEventListener("DOMContentLoaded", function () {
+        swetrix.init("YOUR_PROJECT_ID");
+        swetrix.trackViews();
+      });
     </script>
 
     <noscript>
@@ -48,7 +48,6 @@ Add the Swetrix script just before the closing `</body>` tag:
   </body>
 </html>
 ```
-
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -74,12 +73,12 @@ Or set a default layout for all pages in your Eleventy config (`eleventy.config.
 module.exports = function (eleventyConfig) {
   return {
     dir: {
-      input: 'src',
-      includes: '_includes',
-      output: '_site',
+      input: "src",
+      includes: "_includes",
+      output: "_site",
     },
-  }
-}
+  };
+};
 ```
 
 Then use [directory-level data files](https://www.11ty.dev/docs/data-template-dir/) to set the layout for an entire folder. For example, create `src/src.json`:
@@ -104,8 +103,8 @@ ELEVENTY_ENV=production npx @11ty/eleventy
 
 ```js
 module.exports = {
-  isProd: process.env.ELEVENTY_ENV === 'production',
-}
+  isProd: process.env.ELEVENTY_ENV === "production",
+};
 ```
 
 **3. Wrap the tracking script in a conditional** in your layout:
@@ -114,10 +113,10 @@ module.exports = {
 {% if env.isProd %}
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -129,7 +128,6 @@ module.exports = {
 </noscript>
 {% endif %}
 ```
-
 
 <Callout type="info">
 By default Swetrix ignores `localhost` traffic, so the environment variable approach is optional. It's useful if you want to avoid loading the script entirely during development.
@@ -144,8 +142,8 @@ To keep your Project ID out of template code, store it in a global data file.
 
 ```js
 module.exports = {
-  projectId: process.env.SWETRIX_PID || 'YOUR_PROJECT_ID',
-}
+  projectId: process.env.SWETRIX_PID || "YOUR_PROJECT_ID",
+};
 ```
 
 **2. Reference it in your layout:**
@@ -153,10 +151,10 @@ module.exports = {
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('{{ swetrix.projectId }}')
-    swetrix.trackViews()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("{{ swetrix.projectId }}");
+    swetrix.trackViews();
+  });
 </script>
 
 <noscript>
@@ -180,11 +178,11 @@ Enable automatic client-side error monitoring by adding `trackErrors()` alongsid
 
 ```html
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    swetrix.init('YOUR_PROJECT_ID')
-    swetrix.trackViews()
-    swetrix.trackErrors()
-  })
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
 </script>
 ```
 
@@ -200,14 +198,14 @@ Add event tracking to any page or component using inline scripts:
 <button id="download-btn">Download PDF</button>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var btn = document.getElementById('download-btn')
-    if (!btn || typeof swetrix === 'undefined') return
+  document.addEventListener("DOMContentLoaded", function () {
+    var btn = document.getElementById("download-btn");
+    if (!btn || typeof swetrix === "undefined") return;
 
-    btn.addEventListener('click', function () {
-      swetrix.track({ ev: 'PDF_DOWNLOAD' })
-    })
-  })
+    btn.addEventListener("click", function () {
+      swetrix.track({ ev: "PDF_DOWNLOAD" });
+    });
+  });
 </script>
 ```
 
@@ -220,17 +218,17 @@ Add event tracking to any page or component using inline scripts:
 </form>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var form = document.getElementById('contact-form')
-    if (!form || typeof swetrix === 'undefined') return
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.getElementById("contact-form");
+    if (!form || typeof swetrix === "undefined") return;
 
-    form.addEventListener('submit', function () {
+    form.addEventListener("submit", function () {
       swetrix.track({
-        ev: 'NEWSLETTER_SIGNUP',
-        meta: { source: 'footer' },
-      })
-    })
-  })
+        ev: "NEWSLETTER_SIGNUP",
+        meta: { source: "footer" },
+      });
+    });
+  });
 </script>
 ```
 
@@ -254,10 +252,10 @@ npm install swetrix
 Then import and use it in your client-side JavaScript:
 
 ```js
-import * as Swetrix from 'swetrix'
+import * as Swetrix from "swetrix";
 
-Swetrix.init('YOUR_PROJECT_ID')
-Swetrix.trackViews()
+Swetrix.init("YOUR_PROJECT_ID");
+Swetrix.trackViews();
 ```
 
 ## Further reading
