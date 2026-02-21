@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Script id="swetrix-init" strategy="afterInteractive">
           {`
             document.addEventListener('DOMContentLoaded', function () {
-              swetrix.init('gdXQqPERkpMA');
+              swetrix.init('STEzHcB1rALV');
               swetrix.trackViews();
             });
           `}
