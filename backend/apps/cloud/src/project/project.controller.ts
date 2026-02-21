@@ -910,6 +910,11 @@ export class ProjectController {
 
     this.organisationService.validateManageAccess(organisation, uid)
 
+    const project = await this.projectService.getFullProject(
+      addProjectDTO.projectId,
+    )
+    this.projectService.allowedToManage(project, uid)
+
     return this.projectService.addProjectToOrganisation(
       organisation.id,
       addProjectDTO.projectId,
