@@ -1021,6 +1021,7 @@ export class AnalyticsController {
   }
 
   @Get('hb')
+  @Auth(true, true)
   async getHeartBeatStats(
     @Query() data: GetHeartbeatStatsDto,
     @CurrentUserId() uid: string,

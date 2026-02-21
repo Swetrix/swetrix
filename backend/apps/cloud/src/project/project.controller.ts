@@ -913,6 +913,13 @@ export class ProjectController {
     const project = await this.projectService.getFullProject(
       addProjectDTO.projectId,
     )
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException(
+        `Project with ID ${addProjectDTO.projectId} does not exist`,
+      )
+    }
+
     this.projectService.allowedToManage(project, uid)
 
     return this.projectService.addProjectToOrganisation(
@@ -948,6 +955,14 @@ export class ProjectController {
     }
 
     this.organisationService.validateManageAccess(organisation, uid)
+
+    const project = await this.projectService.getFullProject(projectId)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException(`Project with ID ${projectId} does not exist`)
+    }
+
+    this.projectService.allowedToManage(project, uid)
 
     await this.projectService.removeProjectFromOrganisation(
       organisation.id,
@@ -1871,6 +1886,14 @@ export class ProjectController {
     }
 
     this.projectService.allowedToManage(project, uid)
+
+    const share = _find(project.share, (s) => s.id === shareId)
+
+    if (!share) {
+      throw new NotFoundException(
+        `Share with ID ${shareId} does not exist on project ${pid}`,
+      )
+    }
 
     await deleteProjectRedis(pid)
     await this.projectService.deleteShare(shareId)

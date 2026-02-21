@@ -111,7 +111,11 @@ export class OrganisationService {
       (member) => member.user?.id === userId,
     )
 
-    if (!membership || membership.role === OrganisationRole.viewer) {
+    if (
+      !membership ||
+      !membership.confirmed ||
+      membership.role === OrganisationRole.viewer
+    ) {
       throw new ForbiddenException(
         'You do not have permission to manage this organisation',
       )
@@ -142,6 +146,7 @@ export class OrganisationService {
         organisation: { id: organisationId },
         role: OrganisationRole.owner,
         user: { id: userId },
+        confirmed: true,
       },
     })
 
