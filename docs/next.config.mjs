@@ -5,7 +5,7 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const config = {
   basePath: "/docs",
-  trailingSlash: true,
+  skipTrailingSlashRedirect: true,
   reactStrictMode: true,
   turbopack: {
     root: import.meta.dirname,
