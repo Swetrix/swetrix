@@ -6,6 +6,8 @@ import { isBrowser, isDevelopment, isSelfhosted } from '~/lib/constants'
 export const SWETRIX_PID = 'STEzHcB1rALV'
 const SWETRIX_API_PROXY_PATH = '/_internal_data_inngest_proxy'
 
+const isIframe = isBrowser ? window.self !== window.top : false
+
 const REFS_TO_IGNORE = [
   /https:\/\/swetrix.com\/projects\/(?!new$)[^/]+$/i,
   /https:\/\/swetrix.com\/projects\/settings/i,
@@ -111,7 +113,7 @@ Swetrix.init(SWETRIX_PID, {
 })
 
 export const trackViews = () => {
-  if (isSelfhosted || !isBrowser || isDevelopment) {
+  if (isSelfhosted || !isBrowser || isDevelopment || isIframe) {
     return
   }
 
@@ -139,7 +141,7 @@ export const trackViews = () => {
 }
 
 export const trackPageview = (options: Swetrix.IPageviewOptions) => {
-  if (isSelfhosted) {
+  if (isSelfhosted || isIframe) {
     return
   }
 
@@ -147,7 +149,7 @@ export const trackPageview = (options: Swetrix.IPageviewOptions) => {
 }
 
 export const trackErrors = () => {
-  if (isSelfhosted || !isBrowser || isDevelopment) {
+  if (isSelfhosted || !isBrowser || isDevelopment || isIframe) {
     return
   }
 
@@ -173,7 +175,7 @@ export const trackErrors = () => {
 }
 
 export const trackError = (payload: Swetrix.IErrorEventPayload) => {
-  if (isSelfhosted || !isBrowser || isDevelopment) {
+  if (isSelfhosted || !isBrowser || isDevelopment || isIframe) {
     return
   }
 
@@ -184,7 +186,7 @@ export const trackCustom = (
   ev: string,
   meta?: Swetrix.TrackEventOptions['meta'],
 ) => {
-  if (isSelfhosted || !isBrowser || isDevelopment) {
+  if (isSelfhosted || !isBrowser || isDevelopment || isIframe) {
     return
   }
 
