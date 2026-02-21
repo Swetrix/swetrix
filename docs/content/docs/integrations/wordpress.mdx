@@ -7,17 +7,35 @@ After you sign up on Swetrix and create a new project, the only thing left is to
 
 ## Installation
 
-1. Log in to your Wordpress account.
-2. Install a plugin for adding the code to your HTML, for instance the [Insert Headers and Footers plugin](https://wordpress.org/plugins/insert-headers-and-footers).
-3. Open up your project, go to the `Project Settings > Custom Code` section.
+<Steps>
+<Step>
+### Log in to Wordpress
 
-4. To the `Scripts in Header` section you need to add the following:
+Log in to your Wordpress account.
+</Step>
+<Step>
+### Install a code injection plugin
+
+Install a plugin for adding the code to your HTML, for instance the [Insert Headers and Footers plugin](https://wordpress.org/plugins/insert-headers-and-footers).
+</Step>
+<Step>
+### Open the Custom Code section
+
+Open up your project, go to the `Project Settings > Custom Code` section.
+</Step>
+<Step>
+### Add the script to the header
+
+To the `Scripts in Header` section you need to add the following:
 
 ```html
 <script src="https://swetrix.org/swetrix.js" defer></script>
 ```
+</Step>
+<Step>
+### Add the initialisation to the footer
 
-5. In the `Scripts in Footer` section you need to add the following:
+In the `Scripts in Footer` section you need to add the following:
 
 ```html
 <script>
@@ -35,6 +53,8 @@ After you sign up on Swetrix and create a new project, the only thing left is to
   />
 </noscript>
 ```
+</Step>
+</Steps>
 
 
 <Callout type="warn">

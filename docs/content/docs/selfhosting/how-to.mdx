@@ -24,36 +24,49 @@ We've tested self-hosting Swetrix using [Hetzner Cloud](https://hetzner.cloud), 
 
 ## Installation
 
-### 1. Install the self-hosting repository
+<Steps>
+<Step>
+### Clone the self-hosting repository
 
-To self-host Swetrix, download the [self-hosting repository](https://github.com/swetrix/selfhosting) from GitHub.
+Download the [self-hosting repository](https://github.com/swetrix/selfhosting) from GitHub.
 
 ```bash
 git clone https://github.com/swetrix/selfhosting
 cd selfhosting
 ```
 
-That repository contains a `compose.yaml` file with all the necessary configuration to run Swetrix, you'll need to configure it later.
+The repository contains a `compose.yaml` file with all the necessary configuration to run Swetrix.
 
-The repository also contains various configuration files to ease the setup process (for example, `nginx` or `clickhouse` config files).
+<Files>
+  <Folder name="selfhosting" defaultOpen>
+    <File name="compose.yaml" />
+    <File name="configure.sh" />
+    <Folder name="nginx">
+      <File name="config" />
+    </Folder>
+    <Folder name="clickhouse">
+      <File name="config.xml" />
+    </Folder>
+  </Folder>
+</Files>
+</Step>
+<Step>
+### Configure the environment variables
 
-### 2. Configure the environment variables
-
-That repository contains a `configure.sh` script that will help you set up the environment variables. It will help you configure and autogenerate some necessary variables.
+Run the `configure.sh` script to set up the environment variables. It will help you configure and autogenerate some necessary variables.
 
 This script will also check if you have Docker and Docker Compose installed, and if you don't, it will try to install them for you.
-
-The script will save the environment variables to a `.env` file in the repository directory. You can later change them manually if needed.
 
 ```bash
 ./configure.sh
 ```
 
-You can always manually edit these `.env` variables later. Please refer to the [configuration section](/selfhosting/configuring) for more information.
+The script will save the environment variables to a `.env` file in the repository directory. You can later change them manually if needed. Please refer to the [configuration section](/selfhosting/configuring) for more information.
+</Step>
+<Step>
+### Run the containers
 
-### 3. Run the container
-
-Once all the environment variables are set, you can start the containers by running the following command:
+Once all the environment variables are set, start the containers:
 
 ```bash
 docker compose up -d
@@ -67,6 +80,8 @@ After you run this command, the following containers will be started:
 - Clickhouse server for analytics and transactional data
 
 After starting the container you can access the dashboard at `http://{host}:80` (or your configured reverse-proxy domain).
+</Step>
+</Steps>
 
 ## Updating
 
@@ -80,17 +95,21 @@ The default routing is:
 - Frontend: /
 - API: /backend/ (proxied to swetrix-api)
 
-### Nginx proxy (default)
+<Tabs items={["Nginx (default)", "Traefik"]}>
+<Tab value="Nginx (default)">
 
 The self-hosting repository includes an nginx-proxy service and an nginx/config file. The nginx-proxy container listens on port 80 and forwards:
 
 - `/` → `swetrix-fe` (frontend, port 3000)
 - `/backend/` → `swetrix-api` (API, port 5005)
+
 If you use another reverse proxy in front of Swetrix (for example for TLS termination), keep exposing only the nginx-proxy service and forward traffic to it.
 
-### Traefik (alternative to nginx-proxy)
+</Tab>
+<Tab value="Traefik">
 
 If you are already using Traefik, you can omit the nginx-proxy service and route requests directly to the Swetrix containers by path.
+
 swetrix-fe labels:
 ```yaml
   - traefik.enable=true
@@ -99,7 +118,7 @@ swetrix-fe labels:
   - traefik.http.routers.swetrix_fe.tls=true
   - traefik.http.routers.swetrix_fe.priority=1
   - traefik.http.services.swetrix_fe.loadbalancer.server.port=3000
-  ```
+```
 
 swetrix-api labels:
 ```yaml
@@ -111,7 +130,10 @@ swetrix-api labels:
   - traefik.http.middlewares.swetrix_be_strip.stripprefix.prefixes=/backend
   - traefik.http.routers.swetrix_be.middlewares=swetrix_be_strip
   - traefik.http.services.swetrix_be.loadbalancer.server.port=5005
-   ```
+```
+
+</Tab>
+</Tabs>
 
 ## Client IP headers
 

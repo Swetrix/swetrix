@@ -15,11 +15,14 @@ The recommended approach for Next.js is to install Swetrix as an npm package, wh
 npm install swetrix
 ```
 
-### App Router (recommended)
+<Tabs items={["App Router (recommended)", "Pages Router"]}>
+<Tab value="App Router (recommended)">
 
 Create a client component that initialises Swetrix. `trackViews()` automatically detects client-side route changes, so you only need to call it once.
 
-**1. Create the analytics component**
+<Steps>
+<Step>
+### Create the analytics component
 
 Create a new file at `src/components/Analytics.tsx` (or `src/components/Analytics.jsx` if you're not using TypeScript):
 
@@ -38,8 +41,9 @@ export default function Analytics() {
   return null
 }
 ```
-
-**2. Add it to your root layout**
+</Step>
+<Step>
+### Add it to your root layout
 
 Open `src/app/layout.tsx` and render the `Analytics` component:
 
@@ -61,6 +65,22 @@ export default function RootLayout({
   )
 }
 ```
+</Step>
+</Steps>
+
+Your project structure should look like this:
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="app" defaultOpen>
+      <File name="layout.tsx" />
+      <File name="page.tsx" />
+    </Folder>
+    <Folder name="components" defaultOpen>
+      <File name="Analytics.tsx" />
+    </Folder>
+  </Folder>
+</Files>
 
 
 <Callout type="warn">
@@ -68,7 +88,8 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 
 </Callout>
 
-### Pages Router
+</Tab>
+<Tab value="Pages Router">
 
 If you're using the Pages Router, add Swetrix to your `_app.tsx` (or `_app.jsx`) file. `trackViews()` automatically detects route changes, so a single call is all you need.
 
@@ -87,11 +108,17 @@ export default function App({ Component, pageProps }: AppProps) {
 }
 ```
 
+</Tab>
+</Tabs>
+
 ### Noscript fallback (optional)
 
 To track visitors who have JavaScript disabled, add a noscript image pixel to your root layout (App Router) or `_document.tsx` (Pages Router).
 
-**App Router** — add to `src/app/layout.tsx` inside `<body>`:
+<Tabs items={["App Router", "Pages Router"]}>
+<Tab value="App Router">
+
+Add to `src/app/layout.tsx` inside `<body>`:
 
 ```tsx
 <noscript>
@@ -103,7 +130,10 @@ To track visitors who have JavaScript disabled, add a noscript image pixel to yo
 </noscript>
 ```
 
-**Pages Router** — add to `pages/_document.tsx` inside `<body>`:
+</Tab>
+<Tab value="Pages Router">
+
+Add to `pages/_document.tsx` inside `<body>`:
 
 ```tsx
 import { Html, Head, Main, NextScript } from 'next/document'
@@ -127,6 +157,9 @@ export default function Document() {
   )
 }
 ```
+
+</Tab>
+</Tabs>
 
 ## Disable tracking in development
 
@@ -160,7 +193,10 @@ Deploy your application (or temporarily enable `devMode`) and visit a few pages.
 
 Enable automatic client-side error monitoring by adding `trackErrors()` to your analytics component. This captures unhandled JavaScript errors and reports them to Swetrix.
 
-**App Router** — update `src/components/Analytics.tsx`:
+<Tabs items={["App Router", "Pages Router"]}>
+<Tab value="App Router">
+
+Update `src/components/Analytics.tsx`:
 
 ```tsx
 useEffect(() => {
@@ -170,7 +206,10 @@ useEffect(() => {
 }, [])
 ```
 
-**Pages Router** — update `_app.tsx`:
+</Tab>
+<Tab value="Pages Router">
+
+Update `_app.tsx`:
 
 ```tsx
 useEffect(() => {
@@ -179,6 +218,9 @@ useEffect(() => {
   Swetrix.trackErrors()
 }, [])
 ```
+
+</Tab>
+</Tabs>
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
 

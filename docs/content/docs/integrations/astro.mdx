@@ -16,13 +16,12 @@ There are two ways to add Swetrix to your Astro site:
 | **CDN script** | Simple sites, blogs, and documentation — no build-time dependency required |
 | **npm package** | Full TypeScript support, tighter integration with island components, more configuration options |
 
-### Option A: CDN script (recommended for most sites)
+<Tabs items={["CDN script (recommended)", "npm package"]}>
+<Tab value="CDN script (recommended)">
 
 The simplest way to add Swetrix is to include the tracking script in a shared layout component. No npm install needed.
 
-**1. Add the script to your layout**
-
-Open your base layout (e.g. `src/layouts/Layout.astro`) and add the Swetrix script inside the `<head>`:
+Add the script to your base layout (e.g. `src/layouts/Layout.astro`) inside the `<head>`:
 
 ```html
 ---
@@ -61,8 +60,6 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 
 </Callout>
 
-**2. Use the layout on your pages**
-
 Make sure your pages use this layout so the script is included on every page:
 
 ```html
@@ -78,7 +75,8 @@ import Layout from '../layouts/Layout.astro';
 
 Since Astro builds multi-page applications by default, each navigation triggers a full page load and Swetrix will automatically track each page view.
 
-### Option B: npm package
+</Tab>
+<Tab value="npm package">
 
 If you want full TypeScript support or need fine-grained control (e.g. custom init options, programmatic event tracking from island components), install the npm package instead.
 
@@ -86,9 +84,9 @@ If you want full TypeScript support or need fine-grained control (e.g. custom in
 npm install swetrix
 ```
 
-Create a client-side script that initialises Swetrix and add it to your layout.
-
-**1. Create the analytics script**
+<Steps>
+<Step>
+### Create the analytics script
 
 Create `src/scripts/analytics.ts`:
 
@@ -98,10 +96,11 @@ import * as Swetrix from 'swetrix'
 Swetrix.init('YOUR_PROJECT_ID')
 Swetrix.trackViews()
 ```
+</Step>
+<Step>
+### Include it in your layout
 
-**2. Include it in your layout**
-
-Add the script to your base layout with the `client:load` directive via a `<script>` tag:
+Add the script to your base layout:
 
 ```html
 ---
@@ -130,6 +129,8 @@ const { title } = Astro.props;
   </body>
 </html>
 ```
+</Step>
+</Steps>
 
 
 <Callout type="warn">
@@ -142,6 +143,25 @@ Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboar
 Astro processes `<script>` tags — they're bundled and deduplicated automatically. The script above will only be included once in the final build, even if the layout is used on every page.
 
 </Callout>
+
+Your project structure should look like this:
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="layouts" defaultOpen>
+      <File name="Layout.astro" />
+    </Folder>
+    <Folder name="pages" defaultOpen>
+      <File name="index.astro" />
+    </Folder>
+    <Folder name="scripts" defaultOpen>
+      <File name="analytics.ts" />
+    </Folder>
+  </Folder>
+</Files>
+
+</Tab>
+</Tabs>
 
 ## View Transitions support
 
@@ -165,7 +185,10 @@ To track visitors who have JavaScript disabled, add a noscript image pixel to yo
 
 By default, Swetrix ignores `localhost` traffic. If you want to be explicit about it, you can conditionally disable tracking in development.
 
-**CDN script** — wrap the initialisation in a host check:
+<Tabs items={["CDN script", "npm package"]}>
+<Tab value="CDN script">
+
+Wrap the initialisation in a host check:
 
 ```html
 <script>
@@ -178,7 +201,10 @@ By default, Swetrix ignores `localhost` traffic. If you want to be explicit abou
 </script>
 ```
 
-**npm package** — use `import.meta.env`:
+</Tab>
+<Tab value="npm package">
+
+Use `import.meta.env`:
 
 ```typescript
 import * as Swetrix from 'swetrix'
@@ -188,6 +214,9 @@ Swetrix.init('YOUR_PROJECT_ID', {
 })
 Swetrix.trackViews()
 ```
+
+</Tab>
+</Tabs>
 
 
 <Callout type="info">
@@ -211,7 +240,8 @@ Build and deploy your site (or temporarily enable `devMode`) and visit a few pag
 
 Enable automatic client-side error monitoring to capture unhandled JavaScript errors and report them to Swetrix.
 
-**CDN script:**
+<Tabs items={["CDN script", "npm package"]}>
+<Tab value="CDN script">
 
 ```html
 <script>
@@ -223,7 +253,8 @@ Enable automatic client-side error monitoring to capture unhandled JavaScript er
 </script>
 ```
 
-**npm package:**
+</Tab>
+<Tab value="npm package">
 
 ```typescript
 import * as Swetrix from 'swetrix'
@@ -232,6 +263,9 @@ Swetrix.init('YOUR_PROJECT_ID')
 Swetrix.trackViews()
 Swetrix.trackErrors()
 ```
+
+</Tab>
+</Tabs>
 
 Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
 

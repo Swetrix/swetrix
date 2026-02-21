@@ -30,6 +30,17 @@ export default defineNuxtPlugin(() => {
 
 That's it — Nuxt auto-registers files in the `plugins/` directory. `trackViews()` automatically detects client-side route changes, so page views are tracked on every navigation.
 
+<Files>
+  <Folder name="plugins" defaultOpen>
+    <File name="swetrix.client.ts" />
+  </Folder>
+  <Folder name="pages">
+    <File name="index.vue" />
+  </Folder>
+  <File name="app.vue" />
+  <File name="nuxt.config.ts" />
+</Files>
+
 
 <Callout type="warn">
 Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
@@ -209,7 +220,9 @@ We recommend `UPPER_SNAKE_CASE` for consistency (e.g. `SIGNUP_CTA_CLICK`, `CONTA
 
 Rather than hardcoding your Project ID, use Nuxt's [runtime config](https://nuxt.com/docs/guide/going-further/runtime-config).
 
-**1. Add to your `nuxt.config.ts`:**
+<Steps>
+<Step>
+### Add to your `nuxt.config.ts`
 
 ```ts
 export default defineNuxtConfig({
@@ -220,19 +233,23 @@ export default defineNuxtConfig({
   },
 })
 ```
-
-**2. Set the environment variable:**
+</Step>
+<Step>
+### Set the environment variable
 
 ```
 NUXT_PUBLIC_SWETRIX_PID=YOUR_PROJECT_ID
 ```
-
-**3. Reference it in your plugin:**
+</Step>
+<Step>
+### Reference it in your plugin
 
 ```ts
 const config = useRuntimeConfig()
 Swetrix.init(config.public.swetrixPid)
 ```
+</Step>
+</Steps>
 
 ## Further reading
 

@@ -16,7 +16,8 @@ See [CMS & website builder integrations](/integrations#cms--website-builders).
 
 </Callout>
 
-## Edit the website's HTML code
+<Tabs items={["HTML script tag", "npm package"]}>
+<Tab value="HTML script tag">
 
 The easiest way to add the tracking script to your website is to edit the HTML code of your website.
 To do this, paste the following code snippet into the Body section (`<body>` tag). You have to place the script within the `<body>...</body>` tags.
@@ -47,21 +48,30 @@ It's important to remember to replace `YOUR_PROJECT_ID` with your actual Project
 
 Done. Now you can start using Swetrix on your website.
 
-## Install Swetrix via npm
+</Tab>
+<Tab value="npm package">
 
 If you are using a website based on a JavaScript framework such as React or Vue, you can install Swetrix via npm and use it on your website.
 
-To install Swetrix using npm, run the following command in your terminal:
+<Steps>
+<Step>
+### Install the package
 
 ```bash
 npm install swetrix
 ```
+</Step>
+<Step>
+### Import Swetrix
 
-Next, you should import the module into your project's root file (in React this is usually called `index.js` or `App.js`, and these files are located in the `src` folder):
+Import the module into your project's root file (in React this is usually called `index.js` or `App.js`, and these files are located in the `src` folder):
 
 ```js
 import * as Swetrix from 'swetrix'
 ```
+</Step>
+<Step>
+### Start tracking
 
 After that you can track anything you want. For example, the following code snippet will work just fine:
 
@@ -69,3 +79,8 @@ After that you can track anything you want. For example, the following code snip
 Swetrix.init('YOUR_PROJECT_ID')
 Swetrix.trackViews()
 ```
+</Step>
+</Steps>
+
+</Tab>
+</Tabs>

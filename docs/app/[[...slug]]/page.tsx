@@ -9,6 +9,7 @@ import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { notFound } from 'next/navigation';
 import { FeedbackWidget } from '@/components/FeedbackWidget';
 import { IntegrationsGrid } from '@/components/IntegrationsGrid';
+import { getMDXComponents } from '@/mdx-components';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -32,7 +33,7 @@ export default async function Page(props: {
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <Mdx components={{ ...defaultMdxComponents, IntegrationsGrid }} />
+        <Mdx components={getMDXComponents({ IntegrationsGrid })} />
         <FeedbackWidget />
       </DocsBody>
     </DocsPage>
