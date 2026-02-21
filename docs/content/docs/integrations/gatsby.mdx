@@ -1,0 +1,188 @@
+---
+title: Gatsby
+slug: /gatsby-integration
+---
+
+Integrate Swetrix with your [Gatsby](https://www.gatsbyjs.com/) site to track page views, monitor errors, and capture custom events — all while staying privacy-friendly and GDPR-compliant.
+
+## Installation
+
+Install the Swetrix npm package:
+
+```bash
+npm install swetrix
+```
+
+### Set up tracking in `gatsby-browser.js`
+
+Gatsby provides a [`gatsby-browser.js`](https://www.gatsbyjs.com/docs/reference/config-files/gatsby-browser/) (or `gatsby-browser.tsx`) file at the root of your project where you can hook into client-side lifecycle events. Use the `onClientEntry` API to initialise Swetrix and `onRouteUpdate` to track page views on every navigation.
+
+Create or update `gatsby-browser.js` in your project root:
+
+```js
+import * as Swetrix from "swetrix";
+
+export const onClientEntry = () => {
+  Swetrix.init("YOUR_PROJECT_ID");
+};
+
+export const onRouteUpdate = () => {
+  Swetrix.trackViews();
+};
+```
+
+<Callout type="warn">
+Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
+
+</Callout>
+
+### Noscript fallback (optional)
+
+To track visitors who have JavaScript disabled, add a noscript image pixel using Gatsby's [`gatsby-ssr.js`](https://www.gatsbyjs.com/docs/reference/config-files/gatsby-ssr/) (or `gatsby-ssr.tsx`) file.
+
+Create or update `gatsby-ssr.js` in your project root:
+
+```jsx
+import React from "react";
+
+export const onRenderBody = ({ setPostBodyComponents }) => {
+  setPostBodyComponents([
+    <noscript key="swetrix-noscript">
+      <img
+        src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+        alt=""
+        referrerPolicy="no-referrer-when-downgrade"
+      />
+    </noscript>,
+  ]);
+};
+```
+
+## Disable tracking in development
+
+By default, Swetrix ignores `localhost` traffic. If you want to be explicit about it, you can conditionally disable tracking based on your environment:
+
+```js
+Swetrix.init("YOUR_PROJECT_ID", {
+  disabled: process.env.NODE_ENV === "development",
+});
+```
+
+<Callout type="info">
+If you want to verify tracking locally during development, set `devMode: true` instead:
+
+```js
+Swetrix.init("YOUR_PROJECT_ID", {
+  devMode: true,
+});
+```
+
+Remember to remove this before deploying to production.
+
+</Callout>
+
+## Check your installation
+
+Build and deploy your site with `gatsby build && gatsby serve` (or deploy to your hosting provider). Visit a few pages — within a minute you should see new pageviews appearing in your Swetrix dashboard.
+
+## Error tracking
+
+Enable automatic client-side error monitoring by adding `trackErrors()` to your `gatsby-browser.js`. This captures unhandled JavaScript errors and reports them to Swetrix.
+
+```js
+import * as Swetrix from "swetrix";
+
+export const onClientEntry = () => {
+  Swetrix.init("YOUR_PROJECT_ID");
+  Swetrix.trackErrors();
+};
+
+export const onRouteUpdate = () => {
+  Swetrix.trackViews();
+};
+```
+
+Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
+
+## Tracking custom events
+
+Custom events let you track specific user interactions — button clicks, form submissions, sign-ups, purchases, and more. Import `swetrix` in any component and call `track()`.
+
+### Example: tracking button clicks
+
+```jsx
+import * as Swetrix from "swetrix";
+
+export default function PricingCTA() {
+  const handleClick = () => {
+    Swetrix.track({
+      ev: "PRICING_CTA_CLICK",
+      meta: {
+        plan: "pro",
+        location: "hero",
+      },
+    });
+  };
+
+  return <button onClick={handleClick}>Upgrade to Pro</button>;
+}
+```
+
+### Example: tracking form submissions
+
+```jsx
+import * as Swetrix from "swetrix";
+
+export default function NewsletterForm() {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    Swetrix.track({
+      ev: "NEWSLETTER_SIGNUP",
+      meta: {
+        source: "footer",
+      },
+    });
+
+    // ...submit logic
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="email" placeholder="you@example.com" required />
+      <button type="submit">Subscribe</button>
+    </form>
+  );
+}
+```
+
+### Event naming rules
+
+Event names must:
+
+- Contain any characters (including spaces, unicode, etc.)
+- Be no longer than 256 characters
+
+We recommend `UPPER_SNAKE_CASE` for consistency (e.g. `PRICING_CTA_CLICK`, `NEWSLETTER_SIGNUP`).
+
+## Using environment variables for your Project ID
+
+Rather than hardcoding your Project ID, you can use Gatsby's environment variables. Prefix the variable with `GATSBY_` so it's available in client-side code.
+
+**1. Add to your `.env.production` file:**
+
+```
+GATSBY_SWETRIX_PID=YOUR_PROJECT_ID
+```
+
+**2. Reference it in `gatsby-browser.js`:**
+
+```js
+Swetrix.init(process.env.GATSBY_SWETRIX_PID);
+```
+
+## Further reading
+
+- [React integration](/react-integration) — generic React setup guide for Vite and CRA.
+- [Tracking script reference](/swetrix-js-reference) — full API documentation for `init()`, `track()`, `trackViews()`, `trackErrors()`, and more.
+- [Swetrix npm package](https://www.npmjs.com/package/swetrix) — package details and changelog.

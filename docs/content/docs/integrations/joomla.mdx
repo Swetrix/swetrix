@@ -1,0 +1,149 @@
+---
+title: Joomla
+slug: /joomla-integration
+---
+
+Integrate Swetrix with your Joomla site to get privacy-friendly, GDPR-compliant analytics without any third-party plugins.
+
+## Installation
+
+There are two ways to add Swetrix to Joomla: using a **Custom HTML module** (no file editing required) or by editing your **template's index.php** directly.
+
+### Method 1: Custom HTML module
+
+This is the simplest approach and works with any Joomla template.
+
+#### 1. Create the module
+
+1. Log in to your Joomla Administrator panel.
+2. Navigate to **Content > Site Modules** (Joomla 4/5) or **Extensions > Modules** (Joomla 3).
+3. Click **New** and choose **Custom**.
+
+#### 2. Configure the module
+
+Set the following fields:
+
+- **Title:** Swetrix Analytics (or any name you prefer)
+- **Show Title:** No
+- **Position:** Choose a position that loads on every page. Many templates provide a `debug` or `head` position — either works fine.
+
+Switch to the **Editor** tab. If the WYSIWYG editor is active, switch it to source / code view, then paste:
+
+```html
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+```
+
+<Callout type="warn">
+Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
+
+</Callout>
+
+#### 3. Publish the module
+
+1. Set **Status** to **Published**.
+2. Under the **Menu Assignment** tab, select **On all pages**.
+3. Click **Save & Close**.
+
+### Method 2: Edit the template directly
+
+If you prefer to embed the tracking code at the template level, you can add it to your active template's main layout file.
+
+#### 1. Open your template file
+
+1. In your Joomla Administrator panel, go to **System > Site Templates** (Joomla 4/5) or **Extensions > Templates** (Joomla 3).
+2. Click on your active template to open the template editor.
+3. Open the file `index.php` (or `component.php` depending on your template structure).
+
+#### 2. Add the tracking snippet
+
+Paste the following just before the closing `</body>` tag:
+
+```html
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+```
+
+<Callout type="warn">
+Replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard.
+
+</Callout>
+
+3. Click **Save**.
+
+<Callout>
+Template updates may overwrite your changes. If you update your template, verify the Swetrix snippet is still present. Making a copy of the template before updating is a good precaution.
+
+</Callout>
+
+## Tracking custom events
+
+Once basic page tracking is working, you can use `swetrix.track()` to record custom interactions — form submissions, button clicks, downloads, and more. Refer to the [tracking script reference](/swetrix-js-reference) for the full API.
+
+Example — tracking a contact form submission:
+
+```html
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.querySelector("#contact-form");
+    if (!form || typeof swetrix === "undefined") return;
+
+    form.addEventListener("submit", function () {
+      swetrix.track({ ev: "contact_form_submitted" });
+    });
+  });
+</script>
+```
+
+## Troubleshooting
+
+### The editor strips the script tags
+
+Joomla's default editor (TinyMCE) may remove `<script>` tags when saving. To prevent this:
+
+- **Easiest fix:** Switch to code / source view before pasting the snippet. In Joomla 4/5, click the **Toggle editor** button below the editor area.
+- **Alternative:** Go to **System > Plugins** (or **Extensions > Plugins**), find **Editor - TinyMCE**, and under the **Extended Valid Elements** field add `script[src|defer|data-site-id]`. Save the plugin.
+- **Last resort:** Temporarily switch the editor to **Editor - None** under **System > Global Configuration > Default Editor**, paste the snippet, then switch back.
+
+### Script not appearing on the site
+
+- Confirm the module is published and assigned to all pages.
+- Clear Joomla's cache: **System > Clear Cache**.
+- Check that the module position you selected actually exists in your active template.
+
+### Caching issues
+
+If you're using Joomla's built-in cache or a third-party caching extension:
+
+- Clear all caches after adding the snippet.
+- The Swetrix script loads client-side, so it works fine with page caching once the HTML has been served with the snippet included.
+
+## Check your installation
+
+Visit your live Joomla site and navigate through a few pages. Within a minute you should see new pageviews appearing in your Swetrix dashboard.

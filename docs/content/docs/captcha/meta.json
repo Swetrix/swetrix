@@ -1,0 +1,5 @@
+{
+  "title": "CAPTCHA",
+  "root": true,
+  "pages": ["introduction", "client-side-usage", "server-side-validation", "testing"]
+}
