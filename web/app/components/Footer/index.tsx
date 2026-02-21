@@ -816,7 +816,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
           <div className='flex flex-col items-start border-t border-white/10 pt-6 lg:pt-8'>
             <div className='flex w-full flex-col items-center gap-4 text-center text-sm md:flex-row md:justify-between md:text-left'>
               <div className='text-gray-200'>
-                © {year} {t('footer.copy')}
+                &copy; 2021-{year} {t('footer.copy')}
                 {showDBIPMessage && isSelfhosted ? (
                   <>
                     {' · '}
