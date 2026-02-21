@@ -1,0 +1,19 @@
+{
+  "title": "Analytics Dashboard",
+  "pages": [
+    "ask-ai",
+    "traffic",
+    "performance",
+    "funnels",
+    "alerts",
+    "profiles-and-sessions",
+    "error-tracking",
+    "goals",
+    "feature-flags",
+    "experiments",
+    "captcha",
+    "revenue-tracking",
+    "segments",
+    "live-visitors"
+  ]
+}

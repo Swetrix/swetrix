@@ -1,0 +1,667 @@
+---
+title: FastAPI
+slug: /fastapi-integration
+---
+
+Integrate Swetrix with your [FastAPI](https://fastapi.tiangolo.com/) application to track page views, monitor errors, and capture custom events — all while staying privacy-friendly and GDPR-compliant.
+
+Unlike client-side integrations that inject a tracking script into the browser, this approach sends analytics data directly from your server using the Swetrix [Events API](/events-api). This means tracking works even when visitors have JavaScript disabled or use ad blockers, and no third-party scripts are loaded in the browser.
+
+## Installation
+
+Install [httpx](https://www.python-httpx.org/) for making async HTTP requests to the Swetrix API:
+
+```bash
+pip install httpx
+```
+
+## Setup
+
+Create a reusable Swetrix client that wraps the Events API:
+
+```python
+import httpx
+from typing import Optional
+
+
+class SwetrixClient:
+    def __init__(
+        self,
+        project_id: str,
+        api_url: str = "https://api.swetrix.com/log",
+        disabled: bool = False,
+    ):
+        self.project_id = project_id
+        self.api_url = api_url
+        self.disabled = disabled
+        self._client = httpx.AsyncClient(timeout=10.0)
+
+    async def track_pageview(
+        self,
+        ip: str,
+        user_agent: str,
+        *,
+        pg: Optional[str] = None,
+        lc: Optional[str] = None,
+        ref: Optional[str] = None,
+        so: Optional[str] = None,
+        me: Optional[str] = None,
+        ca: Optional[str] = None,
+        unique: bool = False,
+    ):
+        if self.disabled:
+            return
+
+        payload = {"pid": self.project_id}
+        if pg:
+            payload["pg"] = pg
+        if lc:
+            payload["lc"] = lc
+        if ref:
+            payload["ref"] = ref
+        if so:
+            payload["so"] = so
+        if me:
+            payload["me"] = me
+        if ca:
+            payload["ca"] = ca
+        if unique:
+            payload["unique"] = True
+
+        await self._client.post(
+            self.api_url,
+            json=payload,
+            headers={
+                "User-Agent": user_agent or "",
+                "X-Client-IP-Address": ip,
+                "Content-Type": "application/json",
+            },
+        )
+
+    async def track_event(
+        self,
+        ip: str,
+        user_agent: str,
+        *,
+        ev: str,
+        pg: Optional[str] = None,
+        unique: bool = False,
+        meta: Optional[dict] = None,
+    ):
+        if self.disabled:
+            return
+
+        payload = {"pid": self.project_id, "ev": ev}
+        if pg:
+            payload["pg"] = pg
+        if unique:
+            payload["unique"] = True
+        if meta:
+            payload["meta"] = meta
+
+        await self._client.post(
+            f"{self.api_url}/custom",
+            json=payload,
+            headers={
+                "User-Agent": user_agent or "",
+                "X-Client-IP-Address": ip,
+                "Content-Type": "application/json",
+            },
+        )
+
+    async def track_error(
+        self,
+        ip: str,
+        user_agent: str,
+        *,
+        name: str,
+        message: Optional[str] = None,
+        stack_trace: Optional[str] = None,
+        pg: Optional[str] = None,
+        lc: Optional[str] = None,
+        meta: Optional[dict] = None,
+    ):
+        if self.disabled:
+            return
+
+        payload = {"pid": self.project_id, "name": name}
+        if message:
+            payload["message"] = message
+        if stack_trace:
+            payload["stackTrace"] = stack_trace
+        if pg:
+            payload["pg"] = pg
+        if lc:
+            payload["lc"] = lc
+        if meta:
+            payload["meta"] = meta
+
+        await self._client.post(
+            f"{self.api_url}/error",
+            json=payload,
+            headers={
+                "User-Agent": user_agent or "",
+                "X-Client-IP-Address": ip,
+                "Content-Type": "application/json",
+            },
+        )
+
+    async def heartbeat(self, ip: str, user_agent: str):
+        if self.disabled:
+            return
+
+        await self._client.post(
+            f"{self.api_url}/hb",
+            json={"pid": self.project_id},
+            headers={
+                "User-Agent": user_agent or "",
+                "X-Client-IP-Address": ip,
+                "Content-Type": "application/json",
+            },
+        )
+
+    async def close(self):
+        await self._client.aclose()
+```
+
+<Callout type="warn">
+Replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
+
+</Callout>
+
+## Application setup
+
+Initialise the client and wire it into your FastAPI app using [lifespan events](https://fastapi.tiangolo.com/advanced/events/):
+
+```python
+import os
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.swetrix = SwetrixClient(
+        project_id=os.environ["SWETRIX_PROJECT_ID"],
+        disabled=os.environ.get("ENVIRONMENT") != "production",
+    )
+    yield
+    await app.state.swetrix.close()
+
+
+app = FastAPI(lifespan=lifespan)
+```
+
+## Tracking pageviews
+
+To track pageviews you need to pass the visitor's **IP address** and **User-Agent** header. Without these, unique visitor counting and live visitor tracking won't work. See the [Events API docs](/events-api#unique-visitors-tracking) for details.
+
+### Basic example
+
+```python
+from fastapi import Request
+
+
+@app.get("/")
+async def homepage(request: Request):
+    swetrix = request.app.state.swetrix
+    ip = request.client.host
+    user_agent = request.headers.get("user-agent", "")
+
+    await swetrix.track_pageview(
+        ip,
+        user_agent,
+        pg="/",
+        lc=request.headers.get("accept-language", "").split(",")[0] or None,
+        ref=request.headers.get("referer"),
+    )
+
+    return {"message": "Hello World"}
+```
+
+### Middleware approach (recommended)
+
+FastAPI middleware lets you track pageviews automatically on every request without repeating code in each route:
+
+```python
+from fastapi import Request
+
+
+@app.middleware("http")
+async def track_pageviews(request: Request, call_next):
+    swetrix = request.app.state.swetrix
+    ip = request.client.host
+    user_agent = request.headers.get("user-agent", "")
+
+    # Fire-and-forget — don't block the response
+    import asyncio
+    asyncio.create_task(
+        swetrix.track_pageview(
+            ip,
+            user_agent,
+            pg=request.url.path,
+            lc=request.headers.get("accept-language", "").split(",")[0] or None,
+            ref=request.headers.get("referer"),
+        )
+    )
+
+    response = await call_next(request)
+    return response
+```
+
+<Callout type="info">
+By using `asyncio.create_task()`, the analytics call runs in the background without adding latency to your responses. This is the recommended pattern for production.
+
+</Callout>
+
+If your FastAPI app runs behind a reverse proxy (e.g. Nginx, Cloudflare, or a load balancer), configure [trusted hosts](https://fastapi.tiangolo.com/advanced/middleware/) and use the `X-Forwarded-For` header to get the real client IP:
+
+```python
+@app.middleware("http")
+async def track_pageviews(request: Request, call_next):
+    ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+    if not ip:
+        ip = request.client.host
+
+    # ... rest of tracking logic
+```
+
+### Dependency injection approach
+
+For more control, you can use FastAPI's dependency injection to make the client IP and user agent available in your routes:
+
+```python
+from fastapi import Depends, Request
+from dataclasses import dataclass
+
+
+@dataclass
+class VisitorInfo:
+    ip: str
+    user_agent: str
+
+
+def get_visitor_info(request: Request) -> VisitorInfo:
+    ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+    if not ip:
+        ip = request.client.host
+    return VisitorInfo(
+        ip=ip,
+        user_agent=request.headers.get("user-agent", ""),
+    )
+
+
+@app.get("/dashboard")
+async def dashboard(request: Request, visitor: VisitorInfo = Depends(get_visitor_info)):
+    await request.app.state.swetrix.track_pageview(
+        visitor.ip,
+        visitor.user_agent,
+        pg="/dashboard",
+    )
+    return {"page": "dashboard"}
+```
+
+### Pageview options
+
+The `track_pageview` method accepts the following keyword arguments:
+
+| Option   | Type   | Description                        |
+| -------- | ------ | ---------------------------------- |
+| `pg`     | `str`  | Page path (e.g. `/home`)           |
+| `lc`     | `str`  | Visitor locale (e.g. `en-US`)      |
+| `ref`    | `str`  | Referrer URL                       |
+| `so`     | `str`  | Traffic source (e.g. `utm_source`) |
+| `me`     | `str`  | Traffic medium (e.g. `utm_medium`) |
+| `ca`     | `str`  | Campaign (e.g. `utm_campaign`)     |
+| `unique` | `bool` | Only save unique visits            |
+
+## Tracking custom events
+
+Track specific actions — API calls, form submissions, purchases, etc.:
+
+```python
+from pydantic import BaseModel
+
+
+class SubscribeRequest(BaseModel):
+    email: str
+    plan: str
+
+
+@app.post("/api/subscribe")
+async def subscribe(body: SubscribeRequest, request: Request):
+    swetrix = request.app.state.swetrix
+    ip = request.client.host
+    user_agent = request.headers.get("user-agent", "")
+
+    import asyncio
+    asyncio.create_task(
+        swetrix.track_event(
+            ip,
+            user_agent,
+            ev="NEWSLETTER_SUBSCRIBE",
+            pg="/subscribe",
+            meta={"plan": body.plan},
+        )
+    )
+
+    return {"success": True}
+```
+
+### Event naming rules
+
+Event names must:
+
+- Contain any characters (including spaces, unicode, etc.)
+- Be no longer than 256 characters
+
+We recommend `UPPER_SNAKE_CASE` for consistency (e.g. `NEWSLETTER_SUBSCRIBE`, `CHECKOUT_COMPLETED`).
+
+## Error tracking
+
+Use a custom exception handler to report errors to Swetrix automatically:
+
+```python
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    import traceback
+
+    swetrix = request.app.state.swetrix
+
+    import asyncio
+    asyncio.create_task(
+        swetrix.track_error(
+            request.client.host,
+            request.headers.get("user-agent", ""),
+            name=type(exc).__name__,
+            message=str(exc),
+            stack_trace=traceback.format_exc(),
+            pg=request.url.path,
+        )
+    )
+
+    return JSONResponse(
+        status_code=500,
+        content={"error": "Internal Server Error"},
+    )
+```
+
+You can also track errors from specific routes:
+
+```python
+@app.get("/api/data")
+async def get_data(request: Request):
+    try:
+        data = await fetch_external_data()
+        return data
+    except Exception as exc:
+        import traceback
+        import asyncio
+
+        asyncio.create_task(
+            request.app.state.swetrix.track_error(
+                request.client.host,
+                request.headers.get("user-agent", ""),
+                name=type(exc).__name__,
+                message=str(exc),
+                stack_trace=traceback.format_exc(),
+                pg="/api/data",
+            )
+        )
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to fetch data"},
+        )
+```
+
+## Heartbeat events
+
+Heartbeat events let Swetrix know a visitor's session is still active, powering the **Live Visitors** counter in your dashboard. They're most useful in long-lived connections like WebSocket sessions:
+
+```python
+import asyncio
+from fastapi import WebSocket
+
+
+HEARTBEAT_INTERVAL = 30
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    ip = websocket.client.host
+    user_agent = websocket.headers.get("user-agent", "")
+    swetrix = websocket.app.state.swetrix
+
+    async def send_heartbeats():
+        while True:
+            await swetrix.heartbeat(ip, user_agent)
+            await asyncio.sleep(HEARTBEAT_INTERVAL)
+
+    heartbeat_task = asyncio.create_task(send_heartbeats())
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except Exception:
+        heartbeat_task.cancel()
+```
+
+## Disable tracking in development
+
+Use the `disabled` option to prevent tracking during development:
+
+```python
+swetrix = SwetrixClient(
+    project_id=os.environ["SWETRIX_PROJECT_ID"],
+    disabled=os.environ.get("ENVIRONMENT") != "production",
+)
+```
+
+## Using environment variables for your Project ID
+
+Rather than hardcoding the Project ID, store it in an environment variable:
+
+```bash
+export SWETRIX_PROJECT_ID=YOUR_PROJECT_ID
+```
+
+If you use a `.env` file with [python-dotenv](https://pypi.org/project/python-dotenv/):
+
+```
+SWETRIX_PROJECT_ID=YOUR_PROJECT_ID
+ENVIRONMENT=production
+```
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv()
+```
+
+Or with [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/), which is common in FastAPI projects:
+
+```python
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    swetrix_project_id: str
+    environment: str = "development"
+
+    class Config:
+        env_file = ".env"
+
+
+settings = Settings()
+
+swetrix = SwetrixClient(
+    project_id=settings.swetrix_project_id,
+    disabled=settings.environment != "production",
+)
+```
+
+## Complete example
+
+Here's a full FastAPI application with Swetrix analytics:
+
+```python
+import os
+import asyncio
+import traceback
+from contextlib import asynccontextmanager
+
+import httpx
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
+
+class SwetrixClient:
+    def __init__(self, project_id: str, api_url: str = "https://api.swetrix.com/log", disabled: bool = False):
+        self.project_id = project_id
+        self.api_url = api_url
+        self.disabled = disabled
+        self._client = httpx.AsyncClient(timeout=10.0)
+
+    async def track_pageview(self, ip: str, user_agent: str, **kwargs):
+        if self.disabled:
+            return
+        payload = {"pid": self.project_id, **{k: v for k, v in kwargs.items() if v is not None}}
+        await self._client.post(
+            self.api_url,
+            json=payload,
+            headers={"User-Agent": user_agent or "", "X-Client-IP-Address": ip, "Content-Type": "application/json"},
+        )
+
+    async def track_event(self, ip: str, user_agent: str, *, ev: str, **kwargs):
+        if self.disabled:
+            return
+        payload = {"pid": self.project_id, "ev": ev, **{k: v for k, v in kwargs.items() if v is not None}}
+        await self._client.post(
+            f"{self.api_url}/custom",
+            json=payload,
+            headers={"User-Agent": user_agent or "", "X-Client-IP-Address": ip, "Content-Type": "application/json"},
+        )
+
+    async def track_error(self, ip: str, user_agent: str, *, name: str, **kwargs):
+        if self.disabled:
+            return
+        payload = {"pid": self.project_id, "name": name}
+        if "stack_trace" in kwargs:
+            kwargs["stackTrace"] = kwargs.pop("stack_trace")
+        payload.update({k: v for k, v in kwargs.items() if v is not None})
+        await self._client.post(
+            f"{self.api_url}/error",
+            json=payload,
+            headers={"User-Agent": user_agent or "", "X-Client-IP-Address": ip, "Content-Type": "application/json"},
+        )
+
+    async def close(self):
+        await self._client.aclose()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.swetrix = SwetrixClient(
+        project_id=os.environ.get("SWETRIX_PROJECT_ID", "YOUR_PROJECT_ID"),
+        disabled=os.environ.get("ENVIRONMENT") != "production",
+    )
+    yield
+    await app.state.swetrix.close()
+
+
+app = FastAPI(lifespan=lifespan)
+
+
+@app.middleware("http")
+async def track_pageviews(request: Request, call_next):
+    ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+    if not ip:
+        ip = request.client.host
+    user_agent = request.headers.get("user-agent", "")
+
+    asyncio.create_task(
+        request.app.state.swetrix.track_pageview(
+            ip,
+            user_agent,
+            pg=request.url.path,
+            lc=request.headers.get("accept-language", "").split(",")[0] or None,
+            ref=request.headers.get("referer"),
+        )
+    )
+
+    response = await call_next(request)
+    return response
+
+
+@app.get("/")
+async def homepage():
+    return {"message": "Hello World"}
+
+
+class ContactRequest(BaseModel):
+    name: str
+    email: str
+
+
+@app.post("/api/contact")
+async def contact(body: ContactRequest, request: Request):
+    ip = request.client.host
+    user_agent = request.headers.get("user-agent", "")
+
+    asyncio.create_task(
+        request.app.state.swetrix.track_event(
+            ip, user_agent, ev="CONTACT_FORM_SUBMITTED", pg="/contact"
+        )
+    )
+
+    return {"success": True}
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    asyncio.create_task(
+        request.app.state.swetrix.track_error(
+            request.client.host,
+            request.headers.get("user-agent", ""),
+            name=type(exc).__name__,
+            message=str(exc),
+            stack_trace=traceback.format_exc(),
+            pg=request.url.path,
+        )
+    )
+
+    return JSONResponse(status_code=500, content={"error": "Internal Server Error"})
+```
+
+Run it with:
+
+```bash
+uvicorn main:app --reload
+```
+
+## Check your installation
+
+Deploy your application and make a few requests. Within a minute you should see new pageviews appearing in your Swetrix dashboard.
+
+## Self-hosted Swetrix
+
+If you're self-hosting the [Swetrix API](https://github.com/Swetrix/swetrix-api), point the `api_url` option to your instance:
+
+```python
+swetrix = SwetrixClient(
+    project_id="YOUR_PROJECT_ID",
+    api_url="https://your-swetrix-instance.com/log",
+)
+```
+
+## Further reading
+
+- [Events API](/events-api) — API documentation for direct event submission.
+- [FastAPI documentation](https://fastapi.tiangolo.com/) — official FastAPI docs.
+- [httpx documentation](https://www.python-httpx.org/) — the async HTTP client used in this guide.

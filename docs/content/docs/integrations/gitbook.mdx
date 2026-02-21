@@ -1,0 +1,116 @@
+---
+title: GitBook
+slug: /gitbook-integration
+---
+
+Integrate Swetrix with your [GitBook](https://www.gitbook.com/) documentation site to understand how visitors navigate your docs, which pages get the most attention, and where readers drop off — all with full privacy and GDPR compliance.
+
+## Prerequisites
+
+GitBook's custom script injection requires:
+
+- A **Pro**, **Team**, or **Enterprise** plan. Custom scripts are not available on the free Community plan.
+- A **custom domain** configured for your GitBook space. Scripts only execute on custom domains, not on default `*.gitbook.io` URLs.
+
+## Installation
+
+### 1. Open your space settings
+
+1. Navigate to the GitBook space you want to track.
+2. Click the **Settings** icon (gear) in the top-right corner.
+3. Select **Integrations** from the sidebar.
+
+### 2. Add the tracking script
+
+1. Scroll down to the **Custom scripts** section.
+2. In the **Head** field, paste the following:
+
+```html
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
+</script>
+```
+
+### 3. Save
+
+Click **Save** to apply the script to your documentation site.
+
+<Callout type="warn">
+Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the [Swetrix dashboard](https://swetrix.com/projects), otherwise tracking won't work.
+
+</Callout>
+
+### Noscript fallback (optional)
+
+If the Head section supports multiple code blocks, you can also add a noscript pixel to track visitors who have JavaScript disabled:
+
+```html
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+```
+
+## Check your installation
+
+Open your documentation site through your custom domain in a new browser tab or incognito window. Browse through a few pages. Within a minute you should see new pageviews appearing in your Swetrix dashboard.
+
+<Callout type="info">
+Make sure you're accessing the site via your custom domain, not the default `*.gitbook.io` URL. Custom scripts only load on custom domains.
+
+</Callout>
+
+## Page navigation tracking
+
+GitBook uses client-side navigation when readers move between pages. Swetrix's `trackViews()` handles this automatically via the History API, so every page transition is captured without any extra configuration.
+
+## Error tracking
+
+You can enable automatic client-side error monitoring by adding `trackErrors()` alongside the other initialisation calls. This captures unhandled JavaScript errors and reports them to Swetrix.
+
+Update the script in your Head section:
+
+```html
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
+</script>
+```
+
+Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for configuration options like `sampleRate` and `callback`.
+
+## Troubleshooting
+
+### Script not loading
+
+- **Check your plan.** Custom scripts require a Pro plan or higher. Verify your GitBook subscription.
+- **Verify your custom domain.** Scripts only execute on custom domains. If you're viewing your docs at `yourspace.gitbook.io`, the script won't run.
+- **Inspect the source.** Open your published site on your custom domain, right-click and select "View Page Source", then search for `swetrix` to confirm the script is present.
+
+### No data in dashboard
+
+- **Confirm the Project ID.** Double-check that `YOUR_PROJECT_ID` is replaced with your actual project ID from the Swetrix dashboard.
+- **Check the console.** Open your browser's developer tools (F12) and look at the Console tab for JavaScript errors. Check the Network tab for requests to `api.swetrix.com` to verify data is being sent.
+
+### Changes not appearing
+
+GitBook may cache pages aggressively. Try:
+
+- Hard-refreshing the page (Ctrl+Shift+R or Cmd+Shift+R).
+- Opening the site in an incognito or private window.
+- Waiting a few minutes for the cache to update.
+
+## Further reading
+
+- [Tracking script reference](/swetrix-js-reference) — full API documentation for `init()`, `track()`, `trackViews()`, `trackErrors()`, and more.

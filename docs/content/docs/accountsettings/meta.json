@@ -1,0 +1,13 @@
+{
+  "title": "Account settings",
+  "pages": [
+    "two-factor-authentication",
+    "teams-and-integrations",
+    "api-keys",
+    "email-reports",
+    "change-email",
+    "change-password",
+    "delete-account",
+    "other-settings"
+  ]
+}

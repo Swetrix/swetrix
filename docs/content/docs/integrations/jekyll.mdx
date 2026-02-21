@@ -1,0 +1,162 @@
+---
+title: Jekyll
+slug: /jekyll-integration
+---
+
+After you sign up on Swetrix and create a new project, the only thing left is to add it to your website.
+
+## Installation
+
+The recommended approach is to create a Jekyll include file for the Swetrix tracking script and add it to your site's default layout.
+
+### 1. Create an include file
+
+In your Jekyll project, create the file `_includes/swetrix-analytics.html` with the following content:
+
+```html
+{% if jekyll.environment == "production" %}
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+  });
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+{% endif %}
+```
+
+The `{% if jekyll.environment == "production" %}` condition ensures the tracking script is only included in production builds. This prevents inflating your analytics with local page views during development.
+
+<Callout type="warn">
+It's very important not to forget to replace `YOUR_PROJECT_ID` with your actual Project ID you can find in the Dashboard, otherwise tracking won't work!
+
+</Callout>
+
+### 2. Include it in your layout
+
+Open your default layout file — typically `_layouts/default.html`. If you're using a gem-based theme, you may need to copy the layout into your project's `_layouts/` directory first to override it.
+
+Add the include just before the closing `</body>` tag:
+
+```html
+    {% include swetrix-analytics.html %}
+  </body>
+</html>
+```
+
+### 3. Set the environment for production
+
+Jekyll doesn't set the environment to `production` by default when building locally. To ensure tracking is active on your live site, build with:
+
+```bash
+JEKYLL_ENV=production jekyll build
+```
+
+<Callout type="info">
+If you deploy via **GitHub Pages**, the environment is automatically set to `production` — no extra configuration needed.
+
+</Callout>
+
+## Using Jekyll config variables (optional)
+
+To keep your Project ID out of the template and make it easy to manage, you can store it in your `_config.yml`.
+
+**1. Add to `_config.yml`:**
+
+```yaml
+swetrix:
+  project_id: "YOUR_PROJECT_ID"
+```
+
+**2. Update `_includes/swetrix-analytics.html`:**
+
+```html
+{% if jekyll.environment == "production" and site.swetrix.project_id %}
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("{{ site.swetrix.project_id }}");
+    swetrix.trackViews();
+  });
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid={{ site.swetrix.project_id }}"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+{% endif %}
+```
+
+## Error tracking
+
+To enable automatic client-side error monitoring, add `trackErrors()` after `init()` in your include file:
+
+```html
+{% if jekyll.environment == "production" %}
+<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    swetrix.init("YOUR_PROJECT_ID");
+    swetrix.trackViews();
+    swetrix.trackErrors();
+  });
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+{% endif %}
+```
+
+Errors will appear in the **Errors** tab of your project dashboard. See the [tracking script reference](/swetrix-js-reference#trackerrors) for options like `sampleRate` and `callback`.
+
+## Tracking custom events
+
+You can track custom events (button clicks, form submissions, etc.) anywhere on your site by calling `swetrix.track()`:
+
+```html
+<button onclick="swetrix.track({ ev: 'SIGNUP_CLICK' })">Sign up</button>
+```
+
+For events with metadata:
+
+```javascript
+swetrix.track({
+  ev: "NEWSLETTER_SIGNUP",
+  meta: {
+    source: "footer",
+  },
+});
+```
+
+### Event naming rules
+
+Event names must:
+
+- Contain any characters (including spaces, unicode, etc.)
+- Be no longer than 256 characters
+
+## Check your installation
+
+After installing the Swetrix tracking script, build your site with `JEKYLL_ENV=production jekyll build` and deploy it.
+
+Visit your live website and navigate through a few pages. Within a minute you should be able to see new pageviews being added to your project's dashboard.
+
+## Further reading
+
+- [Tracking script reference](/swetrix-js-reference) — full API documentation for `init()`, `track()`, `trackViews()`, `trackErrors()`, and more.
