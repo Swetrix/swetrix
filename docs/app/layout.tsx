@@ -13,7 +13,7 @@ export const metadata = {
     default: "Swetrix Docs",
   },
   description: "Swetrix documentation — turn traffic into insights.",
-  icons: { icon: "/img/favicon.ico" },
+  icons: { icon: "/favicon.ico" },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
