@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Script id="swetrix-init" strategy="afterInteractive">
           {`
             document.addEventListener('DOMContentLoaded', function () {
-              swetrix.init('gdXQqPERkpMA', { devMode: false });
+              swetrix.init('gdXQqPERkpMA');
               swetrix.trackViews();
             });
           `}
@@ -39,18 +39,25 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             tree={source.getPageTree()}
             nav={{
               title: (
-                <>
+                <div className="flex -translate-y-[2px] items-center gap-2 select-none">
                   <img
+                    className="-translate-y-px dark:hidden"
+                    height="28"
+                    width="24"
                     src="/docs/img/logo_blue.png"
-                    alt="Swetrix"
-                    className="h-7 dark:hidden"
+                    alt=""
                   />
                   <img
+                    className="-translate-y-px hidden dark:block"
+                    height="28"
+                    width="24"
                     src="/docs/img/logo_white.png"
-                    alt="Swetrix"
-                    className="hidden h-7 dark:block"
+                    alt=""
                   />
-                </>
+                  <span className="text-2xl leading-5 font-bold text-slate-900 dark:text-white">
+                    Swetrix
+                  </span>
+                </div>
               ),
               url: 'https://swetrix.com',
             }}
