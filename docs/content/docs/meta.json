@@ -1,27 +1,26 @@
 {
   "title": "Docs",
   "pages": [
-    "---[RocketLaunch]Get Started---",
+    "---Get Started---",
     "introduction",
     "add-script",
     "script-reference",
     "error-tracking",
     "troubleshooting",
-    "---Dashboard---",
-    "analytics-dashboard",
     "---Integrations---",
     "integration-guides",
     "integrations",
     "---Settings & Billing---",
+    "analytics-dashboard",
     "sitesettings",
     "accountsettings",
     "billing",
     "---Developers---",
-    "adblockers",
-    "api",
-    "captcha",
+    "...adblockers",
+    "...api",
     "---Resources---",
     "selfhosting",
-    "contribute"
+    "contribute",
+    "captcha"
   ]
 }
