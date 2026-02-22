@@ -1364,11 +1364,10 @@ export class TaskManagerService {
   async trialReminder() {
     const users = await this.userService.find({
       where: {
-        planCode: PlanCode.trial,
+        planCode: Not(PlanCode.none),
         trialEndDate: Between(
-          // between today & tomorrow
           new Date(),
-          new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+          new Date(new Date().getTime() + 48 * 60 * 60 * 1000),
         ),
         trialReminderSent: false,
       },

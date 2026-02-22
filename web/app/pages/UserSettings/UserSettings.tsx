@@ -244,7 +244,7 @@ interface Form extends Partial<User> {
 }
 
 const UserSettings = () => {
-  const { user, logout, mergeUser, isLoading: authLoading } = useAuth()
+  const { user, logout, mergeUser, loadUser, isLoading: authLoading } = useAuth()
   const loaderData = useLoaderData<UserSettingsLoaderData>()
   const { theme } = useTheme()
 
@@ -259,6 +259,8 @@ const UserSettings = () => {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
+  const [cancellationFeedback, setCancellationFeedback] = useState('')
+  const [isCancellingSubscription, setIsCancellingSubscription] = useState(false)
   const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
 
   const metainfo = useMemo(() => {
@@ -287,7 +289,12 @@ const UserSettings = () => {
   } = user || {}
 
   const isSubscriber = !['none', 'trial', 'free'].includes(planCode || '')
-  const isTrial = planCode === 'trial'
+  const isLegacyTrial = planCode === 'trial'
+  const isTrialingPaidPlan = (() => {
+    if (!trialEndDate || !isSubscriber) return false
+    return dayjs.utc(trialEndDate).isAfter(dayjs.utc())
+  })()
+  const isTrial = isLegacyTrial || isTrialingPaidPlan
   const isNoSub = planCode === 'none'
 
   const totalUsage = (() => {
@@ -360,30 +367,15 @@ const UserSettings = () => {
   })()
 
   const onSubscriptionCancel = () => {
-    if (!subCancelURL) {
-      toast.error(t('apiNotifications.somethingWentWrong'))
-      return
+    setIsCancellingSubscription(true)
+
+    const formData = new FormData()
+    formData.set('intent', 'cancel-subscription')
+    if (cancellationFeedback.trim()) {
+      formData.set('feedback', cancellationFeedback.trim())
     }
 
-    if (!(window as any).Paddle) {
-      window.location.replace(subCancelURL)
-      return
-    }
-
-    ;(window as any).Paddle.Checkout.open({
-      override: subCancelURL,
-      method: 'inline',
-      frameTarget: 'checkout-container',
-      frameInitialHeight: 416,
-      frameStyle:
-        'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
-      locale: paddleLanguageMapping[language] || language,
-      displayModeTheme: theme,
-      country: metainfo.country,
-    })
-    setTimeout(() => {
-      document.querySelector('#checkout-container')?.scrollIntoView()
-    }, 500)
+    fetcher.submit(formData, { method: 'POST', action: '/user-settings' })
   }
 
   const onUpdatePaymentDetails = () => {
@@ -505,8 +497,15 @@ const UserSettings = () => {
         logout()
         toast.success(t('apiNotifications.accountDeleted'))
         navigate(routes.main)
+      } else if (intent === 'cancel-subscription') {
+        setIsCancellingSubscription(false)
+        setCancellationFeedback('')
+        setIsCancelSubModalOpened(false)
+        toast.success(t('billing.subscriptionCancelledSuccess'))
+        loadUser()
       }
     } else if (fetcher.data?.error) {
+      setIsCancellingSubscription(false)
       if (pendingToggles.current.has('live-visitors')) {
         mergeUser({
           showLiveVisitorsInTitle: pendingToggles.current.get('live-visitors'),
@@ -1271,7 +1270,8 @@ const UserSettings = () => {
                         title={t('profileSettings.trialActive')}
                         className='mb-6'
                       >
-                        {trialEndsOnMessage} {t('billing.trialDescription')}
+                        {trialEndsOnMessage}{' '}
+                        {t('billing.trialChargeWarning')}
                       </Alert>
                     ) : null}
 
@@ -1785,25 +1785,46 @@ const UserSettings = () => {
       />
       <Modal
         onClose={() => {
-          setIsCancelSubModalOpened(false)
+          if (!isCancellingSubscription) {
+            setIsCancelSubModalOpened(false)
+            setCancellationFeedback('')
+          }
         }}
-        onSubmit={() => {
-          setIsCancelSubModalOpened(false)
-          onSubscriptionCancel()
-        }}
-        submitText={t('common.yes')}
-        closeText={t('common.no')}
+        onSubmit={onSubscriptionCancel}
+        submitText={t('billing.confirmCancellation')}
+        closeText={t('common.cancel')}
         title={t('pricing.cancelTitle')}
         submitType='danger'
         type='error'
+        isLoading={isCancellingSubscription}
+        submitDisabled={isCancellingSubscription}
         message={
-          <Trans
-            t={t}
-            i18nKey='pricing.cancelDesc'
-            values={{
-              email: CONTACT_EMAIL,
-            }}
-          />
+          <div className='space-y-4'>
+            <Trans
+              t={t}
+              i18nKey='pricing.cancelDesc'
+              values={{
+                email: CONTACT_EMAIL,
+              }}
+            />
+            <div>
+              <label
+                htmlFor='cancellation-feedback'
+                className='block text-sm font-medium text-gray-700 dark:text-gray-300'
+              >
+                {t('billing.cancellationFeedbackLabel')}
+              </label>
+              <textarea
+                id='cancellation-feedback'
+                className='mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white'
+                rows={3}
+                placeholder={t('billing.cancellationFeedbackPlaceholder')}
+                value={cancellationFeedback}
+                onChange={(e) => setCancellationFeedback(e.target.value)}
+                disabled={isCancellingSubscription}
+              />
+            </div>
+          </div>
         }
         isOpened={isCancelSubModalOpened}
       />

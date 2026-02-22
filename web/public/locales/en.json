@@ -145,7 +145,9 @@
     "communityEdition": "Community Edition",
     "allPosts": "All posts",
     "details": "Details",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "showMore": "Show {{count}} more",
+    "showLess": "Show less"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
@@ -764,11 +766,12 @@
       "testimonial": "\"Swetrix has been a game changer for our analytics. They've always been on top of feature requests and have been friendly every step of the way.\""
     },
     "signup": {
-      "button": "Sign up",
+      "button": "Continue to checkout",
       "tos": "I do accept <tos>Terms and Conditions</tos> and the <pp>Privacy Policy</pp>.",
       "create": "Create your account",
       "trial": "Start your free {{amount}} day trial",
-      "noCC": "No credit card required.",
+      "trialSubtitle": "Try all features free. Cancel anytime before your trial ends.",
+      "changePlanLater": "You can change your plan later or at any time.",
       "alreadyAMember": "Already a member? <url>Sign in</url>",
       "createAnAccount": "Create an account",
       "insightsInMinutes": "Get better website insights in minutes",
@@ -2023,6 +2026,11 @@
     "changePlan": "You can change or cancel your subscription plan at any time here.",
     "membersNotification": "Pageviews, custom events and error events are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
     "trialDescription": "Your free trial includes access to all features and unlimited data collection limits. When your trial ends, you'll need to select a paid plan that matches your usage to continue using Swetrix.",
+    "trialChargeWarning": "You will be automatically charged when the trial ends unless you cancel. You can cancel anytime from this page — no questions asked.",
+    "subscriptionCancelledSuccess": "Your subscription has been cancelled. You'll retain access until the end of your current billing period.",
+    "confirmCancellation": "Cancel subscription",
+    "cancellationFeedbackLabel": "We'd love to know why you're leaving (optional)",
+    "cancellationFeedbackPlaceholder": "What could we have done better? We're entirely subscriber-funded and value your feedback.",
     "usageWarningHigh": "You've used {{percentage}}% of your monthly event limit. Consider upgrading your plan to avoid service interruption.",
     "usageWarningCritical": "Warning: You've used {{percentage}}% of your monthly event limit! Upgrade now to ensure uninterrupted service.",
     "xPercentUsed": "{{percentage}}% used",
@@ -2073,9 +2081,12 @@
     "yearlyBilling": "Yearly",
     "billedYearly": "Billed yearly",
     "switchToMonthly": "Switch to monthly billing",
+    "payYearly": "Pay yearly (2 months free)",
+    "upToXEvents": "Up to {{amount}} monthly events.",
     "frequency": "Payment frequency",
     "eventsPerMonth": "events / month",
     "switchToYearly": "Switch to yearly billing",
+    "xMonthsFree": "{{amount}} months free",
     "trialEnded": "Trial ended",
     "overXEvents": "Over {{amount}} events",
     "contactUs": "Contact us",
@@ -2153,6 +2164,19 @@
         "title": "User Sessions",
         "desc": "See exactly how users navigate through your site. Understand user journeys, identify drop-off points, and optimise the experience.",
         "tip": "View real-time sessions as they happen."
+      }
+    },
+    "selectPlan": {
+      "title": "Add your payment details",
+      "subtitle": "Your card will not be charged until your 14-day trial has ended, and you can cancel anytime before that.",
+      "startTrial": "Start free trial",
+      "timeline": {
+        "today": "Today",
+        "todayDesc": "Start your free trial with full access to all features",
+        "reminder": "Day {{days}}",
+        "reminderDesc": "We'll send you a friendly reminder before your trial ends",
+        "charge": "Day {{days}}",
+        "chargeDesc": "Your subscription begins unless you cancel beforehand"
       }
     },
     "confirm": {

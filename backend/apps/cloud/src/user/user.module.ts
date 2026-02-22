@@ -13,12 +13,19 @@ import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { DeleteFeedback } from './entities/delete-feedback.entity'
+import { CancellationFeedback } from './entities/cancellation-feedback.entity'
 import { Message } from '../integrations/telegram/entities/message.entity'
 import { OrganisationModule } from '../organisation/organisation.module'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, RefreshToken, DeleteFeedback, Message]),
+    TypeOrmModule.forFeature([
+      User,
+      RefreshToken,
+      DeleteFeedback,
+      CancellationFeedback,
+      Message,
+    ]),
     ActionTokensModule,
     MailerModule,
     forwardRef(() => AuthModule),

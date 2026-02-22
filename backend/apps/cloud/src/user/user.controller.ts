@@ -55,6 +55,7 @@ import { AuthService } from '../auth/auth.service'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { DeleteSelfDTO } from './dto/delete-self.dto'
+import { CancelSubscriptionDTO } from './dto/cancel-subscription.dto'
 import {
   checkRateLimit,
   getGeoDetails,
@@ -733,6 +734,53 @@ export class UserController {
     const { planId } = body
 
     return this.userService.previewSubscription(id, planId)
+  }
+
+  @ApiBearerAuth()
+  @Post('subscription/cancel')
+  async cancelSubscription(
+    @CurrentUserId() id: string,
+    @Body() body: CancelSubscriptionDTO,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ): Promise<void> {
+    this.logger.log({ id }, 'POST /subscription/cancel')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+    const user = await this.userService.findOne({ where: { id } })
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (_includes(UNPAID_PLANS, user.planCode)) {
+      throw new BadRequestException('No paid subscription to cancel')
+    }
+
+    await this.userService.cancelSubscription(id)
+
+    if (body.feedback) {
+      try {
+        await this.userService.saveCancellationFeedback(
+          user.email,
+          user.planCode,
+          body.feedback,
+        )
+      } catch (reason) {
+        this.logger.error(
+          '[ERROR] Failed to save cancellation feedback:',
+          reason,
+        )
+      }
+    }
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'SUBSCRIPTION_CANCELLED',
+      meta: {
+        plan: user.planCode,
+        feedback_given: !!body.feedback,
+      },
+    })
   }
 
   // Used to unsubscribe from email reports

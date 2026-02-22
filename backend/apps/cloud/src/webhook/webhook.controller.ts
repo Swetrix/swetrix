@@ -140,6 +140,7 @@ export class WebhookController {
           }
         }
 
+        const isTrialing = status === 'trialing'
         const shouldUnlock =
           body.alert_name === 'subscription_created' ||
           isNextPlan(currentUser.planCode, plan.id)
@@ -150,7 +151,7 @@ export class WebhookController {
                 dashboardBlockReason: DashboardBlockReason.payment_failed,
                 isAccountBillingSuspended: true,
               }
-            : shouldUnlock
+            : shouldUnlock || isTrialing
               ? {
                   dashboardBlockReason: null,
                   planExceedContactedAt: null,
@@ -158,7 +159,7 @@ export class WebhookController {
                 }
               : {}
 
-        const updateParams = {
+        const updateParams: Record<string, any> = {
           planCode: plan.id,
           subID,
           subUpdateURL,
@@ -170,6 +171,10 @@ export class WebhookController {
           tierCurrency: currency,
           cancellationEffectiveDate: null,
           ...statusParams,
+        }
+
+        if (isTrialing && nextBillDate) {
+          updateParams.trialEndDate = nextBillDate
         }
 
         await this.userService.update(currentUser.id, updateParams)
