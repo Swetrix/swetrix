@@ -6,6 +6,7 @@ const routes = Object.freeze({
   captchaLanding: '/captcha',
   captchaDemo: '/captcha/demo',
   onboarding: '/onboarding',
+  checkout: '/checkout',
   reset_password: '/recovery',
   new_password_form: '/password-reset/:id',
   confirm_share: '/share/:id',

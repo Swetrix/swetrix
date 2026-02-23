@@ -225,9 +225,15 @@ const Signin = () => {
           setIsAuthenticated(true)
           setTotalMonthlyEvents(totalMonthlyEvents)
 
-          // Redirect to onboarding if user hasn't completed it
           if (!user.hasCompletedOnboarding) {
             navigate(routes.onboarding)
+          } else if (
+            !isSelfhosted &&
+            (!user.planCode ||
+              user.planCode === 'trial' ||
+              user.planCode === 'none')
+          ) {
+            navigate(routes.checkout)
           } else {
             navigate(routes.dashboard)
           }
@@ -304,6 +310,13 @@ const Signin = () => {
 
       if (!user.hasCompletedOnboarding) {
         navigate(routes.onboarding)
+      } else if (
+        !isSelfhosted &&
+        (!user.planCode ||
+          user.planCode === 'trial' ||
+          user.planCode === 'none')
+      ) {
+        navigate(routes.checkout)
       } else {
         navigate(routes.dashboard)
       }

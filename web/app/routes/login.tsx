@@ -8,6 +8,7 @@ import type {
 import { redirect, data } from 'react-router'
 
 import { getAuthenticatedUser, loginUser, serverFetch } from '~/api/api.server'
+import { isSelfhosted } from '~/lib/constants'
 import Signin from '~/pages/Auth/Signin'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
@@ -35,8 +36,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const authResult = await getAuthenticatedUser(request)
 
   if (authResult) {
-    if (!authResult.user.user.hasCompletedOnboarding) {
+    const user = authResult.user.user
+
+    if (!user.hasCompletedOnboarding) {
       return redirect('/onboarding')
+    } else if (
+      !isSelfhosted &&
+      (!user.planCode || user.planCode === 'trial' || user.planCode === 'none')
+    ) {
+      return redirect('/checkout')
     }
     return redirect('/dashboard')
   }
@@ -82,7 +90,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const result = await serverFetch<{
       accessToken: string
       refreshToken: string
-      user: { hasCompletedOnboarding: boolean }
+      user: { hasCompletedOnboarding: boolean; planCode?: string }
     }>(request, '2fa/authenticate', {
       method: 'POST',
       body: { twoFactorAuthenticationCode },
@@ -104,9 +112,17 @@ export async function action({ request }: ActionFunctionArgs) {
       !dontRemember,
     )
 
-    const redirectTo = user.hasCompletedOnboarding
-      ? '/dashboard'
-      : '/onboarding'
+    let redirectTo = '/dashboard'
+    if (user) {
+      if (!user.hasCompletedOnboarding) {
+        redirectTo = '/onboarding'
+      } else if (
+        !isSelfhosted &&
+        (!user.planCode || user.planCode === 'trial' || user.planCode === 'none')
+      ) {
+        redirectTo = '/checkout'
+      }
+    }
 
     return redirect(redirectTo, {
       headers: createHeadersWithCookies(cookies),
@@ -148,9 +164,18 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const redirectTo = result.data?.user.hasCompletedOnboarding
-    ? '/dashboard'
-    : '/onboarding'
+  const loggedInUser = result.data?.user
+  let redirectTo = '/dashboard'
+  if (loggedInUser) {
+    if (!loggedInUser.hasCompletedOnboarding) {
+      redirectTo = '/onboarding'
+    } else if (
+      !isSelfhosted &&
+      (!loggedInUser.planCode || loggedInUser.planCode === 'trial' || loggedInUser.planCode === 'none')
+    ) {
+      redirectTo = '/checkout'
+    }
+  }
 
   return redirect(redirectTo, {
     headers: createHeadersWithCookies(result.cookies),

@@ -23,8 +23,6 @@ import {
   HAVE_I_BEEN_PWNED_URL,
   isSelfhosted,
   TRIAL_DAYS,
-  PLAN_LIMITS,
-  STANDARD_PLANS,
 } from '~/lib/constants'
 import { SSOProvider, SSOHashSuccessResponse } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
@@ -33,7 +31,6 @@ import type { SignupActionData } from '~/routes/signup'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
-import { Switch } from '~/ui/Switch'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
@@ -41,7 +38,6 @@ import routes from '~/utils/routes'
 import { MIN_PASSWORD_CHARS } from '~/utils/validator'
 
 const HASH_CHECK_FREQUENCY = 1000
-const INITIAL_VISIBLE_PLANS = 3
 
 const featureIcons = [
   ChartBarIcon,
@@ -49,8 +45,6 @@ const featureIcons = [
   ShieldCheckIcon,
   SparkleIcon,
 ]
-
-const formatEventsLong = (value: number) => value.toLocaleString('en-US')
 
 const featureKeys = [
   'realTimeAnalytics',
@@ -68,18 +62,6 @@ const Signup = () => {
 
   const [tos, setTos] = useState(false)
   const [checkIfLeaked, setCheckIfLeaked] = useState(true)
-
-  const [selectedPlan, setSelectedPlan] = useState<string>('100k')
-  const [selectedBillingFrequency, setSelectedBillingFrequency] = useState<
-    'monthly' | 'yearly'
-  >('monthly')
-  const [showAllPlans, setShowAllPlans] = useState(false)
-
-  // Save selected plan to cookies for the next step
-  useEffect(() => {
-    document.cookie = `swetrix_selected_plan=${selectedPlan}; path=/; max-age=86400`
-    document.cookie = `swetrix_selected_billing=${selectedBillingFrequency}; path=/; max-age=86400`
-  }, [selectedPlan, selectedBillingFrequency])
 
   const [isSsoLoading, setIsSsoLoading] = useState(false)
 
@@ -217,7 +199,6 @@ const Signup = () => {
           setIsAuthenticated(true)
           setTotalMonthlyEvents(totalMonthlyEvents)
 
-          // Redirect to onboarding if user hasn't completed it
           if (!user.hasCompletedOnboarding) {
             navigate(routes.onboarding)
           } else {
@@ -262,101 +243,6 @@ const Signup = () => {
               </Text>
             )}
           </div>
-
-          {!isSelfhosted && (
-            <div className='mb-8'>
-              <div className='mb-3 flex items-center justify-between'>
-                <Text as='p' size='sm' colour='secondary'>
-                  {t('auth.signup.changePlanLater')}
-                </Text>
-                <button
-                  type='button'
-                  onClick={() =>
-                    setSelectedBillingFrequency((f) =>
-                      f === 'monthly' ? 'yearly' : 'monthly',
-                    )
-                  }
-                  className='flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-2.5 py-1.5 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:hover:bg-slate-800'
-                >
-                  <span className='text-xs font-medium text-gray-700 dark:text-gray-200'>
-                    {t('pricing.billedYearly')}
-                  </span>
-                  <span className='rounded-md bg-emerald-100 px-1.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'>
-                    -17%
-                  </span>
-                  <Switch
-                    checked={selectedBillingFrequency === 'yearly'}
-                    visualOnly
-                  />
-                </button>
-              </div>
-
-              <div className='space-y-2'>
-                {STANDARD_PLANS.slice(
-                  0,
-                  showAllPlans ? undefined : INITIAL_VISIBLE_PLANS,
-                ).map((planCode) => {
-                  const tier =
-                    PLAN_LIMITS[planCode as keyof typeof PLAN_LIMITS]
-                  if (!tier) return null
-                  const isSelected = selectedPlan === planCode
-                  const price =
-                    selectedBillingFrequency === 'monthly'
-                      ? tier.price?.USD?.monthly
-                      : tier.price?.USD?.yearly
-                  const priceLabel =
-                    selectedBillingFrequency === 'monthly'
-                      ? t('pricing.perMonth')
-                      : t('pricing.perYear')
-
-                  return (
-                    <button
-                      key={planCode}
-                      type='button'
-                      onClick={() => setSelectedPlan(planCode)}
-                      className={cn(
-                        'flex w-full items-center justify-between rounded-xl px-4 py-3 text-left ring-1 transition-all duration-150',
-                        isSelected
-                          ? 'ring-2 ring-indigo-500 dark:ring-slate-200'
-                          : 'ring-gray-200 hover:ring-gray-300 dark:ring-slate-700 dark:hover:ring-slate-600',
-                      )}
-                    >
-                      <Text as='span' size='base' weight='semibold'>
-                        ${price}
-                        <Text
-                          as='span'
-                          size='sm'
-                          colour='muted'
-                          weight='medium'
-                        >
-                          /{priceLabel}
-                        </Text>
-                      </Text>
-                      <Text as='span' size='sm' colour='muted'>
-                        {t('pricing.upToXEvents', {
-                          amount: formatEventsLong(tier.monthlyUsageLimit),
-                        })}
-                      </Text>
-                    </button>
-                  )
-                })}
-              </div>
-
-              <div className='mt-3'>
-                <button
-                  type='button'
-                  onClick={() => setShowAllPlans((v) => !v)}
-                  className='rounded-full bg-gray-100 px-3.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700'
-                >
-                  {showAllPlans
-                    ? t('common.showLess')
-                    : t('common.showMore', {
-                        count: STANDARD_PLANS.length - INITIAL_VISIBLE_PLANS,
-                      })}
-                </button>
-              </div>
-            </div>
-          )}
 
           <div
             className={cn(

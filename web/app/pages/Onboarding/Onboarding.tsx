@@ -9,9 +9,6 @@ import {
   FileTextIcon,
   ClockIcon,
   FolderPlusIcon,
-  BellIcon,
-  CreditCardIcon,
-  RocketLaunchIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -20,18 +17,11 @@ import { toast } from 'sonner'
 
 import { useAuthProxy } from '~/hooks/useAuthProxy'
 import {
-  BillingFrequency,
   BROWSER_LOGO_MAP,
   CONFIRMATION_TIMEOUT,
   DOCS_URL,
   INTEGRATIONS_URL,
   isSelfhosted,
-  PADDLE_JS_URL,
-  PADDLE_VENDOR_ID,
-  paddleLanguageMapping,
-  PLAN_LIMITS,
-  STANDARD_PLANS,
-  TRIAL_DAYS,
   whitelist,
   languages,
   languageFlag,
@@ -43,7 +33,6 @@ import { changeLanguage } from '~/i18n'
 import { getSnippet } from '~/modals/TrackingSnippet'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import { Switch } from '~/ui/Switch'
 import type {
   OnboardingActionData,
   OnboardingLoaderData,
@@ -58,7 +47,7 @@ import Alert from '~/ui/Alert'
 import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import { trackCustom } from '~/utils/analytics'
-import { cn, loadScript } from '~/utils/generic'
+import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 const MAX_PROJECT_NAME_LENGTH = 50
@@ -77,7 +66,6 @@ type OnboardingStep =
   | 'feature_traffic'
   | 'feature_errors'
   | 'feature_sessions'
-  | 'select_plan'
   | 'create_project'
   | 'setup_tracking'
   | 'verify_email'
@@ -89,31 +77,15 @@ const getSteps = (): OnboardingStep[] => {
     'feature_traffic',
     'feature_errors',
     'feature_sessions',
+    'create_project',
+    'setup_tracking',
   ]
-
-  if (!isSelfhosted) {
-    baseSteps.push('select_plan')
-  }
-
-  baseSteps.push('create_project', 'setup_tracking')
 
   if (!isSelfhosted) {
     baseSteps.push('verify_email')
   }
 
   return baseSteps
-}
-
-const formatEvents = (limit: number): string => {
-  if (limit >= 1_000_000) {
-    const m = limit / 1_000_000
-    return `${m % 1 === 0 ? m : m.toFixed(1)}M`
-  }
-  if (limit >= 1_000) {
-    const k = limit / 1_000
-    return `${k % 1 === 0 ? k : k.toFixed(1)}K`
-  }
-  return limit.toString()
 }
 
 const STEPS = getSteps()
@@ -475,24 +447,6 @@ const Onboarding = () => {
     () => !!getCookie(CONFIRMATION_TIMEOUT),
   )
 
-  // Plan selection state
-  const [selectedBillingFrequency, setSelectedBillingFrequency] = useState<
-    'monthly' | 'yearly'
-  >(() => {
-    if (typeof document === 'undefined') return 'monthly'
-    return getCookie('swetrix_selected_billing') === 'yearly'
-      ? 'yearly'
-      : 'monthly'
-  })
-  const [selectedPlan, setSelectedPlan] = useState<string>(() => {
-    if (typeof document === 'undefined') return '100k'
-    return getCookie('swetrix_selected_plan') || '100k'
-  })
-  const [isPaddleLoaded, setIsPaddleLoaded] = useState(false)
-  const [hasCompletedCheckout, setHasCompletedCheckout] = useState(
-    () => user?.planCode !== 'trial' && user?.planCode !== 'none'
-  )
-
   const currentStep = STEPS[currentStepIndex]
   const isLoading =
     fetcher.state === 'submitting' || fetcher.state === 'loading'
@@ -517,7 +471,7 @@ const Onboarding = () => {
         loadUser()
       } else if (intent === 'complete-onboarding') {
         loadUser()
-        navigate(routes.dashboard)
+        navigate(isSelfhosted ? routes.dashboard : routes.checkout)
       } else if (intent === 'confirm-email') {
         setCookie(CONFIRMATION_TIMEOUT, true, 600)
         setHasResentEmail(true)
@@ -533,29 +487,6 @@ const Onboarding = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data, fetcher.submit, loadUser, logout, navigate])
-
-  useEffect(() => {
-    if (isSelfhosted) return
-
-    loadScript(PADDLE_JS_URL)
-
-    const interval = setInterval(() => {
-      if ((window as any)?.Paddle) {
-        ;(window as any).Paddle.Setup({
-          vendor: PADDLE_VENDOR_ID,
-          eventCallback: (eventData: any) => {
-            if (eventData?.event === 'Checkout.Complete') {
-              setHasCompletedCheckout(true)
-            }
-          },
-        })
-        setIsPaddleLoaded(true)
-        clearInterval(interval)
-      }
-    }, 200)
-
-    return () => clearInterval(interval)
-  }, [])
 
   useEffect(() => {
     if (!isWaitingForEvents || !project) return
@@ -926,123 +857,6 @@ const Onboarding = () => {
                       </div>
                     )}
 
-                    {currentStep === 'select_plan' && (
-                      <div>
-                        <Text
-                          as='h1'
-                          size='3xl'
-                          weight='bold'
-                          tracking='tight'
-                          className='mb-2'
-                        >
-                          {t('onboarding.selectPlan.title')}
-                        </Text>
-                        <Text as='p' colour='secondary' className='mb-6'>
-                          {t('onboarding.selectPlan.subtitle')}
-                        </Text>
-
-                        {selectedPlan && PLAN_LIMITS[selectedPlan as keyof typeof PLAN_LIMITS] && (
-                          <div className='mb-6 flex items-center justify-between rounded-xl bg-indigo-50 p-4 ring-1 ring-indigo-200 dark:bg-indigo-900/20 dark:ring-indigo-800'>
-                            <div>
-                              <Text as='p' size='sm' weight='medium' className='text-indigo-900 dark:text-indigo-100'>
-                                {PLAN_LIMITS[selectedPlan as keyof typeof PLAN_LIMITS].monthlyUsageLimit.toLocaleString()} {t('pricing.eventsPerMonth')}
-                              </Text>
-                              <Text as='p' size='xs' className='text-indigo-700 dark:text-indigo-300'>
-                                {selectedBillingFrequency === 'yearly' ? t('pricing.billedYearly') : t('pricing.monthlyBilling')}
-                              </Text>
-                            </div>
-                            <div className='text-right'>
-                              <Text as='p' size='lg' weight='bold' className='text-indigo-900 dark:text-indigo-100'>
-                                ${selectedBillingFrequency === 'yearly' 
-                                  ? Math.round((PLAN_LIMITS[selectedPlan as keyof typeof PLAN_LIMITS].price?.USD?.yearly || 0) / 12)
-                                  : PLAN_LIMITS[selectedPlan as keyof typeof PLAN_LIMITS].price?.USD?.monthly}
-                                <Text as='span' size='xs' weight='medium' className='text-indigo-700 dark:text-indigo-300'>
-                                  /mo
-                                </Text>
-                              </Text>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className='mb-6 rounded-xl ring-1 ring-gray-200 dark:ring-slate-700'>
-                          <div className='p-5'>
-                            <div className='flex items-start gap-4'>
-                              <div className='relative flex flex-col items-center'>
-                                <div className='flex size-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30'>
-                                  <RocketLaunchIcon className='size-4 text-emerald-600 dark:text-emerald-400' />
-                                </div>
-                                <div className='mt-1 h-8 w-px bg-gray-200 dark:bg-slate-700' />
-                              </div>
-                              <div className='pt-1'>
-                                <Text
-                                  as='p'
-                                  size='sm'
-                                  weight='semibold'
-                                >
-                                  {t('onboarding.selectPlan.timeline.today')}
-                                </Text>
-                                <Text as='p' size='xs' colour='muted'>
-                                  {t(
-                                    'onboarding.selectPlan.timeline.todayDesc',
-                                  )}
-                                </Text>
-                              </div>
-                            </div>
-
-                            <div className='flex items-start gap-4'>
-                              <div className='relative flex flex-col items-center'>
-                                <div className='flex size-8 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30'>
-                                  <BellIcon className='size-4 text-amber-600 dark:text-amber-400' />
-                                </div>
-                                <div className='mt-1 h-8 w-px bg-gray-200 dark:bg-slate-700' />
-                              </div>
-                              <div className='pt-1'>
-                                <Text
-                                  as='p'
-                                  size='sm'
-                                  weight='semibold'
-                                >
-                                  {t('onboarding.selectPlan.timeline.reminder', { days: TRIAL_DAYS - 2 })}
-                                </Text>
-                                <Text as='p' size='xs' colour='muted'>
-                                  {t(
-                                    'onboarding.selectPlan.timeline.reminderDesc',
-                                  )}
-                                </Text>
-                              </div>
-                            </div>
-
-                            <div className='flex items-start gap-4'>
-                              <div className='relative flex flex-col items-center'>
-                                <div className='flex size-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30'>
-                                  <CreditCardIcon className='size-4 text-blue-600 dark:text-blue-400' />
-                                </div>
-                              </div>
-                              <div className='pt-1'>
-                                <Text
-                                  as='p'
-                                  size='sm'
-                                  weight='semibold'
-                                >
-                                  {t('onboarding.selectPlan.timeline.charge', { days: TRIAL_DAYS })}
-                                </Text>
-                                <Text as='p' size='xs' colour='muted'>
-                                  {t(
-                                    'onboarding.selectPlan.timeline.chargeDesc',
-                                  )}
-                                </Text>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div
-                          id='checkout-container'
-                          className='mt-6 min-h-[100px]'
-                        />
-                      </div>
-                    )}
-
                     {currentStep === 'create_project' && (
                       <form onSubmit={handleCreateProject}>
                         <Text
@@ -1325,66 +1139,6 @@ const Onboarding = () => {
                     <Button onClick={goNext} primary large>
                       {t('common.next')}
                     </Button>
-                  )}
-                  {currentStep === 'select_plan' && (
-                    <>
-                      {hasCompletedCheckout ? (
-                        <Button onClick={goNext} primary large>
-                          {t('common.continue')}
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => {
-                            if (!isPaddleLoaded || !(window as any).Paddle) {
-                              toast.error(
-                                'Payment script is still loading. Please try again.',
-                              )
-                              return
-                            }
-
-                            const tier =
-                              PLAN_LIMITS[
-                                selectedPlan as keyof typeof PLAN_LIMITS
-                              ]
-                            if (!tier) return
-
-                            const product =
-                              selectedBillingFrequency ===
-                              BillingFrequency.monthly
-                                ? (tier as any).pid
-                                : (tier as any).ypid
-
-                            ;(window as any).Paddle.Checkout.open({
-                              product,
-                              method: 'inline',
-                              frameTarget: 'checkout-container',
-                              frameInitialHeight: 416,
-                              frameStyle:
-                                'width:100%; min-width:312px; background-color: transparent; border: none; border-radius: 10px;',
-                              email: user?.email,
-                              passthrough: JSON.stringify({
-                                uid: user?.id,
-                              }),
-                              locale:
-                                paddleLanguageMapping[i18n.language] ||
-                                i18n.language,
-                              displayModeTheme: theme,
-                              country: metainfo.country,
-                            })
-
-                            setTimeout(() => {
-                              document
-                                .querySelector('#checkout-container')
-                                ?.scrollIntoView({ behavior: 'smooth' })
-                            }, 500)
-                          }}
-                          primary
-                          large
-                        >
-                          {t('onboarding.selectPlan.startTrial')}
-                        </Button>
-                      )}
-                    </>
                   )}
                   {currentStep === 'create_project' && (
                     <Button

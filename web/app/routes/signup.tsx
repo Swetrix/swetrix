@@ -39,7 +39,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const authResult = await getAuthenticatedUser(request)
 
   if (authResult) {
-    if (!authResult.user.user.hasCompletedOnboarding) {
+    const user = authResult.user.user
+
+    if (!user.hasCompletedOnboarding) {
       return redirect('/onboarding')
     }
     return redirect('/dashboard')

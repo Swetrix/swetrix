@@ -8,6 +8,7 @@ import { data, redirect } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
+import { isSelfhosted } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Project } from '~/lib/models/Project'
 import { User } from '~/lib/models/User'
@@ -73,6 +74,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const allCookies = [...cookies, ...metainfoResult.cookies]
 
   if (user?.user?.hasCompletedOnboarding) {
+    // Redirect to checkout if user hasn't subscribed yet
+    const userPlanCode = user.user.planCode
+    if (
+      !isSelfhosted &&
+      (!userPlanCode || userPlanCode === 'trial' || userPlanCode === 'none')
+    ) {
+      if (allCookies.length > 0) {
+        return redirect('/checkout', {
+          headers: createHeadersWithCookies(allCookies),
+        })
+      }
+      return redirect('/checkout')
+    }
+
     if (allCookies.length > 0) {
       return redirect('/dashboard', {
         headers: createHeadersWithCookies(allCookies),
@@ -82,7 +97,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/dashboard')
   }
 
-  const onboardingStep = user?.user?.onboardingStep as string | undefined
+  const rawOnboardingStep = user?.user?.onboardingStep as string | undefined
+  // Migrate users who were on the removed select_plan step
+  const onboardingStep =
+    rawOnboardingStep === 'select_plan' ? 'create_project' : rawOnboardingStep
 
   if (
     onboardingStep === 'setup_tracking' ||

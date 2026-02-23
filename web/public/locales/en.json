@@ -2134,6 +2134,18 @@
       "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
     }
   },
+  "checkout": {
+    "title": "Start your free trial",
+    "subtitle": "Add payment details to start your {{days}}-day free trial. You won't be charged until your trial ends, and you can cancel anytime.",
+    "noChargeToday": "Your card will not be charged today.",
+    "willRemind": "We'll remind you before your trial ends",
+    "freeTrialAnytime": "Free {{days}} day trial, cancel any time",
+    "dueEnd": "Due {{date}}",
+    "dueToday": "Due today ({{days}} days free)",
+    "free": "$0",
+    "next": "Next",
+    "termsDesc": "By continuing, you agree to the Terms of Use applicable to Swetrix and confirm you have read our <privacy>Privacy Policy</privacy>."
+  },
   "onboarding": {
     "welcome": "Welcome to Swetrix",
     "title": "Get started",
@@ -2252,7 +2264,8 @@
     "cookiePolicy": "Cookie Policy",
     "termsAndConditions": "Terms and Conditions",
     "gaAlternative": "Cookieless Google Analytics alternative",
-    "projectWithPassword": "Website analytics - password required"
+    "projectWithPassword": "Website analytics - password required",
+    "checkout": "Checkout"
   },
   "description": {
     "default": "Swetrix is a privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.",

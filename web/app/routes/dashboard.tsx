@@ -8,6 +8,7 @@ import { data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
+import { isSelfhosted } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import Dashboard from '~/pages/Dashboard'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -197,14 +198,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const authResult = await getAuthenticatedUser(request)
   const authCookies = authResult?.cookies || []
 
-  if (authResult?.user?.user && !authResult.user.user.hasCompletedOnboarding) {
+  const user = authResult?.user?.user
+  if (user && !user.hasCompletedOnboarding) {
     if (authCookies.length > 0) {
       return redirect('/onboarding', {
         headers: createHeadersWithCookies(authCookies),
       })
     }
-
     return redirect('/onboarding')
+  }
+
+  if (
+    !isSelfhosted &&
+    user &&
+    (!user.planCode || user.planCode === 'trial' || user.planCode === 'none')
+  ) {
+    if (authCookies.length > 0) {
+      return redirect('/checkout', {
+        headers: createHeadersWithCookies(authCookies),
+      })
+    }
+    return redirect('/checkout')
   }
 
   const url = new URL(request.url)
