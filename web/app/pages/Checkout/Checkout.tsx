@@ -20,7 +20,6 @@ import {
   STANDARD_PLANS,
   TRIAL_DAYS,
 } from '~/lib/constants'
-import { getCookie } from '~/utils/cookie'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { CheckoutLoaderData } from '~/routes/checkout'
@@ -40,18 +39,10 @@ const Checkout = () => {
   const navigate = useNavigate()
   const { metainfo } = useLoaderData<CheckoutLoaderData>()
 
-  const [selectedPlan, setSelectedPlan] = useState<string>(() => {
-    if (typeof document === 'undefined') return '100k'
-    return getCookie('swetrix_selected_plan') || '100k'
-  })
+  const [selectedPlan, setSelectedPlan] = useState('100k')
   const [selectedBillingFrequency, setSelectedBillingFrequency] = useState<
     'monthly' | 'yearly'
-  >(() => {
-    if (typeof document === 'undefined') return 'monthly'
-    return getCookie('swetrix_selected_billing') === 'yearly'
-      ? 'yearly'
-      : 'monthly'
-  })
+  >('monthly')
   const [showAllPlans, setShowAllPlans] = useState(false)
 
   const [isPaddleLoaded, setIsPaddleLoaded] = useState(false)
@@ -67,11 +58,6 @@ const Checkout = () => {
     tier?.price?.[currencyCode]?.yearly ?? tier?.price?.USD?.yearly
   const displayPrice =
     selectedBillingFrequency === 'yearly' ? yearlyPrice : monthlyPrice
-
-  useEffect(() => {
-    document.cookie = `swetrix_selected_plan=${selectedPlan}; path=/; max-age=86400`
-    document.cookie = `swetrix_selected_billing=${selectedBillingFrequency}; path=/; max-age=86400`
-  }, [selectedPlan, selectedBillingFrequency])
 
   useEffect(() => {
     loadScript(PADDLE_JS_URL)
