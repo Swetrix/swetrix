@@ -229,9 +229,7 @@ const Signin = () => {
             navigate(routes.onboarding)
           } else if (
             !isSelfhosted &&
-            (!user.planCode ||
-              user.planCode === 'trial' ||
-              user.planCode === 'none')
+            (!user.planCode || user.planCode === 'none')
           ) {
             navigate(routes.checkout)
           } else {
@@ -312,9 +310,7 @@ const Signin = () => {
         navigate(routes.onboarding)
       } else if (
         !isSelfhosted &&
-        (!user.planCode ||
-          user.planCode === 'trial' ||
-          user.planCode === 'none')
+        (!user.planCode || user.planCode === 'none')
       ) {
         navigate(routes.checkout)
       } else {

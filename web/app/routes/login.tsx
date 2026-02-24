@@ -115,9 +115,7 @@ export async function action({ request }: ActionFunctionArgs) {
         redirectTo = '/onboarding'
       } else if (
         !isSelfhosted &&
-        (!user.planCode ||
-          user.planCode === 'trial' ||
-          user.planCode === 'none')
+        (!user.planCode || user.planCode === 'none')
       ) {
         redirectTo = '/checkout'
       }
@@ -170,9 +168,7 @@ export async function action({ request }: ActionFunctionArgs) {
       redirectTo = '/onboarding'
     } else if (
       !isSelfhosted &&
-      (!loggedInUser.planCode ||
-        loggedInUser.planCode === 'trial' ||
-        loggedInUser.planCode === 'none')
+      (!loggedInUser.planCode || loggedInUser.planCode === 'none')
     ) {
       redirectTo = '/checkout'
     }
