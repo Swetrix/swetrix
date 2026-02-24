@@ -461,8 +461,7 @@ export class UserService {
       throw new BadRequestException('No active subscription found')
     }
 
-    const url =
-      'https://vendors.paddle.com/api/2.0/subscription/users/cancel'
+    const url = 'https://vendors.paddle.com/api/2.0/subscription/users/cancel'
 
     try {
       const result = await axios.post(url, {

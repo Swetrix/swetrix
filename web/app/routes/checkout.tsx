@@ -54,11 +54,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   // If the user already has a paid subscription, skip checkout
-  if (
-    user?.planCode &&
-    user.planCode !== 'trial' &&
-    user.planCode !== 'none'
-  ) {
+  if (user?.planCode && user.planCode !== 'trial' && user.planCode !== 'none') {
     if (cookies.length > 0) {
       return redirect('/dashboard', {
         headers: createHeadersWithCookies(cookies),
@@ -67,11 +63,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/dashboard')
   }
 
-  const metainfoResult = await serverFetch<Metainfo>(
-    request,
-    'user/metainfo',
-    { skipAuth: true },
-  )
+  const metainfoResult = await serverFetch<Metainfo>(request, 'user/metainfo', {
+    skipAuth: true,
+  })
   const metainfo = metainfoResult.data ?? DEFAULT_METAINFO
   const allCookies = [...cookies, ...metainfoResult.cookies]
 

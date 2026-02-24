@@ -208,11 +208,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/onboarding')
   }
 
-  if (
-    !isSelfhosted &&
-    user &&
-    (!user.planCode || user.planCode === 'trial' || user.planCode === 'none')
-  ) {
+  if (!isSelfhosted && user && (!user.planCode || user.planCode === 'none')) {
     if (authCookies.length > 0) {
       return redirect('/checkout', {
         headers: createHeadersWithCookies(authCookies),

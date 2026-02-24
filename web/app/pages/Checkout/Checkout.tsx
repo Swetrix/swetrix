@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 
 import {
   BillingFrequency,
+  CURRENCIES,
   PADDLE_JS_URL,
   PADDLE_VENDOR_ID,
   paddleLanguageMapping,
@@ -43,7 +44,9 @@ const Checkout = () => {
     if (typeof document === 'undefined') return '100k'
     return getCookie('swetrix_selected_plan') || '100k'
   })
-  const [selectedBillingFrequency, setSelectedBillingFrequency] = useState<'monthly' | 'yearly'>(() => {
+  const [selectedBillingFrequency, setSelectedBillingFrequency] = useState<
+    'monthly' | 'yearly'
+  >(() => {
     if (typeof document === 'undefined') return 'monthly'
     return getCookie('swetrix_selected_billing') === 'yearly'
       ? 'yearly'
@@ -55,13 +58,15 @@ const Checkout = () => {
   const [hasCompletedCheckout, setHasCompletedCheckout] = useState(false)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
 
+  const currencyCode = user?.tierCurrency || metainfo.code
+  const currency = CURRENCIES[currencyCode] || CURRENCIES.USD
   const tier = PLAN_LIMITS[selectedPlan as keyof typeof PLAN_LIMITS]
-  const monthlyPrice = tier?.price?.USD?.monthly
-  const yearlyPrice = tier?.price?.USD?.yearly
+  const monthlyPrice =
+    tier?.price?.[currencyCode]?.monthly ?? tier?.price?.USD?.monthly
+  const yearlyPrice =
+    tier?.price?.[currencyCode]?.yearly ?? tier?.price?.USD?.yearly
   const displayPrice =
-    selectedBillingFrequency === 'yearly'
-      ? Math.round((yearlyPrice || 0) / 12)
-      : monthlyPrice
+    selectedBillingFrequency === 'yearly' ? yearlyPrice : monthlyPrice
 
   useEffect(() => {
     document.cookie = `swetrix_selected_plan=${selectedPlan}; path=/; max-age=86400`
@@ -100,9 +105,7 @@ const Checkout = () => {
 
   const handleStartCheckout = () => {
     if (!isPaddleLoaded || !(window as any).Paddle) {
-      toast.error(
-        'Payment script is still loading. Please try again.',
-      )
+      toast.error('Payment script is still loading. Please try again.')
       return
     }
 
@@ -138,35 +141,40 @@ const Checkout = () => {
   const today = new Date()
   const trialEndDate = new Date()
   trialEndDate.setDate(today.getDate() + TRIAL_DAYS)
-  
+
   const dateFormatter = new Intl.DateTimeFormat(i18n.language, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   })
-  
+
   const formattedEndDate = dateFormatter.format(trialEndDate)
 
   return (
-    <div className='flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4 dark:bg-slate-950 lg:p-8'>
-      <div className='w-full max-w-5xl grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12 lg:gap-16 items-start'>
-        
+    <div className='flex min-h-screen flex-col items-center bg-gray-50 p-4 lg:p-8 dark:bg-slate-950'>
+      <div className='grid w-full max-w-5xl grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_400px] lg:gap-16'>
         {/* Left Column */}
         <div className='flex flex-col gap-8'>
           <div>
-            <Text as='h1' size='3xl' weight='bold' tracking='tight'>
+            <Text as='h1' size='4xl' weight='bold' tracking='tight'>
               {t('checkout.title')}
             </Text>
-            
+
             <div className='mt-6 flex flex-col gap-3'>
               <div className='flex items-center gap-3'>
-                <CheckIcon className='size-5 shrink-0 text-emerald-500' weight='bold' />
+                <CheckIcon
+                  className='size-5 shrink-0 text-emerald-500'
+                  weight='bold'
+                />
                 <Text as='p' size='base'>
                   {t('checkout.freeTrialAnytime', { days: TRIAL_DAYS })}
                 </Text>
               </div>
               <div className='flex items-center gap-3'>
-                <CheckIcon className='size-5 shrink-0 text-emerald-500' weight='bold' />
+                <CheckIcon
+                  className='size-5 shrink-0 text-emerald-500'
+                  weight='bold'
+                />
                 <Text as='p' size='base'>
                   {t('checkout.willRemind')}
                 </Text>
@@ -177,7 +185,7 @@ const Checkout = () => {
           <div>
             <div className='mb-3 flex items-center justify-between'>
               <Text as='p' size='sm' colour='secondary'>
-                Select your plan
+                {t('checkout.selectPlan')}
               </Text>
               <button
                 type='button'
@@ -206,13 +214,16 @@ const Checkout = () => {
                 0,
                 showAllPlans ? undefined : INITIAL_VISIBLE_PLANS,
               ).map((planCode) => {
-                const planTier = PLAN_LIMITS[planCode as keyof typeof PLAN_LIMITS]
+                const planTier =
+                  PLAN_LIMITS[planCode as keyof typeof PLAN_LIMITS]
                 if (!planTier) return null
                 const isSelected = selectedPlan === planCode
                 const price =
                   selectedBillingFrequency === 'monthly'
-                    ? planTier.price?.USD?.monthly
-                    : planTier.price?.USD?.yearly
+                    ? (planTier.price?.[currencyCode]?.monthly ??
+                      planTier.price?.USD?.monthly)
+                    : (planTier.price?.[currencyCode]?.yearly ??
+                      planTier.price?.USD?.yearly)
                 const priceLabel =
                   selectedBillingFrequency === 'monthly'
                     ? t('pricing.perMonth')
@@ -224,14 +235,15 @@ const Checkout = () => {
                     type='button'
                     onClick={() => setSelectedPlan(planCode)}
                     className={cn(
-                      'flex w-full items-center justify-between rounded-xl px-4 py-3 text-left ring-1 transition-all duration-150',
+                      'flex w-full items-center justify-between rounded-lg px-4 py-3 text-left ring-1 transition-all duration-150 ring-inset',
                       isSelected
-                        ? 'ring-2 ring-indigo-500 bg-white shadow-sm dark:bg-slate-900 dark:ring-slate-200'
-                        : 'ring-gray-200 bg-white hover:ring-gray-300 dark:bg-slate-900 dark:ring-slate-700 dark:hover:ring-slate-600',
+                        ? 'bg-white shadow-sm ring-2 ring-indigo-500 dark:bg-slate-900 dark:ring-slate-200'
+                        : 'bg-white ring-gray-200 hover:ring-gray-300 dark:bg-slate-900 dark:ring-slate-700 dark:hover:ring-slate-600',
                     )}
                   >
                     <Text as='span' size='base' weight='semibold'>
-                      ${price}
+                      {currency.symbol}
+                      {price}
                       <Text as='span' size='sm' colour='muted' weight='medium'>
                         /{priceLabel}
                       </Text>
@@ -267,15 +279,21 @@ const Checkout = () => {
                 {t('checkout.dueEnd', { date: formattedEndDate })}
               </Text>
               <Text as='p' size='base' weight='semibold'>
-                ${displayPrice}
+                {currency.symbol}
+                {displayPrice}
               </Text>
             </div>
             <div className='flex items-center justify-between'>
               <Text as='p' size='base' weight='bold'>
                 {t('checkout.dueToday', { days: TRIAL_DAYS })}
               </Text>
-              <Text as='p' size='base' weight='bold' className='text-emerald-600 dark:text-emerald-500'>
-                {t('checkout.free')}
+              <Text
+                as='p'
+                size='base'
+                weight='bold'
+                className='text-emerald-600 dark:text-emerald-500'
+              >
+                {currency.symbol}0
               </Text>
             </div>
           </div>
@@ -309,9 +327,14 @@ const Checkout = () => {
                 )}
 
                 <div id='checkout-container' className='min-h-0 w-full' />
-                
+
                 {!isCheckoutOpen && (
-                  <Text as='p' size='xs' colour='muted' className='mt-4 text-center'>
+                  <Text
+                    as='p'
+                    size='xs'
+                    colour='muted'
+                    className='mt-4 text-center'
+                  >
                     <Trans
                       t={t}
                       i18nKey='checkout.termsDesc'
@@ -335,7 +358,7 @@ const Checkout = () => {
 
         {/* Right Column (Timeline) */}
         <div className='hidden lg:block lg:pt-16'>
-          <div className='rounded-2xl bg-white p-6 shadow-xs ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-700/80'>
+          <div className='rounded-lg bg-white p-6 shadow-xs ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-700/80'>
             <div className='flex items-start gap-5'>
               <div className='relative flex flex-col items-center'>
                 <div className='flex size-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30'>
@@ -391,7 +414,6 @@ const Checkout = () => {
             </div>
           </div>
         </div>
-        
       </div>
     </div>
   )

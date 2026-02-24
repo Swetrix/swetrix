@@ -244,7 +244,13 @@ interface Form extends Partial<User> {
 }
 
 const UserSettings = () => {
-  const { user, logout, mergeUser, loadUser, isLoading: authLoading } = useAuth()
+  const {
+    user,
+    logout,
+    mergeUser,
+    loadUser,
+    isLoading: authLoading,
+  } = useAuth()
   const loaderData = useLoaderData<UserSettingsLoaderData>()
   const { theme } = useTheme()
 
@@ -260,7 +266,8 @@ const UserSettings = () => {
 
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
   const [cancellationFeedback, setCancellationFeedback] = useState('')
-  const [isCancellingSubscription, setIsCancellingSubscription] = useState(false)
+  const [isCancellingSubscription, setIsCancellingSubscription] =
+    useState(false)
   const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
 
   const metainfo = useMemo(() => {
@@ -522,7 +529,7 @@ const UserSettings = () => {
       }
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, fetcher.state, mergeUser, t, logout, navigate])
+  }, [fetcher.data, fetcher.state, mergeUser, t, logout, navigate, loadUser])
 
   const errors = useMemo(() => {
     const allErrors: Record<string, string> = {}
@@ -1270,8 +1277,7 @@ const UserSettings = () => {
                         title={t('profileSettings.trialActive')}
                         className='mb-6'
                       >
-                        {trialEndsOnMessage}{' '}
-                        {t('billing.trialChargeWarning')}
+                        {trialEndsOnMessage} {t('billing.trialChargeWarning')}
                       </Alert>
                     ) : null}
 
