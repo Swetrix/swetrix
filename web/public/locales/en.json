@@ -2034,7 +2034,9 @@
     "usageWarningHigh": "You've used {{percentage}}% of your monthly event limit. Consider upgrading your plan to avoid service interruption.",
     "usageWarningCritical": "Warning: You've used {{percentage}}% of your monthly event limit! Upgrade now to ensure uninterrupted service.",
     "xPercentUsed": "{{percentage}}% used",
-    "xPercentRemaining": "{{percentage}}% remaining"
+    "xPercentRemaining": "{{percentage}}% remaining",
+    "paddleLoadError": "Failed to load the payment system. Please refresh the page and try again.",
+    "paddleStillLoading": "Payment system is still loading. Please try again in a moment."
   },
   "modals": {
     "paidFeature": {

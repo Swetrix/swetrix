@@ -39,12 +39,11 @@ import {
   whitelist,
   languages,
   languageFlag,
-  PADDLE_JS_URL,
-  PADDLE_VENDOR_ID,
   CONTACT_EMAIL,
   paddleLanguageMapping,
 } from '~/lib/constants'
 import BillingPricing from '~/components/pricing/BillingPricing'
+import { usePaddle } from '~/hooks/usePaddle'
 import { changeLanguage } from '~/i18n'
 import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
@@ -70,7 +69,6 @@ import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import Flag from '~/ui/Flag'
 import TimezonePicker from '~/ui/TimezonePicker'
-import { loadScript } from '~/utils/generic'
 import { getCookie, setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
 import {
@@ -270,6 +268,8 @@ const UserSettings = () => {
     useState(false)
   const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
 
+  usePaddle({ onEvent: setLastEvent })
+
   const metainfo = useMemo(() => {
     if (metainfoFetcher.data?.success && metainfoFetcher.data.data) {
       return metainfoFetcher.data.data as typeof DEFAULT_METAINFO
@@ -312,26 +312,6 @@ const UserSettings = () => {
     return Math.min(100, Math.max(0, raw))
   })()
   const remainingUsage = _round(Math.max(0, 100 - totalUsage), 2)
-
-  useEffect(() => {
-    loadScript(PADDLE_JS_URL)
-
-    const interval = setInterval(paddleSetup, 200)
-
-    function paddleSetup() {
-      if ((window as any)?.Paddle) {
-        ;(window as any).Paddle.Setup({
-          vendor: PADDLE_VENDOR_ID,
-          eventCallback: setLastEvent,
-        })
-        clearInterval(interval)
-      }
-    }
-
-    return () => {
-      clearInterval(interval)
-    }
-  }, [])
 
   const isTrialEnded = (() => {
     if (!trialEndDate) {

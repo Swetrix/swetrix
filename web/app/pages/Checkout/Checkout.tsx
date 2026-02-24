@@ -5,16 +5,15 @@ import {
   ShieldCheckIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
 
+import { usePaddle } from '~/hooks/usePaddle'
 import {
   BillingFrequency,
   CURRENCIES,
-  PADDLE_JS_URL,
-  PADDLE_VENDOR_ID,
   paddleLanguageMapping,
   PLAN_LIMITS,
   STANDARD_PLANS,
@@ -26,7 +25,7 @@ import type { CheckoutLoaderData } from '~/routes/checkout'
 import Button from '~/ui/Button'
 import { Text } from '~/ui/Text'
 import { Switch } from '~/ui/Switch'
-import { cn, loadScript } from '~/utils/generic'
+import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 const INITIAL_VISIBLE_PLANS = 3
@@ -45,9 +44,18 @@ const Checkout = () => {
   >('monthly')
   const [showAllPlans, setShowAllPlans] = useState(false)
 
-  const [isPaddleLoaded, setIsPaddleLoaded] = useState(false)
   const [hasCompletedCheckout, setHasCompletedCheckout] = useState(false)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
+
+  const onPaddleEvent = useCallback((eventData: any) => {
+    if (eventData?.event === 'Checkout.Complete') {
+      setHasCompletedCheckout(true)
+    }
+  }, [])
+
+  const { isPaddleLoaded, paddleLoadError } = usePaddle({
+    onEvent: onPaddleEvent,
+  })
 
   const currencyCode = user?.tierCurrency || metainfo.code
   const currency = CURRENCIES[currencyCode] || CURRENCIES.USD
@@ -60,27 +68,6 @@ const Checkout = () => {
     selectedBillingFrequency === 'yearly' ? yearlyPrice : monthlyPrice
 
   useEffect(() => {
-    loadScript(PADDLE_JS_URL)
-
-    const interval = setInterval(() => {
-      if ((window as any)?.Paddle) {
-        ;(window as any).Paddle.Setup({
-          vendor: PADDLE_VENDOR_ID,
-          eventCallback: (eventData: any) => {
-            if (eventData?.event === 'Checkout.Complete') {
-              setHasCompletedCheckout(true)
-            }
-          },
-        })
-        setIsPaddleLoaded(true)
-        clearInterval(interval)
-      }
-    }, 200)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
     if (hasCompletedCheckout) {
       const timer = setTimeout(() => {
         navigate(routes.dashboard)
@@ -90,8 +77,13 @@ const Checkout = () => {
   }, [hasCompletedCheckout, navigate])
 
   const handleStartCheckout = () => {
+    if (paddleLoadError) {
+      toast.error(t('billing.paddleLoadError'))
+      return
+    }
+
     if (!isPaddleLoaded || !(window as any).Paddle) {
-      toast.error('Payment script is still loading. Please try again.')
+      toast.error(t('billing.paddleStillLoading'))
       return
     }
 
