@@ -29,7 +29,8 @@ import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 const INITIAL_VISIBLE_PLANS = 3
-const formatEventsLong = (value: number) => value.toLocaleString('en-US')
+const formatEventsLong = (value: number, locale = 'en-US') =>
+  value.toLocaleString(locale)
 
 const Checkout = () => {
   const { t, i18n } = useTranslation('common')
@@ -228,7 +229,10 @@ const Checkout = () => {
                     </Text>
                     <Text as='span' size='sm' colour='muted'>
                       {t('pricing.upToXEvents', {
-                        amount: formatEventsLong(planTier.monthlyUsageLimit),
+                        amount: formatEventsLong(
+                          planTier.monthlyUsageLimit,
+                          i18n.language,
+                        ),
                       })}
                     </Text>
                   </button>
@@ -287,7 +291,7 @@ const Checkout = () => {
                     weight='semibold'
                     className='text-emerald-700 dark:text-emerald-300'
                   >
-                    {t('common.success')}! Redirecting...
+                    {t('common.success')}! {t('common.redirecting')}
                   </Text>
                 </div>
               </div>

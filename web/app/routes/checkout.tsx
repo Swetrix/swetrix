@@ -23,7 +23,7 @@ export const meta: MetaFunction = () => {
 
   return [
     ...getTitle(t('titles.checkout')),
-    ...getDescription(t('description.signup')),
+    ...getDescription(t('description.checkout')),
     ...getPreviewImage(),
   ]
 }
