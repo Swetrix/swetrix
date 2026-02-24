@@ -6,6 +6,49 @@ import { loadScript } from '~/utils/generic'
 const POLL_INTERVAL_MS = 200
 const MAX_ATTEMPTS = 50 // 10 seconds
 
+type PaddleListener = (eventData: any) => void
+
+let initStarted = false
+let paddleReady = false
+let paddleError = false
+const listeners = new Set<PaddleListener>()
+const stateSubscribers = new Set<() => void>()
+
+function notifyStateSubscribers() {
+  for (const cb of stateSubscribers) cb()
+}
+
+function initPaddle() {
+  if (initStarted) return
+  initStarted = true
+
+  loadScript(PADDLE_JS_URL)
+
+  let attempts = 0
+  const interval = setInterval(() => {
+    attempts += 1
+
+    if ((window as any)?.Paddle) {
+      ;(window as any).Paddle.Setup({
+        vendor: PADDLE_VENDOR_ID,
+        eventCallback: (eventData: any) => {
+          for (const listener of listeners) listener(eventData)
+        },
+      })
+      paddleReady = true
+      notifyStateSubscribers()
+      clearInterval(interval)
+      return
+    }
+
+    if (attempts >= MAX_ATTEMPTS) {
+      paddleError = true
+      notifyStateSubscribers()
+      clearInterval(interval)
+    }
+  }, POLL_INTERVAL_MS)
+}
+
 interface UsePaddleOptions {
   onEvent?: (eventData: any) => void
 }
@@ -17,38 +60,32 @@ interface UsePaddleResult {
 }
 
 export function usePaddle(options: UsePaddleOptions = {}): UsePaddleResult {
-  const [isPaddleLoaded, setIsPaddleLoaded] = useState(false)
-  const [paddleLoadError, setPaddleLoadError] = useState(false)
+  const [isPaddleLoaded, setIsPaddleLoaded] = useState(paddleReady)
+  const [paddleLoadError, setPaddleLoadError] = useState(paddleError)
   const onEventRef = useRef(options.onEvent)
   onEventRef.current = options.onEvent
 
   useEffect(() => {
-    loadScript(PADDLE_JS_URL)
+    const listener: PaddleListener = (eventData) => {
+      onEventRef.current?.(eventData)
+    }
+    listeners.add(listener)
 
-    let attempts = 0
+    const stateSubscriber = () => {
+      setIsPaddleLoaded(paddleReady)
+      setPaddleLoadError(paddleError)
+    }
+    stateSubscribers.add(stateSubscriber)
 
-    const interval = setInterval(() => {
-      attempts += 1
+    // Sync state in case init already completed before this effect ran
+    stateSubscriber()
 
-      if ((window as any)?.Paddle) {
-        ;(window as any).Paddle.Setup({
-          vendor: PADDLE_VENDOR_ID,
-          eventCallback: (eventData: any) => {
-            onEventRef.current?.(eventData)
-          },
-        })
-        setIsPaddleLoaded(true)
-        clearInterval(interval)
-        return
-      }
+    initPaddle()
 
-      if (attempts >= MAX_ATTEMPTS) {
-        setPaddleLoadError(true)
-        clearInterval(interval)
-      }
-    }, POLL_INTERVAL_MS)
-
-    return () => clearInterval(interval)
+    return () => {
+      listeners.delete(listener)
+      stateSubscribers.delete(stateSubscriber)
+    }
   }, [])
 
   const openCheckout = useCallback(

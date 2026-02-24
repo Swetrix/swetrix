@@ -48,11 +48,16 @@ const Checkout = () => {
   const [hasCompletedCheckout, setHasCompletedCheckout] = useState(false)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
 
-  const onPaddleEvent = useCallback((eventData: any) => {
-    if (eventData?.event === 'Checkout.Complete') {
-      setHasCompletedCheckout(true)
-    }
-  }, [])
+  const onPaddleEvent = useCallback(
+    (eventData: any) => {
+      if (eventData?.event === 'Checkout.Complete') {
+        setHasCompletedCheckout(true)
+      } else if (eventData?.event === 'Checkout.Close') {
+        setIsCheckoutOpen(false)
+      }
+    },
+    [setIsCheckoutOpen, setHasCompletedCheckout],
+  )
 
   const { isPaddleLoaded, paddleLoadError, openCheckout } = usePaddle({
     onEvent: onPaddleEvent,
@@ -90,10 +95,22 @@ const Checkout = () => {
 
     if (!tier) return
 
+    const hasPid = 'pid' in tier && typeof tier.pid === 'number'
+    const hasYpid = 'ypid' in tier && typeof tier.ypid === 'number'
+
     const product =
       selectedBillingFrequency === BillingFrequency.monthly
-        ? (tier as any).pid
-        : (tier as any).ypid
+        ? hasPid
+          ? tier.pid
+          : undefined
+        : hasYpid
+          ? tier.ypid
+          : undefined
+
+    if (!product) {
+      toast.error(t('apiNotifications.somethingWentWrong'))
+      return
+    }
 
     const opened = openCheckout({
       product,
@@ -124,9 +141,9 @@ const Checkout = () => {
     }, 500)
   }
 
-  const today = new Date()
-  const trialEndDate = new Date()
-  trialEndDate.setDate(today.getDate() + TRIAL_DAYS)
+  const trialEndDate = user?.trialEndDate
+    ? new Date(user.trialEndDate)
+    : new Date()
 
   const dateFormatter = new Intl.DateTimeFormat(i18n.language, {
     month: 'long',
