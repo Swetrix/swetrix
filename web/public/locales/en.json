@@ -555,7 +555,7 @@
         },
         {
           "q": "Is there a free trial?",
-          "a": "Yep, you can try Swetrix for free for {{freeTrialDays}} days, no credit card required!"
+          "a": "Yep, you can try Swetrix for free for {{freeTrialDays}} days! A payment method is required to start your trial, but you won't be charged until it ends and you can cancel anytime."
         },
         {
           "q": "What is counted as events?",
@@ -2071,7 +2071,7 @@
   },
   "pricing": {
     "title": "Simple, traffic-based pricing",
-    "adv": "Try Swetrix on your website for {{amount}} days - completely free of charge.\nNo credit card required. No strings attached.",
+    "adv": "Try Swetrix on your website for {{amount}} days - completely free of charge.\nA payment method is required, but you can cancel anytime before the trial ends.",
     "subscribe": "Subscribe",
     "legacy": "Legacy",
     "legacyDescription": "This plan or pricing is no longer available for new users. It is still available for existing users.",
