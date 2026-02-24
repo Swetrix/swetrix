@@ -7,6 +7,22 @@ import {
 
 import { getCookie } from './cookie'
 import { removeItem } from './localstorage'
+import routes from './routes'
+
+export const decidePostAuthRedirect = (user: {
+  hasCompletedOnboarding: boolean
+  planCode?: string
+}): string => {
+  if (!user.hasCompletedOnboarding) {
+    return routes.onboarding
+  }
+
+  if (!isSelfhosted && (!user.planCode || user.planCode === 'none')) {
+    return routes.checkout
+  }
+
+  return routes.dashboard
+}
 
 export const shouldShowLowEventsBanner = (
   totalMonthlyEvents: number,

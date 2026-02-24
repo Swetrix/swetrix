@@ -16,6 +16,7 @@ import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
 import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
+import { decidePostAuthRedirect } from '~/utils/auth'
 import { SSOProvider, SSOHashSuccessResponse } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -225,16 +226,7 @@ const Signin = () => {
           setIsAuthenticated(true)
           setTotalMonthlyEvents(totalMonthlyEvents)
 
-          if (!user.hasCompletedOnboarding) {
-            navigate(routes.onboarding)
-          } else if (
-            !isSelfhosted &&
-            (!user.planCode || user.planCode === 'none')
-          ) {
-            navigate(routes.checkout)
-          } else {
-            navigate(routes.dashboard)
-          }
+          navigate(decidePostAuthRedirect(user))
 
           return
         } catch {
@@ -306,16 +298,7 @@ const Signin = () => {
         }),
       )
 
-      if (!user.hasCompletedOnboarding) {
-        navigate(routes.onboarding)
-      } else if (
-        !isSelfhosted &&
-        (!user.planCode || user.planCode === 'none')
-      ) {
-        navigate(routes.checkout)
-      } else {
-        navigate(routes.dashboard)
-      }
+      navigate(decidePostAuthRedirect(user))
     } catch (error) {
       setLinkingError(
         error instanceof Error

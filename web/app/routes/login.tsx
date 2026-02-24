@@ -8,8 +8,8 @@ import type {
 import { redirect, data } from 'react-router'
 
 import { getAuthenticatedUser, loginUser, serverFetch } from '~/api/api.server'
-import { isSelfhosted } from '~/lib/constants'
 import Signin from '~/pages/Auth/Signin'
+import { decidePostAuthRedirect } from '~/utils/auth'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   createHeadersWithCookies,
@@ -36,14 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const authResult = await getAuthenticatedUser(request)
 
   if (authResult) {
-    const user = authResult.user.user
-
-    if (!user.hasCompletedOnboarding) {
-      return redirect('/onboarding')
-    } else if (!isSelfhosted && (!user.planCode || user.planCode === 'none')) {
-      return redirect('/checkout')
-    }
-    return redirect('/dashboard')
+    return redirect(decidePostAuthRedirect(authResult.user.user))
   }
 
   return null
@@ -109,19 +102,7 @@ export async function action({ request }: ActionFunctionArgs) {
       !dontRemember,
     )
 
-    let redirectTo = '/dashboard'
-    if (user) {
-      if (!user.hasCompletedOnboarding) {
-        redirectTo = '/onboarding'
-      } else if (
-        !isSelfhosted &&
-        (!user.planCode || user.planCode === 'none')
-      ) {
-        redirectTo = '/checkout'
-      }
-    }
-
-    return redirect(redirectTo, {
+    return redirect(user ? decidePostAuthRedirect(user) : '/dashboard', {
       headers: createHeadersWithCookies(cookies),
     })
   }
@@ -161,22 +142,10 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const loggedInUser = result.data?.user
-  let redirectTo = '/dashboard'
-  if (loggedInUser) {
-    if (!loggedInUser.hasCompletedOnboarding) {
-      redirectTo = '/onboarding'
-    } else if (
-      !isSelfhosted &&
-      (!loggedInUser.planCode || loggedInUser.planCode === 'none')
-    ) {
-      redirectTo = '/checkout'
-    }
-  }
-
-  return redirect(redirectTo, {
-    headers: createHeadersWithCookies(result.cookies),
-  })
+  return redirect(
+    result.data?.user ? decidePostAuthRedirect(result.data.user) : '/dashboard',
+    { headers: createHeadersWithCookies(result.cookies) },
+  )
 }
 
 export default function SigninRoute() {
