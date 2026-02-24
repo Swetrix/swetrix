@@ -268,7 +268,7 @@ const UserSettings = () => {
     useState(false)
   const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
 
-  usePaddle({ onEvent: setLastEvent })
+  const { openCheckout } = usePaddle({ onEvent: setLastEvent })
 
   const metainfo = useMemo(() => {
     if (metainfoFetcher.data?.success && metainfoFetcher.data.data) {
@@ -371,12 +371,7 @@ const UserSettings = () => {
       return
     }
 
-    if (!(window as any).Paddle) {
-      window.location.replace(subUpdateURL)
-      return
-    }
-
-    ;(window as any).Paddle.Checkout.open({
+    const opened = openCheckout({
       override: subUpdateURL,
       method: 'inline',
       frameTarget: 'checkout-container',
@@ -387,6 +382,12 @@ const UserSettings = () => {
       displayModeTheme: theme,
       country: metainfo.country,
     })
+
+    if (!opened) {
+      window.location.replace(subUpdateURL)
+      return
+    }
+
     setTimeout(() => {
       document.querySelector('#checkout-container')?.scrollIntoView()
     }, 500)
@@ -1529,6 +1530,7 @@ const UserSettings = () => {
                       <BillingPricing
                         lastEvent={lastEvent}
                         metainfo={metainfo}
+                        openCheckout={openCheckout}
                       />
 
                       <div className='mt-4 flex flex-wrap gap-3'>

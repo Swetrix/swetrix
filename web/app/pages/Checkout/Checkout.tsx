@@ -54,7 +54,7 @@ const Checkout = () => {
     }
   }, [])
 
-  const { isPaddleLoaded, paddleLoadError } = usePaddle({
+  const { isPaddleLoaded, paddleLoadError, openCheckout } = usePaddle({
     onEvent: onPaddleEvent,
   })
 
@@ -95,8 +95,7 @@ const Checkout = () => {
         ? (tier as any).pid
         : (tier as any).ypid
 
-    setIsCheckoutOpen(true)
-    ;(window as any).Paddle.Checkout.open({
+    const opened = openCheckout({
       product,
       method: 'inline',
       frameTarget: 'checkout-container',
@@ -109,6 +108,14 @@ const Checkout = () => {
       displayModeTheme: theme,
       country: metainfo.country,
     })
+
+    if (!opened) {
+      setIsCheckoutOpen(false)
+      toast.error(t('apiNotifications.somethingWentWrong'))
+      return
+    }
+
+    setIsCheckoutOpen(true)
 
     setTimeout(() => {
       document

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PADDLE_JS_URL, PADDLE_VENDOR_ID } from '~/lib/constants'
 import { loadScript } from '~/utils/generic'
@@ -13,6 +13,7 @@ interface UsePaddleOptions {
 interface UsePaddleResult {
   isPaddleLoaded: boolean
   paddleLoadError: boolean
+  openCheckout: (options: Record<string, any>) => boolean
 }
 
 export function usePaddle(options: UsePaddleOptions = {}): UsePaddleResult {
@@ -50,5 +51,19 @@ export function usePaddle(options: UsePaddleOptions = {}): UsePaddleResult {
     return () => clearInterval(interval)
   }, [])
 
-  return { isPaddleLoaded, paddleLoadError }
+  const openCheckout = useCallback(
+    (checkoutOptions: Record<string, any>): boolean => {
+      if (!(window as any)?.Paddle) return false
+
+      try {
+        ;(window as any).Paddle.Checkout.open(checkoutOptions)
+        return true
+      } catch {
+        return false
+      }
+    },
+    [],
+  )
+
+  return { isPaddleLoaded, paddleLoadError, openCheckout }
 }
