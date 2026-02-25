@@ -2084,12 +2084,10 @@
     "yearlyBilling": "Yearly",
     "billedYearly": "Billed yearly",
     "switchToMonthly": "Switch to monthly billing",
-    "payYearly": "Pay yearly (2 months free)",
     "upToXEvents": "Up to {{amount}} monthly events.",
     "frequency": "Payment frequency",
     "eventsPerMonth": "events / month",
     "switchToYearly": "Switch to yearly billing",
-    "xMonthsFree": "{{amount}} months free",
     "trialEnded": "Trial ended",
     "overXEvents": "Over {{amount}} events",
     "contactUs": "Contact us",
@@ -2139,13 +2137,10 @@
   },
   "checkout": {
     "title": "Start your free trial",
-    "subtitle": "Add payment details to start your {{days}}-day free trial. You won't be charged until your trial ends, and you can cancel anytime.",
-    "noChargeToday": "Your card will not be charged today.",
     "willRemind": "We'll remind you before your trial ends",
     "freeTrialAnytime": "Free {{days}} day trial, cancel any time",
     "dueEnd": "Due {{date}}",
     "dueToday": "Due today ({{days}} days free)",
-    "free": "$0",
     "next": "Start free trial",
     "selectPlan": "Select your plan",
     "termsDesc": "By continuing, you agree to the Terms of Use applicable to Swetrix and confirm you have read our <privacy>Privacy Policy</privacy>."
@@ -2183,9 +2178,6 @@
       }
     },
     "selectPlan": {
-      "title": "Add your payment details",
-      "subtitle": "Your card will not be charged until your {{days}}-day trial has ended, and you can cancel anytime before that.",
-      "startTrial": "Start free trial",
       "timeline": {
         "today": "Today",
         "todayDesc": "Start your free trial with full access to all features",
