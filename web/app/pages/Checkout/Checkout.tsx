@@ -353,6 +353,14 @@ const Checkout = () => {
                             className='font-medium underline decoration-dashed hover:decoration-solid'
                           />
                         ),
+                        tos: (
+                          <a
+                            href={routes.terms}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='font-medium underline decoration-dashed hover:decoration-solid'
+                          />
+                        ),
                       }}
                     />
                   </Text>

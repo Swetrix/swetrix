@@ -2142,7 +2142,7 @@
     "dueToday": "Due today ({{days}} days free)",
     "next": "Start free trial",
     "selectPlan": "Select your plan",
-    "termsDesc": "By continuing, you agree to the Terms of Use applicable to Swetrix and confirm you have read our <privacy>Privacy Policy</privacy>."
+    "termsDesc": "By continuing, you agree to the <tos>Terms of Use</tos> applicable to Swetrix and confirm you have read our <privacy>Privacy Policy</privacy>."
   },
   "onboarding": {
     "welcome": "Welcome to Swetrix",
