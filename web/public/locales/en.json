@@ -767,7 +767,6 @@
       "testimonial": "\"Swetrix has been a game changer for our analytics. They've always been on top of feature requests and have been friendly every step of the way.\""
     },
     "signup": {
-      "button": "Continue to checkout",
       "tos": "I do accept <tos>Terms and Conditions</tos> and the <pp>Privacy Policy</pp>.",
       "create": "Create your account",
       "trial": "Start your free {{amount}} day trial",

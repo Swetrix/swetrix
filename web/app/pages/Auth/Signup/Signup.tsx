@@ -1,4 +1,5 @@
 import {
+  ArrowRightIcon,
   ChartBarIcon,
   CursorClickIcon,
   ShieldCheckIcon,
@@ -390,13 +391,14 @@ const Signup = () => {
             </div>
 
             <Button
-              className='mt-6 w-full justify-center'
+              className='mt-6 flex w-full items-center justify-center gap-1'
               type='submit'
               loading={isFormSubmitting}
               primary
               giant
             >
-              {t('auth.signup.button')}
+              <span>{t('common.continue')}</span>
+              <ArrowRightIcon className='size-4 translate-y-px' />
             </Button>
           </Form>
 
