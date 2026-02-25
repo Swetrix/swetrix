@@ -2200,7 +2200,29 @@
       "desc": "Add the Swetrix script to your website. You can also use Swetrix for tracking events on your mobile or desktop apps, send events directly to our API. Learn more about more advanced integrations in our <url>documentation</url>.",
       "websiteInstallation": "Website installation",
       "pasteScript": "Paste the script to your website",
-      "weAlsoSupport": "We also support intalling Swetrix via NPM (for React, Vue, etc.), provide Events API to send events directly to our API, and many different integrations with other services like WordPress or Google Tag Manager. <url>Learn more</url>."
+      "weAlsoSupport": "We also support intalling Swetrix via NPM (for React, Vue, etc.), provide Events API to send events directly to our API, and many different integrations with other services like WordPress or Google Tag Manager. <url>Learn more</url>.",
+      "optional": "This step is optional — you can always set up tracking later from your project settings.",
+      "skipForNow": "Skip for now",
+      "npm": {
+        "title": "NPM package",
+        "desc": "For React, Vue, Angular, and other JS frameworks.",
+        "step1": "1. Install the package",
+        "step2": "2. Import and initialise",
+        "entryFileHint": "Add this to your app's entry file (e.g. <codeA>index.js</codeA> or <codeB>App.js</codeB>). <url>View full docs</url>"
+      },
+      "gtm": {
+        "title": "Google Tag Manager",
+        "desc": "Add Swetrix via GTM without touching your codebase.",
+        "step1": "1. Your Project ID",
+        "step2": "2. Create a Custom HTML tag in GTM with this code",
+        "step3": "3. Set the trigger to \"All Pages\" and publish",
+        "viewGuide": "View full GTM guide"
+      },
+      "platforms": {
+        "title": "Platform guides",
+        "desc": "Step-by-step integration guides for popular platforms.",
+        "viewAll": "View all integrations"
+      }
     },
     "verifyInstallation": {
       "navTitle": "Verify installation",
