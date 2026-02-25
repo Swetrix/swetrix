@@ -8,6 +8,7 @@ import { data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
+import { isSelfhosted } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import Dashboard from '~/pages/Dashboard'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -205,6 +206,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
     }
     return redirect('/onboarding')
+  }
+
+  // If user is not subscribed (trial or real sub), and they're not past subscription (none tier, but have blocked dashboard), redirect to checkout
+  if (
+    !isSelfhosted &&
+    user?.planCode === 'none' &&
+    !user?.dashboardBlockReason
+  ) {
+    if (authCookies.length > 0) {
+      return redirect('/checkout', {
+        headers: createHeadersWithCookies(authCookies),
+      })
+    }
+    return redirect('/checkout')
   }
 
   const url = new URL(request.url)

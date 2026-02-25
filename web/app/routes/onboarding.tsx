@@ -74,17 +74,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const allCookies = [...cookies, ...metainfoResult.cookies]
 
   if (user?.user?.hasCompletedOnboarding) {
-    // Redirect to checkout if user hasn't subscribed yet
-    const userPlanCode = user.user.planCode
-    if (!isSelfhosted && (!userPlanCode || userPlanCode === 'none')) {
-      if (allCookies.length > 0) {
-        return redirect('/checkout', {
-          headers: createHeadersWithCookies(allCookies),
-        })
-      }
-      return redirect('/checkout')
-    }
-
     if (allCookies.length > 0) {
       return redirect('/dashboard', {
         headers: createHeadersWithCookies(allCookies),
