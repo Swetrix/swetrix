@@ -89,6 +89,7 @@
     "amount": "Kwota",
     "date": "Data",
     "success": "Sukces",
+    "redirecting": "Przekierowywanie...",
     "info": "Informacje",
     "error": "Błąd",
     "close": "Zamknij",
@@ -145,7 +146,9 @@
     "communityEdition": "Wersja Społecznościowa",
     "allPosts": "Wszystkie posty",
     "details": "Szczegóły",
-    "unknown": "Nieznane"
+    "unknown": "Nieznane",
+    "showMore": "Pokaż {{count}} więcej",
+    "showLess": "Pokaż mniej"
   },
   "performance": {
     "slogan": "Monitorowanie <span>wydajności</span> końcowego użytkownika, aby dostarczać szybkie strony internetowe.",
@@ -552,7 +555,7 @@
         },
         {
           "q": "Czy jest dostępny bezpłatny okres próbny?",
-          "a": "Tak, możesz wypróbować Swetrix przez {{freeTrialDays}} dni za darmo, bez karty kredytowej!"
+          "a": "Tak, możesz wypróbować Swetrix za darmo przez {{freeTrialDays}} dni! Do rozpoczęcia okresu próbnego wymagana jest metoda płatności, ale nie zostaniesz obciążony do momentu jego zakończenia i możesz anulować w dowolnym momencie."
         },
         {
           "q": "Co jest liczone jako zdarzenie?",
@@ -764,11 +767,12 @@
       "testimonial": "„Swetrix to prawdziwy przełom w naszej analityce. Zawsze szybko reagowali na prośby o nowe funkcje i byli życzliwi na każdym etapie.”"
     },
     "signup": {
-      "button": "Zarejestruj się",
+      "button": "Przejdź do płatności",
       "tos": "Akceptuję <tos>Regulamin</tos> oraz <pp>Politykę Prywatności</pp>.",
       "create": "Utwórz konto",
       "trial": "Rozpocznij {{amount}} dniowy, bezpłatny okres próbny",
-      "noCC": "Karta kredytowa nie jest wymagana.",
+      "trialSubtitle": "Wypróbuj wszystkie funkcje za darmo. Anuluj w dowolnym momencie przed zakończeniem okresu próbnego.",
+      "changePlanLater": "Możesz zmienić swój plan później lub w dowolnym momencie.",
       "alreadyAMember": "Już jesteś członkiem? <url>Zaloguj się</url>",
       "createAnAccount": "Utwórz konto",
       "insightsInMinutes": "Uzyskaj lepszy wgląd w stronę w kilka minut",
@@ -2023,10 +2027,17 @@
     "changePlan": "Możesz w każdej chwili zmienić lub anulować swój plan subskrypcji tutaj.",
     "membersNotification": "Odsłony stron, zdarzenia niestandardowe i zdarzenia błędów są wliczane do limitu subskrypcji właściciela konta. Osoby, które zapraszasz do swoich projektów, nie potrzebują subskrypcji.",
     "trialDescription": "Twój bezpłatny okres próbny obejmuje dostęp do wszystkich funkcji oraz brak limitów zbierania danych. Po zakończeniu okresu próbnego musisz wybrać płatny plan dopasowany do Twojego użycia, aby dalej korzystać ze Swetrix.",
+    "trialChargeWarning": "Po zakończeniu okresu próbnego zostaniesz automatycznie obciążony opłatą, chyba że anulujesz subskrypcję. Możesz ją anulować w dowolnym momencie z tej strony — bez zadawania pytań.",
+    "subscriptionCancelledSuccess": "Twoja subskrypcja została anulowana. Zachowasz dostęp do końca bieżącego okresu rozliczeniowego.",
+    "confirmCancellation": "Anuluj subskrypcję",
+    "cancellationFeedbackLabel": "Chcielibyśmy wiedzieć, dlaczego odchodzisz (opcjonalnie)",
+    "cancellationFeedbackPlaceholder": "Co moglibyśmy zrobić lepiej? Jesteśmy finansowani w całości przez subskrybentów i cenimy Twoją opinię.",
     "usageWarningHigh": "Wykorzystałeś {{percentage}}% miesięcznego limitu zdarzeń. Rozważ uaktualnienie planu, aby uniknąć przerwy w działaniu usługi.",
     "usageWarningCritical": "Uwaga: wykorzystałeś {{percentage}}% miesięcznego limitu zdarzeń! Uaktualnij plan, aby zapewnić nieprzerwany dostęp do usługi.",
     "xPercentUsed": "{{percentage}}% wykorzystane",
-    "xPercentRemaining": "{{percentage}}% pozostało"
+    "xPercentRemaining": "{{percentage}}% pozostało",
+    "paddleLoadError": "Nie udało się załadować systemu płatności. Odśwież stronę i spróbuj ponownie.",
+    "paddleStillLoading": "System płatności wciąż się ładuje. Spróbuj ponownie za chwilę."
   },
   "modals": {
     "paidFeature": {
@@ -2060,7 +2071,7 @@
   },
   "pricing": {
     "title": "Proste, oparte na ruchu ceny",
-    "adv": "Wypróbuj Swetrix na swojej stronie przez {{amount}} dni - całkowicie za darmo.\nNie wymagamy karty kredytowej. Bez żadnych zobowiązań.",
+    "adv": "Wypróbuj Swetrix na swojej stronie internetowej przez {{amount}} dni - całkowicie za darmo. Wymagana jest metoda płatności, ale możesz zrezygnować w dowolnym momencie przed zakończeniem okresu próbnego.",
     "subscribe": "Subskrybuj",
     "legacy": "Wygasły",
     "legacyDescription": "Ten plan lub ta oferta cenowa nie jest już dostępna dla nowych użytkowników. Nadal jest dostępna dla obecnych użytkowników.",
@@ -2073,9 +2084,12 @@
     "yearlyBilling": "Rocznie",
     "billedYearly": "Rozliczane rocznie",
     "switchToMonthly": "Przełącz na płatność miesięczną",
+    "payYearly": "Płać rocznie (2 miesiące za darmo)",
+    "upToXEvents": "Do {{amount}} zdarzeń miesięcznie.",
     "frequency": "Częstotliwość płatności",
     "eventsPerMonth": "zdarzenia / miesiąc",
     "switchToYearly": "Przełącz na płatność roczną",
+    "xMonthsFree": "{{amount}} miesięcy za darmo",
     "trialEnded": "Zakończono okres próbny",
     "overXEvents": "Ponad {{amount}} zdarzeń",
     "contactUs": "Skontaktuj się z nami",
@@ -2123,6 +2137,19 @@
       "live": "Możesz zobaczyć nasze bieżące metryki na <livedemo>publicznym pulpicie nawigacyjnym</livedemo>. Możesz również udostępnić własne pulpity Swetrix publicznie i dostosować je do swoich potrzeb."
     }
   },
+  "checkout": {
+    "title": "Rozpocznij darmowy okres próbny",
+    "subtitle": "Dodaj dane płatności, aby rozpocząć {{days}}-dniowy darmowy okres próbny. Nie zostaniesz obciążony opłatą do czasu jego zakończenia i możesz anulować w dowolnym momencie.",
+    "noChargeToday": "Twoja karta nie zostanie dziś obciążona.",
+    "willRemind": "Przypomnimy Ci przed zakończeniem okresu próbnego",
+    "freeTrialAnytime": "Darmowy {{days}}-dniowy okres próbny, anuluj w dowolnym momencie",
+    "dueEnd": "Do zapłaty: {{date}}",
+    "dueToday": "Do zapłaty dzisiaj ({{days}} dni za darmo)",
+    "free": "$0",
+    "next": "Rozpocznij darmowy okres próbny",
+    "selectPlan": "Wybierz swój plan",
+    "termsDesc": "Kontynuując, zgadzasz się na Warunki korzystania mające zastosowanie do Swetrix i potwierdzasz, że przeczytałeś naszą <privacy>Politykę prywatności</privacy>."
+  },
   "onboarding": {
     "welcome": "Witamy w Swetrix",
     "title": "Rozpocznij",
@@ -2153,6 +2180,19 @@
         "title": "Sesje użytkowników",
         "desc": "Zobacz dokładnie, jak użytkownicy poruszają się po Twojej stronie. Zrozum ścieżki użytkowników, zidentyfikuj miejsca porzucenia i zoptymalizuj doświadczenie.",
         "tip": "Przeglądaj sesje w czasie rzeczywistym, gdy trwają."
+      }
+    },
+    "selectPlan": {
+      "title": "Dodaj dane płatności",
+      "subtitle": "Twoja karta nie zostanie obciążona, dopóki Twój {{days}}-dniowy okres próbny się nie zakończy, a do tego czasu możesz zrezygnować w dowolnym momencie.",
+      "startTrial": "Rozpocznij darmowy okres próbny",
+      "timeline": {
+        "today": "Dzisiaj",
+        "todayDesc": "Rozpocznij darmowy okres próbny z pełnym dostępem do wszystkich funkcji",
+        "reminder": "Dzień {{days}}",
+        "reminderDesc": "Wyślemy Ci przyjazne przypomnienie przed zakończeniem okresu próbnego",
+        "charge": "Dzień {{days}}",
+        "chargeDesc": "Twoja subskrypcja się rozpocznie, chyba że anulujesz ją wcześniej"
       }
     },
     "confirm": {
@@ -2228,7 +2268,8 @@
     "cookiePolicy": "Polityka plików cookie",
     "termsAndConditions": "Regulamin",
     "gaAlternative": "Alternatywa dla Google Analytics bez plików cookie",
-    "projectWithPassword": "Analityka strony – wymagane hasło"
+    "projectWithPassword": "Analityka strony – wymagane hasło",
+    "checkout": "Płatność"
   },
   "description": {
     "default": "Swetrix to alternatywa dla Google Analytics, stawiająca prywatność na pierwszym miejscu i niewymagająca plików cookie, z analizą w czasie rzeczywistym, bez próbkowania oraz z wbudowanym monitorowaniem wydajności i błędów.",
@@ -2238,6 +2279,7 @@
     "errorTracking": "Śledzenie błędów użytkowników końcowych z naciskiem na prywatność od Swetrix. Konfiguracja w jednej linijce, podgląd błędów według przeglądarki/urządzenia/lokalizacji i szybsze naprawianie problemów. 14-dniowy darmowy okres próbny – bez karty.",
     "login": "Zaloguj się do Swetrix, aby zobaczyć analitykę bez plików cookie i przyjazną prywatności – dane w czasie rzeczywistym, brak śledzących cookie, bez bałaganu GA.",
     "signup": "Utwórz konto Swetrix i zacznij śledzić ruch na stronie dzięki analityce bez plików cookie i przyjaznej prywatności – prosta konfiguracja, statystyki w czasie rzeczywistym.",
+    "checkout": "Wybierz plan Swetrix i sfinalizuj subskrypcję — analityka bez plików cookie, stawiająca na prywatność, z wnioskami w czasie rzeczywistym.",
     "onboarding": "Zacznij korzystać ze Swetrix (alternatywy dla Google Analytics bez plików cookie i z naciskiem na prywatność) w kilku krokach.",
     "open": "Otwarte metryki startupu: dowiedz się więcej o naszych kluczowych metrykach finansowych i operacyjnych.",
     "recovery": "Nie pamiętasz hasła? Skorzystaj z funkcji odzyskiwania hasła, aby przywrócić dostęp do konta.",

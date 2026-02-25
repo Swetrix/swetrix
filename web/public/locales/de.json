@@ -89,6 +89,7 @@
     "amount": "Anzahl",
     "date": "Datum",
     "success": "Erfolg",
+    "redirecting": "Weiterleitung...",
     "info": "Info",
     "error": "Fehler",
     "close": "Schließen",
@@ -145,7 +146,9 @@
     "communityEdition": "Community Edition",
     "allPosts": "Alle Beiträge",
     "details": "Details",
-    "unknown": "Unbekannt"
+    "unknown": "Unbekannt",
+    "showMore": "{{count}} weitere anzeigen",
+    "showLess": "Weniger anzeigen"
   },
   "performance": {
     "slogan": "Endbenutzer <span>Leistungsüberwachung</span> um schnelle Webseiten zu liefern.",
@@ -552,7 +555,7 @@
         },
         {
           "q": "Gibt es eine kostenlose Testphase?",
-          "a": "Ja, Sie können Swetrix {{freeTrialDays}} Tage lang kostenlos testen, keine Kreditkarte erforderlich!"
+          "a": "Ja, Sie können Swetrix {{freeTrialDays}} Tage lang kostenlos testen! Es ist eine Zahlungsmethode erforderlich, um Ihre Testversion zu starten, aber es wird Ihnen erst nach Ablauf der Testphase etwas berechnet und Sie können jederzeit kündigen."
         },
         {
           "q": "Was wird als Ereignis gezählt?",
@@ -764,11 +767,12 @@
       "testimonial": "„Swetrix war ein echter Game-Changer für unsere Analytics. Sie waren bei Feature-Wünschen immer dran und dabei bei jedem Schritt freundlich.“"
     },
     "signup": {
-      "button": "Registrieren",
+      "button": "Weiter zur Kasse",
       "tos": "Ich akzeptiere die <tos>Allgemeinen Geschäftsbedingungen</tos> und die <pp>Datenschutzerklärung</pp>.",
       "create": "Erstellen Sie ihr Konto",
       "trial": "Starten Sie Ihre kostenlose {{amount}}-Tage Testversion",
-      "noCC": "Keine Kreditkarte erforderlich.",
+      "trialSubtitle": "Testen Sie alle Funktionen kostenlos. Kündigen Sie jederzeit, bevor Ihre Testphase endet.",
+      "changePlanLater": "Sie können Ihren Plan später oder jederzeit ändern.",
       "alreadyAMember": "Bereits Mitglied? <url>Anmelden</url>",
       "createAnAccount": "Konto erstellen",
       "insightsInMinutes": "In wenigen Minuten bessere Website-Einblicke erhalten",
@@ -2023,10 +2027,17 @@
     "changePlan": "Sie können Ihr Abonnement hier jederzeit ändern oder kündigen.",
     "membersNotification": "Seitenaufrufe, benutzerdefinierte Ereignisse und Fehlerereignisse werden auf das Abonnementlimit des Kontoinhabers angerechnet. Personen, die Sie in Ihre Projekte einladen, benötigen kein Abonnement.",
     "trialDescription": "Ihre kostenlose Testversion umfasst den Zugriff auf alle Funktionen und keine Limits bei der Datenerfassung. Wenn Ihre Testphase endet, müssen Sie einen kostenpflichtigen Tarif wählen, der Ihrer Nutzung entspricht, um Swetrix weiter verwenden zu können.",
+    "trialChargeWarning": "Ihnen wird der Betrag nach Ablauf der Testphase automatisch in Rechnung gestellt, sofern Sie nicht kündigen. Sie können jederzeit von dieser Seite aus kündigen — ohne Rückfragen.",
+    "subscriptionCancelledSuccess": "Ihr Abonnement wurde gekündigt. Sie behalten den Zugriff bis zum Ende Ihres aktuellen Abrechnungszeitraums.",
+    "confirmCancellation": "Abonnement kündigen",
+    "cancellationFeedbackLabel": "Wir würden gerne wissen, warum Sie gehen (optional)",
+    "cancellationFeedbackPlaceholder": "Was hätten wir besser machen können? Wir werden vollständig von Abonnenten finanziert und legen großen Wert auf Ihr Feedback.",
     "usageWarningHigh": "Sie haben {{percentage}} % Ihres monatlichen Ereignislimits verbraucht. Erwägen Sie ein Upgrade Ihres Tarifs, um Unterbrechungen des Dienstes zu vermeiden.",
     "usageWarningCritical": "Warnung: Sie haben {{percentage}} % Ihres monatlichen Ereignislimits verbraucht! Führen Sie jetzt ein Upgrade durch, um einen unterbrechungsfreien Service sicherzustellen.",
     "xPercentUsed": "{{percentage}} % verwendet",
-    "xPercentRemaining": "{{percentage}} % verbleibend"
+    "xPercentRemaining": "{{percentage}} % verbleibend",
+    "paddleLoadError": "Das Zahlungssystem konnte nicht geladen werden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
+    "paddleStillLoading": "Das Zahlungssystem wird noch geladen. Bitte versuchen Sie es in einem Moment erneut."
   },
   "modals": {
     "paidFeature": {
@@ -2060,7 +2071,7 @@
   },
   "pricing": {
     "title": "Einfache, verkehrsbasierte Preisgestaltung",
-    "adv": "Probieren Sie Swetrix für {{amount}} Tage auf Ihrer Website aus - völlig kostenlos.\nKeine Kreditkarte erforderlich. Unverbindlich.",
+    "adv": "Testen Sie Swetrix {{amount}} Tage lang auf Ihrer Website – völlig kostenlos. Es ist eine Zahlungsmethode erforderlich, aber Sie können jederzeit kündigen, bevor die Testphase endet.",
     "subscribe": "Abonnieren",
     "legacy": "Legacy",
     "legacyDescription": "Dieser Tarif bzw. dieses Preismodell ist für neue Nutzer nicht mehr verfügbar. Für bestehende Nutzer ist es weiterhin verfügbar.",
@@ -2073,9 +2084,12 @@
     "yearlyBilling": "Jährlich",
     "billedYearly": "Jährlich abgerechnet",
     "switchToMonthly": "Zu monatlicher Abrechnung wechseln",
+    "payYearly": "Jährlich bezahlen (2 Monate kostenlos)",
+    "upToXEvents": "Bis zu {{amount}} monatliche Ereignisse.",
     "frequency": "Zahlungsfrequenz",
     "eventsPerMonth": "Ereignisse / Monat",
     "switchToYearly": "Zu jährlicher Abrechnung wechseln",
+    "xMonthsFree": "{{amount}} Monate kostenlos",
     "trialEnded": "Testversion abgelaufen",
     "overXEvents": "Über {{amount}} Ereignisse",
     "contactUs": "Kontaktieren Sie uns",
@@ -2123,6 +2137,19 @@
       "live": "Sie können unsere Live-Metriken auf unserem <livedemo>öffentlichen Dashboard</livedemo>sehen. Sie können auch Ihre eigenen Swetrix Dashboards öffentlich machen und sie an Ihre Bedürfnisse anpassen."
     }
   },
+  "checkout": {
+    "title": "Kostenlose Testversion starten",
+    "subtitle": "Fügen Sie Zahlungsdetails hinzu, um Ihre {{days}}-tägige kostenlose Testversion zu starten. Es wird Ihnen erst nach Ablauf der Testphase etwas berechnet und Sie können jederzeit kündigen.",
+    "noChargeToday": "Ihre Karte wird heute nicht belastet.",
+    "willRemind": "Wir erinnern Sie, bevor Ihre Testphase endet",
+    "freeTrialAnytime": "{{days}} Tage kostenlos testen, jederzeit kündbar",
+    "dueEnd": "Fällig am {{date}}",
+    "dueToday": "Heute fällig ({{days}} Tage kostenlos)",
+    "free": "$0",
+    "next": "Kostenlos testen",
+    "selectPlan": "Wählen Sie Ihren Plan",
+    "termsDesc": "Indem Sie fortfahren, stimmen Sie den für Swetrix geltenden Nutzungsbedingungen zu und bestätigen, dass Sie unsere <privacy>Datenschutzrichtlinie</privacy> gelesen haben."
+  },
   "onboarding": {
     "welcome": "Willkommen bei Swetrix",
     "title": "Loslegen",
@@ -2153,6 +2180,19 @@
         "title": "Nutzersitzungen",
         "desc": "Sehen Sie genau, wie Nutzer durch Ihre Website navigieren. Verstehen Sie User Journeys, identifizieren Sie Absprungstellen und optimieren Sie das Erlebnis.",
         "tip": "Sehen Sie sich Sitzungen in Echtzeit an, während sie stattfinden."
+      }
+    },
+    "selectPlan": {
+      "title": "Fügen Sie Ihre Zahlungsdetails hinzu",
+      "subtitle": "Ihre Karte wird erst nach Ablauf Ihrer {{days}}-tägigen Testversion belastet und Sie können davor jederzeit kündigen.",
+      "startTrial": "Kostenlos testen",
+      "timeline": {
+        "today": "Heute",
+        "todayDesc": "Starten Sie Ihre kostenlose Testversion mit vollem Zugriff auf alle Funktionen",
+        "reminder": "Tag {{days}}",
+        "reminderDesc": "Wir senden Ihnen eine freundliche Erinnerung, bevor Ihre Testphase endet",
+        "charge": "Tag {{days}}",
+        "chargeDesc": "Ihr Abonnement beginnt, es sei denn, Sie kündigen vorher"
       }
     },
     "confirm": {
@@ -2228,7 +2268,8 @@
     "cookiePolicy": "Cookie-Richtlinie",
     "termsAndConditions": "Allgemeine Geschäftsbedingungen",
     "gaAlternative": "Cookie-freie Alternative zu Google Analytics",
-    "projectWithPassword": "Website-Analytics – Passwort erforderlich"
+    "projectWithPassword": "Website-Analytics – Passwort erforderlich",
+    "checkout": "Kasse"
   },
   "description": {
     "default": "Swetrix ist eine datenschutzorientierte, cookielose Alternative zu Google Analytics mit Echtzeit-Analysen, ohne Sampling sowie integrierter Performance- und Fehlerüberwachung.",
@@ -2238,6 +2279,7 @@
     "errorTracking": "Datenschutzorientiertes Endnutzer-Fehlertracking von Swetrix. In einer Zeile eingerichtet, Fehler nach Browser/Gerät/Standort sehen und Probleme schneller beheben. 14 Tage kostenlos testen – keine Karte erforderlich.",
     "login": "Melden Sie sich bei Swetrix an, um Ihre cookielosen, datenschutzfreundlichen Analysen zu sehen – Echtzeit-Einblicke, keine Tracking-Cookies, kein GA-Ballast.",
     "signup": "Erstellen Sie Ihr Swetrix-Konto und beginnen Sie, Website-Traffic mit cookielosen, datenschutzfreundlichen Analysen zu tracken – einfache Einrichtung, Echtzeit-Statistiken.",
+    "checkout": "Wählen Sie einen Swetrix-Plan und schließen Sie Ihr Abonnement ab — cookiefreie, datenschutzorientierte Analysen mit Echtzeit-Einblicken.",
     "onboarding": "Starten Sie mit Swetrix (cookielose & datenschutzorientierte Google-Analytics-Alternative) in nur wenigen Schritten.",
     "open": "Offene Startup-Kennzahlen: Erfahren Sie mehr über unsere wichtigsten finanziellen und operativen Kennzahlen.",
     "recovery": "Passwort vergessen? Nutzen Sie unsere Passwort-Wiederherstellung, um wieder Zugriff auf Ihr Konto zu erhalten.",
