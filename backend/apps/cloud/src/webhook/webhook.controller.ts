@@ -211,16 +211,20 @@ export class WebhookController {
           cancellationEffectiveDate,
         })
 
-        const { email } =
-          (await this.userService.findOne({
-            where: { subID },
-          })) || {}
+        const user = await this.userService.findOne({
+          where: { subID },
+        })
 
-        if (email) {
-          await this.mailerService.sendEmail(
-            email,
-            LetterTemplate.SubscriptionCancelled,
-          )
+        if (user?.email) {
+          const isTrialing =
+            user.trialEndDate && new Date(user.trialEndDate) > new Date()
+
+          if (!isTrialing) {
+            await this.mailerService.sendEmail(
+              user.email,
+              LetterTemplate.SubscriptionCancelled,
+            )
+          }
         }
 
         break

@@ -1371,22 +1371,23 @@ export class TaskManagerService {
         ),
         trialReminderSent: false,
       },
-      select: ['id', 'email'],
+      select: ['id', 'email', 'cancellationEffectiveDate'],
     })
 
     const promises = _map(users, async (user) => {
-      const { id, email } = user
+      const { id, email, cancellationEffectiveDate } = user
 
       await this.userService.update(id, {
         trialReminderSent: true,
       })
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.TrialEndsTomorrow,
-        {
-          url: 'https://swetrix.com/user-settings?tab=billing',
-        },
-      )
+
+      const template = cancellationEffectiveDate
+        ? LetterTemplate.TrialEndingCancelled
+        : LetterTemplate.TrialEndsTomorrow
+
+      await this.mailerService.sendEmail(email, template, {
+        url: 'https://swetrix.com/user-settings?tab=billing',
+      })
     })
 
     await Promise.allSettled(promises).catch((reason) => {

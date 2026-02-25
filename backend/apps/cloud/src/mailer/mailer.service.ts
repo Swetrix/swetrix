@@ -81,6 +81,11 @@ const metaInfoJson = {
       en: () => 'Your Swetrix trial ends in 48 hours',
     },
   },
+  [LetterTemplate.TrialEndingCancelled]: {
+    subject: {
+      en: () => 'Your Swetrix trial ends in 48 hours — action needed',
+    },
+  },
   [LetterTemplate.ProjectSubscriberInvitation]: {
     subject: {
       en: () => 'You have been invited to join the project',
