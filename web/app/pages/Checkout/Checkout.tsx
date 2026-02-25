@@ -372,15 +372,18 @@ const Checkout = () => {
 
         {/* Right Column (Timeline) */}
         <div className='hidden lg:block lg:pt-16'>
-          <div className='rounded-lg bg-white p-6 shadow-xs ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-700/80'>
+          <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-900/80 dark:ring-slate-800'>
             <div className='flex items-start gap-5'>
               <div className='relative flex flex-col items-center'>
-                <div className='flex size-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30'>
-                  <RocketLaunchIcon className='size-5 text-emerald-600 dark:text-emerald-400' />
+                <div className='flex size-8 items-center justify-center'>
+                  <RocketLaunchIcon
+                    weight='duotone'
+                    className='size-7 text-emerald-600 dark:text-emerald-500'
+                  />
                 </div>
-                <div className='my-1 h-12 w-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30' />
+                <div className='my-2 h-14 w-px bg-linear-to-b from-emerald-200 to-gray-200 dark:from-emerald-900/60 dark:to-slate-800' />
               </div>
-              <div className='pt-2'>
+              <div className='pt-1'>
                 <Text as='p' size='sm' weight='bold'>
                   {t('onboarding.selectPlan.timeline.today')}
                 </Text>
@@ -392,12 +395,15 @@ const Checkout = () => {
 
             <div className='flex items-start gap-5'>
               <div className='relative flex flex-col items-center'>
-                <div className='flex size-10 items-center justify-center rounded-full bg-amber-50 ring-1 ring-amber-100 dark:bg-amber-900/10 dark:ring-amber-900/30'>
-                  <BellIcon className='size-5 text-amber-500 dark:text-amber-400' />
+                <div className='flex size-8 items-center justify-center'>
+                  <BellIcon
+                    weight='duotone'
+                    className='size-7 text-amber-500 dark:text-amber-500/90'
+                  />
                 </div>
-                <div className='my-1 h-12 w-1 rounded-full bg-gray-100 dark:bg-slate-800' />
+                <div className='my-2 h-14 w-px bg-gray-200 dark:bg-slate-800' />
               </div>
-              <div className='pt-2'>
+              <div className='pt-1'>
                 <Text as='p' size='sm' weight='semibold'>
                   {t('onboarding.selectPlan.timeline.reminder', {
                     days: TRIAL_DAYS - 2,
@@ -411,11 +417,14 @@ const Checkout = () => {
 
             <div className='flex items-start gap-5'>
               <div className='relative flex flex-col items-center'>
-                <div className='flex size-10 items-center justify-center rounded-full bg-blue-50 ring-1 ring-blue-100 dark:bg-blue-900/10 dark:ring-blue-900/30'>
-                  <CreditCardIcon className='size-5 text-blue-500 dark:text-blue-400' />
+                <div className='flex size-8 items-center justify-center'>
+                  <CreditCardIcon
+                    weight='duotone'
+                    className='size-7 text-blue-500 dark:text-blue-500/90'
+                  />
                 </div>
               </div>
-              <div className='pt-2'>
+              <div className='pt-1'>
                 <Text as='p' size='sm' weight='semibold'>
                   {t('onboarding.selectPlan.timeline.charge', {
                     days: TRIAL_DAYS,
