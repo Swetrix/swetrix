@@ -835,12 +835,6 @@ export class UserController {
   async completeOnboarding(@CurrentUserId() userId: string): Promise<void> {
     this.logger.log({ userId }, 'POST /user/onboarding/complete')
 
-    const user = await this.userService.findOne({ where: { id: userId } })
-
-    if (!user?.isActive) {
-      throw new ForbiddenException('Please, verify your email address first')
-    }
-
     await this.userService.update(userId, {
       onboardingStep: OnboardingStep.COMPLETED,
       hasCompletedOnboarding: true,

@@ -180,12 +180,19 @@ export class WebhookController {
         await this.userService.update(currentUser.id, updateParams)
         await this.projectService.clearProjectsRedisCache(currentUser.id)
 
+        if (body.alert_name === 'subscription_created' && isTrialing) {
+          await this.mailerService.sendEmail(
+            currentUser.email,
+            LetterTemplate.SignUp,
+          )
+        }
+
         if (status === 'paused') {
           await this.mailerService.sendEmail(
             currentUser.email,
             LetterTemplate.DashboardLockedPaymentFailure,
             {
-              billingUrl: 'https://swetrix.com/billing',
+              billingUrl: 'https://swetrix.com/user-settings?tab=billing',
             },
           )
         }

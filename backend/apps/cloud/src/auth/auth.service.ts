@@ -179,10 +179,8 @@ export class AuthService {
 
     const user = await this.userService.createUser({
       email,
-      password: hashedPassword, // Using the password field is incorrect.
+      password: hashedPassword,
     })
-
-    await this.sendVerificationEmail(user.id, user.email)
 
     return user
   }

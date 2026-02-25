@@ -893,7 +893,7 @@ export class TaskManagerService {
           user,
           hitPercentageLimit: _includes(exceedingUserIds, user.id),
           percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
-          billingUrl: 'https://swetrix.com/billing',
+          billingUrl: 'https://swetrix.com/user-settings?tab=billing',
           suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
         }
 
@@ -950,7 +950,7 @@ export class TaskManagerService {
           upgradePeriodDays: 7,
           thisMonthUsage: usage,
           percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
-          billingUrl: 'https://swetrix.com/billing',
+          billingUrl: 'https://swetrix.com/user-settings?tab=billing',
           suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
         }
 
@@ -1021,7 +1021,7 @@ export class TaskManagerService {
             thisMonthUsage: userThisMonthUsage,
             lastMonthUsage: userLastMonthUsage,
             percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
-            billingUrl: 'https://swetrix.com/billing',
+            billingUrl: 'https://swetrix.com/user-settings?tab=billing',
             suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
           }
 
@@ -1068,7 +1068,7 @@ export class TaskManagerService {
     })
     const emailParams = {
       amount: SEND_WARNING_AT_PERC,
-      url: 'https://swetrix.com/billing',
+      url: 'https://swetrix.com/user-settings?tab=billing',
     }
 
     const promises = _map(users, async (user) => {
@@ -1384,7 +1384,7 @@ export class TaskManagerService {
         email,
         LetterTemplate.TrialEndsTomorrow,
         {
-          url: 'https://swetrix.com/billing',
+          url: 'https://swetrix.com/user-settings?tab=billing',
         },
       )
     })
@@ -1447,7 +1447,7 @@ export class TaskManagerService {
         // trialEndDate: null,
       })
       await this.mailerService.sendEmail(email, LetterTemplate.TrialExpired, {
-        url: 'https://swetrix.com/billing',
+        url: 'https://swetrix.com/user-settings?tab=billing',
       })
       await this.projectService.clearProjectsRedisCache(id)
     })

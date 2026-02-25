@@ -18,7 +18,6 @@ import { toast } from 'sonner'
 import { useAuthProxy } from '~/hooks/useAuthProxy'
 import {
   BROWSER_LOGO_MAP,
-  CONFIRMATION_TIMEOUT,
   DOCS_URL,
   INTEGRATIONS_URL,
   isSelfhosted,
@@ -28,7 +27,6 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
 } from '~/lib/constants'
-import { getCookie, setCookie } from '~/utils/cookie'
 import { changeLanguage } from '~/i18n'
 import { getSnippet } from '~/modals/TrackingSnippet'
 import { useAuth } from '~/providers/AuthProvider'
@@ -68,25 +66,16 @@ type OnboardingStep =
   | 'feature_sessions'
   | 'create_project'
   | 'setup_tracking'
-  | 'verify_email'
 
-const getSteps = (): OnboardingStep[] => {
-  const baseSteps: OnboardingStep[] = [
-    'language',
-    'welcome',
-    'feature_traffic',
-    'feature_errors',
-    'feature_sessions',
-    'create_project',
-    'setup_tracking',
-  ]
-
-  if (!isSelfhosted) {
-    baseSteps.push('verify_email')
-  }
-
-  return baseSteps
-}
+const getSteps = (): OnboardingStep[] => [
+  'language',
+  'welcome',
+  'feature_traffic',
+  'feature_errors',
+  'feature_sessions',
+  'create_project',
+  'setup_tracking',
+]
 
 const STEPS = getSteps()
 
@@ -442,10 +431,6 @@ const Onboarding = () => {
   const [newProjectErrors, setNewProjectErrors] = useState<{
     name?: string
   }>({})
-  const [isCheckingVerification, setIsCheckingVerification] = useState(false)
-  const [hasResentEmail, setHasResentEmail] = useState(
-    () => !!getCookie(CONFIRMATION_TIMEOUT),
-  )
 
   const currentStep = STEPS[currentStepIndex]
   const isLoading =
@@ -472,10 +457,6 @@ const Onboarding = () => {
       } else if (intent === 'complete-onboarding') {
         loadUser()
         navigate(isSelfhosted ? routes.dashboard : routes.checkout)
-      } else if (intent === 'confirm-email') {
-        setCookie(CONFIRMATION_TIMEOUT, true, 600)
-        setHasResentEmail(true)
-        toast.success(t('profileSettings.confSent'))
       }
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
@@ -610,25 +591,6 @@ const Onboarding = () => {
 
     const formData = new FormData()
     formData.set('intent', 'complete-onboarding')
-    fetcher.submit(formData, { method: 'post' })
-  }
-
-  const handleDeleteAccount = () => {
-    if (fetcher.state !== 'idle') return
-
-    const formData = new FormData()
-    formData.set('intent', 'delete-account')
-    fetcher.submit(formData, { method: 'post' })
-  }
-
-  const handleResendEmail = () => {
-    if (getCookie(CONFIRMATION_TIMEOUT)) {
-      toast.error(t('profileSettings.confTimeout'))
-      return
-    }
-
-    const formData = new FormData()
-    formData.set('intent', 'confirm-email')
     fetcher.submit(formData, { method: 'post' })
   }
 
@@ -1027,93 +989,6 @@ const Onboarding = () => {
                         )}
                       </div>
                     )}
-
-                    {currentStep === 'verify_email' && (
-                      <div>
-                        <Text
-                          as='h1'
-                          size='3xl'
-                          weight='bold'
-                          tracking='tight'
-                          className='mb-2'
-                        >
-                          {t('onboarding.confirm.title')}
-                        </Text>
-
-                        {user?.isActive ? (
-                          <Alert variant='success' className='mt-8'>
-                            {t('onboarding.confirm.emailVerified')}
-                          </Alert>
-                        ) : (
-                          <>
-                            <Text
-                              as='h2'
-                              size='lg'
-                              weight='semibold'
-                              className='mt-8 mb-4'
-                            >
-                              {t('onboarding.confirm.emailVerification')}
-                            </Text>
-
-                            <Alert
-                              variant='info'
-                              title={t('onboarding.confirm.verifyTitle')}
-                            >
-                              <Trans
-                                t={t}
-                                i18nKey='onboarding.confirm.linkSent'
-                                values={{ email: user?.email }}
-                                components={{
-                                  email: <span className='font-semibold' />,
-                                }}
-                              />
-                            </Alert>
-
-                            <div className='mt-6'>
-                              <Text
-                                as='p'
-                                size='sm'
-                                colour='secondary'
-                                className='mb-2'
-                              >
-                                {t('onboarding.confirm.didNotReceive')}
-                              </Text>
-                              <Button
-                                onClick={handleResendEmail}
-                                disabled={hasResentEmail}
-                                secondary
-                                small
-                              >
-                                {hasResentEmail && (
-                                  <CheckCircleIcon className='mr-2 size-4' />
-                                )}
-                                {hasResentEmail
-                                  ? t('onboarding.confirm.emailResent')
-                                  : t('onboarding.confirm.resend')}
-                              </Button>
-                            </div>
-
-                            <div className='mt-6'>
-                              <Text
-                                as='p'
-                                size='sm'
-                                colour='secondary'
-                                className='mb-2'
-                              >
-                                {t('onboarding.confirm.troubleOrChange')}
-                              </Text>
-                              <Button
-                                onClick={handleDeleteAccount}
-                                secondary
-                                small
-                              >
-                                {t('onboarding.confirm.logoutAndRegister')}
-                              </Button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -1154,40 +1029,12 @@ const Onboarding = () => {
                     <Button
                       onClick={() => {
                         setIsWaitingForEvents(true)
-                        if (isSelfhosted) {
-                          handleCompleteOnboarding(false)
-                        } else {
-                          goNext()
-                        }
+                        handleCompleteOnboarding(false)
                       }}
                       primary
                       large
                     >
                       {t('common.continue')}
-                    </Button>
-                  )}
-                  {currentStep === 'verify_email' && (
-                    <Button
-                      onClick={async () => {
-                        setIsCheckingVerification(true)
-                        try {
-                          const loadedUser = await loadUser()
-                          if (!loadedUser?.isActive) {
-                            toast.error(
-                              'Please, verify your email address first',
-                            )
-                            return
-                          }
-                          handleCompleteOnboarding(false)
-                        } finally {
-                          setIsCheckingVerification(false)
-                        }
-                      }}
-                      loading={isCheckingVerification}
-                      primary
-                      large
-                    >
-                      {t('onboarding.confirm.letsGo')}
                     </Button>
                   )}
                 </div>

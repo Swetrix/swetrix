@@ -95,14 +95,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   const rawOnboardingStep = user?.user?.onboardingStep as string | undefined
-  // Migrate users who were on the removed select_plan step
+  // Migrate users who were on removed steps
   const onboardingStep =
-    rawOnboardingStep === 'select_plan' ? 'create_project' : rawOnboardingStep
+    rawOnboardingStep === 'select_plan'
+      ? 'create_project'
+      : rawOnboardingStep === 'verify_email'
+        ? 'setup_tracking'
+        : rawOnboardingStep
 
   if (
     onboardingStep === 'setup_tracking' ||
-    onboardingStep === 'waiting_for_events' ||
-    onboardingStep === 'verify_email'
+    onboardingStep === 'waiting_for_events'
   ) {
     const projectsResult = await serverFetch<{
       results: Project[]
@@ -245,39 +248,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
       return data<OnboardingActionData>(
         { intent, success: true, user: result.data as User },
-        { headers: createHeadersWithCookies(result.cookies) },
-      )
-    }
-
-    case 'delete-account': {
-      const result = await serverFetch(request, 'user', {
-        method: 'DELETE',
-      })
-
-      if (result.error) {
-        return data<OnboardingActionData>(
-          { intent, error: result.error as string },
-          { status: 400 },
-        )
-      }
-
-      return redirect('/logout')
-    }
-
-    case 'confirm-email': {
-      const result = await serverFetch(request, 'user/confirm_email', {
-        method: 'POST',
-      })
-
-      if (result.error) {
-        return data<OnboardingActionData>(
-          { intent, error: result.error as string },
-          { status: 400 },
-        )
-      }
-
-      return data<OnboardingActionData>(
-        { intent, success: true },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

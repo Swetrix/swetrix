@@ -2186,24 +2186,6 @@
         "chargeDesc": "Your subscription begins unless you cancel beforehand"
       }
     },
-    "confirm": {
-      "navTitle": "Confirm your email",
-      "navDesc": "Check your inbox and click the confirmation link.",
-      "title": "One step left and you're ready to go! 🚀",
-      "emailVerification": "Email Verification",
-      "verifyTitle": "Please verify your email address",
-      "linkSent": "We sent an email to <email>{{email}}</email>. Please confirm your email address to continue.",
-      "didNotReceive": "Did not receive an email?",
-      "resend": "Resend",
-      "emailResent": "Requested",
-      "troubleOrChange": "Do you have trouble or want to change your email address?",
-      "logoutAndRegister": "Logout and register again",
-      "letsGo": "Let's go!",
-      "emailVerified": "Your email is verified",
-      "spam": "Can't see the email? Please check your spam folder.",
-      "wrongEmail": "Wrong email? <url>Create a new account.</url>",
-      "checkVerification": "I've verified my email"
-    },
     "createProject": {
       "navTitle": "Create a project",
       "navDesc": "Add a website to start tracking analytics.",

@@ -222,6 +222,7 @@ export class UserService {
   public async createUser(user: Pick<User, 'email' | 'password'>) {
     return this.usersRepository.save({
       ...user,
+      isActive: true,
       trialEndDate: dayjs
         .utc()
         .add(TRIAL_DURATION, 'day')
