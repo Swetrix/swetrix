@@ -56,7 +56,6 @@ import {
   LEGAL_PID_CHARACTERS,
   PID_LENGTH,
 } from './project.service'
-import { PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
@@ -334,13 +333,6 @@ export class ProjectController {
       )
     }
 
-    if (user.planCode === PlanCode.none) {
-      throw new HttpException(
-        'You cannot create new projects due to no active subscription. Please upgrade your account plan to continue.',
-        HttpStatus.PAYMENT_REQUIRED,
-      )
-    }
-
     if (user.isAccountBillingSuspended) {
       throw new HttpException(
         'This account is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
@@ -426,13 +418,6 @@ export class ProjectController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    if (user.planCode === PlanCode.none) {
-      throw new HttpException(
-        'You cannot create new funnels due to no active subscription. Please upgrade your account plan to continue.',
-        HttpStatus.PAYMENT_REQUIRED,
-      )
-    }
-
     if (user.isAccountBillingSuspended) {
       throw new HttpException(
         'This account is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
@@ -480,13 +465,6 @@ export class ProjectController {
 
     if (!user.isActive) {
       throw new ForbiddenException('Please, verify your email address first')
-    }
-
-    if (user.planCode === PlanCode.none) {
-      throw new HttpException(
-        'You cannot update funnels due to no active subscription. Please upgrade your account plan to continue.',
-        HttpStatus.PAYMENT_REQUIRED,
-      )
     }
 
     if (user.isAccountBillingSuspended) {

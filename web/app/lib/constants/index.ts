@@ -560,7 +560,7 @@ export const PLAN_LIMITS = {
   none: {
     index: 0, // 'downgrade' or 'upgrade' logic depends on this
     planCode: 'none',
-    monthlyUsageLimit: 0,
+    monthlyUsageLimit: 10000000,
     legacy: false,
     price: {
       USD: {
@@ -576,7 +576,7 @@ export const PLAN_LIMITS = {
         yearly: 0,
       },
     },
-    maxAlerts: 0,
+    maxAlerts: 50,
   },
   free: {
     index: 0, // 'downgrade' or 'upgrade' logic depends on this

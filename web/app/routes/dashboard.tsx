@@ -8,7 +8,6 @@ import { data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
-import { isSelfhosted } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import Dashboard from '~/pages/Dashboard'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -206,15 +205,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
     }
     return redirect('/onboarding')
-  }
-
-  if (!isSelfhosted && user && (!user.planCode || user.planCode === 'none')) {
-    if (authCookies.length > 0) {
-      return redirect('/checkout', {
-        headers: createHeadersWithCookies(authCookies),
-      })
-    }
-    return redirect('/checkout')
   }
 
   const url = new URL(request.url)

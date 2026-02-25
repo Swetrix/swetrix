@@ -31,7 +31,6 @@ import _round from 'lodash/round'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
-import { PlanCode } from '../user/entities/user.entity'
 import {
   AnalyticsService,
   getLowestPossibleTimeBucket,
@@ -190,13 +189,6 @@ export class FeatureFlagController {
     const flagsCount = await this.featureFlagService.count({
       where: { project: { id: flagDto.pid } },
     })
-
-    if (user.planCode === PlanCode.none) {
-      throw new HttpException(
-        'You cannot create new feature flags due to no active subscription. Please upgrade your account plan to continue.',
-        HttpStatus.PAYMENT_REQUIRED,
-      )
-    }
 
     if (user.isAccountBillingSuspended) {
       throw new HttpException(

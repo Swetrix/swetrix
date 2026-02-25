@@ -1,6 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { checkRateLimitForApiKey } from '../../common/utils'
-import { PlanCode } from '../../user/entities/user.entity'
 
 @Injectable()
 export class ApiKeyRateLimitGuard implements CanActivate {
@@ -12,9 +11,7 @@ export class ApiKeyRateLimitGuard implements CanActivate {
       if (!user) return false
 
       const reqAmount =
-        user.planCode === PlanCode.none ||
-        user.isAccountBillingSuspended ||
-        user.dashboardBlockReason !== null
+        user.isAccountBillingSuspended || user.dashboardBlockReason !== null
           ? 0
           : user.maxApiKeyRequestsPerHour
       return checkRateLimitForApiKey(user.apiKey, reqAmount)

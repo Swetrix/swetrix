@@ -1010,7 +1010,6 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                 ) : null}
                 {!isSelfhosted &&
                 isAuthenticated &&
-                user?.planCode !== 'none' &&
                 user?.planCode !== 'trial' ? (
                   <Link
                     to={routes.billing}

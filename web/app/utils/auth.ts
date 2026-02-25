@@ -17,10 +17,6 @@ export const decidePostAuthRedirect = (user: {
     return routes.onboarding
   }
 
-  if (!isSelfhosted && (!user.planCode || user.planCode === 'none')) {
-    return routes.checkout
-  }
-
   return routes.dashboard
 }
 
