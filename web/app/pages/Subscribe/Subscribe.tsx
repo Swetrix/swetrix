@@ -21,7 +21,7 @@ import {
 } from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import type { CheckoutLoaderData } from '~/routes/checkout'
+import type { SubscribeLoaderData } from '~/routes/subscribe'
 import Button from '~/ui/Button'
 import { Text } from '~/ui/Text'
 import { Switch } from '~/ui/Switch'
@@ -32,12 +32,12 @@ const INITIAL_VISIBLE_PLANS = 3
 const formatEventsLong = (value: number, locale = 'en-US') =>
   value.toLocaleString(locale)
 
-const Checkout = () => {
+const Subscribe = () => {
   const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { metainfo } = useLoaderData<CheckoutLoaderData>()
+  const { metainfo } = useLoaderData<SubscribeLoaderData>()
 
   const [selectedPlan, setSelectedPlan] = useState('100k')
   const [selectedBillingFrequency, setSelectedBillingFrequency] = useState<
@@ -442,4 +442,4 @@ const Checkout = () => {
   )
 }
 
-export default Checkout
+export default Subscribe

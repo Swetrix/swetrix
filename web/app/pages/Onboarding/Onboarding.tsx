@@ -1150,7 +1150,7 @@ const Onboarding = () => {
         loadUser()
       } else if (intent === 'complete-onboarding') {
         loadUser()
-        navigate(isSelfhosted ? routes.dashboard : routes.checkout)
+        navigate(isSelfhosted ? routes.dashboard : routes.subscribe)
       }
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)

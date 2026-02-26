@@ -215,11 +215,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     !user?.dashboardBlockReason
   ) {
     if (authCookies.length > 0) {
-      return redirect('/checkout', {
+      return redirect('/subscribe', {
         headers: createHeadersWithCookies(authCookies),
       })
     }
-    return redirect('/checkout')
+    return redirect('/subscribe')
   }
 
   const url = new URL(request.url)

@@ -6,7 +6,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
 import { isSelfhosted } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
-import Checkout from '~/pages/Checkout'
+import Subscribe from '~/pages/Subscribe'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   redirectIfNotAuthenticated,
@@ -28,7 +28,7 @@ export const meta: MetaFunction = () => {
   ]
 }
 
-export interface CheckoutLoaderData {
+export interface SubscribeLoaderData {
   metainfo: Metainfo
 }
 
@@ -69,7 +69,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const metainfo = metainfoResult.data ?? DEFAULT_METAINFO
   const allCookies = [...cookies, ...metainfoResult.cookies]
 
-  const loaderData: CheckoutLoaderData = { metainfo }
+  const loaderData: SubscribeLoaderData = { metainfo }
 
   if (allCookies.length > 0) {
     return data(loaderData, {
@@ -80,6 +80,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return loaderData
 }
 
-export default function CheckoutRoute() {
-  return <Checkout />
+export default function SubscribeRoute() {
+  return <Subscribe />
 }
