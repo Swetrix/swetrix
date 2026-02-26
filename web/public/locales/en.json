@@ -122,7 +122,9 @@
     "quit": "Quit",
     "enable": "Enable",
     "disable": "Disable",
+    "copy": "Copy",
     "copied": "Copied",
+    "failedToCopy": "Failed to copy",
     "new": "New",
     "all": "All",
     "active": "Active",
@@ -2203,6 +2205,12 @@
       "weAlsoSupport": "We also support intalling Swetrix via NPM (for React, Vue, etc.), provide Events API to send events directly to our API, and many different integrations with other services like WordPress or Google Tag Manager. <url>Learn more</url>.",
       "optional": "This step is optional — you can always set up tracking later from your project settings.",
       "skipForNow": "Skip for now",
+      "tabs": {
+        "script": "Script",
+        "npm": "NPM",
+        "tagManager": "Tag Manager",
+        "platforms": "Platforms"
+      },
       "npm": {
         "title": "NPM package",
         "desc": "For React, Vue, Angular, and other JS frameworks.",

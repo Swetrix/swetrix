@@ -441,10 +441,26 @@ const TRACKING_TABS: {
   labelKey: string
   icon: React.ElementType
 }[] = [
-  { id: 'script', labelKey: 'Script', icon: CodeIcon },
-  { id: 'npm', labelKey: 'NPM', icon: PackageIcon },
-  { id: 'gtm', labelKey: 'Tag Manager', icon: TagIcon },
-  { id: 'platforms', labelKey: 'Platforms', icon: SquaresFourIcon },
+  {
+    id: 'script',
+    labelKey: 'onboarding.installTracking.tabs.script',
+    icon: CodeIcon,
+  },
+  {
+    id: 'npm',
+    labelKey: 'onboarding.installTracking.tabs.npm',
+    icon: PackageIcon,
+  },
+  {
+    id: 'gtm',
+    labelKey: 'onboarding.installTracking.tabs.tagManager',
+    icon: TagIcon,
+  },
+  {
+    id: 'platforms',
+    labelKey: 'onboarding.installTracking.tabs.platforms',
+    icon: SquaresFourIcon,
+  },
 ]
 
 const PLATFORM_INTEGRATIONS: {
@@ -804,7 +820,7 @@ const SetupTrackingStep = ({
                 className='size-4 shrink-0'
                 weight={isActive ? 'bold' : 'regular'}
               />
-              <span className='hidden sm:inline'>{tab.labelKey}</span>
+              <span className='hidden sm:inline'>{t(tab.labelKey)}</span>
             </button>
           )
         })}
@@ -1050,6 +1066,7 @@ const SetupTrackingStep = ({
 }
 
 const CopyableField = ({ value }: { value: string }) => {
+  const { t } = useTranslation('common')
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -1058,7 +1075,7 @@ const CopyableField = ({ value }: { value: string }) => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      toast.error('Failed to copy')
+      toast.error(t('common.failedToCopy'))
     }
   }
 
@@ -1074,13 +1091,13 @@ const CopyableField = ({ value }: { value: string }) => {
           <>
             <CheckIcon className='size-4 text-emerald-500' />
             <span className='text-emerald-600 dark:text-emerald-400'>
-              Copied
+              {t('common.copied')}
             </span>
           </>
         ) : (
           <>
             <CopyIcon className='size-4' />
-            Copy
+            {t('common.copy')}
           </>
         )}
       </button>

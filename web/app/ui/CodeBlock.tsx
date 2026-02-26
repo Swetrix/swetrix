@@ -1,5 +1,6 @@
 import { CheckIcon, CopyIcon } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 const highlightHTML = (code: string): React.ReactNode[] => {
@@ -81,6 +82,7 @@ interface CodeBlockProps {
 }
 
 const CodeBlock = ({ code, onCopy }: CodeBlockProps) => {
+  const { t } = useTranslation('common')
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -90,7 +92,7 @@ const CodeBlock = ({ code, onCopy }: CodeBlockProps) => {
       onCopy?.()
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      toast.error('Failed to copy')
+      toast.error(t('common.failedToCopy'))
     }
   }
 
@@ -109,12 +111,12 @@ const CodeBlock = ({ code, onCopy }: CodeBlockProps) => {
         {copied ? (
           <>
             <CheckIcon className='size-3.5' />
-            Copied
+            {t('common.copied')}
           </>
         ) : (
           <>
             <CopyIcon className='size-3.5' />
-            Copy
+            {t('common.copy')}
           </>
         )}
       </button>
