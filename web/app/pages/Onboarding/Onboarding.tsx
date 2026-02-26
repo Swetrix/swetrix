@@ -60,7 +60,6 @@ import {
   siSolid,
   siSquarespace,
   siSvelte,
-  siVite,
   siVitepress,
   siVuedotjs,
   siWebflow,

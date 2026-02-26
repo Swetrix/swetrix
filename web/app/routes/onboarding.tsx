@@ -8,7 +8,6 @@ import { data, redirect } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
-import { isSelfhosted } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Project } from '~/lib/models/Project'
 import { User } from '~/lib/models/User'

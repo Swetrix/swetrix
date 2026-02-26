@@ -34,6 +34,7 @@ import { DataSource } from 'typeorm'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
+import { PlanCode } from '../user/entities/user.entity'
 import {
   AnalyticsService,
   getLowestPossibleTimeBucket,
@@ -214,6 +215,13 @@ export class ExperimentController {
     const experimentsCount = await this.experimentService.count({
       where: { project: { id: experimentDto.pid } },
     })
+
+    if (user.planCode === PlanCode.none) {
+      throw new HttpException(
+        'You cannot create new experiments due to no active subscription. Please upgrade your account plan to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
 
     if (user.isAccountBillingSuspended) {
       throw new HttpException(

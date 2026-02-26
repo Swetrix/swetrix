@@ -2272,7 +2272,7 @@
     "termsAndConditions": "Terms and Conditions",
     "gaAlternative": "Cookieless Google Analytics alternative",
     "projectWithPassword": "Website analytics - password required",
-    "checkout": "Checkout"
+    "subscribe": "Start your free trial"
   },
   "description": {
     "default": "Swetrix is a privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.",

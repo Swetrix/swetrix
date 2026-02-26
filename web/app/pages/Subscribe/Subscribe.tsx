@@ -5,7 +5,7 @@ import {
   ShieldCheckIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
@@ -35,7 +35,7 @@ const formatEventsLong = (value: number, locale = 'en-US') =>
 const Subscribe = () => {
   const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
-  const { user } = useAuth()
+  const { user, loadUser } = useAuth()
   const navigate = useNavigate()
   const { metainfo } = useLoaderData<SubscribeLoaderData>()
 
@@ -73,14 +73,39 @@ const Subscribe = () => {
   const displayPrice =
     selectedBillingFrequency === 'yearly' ? yearlyPrice : monthlyPrice
 
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
   useEffect(() => {
-    if (hasCompletedCheckout) {
-      const timer = setTimeout(() => {
+    if (!hasCompletedCheckout) return
+
+    let attempts = 0
+    const MAX_POLL_ATTEMPTS = 30
+
+    pollRef.current = setInterval(async () => {
+      attempts += 1
+
+      try {
+        const freshUser = await loadUser()
+
+        if (freshUser?.planCode && freshUser.planCode !== 'none') {
+          if (pollRef.current) clearInterval(pollRef.current)
+          navigate(routes.dashboard)
+          return
+        }
+      } catch {
+        // ignore, keep polling
+      }
+
+      if (attempts >= MAX_POLL_ATTEMPTS) {
+        if (pollRef.current) clearInterval(pollRef.current)
         navigate(routes.dashboard)
-      }, 2000)
-      return () => clearTimeout(timer)
+      }
+    }, 2000)
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
     }
-  }, [hasCompletedCheckout, navigate])
+  }, [hasCompletedCheckout, navigate, loadUser])
 
   const handleStartCheckout = () => {
     if (paddleLoadError) {

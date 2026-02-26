@@ -171,6 +171,13 @@ export class AlertController {
       where: { project: { id: In(pids) } },
     })
 
+    if (user.planCode === PlanCode.none) {
+      throw new HttpException(
+        'You cannot create new alerts due to no active subscription. Please upgrade your account plan to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
     if (user.isAccountBillingSuspended) {
       throw new HttpException(
         'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',

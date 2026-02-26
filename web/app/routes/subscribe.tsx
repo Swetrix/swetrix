@@ -22,7 +22,7 @@ export const meta: MetaFunction = () => {
   const { t } = useTranslation('common')
 
   return [
-    ...getTitle(t('titles.checkout')),
+    ...getTitle(t('titles.subscribe')),
     ...getDescription(t('description.checkout')),
     ...getPreviewImage(),
   ]
@@ -53,8 +53,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/onboarding')
   }
 
-  // If the user already has a paid subscription, skip checkout
-  if (user?.planCode && user.planCode !== 'trial' && user.planCode !== 'none') {
+  // If the user already has an active subscription or legacy trial, skip checkout
+  if (user?.planCode && user.planCode !== 'none') {
     if (cookies.length > 0) {
       return redirect('/dashboard', {
         headers: createHeadersWithCookies(cookies),

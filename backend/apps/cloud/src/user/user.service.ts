@@ -438,7 +438,7 @@ export class UserService {
       return false
     }
 
-    return ![(PlanCode.none, PlanCode.free, PlanCode.trial)].includes(
+    return ![PlanCode.none, PlanCode.free, PlanCode.trial].includes(
       user.planCode,
     )
   }
@@ -455,20 +455,14 @@ export class UserService {
     })
   }
 
-  async cancelSubscription(id: string) {
-    const user = await this.findOne({ where: { id } })
-
-    if (!user?.subID) {
-      throw new BadRequestException('No active subscription found')
-    }
-
+  async cancelSubscription(subID: string) {
     const url = 'https://vendors.paddle.com/api/2.0/subscription/users/cancel'
 
     try {
       const result = await axios.post(url, {
         vendor_id: Number(PADDLE_VENDOR_ID),
         vendor_auth_code: PADDLE_API_KEY,
-        subscription_id: Number(user.subID),
+        subscription_id: Number(subID),
       })
 
       if (!result.data?.success) {

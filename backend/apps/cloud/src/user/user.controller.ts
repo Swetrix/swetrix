@@ -9,7 +9,6 @@ import {
   Delete,
   HttpCode,
   BadRequestException,
-  ForbiddenException,
   UseGuards,
   ConflictException,
   Headers,
@@ -757,7 +756,11 @@ export class UserController {
       throw new BadRequestException('No paid subscription to cancel')
     }
 
-    await this.userService.cancelSubscription(id)
+    if (!user.subID) {
+      throw new BadRequestException('No active subscription found')
+    }
+
+    await this.userService.cancelSubscription(user.subID)
 
     if (body.feedback) {
       try {
