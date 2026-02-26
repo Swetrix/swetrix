@@ -49,8 +49,8 @@ interface PlanSignature {
 export const ACCOUNT_PLANS = {
   [PlanCode.none]: {
     id: PlanCode.none,
-    monthlyUsageLimit: 10000000,
-    maxAlerts: 50,
+    monthlyUsageLimit: 0,
+    maxAlerts: 0,
     pid: null,
     ypid: null,
   },
