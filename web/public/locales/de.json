@@ -122,7 +122,9 @@
     "quit": "Verlassen",
     "enable": "Aktivieren",
     "disable": "Deaktivieren",
+    "copy": "Kopieren",
     "copied": "Kopiert",
+    "failedToCopy": "Kopieren fehlgeschlagen",
     "new": "Neu",
     "all": "Alle",
     "active": "Aktiv",
@@ -767,7 +769,6 @@
       "testimonial": "„Swetrix war ein echter Game-Changer für unsere Analytics. Sie waren bei Feature-Wünschen immer dran und dabei bei jedem Schritt freundlich.“"
     },
     "signup": {
-      "button": "Weiter zur Kasse",
       "tos": "Ich akzeptiere die <tos>Allgemeinen Geschäftsbedingungen</tos> und die <pp>Datenschutzerklärung</pp>.",
       "create": "Erstellen Sie ihr Konto",
       "trial": "Starten Sie Ihre kostenlose {{amount}}-Tage Testversion",
@@ -2084,12 +2085,10 @@
     "yearlyBilling": "Jährlich",
     "billedYearly": "Jährlich abgerechnet",
     "switchToMonthly": "Zu monatlicher Abrechnung wechseln",
-    "payYearly": "Jährlich bezahlen (2 Monate kostenlos)",
     "upToXEvents": "Bis zu {{amount}} monatliche Ereignisse.",
     "frequency": "Zahlungsfrequenz",
     "eventsPerMonth": "Ereignisse / Monat",
     "switchToYearly": "Zu jährlicher Abrechnung wechseln",
-    "xMonthsFree": "{{amount}} Monate kostenlos",
     "trialEnded": "Testversion abgelaufen",
     "overXEvents": "Über {{amount}} Ereignisse",
     "contactUs": "Kontaktieren Sie uns",
@@ -2139,16 +2138,13 @@
   },
   "checkout": {
     "title": "Kostenlose Testversion starten",
-    "subtitle": "Fügen Sie Zahlungsdetails hinzu, um Ihre {{days}}-tägige kostenlose Testversion zu starten. Es wird Ihnen erst nach Ablauf der Testphase etwas berechnet und Sie können jederzeit kündigen.",
-    "noChargeToday": "Ihre Karte wird heute nicht belastet.",
     "willRemind": "Wir erinnern Sie, bevor Ihre Testphase endet",
     "freeTrialAnytime": "{{days}} Tage kostenlos testen, jederzeit kündbar",
     "dueEnd": "Fällig am {{date}}",
     "dueToday": "Heute fällig ({{days}} Tage kostenlos)",
-    "free": "$0",
     "next": "Kostenlos testen",
     "selectPlan": "Wählen Sie Ihren Plan",
-    "termsDesc": "Indem Sie fortfahren, stimmen Sie den für Swetrix geltenden Nutzungsbedingungen zu und bestätigen, dass Sie unsere <privacy>Datenschutzrichtlinie</privacy> gelesen haben."
+    "termsDesc": "Wenn Sie fortfahren, stimmen Sie den für Swetrix geltenden <tos>Nutzungsbedingungen</tos> zu und bestätigen, dass Sie unsere <privacy>Datenschutzrichtlinie</privacy> gelesen haben."
   },
   "onboarding": {
     "welcome": "Willkommen bei Swetrix",
@@ -2183,9 +2179,6 @@
       }
     },
     "selectPlan": {
-      "title": "Fügen Sie Ihre Zahlungsdetails hinzu",
-      "subtitle": "Ihre Karte wird erst nach Ablauf Ihrer {{days}}-tägigen Testversion belastet und Sie können davor jederzeit kündigen.",
-      "startTrial": "Kostenlos testen",
       "timeline": {
         "today": "Heute",
         "todayDesc": "Starten Sie Ihre kostenlose Testversion mit vollem Zugriff auf alle Funktionen",
@@ -2194,24 +2187,6 @@
         "charge": "Tag {{days}}",
         "chargeDesc": "Ihr Abonnement beginnt, es sei denn, Sie kündigen vorher"
       }
-    },
-    "confirm": {
-      "navTitle": "Bestätigen Sie Ihre E‑Mail-Adresse",
-      "navDesc": "Prüfen Sie Ihren Posteingang und klicken Sie auf den Bestätigungslink.",
-      "title": "Nur noch ein Schritt, dann kann es losgehen! 🚀",
-      "emailVerification": "E-Mail-Verifizierung",
-      "verifyTitle": "Bitte bestätigen Sie Ihre E-Mail-Adresse",
-      "linkSent": "Wir haben eine E-Mail an <email>{{email}}</email> gesendet. Bitte bestätigen Sie Ihre E-Mail-Adresse, um fortzufahren.",
-      "didNotReceive": "Keine E-Mail erhalten?",
-      "resend": "Erneut senden",
-      "emailResent": "Angefordert",
-      "troubleOrChange": "Haben Sie Probleme oder möchten Sie Ihre E-Mail-Adresse ändern?",
-      "logoutAndRegister": "Abmelden und erneut registrieren",
-      "letsGo": "Los geht’s!",
-      "emailVerified": "Ihre E-Mail-Adresse ist verifiziert",
-      "spam": "Sie sehen die E‑Mail nicht? Bitte prüfen Sie Ihren Spamordner.",
-      "wrongEmail": "Falsche E‑Mail? <url>Erstellen Sie ein neues Konto.</url>",
-      "checkVerification": "Ich habe meine E-Mail-Adresse verifiziert"
     },
     "createProject": {
       "navTitle": "Projekt erstellen",
@@ -2227,7 +2202,35 @@
       "desc": "Fügen Sie das Swetrix‑Skript zu Ihrer Website hinzu. Sie können Swetrix auch zur Erfassung von Ereignissen in Ihren mobilen oder Desktop‑Apps verwenden und Ereignisse direkt an unsere API senden. Erfahren Sie mehr über erweiterte Integrationen in unserer <url>Dokumentation</url>.",
       "websiteInstallation": "Website‑Installation",
       "pasteScript": "Fügen Sie das Skript auf Ihrer Website ein",
-      "weAlsoSupport": "Wir unterstützen auch die Installation von Swetrix über NPM (für React, Vue usw.), stellen eine Events‑API bereit, um Ereignisse direkt an unsere API zu senden, sowie viele Integrationen mit anderen Diensten wie WordPress oder dem Google Tag Manager. <url>Mehr erfahren</url>."
+      "weAlsoSupport": "Wir unterstützen auch die Installation von Swetrix über NPM (für React, Vue usw.), stellen eine Events‑API bereit, um Ereignisse direkt an unsere API zu senden, sowie viele Integrationen mit anderen Diensten wie WordPress oder dem Google Tag Manager. <url>Mehr erfahren</url>.",
+      "optional": "Dieser Schritt ist optional — Sie können das Tracking jederzeit später in Ihren Projekteinstellungen einrichten.",
+      "skipForNow": "Vorerst überspringen",
+      "tabs": {
+        "script": "Skript",
+        "npm": "NPM",
+        "tagManager": "Tag Manager",
+        "platforms": "Plattformen"
+      },
+      "npm": {
+        "title": "NPM-Paket",
+        "desc": "Für React, Vue, Angular und andere JS-Frameworks.",
+        "step1": "1. Installieren Sie das Paket",
+        "step2": "2. Importieren und initialisieren",
+        "entryFileHint": "Fügen Sie dies der Einstiegsdatei Ihrer App hinzu (z. B. <codeA>index.js</codeA> oder <codeB>App.js</codeB>). <url>Vollständige Dokumentation ansehen</url>"
+      },
+      "gtm": {
+        "title": "Google Tag Manager",
+        "desc": "Fügen Sie Swetrix über GTM hinzu, ohne Ihren Code zu ändern.",
+        "step1": "1. Ihre Projekt-ID",
+        "step2": "2. Erstellen Sie ein benutzerdefiniertes HTML-Tag in GTM mit diesem Code",
+        "step3": "3. Setzen Sie den Trigger auf \"All Pages\" (Alle Seiten) und veröffentlichen Sie",
+        "viewGuide": "Vollständigen GTM-Guide ansehen"
+      },
+      "platforms": {
+        "title": "Plattform-Guides",
+        "desc": "Schritt-für-Schritt-Integrationsanleitungen für beliebte Plattformen.",
+        "viewAll": "Alle Integrationen ansehen"
+      }
     },
     "verifyInstallation": {
       "navTitle": "Installation überprüfen",
