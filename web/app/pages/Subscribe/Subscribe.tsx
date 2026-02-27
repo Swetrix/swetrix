@@ -2,7 +2,6 @@ import {
   RocketLaunchIcon,
   BellIcon,
   CreditCardIcon,
-  ShieldCheckIcon,
   CheckIcon,
   StarIcon,
 } from '@phosphor-icons/react'
@@ -317,14 +316,14 @@ const Subscribe = () => {
 
           <div className='pt-2'>
             {hasCompletedCheckout ? (
-              <div className='rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center dark:border-emerald-800 dark:bg-emerald-900/20'>
+              <div className='rounded-lg border border-green-200 bg-green-50 p-4 text-center dark:border-green-800 dark:bg-green-900/20'>
                 <div className='flex items-center justify-center gap-2'>
-                  <ShieldCheckIcon className='size-5 text-emerald-600 dark:text-emerald-400' />
+                  <CheckIcon className='size-5 text-green-600 dark:text-green-400' />
                   <Text
                     as='p'
                     size='sm'
                     weight='semibold'
-                    className='text-emerald-700 dark:text-emerald-300'
+                    className='text-green-700 dark:text-green-300'
                   >
                     {t('common.success')}! {t('common.redirecting')}
                   </Text>
