@@ -4,6 +4,7 @@ import {
   CreditCardIcon,
   ShieldCheckIcon,
   CheckIcon,
+  StarIcon,
 } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -397,7 +398,7 @@ const Subscribe = () => {
 
         {/* Right Column (Timeline) */}
         <div className='hidden lg:block lg:pt-16'>
-          <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-900/80 dark:ring-slate-800'>
+          <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 ring-inset dark:bg-slate-900/80 dark:ring-slate-800'>
             <div className='flex items-start gap-5'>
               <div className='relative flex flex-col items-center'>
                 <div className='flex size-8 items-center justify-center'>
@@ -460,6 +461,49 @@ const Subscribe = () => {
                 </Text>
               </div>
             </div>
+          </div>
+
+          <div className='mt-6 rounded-lg bg-white p-6 ring-1 ring-gray-200 ring-inset dark:bg-slate-900/80 dark:ring-slate-800'>
+            <div className='mb-3 flex items-center gap-1'>
+              <StarIcon className='size-5 text-yellow-500' weight='fill' />
+              <StarIcon className='size-5 text-yellow-500' weight='fill' />
+              <StarIcon className='size-5 text-yellow-500' weight='fill' />
+              <StarIcon className='size-5 text-yellow-500' weight='fill' />
+              <StarIcon className='size-5 text-yellow-500' weight='fill' />
+            </div>
+            <blockquote>
+              <Text
+                as='p'
+                size='sm'
+                className='leading-relaxed text-gray-700 dark:text-gray-300'
+              >
+                {t('auth.signup.testimonial')}
+              </Text>
+              <footer className='mt-4 flex items-center gap-3'>
+                <img
+                  src='/assets/users/alper-phalcode.jpg'
+                  alt='Alper Alkan'
+                  className='size-10 rounded-full ring-2 ring-gray-100 dark:ring-slate-800'
+                />
+                <div>
+                  <Text
+                    as='p'
+                    size='sm'
+                    weight='medium'
+                    className='text-gray-900 dark:text-white'
+                  >
+                    Alper Alkan
+                  </Text>
+                  <Text
+                    as='p'
+                    size='xs'
+                    className='text-gray-500 dark:text-slate-400'
+                  >
+                    Co-founder of Phalcode
+                  </Text>
+                </div>
+              </footer>
+            </blockquote>
           </div>
         </div>
       </div>
