@@ -616,7 +616,7 @@ const Signin = () => {
         </div>
       </div>
 
-      <div className='relative hidden overflow-hidden bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-2/5 lg:flex-col lg:justify-between dark:from-slate-900 dark:to-slate-950'>
+      <div className='relative m-3 hidden overflow-hidden rounded-lg bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-2/5 lg:flex-col lg:justify-between dark:from-slate-900 dark:to-slate-950'>
         <div className='absolute -top-24 -right-24 size-96 rounded-full bg-indigo-500/20 blur-3xl' />
         <div className='absolute -bottom-24 -left-24 size-96 rounded-full bg-slate-500/20 blur-3xl' />
 
