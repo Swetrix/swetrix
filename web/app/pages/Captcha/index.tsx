@@ -115,13 +115,13 @@ const Captcha = () => {
   return (
     <div className='overflow-hidden'>
       <main className='bg-gray-50 dark:bg-slate-950'>
-        <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-800/50'>
+        <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-900/50'>
           <div className='relative mx-2 overflow-hidden rounded-4xl'>
             <div
               aria-hidden
               className='pointer-events-none absolute inset-0 -z-10'
             >
-              <div className='absolute inset-0 rounded-4xl bg-linear-115 from-indigo-200 from-15% via-purple-400 via-70% to-indigo-700 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-600 dark:opacity-60' />
+              <div className='absolute inset-0 rounded-4xl bg-linear-115 from-slate-100 from-45% via-emerald-400 via-80% to-emerald-700 opacity-40 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-950 dark:opacity-35 dark:ring-white/10' />
             </div>
             <Header transparent />
             <section className='mx-auto max-w-7xl px-4 pt-10 pb-20 sm:px-3 lg:px-6 lg:pt-20 xl:px-8'>
@@ -138,7 +138,7 @@ const Captcha = () => {
                     i18nKey='captchaPage.slogan'
                     components={{
                       span: (
-                        <span className='bg-linear-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400' />
+                        <span className='bg-linear-to-r from-emerald-700 to-green-700 bg-clip-text text-transparent dark:from-emerald-400 dark:to-green-400' />
                       ),
                     }}
                   />
@@ -181,9 +181,9 @@ const Captcha = () => {
           <div className='mt-16 grid gap-8 sm:grid-cols-2 lg:gap-12'>
             {_map(features, (feature) => (
               <div key={feature.titleKey} className='relative flex gap-4'>
-                <div className='flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/30'>
+                <div className='flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30'>
                   <feature.icon
-                    className='h-7 w-7 text-indigo-600 dark:text-indigo-400'
+                    className='h-7 w-7 text-emerald-600 dark:text-emerald-400'
                     aria-hidden='true'
                   />
                 </div>
@@ -220,7 +220,7 @@ const Captcha = () => {
 
           <div className='mt-16 grid gap-8 md:grid-cols-3'>
             <div className='relative text-center'>
-              <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 text-2xl font-bold text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'>
+              <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'>
                 1
               </div>
               <Text as='h3' size='lg' weight='semibold' className='mt-6'>
@@ -231,7 +231,7 @@ const Captcha = () => {
               </Text>
             </div>
             <div className='relative text-center'>
-              <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 text-2xl font-bold text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'>
+              <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'>
                 2
               </div>
               <Text as='h3' size='lg' weight='semibold' className='mt-6'>
@@ -242,7 +242,7 @@ const Captcha = () => {
               </Text>
             </div>
             <div className='relative text-center'>
-              <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 text-2xl font-bold text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'>
+              <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'>
                 3
               </div>
               <Text as='h3' size='lg' weight='semibold' className='mt-6'>
@@ -267,7 +267,7 @@ const Captcha = () => {
           </div>
         </div>
 
-        <div className='bg-gray-100 py-20 dark:bg-slate-800/50'>
+        <div className='bg-gray-100 py-20 dark:bg-slate-900/50'>
           <div className='mx-auto max-w-7xl px-4'>
             <div className='grid gap-12 lg:grid-cols-2 lg:gap-16'>
               <div className='flex flex-col justify-center'>
@@ -276,7 +276,7 @@ const Captcha = () => {
                   size='sm'
                   weight='semibold'
                   tracking='wide'
-                  className='text-indigo-600 uppercase dark:text-indigo-400'
+                  className='text-emerald-600 uppercase dark:text-emerald-400'
                 >
                   {t('captchaPage.demo.tagline')}
                 </Text>
