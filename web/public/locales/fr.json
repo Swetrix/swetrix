@@ -2137,7 +2137,9 @@
     }
   },
   "checkout": {
-    "title": "Commencer votre essai gratuit",
+    "title": "Commencez à suivre votre croissance dès aujourd'hui",
+    "subtitle": "Profitez d'un essai gratuit de {{days}} jours offert. Annulez à tout moment.",
+    "realTimeAnalytics": "Analyses sans cookies en temps réel",
     "willRemind": "Nous vous le rappellerons avant la fin de votre essai",
     "freeTrialAnytime": "Essai gratuit de {{days}} jours, annulez à tout moment",
     "dueEnd": "Dû le {{date}}",
@@ -2272,7 +2274,7 @@
     "termsAndConditions": "Conditions générales",
     "gaAlternative": "Alternative à Google Analytics sans cookies",
     "projectWithPassword": "Analyse du site web – mot de passe requis",
-    "checkout": "Paiement"
+    "subscribe": "Commencez votre essai gratuit"
   },
   "description": {
     "default": "Swetrix est une alternative à Google Analytics, respectueuse de la vie privée et sans cookies, avec des analyses en temps réel, sans échantillonnage, et un suivi intégré des performances et des erreurs.",

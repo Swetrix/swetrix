@@ -188,6 +188,9 @@ const Subscribe = () => {
             <Text as='h1' size='4xl' weight='bold' tracking='tight'>
               {t('checkout.title')}
             </Text>
+            <Text as='p' size='lg' colour='secondary' className='mt-2'>
+              {t('checkout.subtitle', { days: TRIAL_DAYS })}
+            </Text>
 
             <div className='mt-6 flex flex-col gap-3'>
               <div className='flex items-center gap-3'>
@@ -196,7 +199,7 @@ const Subscribe = () => {
                   weight='bold'
                 />
                 <Text as='p' size='base'>
-                  {t('checkout.freeTrialAnytime', { days: TRIAL_DAYS })}
+                  {t('auth.signup.features.realTimeAnalytics')}
                 </Text>
               </div>
               <div className='flex items-center gap-3'>

@@ -2137,7 +2137,9 @@
     }
   },
   "checkout": {
-    "title": "Start your free trial",
+    "title": "Start tracking your growth today",
+    "subtitle": "Enjoy a {{days}}-day free trial on us. Cancel anytime.",
+    "realTimeAnalytics": "Real-time cookieless analytics",
     "willRemind": "We'll remind you before your trial ends",
     "freeTrialAnytime": "Free {{days}} day trial, cancel any time",
     "dueEnd": "Due {{date}}",

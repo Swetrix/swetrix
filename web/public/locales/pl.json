@@ -2137,7 +2137,9 @@
     }
   },
   "checkout": {
-    "title": "Rozpocznij darmowy okres próbny",
+    "title": "Rozpocznij śledzenie swojego rozwoju już dziś",
+    "subtitle": "Skorzystaj z darmowego {{days}}-dniowego okresu próbnego na nasz koszt. Anuluj w dowolnym momencie.",
+    "realTimeAnalytics": "Analityka w czasie rzeczywistym bez plików cookie",
     "willRemind": "Przypomnimy Ci przed zakończeniem okresu próbnego",
     "freeTrialAnytime": "Darmowy {{days}}-dniowy okres próbny, anuluj w dowolnym momencie",
     "dueEnd": "Do zapłaty: {{date}}",
@@ -2272,7 +2274,7 @@
     "termsAndConditions": "Regulamin",
     "gaAlternative": "Alternatywa dla Google Analytics bez plików cookie",
     "projectWithPassword": "Analityka strony – wymagane hasło",
-    "checkout": "Płatność"
+    "subscribe": "Rozpocznij darmowy okres próbny"
   },
   "description": {
     "default": "Swetrix to alternatywa dla Google Analytics, stawiająca prywatność na pierwszym miejscu i niewymagająca plików cookie, z analizą w czasie rzeczywistym, bez próbkowania oraz z wbudowanym monitorowaniem wydajności i błędów.",
