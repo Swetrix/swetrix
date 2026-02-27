@@ -100,7 +100,7 @@ const CodeBlock = ({ code, onCopy }: CodeBlockProps) => {
 
   return (
     <div className='group relative'>
-      <pre className='overflow-x-auto rounded-lg bg-white p-4 font-mono text-xs leading-relaxed ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-700'>
+      <pre className='overflow-x-auto rounded-lg bg-white p-4 font-mono text-xs leading-relaxed text-gray-800 ring-1 ring-gray-200 dark:bg-slate-950 dark:text-gray-200 dark:ring-slate-700'>
         <code>{highlighted}</code>
       </pre>
       <button

@@ -310,7 +310,7 @@ const Revenue = ({ projectId }: Props) => {
                         href={providerConfig.apiKeyCreateUrl}
                         target='_blank'
                         rel='noreferrer noopener'
-                        className='inline-flex items-center font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                        className='inline-flex items-center font-medium underline decoration-dashed hover:decoration-solid'
                       >
                         {providerConfig.label}{' '}
                         {t('project.settings.revenue.dashboard')}
@@ -386,7 +386,7 @@ const Revenue = ({ projectId }: Props) => {
           href={DOCS_URL}
           target='_blank'
           rel='noreferrer noopener'
-          className='inline-flex items-center text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+          className='inline-flex items-center text-sm font-medium underline decoration-dashed hover:decoration-solid'
         >
           <ArrowSquareOutIcon className='mr-1.5 h-4 w-4' />
           {t('project.settings.revenue.learnMore')}

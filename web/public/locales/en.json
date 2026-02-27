@@ -1563,7 +1563,26 @@
     },
     "waitingCaptcha": {
       "title": "No CAPTCHA events yet",
-      "desc": "You haven't tracked any CAPTCHA events yet.\nSee our <guideurl>integration guide</guideurl> to learn more about how to use it in your application.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "desc": "You haven't tracked any CAPTCHA events yet.\nSee our <guideurl>integration guide</guideurl> to learn more about how to use it in your application.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup.",
+      "setup": {
+        "tabs": {
+          "script": "Script",
+          "validation": "Server validation"
+        },
+        "script": {
+          "title": "Widget installation",
+          "desc": "Add the CAPTCHA widget to your website forms.",
+          "step1": "1. Add the loader script to your page's <headTag></headTag>",
+          "step2": "2. Add the widget to your form",
+          "docsHint": "See the <url>full documentation</url> for customisation options like theming, language, and more."
+        },
+        "validation": {
+          "title": "Server-side validation",
+          "desc": "Verify CAPTCHA tokens on your backend.",
+          "step1": "Generate a secret key in your project settings, then verify tokens via our API.",
+          "docsHint": "See the <url>server-side validation docs</url> for implementation details."
+        }
+      }
     },
     "waitingError": {
       "title": "No errors yet",

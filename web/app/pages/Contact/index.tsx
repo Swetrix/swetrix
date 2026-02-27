@@ -51,19 +51,19 @@ const Contact = () => {
               mail: (
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
-                  className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                  className='font-medium underline decoration-dashed hover:decoration-solid'
                 />
               ),
               twitter: (
                 <a
                   href={TWITTER_URL}
-                  className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                  className='font-medium underline decoration-dashed hover:decoration-solid'
                 />
               ),
               discord: (
                 <a
                   href={DISCORD_URL}
-                  className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                  className='font-medium underline decoration-dashed hover:decoration-solid'
                 />
               ),
             }}

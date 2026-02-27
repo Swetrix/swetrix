@@ -1556,7 +1556,10 @@ const UserSettings = () => {
                         ) : null}
                       </div>
 
-                      <div id='checkout-container' className='checkout-container mt-4' />
+                      <div
+                        id='checkout-container'
+                        className='checkout-container mt-4'
+                      />
                     </SettingsSection>
                   </>
                 )}

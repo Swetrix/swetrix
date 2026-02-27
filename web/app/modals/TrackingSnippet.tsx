@@ -91,7 +91,7 @@ const TrackingSnippet = ({ onClose, isOpened }: TrackingSnippetProps) => {
                 pdocs: (
                   <a
                     href={SCRIPT_DOCS_URL}
-                    className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                    className='font-medium underline decoration-dashed hover:decoration-solid'
                     target='_blank'
                     rel='noreferrer noopener'
                   />

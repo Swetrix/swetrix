@@ -493,7 +493,7 @@ const BillingPricing = ({
                       <a
                         title={`Email us at ${CONTACT_EMAIL}`}
                         href={`mailto:${CONTACT_EMAIL}`}
-                        className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                        className='font-medium underline decoration-dashed hover:decoration-solid'
                       />
                     ),
                   }}
