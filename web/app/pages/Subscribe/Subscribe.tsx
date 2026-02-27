@@ -47,17 +47,14 @@ const Subscribe = () => {
   const [showAllPlans, setShowAllPlans] = useState(false)
 
   const [hasCompletedCheckout, setHasCompletedCheckout] = useState(false)
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
 
   const onPaddleEvent = useCallback(
     (eventData: any) => {
       if (eventData?.event === 'Checkout.Complete') {
         setHasCompletedCheckout(true)
-      } else if (eventData?.event === 'Checkout.Close') {
-        setIsCheckoutOpen(false)
       }
     },
-    [setIsCheckoutOpen, setHasCompletedCheckout],
+    [setHasCompletedCheckout],
   )
 
   const { isPaddleLoaded, paddleLoadError, openCheckout } = usePaddle({
@@ -140,11 +137,6 @@ const Subscribe = () => {
 
     const opened = openCheckout({
       product,
-      method: 'inline',
-      frameTarget: 'checkout-container',
-      frameInitialHeight: 416,
-      frameStyle:
-        'width:100%; min-width:312px; background-color: transparent; border: none; border-radius: 10px;',
       email: user?.email,
       passthrough: JSON.stringify({ uid: user?.id }),
       locale: paddleLanguageMapping[i18n.language] || i18n.language,
@@ -153,18 +145,8 @@ const Subscribe = () => {
     })
 
     if (!opened) {
-      setIsCheckoutOpen(false)
       toast.error(t('apiNotifications.somethingWentWrong'))
-      return
     }
-
-    setIsCheckoutOpen(true)
-
-    setTimeout(() => {
-      document
-        .querySelector('#checkout-container')
-        ?.scrollIntoView({ behavior: 'smooth' })
-    }, 500)
   }
 
   const trialEndDate = user?.trialEndDate
@@ -350,50 +332,44 @@ const Subscribe = () => {
               </div>
             ) : (
               <>
-                {!isCheckoutOpen && (
-                  <Button
-                    className='w-full justify-center'
-                    onClick={handleStartCheckout}
-                    primary
-                    giant
-                  >
-                    {t('checkout.next')}
-                  </Button>
-                )}
+                <Button
+                  className='w-full justify-center'
+                  onClick={handleStartCheckout}
+                  primary
+                  giant
+                >
+                  {t('checkout.next')}
+                </Button>
 
-                <div id='checkout-container' className='min-h-0 w-full' />
-
-                {!isCheckoutOpen && (
-                  <Text
-                    as='p'
-                    size='xs'
-                    colour='muted'
-                    className='mt-4 text-center'
-                  >
-                    <Trans
-                      t={t}
-                      i18nKey='checkout.termsDesc'
-                      components={{
-                        privacy: (
-                          <a
-                            href={routes.privacy}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='font-medium underline decoration-dashed hover:decoration-solid'
-                          />
-                        ),
-                        tos: (
-                          <a
-                            href={routes.terms}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='font-medium underline decoration-dashed hover:decoration-solid'
-                          />
-                        ),
-                      }}
-                    />
-                  </Text>
-                )}
+                <Text
+                  as='p'
+                  size='xs'
+                  colour='muted'
+                  className='mt-4 text-center'
+                >
+                  <Trans
+                    t={t}
+                    i18nKey='checkout.termsDesc'
+                    components={{
+                      privacy: (
+                        <a
+                          href={routes.privacy}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='font-medium underline decoration-dashed hover:decoration-solid'
+                        />
+                      ),
+                      tos: (
+                        <a
+                          href={routes.terms}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='font-medium underline decoration-dashed hover:decoration-solid'
+                        />
+                      ),
+                    }}
+                  />
+                </Text>
               </>
             )}
           </div>
