@@ -1035,14 +1035,16 @@ const UserSettings = () => {
                         title={t('profileSettings.confirmEmail')}
                         description={t('profileSettings.confirmEmailDesc')}
                       >
-                        <button
-                          type='button'
-                          className='flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
-                          onClick={onEmailConfirm}
-                        >
-                          <EnvelopeIcon className='mr-2 h-5 w-5' />
-                          {t('profileSettings.noLink')}
-                        </button>
+                        <Text as='p' size='sm' className='mb-3'>
+                          <button
+                            type='button'
+                            className='inline-flex items-center underline decoration-dashed hover:decoration-solid'
+                            onClick={onEmailConfirm}
+                          >
+                            <EnvelopeIcon className='mr-2 size-4' />
+                            {t('profileSettings.noLink')}
+                          </button>
+                        </Text>
                       </SettingsSection>
                     ) : null}
                   </>

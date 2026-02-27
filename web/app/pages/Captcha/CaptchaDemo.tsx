@@ -268,7 +268,7 @@ const CaptchaDemo = () => {
             href={`${DOCS_URL}/captcha/introduction`}
             target='_blank'
             rel='noopener noreferrer'
-            className='inline-flex items-center text-base font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+            className='inline-flex items-center text-base font-medium underline decoration-dashed hover:decoration-solid'
           >
             {t('captchaPage.demoPage.learnMore')}
             <ArrowRightIcon className='ml-2 h-4 w-4' />

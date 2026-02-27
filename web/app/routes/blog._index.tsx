@@ -9,6 +9,7 @@ import { redirect, Link, useLoaderData } from 'react-router'
 import { getBlogPosts } from '~/api/api.server'
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+import { Text } from '~/ui/Text'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted || isDisableMarketingPages) {
@@ -93,13 +94,15 @@ export default function Posts() {
                       </dd>
                     </dl>
                   </div>
-                  <Link
-                    className='underline-animate flex max-w-max items-center text-sm font-medium text-indigo-600 dark:text-gray-50'
-                    to={post.slug}
-                  >
-                    <span className='relative'>Read more</span>
-                    <CaretRightIcon className='relative mt-px ml-0.5 size-4 overflow-visible' />
-                  </Link>
+                  <Text as='p' size='sm'>
+                    <Link
+                      className='flex max-w-max items-center text-sm font-medium underline decoration-dashed hover:decoration-solid'
+                      to={post.slug}
+                    >
+                      <span className='relative'>Read more</span>
+                      <CaretRightIcon className='relative mt-px ml-0.5 size-3 overflow-visible' />
+                    </Link>
+                  </Text>
                 </article>
               )
             })}

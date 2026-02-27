@@ -432,7 +432,7 @@ const Signin = () => {
                   <Text
                     as='div'
                     size='sm'
-                    colour='muted'
+                    colour='secondary'
                     className='whitespace-pre-line'
                   >
                     {!isSelfhosted ? (
@@ -443,7 +443,7 @@ const Signin = () => {
                           ctl: (
                             <Link
                               to={routes.contact}
-                              className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                              className='font-medium underline decoration-dashed hover:decoration-solid'
                             />
                           ),
                         }}

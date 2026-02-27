@@ -184,7 +184,7 @@ const NewFunnel = ({
               onClick={() => {
                 setSteps([...steps, createEmptyStep()])
               }}
-              className='mt-2 cursor-pointer text-indigo-600 hover:underline dark:text-indigo-400'
+              className='mt-2 cursor-pointer underline decoration-dashed hover:decoration-solid'
             >
               + {t('modals.funnels.addStep')}
             </button>
