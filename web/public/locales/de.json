@@ -600,7 +600,6 @@
     "understandTheirUsers": "<0>{{amount}}</0> Leute verstehen ihre Benutzer",
     "startAXDayFreeTrial": "Kostenlose {{amount}} Testtage",
     "metric": "Metrisch",
-    "coreFeatures": "Nur die Funktionen die Sie benötigen",
     "heroBenefits": {
       "trial": "Kostenlose Testversion für {{days}} Tage",
       "cookieless": "Tracking ohne Cookies",
@@ -608,68 +607,6 @@
       "openSource": "Open-Source",
       "selfHostable": "Selbst hostbar",
       "quickSetup": "Schnelle Einrichtung"
-    },
-    "web": {
-      "title": "Webanalyse",
-      "description": "Erhalten Sie alle Erkenntnisse, die Sie über Ihre Nutzer benötigen, mit einem datenschutzfreundlichen und einfach zu bedienenden Webanalyse-Tool.",
-      "features": [
-        "Top-Seiten",
-        "Geolokalisierung",
-        "Traffic-Quellen",
-        "UTM-Kampagnen",
-        "Benutzerdefinierte Ereignisse",
-        "Sitzungsanalyse",
-        "Absprungrate",
-        "Nutzerflüsse"
-      ]
-    },
-    "performance": {
-      "title": "Website-Geschwindigkeit und -Performance",
-      "description": "Überwachen Sie die Geschwindigkeit und Performance Ihrer Website anhand realer Nutzerinteraktionen."
-    },
-    "errors": {
-      "title": "Fehlerverfolgung",
-      "description": "Erhalten Sie detaillierte Einblicke, welche Arten von Fehlern auf Ihrer Website auftreten. Sehen Sie Fehlerdetails und aggregierte Daten nach Geolokalisierung, Browser, Gerätetyp, Seite und weiteren Metriken."
-    },
-    "sessions": {
-      "title": "Nutzersitzungen",
-      "description": "Erhalten Sie detaillierte Einblicke in die Reise Ihrer Nutzer durch Ihre Website und sehen Sie, wie sie damit interagieren. Verfolgen Sie, wie lange sie auf Ihrer Website geblieben sind, welche Aktionen sie durchgeführt haben und welche Seiten sie besucht haben.",
-      "features": [
-        "Sitzungsdauer",
-        "Geolokalisierung",
-        "Seitenaufruf-Fluss der Sitzung",
-        "Fehlerverfolgung",
-        "Informationen zu Browser und Betriebssystem",
-        "Benutzerdefinierte Ereignisse"
-      ]
-    },
-    "cookies": {
-      "title": "Vergessen Sie lästige Cookie-Banner",
-      "description": "Swetrix verwendet keinerlei Cookies für das Tracking, sodass Sie all diese nervigen Cookie-Banner vergessen können. Wir sammeln Analysedaten anonym, um die Privatsphäre Ihrer Benutzer zu respektieren. Wir sammeln keine persönlichen Identifikatoren und führen kein geräteübergreifendes Tracking durch."
-    },
-    "funnels": {
-      "title": "Trichter und Nutzerflüsse",
-      "description": "Verfolgen Sie, wie Nutzer auf Ihre Website gelangen und wohin sie weitergehen. Analysieren, visualisieren und verstehen Sie das Nutzerverhalten und die Nutzerreise."
-    },
-    "alerts": {
-      "title": "Ansprechbare Benachrichtigungen",
-      "description": "Werden Sie sofort informiert, wenn auf Ihrer Website etwas passiert. Lassen Sie sich über Telegram, Slack oder Discord benachrichtigen, wenn bestimmte Ereignisse eintreten."
-    },
-    "events": {
-      "title": "Benutzerdefinierte Ereignisse & Ziele",
-      "description": "Verfolgen Sie Nutzerinteraktionen wie Verkäufe, Registrierungen oder Klicks in Echtzeit. Legen Sie Conversion-Ziele fest, um den Erfolg zu messen, und erhalten Sie detaillierte Einblicke in die Nutzung Ihrer Website."
-    },
-    "revenue": {
-      "title": "Umsatzanalyse",
-      "description": "Verbinden Sie Ihren Zahlungsanbieter (Stripe, Paddle) und finden Sie heraus, welche Marketingkanäle zahlende Kunden bringen. Identifizieren Sie Kundensegmente mit dem höchsten LTV und verstehen Sie Muster, die Kaufentscheidungen beeinflussen."
-    },
-    "featureFlags": {
-      "title": "Feature-Flags",
-      "description": "Rollen Sie Features sicher aus – mit sofortigen Rollouts und Rollbacks. Zielgruppen lassen sich mit booleschen oder prozentbasierten Flags ansprechen, und Sie können die Performance jedes Flags nachverfolgen."
-    },
-    "experiments": {
-      "title": "A/B-Tests & Experimente",
-      "description": "Führen Sie datengestützte Experimente zur Optimierung der Conversions durch. Vergleichen Sie Varianten mit statistischer Sicherheit, verfolgen Sie Exposures und messen Sie die tatsächliche Wirkung Ihrer Änderungen."
     },
     "integrations": {
       "title": "Funktioniert mit den Tools, die Sie bereits verwenden",

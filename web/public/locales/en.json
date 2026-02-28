@@ -600,7 +600,6 @@
     "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
     "startAXDayFreeTrial": "Start a {{amount}}-day free trial",
     "metric": "Metric",
-    "coreFeatures": "Only the features you need",
     "heroBenefits": {
       "trial": "Free trial {{days}} days",
       "cookieless": "Cookie-less tracking",
@@ -608,68 +607,6 @@
       "openSource": "Open-source",
       "selfHostable": "Self-hostable",
       "quickSetup": "Quick setup"
-    },
-    "web": {
-      "title": "Web analytics",
-      "description": "Get all the insights you need about your users with a privacy-friendly and easy-to-use web analytics tool.",
-      "features": [
-        "Top pages",
-        "Geolocation",
-        "Traffic sources",
-        "UTM Campaigns",
-        "Custom events",
-        "Session analysis",
-        "Bounce rate",
-        "User flows"
-      ]
-    },
-    "performance": {
-      "title": "Website speed and performance",
-      "description": "Monitor your website speed and performance metrics from real user interactions."
-    },
-    "errors": {
-      "title": "Error tracking",
-      "description": "Get detailed insights into what kind of errors are happening on your website. View error details and aggregated data by geolocation, browser, device type, page and other metrics."
-    },
-    "sessions": {
-      "title": "User sessions",
-      "description": "Get detailed insights about your users' journey through your website and see how they interact with it. Track how long they stayed on your website, what actions they took and what pages visited.",
-      "features": [
-        "Session duration",
-        "Geolocation",
-        "Session pageviews flow",
-        "Error tracking",
-        "Browser & OS info",
-        "Custom events"
-      ]
-    },
-    "cookies": {
-      "title": "Forget about annoying cookie banners",
-      "description": "Swetrix does not use cookies for tracking, so you can forget about all those annoying cookie banners. We collect analytical data anonymously to respect the privacy of your users. We do not collect personal identifiers and do not perform cross-device tracking."
-    },
-    "funnels": {
-      "title": "Funnels and user flows",
-      "description": "Track how users get to your site and where they go. Study behaviour, visualise and understand your user journey."
-    },
-    "alerts": {
-      "title": "Customisable alerts",
-      "description": "Be the first to know when something happens on your website. Get notified via Telegram, Slack or Discord when specific events occur."
-    },
-    "events": {
-      "title": "Custom events & goals",
-      "description": "Track user interactions like sales, signups or clicks in real time. Set conversion goals to measure success and get detailed insights into how users engage with your website."
-    },
-    "revenue": {
-      "title": "Revenue analytics",
-      "description": "Connect your payment provider (Stripe, Paddle) and discover which marketing channels drive paying customers. Identify customer segments with highest LTV and understand patterns that influence purchase decisions."
-    },
-    "featureFlags": {
-      "title": "Feature flags",
-      "description": "Ship features safely with instant rollouts and rollbacks. Target specific user segments with boolean or percentage-based flags and track how each flag performs."
-    },
-    "experiments": {
-      "title": "A/B testing & experiments",
-      "description": "Run data-driven experiments to optimise conversions. Compare variants with statistical confidence, track exposures and measure the real impact of your changes."
     },
     "integrations": {
       "title": "Works with the tools you already use",

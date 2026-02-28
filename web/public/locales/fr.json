@@ -600,7 +600,6 @@
     "understandTheirUsers": "<0>{{amount}}</0> personnes comprennent leurs utilisateurs",
     "startAXDayFreeTrial": "Essai gratuit de {{amount}} jours",
     "metric": "Métrique",
-    "coreFeatures": "Uniquement les fonctionnalités dont vous avez besoin",
     "heroBenefits": {
       "trial": "Essai gratuit de {{days}} jours",
       "cookieless": "Suivi sans cookies",
@@ -608,68 +607,6 @@
       "openSource": "Open source",
       "selfHostable": "Auto-hébergeable",
       "quickSetup": "Mise en place rapide"
-    },
-    "web": {
-      "title": "Analyse web",
-      "description": "Obtenez toutes les informations dont vous avez besoin sur vos utilisateurs grâce à un outil d’analyse web respectueux de la vie privée et facile à utiliser.",
-      "features": [
-        "Pages les plus consultées",
-        "Géolocalisation",
-        "Sources de trafic",
-        "Campagnes UTM",
-        "Événements personnalisés",
-        "Analyse des sessions",
-        "Taux de rebond",
-        "Parcours utilisateurs"
-      ]
-    },
-    "performance": {
-      "title": "Vitesse et performances du site",
-      "description": "Surveillez la vitesse et les indicateurs de performance de votre site à partir des interactions réelles des utilisateurs."
-    },
-    "errors": {
-      "title": "Suivi des erreurs",
-      "description": "Obtenez des informations détaillées sur les types d’erreurs qui se produisent sur votre site. Affichez les détails des erreurs et des données agrégées par géolocalisation, navigateur, type d’appareil, page et autres métriques."
-    },
-    "sessions": {
-      "title": "Sessions utilisateurs",
-      "description": "Obtenez un aperçu détaillé du parcours de vos utilisateurs sur votre site et voyez comment ils interagissent avec lui. Suivez la durée de leur visite, les actions effectuées et les pages consultées.",
-      "features": [
-        "Durée de session",
-        "Géolocalisation",
-        "Flux des pages vues de la session",
-        "Suivi des erreurs",
-        "Informations sur le navigateur et le système d’exploitation",
-        "Événements personnalisés"
-      ]
-    },
-    "cookies": {
-      "title": "Oubliez les bannières de cookies gênantes",
-      "description": "Swetrix n'utilise pas de cookies pour le suivi, vous pouvez donc oublier toutes ces bannières de cookies agaçantes. Nous collectons des données analytiques de manière anonyme afin de respecter la vie privée de vos utilisateurs. Nous ne collectons pas d'identifiants personnels et n'effectuons pas de suivi multi-appareils."
-    },
-    "funnels": {
-      "title": "Entonnoirs et parcours utilisateurs",
-      "description": "Suivez comment les utilisateurs arrivent sur votre site et où ils vont. Étudiez le comportement, visualisez et comprenez le parcours utilisateur."
-    },
-    "alerts": {
-      "title": "Alertes personnalisables",
-      "description": "Soyez le premier informé lorsque quelque chose se produit sur votre site. Recevez des notifications via Telegram, Slack ou Discord lorsque des événements spécifiques se produisent."
-    },
-    "events": {
-      "title": "Événements personnalisés et objectifs",
-      "description": "Suivez en temps réel les interactions des utilisateurs (ventes, inscriptions, clics). Définissez des objectifs de conversion pour mesurer le succès et obtenir des informations détaillées sur l’engagement des utilisateurs sur votre site."
-    },
-    "revenue": {
-      "title": "Analyse des revenus",
-      "description": "Connectez votre prestataire de paiement (Stripe, Paddle) et découvrez quels canaux marketing génèrent des clients payants. Identifiez les segments avec la LTV la plus élevée et comprenez les tendances qui influencent les décisions d’achat."
-    },
-    "featureFlags": {
-      "title": "Flags de fonctionnalités",
-      "description": "Déployez des fonctionnalités en toute sécurité avec des mises en ligne et des retours arrière instantanés. Ciblez des segments d’utilisateurs avec des flags booléens ou en pourcentage et suivez les performances de chaque flag."
-    },
-    "experiments": {
-      "title": "Tests A/B et expérimentations",
-      "description": "Menez des expériences pilotées par les données pour optimiser les conversions. Comparez des variantes avec une confiance statistique, suivez les expositions et mesurez l’impact réel de vos changements."
     },
     "integrations": {
       "title": "Fonctionne avec les outils que vous utilisez déjà",

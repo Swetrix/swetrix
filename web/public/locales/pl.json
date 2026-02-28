@@ -600,7 +600,6 @@
     "understandTheirUsers": "<0>{{amount}}</0> osób rozumie swoich użytkowników",
     "startAXDayFreeTrial": "{{amount}} dni za darmo",
     "metric": "Metryka",
-    "coreFeatures": "Tylko funkcje, których potrzebujesz",
     "heroBenefits": {
       "trial": "Bezpłatny okres próbny przez {{days}} dni",
       "cookieless": "Śledzenie bez plików cookie",
@@ -608,68 +607,6 @@
       "openSource": "Open source",
       "selfHostable": "Do samodzielnego hostowania",
       "quickSetup": "Szybka konfiguracja"
-    },
-    "web": {
-      "title": "Analityka internetowa",
-      "description": "Uzyskaj wszystkie potrzebne informacje o swoich użytkownikach dzięki narzędziu do analityki internetowej, które szanuje prywatność i jest łatwe w użyciu.",
-      "features": [
-        "Najpopularniejsze strony",
-        "Geolokalizacja",
-        "Źródła ruchu",
-        "Kampanie UTM",
-        "Zdarzenia niestandardowe",
-        "Analiza sesji",
-        "Współczynnik odrzuceń",
-        "Ścieżki użytkowników"
-      ]
-    },
-    "performance": {
-      "title": "Szybkość i wydajność witryny",
-      "description": "Monitoruj szybkość i metryki wydajności swojej witryny na podstawie rzeczywistych interakcji użytkowników."
-    },
-    "errors": {
-      "title": "Śledzenie błędów",
-      "description": "Uzyskaj szczegółowe informacje o tym, jakie błędy występują w Twojej witrynie. Zobacz szczegóły błędów i dane zagregowane według geolokalizacji, przeglądarki, typu urządzenia, strony i innych metryk."
-    },
-    "sessions": {
-      "title": "Sesje użytkowników",
-      "description": "Uzyskaj szczegółowy wgląd w ścieżkę użytkowników przez Twoją witrynę i zobacz, jak z niej korzystają. Śledź, jak długo pozostali w Twojej witrynie, jakie działania podjęli i jakie strony odwiedzili.",
-      "features": [
-        "Czas trwania sesji",
-        "Geolokalizacja",
-        "Przepływ odsłon sesji",
-        "Śledzenie błędów",
-        "Informacje o przeglądarce i systemie operacyjnym",
-        "Zdarzenia niestandardowe"
-      ]
-    },
-    "cookies": {
-      "title": "Zapomnij o irytujących banerach ciasteczek",
-      "description": "Swetrix nie używa plików cookie do śledzenia, więc możesz zapomnieć o tych wszystkich irytujących banerach cookie. Zbieramy dane analityczne anonimowo, aby szanować prywatność Twoich użytkowników. Nie zbieramy osobistych identyfikatorów i nie prowadzimy śledzenia między urządzeniami."
-    },
-    "funnels": {
-      "title": "Lejki i ścieżki użytkowników",
-      "description": "Śledź, jak użytkownicy trafiają na Twoją witrynę i dokąd dalej przechodzą. Analizuj zachowania, wizualizuj i zrozum ich ścieżkę."
-    },
-    "alerts": {
-      "title": "Konfigurowalne alerty",
-      "description": "Bądź pierwszą osobą, która dowie się, gdy coś dzieje się w Twojej witrynie. Otrzymuj powiadomienia przez Telegram, Slack lub Discord, gdy wystąpią określone zdarzenia."
-    },
-    "events": {
-      "title": "Zdarzenia niestandardowe i cele",
-      "description": "Śledź interakcje użytkowników, takie jak sprzedaż, rejestracje czy kliknięcia, w czasie rzeczywistym. Ustaw cele konwersji, aby mierzyć sukces i uzyskać szczegółowy wgląd w to, jak użytkownicy korzystają z Twojej strony."
-    },
-    "revenue": {
-      "title": "Analityka przychodów",
-      "description": "Połącz swojego dostawcę płatności (Stripe, Paddle) i sprawdź, które kanały marketingowe pozyskują płacących klientów. Zidentyfikuj segmenty o najwyższym LTV i poznaj wzorce wpływające na decyzje zakupowe."
-    },
-    "featureFlags": {
-      "title": "Flagi funkcji",
-      "description": "Wdrażaj funkcje bezpiecznie dzięki natychmiastowym wdrożeniom i wycofaniom. Kieruj je do wybranych segmentów użytkowników za pomocą flag typu boolean lub procentowych i śledź skuteczność każdej flagi."
-    },
-    "experiments": {
-      "title": "Testy A/B i eksperymenty",
-      "description": "Prowadź eksperymenty oparte na danych, aby optymalizować konwersje. Porównuj warianty z istotnością statystyczną, śledź ekspozycje i mierz realny wpływ zmian."
     },
     "integrations": {
       "title": "Działa z narzędziami, których już używasz",
