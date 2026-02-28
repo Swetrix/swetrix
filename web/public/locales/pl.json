@@ -2065,9 +2065,7 @@
       "desc": "Przepraszamy za niedogodności, ale aby korzystać z tej funkcji, musisz wykupić płatny plan.\n\nZdajemy sobie sprawę, że możesz nie być jeszcze gotowy na zakup płatnej subskrypcji, ale jej zakup da Ci nie tylko dostęp do tej funkcji, ale także wiele innych wspaniałych korzyści, takich jak dostęp do wszystkich innych płatnych funkcji, wyższe limity wizyt w miesiącu i liczba dostępnych stron internetowych, a także będziesz wspierać rozwój małego biznesu :)"
     },
     "trackingSnippet": {
-      "title": "Dodaj kod śledzenia Swetrix do swojej strony internetowej",
-      "add": "Dodaj następujący fragment do sekcji <bsect></bsect> twojej strony.",
-      "docs": "Sprawdź naszą <pdocs>dokumentację</pdocs>, aby poznać szczegóły i więcej przewodników integracyjnych."
+      "add": "Dodaj następujący fragment do sekcji <bsect></bsect> twojej strony."
     },
     "funnels": {
       "addTitle": "Dodaj lejek",

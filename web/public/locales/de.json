@@ -2065,9 +2065,7 @@
       "desc": "Wir entschuldigen uns für die Unannehmlichkeiten, aber Sie müssen ein kostenpflichtiges Abo abschließen, um diese Funktion nutzen zu können.\n\nWir wissen, dass Sie vielleicht noch nicht bereit sind, ein kostenpflichtiges Abonnement abzuschließen, aber wenn Sie ein Abonnement abschließen, haben Sie nicht nur Zugang zu dieser Funktion, sondern auch zu allen anderen kostenpflichtigen Funktionen, höhere Limits für die monatlichen Besuchszahlen und die Anzahl der zur Verfügung stehenden Websites. Außerdem unterstützen Sie das Wachstum eines kleinen Unternehmens :)"
     },
     "trackingSnippet": {
-      "title": "Fügen Sie Ihrer Website einen Swetrix-Tracking-Code hinzu",
-      "add": "Fügen Sie folgendes Snippet in den <bsect></bsect> Bereich Ihrer Website ein.",
-      "docs": "Lesen Sie unsere <pdocs>Dokumentation</pdocs> für Details und weitere Integrationsanleitungen."
+      "add": "Fügen Sie folgendes Snippet in den <bsect></bsect> Bereich Ihrer Website ein."
     },
     "funnels": {
       "addTitle": "Trichter hinzufügen",

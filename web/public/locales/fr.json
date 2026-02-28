@@ -2065,9 +2065,7 @@
       "desc": "Nous nous excusons pour le désagrément, mais vous devez souscrire à un plan payant pour utiliser cette fonctionnalité.\n\nNous réalisons que vous n'êtes peut-être pas encore prêt à acheter un abonnement payant, mais l'acheter vous donnera non seulement accès à cette fonctionnalité, mais aussi à de nombreux autres avantages, tels que l'accès à toutes les autres fonctionnalités payantes, des limites plus élevées sur les visites par mois et le nombre de sites web disponibles, et vous soutiendrez la croissance d'une petite entreprise :)"
     },
     "trackingSnippet": {
-      "title": "Ajoutez un code de suivi Swetrix à votre site web",
-      "add": "Ajoutez l'extrait de code suivant dans la section <bsect></bsect> de votre site.",
-      "docs": "Consultez notre <pdocs>documentation</pdocs> pour plus de détails et d'autres guides d'intégration."
+      "add": "Ajoutez l'extrait de code suivant dans la section <bsect></bsect> de votre site."
     },
     "funnels": {
       "addTitle": "Ajouter un entonnoir",
