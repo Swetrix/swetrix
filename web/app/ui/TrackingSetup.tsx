@@ -73,7 +73,7 @@ const API_URL_WITHOUT_TRAILING_SLASH = API_URL.endsWith('/')
   ? API_URL.slice(0, -1)
   : API_URL
 
-export const getSnippet = (pid: string) => {
+const getSnippet = (pid: string) => {
   if (isSelfhosted) {
     return `<script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
