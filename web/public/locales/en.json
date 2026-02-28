@@ -1559,7 +1559,7 @@
     },
     "waiting": {
       "title": "No events yet",
-      "desc": "You haven't tracked any events yet.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "desc": "You haven't tracked any events yet. To start collecting data, follow the installation instructions below. Still not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
     },
     "waitingCaptcha": {
       "title": "No CAPTCHA events yet",
@@ -2103,6 +2103,8 @@
     "monthlyBilling": "Monthly",
     "yearlyBilling": "Yearly",
     "billedYearly": "Billed yearly",
+    "billedMonthly": "Billed monthly",
+    "billedAnnuallyAt": "Billed annually at {{amount}}",
     "switchToMonthly": "Switch to monthly billing",
     "upToXEvents": "Up to {{amount}} monthly events.",
     "frequency": "Payment frequency",
@@ -2190,8 +2192,7 @@
       },
       "errors": {
         "title": "Error Tracking",
-        "desc": "Catch and fix bugs before your users notice them. Get detailed error reports with stack traces, browser info, and user context.",
-        "tip": "Receive instant alerts when new errors occur."
+        "desc": "Catch and fix bugs before your users notice them. Get detailed error reports with stack traces, browser info, and user context."
       },
       "sessions": {
         "title": "User Sessions",
@@ -2252,20 +2253,6 @@
         "desc": "Step-by-step integration guides for popular platforms.",
         "viewAll": "View all integrations"
       }
-    },
-    "verifyInstallation": {
-      "navTitle": "Verify installation",
-      "navDesc": "We're waiting for your first event to arrive.",
-      "desc": "Deploy your changes, and try visiting your website to send the first event.",
-      "needInstructionsAgain": "Need to see the instructions again? <btn>Click here</btn>",
-      "orContactUs": "Or <url>contact us</url> for further help with your setup.",
-      "waitingForEvents": "Waiting for events",
-      "onTheXProject": "On the {{project}} project",
-      "onYourProject": "On your project",
-      "perfect": "Perfect!",
-      "perfectDesc": "We're receiving data!",
-      "waitingForAnEvent": "We're waiting for your first event! If your integration is set up correctly, you should see it within 1 minute.",
-      "eventReceived": "We've received your first event! Your integration works correctly. Welcome to Swetrix!"
     }
   },
   "titles": {

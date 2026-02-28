@@ -1559,11 +1559,30 @@
     },
     "waiting": {
       "title": "Aucun événement pour le moment",
-      "desc": "Vous n'avez encore suivi aucun événement. <snippet>Cliquez ici</snippet> pour afficher votre code de suivi JavaScript.\n\nCela ne fonctionne toujours pas ? Essayez le <turl>dépannage</turl> de votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide concernant la configuration."
+      "desc": "Vous n'avez encore suivi aucun événement. Pour commencer à collecter des données, suivez les instructions d'installation ci-dessous. Cela ne fonctionne toujours pas ? Essayez de <turl>dépanner</turl> votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide avec votre configuration."
     },
     "waitingCaptcha": {
       "title": "Aucun événement CAPTCHA pour le moment",
-      "desc": "Vous n’avez pas encore suivi d’événements CAPTCHA. Consultez notre <guideurl>guide d’intégration</guideurl> pour en savoir plus sur son utilisation dans votre application.\n\nÇa ne fonctionne toujours pas ? Essayez de <turl>dépanner</turl> votre intégration ou de <curl>nous contacter</curl> pour obtenir de l’aide concernant votre configuration."
+      "desc": "Vous n’avez pas encore suivi d’événements CAPTCHA. Consultez notre <guideurl>guide d’intégration</guideurl> pour en savoir plus sur son utilisation dans votre application.\n\nÇa ne fonctionne toujours pas ? Essayez de <turl>dépanner</turl> votre intégration ou de <curl>nous contacter</curl> pour obtenir de l’aide concernant votre configuration.",
+      "setup": {
+        "tabs": {
+          "script": "Script",
+          "validation": "Validation serveur"
+        },
+        "script": {
+          "title": "Installation du widget",
+          "desc": "Ajoutez le widget CAPTCHA aux formulaires de votre site Web.",
+          "step1": "1. Ajoutez le script de chargement dans la balise <headTag></headTag> de votre page",
+          "step2": "2. Ajoutez le widget à votre formulaire",
+          "docsHint": "Consultez la <url>documentation complète</url> pour les options de personnalisation telles que le thème, la langue, et plus encore."
+        },
+        "validation": {
+          "title": "Validation côté serveur",
+          "desc": "Vérifiez les jetons CAPTCHA sur votre backend.",
+          "step1": "Générez une clé secrète dans les paramètres de votre projet, puis vérifiez les jetons via notre API.",
+          "docsHint": "Consultez la <url>documentation sur la validation côté serveur</url> pour les détails d'implémentation."
+        }
+      }
     },
     "waitingError": {
       "title": "Aucune erreur pour le moment",
@@ -2084,6 +2103,8 @@
     "monthlyBilling": "Facturation mensuelle",
     "yearlyBilling": "Facturation annuelle",
     "billedYearly": "Facturé annuellement",
+    "billedMonthly": "Facturation mensuelle",
+    "billedAnnuallyAt": "Facturation annuelle à {{amount}}",
     "switchToMonthly": "Passer à la facturation mensuelle",
     "upToXEvents": "Jusqu'à {{amount}} événements par mois.",
     "frequency": "Fréquence de paiement",
@@ -2171,8 +2192,7 @@
       },
       "errors": {
         "title": "Suivi des erreurs",
-        "desc": "Détectez et corrigez les bugs avant que vos utilisateurs ne les remarquent. Obtenez des rapports d’erreurs détaillés avec des traces de pile, des informations sur le navigateur et le contexte utilisateur.",
-        "tip": "Recevez des alertes instantanées lorsque de nouvelles erreurs surviennent."
+        "desc": "Détectez et corrigez les bugs avant que vos utilisateurs ne les remarquent. Obtenez des rapports d’erreurs détaillés avec des traces de pile, des informations sur le navigateur et le contexte utilisateur."
       },
       "sessions": {
         "title": "Sessions utilisateur",
@@ -2233,20 +2253,6 @@
         "desc": "Guides d'intégration étape par étape pour les plateformes populaires.",
         "viewAll": "Voir toutes les intégrations"
       }
-    },
-    "verifyInstallation": {
-      "navTitle": "Vérifier l’installation",
-      "navDesc": "Nous attendons l’arrivée de votre premier événement.",
-      "desc": "Déployez vos modifications et visitez votre site web pour envoyer le premier événement.",
-      "needInstructionsAgain": "Besoin de revoir les instructions ? <btn>Cliquez ici</btn>",
-      "orContactUs": "Ou <url>contactez‑nous</url> pour obtenir davantage d’aide pour votre configuration.",
-      "waitingForEvents": "En attente d’événements",
-      "onTheXProject": "Sur le projet {{project}}",
-      "onYourProject": "Sur votre projet",
-      "perfect": "Parfait !",
-      "perfectDesc": "Nous recevons des données !",
-      "waitingForAnEvent": "Nous attendons votre premier événement ! Si votre intégration est correctement configurée, vous devriez le voir sous 1 minute.",
-      "eventReceived": "Nous avons reçu votre premier événement ! Votre intégration fonctionne correctement. Bienvenue sur Swetrix !"
     }
   },
   "titles": {

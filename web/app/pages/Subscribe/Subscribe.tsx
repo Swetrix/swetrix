@@ -162,7 +162,7 @@ const Subscribe = () => {
 
   return (
     <div className='flex min-h-screen flex-col items-center bg-gray-50 p-4 lg:p-8 dark:bg-slate-950'>
-      <div className='grid w-full max-w-5xl grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_400px] lg:gap-16'>
+      <div className='grid w-full max-w-5xl grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_380px] lg:gap-16'>
         {/* Left Column */}
         <div className='flex flex-col gap-8'>
           <div>
@@ -176,7 +176,7 @@ const Subscribe = () => {
             <div className='mt-6 flex flex-col gap-3'>
               <div className='flex items-center gap-3'>
                 <CheckIcon
-                  className='size-5 shrink-0 text-emerald-500'
+                  className='size-5 shrink-0 text-green-500'
                   weight='bold'
                 />
                 <Text as='p' size='base'>
@@ -185,7 +185,7 @@ const Subscribe = () => {
               </div>
               <div className='flex items-center gap-3'>
                 <CheckIcon
-                  className='size-5 shrink-0 text-emerald-500'
+                  className='size-5 shrink-0 text-green-500'
                   weight='bold'
                 />
                 <Text as='p' size='base'>
@@ -207,12 +207,12 @@ const Subscribe = () => {
                     f === 'monthly' ? 'yearly' : 'monthly',
                   )
                 }
-                className='flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-2.5 py-1.5 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:hover:bg-slate-800'
+                className='flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-2.5 py-1.5 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:hover:bg-slate-900'
               >
                 <span className='text-xs font-medium text-gray-700 dark:text-gray-200'>
                   {t('pricing.billedYearly')}
                 </span>
-                <span className='rounded-md bg-emerald-100 px-1.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'>
+                <span className='rounded-md bg-green-100 px-1.5 py-0.5 text-xs font-semibold text-green-700 dark:bg-green-500/20 dark:text-green-300'>
                   -17%
                 </span>
                 <Switch
@@ -231,16 +231,17 @@ const Subscribe = () => {
                   PLAN_LIMITS[planCode as keyof typeof PLAN_LIMITS]
                 if (!planTier) return null
                 const isSelected = selectedPlan === planCode
-                const price =
+                const monthlyPrice =
+                  planTier.price?.[currencyCode]?.monthly ??
+                  planTier.price?.USD?.monthly
+                const yearlyPrice =
+                  planTier.price?.[currencyCode]?.yearly ??
+                  planTier.price?.USD?.yearly
+
+                const displayPrice =
                   selectedBillingFrequency === 'monthly'
-                    ? (planTier.price?.[currencyCode]?.monthly ??
-                      planTier.price?.USD?.monthly)
-                    : (planTier.price?.[currencyCode]?.yearly ??
-                      planTier.price?.USD?.yearly)
-                const priceLabel =
-                  selectedBillingFrequency === 'monthly'
-                    ? t('pricing.perMonth')
-                    : t('pricing.perYear')
+                    ? monthlyPrice
+                    : Math.round((yearlyPrice || 0) / 12)
 
                 return (
                   <button
@@ -248,19 +249,33 @@ const Subscribe = () => {
                     type='button'
                     onClick={() => setSelectedPlan(planCode)}
                     className={cn(
-                      'flex w-full items-center justify-between rounded-lg px-4 py-3 text-left ring-1 transition-all duration-150 ring-inset',
+                      'flex w-full items-center justify-between rounded-lg bg-white px-4 py-3 text-left ring-1 transition-all duration-150 ring-inset dark:bg-slate-950',
                       isSelected
-                        ? 'bg-white shadow-sm ring-2 ring-indigo-500 dark:bg-slate-900 dark:ring-slate-200'
-                        : 'bg-white ring-gray-200 hover:ring-gray-300 dark:bg-slate-900 dark:ring-slate-700 dark:hover:ring-slate-600',
+                        ? 'ring-2 ring-indigo-500 dark:ring-slate-200'
+                        : 'ring-gray-200 hover:ring-gray-300 dark:ring-slate-700 dark:hover:ring-slate-600',
                     )}
                   >
-                    <Text as='span' size='base' weight='semibold'>
-                      {currency.symbol}
-                      {price}
-                      <Text as='span' size='sm' colour='muted' weight='medium'>
-                        /{priceLabel}
+                    <div className='flex flex-col items-start'>
+                      <Text as='span' size='base' weight='semibold'>
+                        {currency.symbol}
+                        {displayPrice}
+                        <Text
+                          as='span'
+                          size='sm'
+                          colour='muted'
+                          weight='medium'
+                        >
+                          /{t('pricing.perMonth')}
+                        </Text>
                       </Text>
-                    </Text>
+                      <Text as='span' size='xs' colour='muted'>
+                        {selectedBillingFrequency === 'monthly'
+                          ? t('pricing.billedMonthly')
+                          : t('pricing.billedAnnuallyAt', {
+                              amount: `${currency.symbol}${yearlyPrice}`,
+                            })}
+                      </Text>
+                    </div>
                     <Text as='span' size='sm' colour='muted'>
                       {t('pricing.upToXEvents', {
                         amount: formatEventsLong(
@@ -278,38 +293,40 @@ const Subscribe = () => {
               <button
                 type='button'
                 onClick={() => setShowAllPlans((v) => !v)}
-                className='rounded-full bg-gray-100 px-3.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700'
+                className='rounded-full bg-gray-100 px-3.5 py-1.5 transition-colors hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800'
               >
-                {showAllPlans
-                  ? t('common.showLess')
-                  : t('common.showMore', {
-                      count: STANDARD_PLANS.length - INITIAL_VISIBLE_PLANS,
-                    })}
+                <Text as='p' size='xs' weight='semibold'>
+                  {showAllPlans
+                    ? t('common.showLess')
+                    : t('common.showMore', {
+                        count: STANDARD_PLANS.length - INITIAL_VISIBLE_PLANS,
+                      })}
+                </Text>
               </button>
             </div>
           </div>
 
-          <div className='flex flex-col gap-4 border-t border-gray-200 pt-6 dark:border-slate-800'>
+          <div className='flex flex-col gap-3 border-t border-gray-200 pt-6 dark:border-slate-800'>
             <div className='flex items-center justify-between'>
-              <Text as='p' size='base'>
-                {t('checkout.dueEnd', { date: formattedEndDate })}
-              </Text>
               <Text as='p' size='base' weight='semibold'>
-                {currency.symbol}
-                {displayPrice}
-              </Text>
-            </div>
-            <div className='flex items-center justify-between'>
-              <Text as='p' size='base' weight='bold'>
                 {t('checkout.dueToday', { days: TRIAL_DAYS })}
               </Text>
               <Text
                 as='p'
                 size='base'
                 weight='bold'
-                className='text-emerald-600 dark:text-emerald-500'
+                className='text-green-600 dark:text-green-500'
               >
                 {currency.symbol}0
+              </Text>
+            </div>
+            <div className='flex items-center justify-between'>
+              <Text as='p' size='base'>
+                {t('checkout.dueEnd', { date: formattedEndDate })}
+              </Text>
+              <Text as='p' size='base'>
+                {currency.symbol}
+                {displayPrice}
               </Text>
             </div>
           </div>
@@ -376,16 +393,16 @@ const Subscribe = () => {
 
         {/* Right Column (Timeline) */}
         <div className='hidden lg:block lg:pt-16'>
-          <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 ring-inset dark:bg-slate-900/80 dark:ring-slate-800'>
+          <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 ring-inset dark:bg-slate-950 dark:ring-slate-800'>
             <div className='flex items-start gap-5'>
               <div className='relative flex flex-col items-center'>
                 <div className='flex size-8 items-center justify-center'>
                   <RocketLaunchIcon
                     weight='duotone'
-                    className='size-7 text-emerald-600 dark:text-emerald-500'
+                    className='size-7 text-green-600 dark:text-green-500'
                   />
                 </div>
-                <div className='my-2 h-14 w-px bg-linear-to-b from-emerald-200 to-gray-200 dark:from-emerald-900/60 dark:to-slate-800' />
+                <div className='my-2 h-14 w-px bg-linear-to-b from-green-200 to-gray-200 dark:from-green-900/60 dark:to-slate-800' />
               </div>
               <div className='pt-1'>
                 <Text as='p' size='sm' weight='bold'>
@@ -441,7 +458,7 @@ const Subscribe = () => {
             </div>
           </div>
 
-          <div className='mt-6 rounded-lg bg-white p-6 ring-1 ring-gray-200 ring-inset dark:bg-slate-900/80 dark:ring-slate-800'>
+          <div className='mt-6 rounded-lg bg-white p-6 ring-1 ring-gray-200 ring-inset dark:bg-slate-950 dark:ring-slate-800'>
             <div className='mb-3 flex items-center gap-1'>
               <StarIcon className='size-5 text-yellow-500' weight='fill' />
               <StarIcon className='size-5 text-yellow-500' weight='fill' />

@@ -609,7 +609,7 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
                   href={integration.href}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='flex items-center gap-2.5 rounded-lg bg-white px-3 py-2.5 ring-1 ring-gray-200 transition-colors hover:bg-gray-50 hover:ring-gray-300 dark:bg-slate-900 dark:ring-slate-700 dark:hover:bg-slate-800 dark:hover:ring-slate-600'
+                  className='flex items-center gap-2.5 rounded-lg bg-white px-3 py-2.5 ring-1 ring-gray-200 transition-all hover:bg-gray-50 hover:ring-gray-300 dark:bg-slate-950 dark:ring-slate-800 dark:hover:bg-slate-900 dark:hover:ring-slate-700'
                 >
                   <PlatformIcon
                     icon={integration.icon}

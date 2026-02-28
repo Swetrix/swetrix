@@ -42,7 +42,6 @@ const WaitingForAnEvent = () => {
                     className='font-medium underline decoration-dashed hover:decoration-solid'
                   />
                 ),
-                snippet: <span className='hidden' />,
               }}
             />
           </Text>

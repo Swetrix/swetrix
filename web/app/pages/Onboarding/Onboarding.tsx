@@ -2,7 +2,6 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import _map from 'lodash/map'
 import {
   BugIcon,
-  CheckCircleIcon,
   UserIcon,
   CursorClickIcon,
   FileTextIcon,
@@ -15,7 +14,6 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate, useFetcher, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
 
-import { useAuthProxy } from '~/hooks/useAuthProxy'
 import {
   BROWSER_LOGO_MAP,
   INTEGRATIONS_URL,
@@ -35,7 +33,6 @@ import type {
 } from '~/routes/onboarding'
 import Button from '~/ui/Button'
 import Flag from '~/ui/Flag'
-import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Input from '~/ui/Input'
 import TrackingSetup from '~/ui/TrackingSetup'
 import Loader from '~/ui/Loader'
@@ -391,15 +388,7 @@ const ProjectVisualisation = () => {
   )
 }
 
-const SetupTrackingStep = ({
-  project,
-  isWaitingForEvents,
-  hasEvents,
-}: {
-  project: Project
-  isWaitingForEvents: boolean
-  hasEvents: boolean
-}) => {
+const SetupTrackingStep = ({ project }: { project: Project }) => {
   const { t } = useTranslation('common')
 
   return (
@@ -431,47 +420,6 @@ const SetupTrackingStep = ({
       </div>
 
       <TrackingSetup projectId={project.id} />
-
-      {isWaitingForEvents && (
-        <div className='mt-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20'>
-          <div className='flex items-center gap-3'>
-            <PulsatingCircle type='big' />
-            <div>
-              <Text as='h3' size='sm' weight='semibold'>
-                {t('onboarding.verifyInstallation.waitingForEvents')}
-              </Text>
-              <Text as='p' size='xs' colour='muted'>
-                {t('onboarding.verifyInstallation.waitingForAnEvent')}
-              </Text>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {hasEvents && (
-        <div className='mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-900/20'>
-          <div className='flex items-center gap-3'>
-            <CheckCircleIcon className='size-6 text-emerald-600 dark:text-emerald-400' />
-            <div>
-              <Text
-                as='h3'
-                size='sm'
-                weight='semibold'
-                className='text-emerald-700 dark:text-emerald-300'
-              >
-                {t('onboarding.verifyInstallation.perfect')}
-              </Text>
-              <Text
-                as='p'
-                size='xs'
-                className='text-emerald-600 dark:text-emerald-400'
-              >
-                {t('onboarding.verifyInstallation.eventReceived')}
-              </Text>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -487,7 +435,6 @@ const Onboarding = () => {
     onboardingStep: loaderStep,
   } = useLoaderData<OnboardingLoaderData>()
   const { user, loadUser, logout } = useAuth()
-  const { authMe } = useAuthProxy()
   const navigate = useNavigate()
   const fetcher = useFetcher<OnboardingActionData>()
   const stepFetcher = useFetcher()
@@ -504,10 +451,6 @@ const Onboarding = () => {
   const [direction, setDirection] = useState(0)
   const [projectName, setProjectName] = useState('')
   const [project, setProject] = useState<Project | null>(loaderProject)
-  const [isWaitingForEvents, setIsWaitingForEvents] = useState(
-    () => loaderStep === 'waiting_for_events',
-  )
-  const [hasEvents, setHasEvents] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language)
 
   const [newProjectErrors, setNewProjectErrors] = useState<{
@@ -550,25 +493,6 @@ const Onboarding = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data, fetcher.submit, loadUser, logout, navigate])
-
-  useEffect(() => {
-    if (!isWaitingForEvents || !project) return
-
-    const checkForEvents = async () => {
-      try {
-        const { totalMonthlyEvents } = await authMe()
-        if (totalMonthlyEvents > 0) {
-          setHasEvents(true)
-          setIsWaitingForEvents(false)
-        }
-      } catch {
-        // Silently handle error - will retry on next interval
-      }
-    }
-
-    const interval = setInterval(checkForEvents, 3000)
-    return () => clearInterval(interval)
-  }, [isWaitingForEvents, project, authMe])
 
   const persistStep = useCallback(
     (step: OnboardingStep) => {
@@ -804,7 +728,7 @@ const Onboarding = () => {
                                 </div>
                               </div>
                             </div>
-                            <div className='pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95' />
+                            <div className='pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-white via-white/95 to-transparent dark:from-slate-950 dark:via-slate-950/95' />
                             <div className='absolute inset-x-0 bottom-0 px-6 pt-4 pb-8 text-center'>
                               <Text
                                 as='h3'
@@ -870,11 +794,19 @@ const Onboarding = () => {
                           {t('onboarding.features.errors.desc')}
                         </Text>
 
-                        <Alert variant='info' className='mt-4'>
-                          {t('onboarding.features.errors.tip')}
-                        </Alert>
-
-                        <FeatureVisualization type='errors' />
+                        <div className='mt-8 overflow-hidden rounded-xl ring-1 ring-gray-200 dark:ring-slate-700/80'>
+                          <img
+                            src={
+                              theme === 'dark'
+                                ? '/assets/screenshot_errors_dark.png'
+                                : '/assets/screenshot_errors_light.png'
+                            }
+                            className='w-full'
+                            width='100%'
+                            height='auto'
+                            alt='Swetrix Error Tracking dashboard'
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -937,11 +869,7 @@ const Onboarding = () => {
                     )}
 
                     {currentStep === 'setup_tracking' && project && (
-                      <SetupTrackingStep
-                        project={project}
-                        isWaitingForEvents={isWaitingForEvents}
-                        hasEvents={hasEvents}
-                      />
+                      <SetupTrackingStep project={project} />
                     )}
                   </motion.div>
                 </AnimatePresence>
@@ -990,7 +918,6 @@ const Onboarding = () => {
                       </Button>
                       <Button
                         onClick={() => {
-                          setIsWaitingForEvents(true)
                           handleCompleteOnboarding(false)
                         }}
                         primary

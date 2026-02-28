@@ -1559,11 +1559,30 @@
     },
     "waiting": {
       "title": "Nie ma jeszcze żadnych zdarzeń",
-      "desc": "Nie śledzono jeszcze żadnych zdarzeń. <snippet>Kliknij tutaj</snippet>, aby wyświetlić swój kod śledzenia JavaScript.\n\nNadal nie działa? Spróbuj <turl>rozwiązywania problemów</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc przy konfiguracji."
+      "desc": "Nie śledzisz jeszcze żadnych zdarzeń. Aby rozpocząć zbieranie danych, postępuj zgodnie z poniższymi instrukcjami instalacji. Nadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc w konfiguracji."
     },
     "waitingCaptcha": {
       "title": "Brak zdarzeń CAPTCHA",
-      "desc": "Nie śledzisz jeszcze żadnych zdarzeń CAPTCHA. Zobacz nasz <guideurl>przewodnik integracji</guideurl>, aby dowiedzieć się, jak używać tego w swojej aplikacji.\n\nNadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc przy konfiguracji."
+      "desc": "Nie śledzisz jeszcze żadnych zdarzeń CAPTCHA. Zobacz nasz <guideurl>przewodnik integracji</guideurl>, aby dowiedzieć się, jak używać tego w swojej aplikacji.\n\nNadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc przy konfiguracji.",
+      "setup": {
+        "tabs": {
+          "script": "Skrypt",
+          "validation": "Walidacja serwera"
+        },
+        "script": {
+          "title": "Instalacja widżetu",
+          "desc": "Dodaj widżet CAPTCHA do formularzy na swojej stronie internetowej.",
+          "step1": "1. Dodaj skrypt ładujący do sekcji <headTag></headTag> swojej strony",
+          "step2": "2. Dodaj widżet do swojego formularza",
+          "docsHint": "Zapoznaj się z <url>pełną dokumentacją</url>, aby uzyskać informacje o opcjach dostosowywania, takich jak motyw, język i inne."
+        },
+        "validation": {
+          "title": "Walidacja po stronie serwera",
+          "desc": "Weryfikuj tokeny CAPTCHA w swoim backendzie.",
+          "step1": "Wygeneruj tajny klucz w ustawieniach projektu, a następnie weryfikuj tokeny za pośrednictwem naszego API.",
+          "docsHint": "Zapoznaj się z <url>dokumentacją walidacji po stronie serwera</url>, aby poznać szczegóły implementacji."
+        }
+      }
     },
     "waitingError": {
       "title": "Nie ma jeszcze żadnych błędów",
@@ -2084,6 +2103,8 @@
     "monthlyBilling": "Co miesiąc",
     "yearlyBilling": "Rocznie",
     "billedYearly": "Rozliczane rocznie",
+    "billedMonthly": "Rozliczane miesięcznie",
+    "billedAnnuallyAt": "Rozliczane rocznie w kwocie {{amount}}",
     "switchToMonthly": "Przełącz na płatność miesięczną",
     "upToXEvents": "Do {{amount}} zdarzeń miesięcznie.",
     "frequency": "Częstotliwość płatności",
@@ -2171,8 +2192,7 @@
       },
       "errors": {
         "title": "Śledzenie błędów",
-        "desc": "Wykrywaj i naprawiaj błędy, zanim zauważą je użytkownicy. Otrzymuj szczegółowe raporty błędów ze śladami stosu, informacjami o przeglądarce i kontekstem użytkownika.",
-        "tip": "Otrzymuj natychmiastowe powiadomienia, gdy pojawią się nowe błędy."
+        "desc": "Wykrywaj i naprawiaj błędy, zanim zauważą je użytkownicy. Otrzymuj szczegółowe raporty błędów ze śladami stosu, informacjami o przeglądarce i kontekstem użytkownika."
       },
       "sessions": {
         "title": "Sesje użytkowników",
@@ -2233,20 +2253,6 @@
         "desc": "Przewodniki integracji krok po kroku dla popularnych platform.",
         "viewAll": "Zobacz wszystkie integracje"
       }
-    },
-    "verifyInstallation": {
-      "navTitle": "Zweryfikuj instalację",
-      "navDesc": "Czekamy na Twoje pierwsze zdarzenie.",
-      "desc": "Wdróż zmiany i wejdź na swoją stronę, aby wysłać pierwsze zdarzenie.",
-      "needInstructionsAgain": "Chcesz ponownie zobaczyć instrukcje? <btn>Kliknij tutaj</btn>",
-      "orContactUs": "Lub <url>skontaktuj się z nami</url>, aby uzyskać dodatkową pomoc przy konfiguracji.",
-      "waitingForEvents": "Oczekiwanie na zdarzenia",
-      "onTheXProject": "W projekcie {{project}}",
-      "onYourProject": "W Twoim projekcie",
-      "perfect": "Idealnie!",
-      "perfectDesc": "Otrzymujemy dane!",
-      "waitingForAnEvent": "Czekamy na Twoje pierwsze zdarzenie! Jeśli integracja jest poprawnie skonfigurowana, powinno być widoczne w ciągu 1 minuty.",
-      "eventReceived": "Otrzymaliśmy Twoje pierwsze zdarzenie! Integracja działa poprawnie. Witamy w Swetrix!"
     }
   },
   "titles": {
