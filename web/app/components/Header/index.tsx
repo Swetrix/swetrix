@@ -72,10 +72,10 @@ import Modal from '~/ui/Modal'
 import routes from '~/utils/routes'
 import { cn } from '~/utils/generic'
 
+const CONTACT_US_URL = `https://swetrix.com${routes.contact}`
+
 dayjs.extend(utc)
 dayjs.extend(duration)
-
-const CONTACT_US_URL = `https://swetrix.com${routes.contact}`
 
 const TRIAL_STATUS_MAPPING = {
   ENDED: 1,
@@ -648,10 +648,7 @@ const BannerManager = () => {
 
   const trialBannerHidden = useMemo(() => {
     return (
-      !status ||
-      isSelfhosted ||
-      !isAuthenticated ||
-      !['none', 'trial'].includes(user?.planCode || '')
+      !status || isSelfhosted || !isAuthenticated || user?.planCode !== 'trial'
     )
   }, [status, isAuthenticated, user?.planCode])
 
@@ -1013,7 +1010,6 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                 ) : null}
                 {!isSelfhosted &&
                 isAuthenticated &&
-                user?.planCode !== 'none' &&
                 user?.planCode !== 'trial' ? (
                   <Link
                     to={routes.billing}

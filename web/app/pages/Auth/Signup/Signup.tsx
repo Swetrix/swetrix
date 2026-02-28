@@ -1,4 +1,5 @@
 import {
+  ArrowRightIcon,
   ChartBarIcon,
   CursorClickIcon,
   ShieldCheckIcon,
@@ -199,7 +200,6 @@ const Signup = () => {
           setIsAuthenticated(true)
           setTotalMonthlyEvents(totalMonthlyEvents)
 
-          // Redirect to onboarding if user hasn't completed it
           if (!user.hasCompletedOnboarding) {
             navigate(routes.onboarding)
           } else {
@@ -240,7 +240,7 @@ const Signup = () => {
             </Text>
             {isSelfhosted ? null : (
               <Text as='p' colour='muted' className='mt-2'>
-                {t('auth.signup.noCC')}
+                {t('auth.signup.trialSubtitle')}
               </Text>
             )}
           </div>
@@ -309,15 +309,6 @@ const Signup = () => {
               disabled={isLoading}
               onChange={() => clearFieldError('password')}
             />
-            <Input
-              name='repeat'
-              type='password'
-              label={t('auth.common.repeat')}
-              error={getFieldError('repeat')}
-              disabled={isLoading}
-              onChange={() => clearFieldError('repeat')}
-            />
-
             {/* Hidden fields for checkbox values since Headless UI Checkbox doesn't submit natively */}
             <input type='hidden' name='tos' value={tos ? 'true' : 'false'} />
             <input
@@ -400,13 +391,14 @@ const Signup = () => {
             </div>
 
             <Button
-              className='mt-6 w-full justify-center'
+              className='mt-6 flex w-full items-center justify-center gap-1'
               type='submit'
               loading={isFormSubmitting}
               primary
               giant
             >
-              {t('auth.signup.button')}
+              <span>{t('common.continue')}</span>
+              <ArrowRightIcon className='size-4 translate-y-px' />
             </Button>
           </Form>
 
@@ -428,7 +420,7 @@ const Signup = () => {
         </div>
       </div>
 
-      <div className='relative hidden overflow-hidden bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-2/5 lg:flex-col lg:justify-between dark:from-slate-900 dark:to-slate-950'>
+      <div className='relative m-3 hidden overflow-hidden rounded-lg bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-2/5 lg:flex-col lg:justify-between dark:from-slate-900 dark:to-slate-950'>
         <div className='absolute -top-24 -right-24 size-96 rounded-full bg-indigo-500/20 blur-3xl' />
         <div className='absolute -bottom-24 -left-24 size-96 rounded-full bg-slate-500/20 blur-3xl' />
 
@@ -465,7 +457,7 @@ const Signup = () => {
           </div>
 
           <div className='relative'>
-            <div className='overflow-hidden rounded-xl shadow-lg ring-1 ring-white/10'>
+            <div className='overflow-hidden rounded-lg shadow-lg ring-1 ring-white/10'>
               <img
                 src={
                   theme === 'dark'

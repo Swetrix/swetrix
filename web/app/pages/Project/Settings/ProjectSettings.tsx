@@ -1189,7 +1189,7 @@ const ProjectSettings = () => {
                                 href='https://search.google.com/search-console/about'
                                 target='_blank'
                                 rel='noopener noreferrer'
-                                className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                                className='font-medium underline decoration-dashed hover:decoration-solid'
                               />
                             ),
                           }}

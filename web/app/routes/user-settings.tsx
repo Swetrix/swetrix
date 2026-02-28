@@ -613,6 +613,27 @@ export async function action({ request }: ActionFunctionArgs) {
       )
     }
 
+    case 'cancel-subscription': {
+      const feedback = formData.get('feedback')?.toString() || ''
+
+      const result = await serverFetch(request, 'user/subscription/cancel', {
+        method: 'POST',
+        body: { feedback: feedback || undefined },
+      })
+
+      if (result.error) {
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
     default:
       return data<UserSettingsActionData>(
         { error: 'Unknown action' },

@@ -39,7 +39,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const authResult = await getAuthenticatedUser(request)
 
   if (authResult) {
-    if (!authResult.user.user.hasCompletedOnboarding) {
+    const user = authResult.user.user
+
+    if (!user.hasCompletedOnboarding) {
       return redirect('/onboarding')
     }
     return redirect('/dashboard')
@@ -53,7 +55,6 @@ export interface SignupActionData {
   fieldErrors?: {
     email?: string
     password?: string
-    repeat?: string
     tos?: string
   }
   timestamp?: number
@@ -64,7 +65,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const email = formData.get('email')?.toString() || ''
   const password = formData.get('password')?.toString() || ''
-  const repeat = formData.get('repeat')?.toString() || ''
   const tos = formData.get('tos') === 'true'
   const checkIfLeaked = formData.get('checkIfLeaked') === 'true'
 
@@ -82,20 +82,11 @@ export async function action({ request }: ActionFunctionArgs) {
     fieldErrors.password = 'Password must be at most 50 characters'
   }
 
-  if (password !== repeat) {
-    fieldErrors.repeat = 'Passwords do not match'
-  }
-
   if (!tos && !isSelfhosted) {
     fieldErrors.tos = 'You must accept the Terms of Service'
   }
 
-  if (
-    fieldErrors.email ||
-    fieldErrors.password ||
-    fieldErrors.repeat ||
-    fieldErrors.tos
-  ) {
+  if (fieldErrors.email || fieldErrors.password || fieldErrors.tos) {
     return data({ fieldErrors, timestamp: Date.now() }, { status: 400 })
   }
 

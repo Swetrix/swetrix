@@ -64,9 +64,9 @@ export default function Tools() {
                   </div>
                 </div>
 
-                <div className='mt-4 flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400'>
+                <div className='mt-4 flex items-center text-sm font-medium underline decoration-dashed hover:decoration-solid'>
                   Use tool
-                  <ArrowRightIcon className='ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5' />
+                  <ArrowRightIcon className='ml-1 size-3' />
                 </div>
               </Link>
             )

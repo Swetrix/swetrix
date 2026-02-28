@@ -41,7 +41,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: PlanCode,
-    default: PlanCode.trial,
+    default: PlanCode.none,
   })
   planCode: PlanCode
 

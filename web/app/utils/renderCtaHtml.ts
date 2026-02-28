@@ -39,7 +39,7 @@ export function renderTimeToSwitchCta(): string {
         <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-slate-800 dark:text-slate-200">
           <div class="flex items-center">
             ${checkIconSvg}
-            No credit card required
+            Cancel anytime
           </div>
           <div class="flex items-center">
             ${checkIconSvg}

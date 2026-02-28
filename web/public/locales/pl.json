@@ -89,6 +89,7 @@
     "amount": "Kwota",
     "date": "Data",
     "success": "Sukces",
+    "redirecting": "Przekierowywanie...",
     "info": "Informacje",
     "error": "Błąd",
     "close": "Zamknij",
@@ -121,7 +122,9 @@
     "quit": "Zamknij",
     "enable": "Włącz",
     "disable": "Wyłącz",
+    "copy": "Kopiuj",
     "copied": "Skopiowano",
+    "failedToCopy": "Kopiowanie nie powiodło się",
     "new": "Nowy",
     "all": "Wszystkie",
     "active": "Aktywne",
@@ -145,7 +148,9 @@
     "communityEdition": "Wersja Społecznościowa",
     "allPosts": "Wszystkie posty",
     "details": "Szczegóły",
-    "unknown": "Nieznane"
+    "unknown": "Nieznane",
+    "showMore": "Pokaż {{count}} więcej",
+    "showLess": "Pokaż mniej"
   },
   "performance": {
     "slogan": "Monitorowanie <span>wydajności</span> końcowego użytkownika, aby dostarczać szybkie strony internetowe.",
@@ -552,7 +557,7 @@
         },
         {
           "q": "Czy jest dostępny bezpłatny okres próbny?",
-          "a": "Tak, możesz wypróbować Swetrix przez {{freeTrialDays}} dni za darmo, bez karty kredytowej!"
+          "a": "Tak, możesz wypróbować Swetrix za darmo przez {{freeTrialDays}} dni! Do rozpoczęcia okresu próbnego wymagana jest metoda płatności, ale nie zostaniesz obciążony do momentu jego zakończenia i możesz anulować w dowolnym momencie."
         },
         {
           "q": "Co jest liczone jako zdarzenie?",
@@ -764,11 +769,11 @@
       "testimonial": "„Swetrix to prawdziwy przełom w naszej analityce. Zawsze szybko reagowali na prośby o nowe funkcje i byli życzliwi na każdym etapie.”"
     },
     "signup": {
-      "button": "Zarejestruj się",
       "tos": "Akceptuję <tos>Regulamin</tos> oraz <pp>Politykę Prywatności</pp>.",
       "create": "Utwórz konto",
       "trial": "Rozpocznij {{amount}} dniowy, bezpłatny okres próbny",
-      "noCC": "Karta kredytowa nie jest wymagana.",
+      "trialSubtitle": "Wypróbuj wszystkie funkcje za darmo. Anuluj w dowolnym momencie przed zakończeniem okresu próbnego.",
+      "changePlanLater": "Możesz zmienić swój plan później lub w dowolnym momencie.",
       "alreadyAMember": "Już jesteś członkiem? <url>Zaloguj się</url>",
       "createAnAccount": "Utwórz konto",
       "insightsInMinutes": "Uzyskaj lepszy wgląd w stronę w kilka minut",
@@ -1554,11 +1559,30 @@
     },
     "waiting": {
       "title": "Nie ma jeszcze żadnych zdarzeń",
-      "desc": "Nie śledzono jeszcze żadnych zdarzeń. <snippet>Kliknij tutaj</snippet>, aby wyświetlić swój kod śledzenia JavaScript.\n\nNadal nie działa? Spróbuj <turl>rozwiązywania problemów</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc przy konfiguracji."
+      "desc": "Nie śledzisz jeszcze żadnych zdarzeń. Aby rozpocząć zbieranie danych, postępuj zgodnie z poniższymi instrukcjami instalacji. Nadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc w konfiguracji."
     },
     "waitingCaptcha": {
       "title": "Brak zdarzeń CAPTCHA",
-      "desc": "Nie śledzisz jeszcze żadnych zdarzeń CAPTCHA. Zobacz nasz <guideurl>przewodnik integracji</guideurl>, aby dowiedzieć się, jak używać tego w swojej aplikacji.\n\nNadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc przy konfiguracji."
+      "desc": "Nie śledzisz jeszcze żadnych zdarzeń CAPTCHA. Zobacz nasz <guideurl>przewodnik integracji</guideurl>, aby dowiedzieć się, jak używać tego w swojej aplikacji.\n\nNadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc przy konfiguracji.",
+      "setup": {
+        "tabs": {
+          "script": "Skrypt",
+          "validation": "Walidacja serwera"
+        },
+        "script": {
+          "title": "Instalacja widżetu",
+          "desc": "Dodaj widżet CAPTCHA do formularzy na swojej stronie internetowej.",
+          "step1": "1. Dodaj skrypt ładujący do sekcji <headTag></headTag> swojej strony",
+          "step2": "2. Dodaj widżet do swojego formularza",
+          "docsHint": "Zapoznaj się z <url>pełną dokumentacją</url>, aby uzyskać informacje o opcjach dostosowywania, takich jak motyw, język i inne."
+        },
+        "validation": {
+          "title": "Walidacja po stronie serwera",
+          "desc": "Weryfikuj tokeny CAPTCHA w swoim backendzie.",
+          "step1": "Wygeneruj tajny klucz w ustawieniach projektu, a następnie weryfikuj tokeny za pośrednictwem naszego API.",
+          "docsHint": "Zapoznaj się z <url>dokumentacją walidacji po stronie serwera</url>, aby poznać szczegóły implementacji."
+        }
+      }
     },
     "waitingError": {
       "title": "Nie ma jeszcze żadnych błędów",
@@ -2023,10 +2047,17 @@
     "changePlan": "Możesz w każdej chwili zmienić lub anulować swój plan subskrypcji tutaj.",
     "membersNotification": "Odsłony stron, zdarzenia niestandardowe i zdarzenia błędów są wliczane do limitu subskrypcji właściciela konta. Osoby, które zapraszasz do swoich projektów, nie potrzebują subskrypcji.",
     "trialDescription": "Twój bezpłatny okres próbny obejmuje dostęp do wszystkich funkcji oraz brak limitów zbierania danych. Po zakończeniu okresu próbnego musisz wybrać płatny plan dopasowany do Twojego użycia, aby dalej korzystać ze Swetrix.",
+    "trialChargeWarning": "Po zakończeniu okresu próbnego zostaniesz automatycznie obciążony opłatą, chyba że anulujesz subskrypcję. Możesz ją anulować w dowolnym momencie z tej strony — bez zadawania pytań.",
+    "subscriptionCancelledSuccess": "Twoja subskrypcja została anulowana. Zachowasz dostęp do końca bieżącego okresu rozliczeniowego.",
+    "confirmCancellation": "Anuluj subskrypcję",
+    "cancellationFeedbackLabel": "Chcielibyśmy wiedzieć, dlaczego odchodzisz (opcjonalnie)",
+    "cancellationFeedbackPlaceholder": "Co moglibyśmy zrobić lepiej? Jesteśmy finansowani w całości przez subskrybentów i cenimy Twoją opinię.",
     "usageWarningHigh": "Wykorzystałeś {{percentage}}% miesięcznego limitu zdarzeń. Rozważ uaktualnienie planu, aby uniknąć przerwy w działaniu usługi.",
     "usageWarningCritical": "Uwaga: wykorzystałeś {{percentage}}% miesięcznego limitu zdarzeń! Uaktualnij plan, aby zapewnić nieprzerwany dostęp do usługi.",
     "xPercentUsed": "{{percentage}}% wykorzystane",
-    "xPercentRemaining": "{{percentage}}% pozostało"
+    "xPercentRemaining": "{{percentage}}% pozostało",
+    "paddleLoadError": "Nie udało się załadować systemu płatności. Odśwież stronę i spróbuj ponownie.",
+    "paddleStillLoading": "System płatności wciąż się ładuje. Spróbuj ponownie za chwilę."
   },
   "modals": {
     "paidFeature": {
@@ -2034,9 +2065,7 @@
       "desc": "Przepraszamy za niedogodności, ale aby korzystać z tej funkcji, musisz wykupić płatny plan.\n\nZdajemy sobie sprawę, że możesz nie być jeszcze gotowy na zakup płatnej subskrypcji, ale jej zakup da Ci nie tylko dostęp do tej funkcji, ale także wiele innych wspaniałych korzyści, takich jak dostęp do wszystkich innych płatnych funkcji, wyższe limity wizyt w miesiącu i liczba dostępnych stron internetowych, a także będziesz wspierać rozwój małego biznesu :)"
     },
     "trackingSnippet": {
-      "title": "Dodaj kod śledzenia Swetrix do swojej strony internetowej",
-      "add": "Dodaj następujący fragment do sekcji <bsect></bsect> twojej strony.",
-      "docs": "Sprawdź naszą <pdocs>dokumentację</pdocs>, aby poznać szczegóły i więcej przewodników integracyjnych."
+      "add": "Dodaj następujący fragment do sekcji <bsect></bsect> twojej strony."
     },
     "funnels": {
       "addTitle": "Dodaj lejek",
@@ -2060,7 +2089,7 @@
   },
   "pricing": {
     "title": "Proste, oparte na ruchu ceny",
-    "adv": "Wypróbuj Swetrix na swojej stronie przez {{amount}} dni - całkowicie za darmo.\nNie wymagamy karty kredytowej. Bez żadnych zobowiązań.",
+    "adv": "Wypróbuj Swetrix na swojej stronie internetowej przez {{amount}} dni - całkowicie za darmo. Wymagana jest metoda płatności, ale możesz zrezygnować w dowolnym momencie przed zakończeniem okresu próbnego.",
     "subscribe": "Subskrybuj",
     "legacy": "Wygasły",
     "legacyDescription": "Ten plan lub ta oferta cenowa nie jest już dostępna dla nowych użytkowników. Nadal jest dostępna dla obecnych użytkowników.",
@@ -2072,7 +2101,10 @@
     "monthlyBilling": "Co miesiąc",
     "yearlyBilling": "Rocznie",
     "billedYearly": "Rozliczane rocznie",
+    "billedMonthly": "Rozliczane miesięcznie",
+    "billedAnnuallyAt": "Rozliczane rocznie w kwocie {{amount}}",
     "switchToMonthly": "Przełącz na płatność miesięczną",
+    "upToXEvents": "Do {{amount}} zdarzeń miesięcznie.",
     "frequency": "Częstotliwość płatności",
     "eventsPerMonth": "zdarzenia / miesiąc",
     "switchToYearly": "Przełącz na płatność roczną",
@@ -2123,6 +2155,18 @@
       "live": "Możesz zobaczyć nasze bieżące metryki na <livedemo>publicznym pulpicie nawigacyjnym</livedemo>. Możesz również udostępnić własne pulpity Swetrix publicznie i dostosować je do swoich potrzeb."
     }
   },
+  "checkout": {
+    "title": "Rozpocznij śledzenie swojego rozwoju już dziś",
+    "subtitle": "Skorzystaj z darmowego {{days}}-dniowego okresu próbnego na nasz koszt. Anuluj w dowolnym momencie.",
+    "realTimeAnalytics": "Analityka w czasie rzeczywistym bez plików cookie",
+    "willRemind": "Przypomnimy Ci przed zakończeniem okresu próbnego",
+    "freeTrialAnytime": "Darmowy {{days}}-dniowy okres próbny, anuluj w dowolnym momencie",
+    "dueEnd": "Do zapłaty: {{date}}",
+    "dueToday": "Do zapłaty dzisiaj ({{days}} dni za darmo)",
+    "next": "Rozpocznij darmowy okres próbny",
+    "selectPlan": "Wybierz swój plan",
+    "termsDesc": "Kontynuując, akceptujesz <tos>Warunki korzystania</tos> obowiązujące dla Swetrix i potwierdzasz, że zapoznałeś się z naszą <privacy>Polityką prywatności</privacy>."
+  },
   "onboarding": {
     "welcome": "Witamy w Swetrix",
     "title": "Rozpocznij",
@@ -2146,8 +2190,7 @@
       },
       "errors": {
         "title": "Śledzenie błędów",
-        "desc": "Wykrywaj i naprawiaj błędy, zanim zauważą je użytkownicy. Otrzymuj szczegółowe raporty błędów ze śladami stosu, informacjami o przeglądarce i kontekstem użytkownika.",
-        "tip": "Otrzymuj natychmiastowe powiadomienia, gdy pojawią się nowe błędy."
+        "desc": "Wykrywaj i naprawiaj błędy, zanim zauważą je użytkownicy. Otrzymuj szczegółowe raporty błędów ze śladami stosu, informacjami o przeglądarce i kontekstem użytkownika."
       },
       "sessions": {
         "title": "Sesje użytkowników",
@@ -2155,23 +2198,15 @@
         "tip": "Przeglądaj sesje w czasie rzeczywistym, gdy trwają."
       }
     },
-    "confirm": {
-      "navTitle": "Potwierdź swój adres e‑mail",
-      "navDesc": "Sprawdź swoją skrzynkę odbiorczą i kliknij link potwierdzający.",
-      "title": "Został tylko jeden krok i możesz zaczynać! 🚀",
-      "emailVerification": "Weryfikacja adresu e-mail",
-      "verifyTitle": "Zweryfikuj swój adres e-mail",
-      "linkSent": "Wysłaliśmy e-mail na adres <email>{{email}}</email>. Potwierdź swój adres e-mail, aby kontynuować.",
-      "didNotReceive": "Nie otrzymałeś(-aś) e-maila?",
-      "resend": "Wyślij ponownie",
-      "emailResent": "Wysłano prośbę",
-      "troubleOrChange": "Masz problem lub chcesz zmienić adres e-mail?",
-      "logoutAndRegister": "Wyloguj się i zarejestruj ponownie",
-      "letsGo": "Zaczynajmy!",
-      "emailVerified": "Twój adres e-mail jest zweryfikowany",
-      "spam": "Nie widzisz wiadomości? Sprawdź folder spam.",
-      "wrongEmail": "Zły adres e‑mail? <url>Utwórz nowe konto.</url>",
-      "checkVerification": "Zweryfikowałem(-am) swój adres e-mail"
+    "selectPlan": {
+      "timeline": {
+        "today": "Dzisiaj",
+        "todayDesc": "Rozpocznij darmowy okres próbny z pełnym dostępem do wszystkich funkcji",
+        "reminder": "Dzień {{days}}",
+        "reminderDesc": "Wyślemy Ci przyjazne przypomnienie przed zakończeniem okresu próbnego",
+        "charge": "Dzień {{days}}",
+        "chargeDesc": "Twoja subskrypcja się rozpocznie, chyba że anulujesz ją wcześniej"
+      }
     },
     "createProject": {
       "navTitle": "Utwórz projekt",
@@ -2187,21 +2222,35 @@
       "desc": "Dodaj skrypt Swetrix do swojej strony. Możesz też używać Swetrix do śledzenia zdarzeń w aplikacjach mobilnych lub desktopowych oraz wysyłać zdarzenia bezpośrednio do naszego API. Więcej o zaawansowanych integracjach znajdziesz w naszej <url>dokumentacji</url>.",
       "websiteInstallation": "Instalacja na stronie",
       "pasteScript": "Wklej skrypt na swojej stronie",
-      "weAlsoSupport": "Obsługujemy także instalację Swetrix przez NPM (dla React, Vue itd.), udostępniamy Events API do wysyłania zdarzeń bezpośrednio do naszego API oraz wiele integracji z innymi usługami, np. WordPress czy Google Tag Manager. <url>Dowiedz się więcej</url>."
-    },
-    "verifyInstallation": {
-      "navTitle": "Zweryfikuj instalację",
-      "navDesc": "Czekamy na Twoje pierwsze zdarzenie.",
-      "desc": "Wdróż zmiany i wejdź na swoją stronę, aby wysłać pierwsze zdarzenie.",
-      "needInstructionsAgain": "Chcesz ponownie zobaczyć instrukcje? <btn>Kliknij tutaj</btn>",
-      "orContactUs": "Lub <url>skontaktuj się z nami</url>, aby uzyskać dodatkową pomoc przy konfiguracji.",
-      "waitingForEvents": "Oczekiwanie na zdarzenia",
-      "onTheXProject": "W projekcie {{project}}",
-      "onYourProject": "W Twoim projekcie",
-      "perfect": "Idealnie!",
-      "perfectDesc": "Otrzymujemy dane!",
-      "waitingForAnEvent": "Czekamy na Twoje pierwsze zdarzenie! Jeśli integracja jest poprawnie skonfigurowana, powinno być widoczne w ciągu 1 minuty.",
-      "eventReceived": "Otrzymaliśmy Twoje pierwsze zdarzenie! Integracja działa poprawnie. Witamy w Swetrix!"
+      "weAlsoSupport": "Obsługujemy także instalację Swetrix przez NPM (dla React, Vue itd.), udostępniamy Events API do wysyłania zdarzeń bezpośrednio do naszego API oraz wiele integracji z innymi usługami, np. WordPress czy Google Tag Manager. <url>Dowiedz się więcej</url>.",
+      "optional": "Ten krok jest opcjonalny — zawsze możesz skonfigurować śledzenie później w ustawieniach projektu.",
+      "skipForNow": "Pomiń na razie",
+      "tabs": {
+        "script": "Skrypt",
+        "npm": "NPM",
+        "tagManager": "Tag Manager",
+        "platforms": "Platformy"
+      },
+      "npm": {
+        "title": "Pakiet NPM",
+        "desc": "Dla React, Vue, Angular i innych frameworków JS.",
+        "step1": "1. Zainstaluj pakiet",
+        "step2": "2. Importuj i zainicjuj",
+        "entryFileHint": "Dodaj to do pliku wejściowego swojej aplikacji (np. <codeA>index.js</codeA> lub <codeB>App.js</codeB>). <url>Zobacz pełną dokumentację</url>"
+      },
+      "gtm": {
+        "title": "Google Tag Manager",
+        "desc": "Dodaj Swetrix przez GTM bez ingerowania w kod źródłowy.",
+        "step1": "1. Twoje ID projektu",
+        "step2": "2. Utwórz niestandardowy tag HTML w GTM z tym kodem",
+        "step3": "3. Ustaw regułę na \"All Pages\" (Wszystkie strony) i opublikuj",
+        "viewGuide": "Zobacz pełny przewodnik GTM"
+      },
+      "platforms": {
+        "title": "Przewodniki po platformach",
+        "desc": "Przewodniki integracji krok po kroku dla popularnych platform.",
+        "viewAll": "Zobacz wszystkie integracje"
+      }
     }
   },
   "titles": {
@@ -2228,7 +2277,8 @@
     "cookiePolicy": "Polityka plików cookie",
     "termsAndConditions": "Regulamin",
     "gaAlternative": "Alternatywa dla Google Analytics bez plików cookie",
-    "projectWithPassword": "Analityka strony – wymagane hasło"
+    "projectWithPassword": "Analityka strony – wymagane hasło",
+    "subscribe": "Rozpocznij darmowy okres próbny"
   },
   "description": {
     "default": "Swetrix to alternatywa dla Google Analytics, stawiająca prywatność na pierwszym miejscu i niewymagająca plików cookie, z analizą w czasie rzeczywistym, bez próbkowania oraz z wbudowanym monitorowaniem wydajności i błędów.",
@@ -2238,6 +2288,7 @@
     "errorTracking": "Śledzenie błędów użytkowników końcowych z naciskiem na prywatność od Swetrix. Konfiguracja w jednej linijce, podgląd błędów według przeglądarki/urządzenia/lokalizacji i szybsze naprawianie problemów. 14-dniowy darmowy okres próbny – bez karty.",
     "login": "Zaloguj się do Swetrix, aby zobaczyć analitykę bez plików cookie i przyjazną prywatności – dane w czasie rzeczywistym, brak śledzących cookie, bez bałaganu GA.",
     "signup": "Utwórz konto Swetrix i zacznij śledzić ruch na stronie dzięki analityce bez plików cookie i przyjaznej prywatności – prosta konfiguracja, statystyki w czasie rzeczywistym.",
+    "checkout": "Wybierz plan Swetrix i sfinalizuj subskrypcję — analityka bez plików cookie, stawiająca na prywatność, z wnioskami w czasie rzeczywistym.",
     "onboarding": "Zacznij korzystać ze Swetrix (alternatywy dla Google Analytics bez plików cookie i z naciskiem na prywatność) w kilku krokach.",
     "open": "Otwarte metryki startupu: dowiedz się więcej o naszych kluczowych metrykach finansowych i operacyjnych.",
     "recovery": "Nie pamiętasz hasła? Skorzystaj z funkcji odzyskiwania hasła, aby przywrócić dostęp do konta.",

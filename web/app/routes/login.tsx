@@ -9,6 +9,7 @@ import { redirect, data } from 'react-router'
 
 import { getAuthenticatedUser, loginUser, serverFetch } from '~/api/api.server'
 import Signin from '~/pages/Auth/Signin'
+import { decidePostAuthRedirect } from '~/utils/auth'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   createHeadersWithCookies,
@@ -35,10 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const authResult = await getAuthenticatedUser(request)
 
   if (authResult) {
-    if (!authResult.user.user.hasCompletedOnboarding) {
-      return redirect('/onboarding')
-    }
-    return redirect('/dashboard')
+    return redirect(decidePostAuthRedirect(authResult.user.user))
   }
 
   return null
@@ -82,7 +80,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const result = await serverFetch<{
       accessToken: string
       refreshToken: string
-      user: { hasCompletedOnboarding: boolean }
+      user: { hasCompletedOnboarding: boolean; planCode?: string }
     }>(request, '2fa/authenticate', {
       method: 'POST',
       body: { twoFactorAuthenticationCode },
@@ -104,11 +102,7 @@ export async function action({ request }: ActionFunctionArgs) {
       !dontRemember,
     )
 
-    const redirectTo = user.hasCompletedOnboarding
-      ? '/dashboard'
-      : '/onboarding'
-
-    return redirect(redirectTo, {
+    return redirect(user ? decidePostAuthRedirect(user) : '/dashboard', {
       headers: createHeadersWithCookies(cookies),
     })
   }
@@ -148,13 +142,10 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const redirectTo = result.data?.user.hasCompletedOnboarding
-    ? '/dashboard'
-    : '/onboarding'
-
-  return redirect(redirectTo, {
-    headers: createHeadersWithCookies(result.cookies),
-  })
+  return redirect(
+    result.data?.user ? decidePostAuthRedirect(result.data.user) : '/dashboard',
+    { headers: createHeadersWithCookies(result.cookies) },
+  )
 }
 
 export default function SigninRoute() {

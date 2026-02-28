@@ -34,6 +34,7 @@ import routes from '~/utils/routes'
 interface BillingPricingProps {
   lastEvent?: { event: string } | null
   metainfo?: Metainfo
+  openCheckout: (options: Record<string, any>) => boolean
 }
 
 const formatEventsLong = (value: number): string =>
@@ -42,6 +43,7 @@ const formatEventsLong = (value: number): string =>
 const BillingPricing = ({
   lastEvent,
   metainfo = DEFAULT_METAINFO,
+  openCheckout,
 }: BillingPricingProps) => {
   const {
     t,
@@ -203,15 +205,10 @@ const BillingPricing = ({
 
     setPlanCodeLoading(tier.planCode)
 
-    if (!window.Paddle) {
-      toast.error('Payment script has not yet loaded! Please, try again.')
-      setPlanCodeLoading(null)
-      return
-    }
-
-    window.Paddle.Checkout.open({
+    const opened = openCheckout({
       product:
         billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
+      trialDays: 0,
       email: user.email,
       passthrough: JSON.stringify({ uid: user.id }),
       locale: paddleLanguageMapping[language] || language,
@@ -219,6 +216,12 @@ const BillingPricing = ({
       displayModeTheme: theme,
       country: metainfo.country,
     })
+
+    if (!opened) {
+      toast.error(t('billing.paddleStillLoading'))
+      setPlanCodeLoading(null)
+      return
+    }
   }
 
   const closeUpdateModal = (force?: boolean) => {
@@ -490,7 +493,7 @@ const BillingPricing = ({
                       <a
                         title={`Email us at ${CONTACT_EMAIL}`}
                         href={`mailto:${CONTACT_EMAIL}`}
-                        className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                        className='font-medium underline decoration-dashed hover:decoration-solid'
                       />
                     ),
                   }}

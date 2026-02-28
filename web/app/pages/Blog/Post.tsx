@@ -93,7 +93,7 @@ export default function PostSlug() {
                           <div className='mt-1'>
                             <a
                               href={`https://x.com/${post.twitter_handle}`}
-                              className='text-indigo-600 hover:underline dark:text-indigo-400'
+                              className='underline decoration-dashed hover:decoration-solid'
                             >
                               @{post.twitter_handle}
                             </a>

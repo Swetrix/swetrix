@@ -8,6 +8,7 @@ import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import routes from '~/utils/routes'
 import { MIN_PASSWORD_CHARS } from '~/utils/validator'
+import { Text } from '~/ui/Text'
 
 const CreateNewPassword = () => {
   const { t } = useTranslation('common')
@@ -59,7 +60,7 @@ const CreateNewPassword = () => {
               </Button>
             </Form>
           </div>
-          <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
+          <Text as='p' size='sm' className='mt-10 text-center'>
             <Trans
               t={t}
               i18nKey='auth.signup.alreadyAMember'
@@ -67,13 +68,13 @@ const CreateNewPassword = () => {
                 url: (
                   <Link
                     to={routes.signin}
-                    className='leading-6 font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
+                    className='underline decoration-dashed hover:decoration-solid'
                     aria-label={t('footer.tos')}
                   />
                 ),
               }}
             />
-          </p>
+          </Text>
         </div>
       </div>
     </div>

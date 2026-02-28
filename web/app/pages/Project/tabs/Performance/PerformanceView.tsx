@@ -59,6 +59,7 @@ import LoadingBar from '~/ui/LoadingBar'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import { LoaderView } from '../../View/components/LoaderView'
 import { ChartTypeSwitcher } from '../../View/components/ChartTypeSwitcher'
+import WaitingForAnEvent from '../../View/components/WaitingForAnEvent'
 
 const InteractiveMap = lazy(
   () => import('~/pages/Project/View/components/InteractiveMap'),
@@ -374,6 +375,11 @@ const PerformanceViewInner = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [performanceRefreshTrigger])
+
+  // Show waiting state if project has no traffic data yet
+  if (!project?.isDataExists) {
+    return <WaitingForAnEvent />
+  }
 
   // Show no events if data is empty
   if (isPanelsDataEmpty) {

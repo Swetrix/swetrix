@@ -893,7 +893,7 @@ export class TaskManagerService {
           user,
           hitPercentageLimit: _includes(exceedingUserIds, user.id),
           percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
-          billingUrl: 'https://swetrix.com/billing',
+          billingUrl: 'https://swetrix.com/user-settings?tab=billing',
           suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
         }
 
@@ -950,7 +950,7 @@ export class TaskManagerService {
           upgradePeriodDays: 7,
           thisMonthUsage: usage,
           percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
-          billingUrl: 'https://swetrix.com/billing',
+          billingUrl: 'https://swetrix.com/user-settings?tab=billing',
           suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
         }
 
@@ -1021,7 +1021,7 @@ export class TaskManagerService {
             thisMonthUsage: userThisMonthUsage,
             lastMonthUsage: userLastMonthUsage,
             percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
-            billingUrl: 'https://swetrix.com/billing',
+            billingUrl: 'https://swetrix.com/user-settings?tab=billing',
             suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
           }
 
@@ -1068,7 +1068,7 @@ export class TaskManagerService {
     })
     const emailParams = {
       amount: SEND_WARNING_AT_PERC,
-      url: 'https://swetrix.com/billing',
+      url: 'https://swetrix.com/user-settings?tab=billing',
     }
 
     const promises = _map(users, async (user) => {
@@ -1364,30 +1364,30 @@ export class TaskManagerService {
   async trialReminder() {
     const users = await this.userService.find({
       where: {
-        planCode: PlanCode.trial,
+        planCode: Not(PlanCode.none),
         trialEndDate: Between(
-          // between today & tomorrow
           new Date(),
-          new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+          new Date(new Date().getTime() + 48 * 60 * 60 * 1000),
         ),
         trialReminderSent: false,
       },
-      select: ['id', 'email'],
+      select: ['id', 'email', 'cancellationEffectiveDate'],
     })
 
     const promises = _map(users, async (user) => {
-      const { id, email } = user
+      const { id, email, cancellationEffectiveDate } = user
 
       await this.userService.update(id, {
         trialReminderSent: true,
       })
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.TrialEndsTomorrow,
-        {
-          url: 'https://swetrix.com/billing',
-        },
-      )
+
+      const template = cancellationEffectiveDate
+        ? LetterTemplate.TrialEndingCancelled
+        : LetterTemplate.TrialEndsTomorrow
+
+      await this.mailerService.sendEmail(email, template, {
+        url: 'https://swetrix.com/user-settings?tab=billing',
+      })
     })
 
     await Promise.allSettled(promises).catch((reason) => {
@@ -1448,7 +1448,7 @@ export class TaskManagerService {
         // trialEndDate: null,
       })
       await this.mailerService.sendEmail(email, LetterTemplate.TrialExpired, {
-        url: 'https://swetrix.com/billing',
+        url: 'https://swetrix.com/user-settings?tab=billing',
       })
       await this.projectService.clearProjectsRedisCache(id)
     })

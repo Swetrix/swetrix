@@ -35,6 +35,7 @@ import {
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { DeleteFeedback } from './entities/delete-feedback.entity'
+import { CancellationFeedback } from './entities/cancellation-feedback.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
@@ -108,6 +109,8 @@ export class UserService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     @InjectRepository(DeleteFeedback)
     private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
+    @InjectRepository(CancellationFeedback)
+    private readonly cancellationFeedbackRepository: Repository<CancellationFeedback>,
     private readonly organisationService: OrganisationService,
   ) {}
 
@@ -219,6 +222,7 @@ export class UserService {
   public async createUser(user: Pick<User, 'email' | 'password'>) {
     return this.usersRepository.save({
       ...user,
+      isActive: true,
       trialEndDate: dayjs
         .utc()
         .add(TRIAL_DURATION, 'day')
@@ -434,9 +438,53 @@ export class UserService {
       return false
     }
 
-    return ![(PlanCode.none, PlanCode.free, PlanCode.trial)].includes(
+    return ![PlanCode.none, PlanCode.free, PlanCode.trial].includes(
       user.planCode,
     )
+  }
+
+  async saveCancellationFeedback(
+    email: string,
+    planCode: string,
+    feedback: string,
+  ) {
+    return this.cancellationFeedbackRepository.save({
+      email,
+      planCode,
+      feedback,
+    })
+  }
+
+  async cancelSubscription(subID: string) {
+    const url = 'https://vendors.paddle.com/api/2.0/subscription/users/cancel'
+
+    try {
+      const result = await axios.post(url, {
+        vendor_id: Number(PADDLE_VENDOR_ID),
+        vendor_auth_code: PADDLE_API_KEY,
+        subscription_id: Number(subID),
+      })
+
+      if (!result.data?.success) {
+        console.error(
+          '[ERROR] (cancelSubscription) success -> false:',
+          result.data,
+        )
+        throw new InternalServerErrorException(
+          'Failed to cancel subscription with payment provider',
+        )
+      }
+    } catch (error) {
+      if (error instanceof InternalServerErrorException) throw error
+
+      console.error(
+        '[ERROR] (cancelSubscription):',
+        error?.response?.data?.error?.message || error,
+      )
+      throw new BadRequestException(
+        'Failed to cancel subscription. Please try again or contact support.',
+      )
+    }
   }
 
   async updateSubscription(id: string, planID: number) {

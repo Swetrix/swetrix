@@ -16,6 +16,7 @@ import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
 import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
+import { decidePostAuthRedirect } from '~/utils/auth'
 import { SSOProvider, SSOHashSuccessResponse } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -225,12 +226,7 @@ const Signin = () => {
           setIsAuthenticated(true)
           setTotalMonthlyEvents(totalMonthlyEvents)
 
-          // Redirect to onboarding if user hasn't completed it
-          if (!user.hasCompletedOnboarding) {
-            navigate(routes.onboarding)
-          } else {
-            navigate(routes.dashboard)
-          }
+          navigate(decidePostAuthRedirect(user))
 
           return
         } catch {
@@ -302,11 +298,7 @@ const Signin = () => {
         }),
       )
 
-      if (!user.hasCompletedOnboarding) {
-        navigate(routes.onboarding)
-      } else {
-        navigate(routes.dashboard)
-      }
+      navigate(decidePostAuthRedirect(user))
     } catch (error) {
       setLinkingError(
         error instanceof Error
@@ -440,7 +432,7 @@ const Signin = () => {
                   <Text
                     as='div'
                     size='sm'
-                    colour='muted'
+                    colour='secondary'
                     className='whitespace-pre-line'
                   >
                     {!isSelfhosted ? (
@@ -451,7 +443,7 @@ const Signin = () => {
                           ctl: (
                             <Link
                               to={routes.contact}
-                              className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                              className='font-medium underline decoration-dashed hover:decoration-solid'
                             />
                           ),
                         }}
@@ -624,7 +616,7 @@ const Signin = () => {
         </div>
       </div>
 
-      <div className='relative hidden overflow-hidden bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-2/5 lg:flex-col lg:justify-between dark:from-slate-900 dark:to-slate-950'>
+      <div className='relative m-3 hidden overflow-hidden rounded-lg bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-2/5 lg:flex-col lg:justify-between dark:from-slate-900 dark:to-slate-950'>
         <div className='absolute -top-24 -right-24 size-96 rounded-full bg-indigo-500/20 blur-3xl' />
         <div className='absolute -bottom-24 -left-24 size-96 rounded-full bg-slate-500/20 blur-3xl' />
 
@@ -639,7 +631,7 @@ const Signin = () => {
           </div>
 
           <div className='relative'>
-            <div className='overflow-hidden rounded-xl shadow-lg ring-1 ring-white/10'>
+            <div className='overflow-hidden rounded-lg shadow-lg ring-1 ring-white/10'>
               <img
                 src={
                   theme === 'dark'

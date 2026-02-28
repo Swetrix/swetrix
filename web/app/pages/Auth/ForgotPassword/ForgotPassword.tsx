@@ -13,6 +13,7 @@ import { isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
 import type { ForgotPasswordActionData } from '~/routes/recovery'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 const ForgotPassword = () => {
@@ -66,7 +67,7 @@ const ForgotPassword = () => {
             </Form>
           </div>
           {isSelfhosted ? null : (
-            <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
+            <Text as='p' size='sm' className='mt-10 text-center'>
               <Trans
                 t={t}
                 i18nKey='auth.signin.notAMember'
@@ -74,7 +75,7 @@ const ForgotPassword = () => {
                   url: (
                     <Link
                       to={routes.signup}
-                      className='leading-6 font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
+                      className='leading-6 font-medium underline decoration-dashed hover:decoration-solid'
                       aria-label={t('footer.tos')}
                     />
                   ),
@@ -83,7 +84,7 @@ const ForgotPassword = () => {
                   amount: TRIAL_DAYS,
                 }}
               />
-            </p>
+            </Text>
           )}
         </div>
       </div>

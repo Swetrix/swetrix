@@ -11,7 +11,7 @@ const TEMPLATES_PATH = path.join(__dirname, '..', 'common', 'templates')
 const metaInfoJson = {
   [LetterTemplate.SignUp]: {
     subject: {
-      en: () => 'Please verify your account registration',
+      en: () => 'Welcome to Swetrix — your 14-day trial has started',
     },
   },
   [LetterTemplate.ConfirmPasswordChange]: {
@@ -78,7 +78,12 @@ const metaInfoJson = {
   },
   [LetterTemplate.TrialEndsTomorrow]: {
     subject: {
-      en: () => 'Your free Swetrix trial ends tomorrow',
+      en: () => 'Your Swetrix trial ends in 48 hours',
+    },
+  },
+  [LetterTemplate.TrialEndingCancelled]: {
+    subject: {
+      en: () => 'Your Swetrix trial ends in 48 hours — action needed',
     },
   },
   [LetterTemplate.ProjectSubscriberInvitation]: {

@@ -2,24 +2,20 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import _map from 'lodash/map'
 import {
   BugIcon,
-  CodeIcon,
-  CheckCircleIcon,
   UserIcon,
   CursorClickIcon,
   FileTextIcon,
   ClockIcon,
   FolderPlusIcon,
+  InfoIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate, useFetcher, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
 
-import { useAuthProxy } from '~/hooks/useAuthProxy'
 import {
   BROWSER_LOGO_MAP,
-  CONFIRMATION_TIMEOUT,
-  DOCS_URL,
   INTEGRATIONS_URL,
   isSelfhosted,
   whitelist,
@@ -28,24 +24,20 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
 } from '~/lib/constants'
-import { getCookie, setCookie } from '~/utils/cookie'
 import { changeLanguage } from '~/i18n'
-import { getSnippet } from '~/modals/TrackingSnippet'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type {
   OnboardingActionData,
   OnboardingLoaderData,
 } from '~/routes/onboarding'
-import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Flag from '~/ui/Flag'
-import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Input from '~/ui/Input'
+import TrackingSetup from '~/ui/TrackingSetup'
 import Loader from '~/ui/Loader'
 import Alert from '~/ui/Alert'
 import { Text } from '~/ui/Text'
-import Textarea from '~/ui/Textarea'
 import { trackCustom } from '~/utils/analytics'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
@@ -68,25 +60,16 @@ type OnboardingStep =
   | 'feature_sessions'
   | 'create_project'
   | 'setup_tracking'
-  | 'verify_email'
 
-const getSteps = (): OnboardingStep[] => {
-  const baseSteps: OnboardingStep[] = [
-    'language',
-    'welcome',
-    'feature_traffic',
-    'feature_errors',
-    'feature_sessions',
-    'create_project',
-    'setup_tracking',
-  ]
-
-  if (!isSelfhosted) {
-    baseSteps.push('verify_email')
-  }
-
-  return baseSteps
-}
+const getSteps = (): OnboardingStep[] => [
+  'language',
+  'welcome',
+  'feature_traffic',
+  'feature_errors',
+  'feature_sessions',
+  'create_project',
+  'setup_tracking',
+]
 
 const STEPS = getSteps()
 
@@ -405,6 +388,42 @@ const ProjectVisualisation = () => {
   )
 }
 
+const SetupTrackingStep = ({ project }: { project: Project }) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div>
+      <Text as='h1' size='3xl' weight='bold' tracking='tight' className='mb-2'>
+        {t('onboarding.installTracking.title')}
+      </Text>
+      <Text as='p' colour='secondary' className='mb-2'>
+        <Trans
+          t={t}
+          i18nKey='onboarding.installTracking.desc'
+          components={{
+            url: (
+              <a
+                href={INTEGRATIONS_URL}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='font-medium underline decoration-dashed hover:decoration-solid'
+              />
+            ),
+          }}
+        />
+      </Text>
+      <div className='mb-5 flex items-center gap-1.5'>
+        <InfoIcon className='size-3.5 shrink-0 text-gray-400 dark:text-slate-500' />
+        <Text as='p' size='xs' colour='muted'>
+          {t('onboarding.installTracking.optional')}
+        </Text>
+      </div>
+
+      <TrackingSetup projectId={project.id} />
+    </div>
+  )
+}
+
 const Onboarding = () => {
   const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
@@ -416,7 +435,6 @@ const Onboarding = () => {
     onboardingStep: loaderStep,
   } = useLoaderData<OnboardingLoaderData>()
   const { user, loadUser, logout } = useAuth()
-  const { authMe } = useAuthProxy()
   const navigate = useNavigate()
   const fetcher = useFetcher<OnboardingActionData>()
   const stepFetcher = useFetcher()
@@ -433,19 +451,11 @@ const Onboarding = () => {
   const [direction, setDirection] = useState(0)
   const [projectName, setProjectName] = useState('')
   const [project, setProject] = useState<Project | null>(loaderProject)
-  const [isWaitingForEvents, setIsWaitingForEvents] = useState(
-    () => loaderStep === 'waiting_for_events',
-  )
-  const [hasEvents, setHasEvents] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language)
 
   const [newProjectErrors, setNewProjectErrors] = useState<{
     name?: string
   }>({})
-  const [isCheckingVerification, setIsCheckingVerification] = useState(false)
-  const [hasResentEmail, setHasResentEmail] = useState(
-    () => !!getCookie(CONFIRMATION_TIMEOUT),
-  )
 
   const currentStep = STEPS[currentStepIndex]
   const isLoading =
@@ -471,11 +481,7 @@ const Onboarding = () => {
         loadUser()
       } else if (intent === 'complete-onboarding') {
         loadUser()
-        navigate(routes.dashboard)
-      } else if (intent === 'confirm-email') {
-        setCookie(CONFIRMATION_TIMEOUT, true, 600)
-        setHasResentEmail(true)
-        toast.success(t('profileSettings.confSent'))
+        navigate(isSelfhosted ? routes.dashboard : routes.subscribe)
       }
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
@@ -487,25 +493,6 @@ const Onboarding = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data, fetcher.submit, loadUser, logout, navigate])
-
-  useEffect(() => {
-    if (!isWaitingForEvents || !project) return
-
-    const checkForEvents = async () => {
-      try {
-        const { totalMonthlyEvents } = await authMe()
-        if (totalMonthlyEvents > 0) {
-          setHasEvents(true)
-          setIsWaitingForEvents(false)
-        }
-      } catch {
-        // Silently handle error - will retry on next interval
-      }
-    }
-
-    const interval = setInterval(checkForEvents, 3000)
-    return () => clearInterval(interval)
-  }, [isWaitingForEvents, project, authMe])
 
   const persistStep = useCallback(
     (step: OnboardingStep) => {
@@ -610,25 +597,6 @@ const Onboarding = () => {
 
     const formData = new FormData()
     formData.set('intent', 'complete-onboarding')
-    fetcher.submit(formData, { method: 'post' })
-  }
-
-  const handleDeleteAccount = () => {
-    if (fetcher.state !== 'idle') return
-
-    const formData = new FormData()
-    formData.set('intent', 'delete-account')
-    fetcher.submit(formData, { method: 'post' })
-  }
-
-  const handleResendEmail = () => {
-    if (getCookie(CONFIRMATION_TIMEOUT)) {
-      toast.error(t('profileSettings.confTimeout'))
-      return
-    }
-
-    const formData = new FormData()
-    formData.set('intent', 'confirm-email')
     fetcher.submit(formData, { method: 'post' })
   }
 
@@ -760,7 +728,7 @@ const Onboarding = () => {
                                 </div>
                               </div>
                             </div>
-                            <div className='pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95' />
+                            <div className='pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-white via-white/95 to-transparent dark:from-slate-950 dark:via-slate-950/95' />
                             <div className='absolute inset-x-0 bottom-0 px-6 pt-4 pb-8 text-center'>
                               <Text
                                 as='h3'
@@ -826,11 +794,19 @@ const Onboarding = () => {
                           {t('onboarding.features.errors.desc')}
                         </Text>
 
-                        <Alert variant='info' className='mt-4'>
-                          {t('onboarding.features.errors.tip')}
-                        </Alert>
-
-                        <FeatureVisualization type='errors' />
+                        <div className='mt-8 overflow-hidden rounded-xl ring-1 ring-gray-200 dark:ring-slate-700/80'>
+                          <img
+                            src={
+                              theme === 'dark'
+                                ? '/assets/screenshot_errors_dark.png'
+                                : '/assets/screenshot_errors_light.png'
+                            }
+                            className='w-full'
+                            width='100%'
+                            height='auto'
+                            alt='Swetrix Error Tracking dashboard'
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -893,226 +869,7 @@ const Onboarding = () => {
                     )}
 
                     {currentStep === 'setup_tracking' && project && (
-                      <div>
-                        <Text
-                          as='h1'
-                          size='3xl'
-                          weight='bold'
-                          tracking='tight'
-                          className='mb-2'
-                        >
-                          {t('onboarding.installTracking.title')}
-                        </Text>
-                        <Text as='p' colour='secondary' className='mb-6'>
-                          <Trans
-                            t={t}
-                            i18nKey='onboarding.installTracking.desc'
-                            components={{
-                              url: (
-                                <a
-                                  href={INTEGRATIONS_URL}
-                                  target='_blank'
-                                  rel='noopener noreferrer'
-                                  className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                                />
-                              ),
-                            }}
-                          />
-                        </Text>
-
-                        <div className='rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-slate-700 dark:bg-slate-950'>
-                          <div className='mb-4 flex items-center gap-3'>
-                            <div className='flex size-10 items-center justify-center rounded-lg border border-gray-200 dark:border-slate-700'>
-                              <CodeIcon className='size-5 text-gray-700 dark:text-gray-200' />
-                            </div>
-                            <div>
-                              <Text as='h3' size='sm' weight='semibold'>
-                                {t(
-                                  'onboarding.installTracking.websiteInstallation',
-                                )}
-                              </Text>
-                              <Text as='p' size='xs' colour='secondary'>
-                                <Trans
-                                  t={t}
-                                  i18nKey='modals.trackingSnippet.add'
-                                  components={{
-                                    bsect: (
-                                      <Badge label='<body>' colour='slate' />
-                                    ),
-                                  }}
-                                />
-                              </Text>
-                            </div>
-                          </div>
-
-                          <Textarea
-                            classes={{
-                              container: 'font-mono text-xs',
-                              textarea:
-                                'bg-white dark:bg-slate-950 ring-1 ring-gray-200 dark:ring-slate-700',
-                            }}
-                            value={getSnippet(project.id)}
-                            rows={12}
-                            readOnly
-                          />
-
-                          <Text
-                            as='p'
-                            size='xs'
-                            colour='secondary'
-                            className='mt-4'
-                          >
-                            <Trans
-                              t={t}
-                              i18nKey='onboarding.installTracking.weAlsoSupport'
-                              components={{
-                                url: (
-                                  <a
-                                    href={DOCS_URL}
-                                    target='_blank'
-                                    rel='noopener noreferrer'
-                                    className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                                  />
-                                ),
-                              }}
-                            />
-                          </Text>
-                        </div>
-
-                        {isWaitingForEvents && (
-                          <div className='mt-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20'>
-                            <div className='flex items-center gap-3'>
-                              <PulsatingCircle type='big' />
-                              <div>
-                                <Text as='h3' size='sm' weight='semibold'>
-                                  {t(
-                                    'onboarding.verifyInstallation.waitingForEvents',
-                                  )}
-                                </Text>
-                                <Text as='p' size='xs' colour='muted'>
-                                  {t(
-                                    'onboarding.verifyInstallation.waitingForAnEvent',
-                                  )}
-                                </Text>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {hasEvents && (
-                          <div className='mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-900/20'>
-                            <div className='flex items-center gap-3'>
-                              <CheckCircleIcon className='size-6 text-emerald-600 dark:text-emerald-400' />
-                              <div>
-                                <Text
-                                  as='h3'
-                                  size='sm'
-                                  weight='semibold'
-                                  className='text-emerald-700 dark:text-emerald-300'
-                                >
-                                  {t('onboarding.verifyInstallation.perfect')}
-                                </Text>
-                                <Text
-                                  as='p'
-                                  size='xs'
-                                  className='text-emerald-600 dark:text-emerald-400'
-                                >
-                                  {t(
-                                    'onboarding.verifyInstallation.eventReceived',
-                                  )}
-                                </Text>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {currentStep === 'verify_email' && (
-                      <div>
-                        <Text
-                          as='h1'
-                          size='3xl'
-                          weight='bold'
-                          tracking='tight'
-                          className='mb-2'
-                        >
-                          {t('onboarding.confirm.title')}
-                        </Text>
-
-                        {user?.isActive ? (
-                          <Alert variant='success' className='mt-8'>
-                            {t('onboarding.confirm.emailVerified')}
-                          </Alert>
-                        ) : (
-                          <>
-                            <Text
-                              as='h2'
-                              size='lg'
-                              weight='semibold'
-                              className='mt-8 mb-4'
-                            >
-                              {t('onboarding.confirm.emailVerification')}
-                            </Text>
-
-                            <Alert
-                              variant='info'
-                              title={t('onboarding.confirm.verifyTitle')}
-                            >
-                              <Trans
-                                t={t}
-                                i18nKey='onboarding.confirm.linkSent'
-                                values={{ email: user?.email }}
-                                components={{
-                                  email: <span className='font-semibold' />,
-                                }}
-                              />
-                            </Alert>
-
-                            <div className='mt-6'>
-                              <Text
-                                as='p'
-                                size='sm'
-                                colour='secondary'
-                                className='mb-2'
-                              >
-                                {t('onboarding.confirm.didNotReceive')}
-                              </Text>
-                              <Button
-                                onClick={handleResendEmail}
-                                disabled={hasResentEmail}
-                                secondary
-                                small
-                              >
-                                {hasResentEmail && (
-                                  <CheckCircleIcon className='mr-2 size-4' />
-                                )}
-                                {hasResentEmail
-                                  ? t('onboarding.confirm.emailResent')
-                                  : t('onboarding.confirm.resend')}
-                              </Button>
-                            </div>
-
-                            <div className='mt-6'>
-                              <Text
-                                as='p'
-                                size='sm'
-                                colour='secondary'
-                                className='mb-2'
-                              >
-                                {t('onboarding.confirm.troubleOrChange')}
-                              </Text>
-                              <Button
-                                onClick={handleDeleteAccount}
-                                secondary
-                                small
-                              >
-                                {t('onboarding.confirm.logoutAndRegister')}
-                              </Button>
-                            </div>
-                          </>
-                        )}
-                      </div>
+                      <SetupTrackingStep project={project} />
                     )}
                   </motion.div>
                 </AnimatePresence>
@@ -1151,44 +908,24 @@ const Onboarding = () => {
                     </Button>
                   )}
                   {currentStep === 'setup_tracking' && (
-                    <Button
-                      onClick={() => {
-                        setIsWaitingForEvents(true)
-                        if (isSelfhosted) {
+                    <>
+                      <Button
+                        onClick={() => handleCompleteOnboarding(true)}
+                        secondary
+                        large
+                      >
+                        {t('onboarding.installTracking.skipForNow')}
+                      </Button>
+                      <Button
+                        onClick={() => {
                           handleCompleteOnboarding(false)
-                        } else {
-                          goNext()
-                        }
-                      }}
-                      primary
-                      large
-                    >
-                      {t('common.continue')}
-                    </Button>
-                  )}
-                  {currentStep === 'verify_email' && (
-                    <Button
-                      onClick={async () => {
-                        setIsCheckingVerification(true)
-                        try {
-                          const loadedUser = await loadUser()
-                          if (!loadedUser?.isActive) {
-                            toast.error(
-                              'Please, verify your email address first',
-                            )
-                            return
-                          }
-                          handleCompleteOnboarding(false)
-                        } finally {
-                          setIsCheckingVerification(false)
-                        }
-                      }}
-                      loading={isCheckingVerification}
-                      primary
-                      large
-                    >
-                      {t('onboarding.confirm.letsGo')}
-                    </Button>
+                        }}
+                        primary
+                        large
+                      >
+                        {t('common.continue')}
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>

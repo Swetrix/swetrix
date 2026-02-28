@@ -434,9 +434,9 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                         <button
                           type='button'
                           onClick={addTargetingRule}
-                          className='flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400'
+                          className='flex items-center gap-1 text-sm text-gray-700 underline decoration-dashed hover:decoration-solid dark:text-gray-200'
                         >
-                          <PlusIcon className='h-4 w-4' />
+                          <PlusIcon className='size-3' />
                           {t('featureFlags.addRule')}
                         </button>
                       </div>

@@ -490,7 +490,7 @@ const OpenStartup = ({ stats }: OpenStartupProps) => {
               livedemo: (
                 <Link
                   to={LIVE_DEMO_URL}
-                  className='font-medium text-indigo-600 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-500'
+                  className='font-medium underline decoration-dashed hover:decoration-solid'
                 />
               ),
             }}
