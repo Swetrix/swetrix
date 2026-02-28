@@ -175,17 +175,15 @@ const Subscribe = () => {
     )
   }
 
-  const trialEndDate = user?.trialEndDate
-    ? new Date(user.trialEndDate)
-    : new Date()
-
   const dateFormatter = new Intl.DateTimeFormat(i18n.language, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   })
 
-  const formattedEndDate = dateFormatter.format(trialEndDate)
+  const formattedEndDate = dateFormatter.format(
+    new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000),
+  )
 
   return (
     <div className='flex min-h-screen flex-col items-center bg-gray-50 p-4 lg:p-8 dark:bg-slate-950'>
