@@ -934,19 +934,25 @@ const ExperimentResults = ({
           ) : null}
         </div>
         {results.hasWinner && results.winnerKey ? (
-          <div className='flex items-center gap-4 rounded-lg border border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4 dark:border-green-700 dark:bg-green-900/20'>
-            <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50'>
-              <TrophyIcon className='size-6 text-green-600 dark:text-green-400' />
-            </div>
+          <div className='flex items-center gap-4 rounded-lg border border-green-300 bg-green-50 px-4 py-2 dark:border-green-700 dark:bg-green-900/20'>
+            <TrophyIcon
+              className='size-6 text-green-600 dark:text-green-400'
+              weight='duotone'
+            />
             <div>
               <Text
+                as='p'
                 weight='bold'
                 size='lg'
                 className='text-green-800 dark:text-green-200'
               >
                 {t('experiments.winnerFound')}
               </Text>
-              <Text size='sm' className='text-green-700 dark:text-green-300'>
+              <Text
+                as='p'
+                size='sm'
+                className='text-green-700 dark:text-green-200'
+              >
                 {t('experiments.winnerDescription', {
                   variant:
                     results.variants.find((v) => v.key === results.winnerKey)
