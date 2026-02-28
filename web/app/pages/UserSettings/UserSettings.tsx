@@ -1766,13 +1766,15 @@ const UserSettings = () => {
         submitDisabled={isCancellingSubscription}
         message={
           <div className='space-y-4'>
-            <Trans
-              t={t}
-              i18nKey='pricing.cancelDesc'
-              values={{
-                email: CONTACT_EMAIL,
-              }}
-            />
+            <p>
+              <Trans
+                t={t}
+                i18nKey='pricing.cancelDesc'
+                values={{
+                  email: CONTACT_EMAIL,
+                }}
+              />
+            </p>
             <div>
               <label
                 htmlFor='cancellation-feedback'
