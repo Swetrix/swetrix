@@ -1232,7 +1232,9 @@ const UserSettings = () => {
                 ) : (
                   <>
                     {/* Trial info alert */}
-                    {isTrial && trialEndsOnMessage ? (
+                    {isTrial &&
+                    trialEndsOnMessage &&
+                    !cancellationEffectiveDate ? (
                       <Alert
                         variant='info'
                         title={t('profileSettings.trialActive')}
