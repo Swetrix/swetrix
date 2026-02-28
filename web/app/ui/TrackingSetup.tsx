@@ -64,7 +64,6 @@ import {
   INTEGRATIONS_URL,
   isSelfhosted,
 } from '~/lib/constants'
-import { getSnippet } from '~/modals/TrackingSnippet'
 import { Badge } from '~/ui/Badge'
 import CodeBlock from '~/ui/CodeBlock'
 import { Text } from '~/ui/Text'
@@ -73,6 +72,44 @@ import { cn } from '~/utils/generic'
 const API_URL_WITHOUT_TRAILING_SLASH = API_URL.endsWith('/')
   ? API_URL.slice(0, -1)
   : API_URL
+
+export const getSnippet = (pid: string) => {
+  if (isSelfhosted) {
+    return `<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  swetrix.init('${pid}', {
+    apiURL: '${API_URL_WITHOUT_TRAILING_SLASH}/v1/log',
+  })
+  swetrix.trackViews()
+})
+</script>
+
+<noscript>
+<img
+  src="${API_URL_WITHOUT_TRAILING_SLASH}/log/noscript?pid=${pid}"
+  alt=""
+  referrerpolicy="no-referrer-when-downgrade"
+/>
+</noscript>`
+  }
+
+  return `<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  swetrix.init('${pid}')
+  swetrix.trackViews()
+})
+</script>
+
+<noscript>
+<img
+  src="https://api.swetrix.com/log/noscript?pid=${pid}"
+  alt=""
+  referrerpolicy="no-referrer-when-downgrade"
+/>
+</noscript>`
+}
 
 type TrackingTab = 'script' | 'npm' | 'gtm' | 'platforms'
 
