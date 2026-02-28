@@ -223,10 +223,6 @@ export class UserService {
     return this.usersRepository.save({
       ...user,
       isActive: true,
-      trialEndDate: dayjs
-        .utc()
-        .add(TRIAL_DURATION, 'day')
-        .format('YYYY-MM-DD HH:mm:ss'),
     })
   }
 
@@ -345,17 +341,26 @@ export class UserService {
         // @ts-ignore
         tier.pid === stringifiedPlanId ||
         // @ts-ignore
-        tier.ypid === stringifiedPlanId,
+        tier.ypid === stringifiedPlanId ||
+        // @ts-ignore
+        tier.legacyPids?.includes(stringifiedPlanId) ||
+        // @ts-ignore
+        tier.legacyYpids?.includes(stringifiedPlanId),
     )
 
     // @ts-ignore
     if (plan && plan.pid) {
       const planCode = plan.id
-      const billingFrequency =
+      // @ts-ignore
+      const isMonthly =
         // @ts-ignore
-        Number(plan?.pid) === planId
-          ? BillingFrequency.Monthly
-          : BillingFrequency.Yearly
+        plan.pid === stringifiedPlanId ||
+        // @ts-ignore
+        plan.legacyPids?.includes(stringifiedPlanId)
+
+      const billingFrequency = isMonthly
+        ? BillingFrequency.Monthly
+        : BillingFrequency.Yearly
 
       return {
         planCode,

@@ -208,7 +208,7 @@ const BillingPricing = ({
     const opened = openCheckout({
       product:
         billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
-      trialDays: 0,
+      ...(user.trialEndDate ? { trialDays: 0 } : {}),
       email: user.email,
       passthrough: JSON.stringify({ uid: user.id }),
       locale: paddleLanguageMapping[language] || language,

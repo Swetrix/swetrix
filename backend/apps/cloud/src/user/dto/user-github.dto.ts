@@ -10,10 +10,6 @@ export class UserGithubDTO {
   @IsBoolean()
   registeredWithGithub: boolean
 
-  @ApiProperty({ example: '2023-01-01 23:12:55', required: true })
-  @IsString()
-  trialEndDate: string
-
   @ApiProperty({ example: 'hello@example.com', required: false })
   @IsEmail()
   email?: string

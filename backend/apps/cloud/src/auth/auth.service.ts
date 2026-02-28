@@ -571,10 +571,6 @@ export class AuthService {
   async registerUserGoogle(sub: string, email: string) {
     const query: UserGoogleDTO = {
       googleId: sub,
-      trialEndDate: dayjs
-        .utc()
-        .add(TRIAL_DURATION, 'day')
-        .format('YYYY-MM-DD HH:mm:ss'),
       registeredWithGoogle: true,
       isActive: true,
       emailRequests: 0,
@@ -975,10 +971,6 @@ export class AuthService {
   async registerUserGithub(id: number, email: string) {
     const query: UserGithubDTO = {
       githubId: id,
-      trialEndDate: dayjs
-        .utc()
-        .add(TRIAL_DURATION, 'day')
-        .format('YYYY-MM-DD HH:mm:ss'),
       registeredWithGithub: true,
       isActive: true,
       emailRequests: 0,

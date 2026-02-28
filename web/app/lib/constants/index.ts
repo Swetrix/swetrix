@@ -639,8 +639,10 @@ export const PLAN_LIMITS = {
         yearly: 40,
       },
     },
-    pid: 813694, // Plan ID
-    ypid: 813695, // Plan ID - Yearly billing
+    pid: 813694, // plan ID
+    ypid: 813695, // yearly plan ID
+    legacyPids: [] as number[],
+    legacyYpids: [] as number[],
     maxAlerts: 50,
   },
   '50k': {
@@ -662,8 +664,10 @@ export const PLAN_LIMITS = {
         yearly: 100,
       },
     },
-    pid: 918109, // Plan ID
-    ypid: 918110, // Plan ID - Yearly billing
+    pid: 918109,
+    ypid: 918110,
+    legacyPids: [] as number[],
+    legacyYpids: [] as number[],
     maxAlerts: 50,
   },
   freelancer: {
@@ -685,8 +689,10 @@ export const PLAN_LIMITS = {
         yearly: 140,
       },
     },
-    pid: 752316, // Plan ID
-    ypid: 776469, // Plan ID - Yearly billing
+    pid: 752316,
+    ypid: 776469,
+    legacyPids: [] as number[],
+    legacyYpids: [] as number[],
     maxAlerts: 50,
   },
   '100k': {
@@ -708,8 +714,10 @@ export const PLAN_LIMITS = {
         yearly: 150,
       },
     },
-    pid: 916455, // Plan ID
-    ypid: 916456, // Plan ID - Yearly billing
+    pid: 922473,
+    ypid: 922474,
+    legacyPids: [916455] as number[],
+    legacyYpids: [916456] as number[],
     maxAlerts: 50,
   },
   '200k': {
@@ -731,8 +739,10 @@ export const PLAN_LIMITS = {
         yearly: 230,
       },
     },
-    pid: 854654, // Plan ID
-    ypid: 854655, // Plan ID - Yearly billing
+    pid: 922471,
+    ypid: 922472,
+    legacyPids: [854654] as number[],
+    legacyYpids: [854655] as number[],
     maxAlerts: 50,
   },
   '500k': {
@@ -754,8 +764,10 @@ export const PLAN_LIMITS = {
         yearly: 390,
       },
     },
-    pid: 854656, // Plan ID
-    ypid: 854657, // Plan ID - Yearly billing
+    pid: 922470,
+    ypid: 854657,
+    legacyPids: [854656] as number[],
+    legacyYpids: [] as number[],
     maxAlerts: 50,
   },
   startup: {
@@ -777,8 +789,10 @@ export const PLAN_LIMITS = {
         yearly: 590,
       },
     },
-    pid: 752317,
+    pid: 922469,
     ypid: 776470,
+    legacyPids: [752317] as number[],
+    legacyYpids: [] as number[],
     maxAlerts: 50,
   },
   '2m': {
@@ -802,6 +816,8 @@ export const PLAN_LIMITS = {
     },
     pid: 854663,
     ypid: 854664,
+    legacyPids: [] as number[],
+    legacyYpids: [] as number[],
     maxAlerts: 50,
   },
   enterprise: {
@@ -823,8 +839,10 @@ export const PLAN_LIMITS = {
         yearly: 1390,
       },
     },
-    pid: 752318,
+    pid: 922468,
     ypid: 776471,
+    legacyPids: [752318] as number[],
+    legacyYpids: [] as number[],
     maxAlerts: 50,
   },
   '10m': {
@@ -847,7 +865,9 @@ export const PLAN_LIMITS = {
       },
     },
     pid: 854665,
-    ypid: 854666,
+    ypid: 922467,
+    legacyPids: [] as number[],
+    legacyYpids: [854666] as number[],
     maxAlerts: 50,
   },
   '15m': {
@@ -871,6 +891,8 @@ export const PLAN_LIMITS = {
     },
     pid: 916451,
     ypid: 916452,
+    legacyPids: [] as number[],
+    legacyYpids: [] as number[],
     maxAlerts: 50,
   },
   '20m': {
@@ -894,6 +916,8 @@ export const PLAN_LIMITS = {
     },
     pid: 916453,
     ypid: 916454,
+    legacyPids: [] as number[],
+    legacyYpids: [] as number[],
     maxAlerts: 50,
   },
 }

@@ -136,6 +136,7 @@ const Subscribe = () => {
 
     const opened = openCheckout({
       product,
+      ...(user?.trialEndDate ? { trialDays: 0 } : {}),
       email: user?.email,
       passthrough: JSON.stringify({ uid: user?.id }),
       locale: paddleLanguageMapping[i18n.language] || i18n.language,
