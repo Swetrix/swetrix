@@ -1,12 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { PADDLE_JS_URL, PADDLE_VENDOR_ID } from '~/lib/constants'
+import { PADDLE_JS_URL, PADDLE_CLIENT_TOKEN } from '~/lib/constants'
 import { loadScript } from '~/utils/generic'
 
 const POLL_INTERVAL_MS = 200
 const MAX_ATTEMPTS = 500 // 100 seconds
 
-type PaddleListener = (eventData: any) => void
+type PaddleEventName =
+  | 'checkout.loaded'
+  | 'checkout.customer.created'
+  | 'checkout.completed'
+  | 'checkout.closed'
+  | 'checkout.error'
+  | 'checkout.warning'
+  | 'checkout.payment.initiated'
+  | 'checkout.payment.failed'
+  | 'checkout.payment.selected'
+
+interface PaddleEventData {
+  name: PaddleEventName
+  data?: any
+}
+
+type PaddleListener = (eventData: PaddleEventData) => void
 
 let initStarted = false
 let paddleReady = false
@@ -29,9 +45,9 @@ function initPaddle() {
     attempts += 1
 
     if ((window as any)?.Paddle) {
-      ;(window as any).Paddle.Setup({
-        vendor: PADDLE_VENDOR_ID,
-        eventCallback: (eventData: any) => {
+      ;(window as any).Paddle.Initialize({
+        token: PADDLE_CLIENT_TOKEN,
+        eventCallback: (eventData: PaddleEventData) => {
           for (const listener of listeners) listener(eventData)
         },
       })
@@ -50,13 +66,34 @@ function initPaddle() {
 }
 
 interface UsePaddleOptions {
-  onEvent?: (eventData: any) => void
+  onEvent?: (eventData: PaddleEventData) => void
+}
+
+interface CheckoutItem {
+  priceId: string
+  quantity?: number
+}
+
+export interface CheckoutOptions {
+  items: CheckoutItem[]
+  customer?: { email?: string }
+  customData?: Record<string, string>
+  settings?: {
+    locale?: string
+    theme?: string
+    displayMode?: 'inline' | 'overlay'
+    frameTarget?: string
+    frameInitialHeight?: number
+    frameStyle?: string
+    allowLogout?: boolean
+    showAddDiscounts?: boolean
+  }
 }
 
 interface UsePaddleResult {
   isPaddleLoaded: boolean
   paddleLoadError: boolean
-  openCheckout: (options: Record<string, any>) => boolean
+  openCheckout: (options: CheckoutOptions) => boolean
 }
 
 export function usePaddle(options: UsePaddleOptions = {}): UsePaddleResult {
@@ -77,7 +114,6 @@ export function usePaddle(options: UsePaddleOptions = {}): UsePaddleResult {
     }
     stateSubscribers.add(stateSubscriber)
 
-    // Sync state in case init already completed before this effect ran
     stateSubscriber()
 
     initPaddle()
@@ -89,7 +125,7 @@ export function usePaddle(options: UsePaddleOptions = {}): UsePaddleResult {
   }, [])
 
   const openCheckout = useCallback(
-    (checkoutOptions: Record<string, any>): boolean => {
+    (checkoutOptions: CheckoutOptions): boolean => {
       if (!(window as any)?.Paddle) return false
 
       try {

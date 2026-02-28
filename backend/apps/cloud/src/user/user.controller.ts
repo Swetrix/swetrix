@@ -717,9 +717,9 @@ export class UserController {
     @Body() body: IChangePlanDTO,
   ): Promise<void> {
     this.logger.log({ body, id }, 'POST /change-plan')
-    const { planId } = body
+    const { priceId } = body
 
-    await this.userService.updateSubscription(id, planId)
+    await this.userService.updateSubscription(id, priceId)
     await this.projectService.clearProjectsRedisCache(id)
   }
 
@@ -730,9 +730,9 @@ export class UserController {
     @Body() body: IChangePlanDTO,
   ): Promise<any> {
     this.logger.log({ body, id }, 'POST /preview-plan')
-    const { planId } = body
+    const { priceId } = body
 
-    return this.userService.previewSubscription(id, planId)
+    return this.userService.previewSubscription(id, priceId)
   }
 
   @ApiBearerAuth()

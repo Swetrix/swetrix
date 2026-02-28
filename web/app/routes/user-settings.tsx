@@ -472,22 +472,18 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'preview-subscription-update': {
-      const planId = Number(formData.get('planId'))
+      const priceId = formData.get('priceId')?.toString()
 
-      if (
-        !Number.isFinite(planId) ||
-        planId <= 0 ||
-        !Number.isInteger(planId)
-      ) {
+      if (!priceId) {
         return data<UserSettingsActionData>(
-          { intent, error: 'Invalid planId' },
+          { intent, error: 'Invalid priceId' },
           { status: 400 },
         )
       }
 
       const result = await serverFetch(request, 'user/preview-plan', {
         method: 'POST',
-        body: { planId },
+        body: { priceId },
       })
 
       if (result.error) {
@@ -504,22 +500,18 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'change-subscription-plan': {
-      const planId = Number(formData.get('planId'))
+      const priceId = formData.get('priceId')?.toString()
 
-      if (
-        !Number.isFinite(planId) ||
-        planId <= 0 ||
-        !Number.isInteger(planId)
-      ) {
+      if (!priceId) {
         return data<UserSettingsActionData>(
-          { intent, error: 'Invalid planId' },
+          { intent, error: 'Invalid priceId' },
           { status: 400 },
         )
       }
 
       const result = await serverFetch(request, 'user/change-plan', {
         method: 'POST',
-        body: { planId },
+        body: { priceId },
       })
 
       if (result.error) {

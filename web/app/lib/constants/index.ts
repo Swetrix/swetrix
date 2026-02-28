@@ -303,8 +303,9 @@ export const TimeFormat = {
   '24-hour': '24-hour',
 } as const
 
-export const PADDLE_JS_URL = 'https://cdn.paddle.com/paddle/paddle.js'
-export const PADDLE_VENDOR_ID = 139393
+export const PADDLE_JS_URL = 'https://cdn.paddle.com/paddle/v2/paddle.js'
+// TODO: Replace with your actual Paddle Billing client-side token from the Paddle dashboard
+export const PADDLE_CLIENT_TOKEN = 'REPLACE_WITH_YOUR_PADDLE_CLIENT_TOKEN'
 
 export const reportFrequencies = ['weekly', 'monthly', 'quarterly', 'never']
 
@@ -621,7 +622,7 @@ export const PLAN_LIMITS = {
     maxAlerts: 50,
   },
   hobby: {
-    index: 1, // 'downgrade' or 'upgrade' logic depends on this
+    index: 1,
     planCode: 'hobby',
     monthlyUsageLimit: 10000,
     legacy: true,
@@ -639,261 +640,163 @@ export const PLAN_LIMITS = {
         yearly: 40,
       },
     },
-    pid: 813694, // Plan ID
-    ypid: 813695, // Plan ID - Yearly billing
+    pid: 813694, ypid: 813695,
+    // TODO: Replace with Paddle Billing price IDs from dashboard
+    priceId: 'pri_hobby_monthly', yearlyPriceId: 'pri_hobby_yearly',
     maxAlerts: 50,
   },
   '50k': {
-    index: 1.5, // 'downgrade' or 'upgrade' logic depends on this
+    index: 1.5,
     planCode: '50k',
     monthlyUsageLimit: 50000,
     legacy: true,
     price: {
-      USD: {
-        monthly: 12,
-        yearly: 120,
-      },
-      EUR: {
-        monthly: 10,
-        yearly: 100,
-      },
-      GBP: {
-        monthly: 10,
-        yearly: 100,
-      },
+      USD: { monthly: 12, yearly: 120 },
+      EUR: { monthly: 10, yearly: 100 },
+      GBP: { monthly: 10, yearly: 100 },
     },
-    pid: 918109, // Plan ID
-    ypid: 918110, // Plan ID - Yearly billing
+    pid: 918109, ypid: 918110,
+    priceId: 'pri_50k_monthly', yearlyPriceId: 'pri_50k_yearly',
     maxAlerts: 50,
   },
   freelancer: {
-    index: 2, // 'downgrade' or 'upgrade' logic depends on this
+    index: 2,
     planCode: 'freelancer',
     monthlyUsageLimit: 100000,
     legacy: true,
     price: {
-      USD: {
-        monthly: 15,
-        yearly: 150,
-      },
-      EUR: {
-        monthly: 15,
-        yearly: 150,
-      },
-      GBP: {
-        monthly: 14,
-        yearly: 140,
-      },
+      USD: { monthly: 15, yearly: 150 },
+      EUR: { monthly: 15, yearly: 150 },
+      GBP: { monthly: 14, yearly: 140 },
     },
-    pid: 752316, // Plan ID
-    ypid: 776469, // Plan ID - Yearly billing
+    pid: 752316, ypid: 776469,
+    priceId: 'pri_freelancer_monthly', yearlyPriceId: 'pri_freelancer_yearly',
     maxAlerts: 50,
   },
   '100k': {
-    index: 2.5, // 'downgrade' or 'upgrade' logic depends on this
+    index: 2.5,
     planCode: '100k',
     monthlyUsageLimit: 100000,
     legacy: false,
     price: {
-      USD: {
-        monthly: 19,
-        yearly: 190,
-      },
-      EUR: {
-        monthly: 17,
-        yearly: 170,
-      },
-      GBP: {
-        monthly: 15,
-        yearly: 150,
-      },
+      USD: { monthly: 19, yearly: 190 },
+      EUR: { monthly: 17, yearly: 170 },
+      GBP: { monthly: 15, yearly: 150 },
     },
-    pid: 916455, // Plan ID
-    ypid: 916456, // Plan ID - Yearly billing
+    pid: 916455, ypid: 916456,
+    priceId: 'pri_100k_monthly', yearlyPriceId: 'pri_100k_yearly',
     maxAlerts: 50,
   },
   '200k': {
-    index: 3, // 'downgrade' or 'upgrade' logic depends on this
+    index: 3,
     planCode: '200k',
     monthlyUsageLimit: 200000,
     legacy: false,
     price: {
-      USD: {
-        monthly: 29,
-        yearly: 290,
-      },
-      EUR: {
-        monthly: 25,
-        yearly: 250,
-      },
-      GBP: {
-        monthly: 23,
-        yearly: 230,
-      },
+      USD: { monthly: 29, yearly: 290 },
+      EUR: { monthly: 25, yearly: 250 },
+      GBP: { monthly: 23, yearly: 230 },
     },
-    pid: 854654, // Plan ID
-    ypid: 854655, // Plan ID - Yearly billing
+    pid: 854654, ypid: 854655,
+    priceId: 'pri_200k_monthly', yearlyPriceId: 'pri_200k_yearly',
     maxAlerts: 50,
   },
   '500k': {
-    index: 4, // 'downgrade' or 'upgrade' logic depends on this
+    index: 4,
     planCode: '500k',
     monthlyUsageLimit: 500000,
     legacy: false,
     price: {
-      USD: {
-        monthly: 49,
-        yearly: 490,
-      },
-      EUR: {
-        monthly: 42,
-        yearly: 420,
-      },
-      GBP: {
-        monthly: 39,
-        yearly: 390,
-      },
+      USD: { monthly: 49, yearly: 490 },
+      EUR: { monthly: 42, yearly: 420 },
+      GBP: { monthly: 39, yearly: 390 },
     },
-    pid: 854656, // Plan ID
-    ypid: 854657, // Plan ID - Yearly billing
+    pid: 854656, ypid: 854657,
+    priceId: 'pri_500k_monthly', yearlyPriceId: 'pri_500k_yearly',
     maxAlerts: 50,
   },
   startup: {
-    index: 5, // 'downgrade' or 'upgrade' logic depends on this
+    index: 5,
     planCode: 'startup',
     monthlyUsageLimit: 1000000,
     legacy: false,
     price: {
-      USD: {
-        monthly: 79,
-        yearly: 790,
-      },
-      EUR: {
-        monthly: 69,
-        yearly: 690,
-      },
-      GBP: {
-        monthly: 59,
-        yearly: 590,
-      },
+      USD: { monthly: 79, yearly: 790 },
+      EUR: { monthly: 69, yearly: 690 },
+      GBP: { monthly: 59, yearly: 590 },
     },
-    pid: 752317,
-    ypid: 776470,
+    pid: 752317, ypid: 776470,
+    priceId: 'pri_startup_monthly', yearlyPriceId: 'pri_startup_yearly',
     maxAlerts: 50,
   },
   '2m': {
-    index: 6, // 'downgrade' or 'upgrade' logic depends on this
+    index: 6,
     planCode: '2m',
     monthlyUsageLimit: 2000000,
     legacy: false,
     price: {
-      USD: {
-        monthly: 119,
-        yearly: 1190,
-      },
-      EUR: {
-        monthly: 99,
-        yearly: 990,
-      },
-      GBP: {
-        monthly: 89,
-        yearly: 890,
-      },
+      USD: { monthly: 119, yearly: 1190 },
+      EUR: { monthly: 99, yearly: 990 },
+      GBP: { monthly: 89, yearly: 890 },
     },
-    pid: 854663,
-    ypid: 854664,
+    pid: 854663, ypid: 854664,
+    priceId: 'pri_2m_monthly', yearlyPriceId: 'pri_2m_yearly',
     maxAlerts: 50,
   },
   enterprise: {
-    index: 7, // 'downgrade' or 'upgrade' logic depends on this
+    index: 7,
     planCode: 'enterprise',
     monthlyUsageLimit: 5000000,
     legacy: false,
     price: {
-      USD: {
-        monthly: 179,
-        yearly: 1790,
-      },
-      EUR: {
-        monthly: 149,
-        yearly: 1490,
-      },
-      GBP: {
-        monthly: 139,
-        yearly: 1390,
-      },
+      USD: { monthly: 179, yearly: 1790 },
+      EUR: { monthly: 149, yearly: 1490 },
+      GBP: { monthly: 139, yearly: 1390 },
     },
-    pid: 752318,
-    ypid: 776471,
+    pid: 752318, ypid: 776471,
+    priceId: 'pri_enterprise_monthly', yearlyPriceId: 'pri_enterprise_yearly',
     maxAlerts: 50,
   },
   '10m': {
-    index: 8, // 'downgrade' or 'upgrade' logic depends on this
+    index: 8,
     planCode: '10m',
     monthlyUsageLimit: 10000000,
     legacy: false,
     price: {
-      USD: {
-        monthly: 249,
-        yearly: 2490,
-      },
-      EUR: {
-        monthly: 209,
-        yearly: 2090,
-      },
-      GBP: {
-        monthly: 189,
-        yearly: 1890,
-      },
+      USD: { monthly: 249, yearly: 2490 },
+      EUR: { monthly: 209, yearly: 2090 },
+      GBP: { monthly: 189, yearly: 1890 },
     },
-    pid: 854665,
-    ypid: 854666,
+    pid: 854665, ypid: 854666,
+    priceId: 'pri_10m_monthly', yearlyPriceId: 'pri_10m_yearly',
     maxAlerts: 50,
   },
   '15m': {
-    index: 9, // 'downgrade' or 'upgrade' logic depends on this
+    index: 9,
     planCode: '15m',
     monthlyUsageLimit: 15000000,
     legacy: false,
     price: {
-      USD: {
-        monthly: 349,
-        yearly: 3490,
-      },
-      EUR: {
-        monthly: 299,
-        yearly: 2990,
-      },
-      GBP: {
-        monthly: 259,
-        yearly: 2590,
-      },
+      USD: { monthly: 349, yearly: 3490 },
+      EUR: { monthly: 299, yearly: 2990 },
+      GBP: { monthly: 259, yearly: 2590 },
     },
-    pid: 916451,
-    ypid: 916452,
+    pid: 916451, ypid: 916452,
+    priceId: 'pri_15m_monthly', yearlyPriceId: 'pri_15m_yearly',
     maxAlerts: 50,
   },
   '20m': {
-    index: 10, // 'downgrade' or 'upgrade' logic depends on this
+    index: 10,
     planCode: '20m',
     monthlyUsageLimit: 20000000,
     legacy: false,
     price: {
-      USD: {
-        monthly: 419,
-        yearly: 4190,
-      },
-      EUR: {
-        monthly: 359,
-        yearly: 3590,
-      },
-      GBP: {
-        monthly: 319,
-        yearly: 3190,
-      },
+      USD: { monthly: 419, yearly: 4190 },
+      EUR: { monthly: 359, yearly: 3590 },
+      GBP: { monthly: 319, yearly: 3190 },
     },
-    pid: 916453,
-    ypid: 916454,
+    pid: 916453, ypid: 916454,
+    priceId: 'pri_20m_monthly', yearlyPriceId: 'pri_20m_yearly',
     maxAlerts: 50,
   },
 }

@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNumber } from 'class-validator'
+import { IsString, IsNotEmpty } from 'class-validator'
 
 export class IChangePlanDTO {
-  @ApiProperty({ example: 12345, required: true })
-  @IsNumber()
-  planId: number
+  @ApiProperty({ example: 'pri_100k_monthly', required: true })
+  @IsString()
+  @IsNotEmpty()
+  priceId: string
 }

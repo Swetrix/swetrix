@@ -266,7 +266,7 @@ const UserSettings = () => {
   const [cancellationFeedback, setCancellationFeedback] = useState('')
   const [isCancellingSubscription, setIsCancellingSubscription] =
     useState(false)
-  const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
+  const [lastEvent, setLastEvent] = useState<{ name: string } | null>(null)
 
   const { openCheckout } = usePaddle({ onEvent: setLastEvent })
 
@@ -287,13 +287,16 @@ const UserSettings = () => {
   const {
     nextBillDate,
     planCode,
+    subID,
     subUpdateURL,
+    subCancelURL,
     trialEndDate,
     timeFormat: userTimeFormat,
     cancellationEffectiveDate,
-    subCancelURL,
     maxEventsCount = 0,
   } = user || {}
+
+  const isClassicSubscriber = subID ? !subID.startsWith('sub_') : false
 
   const isSubscriber = !['none', 'trial', 'free'].includes(planCode || '')
   const isLegacyTrial = planCode === 'trial'
@@ -366,31 +369,48 @@ const UserSettings = () => {
   }
 
   const onUpdatePaymentDetails = () => {
-    if (!subUpdateURL) {
+    if (isClassicSubscriber && subUpdateURL) {
+      const opened = openCheckout({
+        items: [],
+        settings: {
+          displayMode: 'inline',
+          frameTarget: 'checkout-container',
+          frameInitialHeight: 416,
+          frameStyle:
+            'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
+          locale: paddleLanguageMapping[language] || language,
+          theme: theme === 'dark' ? 'dark' : 'light',
+        },
+      } as any)
+
+      if (!opened) {
+        window.location.replace(subUpdateURL)
+        return
+      }
+
+      setTimeout(() => {
+        document.querySelector('#checkout-container')?.scrollIntoView()
+      }, 500)
+      return
+    }
+
+    if (!subID) {
       toast.error(t('apiNotifications.somethingWentWrong'))
       return
     }
 
-    const opened = openCheckout({
-      override: subUpdateURL,
-      method: 'inline',
-      frameTarget: 'checkout-container',
-      frameInitialHeight: 416,
-      frameStyle:
-        'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
-      locale: paddleLanguageMapping[language] || language,
-      displayModeTheme: theme,
-      country: metainfo.country,
-    })
-
-    if (!opened) {
-      window.location.replace(subUpdateURL)
-      return
+    try {
+      ;(window as any).Paddle.Checkout.open({
+        settings: {
+          displayMode: 'overlay',
+          theme: theme === 'dark' ? 'dark' : 'light',
+          locale: language,
+        },
+        transactionId: subID,
+      })
+    } catch {
+      toast.error(t('apiNotifications.somethingWentWrong'))
     }
-
-    setTimeout(() => {
-      document.querySelector('#checkout-container')?.scrollIntoView()
-    }, 500)
   }
 
   const tabs = getTabs(t)
@@ -1536,7 +1556,7 @@ const UserSettings = () => {
                       />
 
                       <div className='mt-4 flex flex-wrap gap-3'>
-                        {subUpdateURL && !cancellationEffectiveDate ? (
+                        {(subUpdateURL || subID) && !cancellationEffectiveDate ? (
                           <Button
                             onClick={onUpdatePaymentDetails}
                             type='button'
@@ -1546,7 +1566,7 @@ const UserSettings = () => {
                             {t('billing.update')}
                           </Button>
                         ) : null}
-                        {subCancelURL && !cancellationEffectiveDate ? (
+                        {(subCancelURL || subID) && !cancellationEffectiveDate ? (
                           <Button
                             onClick={() => setIsCancelSubModalOpened(true)}
                             type='button'

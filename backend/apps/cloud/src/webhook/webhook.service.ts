@@ -1,4 +1,3 @@
-/* eslint-disable no-prototype-builtins */
 import crypto from 'crypto'
 import Validator from 'sns-payload-validator'
 import {
@@ -15,6 +14,9 @@ import { ProjectService } from '../project/project.service'
 import { UserService } from '../user/user.service'
 import { ReportFrequency } from '../project/enums'
 
+const { PADDLE_WEBHOOK_SECRET } = process.env
+
+// Paddle Classic public key (for legacy subscribers during transition)
 const PADDLE_PUB_KEY = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqFcHslKkXcJlTYg4FL6j
 XIKu0jM8PUMHRNbseLVqXS81DX7C5rZbacs6mU9MpyZv0QEXjiyZ9zXbQH5200Nx
@@ -31,11 +33,9 @@ ThpjdAzyWEhdnTyWWbxeoxsCAwEAAQ==
 -----END PUBLIC KEY-----`
 
 const paddleWhitelistIPs = [
-  // Production IPs
   '34.232.58.13',
   '34.195.105.136',
   '34.237.3.244',
-  // Sandbox IPs
   '34.194.127.46',
   '54.234.237.108',
   '3.208.120.145',
@@ -51,6 +51,11 @@ export class WebhookService {
     private readonly projectService: ProjectService,
   ) {}
 
+  public isClassicWebhook(body: any, headers: Record<string, string>): boolean {
+    return !!body?.alert_name || !!body?.p_signature
+  }
+
+  // Paddle Classic signature verification
   public ksort(obj: Record<string, unknown>): Record<string, unknown> {
     const keys = _keys(obj).sort()
     const sortedObj: Record<string, unknown> = {}
@@ -62,27 +67,20 @@ export class WebhookService {
     return sortedObj
   }
 
-  public validateWebhook(data: any) {
-    // Grab p_signature
+  public validateClassicWebhook(data: any) {
     const mySig = Buffer.from(data.p_signature, 'base64')
-    // Remove p_signature from object - not included in array of fields used in verification.
     delete data.p_signature
-    // Need to sort array by key in ascending order
     data = this.ksort(data)
     for (const property in data) {
       if (data.hasOwnProperty(property) && typeof data[property] !== 'string') {
         if (_isArray(data[property])) {
-          // is it an array
           data[property] = data[property].toString()
         } else {
-          // if its not an array and not a string, then it is a JSON obj
           data[property] = JSON.stringify(data[property])
         }
       }
     }
-    // Serialise remaining fields of jsonObj
     const serialized = serialize(data)
-    // verify the serialized array against the signature using SHA1 with your public key.
     const verifier = crypto.createVerify('sha1')
     verifier.update(serialized)
     verifier.end()
@@ -90,14 +88,51 @@ export class WebhookService {
     const verification = verifier.verify(PADDLE_PUB_KEY, mySig)
 
     if (!verification) {
-      this.logger.error(`Webhook signature verification failed: ${data}`)
+      this.logger.error(`Classic webhook signature verification failed: ${data}`)
       throw new BadRequestException('Webhook signature verification failed')
     }
   }
 
-  public verifyIP(reqIP: string) {
+  public verifyClassicIP(reqIP: string) {
     if (!_includes(paddleWhitelistIPs, reqIP)) {
       throw new ForbiddenException('You have no access to this endpoint')
+    }
+  }
+
+  // Paddle Billing signature verification (HMAC-SHA256)
+  public validateBillingWebhook(rawBody: string | Buffer, signature: string) {
+    if (!PADDLE_WEBHOOK_SECRET) {
+      throw new BadRequestException('Paddle webhook secret is not configured')
+    }
+
+    if (!signature) {
+      throw new BadRequestException('Missing Paddle-Signature header')
+    }
+
+    const parts: Record<string, string> = {}
+    for (const pair of signature.split(';')) {
+      const [key, value] = pair.split('=')
+      if (key && value) {
+        parts[key] = value
+      }
+    }
+
+    const { ts, h1 } = parts
+
+    if (!ts || !h1) {
+      throw new BadRequestException('Invalid Paddle-Signature format')
+    }
+
+    const body = typeof rawBody === 'string' ? rawBody : rawBody.toString('utf8')
+    const payload = `${ts}:${body}`
+    const expectedSignature = crypto
+      .createHmac('sha256', PADDLE_WEBHOOK_SECRET)
+      .update(payload)
+      .digest('hex')
+
+    if (!crypto.timingSafeEqual(Buffer.from(h1), Buffer.from(expectedSignature))) {
+      this.logger.error('Paddle Billing webhook signature verification failed')
+      throw new BadRequestException('Webhook signature verification failed')
     }
   }
 
@@ -114,7 +149,6 @@ export class WebhookService {
       where: { email },
     })
 
-    // checking if the bounce originates from admin email reports
     if (user) {
       await this.userService.update(user.id, {
         reportFrequency: ReportFrequency.NEVER,
@@ -122,7 +156,6 @@ export class WebhookService {
       return
     }
 
-    // checking if the bounce originates from project subscriber email reports
     const subscribtion = await this.projectService.findOneSubscriber({
       email,
     })
@@ -131,8 +164,6 @@ export class WebhookService {
       await this.projectService.removeSubscriberById(subscribtion.id)
     }
 
-    // if it's some other kind of bounce, we can ignore it because it originates from other transactional emails
-    // but I'll log it here for now
     this.logger.log(
       `Received an email notification, but it originates from other transactional emails. Email: ${email}`,
       'POST /webhook/ses',

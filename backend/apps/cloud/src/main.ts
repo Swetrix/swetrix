@@ -13,7 +13,7 @@ import { validateLicense } from './common/license'
 async function bootstrap() {
   validateLicense()
 
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule, { rawBody: true })
 
   app.use(cookieParser())
   app.useGlobalPipes(new ValidationPipe())
@@ -59,8 +59,6 @@ async function bootstrap() {
 
     next()
   })
-
-  app.use('/webhook', bodyParser.raw({ type: 'application/json' }))
 
   app.use('/webhook/sns', bodyParser.raw())
   app.use('/webhook/sns', bodyParser.text())

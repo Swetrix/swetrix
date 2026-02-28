@@ -14,7 +14,6 @@ import { usePaddle } from '~/hooks/usePaddle'
 import {
   BillingFrequency,
   CURRENCIES,
-  paddleLanguageMapping,
   PLAN_LIMITS,
   STANDARD_PLANS,
   TRIAL_DAYS,
@@ -49,7 +48,7 @@ const Subscribe = () => {
 
   const onPaddleEvent = useCallback(
     (eventData: any) => {
-      if (eventData?.event === 'Checkout.Complete') {
+      if (eventData?.name === 'checkout.completed') {
         setHasCompletedCheckout(true)
       }
     },
@@ -117,30 +116,28 @@ const Subscribe = () => {
 
     if (!tier) return
 
-    const hasPid = 'pid' in tier && typeof tier.pid === 'number'
-    const hasYpid = 'ypid' in tier && typeof tier.ypid === 'number'
-
-    const product =
+    const priceId =
       selectedBillingFrequency === BillingFrequency.monthly
-        ? hasPid
-          ? tier.pid
+        ? 'priceId' in tier
+          ? tier.priceId
           : undefined
-        : hasYpid
-          ? tier.ypid
+        : 'yearlyPriceId' in tier
+          ? tier.yearlyPriceId
           : undefined
 
-    if (!product) {
+    if (!priceId) {
       toast.error(t('apiNotifications.somethingWentWrong'))
       return
     }
 
     const opened = openCheckout({
-      product,
-      email: user?.email,
-      passthrough: JSON.stringify({ uid: user?.id }),
-      locale: paddleLanguageMapping[i18n.language] || i18n.language,
-      displayModeTheme: theme,
-      country: metainfo.country,
+      items: [{ priceId: priceId as string }],
+      customer: { email: user?.email },
+      customData: { uid: user?.id || '' },
+      settings: {
+        theme: theme === 'dark' ? 'dark' : 'light',
+        locale: i18n.language,
+      },
     })
 
     if (!opened) {

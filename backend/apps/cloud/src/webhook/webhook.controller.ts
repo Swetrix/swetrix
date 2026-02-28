@@ -7,6 +7,7 @@ import {
   NotFoundException,
   HttpCode,
   Ip,
+  Req,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import _find from 'lodash/find'
@@ -36,7 +37,6 @@ export class WebhookController {
     private readonly mailerService: MailerService,
   ) {}
 
-  // AWS SNS webhook
   @Post('/sns')
   @HttpCode(200)
   async snsWebhook(@Body() body): Promise<any> {
@@ -55,17 +55,13 @@ export class WebhookController {
     switch (message.eventType) {
       case 'Bounce': {
         const { emailAddress } = message.bounce.bouncedRecipients[0]
-
         await this.webhookService.unsubscribeByEmail(emailAddress)
-
         break
       }
 
       case 'Complaint': {
         const { emailAddress } = message.complaint.complainedRecipients[0]
-
         await this.webhookService.unsubscribeByEmail(emailAddress)
-
         break
       }
 
@@ -73,18 +69,31 @@ export class WebhookController {
     }
   }
 
-  // Paddle - payment processor webhook
   @Post('/paddle')
   @HttpCode(200)
   async paddleWebhook(
     @Body() body,
     @Headers() headers,
     @Ip() reqIP,
+    @Req() req,
+  ): Promise<any> {
+    if (this.webhookService.isClassicWebhook(body, headers)) {
+      return this.handleClassicWebhook(body, headers, reqIP)
+    }
+
+    return this.handleBillingWebhook(body, headers, req)
+  }
+
+  // ─── Paddle Classic (legacy subscribers) ───────────────────────────
+
+  private async handleClassicWebhook(
+    body: any,
+    headers: Record<string, string>,
+    reqIP: string,
   ): Promise<any> {
     const ip = getIPFromHeaders(headers) || reqIP || ''
-
-    this.webhookService.verifyIP(ip)
-    this.webhookService.validateWebhook(body)
+    this.webhookService.verifyClassicIP(ip)
+    this.webhookService.validateClassicWebhook(body)
 
     switch (body.alert_name) {
       case 'subscription_created':
@@ -133,7 +142,7 @@ export class WebhookController {
 
           if (!currentUser) {
             this.logger.error(
-              '[PADDLE WEBHOOK / FATAL] Cannot find the webhook user',
+              '[PADDLE CLASSIC WEBHOOK / FATAL] Cannot find the webhook user',
             )
             this.logger.error(JSON.stringify(body, null, 2))
             return
@@ -239,11 +248,7 @@ export class WebhookController {
 
         if (!subscriber) {
           this.logger.error(
-            `[subscription_payment_succeeded] Cannot find the subscriber with subID: ${subID}\nBody: ${JSON.stringify(
-              body,
-              null,
-              2,
-            )}`,
+            `[subscription_payment_succeeded] Cannot find the subscriber with subID: ${subID}\nBody: ${JSON.stringify(body, null, 2)}`,
           )
           return
         }
@@ -270,7 +275,243 @@ export class WebhookController {
       }
 
       default:
-        throw new BadRequestException('Unexpected event type')
+        throw new BadRequestException('Unexpected Classic event type')
+    }
+  }
+
+  // ─── Paddle Billing (new subscribers) ──────────────────────────────
+
+  private async handleBillingWebhook(
+    body: any,
+    headers: Record<string, string>,
+    req: any,
+  ): Promise<any> {
+    const rawBody = req.rawBody || JSON.stringify(body)
+    const signature = headers['paddle-signature'] || ''
+
+    this.webhookService.validateBillingWebhook(rawBody, signature)
+
+    const { event_type: eventType, data } = body
+
+    switch (eventType) {
+      case 'subscription.created':
+      case 'subscription.updated': {
+        const subscriptionId = data.id
+        const status = data.status
+        const customData = data.custom_data || {}
+        const uid = customData.uid
+        const scheduledChange = data.scheduled_change
+        const currentBillingPeriod = data.current_billing_period
+        const items = data.items || []
+        const currencyCode = data.currency_code
+
+        if (!items.length) {
+          this.logger.error(
+            `[${eventType}] No items in subscription: ${JSON.stringify(body)}`,
+          )
+          return
+        }
+
+        const priceId = items[0].price?.id
+        if (!priceId) {
+          this.logger.error(
+            `[${eventType}] No price ID found: ${JSON.stringify(body)}`,
+          )
+          return
+        }
+
+        let monthlyBilling = true
+        let plan = _find(ACCOUNT_PLANS, (p) => p.priceId === priceId)
+
+        if (!plan) {
+          monthlyBilling = false
+          plan = _find(ACCOUNT_PLANS, (p) => p.yearlyPriceId === priceId)
+        }
+
+        if (!plan) {
+          throw new NotFoundException(
+            `The selected account plan (price: ${priceId}) is not available`,
+          )
+        }
+
+        let currentUser = uid
+          ? await this.userService.findOne({ where: { id: uid } })
+          : null
+
+        if (!currentUser) {
+          currentUser = await this.userService.findOne({
+            where: { subID: subscriptionId },
+          })
+
+          if (!currentUser) {
+            this.logger.error(
+              '[PADDLE BILLING WEBHOOK / FATAL] Cannot find the webhook user',
+            )
+            this.logger.error(JSON.stringify(body, null, 2))
+            return
+          }
+        }
+
+        const isTrialing = status === 'trialing'
+        const shouldUnlock =
+          eventType === 'subscription.created' ||
+          isNextPlan(currentUser.planCode, plan.id)
+
+        const nextBillDate = currentBillingPeriod?.ends_at
+          ? new Date(currentBillingPeriod.ends_at)
+          : null
+
+        const statusParams =
+          status === 'paused'
+            ? {
+                dashboardBlockReason: DashboardBlockReason.payment_failed,
+                isAccountBillingSuspended: true,
+              }
+            : shouldUnlock || isTrialing
+              ? {
+                  dashboardBlockReason: null,
+                  planExceedContactedAt: null,
+                  isAccountBillingSuspended: false,
+                }
+              : {}
+
+        const cancellationEffectiveDate =
+          scheduledChange?.action === 'cancel'
+            ? scheduledChange.effective_at
+            : null
+
+        const updateParams: Record<string, any> = {
+          planCode: plan.id,
+          subID: subscriptionId,
+          subUpdateURL: null,
+          subCancelURL: null,
+          nextBillDate,
+          billingFrequency: monthlyBilling
+            ? BillingFrequency.Monthly
+            : BillingFrequency.Yearly,
+          tierCurrency: currencyCode,
+          cancellationEffectiveDate,
+          ...statusParams,
+        }
+
+        if (isTrialing && nextBillDate) {
+          updateParams.trialEndDate = nextBillDate
+        }
+
+        await this.userService.update(currentUser.id, updateParams)
+        await this.projectService.clearProjectsRedisCache(currentUser.id)
+
+        if (eventType === 'subscription.created' && isTrialing) {
+          await this.mailerService.sendEmail(
+            currentUser.email,
+            LetterTemplate.SignUp,
+          )
+        }
+
+        if (status === 'paused') {
+          await this.mailerService.sendEmail(
+            currentUser.email,
+            LetterTemplate.DashboardLockedPaymentFailure,
+            {
+              billingUrl: 'https://swetrix.com/user-settings?tab=billing',
+            },
+          )
+        }
+
+        break
+      }
+
+      case 'subscription.canceled': {
+        const subscriptionId = data.id
+        const scheduledChange = data.scheduled_change
+        const cancellationEffectiveDate =
+          scheduledChange?.effective_at || new Date().toISOString()
+
+        await this.userService.updateBySubID(subscriptionId, {
+          nextBillDate: null,
+          cancellationEffectiveDate,
+        })
+
+        const user = await this.userService.findOne({
+          where: { subID: subscriptionId },
+        })
+
+        if (user?.email) {
+          const isTrialing =
+            user.trialEndDate && new Date(user.trialEndDate) > new Date()
+
+          if (!isTrialing) {
+            await this.mailerService.sendEmail(
+              user.email,
+              LetterTemplate.SubscriptionCancelled,
+            )
+          }
+        }
+
+        break
+      }
+
+      case 'transaction.completed': {
+        const subscriptionId = data.subscription_id
+        if (!subscriptionId) return
+
+        const subscriber = await this.userService.findOne({
+          where: { subID: subscriptionId },
+        })
+
+        if (!subscriber) {
+          this.logger.error(
+            `[transaction.completed] Cannot find the subscriber with subID: ${subscriptionId}\nBody: ${JSON.stringify(body, null, 2)}`,
+          )
+          return
+        }
+
+        const updateParams: Record<string, any> = {}
+
+        if (
+          subscriber.dashboardBlockReason ===
+          DashboardBlockReason.payment_failed
+        ) {
+          updateParams.dashboardBlockReason = null
+          updateParams.isAccountBillingSuspended = false
+        }
+
+        if (Object.keys(updateParams).length > 0) {
+          await this.userService.updateBySubID(subscriptionId, updateParams)
+          await this.projectService.clearProjectsRedisCacheBySubId(subscriptionId)
+        }
+
+        break
+      }
+
+      case 'transaction.payment_failed': {
+        const subscriptionId = data.subscription_id
+        if (!subscriptionId) return
+
+        const subscriber = await this.userService.findOne({
+          where: { subID: subscriptionId },
+        })
+
+        if (!subscriber) return
+
+        await this.userService.updateBySubID(subscriptionId, {
+          dashboardBlockReason: DashboardBlockReason.payment_failed,
+          isAccountBillingSuspended: true,
+        })
+
+        await this.mailerService.sendEmail(
+          subscriber.email,
+          LetterTemplate.DashboardLockedPaymentFailure,
+          {
+            billingUrl: 'https://swetrix.com/user-settings?tab=billing',
+          },
+        )
+
+        break
+      }
+
+      default:
+        throw new BadRequestException(`Unexpected Billing event type: ${eventType}`)
     }
   }
 }

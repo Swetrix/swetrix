@@ -16,7 +16,6 @@ import {
   PLAN_LIMITS,
   STANDARD_PLANS,
   PURCHASABLE_LEGACY_PLANS,
-  paddleLanguageMapping,
 } from '~/lib/constants'
 import { Metainfo, DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { useAuth } from '~/providers/AuthProvider'
@@ -31,10 +30,12 @@ import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
+import type { CheckoutOptions } from '~/hooks/usePaddle'
+
 interface BillingPricingProps {
-  lastEvent?: { event: string } | null
+  lastEvent?: { name: string } | null
   metainfo?: Metainfo
-  openCheckout: (options: Record<string, any>) => boolean
+  openCheckout: (options: CheckoutOptions) => boolean
 }
 
 const formatEventsLong = (value: number): string =>
@@ -60,12 +61,12 @@ const BillingPricing = ({
     isNewPlanConfirmationModalOpened,
     setIsNewPlanConfirmationModalOpened,
   ] = useState(false)
-  const [newPlanId, setNewPlanId] = useState<number | null>(null)
+  const [newPlanPriceId, setNewPlanPriceId] = useState<string | null>(null)
   const [downgradeTo, setDowngradeTo] = useState<{
     planCode: string
     name: string
-    pid: string
-    ypid: string
+    priceId: string
+    yearlyPriceId: string
   } | null>(null)
   const [showDowngradeModal, setShowDowngradeModal] = useState(false)
   const [billingFrequency, setBillingFrequency] = useState(
@@ -155,16 +156,16 @@ const BillingPricing = ({
   useEffect(() => {
     if (!lastEvent) return
 
-    const lastEventHandler = async (data: { event: string }) => {
+    const lastEventHandler = async (data: { name: string }) => {
       if (_isNil(data)) return
-      if (data.event === 'Checkout.Complete') {
+      if (data.name === 'checkout.completed') {
         setTimeout(async () => {
           await loadUser()
           toast.success(t('apiNotifications.subscriptionUpdated'))
         }, 3000)
         setPlanCodeLoading(null)
         setDowngradeTo(null)
-      } else if (data.event === 'Checkout.Close') {
+      } else if (data.name === 'checkout.closed') {
         setPlanCodeLoading(null)
         setDowngradeTo(null)
       }
@@ -172,10 +173,10 @@ const BillingPricing = ({
     lastEventHandler(lastEvent)
   }, [lastEvent, t, loadUser])
 
-  const loadSubUpdatePreview = (planId: number) => {
+  const loadSubUpdatePreview = (priceId: string) => {
     setIsNewPlanConfirmationModalOpened(true)
     previewFetcher.submit(
-      { intent: 'preview-subscription-update', planId: String(planId) },
+      { intent: 'preview-subscription-update', priceId },
       { method: 'POST', action: '/user-settings' },
     )
   }
@@ -190,31 +191,31 @@ const BillingPricing = ({
 
     if (planCodeLoading || !isSelectingDifferentPlan) return
 
+    const priceId =
+      billingFrequency === BillingFrequency.monthly
+        ? tier.priceId
+        : tier.yearlyPriceId
+
     if (
       user.subID &&
       !user.cancellationEffectiveDate &&
       user.planCode !== 'none'
     ) {
-      const planId = Number(
-        billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
-      )
-      setNewPlanId(planId)
-      loadSubUpdatePreview(planId)
+      setNewPlanPriceId(priceId)
+      loadSubUpdatePreview(priceId)
       return
     }
 
     setPlanCodeLoading(tier.planCode)
 
     const opened = openCheckout({
-      product:
-        billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
-      trialDays: 0,
-      email: user.email,
-      passthrough: JSON.stringify({ uid: user.id }),
-      locale: paddleLanguageMapping[language] || language,
-      title: tier.name,
-      displayModeTheme: theme,
-      country: metainfo.country,
+      items: [{ priceId }],
+      customer: { email: user.email },
+      customData: { uid: user.id },
+      settings: {
+        theme: theme === 'dark' ? 'dark' : 'light',
+        locale: language,
+      },
     })
 
     if (!opened) {
@@ -227,12 +228,12 @@ const BillingPricing = ({
   const closeUpdateModal = (force?: boolean) => {
     if (isSubUpdating && !force) return
     setIsNewPlanConfirmationModalOpened(false)
-    setNewPlanId(null)
+    setNewPlanPriceId(null)
   }
 
   const updateSubscription = () => {
     changePlanFetcher.submit(
-      { intent: 'change-subscription-plan', planId: String(newPlanId) },
+      { intent: 'change-subscription-plan', priceId: newPlanPriceId || '' },
       { method: 'POST', action: '/user-settings' },
     )
   }

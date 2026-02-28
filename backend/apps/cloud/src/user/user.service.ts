@@ -31,6 +31,7 @@ import {
   TRIAL_DURATION,
   BillingFrequency,
   PlanCode,
+  isClassicSubscription,
 } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
@@ -99,6 +100,8 @@ const CURRENCY_BY_COUNTRY = {
 }
 
 const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
+const PADDLE_CLASSIC_API = 'https://vendors.paddle.com/api/2.0'
+const PADDLE_BILLING_API = 'https://api.paddle.com'
 
 @Injectable()
 export class UserService {
@@ -333,72 +336,91 @@ export class UserService {
     return CURRENCY_BY_COUNTRY[country] || USD
   }
 
+  // Paddle Classic: look up by numeric plan ID
   getPlanById(planId: number) {
-    if (!planId) {
-      return null
-    }
+    if (!planId) return null
 
     const stringifiedPlanId = String(planId)
-
     const plan = Object.values(ACCOUNT_PLANS).find(
-      (tier) =>
-        // @ts-ignore
-        tier.pid === stringifiedPlanId ||
-        // @ts-ignore
-        tier.ypid === stringifiedPlanId,
+      (tier) => tier.pid === stringifiedPlanId || tier.ypid === stringifiedPlanId,
     )
 
-    // @ts-ignore
     if (plan && plan.pid) {
-      const planCode = plan.id
-      const billingFrequency =
-        // @ts-ignore
-        Number(plan?.pid) === planId
-          ? BillingFrequency.Monthly
-          : BillingFrequency.Yearly
-
       return {
-        planCode,
-        billingFrequency,
+        planCode: plan.id,
+        billingFrequency:
+          plan.pid === stringifiedPlanId
+            ? BillingFrequency.Monthly
+            : BillingFrequency.Yearly,
       }
     }
 
     return null
   }
 
-  async previewSubscription(id: string, planID: number) {
-    const user = await this.findOne({ where: { id } })
-    const plan = this.getPlanById(planID)
+  // Paddle Billing: look up by price ID string
+  getPlanByPriceId(priceId: string) {
+    if (!priceId) return null
 
-    if (!plan) {
-      throw new BadRequestException('Plan not found')
+    const plan = Object.values(ACCOUNT_PLANS).find(
+      (tier) => tier.priceId === priceId || tier.yearlyPriceId === priceId,
+    )
+
+    if (plan && plan.priceId) {
+      return {
+        planCode: plan.id,
+        billingFrequency:
+          plan.priceId === priceId
+            ? BillingFrequency.Monthly
+            : BillingFrequency.Yearly,
+      }
     }
+
+    return null
+  }
+
+  async previewSubscription(id: string, priceId: string) {
+    const user = await this.findOne({ where: { id } })
+
+    if (isClassicSubscription(user.subID)) {
+      return this.previewClassicSubscription(user, priceId)
+    }
+
+    return this.previewBillingSubscription(user, priceId)
+  }
+
+  private async previewClassicSubscription(user: User, priceId: string) {
+    const plan = this.getPlanByPriceId(priceId)
+    if (!plan) throw new BadRequestException('Plan not found')
 
     const { planCode, billingFrequency } = plan
-
-    if (
-      user.planCode === planCode &&
-      user.billingFrequency === billingFrequency
-    ) {
+    if (user.planCode === planCode && user.billingFrequency === billingFrequency) {
       throw new BadRequestException('You are already subscribed to this plan')
     }
-
     if (user.cancellationEffectiveDate) {
       throw new BadRequestException(
         'Cannot preview a subscription change as it has been cancelled, please subscribe to a new plan',
       )
     }
 
-    const url = 'https://vendors.paddle.com/api/2.0/subscription/preview_update'
+    // Find the Classic numeric plan ID for this price
+    const targetPlan = Object.values(ACCOUNT_PLANS).find(
+      (t) => t.priceId === priceId || t.yearlyPriceId === priceId,
+    )
+    const classicPlanId =
+      targetPlan?.priceId === priceId
+        ? Number(targetPlan?.pid)
+        : Number(targetPlan?.ypid)
+
+    const url = `${PADDLE_CLASSIC_API}/subscription/preview_update`
 
     let preview: any = {}
-
     try {
       preview = await axios.post(url, {
         vendor_id: Number(PADDLE_VENDOR_ID),
         vendor_auth_code: PADDLE_API_KEY,
         subscription_id: Number(user.subID),
-        plan_id: planID,
+        plan_id: classicPlanId,
         prorate: true,
         bill_immediately: true,
         currency: user.tierCurrency,
@@ -406,16 +428,15 @@ export class UserService {
       })
     } catch (error) {
       console.error(
-        '[ERROR] (previewSubscription):',
+        '[ERROR] (previewClassicSubscription):',
         error?.response?.data?.error?.message || error,
       )
       throw new BadRequestException('Something went wrong')
     }
 
     const { data } = preview
-
     if (!data.success) {
-      console.error('[ERROR] (previewSubscription) success -> false:', preview)
+      console.error('[ERROR] (previewClassicSubscription) success -> false:', preview)
       throw new InternalServerErrorException('Something went wrong')
     }
 
@@ -429,6 +450,76 @@ export class UserService {
       nextPayment: {
         ...data.response.next_payment,
         symbol,
+      },
+    }
+  }
+
+  private async previewBillingSubscription(user: User, priceId: string) {
+    const plan = this.getPlanByPriceId(priceId)
+    if (!plan) throw new BadRequestException('Plan not found')
+
+    const { planCode, billingFrequency } = plan
+    if (user.planCode === planCode && user.billingFrequency === billingFrequency) {
+      throw new BadRequestException('You are already subscribed to this plan')
+    }
+    if (user.cancellationEffectiveDate) {
+      throw new BadRequestException(
+        'Cannot preview a subscription change as it has been cancelled, please subscribe to a new plan',
+      )
+    }
+
+    let preview: any = {}
+    try {
+      preview = await axios.get(
+        `${PADDLE_BILLING_API}/subscriptions/${user.subID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${PADDLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          params: { include: 'next_transaction' },
+        },
+      )
+    } catch (error) {
+      console.error(
+        '[ERROR] (previewBillingSubscription):',
+        error?.response?.data || error,
+      )
+      throw new BadRequestException('Something went wrong')
+    }
+
+    const subscriptionData = preview.data?.data
+    if (!subscriptionData) {
+      throw new InternalServerErrorException('Something went wrong')
+    }
+
+    const nextTransaction = subscriptionData.next_transaction
+    const currentBillingPeriod = subscriptionData.current_billing_period
+    const currency = subscriptionData.currency_code || user.tierCurrency
+    const symbol = getSymbolByCode(currency)
+
+    const immediateAmount = nextTransaction?.details?.totals?.grand_total
+      ? _toNumber(nextTransaction.details.totals.grand_total) / 100
+      : 0
+
+    const nextAmount = nextTransaction?.details?.totals?.grand_total
+      ? _toNumber(nextTransaction.details.totals.grand_total) / 100
+      : 0
+
+    return {
+      immediatePayment: {
+        amount: immediateAmount,
+        currency,
+        symbol,
+        date: new Date().toISOString().split('T')[0],
+      },
+      nextPayment: {
+        amount: nextAmount,
+        currency,
+        symbol,
+        date: currentBillingPeriod?.ends_at
+          ? currentBillingPeriod.ends_at.split('T')[0]
+          : null,
       },
     }
   }
@@ -456,7 +547,15 @@ export class UserService {
   }
 
   async cancelSubscription(subID: string) {
-    const url = 'https://vendors.paddle.com/api/2.0/subscription/users/cancel'
+    if (isClassicSubscription(subID)) {
+      return this.cancelClassicSubscription(subID)
+    }
+
+    return this.cancelBillingSubscription(subID)
+  }
+
+  private async cancelClassicSubscription(subID: string) {
+    const url = `${PADDLE_CLASSIC_API}/subscription/users/cancel`
 
     try {
       const result = await axios.post(url, {
@@ -467,7 +566,7 @@ export class UserService {
 
       if (!result.data?.success) {
         console.error(
-          '[ERROR] (cancelSubscription) success -> false:',
+          '[ERROR] (cancelClassicSubscription) success -> false:',
           result.data,
         )
         throw new InternalServerErrorException(
@@ -478,7 +577,7 @@ export class UserService {
       if (error instanceof InternalServerErrorException) throw error
 
       console.error(
-        '[ERROR] (cancelSubscription):',
+        '[ERROR] (cancelClassicSubscription):',
         error?.response?.data?.error?.message || error,
       )
       throw new BadRequestException(
@@ -487,78 +586,176 @@ export class UserService {
     }
   }
 
-  async updateSubscription(id: string, planID: number) {
-    const user = await this.findOne({ where: { id } })
-    const plan = this.getPlanById(planID)
+  private async cancelBillingSubscription(subID: string) {
+    const url = `${PADDLE_BILLING_API}/subscriptions/${subID}/cancel`
 
-    if (!plan) {
-      throw new BadRequestException('Plan not found')
+    try {
+      const result = await axios.post(
+        url,
+        { effective_from: 'next_billing_period' },
+        {
+          headers: {
+            Authorization: `Bearer ${PADDLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+
+      if (!result.data?.data) {
+        console.error(
+          '[ERROR] (cancelBillingSubscription) unexpected response:',
+          result.data,
+        )
+        throw new InternalServerErrorException(
+          'Failed to cancel subscription with payment provider',
+        )
+      }
+    } catch (error) {
+      if (error instanceof InternalServerErrorException) throw error
+
+      console.error(
+        '[ERROR] (cancelBillingSubscription):',
+        error?.response?.data || error,
+      )
+      throw new BadRequestException(
+        'Failed to cancel subscription. Please try again or contact support.',
+      )
     }
+  }
+
+  async updateSubscription(id: string, priceId: string) {
+    const user = await this.findOne({ where: { id } })
+
+    if (isClassicSubscription(user.subID)) {
+      return this.updateClassicSubscription(user, id, priceId)
+    }
+
+    return this.updateBillingSubscription(user, id, priceId)
+  }
+
+  private async updateClassicSubscription(user: User, id: string, priceId: string) {
+    const plan = this.getPlanByPriceId(priceId)
+    if (!plan) throw new BadRequestException('Plan not found')
 
     const { planCode, billingFrequency } = plan
-
-    if (
-      user.planCode === planCode &&
-      user.billingFrequency === billingFrequency
-    ) {
+    if (user.planCode === planCode && user.billingFrequency === billingFrequency) {
       throw new BadRequestException('You are already subscribed to this plan')
     }
-
     if (user.cancellationEffectiveDate) {
       throw new BadRequestException(
         'Cannot change your subscription as it has been cancelled, please subscribe to a new plan',
       )
     }
 
-    const url = 'https://vendors.paddle.com/api/2.0/subscription/users/update'
+    const targetPlan = Object.values(ACCOUNT_PLANS).find(
+      (t) => t.priceId === priceId || t.yearlyPriceId === priceId,
+    )
+    const classicPlanId =
+      targetPlan?.priceId === priceId
+        ? Number(targetPlan?.pid)
+        : Number(targetPlan?.ypid)
+
+    const url = `${PADDLE_CLASSIC_API}/subscription/users/update`
 
     let result: any = {}
-
     try {
       result = await axios.post(url, {
         vendor_id: Number(PADDLE_VENDOR_ID),
         vendor_auth_code: PADDLE_API_KEY,
         subscription_id: Number(user.subID),
-        plan_id: planID,
+        plan_id: classicPlanId,
         prorate: true,
         bill_immediately: true,
         currency: user.tierCurrency,
         keep_modifiers: false,
-        passthrough: JSON.stringify({
-          uid: id,
-        }),
+        passthrough: JSON.stringify({ uid: id }),
       })
     } catch (error) {
       console.error(
-        '[ERROR] (updateSubscription):',
+        '[ERROR] (updateClassicSubscription):',
         error?.response?.data?.error?.message || error,
       )
       throw new BadRequestException('Something went wrong')
     }
 
     const { data } = result
-
     if (!data.success) {
-      console.error('[ERROR] (updateSubscription) success -> false:', result)
+      console.error('[ERROR] (updateClassicSubscription) success -> false:', result)
       throw new InternalServerErrorException('Something went wrong')
     }
 
     const { response } = data
-
     const {
       subscription_id: subID,
       next_payment: { currency, date },
     } = response
 
-    const updateParams = {
+    await this.update(id, {
       planCode,
       subID,
       nextBillDate: date,
       billingFrequency,
       tierCurrency: currency,
+    })
+  }
+
+  private async updateBillingSubscription(user: User, id: string, priceId: string) {
+    const plan = this.getPlanByPriceId(priceId)
+    if (!plan) throw new BadRequestException('Plan not found')
+
+    const { planCode, billingFrequency } = plan
+    if (user.planCode === planCode && user.billingFrequency === billingFrequency) {
+      throw new BadRequestException('You are already subscribed to this plan')
+    }
+    if (user.cancellationEffectiveDate) {
+      throw new BadRequestException(
+        'Cannot change your subscription as it has been cancelled, please subscribe to a new plan',
+      )
     }
 
-    await this.update(id, updateParams)
+    const url = `${PADDLE_BILLING_API}/subscriptions/${user.subID}`
+
+    let result: any = {}
+    try {
+      result = await axios.patch(
+        url,
+        {
+          items: [{ price_id: priceId, quantity: 1 }],
+          proration_billing_mode: 'prorated_immediately',
+          custom_data: { uid: id },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${PADDLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+    } catch (error) {
+      console.error(
+        '[ERROR] (updateBillingSubscription):',
+        error?.response?.data || error,
+      )
+      throw new BadRequestException('Something went wrong')
+    }
+
+    const subscriptionData = result.data?.data
+    if (!subscriptionData) {
+      console.error('[ERROR] (updateBillingSubscription) no data:', result.data)
+      throw new InternalServerErrorException('Something went wrong')
+    }
+
+    const nextBillDate = subscriptionData.current_billing_period?.ends_at
+      ? new Date(subscriptionData.current_billing_period.ends_at)
+      : null
+
+    await this.update(id, {
+      planCode,
+      subID: subscriptionData.id,
+      nextBillDate,
+      billingFrequency,
+      tierCurrency: subscriptionData.currency_code,
+    })
   }
 
   createUnsubscribeKey(userId: string): string {

@@ -42,8 +42,17 @@ interface PlanSignature {
   monthlyUsageLimit: number
   maxAlerts: number
   legacy: boolean
+  // Paddle Classic (legacy, for dual-stack transition)
   pid?: string
   ypid?: string
+  // Paddle Billing
+  priceId?: string
+  yearlyPriceId?: string
+}
+
+export function isClassicSubscription(subID: string | null): boolean {
+  if (!subID) return false
+  return !subID.startsWith('sub_')
 }
 
 export const ACCOUNT_PLANS = {
@@ -51,105 +60,106 @@ export const ACCOUNT_PLANS = {
     id: PlanCode.none,
     monthlyUsageLimit: 0,
     maxAlerts: 0,
-    pid: null,
-    ypid: null,
+    pid: null, ypid: null,
+    priceId: null, yearlyPriceId: null,
   },
   [PlanCode.free]: {
     id: PlanCode.free,
     monthlyUsageLimit: 5000,
     maxAlerts: 1,
-    pid: null,
-    ypid: null,
+    pid: null, ypid: null,
+    priceId: null, yearlyPriceId: null,
   },
   [PlanCode.trial]: {
     id: PlanCode.trial,
     monthlyUsageLimit: 10000000,
     maxAlerts: 50,
-    pid: null,
-    ypid: null,
+    pid: null, ypid: null,
+    priceId: null, yearlyPriceId: null,
   },
   [PlanCode.hobby]: {
     id: PlanCode.hobby,
     monthlyUsageLimit: 10000,
-    pid: '813694', // Plan ID
-    ypid: '813695', // Plan ID - Yearly billing
+    pid: '813694', ypid: '813695',
+    // TODO: Replace with Paddle Billing price IDs from dashboard
+    priceId: 'pri_hobby_monthly', yearlyPriceId: 'pri_hobby_yearly',
     maxAlerts: 50,
   },
   [PlanCode['50k']]: {
     id: PlanCode['50k'],
     monthlyUsageLimit: 50000,
-    pid: '918109', // Plan ID
-    ypid: '918110', // Plan ID - Yearly billing
+    pid: '918109', ypid: '918110',
+    priceId: 'pri_50k_monthly', yearlyPriceId: 'pri_50k_yearly',
     maxAlerts: 50,
   },
   [PlanCode.freelancer]: {
     id: PlanCode.freelancer,
     monthlyUsageLimit: 100000,
-    pid: '752316', // Plan ID
-    ypid: '776469', // Plan ID - Yearly billing
+    pid: '752316', ypid: '776469',
+    priceId: 'pri_freelancer_monthly', yearlyPriceId: 'pri_freelancer_yearly',
     maxAlerts: 50,
   },
   [PlanCode['100k']]: {
     id: PlanCode['100k'],
     monthlyUsageLimit: 100000,
-    pid: '916455', // Plan ID
-    ypid: '916456', // Plan ID - Yearly billing
+    pid: '916455', ypid: '916456',
+    priceId: 'pri_100k_monthly', yearlyPriceId: 'pri_100k_yearly',
     maxAlerts: 50,
   },
   [PlanCode['200k']]: {
     id: PlanCode['200k'],
     monthlyUsageLimit: 200000,
-    pid: '854654', // Plan ID
-    ypid: '854655', // Plan ID - Yearly billing
+    pid: '854654', ypid: '854655',
+    priceId: 'pri_200k_monthly', yearlyPriceId: 'pri_200k_yearly',
     maxAlerts: 50,
   },
   [PlanCode['500k']]: {
     id: PlanCode['500k'],
     monthlyUsageLimit: 500000,
-    pid: '854656', // Plan ID
-    ypid: '854657', // Plan ID - Yearly billing
+    pid: '854656', ypid: '854657',
+    priceId: 'pri_500k_monthly', yearlyPriceId: 'pri_500k_yearly',
     maxAlerts: 50,
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
     monthlyUsageLimit: 1000000,
-    pid: '752317',
-    ypid: '776470',
+    pid: '752317', ypid: '776470',
+    priceId: 'pri_startup_monthly', yearlyPriceId: 'pri_startup_yearly',
     maxAlerts: 50,
   },
   [PlanCode['2m']]: {
     id: PlanCode['2m'],
     monthlyUsageLimit: 2000000,
-    pid: '854663', // Plan ID
-    ypid: '854664', // Plan ID - Yearly billing
+    pid: '854663', ypid: '854664',
+    priceId: 'pri_2m_monthly', yearlyPriceId: 'pri_2m_yearly',
     maxAlerts: 50,
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
     monthlyUsageLimit: 5000000,
-    pid: '752318',
-    ypid: '776471',
+    pid: '752318', ypid: '776471',
+    priceId: 'pri_enterprise_monthly', yearlyPriceId: 'pri_enterprise_yearly',
     maxAlerts: 50,
   },
   [PlanCode['10m']]: {
     id: PlanCode['10m'],
     monthlyUsageLimit: 10000000,
-    pid: '854665', // Plan ID
-    ypid: '854666', // Plan ID - Yearly billing
+    pid: '854665', ypid: '854666',
+    priceId: 'pri_10m_monthly', yearlyPriceId: 'pri_10m_yearly',
     maxAlerts: 50,
   },
   [PlanCode['15m']]: {
     id: PlanCode['15m'],
     monthlyUsageLimit: 15000000,
-    pid: '916451', // Plan ID
-    ypid: '916452', // Plan ID - Yearly billing
+    pid: '916451', ypid: '916452',
+    priceId: 'pri_15m_monthly', yearlyPriceId: 'pri_15m_yearly',
     maxAlerts: 50,
   },
   [PlanCode['20m']]: {
     id: PlanCode['20m'],
     monthlyUsageLimit: 20000000,
-    pid: '916453', // Plan ID
-    ypid: '916454', // Plan ID - Yearly billing
+    pid: '916453', ypid: '916454',
+    priceId: 'pri_20m_monthly', yearlyPriceId: 'pri_20m_yearly',
     maxAlerts: 50,
   },
 }
@@ -274,9 +284,11 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   noEventsReminderSentOn: Date
 
-  @Column('varchar', { length: 15, nullable: true })
+  // Paddle subscription ID (Classic: numeric, Billing: sub_xxxxx)
+  @Column('varchar', { length: 50, nullable: true })
   subID: string
 
+  // Paddle Classic only — not used for Billing subscribers
   @Column('varchar', { length: 200, nullable: true })
   subUpdateURL: string
 
