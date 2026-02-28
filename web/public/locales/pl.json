@@ -2048,6 +2048,7 @@
     "membersNotification": "Odsłony stron, zdarzenia niestandardowe i zdarzenia błędów są wliczane do limitu subskrypcji właściciela konta. Osoby, które zapraszasz do swoich projektów, nie potrzebują subskrypcji.",
     "trialDescription": "Twój bezpłatny okres próbny obejmuje dostęp do wszystkich funkcji oraz brak limitów zbierania danych. Po zakończeniu okresu próbnego musisz wybrać płatny plan dopasowany do Twojego użycia, aby dalej korzystać ze Swetrix.",
     "trialChargeWarning": "Po zakończeniu okresu próbnego zostaniesz automatycznie obciążony opłatą, chyba że anulujesz subskrypcję. Możesz ją anulować w dowolnym momencie z tej strony — bez zadawania pytań.",
+    "cannotChangePlanDuringTrial": "Zmiany planu nie są dostępne podczas okresu próbnego. Możesz zmienić plan po zakończeniu okresu próbnego lub anulować okres próbny i zasubskrybować inny plan.",
     "subscriptionCancelledSuccess": "Twoja subskrypcja została anulowana. Zachowasz dostęp do końca bieżącego okresu rozliczeniowego.",
     "confirmCancellation": "Anuluj subskrypcję",
     "cancellationFeedbackLabel": "Chcielibyśmy wiedzieć, dlaczego odchodzisz (opcjonalnie)",

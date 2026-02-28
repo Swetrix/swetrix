@@ -2048,6 +2048,7 @@
     "membersNotification": "Pageviews, custom events and error events are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
     "trialDescription": "Your free trial includes access to all features and unlimited data collection limits. When your trial ends, you'll need to select a paid plan that matches your usage to continue using Swetrix.",
     "trialChargeWarning": "You will be automatically charged when the trial ends unless you cancel. You can cancel anytime from this page — no questions asked.",
+    "cannotChangePlanDuringTrial": "Plan changes are not available during your trial. You can switch plans after your trial ends, or cancel your trial and subscribe to a different plan.",
     "subscriptionCancelledSuccess": "Your subscription has been cancelled. You'll retain access until the end of your current billing period.",
     "confirmCancellation": "Cancel subscription",
     "cancellationFeedbackLabel": "We'd love to know why you're leaving (optional)",

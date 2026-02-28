@@ -2048,6 +2048,7 @@
     "membersNotification": "Les pages vues, les événements personnalisés et les erreurs sont décomptés du quota de l’abonnement du propriétaire du compte. Les personnes que vous invitez dans vos projets n’ont pas besoin d’un abonnement.",
     "trialDescription": "Votre essai gratuit inclut l’accès à toutes les fonctionnalités et aucune limite de collecte de données. À la fin de votre essai, vous devrez choisir une offre payante adaptée à votre usage pour continuer à utiliser Swetrix.",
     "trialChargeWarning": "Vous serez automatiquement facturé(e) à la fin de l'essai, sauf si vous annulez. Vous pouvez annuler à tout moment depuis cette page — sans justification.",
+    "cannotChangePlanDuringTrial": "Les changements de forfait ne sont pas disponibles pendant votre période d'essai. Vous pouvez changer de forfait après la fin de votre essai, ou annuler votre essai et vous abonner à un autre forfait.",
     "subscriptionCancelledSuccess": "Votre abonnement a été annulé. Vous conserverez l'accès jusqu'à la fin de votre période de facturation en cours.",
     "confirmCancellation": "Annuler l'abonnement",
     "cancellationFeedbackLabel": "Nous aimerions savoir pourquoi vous nous quittez (facultatif)",

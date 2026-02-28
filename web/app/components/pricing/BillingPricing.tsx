@@ -195,6 +195,11 @@ const BillingPricing = ({
       !user.cancellationEffectiveDate &&
       user.planCode !== 'none'
     ) {
+      if (isTrialingPaidPlan) {
+        toast.error(t('billing.cannotChangePlanDuringTrial'))
+        return
+      }
+
       const planId = Number(
         billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
       )
@@ -239,6 +244,12 @@ const BillingPricing = ({
 
   const downgradeHandler = (tier: any) => {
     if (!user) return
+
+    if (isTrialingPaidPlan) {
+      toast.error(t('billing.cannotChangePlanDuringTrial'))
+      return
+    }
+
     if (planCodeLoading === null && user.planCode !== tier.planCode) {
       setDowngradeTo(tier)
       setShowDowngradeModal(true)
@@ -248,6 +259,11 @@ const BillingPricing = ({
   const isUnselectablePlanCode = (planCode: any): boolean => {
     return ['free', 'trial', 'none'].includes(planCode)
   }
+
+  const isTrialingPaidPlan =
+    !!user?.trialEndDate &&
+    !['none', 'trial', 'free'].includes(user?.planCode || '') &&
+    dayjs(user.trialEndDate).isAfter(dayjs())
 
   const userPlancodeID = user?.planCode ? PLAN_LIMITS[user.planCode]?.index : 0
 

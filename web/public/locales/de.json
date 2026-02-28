@@ -2048,6 +2048,7 @@
     "membersNotification": "Seitenaufrufe, benutzerdefinierte Ereignisse und Fehlerereignisse werden auf das Abonnementlimit des Kontoinhabers angerechnet. Personen, die Sie in Ihre Projekte einladen, benötigen kein Abonnement.",
     "trialDescription": "Ihre kostenlose Testversion umfasst den Zugriff auf alle Funktionen und keine Limits bei der Datenerfassung. Wenn Ihre Testphase endet, müssen Sie einen kostenpflichtigen Tarif wählen, der Ihrer Nutzung entspricht, um Swetrix weiter verwenden zu können.",
     "trialChargeWarning": "Ihnen wird der Betrag nach Ablauf der Testphase automatisch in Rechnung gestellt, sofern Sie nicht kündigen. Sie können jederzeit von dieser Seite aus kündigen — ohne Rückfragen.",
+    "cannotChangePlanDuringTrial": "Tarifänderungen sind während Ihrer Testphase nicht verfügbar. Sie können den Tarif nach Ablauf Ihrer Testphase wechseln oder Ihre Testphase abbrechen und einen anderen Tarif abonnieren.",
     "subscriptionCancelledSuccess": "Ihr Abonnement wurde gekündigt. Sie behalten den Zugriff bis zum Ende Ihres aktuellen Abrechnungszeitraums.",
     "confirmCancellation": "Abonnement kündigen",
     "cancellationFeedbackLabel": "Wir würden gerne wissen, warum Sie gehen (optional)",
