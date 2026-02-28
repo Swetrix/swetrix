@@ -334,19 +334,7 @@ const UserSettings = () => {
       return t('pricing.trialEnded')
     }
 
-    let date
-
-    if (language === 'en') {
-      if (userTimeFormat === '12-hour') {
-        date = dayjs(trialEndDate).locale(language).format('MMMM D, h:mm A')
-      } else {
-        date = dayjs(trialEndDate).locale(language).format('MMMM D, HH:mm')
-      }
-    } else if (userTimeFormat === '12-hour') {
-      date = dayjs(trialEndDate).locale(language).format('D MMMM, h:mm A')
-    } else {
-      date = dayjs(trialEndDate).locale(language).format('D MMMM, HH:mm')
-    }
+    const date = dayjs(trialEndDate).locale(language).format('D MMMM, YYYY')
 
     return t('billing.trialEnds', {
       date,
@@ -1296,7 +1284,7 @@ const UserSettings = () => {
                     ) : null}
 
                     {/* Next bill date info */}
-                    {isSubscriber && nextBillDate ? (
+                    {!isTrial && isSubscriber && nextBillDate ? (
                       <Alert
                         variant='info'
                         title={t('profileSettings.nextBilling')}
