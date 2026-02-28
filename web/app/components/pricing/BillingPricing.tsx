@@ -54,8 +54,10 @@ const BillingPricing = ({
 
   const previewFetcher = useFetcher<UserSettingsActionData>()
   const changePlanFetcher = useFetcher<UserSettingsActionData>()
+  const generatePayLinkFetcher = useFetcher<UserSettingsActionData>()
 
   const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
+  const [loadingTier, setLoadingTier] = useState<any>(null)
   const [
     isNewPlanConfirmationModalOpened,
     setIsNewPlanConfirmationModalOpened,
@@ -130,6 +132,42 @@ const BillingPricing = ({
       )
     }
   }, [previewFetcher.data?.error])
+
+  // Handle generate pay link fetcher response
+  useEffect(() => {
+    if (
+      generatePayLinkFetcher.data?.success &&
+      generatePayLinkFetcher.data?.data
+    ) {
+      const url = (generatePayLinkFetcher.data.data as any).url
+
+      const opened = openCheckout({
+        override: url,
+        locale: paddleLanguageMapping[language] || language,
+        title: loadingTier?.name,
+        displayModeTheme: theme,
+        country: metainfo.country,
+      })
+
+      if (!opened) {
+        toast.error(t('billing.paddleStillLoading'))
+        setPlanCodeLoading(null)
+        setLoadingTier(null)
+      }
+
+      // Clear data to prevent infinite loops if re-rendering occurs
+      generatePayLinkFetcher.data = undefined
+    } else if (generatePayLinkFetcher.data?.error) {
+      console.error(
+        '[ERROR] An error occured while generating pay link:',
+        generatePayLinkFetcher.data.error,
+      )
+      toast.error('An error occured while preparing checkout')
+      setPlanCodeLoading(null)
+      setLoadingTier(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generatePayLinkFetcher.data])
 
   const PLAN_CODES_ARRAY = useMemo(() => {
     let basePlans = STANDARD_PLANS
@@ -209,23 +247,16 @@ const BillingPricing = ({
     }
 
     setPlanCodeLoading(tier.planCode)
+    setLoadingTier(tier)
 
-    const opened = openCheckout({
-      product:
-        billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
-      email: user.email,
-      passthrough: JSON.stringify({ uid: user.id }),
-      locale: paddleLanguageMapping[language] || language,
-      title: tier.name,
-      displayModeTheme: theme,
-      country: metainfo.country,
-    })
+    const planId = Number(
+      billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
+    )
 
-    if (!opened) {
-      toast.error(t('billing.paddleStillLoading'))
-      setPlanCodeLoading(null)
-      return
-    }
+    generatePayLinkFetcher.submit(
+      { intent: 'generate-pay-link', planId: String(planId) },
+      { method: 'POST', action: '/user-settings' },
+    )
   }
 
   const closeUpdateModal = (force?: boolean) => {

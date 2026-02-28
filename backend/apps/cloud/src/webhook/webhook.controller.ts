@@ -114,20 +114,8 @@ export class WebhookController {
         let plan = _find(ACCOUNT_PLANS, ({ pid }) => pid === subscriptionPlanId)
 
         if (!plan) {
-          plan = _find(ACCOUNT_PLANS, (tier) =>
-            (tier as any).legacyPids?.includes(subscriptionPlanId),
-          )
-        }
-
-        if (!plan) {
           monthlyBilling = false
           plan = _find(ACCOUNT_PLANS, ({ ypid }) => ypid === subscriptionPlanId)
-        }
-
-        if (!plan) {
-          plan = _find(ACCOUNT_PLANS, (tier) =>
-            (tier as any).legacyYpids?.includes(subscriptionPlanId),
-          )
         }
 
         if (!plan) {

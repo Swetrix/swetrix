@@ -289,7 +289,6 @@ const UserSettings = () => {
     planCode,
     subUpdateURL,
     trialEndDate,
-    timeFormat: userTimeFormat,
     cancellationEffectiveDate,
     subCancelURL,
     maxEventsCount = 0,

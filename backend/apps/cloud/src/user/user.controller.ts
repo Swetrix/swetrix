@@ -724,6 +724,18 @@ export class UserController {
   }
 
   @ApiBearerAuth()
+  @Post('generate-pay-link')
+  async generatePayLink(
+    @CurrentUserId() id: string,
+    @Body() body: IChangePlanDTO,
+  ): Promise<any> {
+    this.logger.log({ body, id }, 'POST /generate-pay-link')
+    const { planId } = body
+
+    return this.userService.generatePayLink(id, planId)
+  }
+
+  @ApiBearerAuth()
   @Post('preview-plan')
   async previewPlan(
     @CurrentUserId() id: string,

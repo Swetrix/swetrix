@@ -341,11 +341,7 @@ export class UserService {
         // @ts-ignore
         tier.pid === stringifiedPlanId ||
         // @ts-ignore
-        tier.ypid === stringifiedPlanId ||
-        // @ts-ignore
-        tier.legacyPids?.includes(stringifiedPlanId) ||
-        // @ts-ignore
-        tier.legacyYpids?.includes(stringifiedPlanId),
+        tier.ypid === stringifiedPlanId,
     )
 
     // @ts-ignore
@@ -354,9 +350,7 @@ export class UserService {
       // @ts-ignore
       const isMonthly =
         // @ts-ignore
-        plan.pid === stringifiedPlanId ||
-        // @ts-ignore
-        plan.legacyPids?.includes(stringifiedPlanId)
+        plan.pid === stringifiedPlanId
 
       const billingFrequency = isMonthly
         ? BillingFrequency.Monthly
@@ -564,6 +558,43 @@ export class UserService {
     }
 
     await this.update(id, updateParams)
+  }
+
+  async generatePayLink(id: string, productId: number) {
+    const user = await this.findOne({ where: { id } })
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    const url = 'https://vendors.paddle.com/api/2.0/product/generate_pay_link'
+
+    let result: any = {}
+
+    try {
+      result = await axios.post(url, {
+        vendor_id: Number(PADDLE_VENDOR_ID),
+        vendor_auth_code: PADDLE_API_KEY,
+        product_id: productId,
+        customer_email: user.email,
+        passthrough: JSON.stringify({ uid: id }),
+        ...(user.trialEndDate ? {} : { trial_days: TRIAL_DURATION }),
+      })
+    } catch (error) {
+      console.error(
+        '[ERROR] (generatePayLink):',
+        error?.response?.data?.error?.message || error,
+      )
+      throw new BadRequestException('Something went wrong')
+    }
+
+    const { data } = result
+
+    if (!data.success) {
+      console.error('[ERROR] (generatePayLink) success -> false:', result.data)
+      throw new InternalServerErrorException('Something went wrong')
+    }
+
+    return { url: data.response.url }
   }
 
   createUnsubscribeKey(userId: string): string {

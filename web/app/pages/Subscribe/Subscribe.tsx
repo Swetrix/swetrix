@@ -7,7 +7,7 @@ import {
 } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useNavigate, useLoaderData } from 'react-router'
+import { useFetcher, useNavigate, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
 
 import { usePaddle } from '~/hooks/usePaddle'
@@ -104,6 +104,41 @@ const Subscribe = () => {
     }
   }, [hasCompletedCheckout, navigate, loadUser])
 
+  const generatePayLinkFetcher = useFetcher<any>()
+
+  // Handle generate pay link fetcher response
+  useEffect(() => {
+    if (
+      generatePayLinkFetcher.data?.success &&
+      generatePayLinkFetcher.data?.data
+    ) {
+      const url = generatePayLinkFetcher.data.data.url
+
+      const opened = openCheckout({
+        override: url,
+        locale: paddleLanguageMapping[i18n.language] || i18n.language,
+        displayModeTheme: theme,
+        country: metainfo.country,
+      })
+
+      if (!opened) {
+        toast.error(t('apiNotifications.somethingWentWrong'))
+      }
+
+      // Clear data
+      generatePayLinkFetcher.data = undefined
+    } else if (generatePayLinkFetcher.data?.error) {
+      toast.error('An error occured while preparing checkout')
+    }
+  }, [
+    generatePayLinkFetcher.data,
+    openCheckout,
+    i18n.language,
+    theme,
+    metainfo.country,
+    t,
+  ])
+
   const handleStartCheckout = () => {
     if (paddleLoadError) {
       toast.error(t('billing.paddleLoadError'))
@@ -134,18 +169,10 @@ const Subscribe = () => {
       return
     }
 
-    const opened = openCheckout({
-      product,
-      email: user?.email,
-      passthrough: JSON.stringify({ uid: user?.id }),
-      locale: paddleLanguageMapping[i18n.language] || i18n.language,
-      displayModeTheme: theme,
-      country: metainfo.country,
-    })
-
-    if (!opened) {
-      toast.error(t('apiNotifications.somethingWentWrong'))
-    }
+    generatePayLinkFetcher.submit(
+      { intent: 'generate-pay-link', planId: String(product) },
+      { method: 'POST', action: '/user-settings' },
+    )
   }
 
   const trialEndDate = user?.trialEndDate
@@ -353,6 +380,8 @@ const Subscribe = () => {
                   onClick={handleStartCheckout}
                   primary
                   giant
+                  loading={generatePayLinkFetcher.state !== 'idle'}
+                  disabled={generatePayLinkFetcher.state !== 'idle'}
                 >
                   {t('checkout.next')}
                 </Button>

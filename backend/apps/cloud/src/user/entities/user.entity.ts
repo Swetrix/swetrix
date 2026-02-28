@@ -44,8 +44,6 @@ interface PlanSignature {
   legacy?: boolean
   pid?: string
   ypid?: string
-  legacyPids?: string[]
-  legacyYpids?: string[]
 }
 
 export const ACCOUNT_PLANS = {
@@ -75,8 +73,6 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 10000,
     pid: '813694',
     ypid: '813695',
-    legacyPids: [],
-    legacyYpids: [],
     maxAlerts: 50,
   },
   [PlanCode['50k']]: {
@@ -84,8 +80,6 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 50000,
     pid: '918109',
     ypid: '918110',
-    legacyPids: [],
-    legacyYpids: [],
     maxAlerts: 50,
   },
   [PlanCode.freelancer]: {
@@ -93,44 +87,34 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 100000,
     pid: '752316',
     ypid: '776469',
-    legacyPids: [],
-    legacyYpids: [],
     maxAlerts: 50,
   },
   [PlanCode['100k']]: {
     id: PlanCode['100k'],
     monthlyUsageLimit: 100000,
-    pid: '922473',
-    ypid: '922474',
-    legacyPids: ['916455'],
-    legacyYpids: ['916456'],
+    pid: '916455',
+    ypid: '916456',
     maxAlerts: 50,
   },
   [PlanCode['200k']]: {
     id: PlanCode['200k'],
     monthlyUsageLimit: 200000,
-    pid: '922471',
-    ypid: '922472',
-    legacyPids: ['854654'],
-    legacyYpids: ['854655'],
+    pid: '854654',
+    ypid: '854655',
     maxAlerts: 50,
   },
   [PlanCode['500k']]: {
     id: PlanCode['500k'],
     monthlyUsageLimit: 500000,
-    pid: '922470',
+    pid: '854656',
     ypid: '854657',
-    legacyPids: ['854656'],
-    legacyYpids: [],
     maxAlerts: 50,
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
     monthlyUsageLimit: 1000000,
-    pid: '922469',
+    pid: '752317',
     ypid: '776470',
-    legacyPids: ['752317'],
-    legacyYpids: [],
     maxAlerts: 50,
   },
   [PlanCode['2m']]: {
@@ -138,26 +122,20 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 2000000,
     pid: '854663',
     ypid: '854664',
-    legacyPids: [],
-    legacyYpids: [],
     maxAlerts: 50,
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
     monthlyUsageLimit: 5000000,
-    pid: '922468',
+    pid: '752318',
     ypid: '776471',
-    legacyPids: ['752318'],
-    legacyYpids: [],
     maxAlerts: 50,
   },
   [PlanCode['10m']]: {
     id: PlanCode['10m'],
     monthlyUsageLimit: 10000000,
     pid: '854665',
-    ypid: '922467',
-    legacyPids: [],
-    legacyYpids: ['854666'],
+    ypid: '854666',
     maxAlerts: 50,
   },
   [PlanCode['15m']]: {
@@ -165,8 +143,6 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 15000000,
     pid: '916451',
     ypid: '916452',
-    legacyPids: [],
-    legacyYpids: [],
     maxAlerts: 50,
   },
   [PlanCode['20m']]: {
@@ -174,8 +150,6 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 20000000,
     pid: '916453',
     ypid: '916454',
-    legacyPids: [],
-    legacyYpids: [],
     maxAlerts: 50,
   },
 }

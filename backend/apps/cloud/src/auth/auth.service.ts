@@ -27,11 +27,7 @@ import {
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { LetterTemplate } from '../mailer/letter'
 import { MailerService } from '../mailer/mailer.service'
-import {
-  MAX_EMAIL_REQUESTS,
-  User,
-  TRIAL_DURATION,
-} from '../user/entities/user.entity'
+import { MAX_EMAIL_REQUESTS, User } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
 import {

@@ -503,6 +503,42 @@ export async function action({ request }: ActionFunctionArgs) {
       )
     }
 
+    case 'generate-pay-link': {
+      const planId = Number(formData.get('planId'))
+
+      if (
+        !Number.isFinite(planId) ||
+        planId <= 0 ||
+        !Number.isInteger(planId)
+      ) {
+        return data<UserSettingsActionData>(
+          { intent, error: 'Invalid planId' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch<{ url: string }>(
+        request,
+        'user/generate-pay-link',
+        {
+          method: 'POST',
+          body: { planId },
+        },
+      )
+
+      if (result.error) {
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
     case 'change-subscription-plan': {
       const planId = Number(formData.get('planId'))
 
