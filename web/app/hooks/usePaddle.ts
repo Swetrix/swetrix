@@ -4,7 +4,7 @@ import { PADDLE_JS_URL, PADDLE_VENDOR_ID } from '~/lib/constants'
 import { loadScript } from '~/utils/generic'
 
 const POLL_INTERVAL_MS = 200
-const MAX_ATTEMPTS = 50 // 10 seconds
+const MAX_ATTEMPTS = 500 // 100 seconds
 
 type PaddleListener = (eventData: any) => void
 
