@@ -1,15 +1,13 @@
-import { CaretDownIcon, XIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
 import _round from 'lodash/round'
-import React, { memo, useState } from 'react'
+import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
 import { Badge } from '~/ui/Badge'
-import OutsideClickHandler from '~/ui/OutsideClickHandler'
 import { Text } from '~/ui/Text'
 import {
   nFormatter,
@@ -120,104 +118,6 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     </div>
   </div>
 )
-
-interface MetricCardSelectProps {
-  values: {
-    label: string
-    value: string | number | undefined | null
-  }[]
-  valueMapper?: (value: any, index: number) => any
-  selectLabel: string
-  classes?: {
-    value?: string
-    label?: string
-    container?: string
-  }
-}
-
-export const MetricCardSelect = ({
-  values,
-  valueMapper,
-  selectLabel,
-  classes,
-}: MetricCardSelectProps) => {
-  const [selected, setSelected] = useState(0)
-  const [show, setShow] = useState(false)
-
-  const _onSelect = (value: number) => {
-    setSelected(value)
-    setShow(false)
-  }
-
-  return (
-    <div className={cx('flex flex-col', classes?.container)}>
-      <Text
-        size='4xl'
-        weight='bold'
-        className={cx('whitespace-nowrap', classes?.value)}
-      >
-        {valueMapper
-          ? valueMapper(values[selected], selected)
-          : values[selected].value}
-      </Text>
-      <div className='relative flex items-center whitespace-nowrap'>
-        <OutsideClickHandler onOutsideClick={() => setShow(false)}>
-          <span
-            className={cx('cursor-pointer', classes?.label)}
-            onClick={() => setShow(!show)}
-          >
-            <Text size='sm' weight='bold'>
-              {values[selected].label}{' '}
-              <CaretDownIcon
-                className={cx(
-                  'inline h-4 w-4 transform transition-transform duration-200',
-                  show ? 'rotate-180' : 'rotate-0',
-                )}
-              />
-            </Text>
-          </span>
-          <div
-            className={cx(
-              'absolute top-4 z-10 mt-2 min-w-[250px] origin-top transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white whitespace-normal shadow-md transition-all duration-200 ease-out dark:border-slate-700/50 dark:bg-slate-950',
-              show
-                ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
-                : 'pointer-events-none -translate-y-1 scale-95 opacity-0',
-            )}
-          >
-            <div className='flex w-full flex-col'>
-              <div className='flex items-center justify-between border-b border-black/10 bg-white p-2 dark:border-slate-700/50 dark:bg-slate-950'>
-                <Text as='p' size='sm' weight='semibold'>
-                  {selectLabel}
-                </Text>
-                <button
-                  className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-800'
-                  type='button'
-                  onClick={() => setShow(!show)}
-                >
-                  <XIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
-                </button>
-              </div>
-              <div className='scrollbar-thin max-h-[200px] overflow-x-hidden overflow-y-auto p-1'>
-                {_map(values, ({ label }, index) => (
-                  <button
-                    type='button'
-                    key={label}
-                    onClick={() => _onSelect(index)}
-                    className='w-full rounded-md p-2 text-left hover:bg-gray-200 dark:hover:bg-slate-800'
-                  >
-                    <Text size='sm' colour='secondary'>
-                      {label}
-                    </Text>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </OutsideClickHandler>
-      </div>
-    </div>
-  )
-}
 
 interface MetricCardsProps {
   overall: Partial<OverallObject>

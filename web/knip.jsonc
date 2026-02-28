@@ -1,11 +1,17 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignoreDependencies": ["@tailwindcss/forms", "@tailwindcss/typography", "tailwindcss"],
+  "ignoreDependencies": [
+    "@tailwindcss/forms",
+    "@tailwindcss/typography",
+    "tailwindcss",
+    "@swetrix/node",
+  ],
   "ignore": [
     "./ecosystem.config.js",
     "./app/routes.ts",
     "./react-router.config.ts",
     "./app/routes/[robots.txt].tsx",
+    "./app/utils/analytics.server.ts",
   ],
   "project": ["./app/**/*.{js,ts,tsx,jsx,cjs}"],
   "paths": {
