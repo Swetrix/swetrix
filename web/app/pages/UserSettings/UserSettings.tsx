@@ -361,11 +361,6 @@ const UserSettings = () => {
 
     const opened = openCheckout({
       override: subUpdateURL,
-      method: 'inline',
-      frameTarget: 'checkout-container',
-      frameInitialHeight: 416,
-      frameStyle:
-        'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
       locale: paddleLanguageMapping[language] || language,
       displayModeTheme: theme,
       country: metainfo.country,
@@ -373,12 +368,7 @@ const UserSettings = () => {
 
     if (!opened) {
       window.location.replace(subUpdateURL)
-      return
     }
-
-    setTimeout(() => {
-      document.querySelector('#checkout-container')?.scrollIntoView()
-    }, 500)
   }
 
   const tabs = getTabs(t)
@@ -1545,11 +1535,6 @@ const UserSettings = () => {
                           </Button>
                         ) : null}
                       </div>
-
-                      <div
-                        id='checkout-container'
-                        className='checkout-container mt-4'
-                      />
                     </SettingsSection>
                   </>
                 )}
