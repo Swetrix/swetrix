@@ -10,6 +10,14 @@ const config = {
   turbopack: {
     root: import.meta.dirname,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/:path*.mdx",
+        destination: "/llms.mdx/:path*",
+      },
+    ];
+  },
 };
 
 export default withMDX(config);
