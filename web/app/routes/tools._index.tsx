@@ -34,7 +34,7 @@ export default function Tools() {
           <Text as='h1' size='4xl' weight='bold' tracking='tight'>
             Free Marketing Tools
           </Text>
-          <Text as='p' size='lg' colour='muted' className='mt-4'>
+          <Text as='p' size='lg' colour='secondary' className='mt-4'>
             Professional marketing calculators and generators to optimize your
             campaigns, track performance, and maximize ROI. No sign-up required.
           </Text>
@@ -48,10 +48,10 @@ export default function Tools() {
               <Link
                 key={tool.id}
                 to={tool.href}
-                className='group relative flex flex-col justify-between rounded-lg bg-white p-6 ring-1 ring-gray-200 transition-shadow hover:ring-gray-300 dark:bg-slate-950 dark:ring-slate-800 dark:hover:bg-slate-900 dark:hover:ring-slate-700'
+                className='group relative flex flex-col justify-between rounded-lg bg-white p-6 ring-1 ring-gray-200 transition-shadow hover:ring-gray-300 dark:bg-slate-950 dark:ring-slate-900 dark:hover:bg-slate-900 dark:hover:ring-slate-700'
               >
                 <div className='flex items-start gap-4'>
-                  <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-700'>
+                  <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800'>
                     <Icon className='h-5 w-5 text-gray-600 dark:text-gray-300' />
                   </div>
                   <div className='min-w-0 flex-1'>

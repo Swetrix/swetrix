@@ -19,13 +19,16 @@ const FAQ = ({ includeGAQuestions = false }: FAQProps) => {
     e.stopPropagation()
   }
 
-  const values = {
-    lowestPlanEventsAmount:
-      PLAN_LIMITS['100k'].monthlyUsageLimit.toLocaleString('en-US'),
-    moderatePlanEventsAmount:
-      PLAN_LIMITS['500k'].monthlyUsageLimit.toLocaleString('en-US'),
-    freeTrialDays: TRIAL_DAYS,
-  }
+  const values = useMemo(
+    () => ({
+      lowestPlanEventsAmount:
+        PLAN_LIMITS['100k'].monthlyUsageLimit.toLocaleString('en-US'),
+      moderatePlanEventsAmount:
+        PLAN_LIMITS['500k'].monthlyUsageLimit.toLocaleString('en-US'),
+      freeTrialDays: TRIAL_DAYS,
+    }),
+    [],
+  )
   const stripTags = (html: string) =>
     sanitizeHtml(html, {
       allowedTags: [],

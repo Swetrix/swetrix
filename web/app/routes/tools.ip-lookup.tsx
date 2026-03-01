@@ -1,4 +1,4 @@
-import { CaretDownIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
+import { MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { useState, useEffect } from 'react'
 import type { MetaFunction } from 'react-router'
 import { redirect, useFetcher, useLoaderData } from 'react-router'
@@ -13,6 +13,7 @@ import Button from '~/ui/Button'
 import Flag from '~/ui/Flag'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
+import { FAQ } from '~/ui/FAQ'
 import Spin from '~/ui/icons/Spin'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
@@ -311,7 +312,7 @@ export default function IpLookup() {
 
             {data && (
               <div className='mt-6 space-y-8'>
-                <section className='overflow-hidden rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                <section className='overflow-hidden rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                   <div className='mb-6 flex items-start gap-4'>
                     {data.country && (
                       <Flag
@@ -579,44 +580,9 @@ export default function IpLookup() {
               </Text>
 
               <div className='space-y-3'>
-                {FAQ_ITEMS.map((item, index) => (
-                  <details
-                    key={index}
-                    className='group rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-800'
-                  >
-                    <summary className='flex cursor-pointer items-center justify-between px-5 py-4 text-left'>
-                      <Text weight='medium'>{item.question}</Text>
-                      <CaretDownIcon className='h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180' />
-                    </summary>
-                    <div className='border-t border-gray-200 px-5 py-4 dark:border-slate-700'>
-                      <Text as='p' colour='muted'>
-                        {item.answer}
-                      </Text>
-                    </div>
-                  </details>
-                ))}
+                <FAQ items={FAQ_ITEMS} withStructuredData />
               </div>
             </section>
-
-            <script
-              type='application/ld+json'
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify({
-                  '@context': 'https://schema.org',
-                  '@type': 'FAQPage',
-                  mainEntity: FAQ_ITEMS.map((item) => ({
-                    '@type': 'Question',
-                    name: item.question,
-                    acceptedAnswer: {
-                      '@type': 'Answer',
-                      text: item.answer,
-                    },
-                  })),
-                })
-                  .replace(/</g, '\\u003c')
-                  .replace(/\u2028|\u2029/g, ''),
-              }}
-            />
 
             <DitchGoogle />
           </div>

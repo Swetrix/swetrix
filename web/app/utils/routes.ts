@@ -50,6 +50,8 @@ const routes = Object.freeze({
   meta_tags_generator: '/tools/meta-tags-generator',
   ad_cost_calculator: '/tools/ad-cost-calculator',
   qr_code_generator: '/tools/qr-code-generator',
+  schema_markup_generator: '/tools/schema-markup-generator',
+  robots_txt_generator: '/tools/robots-txt-generator',
 
   // Marketing pages
   gaAlternative: '/google-analytics-alternative',

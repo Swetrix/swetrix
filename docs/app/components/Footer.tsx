@@ -26,6 +26,7 @@ import {
   CodeIcon,
   MoneyIcon,
   QrCodeIcon,
+  PlusCircleIcon,
   type IconProps,
 } from "@phosphor-icons/react";
 import type { FC, ReactNode } from "react";
@@ -137,6 +138,12 @@ const freeTools: NavItem[] = [
     href: `${SITE}/tools/qr-code-generator`,
     icon: QrCodeIcon,
     iconColor: "text-fuchsia-400",
+  },
+  {
+    name: "More free tools",
+    href: `${SITE}/tools`,
+    icon: PlusCircleIcon,
+    iconColor: "text-gray-400",
   },
 ];
 

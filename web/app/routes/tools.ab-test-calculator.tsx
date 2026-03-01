@@ -1,5 +1,4 @@
 import {
-  CaretDownIcon,
   CheckCircleIcon,
   WarningCircleIcon,
   ChartLineUpIcon,
@@ -13,7 +12,9 @@ import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
 import { isSelfhosted } from '~/lib/constants'
 import Input from '~/ui/Input'
+import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
+import { FAQ } from '~/ui/FAQ'
 import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
@@ -196,7 +197,7 @@ export default function ABTestCalculator() {
               <div className='space-y-8 lg:col-span-2'>
                 <div className='grid gap-6 md:grid-cols-2'>
                   {/* Control Group */}
-                  <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                  <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                     <h2 className='mb-4 text-xl font-semibold text-gray-900 dark:text-white'>
                       Control (Variant A)
                     </h2>
@@ -239,7 +240,7 @@ export default function ABTestCalculator() {
                   </div>
 
                   {/* Variant Group */}
-                  <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                  <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                     <h2 className='mb-4 text-xl font-semibold text-gray-900 dark:text-white'>
                       Variant (Variant B)
                     </h2>
@@ -282,28 +283,34 @@ export default function ABTestCalculator() {
                   </div>
                 </div>
 
-                <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                  <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
-                    Confidence Level
-                  </label>
-                  <select
-                    className='block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-slate-700 dark:text-white'
-                    value={confidenceLevel}
-                    onChange={(e) =>
-                      setConfidenceLevel(parseFloat(e.target.value))
+                <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
+                  <Select
+                    label='Confidence Level'
+                    items={[0.9, 0.95, 0.99]}
+                    selectedItem={confidenceLevel}
+                    title={
+                      confidenceLevel === 0.9
+                        ? '90% (More false positives)'
+                        : confidenceLevel === 0.95
+                          ? '95% (Standard, recommended)'
+                          : '99% (Highly rigorous)'
                     }
-                  >
-                    <option value={0.9}>90% (More false positives)</option>
-                    <option value={0.95}>95% (Standard, recommended)</option>
-                    <option value={0.99}>99% (Highly rigorous)</option>
-                  </select>
+                    onSelect={(val) => setConfidenceLevel(val)}
+                    labelExtractor={(val) =>
+                      val === 0.9
+                        ? '90% (More false positives)'
+                        : val === 0.95
+                          ? '95% (Standard, recommended)'
+                          : '99% (Highly rigorous)'
+                    }
+                  />
                 </div>
               </div>
 
               {/* Results Section */}
               <div className='lg:col-span-1'>
                 <div className='sticky top-8 space-y-6'>
-                  <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                  <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                     <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
                       Test Results
                     </h3>
@@ -475,48 +482,8 @@ export default function ABTestCalculator() {
                 Frequently Asked Questions
               </h2>
 
-              <div className='space-y-4'>
-                {FAQ_ITEMS.map((item, index) => (
-                  <details
-                    key={index}
-                    className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
-                  >
-                    <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
-                      <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
-                        {item.question}
-                      </h3>
-                      <CaretDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
-                    </summary>
-                    <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
-                      <p className='text-gray-600 dark:text-gray-400'>
-                        {item.answer}
-                      </p>
-                    </div>
-                  </details>
-                ))}
-              </div>
+              <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>
-
-            {/* FAQ Structured Data */}
-            <script
-              type='application/ld+json'
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify({
-                  '@context': 'https://schema.org',
-                  '@type': 'FAQPage',
-                  mainEntity: FAQ_ITEMS.map((item) => ({
-                    '@type': 'Question',
-                    name: item.question,
-                    acceptedAnswer: {
-                      '@type': 'Answer',
-                      text: item.answer,
-                    },
-                  })),
-                })
-                  .replace(/</g, '\\u003c')
-                  .replace(/\u2028|\u2029/g, ''),
-              }}
-            />
 
             <DitchGoogle />
           </div>

@@ -1,5 +1,4 @@
 import {
-  CaretDownIcon,
   MagnifyingGlassIcon,
   CheckCircleIcon,
   WarningOctagonIcon,
@@ -18,6 +17,7 @@ import { isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
+import { FAQ } from '~/ui/FAQ'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
@@ -692,7 +692,7 @@ export default function SitemapValidator() {
 
             {result && (
               <div className='mt-8 space-y-6'>
-                <section className='overflow-hidden rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                <section className='overflow-hidden rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                   <div className='mb-6 flex items-center gap-4'>
                     {result.isValid ? (
                       <div className='flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30'>
@@ -820,7 +820,7 @@ export default function SitemapValidator() {
                 </section>
 
                 {result.urls.length > 0 && (
-                  <section className='overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                  <section className='overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                     <div className='border-b border-gray-200 px-6 py-4 dark:border-slate-700'>
                       <Text weight='medium'>
                         URL Preview ({result.urls.length} of {result.urlCount})
@@ -867,7 +867,7 @@ export default function SitemapValidator() {
                 )}
 
                 {result.sitemaps && result.sitemaps.length > 0 && (
-                  <section className='overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                  <section className='overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                     <div className='border-b border-gray-200 px-6 py-4 dark:border-slate-700'>
                       <Text weight='medium'>
                         Referenced Sitemaps ({result.sitemaps.length})
@@ -1058,44 +1058,9 @@ export default function SitemapValidator() {
               </Text>
 
               <div className='space-y-3'>
-                {FAQ_ITEMS.map((item, index) => (
-                  <details
-                    key={index}
-                    className='group rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-800'
-                  >
-                    <summary className='flex cursor-pointer items-center justify-between px-5 py-4 text-left'>
-                      <Text weight='medium'>{item.question}</Text>
-                      <CaretDownIcon className='h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180' />
-                    </summary>
-                    <div className='border-t border-gray-200 px-5 py-4 dark:border-slate-700'>
-                      <Text as='p' colour='muted'>
-                        {item.answer}
-                      </Text>
-                    </div>
-                  </details>
-                ))}
+                <FAQ items={FAQ_ITEMS} withStructuredData />
               </div>
             </section>
-
-            <script
-              type='application/ld+json'
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify({
-                  '@context': 'https://schema.org',
-                  '@type': 'FAQPage',
-                  mainEntity: FAQ_ITEMS.map((item) => ({
-                    '@type': 'Question',
-                    name: item.question,
-                    acceptedAnswer: {
-                      '@type': 'Answer',
-                      text: item.answer,
-                    },
-                  })),
-                })
-                  .replace(/</g, '\\u003c')
-                  .replace(/\u2028|\u2029/g, ''),
-              }}
-            />
 
             <DitchGoogle />
           </div>

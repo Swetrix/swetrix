@@ -10,10 +10,13 @@ import {
   CodeIcon,
   MoneyIcon,
   QrCodeIcon,
+  BracketsCurlyIcon,
+  RobotIcon,
 } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
 
+import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
 export const TOOLS = [
@@ -87,6 +90,20 @@ export const TOOLS = [
     href: '/tools/qr-code-generator',
     icon: QrCodeIcon,
   },
+  {
+    id: 'schema-markup-generator',
+    title: 'Schema Markup Generator',
+    description: 'Generate JSON-LD structured data for rich snippets',
+    href: '/tools/schema-markup-generator',
+    icon: BracketsCurlyIcon,
+  },
+  {
+    id: 'robots-txt-generator',
+    title: 'Robots.txt Generator',
+    description: 'Create crawler rules to control search engine indexing',
+    href: '/tools/robots-txt-generator',
+    icon: RobotIcon,
+  },
 ] as const
 
 interface ToolsNavProps {
@@ -99,7 +116,7 @@ export function ToolsNav({ className }: ToolsNavProps) {
   return (
     <nav
       className={cn(
-        'overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-700',
+        'overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800',
         className,
       )}
     >
@@ -113,10 +130,10 @@ export function ToolsNav({ className }: ToolsNavProps) {
             to={tool.href}
             className={cn(
               'flex items-start gap-3 px-4 py-3 transition-colors',
-              index !== 0 && 'border-t border-gray-100 dark:border-slate-700',
+              index !== 0 && 'border-t border-gray-100 dark:border-slate-800',
               isActive
-                ? 'bg-gray-50 dark:bg-slate-700/50'
-                : 'hover:bg-gray-50 dark:hover:bg-slate-700/30',
+                ? 'bg-gray-50 dark:bg-slate-800/50'
+                : 'hover:bg-gray-50 dark:hover:bg-slate-800/30',
             )}
           >
             <Icon
@@ -128,19 +145,17 @@ export function ToolsNav({ className }: ToolsNavProps) {
               )}
             />
             <div className='min-w-0'>
-              <p
-                className={cn(
-                  'text-sm font-medium',
-                  isActive
-                    ? 'text-gray-900 dark:text-white'
-                    : 'text-gray-600 dark:text-gray-300',
-                )}
+              <Text
+                as='p'
+                size='sm'
+                weight='medium'
+                colour={isActive ? 'primary' : 'muted'}
               >
                 {tool.title}
-              </p>
-              <p className='text-xs text-gray-500 dark:text-gray-400'>
+              </Text>
+              <Text as='p' size='xs' colour='muted'>
                 {tool.description}
-              </p>
+              </Text>
             </div>
           </Link>
         )
@@ -173,12 +188,12 @@ export function ToolsNavMobile({ className }: ToolsNavProps) {
             <CurrentIcon className='h-5 w-5 shrink-0 text-gray-900 dark:text-white' />
           )}
           <div className='text-left'>
-            <p className='text-sm font-medium text-gray-900 dark:text-white'>
+            <Text as='p' size='sm' weight='medium' colour='primary'>
               {currentTool?.title || 'Tools'}
-            </p>
-            <p className='text-xs text-gray-500 dark:text-gray-400'>
+            </Text>
+            <Text as='p' size='xs' colour='muted'>
               {currentTool?.description || 'Select a tool'}
-            </p>
+            </Text>
           </div>
         </div>
         <CaretDownIcon
@@ -207,12 +222,12 @@ export function ToolsNavMobile({ className }: ToolsNavProps) {
                 >
                   <Icon className='mt-0.5 h-5 w-5 shrink-0 text-gray-400 dark:text-gray-500' />
                   <div className='min-w-0'>
-                    <p className='text-sm font-medium text-gray-600 dark:text-gray-300'>
+                    <Text as='p' size='sm' weight='medium' colour='muted'>
                       {tool.title}
-                    </p>
-                    <p className='text-xs text-gray-500 dark:text-gray-400'>
+                    </Text>
+                    <Text as='p' size='xs' colour='muted'>
                       {tool.description}
-                    </p>
+                    </Text>
                   </div>
                 </Link>
               )

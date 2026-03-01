@@ -1,4 +1,4 @@
-import { CaretDownIcon, ChartLineUpIcon } from '@phosphor-icons/react'
+import { ChartLineUpIcon } from '@phosphor-icons/react'
 import { useState, useEffect } from 'react'
 import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
@@ -8,6 +8,7 @@ import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
 import { isSelfhosted } from '~/lib/constants'
 import Input from '~/ui/Input'
+import { FAQ } from '~/ui/FAQ'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -141,7 +142,7 @@ export default function LTVCalculator() {
             <div className='mt-12 grid gap-8 lg:grid-cols-3'>
               {/* Input Section */}
               <div className='lg:col-span-2'>
-                <div className='rounded-xl bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                <div className='rounded-lg bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                   <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
                     Business Metrics
                   </h2>
@@ -245,7 +246,7 @@ export default function LTVCalculator() {
               {/* Results Section */}
               <div className='lg:col-span-1'>
                 <div className='sticky top-8 space-y-6'>
-                  <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                  <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                     <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
                       LTV Results
                     </h3>
@@ -364,48 +365,8 @@ export default function LTVCalculator() {
                 Frequently Asked Questions
               </h2>
 
-              <div className='space-y-4'>
-                {FAQ_ITEMS.map((item, index) => (
-                  <details
-                    key={index}
-                    className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
-                  >
-                    <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
-                      <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
-                        {item.question}
-                      </h3>
-                      <CaretDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
-                    </summary>
-                    <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
-                      <p className='text-gray-600 dark:text-gray-400'>
-                        {item.answer}
-                      </p>
-                    </div>
-                  </details>
-                ))}
-              </div>
+              <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>
-
-            {/* FAQ Structured Data */}
-            <script
-              type='application/ld+json'
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify({
-                  '@context': 'https://schema.org',
-                  '@type': 'FAQPage',
-                  mainEntity: FAQ_ITEMS.map((item) => ({
-                    '@type': 'Question',
-                    name: item.question,
-                    acceptedAnswer: {
-                      '@type': 'Answer',
-                      text: item.answer,
-                    },
-                  })),
-                })
-                  .replace(/</g, '\\u003c')
-                  .replace(/\u2028|\u2029/g, ''),
-              }}
-            />
 
             <DitchGoogle />
           </div>

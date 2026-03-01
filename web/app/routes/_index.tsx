@@ -292,6 +292,7 @@ const LiveDemoPreview = () => {
           className='relative h-auto w-full'
           width={2328}
           height={1666}
+          // eslint-disable-next-line react/no-unknown-property
           fetchPriority='high'
           alt='Swetrix Analytics dashboard'
         />

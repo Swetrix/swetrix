@@ -1,4 +1,4 @@
-import { CaretDownIcon, CodeIcon } from '@phosphor-icons/react'
+import { CodeIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
 import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
@@ -7,11 +7,11 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
 import { isSelfhosted } from '~/lib/constants'
-import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Textarea from '~/ui/Textarea'
 import CodeBlock from '~/ui/CodeBlock'
 import { Text } from '~/ui/Text'
+import { FAQ } from '~/ui/FAQ'
 import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
@@ -116,13 +116,13 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
             <Text as='h1' size='4xl' weight='bold' tracking='tight'>
               Meta Tags & Open Graph Generator
             </Text>
-            <Text as='p' size='lg' colour='muted' className='mt-4'>
+            <Text as='p' size='lg' colour='secondary' className='mt-4'>
               Create perfect SEO and social media meta tags for your website.
             </Text>
 
             <div className='mt-12 grid gap-8 lg:grid-cols-2'>
               {/* Input Section */}
-              <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+              <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                 <h2 className='mb-6 text-xl font-semibold text-gray-900 dark:text-white'>
                   Page Information
                 </h2>
@@ -234,11 +234,11 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
             </div>
 
             {/* Social Preview section (Simplified) */}
-            <div className='mt-8 rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+            <div className='mt-8 rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
               <h2 className='mb-6 text-xl font-semibold text-gray-900 dark:text-white'>
                 Social Preview Example (Twitter/X)
               </h2>
-              <div className='mx-auto max-w-md overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-900'>
+              <div className='mx-auto max-w-md overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900'>
                 {data.imageUrl ? (
                   <div className='aspect-[1.91/1] w-full overflow-hidden bg-gray-100 dark:bg-slate-800'>
                     <img
@@ -266,7 +266,7 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                     <span className='text-gray-400'>No image provided</span>
                   </div>
                 )}
-                <div className='border-t border-gray-200 p-3 dark:border-gray-700'>
+                <div className='border-t border-gray-200 p-3 dark:border-slate-800'>
                   <p className='truncate text-sm text-gray-500 dark:text-gray-400'>
                     {data.url
                       ? new URL(
@@ -287,14 +287,14 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
             </div>
 
             {/* FAQ Section */}
-            <section className='mt-20 border-t border-gray-200 pt-16 dark:border-slate-700'>
+            <section className='mt-20 border-t border-gray-200 pt-16 dark:border-slate-800'>
               <Text as='h2' size='3xl' weight='bold' tracking='tight'>
                 Free Meta Tags & Open Graph Generator
               </Text>
               <Text
                 as='p'
                 size='lg'
-                colour='muted'
+                colour='secondary'
                 className='mt-4 leading-relaxed'
               >
                 Ensure your website looks professional when shared on social
@@ -310,7 +310,7 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                   </Text>
                   <ul className='mt-3 space-y-2'>
                     <li>
-                      <Text colour='muted'>
+                      <Text colour='secondary'>
                         <Text as='span' weight='semibold' colour='inherit'>
                           Search Engine Optimization
                         </Text>{' '}
@@ -319,7 +319,7 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                       </Text>
                     </li>
                     <li>
-                      <Text colour='muted'>
+                      <Text colour='secondary'>
                         <Text as='span' weight='semibold' colour='inherit'>
                           Social Sharing
                         </Text>{' '}
@@ -329,7 +329,7 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                       </Text>
                     </li>
                     <li>
-                      <Text colour='muted'>
+                      <Text colour='secondary'>
                         <Text as='span' weight='semibold' colour='inherit'>
                           Brand Consistency
                         </Text>{' '}
@@ -345,7 +345,7 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                   </Text>
                   <ul className='mt-3 space-y-2'>
                     <li>
-                      <Text colour='muted'>
+                      <Text colour='secondary'>
                         <Text as='span' weight='semibold' colour='inherit'>
                           Character Limits
                         </Text>{' '}
@@ -354,7 +354,7 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                       </Text>
                     </li>
                     <li>
-                      <Text colour='muted'>
+                      <Text colour='secondary'>
                         <Text as='span' weight='semibold' colour='inherit'>
                           Image Sizing
                         </Text>{' '}
@@ -364,7 +364,7 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                       </Text>
                     </li>
                     <li>
-                      <Text colour='muted'>
+                      <Text colour='secondary'>
                         <Text as='span' weight='semibold' colour='inherit'>
                           Compelling Copy
                         </Text>{' '}
@@ -382,48 +382,8 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                 Frequently Asked Questions
               </h2>
 
-              <div className='space-y-4'>
-                {FAQ_ITEMS.map((item, index) => (
-                  <details
-                    key={index}
-                    className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
-                  >
-                    <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
-                      <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
-                        {item.question}
-                      </h3>
-                      <CaretDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
-                    </summary>
-                    <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
-                      <p className='text-gray-600 dark:text-gray-400'>
-                        {item.answer}
-                      </p>
-                    </div>
-                  </details>
-                ))}
-              </div>
+              <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>
-
-            {/* FAQ Structured Data */}
-            <script
-              type='application/ld+json'
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify({
-                  '@context': 'https://schema.org',
-                  '@type': 'FAQPage',
-                  mainEntity: FAQ_ITEMS.map((item) => ({
-                    '@type': 'Question',
-                    name: item.question,
-                    acceptedAnswer: {
-                      '@type': 'Answer',
-                      text: item.answer,
-                    },
-                  })),
-                })
-                  .replace(/</g, '\\u003c')
-                  .replace(/\u2028|\u2029/g, ''),
-              }}
-            />
 
             <DitchGoogle />
           </div>

@@ -29,6 +29,7 @@ import {
   CodeIcon,
   MoneyIcon,
   QrCodeIcon,
+  PlusCircleIcon,
 } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import React, { memo, type FC } from 'react'
@@ -199,6 +200,16 @@ const freeTools: NavItem[] = [
     internal: !isSelfhosted,
     icon: QrCodeIcon,
     iconColor: 'text-fuchsia-400',
+  },
+  {
+    key: 'more-free-tools',
+    name: 'More free tools',
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.tools}`
+      : routesPath.tools,
+    internal: !isSelfhosted,
+    icon: PlusCircleIcon,
+    iconColor: 'text-gray-400',
   },
 ]
 
