@@ -34,7 +34,8 @@ import {
   getTimeFromSeconds,
 } from '~/utils/generic'
 
-import CCRow from '../../View/components/CCRow'
+import Flag from '~/ui/Flag'
+import countries from '~/utils/isoCountries'
 
 import NoSessionDetails from './NoSessionDetails'
 import { Pageflow } from './Pageflow'
@@ -273,18 +274,31 @@ export const SessionDetailView = ({
                 label={t('project.mapping.cc')}
                 value={
                   details.cc ? (
-                    <CCRow size={16} cc={details.cc} language={language} />
+                    <>
+                      <Flag
+                        className='rounded-xs'
+                        country={details.cc}
+                        size={16}
+                        alt=''
+                        aria-hidden='true'
+                      />
+                      &nbsp;
+                      {[
+                        details.rg || details.ct
+                          ? details.cc?.toUpperCase()
+                          : countries.getName(details.cc, language) ||
+                            details.cc,
+                        details.rg,
+                        details.ct,
+                      ]
+                        .filter(Boolean)
+                        .join(' > ')}
+                    </>
                   ) : (
                     '-'
                   )
                 }
               />
-              {details.rg ? (
-                <InfoRow label={t('project.mapping.rg')} value={details.rg} />
-              ) : null}
-              {details.ct ? (
-                <InfoRow label={t('project.mapping.ct')} value={details.ct} />
-              ) : null}
               <InfoRow
                 label={t('project.mapping.lc')}
                 value={

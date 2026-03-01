@@ -886,8 +886,19 @@ export interface SessionDetailsResponse {
     psid: string
     cc: string | null
     os: string | null
+    osv: string | null
     br: string | null
+    brv: string | null
     dv: string | null
+    lc: string | null
+    ref: string | null
+    so: string | null
+    me: string | null
+    ca: string | null
+    te: string | null
+    co: string | null
+    rg: string | null
+    ct: string | null
     pageviews: number
     customEvents: number
     errors: number
