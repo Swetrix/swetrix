@@ -13,7 +13,6 @@ import {
 import { useTranslation } from 'react-i18next'
 
 import { Text } from '~/ui/Text'
-import { cn } from '~/utils/generic'
 
 const FEATURES = [
   { icon: ShieldCheckIcon, key: 'privacy' },
@@ -222,29 +221,12 @@ const DashboardMockup = () => (
   </div>
 )
 
-interface FeaturesGridProps {
-  classes?: {
-    container?: string
-    subContainer?: string
-  }
-}
-
-export const FeaturesGrid = ({ classes }: FeaturesGridProps) => {
+export const FeaturesGrid = () => {
   const { t } = useTranslation('common')
 
   return (
-    <section
-      className={cn(
-        'relative mx-auto max-w-7xl px-4 py-14 lg:px-8',
-        classes?.container,
-      )}
-    >
-      <div
-        className={cn(
-          'grid items-center gap-10 lg:grid-cols-2 lg:gap-16',
-          classes?.subContainer,
-        )}
-      >
+    <section className='relative mx-auto max-w-7xl px-4 py-14 lg:px-8'>
+      <div className='grid items-center gap-10 lg:grid-cols-2 lg:gap-16'>
         <DashboardMockup />
         <div>
           <Text

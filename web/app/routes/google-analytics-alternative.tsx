@@ -34,6 +34,7 @@ import FAQ from '~/components/marketing/FAQ'
 import { FeedbackDual } from './_index'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+import { FeaturesGrid } from '~/components/marketing/FeaturesGrid'
 
 export const meta: MetaFunction = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -617,6 +618,7 @@ export default function GoogleAnalyticsAlternativeRoute() {
       <main className='bg-gray-50 dark:bg-slate-950'>
         <Hero />
         <FeedbackDual />
+        <FeaturesGrid />
         <WhySwitch />
         <ComparisonTable />
         <Migration />
