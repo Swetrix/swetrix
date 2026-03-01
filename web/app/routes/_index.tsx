@@ -101,7 +101,10 @@ export const FeedbackDual = () => {
                   ? '/assets/users/casterlabs-dark.svg'
                   : '/assets/users/casterlabs-light.svg'
               }
-              className='h-12 self-start'
+              className='h-12 w-auto self-start'
+              width={157}
+              height={48}
+              loading='lazy'
             />
             <figure className='mt-10 flex flex-auto flex-col justify-between'>
               <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
@@ -117,9 +120,12 @@ export const FeedbackDual = () => {
               </blockquote>
               <figcaption className='mt-10 flex items-center gap-x-6'>
                 <img
-                  alt=''
+                  alt='Alex Bowles'
                   src='/assets/users/alex-casterlabs.jpg'
-                  className='size-14 rounded-full bg-gray-50 dark:bg-gray-800'
+                  className='size-14 rounded-full bg-gray-50 object-cover dark:bg-gray-800'
+                  width={56}
+                  height={56}
+                  loading='lazy'
                 />
                 <div className='text-base'>
                   <div className='font-semibold text-gray-900 dark:text-gray-100'>
@@ -140,7 +146,10 @@ export const FeedbackDual = () => {
                   ? '/assets/users/phalcode-dark.svg'
                   : '/assets/users/phalcode-light.svg'
               }
-              className='h-8 self-start'
+              className='h-8 w-auto self-start'
+              width={200}
+              height={32}
+              loading='lazy'
             />
             <figure className='mt-10 flex flex-auto flex-col justify-between'>
               <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
@@ -157,9 +166,12 @@ export const FeedbackDual = () => {
               </blockquote>
               <figcaption className='mt-10 flex items-center gap-x-6'>
                 <img
-                  alt=''
+                  alt='Alper Alkan'
                   src='/assets/users/alper-phalcode.jpg'
-                  className='size-14 rounded-full bg-gray-50 dark:bg-gray-800'
+                  className='size-14 rounded-full bg-gray-50 object-cover dark:bg-gray-800'
+                  width={56}
+                  height={56}
+                  loading='lazy'
                 />
                 <div className='text-base'>
                   <div className='font-semibold text-gray-900 dark:text-gray-100'>
@@ -225,8 +237,10 @@ const Testimonials = ({
           >
             <img
               alt={name}
-              width='400'
-              height='400'
+              width={48}
+              height={48}
+              loading='lazy'
+              className='object-cover'
               style={{ color: 'transparent' }}
               src={image}
             />
@@ -275,9 +289,10 @@ const LiveDemoPreview = () => {
               ? '/assets/screenshot_dark.png'
               : '/assets/screenshot_light.png'
           }
-          className='relative w-full'
-          width='100%'
-          height='auto'
+          className='relative h-auto w-full'
+          width={2328}
+          height={1666}
+          fetchPriority='high'
           alt='Swetrix Analytics dashboard'
         />
         <div className='absolute inset-0 flex items-center justify-center bg-slate-900/20 opacity-100 backdrop-blur-[1px] transition-opacity duration-200'>

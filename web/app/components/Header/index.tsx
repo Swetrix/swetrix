@@ -722,8 +722,8 @@ const AuthedHeader = ({
               type='button'
               onClick={openMenu}
               className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
+              aria-label={t('common.openMenu')}
             >
-              <span className='sr-only'>{t('common.openMenu')}</span>
               <ListIcon className='h-8 w-8 flex-none' aria-hidden='true' />
             </button>
           </div>
@@ -814,8 +814,8 @@ const NotAuthedHeader = ({
               type='button'
               onClick={openMenu}
               className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
+              aria-label={t('common.openMenu')}
             >
-              <span className='sr-only'>{t('common.openMenu')}</span>
               <ListIcon className='h-8 w-8 flex-none' aria-hidden='true' />
             </button>
           </div>
@@ -901,8 +901,8 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                 type='button'
                 onClick={() => setMobileMenuOpen(false)}
                 className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
+                aria-label={t('common.close')}
               >
-                <span className='sr-only'>{t('common.close')}</span>
                 <XIcon className='h-8 w-8 flex-none' aria-hidden='true' />
               </button>
             </div>
