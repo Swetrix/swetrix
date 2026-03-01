@@ -132,7 +132,7 @@ const Testimonials = ({ className }: { className?: string }) => {
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
           <span className='font-semibold text-gray-900 dark:text-gray-50'>
             {t('gaAlternative.hero.teams', {
-              amount: stats?.users || '> 1000',
+              amount: stats?.trials || '> 1000',
             })}
           </span>{' '}
           <span className='text-gray-700 dark:text-gray-200'>
