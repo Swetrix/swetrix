@@ -374,6 +374,7 @@ export default function RobotsTxtGenerator() {
                         ))}
                         <Button
                           type='button'
+                          regular
                           secondary
                           onClick={() => addRule(groupIndex)}
                           className='mt-2 w-full text-sm text-gray-900 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:bg-slate-700'
@@ -387,6 +388,7 @@ export default function RobotsTxtGenerator() {
 
                 <Button
                   type='button'
+                  regular
                   primary
                   onClick={addAgentGroup}
                   className='w-full'
