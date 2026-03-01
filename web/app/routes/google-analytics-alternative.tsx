@@ -315,7 +315,7 @@ const ComparisonTable = () => {
         </p>
       </div>
 
-      <div className='mt-10 overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+      <div className='mt-10 overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
         <div className='overflow-x-auto'>
           <table className='w-full min-w-[760px] border-separate border-spacing-0'>
             <caption className='sr-only'>
@@ -341,7 +341,7 @@ const ComparisonTable = () => {
                   className={cn(
                     'border-t border-slate-200 dark:border-white/10',
                     idx % 2 === 1
-                      ? 'bg-white dark:bg-slate-800'
+                      ? 'bg-white dark:bg-slate-900'
                       : 'bg-slate-50/40 dark:bg-slate-950/10',
                   )}
                 >
