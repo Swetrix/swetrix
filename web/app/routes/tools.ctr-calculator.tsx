@@ -277,6 +277,96 @@ export default function CTRCalculator() {
               </div>
             </div>
 
+            <section className='mt-20 border-t border-gray-200 pt-16 dark:border-slate-700'>
+              <Text as='h2' size='3xl' weight='bold' tracking='tight'>
+                Free Click-Through Rate (CTR) Calculator
+              </Text>
+              <Text
+                as='p'
+                size='lg'
+                colour='muted'
+                className='mt-4 leading-relaxed'
+              >
+                Use our free CTR calculator to instantly evaluate the
+                performance of your search ads, display banners, or email
+                campaigns. Click-through rate is a foundational metric that
+                reveals how relevant and engaging your content is to your target
+                audience.
+              </Text>
+
+              <div className='mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2'>
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    Why Does CTR Matter?
+                  </Text>
+                  <ul className='mt-3 space-y-2'>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Quality Score Impact
+                        </Text>{' '}
+                        - Higher CTRs typically lead to better Quality Scores on
+                        platforms like Google Ads, which lowers your cost per
+                        click (CPC).
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Relevance Indicator
+                        </Text>{' '}
+                        - A low CTR is a strong signal that your messaging,
+                        targeting, or creative needs adjustment.
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Engagement Metric
+                        </Text>{' '}
+                        - For organic content and email marketing, CTR is the
+                        best way to measure audience engagement.
+                      </Text>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    Tips for Improving CTR
+                  </Text>
+                  <ul className='mt-3 space-y-2'>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Write compelling copy
+                        </Text>{' '}
+                        - Use action-oriented language and highlight clear
+                        benefits or offers.
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Refine your audience
+                        </Text>{' '}
+                        - Ensure your ads are only shown to highly relevant
+                        users.
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Test different creatives
+                        </Text>{' '}
+                        - Run A/B tests on headlines, images, and
+                        calls-to-action (CTAs).
+                      </Text>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
             <div className='mt-16'>
               <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
                 Frequently Asked Questions

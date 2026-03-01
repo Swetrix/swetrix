@@ -390,6 +390,95 @@ export default function UTMGenerator() {
               </div>
             </div>
 
+            <section className='mt-20 border-t border-gray-200 pt-16 dark:border-slate-700'>
+              <Text as='h2' size='3xl' weight='bold' tracking='tight'>
+                Free UTM Link Generator
+              </Text>
+              <Text
+                as='p'
+                size='lg'
+                colour='muted'
+                className='mt-4 leading-relaxed'
+              >
+                Our free UTM Generator tool makes it easy to build trackable
+                URLs for your marketing campaigns. By adding UTM parameters to
+                your links, you can accurately track where your traffic comes
+                from, which campaigns are driving conversions, and what content
+                resonates best with your audience.
+              </Text>
+
+              <div className='mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2'>
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    Why Use UTM Parameters?
+                  </Text>
+                  <ul className='mt-3 space-y-2'>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Accurate Attribution
+                        </Text>{' '}
+                        - Know exactly which marketing efforts are driving
+                        traffic and sales.
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Campaign Comparison
+                        </Text>{' '}
+                        - Easily compare performance across different channels
+                        (e.g., Email vs. Social).
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          A/B Testing
+                        </Text>{' '}
+                        - Use utm_content to test different link placements
+                        within the same ad or email.
+                      </Text>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    Best Practices
+                  </Text>
+                  <ul className='mt-3 space-y-2'>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Be Consistent
+                        </Text>{' '}
+                        - Use a standardized naming convention (e.g., always use
+                        lowercase, use underscores instead of spaces).
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Keep it Simple
+                        </Text>{' '}
+                        - Use clear, descriptive names for your campaigns so
+                        they are easy to understand in your analytics dashboard.
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Use a URL Shortener
+                        </Text>{' '}
+                        - UTM links can get long; consider shortening them
+                        before sharing on social media.
+                      </Text>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
             <div className='mt-16'>
               <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
                 Frequently Asked Questions

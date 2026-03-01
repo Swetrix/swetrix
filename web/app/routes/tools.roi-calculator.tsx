@@ -531,6 +531,74 @@ export default function ROICalculator() {
             </div>
 
             {/* FAQ Section */}
+            <section className='mt-20 border-t border-gray-200 pt-16 dark:border-slate-700'>
+              <Text as='h2' size='3xl' weight='bold' tracking='tight'>
+                Free Marketing ROI & ROAS Calculator
+              </Text>
+              <Text
+                as='p'
+                size='lg'
+                colour='muted'
+                className='mt-4 leading-relaxed'
+              >
+                Our comprehensive Marketing ROI Calculator helps you measure the
+                true profitability of your advertising campaigns. Quickly
+                compute Return on Ad Spend (ROAS), Customer Acquisition Cost
+                (CAC), and other vital metrics to optimize your marketing budget
+                and improve profitability.
+              </Text>
+
+              <div className='mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2'>
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    Key Marketing Metrics Explained
+                  </Text>
+                  <ul className='mt-3 space-y-2'>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          ROI (Return on Investment)
+                        </Text>{' '}
+                        - Measures the overall profitability of your campaign,
+                        accounting for costs.
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          ROAS (Return on Ad Spend)
+                        </Text>{' '}
+                        - Indicates how much revenue is generated for every
+                        dollar spent on ads.
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          CAC (Customer Acquisition Cost)
+                        </Text>{' '}
+                        - The average amount you spend to acquire a single
+                        paying customer.
+                      </Text>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    How to Use This Tool
+                  </Text>
+                  <Text as='p' colour='muted' className='mt-3'>
+                    Simply enter your campaign's total ad spend, revenue
+                    generated, and other available metrics like clicks or
+                    impressions. The calculator will instantly generate a
+                    detailed performance report, showing your exact profit
+                    margins, conversion rates, and whether your campaign has
+                    reached its break-even point.
+                  </Text>
+                </div>
+              </div>
+            </section>
+
             <div className='mt-16'>
               <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
                 Frequently Asked Questions

@@ -24,6 +24,11 @@ import {
   ChartBarIcon,
   WarningIcon,
   ArrowsHorizontalIcon,
+  ScalesIcon,
+  ChartLineUpIcon,
+  CodeIcon,
+  MoneyIcon,
+  QrCodeIcon,
 } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import React, { memo, type FC } from 'react'
@@ -144,6 +149,56 @@ const freeTools: NavItem[] = [
     internal: !isSelfhosted,
     icon: TreeStructureIcon,
     iconColor: 'text-lime-400',
+  },
+  {
+    key: 'ab-test-calculator',
+    name: 'A/B Test Calculator',
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.ab_test_calculator}`
+      : routesPath.ab_test_calculator,
+    internal: !isSelfhosted,
+    icon: ScalesIcon,
+    iconColor: 'text-orange-400',
+  },
+  {
+    key: 'ltv-calculator',
+    name: 'LTV Calculator',
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.ltv_calculator}`
+      : routesPath.ltv_calculator,
+    internal: !isSelfhosted,
+    icon: ChartLineUpIcon,
+    iconColor: 'text-emerald-400',
+  },
+  {
+    key: 'meta-tags-generator',
+    name: 'Meta Tags Generator',
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.meta_tags_generator}`
+      : routesPath.meta_tags_generator,
+    internal: !isSelfhosted,
+    icon: CodeIcon,
+    iconColor: 'text-sky-400',
+  },
+  {
+    key: 'ad-cost-calculator',
+    name: 'Ad Cost Calculator',
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.ad_cost_calculator}`
+      : routesPath.ad_cost_calculator,
+    internal: !isSelfhosted,
+    icon: MoneyIcon,
+    iconColor: 'text-yellow-400',
+  },
+  {
+    key: 'qr-code-generator',
+    name: 'QR Code Generator',
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.qr_code_generator}`
+      : routesPath.qr_code_generator,
+    internal: !isSelfhosted,
+    icon: QrCodeIcon,
+    iconColor: 'text-fuchsia-400',
   },
 ]
 

@@ -21,6 +21,11 @@ import {
   ChartBarIcon,
   WarningIcon,
   ArrowsHorizontalIcon,
+  ScalesIcon,
+  ChartLineUpIcon,
+  CodeIcon,
+  MoneyIcon,
+  QrCodeIcon,
   type IconProps,
 } from "@phosphor-icons/react";
 import type { FC, ReactNode } from "react";
@@ -102,6 +107,36 @@ const freeTools: NavItem[] = [
     href: `${SITE}/tools/sitemap-validator`,
     icon: TreeStructureIcon,
     iconColor: "text-lime-400",
+  },
+  {
+    name: "A/B Test Calculator",
+    href: `${SITE}/tools/ab-test-calculator`,
+    icon: ScalesIcon,
+    iconColor: "text-orange-400",
+  },
+  {
+    name: "LTV Calculator",
+    href: `${SITE}/tools/ltv-calculator`,
+    icon: ChartLineUpIcon,
+    iconColor: "text-emerald-400",
+  },
+  {
+    name: "Meta Tags Generator",
+    href: `${SITE}/tools/meta-tags-generator`,
+    icon: CodeIcon,
+    iconColor: "text-sky-400",
+  },
+  {
+    name: "Ad Cost Calculator",
+    href: `${SITE}/tools/ad-cost-calculator`,
+    icon: MoneyIcon,
+    iconColor: "text-yellow-400",
+  },
+  {
+    name: "QR Code Generator",
+    href: `${SITE}/tools/qr-code-generator`,
+    icon: QrCodeIcon,
+    iconColor: "text-fuchsia-400",
   },
 ];
 

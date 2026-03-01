@@ -45,6 +45,11 @@ const routes = Object.freeze({
   ctr_calculator: '/tools/ctr-calculator',
   ip_lookup: '/tools/ip-lookup',
   sitemap_validator: '/tools/sitemap-validator',
+  ab_test_calculator: '/tools/ab-test-calculator',
+  ltv_calculator: '/tools/ltv-calculator',
+  meta_tags_generator: '/tools/meta-tags-generator',
+  ad_cost_calculator: '/tools/ad-cost-calculator',
+  qr_code_generator: '/tools/qr-code-generator',
 
   // Marketing pages
   gaAlternative: '/google-analytics-alternative',

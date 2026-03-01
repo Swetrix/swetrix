@@ -5,6 +5,11 @@ import {
   LinkIcon,
   FileMagnifyingGlassIcon,
   CaretDownIcon,
+  ScalesIcon,
+  ChartLineUpIcon,
+  CodeIcon,
+  MoneyIcon,
+  QrCodeIcon,
 } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
@@ -46,6 +51,41 @@ export const TOOLS = [
     description: 'Validate your sitemap.xml for errors',
     href: '/tools/sitemap-validator',
     icon: FileMagnifyingGlassIcon,
+  },
+  {
+    id: 'ab-test-calculator',
+    title: 'A/B Test Calculator',
+    description: 'Calculate statistical significance of your A/B tests',
+    href: '/tools/ab-test-calculator',
+    icon: ScalesIcon,
+  },
+  {
+    id: 'ltv-calculator',
+    title: 'LTV Calculator',
+    description: 'Calculate Customer Lifetime Value',
+    href: '/tools/ltv-calculator',
+    icon: ChartLineUpIcon,
+  },
+  {
+    id: 'meta-tags-generator',
+    title: 'Meta Tags Generator',
+    description: 'Generate SEO and Open Graph meta tags',
+    href: '/tools/meta-tags-generator',
+    icon: CodeIcon,
+  },
+  {
+    id: 'ad-cost-calculator',
+    title: 'Ad Cost Calculator',
+    description: 'Calculate CPM, CPC, and total ad costs',
+    href: '/tools/ad-cost-calculator',
+    icon: MoneyIcon,
+  },
+  {
+    id: 'qr-code-generator',
+    title: 'QR Code Generator',
+    description: 'Create customizable QR codes instantly',
+    href: '/tools/qr-code-generator',
+    icon: QrCodeIcon,
   },
 ] as const
 
