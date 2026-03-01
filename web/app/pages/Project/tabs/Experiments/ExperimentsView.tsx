@@ -129,9 +129,9 @@ const ExperimentRow = ({
   }, [location.search, experiment.id])
 
   const neutralActionButtonClass =
-    'rounded-md border border-transparent p-2 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 sm:p-1.5 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+    'inline-flex items-center justify-center rounded-md border border-transparent p-2 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 sm:p-1.5 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
   const positiveActionButtonClass =
-    'rounded-md border border-transparent p-2 transition-colors sm:p-1.5 text-green-600 hover:border-green-300 hover:bg-green-50 dark:text-green-400 hover:dark:border-green-700/80 dark:hover:bg-green-900/30'
+    'inline-flex items-center justify-center rounded-md border border-transparent p-2 transition-colors sm:p-1.5 text-green-600 hover:border-green-300 hover:bg-green-50 dark:text-green-400 hover:dark:border-green-700/80 dark:hover:bg-green-900/30'
 
   const handleStart = async () => {
     setActionLoading(true)
