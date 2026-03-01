@@ -330,7 +330,7 @@ export default function RobotsTxtGenerator() {
                             key={ruleIndex}
                             className='flex items-center gap-2'
                           >
-                            <div className='w-full'>
+                            <div className='w-32 shrink-0'>
                               <Select
                                 items={['Disallow', 'Allow']}
                                 selectedItem={rule.type}
@@ -347,7 +347,7 @@ export default function RobotsTxtGenerator() {
                                 buttonClassName='!py-2 !px-3'
                               />
                             </div>
-                            <div className='flex-1'>
+                            <div className='min-w-0 flex-1'>
                               <Input
                                 type='text'
                                 placeholder='/path-to-block/'
