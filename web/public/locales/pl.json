@@ -1,6 +1,6 @@
 {
   "apiNotifications": {
-    "somethingWentWrong": "Coś poszło nie tak, spróbuj ponownieКраїни для виключення",
+    "somethingWentWrong": "Coś poszło nie tak, spróbuj ponownie",
     "emailRegistered": "Użytkownik z tym adresem e-mail już istnieje",
     "leakedPassword": "Podane hasło wyciekło, użyj innego",
     "rateLimitHit": "Zbyt wiele żądań, spróbuj ponownie później",
@@ -2103,7 +2103,9 @@
     "dueToday": "Do zapłaty dzisiaj ({{days}} dni za darmo)",
     "next": "Rozpocznij darmowy okres próbny",
     "selectPlan": "Wybierz swój plan",
-    "termsDesc": "Kontynuując, akceptujesz <tos>Warunki korzystania</tos> obowiązujące dla Swetrix i potwierdzasz, że zapoznałeś się z naszą <privacy>Polityką prywatności</privacy>."
+    "termsDesc": "Kontynuując, akceptujesz <tos>Warunki korzystania</tos> obowiązujące dla Swetrix i potwierdzasz, że zapoznałeś się z naszą <privacy>Polityką prywatności</privacy>.",
+    "customPlanTitle": "Potrzebujesz planu na ponad 20 mln odsłon?",
+    "customPlanDesc": "Wybierz „Do {{count}} odsłon miesięcznie” i <contact>skontaktuj się z nami</contact>, aby uzyskać indywidualną wycenę."
   },
   "onboarding": {
     "welcome": "Witamy w Swetrix",

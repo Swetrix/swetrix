@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { usePaddle } from '~/hooks/usePaddle'
 import {
   BillingFrequency,
+  CONTACT_EMAIL,
   CURRENCIES,
   paddleLanguageMapping,
   PLAN_LIMITS,
@@ -313,6 +314,43 @@ const Subscribe = () => {
                 )
               })}
             </div>
+
+            {showAllPlans && (
+              <div className='mt-2 rounded-lg bg-gray-50 px-4 py-3 ring-1 ring-gray-200 ring-inset dark:bg-slate-900/50 dark:ring-slate-800'>
+                <Text
+                  as='p'
+                  size='sm'
+                  weight='medium'
+                  className='text-gray-900 dark:text-gray-100'
+                >
+                  {t('checkout.customPlanTitle')}
+                </Text>
+                <Text
+                  as='p'
+                  size='sm'
+                  className='mt-1 text-gray-600 dark:text-gray-400'
+                >
+                  <Trans
+                    t={t}
+                    i18nKey='checkout.customPlanDesc'
+                    values={{
+                      count: formatEventsLong(
+                        PLAN_LIMITS['20m'].monthlyUsageLimit,
+                        i18n.language,
+                      ),
+                    }}
+                    components={{
+                      contact: (
+                        <a
+                          href={`mailto:${CONTACT_EMAIL}`}
+                          className='font-medium underline decoration-dashed hover:decoration-solid'
+                        />
+                      ),
+                    }}
+                  />
+                </Text>
+              </div>
+            )}
 
             <div className='mt-3'>
               <button
