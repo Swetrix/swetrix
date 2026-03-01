@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 
 import { cn } from '~/utils/generic'
 
-export interface FAQItem {
+interface FAQItem {
   question: string | ReactNode
   answer: string | ReactNode
 }
