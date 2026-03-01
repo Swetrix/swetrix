@@ -329,8 +329,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const timezone = url.searchParams.get('timezone') || DEFAULT_TIMEZONE
   const filters = parseFiltersFromUrl(url.searchParams)
 
-  // Ensure the time bucket is valid for the selected period
-  const timeBucket = getValidTimeBucket(period, urlTimeBucket)
+  // Ensure the time bucket is valid for the selected period and date range
+  const timeBucket = getValidTimeBucket(period, urlTimeBucket, from, to)
 
   // Performance-specific params
   const measure = url.searchParams.get('measure') || 'median'

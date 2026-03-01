@@ -93,8 +93,25 @@ const PERIOD_TO_VALID_TIME_BUCKETS: Record<Period, TimeBucket[]> = {
 export const getValidTimeBucket = (
   period: Period,
   requestedTimeBucket?: string | null,
+  from?: string,
+  to?: string,
 ): TimeBucket => {
-  const validBuckets = PERIOD_TO_VALID_TIME_BUCKETS[period] || ['day']
+  let validBuckets = PERIOD_TO_VALID_TIME_BUCKETS[period] || ['day']
+
+  if ((period === 'custom' || period === 'compare') && from && to) {
+    const days = Math.ceil(
+      Math.abs(new Date(to).getTime() - new Date(from).getTime()) /
+        (1000 * 3600 * 24),
+    )
+
+    for (const entry of timeBucketToDays) {
+      if (entry.lt >= days) {
+        validBuckets = entry.tb
+        break
+      }
+    }
+  }
+
   if (
     requestedTimeBucket &&
     validBuckets.includes(requestedTimeBucket as TimeBucket)

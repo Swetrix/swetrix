@@ -426,6 +426,7 @@ const ViewProjectContent = () => {
       for (const index in timeBucketToDays) {
         if (timeBucketToDays[index].lt >= days) {
           tbs = timeBucketToDays[index].tb
+          break
         }
       }
     }
