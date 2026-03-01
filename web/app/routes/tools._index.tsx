@@ -48,7 +48,7 @@ export default function Tools() {
               <Link
                 key={tool.id}
                 to={tool.href}
-                className='group relative rounded-xl bg-white p-6 ring-1 ring-gray-200 transition-shadow hover:ring-gray-300 dark:bg-slate-800 dark:ring-slate-700 dark:hover:ring-slate-600'
+                className='group relative flex flex-col justify-between rounded-lg bg-white p-6 ring-1 ring-gray-200 transition-shadow hover:ring-gray-300 dark:bg-slate-950 dark:ring-slate-700 dark:hover:bg-slate-900 dark:hover:ring-slate-600'
               >
                 <div className='flex items-start gap-4'>
                   <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-700'>
@@ -58,16 +58,21 @@ export default function Tools() {
                     <Text as='h2' size='lg' weight='semibold'>
                       {tool.title}
                     </Text>
-                    <Text as='p' size='sm' colour='muted' className='mt-1'>
+                    <Text as='p' size='sm' colour='secondary' className='mt-1'>
                       {tool.description}
                     </Text>
                   </div>
                 </div>
 
-                <div className='mt-4 flex items-center text-sm font-medium underline decoration-dashed hover:decoration-solid'>
+                <Text
+                  as='p'
+                  size='sm'
+                  colour='secondary'
+                  className='mt-4 flex items-center'
+                >
                   Use tool
                   <ArrowRightIcon className='ml-1 size-3' />
-                </div>
+                </Text>
               </Link>
             )
           })}
