@@ -14,16 +14,13 @@ import {
   HttpException,
   HttpStatus,
   Headers,
-  Header,
   Patch,
   ConflictException,
-  Res,
   UnauthorizedException,
   UnprocessableEntityException,
   ParseIntPipe,
   Ip,
 } from '@nestjs/common'
-import { Response } from 'express'
 import {
   ApiTags,
   ApiQuery,
@@ -1626,77 +1623,6 @@ export class ProjectController {
     }
 
     await this.projectService.removeSubscriberById(subscriberId)
-  }
-
-  @Get('/ogimage/:id')
-  @HttpCode(200)
-  @Header('Content-Type', 'image/jpeg')
-  // 1 day cache
-  @Header(
-    'Cache-Control',
-    'immutable, no-transform, s-max-age=86400, max-age=86400',
-  )
-  @ApiResponse({ status: 200 })
-  async getOgImage(
-    @Param('id') id: string,
-    @Headers() headers: Record<string, string>,
-    @Ip() requestIp: string,
-    @Res() res: Response,
-  ): Promise<any> {
-    // TODO: Cache the generated image in the filesystem (or CDN) for 1 day and return it instead of generating it again
-    this.logger.log({ id }, 'GET /project/ogimage/:id')
-
-    const ip = getIPFromHeaders(headers) || requestIp || ''
-    await checkRateLimit(ip, 'project-ogimage', 100, 60 * 60)
-
-    if (!isValidPID(id)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-
-    const project = await this.projectService.findOne({ where: { id } })
-
-    if (_isEmpty(project)) {
-      // TODO: Return default image
-      throw new NotFoundException('Project not found.')
-    }
-
-    if (!project.public) {
-      // TODO: Return default image
-      throw new ForbiddenException()
-    }
-
-    const image = await this.projectService.getOgImage(project.id, project.name)
-
-    res.end(image)
-  }
-
-  @Get('/ogimage/:id/html')
-  @HttpCode(200)
-  @ApiResponse({ status: 200 })
-  async getOgHTML(@Param('id') id: string, @Res() res: Response): Promise<any> {
-    this.logger.log({ id }, 'GET /project/ogimage/:id')
-
-    if (!isDevelopment) {
-      throw new ForbiddenException('This route is only available in dev mode')
-    }
-
-    if (!isValidPID(id)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-
-    const project = await this.projectService.findOne({ where: { id } })
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException('Project not found')
-    }
-
-    const html = this.projectService.getOgHTML('My Awesome Project')
-
-    res.send(html)
   }
 
   @ApiBearerAuth()

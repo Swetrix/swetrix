@@ -122,26 +122,6 @@ export const getRandomTip = (language = 'en'): string => {
   return _sample(marketingTips[language])
 }
 
-const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
-
-const formatterLookup = [
-  { value: 1, symbol: '' },
-  { value: 1e3, symbol: 'k' },
-  { value: 1e6, symbol: 'M' },
-  { value: 1e9, symbol: 'B' },
-]
-
-export const nFormatter = (num: any, digits = 1) => {
-  const item = _find(
-    formatterLookup.slice().reverse(),
-    ({ value }) => Math.abs(num) >= value,
-  )
-
-  return item
-    ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol
-    : '0'
-}
-
 // 'action' is used as a salt to differ rate limiting routes
 export const checkRateLimit = async (
   key: string,

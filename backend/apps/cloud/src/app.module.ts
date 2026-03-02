@@ -26,7 +26,6 @@ import { AiModule } from './ai/ai.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { CaptchaModule } from './captcha/captcha.module'
-import { OgImageModule } from './og-image/og-image.module'
 import { IntegrationsModule } from './integrations/integrations.module'
 import { HealthModule } from './health/health.module'
 import { AppController } from './app.controller'
@@ -87,7 +86,6 @@ const modules = [
   AiModule,
   AuthModule,
   CaptchaModule,
-  OgImageModule,
   HealthModule,
   OrganisationModule,
   RevenueModule,
