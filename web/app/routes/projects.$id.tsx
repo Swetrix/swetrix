@@ -44,9 +44,9 @@ import {
 } from '~/api/api.server'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import {
-  API_URL,
   DEFAULT_TIMEZONE,
   PROJECT_TABS,
+  getProjectOgImageUrl,
   getValidTimeBucket,
   type Period,
 } from '~/lib/constants'
@@ -100,14 +100,12 @@ export const links: LinksFunction = () => [
 ]
 
 export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
-  const currentDate = new Date()
-  const cacheVersion = `${currentDate.getUTCFullYear()}${currentDate.getUTCMonth()}`
-
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation('common')
   const { pathname } = location
   const pid = _split(pathname, '/')[2]
-  const previewURL = `${API_URL}project/ogimage/${pid}?cv=${cacheVersion}`
+  const previewURL = getProjectOgImageUrl(pid)
+
   if (data?.isPasswordRequired) {
     return [
       ...getTitle(t('titles.projectWithPassword')),

@@ -418,7 +418,11 @@ const FRONTEND_ORIGIN = isSelfhosted
   : MAIN_URL
 
 export const getOgImageUrl = (title: string, description?: string) => {
-  return `${FRONTEND_ORIGIN}/og-image.png?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description || '')}`
+  return `${FRONTEND_ORIGIN}/api/og-image.png?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description || '')}`
+}
+
+export const getProjectOgImageUrl = (projectId: string) => {
+  return `${FRONTEND_ORIGIN}/api/og-image.png?projectId=${encodeURIComponent(projectId)}`
 }
 
 // Cookies
