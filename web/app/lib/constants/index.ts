@@ -413,10 +413,12 @@ const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
 
 export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
 
-export const getOgImageUrl = (title: string) => {
-  const apiUrl = API_URL.slice(0, -1)
+const FRONTEND_ORIGIN = isSelfhosted
+  ? (isBrowser ? window.REMIX_ENV?.BASE_URL : process.env.BASE_URL) || ''
+  : MAIN_URL
 
-  return `${apiUrl}/v1/og-image?title=${encodeURIComponent(title)}`
+export const getOgImageUrl = (title: string) => {
+  return `${FRONTEND_ORIGIN}/og-image.png?title=${encodeURIComponent(title)}`
 }
 
 // Cookies

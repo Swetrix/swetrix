@@ -22,6 +22,7 @@ export default defineConfig({
       'billboard.js',
       /^remix-i18next.*/
     ],
+    external: ['@takumi-rs/image-response'],
   },
   plugins: [reactRouter(), tsconfigPaths(), tailwindcss()],
 })
