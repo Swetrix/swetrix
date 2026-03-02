@@ -1,3 +1,4 @@
+/* oxlint-disable react/no-unknown-property */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -95,7 +96,7 @@ function GridBackground() {
 function SwetrixLogo() {
   return (
     <div tw='flex items-center' style={{ gap: '18px' }}>
-      <img src='swetrix-logo' width={52} height={60} />
+      <img src='swetrix-logo' alt='' width={52} height={60} />
       <div style={{ fontSize: 48, fontWeight: 600, color: '#0f172a' }}>
         Swetrix
       </div>
