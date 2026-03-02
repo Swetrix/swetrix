@@ -417,8 +417,8 @@ const FRONTEND_ORIGIN = isSelfhosted
   ? (isBrowser ? window.REMIX_ENV?.BASE_URL : process.env.BASE_URL) || ''
   : MAIN_URL
 
-export const getOgImageUrl = (title: string) => {
-  return `${FRONTEND_ORIGIN}/og-image.png?title=${encodeURIComponent(title)}`
+export const getOgImageUrl = (title: string, description?: string) => {
+  return `${FRONTEND_ORIGIN}/og-image.png?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description || '')}`
 }
 
 // Cookies

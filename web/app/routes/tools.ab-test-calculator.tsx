@@ -10,7 +10,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Input from '~/ui/Input'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
@@ -19,12 +19,14 @@ import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free A/B Test Significance Calculator - Swetrix'
+  const description =
+    'Calculate statistical significance for your A/B tests to determine if your variation performs better than the control. Fast, free, and accurate.'
+
   return [
-    ...getTitle('Free A/B Test Significance Calculator - Swetrix'),
-    ...getDescription(
-      'Calculate statistical significance for your A/B tests to determine if your variation performs better than the control. Fast, free, and accurate.',
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

@@ -9,7 +9,11 @@ import {
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { getGeneralStats } from '~/api/api.server'
-import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
+import {
+  getOgImageUrl,
+  isDisableMarketingPages,
+  isSelfhosted,
+} from '~/lib/constants'
 import OpenStartup from '~/pages/OpenStartup'
 import Style from '~/styles/ProjectViewStyle.css?url'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -21,7 +25,7 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('titles.open')),
     ...getDescription(t('description.open')),
-    ...getPreviewImage(),
+    ...getPreviewImage(getOgImageUrl(t('titles.open'), t('description.open'))),
   ]
 }
 

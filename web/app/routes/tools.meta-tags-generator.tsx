@@ -6,7 +6,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Input from '~/ui/Input'
 import Textarea from '~/ui/Textarea'
 import CodeBlock from '~/ui/CodeBlock'
@@ -16,12 +16,13 @@ import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free Meta Tags & Open Graph Generator - Swetrix'
+  const description =
+    'Generate perfect HTML meta tags, Open Graph for Facebook/LinkedIn, and Twitter Cards to make your links look great when shared on social media.'
   return [
-    ...getTitle('Free Meta Tags & Open Graph Generator - Swetrix'),
-    ...getDescription(
-      'Generate perfect HTML meta tags, Open Graph for Facebook/LinkedIn, and Twitter Cards to make your links look great when shared on social media.',
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

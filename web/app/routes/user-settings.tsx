@@ -8,7 +8,7 @@ import { data } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import { Metainfo } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { User } from '~/lib/models/User'
@@ -33,7 +33,9 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('titles.profileSettings')),
     ...getDescription(t('description.default')),
-    ...getPreviewImage(),
+    ...getPreviewImage(
+      getOgImageUrl(t('titles.profileSettings'), t('description.default')),
+    ),
   ]
 }
 

@@ -8,6 +8,7 @@ import type {
 import { redirect, data } from 'react-router'
 
 import { getAuthenticatedUser, loginUser, serverFetch } from '~/api/api.server'
+import { getOgImageUrl } from '~/lib/constants'
 import Signin from '~/pages/Auth/Signin'
 import { decidePostAuthRedirect } from '~/utils/auth'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -23,7 +24,9 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('titles.signin')),
     ...getDescription(t('description.login')),
-    ...getPreviewImage(),
+    ...getPreviewImage(
+      getOgImageUrl(t('titles.signin'), t('description.login')),
+    ),
   ]
 }
 

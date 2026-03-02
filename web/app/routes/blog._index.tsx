@@ -7,7 +7,11 @@ import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { redirect, Link, useLoaderData } from 'react-router'
 
 import { getBlogPosts } from '~/api/api.server'
-import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
+import {
+  getOgImageUrl,
+  isDisableMarketingPages,
+  isSelfhosted,
+} from '~/lib/constants'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { Text } from '~/ui/Text'
 
@@ -32,7 +36,7 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle('Blog'),
     ...getDescription(t('description.blog')),
-    ...getPreviewImage(),
+    ...getPreviewImage(getOgImageUrl('Blog', t('description.blog'))),
   ]
 }
 

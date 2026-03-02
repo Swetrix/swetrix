@@ -6,7 +6,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import { FAQ } from '~/ui/FAQ'
@@ -14,12 +14,14 @@ import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free Ad Cost Calculator (CPM, CPC, CPA) - Swetrix'
+  const description =
+    'Calculate CPM (Cost Per Mille), CPC (Cost Per Click), and CPA (Cost Per Action) instantly. Analyze your ad campaign costs and performance.'
+
   return [
-    ...getTitle('Free Ad Cost Calculator (CPM, CPC, CPA) - Swetrix'),
-    ...getDescription(
-      'Calculate CPM (Cost Per Mille), CPC (Cost Per Click), and CPA (Cost Per Action) instantly. Analyze your ad campaign costs and performance.',
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

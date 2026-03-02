@@ -5,7 +5,7 @@ import { ImageResponse } from '@takumi-rs/image-response'
 import type { LoaderFunctionArgs } from 'react-router'
 
 const MAX_TITLE_LENGTH = 50
-const MAX_DESCRIPTION_LENGTH = 120
+const MAX_DESCRIPTION_LENGTH = 200
 
 const logoData = readFileSync(
   join(process.cwd(), 'public', 'assets', 'logo', 'blue.png'),
@@ -25,7 +25,7 @@ interface OgImageProps {
 }
 
 function OgImage({ title, description, label }: OgImageProps) {
-  const titleFontSize = title.length > 30 ? 84 : 96
+  const titleFontSize = title.length > 30 ? 90 : 104
 
   return (
     <div tw='flex w-full h-full' style={{ backgroundColor: '#f1f5f9' }}>
@@ -115,7 +115,7 @@ function OgImage({ title, description, label }: OgImageProps) {
           <div
             style={{
               fontSize: titleFontSize,
-              fontWeight: 800,
+              fontWeight: 600,
               lineHeight: 1.1,
               letterSpacing: '-0.025em',
               color: '#0f172a',
@@ -130,8 +130,8 @@ function OgImage({ title, description, label }: OgImageProps) {
                 fontSize: 39,
                 fontWeight: 400,
                 lineHeight: 1.45,
-                color: '#334155',
-                marginTop: '18px',
+                color: '#1e293b',
+                marginTop: '3rem',
               }}
             >
               {description}

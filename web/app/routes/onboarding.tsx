@@ -8,6 +8,7 @@ import { data, redirect } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
+import { getOgImageUrl } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Project } from '~/lib/models/Project'
 import { User } from '~/lib/models/User'
@@ -29,7 +30,9 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('onboarding.welcome')),
     ...getDescription(t('description.onboarding')),
-    ...getPreviewImage(),
+    ...getPreviewImage(
+      getOgImageUrl(t('onboarding.welcome'), t('description.onboarding')),
+    ),
   ]
 }
 

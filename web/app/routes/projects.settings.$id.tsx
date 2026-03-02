@@ -7,6 +7,7 @@ import type {
 import { data, redirect } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
+import { getOgImageUrl } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import { Subscriber } from '~/lib/models/Subscriber'
 import ProjectSettings from '~/pages/Project/Settings'
@@ -25,7 +26,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     ...getTitle(title),
     ...getDescription(t('description.default')),
-    ...getPreviewImage(),
+    ...getPreviewImage(getOgImageUrl(title, t('description.default'))),
   ]
 }
 

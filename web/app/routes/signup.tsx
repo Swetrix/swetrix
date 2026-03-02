@@ -9,7 +9,7 @@ import { redirect, data } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, registerUser } from '~/api/api.server'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Signup from '~/pages/Auth/Signup'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { createHeadersWithCookies } from '~/utils/session.server'
@@ -21,7 +21,9 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('titles.signup')),
     ...getDescription(t('description.signup')),
-    ...getPreviewImage(),
+    ...getPreviewImage(
+      getOgImageUrl(t('titles.signup'), t('description.signup')),
+    ),
   ]
 }
 

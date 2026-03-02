@@ -6,7 +6,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Select from '~/ui/Select'
@@ -17,12 +17,13 @@ import { FAQ } from '~/ui/FAQ'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free Schema Markup (JSON-LD) Generator - Swetrix'
+  const description =
+    'Generate valid JSON-LD schema markup for your website to get rich snippets in Google search results. Supports Article, FAQ, Local Business, and more.'
   return [
-    ...getTitle('Free Schema Markup (JSON-LD) Generator - Swetrix'),
-    ...getDescription(
-      'Generate valid JSON-LD schema markup for your website to get rich snippets in Google search results. Supports Article, FAQ, Local Business, and more.',
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

@@ -5,12 +5,15 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { TOOLS } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import { Text } from '~/ui/Text'
 import { getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
-  return [...getTitle('Free Marketing Tools'), ...getPreviewImage()]
+  return [
+    ...getTitle('Free Marketing Tools'),
+    ...getPreviewImage(getOgImageUrl('Free Marketing Tools')),
+  ]
 }
 
 export const sitemap: SitemapFunction = () => ({

@@ -8,7 +8,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Textarea from '~/ui/Textarea'
@@ -18,12 +18,13 @@ import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free QR Code Generator - Swetrix'
+  const description =
+    'Create high-quality, customizable QR codes instantly. Perfect for links, marketing materials, and offline-to-online campaigns.'
   return [
-    ...getTitle('Free QR Code Generator - Swetrix'),
-    ...getDescription(
-      'Create high-quality, customizable QR codes instantly. Perfect for links, marketing materials, and offline-to-online campaigns.',
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

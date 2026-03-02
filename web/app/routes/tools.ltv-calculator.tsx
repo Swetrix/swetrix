@@ -6,7 +6,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Input from '~/ui/Input'
 import { FAQ } from '~/ui/FAQ'
 import { Text } from '~/ui/Text'
@@ -14,12 +14,13 @@ import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free LTV Calculator - Customer Lifetime Value'
+  const description =
+    'Calculate Customer Lifetime Value (LTV) and LTV:CAC ratio. Optimize your marketing spend and understand the long-term value of your customers.'
   return [
-    ...getTitle('Free LTV Calculator - Customer Lifetime Value'),
-    ...getDescription(
-      'Calculate Customer Lifetime Value (LTV) and LTV:CAC ratio. Optimize your marketing spend and understand the long-term value of your customers.',
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

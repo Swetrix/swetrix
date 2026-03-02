@@ -9,6 +9,7 @@ import { data, redirect } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
+import { getOgImageUrl } from '~/lib/constants'
 import ForgotPassword from '~/pages/Auth/ForgotPassword'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { isValidEmail } from '~/utils/validator'
@@ -20,7 +21,9 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('titles.recovery')),
     ...getDescription(t('description.recovery')),
-    ...getPreviewImage(),
+    ...getPreviewImage(
+      getOgImageUrl(t('titles.recovery'), t('description.recovery')),
+    ),
   ]
 }
 

@@ -11,7 +11,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Select from '~/ui/Select'
@@ -21,12 +21,13 @@ import { FAQ } from '~/ui/FAQ'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free Robots.txt Generator - Swetrix'
+  const description =
+    'Create and validate robots.txt files for your website instantly. Control how search engines like Googlebot and Bingbot crawl your site.'
   return [
-    ...getTitle('Free Robots.txt Generator - Swetrix'),
-    ...getDescription(
-      'Create and validate robots.txt files for your website instantly. Control how search engines like Googlebot and Bingbot crawl your site.',
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

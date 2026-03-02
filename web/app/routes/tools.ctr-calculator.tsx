@@ -6,7 +6,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import { FAQ } from '~/ui/FAQ'
@@ -14,12 +14,13 @@ import { Text } from '~/ui/Text'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free CTR Calculator tool - Calculate your CTR'
+  const description =
+    "Use Swetrix's free CTR Calculator to instantly compute click‑through rate from clicks and impressions, learn what a good CTR looks like, and get tips to improve campaign performance—privacy-first and easy to use."
   return [
-    ...getTitle('Free CTR Calculator tool - Calculate your CTR'),
-    ...getDescription(
-      "Use Swetrix's free CTR Calculator to instantly compute click‑through rate from clicks and impressions, learn what a good CTR looks like, and get tips to improve campaign performance—privacy-first and easy to use.",
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

@@ -4,6 +4,7 @@ import { useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
+import { getOgImageUrl } from '~/lib/constants'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -15,7 +16,9 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('titles.invitation')),
     ...getDescription(t('description.default')),
-    ...getPreviewImage(),
+    ...getPreviewImage(
+      getOgImageUrl(t('titles.invitation'), t('description.default')),
+    ),
   ]
 }
 

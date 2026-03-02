@@ -8,7 +8,7 @@ import { data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import Dashboard from '~/pages/Dashboard'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -24,7 +24,9 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('titles.dashboard')),
     ...getDescription(t('description.default')),
-    ...getPreviewImage(),
+    ...getPreviewImage(
+      getOgImageUrl(t('titles.dashboard'), t('description.default')),
+    ),
   ]
 }
 

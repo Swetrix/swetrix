@@ -6,7 +6,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
@@ -15,12 +15,13 @@ import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free UTM Generator tool - Create UTM parameters'
+  const description =
+    'Generate trackable UTM links in seconds. Add utm_source, utm_medium, utm_campaign and optional utm_content/utm_term, then copy the final URL to measure marketing campaign performance with clean, consistent parameters.'
   return [
-    ...getTitle('Free UTM Generator tool - Create UTM parameters'),
-    ...getDescription(
-      'Generate trackable UTM links in seconds. Add utm_source, utm_medium, utm_campaign and optional utm_content/utm_term, then copy the final URL to measure marketing campaign performance with clean, consistent parameters.',
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

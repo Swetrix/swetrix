@@ -23,7 +23,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
   const title = data?.title || 'Blog'
   const intro = data?.intro || t('description.blog')
-  const ogImageUrl = getOgImageUrl(title)
+  const ogImageUrl = getOgImageUrl(title, intro)
 
   return [
     ...getTitle(title),

@@ -13,7 +13,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
@@ -21,12 +21,13 @@ import { FAQ } from '~/ui/FAQ'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free Sitemap Validator tool - Validate your sitemap.xml'
+  const description =
+    'Validate your sitemap.xml for errors, warnings, and SEO best practices. Our free XML Sitemap Validator checks sitemap protocol compliance, URL formatting, required tags, lastmod/date formats, and size limits—so search engines can crawl and index your site correctly.'
   return [
-    ...getTitle('Free Sitemap Validator tool - Validate your sitemap.xml'),
-    ...getDescription(
-      'Validate your sitemap.xml for errors, warnings, and SEO best practices. Our free XML Sitemap Validator checks sitemap protocol compliance, URL formatting, required tags, lastmod/date formats, and size limits—so search engines can crawl and index your site correctly.',
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

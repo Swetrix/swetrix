@@ -10,7 +10,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import { FAQ } from '~/ui/FAQ'
@@ -18,12 +18,13 @@ import Tooltip from '~/ui/Tooltip'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
+  const title = 'Free ROI Calculator tool - Calculate your ROI'
+  const description =
+    'Free Marketing ROI Calculator: quickly calculate ROAS, ROI, profit, CAC, CPC, CPM, CTR, conversion rate, and break-even ROAS to measure and improve your campaign performance.'
   return [
-    ...getTitle('Free ROI Calculator tool - Calculate your ROI'),
-    ...getDescription(
-      'Free Marketing ROI Calculator: quickly calculate ROAS, ROI, profit, CAC, CPC, CPM, CTR, conversion rate, and break-even ROAS to measure and improve your campaign performance.',
-    ),
-    ...getPreviewImage(),
+    ...getTitle(title),
+    ...getDescription(description),
+    ...getPreviewImage(getOgImageUrl(title, description)),
   ]
 }
 

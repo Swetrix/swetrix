@@ -3,7 +3,11 @@ import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
-import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
+import {
+  getOgImageUrl,
+  isDisableMarketingPages,
+  isSelfhosted,
+} from '~/lib/constants'
 import Contact from '~/pages/Contact'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
@@ -14,7 +18,9 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('titles.contact')),
     ...getDescription(t('description.contact')),
-    ...getPreviewImage(),
+    ...getPreviewImage(
+      getOgImageUrl(t('titles.contact'), t('description.contact')),
+    ),
   ]
 }
 

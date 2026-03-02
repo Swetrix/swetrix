@@ -4,7 +4,7 @@ import { data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
-import { isSelfhosted } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import Subscribe from '~/pages/Subscribe'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -24,7 +24,9 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('titles.subscribe')),
     ...getDescription(t('description.checkout')),
-    ...getPreviewImage(),
+    ...getPreviewImage(
+      getOgImageUrl(t('titles.subscribe'), t('description.checkout')),
+    ),
   ]
 }
 

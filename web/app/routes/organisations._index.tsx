@@ -8,7 +8,11 @@ import { redirect, data } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
-import { ENTRIES_PER_PAGE_DASHBOARD, isSelfhosted } from '~/lib/constants'
+import {
+  ENTRIES_PER_PAGE_DASHBOARD,
+  getOgImageUrl,
+  isSelfhosted,
+} from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import Organisations from '~/pages/Organisations'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -24,7 +28,9 @@ export const meta: MetaFunction = () => {
   return [
     ...getTitle(t('titles.organisations')),
     ...getDescription(t('description.default')),
-    ...getPreviewImage(),
+    ...getPreviewImage(
+      getOgImageUrl(t('titles.organisations'), t('description.default')),
+    ),
   ]
 }
 
