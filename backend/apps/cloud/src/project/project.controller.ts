@@ -1882,6 +1882,9 @@ export class ProjectController {
       }
     }
 
+    const isManagerRole = role === 'owner' || role === 'admin'
+    const isViewerRole = role === 'viewer'
+
     return {
       ..._omit(project, [
         'admin',
@@ -1892,7 +1895,8 @@ export class ProjectController {
         'gscTokenExpiry',
         'gscScope',
         'gscAccountEmail',
-        role !== 'owner' && role !== 'admin' && 'share',
+        !isManagerRole && !isViewerRole && 'share',
+        !isManagerRole && 'captchaSecretKey',
       ]),
       isAccessConfirmed,
       isLocked: !!project.admin?.dashboardBlockReason,

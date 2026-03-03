@@ -1545,6 +1545,7 @@ export class ProjectService {
         role,
         passwordHash: undefined,
         admin: undefined,
+        captchaSecretKey: undefined,
       }
     })
 

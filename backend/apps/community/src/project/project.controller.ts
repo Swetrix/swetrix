@@ -302,7 +302,7 @@ export class ProjectController {
         : undefined
 
       return {
-        ..._omit(project, ['passwordHash']),
+        ..._omit(project, ['passwordHash', 'captchaSecretKey']),
         share: projectShare,
         funnels: funnelsMap[project.id],
         isDataExists: _includes(pidsWithData, project?.id),
@@ -1210,12 +1210,15 @@ export class ProjectController {
         ? Boolean(userShare.confirmed)
         : true
 
+    const isManagerRole = role === 'owner' || role === 'admin'
+
     return this.projectService.formatFromClickhouse({
       ..._omit(project, [
         'passwordHash',
-        role !== 'owner' && role !== 'admin' && 'share',
+        !isManagerRole && 'share',
+        !isManagerRole && 'captchaSecretKey',
       ]),
-      share: role === 'owner' || role === 'admin' ? share : undefined,
+      share: isManagerRole ? share : undefined,
       funnels: this.projectService.formatFunnelsFromClickhouse(funnels),
       isDataExists,
       isErrorDataExists,
