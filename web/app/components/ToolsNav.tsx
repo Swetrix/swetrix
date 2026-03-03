@@ -12,6 +12,9 @@ import {
   QrCodeIcon,
   BracketsCurlyIcon,
   RobotIcon,
+  FunnelIcon,
+  ShareNetworkIcon,
+  PercentIcon,
 } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
@@ -103,6 +106,28 @@ export const TOOLS = [
     description: 'Create crawler rules to control search engine indexing',
     href: '/tools/robots-txt-generator',
     icon: RobotIcon,
+  },
+  {
+    id: 'conversion-rate-calculator',
+    title: 'Conversion Rate Calculator',
+    description: 'Calculate conversion rate, traffic needs, and revenue impact',
+    href: '/tools/conversion-rate-calculator',
+    icon: FunnelIcon,
+  },
+  {
+    id: 'og-preview',
+    title: 'Open Graph Preview',
+    description:
+      'Preview social media cards for Google, Facebook, X, and LinkedIn',
+    href: '/tools/og-preview',
+    icon: ShareNetworkIcon,
+  },
+  {
+    id: 'percentage-calculator',
+    title: 'Percentage Calculator',
+    description: 'Calculate percentages, percentage of, and percentage change',
+    href: '/tools/percentage-calculator',
+    icon: PercentIcon,
   },
 ] as const
 
