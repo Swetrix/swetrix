@@ -1348,8 +1348,13 @@ const TrafficViewInner = ({
                         <RefRow rowName={entryName} />
                       )
                     }
-                    return ({ name: entryName }: any) =>
-                      decodeURIComponent(entryName)
+                    return ({ name: entryName }: any) => {
+                      try {
+                        return decodeURIComponent(entryName)
+                      } catch {
+                        return entryName
+                      }
+                    }
                   }
 
                   return (
