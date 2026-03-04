@@ -51,7 +51,7 @@ const SELFHOSTED_GEOIP_DB_PATH = process.env.IP_GEOLOCATION_DB_PATH
 
 // OIDC configuration
 const TWO_FACTOR_AUTHENTICATION_APP_NAME =
-  process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME || 'Swetrix'
+  process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME || 'Swetrix CE'
 
 const OIDC_ENABLED = process.env.OIDC_ENABLED === 'true'
 const OIDC_ONLY_AUTH = process.env.OIDC_ONLY_AUTH === 'true'
