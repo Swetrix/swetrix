@@ -550,7 +550,8 @@ export class AuthService {
         throw new BadRequestException('Invalid user ID')
       }
 
-      const tokens = await this.generateJwtTokens(id, true)
+      const is2FAAuthenticated = !user.isTwoFactorAuthenticationEnabled
+      const tokens = await this.generateJwtTokens(id, is2FAAuthenticated)
 
       return {
         ...tokens,

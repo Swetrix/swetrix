@@ -109,6 +109,12 @@ export const generateRandomId = (alphabet: string, size: number) => {
 export const generateRandomString = (length: number): string =>
   randomstring.generate(length)
 
+export const generateRecoveryCode = () =>
+  randomstring.generate({
+    length: 30,
+    charset: 'alphabetic',
+  })
+
 const RATE_LIMIT_REQUESTS_AMOUNT = 3
 const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 

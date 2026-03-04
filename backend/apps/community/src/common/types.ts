@@ -10,6 +10,9 @@ export interface ClickhouseInputUser {
   onboardingStep: OnboardingStep
   hasCompletedOnboarding: number
   apiKey: string | null
+  twoFactorAuthenticationSecret: string | null
+  twoFactorRecoveryCode: string | null
+  isTwoFactorAuthenticationEnabled: number
 }
 
 export interface User {
@@ -22,6 +25,9 @@ export interface User {
   onboardingStep: OnboardingStep
   hasCompletedOnboarding: boolean
   apiKey: string | null
+  twoFactorAuthenticationSecret: string | null
+  twoFactorRecoveryCode: string | null
+  isTwoFactorAuthenticationEnabled: boolean
 }
 
 export interface ClickhouseFunnel {

@@ -13,7 +13,10 @@ const CLICKHOUSE_INIT_QUERIES = [
     showLiveVisitorsInTitle Int8,
     onboardingStep String CODEC(ZSTD(3)),
     hasCompletedOnboarding Int8,
-    apiKey Nullable(String) CODEC(ZSTD(3))
+    apiKey Nullable(String) CODEC(ZSTD(3)),
+    twoFactorAuthenticationSecret Nullable(String) CODEC(ZSTD(3)),
+    twoFactorRecoveryCode Nullable(String) CODEC(ZSTD(3)),
+    isTwoFactorAuthenticationEnabled Int8 DEFAULT 0
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,

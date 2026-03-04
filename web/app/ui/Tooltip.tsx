@@ -57,13 +57,18 @@ const Tooltip = ({
       disableHoverableContent={disableHoverableContent}
     >
       <TooltipRoot>
-        <TooltipTrigger className={className} aria-label={t('common.learnMore')}>
+        <TooltipTrigger
+          className={className}
+          aria-label={t('common.learnMore')}
+        >
           {tooltipNode || (
             <QuestionIcon className='size-4.5 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800' />
           )}
         </TooltipTrigger>
         <TooltipContent
-          className={disableHoverableContent ? 'pointer-events-none' : undefined}
+          className={
+            disableHoverableContent ? 'pointer-events-none' : undefined
+          }
         >
           {text}
         </TooltipContent>

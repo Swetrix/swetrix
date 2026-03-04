@@ -1093,14 +1093,12 @@ const UserSettings = () => {
                 </SettingsSection>
 
                 {/* 2FA setting */}
-                {!isSelfhosted ? (
-                  <SettingsSection
-                    title={t('profileSettings.2fa')}
-                    description={t('profileSettings.2faSectionDesc')}
-                  >
-                    <TwoFA />
-                  </SettingsSection>
-                ) : null}
+                <SettingsSection
+                  title={t('profileSettings.2fa')}
+                  description={t('profileSettings.2faSectionDesc')}
+                >
+                  <TwoFA />
+                </SettingsSection>
 
                 {/* Logout from all devices */}
                 <SettingsSection
