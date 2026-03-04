@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { authenticator } from 'otplib'
+import { generateSecret, generateURI, verify } from 'otplib'
 
 import { UserService } from '../user/user.service'
 import { User } from '../user/entities/user.entity'
@@ -10,12 +10,12 @@ export class TwoFactorAuthService {
   constructor(private userService: UserService) {}
 
   async generateTwoFactorAuthenticationSecret(user: User) {
-    const secret = authenticator.generateSecret()
-    const otpauthUrl = authenticator.keyuri(
-      user.email,
-      TWO_FACTOR_AUTHENTICATION_APP_NAME,
+    const secret = generateSecret()
+    const otpauthUrl = generateURI({
+      issuer: TWO_FACTOR_AUTHENTICATION_APP_NAME,
+      label: user.email,
       secret,
-    )
+    })
 
     await this.userService.update(user.id, {
       twoFactorAuthenticationSecret: secret,
@@ -27,16 +27,18 @@ export class TwoFactorAuthService {
     }
   }
 
-  isTwoFactorAuthenticationCodeValid(
+  async isTwoFactorAuthenticationCodeValid(
     twoFactorAuthenticationCode: string,
     user: User,
   ) {
     if (!twoFactorAuthenticationCode) return false
     if (!user?.twoFactorAuthenticationSecret) return false
 
-    return authenticator.verify({
+    const result = await verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,
     })
+
+    return result.valid
   }
 }

@@ -93,7 +93,7 @@ export class TwoFactorAuthController {
     }
 
     const isCodeValid =
-      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+      await this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,
         user,
       )
@@ -148,7 +148,7 @@ export class TwoFactorAuthController {
       !!user.twoFactorRecoveryCode &&
       user.twoFactorRecoveryCode === twoFactorAuthenticationCode
     const isTotpValid =
-      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+      await this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,
         user,
       )
@@ -199,7 +199,7 @@ export class TwoFactorAuthController {
       !!user.twoFactorRecoveryCode &&
       user.twoFactorRecoveryCode === twoFactorAuthenticationCode
     const isTotpValid =
-      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+      await this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,
         user,
       )
