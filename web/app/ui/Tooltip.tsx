@@ -1,6 +1,7 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { QuestionIcon } from '@phosphor-icons/react'
 import React, { forwardRef, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { cn } from '~/utils/generic'
 
@@ -47,24 +48,28 @@ const Tooltip = ({
   tooltipNode,
   delay = 50,
   disableHoverableContent,
-}: TooltipProps) => (
-  <TooltipProvider
-    delayDuration={delay}
-    disableHoverableContent={disableHoverableContent}
-  >
-    <TooltipRoot>
-      <TooltipTrigger className={className}>
-        {tooltipNode || (
-          <QuestionIcon className='size-4.5 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800' />
-        )}
-      </TooltipTrigger>
-      <TooltipContent
-        className={disableHoverableContent ? 'pointer-events-none' : undefined}
-      >
-        {text}
-      </TooltipContent>
-    </TooltipRoot>
-  </TooltipProvider>
-)
+}: TooltipProps) => {
+  const { t } = useTranslation()
+
+  return (
+    <TooltipProvider
+      delayDuration={delay}
+      disableHoverableContent={disableHoverableContent}
+    >
+      <TooltipRoot>
+        <TooltipTrigger className={className} aria-label={t('common.learnMore')}>
+          {tooltipNode || (
+            <QuestionIcon className='size-4.5 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800' />
+          )}
+        </TooltipTrigger>
+        <TooltipContent
+          className={disableHoverableContent ? 'pointer-events-none' : undefined}
+        >
+          {text}
+        </TooltipContent>
+      </TooltipRoot>
+    </TooltipProvider>
+  )
+}
 
 export default memo(Tooltip)
