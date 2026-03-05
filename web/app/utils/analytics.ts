@@ -155,7 +155,10 @@ export const trackErrors = () => {
 
   Swetrix.trackErrors({
     callback: ({ message, pg, filename }) => {
-      if (_includes(message, 'Minified React error')) {
+      if (
+        _includes(message, 'Minified React error') ||
+        _includes(message, 'Script error.')
+      ) {
         return false
       }
 
