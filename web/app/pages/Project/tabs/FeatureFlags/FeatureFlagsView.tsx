@@ -213,6 +213,16 @@ const FeatureFlagRow = ({
         {/* Main row - clickable to expand */}
         <div
           onClick={() => onToggleExpand(flag.id)}
+          onKeyDown={(e) => {
+            if (e.target !== e.currentTarget) return
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              onToggleExpand(flag.id)
+            }
+          }}
+          // eslint-disable-next-line jsx-a11y/prefer-tag-over-role -- contains nested interactive elements
+          role='button'
+          tabIndex={0}
           className='flex cursor-pointer justify-between gap-x-6 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:hover:bg-slate-900/60'
         >
           <div className='flex min-w-0 gap-x-4'>

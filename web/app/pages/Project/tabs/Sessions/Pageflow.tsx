@@ -234,11 +234,13 @@ const PageflowItem = ({
                 onClick={
                   hasMetadata ? () => setIsExpanded(!isExpanded) : undefined
                 }
-                role={hasMetadata ? 'button' : undefined}
+                // eslint-disable-next-line jsx-a11y/prefer-tag-over-role -- conditionally interactive, contains nested interactive elements
+                role='button'
                 tabIndex={hasMetadata ? 0 : undefined}
                 onKeyDown={
                   hasMetadata
                     ? (e) => {
+                        if (e.target !== e.currentTarget) return
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault()
                           setIsExpanded(!isExpanded)

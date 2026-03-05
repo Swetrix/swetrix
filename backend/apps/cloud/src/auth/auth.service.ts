@@ -1167,7 +1167,7 @@ export class AuthService {
         !!user.twoFactorRecoveryCode &&
         user.twoFactorRecoveryCode === twoFactorAuthenticationCode
       const isTotpValid =
-        this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+        await this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
           twoFactorAuthenticationCode,
           user,
         )

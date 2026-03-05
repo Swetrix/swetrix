@@ -35,6 +35,16 @@ const metaInfoJson = {
       en: () => 'You have been invited to join the project',
     },
   },
+  [LetterTemplate.TwoFAOn]: {
+    subject: {
+      en: () => '2FA has been enabled on your account',
+    },
+  },
+  [LetterTemplate.TwoFAOff]: {
+    subject: {
+      en: () => '2FA has been disabled on your account',
+    },
+  },
 }
 
 interface Params {

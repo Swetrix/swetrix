@@ -131,15 +131,16 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div
-        className='w-full cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800'
+      <button
+        type='button'
+        className='w-full cursor-pointer rounded-md p-2 text-left text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800'
         onClick={handleClick}
       >
         <div className='flex items-center justify-between'>
           <span>{label}</span>
           <CaretRightIcon className='size-4 text-gray-500 dark:text-gray-400' />
         </div>
-      </div>
+      </button>
 
       {isOpen && typeof document !== 'undefined'
         ? createPortal(
@@ -177,6 +178,7 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
                     >
                       <div
                         className='max-w-max'
+                        role='presentation'
                         onClick={(e) => {
                           e.stopPropagation()
                         }}

@@ -40,14 +40,12 @@ export class TwoFactorAuthController {
   @Auth()
   @TwoFaNotRequired()
   async register(@CurrentUserId() id: string) {
-    const user = await this.userService.findOne({ where: { id } })
+    const user = await this.userService.findOne({ id })
 
     if (!user) {
       throw new BadRequestException('User not found')
     }
 
-    // Prevent re-issuing a new secret while 2FA is already enabled (would allow secret rotation
-    // using only a pre-2FA access token).
     if (user.isTwoFactorAuthenticationEnabled) {
       throw new BadRequestException(
         'Two-factor authentication is already enabled',
@@ -73,7 +71,7 @@ export class TwoFactorAuthController {
     await checkRateLimit(ip, '2fa-enable', 5, 1800)
     await checkRateLimit(id, '2fa-enable', 5, 1800)
 
-    const user = await this.userService.findOne({ where: { id } })
+    const user = await this.userService.findOne({ id })
     const { twoFactorAuthenticationCode } = body
 
     if (!user) {
@@ -103,10 +101,13 @@ export class TwoFactorAuthController {
     }
 
     const twoFactorRecoveryCode = generateRecoveryCode()
+    const hashedRecoveryCode = await this.twoFactorAuthService.hashRecoveryCode(
+      twoFactorRecoveryCode,
+    )
 
     await this.userService.update(user.id, {
-      isTwoFactorAuthenticationEnabled: true,
-      twoFactorRecoveryCode,
+      isTwoFactorAuthenticationEnabled: 1,
+      twoFactorRecoveryCode: hashedRecoveryCode,
     })
 
     try {
@@ -114,8 +115,6 @@ export class TwoFactorAuthController {
     } catch (error) {
       this.logger.error(error, 'Failed to send 2FA enabled email')
     }
-
-    user.isTwoFactorAuthenticationEnabled = true
 
     const authData = await this.authService.generateJwtTokens(user.id, true)
 
@@ -141,16 +140,19 @@ export class TwoFactorAuthController {
     await checkRateLimit(ip, '2fa-disable', 5, 1800)
     await checkRateLimit(id, '2fa-disable', 5, 1800)
 
-    const user = await this.userService.findOne({ where: { id } })
+    const user = await this.userService.findOne({ id })
     const { twoFactorAuthenticationCode } = body
 
     if (!user) {
       throw new BadRequestException('User not found')
     }
 
-    const isRecoveryCodeValid =
-      !!user.twoFactorRecoveryCode &&
-      user.twoFactorRecoveryCode === twoFactorAuthenticationCode
+    const isRecoveryCodeValid = user.twoFactorRecoveryCode
+      ? await this.twoFactorAuthService.compareRecoveryCode(
+          twoFactorAuthenticationCode,
+          user.twoFactorRecoveryCode,
+        )
+      : false
     const isTotpValid =
       await this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,
@@ -163,7 +165,7 @@ export class TwoFactorAuthController {
     }
 
     await this.userService.update(user.id, {
-      isTwoFactorAuthenticationEnabled: false,
+      isTwoFactorAuthenticationEnabled: 0,
       twoFactorRecoveryCode: null,
       twoFactorAuthenticationSecret: null,
     })
@@ -192,7 +194,7 @@ export class TwoFactorAuthController {
     await checkRateLimit(ip, '2fa-auth', 10, 1800)
     await checkRateLimit(id, '2fa-auth', 10, 1800)
 
-    const user = await this.userService.findOne({ where: { id } })
+    const user = await this.userService.findOne({ id })
     const { twoFactorAuthenticationCode } = body
 
     if (!user) {
@@ -203,9 +205,12 @@ export class TwoFactorAuthController {
       throw new BadRequestException('Two-factor authentication is not enabled')
     }
 
-    const isRecoveryCodeValid =
-      !!user.twoFactorRecoveryCode &&
-      user.twoFactorRecoveryCode === twoFactorAuthenticationCode
+    const isRecoveryCodeValid = user.twoFactorRecoveryCode
+      ? await this.twoFactorAuthService.compareRecoveryCode(
+          twoFactorAuthenticationCode,
+          user.twoFactorRecoveryCode,
+        )
+      : false
     const isTotpValid =
       await this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,

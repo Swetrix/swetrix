@@ -2358,7 +2358,7 @@ export async function getRevenueDataServer(
 // MARK: Tools API
 // ============================================================================
 
-export interface IpLookupResponse {
+interface IpLookupResponse {
   ip: string
   country: string | null
   countryName: string | null

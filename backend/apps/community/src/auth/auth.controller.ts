@@ -161,6 +161,15 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.invalidCredentials'))
     }
 
+    if (user.isTwoFactorAuthenticationEnabled) {
+      const jwtTokens = await this.authService.generateJwtTokens(user.id, false)
+
+      return {
+        ...jwtTokens,
+        user: this.userService.omitSensitiveData(user),
+      }
+    }
+
     const jwtTokens = await this.authService.generateJwtTokens(user.id, true)
 
     return {
@@ -328,7 +337,10 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.invalidRefreshToken'))
     }
 
-    const accessToken = await this.authService.generateJwtAccessToken(user.id)
+    const accessToken = await this.authService.generateJwtAccessToken(
+      user.id,
+      true,
+    )
 
     return { accessToken }
   }

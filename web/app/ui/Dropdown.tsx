@@ -77,7 +77,7 @@ function Dropdown<T>({
               {
                 'justify-between': aside,
                 'justify-center': !aside,
-                'inline-flex w-full rounded-md border-0 bg-white px-3 py-2 text-sm font-medium ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden md:px-4 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300':
+                'inline-flex w-full rounded-md border-0 bg-white px-3 py-2 text-sm font-medium ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden md:px-4 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300':
                   !headless,
                 'group inline-flex w-full px-3 py-2 text-sm font-medium outline-hidden md:px-4':
                   headless,

@@ -24,6 +24,9 @@ export class UserService {
       onboardingStep: 'String',
       hasCompletedOnboarding: 'Int8',
       apiKey: 'String',
+      twoFactorAuthenticationSecret: 'String',
+      twoFactorRecoveryCode: 'String',
+      isTwoFactorAuthenticationEnabled: 'Int8',
     }
 
     const entries = Object.entries(options).filter(
@@ -64,6 +67,9 @@ export class UserService {
       'onboardingStep',
       'hasCompletedOnboarding',
       'apiKey',
+      'twoFactorAuthenticationSecret',
+      'twoFactorRecoveryCode',
+      'isTwoFactorAuthenticationEnabled',
     ]
 
     const rawEntries = Object.entries(update) as [
@@ -84,8 +90,13 @@ export class UserService {
     for (const [key, value] of entries) {
       // Support explicit clearing of the nullable apiKey column
       if (value === null) {
-        if (key === 'apiKey') {
-          assignments.push('apiKey = NULL')
+        const nullableKeys: Array<keyof ClickhouseInputUser> = [
+          'apiKey',
+          'twoFactorAuthenticationSecret',
+          'twoFactorRecoveryCode',
+        ]
+        if (nullableKeys.includes(key)) {
+          assignments.push(`${String(key)} = NULL`)
         }
         continue
       }
@@ -93,6 +104,7 @@ export class UserService {
       const type = [
         'showLiveVisitorsInTitle',
         'hasCompletedOnboarding',
+        'isTwoFactorAuthenticationEnabled',
       ].includes(key)
         ? 'Int8'
         : 'String'
@@ -144,6 +156,9 @@ export class UserService {
           onboardingStep: OnboardingStep.LANGUAGE,
           hasCompletedOnboarding: 0,
           apiKey: null,
+          twoFactorAuthenticationSecret: null,
+          twoFactorRecoveryCode: null,
+          isTwoFactorAuthenticationEnabled: 0,
         },
       ],
     })
@@ -163,7 +178,11 @@ export class UserService {
   }
 
   omitSensitiveData(user: Partial<User>): Partial<User> {
-    return _omit(user, ['password'])
+    return _omit(user, [
+      'password',
+      'twoFactorAuthenticationSecret',
+      'twoFactorRecoveryCode',
+    ])
   }
 
   validatePassword(pass: string): void {
@@ -194,6 +213,9 @@ export class UserService {
       ...user,
       showLiveVisitorsInTitle: Boolean(user.showLiveVisitorsInTitle),
       hasCompletedOnboarding: Boolean(user.hasCompletedOnboarding),
+      isTwoFactorAuthenticationEnabled: Boolean(
+        user.isTwoFactorAuthenticationEnabled,
+      ),
     }
   }
 }

@@ -15,6 +15,7 @@ import { FeatureFlagModule } from './feature-flag/feature-flag.module'
 import { CaptchaModule } from './captcha/captcha.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
+import { TwoFactorAuthModule } from './twoFactorAuth/twoFactorAuth.module'
 import { AppController } from './app.controller'
 import { isPrimaryNode } from './common/utils'
 import { MailerModule } from './mailer/mailer.module'
@@ -71,6 +72,7 @@ const modules = [
   FeatureFlagModule,
   CaptchaModule,
   AuthModule,
+  TwoFactorAuthModule,
 ]
 
 @Module({

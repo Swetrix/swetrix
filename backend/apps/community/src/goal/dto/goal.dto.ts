@@ -16,7 +16,7 @@ import { GoalType, GoalMatchType, MetadataFilter } from '../entity/goal.entity'
 // Allowed match types for API (regex is disabled for now)
 const ALLOWED_MATCH_TYPES = [GoalMatchType.EXACT, GoalMatchType.CONTAINS]
 
-export class MetadataFilterDto implements MetadataFilter {
+class MetadataFilterDto implements MetadataFilter {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)

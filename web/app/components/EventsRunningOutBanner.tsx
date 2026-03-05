@@ -65,12 +65,13 @@ const EventsRunningOutBanner = () => {
               </p>
             </div>
             <div className='order-3 mt-2 w-full shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
-              <span
+              <button
+                type='button'
                 onClick={() => setShowMoreInfoModal(true)}
                 className='flex cursor-pointer items-center justify-center rounded-md bg-gray-50 px-4 py-2 text-sm font-medium text-yellow-600 hover:bg-yellow-50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
               >
                 {t('common.learnMore')}
-              </span>
+              </button>
             </div>
             <div className='order-2 shrink-0 sm:order-3 sm:ml-3'>
               <button

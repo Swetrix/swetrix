@@ -100,6 +100,7 @@ export default function ExitIntentPopup({
     <div
       className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-xs'
       onClick={handleBackdropClick}
+      role='presentation'
     >
       <div className='relative w-full max-w-2xl rounded-xl bg-white p-8 dark:bg-slate-900'>
         <button

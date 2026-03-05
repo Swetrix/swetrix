@@ -1,13 +1,26 @@
 import { Injectable } from '@nestjs/common'
 import { generateSecret, generateURI, verify } from 'otplib'
+import { genSalt, hash, compare } from 'bcrypt'
 
 import { UserService } from '../user/user.service'
-import { User } from '../user/entities/user.entity'
+import { User } from '../common/types'
 import { TWO_FACTOR_AUTHENTICATION_APP_NAME } from '../common/constants'
 
 @Injectable()
 export class TwoFactorAuthService {
   constructor(private userService: UserService) {}
+
+  async hashRecoveryCode(code: string): Promise<string> {
+    const salt = await genSalt(10)
+    return hash(code, salt)
+  }
+
+  async compareRecoveryCode(
+    code: string,
+    hashedCode: string,
+  ): Promise<boolean> {
+    return compare(code, hashedCode)
+  }
 
   async generateTwoFactorAuthenticationSecret(user: User) {
     const secret = generateSecret()

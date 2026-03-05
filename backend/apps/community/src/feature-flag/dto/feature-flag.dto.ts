@@ -28,7 +28,7 @@ const VALID_TARGETING_COLUMNS = [
   'os', // operating system
 ] as const
 
-export class TargetingRuleDto implements TargetingRule {
+class TargetingRuleDto implements TargetingRule {
   @ApiProperty({
     description: 'Column/attribute to filter on (cc, ct, rg, dv, br, os)',
     enum: VALID_TARGETING_COLUMNS,
@@ -240,7 +240,7 @@ export class EvaluatedFlagsResponseDto {
   flags: Record<string, boolean>
 }
 
-export class FeatureFlagProfileDto {
+class FeatureFlagProfileDto {
   @ApiProperty({ description: 'Profile ID' })
   profileId: string
 

@@ -33,6 +33,9 @@ export class JwtAccessTokenStrategy extends PassportStrategy(
       throw new UnauthorizedException()
     }
 
-    return user
+    return {
+      ...user,
+      isSecondFactorAuthenticated: payload.isSecondFactorAuthenticated,
+    }
   }
 }
