@@ -1076,13 +1076,14 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                         {t('organisations.organisations')}
                       </Link>
                     ) : null}
-                    <span
+                    <button
+                      type='button'
                       className='-mx-3 flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       onClick={logoutHandler}
                     >
                       <SignOutIcon className='h-5 w-5' />
                       {t('common.logout')}
-                    </span>
+                    </button>
                   </>
                 ) : (
                   <>

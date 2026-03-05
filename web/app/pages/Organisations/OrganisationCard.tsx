@@ -89,7 +89,7 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
   }
 
   const onElementClick = (
-    e: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
+    e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>,
   ) => {
     if (membership?.confirmed) {
       return
@@ -154,9 +154,13 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
 
   if (isViewer) {
     return (
-      <div onClick={onElementClick} className={cardClassName}>
+      <button
+        type='button'
+        onClick={onElementClick}
+        className={cx(cardClassName, 'w-full text-left')}
+      >
         {cardContent}
-      </div>
+      </button>
     )
   }
 

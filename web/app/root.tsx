@@ -163,7 +163,8 @@ export function ErrorBoundary() {
                     <>
                       {error.message}
                       <br />
-                      <span
+                      <button
+                        type='button'
                         onClick={() => setCrashStackShown((prev) => !prev)}
                         className='flex cursor-pointer items-center justify-center text-base text-gray-800 hover:underline dark:text-gray-300'
                       >
@@ -178,7 +179,7 @@ export function ErrorBoundary() {
                             <CaretDownIcon className='ml-2 h-4 w-4' />
                           </>
                         )}
-                      </span>
+                      </button>
                       {crashStackShown ? (
                         <span className='text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'>
                           {error.stack}

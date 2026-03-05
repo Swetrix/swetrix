@@ -852,9 +852,10 @@ const CustomEvents = ({
                   : _round((eventsData[ev] / totalCustomEvents) * 100, 0)
 
               return (
-                <div
+                <button
+                  type='button'
                   key={`${ev}-${item.value}`}
-                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
+                  className='group relative flex w-full cursor-pointer items-center rounded-sm px-1 py-1.5 text-left hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
                   onClick={() => {
                     navigate(link)
                   }}
@@ -884,7 +885,7 @@ const CustomEvents = ({
                       {perc}%
                     </Text>
                   </div>
-                </div>
+                </button>
               )
             },
           )}
@@ -1305,9 +1306,10 @@ const MetadataKeyPanel = ({
                 const link = _getFilterLink(key, value)
 
                 return (
-                  <div
+                  <button
+                    type='button'
                     key={`${key}-${value}`}
-                    className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
+                    className='group relative flex w-full cursor-pointer items-center rounded-sm px-1 py-1.5 text-left hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
                     onClick={() => {
                       navigate(link)
                     }}
@@ -1341,7 +1343,7 @@ const MetadataKeyPanel = ({
                         {perc}%
                       </Text>
                     </div>
-                  </div>
+                  </button>
                 )
               },
             )}
@@ -1394,9 +1396,10 @@ const MetadataKeyPanel = ({
               const link = _getFilterLink(null, value)
 
               return (
-                <div
+                <button
+                  type='button'
                   key={value}
-                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
+                  className='group relative flex w-full cursor-pointer items-center rounded-sm px-1 py-1.5 text-left hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
                   onClick={() => {
                     navigate(link)
                   }}
@@ -1425,7 +1428,7 @@ const MetadataKeyPanel = ({
                       {perc}%
                     </Text>
                   </div>
-                </div>
+                </button>
               )
             },
           )}
