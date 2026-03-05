@@ -101,8 +101,9 @@ export class TwoFactorAuthController {
     }
 
     const twoFactorRecoveryCode = generateRecoveryCode()
-    const hashedRecoveryCode =
-      await this.twoFactorAuthService.hashRecoveryCode(twoFactorRecoveryCode)
+    const hashedRecoveryCode = await this.twoFactorAuthService.hashRecoveryCode(
+      twoFactorRecoveryCode,
+    )
 
     await this.userService.update(user.id, {
       isTwoFactorAuthenticationEnabled: 1,
