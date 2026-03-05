@@ -153,6 +153,10 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
   )
 
   if (isViewer) {
+    if (membership?.confirmed) {
+      return <div className={cardClassName}>{cardContent}</div>
+    }
+
     return (
       <button
         type='button'
