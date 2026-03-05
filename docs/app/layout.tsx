@@ -3,8 +3,8 @@ import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { GithubInfo } from "fumadocs-ui/components/github-info";
 import type { ReactNode } from "react";
 import { source } from "@/lib/source";
-import Script from "next/script";
 import Footer from "./components/Footer";
+import Analytics from "./components/Analytics";
 import "./global.css";
 
 export const metadata = {
@@ -19,17 +19,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <Script src="https://swetrix.org/swetrix.js" strategy="afterInteractive" />
-        <Script id="swetrix-init" strategy="afterInteractive">
-          {`
-            document.addEventListener('DOMContentLoaded', function () {
-              swetrix.init('STEzHcB1rALV');
-              swetrix.trackViews();
-            });
-          `}
-        </Script>
-      </head>
+      <head />
       <body>
         <RootProvider>
           <DocsLayout
@@ -68,6 +58,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             {children}
           </DocsLayout>
           <Footer />
+          <Analytics />
         </RootProvider>
       </body>
     </html>
