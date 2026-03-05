@@ -214,6 +214,7 @@ const FeatureFlagRow = ({
         <div
           onClick={() => onToggleExpand(flag.id)}
           onKeyDown={(e) => {
+            if (e.target !== e.currentTarget) return
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault()
               onToggleExpand(flag.id)
