@@ -107,7 +107,11 @@ export class TwoFactorAuthController {
       twoFactorRecoveryCode,
     })
 
-    await this.mailerService.sendEmail(user.email, LetterTemplate.TwoFAOn)
+    try {
+      await this.mailerService.sendEmail(user.email, LetterTemplate.TwoFAOn)
+    } catch (error) {
+      this.logger.error(error, 'Failed to send 2FA enabled email')
+    }
 
     const authData = await this.authService.generateJwtTokens(user.id, true)
 
@@ -154,13 +158,17 @@ export class TwoFactorAuthController {
       throw new BadRequestException('Wrong authentication code')
     }
 
-    await this.mailerService.sendEmail(user.email, LetterTemplate.TwoFAOff)
-
     await this.userService.update(user.id, {
       isTwoFactorAuthenticationEnabled: 0,
       twoFactorRecoveryCode: null,
       twoFactorAuthenticationSecret: null,
     })
+
+    try {
+      await this.mailerService.sendEmail(user.email, LetterTemplate.TwoFAOff)
+    } catch (error) {
+      this.logger.error(error, 'Failed to send 2FA disabled email')
+    }
   }
 
   @ApiBearerAuth()
