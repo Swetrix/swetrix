@@ -34,11 +34,15 @@ export class TwoFactorAuthService {
     if (!twoFactorAuthenticationCode) return false
     if (!user?.twoFactorAuthenticationSecret) return false
 
-    const result = await verify({
-      token: twoFactorAuthenticationCode,
-      secret: user.twoFactorAuthenticationSecret,
-    })
+    try {
+      const result = await verify({
+        token: twoFactorAuthenticationCode,
+        secret: user.twoFactorAuthenticationSecret,
+      })
 
-    return result.valid
+      return result.valid
+    } catch {
+      return false
+    }
   }
 }
