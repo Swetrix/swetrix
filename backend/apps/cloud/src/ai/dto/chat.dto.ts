@@ -18,7 +18,7 @@ const MAX_MESSAGES_PER_CHAT = 50
 const MAX_MESSAGE_LENGTH = 5000
 const MAX_CHAT_NAME_LENGTH = 200
 
-export class ChatMessageDto {
+class ChatMessageDto {
   @ApiProperty({
     enum: ['user', 'assistant'],
     description: 'The role of the message sender',

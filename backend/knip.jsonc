@@ -3,7 +3,7 @@
   "ignoreDependencies": [
     "@faker-js/faker", "@types/ioredis", "@types/multer"
   ],
-  "ignore": ["./ecosystem.config.js"],
+  "ignore": [],
   "exclude": ["enumMembers"],
   "entry": ["./apps/cloud/src/main.ts", "./apps/community/src/main.ts"],
   "project": ["./apps/cloud/src/**/*.ts", "./apps/community/src/**/*.ts"]

@@ -26,7 +26,7 @@ import { PID_REGEX } from '../../common/constants'
 
 const KEY_REGEX = /^[a-zA-Z0-9_-]+$/
 
-export class ExperimentVariantDto {
+class ExperimentVariantDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -302,7 +302,7 @@ export class VariantResultDto {
   improvement: number
 }
 
-export class ExperimentChartDataDto {
+class ExperimentChartDataDto {
   @ApiProperty({ type: [String], description: 'X-axis timestamps' })
   x: string[]
 
