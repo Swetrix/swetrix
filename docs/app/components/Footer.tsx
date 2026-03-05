@@ -36,7 +36,7 @@ const GITHUB_URL = "https://github.com/Swetrix/swetrix";
 const LINKEDIN_URL = "https://www.linkedin.com/company/swetrix/";
 const TWITTER_URL = "https://twitter.com/intent/user?screen_name=swetrix";
 const DISCORD_URL = "https://discord.gg/ZVK8Tw2E8j";
-const STATUSPAGE_URL = "https://stats.uptimerobot.com/33rvmiXXEz";
+const STATUSPAGE_URL = "https://status.swetrix.com/";
 const DOCS_URL = "https://swetrix.com/docs";
 
 interface NavItem {
