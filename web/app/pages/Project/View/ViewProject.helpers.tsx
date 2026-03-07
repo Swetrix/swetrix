@@ -680,7 +680,10 @@ const getSettings = (
       } else if (currentIndex === 0) {
         regionStart = dayjs(chart.x[0]).toDate()
       } else {
-        regionStart = xAxisSize > 1 ? dayjs(chart.x[xAxisSize - 2]).toDate() : dayjs(chart.x[xAxisSize - 1]).toDate()
+        regionStart =
+          xAxisSize > 1
+            ? dayjs(chart.x[xAxisSize - 2]).toDate()
+            : dayjs(chart.x[xAxisSize - 1]).toDate()
       }
     } else {
       if (xAxisSize > 1) {
