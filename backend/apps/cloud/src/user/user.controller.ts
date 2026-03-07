@@ -1,6 +1,7 @@
 import {
   Controller,
   Req,
+  Res,
   Body,
   Param,
   Get,
@@ -15,7 +16,7 @@ import {
   Ip,
   NotFoundException,
 } from '@nestjs/common'
-import { Request } from 'express'
+import { Request, Response } from 'express'
 import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -796,6 +797,63 @@ export class UserController {
         feedback_given: !!body.feedback,
       },
     })
+  }
+
+  @ApiBearerAuth()
+  @Get('billing/invoices')
+  async getInvoices(@CurrentUserId() userId: string) {
+    this.logger.log({ userId }, 'GET /user/billing/invoices')
+
+    const user = await this.userService.findOne({ where: { id: userId } })
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    let invoices = await this.userService.getInvoicesForUser(userId)
+
+    if (invoices.length === 0 && user.subID) {
+      invoices = await this.userService.syncSubscriptionPayments(
+        userId,
+        user.subID,
+      )
+    }
+
+    return invoices.map((inv) => ({
+      id: inv.id,
+      amount: Number(inv.amount),
+      currency: inv.currency,
+      status: inv.status,
+      planCode: inv.planCode,
+      billingFrequency: inv.billingFrequency,
+      receiptUrl: inv.receiptUrl,
+      billedAt: inv.billedAt,
+    }))
+  }
+
+  @ApiBearerAuth()
+  @Get('billing/invoices/:id/download')
+  async downloadInvoice(
+    @CurrentUserId() userId: string,
+    @Param('id') invoiceId: string,
+    @Res() res: Response,
+  ) {
+    this.logger.log(
+      { userId, invoiceId },
+      'GET /user/billing/invoices/:id/download',
+    )
+
+    const invoice = await this.userService.getInvoiceById(invoiceId, userId)
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found')
+    }
+
+    if (!invoice.receiptUrl) {
+      throw new BadRequestException('No receipt available for this invoice')
+    }
+
+    return res.redirect(invoice.receiptUrl)
   }
 
   // Used to unsubscribe from email reports

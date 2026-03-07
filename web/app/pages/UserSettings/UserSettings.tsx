@@ -18,6 +18,8 @@ import {
   LockIcon,
   CaretDownIcon,
   CreditCardIcon,
+  ReceiptIcon,
+  DownloadSimpleIcon,
 } from '@phosphor-icons/react'
 import _round from 'lodash/round'
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react'
@@ -45,6 +47,7 @@ import {
 import BillingPricing from '~/components/pricing/BillingPricing'
 import { usePaddle } from '~/hooks/usePaddle'
 import { changeLanguage } from '~/i18n'
+import type { BillingInvoice } from '~/lib/models/BillingInvoice'
 import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { User } from '~/lib/models/User'
@@ -280,6 +283,11 @@ const UserSettings = () => {
   const usageInfo = useMemo(
     () => loaderData?.usageInfo ?? DEFAULT_USAGE_INFO,
     [loaderData?.usageInfo],
+  )
+
+  const invoices = useMemo<BillingInvoice[]>(
+    () => loaderData?.invoices ?? [],
+    [loaderData?.invoices],
   )
 
   const isBillingLoading = !loaderData
@@ -1534,6 +1542,136 @@ const UserSettings = () => {
                           </Button>
                         ) : null}
                       </div>
+                    </SettingsSection>
+
+                    {/* Invoice History Section */}
+                    <SettingsSection
+                      title={t('billing.invoiceHistory')}
+                      description={t('billing.invoiceHistoryDesc')}
+                      isLast
+                    >
+                      {invoices.length > 0 ? (
+                        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+                          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+                            <thead className='bg-gray-50 dark:bg-slate-900'>
+                              <tr>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('billing.invoiceDate')}
+                                </th>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('billing.invoiceAmount')}
+                                </th>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('billing.invoiceStatus')}
+                                </th>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('billing.invoicePlan')}
+                                </th>
+                                <th scope='col' className='px-4 py-3'>
+                                  <span className='sr-only'>
+                                    {t('billing.invoiceDownload')}
+                                  </span>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
+                              {invoices.map((invoice) => {
+                                const currencySymbol =
+                                  invoice.currency === 'EUR'
+                                    ? '€'
+                                    : invoice.currency === 'GBP'
+                                      ? '£'
+                                      : '$'
+
+                                return (
+                                  <tr key={invoice.id}>
+                                    <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
+                                      {language === 'en'
+                                        ? dayjs(invoice.billedAt)
+                                            .locale(language)
+                                            .format('MMM D, YYYY')
+                                        : dayjs(invoice.billedAt)
+                                            .locale(language)
+                                            .format('D MMM YYYY')}
+                                    </td>
+                                    <td className='px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-gray-100'>
+                                      {currencySymbol}
+                                      {Number(invoice.amount).toFixed(2)}
+                                    </td>
+                                    <td className='px-4 py-3 text-sm whitespace-nowrap'>
+                                      <span
+                                        className={cx(
+                                          'inline-flex rounded-full px-2 py-0.5 text-xs font-semibold',
+                                          {
+                                            'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400':
+                                              invoice.status === 'paid',
+                                            'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400':
+                                              invoice.status === 'refunded',
+                                            'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400':
+                                              invoice.status === 'pending',
+                                          },
+                                        )}
+                                      >
+                                        {t(`billing.status.${invoice.status}`)}
+                                      </span>
+                                    </td>
+                                    <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-600 dark:text-gray-400'>
+                                      {invoice.planCode || '—'}
+                                      {invoice.billingFrequency
+                                        ? ` (${t(`pricing.${invoice.billingFrequency === 'monthly' ? 'billedMonthly' : 'billedYearly'}`)})`
+                                        : ''}
+                                    </td>
+                                    <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
+                                      {invoice.receiptUrl ? (
+                                        <a
+                                          href={invoice.receiptUrl}
+                                          target='_blank'
+                                          rel='noopener noreferrer'
+                                          className='inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                                        >
+                                          <DownloadSimpleIcon className='size-4' />
+                                          {t('billing.invoiceDownload')}
+                                        </a>
+                                      ) : (
+                                        <span className='text-gray-400 dark:text-gray-600'>
+                                          —
+                                        </span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className='flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 py-10 dark:border-slate-700'>
+                          <ReceiptIcon
+                            weight='duotone'
+                            className='size-10 text-gray-400 dark:text-gray-600'
+                          />
+                          <Text
+                            as='p'
+                            size='sm'
+                            colour='muted'
+                            className='mt-3'
+                          >
+                            {t('billing.noInvoices')}
+                          </Text>
+                        </div>
+                      )}
                     </SettingsSection>
                   </>
                 )}

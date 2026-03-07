@@ -1995,7 +1995,20 @@
     "xPercentUsed": "{{percentage}}% used",
     "xPercentRemaining": "{{percentage}}% remaining",
     "paddleLoadError": "Failed to load the payment system. Please refresh the page and try again.",
-    "paddleStillLoading": "Payment system is still loading. Please try again in a moment."
+    "paddleStillLoading": "Payment system is still loading. Please try again in a moment.",
+    "invoiceHistory": "Invoice history",
+    "invoiceHistoryDesc": "View and download invoices for all your past subscription payments.",
+    "invoiceDate": "Date",
+    "invoiceAmount": "Amount",
+    "invoiceStatus": "Status",
+    "invoicePlan": "Plan",
+    "invoiceDownload": "Receipt",
+    "noInvoices": "No invoices yet. Invoices will appear here once a payment is made.",
+    "status": {
+      "paid": "Paid",
+      "refunded": "Refunded",
+      "pending": "Pending"
+    }
   },
   "modals": {
     "paidFeature": {
