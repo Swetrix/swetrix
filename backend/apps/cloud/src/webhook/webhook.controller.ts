@@ -231,7 +231,16 @@ export class WebhookController {
       }
 
       case 'subscription_payment_succeeded': {
-        const { subscription_id: subID, next_bill_date: nextBillDate } = body
+        const {
+          subscription_id: subID,
+          next_bill_date: nextBillDate,
+          order_id: orderId,
+          sale_gross: saleGross,
+          currency,
+          receipt_url: receiptUrl,
+          subscription_plan_id: planId,
+          event_time: eventTime,
+        } = body
 
         const subscriber = await this.userService.findOne({
           where: { subID },
@@ -264,6 +273,29 @@ export class WebhookController {
         if (Object.keys(updateParams).length > 0) {
           await this.userService.updateBySubID(subID, updateParams)
           await this.projectService.clearProjectsRedisCacheBySubId(subID)
+        }
+
+        if (orderId) {
+          try {
+            await this.userService.upsertInvoice({
+              userId: subscriber.id,
+              provider: 'paddle',
+              providerPaymentId: String(orderId),
+              providerSubscriptionId: subID,
+              amount: parseFloat(saleGross) || 0,
+              currency: currency || subscriber.tierCurrency || 'USD',
+              status: 'paid' as any,
+              planCode: subscriber.planCode || null,
+              billingFrequency: subscriber.billingFrequency || null,
+              receiptUrl: receiptUrl || null,
+              billedAt: eventTime ? new Date(eventTime) : new Date(),
+            })
+          } catch (reason) {
+            this.logger.error(
+              '[subscription_payment_succeeded] Failed to persist invoice:',
+              reason,
+            )
+          }
         }
 
         break

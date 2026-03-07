@@ -10,6 +10,7 @@ import { ActionToken } from '../../action-tokens/action-token.entity'
 import { Project } from '../../project/entity/project.entity'
 import { ProjectShare } from '../../project/entity/project-share.entity'
 import { RefreshToken } from './refresh-token.entity'
+import { BillingInvoice } from './billing-invoice.entity'
 import { OrganisationMember } from '../../organisation/entity/organisation-member.entity'
 
 export enum PlanCode {
@@ -439,4 +440,7 @@ export class User {
 
   @OneToMany(() => OrganisationMember, (membership) => membership.user)
   organisationMemberships: OrganisationMember[]
+
+  @OneToMany(() => BillingInvoice, (invoice) => invoice.user)
+  billingInvoices: BillingInvoice[]
 }
