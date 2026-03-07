@@ -2,6 +2,8 @@ import type { ChartOptions, GridLineOptions } from 'billboard.js'
 import { area, areaSpline, spline, bar, line, zoom } from 'billboard.js'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezonePlugin from 'dayjs/plugin/timezone'
 import filesaver from 'file-saver'
 import type i18next from 'i18next'
 import JSZip from 'jszip'
@@ -66,6 +68,9 @@ import {
 import countries from '~/utils/isoCountries'
 
 import { TrafficLogResponse } from './interfaces/traffic'
+
+dayjs.extend(utc)
+dayjs.extend(timezonePlugin)
 
 // Max length of annotation text displayed on chart (truncated with "...")
 const ANNOTATION_CHART_TEXT_MAX_LENGTH = 25
@@ -592,6 +597,8 @@ const getSettings = (
   onZoom?: (domain: [Date, Date] | null) => void,
   enableZoom?: boolean,
   annotations?: Annotation[],
+  period?: string,
+  timezone?: string,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -651,45 +658,53 @@ const getSettings = (
   if (applyRegions) {
     let regionStart
 
-    if (xAxisSize > 1) {
-      regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
+    if (period === 'today' && timezone) {
+      // Get current time in the selected timezone
+      const nowInTz = dayjs().tz(timezone)
+      // Format it without timezone offset to match chart.x strings
+      const nowStr = nowInTz.format('YYYY-MM-DD HH:mm:ss')
+      const nowDate = dayjs(nowStr).toDate()
+
+      let currentIndex = -1
+      for (let i = 0; i < xAxisSize; i++) {
+        const pointDate = dayjs(chart.x[i]).toDate()
+        if (pointDate <= nowDate) {
+          currentIndex = i
+        } else {
+          break
+        }
+      }
+
+      if (currentIndex > 0) {
+        regionStart = dayjs(chart.x[currentIndex - 1]).toDate()
+      } else if (currentIndex === 0) {
+        regionStart = dayjs(chart.x[0]).toDate()
+      } else {
+        regionStart =
+          xAxisSize > 1
+            ? dayjs(chart.x[xAxisSize - 2]).toDate()
+            : dayjs(chart.x[xAxisSize - 1]).toDate()
+      }
     } else {
-      regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+      if (xAxisSize > 1) {
+        regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
+      } else {
+        regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+      }
+    }
+
+    const regionObj: any = {
+      start: regionStart,
+      style: {
+        dasharray: '6 2',
+      },
     }
 
     regions = {
-      unique: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-      total: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-      bounce: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
-      viewsPerUnique: [
-        {
-          start: regionStart,
-          style: {
-            dasharray: '6 2',
-          },
-        },
-      ],
+      unique: [regionObj],
+      total: [regionObj],
+      bounce: [regionObj],
+      viewsPerUnique: [regionObj],
     }
   }
 
@@ -737,7 +752,6 @@ const getSettings = (
       // Prevent billboard/c3 from auto-reordering stacked series
       // (we need refunds stacked on top of revenue consistently)
       order: activeChartMetrics.revenue ? null : undefined,
-      // @ts-expect-error
       regions,
       axes: {
         bounce: 'y2',

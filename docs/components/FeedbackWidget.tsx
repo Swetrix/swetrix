@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ThumbsUpIcon, ThumbsDownIcon } from "@phosphor-icons/react";
+import * as Swetrix from "swetrix";
 import Link from "next/link";
 
 const FEEDBACK_TTL_DAYS = 7;
@@ -54,7 +55,7 @@ const persistFeedback = (pathname: string, answer: string, reason: string) => {
 
 const trackFeedback = async (answer: string, pathname: string, reason: string) => {
   try {
-    await (window as any)?.swetrix?.track({
+    await Swetrix.track({
       ev: "DOCS_FEEDBACK",
       meta: {
         answer,
@@ -62,8 +63,8 @@ const trackFeedback = async (answer: string, pathname: string, reason: string) =
         ...(reason ? { reason } : {}),
       },
     });
-  } catch (reason) {
-    console.error("Error tracking feedback:", reason);
+  } catch (errorReason) {
+    console.error("Error tracking feedback:", errorReason);
   }
 };
 

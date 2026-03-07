@@ -1108,6 +1108,8 @@ const TrafficViewInner = ({
                 dataNames={dataNames}
                 className='mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'
                 annotations={filteredAnnotations}
+                period={activePeriod?.period}
+                timezone={timezone}
               />
             </div>
           ) : null}
