@@ -287,7 +287,7 @@ const generateParamsQuery = (
   }
 
   if (customEVFilterApplied) {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
   if (col === 'pg' || col === 'host') {
