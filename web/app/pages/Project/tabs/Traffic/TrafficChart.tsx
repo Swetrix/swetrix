@@ -21,6 +21,8 @@ interface TrafficChartProps {
   dataNames: Record<string, string>
   className?: string
   annotations?: Annotation[]
+  period?: string
+  timezone?: string
 }
 
 export const TrafficChart = ({
@@ -38,6 +40,8 @@ export const TrafficChart = ({
   dataNames,
   className,
   annotations,
+  period,
+  timezone,
 }: TrafficChartProps) => {
   const options: ChartOptions = useMemo(() => {
     return getSettings(
@@ -53,6 +57,8 @@ export const TrafficChart = ({
       onZoom,
       enableZoom,
       annotations,
+      period,
+      timezone,
     )
   }, [
     chartData,
@@ -67,6 +73,8 @@ export const TrafficChart = ({
     onZoom,
     enableZoom,
     annotations,
+    period,
+    timezone,
   ])
 
   const deps = useMemo(
@@ -83,6 +91,8 @@ export const TrafficChart = ({
       onZoom,
       enableZoom,
       annotations,
+      period,
+      timezone,
     ],
     [
       chartData,
@@ -97,6 +107,8 @@ export const TrafficChart = ({
       onZoom,
       enableZoom,
       annotations,
+      period,
+      timezone,
     ],
   )
 
