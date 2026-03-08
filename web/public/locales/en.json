@@ -1329,6 +1329,17 @@
     "goHome": "Go back home",
     "support": "Contact support"
   },
+  "errorBoundary": {
+    "connectionLost": "Connection lost",
+    "connectionLostDesc": "It looks like you lost your internet connection.",
+    "connectionLostHint": "Check your network and try again.",
+    "crashTitle": "Uh-oh..",
+    "crashDesc": "The app has crashed. We are sorry about that :(",
+    "crashContact": "Please, tell us about it at {{email}}",
+    "showCrashStack": "Show crash stack",
+    "hideCrashStack": "Hide crash stack",
+    "unknownError": "Unknown error"
+  },
   "project": {
     "passwordProtectedHint": "Please enter the password to view this dashboard.",
     "captchaCompletions": "CAPTCHA completions",

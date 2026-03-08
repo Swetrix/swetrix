@@ -1329,6 +1329,17 @@
     "goHome": "Zurück auf die Homepage",
     "support": "Support kontaktieren"
   },
+  "errorBoundary": {
+    "connectionLost": "Verbindung unterbrochen",
+    "connectionLostDesc": "Es sieht so aus, als hättest du deine Internetverbindung verloren.",
+    "connectionLostHint": "Überprüfe dein Netzwerk und versuche es erneut.",
+    "crashTitle": "Oh-oh..",
+    "crashDesc": "Die App ist abgestürzt. Das tut uns leid :(",
+    "crashContact": "Bitte teile uns dies unter {{email}} mit",
+    "showCrashStack": "Crash-Stack anzeigen",
+    "hideCrashStack": "Crash-Stack verbergen",
+    "unknownError": "Unbekannter Fehler"
+  },
   "project": {
     "passwordProtectedHint": "Bitte geben Sie das Passwort ein, um dieses Dashboard anzuzeigen.",
     "captchaCompletions": "CAPTCHA-Abschlüsse",

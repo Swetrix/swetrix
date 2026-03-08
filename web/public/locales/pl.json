@@ -1329,6 +1329,17 @@
     "goHome": "Powrót do strony głównej",
     "support": "Skontaktuj się z obsługą"
   },
+  "errorBoundary": {
+    "connectionLost": "Utracono połączenie",
+    "connectionLostDesc": "Wygląda na to, że utracono połączenie z internetem.",
+    "connectionLostHint": "Sprawdź sieć i spróbuj ponownie.",
+    "crashTitle": "Ups..",
+    "crashDesc": "Aplikacja uległa awarii. Przepraszamy za to :(",
+    "crashContact": "Prosimy, poinformuj nas o tym na {{email}}",
+    "showCrashStack": "Pokaż stos wywołań awarii",
+    "hideCrashStack": "Ukryj stos wywołań awarii",
+    "unknownError": "Nieznany błąd"
+  },
   "project": {
     "passwordProtectedHint": "Wprowadź hasło, aby wyświetlić ten panel.",
     "captchaCompletions": "Ukończenia CAPTCHA",
