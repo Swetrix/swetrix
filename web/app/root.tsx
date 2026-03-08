@@ -116,6 +116,7 @@ function isNetworkError(error: unknown): boolean {
 
 export function ErrorBoundary() {
   const error = useRouteError()
+  const { t } = useTranslation('common')
   const [crashStackShown, setCrashStackShown] = useState(false)
   const networkError =
     !isRouteErrorResponse(error) &&
@@ -148,7 +149,7 @@ export function ErrorBoundary() {
       <html lang='en' className={getCookie(LS_THEME_SETTING) || 'light'}>
         <head>
           <meta charSet='utf-8' />
-          <title>Connection lost</title>
+          <title>{t('errorBoundary.connectionLost')}</title>
           <Links />
         </head>
         <body>
@@ -166,19 +167,19 @@ export function ErrorBoundary() {
               <div className='py-8'>
                 <div className='text-center'>
                   <h1 className='text-3xl font-bold text-gray-900 sm:text-4xl dark:text-gray-50'>
-                    Connection lost
+                    {t('errorBoundary.connectionLost')}
                   </h1>
                   <p className='mt-3 text-base text-gray-600 dark:text-gray-400'>
-                    It looks like you lost your internet connection.
+                    {t('errorBoundary.connectionLostDesc')}
                     <br />
-                    Check your network and try again.
+                    {t('errorBoundary.connectionLostHint')}
                   </p>
                   <button
                     type='button'
                     onClick={() => window.location.reload()}
                     className='mt-6 inline-flex cursor-pointer items-center rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200'
                   >
-                    Reload page
+                    {t('dashboard.reloadPage')}
                   </button>
                 </div>
               </div>
@@ -195,7 +196,7 @@ export function ErrorBoundary() {
     <html lang='en' className={getCookie(LS_THEME_SETTING) || 'light'}>
       <head>
         <meta charSet='utf-8' />
-        <title>The app has crashed..</title>
+        <title>{t('errorBoundary.crashTitle')}</title>
         <Links />
       </head>
       <body>
@@ -211,12 +212,12 @@ export function ErrorBoundary() {
             <div className='py-8'>
               <div className='text-center'>
                 <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
-                  Uh-oh..
+                  {t('errorBoundary.crashTitle')}
                 </h1>
                 <p className='mt-2 text-base font-medium text-gray-800 dark:text-gray-300'>
-                  The app has crashed. We are sorry about that :(
+                  {t('errorBoundary.crashDesc')}
                   <br />
-                  Please, tell us about it at {CONTACT_EMAIL}
+                  {t('errorBoundary.crashContact', { email: CONTACT_EMAIL })}
                 </p>
                 <p className='mt-6 flex flex-col justify-center text-base font-medium text-gray-800 dark:text-gray-300'>
                   {isRouteErrorResponse(error) ? (
@@ -237,12 +238,12 @@ export function ErrorBoundary() {
                       >
                         {crashStackShown ? (
                           <>
-                            Hide crash stack
+                            {t('errorBoundary.hideCrashStack')}
                             <CaretUpIcon className='ml-2 h-4 w-4' />
                           </>
                         ) : (
                           <>
-                            Show crash stack
+                            {t('errorBoundary.showCrashStack')}
                             <CaretDownIcon className='ml-2 h-4 w-4' />
                           </>
                         )}
@@ -254,7 +255,7 @@ export function ErrorBoundary() {
                       ) : null}
                     </>
                   ) : (
-                    <>Unknown error</>
+                    <>{t('errorBoundary.unknownError')}</>
                   )}
                 </p>
               </div>

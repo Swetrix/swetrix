@@ -1329,6 +1329,17 @@
     "goHome": "На головну",
     "support": "Зв'язатися з підтримкою"
   },
+  "errorBoundary": {
+    "connectionLost": "З'єднання втрачено",
+    "connectionLostDesc": "Схоже, ви втратили підключення до інтернету.",
+    "connectionLostHint": "Перевірте мережу та спробуйте ще раз.",
+    "crashTitle": "Ой..",
+    "crashDesc": "Стався збій у додатку. Нам дуже шкода :(",
+    "crashContact": "Будь ласка, повідомте нам про це на {{email}}",
+    "showCrashStack": "Показати стек збою",
+    "hideCrashStack": "Сховати стек збою",
+    "unknownError": "Невідома помилка"
+  },
   "project": {
     "passwordProtectedHint": "Будь ласка, введіть пароль, щоб переглянути цю панель.",
     "captchaCompletions": "Завершення CAPTCHA",

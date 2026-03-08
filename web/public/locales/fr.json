@@ -1329,6 +1329,17 @@
     "goHome": "Retour à l'accueil",
     "support": "Contacter le service client"
   },
+  "errorBoundary": {
+    "connectionLost": "Connexion perdue",
+    "connectionLostDesc": "Il semble que vous ayez perdu votre connexion Internet.",
+    "connectionLostHint": "Vérifiez votre réseau et réessayez.",
+    "crashTitle": "Oups..",
+    "crashDesc": "L'application a planté. Nous en sommes désolés :(",
+    "crashContact": "Veuillez nous en informer à {{email}}",
+    "showCrashStack": "Afficher la pile de plantage",
+    "hideCrashStack": "Masquer la pile de plantage",
+    "unknownError": "Erreur inconnue"
+  },
   "project": {
     "passwordProtectedHint": "Veuillez saisir le mot de passe pour afficher ce tableau de bord.",
     "captchaCompletions": "Résolutions de CAPTCHA",
