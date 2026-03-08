@@ -6,7 +6,7 @@
 
 [![NPM](https://img.shields.io/npm/v/swetrix)](https://www.npmjs.com/package/swetrix)
 [![Package size](https://img.shields.io/bundlephobia/minzip/swetrix)](https://bundlephobia.com/package/swetrix)
-[![JSDelivr hits](https://data.jsdelivr.com/v1/package/gh/Swetrix/swetrix-js/badge?style=rounded)](https://data.jsdelivr.com/v1/package/gh/Swetrix/swetrix-js/stats)
+[![JSDelivr hits](https://data.jsdelivr.com/v1/package/npm/swetrix/badge?style=rounded)](https://data.jsdelivr.com/v1/package/npm/swetrix/badge/stats)
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/swetrix/swetrix-js/issues)
 
 # Swetrix Tracking Script
