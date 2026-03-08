@@ -47,6 +47,10 @@ interface ProxyResponse<T> {
 }
 
 async function postAnalytics<T>(payload: unknown): Promise<ProxyResponse<T>> {
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    throw new Error('No internet connection')
+  }
+
   const response = await fetch('/api/analytics', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

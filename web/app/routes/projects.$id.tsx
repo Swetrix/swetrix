@@ -8,6 +8,7 @@ import {
   type LinksFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
+  type ShouldRevalidateFunctionArgs,
 } from 'react-router'
 import { data, redirect } from 'react-router'
 
@@ -98,6 +99,16 @@ function parseBooleanFormValue(
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: ProjectViewStyle },
 ]
+
+export function shouldRevalidate({
+  defaultShouldRevalidate,
+}: ShouldRevalidateFunctionArgs) {
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    return false
+  }
+
+  return defaultShouldRevalidate
+}
 
 export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
