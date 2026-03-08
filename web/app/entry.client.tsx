@@ -45,33 +45,15 @@ const handleChunkError = (error: unknown): boolean => {
   return false
 }
 
-const isNetworkError = (error: unknown): boolean => {
-  if (!error) return false
-  const message = error instanceof Error ? error.message : String(error)
-  return (
-    !navigator.onLine ||
-    /NetworkError/i.test(message) ||
-    /Failed to fetch/i.test(message) ||
-    /Load failed/i.test(message) ||
-    (/fetch/i.test(message) && error instanceof TypeError)
-  )
-}
-
 // Global error handler for uncaught chunk loading errors
 window.addEventListener('error', (event) => {
   handleChunkError(event.error)
 })
 
-// Handle unhandled promise rejections (dynamic imports + network errors)
+// Handle unhandled promise rejections (dynamic imports)
 window.addEventListener('unhandledrejection', (event) => {
   if (handleChunkError(event.reason)) {
     event.preventDefault()
-    return
-  }
-
-  if (isNetworkError(event.reason)) {
-    event.preventDefault()
-    console.warn('[Swetrix] Network request failed (offline?)', event.reason)
   }
 })
 

@@ -47,8 +47,6 @@ import { toast } from 'sonner'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
-import OfflineBanner from '~/components/OfflineBanner'
-import { useNetworkStatus, markSynced } from '~/hooks/useNetworkStatus'
 import useSize from '~/hooks/useSize'
 import { changeLanguage } from '~/i18n'
 import {
@@ -694,14 +692,6 @@ const ViewProjectContent = () => {
     setItem(LS_IS_ACTIVE_COMPARE_KEY, isActiveCompare ? 'true' : 'false')
   }, [isActiveCompare])
 
-  const { isOnline, justReconnected, clearReconnected } = useNetworkStatus()
-
-  useEffect(() => {
-    if (project && !authLoading) {
-      markSynced()
-    }
-  }, [project, authLoading])
-
   const [showFiltersSearch, setShowFiltersSearch] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
@@ -920,15 +910,6 @@ const ViewProjectContent = () => {
     },
     [authLoading, dataLoading, activeTab],
   )
-
-  useEffect(() => {
-    if (justReconnected && isOnline) {
-      refreshStats(false).finally(() => {
-        clearReconnected()
-        markSynced()
-      })
-    }
-  }, [justReconnected, isOnline, refreshStats, clearReconnected])
 
   useEffect(() => {
     setPeriodPairsCompare(tbPeriodPairsCompare(t, undefined, language))
@@ -1503,10 +1484,6 @@ const ViewProjectContent = () => {
                         ref={dashboardRef}
                       >
                         <EventsRunningOutBanner />
-                        <OfflineBanner
-                          onRetry={() => refreshStats(true)}
-                          className='mb-2'
-                        />
                         {!isMapFullscreen ? (
                           <div className='pointer-events-auto'>
                             <MobileSidebarTrigger
