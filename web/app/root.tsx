@@ -151,7 +151,7 @@ export function ErrorBoundary() {
                   <br />
                   Please, tell us about it at {CONTACT_EMAIL}
                 </p>
-                <p className='mt-6 text-base font-medium text-gray-800 dark:text-gray-300'>
+                <p className='mt-6 flex flex-col justify-center text-base font-medium text-gray-800 dark:text-gray-300'>
                   {isRouteErrorResponse(error) ? (
                     <>
                       <span>
@@ -161,7 +161,7 @@ export function ErrorBoundary() {
                     </>
                   ) : error instanceof Error ? (
                     <>
-                      {error.message}
+                      <span>{error.message}</span>
                       <br />
                       <button
                         type='button'
