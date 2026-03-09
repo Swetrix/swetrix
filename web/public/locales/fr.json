@@ -726,6 +726,14 @@
         "intuitiveDesc": "Facile à utiliser, pas besoin d’être data scientist."
       }
     },
+    "invitation": {
+      "invalidLink": "Ce lien d'invitation est invalide ou a expiré.",
+      "invitedToJoin": "Vous avez été invité à rejoindre <target>{{targetName}}</target>",
+      "invitedByAs": "{{inviterEmail}} vous a invité en tant que <role>{{role}}</role> dans ce/cette {{type}}. Créez votre compte pour commencer.",
+      "createAndJoin": "Créer un compte et rejoindre {{type}}",
+      "project": "projet",
+      "organisation": "organisation"
+    },
     "verification": {
       "success": "Votre e-mail a été vérifié avec succès !",
       "continueToOnboarding": "Continuer vers l’onboarding"
@@ -1771,6 +1779,7 @@
       "pxCharsError": "Le nom du projet ne peut pas dépasser {{amount}} caractères.",
       "oxCharsError": "La liste des origines autorisées doit être inférieure à {{amount}} symboles.",
       "noNameError": "Veuillez entrer un nom de projet.",
+      "subscriptionRequired": "Vous avez besoin d'un abonnement actif pour créer des projets personnels. Veuillez commencer un essai gratuit ou souscrire à un forfait dans les paramètres de votre compte.",
       "create": "Créer un nouveau projet",
       "settings": "Paramètres de",
       "name": "Nom du projet",

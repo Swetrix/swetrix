@@ -16,6 +16,8 @@ import {
   JwtRefreshTokenStrategy,
 } from './strategies'
 import { Message } from '../integrations/telegram/entities/message.entity'
+import { PendingInvitationModule } from '../pending-invitation/pending-invitation.module'
+import { OrganisationModule } from '../organisation/organisation.module'
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { Message } from '../integrations/telegram/entities/message.entity'
     ProjectModule,
     forwardRef(() => TwoFactorAuthModule),
     TypeOrmModule.forFeature([Message]),
+    PendingInvitationModule,
+    forwardRef(() => OrganisationModule),
   ],
   controllers: [AuthController],
   providers: [

@@ -6,11 +6,15 @@ import type {
   MetaFunction,
 } from 'react-router'
 import { redirect, data } from 'react-router'
-import type { SitemapFunction } from 'remix-sitemap'
 
-import { getAuthenticatedUser, registerUser } from '~/api/api.server'
+import {
+  getAuthenticatedUser,
+  getInvitationDetails,
+  registerViaInvitation,
+  claimInvitation,
+} from '~/api/api.server'
 import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
-import Signup from '~/pages/Auth/Signup'
+import InvitationSignup from '~/pages/Auth/Signup/InvitationSignup'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { createHeadersWithCookies } from '~/utils/session.server'
 import { MAX_PASSWORD_CHARS } from '~/utils/validator'
@@ -33,27 +37,21 @@ export const headers: HeadersFunction = ({ parentHeaders }) => {
   return parentHeaders
 }
 
-export const sitemap: SitemapFunction = () => ({
-  priority: 0.9,
-  exclude: isSelfhosted,
-})
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  const authResult = await getAuthenticatedUser(request)
-
-  if (authResult) {
-    const user = authResult.user.user
-
-    if (!user.hasCompletedOnboarding) {
-      return redirect('/onboarding')
-    }
-    return redirect('/dashboard')
-  }
-
-  return null
+export interface InvitationDetails {
+  id: string
+  email: string
+  type: string
+  role: string
+  inviterEmail: string
+  targetName: string
 }
 
-export interface SignupActionData {
+export interface InvitationSignupLoaderData {
+  invitation?: InvitationDetails
+  error?: string
+}
+
+export interface InvitationSignupActionData {
   error?: string | string[]
   fieldErrors?: {
     email?: string
@@ -63,7 +61,53 @@ export interface SignupActionData {
   timestamp?: number
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function loader({
+  request,
+  params,
+}: LoaderFunctionArgs): Promise<InvitationSignupLoaderData> {
+  const authResult = await getAuthenticatedUser(request)
+
+  if (authResult) {
+    const { id: invId } = params
+
+    if (invId) {
+      await claimInvitation(request, invId)
+    }
+
+    const user = authResult.user.user
+    const cookies = authResult.cookies || []
+    const redirectHeaders = cookies.length
+      ? createHeadersWithCookies(cookies)
+      : undefined
+
+    if (!user.hasCompletedOnboarding) {
+      throw redirect('/onboarding', {
+        headers: redirectHeaders,
+      })
+    }
+
+    throw redirect('/dashboard', {
+      headers: redirectHeaders,
+    })
+  }
+
+  const { id } = params
+
+  if (!id) {
+    return { error: 'Invalid invitation link' }
+  }
+
+  const result = await getInvitationDetails(request, id)
+
+  if (!result.success || !result.data) {
+    return { error: result.error || 'Invitation not found or has expired' }
+  }
+
+  return { invitation: result.data }
+}
+
+export async function action({ request, params }: ActionFunctionArgs) {
+  const { id } = params
   const formData = await request.formData()
 
   const email = formData.get('email')?.toString() || ''
@@ -71,7 +115,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const tos = formData.get('tos') === 'true'
   const checkIfLeaked = formData.get('checkIfLeaked') === 'true'
 
-  const fieldErrors: SignupActionData['fieldErrors'] = {}
+  const fieldErrors: InvitationSignupActionData['fieldErrors'] = {}
 
   if (!email || !email.includes('@')) {
     fieldErrors.email = 'Please enter a valid email address'
@@ -93,21 +137,22 @@ export async function action({ request }: ActionFunctionArgs) {
     return data({ fieldErrors, timestamp: Date.now() }, { status: 400 })
   }
 
-  const result = await registerUser(
-    request,
-    { email, password, checkIfLeaked },
-    true,
-  )
+  const result = await registerViaInvitation(request, {
+    pendingInvitationId: id!,
+    email,
+    password,
+    checkIfLeaked,
+  })
 
   if (!result.success) {
     return data({ error: result.error, timestamp: Date.now() }, { status: 400 })
   }
 
-  return redirect('/onboarding', {
+  return redirect('/dashboard', {
     headers: createHeadersWithCookies(result.cookies),
   })
 }
 
-export default function SignupPage() {
-  return <Signup />
+export default function InvitationSignupPage() {
+  return <InvitationSignup />
 }

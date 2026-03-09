@@ -3,11 +3,19 @@ import {
   IsEmail,
   IsNotEmpty,
   IsBoolean,
+  IsUUID,
   MaxLength,
   MinLength,
 } from 'class-validator'
 
-export class RegisterRequestDto {
+export class RegisterInvitationRequestDto {
+  @ApiProperty({
+    description: 'Pending invitation ID',
+  })
+  @IsNotEmpty()
+  @IsUUID('4')
+  public readonly pendingInvitationId: string
+
   @ApiProperty({
     description: 'User email',
     example: 'yourusername@example.com',
@@ -34,26 +42,4 @@ export class RegisterRequestDto {
   @IsNotEmpty({ message: 'This field is required.' })
   @IsBoolean({ message: 'Please enter the valid value (true or false).' })
   public readonly checkIfLeaked: boolean
-}
-
-export class RegisterResponseDto {
-  @ApiProperty({
-    description: 'Access token (JWT)',
-  })
-  public readonly accessToken: string
-
-  @ApiProperty({
-    description: 'Refresh token (JWT)',
-  })
-  public readonly refreshToken: string
-
-  @ApiProperty({
-    description: 'User entity',
-  })
-  user: object
-
-  @ApiProperty({
-    description: 'Total used monthly events',
-  })
-  totalMonthlyEvents: number
 }

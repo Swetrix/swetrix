@@ -41,6 +41,8 @@ import { Project } from '../project/entity'
 import { isDevelopment, PRODUCTION_ORIGIN } from '../common/constants'
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 import { trackCustom } from '../common/analytics'
+import { PendingInvitationService } from '../pending-invitation/pending-invitation.service'
+import { PendingInvitationType } from '../pending-invitation/pending-invitation.entity'
 
 const ORGANISATION_INVITE_EXPIRE = 7 * 24 // 7 days in hours
 
@@ -53,6 +55,7 @@ export class OrganisationController {
     private readonly actionTokensService: ActionTokensService,
     private readonly logger: AppLoggerService,
     private readonly projectService: ProjectService,
+    private readonly pendingInvitationService: PendingInvitationService,
   ) {}
 
   @ApiBearerAuth()
@@ -200,20 +203,60 @@ export class OrganisationController {
     })
 
     if (!invitee) {
-      throw new NotFoundException(
-        `User with email ${inviteDTO.email} is not registered`,
-      )
+      const existingPending =
+        await this.pendingInvitationService.findByEmailAndOrganisation(
+          inviteDTO.email,
+          orgId,
+        )
+
+      if (existingPending) {
+        throw new BadRequestException(
+          `An invitation has already been sent to ${inviteDTO.email}`,
+        )
+      }
+
+      try {
+        const pendingInvitation = await this.pendingInvitationService.create({
+          email: inviteDTO.email,
+          type: PendingInvitationType.ORGANISATION_MEMBER,
+          organisationId: orgId,
+          role: inviteDTO.role,
+          inviterId: userId,
+        })
+
+        const origin =
+          isDevelopment && typeof headers?.origin === 'string'
+            ? headers.origin
+            : PRODUCTION_ORIGIN
+        const url = `${origin}/signup/invitation/${pendingInvitation.id}?email=${encodeURIComponent(inviteDTO.email)}`
+
+        await this.mailerService.sendEmail(
+          inviteDTO.email,
+          LetterTemplate.OrganisationInvitationUnregistered,
+          {
+            url,
+            email: user.email,
+            name: organisation.name,
+            role: inviteDTO.role,
+          },
+        )
+
+        return await this.organisationService.findOne({
+          where: { id: orgId },
+          relations: ['members', 'members.user'],
+        })
+      } catch (reason) {
+        this.logger.error(
+          { orgId: organisation?.id, email: inviteDTO.email, reason },
+          'Could not create pending invitation for organisation',
+        )
+        throw new BadRequestException('Failed to invite member to organisation')
+      }
     }
 
     if (invitee.id === user.id) {
       throw new BadRequestException('You cannot invite yourself')
     }
-
-    // if (!this.userService.isPaidTier(invitee)) {
-    //   throw new BadRequestException(
-    //     'You must be a paid tier subscriber to use this feature.',
-    //   )
-    // }
 
     const isAlreadyMember = !_isEmpty(
       _find(organisation.members, (member) => member.user?.id === invitee.id),
