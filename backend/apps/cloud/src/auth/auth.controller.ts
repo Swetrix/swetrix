@@ -60,11 +60,10 @@ import {
   JwtRefreshTokenGuard,
   AuthenticationGuard,
 } from './guards'
-import { ProjectService, deleteProjectRedis } from '../project/project.service'
+import { ProjectService } from '../project/project.service'
 import { trackCustom } from '../common/analytics'
 import { PendingInvitationService } from '../pending-invitation/pending-invitation.service'
 import { PendingInvitationType } from '../pending-invitation/pending-invitation.entity'
-import { ProjectShare } from '../project/entity/project-share.entity'
 import { OrganisationService } from '../organisation/organisation.service'
 
 const OAUTH_RATE_LIMIT = 15
@@ -133,6 +132,16 @@ export class AuthController {
       body.password,
     )
 
+    const hadPendingInvitations =
+      await this.authService.redeemPendingInvitations(newUser)
+
+    if (hadPendingInvitations) {
+      await this.userService.updateUser(newUser.id, {
+        registeredViaInvitation: true,
+        hasCompletedOnboarding: true,
+      })
+    }
+
     await trackCustom(ip, headers['user-agent'], {
       ev: 'SIGNUP',
       meta: {
@@ -142,9 +151,23 @@ export class AuthController {
 
     const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
 
+    const updatedUser = hadPendingInvitations
+      ? await this.userService.findUserById(newUser.id)
+      : newUser
+
+    if (hadPendingInvitations) {
+      const [sharedProjects, organisationMemberships] = await Promise.all([
+        this.authService.getSharedProjectsForUser(newUser.id),
+        this.userService.getOrganisationsForUser(newUser.id),
+      ])
+
+      updatedUser.sharedProjects = sharedProjects
+      updatedUser.organisationMemberships = organisationMemberships
+    }
+
     return {
       ...jwtTokens,
-      user: this.userService.omitSensitiveData(newUser),
+      user: this.userService.omitSensitiveData(updatedUser),
       totalMonthlyEvents: 0,
     }
   }
@@ -488,6 +511,42 @@ export class AuthController {
     }
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Claim a pending invitation for an authenticated user',
+  })
+  @ApiOkResponse({ description: 'Invitation claimed' })
+  @UseGuards(AuthenticationGuard)
+  @Post('invitation/:id/claim')
+  public async claimInvitation(
+    @Param('id') id: string,
+    @CurrentUserId() userId: string,
+  ) {
+    const invitation = await this.pendingInvitationService.findById(id)
+
+    if (!invitation) {
+      throw new NotFoundException('Invitation not found or has expired')
+    }
+
+    const user = await this.userService.findOne({
+      where: { id: userId },
+    })
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    if (invitation.email !== user.email) {
+      throw new BadRequestException(
+        'This invitation was sent to a different email address',
+      )
+    }
+
+    await this.authService.redeemPendingInvitations(user)
+
+    return { success: true }
+  }
+
   @ApiOperation({ summary: 'Register a new user via invitation' })
   @ApiCreatedResponse({
     description: 'User registered via invitation',
@@ -547,52 +606,7 @@ export class AuthController {
       registeredViaInvitation: true,
     })
 
-    const allPendingInvitations =
-      await this.pendingInvitationService.findByEmail(body.email)
-
-    for (const pending of allPendingInvitations) {
-      if (
-        pending.type === PendingInvitationType.PROJECT_SHARE &&
-        pending.projectId
-      ) {
-        const project = await this.projectService.findOne({
-          where: { id: pending.projectId },
-          relations: ['share'],
-        })
-
-        if (project) {
-          const share = new ProjectShare()
-          share.role = pending.role as any
-          share.user = newUser
-          share.project = project
-          share.confirmed = true
-
-          await this.projectService.createShare(share)
-          await deleteProjectRedis(project.id)
-        }
-      } else if (
-        pending.type === PendingInvitationType.ORGANISATION_MEMBER &&
-        pending.organisationId
-      ) {
-        const organisation = await this.organisationService.findOne({
-          where: { id: pending.organisationId },
-        })
-
-        if (organisation) {
-          await this.organisationService.createMembership({
-            role: pending.role as any,
-            user: newUser,
-            organisation,
-            confirmed: true,
-          })
-          await this.organisationService.deleteOrganisationProjectsFromRedis(
-            organisation.id,
-          )
-        }
-      }
-    }
-
-    await this.pendingInvitationService.deleteAllByEmail(body.email)
+    await this.authService.redeemPendingInvitations(newUser)
 
     await trackCustom(ip, headers['user-agent'], {
       ev: 'SIGNUP',

@@ -483,6 +483,26 @@ export async function getInvitationDetails(
   }
 }
 
+export async function claimInvitation(
+  request: Request,
+  invitationId: string,
+): Promise<{ success: boolean; error?: string }> {
+  const result = await serverFetch<{ success: boolean }>(
+    request,
+    `v1/auth/invitation/${invitationId}/claim`,
+    { method: 'POST' },
+  )
+
+  if (result.error) {
+    return {
+      success: false,
+      error: Array.isArray(result.error) ? result.error[0] : result.error,
+    }
+  }
+
+  return { success: true }
+}
+
 export async function registerViaInvitation(
   request: Request,
   data: {

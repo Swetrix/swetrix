@@ -11,6 +11,7 @@ import {
   getAuthenticatedUser,
   getInvitationDetails,
   registerViaInvitation,
+  claimInvitation,
 } from '~/api/api.server'
 import { getOgImageUrl } from '~/lib/constants'
 import InvitationSignup from '~/pages/Auth/Signup/InvitationSignup'
@@ -66,12 +67,27 @@ export async function loader({
   const authResult = await getAuthenticatedUser(request)
 
   if (authResult) {
+    const { id: invId } = params
+
+    if (invId) {
+      await claimInvitation(request, invId)
+    }
+
     const user = authResult.user.user
+    const cookies = authResult.cookies || []
+    const redirectHeaders = cookies.length
+      ? createHeadersWithCookies(cookies)
+      : undefined
 
     if (!user.hasCompletedOnboarding) {
-      throw redirect('/onboarding')
+      throw redirect('/onboarding', {
+        headers: redirectHeaders,
+      })
     }
-    throw redirect('/dashboard')
+
+    throw redirect('/dashboard', {
+      headers: redirectHeaders,
+    })
   }
 
   const { id } = params
