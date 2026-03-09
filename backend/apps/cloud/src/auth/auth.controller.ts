@@ -132,10 +132,10 @@ export class AuthController {
       body.password,
     )
 
-    const hadPendingInvitations =
+    const redeemedCount =
       await this.authService.redeemPendingInvitations(newUser)
 
-    if (hadPendingInvitations) {
+    if (redeemedCount > 0) {
       await this.userService.updateUser(newUser.id, {
         registeredViaInvitation: true,
         hasCompletedOnboarding: true,
@@ -151,11 +151,12 @@ export class AuthController {
 
     const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
 
-    const updatedUser = hadPendingInvitations
-      ? await this.userService.findUserById(newUser.id)
-      : newUser
+    const updatedUser =
+      redeemedCount > 0
+        ? await this.userService.findUserById(newUser.id)
+        : newUser
 
-    if (hadPendingInvitations) {
+    if (redeemedCount > 0) {
       const [sharedProjects, organisationMemberships] = await Promise.all([
         this.authService.getSharedProjectsForUser(newUser.id),
         this.userService.getOrganisationsForUser(newUser.id),
@@ -490,7 +491,13 @@ export class AuthController {
       const project = await this.projectService.findOne({
         where: { id: invitation.projectId },
       })
-      targetName = project?.name || ''
+
+      if (!project) {
+        await this.pendingInvitationService.delete(invitation.id)
+        throw new NotFoundException('Invitation not found or has expired')
+      }
+
+      targetName = project.name
     } else if (
       invitation.type === PendingInvitationType.ORGANISATION_MEMBER &&
       invitation.organisationId
@@ -498,7 +505,13 @@ export class AuthController {
       const organisation = await this.organisationService.findOne({
         where: { id: invitation.organisationId },
       })
-      targetName = organisation?.name || ''
+
+      if (!organisation) {
+        await this.pendingInvitationService.delete(invitation.id)
+        throw new NotFoundException('Invitation not found or has expired')
+      }
+
+      targetName = organisation.name
     }
 
     return {
@@ -574,6 +587,36 @@ export class AuthController {
 
     if (invitation.email !== body.email) {
       throw new BadRequestException('Email does not match the invitation')
+    }
+
+    if (
+      invitation.type === PendingInvitationType.PROJECT_SHARE &&
+      invitation.projectId
+    ) {
+      const project = await this.projectService.findOne({
+        where: { id: invitation.projectId },
+      })
+
+      if (!project) {
+        await this.pendingInvitationService.delete(invitation.id)
+        throw new BadRequestException(
+          'The project this invitation was for no longer exists',
+        )
+      }
+    } else if (
+      invitation.type === PendingInvitationType.ORGANISATION_MEMBER &&
+      invitation.organisationId
+    ) {
+      const organisation = await this.organisationService.findOne({
+        where: { id: invitation.organisationId },
+      })
+
+      if (!organisation) {
+        await this.pendingInvitationService.delete(invitation.id)
+        throw new BadRequestException(
+          'The organisation this invitation was for no longer exists',
+        )
+      }
     }
 
     const existingUser = await this.userService.findUser(body.email)

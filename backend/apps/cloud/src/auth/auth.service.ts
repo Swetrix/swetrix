@@ -189,14 +189,16 @@ export class AuthService {
     return user
   }
 
-  public async redeemPendingInvitations(user: User): Promise<boolean> {
+  public async redeemPendingInvitations(user: User): Promise<number> {
     const pendingInvitations = await this.pendingInvitationService.findByEmail(
       user.email,
     )
 
     if (!pendingInvitations.length) {
-      return false
+      return 0
     }
+
+    let redeemed = 0
 
     for (const pending of pendingInvitations) {
       if (
@@ -222,6 +224,7 @@ export class AuthService {
 
             await this.projectService.createShare(share)
             await deleteProjectRedis(project.id)
+            redeemed++
           }
         }
       } else if (
@@ -248,6 +251,7 @@ export class AuthService {
             await this.organisationService.deleteOrganisationProjectsFromRedis(
               organisation.id,
             )
+            redeemed++
           }
         }
       }
@@ -255,7 +259,7 @@ export class AuthService {
 
     await this.pendingInvitationService.deleteAllByEmail(user.email)
 
-    return true
+    return redeemed
   }
 
   public async generateJwtAccessToken(
@@ -667,9 +671,9 @@ export class AuthService {
 
     const user = await this.userService.create(query)
 
-    const hadPendingInvitations = await this.redeemPendingInvitations(user)
+    const redeemedCount = await this.redeemPendingInvitations(user)
 
-    if (hadPendingInvitations) {
+    if (redeemedCount > 0) {
       await this.userService.updateUser(user.id, {
         registeredViaInvitation: true,
         hasCompletedOnboarding: true,
@@ -678,9 +682,8 @@ export class AuthService {
 
     const jwtTokens = await this.generateJwtTokens(user.id, true)
 
-    const finalUser = hadPendingInvitations
-      ? await this.userService.findUserById(user.id)
-      : user
+    const finalUser =
+      redeemedCount > 0 ? await this.userService.findUserById(user.id) : user
 
     return {
       ...jwtTokens,
@@ -1080,9 +1083,9 @@ export class AuthService {
 
     const user = await this.userService.create(query)
 
-    const hadPendingInvitations = await this.redeemPendingInvitations(user)
+    const redeemedCount = await this.redeemPendingInvitations(user)
 
-    if (hadPendingInvitations) {
+    if (redeemedCount > 0) {
       await this.userService.updateUser(user.id, {
         registeredViaInvitation: true,
         hasCompletedOnboarding: true,
@@ -1091,9 +1094,8 @@ export class AuthService {
 
     const jwtTokens = await this.generateJwtTokens(user.id, true)
 
-    const finalUser = hadPendingInvitations
-      ? await this.userService.findUserById(user.id)
-      : user
+    const finalUser =
+      redeemedCount > 0 ? await this.userService.findUserById(user.id) : user
 
     return {
       ...jwtTokens,

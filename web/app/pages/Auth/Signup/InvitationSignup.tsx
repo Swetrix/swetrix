@@ -10,7 +10,7 @@ import {
 } from 'react-router'
 import { toast } from 'sonner'
 
-import { HAVE_I_BEEN_PWNED_URL } from '~/lib/constants'
+import { HAVE_I_BEEN_PWNED_URL, isSelfhosted } from '~/lib/constants'
 import type {
   InvitationSignupLoaderData,
   InvitationSignupActionData,
@@ -155,42 +155,44 @@ const InvitationSignup = () => {
             value={checkIfLeaked ? 'true' : 'false'}
           />
 
-          <Checkbox
-            checked={tos}
-            onChange={(checked) => {
-              setTos(checked)
-              clearFieldError('tos')
-            }}
-            disabled={isFormSubmitting}
-            label={
-              <Text as='span' size='sm'>
-                <Trans
-                  t={t}
-                  i18nKey='auth.signup.tos'
-                  components={{
-                    tos: (
-                      <Link
-                        to={routes.terms}
-                        className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
-                        aria-label={t('footer.tos')}
-                      />
-                    ),
-                    pp: (
-                      <Link
-                        to={routes.privacy}
-                        className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
-                        aria-label={t('footer.pp')}
-                      />
-                    ),
-                  }}
-                />
-              </Text>
-            }
-            classes={{
-              hint: '!text-red-600 dark:!text-red-500',
-            }}
-            hint={getFieldError('tos')}
-          />
+          {isSelfhosted ? null : (
+            <Checkbox
+              checked={tos}
+              onChange={(checked) => {
+                setTos(checked)
+                clearFieldError('tos')
+              }}
+              disabled={isFormSubmitting}
+              label={
+                <Text as='span' size='sm'>
+                  <Trans
+                    t={t}
+                    i18nKey='auth.signup.tos'
+                    components={{
+                      tos: (
+                        <Link
+                          to={routes.terms}
+                          className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
+                          aria-label={t('footer.tos')}
+                        />
+                      ),
+                      pp: (
+                        <Link
+                          to={routes.privacy}
+                          className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
+                          aria-label={t('footer.pp')}
+                        />
+                      ),
+                    }}
+                  />
+                </Text>
+              }
+              classes={{
+                hint: '!text-red-600 dark:!text-red-500',
+              }}
+              hint={getFieldError('tos')}
+            />
+          )}
 
           <div className='flex items-center'>
             <Checkbox

@@ -13,7 +13,7 @@ import {
   registerViaInvitation,
   claimInvitation,
 } from '~/api/api.server'
-import { getOgImageUrl } from '~/lib/constants'
+import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import InvitationSignup from '~/pages/Auth/Signup/InvitationSignup'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { createHeadersWithCookies } from '~/utils/session.server'
@@ -128,7 +128,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     fieldErrors.password = 'Password must be at most 50 characters'
   }
 
-  if (!tos) {
+  if (!tos && !isSelfhosted) {
     fieldErrors.tos = 'You must accept the Terms of Service'
   }
 
