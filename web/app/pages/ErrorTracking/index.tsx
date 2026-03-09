@@ -60,8 +60,8 @@ const ErrorTracking = () => {
                   <img
                     src={
                       theme === 'dark'
-                        ? '/assets/screenshot_dark.png'
-                        : '/assets/screenshot_light.png'
+                        ? '/assets/screenshot_errors_dark.png'
+                        : '/assets/screenshot_errors_light.png'
                     }
                     className='relative w-full'
                     width='100%'
