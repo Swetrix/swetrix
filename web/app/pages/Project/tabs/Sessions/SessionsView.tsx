@@ -174,10 +174,15 @@ const SessionsViewInner = ({
     () => (deferredData.sessionsData?.sessions?.length || 0) >= SESSIONS_TAKE,
   )
 
+  const activePSID = useMemo(() => {
+    return searchParams.get('psid')
+  }, [searchParams])
+
   // Session detail - derived from loader when available
   const activeSession: ActiveSession | null = useMemo(() => {
     if (deferredData.sessionDetails) {
       const apiDetails = deferredData.sessionDetails.details
+      const matchingSession = sessions.find((s) => s.psid === activePSID)
       const details: SessionDetailsType = {
         cc: apiDetails.cc,
         os: apiDetails.os,
@@ -196,7 +201,7 @@ const SessionsViewInner = ({
         dv: apiDetails.dv,
         profileId: apiDetails.profileId,
         sdur: apiDetails.sdur,
-        isLive: false,
+        isLive: matchingSession?.isLive === 1,
       }
       return {
         details,
@@ -206,7 +211,7 @@ const SessionsViewInner = ({
       }
     }
     return null
-  }, [deferredData.sessionDetails])
+  }, [deferredData.sessionDetails, sessions, activePSID])
 
   const sessionsLoading =
     revalidator.state === 'loading' || sessionsProxy.isLoading
@@ -221,10 +226,6 @@ const SessionsViewInner = ({
 
   // Track if we've shown content in the current data set to prevent NoSessions flash during exit animation
   const hasShownContentRef = useRef(false)
-
-  const activePSID = useMemo(() => {
-    return searchParams.get('psid')
-  }, [searchParams])
 
   // Search params without the session id. Needed for the back button.
   const pureSearchParams = useMemo(() => {

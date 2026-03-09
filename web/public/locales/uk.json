@@ -1651,6 +1651,7 @@
     "resetZoom": "Скинути масштаб",
     "noEventsForSelectedPeriod": "Немає подій за вибраний період часу.",
     "endOfSession": "Кінець сесії",
+    "sessionInProgress": "Сесія активна",
     "showLess": "Показати менше",
     "showMore": "Показати ще {{count}}",
     "barChart": "Гістограма",

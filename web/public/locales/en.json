@@ -1651,6 +1651,7 @@
     "resetZoom": "Reset zoom",
     "noEventsForSelectedPeriod": "There are no events for the selected time period.",
     "endOfSession": "End of session",
+    "sessionInProgress": "Session in progress",
     "showLess": "Show less",
     "showMore": "Show {{count}} more",
     "barChart": "Bar chart",

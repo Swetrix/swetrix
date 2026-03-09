@@ -1651,6 +1651,7 @@
     "resetZoom": "Zoom zurücksetzen",
     "noEventsForSelectedPeriod": "Für den ausgewählten Zeitraum sind keine Ereignisse vorhanden.",
     "endOfSession": "Ende der Sitzung",
+    "sessionInProgress": "Sitzung läuft",
     "showLess": "Weniger anzeigen",
     "showMore": "{{count}} weitere anzeigen",
     "barChart": "Balkendiagramm",

@@ -1651,6 +1651,7 @@
     "resetZoom": "Resetuj powiększenie",
     "noEventsForSelectedPeriod": "Brak zdarzeń dla wybranego przedziału czasowego.",
     "endOfSession": "Koniec sesji",
+    "sessionInProgress": "Sesja w toku",
     "showLess": "Pokaż mniej",
     "showMore": "Pokaż jeszcze {{count}}",
     "barChart": "Wykres słupkowy",
