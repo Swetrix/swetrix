@@ -13,6 +13,7 @@ import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Signup from '~/pages/Auth/Signup'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { createHeadersWithCookies } from '~/utils/session.server'
+import { MAX_PASSWORD_CHARS } from '~/utils/validator'
 
 export const meta: MetaFunction = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -80,8 +81,8 @@ export async function action({ request }: ActionFunctionArgs) {
     fieldErrors.password = 'Password must be at least 8 characters'
   }
 
-  if (password.length > 50) {
-    fieldErrors.password = 'Password must be at most 50 characters'
+  if (password.length > MAX_PASSWORD_CHARS) {
+    fieldErrors.password = `Password must be at most ${MAX_PASSWORD_CHARS} characters`
   }
 
   if (!tos && !isSelfhosted) {
