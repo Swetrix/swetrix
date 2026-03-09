@@ -726,6 +726,14 @@
         "intuitiveDesc": "Einfach zu bedienen, du musst kein Data Scientist sein."
       }
     },
+    "invitation": {
+      "invalidLink": "Dieser Einladungslink ist ungültig oder abgelaufen.",
+      "invitedToJoin": "Sie wurden eingeladen, <target>{{targetName}}</target> beizutreten",
+      "invitedByAs": "{{inviterEmail}} hat Sie als <role>{{role}}</role> zu diesem/dieser {{type}} eingeladen. Erstellen Sie Ihr Konto, um loszulegen.",
+      "createAndJoin": "Konto erstellen & {{type}} beitreten",
+      "project": "Projekt",
+      "organisation": "Organisation"
+    },
     "verification": {
       "success": "Deine E-Mail wurde erfolgreich verifiziert!",
       "continueToOnboarding": "Weiter zum Onboarding"
@@ -1771,6 +1779,7 @@
       "pxCharsError": "Der Projektname darf nicht länger als {{amount}} Zeichen sein.",
       "oxCharsError": "Die Liste der Allowed-Origins darf nicht kürzer als {{amount}} Zeichen sein.",
       "noNameError": "Bitte geben Sie einen Projektnamen ein.",
+      "subscriptionRequired": "Sie benötigen ein aktives Abonnement, um persönliche Projekte zu erstellen. Bitte starten Sie eine kostenlose Testversion oder abonnieren Sie einen Plan in Ihren Kontoeinstellungen.",
       "create": "Neues Projekt erstellen",
       "settings": "Einstellungen von",
       "name": "Projektname",

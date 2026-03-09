@@ -726,6 +726,14 @@
         "intuitiveDesc": "Łatwe w użyciu — nie musisz być data scientist."
       }
     },
+    "invitation": {
+      "invalidLink": "Ten link z zaproszeniem jest nieprawidłowy lub wygasł.",
+      "invitedToJoin": "Zostałeś(-aś) zaproszony(-a) do dołączenia do <target>{{targetName}}</target>",
+      "invitedByAs": "{{inviterEmail}} zaprosił(-a) Cię jako <role>{{role}}</role> do tego/tej {{type}}. Utwórz konto, aby rozpocząć.",
+      "createAndJoin": "Utwórz konto i dołącz do {{type}}",
+      "project": "projekt",
+      "organisation": "organizacja"
+    },
     "verification": {
       "success": "Twój adres e-mail został pomyślnie zweryfikowany!",
       "continueToOnboarding": "Przejdź do onboardingu"
@@ -1771,6 +1779,7 @@
       "pxCharsError": "Nazwa projektu nie może być dłuższa niż {{amount}} znaków.",
       "oxCharsError": "Lista dozwolonych źródeł musi być mniejsza niż {{amount}} znaków.",
       "noNameError": "Wprowadź nazwę projektu.",
+      "subscriptionRequired": "Potrzebujesz aktywnej subskrypcji, aby tworzyć projekty osobiste. Rozpocznij bezpłatny okres próbny lub wykup subskrypcję w ustawieniach konta.",
       "create": "Utwórz nowy projekt",
       "settings": "Ustawienia",
       "name": "Nazwa projektu",
