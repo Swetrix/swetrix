@@ -1,4 +1,4 @@
-import { ArrowRightIcon, EnvelopeIcon } from '@phosphor-icons/react'
+import { ArrowRightIcon } from '@phosphor-icons/react'
 import React, { useState, useEffect, memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import {
@@ -14,7 +14,8 @@ import { HAVE_I_BEEN_PWNED_URL } from '~/lib/constants'
 import type {
   InvitationSignupLoaderData,
   InvitationSignupActionData,
-} from '~/routes/signup.invitation.$id'
+} from '~/routes/signup_.invitation.$id'
+import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
@@ -95,204 +96,164 @@ const InvitationSignup = () => {
       : t('auth.invitation.organisation')
 
   return (
-    <div className='flex min-h-min-footer bg-gray-50 dark:bg-slate-950'>
-      <div className='flex w-full flex-col justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:w-3/5 lg:px-12 xl:px-24 dark:bg-slate-950'>
-        <div className='mx-auto w-full max-w-md'>
-          <div className='mb-6'>
-            <Text as='h1' size='3xl' weight='bold' className='tracking-tight'>
-              {t('auth.signup.createAnAccount')}
-            </Text>
-          </div>
-
-          <div className='mb-6 rounded-xl bg-indigo-50 p-4 ring-1 ring-indigo-200 dark:bg-slate-900 dark:ring-slate-700/80'>
-            <div className='flex items-start gap-3'>
-              <div className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-slate-800'>
-                <EnvelopeIcon
-                  weight='duotone'
-                  className='size-5 text-indigo-600 dark:text-slate-200'
-                />
-              </div>
-              <div>
-                <Text size='sm' weight='semibold'>
-                  <Trans
-                    t={t}
-                    i18nKey='auth.invitation.invitedToJoin'
-                    values={{ targetName: invitation.targetName }}
-                    components={{
-                      target: (
-                        <span className='text-indigo-600 dark:text-white' />
-                      ),
-                    }}
-                  />
-                </Text>
-                <Text size='sm' colour='muted' className='mt-0.5'>
-                  <Trans
-                    t={t}
-                    i18nKey='auth.invitation.invitedByAs'
-                    values={{
-                      inviterEmail: invitation.inviterEmail,
-                      role: invitation.role,
-                      type: typeLabel,
-                    }}
-                    components={{
-                      role: <span className='font-medium' />,
-                    }}
-                  />
-                </Text>
-              </div>
-            </div>
-          </div>
-
-          <Form method='post' className='space-y-4' onSubmit={handleFormSubmit}>
-            <Input
-              name='email'
-              type='email'
-              label={t('auth.common.email')}
-              error={getFieldError('email')}
-              placeholder='name@company.com'
-              disabled
-              defaultValue={invitation.email}
-            />
-            <Input
-              name='password'
-              type='password'
-              label={t('auth.common.password')}
-              hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-              error={getFieldError('password')}
-              disabled={isFormSubmitting}
-              onChange={() => clearFieldError('password')}
-            />
-            <input type='hidden' name='tos' value={tos ? 'true' : 'false'} />
-            <input
-              type='hidden'
-              name='checkIfLeaked'
-              value={checkIfLeaked ? 'true' : 'false'}
-            />
-
-            <Checkbox
-              checked={tos}
-              onChange={(checked) => {
-                setTos(checked)
-                clearFieldError('tos')
-              }}
-              disabled={isFormSubmitting}
-              label={
-                <Text as='span' size='sm'>
-                  <Trans
-                    t={t}
-                    i18nKey='auth.signup.tos'
-                    components={{
-                      tos: (
-                        <Link
-                          to={routes.terms}
-                          className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
-                          aria-label={t('footer.tos')}
-                        />
-                      ),
-                      pp: (
-                        <Link
-                          to={routes.privacy}
-                          className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
-                          aria-label={t('footer.pp')}
-                        />
-                      ),
-                    }}
-                  />
-                </Text>
-              }
-              classes={{
-                hint: '!text-red-600 dark:!text-red-500',
-              }}
-              hint={getFieldError('tos')}
-            />
-
-            <div className='flex items-center'>
-              <Checkbox
-                checked={checkIfLeaked}
-                onChange={setCheckIfLeaked}
-                disabled={isFormSubmitting}
-                label={
-                  <Text size='sm'>{t('auth.common.checkLeakedPassword')}</Text>
-                }
-              />
-              <Tooltip
-                className='ml-2'
-                text={
-                  <Trans
-                    t={t}
-                    i18nKey='auth.common.checkLeakedPasswordDesc'
-                    components={{
-                      db: (
-                        <a
-                          href={HAVE_I_BEEN_PWNED_URL}
-                          className='font-medium underline decoration-dashed hover:decoration-solid'
-                          target='_blank'
-                          rel='noreferrer noopener'
-                        />
-                      ),
-                    }}
-                    values={{
-                      database: 'haveibeenpwned.com',
-                    }}
-                  />
-                }
-              />
-            </div>
-
-            <Button
-              className='mt-6 flex w-full items-center justify-center gap-1'
-              type='submit'
-              loading={isFormSubmitting}
-              primary
-              giant
-            >
-              <span>
-                {t('auth.invitation.createAndJoin', { type: typeLabel })}
-              </span>
-              <ArrowRightIcon className='size-4 translate-y-px' />
-            </Button>
-          </Form>
-
-          <Text as='p' size='sm' colour='muted' className='mt-6 text-center'>
-            <Trans
-              t={t}
-              i18nKey='auth.signup.alreadyAMember'
-              components={{
-                url: (
-                  <Link
-                    to={routes.signin}
-                    className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
-                    aria-label={t('titles.signin')}
-                  />
-                ),
-              }}
-            />
+    <div className='flex min-h-min-footer items-center justify-center bg-gray-50 dark:bg-slate-950'>
+      <div className='w-full max-w-md px-4 py-12 sm:px-6'>
+        <div className='mb-6'>
+          <Text as='h1' size='3xl' weight='bold' className='tracking-tight'>
+            {t('auth.signup.createAnAccount')}
           </Text>
         </div>
-      </div>
 
-      <div className='relative m-3 hidden overflow-hidden rounded-lg bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-2/5 lg:flex-col lg:items-center lg:justify-center dark:from-slate-900 dark:to-slate-950'>
-        <div className='absolute -top-24 -right-24 size-96 rounded-full bg-indigo-500/20 blur-3xl' />
-        <div className='absolute -bottom-24 -left-24 size-96 rounded-full bg-slate-500/20 blur-3xl' />
-
-        <div className='relative z-10 max-w-sm px-10 text-center'>
-          <div className='mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-white/10'>
-            <EnvelopeIcon weight='duotone' className='size-8 text-white' />
-          </div>
-          <Text as='h2' size='xl' weight='bold' className='mb-3 text-white'>
-            {t('auth.invitation.youreInvited')}
-          </Text>
-          <Text size='sm' className='text-slate-400'>
+        <Alert variant='info' className='mb-6'>
+          <p className='font-semibold'>
             <Trans
               t={t}
-              i18nKey='auth.invitation.sidebarDesc'
+              i18nKey='auth.invitation.invitedToJoin'
               values={{ targetName: invitation.targetName }}
               components={{
-                target: <span className='font-medium text-white' />,
+                target: <span className='font-bold' />,
               }}
             />
-          </Text>
-        </div>
+          </p>
+          <Trans
+            t={t}
+            i18nKey='auth.invitation.invitedByAs'
+            values={{
+              inviterEmail: invitation.inviterEmail,
+              role: invitation.role,
+              type: typeLabel,
+            }}
+            components={{
+              role: <span className='font-medium capitalize' />,
+            }}
+          />
+        </Alert>
+
+        <Form method='post' className='space-y-4' onSubmit={handleFormSubmit}>
+          <Input
+            name='email'
+            type='email'
+            label={t('auth.common.email')}
+            error={getFieldError('email')}
+            placeholder='name@company.com'
+            readOnly
+            defaultValue={invitation.email}
+          />
+          <Input
+            name='password'
+            type='password'
+            label={t('auth.common.password')}
+            hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+            error={getFieldError('password')}
+            disabled={isFormSubmitting}
+            onChange={() => clearFieldError('password')}
+          />
+          <input type='hidden' name='tos' value={tos ? 'true' : 'false'} />
+          <input
+            type='hidden'
+            name='checkIfLeaked'
+            value={checkIfLeaked ? 'true' : 'false'}
+          />
+
+          <Checkbox
+            checked={tos}
+            onChange={(checked) => {
+              setTos(checked)
+              clearFieldError('tos')
+            }}
+            disabled={isFormSubmitting}
+            label={
+              <Text as='span' size='sm'>
+                <Trans
+                  t={t}
+                  i18nKey='auth.signup.tos'
+                  components={{
+                    tos: (
+                      <Link
+                        to={routes.terms}
+                        className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
+                        aria-label={t('footer.tos')}
+                      />
+                    ),
+                    pp: (
+                      <Link
+                        to={routes.privacy}
+                        className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
+                        aria-label={t('footer.pp')}
+                      />
+                    ),
+                  }}
+                />
+              </Text>
+            }
+            classes={{
+              hint: '!text-red-600 dark:!text-red-500',
+            }}
+            hint={getFieldError('tos')}
+          />
+
+          <div className='flex items-center'>
+            <Checkbox
+              checked={checkIfLeaked}
+              onChange={setCheckIfLeaked}
+              disabled={isFormSubmitting}
+              label={
+                <Text size='sm'>{t('auth.common.checkLeakedPassword')}</Text>
+              }
+            />
+            <Tooltip
+              className='ml-2'
+              text={
+                <Trans
+                  t={t}
+                  i18nKey='auth.common.checkLeakedPasswordDesc'
+                  components={{
+                    db: (
+                      <a
+                        href={HAVE_I_BEEN_PWNED_URL}
+                        className='font-medium underline decoration-dashed hover:decoration-solid'
+                        target='_blank'
+                        rel='noreferrer noopener'
+                      />
+                    ),
+                  }}
+                  values={{
+                    database: 'haveibeenpwned.com',
+                  }}
+                />
+              }
+            />
+          </div>
+
+          <Button
+            className='mt-6 flex w-full items-center justify-center gap-1'
+            type='submit'
+            loading={isFormSubmitting}
+            primary
+            giant
+          >
+            <span>
+              {t('auth.invitation.createAndJoin', { type: typeLabel })}
+            </span>
+            <ArrowRightIcon className='size-4 translate-y-px' />
+          </Button>
+        </Form>
+
+        <Text as='p' size='sm' colour='muted' className='mt-6 text-center'>
+          <Trans
+            t={t}
+            i18nKey='auth.signup.alreadyAMember'
+            components={{
+              url: (
+                <Link
+                  to={routes.signin}
+                  className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
+                  aria-label={t('titles.signin')}
+                />
+              ),
+            }}
+          />
+        </Text>
       </div>
     </div>
   )

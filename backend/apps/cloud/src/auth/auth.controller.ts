@@ -60,7 +60,7 @@ import {
   JwtRefreshTokenGuard,
   AuthenticationGuard,
 } from './guards'
-import { ProjectService } from '../project/project.service'
+import { ProjectService, deleteProjectRedis } from '../project/project.service'
 import { trackCustom } from '../common/analytics'
 import { PendingInvitationService } from '../pending-invitation/pending-invitation.service'
 import { PendingInvitationType } from '../pending-invitation/pending-invitation.entity'
@@ -568,6 +568,7 @@ export class AuthController {
           share.confirmed = true
 
           await this.projectService.createShare(share)
+          await deleteProjectRedis(project.id)
         }
       } else if (
         pending.type === PendingInvitationType.ORGANISATION_MEMBER &&
@@ -584,6 +585,9 @@ export class AuthController {
             organisation,
             confirmed: true,
           })
+          await this.organisationService.deleteOrganisationProjectsFromRedis(
+            organisation.id,
+          )
         }
       }
     }

@@ -340,7 +340,7 @@ export class ProjectController {
       !projectDTO.organisationId
     ) {
       throw new HttpException(
-        'You need an active subscription to create personal projects. Please start a free trial or subscribe to a plan.',
+        'You need an active subscription to create personal projects. Please start a free trial or subscribe to a plan in your account settings.',
         HttpStatus.PAYMENT_REQUIRED,
       )
     }

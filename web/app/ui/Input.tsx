@@ -16,6 +16,7 @@ interface InputProps {
   className?: string
   error?: string | null | boolean
   disabled?: boolean
+  readOnly?: boolean
   hintPosition?: 'top' | 'bottom'
   classes?: {
     input?: string
@@ -31,6 +32,7 @@ const Input = ({
   className,
   error,
   disabled,
+  readOnly,
   classes,
   hintPosition = 'bottom',
   ...rest
@@ -49,13 +51,14 @@ const Input = ({
         {
           'text-red-900 placeholder-red-300 ring-red-600': isError,
           'ring-gray-300 dark:ring-slate-700/80': !isError,
-          'cursor-text bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400':
-            disabled,
+          'cursor-text bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-gray-200':
+            disabled || readOnly,
           'pr-10': isPassword,
         },
         classes?.input,
       )}
       disabled={disabled}
+      readOnly={readOnly}
       invalid={isError}
       {...restWithoutType}
       type={isPassword && showPassword ? 'text' : type}
