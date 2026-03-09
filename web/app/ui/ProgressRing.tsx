@@ -96,7 +96,7 @@ const ProgressRing = ({
           r={radius}
           fill='none'
           strokeWidth={strokeWidth}
-          className='stroke-gray-200 dark:stroke-slate-600'
+          className='stroke-gray-200 dark:stroke-slate-800'
         />
         {/* Progress circle */}
         <circle
