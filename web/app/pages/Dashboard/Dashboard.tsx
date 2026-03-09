@@ -245,6 +245,15 @@ const Dashboard = () => {
       return
     }
 
+    if (
+      !isSelfhosted &&
+      user?.planCode === 'none' &&
+      !newProjectOrganisationId
+    ) {
+      toast.error(t('project.settings.subscriptionRequired'))
+      return
+    }
+
     const formData = new FormData()
     formData.set('intent', 'create-project')
     formData.set('name', newProjectName || DEFAULT_PROJECT_NAME)

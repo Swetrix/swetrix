@@ -12,6 +12,7 @@ import routes from './routes'
 export const decidePostAuthRedirect = (user: {
   hasCompletedOnboarding: boolean
   planCode?: string
+  registeredViaInvitation?: boolean
 }): string => {
   if (!user.hasCompletedOnboarding) {
     return routes.onboarding

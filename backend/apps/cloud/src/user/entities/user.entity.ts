@@ -408,6 +408,9 @@ export class User {
   @Column({ default: false })
   hasCompletedOnboarding: boolean
 
+  @Column({ default: false })
+  registeredViaInvitation: boolean
+
   // Google SSO
   @Column({
     type: 'varchar',

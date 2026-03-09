@@ -442,6 +442,90 @@ export async function registerUser(
   }
 }
 
+export async function getInvitationDetails(
+  request: Request,
+  invitationId: string,
+): Promise<{
+  success: boolean
+  data?: {
+    id: string
+    email: string
+    type: string
+    role: string
+    inviterEmail: string
+    targetName: string
+  }
+  error?: string
+}> {
+  const result = await serverFetch<{
+    id: string
+    email: string
+    type: string
+    role: string
+    inviterEmail: string
+    targetName: string
+  }>(request, `v1/auth/invitation/${invitationId}`, {
+    skipAuth: true,
+  })
+
+  if (result.error || !result.data) {
+    return {
+      success: false,
+      error: Array.isArray(result.error)
+        ? result.error[0]
+        : result.error || 'Invitation not found',
+    }
+  }
+
+  return {
+    success: true,
+    data: result.data,
+  }
+}
+
+export async function registerViaInvitation(
+  request: Request,
+  data: {
+    pendingInvitationId: string
+    email: string
+    password: string
+    checkIfLeaked: boolean
+  },
+): Promise<{
+  success: boolean
+  data?: Auth
+  error?: string | string[]
+  cookies: string[]
+}> {
+  const result = await serverFetch<Auth>(
+    request,
+    'v1/auth/register/invitation',
+    {
+      method: 'POST',
+      body: data,
+      skipAuth: true,
+    },
+  )
+
+  if (result.error || !result.data) {
+    return {
+      success: false,
+      error: result.error || 'Registration failed',
+      cookies: [],
+    }
+  }
+
+  const { accessToken, refreshToken } = result.data
+
+  const cookies = createAuthCookies({ accessToken, refreshToken }, true)
+
+  return {
+    success: true,
+    data: result.data,
+    cookies,
+  }
+}
+
 export async function logoutUser(
   request: Request,
   options: { logoutAll?: boolean } = {},

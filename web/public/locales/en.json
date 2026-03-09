@@ -726,6 +726,16 @@
         "intuitiveDesc": "Easy to use, no need to be a data scientist."
       }
     },
+    "invitation": {
+      "invalidLink": "This invitation link is invalid or has expired.",
+      "invitedToJoin": "You've been invited to join <target>{{targetName}}</target>",
+      "invitedByAs": "{{inviterEmail}} invited you as <role>{{role}}</role> to this {{type}}. Create your account to get started.",
+      "createAndJoin": "Create account & join {{type}}",
+      "youreInvited": "You're invited",
+      "sidebarDesc": "Create your free account to access the analytics for <target>{{targetName}}</target>. No credit card required.",
+      "project": "project",
+      "organisation": "organisation"
+    },
     "verification": {
       "success": "Your email has been successfully verified!",
       "continueToOnboarding": "Continue to onboarding"
@@ -1771,6 +1781,7 @@
       "pxCharsError": "Project name cannot be longer than {{amount}} characters.",
       "oxCharsError": "A list of allowed origins has to be smaller than {{amount}} symbols.",
       "noNameError": "Please enter a project name.",
+      "subscriptionRequired": "You need an active subscription to create personal projects. Please start a free trial or subscribe to a plan.",
       "create": "Create a new project",
       "settings": "Settings of",
       "name": "Project name",

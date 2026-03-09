@@ -111,6 +111,9 @@ import { OrganisationService } from '../organisation/organisation.service'
 import { Organisation } from '../organisation/entity/organisation.entity'
 import { ProjectOrganisationDto } from './dto/project-organisation.dto'
 import { trackCustom } from '../common/analytics'
+import { PendingInvitationService } from '../pending-invitation/pending-invitation.service'
+import { PendingInvitationType } from '../pending-invitation/pending-invitation.entity'
+import { PlanCode } from '../user/entities/user.entity'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -133,6 +136,7 @@ export class ProjectController {
     private readonly mailerService: MailerService,
     private readonly projectsViewsRepository: ProjectsViewsRepository,
     private readonly organisationService: OrganisationService,
+    private readonly pendingInvitationService: PendingInvitationService,
   ) {}
 
   @ApiBearerAuth()
@@ -327,6 +331,17 @@ export class ProjectController {
 
       user = await this.organisationService.getOrganisationOwner(
         projectDTO.organisationId,
+      )
+    }
+
+    if (
+      initiatingUser.planCode === PlanCode.none &&
+      initiatingUser.hasCompletedOnboarding &&
+      !projectDTO.organisationId
+    ) {
+      throw new HttpException(
+        'You need an active subscription to create personal projects. Please start a free trial or subscribe to a plan.',
+        HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
@@ -1030,9 +1045,53 @@ export class ProjectController {
     })
 
     if (!invitee) {
-      throw new NotFoundException(
-        `User with email ${shareDTO.email} is not registered on Swetrix`,
-      )
+      const existingPending =
+        await this.pendingInvitationService.findByEmailAndProject(
+          shareDTO.email,
+          pid,
+        )
+
+      if (existingPending) {
+        throw new BadRequestException(
+          `An invitation has already been sent to ${shareDTO.email}`,
+        )
+      }
+
+      try {
+        const pendingInvitation = await this.pendingInvitationService.create({
+          email: shareDTO.email,
+          type: PendingInvitationType.PROJECT_SHARE,
+          projectId: pid,
+          role: shareDTO.role,
+          inviterId: userId,
+        })
+
+        const origin = isDevelopment ? headers.origin : PRODUCTION_ORIGIN
+        const url = `${origin}/signup/invitation/${pendingInvitation.id}?email=${encodeURIComponent(shareDTO.email)}`
+
+        await this.mailerService.sendEmail(
+          shareDTO.email,
+          LetterTemplate.ProjectInvitationUnregistered,
+          {
+            url,
+            email: user.email,
+            name: project.name,
+            role: shareDTO.role,
+          },
+        )
+
+        const updatedProject = await this.projectService.findOne({
+          where: { id: pid },
+          relations: ['share', 'share.user'],
+        })
+
+        return processProjectUser(updatedProject)
+      } catch (reason) {
+        console.error(
+          `[ERROR] Could not create pending invitation for project (pid: ${project.id}, email: ${shareDTO.email}): ${reason}`,
+        )
+        throw new BadRequestException(reason)
+      }
     }
 
     if (invitee.id === user.id) {

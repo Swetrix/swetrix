@@ -77,4 +77,5 @@ export interface User {
   organisationMemberships: OrganisationMembership[]
   onboardingStep: OnboardingStep
   hasCompletedOnboarding: boolean
+  registeredViaInvitation: boolean
 }

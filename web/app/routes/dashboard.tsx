@@ -210,11 +210,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/onboarding')
   }
 
-  // If user is not subscribed (trial or real sub), and they're not past subscription (none tier, but have blocked dashboard), redirect to checkout
   if (
     !isSelfhosted &&
     user?.planCode === 'none' &&
-    !user?.dashboardBlockReason
+    !user?.dashboardBlockReason &&
+    !user?.registeredViaInvitation
   ) {
     if (authCookies.length > 0) {
       return redirect('/subscribe', {

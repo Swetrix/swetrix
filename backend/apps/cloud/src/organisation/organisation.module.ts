@@ -9,6 +9,7 @@ import { MailerModule } from '../mailer/mailer.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
+import { PendingInvitationModule } from '../pending-invitation/pending-invitation.module'
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ProjectModule } from '../project/project.module'
     MailerModule,
     ActionTokensModule,
     AppLoggerModule,
+    PendingInvitationModule,
   ],
   controllers: [OrganisationController],
   providers: [OrganisationService],

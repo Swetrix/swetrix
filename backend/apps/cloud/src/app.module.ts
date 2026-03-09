@@ -33,6 +33,7 @@ import { isPrimaryNode, isPrimaryClusterNode } from './common/utils'
 import { OrganisationModule } from './organisation/organisation.module'
 import { RevenueModule } from './revenue/revenue.module'
 import { ToolsModule } from './tools/tools.module'
+import { PendingInvitationModule } from './pending-invitation/pending-invitation.module'
 
 const modules = [
   SentryModule.forRoot(),
@@ -90,6 +91,7 @@ const modules = [
   OrganisationModule,
   RevenueModule,
   ToolsModule,
+  PendingInvitationModule,
 ]
 
 @Module({

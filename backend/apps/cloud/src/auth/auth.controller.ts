@@ -8,6 +8,8 @@ import {
   Delete,
   Body,
   Ip,
+  Inject,
+  forwardRef,
   ConflictException,
   HttpCode,
   HttpStatus,
@@ -15,6 +17,7 @@ import {
   Param,
   UnauthorizedException,
   BadRequestException,
+  NotFoundException,
   Headers,
 } from '@nestjs/common'
 import {
@@ -50,6 +53,7 @@ import {
   SSOUnlinkDto,
   SSOProviders,
   SSOLinkWithPasswordDto,
+  RegisterInvitationRequestDto,
 } from './dtos'
 import {
   JwtAccessTokenGuard,
@@ -58,6 +62,10 @@ import {
 } from './guards'
 import { ProjectService } from '../project/project.service'
 import { trackCustom } from '../common/analytics'
+import { PendingInvitationService } from '../pending-invitation/pending-invitation.service'
+import { PendingInvitationType } from '../pending-invitation/pending-invitation.entity'
+import { ProjectShare } from '../project/entity/project-share.entity'
+import { OrganisationService } from '../organisation/organisation.service'
 
 const OAUTH_RATE_LIMIT = 15
 
@@ -78,6 +86,9 @@ export class AuthController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly projectService: ProjectService,
+    private readonly pendingInvitationService: PendingInvitationService,
+    @Inject(forwardRef(() => OrganisationService))
+    private readonly organisationService: OrganisationService,
   ) {}
 
   @ApiOperation({ summary: 'Register a new user' })
@@ -432,6 +443,177 @@ export class AuthController {
     }
 
     await this.authService.logoutAll(user.id)
+  }
+
+  @ApiOperation({ summary: 'Get pending invitation details' })
+  @ApiOkResponse({ description: 'Invitation details returned' })
+  @Public()
+  @Get('invitation/:id')
+  public async getInvitationDetails(@Param('id') id: string) {
+    const invitation = await this.pendingInvitationService.findById(id)
+
+    if (!invitation) {
+      throw new NotFoundException('Invitation not found or has expired')
+    }
+
+    const inviter = await this.userService.findUserById(invitation.inviterId)
+
+    let targetName = ''
+
+    if (
+      invitation.type === PendingInvitationType.PROJECT_SHARE &&
+      invitation.projectId
+    ) {
+      const project = await this.projectService.findOne({
+        where: { id: invitation.projectId },
+      })
+      targetName = project?.name || ''
+    } else if (
+      invitation.type === PendingInvitationType.ORGANISATION_MEMBER &&
+      invitation.organisationId
+    ) {
+      const organisation = await this.organisationService.findOne({
+        where: { id: invitation.organisationId },
+      })
+      targetName = organisation?.name || ''
+    }
+
+    return {
+      id: invitation.id,
+      email: invitation.email,
+      type: invitation.type,
+      role: invitation.role,
+      inviterEmail: inviter?.email || '',
+      targetName,
+    }
+  }
+
+  @ApiOperation({ summary: 'Register a new user via invitation' })
+  @ApiCreatedResponse({
+    description: 'User registered via invitation',
+    type: RegisterResponseDto,
+  })
+  @Public()
+  @Post('register/invitation')
+  public async registerViaInvitation(
+    @Body() body: RegisterInvitationRequestDto,
+    @I18n() i18n: I18nContext,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
+    await checkRateLimit(ip, 'register', 5)
+
+    const invitation = await this.pendingInvitationService.findById(
+      body.pendingInvitationId,
+    )
+
+    if (!invitation) {
+      throw new NotFoundException('Invitation not found or has expired')
+    }
+
+    if (invitation.email !== body.email) {
+      throw new BadRequestException('Email does not match the invitation')
+    }
+
+    const existingUser = await this.userService.findUser(body.email)
+
+    if (existingUser) {
+      throw new ConflictException(i18n.t('user.emailAlreadyUsed'))
+    }
+
+    if (body.checkIfLeaked) {
+      const isLeaked = await this.authService.checkIfLeaked(body.password)
+
+      if (isLeaked) {
+        throw new ConflictException(
+          'The provided password is leaked, please use another one',
+        )
+      }
+    }
+
+    if (body.email === body.password) {
+      throw new ConflictException(i18n.t('auth.passwordSameAsEmail'))
+    }
+
+    const newUser = await this.authService.createUnverifiedUser(
+      body.email,
+      body.password,
+    )
+
+    await this.userService.updateUser(newUser.id, {
+      hasCompletedOnboarding: true,
+      registeredViaInvitation: true,
+    })
+
+    const allPendingInvitations =
+      await this.pendingInvitationService.findByEmail(body.email)
+
+    for (const pending of allPendingInvitations) {
+      if (
+        pending.type === PendingInvitationType.PROJECT_SHARE &&
+        pending.projectId
+      ) {
+        const project = await this.projectService.findOne({
+          where: { id: pending.projectId },
+          relations: ['share'],
+        })
+
+        if (project) {
+          const share = new ProjectShare()
+          share.role = pending.role as any
+          share.user = newUser
+          share.project = project
+          share.confirmed = true
+
+          await this.projectService.createShare(share)
+        }
+      } else if (
+        pending.type === PendingInvitationType.ORGANISATION_MEMBER &&
+        pending.organisationId
+      ) {
+        const organisation = await this.organisationService.findOne({
+          where: { id: pending.organisationId },
+        })
+
+        if (organisation) {
+          await this.organisationService.createMembership({
+            role: pending.role as any,
+            user: newUser,
+            organisation,
+            confirmed: true,
+          })
+        }
+      }
+    }
+
+    await this.pendingInvitationService.deleteAllByEmail(body.email)
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'SIGNUP',
+      meta: {
+        method: 'invitation',
+      },
+    })
+
+    const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
+
+    const updatedUser = await this.userService.findUserById(newUser.id)
+
+    const [sharedProjects, organisationMemberships] = await Promise.all([
+      this.authService.getSharedProjectsForUser(newUser.id),
+      this.userService.getOrganisationsForUser(newUser.id),
+    ])
+
+    updatedUser.sharedProjects = sharedProjects
+    updatedUser.organisationMemberships = organisationMemberships
+
+    return {
+      ...jwtTokens,
+      user: this.userService.omitSensitiveData(updatedUser),
+      totalMonthlyEvents: 0,
+    }
   }
 
   // SSO section

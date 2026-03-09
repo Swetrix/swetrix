@@ -21,6 +21,7 @@ import { ProjectsViewsRepository } from './repositories/projects-views.repositor
 import { ProjectViewEntity } from './entity/project-view.entity'
 import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event.entity'
 import { OrganisationModule } from '../organisation/organisation.module'
+import { PendingInvitationModule } from '../pending-invitation/pending-invitation.module'
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { OrganisationModule } from '../organisation/organisation.module'
     AppLoggerModule,
     ActionTokensModule,
     MailerModule,
+    PendingInvitationModule,
   ],
   providers: [ProjectService, ProjectsViewsRepository, GSCService],
   exports: [ProjectService, ProjectsViewsRepository, GSCService],

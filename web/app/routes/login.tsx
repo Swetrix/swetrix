@@ -83,7 +83,11 @@ export async function action({ request }: ActionFunctionArgs) {
     const result = await serverFetch<{
       accessToken: string
       refreshToken: string
-      user: { hasCompletedOnboarding: boolean; planCode?: string }
+      user: {
+        hasCompletedOnboarding: boolean
+        planCode?: string
+        registeredViaInvitation?: boolean
+      }
     }>(request, '2fa/authenticate', {
       method: 'POST',
       body: { twoFactorAuthenticationCode },
