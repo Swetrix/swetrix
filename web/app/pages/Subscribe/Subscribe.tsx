@@ -5,7 +5,7 @@ import {
   CheckIcon,
   StarIcon,
 } from '@phosphor-icons/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher, useNavigate, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
@@ -24,6 +24,7 @@ import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { SubscribeLoaderData } from '~/routes/subscribe'
 import Button from '~/ui/Button'
+import { FAQ } from '~/ui/FAQ'
 import { Text } from '~/ui/Text'
 import { Switch } from '~/ui/Switch'
 import { cn } from '~/utils/generic'
@@ -185,6 +186,24 @@ const Subscribe = () => {
   const formattedEndDate = dateFormatter.format(
     new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000),
   )
+
+  const faqItems = useMemo(() => {
+    const faqValues = {
+      lowestPlanEventsAmount:
+        PLAN_LIMITS['100k'].monthlyUsageLimit.toLocaleString('en-US'),
+      moderatePlanEventsAmount:
+        PLAN_LIMITS['500k'].monthlyUsageLimit.toLocaleString('en-US'),
+    }
+
+    return [0, 1, 4].map((idx) => ({
+      question: (
+        <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} values={faqValues} />
+      ),
+      answer: (
+        <Trans t={t} i18nKey={`main.faq.items.${idx}.a`} values={faqValues} />
+      ),
+    }))
+  }, [t])
 
   return (
     <div className='flex min-h-screen flex-col items-center bg-gray-50 p-4 lg:p-8 dark:bg-slate-950'>
@@ -422,6 +441,8 @@ const Subscribe = () => {
               </Button>
             )}
           </div>
+
+          <FAQ items={faqItems} />
         </div>
 
         {/* Right Column (Timeline) */}
