@@ -410,48 +410,16 @@ const Subscribe = () => {
                 </div>
               </div>
             ) : (
-              <>
-                <Button
-                  className='w-full justify-center'
-                  onClick={handleStartCheckout}
-                  primary
-                  giant
-                  loading={generatePayLinkFetcher.state !== 'idle'}
-                  disabled={generatePayLinkFetcher.state !== 'idle'}
-                >
-                  {t('checkout.next')}
-                </Button>
-
-                <Text
-                  as='p'
-                  size='xs'
-                  colour='muted'
-                  className='mt-4 text-center'
-                >
-                  <Trans
-                    t={t}
-                    i18nKey='checkout.termsDesc'
-                    components={{
-                      privacy: (
-                        <a
-                          href={routes.privacy}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className='font-medium underline decoration-dashed hover:decoration-solid'
-                        />
-                      ),
-                      tos: (
-                        <a
-                          href={routes.terms}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className='font-medium underline decoration-dashed hover:decoration-solid'
-                        />
-                      ),
-                    }}
-                  />
-                </Text>
-              </>
+              <Button
+                className='w-full justify-center'
+                onClick={handleStartCheckout}
+                primary
+                giant
+                loading={generatePayLinkFetcher.state !== 'idle'}
+                disabled={generatePayLinkFetcher.state !== 'idle'}
+              >
+                {t('checkout.next')}
+              </Button>
             )}
           </div>
         </div>
