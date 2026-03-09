@@ -7,7 +7,6 @@ import Select from '~/ui/Select'
 
 interface AccessSettingsProps {
   form: {
-    active?: boolean
     public?: boolean
     isPasswordProtected?: boolean
     organisationId?: string
@@ -32,21 +31,6 @@ const AccessSettings = ({
       <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
         {t('project.settings.access')}
       </h3>
-      <Checkbox
-        checked={Boolean(form.active)}
-        onChange={(checked) =>
-          setForm((prev: any) => ({
-            ...prev,
-            active: checked,
-          }))
-        }
-        name='active'
-        classes={{
-          label: 'mt-2',
-        }}
-        label={t('project.settings.enabled')}
-        hint={t('project.settings.enabledHint')}
-      />
       <Checkbox
         checked={Boolean(form.public)}
         onChange={(checked) => {
