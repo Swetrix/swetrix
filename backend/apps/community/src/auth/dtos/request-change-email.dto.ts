@@ -17,7 +17,7 @@ export class RequestChangeEmailDto {
     maxLength: 72,
     minLength: 8,
   })
-  @MaxLength(50, { message: 'Max length is $constraint1 characters' })
+  @MaxLength(72, { message: 'Max length is $constraint1 characters' })
   @MinLength(8, { message: 'Min length is $constraint1 characters' })
   public readonly password: string
 }
