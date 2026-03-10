@@ -134,6 +134,11 @@ const metaInfoJson = {
       en: () => 'Need help setting up Swetrix?',
     },
   },
+  [LetterTemplate.SubscribeReminder]: {
+    subject: {
+      en: () => 'Your Swetrix trial is waiting for you',
+    },
+  },
 }
 
 interface Params {

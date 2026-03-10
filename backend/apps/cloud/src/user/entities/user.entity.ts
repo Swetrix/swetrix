@@ -274,6 +274,10 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   noEventsReminderSentOn: Date
 
+  // the date when the "you haven't subscribed yet" reminder email was sent
+  @Column({ type: 'timestamp', nullable: true })
+  subscribeReminderSentOn: Date
+
   @Column('varchar', { length: 15, nullable: true })
   subID: string
 
