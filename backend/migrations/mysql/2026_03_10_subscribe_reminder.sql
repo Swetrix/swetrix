@@ -1,1 +1,1 @@
-ALTER TABLE `user` ADD COLUMN `subscribeReminderSentOn` datetime DEFAULT NULL;
+ALTER TABLE `user` ADD COLUMN `subscribeReminderSentOn` timestamp DEFAULT NULL;
