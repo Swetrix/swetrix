@@ -23,4 +23,5 @@ export enum LetterTemplate {
   OrganisationInvitationUnregistered = 'organisation-invitation-unregistered',
   SocialIdentityLinked = 'social-identity-linked',
   NoEventsAfterSignup = 'no-events-after-signup',
+  SubscribeReminder = 'subscribe-reminder',
 }
