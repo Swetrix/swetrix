@@ -9,6 +9,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
 import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
+import { BillingInvoice } from '~/lib/models/BillingInvoice'
 import { Metainfo } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { User } from '~/lib/models/User'
@@ -46,6 +47,7 @@ export const sitemap: SitemapFunction = () => ({
 export interface UserSettingsLoaderData {
   metainfo: Metainfo | null
   usageInfo: UsageInfo | null
+  invoices: BillingInvoice[] | null
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -55,20 +57,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return data<UserSettingsLoaderData>({
       metainfo: null,
       usageInfo: null,
+      invoices: null,
     })
   }
 
-  const [metainfoResult, usageInfoResult] = await Promise.all([
+  const [metainfoResult, usageInfoResult, invoicesResult] = await Promise.all([
     serverFetch<Metainfo>(request, 'user/metainfo'),
     serverFetch<UsageInfo>(request, 'user/usageinfo'),
+    serverFetch<BillingInvoice[]>(request, 'user/billing/invoices'),
   ])
 
-  const cookies = [...metainfoResult.cookies, ...usageInfoResult.cookies]
+  const cookies = [
+    ...metainfoResult.cookies,
+    ...usageInfoResult.cookies,
+    ...invoicesResult.cookies,
+  ]
 
   return data<UserSettingsLoaderData>(
     {
       metainfo: metainfoResult.data,
       usageInfo: usageInfoResult.data,
+      invoices: invoicesResult.data,
     },
     { headers: createHeadersWithCookies(cookies) },
   )
