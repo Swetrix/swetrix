@@ -75,29 +75,37 @@ interface LegalItem {
 const products: NavItem[] = [
   {
     key: 'header.solutions.analytics.title',
-    href: routesPath.main,
-    internal: true,
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.main}`
+      : routesPath.main,
+    internal: !isSelfhosted,
     icon: ChartBarIcon,
     iconColor: 'text-indigo-400',
   },
   {
     key: 'header.solutions.performance.title',
-    href: routesPath.performance,
-    internal: true,
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.performance}`
+      : routesPath.performance,
+    internal: !isSelfhosted,
     icon: GaugeIcon,
     iconColor: 'text-amber-400',
   },
   {
     key: 'header.solutions.errors.title',
-    href: routesPath.errorTracking,
-    internal: true,
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.errorTracking}`
+      : routesPath.errorTracking,
+    internal: !isSelfhosted,
     icon: WarningIcon,
     iconColor: 'text-rose-400',
   },
   {
     key: 'header.solutions.captcha.title',
-    href: routesPath.captchaLanding,
-    internal: true,
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.captchaLanding}`
+      : routesPath.captchaLanding,
+    internal: !isSelfhosted,
     icon: ShieldCheckIcon,
     iconColor: 'text-emerald-400',
   },
