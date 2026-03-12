@@ -2127,7 +2127,7 @@ export class AnalyticsController {
       timeBucket = getLowestPossibleTimeBucket(period, from, to)
     }
 
-    const [filtersQuery, filtersParams, appliedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -2157,6 +2157,7 @@ export class AnalyticsController {
       take,
       skip,
       profileType,
+      customEVFilterApplied,
     )
 
     return { profiles, appliedFilters, take, skip }
