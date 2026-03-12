@@ -37,7 +37,8 @@ RUN npm run build
 FROM base
 
 ENV NODE_ENV=production \
-    __SELFHOSTED=true
+    __SELFHOSTED=true \
+    API_ORIGIN=http://swetrix-api:5005
 
 RUN mkdir /app
 WORKDIR /app

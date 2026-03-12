@@ -381,7 +381,7 @@ const PRODUCTION_API_URL = isBrowser
   : process.env.API_URL
 const SELFHOSTED_API_URL = isBrowser
   ? `${window.REMIX_ENV?.BASE_URL}/backend`
-  : `${process.env.BASE_URL}/backend`
+  : process.env.API_ORIGIN || `${process.env.BASE_URL}/backend`
 
 export const COOKIE_DOMAIN =
   (isBrowser ? window.REMIX_ENV?.COOKIE_DOMAIN : process.env.COOKIE_DOMAIN) ||
