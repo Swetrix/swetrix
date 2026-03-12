@@ -1,0 +1,74 @@
+name: Discord Release Notification
+on:
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    name: Send Discord notification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TAG: ${{ github.event.release.tag_name }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          python3 << 'PYEOF' | curl -sf -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK_URL"
+          import json, os, re
+          from datetime import datetime, timezone
+
+          tag        = os.environ["TAG"]
+          url        = os.environ["RELEASE_URL"]
+          name       = os.environ.get("RELEASE_NAME", "")
+          body       = os.environ.get("RELEASE_BODY", "")
+          prerelease = os.environ.get("PRERELEASE", "false") == "true"
+
+          # Friendly component name from tag prefix
+          COMPONENT_MAP = {
+              "tracker-js@":         "Tracker (JS)",
+              "tracker-node@":       "Tracker (Node)",
+              "captcha@":            "CAPTCHA Widget",
+              "captcha-validator@":  "CAPTCHA Validator",
+          }
+          component = "Swetrix"
+          for prefix, label in COMPONENT_MAP.items():
+              if tag.startswith(prefix):
+                  component = label
+                  break
+
+          # Extract version number
+          m = re.search(r"(\d+\.\d+\.\d+.*)", tag)
+          version = m.group(1) if m else tag
+
+          # Trim body for Discord's 4096-char embed description limit
+          max_body = 1800
+          if len(body) > max_body:
+              body = body[:max_body].rsplit("\n", 1)[0]
+              body += f"\n\n[Read the full changelog →]({url})"
+
+          label = "Pre-release" if prerelease else "New release"
+          color = 0xFFB347 if prerelease else 0x58D68D
+
+          title = name if name else f"{component} {version}"
+          description = f"**{label}** · [`{tag}`]({url})\n\n---\n\n{body}"
+
+          payload = {
+              "embeds": [{
+                  "title": title,
+                  "url": url,
+                  "color": color,
+                  "description": description,
+                  "thumbnail": {
+                      "url": "https://swetrix.com/assets/logo_white_bg.png"
+                  },
+                  "footer": {"text": "swetrix/swetrix"},
+                  "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              }]
+          }
+
+          print(json.dumps(payload))
+          PYEOF
