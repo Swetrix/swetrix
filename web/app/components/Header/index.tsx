@@ -652,11 +652,26 @@ const BannerManager = () => {
     )
   }, [status, isAuthenticated, user?.planCode])
 
+  const isExpiredTrialWithoutSubscription = useMemo(() => {
+    return (
+      user?.dashboardBlockReason ===
+        DashboardBlockReason.subscription_cancelled &&
+      user?.planCode === 'none' &&
+      !!user?.trialEndDate &&
+      !user?.subID
+    )
+  }, [
+    user?.dashboardBlockReason,
+    user?.planCode,
+    user?.trialEndDate,
+    user?.subID,
+  ])
+
   if (showSelfhostedCantReachAPIBanner) {
     return <SelfhostedCantReachAPIBanner />
   }
 
-  if (!trialBannerHidden) {
+  if (!trialBannerHidden || (isExpiredTrialWithoutSubscription && status)) {
     return <TrialBanner status={status} rawStatus={rawStatus} />
   }
 
