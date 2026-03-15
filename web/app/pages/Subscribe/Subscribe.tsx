@@ -29,6 +29,7 @@ import { Text } from '~/ui/Text'
 import { Switch } from '~/ui/Switch'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
+import { track } from 'swetrix'
 
 const INITIAL_VISIBLE_PLANS = 3
 const formatEventsLong = (value: number, locale = 'en-US') =>
@@ -142,6 +143,18 @@ const Subscribe = () => {
   ])
 
   const handleStartCheckout = () => {
+    track({
+      ev: 'SUBSCRIBE_START_CHECKOUT',
+      meta: {
+        plan: selectedPlan,
+        billingFrequency: selectedBillingFrequency,
+        currency: currencyCode,
+        paddleLoadError,
+        isPaddleLoaded,
+        paddleWindowExists: !!(window as any).Paddle,
+      },
+    })
+
     if (paddleLoadError) {
       toast.error(t('billing.paddleLoadError'))
       return
