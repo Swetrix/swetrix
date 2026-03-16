@@ -457,6 +457,7 @@ export const SessionDetailView = ({
           timeFormat={timeFormat}
           zoomedTimeRange={zoomedTimeRange}
           sdur={activeSession?.details?.sdur}
+          isLive={activeSession?.details?.isLive}
           websiteUrl={websiteUrl}
         />
       </div>

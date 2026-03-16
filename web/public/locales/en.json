@@ -726,6 +726,14 @@
         "intuitiveDesc": "Easy to use, no need to be a data scientist."
       }
     },
+    "invitation": {
+      "invalidLink": "This invitation link is invalid or has expired.",
+      "invitedToJoin": "You've been invited to join <target>{{targetName}}</target>",
+      "invitedByAs": "{{inviterEmail}} invited you as <role>{{role}}</role> to this {{type}}. Create your account to get started.",
+      "createAndJoin": "Create account & join {{type}}",
+      "project": "project",
+      "organisation": "organisation"
+    },
     "verification": {
       "success": "Your email has been successfully verified!",
       "continueToOnboarding": "Continue to onboarding"
@@ -1329,6 +1337,17 @@
     "goHome": "Go back home",
     "support": "Contact support"
   },
+  "errorBoundary": {
+    "connectionLost": "Connection lost",
+    "connectionLostDesc": "It looks like you lost your internet connection.",
+    "connectionLostHint": "Check your network and try again.",
+    "crashTitle": "Uh-oh..",
+    "crashDesc": "The app has crashed. We are sorry about that :(",
+    "crashContact": "Please, tell us about it at {{email}}",
+    "showCrashStack": "Show crash stack",
+    "hideCrashStack": "Hide crash stack",
+    "unknownError": "Unknown error"
+  },
   "project": {
     "passwordProtectedHint": "Please enter the password to view this dashboard.",
     "captchaCompletions": "CAPTCHA completions",
@@ -1640,6 +1659,7 @@
     "resetZoom": "Reset zoom",
     "noEventsForSelectedPeriod": "There are no events for the selected time period.",
     "endOfSession": "End of session",
+    "sessionInProgress": "Session in progress",
     "showLess": "Show less",
     "showMore": "Show {{count}} more",
     "barChart": "Bar chart",
@@ -1759,6 +1779,7 @@
       "pxCharsError": "Project name cannot be longer than {{amount}} characters.",
       "oxCharsError": "A list of allowed origins has to be smaller than {{amount}} symbols.",
       "noNameError": "Please enter a project name.",
+      "subscriptionRequired": "You need an active subscription to create personal projects. Please start a free trial or subscribe to a plan in your account settings.",
       "create": "Create a new project",
       "settings": "Settings of",
       "name": "Project name",
@@ -2103,7 +2124,6 @@
     "dueToday": "Due today ({{days}} days free)",
     "next": "Start free trial",
     "selectPlan": "Select your plan",
-    "termsDesc": "By continuing, you agree to the <tos>Terms of Use</tos> applicable to Swetrix and confirm you have read our <privacy>Privacy Policy</privacy>.",
     "customPlanTitle": "Need a plan higher than 20M pageviews?",
     "customPlanDesc": "Select \"Up to {{count}} monthly pageviews\" and <contact>contact us</contact> for a custom quote."
   },

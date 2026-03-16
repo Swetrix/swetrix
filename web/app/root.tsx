@@ -2,6 +2,7 @@ import {
   WarningOctagonIcon,
   CaretDownIcon,
   CaretUpIcon,
+  WifiSlashIcon,
 } from '@phosphor-icons/react'
 import BillboardCss from 'billboard.js/dist/billboard.min.css?url'
 import cx from 'clsx'
@@ -101,11 +102,30 @@ export async function action() {
   })
 }
 
+function isNetworkError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  const msg = error.message.toLowerCase()
+  return (
+    msg.includes('networkerror') ||
+    msg.includes('failed to fetch') ||
+    msg.includes('load failed') ||
+    msg.includes('network request failed') ||
+    (error instanceof TypeError && msg.includes('fetch'))
+  )
+}
+
 export function ErrorBoundary() {
   const error = useRouteError()
+  const { t } = useTranslation('common')
   const [crashStackShown, setCrashStackShown] = useState(false)
+  const networkError =
+    !isRouteErrorResponse(error) &&
+    error instanceof Error &&
+    isNetworkError(error)
 
   useEffect(() => {
+    if (networkError) return
+
     if (isRouteErrorResponse(error)) {
       trackError({
         name: `ErrorBoundary: ${error.status} ${error.statusText}`,
@@ -122,13 +142,61 @@ export function ErrorBoundary() {
         stackTrace: error.stack || '',
       })
     }
-  }, [error])
+  }, [error, networkError])
+
+  if (networkError) {
+    return (
+      <html lang='en' className={getCookie(LS_THEME_SETTING) || 'light'}>
+        <head>
+          <meta charSet='utf-8' />
+          <title>{t('errorBoundary.connectionLost')}</title>
+          <Links />
+        </head>
+        <body>
+          <div
+            style={{ minHeight: '100vh' }}
+            className='flex flex-col bg-gray-50 pt-16 pb-12 dark:bg-slate-950'
+          >
+            <div className='mx-auto flex w-full max-w-7xl grow flex-col justify-center px-4 sm:px-6 lg:px-8'>
+              <div className='flex shrink-0 justify-center'>
+                <WifiSlashIcon
+                  weight='duotone'
+                  className='h-20 w-auto text-amber-500 dark:text-amber-400'
+                />
+              </div>
+              <div className='py-8'>
+                <div className='text-center'>
+                  <h1 className='text-3xl font-bold text-gray-900 sm:text-4xl dark:text-gray-50'>
+                    {t('errorBoundary.connectionLost')}
+                  </h1>
+                  <p className='mt-3 text-base text-gray-600 dark:text-gray-400'>
+                    {t('errorBoundary.connectionLostDesc')}
+                    <br />
+                    {t('errorBoundary.connectionLostHint')}
+                  </p>
+                  <button
+                    type='button'
+                    onClick={() => window.location.reload()}
+                    className='mt-6 inline-flex cursor-pointer items-center rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200'
+                  >
+                    {t('dashboard.reloadPage')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ScrollRestoration />
+          <Scripts />
+        </body>
+      </html>
+    )
+  }
 
   return (
     <html lang='en' className={getCookie(LS_THEME_SETTING) || 'light'}>
       <head>
         <meta charSet='utf-8' />
-        <title>The app has crashed..</title>
+        <title>{t('errorBoundary.crashTitle')}</title>
         <Links />
       </head>
       <body>
@@ -144,14 +212,14 @@ export function ErrorBoundary() {
             <div className='py-8'>
               <div className='text-center'>
                 <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
-                  Uh-oh..
+                  {t('errorBoundary.crashTitle')}
                 </h1>
                 <p className='mt-2 text-base font-medium text-gray-800 dark:text-gray-300'>
-                  The app has crashed. We are sorry about that :(
+                  {t('errorBoundary.crashDesc')}
                   <br />
-                  Please, tell us about it at {CONTACT_EMAIL}
+                  {t('errorBoundary.crashContact', { email: CONTACT_EMAIL })}
                 </p>
-                <p className='mt-6 text-base font-medium text-gray-800 dark:text-gray-300'>
+                <p className='mt-6 flex flex-col justify-center text-base font-medium text-gray-800 dark:text-gray-300'>
                   {isRouteErrorResponse(error) ? (
                     <>
                       <span>
@@ -161,7 +229,7 @@ export function ErrorBoundary() {
                     </>
                   ) : error instanceof Error ? (
                     <>
-                      {error.message}
+                      <span>{error.message}</span>
                       <br />
                       <button
                         type='button'
@@ -170,12 +238,12 @@ export function ErrorBoundary() {
                       >
                         {crashStackShown ? (
                           <>
-                            Hide crash stack
+                            {t('errorBoundary.hideCrashStack')}
                             <CaretUpIcon className='ml-2 h-4 w-4' />
                           </>
                         ) : (
                           <>
-                            Show crash stack
+                            {t('errorBoundary.showCrashStack')}
                             <CaretDownIcon className='ml-2 h-4 w-4' />
                           </>
                         )}
@@ -187,7 +255,7 @@ export function ErrorBoundary() {
                       ) : null}
                     </>
                   ) : (
-                    <>Unknown error</>
+                    <>{t('errorBoundary.unknownError')}</>
                   )}
                 </p>
               </div>

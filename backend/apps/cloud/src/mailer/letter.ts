@@ -19,6 +19,9 @@ export enum LetterTemplate {
   DashboardLockedExceedingLimits = 'dashboard-locked-exceeding-limits',
   DashboardLockedPaymentFailure = 'dashboard-locked-payment-failure',
   OrganisationInvitation = 'organisation-invitation',
+  ProjectInvitationUnregistered = 'project-invitation-unregistered',
+  OrganisationInvitationUnregistered = 'organisation-invitation-unregistered',
   SocialIdentityLinked = 'social-identity-linked',
   NoEventsAfterSignup = 'no-events-after-signup',
+  SubscribeReminder = 'subscribe-reminder',
 }

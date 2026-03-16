@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head />
       <body>
-        <RootProvider>
+        <RootProvider search={{ options: { api: "/docs/api/search" } }}>
           <DocsLayout
             tree={source.getPageTree()}
             nav={{

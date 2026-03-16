@@ -47,6 +47,11 @@ import { SSOProviders } from './dtos'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'
 import { trackCustom } from '../common/analytics'
+import { PendingInvitationService } from '../pending-invitation/pending-invitation.service'
+import { PendingInvitationType } from '../pending-invitation/pending-invitation.entity'
+import { ProjectShare } from '../project/entity/project-share.entity'
+import { deleteProjectRedis } from '../project/project.service'
+import { OrganisationService } from '../organisation/organisation.service'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
@@ -85,6 +90,9 @@ export class AuthService {
     private readonly telegramService: TelegramService,
     @Inject(forwardRef(() => TwoFactorAuthService))
     private readonly twoFactorAuthService: TwoFactorAuthService,
+    private readonly pendingInvitationService: PendingInvitationService,
+    @Inject(forwardRef(() => OrganisationService))
+    private readonly organisationService: OrganisationService,
   ) {
     this.oauth2Client = new OAuth2Client(
       this.configService.get('GOOGLE_OAUTH2_CLIENT_ID'),
@@ -179,6 +187,79 @@ export class AuthService {
     })
 
     return user
+  }
+
+  public async redeemPendingInvitations(user: User): Promise<number> {
+    const pendingInvitations = await this.pendingInvitationService.findByEmail(
+      user.email,
+    )
+
+    if (!pendingInvitations.length) {
+      return 0
+    }
+
+    let redeemed = 0
+
+    for (const pending of pendingInvitations) {
+      if (
+        pending.type === PendingInvitationType.PROJECT_SHARE &&
+        pending.projectId
+      ) {
+        const project = await this.projectService.findOne({
+          where: { id: pending.projectId },
+          relations: ['share'],
+        })
+
+        if (project) {
+          const alreadyShared = project.share?.some(
+            (s) => s.user?.id === user.id,
+          )
+
+          if (!alreadyShared) {
+            const share = new ProjectShare()
+            share.role = pending.role as any
+            share.user = user
+            share.project = project
+            share.confirmed = true
+
+            await this.projectService.createShare(share)
+            await deleteProjectRedis(project.id)
+            redeemed++
+          }
+        }
+      } else if (
+        pending.type === PendingInvitationType.ORGANISATION_MEMBER &&
+        pending.organisationId
+      ) {
+        const organisation = await this.organisationService.findOne({
+          where: { id: pending.organisationId },
+          relations: ['members', 'members.user'],
+        })
+
+        if (organisation) {
+          const alreadyMember = organisation.members?.some(
+            (m) => m.user?.id === user.id,
+          )
+
+          if (!alreadyMember) {
+            await this.organisationService.createMembership({
+              role: pending.role as any,
+              user,
+              organisation,
+              confirmed: true,
+            })
+            await this.organisationService.deleteOrganisationProjectsFromRedis(
+              organisation.id,
+            )
+            redeemed++
+          }
+        }
+      }
+    }
+
+    await this.pendingInvitationService.deleteAllByEmail(user.email)
+
+    return redeemed
   }
 
   public async generateJwtAccessToken(
@@ -590,11 +671,23 @@ export class AuthService {
 
     const user = await this.userService.create(query)
 
+    const redeemedCount = await this.redeemPendingInvitations(user)
+
+    if (redeemedCount > 0) {
+      await this.userService.updateUser(user.id, {
+        registeredViaInvitation: true,
+        hasCompletedOnboarding: true,
+      })
+    }
+
     const jwtTokens = await this.generateJwtTokens(user.id, true)
+
+    const finalUser =
+      redeemedCount > 0 ? await this.userService.findUserById(user.id) : user
 
     return {
       ...jwtTokens,
-      user: this.userService.omitSensitiveData(user),
+      user: this.userService.omitSensitiveData(finalUser),
       totalMonthlyEvents: 0,
     }
   }
@@ -990,11 +1083,23 @@ export class AuthService {
 
     const user = await this.userService.create(query)
 
+    const redeemedCount = await this.redeemPendingInvitations(user)
+
+    if (redeemedCount > 0) {
+      await this.userService.updateUser(user.id, {
+        registeredViaInvitation: true,
+        hasCompletedOnboarding: true,
+      })
+    }
+
     const jwtTokens = await this.generateJwtTokens(user.id, true)
+
+    const finalUser =
+      redeemedCount > 0 ? await this.userService.findUserById(user.id) : user
 
     return {
       ...jwtTokens,
-      user: this.userService.omitSensitiveData(user),
+      user: this.userService.omitSensitiveData(finalUser),
       totalMonthlyEvents: 0,
     }
   }

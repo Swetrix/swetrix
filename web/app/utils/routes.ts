@@ -1,6 +1,7 @@
 const routes = Object.freeze({
   signin: '/login',
   signup: '/signup',
+  signup_invitation: '/signup/invitation/:id',
   performance: '/performance',
   errorTracking: '/error-tracking',
   captchaLanding: '/captcha',

@@ -726,6 +726,14 @@
         "intuitiveDesc": "Facile à utiliser, pas besoin d’être data scientist."
       }
     },
+    "invitation": {
+      "invalidLink": "Ce lien d'invitation est invalide ou a expiré.",
+      "invitedToJoin": "Vous avez été invité à rejoindre <target>{{targetName}}</target>",
+      "invitedByAs": "{{inviterEmail}} vous a invité en tant que <role>{{role}}</role> dans ce/cette {{type}}. Créez votre compte pour commencer.",
+      "createAndJoin": "Créer un compte et rejoindre {{type}}",
+      "project": "projet",
+      "organisation": "organisation"
+    },
     "verification": {
       "success": "Votre e-mail a été vérifié avec succès !",
       "continueToOnboarding": "Continuer vers l’onboarding"
@@ -1329,6 +1337,17 @@
     "goHome": "Retour à l'accueil",
     "support": "Contacter le service client"
   },
+  "errorBoundary": {
+    "connectionLost": "Connexion perdue",
+    "connectionLostDesc": "Il semble que vous ayez perdu votre connexion Internet.",
+    "connectionLostHint": "Vérifiez votre réseau et réessayez.",
+    "crashTitle": "Oups..",
+    "crashDesc": "L'application a planté. Nous en sommes désolés :(",
+    "crashContact": "Veuillez nous en informer à {{email}}",
+    "showCrashStack": "Afficher la pile de plantage",
+    "hideCrashStack": "Masquer la pile de plantage",
+    "unknownError": "Erreur inconnue"
+  },
   "project": {
     "passwordProtectedHint": "Veuillez saisir le mot de passe pour afficher ce tableau de bord.",
     "captchaCompletions": "Résolutions de CAPTCHA",
@@ -1640,6 +1659,7 @@
     "resetZoom": "Réinitialiser le zoom",
     "noEventsForSelectedPeriod": "Il n'y a pas d'événements pour la période sélectionnée.",
     "endOfSession": "Fin de session",
+    "sessionInProgress": "Session en cours",
     "showLess": "Afficher moins",
     "showMore": "Afficher {{count}} de plus",
     "barChart": "Graphique en barres",
@@ -1759,6 +1779,7 @@
       "pxCharsError": "Le nom du projet ne peut pas dépasser {{amount}} caractères.",
       "oxCharsError": "La liste des origines autorisées doit être inférieure à {{amount}} symboles.",
       "noNameError": "Veuillez entrer un nom de projet.",
+      "subscriptionRequired": "Vous avez besoin d'un abonnement actif pour créer des projets personnels. Veuillez commencer un essai gratuit ou souscrire à un forfait dans les paramètres de votre compte.",
       "create": "Créer un nouveau projet",
       "settings": "Paramètres de",
       "name": "Nom du projet",

@@ -1114,7 +1114,7 @@ export class TaskManagerService {
     const users = await this.userService.find({
       where: {
         isActive: true,
-        // we don't want to send the reminder for people who for example used it long time ago, then removed their projects and now are kinda counted as "new users"
+        planCode: Not(PlanCode.none),
         created: Between(weekAgo, twoDaysAgo),
         noEventsReminderSentOn: IsNull(),
       },
@@ -1158,6 +1158,50 @@ export class TaskManagerService {
       } catch (reason) {
         this.logger.error(
           `[CRON WORKER](remindUsersWithoutEventsAfterSignup) Failed to process user ${user.id}: ${reason}`,
+        )
+      }
+    })
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_10AM)
+  async remindUsersToSubscribe() {
+    const weekAgo = dayjs.utc().subtract(1, 'week').toDate()
+    const twoDaysAgo = dayjs
+      .utc()
+      .subtract(NO_EVENTS_REMINDER_DELAY_DAYS, 'days')
+      .toDate()
+
+    const users = await this.userService.find({
+      where: {
+        isActive: true,
+        planCode: PlanCode.none,
+        hasCompletedOnboarding: true,
+        created: Between(weekAgo, twoDaysAgo),
+        subscribeReminderSentOn: IsNull(),
+      },
+      select: ['id', 'email'],
+    })
+
+    if (_isEmpty(users)) {
+      return
+    }
+
+    const subscribeUrl = `${this.configService.get('CLIENT_URL')}/subscribe`
+    const sentOn = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+    await mapLimit(users, REPORTS_USERS_CONCURRENCY, async (user) => {
+      try {
+        await this.mailerService.sendEmail(
+          user.email,
+          LetterTemplate.SubscribeReminder,
+          { subscribeUrl },
+        )
+        await this.userService.update(user.id, {
+          subscribeReminderSentOn: sentOn,
+        })
+      } catch (reason) {
+        this.logger.error(
+          `[CRON WORKER](remindUsersToSubscribe) Failed to process user ${user.id}: ${reason}`,
         )
       }
     })

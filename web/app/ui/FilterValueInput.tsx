@@ -277,7 +277,7 @@ const FilterValueInput = ({
     count: filteredItems.length,
     getScrollElement: () => listRef.current,
     estimateSize: () => ITEM_HEIGHT,
-    overscan: 15,
+    overscan: 8,
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -406,7 +406,7 @@ const FilterValueInput = ({
               )}
             </div>
           ) : (
-            <div ref={listRef} className='max-h-48 overflow-auto py-1'>
+            <div ref={listRef} className='max-h-72 overflow-auto py-1'>
               <div
                 style={{
                   height: `${virtualizer.getTotalSize()}px`,
@@ -422,7 +422,7 @@ const FilterValueInput = ({
 
                   return (
                     <button
-                      key={item}
+                      key={virtualItem.key}
                       type='button'
                       onClick={() => handleSelectItem(item)}
                       className={cx(

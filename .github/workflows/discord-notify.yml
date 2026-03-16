@@ -1,0 +1,32 @@
+name: Discord Release Notification
+on:
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    name: Send Discord notification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TAG: ${{ github.event.release.tag_name }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
+          ROLE_ID: ${{ secrets.DISCORD_RELEASE_ROLE_ID }}
+        run: |
+          python3 << 'PYEOF' | curl -sf -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK_URL"
+          import json, os, re
+
+          tag     = os.environ["TAG"]
+          url     = os.environ["RELEASE_URL"]
+          role_id = os.environ.get("ROLE_ID", "")
+
+          m = re.search(r"(\d+\.\d+\.\d+.*)", tag)
+          version = m.group(1) if m else tag
+
+          ping = f"<@&{role_id}> " if role_id else ""
+          msg = f"{ping}**Swetrix CE {version}** has been released! Check out what's new:\n{url}"
+
+          print(json.dumps({"content": msg}))
+          PYEOF

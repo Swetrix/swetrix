@@ -492,16 +492,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     case 'delete-share-user': {
-      const userId = formData.get('userId')?.toString()
+      const shareId = formData.get('shareId')?.toString()
 
-      if (!userId) {
+      if (!shareId) {
         return data<ProjectSettingsActionData>(
-          { intent, error: 'User ID is required' },
+          { intent, error: 'Share ID is required' },
           { status: 400 },
         )
       }
 
-      const result = await serverFetch(request, `project/${id}/${userId}`, {
+      const result = await serverFetch(request, `project/${id}/${shareId}`, {
         method: 'DELETE',
       })
 

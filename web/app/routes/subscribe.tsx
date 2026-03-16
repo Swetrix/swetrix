@@ -55,8 +55,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/onboarding')
   }
 
-  // If the user already has an active subscription or legacy trial, skip checkout
-  if (user?.planCode && user.planCode !== 'none') {
+  if (
+    (user?.planCode && user.planCode !== 'none') ||
+    user?.registeredViaInvitation
+  ) {
     if (cookies.length > 0) {
       return redirect('/dashboard', {
         headers: createHeadersWithCookies(cookies),

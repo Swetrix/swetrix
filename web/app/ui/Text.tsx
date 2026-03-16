@@ -70,7 +70,7 @@ const weightClasses: Record<TextWeight, string> = {
 const colourClasses: Record<TextColour, string> = {
   primary: 'text-gray-900 dark:text-gray-50',
   secondary: 'text-gray-700 dark:text-gray-200',
-  muted: 'text-gray-600 dark:text-slate-400',
+  muted: 'text-gray-600 dark:text-slate-300',
   success: 'text-green-600 dark:text-green-400',
   warning: 'text-yellow-600 dark:text-yellow-500',
   error: 'text-red-600 dark:text-red-400',
@@ -103,7 +103,7 @@ export const Text = ({
       trackingClasses[tracking],
       { truncate },
       code &&
-        'rounded bg-gray-200/80 px-1.5 py-0.5 font-mono dark:bg-slate-700',
+        'rounded bg-gray-200/80 px-1.5 py-0.5 font-mono dark:bg-slate-800',
       className,
     )}
     {...props}

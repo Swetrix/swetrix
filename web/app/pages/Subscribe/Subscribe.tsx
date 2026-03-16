@@ -5,7 +5,7 @@ import {
   CheckIcon,
   StarIcon,
 } from '@phosphor-icons/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher, useNavigate, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
@@ -24,10 +24,12 @@ import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { SubscribeLoaderData } from '~/routes/subscribe'
 import Button from '~/ui/Button'
+import { FAQ } from '~/ui/FAQ'
 import { Text } from '~/ui/Text'
 import { Switch } from '~/ui/Switch'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
+import { trackCustom } from '~/utils/analytics'
 
 const INITIAL_VISIBLE_PLANS = 3
 const formatEventsLong = (value: number, locale = 'en-US') =>
@@ -141,6 +143,15 @@ const Subscribe = () => {
   ])
 
   const handleStartCheckout = () => {
+    trackCustom('SUBSCRIBE_START_CHECKOUT', {
+      plan: selectedPlan,
+      billingFrequency: selectedBillingFrequency,
+      currency: currencyCode,
+      paddleLoadError,
+      isPaddleLoaded,
+      paddleWindowExists: !!(window as any).Paddle,
+    })
+
     if (paddleLoadError) {
       toast.error(t('billing.paddleLoadError'))
       return
@@ -185,6 +196,24 @@ const Subscribe = () => {
   const formattedEndDate = dateFormatter.format(
     new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000),
   )
+
+  const faqItems = useMemo(() => {
+    const faqValues = {
+      lowestPlanEventsAmount:
+        PLAN_LIMITS['100k'].monthlyUsageLimit.toLocaleString('en-US'),
+      moderatePlanEventsAmount:
+        PLAN_LIMITS['500k'].monthlyUsageLimit.toLocaleString('en-US'),
+    }
+
+    return [0, 1, 4].map((idx) => ({
+      question: (
+        <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} values={faqValues} />
+      ),
+      answer: (
+        <Trans t={t} i18nKey={`main.faq.items.${idx}.a`} values={faqValues} />
+      ),
+    }))
+  }, [t])
 
   return (
     <div className='flex min-h-screen flex-col items-center bg-gray-50 p-4 lg:p-8 dark:bg-slate-950'>
@@ -410,50 +439,20 @@ const Subscribe = () => {
                 </div>
               </div>
             ) : (
-              <>
-                <Button
-                  className='w-full justify-center'
-                  onClick={handleStartCheckout}
-                  primary
-                  giant
-                  loading={generatePayLinkFetcher.state !== 'idle'}
-                  disabled={generatePayLinkFetcher.state !== 'idle'}
-                >
-                  {t('checkout.next')}
-                </Button>
-
-                <Text
-                  as='p'
-                  size='xs'
-                  colour='muted'
-                  className='mt-4 text-center'
-                >
-                  <Trans
-                    t={t}
-                    i18nKey='checkout.termsDesc'
-                    components={{
-                      privacy: (
-                        <a
-                          href={routes.privacy}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className='font-medium underline decoration-dashed hover:decoration-solid'
-                        />
-                      ),
-                      tos: (
-                        <a
-                          href={routes.terms}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className='font-medium underline decoration-dashed hover:decoration-solid'
-                        />
-                      ),
-                    }}
-                  />
-                </Text>
-              </>
+              <Button
+                className='w-full justify-center'
+                onClick={handleStartCheckout}
+                primary
+                giant
+                loading={generatePayLinkFetcher.state !== 'idle'}
+                disabled={generatePayLinkFetcher.state !== 'idle'}
+              >
+                {t('checkout.next')}
+              </Button>
             )}
           </div>
+
+          <FAQ items={faqItems} />
         </div>
 
         {/* Right Column (Timeline) */}

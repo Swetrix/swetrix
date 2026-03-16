@@ -1,8 +1,7 @@
 # Stage 1
-FROM node:24-alpine as base
+FROM node:24-alpine AS base
 
-# Install all node_modules, including dev dependencies
-FROM base as deps
+FROM base AS deps
 
 RUN mkdir /app
 WORKDIR /app
@@ -10,8 +9,7 @@ WORKDIR /app
 ADD package.json ./
 RUN yarn install --production=false
 
-# Setup production node_modules
-FROM base as production-deps
+FROM base AS production-deps
 
 RUN mkdir /app
 WORKDIR /app
@@ -19,8 +17,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules /app/node_modules
 ADD package.json ./
 
-# Build the app
-FROM base as build
+FROM base AS build
 
 ENV NODE_ENV=production \
     __SELFHOSTED=true
@@ -37,7 +34,8 @@ RUN npm run build
 FROM base
 
 ENV NODE_ENV=production \
-    __SELFHOSTED=true
+    __SELFHOSTED=true \
+    API_ORIGIN=http://swetrix-api:5005
 
 RUN mkdir /app
 WORKDIR /app

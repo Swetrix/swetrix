@@ -315,6 +315,7 @@ const ProjectSettings = () => {
       ? initialProject.ipBlacklist
       : _join(initialProject.ipBlacklist, ', '),
     countryBlacklist: initialProject.countryBlacklist || [],
+    active: initialProject.active !== false,
     botsProtectionLevel:
       (initialProject.botsProtectionLevel as 'off' | 'basic') || 'basic',
     gscPropertyUri: initialProject.gscPropertyUri || null,
@@ -675,6 +676,7 @@ const ProjectSettings = () => {
     const formData = new FormData()
     formData.set('intent', 'update-project')
     if (data.name) formData.set('name', data.name)
+    formData.set('active', data.active ? 'true' : 'false')
     formData.set('public', data.public ? 'true' : 'false')
     formData.set(
       'isPasswordProtected',
@@ -1359,7 +1361,7 @@ const ProjectSettings = () => {
             ) : null}
 
             {activeTab === 'danger' && activeTabConfig ? (
-              <>
+              <form onSubmit={handleSubmit}>
                 <TabHeader
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
@@ -1367,13 +1369,18 @@ const ProjectSettings = () => {
                   iconColorClass={activeTabConfig.iconColor}
                 />
                 <DangerZone
+                  isActive={Boolean(form.active)}
+                  onToggleActive={(active) =>
+                    setForm((prev) => ({ ...prev, active }))
+                  }
+                  isSaving={isSaving}
                   setShowTransfer={setShowTransfer}
                   setShowReset={setShowReset}
                   setShowDelete={setShowDelete}
                   isDeleting={isDeleting}
                   setResetting={isResetting}
                 />
-              </>
+              </form>
             ) : null}
           </section>
         </div>

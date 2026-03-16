@@ -726,6 +726,14 @@
         "intuitiveDesc": "Łatwe w użyciu — nie musisz być data scientist."
       }
     },
+    "invitation": {
+      "invalidLink": "Ten link z zaproszeniem jest nieprawidłowy lub wygasł.",
+      "invitedToJoin": "Zostałeś(-aś) zaproszony(-a) do dołączenia do <target>{{targetName}}</target>",
+      "invitedByAs": "{{inviterEmail}} zaprosił(-a) Cię jako <role>{{role}}</role> do tego/tej {{type}}. Utwórz konto, aby rozpocząć.",
+      "createAndJoin": "Utwórz konto i dołącz do {{type}}",
+      "project": "projekt",
+      "organisation": "organizacja"
+    },
     "verification": {
       "success": "Twój adres e-mail został pomyślnie zweryfikowany!",
       "continueToOnboarding": "Przejdź do onboardingu"
@@ -1329,6 +1337,17 @@
     "goHome": "Powrót do strony głównej",
     "support": "Skontaktuj się z obsługą"
   },
+  "errorBoundary": {
+    "connectionLost": "Utracono połączenie",
+    "connectionLostDesc": "Wygląda na to, że utracono połączenie z internetem.",
+    "connectionLostHint": "Sprawdź sieć i spróbuj ponownie.",
+    "crashTitle": "Ups..",
+    "crashDesc": "Aplikacja uległa awarii. Przepraszamy za to :(",
+    "crashContact": "Prosimy, poinformuj nas o tym na {{email}}",
+    "showCrashStack": "Pokaż stos wywołań awarii",
+    "hideCrashStack": "Ukryj stos wywołań awarii",
+    "unknownError": "Nieznany błąd"
+  },
   "project": {
     "passwordProtectedHint": "Wprowadź hasło, aby wyświetlić ten panel.",
     "captchaCompletions": "Ukończenia CAPTCHA",
@@ -1640,6 +1659,7 @@
     "resetZoom": "Resetuj powiększenie",
     "noEventsForSelectedPeriod": "Brak zdarzeń dla wybranego przedziału czasowego.",
     "endOfSession": "Koniec sesji",
+    "sessionInProgress": "Sesja w toku",
     "showLess": "Pokaż mniej",
     "showMore": "Pokaż jeszcze {{count}}",
     "barChart": "Wykres słupkowy",
@@ -1759,6 +1779,7 @@
       "pxCharsError": "Nazwa projektu nie może być dłuższa niż {{amount}} znaków.",
       "oxCharsError": "Lista dozwolonych źródeł musi być mniejsza niż {{amount}} znaków.",
       "noNameError": "Wprowadź nazwę projektu.",
+      "subscriptionRequired": "Potrzebujesz aktywnej subskrypcji, aby tworzyć projekty osobiste. Rozpocznij bezpłatny okres próbny lub wykup subskrypcję w ustawieniach konta.",
       "create": "Utwórz nowy projekt",
       "settings": "Ustawienia",
       "name": "Nazwa projektu",

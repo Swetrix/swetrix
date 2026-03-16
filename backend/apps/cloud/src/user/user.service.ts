@@ -571,13 +571,20 @@ export class UserService {
     let result: any = {}
 
     try {
+      const isTrial = !user.trialEndDate
+
       result = await axios.post(url, {
         vendor_id: Number(PADDLE_VENDOR_ID),
         vendor_auth_code: PADDLE_API_KEY,
         product_id: productId,
         customer_email: user.email,
         passthrough: JSON.stringify({ uid: id }),
-        ...(user.trialEndDate ? {} : { trial_days: TRIAL_DURATION }),
+        ...(isTrial
+          ? {
+              trial_days: TRIAL_DURATION,
+              prices: ['USD:0', 'EUR:0', 'GBP:0'],
+            }
+          : {}),
       })
     } catch (error) {
       console.error(

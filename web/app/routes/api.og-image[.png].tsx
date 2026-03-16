@@ -7,7 +7,7 @@ import type { LoaderFunctionArgs } from 'react-router'
 
 import { API_URL } from '~/lib/constants'
 
-const MAX_TITLE_LENGTH = 50
+const MAX_TITLE_LENGTH = 65
 const MAX_DESCRIPTION_LENGTH = 200
 const MAX_PROJECT_NAME_LENGTH = 40
 

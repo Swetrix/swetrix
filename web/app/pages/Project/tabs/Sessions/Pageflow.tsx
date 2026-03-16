@@ -36,6 +36,7 @@ interface PageflowProps {
   timeFormat: '12-hour' | '24-hour'
   zoomedTimeRange?: [Date, Date] | null
   sdur?: number
+  isLive?: boolean
   websiteUrl?: string | null
 }
 
@@ -357,6 +358,7 @@ export const Pageflow = ({
   timeFormat,
   zoomedTimeRange,
   sdur = 0,
+  isLive,
   websiteUrl,
 }: PageflowProps) => {
   const {
@@ -470,24 +472,39 @@ export const Pageflow = ({
           },
         )}
 
-        {/* End of session marker */}
+        {/* End of session / active session marker */}
         {filteredPages.length > 0 ? (
           <li>
             <div className='relative pb-8'>
               <div className='relative flex space-x-3'>
                 <div>
-                  <span className='flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-950'>
-                    <CircleIcon
-                      className='h-3 w-3 text-slate-400 dark:text-slate-500'
-                      aria-hidden='true'
-                      fill='currentColor'
-                    />
-                  </span>
+                  {isLive ? (
+                    <span className='flex h-8 w-8 items-center justify-center rounded-full border-2 border-red-300 bg-white dark:border-red-600 dark:bg-slate-950'>
+                      <span className='h-2.5 w-2.5 animate-pulse rounded-full bg-red-500' />
+                    </span>
+                  ) : (
+                    <span className='flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-950'>
+                      <CircleIcon
+                        className='h-3 w-3 text-slate-400 dark:text-slate-500'
+                        aria-hidden='true'
+                        fill='currentColor'
+                      />
+                    </span>
+                  )}
                 </div>
                 <div className='flex min-w-0 flex-1 flex-col pt-1.5'>
                   <div className='flex justify-between space-x-4'>
-                    <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>
-                      {t('project.endOfSession')}
+                    <div
+                      className={cn(
+                        'text-sm font-medium',
+                        isLive
+                          ? 'text-red-500 dark:text-red-400'
+                          : 'text-gray-500 dark:text-gray-400',
+                      )}
+                    >
+                      {isLive
+                        ? t('project.sessionInProgress')
+                        : t('project.endOfSession')}
                     </div>
                   </div>
                 </div>

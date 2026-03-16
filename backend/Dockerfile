@@ -1,5 +1,5 @@
 #Stage 1: Build
-FROM node:lts-alpine as build
+FROM node:lts-alpine AS build
 WORKDIR /build
 COPY package*.json .
 RUN npm install --force
@@ -8,15 +8,12 @@ RUN npm run deploy:community
 RUN node ./meta/dbip-free-sync.js
 
 #Stage 2: Runtime
-FROM node:lts-alpine as run
+FROM node:lts-alpine AS run
 LABEL maintainer="swetrix.com <contact@swetrix.com>"
 
-# System and security configs
 ENV TZ=UTC \
-    NODE_ENV=production \
-    SECRET_KEY_BASE=secret-key-base-tokens
+    NODE_ENV=production
 
-# Service connections
 ENV REDIS_HOST=localhost \
     REDIS_PORT=6379 \
     CLICKHOUSE_HOST=http://localhost \
@@ -24,16 +21,11 @@ ENV REDIS_HOST=localhost \
     CLICKHOUSE_PORT=8123 \
     CLICKHOUSE_DATABASE=analytics
 
-# Authentication mode settings
 ENV OIDC_ENABLED=false \
     OIDC_ONLY_AUTH=false
 
-# Application configs
-ENV EMAIL=test@test.com \
-    PASSWORD=12345678 \
-    IS_PRIMARY_NODE=true
+ENV IS_PRIMARY_NODE=true
 
-# OIDC Configuration (optional)
 ENV OIDC_CLIENT_ID='' \
     OIDC_DISCOVERY_URL='' \
     OIDC_CLIENT_SECRET=''
