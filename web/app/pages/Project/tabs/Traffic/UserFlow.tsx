@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { useUserFlowProxy } from '~/hooks/useAnalyticsProxy'
-import { UserFlowType } from '~/lib/models/UserFlow'
+import type { UserFlowResponse } from '~/api/api.server'
 import Loader from '~/ui/Loader'
 
 import { useCurrentProject } from '../../../../providers/CurrentProjectProvider'
@@ -23,10 +23,7 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
   const { id } = useCurrentProject()
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [userFlow, setUserFlow] = useState<{
-    ascending: UserFlowType
-    descending: UserFlowType
-  } | null>(null)
+  const [userFlow, setUserFlow] = useState<UserFlowResponse | null>(null)
   const { fetchUserFlow: fetchUserFlowProxy } = useUserFlowProxy()
 
   const [from, to] = useMemo(() => {
@@ -54,10 +51,7 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
         timezone,
       })
       if (result) {
-        setUserFlow({
-          ascending: result as unknown as UserFlowType,
-          descending: result as unknown as UserFlowType,
-        })
+        setUserFlow(result as UserFlowResponse)
       }
     } catch (error: any) {
       toast.error(

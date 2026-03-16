@@ -2230,9 +2230,14 @@ interface UserFlowLink {
   value: number
 }
 
-export interface UserFlowResponse {
+export interface UserFlowData {
   nodes: UserFlowNode[]
   links: UserFlowLink[]
+}
+
+export interface UserFlowResponse {
+  ascending: UserFlowData
+  descending: UserFlowData
 }
 
 export async function getUserFlowServer(

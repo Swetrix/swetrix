@@ -1,4 +1,4 @@
-interface UserFlow {
+interface UserFlowData {
   nodes: {
     id: string
   }[]
@@ -9,4 +9,9 @@ interface UserFlow {
   }[]
 }
 
-export type UserFlowType = UserFlow | null
+export type UserFlowType = UserFlowData | null
+
+export interface UserFlowResult {
+  ascending: UserFlowData
+  descending: UserFlowData
+}
