@@ -4966,6 +4966,7 @@ export class AnalyticsService {
             0 AS isEvent
           FROM analytics
           WHERE pid = {pid:FixedString(12)}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
             AND profileId IS NOT NULL
             AND profileId != ''
             ${profileTypeFilter}
@@ -4973,6 +4974,7 @@ export class AnalyticsService {
               SELECT DISTINCT profileId
               FROM customEV
               WHERE pid = {pid:FixedString(12)}
+                AND created BETWEEN {groupFrom:String} AND {groupTo:String}
                 AND profileId IS NOT NULL
                 AND profileId != ''
                 ${profileTypeFilter}
@@ -4991,6 +4993,7 @@ export class AnalyticsService {
             1 AS isEvent
           FROM customEV
           WHERE pid = {pid:FixedString(12)}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
             AND profileId IS NOT NULL
             AND profileId != ''
             ${profileTypeFilter}
@@ -5011,6 +5014,7 @@ export class AnalyticsService {
             0 AS isEvent
           FROM analytics
           WHERE pid = {pid:FixedString(12)}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
             AND profileId IS NOT NULL
             AND profileId != ''
             ${profileTypeFilter}
@@ -5028,6 +5032,7 @@ export class AnalyticsService {
             1 AS isEvent
           FROM customEV
           WHERE pid = {pid:FixedString(12)}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
             AND profileId IS NOT NULL
             AND profileId != ''
             ${profileTypeFilter}
