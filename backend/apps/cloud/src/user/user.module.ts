@@ -14,6 +14,7 @@ import { ProjectModule } from '../project/project.module'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { DeleteFeedback } from './entities/delete-feedback.entity'
 import { CancellationFeedback } from './entities/cancellation-feedback.entity'
+import { BillingInvoice } from './entities/billing-invoice.entity'
 import { Message } from '../integrations/telegram/entities/message.entity'
 import { OrganisationModule } from '../organisation/organisation.module'
 
@@ -24,6 +25,7 @@ import { OrganisationModule } from '../organisation/organisation.module'
       RefreshToken,
       DeleteFeedback,
       CancellationFeedback,
+      BillingInvoice,
       Message,
     ]),
     ActionTokensModule,

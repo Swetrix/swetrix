@@ -36,6 +36,10 @@ import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { DeleteFeedback } from './entities/delete-feedback.entity'
 import { CancellationFeedback } from './entities/cancellation-feedback.entity'
+import {
+  BillingInvoice,
+  InvoiceStatus,
+} from './entities/billing-invoice.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
@@ -111,6 +115,8 @@ export class UserService {
     private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
     @InjectRepository(CancellationFeedback)
     private readonly cancellationFeedbackRepository: Repository<CancellationFeedback>,
+    @InjectRepository(BillingInvoice)
+    private readonly billingInvoiceRepository: Repository<BillingInvoice>,
     private readonly organisationService: OrganisationService,
   ) {}
 
@@ -729,5 +735,97 @@ export class UserService {
         userIds: userIds.map((u) => u.id),
       })
       .getMany()
+  }
+
+  async getInvoicesForUser(userId: string): Promise<BillingInvoice[]> {
+    return this.billingInvoiceRepository.find({
+      where: { userId },
+      order: { billedAt: 'DESC' },
+    })
+  }
+
+  async getInvoiceById(
+    id: string,
+    userId: string,
+  ): Promise<BillingInvoice | null> {
+    return this.billingInvoiceRepository.findOne({
+      where: { id, userId },
+    })
+  }
+
+  async createInvoice(data: Partial<BillingInvoice>): Promise<BillingInvoice> {
+    return this.billingInvoiceRepository.save(data)
+  }
+
+  async upsertInvoice(
+    data: Partial<BillingInvoice> & { providerPaymentId: string },
+  ): Promise<BillingInvoice> {
+    const existing = await this.billingInvoiceRepository.findOne({
+      where: { providerPaymentId: data.providerPaymentId },
+    })
+
+    if (existing) {
+      await this.billingInvoiceRepository.update(existing.id, data)
+      return { ...existing, ...data } as BillingInvoice
+    }
+
+    return this.billingInvoiceRepository.save(data)
+  }
+
+  async syncSubscriptionPayments(userId: string, subID: string) {
+    if (!PADDLE_VENDOR_ID || !PADDLE_API_KEY) {
+      return []
+    }
+
+    const url = 'https://vendors.paddle.com/api/2.0/subscription/payments'
+
+    try {
+      const result = await axios.post(url, {
+        vendor_id: Number(PADDLE_VENDOR_ID),
+        vendor_auth_code: PADDLE_API_KEY,
+        subscription_id: Number(subID),
+      })
+
+      if (!result.data?.success) {
+        console.error(
+          '[syncSubscriptionPayments] Paddle API returned success=false:',
+          result.data,
+        )
+        return []
+      }
+
+      const payments = result.data.response || []
+      const invoices: BillingInvoice[] = []
+
+      for (const payment of payments) {
+        if (!payment.is_paid) continue
+
+        const user = await this.findOne({ where: { id: userId } })
+
+        const invoice = await this.upsertInvoice({
+          userId,
+          provider: 'paddle',
+          providerPaymentId: String(payment.id),
+          providerSubscriptionId: subID,
+          amount: _toNumber(payment.amount),
+          currency: payment.currency,
+          status: InvoiceStatus.PAID,
+          planCode: user?.planCode || null,
+          billingFrequency: user?.billingFrequency || null,
+          receiptUrl: payment.receipt_url || null,
+          billedAt: new Date(payment.payout_date),
+        })
+
+        invoices.push(invoice)
+      }
+
+      return invoices
+    } catch (error) {
+      console.error(
+        '[syncSubscriptionPayments] Failed:',
+        error?.response?.data || error?.message,
+      )
+      return []
+    }
   }
 }
