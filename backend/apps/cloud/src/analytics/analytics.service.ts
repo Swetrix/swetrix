@@ -4940,6 +4940,7 @@ export class AnalyticsService {
     take = 30,
     skip = 0,
     profileType: 'all' | 'anonymous' | 'identified' = 'all',
+    customEVFilterApplied = false,
   ): Promise<object[]> {
     let profileTypeFilter = ''
     if (profileType === 'anonymous') {
@@ -4948,42 +4949,99 @@ export class AnalyticsService {
       profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_USER}%'`
     }
 
+    let allProfileDataCTE: string
+
+    if (customEVFilterApplied) {
+      allProfileDataCTE = `
+        all_profile_data AS (
+          SELECT
+            profileId,
+            psid,
+            cc,
+            os,
+            br,
+            dv,
+            created,
+            1 AS isPageview,
+            0 AS isEvent
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND profileId IS NOT NULL
+            AND profileId != ''
+            ${profileTypeFilter}
+            AND profileId IN (
+              SELECT DISTINCT profileId
+              FROM customEV
+              WHERE pid = {pid:FixedString(12)}
+                AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+                AND profileId IS NOT NULL
+                AND profileId != ''
+                ${profileTypeFilter}
+                ${filtersQuery}
+            )
+          UNION ALL
+          SELECT
+            profileId,
+            psid,
+            cc,
+            os,
+            br,
+            dv,
+            created,
+            0 AS isPageview,
+            1 AS isEvent
+          FROM customEV
+          WHERE pid = {pid:FixedString(12)}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND profileId IS NOT NULL
+            AND profileId != ''
+            ${profileTypeFilter}
+            ${filtersQuery}
+        )`
+    } else {
+      allProfileDataCTE = `
+        all_profile_data AS (
+          SELECT
+            profileId,
+            psid,
+            cc,
+            os,
+            br,
+            dv,
+            created,
+            1 AS isPageview,
+            0 AS isEvent
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND profileId IS NOT NULL
+            AND profileId != ''
+            ${profileTypeFilter}
+            ${filtersQuery}
+          UNION ALL
+          SELECT
+            profileId,
+            psid,
+            cc,
+            os,
+            br,
+            dv,
+            created,
+            0 AS isPageview,
+            1 AS isEvent
+          FROM customEV
+          WHERE pid = {pid:FixedString(12)}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND profileId IS NOT NULL
+            AND profileId != ''
+            ${profileTypeFilter}
+            ${filtersQuery}
+        )`
+    }
+
     const query = `
-      WITH all_profile_data AS (
-        SELECT
-          profileId,
-          psid,
-          cc,
-          os,
-          br,
-          dv,
-          created,
-          1 AS isPageview,
-          0 AS isEvent
-        FROM analytics
-        WHERE pid = {pid:FixedString(12)}
-          AND profileId IS NOT NULL
-          AND profileId != ''
-          ${profileTypeFilter}
-          ${filtersQuery}
-        UNION ALL
-        SELECT
-          profileId,
-          psid,
-          cc,
-          os,
-          br,
-          dv,
-          created,
-          0 AS isPageview,
-          1 AS isEvent
-        FROM customEV
-        WHERE pid = {pid:FixedString(12)}
-          AND profileId IS NOT NULL
-          AND profileId != ''
-          ${profileTypeFilter}
-          ${filtersQuery}
-      ),
+      WITH ${allProfileDataCTE},
       profile_aggregated AS (
         SELECT
           profileId,
@@ -5005,6 +5063,7 @@ export class AnalyticsService {
           count() AS errorsCount
         FROM errors
         WHERE pid = {pid:FixedString(12)}
+          AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
           AND profileId IS NOT NULL
           AND profileId != ''
           ${profileTypeFilter}
