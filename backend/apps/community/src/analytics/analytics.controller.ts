@@ -2053,13 +2053,16 @@ export class AnalyticsController {
       'GET /analytics/profiles',
     )
 
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
     let timeBucket
     let diff
 
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'analytics',
+        customEVFilterApplied ? 'customEV' : 'analytics',
       )
 
       timeBucket = res.timeBucket[0]
@@ -2067,9 +2070,6 @@ export class AnalyticsController {
     } else {
       timeBucket = getLowestPossibleTimeBucket(period, from, to)
     }
-
-    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(

@@ -5063,6 +5063,7 @@ export class AnalyticsService {
           count() AS errorsCount
         FROM errors
         WHERE pid = {pid:FixedString(12)}
+          AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
           AND profileId IS NOT NULL
           AND profileId != ''
           ${profileTypeFilter}
