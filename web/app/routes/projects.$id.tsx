@@ -349,6 +349,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     ? customEventsParam.split(',').filter(Boolean)
     : []
 
+  // Segment custom metrics (JSON-encoded ProjectViewCustomEvent[])
+  const metricsParam = url.searchParams.get('metrics') || undefined
+
   const analyticsParams = {
     timeBucket,
     period,
@@ -357,6 +360,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     to: to || undefined,
     timezone,
     password: password || undefined,
+    metrics: metricsParam,
   }
 
   // Initialize deferred data promises

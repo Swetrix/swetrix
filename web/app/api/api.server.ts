@@ -745,6 +745,7 @@ export interface AnalyticsParams {
   timezone: string
   mode?: 'periodical' | 'cumulative'
   password?: string
+  metrics?: string
 }
 
 function serializeFiltersForUrl(filters: AnalyticsFilter[]): string {
@@ -765,6 +766,7 @@ export async function getProjectDataServer(
   if (params.to) queryParams.append('to', params.to)
   if (params.timezone) queryParams.append('timezone', params.timezone)
   if (params.mode) queryParams.append('mode', params.mode)
+  if (params.metrics) queryParams.append('metrics', params.metrics)
 
   const headers: Record<string, string> = {}
   if (params.password) {
