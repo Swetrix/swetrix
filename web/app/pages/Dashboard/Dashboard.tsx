@@ -10,7 +10,14 @@ import {
   XIcon,
   FolderPlusIcon,
 } from '@phosphor-icons/react'
-import React, { useState, useEffect, useRef, useMemo, memo } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  memo,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   useLoaderData,
@@ -275,9 +282,9 @@ const Dashboard = () => {
     setNewProjectBeenSubmitted(false)
   }
 
-  const refetchProjects = () => {
+  const refetchProjects = useCallback(() => {
     revalidator.revalidate()
-  }
+  }, [revalidator])
 
   // Update URL when debounced search changes
   useEffect(() => {

@@ -9,7 +9,7 @@ import {
   CaretUpIcon,
   CaretDownIcon,
 } from '@phosphor-icons/react'
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useFetcher, useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -175,11 +175,16 @@ export const ProjectCard = ({
     setLocalIsPinned(isPinned)
   }, [isPinned])
 
+  const processedFetcherDataRef = useRef<DashboardActionData | undefined>(
+    undefined,
+  )
+
   // Handle fetcher responses
   useEffect(() => {
-    if (!fetcher.data) return
+    if (!fetcher.data || fetcher.data === processedFetcherDataRef.current)
+      return
+    processedFetcherDataRef.current = fetcher.data
 
-    // Guard: only process responses for this specific project card
     const submittedProjectId = fetcher.formData?.get('projectId')
     const submittedShareId = fetcher.formData?.get('shareId')
     const isForThisCard =
