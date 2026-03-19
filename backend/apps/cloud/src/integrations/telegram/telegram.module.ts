@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common'
+import { Module, OnModuleInit, Logger, Optional } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { TelegrafModule } from 'nestjs-telegraf'
-import { session } from 'telegraf'
+import { TelegrafModule, InjectBot } from 'nestjs-telegraf'
+import { session, Telegraf } from 'telegraf'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { TelegramUpdate } from './telegram.update'
 import { StartScene } from './scene/start.scene'
@@ -14,19 +14,20 @@ import { UserModule } from '../../user/user.module'
 import { ProjectModule } from '../../project/project.module'
 import { AnalyticsModule } from '../../analytics/analytics.module'
 import { isPrimaryNode, isPrimaryClusterNode } from '../../common/utils'
+import { Context } from './interface/context.interface'
 
 const shouldBotBeLaunched = isPrimaryNode() && isPrimaryClusterNode()
+const hasTelegramToken = !!process.env.TELEGRAM_BOT_TOKEN
 
 @Module({
   imports: [
     shouldBotBeLaunched &&
+      hasTelegramToken &&
       TelegrafModule.forRootAsync({
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
           token: configService.get<string>('TELEGRAM_BOT_TOKEN'),
-          launchOptions: {
-            dropPendingUpdates: false,
-          },
+          launchOptions: false,
           middlewares: [session()],
         }),
       }),
@@ -36,13 +37,36 @@ const shouldBotBeLaunched = isPrimaryNode() && isPrimaryClusterNode()
     AnalyticsModule,
   ].filter((m) => !!m),
   providers: [
-    TelegramUpdate,
-    StartScene,
-    ProjectsScene,
-    SettingsScene,
-    UnlinkAccountScene,
+    ...(shouldBotBeLaunched && hasTelegramToken
+      ? [
+          TelegramUpdate,
+          StartScene,
+          ProjectsScene,
+          SettingsScene,
+          UnlinkAccountScene,
+        ]
+      : []),
     TelegramService,
   ],
   exports: [TelegramService],
 })
-export class TelegramModule {}
+export class TelegramModule implements OnModuleInit {
+  private readonly logger = new Logger(TelegramModule.name)
+
+  constructor(
+    @Optional() @InjectBot() private readonly bot: Telegraf<Context>,
+  ) {}
+
+  async onModuleInit() {
+    if (!this.bot) return
+
+    try {
+      await this.bot.launch({ dropPendingUpdates: false })
+      this.logger.log('Telegram bot launched successfully')
+    } catch (reason) {
+      this.logger.warn(
+        `Telegram bot failed to launch: ${reason.message}. Bot features will be unavailable.`,
+      )
+    }
+  }
+}
