@@ -234,13 +234,10 @@ export class ProjectService {
   }
 
   // Instead of passing relations to the findOne method every time, this method returns a project
-  // with necessary relations needed for the allowedToView and allowedToManage methods
-  async getFullProject(
-    pid: string,
-    userId?: string,
-    additionalRelations: string[] = [],
-  ) {
-    const query: FindOneOptions<Project> = {
+  // with necessary relations needed for the allowedToView and allowedToManage methods.
+  // Authorisation should be handled separately via allowedToView/allowedToManage.
+  async getFullProject(pid: string, additionalRelations: string[] = []) {
+    return this.projectsRepository.findOne({
       where: { id: pid },
       relations: [
         'share',
@@ -278,16 +275,7 @@ export class ProjectService {
           },
         },
       },
-    }
-
-    if (userId) {
-      query.where = {
-        id: pid,
-        admin: { id: userId },
-      } as FindOptionsWhere<Project>
-    }
-
-    return this.projectsRepository.findOne(query)
+    })
   }
 
   async paginate(
