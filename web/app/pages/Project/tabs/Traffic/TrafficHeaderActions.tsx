@@ -18,11 +18,7 @@ import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 
 import { getFiltersUrlParams } from '../../View/components/SearchFilters'
-import {
-  Filter,
-  ProjectView,
-  ProjectViewCustomEvent,
-} from '../../View/interfaces/traffic'
+import { Filter, ProjectView } from '../../View/interfaces/traffic'
 
 interface ExportType {
   label: string
@@ -36,7 +32,6 @@ interface TrafficHeaderActionsProps {
   loadProjectViews: (forced?: boolean) => void
   setProjectViewToUpdate: (view: ProjectView | undefined) => void
   setIsAddAViewOpened: (value: boolean) => void
-  onCustomMetric: (metrics: ProjectViewCustomEvent[]) => void
   filters: Filter[]
   allowedToManage: boolean
   dataLoading: boolean
@@ -52,7 +47,6 @@ const TrafficHeaderActions = ({
   loadProjectViews,
   setProjectViewToUpdate,
   setIsAddAViewOpened,
-  onCustomMetric,
   filters,
   allowedToManage,
   dataLoading,
@@ -182,18 +176,19 @@ const TrafficHeaderActions = ({
             return
           }
 
-          if (item.filters && !_isEmpty(item.filters)) {
-            const newUrlParams = getFiltersUrlParams(
-              filters,
-              item.filters,
-              true,
-              searchParams,
-            )
-            setSearchParams(newUrlParams)
-          }
+          const hasFilters = item.filters && !_isEmpty(item.filters)
+          const hasMetrics = item.customEvents && !_isEmpty(item.customEvents)
 
-          if (item.customEvents && !_isEmpty(item.customEvents)) {
-            onCustomMetric(item.customEvents)
+          if (hasFilters || hasMetrics) {
+            let newParams = hasFilters
+              ? getFiltersUrlParams(filters, item.filters!, true, searchParams)
+              : new URLSearchParams(searchParams)
+
+            if (hasMetrics) {
+              newParams.set('metrics', JSON.stringify(item.customEvents))
+            }
+
+            setSearchParams(newParams)
           }
         }}
         chevron='mini'

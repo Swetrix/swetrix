@@ -342,9 +342,15 @@ const ViewProjectContent = () => {
     [CHART_METRICS_MAPPING.customEvents]: false,
     [CHART_METRICS_MAPPING.revenue]: false,
   } as Record<keyof typeof CHART_METRICS_MAPPING, boolean>)
-  const [customMetrics, setCustomMetrics] = useState<ProjectViewCustomEvent[]>(
-    [],
-  )
+  const customMetrics = useMemo<ProjectViewCustomEvent[]>(() => {
+    const raw = searchParams.get('metrics')
+    if (!raw) return []
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return []
+    }
+  }, [searchParams])
   const filters = useMemo<Filter[]>(() => {
     return parseFilters(searchParams)
   }, [searchParams])
@@ -810,34 +816,41 @@ const ViewProjectContent = () => {
     setActivePeriodCompare(periodPairsCompare[0].period)
   }, [periodPairsCompare])
 
-  const onCustomMetric = (metrics: ProjectViewCustomEvent[]) => {
+  const onRemoveCustomMetric = useCallback(
+    (metricId: ProjectViewCustomEvent['id']) => {
+      if (activeTab !== PROJECT_TABS.traffic) {
+        return
+      }
+
+      const newMetrics = _filter(
+        customMetrics,
+        (metric) => metric.id !== metricId,
+      )
+
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        if (newMetrics.length > 0) {
+          next.set('metrics', JSON.stringify(newMetrics))
+        } else {
+          next.delete('metrics')
+        }
+        return next
+      })
+    },
+    [activeTab, customMetrics, setSearchParams],
+  )
+
+  const resetCustomMetrics = useCallback(() => {
     if (activeTab !== PROJECT_TABS.traffic) {
       return
     }
 
-    setCustomMetrics(metrics)
-  }
-
-  const onRemoveCustomMetric = (metricId: ProjectViewCustomEvent['id']) => {
-    if (activeTab !== PROJECT_TABS.traffic) {
-      return
-    }
-
-    const newMetrics = _filter(
-      customMetrics,
-      (metric) => metric.id !== metricId,
-    )
-
-    setCustomMetrics(newMetrics)
-  }
-
-  const resetCustomMetrics = () => {
-    if (activeTab !== PROJECT_TABS.traffic) {
-      return
-    }
-
-    setCustomMetrics([])
-  }
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('metrics')
+      return next
+    })
+  }, [activeTab, setSearchParams])
 
   const setDashboardTab = useCallback(
     (key: keyof typeof PROJECT_TABS) => {
@@ -1515,7 +1528,6 @@ const ViewProjectContent = () => {
                                 loadProjectViews={loadProjectViews}
                                 setProjectViewToUpdate={setProjectViewToUpdate}
                                 setIsAddAViewOpened={setIsAddAViewOpened}
-                                onCustomMetric={onCustomMetric}
                               />
                             ) : null}
                             {activeTab === PROJECT_TABS.performance ? (

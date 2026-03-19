@@ -132,7 +132,6 @@ interface TrafficViewProps {
   loadProjectViews: (forced?: boolean) => void
   setProjectViewToUpdate: (view: ProjectView | undefined) => void
   setIsAddAViewOpened: (value: boolean) => void
-  onCustomMetric: (metrics: ProjectViewCustomEvent[]) => void
 }
 
 interface DeferredTrafficData {
@@ -252,7 +251,6 @@ const TrafficViewInner = ({
   loadProjectViews,
   setProjectViewToUpdate,
   setIsAddAViewOpened,
-  onCustomMetric,
   deferredData,
 }: TrafficViewInnerProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
@@ -902,7 +900,6 @@ const TrafficViewInner = ({
       loadProjectViews={loadProjectViews}
       setProjectViewToUpdate={setProjectViewToUpdate}
       setIsAddAViewOpened={setIsAddAViewOpened}
-      onCustomMetric={onCustomMetric}
       filters={filters}
       allowedToManage={allowedToManage}
       dataLoading={dataLoading}
@@ -967,6 +964,12 @@ const TrafficViewInner = ({
         {!isPanelsDataEmpty ? (
           <Filters className='mb-3' tnMapping={tnMapping} />
         ) : null}
+        <CustomMetrics
+          className='mb-3'
+          metrics={customMetrics}
+          onRemoveMetric={(metricId) => onRemoveCustomMetric(metricId)}
+          resetMetrics={resetCustomMetrics}
+        />
         <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <div className='mb-3 flex w-full items-center justify-end gap-1 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
             <Dropdown
@@ -1114,11 +1117,6 @@ const TrafficViewInner = ({
             </div>
           ) : null}
         </div>
-        <CustomMetrics
-          metrics={customMetrics}
-          onRemoveMetric={(metricId) => onRemoveCustomMetric(metricId)}
-          resetMetrics={resetCustomMetrics}
-        />
         <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
           {!_isEmpty(panelsData.types)
             ? _map(TRAFFIC_PANELS_ORDER, (type: string) => {

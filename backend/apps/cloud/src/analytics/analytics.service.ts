@@ -1945,12 +1945,17 @@ export class AnalyticsService {
           // For 'all' period, we use month time bucket for chart
           if (includeChart) {
             const allTimeChartBucket = TimeBucketType.MONTH
+            const { diff: allDiff } = await this.calculateTimeBucketForAllTime(
+              pid,
+              'analytics',
+            )
             const { groupFrom: allFrom, groupTo: allTo } = this.getGroupFromTo(
               undefined,
               undefined,
               allTimeChartBucket,
               'all',
               safeTimezone,
+              allDiff,
             )
             const chartData = await this.getSimplifiedChartData(
               pid,
@@ -6280,27 +6285,28 @@ export class AnalyticsService {
     let periodFormatted
     let periodSubtracted
 
-    if (period !== 'all') {
-      if (from && to) {
-        // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
-        const diff = dayjs(to).diff(dayjs(from), 'days') || 1
+    if (period === 'all') {
+      now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+      periodFormatted = '1970-01-01 00:00:00'
+      periodSubtracted = '1970-01-01 00:00:00'
+    } else if (from && to) {
+      const diff = dayjs(to).diff(dayjs(from), 'days') || 1
 
-        now = to
-        periodFormatted = from
-        periodSubtracted = dayjs(from)
-          .subtract(diff, 'days')
-          .format('YYYY-MM-DD HH:mm:ss')
-      } else {
-        const amountToSubtract = parseInt(period, 10)
-        const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
+      now = to
+      periodFormatted = from
+      periodSubtracted = dayjs(from)
+        .subtract(diff, 'days')
+        .format('YYYY-MM-DD HH:mm:ss')
+    } else {
+      const amountToSubtract = parseInt(period, 10)
+      const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
 
-        now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
-        periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
-        periodSubtracted = periodRaw
-          .subtract(amountToSubtract, unit)
-          .format('YYYY-MM-DD HH:mm:ss')
-      }
+      now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+      const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
+      periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+      periodSubtracted = periodRaw
+        .subtract(amountToSubtract, unit)
+        .format('YYYY-MM-DD HH:mm:ss')
     }
 
     const params = {
