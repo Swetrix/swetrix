@@ -251,7 +251,6 @@ const generateParamsQuery = (
   col: string,
   subQuery: string,
   customEVFilterApplied: boolean,
-  isPageInclusiveFilterSet: boolean,
   type: 'traffic' | 'performance' | 'captcha' | 'errors',
   measure?: PerfMeasure,
 ): string => {
@@ -295,14 +294,6 @@ const generateParamsQuery = (
   }
 
   if (customEVFilterApplied) {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
-  }
-
-  if (col === 'pg' || col === 'host') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
-  }
-
-  if (isPageInclusiveFilterSet) {
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
@@ -2591,18 +2582,6 @@ export class AnalyticsService {
     type: 'traffic' | 'performance' | 'captcha' | 'errors',
     measure?: PerfMeasure,
   ) {
-    // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
-    const isPageInclusiveFilterSet = ['captcha', 'performance'].includes(type)
-      ? false
-      : !_isEmpty(
-          _find(
-            parsedFilters,
-            (filter) =>
-              (filter.column === 'pg' || filter.column === 'host') &&
-              !filter.isExclusive,
-          ),
-        )
-
     let columns = TRAFFIC_COLUMNS
 
     if (type === 'captcha') {
@@ -2623,7 +2602,6 @@ export class AnalyticsService {
         col,
         subQuery,
         customEVFilterApplied,
-        isPageInclusiveFilterSet,
         type,
         measure,
       )
