@@ -1731,22 +1731,21 @@ const getSettingsFunnels = (
           : ''
 
         const title = `
-          <p class='font-semibold flex space-x-2 items-center tracking-tight'>
+          <p class='font-semibold flex items-center gap-1 tracking-tight'>
             ${prevStepHtml}
-            <svg fill='none' viewBox='0 0 24 24' stroke-width='1.5' class='w-4 h-4'>
-              <path class='stroke-gray-400 dark:stroke-gray-200' stroke-linecap='round' stroke-linejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
-            </svg>
+            <span class='opacity-70'>→</span>
             <span>${stepTitle}</span>
           </p>
         `
-
         const events = `
           <tr class='tracking-tight'>
             <td class='pr-4'>
-              <div class='w-2.5 h-2.5 rounded-xs mr-1 float-left mt-0.5' style=background-color:${color('events')}></div>
-              <span class='font-semibold'>
-                ${_startsWith(step.value, '/') ? t('project.visitors') : t('project.events')}
-              </span>
+              <div class='flex items-center gap-1.5'>
+                <div class='w-2.5 h-2.5 rounded-xs shrink-0' style=background-color:${color('events')}></div>
+                <span class='font-semibold'>
+                  ${_startsWith(step.value, '/') ? t('project.visitors') : t('project.events')}
+                </span>
+              </div>
             </td>
             <td class='pr-2 font-semibold text-right font-mono'>
               ${step.events}
@@ -1760,12 +1759,12 @@ const getSettingsFunnels = (
         const dropoff = `
           <tr class='tracking-tight'>
             <td class='pr-4'>
-              <div class='w-2.5 h-2.5 rounded-xs mr-1 float-left mt-0.5' style="background-color:${color(
-                'dropoff',
-              )}"}></div>
-              <span class='font-semibold'>
-                ${index === 0 ? t('project.neverEnteredTheFunnel') : t('project.dropoff')}
-              </span>
+              <div class='flex items-center gap-1.5'>
+                <div class='w-2.5 h-2.5 rounded-xs shrink-0' style="background-color:${color('dropoff')}"></div>
+                <span class='font-semibold'>
+                  ${index === 0 ? t('project.neverEnteredTheFunnel') : t('project.dropoff')}
+                </span>
+              </div>
             </td>
             <td class='pr-2 font-semibold text-right font-mono'>
               ${index === 0 ? totalPageviews - step.events : step.dropoff}

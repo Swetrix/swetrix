@@ -237,21 +237,20 @@ const getErrorTrendsChartSettings = (
         if (!item || _isEmpty(item) || !item[0]) {
           return ''
         }
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-3 py-1'>
-          <li class='font-semibold'>${
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-md z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
           }</li>
-          <hr class='border-gray-200 dark:border-slate-800' />
           ${_map(item, (el: { id: string; name: string; value: string }) => {
             return `
-            <li class='flex justify-between'>
-              <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
-                <span>${el.name}</span>
+            <li class='flex justify-between items-center py-px leading-snug'>
+              <div class='flex items-center min-w-0 mr-4'>
+                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0' style=background-color:${color(el.id)}></div>
+                <span class="truncate">${el.name}</span>
               </div>
-              <span class='pl-4'>${el.value}</span>
+              <span class='font-mono whitespace-nowrap'>${el.value}</span>
             </li>
             `
           }).join('')}</ul>`
