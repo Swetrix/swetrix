@@ -1628,7 +1628,7 @@ export class AnalyticsService {
             const allTimeChartBucket = TimeBucketType.MONTH
             const { diff: allDiff } = await this.calculateTimeBucketForAllTime(
               pid,
-              'analytics',
+              customEVFilterApplied ? 'customEV' : 'analytics',
             )
             const { groupFrom: allFrom, groupTo: allTo } = this.getGroupFromTo(
               undefined,
