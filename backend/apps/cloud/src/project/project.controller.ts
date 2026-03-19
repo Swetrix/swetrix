@@ -244,7 +244,7 @@ export class ProjectController {
       throw new BadRequestException('The provided project ID is incorrect')
     }
 
-    const project = await this.projectService.getFullProject(projectId, userId)
+    const project = await this.projectService.getFullProject(projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -278,7 +278,7 @@ export class ProjectController {
       throw new BadRequestException('The provided project ID is incorrect')
     }
 
-    const project = await this.projectService.getFullProject(projectId, userId)
+    const project = await this.projectService.getFullProject(projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -437,16 +437,21 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.getFullProject(
-      funnelDTO.pid,
-      userId,
-    )
+    const project = await this.projectService.getFullProject(funnelDTO.pid, [
+      'funnels',
+    ])
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
 
     this.projectService.allowedToManage(project, userId)
+
+    if (_size(project.funnels) >= MAX_FUNNELS) {
+      throw new ForbiddenException(
+        `You cannot create more than ${MAX_FUNNELS}. Please contact us to increase the limit.`,
+      )
+    }
 
     await trackCustom(ip, headers['user-agent'], {
       ev: 'FUNNEL_CREATED',
@@ -486,23 +491,13 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.getFullProject(
-      funnelDTO.pid,
-      userId,
-      ['funnels'],
-    )
+    const project = await this.projectService.getFullProject(funnelDTO.pid)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
 
     this.projectService.allowedToManage(project, userId)
-
-    if (_size(project.funnels) >= MAX_FUNNELS) {
-      throw new ForbiddenException(
-        `You cannot create more than ${MAX_FUNNELS}. Please contact us to increase the limit.`,
-      )
-    }
 
     const oldFunnel = await this.projectService.getFunnel(
       funnelDTO.id,
@@ -538,7 +533,7 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await this.projectService.getFullProject(pid, userId)
+    const project = await this.projectService.getFullProject(pid)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -576,7 +571,7 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await this.projectService.getFullProject(pid, userId)
+    const project = await this.projectService.getFullProject(pid)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -612,10 +607,7 @@ export class ProjectController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.getFullProject(
-      annotationDTO.pid,
-      userId,
-    )
+    const project = await this.projectService.getFullProject(annotationDTO.pid)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -654,10 +646,7 @@ export class ProjectController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.getFullProject(
-      annotationDTO.pid,
-      userId,
-    )
+    const project = await this.projectService.getFullProject(annotationDTO.pid)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -691,7 +680,7 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await this.projectService.getFullProject(pid, userId)
+    const project = await this.projectService.getFullProject(pid)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -1878,9 +1867,7 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.getFullProject(id, null, [
-      'funnels',
-    ])
+    const project = await this.projectService.getFullProject(id, ['funnels'])
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
