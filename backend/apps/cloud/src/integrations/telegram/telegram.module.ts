@@ -60,13 +60,10 @@ export class TelegramModule implements OnModuleInit {
   async onModuleInit() {
     if (!this.bot) return
 
-    try {
-      await this.bot.launch({ dropPendingUpdates: false })
-      this.logger.log('Telegram bot launched successfully')
-    } catch (reason) {
+    this.bot.launch({ dropPendingUpdates: false }).catch((reason) => {
       this.logger.warn(
         `Telegram bot failed to launch: ${reason.message}. Bot features will be unavailable.`,
       )
-    }
+    })
   }
 }
