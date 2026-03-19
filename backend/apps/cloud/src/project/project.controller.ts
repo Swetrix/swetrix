@@ -437,13 +437,21 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.getFullProject(funnelDTO.pid)
+    const project = await this.projectService.getFullProject(funnelDTO.pid, [
+      'funnels',
+    ])
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
 
     this.projectService.allowedToManage(project, userId)
+
+    if (_size(project.funnels) >= MAX_FUNNELS) {
+      throw new ForbiddenException(
+        `You cannot create more than ${MAX_FUNNELS}. Please contact us to increase the limit.`,
+      )
+    }
 
     await trackCustom(ip, headers['user-agent'], {
       ev: 'FUNNEL_CREATED',
@@ -483,21 +491,13 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.getFullProject(funnelDTO.pid, [
-      'funnels',
-    ])
+    const project = await this.projectService.getFullProject(funnelDTO.pid)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
 
     this.projectService.allowedToManage(project, userId)
-
-    if (_size(project.funnels) >= MAX_FUNNELS) {
-      throw new ForbiddenException(
-        `You cannot create more than ${MAX_FUNNELS}. Please contact us to increase the limit.`,
-      )
-    }
 
     const oldFunnel = await this.projectService.getFunnel(
       funnelDTO.id,
