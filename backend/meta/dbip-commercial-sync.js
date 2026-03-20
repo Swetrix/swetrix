@@ -55,7 +55,7 @@ function followableGet(url, options = {}, maxRedirects = 5) {
 }
 
 async function fetchDbipAccountInfo(apiKey) {
-  const metadataUrl = `https://db-ip.com/account/${apiKey}/db/ip-to-location/`
+  const metadataUrl = `https://db-ip.com/account/${apiKey}/db/ip-to-location-isp/`
   const response = await followableGet(metadataUrl, {
     headers: { Accept: 'application/json' },
   })

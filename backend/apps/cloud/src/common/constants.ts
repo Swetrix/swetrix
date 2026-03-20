@@ -83,6 +83,10 @@ const TRAFFIC_COLUMNS = [
   'cc',
   'rg',
   'ct',
+  'isp',
+  'og',
+  'ut',
+  'ctp',
   'host',
   'pg',
   'lc',
@@ -103,7 +107,20 @@ const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev', 'entryPage', 'exitPage']
 const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
-const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'host', 'pg', 'dv', 'br', 'brv']
+const PERFORMANCE_COLUMNS = [
+  'cc',
+  'rg',
+  'ct',
+  'isp',
+  'og',
+  'ut',
+  'ctp',
+  'host',
+  'pg',
+  'dv',
+  'br',
+  'brv',
+]
 const ERROR_COLUMNS = [
   'host',
   'pg',
@@ -116,6 +133,10 @@ const ERROR_COLUMNS = [
   'cc',
   'rg',
   'ct',
+  'isp',
+  'og',
+  'ut',
+  'ctp',
 ]
 
 const sentryIgnoreErrors: (string | RegExp)[] = [

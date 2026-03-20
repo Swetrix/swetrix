@@ -1576,7 +1576,11 @@
       "entryPage": "Entry page",
       "exitPage": "Exit page",
       "keywords": "Keywords",
-      "keyword": "Keyword"
+      "keyword": "Keyword",
+      "isp": "ISP",
+      "og": "Organisation",
+      "ut": "Usage type",
+      "ctp": "Connection type"
     },
     "connectGsc": "Connect Google Search Console to see keywords for this project.",
     "gscConnectionRequired": "Google Search Console connection is required to view keywords for this project. Ask the project administrator to connect it first.",
