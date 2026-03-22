@@ -817,7 +817,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
 
             {/* Column 4: About / Logo */}
             <div>
-              <SwetrixLogo theme='dark' lazy />
+              <SwetrixLogo theme='dark' />
 
               <p className='mt-4 max-w-72 text-sm text-gray-200'>
                 {isSelfhosted ? (
