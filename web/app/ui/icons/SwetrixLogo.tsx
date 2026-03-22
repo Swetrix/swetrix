@@ -28,19 +28,18 @@ const SwetrixLogo = ({
       <svg
         className={cx(
           '-translate-y-px',
-          theme === 'dark' ? 'fill-white' : 'fill-slate-900',
+          theme === 'dark' ? 'text-white' : 'text-slate-900',
         )}
         height='28'
         width='24'
         viewBox='0 0 24 28'
-        xmlns='http://www.w3.org/2000/svg'
+        fill='currentColor'
       >
         <circle cx='4' cy='22' r='3' />
         <circle cx='12' cy='22' r='3' />
         <circle cx='12' cy='14' r='3' />
-        <circle cx='20' cy='22' r='3' />
         <circle cx='20' cy='14' r='3' />
-        <circle cx='20' cy='6' r='3' />
+        <circle cx='12' cy='6' r='3' />
       </svg>
       <div className='flex flex-col'>
         <span
