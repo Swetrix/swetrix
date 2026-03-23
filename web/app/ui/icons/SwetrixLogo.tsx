@@ -6,15 +6,10 @@ import { useTheme } from '~/providers/ThemeProvider'
 
 interface SwetrixLogoProps {
   className?: string
-  lazy?: boolean
   theme?: ThemeType
 }
 
-const SwetrixLogo = ({
-  className,
-  lazy,
-  theme: themeOverride,
-}: SwetrixLogoProps) => {
+const SwetrixLogo = ({ className, theme: themeOverride }: SwetrixLogoProps) => {
   const { theme: currentTheme } = useTheme()
   const { t } = useTranslation()
 
@@ -27,16 +22,20 @@ const SwetrixLogo = ({
         className,
       )}
     >
-      <img
-        className='-translate-y-[1px]'
-        height='28px'
-        width='24px'
-        src={
-          theme === 'dark' ? '/assets/logo/white.png' : '/assets/logo/blue.png'
-        }
-        alt=''
-        loading={lazy ? 'lazy' : 'eager'}
-      />
+      <svg
+        className={cx(theme === 'dark' ? 'text-white' : 'text-slate-900')}
+        height='28'
+        width='24'
+        viewBox='0 0 24 28'
+        aria-hidden="true"
+        fill='currentColor'
+      >
+        <circle cx='4' cy='22' r='3' />
+        <circle cx='12' cy='22' r='3' />
+        <circle cx='12' cy='14' r='3' />
+        <circle cx='20' cy='14' r='3' />
+        <circle cx='12' cy='6' r='3' />
+      </svg>
       <div className='flex flex-col'>
         <span
           className={cx(
