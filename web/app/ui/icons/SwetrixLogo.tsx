@@ -23,9 +23,7 @@ const SwetrixLogo = ({ className, theme: themeOverride }: SwetrixLogoProps) => {
       )}
     >
       <svg
-        className={cx(
-          theme === 'dark' ? 'text-white' : 'text-slate-900',
-        )}
+        className={cx(theme === 'dark' ? 'text-white' : 'text-slate-900')}
         height='28'
         width='24'
         viewBox='0 0 24 28'
