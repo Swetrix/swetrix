@@ -9,10 +9,7 @@ interface SwetrixLogoProps {
   theme?: ThemeType
 }
 
-const SwetrixLogo = ({
-  className,
-  theme: themeOverride,
-}: SwetrixLogoProps) => {
+const SwetrixLogo = ({ className, theme: themeOverride }: SwetrixLogoProps) => {
   const { theme: currentTheme } = useTheme()
   const { t } = useTranslation()
 
