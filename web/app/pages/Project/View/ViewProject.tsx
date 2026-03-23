@@ -44,7 +44,6 @@ import {
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
 import useSize from '~/hooks/useSize'
@@ -1496,7 +1495,6 @@ const ViewProjectContent = () => {
                         )}
                         ref={dashboardRef}
                       >
-                        <EventsRunningOutBanner />
                         {!isMapFullscreen ? (
                           <div className='pointer-events-auto'>
                             <MobileSidebarTrigger

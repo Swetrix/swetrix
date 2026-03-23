@@ -27,7 +27,7 @@ const SwetrixLogo = ({ className, theme: themeOverride }: SwetrixLogoProps) => {
         height='28'
         width='24'
         viewBox='0 0 24 28'
-        aria-hidden="true"
+        aria-hidden='true'
         fill='currentColor'
       >
         <circle cx='4' cy='22' r='3' />
