@@ -34,6 +34,7 @@ import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { FeaturesGrid } from '~/components/marketing/FeaturesGrid'
+import { Text } from '~/ui/Text'
 
 export const meta: MetaFunction = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -72,9 +73,14 @@ interface FeedbackHighlightProps {
 }
 
 const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
-  <span className='bg-yellow-100/80 font-medium dark:bg-yellow-900/60'>
-    &nbsp;{children}&nbsp;
-  </span>
+  <Text
+    as='span'
+    colour='primary'
+    size='lg'
+    className='rounded-sm bg-indigo-600/20 px-0.5 dark:bg-indigo-400/30'
+  >
+    {children}
+  </Text>
 )
 
 export const FeedbackDual = () => {
@@ -98,16 +104,16 @@ export const FeedbackDual = () => {
               loading='lazy'
             />
             <figure className='mt-10 flex flex-auto flex-col justify-between'>
-              <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
-                <p>
-                  "Swetrix has been a
+              <blockquote>
+                <Text as='p' size='lg' colour='secondary'>
+                  "Swetrix has been a{' '}
                   <FeedbackHighlight>
                     game changer for our analytics.
                   </FeedbackHighlight>{' '}
                   They've always been on top of feature requests and bug reports
                   and have been friendly every step of the way. I can't
                   recommend them enough."
-                </p>
+                </Text>
               </blockquote>
               <figcaption className='mt-10 flex items-center gap-x-6'>
                 <img
@@ -118,13 +124,13 @@ export const FeedbackDual = () => {
                   height={56}
                   loading='lazy'
                 />
-                <div className='text-base'>
-                  <div className='font-semibold text-gray-900 dark:text-gray-100'>
+                <div className='space-y-1'>
+                  <Text as='p' size='base' weight='medium' colour='primary'>
                     Alex Bowles
-                  </div>
-                  <div className='mt-1 text-gray-500 dark:text-gray-400'>
+                  </Text>
+                  <Text as='p' size='base' colour='muted'>
                     Co-founder of Casterlabs
-                  </div>
+                  </Text>
                 </div>
               </figcaption>
             </figure>
@@ -143,17 +149,17 @@ export const FeedbackDual = () => {
               loading='lazy'
             />
             <figure className='mt-10 flex flex-auto flex-col justify-between'>
-              <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
-                <p>
+              <blockquote>
+                <Text as='p' size='lg' colour='secondary'>
                   "I was confused by Google Analytics so much that I was getting
-                  zero actionable insights. Swetrix changed everything -
+                  zero actionable insights. Swetrix changed everything -{' '}
                   <FeedbackHighlight>
                     clean dashboard, instant understanding of user behavior, and
                     features that actually matter.
-                  </FeedbackHighlight>
+                  </FeedbackHighlight>{' '}
                   Finally, analytics that help me make better decisions instead
                   of irritating me."
-                </p>
+                </Text>
               </blockquote>
               <figcaption className='mt-10 flex items-center gap-x-6'>
                 <img
@@ -164,13 +170,13 @@ export const FeedbackDual = () => {
                   height={56}
                   loading='lazy'
                 />
-                <div className='text-base'>
-                  <div className='font-semibold text-gray-900 dark:text-gray-100'>
+                <div className='space-y-1'>
+                  <Text as='p' size='base' weight='medium' colour='primary'>
                     Alper Alkan
-                  </div>
-                  <div className='mt-1 text-gray-500 dark:text-gray-400'>
+                  </Text>
+                  <Text as='p' size='base' colour='muted'>
                     Co-founder of Phalcode
-                  </div>
+                  </Text>
                 </div>
               </figcaption>
             </figure>
@@ -339,8 +345,6 @@ const Hero = () => {
       <div className='relative mx-2 overflow-hidden rounded-4xl'>
         <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
           <div className='absolute inset-0 rounded-4xl bg-linear-115 from-slate-100 from-28% via-purple-500 via-70% to-indigo-600 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-950 dark:opacity-45 dark:ring-white/10' />
-          <div className='absolute top-28 -left-24 size-[28rem] rounded-full bg-[radial-gradient(closest-side,#6366f1,transparent)] opacity-25 blur-3xl dark:opacity-15' />
-          <div className='absolute -right-16 bottom-[-3rem] size-[26rem] rounded-full bg-[radial-gradient(closest-side,#eef2ff,transparent)] opacity-30 blur-3xl dark:opacity-15' />
         </div>
         <Header transparent />
         <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>

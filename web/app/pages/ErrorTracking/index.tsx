@@ -23,7 +23,7 @@ const ErrorTracking = () => {
               aria-hidden
               className='pointer-events-none absolute inset-0 -z-10'
             >
-              <div className='absolute inset-0 rounded-4xl bg-linear-115 from-rose-200 from-28% via-red-400 via-75% to-red-700 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-950 dark:opacity-45 dark:ring-white/10' />
+              <div className='absolute inset-0 rounded-4xl bg-linear-115 from-slate-100 from-28% via-red-400 via-75% to-red-700 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-950 dark:opacity-45 dark:ring-white/10' />
             </div>
             <Header transparent />
             <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
