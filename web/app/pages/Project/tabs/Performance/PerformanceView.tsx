@@ -259,10 +259,12 @@ const PerformanceViewInner = ({
     location: 'cc' | 'rg' | 'ct' | 'map'
     page: 'pg' | 'host'
     device: 'br' | 'os' | 'dv'
+    network: 'isp' | 'og' | 'ut' | 'ctp'
   }>({
     location: 'cc',
     page: 'pg',
     device: 'br',
+    network: 'isp',
   })
 
   const chartMetrics = useMemo(
@@ -635,6 +637,48 @@ const PerformanceViewInner = ({
                       getVersionFilterLink={(parent, version) =>
                         getVersionFilterLink(parent, version, 'br')
                       }
+                      // @ts-expect-error
+                      valueMapper={(value) =>
+                        getStringFromTime(getTimeFromSeconds(value), true)
+                      }
+                      valuesHeaderName={t('project.loadTime')}
+                      highlightColour='orange'
+                    />
+                  )
+                }
+
+                if (type === 'network') {
+                  const networkTabs = [
+                    { id: 'isp', label: t('project.mapping.isp') },
+                    { id: 'og', label: t('project.mapping.og') },
+                    { id: 'ut', label: t('project.mapping.ut') },
+                    { id: 'ctp', label: t('project.mapping.ctp') },
+                  ]
+
+                  return (
+                    <Panel
+                      key={activeTabs.network}
+                      icon={panelIconMapping.isp}
+                      id={activeTabs.network}
+                      getFilterLink={getFilterLink}
+                      name={t('project.network')}
+                      tabs={networkTabs}
+                      onTabChange={(tab) =>
+                        setActiveTabs({
+                          ...activeTabs,
+                          network: tab as 'isp' | 'og' | 'ut' | 'ctp',
+                        })
+                      }
+                      activeTabId={activeTabs.network}
+                      data={panelsData.data[activeTabs.network]}
+                      rowMapper={({ name: entryName }) => {
+                        if (!entryName) {
+                          return (
+                            <span className='italic'>{t('common.notSet')}</span>
+                          )
+                        }
+                        return entryName
+                      }}
                       // @ts-expect-error
                       valueMapper={(value) =>
                         getStringFromTime(getTimeFromSeconds(value), true)
