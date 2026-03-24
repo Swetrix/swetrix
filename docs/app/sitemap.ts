@@ -6,6 +6,6 @@ const BASE_URL = "https://swetrix.com/docs";
 export default function sitemap(): MetadataRoute.Sitemap {
   return source.getPages().map((page) => ({
     url: `${BASE_URL}${page.url}`,
-    lastModified: new Date(),
+    changeFrequency: "weekly",
   }));
 }
