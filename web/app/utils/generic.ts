@@ -53,17 +53,6 @@ export const nFormatterSeparated = (num: any, digits = 1) => {
   return [0, null]
 }
 
-export const secondsTillNextMonth = () => {
-  const now: any = new Date()
-  const date: any = new Date()
-
-  date.setMonth(date.getMonth() + 1)
-  date.setDate(1)
-  date.setHours(0, 0, 0, 0)
-
-  return 0 | ((date - now) / 1000)
-}
-
 type Time = {
   h: number
   m: number
