@@ -2124,7 +2124,6 @@
     "dueToday": "Heute fällig ({{days}} Tage kostenlos)",
     "next": "Kostenlos testen",
     "selectPlan": "Wählen Sie Ihren Plan",
-    "termsDesc": "Wenn Sie fortfahren, stimmen Sie den für Swetrix geltenden <tos>Nutzungsbedingungen</tos> zu und bestätigen, dass Sie unsere <privacy>Datenschutzrichtlinie</privacy> gelesen haben.",
     "customPlanTitle": "Benötigen Sie einen Plan für mehr als 20 Mio. Seitenaufrufe?",
     "customPlanDesc": "Wählen Sie „Bis zu {{count}} monatliche Seitenaufrufe“ und <contact>kontaktieren Sie uns</contact> für ein individuelles Angebot."
   },
@@ -2328,6 +2327,7 @@
     "privacy": "Datenschutz",
     "data-policy": "Datenschutzrichtlinie",
     "cookie": "Cookie-Richtlinien",
+    "dpa": "AVV",
     "terms": "AGB",
     "status": "Status",
     "supportUs": "Unterstützen Sie uns",

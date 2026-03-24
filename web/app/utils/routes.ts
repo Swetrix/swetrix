@@ -22,6 +22,7 @@ const routes = Object.freeze({
   billing: '/billing',
   privacy: '/privacy',
   cookiePolicy: '/cookie-policy',
+  dpa: '/dpa',
   terms: '/terms',
   contact: '/contact',
   transfer_confirm: '/project/transfer/confirm',

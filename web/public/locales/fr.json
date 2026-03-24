@@ -2124,7 +2124,6 @@
     "dueToday": "Dû aujourd'hui ({{days}} jours gratuits)",
     "next": "Démarrer l'essai gratuit",
     "selectPlan": "Sélectionnez votre forfait",
-    "termsDesc": "En continuant, vous acceptez les <tos>Conditions d'utilisation</tos> applicables à Swetrix et confirmez avoir lu notre <privacy>Politique de confidentialité</privacy>.",
     "customPlanTitle": "Besoin d'un plan supérieur à 20M de pages vues ?",
     "customPlanDesc": "Sélectionnez « Jusqu'à {{count}} pages vues par mois » et <contact>contactez-nous</contact> pour un devis personnalisé."
   },
@@ -2328,6 +2327,7 @@
     "privacy": "Confidentialité",
     "data-policy": "Politique de données",
     "cookie": "Politique de Cookies",
+    "dpa": "DPA",
     "terms": "Conditions",
     "status": "Statut",
     "supportUs": "Soutenez‑nous",

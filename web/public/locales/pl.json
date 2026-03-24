@@ -2124,7 +2124,6 @@
     "dueToday": "Do zapłaty dzisiaj ({{days}} dni za darmo)",
     "next": "Rozpocznij darmowy okres próbny",
     "selectPlan": "Wybierz swój plan",
-    "termsDesc": "Kontynuując, akceptujesz <tos>Warunki korzystania</tos> obowiązujące dla Swetrix i potwierdzasz, że zapoznałeś się z naszą <privacy>Polityką prywatności</privacy>.",
     "customPlanTitle": "Potrzebujesz planu na ponad 20 mln odsłon?",
     "customPlanDesc": "Wybierz „Do {{count}} odsłon miesięcznie” i <contact>skontaktuj się z nami</contact>, aby uzyskać indywidualną wycenę."
   },
@@ -2328,6 +2327,7 @@
     "privacy": "Prywatność",
     "data-policy": "Polityka danych",
     "cookie": "Polityka plików cookie",
+    "dpa": "DPA",
     "terms": "Regulamin",
     "status": "Status",
     "supportUs": "Wesprzyj nas",

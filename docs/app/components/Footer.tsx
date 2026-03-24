@@ -289,6 +289,7 @@ const legal: LegalItem[] = [
   { name: "Privacy", href: `${SITE}/privacy` },
   { name: "Terms", href: `${SITE}/terms` },
   { name: "Cookie Policy", href: `${SITE}/cookie-policy` },
+  { name: "DPA", href: `${SITE}/dpa` },
   { name: "Legal notice", href: `${SITE}/imprint` },
 ];
 
