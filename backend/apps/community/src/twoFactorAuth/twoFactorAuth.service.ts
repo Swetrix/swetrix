@@ -1,15 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { generateSecret, generateURI, verify, createGuardrails } from 'otplib'
+import { generateSecret, generateURI, verify } from 'otplib'
 import { genSalt, hash, compare } from 'bcrypt'
 
 import { UserService } from '../user/user.service'
 import { User } from '../common/types'
 import { TWO_FACTOR_AUTHENTICATION_APP_NAME } from '../common/constants'
-
-// otplib v13 defaults to MIN_SECRET_BYTES=16, but secrets created under v12
-// are 10 bytes (16 Base32 chars). Relax the guardrail so existing users can
-// still verify.
-const verifyGuardrails = createGuardrails({ MIN_SECRET_BYTES: 10 })
 
 @Injectable()
 export class TwoFactorAuthService {
@@ -57,7 +52,6 @@ export class TwoFactorAuthService {
         token: twoFactorAuthenticationCode,
         secret: user.twoFactorAuthenticationSecret,
         epochTolerance: 30,
-        guardrails: verifyGuardrails,
       })
 
       return result.valid
