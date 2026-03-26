@@ -489,7 +489,7 @@ export class AnalyticsService {
       )
     }
 
-    this.checkIfAccountSuspended(project)
+    // this.checkIfAccountSuspended(project)
 
     this.checkOrigin(project, origin)
 
@@ -513,7 +513,7 @@ export class AnalyticsService {
       )
     }
 
-    this.checkIfAccountSuspended(project)
+    // this.checkIfAccountSuspended(project)
 
     this.checkOrigin(project, origin)
 
