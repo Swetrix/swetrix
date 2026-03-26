@@ -142,6 +142,7 @@ export class WebhookController {
 
         const isTrialing = status === 'trialing'
         const shouldUnlock =
+          status === 'active' ||
           body.alert_name === 'subscription_created' ||
           isNextPlan(currentUser.planCode, plan.id)
 
@@ -259,6 +260,10 @@ export class WebhookController {
           DashboardBlockReason.payment_failed
         ) {
           updateParams.dashboardBlockReason = null
+        }
+
+        if (subscriber.isAccountBillingSuspended) {
+          updateParams.isAccountBillingSuspended = false
         }
 
         if (Object.keys(updateParams).length > 0) {
