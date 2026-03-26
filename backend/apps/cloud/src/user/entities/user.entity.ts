@@ -293,7 +293,7 @@ export class User {
   @Column('varchar', { length: 32, nullable: true })
   twoFactorAuthenticationSecret: string
 
-  @Column('varchar', { length: 30, nullable: true })
+  @Column('varchar', { length: 60, nullable: true })
   twoFactorRecoveryCode: string
 
   @Column('int', { default: 50 })

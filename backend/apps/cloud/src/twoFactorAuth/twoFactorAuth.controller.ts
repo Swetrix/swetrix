@@ -103,10 +103,13 @@ export class TwoFactorAuthController {
     }
 
     const twoFactorRecoveryCode = generateRecoveryCode()
+    const hashedRecoveryCode = await this.twoFactorAuthService.hashRecoveryCode(
+      twoFactorRecoveryCode,
+    )
 
     await this.userService.update(user.id, {
       isTwoFactorAuthenticationEnabled: true,
-      twoFactorRecoveryCode,
+      twoFactorRecoveryCode: hashedRecoveryCode,
     })
 
     try {
@@ -148,9 +151,12 @@ export class TwoFactorAuthController {
       throw new BadRequestException('User not found')
     }
 
-    const isRecoveryCodeValid =
-      !!user.twoFactorRecoveryCode &&
-      user.twoFactorRecoveryCode === twoFactorAuthenticationCode
+    const isRecoveryCodeValid = user.twoFactorRecoveryCode
+      ? await this.twoFactorAuthService.compareRecoveryCode(
+          twoFactorAuthenticationCode,
+          user.twoFactorRecoveryCode,
+        )
+      : false
     const isTotpValid =
       await this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,
@@ -203,9 +209,12 @@ export class TwoFactorAuthController {
       throw new BadRequestException('Two-factor authentication is not enabled')
     }
 
-    const isRecoveryCodeValid =
-      !!user.twoFactorRecoveryCode &&
-      user.twoFactorRecoveryCode === twoFactorAuthenticationCode
+    const isRecoveryCodeValid = user.twoFactorRecoveryCode
+      ? await this.twoFactorAuthService.compareRecoveryCode(
+          twoFactorAuthenticationCode,
+          user.twoFactorRecoveryCode,
+        )
+      : false
     const isTotpValid =
       await this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,

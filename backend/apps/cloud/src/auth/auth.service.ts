@@ -1268,9 +1268,12 @@ export class AuthService {
         )
       }
 
-      const isRecoveryCodeValid =
-        !!user.twoFactorRecoveryCode &&
-        user.twoFactorRecoveryCode === twoFactorAuthenticationCode
+      const isRecoveryCodeValid = user.twoFactorRecoveryCode
+        ? await this.twoFactorAuthService.compareRecoveryCode(
+            twoFactorAuthenticationCode,
+            user.twoFactorRecoveryCode,
+          )
+        : false
       const isTotpValid =
         await this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
           twoFactorAuthenticationCode,
