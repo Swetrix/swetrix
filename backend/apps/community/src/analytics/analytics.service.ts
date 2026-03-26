@@ -31,6 +31,7 @@ import {
   Injectable,
   BadRequestException,
   InternalServerErrorException,
+  HttpException,
   UnprocessableEntityException,
   PreconditionFailedException,
   Logger,
@@ -1614,13 +1615,18 @@ export class AnalyticsService {
             customEVFilterApplied,
           }
 
-          // For 'all' period, we use month time bucket for chart
           if (includeChart) {
-            const allTimeChartBucket = TimeBucketType.MONTH
-            const { diff: allDiff } = await this.calculateTimeBucketForAllTime(
-              pid,
-              customEVFilterApplied ? 'customEV' : 'analytics',
+            const { diff: allDiff, timeBucket: allowedBuckets } =
+              await this.calculateTimeBucketForAllTime(
+                pid,
+                customEVFilterApplied ? 'customEV' : 'analytics',
+              )
+            const allTimeChartBucket = _includes(
+              allowedBuckets,
+              TimeBucketType.MONTH,
             )
+              ? TimeBucketType.MONTH
+              : _last(allowedBuckets) || TimeBucketType.MONTH
             const { groupFrom: allFrom, groupTo: allTo } = this.getGroupFromTo(
               undefined,
               undefined,
@@ -1882,6 +1888,10 @@ export class AnalyticsService {
           result[pid].chart = chartData
         }
       } catch (reason) {
+        if (reason instanceof HttpException) {
+          throw reason
+        }
+
         console.error(
           `[ERROR] (getAnalyticsSummary) Error occurred for PID ${pid}`,
         )
@@ -5633,9 +5643,63 @@ export class AnalyticsService {
     safeTimezone: string,
     take = 30,
     skip = 0,
+    customEVFilterApplied = false,
   ): Promise<object[]> {
-    const query = `
-      WITH all_profile_events AS (
+    let allProfileEventsCTE: string
+
+    if (customEVFilterApplied) {
+      allProfileEventsCTE = `
+      all_profile_events AS (
+        SELECT
+          all_events.psidCasted,
+          all_events.pid,
+          all_events.profileId,
+          all_events.cc,
+          all_events.os,
+          all_events.br,
+          all_events.created_tz
+        FROM (
+          SELECT
+            CAST(psid, 'String') AS psidCasted,
+            pid,
+            profileId,
+            cc,
+            os,
+            br,
+            toTimeZone(created, {timezone:String}) AS created_tz
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)}
+            AND profileId = {profileId:String}
+            AND psid IS NOT NULL
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          UNION ALL
+          SELECT
+            CAST(psid, 'String') AS psidCasted,
+            pid,
+            profileId,
+            cc,
+            os,
+            br,
+            toTimeZone(created, {timezone:String}) AS created_tz
+          FROM customEV
+          WHERE pid = {pid:FixedString(12)}
+            AND profileId = {profileId:String}
+            AND psid IS NOT NULL
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ) AS all_events
+        WHERE all_events.psidCasted IN (
+          SELECT DISTINCT CAST(psid, 'String')
+          FROM customEV
+          WHERE pid = {pid:FixedString(12)}
+            AND profileId = {profileId:String}
+            AND psid IS NOT NULL
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            ${filtersQuery}
+        )
+      )`
+    } else {
+      allProfileEventsCTE = `
+      all_profile_events AS (
         SELECT
           CAST(psid, 'String') AS psidCasted,
           pid,
@@ -5665,7 +5729,11 @@ export class AnalyticsService {
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${filtersQuery}
-      ),
+      )`
+    }
+
+    const query = `
+      WITH ${allProfileEventsCTE},
       profile_sessions AS (
         SELECT
           psidCasted,
