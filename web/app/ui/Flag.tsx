@@ -24,7 +24,7 @@ const Flag = ({ country, size = 24, alt, ...props }: FlagProps) => {
   return (
     <img
       src={`${FLAGS_PREFIX_PATH}/${countryLower}.svg`}
-      alt={alt || ' '}
+      alt={alt || ''}
       {...props}
       width={width}
       height={height}

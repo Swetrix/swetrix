@@ -7,11 +7,14 @@ import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { TOOLS } from '~/components/ToolsNav'
 import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import { Text } from '~/ui/Text'
-import { getPreviewImage, getTitle } from '~/utils/seo'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
   return [
     ...getTitle('Free Marketing Tools'),
+    ...getDescription(
+      'Professional marketing calculators and generators to optimize your campaigns, track performance, and maximize ROI. No sign-up required.',
+    ),
     ...getPreviewImage(getOgImageUrl('Free Marketing Tools')),
   ]
 }

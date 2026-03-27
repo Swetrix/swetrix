@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from 'react-router'
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
@@ -6,10 +6,16 @@ import { serverFetch } from '~/api/api.server'
 import { isSelfhosted } from '~/lib/constants'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
+import { getTitle } from '~/utils/seo'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
+
+export const meta: MetaFunction = () => [
+  ...getTitle('Unsubscribe'),
+  { name: 'robots', content: 'noindex' },
+]
 
 export interface UnsubscribeLoaderData {
   success: boolean

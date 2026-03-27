@@ -411,6 +411,48 @@ const Hero = () => {
   )
 }
 
+const SOFTWARE_APPLICATION_JSONLD = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Swetrix',
+  url: 'https://swetrix.com',
+  applicationCategory: 'WebApplication',
+  operatingSystem: 'All',
+  offers: {
+    '@type': 'AggregateOffer',
+    priceCurrency: 'USD',
+    lowPrice: '19',
+    highPrice: '419',
+    offerCount: '9',
+    description: '14-day free trial, then paid plans from $19/month',
+  },
+  description:
+    'Privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.',
+  featureList: [
+    'Cookie-free tracking',
+    'Traffic web analytics',
+    'Session analysis',
+    'Website speed analytics',
+    'Error tracking',
+    'Funnels',
+    'Feature flags',
+    'Experiments',
+    'reCAPTCHA alternative',
+    'API access',
+    'Team members',
+  ],
+  screenshot: 'https://swetrix.com/assets/screenshot_light.png',
+  softwareHelp: {
+    '@type': 'WebPage',
+    url: 'https://swetrix.com/docs',
+  },
+  author: {
+    '@type': 'Organization',
+    name: 'Swetrix',
+    url: 'https://swetrix.com',
+  },
+}
+
 export default function Index() {
   const { metainfo } = useLoaderData<typeof loader>()
 
@@ -431,6 +473,14 @@ export default function Index() {
 
         <DitchGoogle />
       </main>
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(SOFTWARE_APPLICATION_JSONLD)
+            .replace(/</g, '\\u003c')
+            .replace(/\u2028|\u2029/g, ''),
+        }}
+      />
     </div>
   )
 }

@@ -354,7 +354,7 @@ const Dashboard = () => {
             <div className='mb-4 flex flex-wrap justify-between gap-2'>
               <div className='flex items-end justify-between'>
                 <Text
-                  as='h2'
+                  as='h1'
                   size='3xl'
                   weight='bold'
                   className='mt-2 flex items-baseline gap-2'
