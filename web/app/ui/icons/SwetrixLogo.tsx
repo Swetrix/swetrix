@@ -24,12 +24,7 @@ const SwetrixLogo = ({ className, theme: themeOverride }: SwetrixLogoProps) => {
         className,
       )}
     >
-      <svg
-        height='28'
-        width='24'
-        viewBox='0 0 24 28'
-        aria-hidden='true'
-      >
+      <svg height='28' width='24' viewBox='0 0 24 28' aria-hidden='true'>
         <defs>
           <linearGradient
             id={gradientId}
