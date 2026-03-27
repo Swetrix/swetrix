@@ -406,6 +406,7 @@ const productionNavigation = {
     { key: 'terms', href: routesPath.terms, internal: true },
     { key: 'cookie', href: routesPath.cookiePolicy, internal: true },
     { key: 'dpa', href: routesPath.dpa, internal: true },
+    { key: 'security', href: routesPath.security, internal: true },
     { key: 'imprint', href: routesPath.imprint, internal: true },
   ] as LegalItem[],
 }
