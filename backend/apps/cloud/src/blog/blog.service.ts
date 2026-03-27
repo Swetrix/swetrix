@@ -26,7 +26,7 @@ const getSlugFromFilename = (filename: string) => filename.substring(11)
 const getDateFromFilename = (filename: string) => filename.substring(0, 10)
 
 const findFilenameBySlug = (list: string[], handle: string) => {
-  return _find(list, (item) => _endsWith(item, `-${handle}.md`))
+  return _find(list, (item) => getSlugFromFilename(item) === `${handle}.md`)
 }
 
 interface IParseFontMatter {
