@@ -31,7 +31,6 @@ const routes = Object.freeze({
   socialised: '/socialised',
   gsc_connected: '/gsc-connected',
   open: '/open',
-  ref: '/ref/:id',
   blog: '/blog',
   imprint: '/imprint',
   forMarketers: '/for-marketers',

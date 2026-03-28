@@ -15,7 +15,6 @@ const App = () => {
   const { pathname } = useLocation()
   const { theme } = useTheme()
 
-  const isReferralPage = _startsWith(pathname, '/ref/')
   const isOnboardingPage = pathname === routesPath.onboarding
   const isProjectViewPage =
     _startsWith(pathname, '/projects/') &&
@@ -39,7 +38,6 @@ const App = () => {
   return (
     <>
       {!_includes(routesWithOutHeader, pathname) &&
-      !isReferralPage &&
       !isProjectViewPage &&
       !isOnboardingPage ? (
         <Header />
@@ -51,9 +49,7 @@ const App = () => {
           duration: 5000,
         }}
       />
-      {!isReferralPage && !isProjectViewPage && !isOnboardingPage ? (
-        <Footer />
-      ) : null}
+      {!isProjectViewPage && !isOnboardingPage ? <Footer /> : null}
     </>
   )
 }

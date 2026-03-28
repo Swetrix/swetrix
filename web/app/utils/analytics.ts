@@ -51,10 +51,6 @@ const PATHS_REPLACEMENT_MAP = [
     replacement: '/share/[token]',
   },
   {
-    regex: /^\/ref/i,
-    replacement: '/ref/[id]',
-  },
-  {
     regex: /\/projects\/([^/]+)\/alerts\/create/i,
     replacement: '/projects/[id]/alerts/create',
   },
