@@ -121,30 +121,40 @@ const getPost = async (
   return { attributes, body }
 }
 
-const getArticlesMetaData = async () => {
+const getArticlesFromDir = async (category?: string): Promise<any[]> => {
   try {
-    const dirents = await fs.readdir(resolveBlogPostsPath(), {
-      withFileTypes: true,
-    })
-    const filtered = _map(
-      _filter(dirents, (d) => d.isFile() && _endsWith(d.name, '.md')),
-      (d) => d.name,
+    const dirPath = category
+      ? resolveBlogPostsPath(category)
+      : resolveBlogPostsPath()
+
+    const dirents = await fs.readdir(dirPath, { withFileTypes: true })
+
+    const mdFiles = _filter(
+      dirents,
+      (d) => d.isFile() && _endsWith(d.name, '.md'),
     )
 
     const articles = await Promise.all(
-      _map(filtered, async (filename) => {
+      _map(mdFiles, async (d) => {
         try {
-          const file = await fs.readFile(resolveBlogPostsPath(filename))
+          const filePath = category
+            ? resolveBlogPostsPath(category, d.name)
+            : resolveBlogPostsPath(d.name)
+
+          const file = await fs.readFile(filePath)
           const { attributes }: IParseFontMatter = parseFrontMatter(
             file.toString(),
           )
+
+          const baseSlug = _replace(getSlugFromFilename(d.name), /\.md$/, '')
+
           return {
-            slug: _replace(getSlugFromFilename(filename), /\.md$/, ''),
+            slug: category ? `${category}/${baseSlug}` : baseSlug,
             title: attributes.title,
             hidden: attributes.hidden,
             intro: attributes.intro,
             date: attributes.date,
-            _date: getDateFromFilename(filename),
+            _date: getDateFromFilename(d.name),
             author: attributes.author,
             nickname: attributes.nickname,
           }
@@ -154,13 +164,30 @@ const getArticlesMetaData = async () => {
       }),
     )
 
-    return _sortBy(
-      _filter(articles, (a) => !!a),
-      ['_date'],
-    ).reverse()
+    const subdirs = _filter(dirents, (d) => d.isDirectory())
+    let subArticles: any[] = []
+
+    for (const sub of subdirs) {
+      const subName = sub.name
+      if (!isSafePathSegment(subName)) continue
+      const nested = await getArticlesFromDir(
+        category ? `${category}/${subName}` : subName,
+      )
+      subArticles = [...subArticles, ...nested]
+    }
+
+    return [..._filter(articles, (a) => !!a), ...subArticles]
   } catch {
-    return null
+    return []
   }
+}
+
+const getArticlesMetaData = async () => {
+  const articles = await getArticlesFromDir()
+
+  if (_isEmpty(articles)) return null
+
+  return _sortBy(articles, ['_date']).reverse()
 }
 
 @Injectable()
