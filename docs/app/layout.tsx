@@ -31,14 +31,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                     className="-translate-y-px dark:hidden"
                     height="28"
                     width="24"
-                    src="/docs/img/logo/dark.svg"
+                    src="/assets/logo/dark.svg"
                     alt=""
                   />
                   <img
                     className="-translate-y-px hidden dark:block"
                     height="28"
                     width="24"
-                    src="/docs/img/logo/light.svg"
+                    src="/assets/logo/light.svg"
                     alt=""
                   />
                   <span className="text-2xl leading-5 font-bold text-slate-900 dark:text-white">
