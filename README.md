@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/Swetrix/swetrix">
-   <img src="https://swetrix.com/assets/readme-image.png" alt="Logo">
+   <img src="https://swetrix.com/assets/readme-image.png?v=2" alt="Logo">
   </a>
 
   <h3 align="center">Swetrix</h3>
