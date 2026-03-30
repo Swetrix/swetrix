@@ -81,7 +81,7 @@ export default function Posts() {
                     />
                   </svg>
                   <div className='relative'>
-                    <Link to={post.slug}>
+                    <Link to={post.standalone ? `/${post.slug}` : post.slug}>
                       <h3 className='pt-8 text-base font-semibold text-slate-900 lg:pt-0 dark:text-slate-200'>
                         {post.title}
                       </h3>
@@ -101,7 +101,7 @@ export default function Posts() {
                   <Text as='p' size='sm'>
                     <Link
                       className='flex max-w-max items-center text-sm font-medium underline decoration-dashed hover:decoration-solid'
-                      to={post.slug}
+                      to={post.standalone ? `/${post.slug}` : post.slug}
                     >
                       <span className='relative'>Read more</span>
                       <CaretRightIcon className='relative mt-px ml-0.5 size-3 overflow-visible' />

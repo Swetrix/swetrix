@@ -64,14 +64,20 @@ const resolveBlogPostsPath = (...segments: string[]) => {
   return resolved
 }
 
+const isValidCategoryPath = (category: string): boolean => {
+  return category.split('/').every(isSafePathSegment)
+}
+
+const categorySegments = (category: string): string[] => category.split('/')
+
 const getFileNames = async (category?: string): Promise<string[]> => {
   try {
-    if (category && !isSafePathSegment(category)) {
+    if (category && !isValidCategoryPath(category)) {
       return []
     }
 
     const pathToRead = category
-      ? resolveBlogPostsPath(category)
+      ? resolveBlogPostsPath(...categorySegments(category))
       : resolveBlogPostsPath()
 
     const dirents = await fs.readdir(pathToRead, { withFileTypes: true })
@@ -91,7 +97,7 @@ const getPost = async (
   if (!isSafePathSegment(slug)) {
     return null
   }
-  if (category && !isSafePathSegment(category)) {
+  if (category && !isValidCategoryPath(category)) {
     return null
   }
 
@@ -103,7 +109,7 @@ const getPost = async (
   }
 
   const filepath = category
-    ? resolveBlogPostsPath(category, filename)
+    ? resolveBlogPostsPath(...categorySegments(category), filename)
     : resolveBlogPostsPath(filename)
 
   let file: Buffer
@@ -152,6 +158,7 @@ const getArticlesFromDir = async (category?: string): Promise<any[]> => {
             slug: category ? `${category}/${baseSlug}` : baseSlug,
             title: attributes.title,
             hidden: attributes.hidden,
+            standalone: attributes.standalone,
             intro: attributes.intro,
             date: attributes.date,
             _date: getDateFromFilename(d.name),
@@ -233,7 +240,7 @@ export class BlogService {
       }
     }
 
-    if (category && !isSafePathSegment(category)) {
+    if (category && !isValidCategoryPath(category)) {
       return []
     }
 
@@ -241,7 +248,7 @@ export class BlogService {
 
     try {
       const dirPath = category
-        ? resolveBlogPostsPath(category)
+        ? resolveBlogPostsPath(...categorySegments(category))
         : BLOG_POSTS_BASE
       dirents = await fs.readdir(dirPath, { withFileTypes: true })
     } catch (reason) {
@@ -264,7 +271,10 @@ export class BlogService {
 
         try {
           const filePath = category
-            ? resolveBlogPostsPath(category, actualFilename)
+            ? resolveBlogPostsPath(
+                ...categorySegments(category),
+                actualFilename,
+              )
             : resolveBlogPostsPath(actualFilename)
 
           const file = await fs.readFile(filePath)
@@ -273,7 +283,6 @@ export class BlogService {
           )
 
           if (attributes.standalone === true) {
-            // Include category path for standalone articles in subfolders
             if (category) {
               return [category, slug]
             }
@@ -306,8 +315,12 @@ export class BlogService {
           continue
         }
 
+        const fullCategory = category
+          ? `${category}/${directoryName}`
+          : directoryName
+
         const _files = await this.getSitemapFileNames(
-          directoryName,
+          fullCategory,
           infiniteRecursive,
         )
         filesInDirectories = [...filesInDirectories, ..._files]

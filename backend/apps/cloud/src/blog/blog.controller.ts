@@ -45,4 +45,23 @@ export class BlogController {
 
     return post
   }
+
+  @Get('/:category/:subcategory/:slug')
+  @ApiResponse({ status: 200 })
+  async getNestedCategorySlug(
+    @Param('category') category: string,
+    @Param('subcategory') subcategory: string,
+    @Param('slug') slug: string,
+  ): Promise<any> {
+    const post = await this.blogService.getArticleBySlug(
+      slug,
+      `${category}/${subcategory}`,
+    )
+
+    if (!post) {
+      throw new NotFoundException()
+    }
+
+    return post
+  }
 }
