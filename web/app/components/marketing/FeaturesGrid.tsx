@@ -8,21 +8,22 @@ import {
   MegaphoneIcon,
   ShieldCheckIcon,
   TerminalWindowIcon,
-  UsersThreeIcon,
+  UserListIcon,
 } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 
 import { Text } from '~/ui/Text'
+import { cn } from '~/utils/generic'
 
 const FEATURES = [
-  { icon: ShieldCheckIcon, key: 'privacy' },
-  { icon: CursorClickIcon, key: 'events' },
-  { icon: MegaphoneIcon, key: 'campaigns' },
-  { icon: GaugeIcon, key: 'perf' },
-  { icon: BugIcon, key: 'errors' },
-  { icon: UsersThreeIcon, key: 'sessions' },
-  { icon: CodeIcon, key: 'opensource' },
-  { icon: TerminalWindowIcon, key: 'devs' },
+  { icon: ShieldCheckIcon, key: 'privacy', className: 'text-indigo-500' },
+  { icon: CursorClickIcon, key: 'events', className: 'text-purple-500' },
+  { icon: MegaphoneIcon, key: 'campaigns', className: 'text-blue-500' },
+  { icon: GaugeIcon, key: 'perf', className: 'text-amber-500' },
+  { icon: BugIcon, key: 'errors', className: 'text-red-500' },
+  { icon: UserListIcon, key: 'sessions', className: 'text-indigo-500' },
+  { icon: CodeIcon, key: 'opensource', className: 'text-green-500' },
+  { icon: TerminalWindowIcon, key: 'devs', className: 'text-cyan-500' },
 ] as const
 
 const DashboardMockup = () => (
@@ -239,12 +240,13 @@ export const FeaturesGrid = () => {
             {t('main.featuresAlt.heading')}
           </Text>
           <div className='mt-8 grid grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-2'>
-            {FEATURES.map(({ icon: Icon, key }) => (
+            {FEATURES.map(({ icon: Icon, key, className }) => (
               <div key={key}>
                 <div className='flex items-center gap-2'>
                   <Icon
                     weight='duotone'
-                    className='size-5 shrink-0 text-indigo-600 dark:text-indigo-400'
+                    className={cn('size-5 shrink-0', className)}
+                    aria-hidden='true'
                   />
                   <Text as='h3' weight='semibold'>
                     {t(`main.featuresAlt.${key}.title`)}
