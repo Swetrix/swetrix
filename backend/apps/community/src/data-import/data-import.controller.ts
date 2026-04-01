@@ -8,6 +8,7 @@ import {
   Get,
   Delete,
   Param,
+  ParseIntPipe,
   Body,
   UseInterceptors,
   UploadedFile,
@@ -175,7 +176,7 @@ export class DataImportController {
   @Auth()
   async getOne(
     @Param('projectId') projectId: string,
-    @Param('importId') importId: number,
+    @Param('importId', ParseIntPipe) importId: number,
     @CurrentUserId() uid: string,
   ) {
     const project = await this.projectService.getFullProject(projectId)
@@ -187,7 +188,7 @@ export class DataImportController {
   @Auth()
   async deleteImport(
     @Param('projectId') projectId: string,
-    @Param('importId') importId: number,
+    @Param('importId', ParseIntPipe) importId: number,
     @CurrentUserId() uid: string,
   ) {
     const project = await this.projectService.getFullProject(projectId)
