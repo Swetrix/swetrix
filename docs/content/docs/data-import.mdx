@@ -1,0 +1,116 @@
+---
+title: Data Import
+description: Import historical analytics data from third-party platforms into Swetrix
+---
+
+# Data Import
+
+Swetrix allows you to import historical analytics data from other platforms so you can switch without losing your history. Imported data appears alongside your live-tracked data in dashboards, charts, and reports.
+
+## Supported Providers
+
+| Provider | File Format | Status |
+|----------|------------|--------|
+| Umami | ZIP | Available |
+| Plausible | ZIP (CSV) | Coming soon |
+| Fathom | CSV | Coming soon |
+| Simple Analytics | CSV | Coming soon |
+
+## How It Works
+
+1. **Export** your data from the source platform
+2. **Upload** the exported file to Swetrix
+3. **Swetrix processes** the data in the background
+4. **Imported data** appears in your analytics dashboards
+
+Imported data is tagged internally so it can be identified and, if needed, removed later without affecting your live-tracked data.
+
+## Importing from Umami
+
+### Step 1: Export Your Data from Umami
+
+1. Log in to your Umami instance
+2. Go to **Settings** → **Websites**
+3. Click on the website you want to export
+4. Navigate to the **Data** section
+5. Click **Export** to download a CSV file
+
+[SCREENSHOT: Umami export data page]
+
+### Step 2: Import into Swetrix
+
+1. Go to your project's **Settings** page in Swetrix
+2. Click the **Import data** tab
+3. Click the **Umami** provider card
+4. In the upload modal, either drag and drop your CSV file or click to browse
+5. Wait for the upload and processing to complete
+
+[SCREENSHOT: Swetrix import data tab with provider cards]
+
+[SCREENSHOT: Swetrix upload modal]
+
+### Step 3: Monitor Progress
+
+After uploading, the import will appear in the **Import history** table below the provider cards. You can see:
+
+- **Status** — Pending, Processing, Completed, or Failed
+- **Date range** — The time span of the imported data
+- **Rows** — How many analytics events were imported
+
+The page auto-refreshes while an import is processing. You can navigate away and come back later.
+
+[SCREENSHOT: Import history table showing a completed import]
+
+## Viewing Imported Data
+
+Once an import completes, the data is immediately available in your analytics dashboard. When you select a date range that includes imported data, a small **"Imported"** badge appears near the period selector to let you know.
+
+[SCREENSHOT: Dashboard with imported data indicator badge]
+
+## Deleting an Import
+
+If you want to remove imported data:
+
+1. Go to **Settings** → **Import data**
+2. Find the import in the history table
+3. Click the trash icon
+4. Confirm the deletion
+
+This permanently removes all analytics rows associated with that import. Your live-tracked data is not affected.
+
+## Data Mapping
+
+When importing from Umami, Swetrix maps field names and values to match its internal format:
+
+- **Browsers** — Umami's lowercase identifiers (e.g., `chrome`, `firefox`, `fxios`) are mapped to Swetrix display names (e.g., `Chrome`, `Firefox`, `Mobile Firefox`)
+- **Operating systems** — Names are normalized (e.g., `Mac OS` → `macOS`, `Android OS` → `Android`)
+- **Devices** — Categories are mapped (e.g., `laptop` → `desktop`)
+- **UTM parameters** — Imported directly (`utm_source`, `utm_medium`, `utm_campaign`, etc.)
+- **Geolocation** — Country codes, region codes, and city names are imported as-is
+- **Custom events** — Umami event type `2` rows are imported as custom events
+
+## Limitations
+
+- **File size**: Maximum 100 MB per upload
+- **One at a time**: Only one import can be active (pending or processing) per project at a time
+- **ZIP format**: Upload the `.zip` file from Umami directly — Swetrix extracts `website_event.csv` from it automatically (session and event metadata files are not used)
+- **No performance data**: Web Vitals from Umami (LCP, FCP, etc.) are not imported as they use a different measurement schema
+- **Timestamps**: Events with invalid timestamps are skipped during import
+
+## Troubleshooting
+
+### Import stuck in "Processing"
+
+Large files may take several minutes to process. If an import seems stuck, wait up to 30 minutes. If it still hasn't completed, the import may have failed — check for error messages in the import history.
+
+### "An import is already in progress"
+
+Only one import can run at a time per project. Wait for the current import to complete or fail before starting a new one.
+
+### Invalid file type error
+
+Make sure you're uploading the correct file format for your provider. For Umami, upload the `.zip` file from the export directly — do not extract it first.
+
+### Data not appearing in charts
+
+After a successful import, select a date range that covers the imported data's time period. The imported data indicator badge should appear to confirm it's included.

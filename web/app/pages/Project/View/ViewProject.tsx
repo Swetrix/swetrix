@@ -164,6 +164,8 @@ interface ViewProjectContextType {
   resetDateRange: () => void
   refreshStats: (isManual?: boolean) => Promise<void>
 
+  hasImportedData: boolean
+
   refCalendar: React.RefObject<any>
   refCalendarCompare: React.RefObject<any>
 
@@ -225,6 +227,8 @@ const defaultViewProjectContext: ViewProjectContextType = {
   setShowFiltersSearch: () => {},
   resetDateRange: () => {},
   refreshStats: async () => {},
+  hasImportedData: false,
+
   refCalendar: { current: null } as any,
   refCalendarCompare: { current: null } as any,
 
@@ -418,6 +422,67 @@ const ViewProjectContent = () => {
 
     return null
   }, [period, searchParams])
+
+  const [hasImportedData, setHasImportedData] = useState(false)
+
+  useEffect(() => {
+    if (!id) return
+
+    let from: string
+    let to: string
+
+    if (dateRange && dateRange.length >= 2) {
+      from = dayjs(dateRange[0]).format('YYYY-MM-DD HH:mm:ss')
+      to = dayjs(dateRange[1]).format('YYYY-MM-DD HH:mm:ss')
+    } else {
+      const now = dayjs()
+      to = now.format('YYYY-MM-DD HH:mm:ss')
+
+      const periodMap: Record<string, [number, dayjs.ManipulateType]> = {
+        '1h': [1, 'hour'],
+        today: [0, 'day'],
+        yesterday: [1, 'day'],
+        '1d': [1, 'day'],
+        '7d': [7, 'day'],
+        '4w': [4, 'week'],
+        '3M': [3, 'month'],
+        '12M': [12, 'month'],
+        '24M': [24, 'month'],
+      }
+
+      const mapping = periodMap[period]
+      if (mapping) {
+        from = now
+          .subtract(mapping[0], mapping[1])
+          .format('YYYY-MM-DD HH:mm:ss')
+        if (period === 'today') {
+          from = now.startOf('day').format('YYYY-MM-DD HH:mm:ss')
+        } else if (period === 'yesterday') {
+          from = now
+            .subtract(1, 'day')
+            .startOf('day')
+            .format('YYYY-MM-DD HH:mm:ss')
+          to = now.subtract(1, 'day').endOf('day').format('YYYY-MM-DD HH:mm:ss')
+        }
+      } else if (period === 'all') {
+        from = '2020-01-01 00:00:00'
+      } else {
+        setHasImportedData(false)
+        return
+      }
+    }
+
+    const endpoint = `data-import/${id}/has-imported-data?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+
+    fetch(`/api/data-import?endpoint=${encodeURIComponent(endpoint)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        setHasImportedData(data?.hasImportedData === true)
+      })
+      .catch(() => {
+        setHasImportedData(false)
+      })
+  }, [id, dateRange, period])
 
   const periodPairs = useMemo<TBPeriodPairsProps[]>(() => {
     let tbs = null
@@ -1191,6 +1256,8 @@ const ViewProjectContent = () => {
       resetDateRange,
       refreshStats,
 
+      hasImportedData,
+
       refCalendar,
       refCalendarCompare,
       fullscreenMapRef,
@@ -1232,6 +1299,7 @@ const ViewProjectContent = () => {
       setShowFiltersSearch,
       resetDateRange,
       refreshStats,
+      hasImportedData,
       refCalendar,
       refCalendarCompare,
       fullscreenMapRef,

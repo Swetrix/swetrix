@@ -46,7 +46,7 @@ async function fetchWithTimeout(
 
 interface ServerFetchOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-  body?: Record<string, unknown>
+  body?: Record<string, unknown> | FormData
   headers?: Record<string, string>
   /** Skip authentication - for public endpoints */
   skipAuth?: boolean
@@ -75,8 +75,10 @@ export async function serverFetch<T = unknown>(
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
   const url = `${API_URL}${cleanEndpoint}`
 
+  const isFormData = body instanceof FormData
+
   const fetchHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...customHeaders,
   }
 
@@ -97,11 +99,17 @@ export async function serverFetch<T = unknown>(
     }
   }
 
+  const serializedBody = body
+    ? isFormData
+      ? body
+      : JSON.stringify(body)
+    : undefined
+
   try {
     const response = await fetchWithTimeout(url, {
       method,
       headers: fetchHeaders,
-      body: body ? JSON.stringify(body) : undefined,
+      body: serializedBody,
     })
 
     if ((response.status === 401 || response.status === 403) && !skipAuth) {
@@ -114,7 +122,7 @@ export async function serverFetch<T = unknown>(
         const retryResponse = await fetchWithTimeout(url, {
           method,
           headers: fetchHeaders,
-          body: body ? JSON.stringify(body) : undefined,
+          body: serializedBody,
         })
 
         if (retryResponse.ok) {
