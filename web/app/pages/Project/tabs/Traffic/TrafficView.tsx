@@ -141,7 +141,6 @@ interface DeferredTrafficData {
   trafficCompareData: ServerTrafficLogResponse | null
   overallCompareStats: Record<string, ServerOverallObject> | null
   customEventsData: { chart?: { events?: Record<string, unknown> } } | null
-  hasImportedData?: boolean
 }
 
 interface TrafficErrorBoundaryState {
@@ -199,7 +198,6 @@ function TrafficDataResolver({
     trafficCompareData: trafficComparePromise,
     overallCompareStats: overallComparePromise,
     customEventsData: customEventsPromise,
-    hasImportedData: hasImportedDataPromise,
   } = useLoaderData<ProjectLoaderData>()
 
   const trafficData = trafficDataPromise ? use(trafficDataPromise) : null
@@ -211,9 +209,6 @@ function TrafficDataResolver({
     ? use(overallComparePromise)
     : null
   const customEventsData = customEventsPromise ? use(customEventsPromise) : null
-  const hasImportedData = hasImportedDataPromise
-    ? use(hasImportedDataPromise)
-    : false
 
   return (
     <>
@@ -223,9 +218,31 @@ function TrafficDataResolver({
         trafficCompareData,
         overallCompareStats,
         customEventsData,
-        hasImportedData,
       })}
     </>
+  )
+}
+
+function HasImportedIndicator() {
+  const { t } = useTranslation('common')
+  const { hasImportedData: hasImportedDataPromise } =
+    useLoaderData<ProjectLoaderData>()
+
+  const hasImportedData = hasImportedDataPromise
+    ? use(hasImportedDataPromise)
+    : false
+
+  if (!hasImportedData) return null
+
+  return (
+    <Tooltip
+      text={t('project.settings.dataImport.statsIncludeImported')}
+      tooltipNode={
+        <span className='inline-flex rounded-md border border-transparent p-1.5'>
+          <DownloadIcon className='size-5 text-gray-700 dark:text-gray-50' />
+        </span>
+      }
+    />
   )
 }
 
@@ -1062,16 +1079,9 @@ const TrafficViewInner = ({
               onSwitch={setChartTypeOnClick}
               type={chartType}
             />
-            {deferredData.hasImportedData ? (
-              <Tooltip
-                text={t('project.settings.dataImport.statsIncludeImported')}
-                tooltipNode={
-                  <span className='inline-flex rounded-md border border-transparent p-1.5'>
-                    <DownloadIcon className='size-5 text-gray-700 dark:text-gray-50' />
-                  </span>
-                }
-              />
-            ) : null}
+            <Suspense fallback={null}>
+              <HasImportedIndicator />
+            </Suspense>
           </div>
           {!_isEmpty(overall) ? (
             <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>

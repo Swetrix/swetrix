@@ -1750,6 +1750,7 @@
         "deleteImportConfirm": "This will permanently remove all imported data ({{count}} rows) from your analytics. This action cannot be undone.",
         "importStarted": "Import started. Your data is being processed.",
         "importDeleted": "Import deleted successfully",
+        "loadFailed": "Failed to load imports",
         "uploadFailed": "Failed to upload file. Please try again.",
         "deleteFailed": "Failed to delete import",
         "clickToUpload": "Click to upload",

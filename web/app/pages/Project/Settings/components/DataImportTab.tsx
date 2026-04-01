@@ -113,10 +113,15 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
     if (listFetcher.state !== 'idle' || !listFetcher.data) return
     if (listFetcher.data.intent !== 'list-data-imports') return
 
-    if (listFetcher.data.dataImports) {
+    if (listFetcher.data.error) {
+      toast.error(
+        listFetcher.data.error || t('project.settings.dataImport.loadFailed'),
+      )
+    } else if (listFetcher.data.dataImports) {
       setImports(listFetcher.data.dataImports)
     }
     setLoading(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listFetcher.state, listFetcher.data])
 
   useEffect(() => {
@@ -343,7 +348,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                     <td className='px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 capitalize dark:text-gray-100'>
                       {imp.provider}
                     </td>
-                    <td className='px-4 py-3 whitespace-nowrap'>
+                    <td className='px-4 py-3'>
                       <StatusBadge
                         status={imp.status}
                         label={statusLabels[imp.status]}
@@ -354,7 +359,6 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                           size='xs'
                           colour='error'
                           className='mt-1 max-w-xs'
-                          truncate
                         >
                           {imp.errorMessage}
                         </Text>
