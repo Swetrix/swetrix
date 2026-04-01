@@ -31,6 +31,7 @@ import { getMapper, SUPPORTED_PROVIDERS } from './mappers'
 import { DataImportJobData, DATA_IMPORT_QUEUE } from './data-import.processor'
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100 MB
+const IMPORT_TMP_DIR = path.resolve(os.tmpdir(), 'swetrix-imports')
 
 @ApiTags('Data Import')
 @Controller('data-import')
@@ -61,9 +62,8 @@ export class DataImportController {
       limits: { fileSize: MAX_FILE_SIZE },
       storage: diskStorage({
         destination: (_req, _file, cb) => {
-          const dir = path.join(os.tmpdir(), 'swetrix-imports')
-          fs.mkdirSync(dir, { recursive: true })
-          cb(null, dir)
+          fs.mkdirSync(IMPORT_TMP_DIR, { recursive: true })
+          cb(null, IMPORT_TMP_DIR)
         },
         filename: (_req, file, cb) => {
           const ext = path.extname(file.originalname).toLowerCase()
@@ -198,8 +198,22 @@ export class DataImportController {
 
   private cleanupFile(filePath: string): void {
     try {
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
+      const resolvedPath = path.resolve(filePath)
+      const relativePath = path.relative(IMPORT_TMP_DIR, resolvedPath)
+      const isImportTempFile =
+        relativePath !== '' &&
+        !relativePath.startsWith('..') &&
+        !path.isAbsolute(relativePath)
+
+      if (!isImportTempFile) {
+        this.logger.warn(
+          `Skipped cleanup outside import temp dir: ${resolvedPath}`,
+        )
+        return
+      }
+
+      if (fs.existsSync(resolvedPath) && fs.lstatSync(resolvedPath).isFile()) {
+        fs.unlinkSync(resolvedPath)
       }
     } catch {
       //

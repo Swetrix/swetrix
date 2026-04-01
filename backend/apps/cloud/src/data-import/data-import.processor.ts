@@ -1,4 +1,6 @@
 import * as fs from 'fs'
+import * as os from 'os'
+import * as path from 'path'
 import { Processor, WorkerHost } from '@nestjs/bullmq'
 import { Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
@@ -10,6 +12,7 @@ import { clickhouse } from '../common/integrations/clickhouse'
 
 const CLICKHOUSE_DB = process.env.CLICKHOUSE_DATABASE || 'analytics'
 const BATCH_SIZE = 5000
+const IMPORT_TMP_DIR = path.resolve(os.tmpdir(), 'swetrix-imports')
 
 export const DATA_IMPORT_QUEUE = 'data-import'
 
@@ -152,8 +155,22 @@ export class DataImportProcessor extends WorkerHost {
 
   private cleanupFile(filePath: string): void {
     try {
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
+      const resolvedPath = path.resolve(filePath)
+      const relativePath = path.relative(IMPORT_TMP_DIR, resolvedPath)
+      const isImportTempFile =
+        relativePath !== '' &&
+        !relativePath.startsWith('..') &&
+        !path.isAbsolute(relativePath)
+
+      if (!isImportTempFile) {
+        this.logger.warn(
+          `Skipped cleanup outside import temp dir: ${resolvedPath}`,
+        )
+        return
+      }
+
+      if (fs.existsSync(resolvedPath) && fs.lstatSync(resolvedPath).isFile()) {
+        fs.unlinkSync(resolvedPath)
       }
     } catch {
       this.logger.warn(`Failed to clean up temp file: ${filePath}`)
