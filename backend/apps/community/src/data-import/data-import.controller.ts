@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  ServiceUnavailableException,
   Query,
   Logger,
 } from '@nestjs/common'
@@ -127,7 +128,7 @@ export class DataImportController {
       this.logger.error(`Failed to enqueue import job: ${error.message}`)
       await this.dataImportService.deleteImportRecord(projectId, dataImport.id)
       this.cleanupFile(file.path)
-      throw new BadRequestException(
+      throw new ServiceUnavailableException(
         'Failed to start import. Please try again later.',
       )
     }
