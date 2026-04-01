@@ -10,6 +10,8 @@ import { clickhouse } from '../common/integrations/clickhouse'
 const CLICKHOUSE_DB = process.env.CLICKHOUSE_DATABASE || 'analytics'
 const BATCH_SIZE = 5000
 
+export const DATA_IMPORT_QUEUE = 'data-import'
+
 export interface DataImportJobData {
   importId: number
   projectId: string
@@ -17,7 +19,7 @@ export interface DataImportJobData {
   filePath: string
 }
 
-@Processor('data-import', { concurrency: 1 })
+@Processor(DATA_IMPORT_QUEUE, { concurrency: 1 })
 export class DataImportProcessor extends WorkerHost {
   private readonly logger = new Logger(DataImportProcessor.name)
 

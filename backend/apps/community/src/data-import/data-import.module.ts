@@ -4,11 +4,14 @@ import { BullModule } from '@nestjs/bullmq'
 import { ProjectModule } from '../project/project.module'
 import { DataImportService } from './data-import.service'
 import { DataImportController } from './data-import.controller'
-import { DataImportProcessor } from './data-import.processor'
+import {
+  DataImportProcessor,
+  DATA_IMPORT_QUEUE,
+} from './data-import.processor'
 
 @Module({
   imports: [
-    BullModule.registerQueue({ name: 'data-import' }),
+    BullModule.registerQueue({ name: DATA_IMPORT_QUEUE }),
     forwardRef(() => ProjectModule),
   ],
   providers: [DataImportService, DataImportProcessor],
