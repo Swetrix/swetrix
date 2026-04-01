@@ -432,8 +432,8 @@ const ViewProjectContent = () => {
     let to: string
 
     if (dateRange && dateRange.length >= 2) {
-      from = dayjs(dateRange[0]).format('YYYY-MM-DD HH:mm:ss')
-      to = dayjs(dateRange[1]).format('YYYY-MM-DD HH:mm:ss')
+      from = dayjs.utc(dateRange[0]).format('YYYY-MM-DD HH:mm:ss')
+      to = dayjs.utc(dateRange[1]).format('YYYY-MM-DD HH:mm:ss')
     } else {
       const now = dayjs()
       to = now.format('YYYY-MM-DD HH:mm:ss')
