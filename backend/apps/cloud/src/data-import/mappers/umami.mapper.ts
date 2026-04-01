@@ -2,12 +2,13 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import * as crypto from 'crypto'
-import { unzipSync } from 'fflate'
+import { Unzip, UnzipInflate } from 'fflate'
 import { parse } from 'csv-parse'
 
 import { ImportMapper, AnalyticsImportRow } from './mapper.interface'
 
 const WEBSITE_EVENT_CSV = 'website_event.csv'
+const MAX_UMAMI_CSV_BYTES = 512 * 1024 * 1024
 
 const BROWSER_MAP: Record<string, string> = {
   chrome: 'Chrome',
@@ -135,24 +136,172 @@ export class UmamiMapper implements ImportMapper {
   readonly provider = 'umami'
   readonly expectedFileExtension = '.zip'
 
-  private extractCsvFromZip(zipPath: string): string {
-    const zipBuffer = fs.readFileSync(zipPath)
-    const files = unzipSync(new Uint8Array(zipBuffer))
-
-    const matchKey = Object.keys(files).find((name) => {
-      const basename = name.split('/').pop() || name
-      return basename === WEBSITE_EVENT_CSV
-    })
-
-    if (!matchKey) {
-      throw new Error(
-        `ZIP does not contain ${WEBSITE_EVENT_CSV}. Please upload the export ZIP from Umami.`,
-      )
-    }
-
+  private async extractCsvFromZip(zipPath: string): Promise<string> {
     const tempCsv = path.join(os.tmpdir(), `swetrix-umami-${Date.now()}.csv`)
-    fs.writeFileSync(tempCsv, Buffer.from(files[matchKey]))
-    return tempCsv
+
+    return new Promise((resolve, reject) => {
+      const zipStream = fs.createReadStream(zipPath)
+      const unzipper = new Unzip()
+
+      unzipper.register(UnzipInflate)
+
+      let settled = false
+      let foundEntry = false
+      let fileDescriptor: number | null = null
+      let tempFileCreated = false
+      let extractedBytes = 0
+      let terminateEntry: (() => void) | null = null
+
+      const cleanupTempCsv = () => {
+        if (fileDescriptor !== null) {
+          try {
+            fs.closeSync(fileDescriptor)
+          } catch {
+            //
+          }
+          fileDescriptor = null
+        }
+
+        if (tempFileCreated) {
+          try {
+            fs.unlinkSync(tempCsv)
+          } catch {
+            //
+          }
+        }
+      }
+
+      const fail = (error: Error) => {
+        if (settled) return
+        settled = true
+        terminateEntry?.()
+        zipStream.destroy()
+        cleanupTempCsv()
+        reject(error)
+      }
+
+      const succeed = () => {
+        if (settled) return
+        settled = true
+        if (fileDescriptor !== null) {
+          try {
+            fs.closeSync(fileDescriptor)
+          } catch (error) {
+            cleanupTempCsv()
+            reject(error)
+            return
+          }
+          fileDescriptor = null
+        }
+        zipStream.destroy()
+        resolve(tempCsv)
+      }
+
+      unzipper.onfile = (file) => {
+        if (path.basename(file.name) !== WEBSITE_EVENT_CSV || foundEntry) return
+
+        foundEntry = true
+
+        if (
+          typeof file.originalSize !== 'number' ||
+          !Number.isFinite(file.originalSize)
+        ) {
+          fail(
+            new Error(
+              `Unable to validate ${WEBSITE_EVENT_CSV} size in the ZIP archive.`,
+            ),
+          )
+          return
+        }
+
+        if (file.originalSize > MAX_UMAMI_CSV_BYTES) {
+          fail(
+            new Error(
+              `${WEBSITE_EVENT_CSV} exceeds the ${MAX_UMAMI_CSV_BYTES} byte limit.`,
+            ),
+          )
+          return
+        }
+
+        try {
+          fileDescriptor = fs.openSync(tempCsv, 'wx')
+          tempFileCreated = true
+        } catch (error) {
+          fail(error as Error)
+          return
+        }
+
+        terminateEntry = file.terminate
+        file.ondata = (error, chunk, final) => {
+          if (error) {
+            fail(error)
+            return
+          }
+
+          extractedBytes += chunk.length
+          if (extractedBytes > MAX_UMAMI_CSV_BYTES) {
+            fail(
+              new Error(
+                `${WEBSITE_EVENT_CSV} exceeds the ${MAX_UMAMI_CSV_BYTES} byte limit.`,
+              ),
+            )
+            return
+          }
+
+          try {
+            fs.writeSync(fileDescriptor!, chunk)
+          } catch (writeError) {
+            fail(writeError as Error)
+            return
+          }
+
+          if (final) {
+            succeed()
+          }
+        }
+
+        try {
+          file.start()
+        } catch (error) {
+          fail(error as Error)
+        }
+      }
+
+      zipStream.on('data', (chunk: Buffer) => {
+        if (settled) return
+
+        try {
+          unzipper.push(
+            new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength),
+          )
+        } catch (error) {
+          fail(error as Error)
+        }
+      })
+
+      zipStream.on('end', () => {
+        if (settled) return
+
+        try {
+          unzipper.push(new Uint8Array(0), true)
+        } catch (error) {
+          fail(error as Error)
+          return
+        }
+
+        if (!foundEntry) {
+          fail(
+            new Error(
+              `ZIP does not contain ${WEBSITE_EVENT_CSV}. Please upload the export ZIP from Umami.`,
+            ),
+          )
+        }
+      })
+
+      zipStream.on('error', (error) => {
+        fail(error)
+      })
+    })
   }
 
   async *createRowStream(
@@ -160,7 +309,7 @@ export class UmamiMapper implements ImportMapper {
     pid: string,
     importID: number,
   ): AsyncIterable<AnalyticsImportRow> {
-    const csvPath = this.extractCsvFromZip(filePath)
+    const csvPath = await this.extractCsvFromZip(filePath)
 
     let cleanedUp = false
     const cleanup = () => {
