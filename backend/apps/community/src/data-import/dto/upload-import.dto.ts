@@ -11,5 +11,5 @@ export class UploadImportDto {
   })
   @IsString()
   @IsIn(SUPPORTED_PROVIDERS)
-  provider: string
+  provider: (typeof SUPPORTED_PROVIDERS)[number]
 }
