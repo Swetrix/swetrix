@@ -122,10 +122,7 @@ export class DataImportProcessor extends WorkerHost {
         )
 
         try {
-          await this.dataImportService.cleanupImportedRows(
-            projectId,
-            importId,
-          )
+          await this.dataImportService.cleanupImportedRows(projectId, importId)
         } catch (cleanupError) {
           this.logger.error(
             `Failed to rollback partial import ${importId}: ${cleanupError.message}`,

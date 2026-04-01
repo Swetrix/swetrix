@@ -112,17 +112,12 @@ export class DataImportProcessor extends WorkerHost {
           dateTo: maxDate ? new Date(maxDate) : null,
         })
 
-        this.logger.log(
-          `Import ${id} completed: ${importedRows} rows imported`,
-        )
+        this.logger.log(`Import ${id} completed: ${importedRows} rows imported`)
       } catch (error) {
         this.logger.error(`Import ${id} failed: ${error.message}`, error.stack)
 
         try {
-          await this.dataImportService.cleanupImportedRows(
-            projectId,
-            importId,
-          )
+          await this.dataImportService.cleanupImportedRows(projectId, importId)
         } catch (cleanupError) {
           this.logger.error(
             `Failed to rollback partial import ${id}: ${cleanupError.message}`,

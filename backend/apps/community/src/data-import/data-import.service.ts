@@ -4,6 +4,7 @@ import {
   NotFoundException,
   Logger,
 } from '@nestjs/common'
+import { randomUUID } from 'crypto'
 
 import {
   DataImport,
@@ -11,12 +12,63 @@ import {
   MAX_IMPORT_ID,
 } from './entity/data-import.entity'
 import { clickhouse } from '../common/integrations/clickhouse'
+import { redis } from '../common/constants'
 
 const CLICKHOUSE_DB = process.env.CLICKHOUSE_DATABASE || 'analytics'
+const IMPORT_IN_PROGRESS_ERROR =
+  'An import is already in progress for this project. Please wait for it to complete before starting a new one.'
+const IMPORT_CREATE_LOCK_TTL_MS = 10_000
+const IMPORT_CREATE_LOCK_WAIT_MS = 5_000
+const IMPORT_CREATE_LOCK_RETRY_MS = 100
 
 @Injectable()
 export class DataImportService {
   private readonly logger = new Logger(DataImportService.name)
+
+  private getCreateLockKey(projectId: string): string {
+    return `data-import:create:${projectId}`
+  }
+
+  private async acquireCreateLock(projectId: string): Promise<string> {
+    const token = randomUUID()
+    const lockKey = this.getCreateLockKey(projectId)
+    const deadline = Date.now() + IMPORT_CREATE_LOCK_WAIT_MS
+
+    while (Date.now() < deadline) {
+      const acquired = await redis.set(
+        lockKey,
+        token,
+        'PX',
+        IMPORT_CREATE_LOCK_TTL_MS,
+        'NX',
+      )
+
+      if (acquired === 'OK') {
+        return token
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, IMPORT_CREATE_LOCK_RETRY_MS),
+      )
+    }
+
+    throw new BadRequestException(IMPORT_IN_PROGRESS_ERROR)
+  }
+
+  private async releaseCreateLock(
+    projectId: string,
+    token: string,
+  ): Promise<void> {
+    await redis.eval(
+      `if redis.call("GET", KEYS[1]) == ARGV[1] then
+         return redis.call("DEL", KEYS[1])
+       end
+       return 0`,
+      1,
+      this.getCreateLockKey(projectId),
+      token,
+    )
+  }
 
   private async getNextId(projectId: string): Promise<number> {
     const result = await clickhouse
@@ -53,57 +105,61 @@ export class DataImportService {
   }
 
   async create(projectId: string, provider: string): Promise<DataImport> {
-    const active = await this.findActiveByProject(projectId)
-    if (active) {
-      throw new BadRequestException(
-        'An import is already in progress for this project. Please wait for it to complete before starting a new one.',
-      )
-    }
+    const lockToken = await this.acquireCreateLock(projectId)
 
-    const id = await this.getNextId(projectId)
+    try {
+      const active = await this.findActiveByProject(projectId)
+      if (active) {
+        throw new BadRequestException(IMPORT_IN_PROGRESS_ERROR)
+      }
 
-    const now = new Date()
-      .toISOString()
-      .replace('T', ' ')
-      .replace('Z', '')
-      .slice(0, 19)
+      const id = await this.getNextId(projectId)
 
-    await clickhouse.insert({
-      table: `${CLICKHOUSE_DB}.data_import`,
-      values: [
-        {
-          id,
-          projectId,
-          provider,
-          status: 'pending',
-          dateFrom: null,
-          dateTo: null,
-          totalRows: 0,
-          importedRows: 0,
-          invalidRows: 0,
-          errorMessage: null,
-          createdAt: now,
-          finishedAt: null,
-          version: 1,
-        },
-      ],
-      format: 'JSONEachRow',
-    })
+      const now = new Date()
+        .toISOString()
+        .replace('T', ' ')
+        .replace('Z', '')
+        .slice(0, 19)
 
-    return {
-      id,
-      projectId,
-      provider,
-      status: DataImportStatus.PENDING,
-      dateFrom: null,
-      dateTo: null,
-      totalRows: 0,
-      importedRows: 0,
-      invalidRows: 0,
-      errorMessage: null,
-      createdAt: now,
-      finishedAt: null,
-      version: 1,
+      await clickhouse.insert({
+        table: `${CLICKHOUSE_DB}.data_import`,
+        values: [
+          {
+            id,
+            projectId,
+            provider,
+            status: 'pending',
+            dateFrom: null,
+            dateTo: null,
+            totalRows: 0,
+            importedRows: 0,
+            invalidRows: 0,
+            errorMessage: null,
+            createdAt: now,
+            finishedAt: null,
+            version: 1,
+          },
+        ],
+        format: 'JSONEachRow',
+      })
+
+      return {
+        id,
+        projectId,
+        provider,
+        status: DataImportStatus.PENDING,
+        dateFrom: null,
+        dateTo: null,
+        totalRows: 0,
+        importedRows: 0,
+        invalidRows: 0,
+        errorMessage: null,
+        createdAt: now,
+        finishedAt: null,
+        version: 1,
+      }
+    } finally {
+      await this.releaseCreateLock(projectId, lockToken)
     }
   }
 

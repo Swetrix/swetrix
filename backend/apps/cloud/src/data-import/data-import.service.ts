@@ -5,7 +5,7 @@ import {
   Logger,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { DataSource, Repository } from 'typeorm'
 
 import {
   DataImport,
@@ -13,6 +13,7 @@ import {
   MAX_IMPORT_ID,
 } from './entity/data-import.entity'
 import { clickhouse } from '../common/integrations/clickhouse'
+import { Project } from '../project/entity/project.entity'
 
 const CLICKHOUSE_DB = process.env.CLICKHOUSE_DATABASE || 'analytics'
 
@@ -23,10 +24,14 @@ export class DataImportService {
   constructor(
     @InjectRepository(DataImport)
     private readonly dataImportRepository: Repository<DataImport>,
+    private readonly dataSource: DataSource,
   ) {}
 
-  private async getNextImportId(projectId: string): Promise<number> {
-    const existingImportIds = await this.dataImportRepository
+  private async getNextImportId(
+    repository: Repository<DataImport>,
+    projectId: string,
+  ): Promise<number> {
+    const existingImportIds = await repository
       .createQueryBuilder('di')
       .select('di.importId', 'importId')
       .where('di.projectId = :projectId', { projectId })
@@ -60,29 +65,37 @@ export class DataImportService {
   }
 
   async create(projectId: string, provider: string): Promise<DataImport> {
-    const active = await this.dataImportRepository.findOne({
-      where: [
-        { projectId, status: DataImportStatus.PENDING },
-        { projectId, status: DataImportStatus.PROCESSING },
-      ],
+    return this.dataSource.transaction(async (manager) => {
+      await manager.getRepository(Project).findOneOrFail({
+        where: { id: projectId },
+        lock: { mode: 'pessimistic_write' },
+      })
+
+      const repository = manager.getRepository(DataImport)
+      const active = await repository.findOne({
+        where: [
+          { projectId, status: DataImportStatus.PENDING },
+          { projectId, status: DataImportStatus.PROCESSING },
+        ],
+      })
+
+      if (active) {
+        throw new BadRequestException(
+          'An import is already in progress for this project. Please wait for it to complete before starting a new one.',
+        )
+      }
+
+      const importId = await this.getNextImportId(repository, projectId)
+
+      const dataImport = repository.create({
+        projectId,
+        importId,
+        provider,
+        status: DataImportStatus.PENDING,
+      })
+
+      return repository.save(dataImport)
     })
-
-    if (active) {
-      throw new BadRequestException(
-        'An import is already in progress for this project. Please wait for it to complete before starting a new one.',
-      )
-    }
-
-    const importId = await this.getNextImportId(projectId)
-
-    const dataImport = this.dataImportRepository.create({
-      projectId,
-      importId,
-      provider,
-      status: DataImportStatus.PENDING,
-    })
-
-    return this.dataImportRepository.save(dataImport)
   }
 
   async findAllByProject(projectId: string): Promise<DataImport[]> {
