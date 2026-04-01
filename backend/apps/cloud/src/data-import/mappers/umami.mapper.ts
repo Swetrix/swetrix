@@ -5,7 +5,11 @@ import * as crypto from 'crypto'
 import { Unzip, UnzipInflate } from 'fflate'
 import { parse } from 'csv-parse'
 
-import { ImportMapper, AnalyticsImportRow } from './mapper.interface'
+import {
+  ImportMapper,
+  ImportError,
+  AnalyticsImportRow,
+} from './mapper.interface'
 
 const WEBSITE_EVENT_CSV = 'website_event.csv'
 const MAX_UMAMI_CSV_BYTES = 512 * 1024 * 1024
@@ -207,7 +211,7 @@ export class UmamiMapper implements ImportMapper {
           !Number.isFinite(file.originalSize)
         ) {
           fail(
-            new Error(
+            new ImportError(
               `Unable to validate ${WEBSITE_EVENT_CSV} size in the ZIP archive.`,
             ),
           )
@@ -216,7 +220,7 @@ export class UmamiMapper implements ImportMapper {
 
         if (file.originalSize > MAX_UMAMI_CSV_BYTES) {
           fail(
-            new Error(
+            new ImportError(
               `${WEBSITE_EVENT_CSV} exceeds the ${MAX_UMAMI_CSV_BYTES} byte limit.`,
             ),
           )
@@ -241,7 +245,7 @@ export class UmamiMapper implements ImportMapper {
           extractedBytes += chunk.length
           if (extractedBytes > MAX_UMAMI_CSV_BYTES) {
             fail(
-              new Error(
+              new ImportError(
                 `${WEBSITE_EVENT_CSV} exceeds the ${MAX_UMAMI_CSV_BYTES} byte limit.`,
               ),
             )
@@ -291,7 +295,7 @@ export class UmamiMapper implements ImportMapper {
 
         if (!foundEntry) {
           fail(
-            new Error(
+            new ImportError(
               `ZIP does not contain ${WEBSITE_EVENT_CSV}. Please upload the export ZIP from Umami.`,
             ),
           )

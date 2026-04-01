@@ -1754,9 +1754,8 @@
         "deleteFailed": "Failed to delete import",
         "clickToUpload": "Click to upload",
         "orDragDrop": "or drag and drop",
-        "maxFileSize": "{{fileType}} file, max 100 MB",
+        "maxFileSize": "{{fileType}} file, max {{maxSize}} MB",
         "uploadingProcessing": "Uploading and processing...",
-        "howToExport": "How to export your data",
         "importFromProvider": "Import from {{provider}}",
         "statsIncludeImported": "Stats include imported data",
         "imported": "Imported",
@@ -1764,10 +1763,10 @@
         "statusProcessing": "Processing",
         "statusCompleted": "Completed",
         "statusFailed": "Failed",
+        "uploadInstructions": "Please select your export file. Once started, the data will be imported in the background. Please allow for some time to complete. To learn more how to export 3rd party providers data, <1>see our docs</1>.",
         "umami": {
           "description": "Import pageviews and custom events from Umami export",
-          "fileType": ".zip",
-          "exportGuide": "In Umami, go to Settings → Websites → click your site → Data → Export. Upload the resulting .zip file directly."
+          "fileType": ".zip"
         }
       },
       "captcha": {

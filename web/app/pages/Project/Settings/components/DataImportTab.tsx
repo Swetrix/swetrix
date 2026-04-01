@@ -11,7 +11,7 @@ import {
 import cx from 'clsx'
 import { toast } from 'sonner'
 import dayjs from 'dayjs'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 
 import { DataImport } from '~/lib/models/Project'
@@ -202,9 +202,6 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
   const providerFileType = selectedProvider
     ? t(`project.settings.dataImport.${selectedProvider}.fileType`)
     : ''
-  const providerExportGuide = selectedProvider
-    ? t(`project.settings.dataImport.${selectedProvider}.exportGuide`)
-    : ''
 
   return (
     <div className='space-y-8'>
@@ -229,9 +226,6 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
             )
             const name =
               providerId.charAt(0).toUpperCase() + providerId.slice(1)
-            const description = t(
-              `project.settings.dataImport.${providerId}.description`,
-            )
             const fileType = t(
               `project.settings.dataImport.${providerId}.fileType`,
             )
@@ -243,7 +237,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                 disabled={hasActive}
                 onClick={() => setSelectedProvider(providerId)}
                 className={cx(
-                  'group relative flex flex-col items-start rounded-xl border p-4 text-left transition-all',
+                  'group relative flex flex-col items-start rounded-lg border p-4 text-left transition-all',
                   hasActive
                     ? 'cursor-not-allowed border-gray-200 opacity-50 dark:border-slate-800'
                     : 'cursor-pointer border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-slate-700/80 dark:hover:border-slate-600 dark:hover:bg-slate-900/50',
@@ -273,7 +267,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                   colour='inherit'
                   className='mt-2 text-gray-500 dark:text-gray-400'
                 >
-                  {description}
+                  {t(`project.settings.dataImport.${providerId}.description`)}
                 </Text>
               </button>
             )
@@ -388,14 +382,18 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                     <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
                       {(imp.status === 'completed' ||
                         imp.status === 'failed') && (
-                        <button
-                          type='button'
-                          onClick={() => setDeleteTarget(imp)}
-                          className='text-gray-400 transition-colors hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400'
-                          title={t('project.settings.dataImport.deleteImport')}
-                        >
-                          <TrashIcon className='size-4' />
-                        </button>
+                        <div className='flex items-center justify-end'>
+                          <button
+                            type='button'
+                            onClick={() => setDeleteTarget(imp)}
+                            className='rounded p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300'
+                            title={t(
+                              'project.settings.dataImport.deleteImport',
+                            )}
+                          >
+                            <TrashIcon className='size-4' />
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -420,25 +418,27 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
         size='medium'
         message={
           <div className='space-y-4'>
-            <div className='rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-800/50'>
-              <Text
-                as='p'
-                size='sm'
-                weight='medium'
-                colour='inherit'
-                className='text-gray-700 dark:text-gray-300'
-              >
-                {t('project.settings.dataImport.howToExport')}
-              </Text>
-              <Text
-                as='p'
-                size='sm'
-                colour='inherit'
-                className='mt-1 text-gray-500 dark:text-gray-400'
-              >
-                {providerExportGuide}
-              </Text>
-            </div>
+            <Text
+              as='p'
+              size='sm'
+              colour='inherit'
+              className='text-gray-600 dark:text-gray-400'
+            >
+              <Trans
+                i18nKey='project.settings.dataImport.uploadInstructions'
+                t={t}
+                components={{
+                  1: (
+                    <a
+                      href='https://swetrix.com/docs/data-import'
+                      target='_blank'
+                      rel='noreferrer'
+                      className='text-indigo-600 hover:text-indigo-500 dark:text-slate-300 dark:hover:text-white'
+                    />
+                  ),
+                }}
+              />
+            </Text>
 
             <FileUpload
               accept={providerFileType}
@@ -471,6 +471,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                   ? undefined
                   : t('project.settings.dataImport.maxFileSize', {
                       fileType: providerFileType.toUpperCase(),
+                      maxSize: 100,
                     })
               }
             />

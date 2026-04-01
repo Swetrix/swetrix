@@ -73,3 +73,5 @@ docs/.cache-loader
 
 .cursorrules
 .cursor
+
+next-env.d.ts

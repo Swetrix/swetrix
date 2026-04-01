@@ -38,7 +38,6 @@ import { useTranslation } from 'react-i18next'
 import {
   useNavigate,
   useSearchParams,
-  useLoaderData,
   LinkProps,
   useFetcher,
 } from 'react-router'
@@ -72,10 +71,7 @@ import {
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import {
-  ProjectViewActionData,
-  type ProjectLoaderData,
-} from '~/routes/projects.$id'
+import { ProjectViewActionData } from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
@@ -168,8 +164,6 @@ interface ViewProjectContextType {
   resetDateRange: () => void
   refreshStats: (isManual?: boolean) => Promise<void>
 
-  hasImportedData: boolean
-
   refCalendar: React.RefObject<any>
   refCalendarCompare: React.RefObject<any>
 
@@ -231,7 +225,6 @@ const defaultViewProjectContext: ViewProjectContextType = {
   setShowFiltersSearch: () => {},
   resetDateRange: () => {},
   refreshStats: async () => {},
-  hasImportedData: false,
 
   refCalendar: { current: null } as any,
   refCalendarCompare: { current: null } as any,
@@ -426,19 +419,6 @@ const ViewProjectContent = () => {
 
     return null
   }, [period, searchParams])
-
-  const loaderData = useLoaderData<ProjectLoaderData>()
-  const [hasImportedData, setHasImportedData] = useState(false)
-
-  useEffect(() => {
-    if (loaderData?.hasImportedData instanceof Promise) {
-      loaderData.hasImportedData
-        .then((value) => setHasImportedData(value))
-        .catch(() => setHasImportedData(false))
-    } else {
-      setHasImportedData(false)
-    }
-  }, [loaderData?.hasImportedData])
 
   const periodPairs = useMemo<TBPeriodPairsProps[]>(() => {
     let tbs = null
@@ -1212,8 +1192,6 @@ const ViewProjectContent = () => {
       resetDateRange,
       refreshStats,
 
-      hasImportedData,
-
       refCalendar,
       refCalendarCompare,
       fullscreenMapRef,
@@ -1255,7 +1233,6 @@ const ViewProjectContent = () => {
       setShowFiltersSearch,
       resetDateRange,
       refreshStats,
-      hasImportedData,
       refCalendar,
       refCalendarCompare,
       fullscreenMapRef,

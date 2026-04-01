@@ -141,6 +141,7 @@ interface DeferredTrafficData {
   trafficCompareData: ServerTrafficLogResponse | null
   overallCompareStats: Record<string, ServerOverallObject> | null
   customEventsData: { chart?: { events?: Record<string, unknown> } } | null
+  hasImportedData?: boolean
 }
 
 interface TrafficErrorBoundaryState {
@@ -198,6 +199,7 @@ function TrafficDataResolver({
     trafficCompareData: trafficComparePromise,
     overallCompareStats: overallComparePromise,
     customEventsData: customEventsPromise,
+    hasImportedData: hasImportedDataPromise,
   } = useLoaderData<ProjectLoaderData>()
 
   const trafficData = trafficDataPromise ? use(trafficDataPromise) : null
@@ -209,6 +211,9 @@ function TrafficDataResolver({
     ? use(overallComparePromise)
     : null
   const customEventsData = customEventsPromise ? use(customEventsPromise) : null
+  const hasImportedData = hasImportedDataPromise
+    ? use(hasImportedDataPromise)
+    : false
 
   return (
     <>
@@ -218,6 +223,7 @@ function TrafficDataResolver({
         trafficCompareData,
         overallCompareStats,
         customEventsData,
+        hasImportedData,
       })}
     </>
   )
@@ -286,7 +292,6 @@ const TrafficViewInner = ({
     isMapFullscreen,
     setIsMapFullscreen,
     fullscreenMapRef,
-    hasImportedData,
   } = useViewProjectContext()
   const {
     t,
@@ -1057,7 +1062,7 @@ const TrafficViewInner = ({
               onSwitch={setChartTypeOnClick}
               type={chartType}
             />
-            {hasImportedData ? (
+            {deferredData.hasImportedData ? (
               <Tooltip
                 text={t('project.settings.dataImport.statsIncludeImported')}
                 tooltipNode={

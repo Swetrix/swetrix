@@ -5,6 +5,7 @@ import { Job } from 'bullmq'
 
 import { DataImportService } from './data-import.service'
 import { getMapper } from './mappers'
+import { ImportError } from './mappers/mapper.interface'
 import { clickhouse } from '../common/integrations/clickhouse'
 
 const CLICKHOUSE_DB = process.env.CLICKHOUSE_DATABASE || 'analytics'
@@ -126,7 +127,12 @@ export class DataImportProcessor extends WorkerHost {
           )
         }
 
-        await this.dataImportService.markFailed(id, error.message)
+        const userMessage =
+          error instanceof ImportError
+            ? error.message
+            : 'An unexpected error occurred while processing the import. Please try again or contact support.'
+
+        await this.dataImportService.markFailed(id, userMessage)
       }
     } finally {
       this.cleanupFile(filePath)
