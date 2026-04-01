@@ -21,12 +21,27 @@ export class DataImportService {
   private async getNextId(projectId: string): Promise<number> {
     const result = await clickhouse
       .query({
-        query: `SELECT max(id) as maxId FROM ${CLICKHOUSE_DB}.data_import FINAL WHERE projectId = {projectId:FixedString(12)}`,
+        query: `SELECT id FROM ${CLICKHOUSE_DB}.data_import FINAL WHERE projectId = {projectId:FixedString(12)} ORDER BY id ASC`,
         query_params: { projectId },
       })
-      .then((rs) => rs.json<{ maxId: number }>())
+      .then((rs) => rs.json<{ id: number | string }>())
 
-    const next = (result.data?.[0]?.maxId || 0) + 1
+    let next = 1
+
+    for (const row of result.data || []) {
+      const currentId = Number(row.id)
+
+      if (currentId < next) {
+        continue
+      }
+
+      if (currentId === next) {
+        next += 1
+        continue
+      }
+
+      break
+    }
 
     if (next > MAX_IMPORT_ID) {
       throw new BadRequestException(

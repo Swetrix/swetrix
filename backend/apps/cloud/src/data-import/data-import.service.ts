@@ -26,13 +26,29 @@ export class DataImportService {
   ) {}
 
   private async getNextImportId(projectId: string): Promise<number> {
-    const result = await this.dataImportRepository
+    const existingImportIds = await this.dataImportRepository
       .createQueryBuilder('di')
-      .select('MAX(di.importId)', 'maxId')
+      .select('di.importId', 'importId')
       .where('di.projectId = :projectId', { projectId })
-      .getRawOne<{ maxId: number | null }>()
+      .orderBy('di.importId', 'ASC')
+      .getRawMany<{ importId: number | string }>()
 
-    const next = (result?.maxId ?? 0) + 1
+    let next = 1
+
+    for (const { importId } of existingImportIds) {
+      const currentImportId = Number(importId)
+
+      if (currentImportId < next) {
+        continue
+      }
+
+      if (currentImportId === next) {
+        next += 1
+        continue
+      }
+
+      break
+    }
 
     if (next > MAX_IMPORT_ID) {
       throw new BadRequestException(
