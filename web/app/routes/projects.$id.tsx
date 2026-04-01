@@ -564,7 +564,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       hasImportedData = serverFetch<{ hasImportedData: boolean }>(
         request,
         `data-import/${projectId}/has-imported-data?from=${encodeURIComponent(importRange.from)}&to=${encodeURIComponent(importRange.to)}`,
-      ).then((res) => res.data?.hasImportedData === true)
+      )
+        .then((res) => res.data?.hasImportedData === true)
         .catch(() => false)
     }
   }

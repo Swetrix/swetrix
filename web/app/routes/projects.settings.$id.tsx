@@ -809,11 +809,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       proxyForm.append('file', file, file.name)
       proxyForm.append('provider', provider)
 
-      const result = await serverFetch(
-        request,
-        `data-import/${id}/upload`,
-        { method: 'POST', body: proxyForm },
-      )
+      const result = await serverFetch(request, `data-import/${id}/upload`, {
+        method: 'POST',
+        body: proxyForm,
+      })
 
       if (result.error) {
         return data<ProjectSettingsActionData>(

@@ -28,10 +28,7 @@ import { ProjectService } from '../project/project.service'
 import { DataImportService } from './data-import.service'
 import { UploadImportDto } from './dto'
 import { getMapper, SUPPORTED_PROVIDERS } from './mappers'
-import {
-  DataImportJobData,
-  DATA_IMPORT_QUEUE,
-} from './data-import.processor'
+import { DataImportJobData, DATA_IMPORT_QUEUE } from './data-import.processor'
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100 MB
 
