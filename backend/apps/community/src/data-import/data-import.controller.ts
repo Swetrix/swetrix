@@ -82,13 +82,13 @@ export class DataImportController {
     const project = await this.projectService.getFullProject(projectId)
     this.projectService.allowedToManage(project, uid)
 
-    if (!file?.path) {
+    if (!file?.filename) {
       throw new BadRequestException('No file uploaded')
     }
 
     const mapper = getMapper(dto.provider)
     if (!mapper) {
-      this.cleanupFile(file.path)
+      this.cleanupFile(file.filename)
       throw new BadRequestException(
         `Unsupported provider: ${dto.provider}. Supported: ${SUPPORTED_PROVIDERS.join(', ')}`,
       )
@@ -96,7 +96,7 @@ export class DataImportController {
 
     const ext = path.extname(file.originalname).toLowerCase()
     if (ext !== mapper.expectedFileExtension) {
-      this.cleanupFile(file.path)
+      this.cleanupFile(file.filename)
       throw new BadRequestException(
         `Invalid file type. Expected a ${mapper.expectedFileExtension} file for ${dto.provider} import.`,
       )
@@ -106,7 +106,7 @@ export class DataImportController {
     try {
       dataImport = await this.dataImportService.create(projectId, dto.provider)
     } catch (error) {
-      this.cleanupFile(file.path)
+      this.cleanupFile(file.filename)
       throw error
     }
 
@@ -117,7 +117,7 @@ export class DataImportController {
           importId: dataImport.id,
           projectId,
           provider: dto.provider,
-          filePath: file.path,
+          fileName: file.filename,
         },
         {
           attempts: 1,
@@ -128,7 +128,7 @@ export class DataImportController {
     } catch (error) {
       this.logger.error(`Failed to enqueue import job: ${error.message}`)
       await this.dataImportService.deleteImportRecord(projectId, dataImport.id)
-      this.cleanupFile(file.path)
+      this.cleanupFile(file.filename)
       throw new ServiceUnavailableException(
         'Failed to start import. Please try again later.',
       )
@@ -197,18 +197,12 @@ export class DataImportController {
     return { success: true }
   }
 
-  private cleanupFile(filePath: string): void {
+  private cleanupFile(fileName: string): void {
     try {
-      const resolvedPath = path.resolve(filePath)
-      const relativePath = path.relative(IMPORT_TMP_DIR, resolvedPath)
-      const isImportTempFile =
-        relativePath !== '' &&
-        !relativePath.startsWith('..') &&
-        !path.isAbsolute(relativePath)
-
-      if (!isImportTempFile) {
+      const resolvedPath = this.getImportFilePath(fileName)
+      if (!resolvedPath) {
         this.logger.warn(
-          `Skipped cleanup outside import temp dir: ${resolvedPath}`,
+          `Skipped cleanup for invalid import file name: ${fileName}`,
         )
         return
       }
@@ -219,5 +213,17 @@ export class DataImportController {
     } catch {
       //
     }
+  }
+
+  private getImportFilePath(fileName: string): string | null {
+    if (
+      !fileName ||
+      fileName !== path.basename(fileName) ||
+      /[\\/]/.test(fileName)
+    ) {
+      return null
+    }
+
+    return path.join(IMPORT_TMP_DIR, fileName)
   }
 }

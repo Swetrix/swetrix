@@ -19,7 +19,7 @@ export interface DataImportJobData {
   importId: number
   projectId: string
   provider: string
-  filePath: string
+  fileName: string
 }
 
 @Processor(DATA_IMPORT_QUEUE, { concurrency: 1 })
@@ -31,7 +31,8 @@ export class DataImportProcessor extends WorkerHost {
   }
 
   async process(job: Job<DataImportJobData>): Promise<void> {
-    const { importId, projectId, provider, filePath } = job.data
+    const { importId, projectId, provider, fileName } = job.data
+    const filePath = this.getImportFilePath(fileName)
 
     try {
       this.logger.log(
@@ -39,6 +40,15 @@ export class DataImportProcessor extends WorkerHost {
       )
 
       await this.dataImportService.markProcessing(importId, projectId)
+
+      if (!filePath) {
+        await this.dataImportService.markFailed(
+          importId,
+          projectId,
+          'Invalid import file reference. Please upload the file again.',
+        )
+        return
+      }
 
       const mapper = getMapper(provider)
       if (!mapper) {
@@ -153,7 +163,7 @@ export class DataImportProcessor extends WorkerHost {
         )
       }
     } finally {
-      this.cleanupFile(filePath)
+      this.cleanupFile(fileName)
     }
   }
 
@@ -168,18 +178,12 @@ export class DataImportProcessor extends WorkerHost {
     })
   }
 
-  private cleanupFile(filePath: string): void {
+  private cleanupFile(fileName: string): void {
     try {
-      const resolvedPath = path.resolve(filePath)
-      const relativePath = path.relative(IMPORT_TMP_DIR, resolvedPath)
-      const isImportTempFile =
-        relativePath !== '' &&
-        !relativePath.startsWith('..') &&
-        !path.isAbsolute(relativePath)
-
-      if (!isImportTempFile) {
+      const resolvedPath = this.getImportFilePath(fileName)
+      if (!resolvedPath) {
         this.logger.warn(
-          `Skipped cleanup outside import temp dir: ${resolvedPath}`,
+          `Skipped cleanup for invalid import file name: ${fileName}`,
         )
         return
       }
@@ -188,7 +192,19 @@ export class DataImportProcessor extends WorkerHost {
         fs.unlinkSync(resolvedPath)
       }
     } catch {
-      this.logger.warn(`Failed to clean up temp file: ${filePath}`)
+      this.logger.warn(`Failed to clean up temp file: ${fileName}`)
     }
+  }
+
+  private getImportFilePath(fileName: string): string | null {
+    if (
+      !fileName ||
+      fileName !== path.basename(fileName) ||
+      /[\\/]/.test(fileName)
+    ) {
+      return null
+    }
+
+    return path.join(IMPORT_TMP_DIR, fileName)
   }
 }
