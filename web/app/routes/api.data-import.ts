@@ -7,12 +7,37 @@ import {
 import { serverFetch } from '~/api/api.server'
 import { createHeadersWithCookies } from '~/utils/session.server'
 
+function validateEndpoint(raw: string | null): string | null {
+  if (!raw) return null
+
+  const trimmed = raw.replace(/^\/+/, '')
+
+  if (
+    trimmed !== 'data-import' &&
+    !trimmed.startsWith('data-import/')
+  ) {
+    return null
+  }
+
+  if (trimmed.includes('..')) return null
+
+  if (/^[a-z]+:\/\//i.test(trimmed)) return null
+
+  return trimmed
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
-  const endpoint = url.searchParams.get('endpoint')
+  const raw = url.searchParams.get('endpoint')
+
+  if (!raw) {
+    return data({ error: 'endpoint param is required' }, { status: 400 })
+  }
+
+  const endpoint = validateEndpoint(raw)
 
   if (!endpoint) {
-    return data({ error: 'endpoint param is required' }, { status: 400 })
+    return data({ error: 'Invalid endpoint' }, { status: 400 })
   }
 
   const result = await serverFetch(request, endpoint)
@@ -31,10 +56,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const url = new URL(request.url)
-  const endpoint = url.searchParams.get('endpoint')
+  const raw = url.searchParams.get('endpoint')
+
+  if (!raw) {
+    return data({ error: 'endpoint param is required' }, { status: 400 })
+  }
+
+  const endpoint = validateEndpoint(raw)
 
   if (!endpoint) {
-    return data({ error: 'endpoint param is required' }, { status: 400 })
+    return data({ error: 'Invalid endpoint' }, { status: 400 })
   }
 
   if (request.method === 'DELETE') {
