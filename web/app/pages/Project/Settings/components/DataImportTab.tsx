@@ -191,7 +191,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
     if (!deleteTarget) return
 
     deleteFetcher.submit(
-      { intent: 'delete-data-import', importId: String(deleteTarget.id) },
+      { intent: 'delete-data-import', importId: String(deleteTarget.importId) },
       { method: 'POST', action: settingsAction },
     )
   }

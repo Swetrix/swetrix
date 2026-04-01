@@ -174,6 +174,7 @@ export interface AnalyticsFunnel {
 
 export interface DataImport {
   id: number
+  importId: number
   projectId: string
   provider: string
   status: 'pending' | 'processing' | 'completed' | 'failed'

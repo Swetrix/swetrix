@@ -105,9 +105,9 @@ export class DataImportService {
     })
   }
 
-  async findOne(projectId: string, id: number): Promise<DataImport> {
+  async findOne(projectId: string, importId: number): Promise<DataImport> {
     const dataImport = await this.dataImportRepository.findOne({
-      where: { id, projectId },
+      where: { importId, projectId },
     })
 
     if (!dataImport) {
@@ -166,8 +166,8 @@ export class DataImportService {
     })
   }
 
-  async deleteImport(projectId: string, id: number): Promise<void> {
-    const dataImport = await this.findOne(projectId, id)
+  async deleteImport(projectId: string, importId: number): Promise<void> {
+    const dataImport = await this.findOne(projectId, importId)
 
     if (
       dataImport.status === DataImportStatus.PENDING ||
@@ -189,7 +189,7 @@ export class DataImportService {
       )
     }
 
-    await this.dataImportRepository.delete(id)
+    await this.dataImportRepository.delete(dataImport.id)
   }
 
   async deleteImportRecord(id: number): Promise<void> {

@@ -17,6 +17,7 @@ import {
   ServiceUnavailableException,
   Query,
   Logger,
+  Headers,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { diskStorage } from 'multer'
@@ -155,16 +156,17 @@ export class DataImportController {
   }
 
   @Get(':projectId/has-imported-data')
-  @Auth()
+  @Auth(true, true)
   @ApiBearerAuth()
   async hasImportedData(
     @Param('projectId') projectId: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: { 'x-password'?: string },
     @Query('from') from: string,
     @Query('to') to: string,
   ) {
     const project = await this.projectService.getFullProject(projectId)
-    this.projectService.allowedToView(project, uid)
+    this.projectService.allowedToView(project, uid, headers['x-password'])
 
     if (!from || !to) {
       throw new BadRequestException('"from" and "to" query params are required')

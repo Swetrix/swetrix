@@ -564,6 +564,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       hasImportedData = serverFetch<{ hasImportedData: boolean }>(
         request,
         `data-import/${projectId}/has-imported-data?from=${encodeURIComponent(importRange.from)}&to=${encodeURIComponent(importRange.to)}`,
+        {
+          headers: password ? { 'x-password': password } : undefined,
+        },
       )
         .then((res) => res.data?.hasImportedData === true)
         .catch(() => false)
