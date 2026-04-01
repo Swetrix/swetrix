@@ -104,10 +104,13 @@ export class DataImportController {
       )
     }
 
-    const dataImport = await this.dataImportService.create(
-      projectId,
-      dto.provider,
-    )
+    let dataImport
+    try {
+      dataImport = await this.dataImportService.create(projectId, dto.provider)
+    } catch (error) {
+      this.cleanupFile(file.path)
+      throw error
+    }
 
     try {
       await this.importQueue.add(
