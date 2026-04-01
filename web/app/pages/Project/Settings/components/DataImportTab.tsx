@@ -22,8 +22,9 @@ import FileUpload from '~/ui/FileUpload'
 import { Text } from '~/ui/Text'
 import UmamiSVG from '~/ui/icons/Umami'
 import SimpleAnalyticsSVG from '~/ui/icons/SimpleAnalytics'
+import FathomSVG from '~/ui/icons/Fathom'
 
-const PROVIDERS = ['umami', 'simple-analytics'] as const
+const PROVIDERS = ['fathom', 'simple-analytics', 'umami'] as const
 
 const PROVIDER_ICONS: Record<
   string,
@@ -31,11 +32,13 @@ const PROVIDER_ICONS: Record<
 > = {
   umami: UmamiSVG,
   'simple-analytics': SimpleAnalyticsSVG,
+  fathom: FathomSVG,
 }
 
 const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
   umami: 'Umami',
   'simple-analytics': 'Simple Analytics',
+  fathom: 'Fathom Analytics',
 }
 
 const STATUS_ICONS = {

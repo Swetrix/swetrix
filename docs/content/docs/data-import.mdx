@@ -11,6 +11,7 @@ Swetrix allows you to import historical analytics data from other platforms so y
 
 - Umami
 - Simple Analytics
+- Fathom Analytics
 
 ## Importing from Umami
 
@@ -121,6 +122,46 @@ The page auto-refreshes while an import is processing. You can navigate away and
 </Step>
 </Steps>
 
+## Importing from Fathom Analytics
+
+<Steps>
+<Step>
+### Export Your Data from Fathom
+
+1. Log in to your [Fathom Analytics](https://usefathom.com) dashboard
+2. Go to your site's **Detailed export** page
+3. Select the date range and the dimensions you want to export — make sure to include at least **Browser**, **Country**, **City**, **Region**, **Device type**, **UTM parameters**, **Referrer**, **Page**, and **Operating system**
+4. Export pageviews and events as separate `.csv` files — Fathom provides separate exports for pageviews and custom events
+
+You can learn more on how to export your data from Fathom on their [export documentation](https://usefathom.com/docs/features/detailed-csv-export).
+
+</Step>
+<Step>
+### Import into Swetrix
+
+1. Go to your project's **Settings** page in Swetrix
+2. Click the **Import data** tab
+3. Click the **Fathom Analytics** provider card
+4. In the upload modal, either drag and drop your `.csv` file or click to browse
+5. Wait for the upload and processing to complete
+
+<Callout type="info">Fathom exports pageviews and events as separate CSV files. Upload them one at a time — you don't need to upload both at once. The imported data will be linked automatically.</Callout>
+
+</Step>
+<Step>
+### Monitor Progress
+
+After uploading, the import will appear in the **Import history** table below the provider cards. You can see:
+
+- **Status** — Pending, Processing, Completed, or Failed
+- **Date range** — The time span of the imported data
+- **Rows** — How many analytics events were imported
+
+The page auto-refreshes while an import is processing. You can navigate away and come back later.
+
+</Step>
+</Steps>
+
 ## Viewing Imported Data
 
 Once an import completes, the data is immediately available in your analytics dashboard. When you select a date range that includes imported data, a small **"Imported"** badge appears near the period selector to let you know.
@@ -159,7 +200,7 @@ Only one import can run at a time per project. Wait for the current import to co
 
 ### Invalid file type error
 
-Make sure you're uploading the correct file format for your provider. For Umami, upload the `.zip` file directly - do not extract it first. For Simple Analytics, upload the `.csv` export file.
+Make sure you're uploading the correct file format for your provider. For Umami, upload the `.zip` file directly - do not extract it first. For Simple Analytics and Fathom Analytics, upload the `.csv` export file.
 
 ### Data not appearing in charts
 
