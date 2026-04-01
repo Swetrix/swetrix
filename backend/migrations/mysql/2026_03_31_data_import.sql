@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `data_import` (
   `invalidRows` int NOT NULL DEFAULT 0,
   `errorMessage` text DEFAULT NULL,
   `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  `finishedAt` datetime DEFAULT NULL,
+  `finishedAt` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_data_import_project` (`projectId`),
   CONSTRAINT `FK_data_import_project` FOREIGN KEY (`projectId`) REFERENCES `project` (`id`) ON DELETE CASCADE
