@@ -1,0 +1,509 @@
+import { useState, useEffect, useCallback, useRef } from 'react'
+import {
+  UploadIcon,
+  TrashIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  SpinnerIcon,
+  FileTextIcon,
+} from '@phosphor-icons/react'
+import cx from 'clsx'
+import { toast } from 'sonner'
+import dayjs from 'dayjs'
+import { Trans, useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
+
+import { DataImport } from '~/lib/models/Project'
+import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
+import Modal from '~/ui/Modal'
+import Loader from '~/ui/Loader'
+import FileUpload from '~/ui/FileUpload'
+import { Text } from '~/ui/Text'
+import UmamiSVG from '~/ui/icons/Umami'
+
+const PROVIDERS = ['umami'] as const
+
+const STATUS_ICONS = {
+  pending: ClockIcon,
+  processing: SpinnerIcon,
+  completed: CheckCircleIcon,
+  failed: XCircleIcon,
+} as const
+
+const STATUS_CLASSES = {
+  pending:
+    'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/20',
+  processing:
+    'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-500/20',
+  completed:
+    'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20',
+  failed:
+    'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20',
+} as const
+
+function StatusBadge({
+  status,
+  label,
+}: {
+  status: DataImport['status']
+  label: string
+}) {
+  const Icon = STATUS_ICONS[status]
+
+  return (
+    <Text
+      as='span'
+      size='xs'
+      weight='medium'
+      colour='inherit'
+      className={cx(
+        'inline-flex items-center gap-1 rounded-md px-2 py-0.5 ring-1 ring-inset',
+        STATUS_CLASSES[status],
+      )}
+    >
+      <Icon
+        className={cx('size-3', {
+          'animate-spin': status === 'processing',
+        })}
+      />
+      {label}
+    </Text>
+  )
+}
+
+interface DataImportTabProps {
+  projectId: string
+}
+
+export default function DataImportTab({ projectId }: DataImportTabProps) {
+  const { t } = useTranslation('common')
+  const [imports, setImports] = useState<DataImport[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<DataImport | null>(null)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const listFetcher = useFetcher<ProjectSettingsActionData>()
+  const uploadFetcher = useFetcher<ProjectSettingsActionData>()
+  const deleteFetcher = useFetcher<ProjectSettingsActionData>()
+
+  const settingsAction = `/projects/settings/${projectId}`
+
+  const statusLabels: Record<DataImport['status'], string> = {
+    pending: t('project.settings.dataImport.statusPending'),
+    processing: t('project.settings.dataImport.statusProcessing'),
+    completed: t('project.settings.dataImport.statusCompleted'),
+    failed: t('project.settings.dataImport.statusFailed'),
+  }
+
+  const fetchImports = useCallback(() => {
+    listFetcher.submit(
+      { intent: 'list-data-imports' },
+      { method: 'POST', action: settingsAction },
+    )
+  }, [listFetcher, settingsAction])
+
+  useEffect(() => {
+    fetchImports()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (listFetcher.state !== 'idle' || !listFetcher.data) return
+    if (listFetcher.data.intent !== 'list-data-imports') return
+
+    if (listFetcher.data.error) {
+      toast.error(
+        listFetcher.data.error || t('project.settings.dataImport.loadFailed'),
+      )
+    } else if (listFetcher.data.dataImports) {
+      setImports(listFetcher.data.dataImports)
+    }
+    setLoading(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listFetcher.state, listFetcher.data])
+
+  useEffect(() => {
+    const hasActive = imports.some(
+      (i) => i.status === 'pending' || i.status === 'processing',
+    )
+
+    if (hasActive) {
+      pollRef.current = setInterval(fetchImports, 3000)
+    } else if (pollRef.current) {
+      clearInterval(pollRef.current)
+      pollRef.current = null
+    }
+
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current)
+      }
+    }
+  }, [imports, fetchImports])
+
+  useEffect(() => {
+    if (uploadFetcher.state !== 'idle' || !uploadFetcher.data) return
+    if (uploadFetcher.data.intent !== 'upload-data-import') return
+
+    if (uploadFetcher.data.success) {
+      toast.success(t('project.settings.dataImport.importStarted'))
+      setSelectedProvider(null)
+      fetchImports()
+    } else if (uploadFetcher.data.error) {
+      toast.error(
+        uploadFetcher.data.error ||
+          t('project.settings.dataImport.uploadFailed'),
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploadFetcher.state, uploadFetcher.data])
+
+  useEffect(() => {
+    if (deleteFetcher.state !== 'idle' || !deleteFetcher.data) return
+    if (deleteFetcher.data.intent !== 'delete-data-import') return
+
+    if (deleteFetcher.data.success) {
+      toast.success(t('project.settings.dataImport.importDeleted'))
+      setDeleteTarget(null)
+      fetchImports()
+    } else if (deleteFetcher.data.error) {
+      toast.error(
+        deleteFetcher.data.error ||
+          t('project.settings.dataImport.deleteFailed'),
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleteFetcher.state, deleteFetcher.data])
+
+  const handleUpload = (file: File) => {
+    if (!selectedProvider) return
+
+    const formData = new FormData()
+    formData.append('intent', 'upload-data-import')
+    formData.append('file', file)
+    formData.append('provider', selectedProvider)
+
+    uploadFetcher.submit(formData, {
+      method: 'POST',
+      action: settingsAction,
+      encType: 'multipart/form-data',
+    })
+  }
+
+  const handleDelete = () => {
+    if (!deleteTarget) return
+
+    deleteFetcher.submit(
+      { intent: 'delete-data-import', importId: String(deleteTarget.importId) },
+      { method: 'POST', action: settingsAction },
+    )
+  }
+
+  const uploading = uploadFetcher.state !== 'idle'
+  const deleting = deleteFetcher.state !== 'idle'
+
+  const providerFileType = selectedProvider
+    ? t(`project.settings.dataImport.${selectedProvider}.fileType`)
+    : ''
+
+  return (
+    <div className='space-y-8'>
+      <div>
+        <Text as='h3' size='base' weight='semibold' colour='primary'>
+          {t('project.settings.dataImport.importFrom')}
+        </Text>
+        <Text
+          as='p'
+          size='sm'
+          colour='inherit'
+          className='mt-1 text-gray-500 dark:text-gray-400'
+        >
+          {t('project.settings.dataImport.importFromDesc')}
+        </Text>
+
+        <div className='mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3'>
+          {PROVIDERS.map((providerId) => {
+            const Icon = providerId === 'umami' ? UmamiSVG : FileTextIcon
+            const hasActive = imports.some(
+              (i) => i.status === 'pending' || i.status === 'processing',
+            )
+            const name =
+              providerId.charAt(0).toUpperCase() + providerId.slice(1)
+            const fileType = t(
+              `project.settings.dataImport.${providerId}.fileType`,
+            )
+
+            return (
+              <button
+                key={providerId}
+                type='button'
+                disabled={hasActive}
+                onClick={() => setSelectedProvider(providerId)}
+                className={cx(
+                  'group relative flex flex-col items-start rounded-lg border p-4 text-left transition-all',
+                  hasActive
+                    ? 'cursor-not-allowed border-gray-200 opacity-50 dark:border-slate-800'
+                    : 'cursor-pointer border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-slate-700/80 dark:hover:border-slate-600 dark:hover:bg-slate-900/50',
+                )}
+              >
+                <div className='flex items-center gap-3'>
+                  <div className='flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800'>
+                    <Icon className='size-5' />
+                  </div>
+                  <div>
+                    <Text as='p' size='sm' weight='semibold' colour='primary'>
+                      {name}
+                    </Text>
+                    <Text
+                      as='p'
+                      size='xs'
+                      colour='inherit'
+                      className='text-gray-500 dark:text-gray-400'
+                    >
+                      {fileType}
+                    </Text>
+                  </div>
+                </div>
+                <Text
+                  as='p'
+                  size='xs'
+                  colour='inherit'
+                  className='mt-2 text-gray-500 dark:text-gray-400'
+                >
+                  {t(`project.settings.dataImport.${providerId}.description`)}
+                </Text>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div>
+        <Text as='h3' size='base' weight='semibold' colour='primary'>
+          {t('project.settings.dataImport.importHistory')}
+        </Text>
+
+        {loading ? (
+          <div className='mt-4 flex justify-center py-8'>
+            <Loader />
+          </div>
+        ) : imports.length === 0 ? (
+          <div className='mt-4 rounded-lg border border-dashed border-gray-300 py-8 text-center dark:border-slate-700'>
+            <UploadIcon className='mx-auto size-8 text-gray-400 dark:text-gray-500' />
+            <Text
+              as='p'
+              size='sm'
+              colour='inherit'
+              className='mt-2 text-gray-500 dark:text-gray-400'
+            >
+              {t('project.settings.dataImport.noImports')}
+            </Text>
+          </div>
+        ) : (
+          <div className='mt-4 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+              <thead className='bg-gray-50 dark:bg-slate-900'>
+                <tr>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('project.settings.dataImport.provider')}
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('project.settings.dataImport.status')}
+                  </th>
+                  <th
+                    scope='col'
+                    className='hidden px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-900 uppercase sm:table-cell dark:text-white'
+                  >
+                    {t('project.settings.dataImport.dateRange')}
+                  </th>
+                  <th
+                    scope='col'
+                    className='hidden px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-900 uppercase sm:table-cell dark:text-white'
+                  >
+                    {t('project.settings.dataImport.rows')}
+                  </th>
+                  <th
+                    scope='col'
+                    className='hidden px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-900 uppercase md:table-cell dark:text-white'
+                  >
+                    {t('project.settings.dataImport.created')}
+                  </th>
+                  <th scope='col' />
+                </tr>
+              </thead>
+              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
+                {imports.map((imp) => (
+                  <tr
+                    key={imp.id}
+                    className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'
+                  >
+                    <td className='px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 capitalize dark:text-gray-100'>
+                      {imp.provider}
+                    </td>
+                    <td className='px-4 py-3'>
+                      <StatusBadge
+                        status={imp.status}
+                        label={statusLabels[imp.status]}
+                      />
+                      {imp.status === 'failed' && imp.errorMessage && (
+                        <Text
+                          as='p'
+                          size='xs'
+                          colour='error'
+                          className='mt-1 max-w-xs'
+                        >
+                          {imp.errorMessage}
+                        </Text>
+                      )}
+                    </td>
+                    <td className='hidden px-4 py-3 text-sm whitespace-nowrap text-gray-900 sm:table-cell dark:text-gray-100'>
+                      {imp.dateFrom && imp.dateTo ? (
+                        <>
+                          {dayjs(imp.dateFrom).format('MMM D, YYYY')}
+                          {' — '}
+                          {dayjs(imp.dateTo).format('MMM D, YYYY')}
+                        </>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td className='hidden px-4 py-3 text-sm whitespace-nowrap text-gray-900 sm:table-cell dark:text-gray-100'>
+                      {imp.importedRows > 0
+                        ? imp.importedRows.toLocaleString()
+                        : '—'}
+                    </td>
+                    <td className='hidden px-4 py-3 text-sm whitespace-nowrap text-gray-900 md:table-cell dark:text-gray-100'>
+                      {dayjs(imp.createdAt).format('MMM D, YYYY HH:mm')}
+                    </td>
+                    <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
+                      {(imp.status === 'completed' ||
+                        imp.status === 'failed') && (
+                        <div className='flex items-center justify-end'>
+                          <button
+                            type='button'
+                            onClick={() => setDeleteTarget(imp)}
+                            className='rounded p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300'
+                            title={t(
+                              'project.settings.dataImport.deleteImport',
+                            )}
+                          >
+                            <TrashIcon className='size-4' />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <Modal
+        isOpened={!!selectedProvider}
+        onClose={() => {
+          if (!uploading) setSelectedProvider(null)
+        }}
+        title={t('project.settings.dataImport.importFromProvider', {
+          provider: selectedProvider
+            ? selectedProvider.charAt(0).toUpperCase() +
+              selectedProvider.slice(1)
+            : '',
+        })}
+        size='medium'
+        message={
+          <div className='space-y-4'>
+            <Text
+              as='p'
+              size='sm'
+              colour='inherit'
+              className='text-gray-600 dark:text-gray-400'
+            >
+              <Trans
+                i18nKey='project.settings.dataImport.uploadInstructions'
+                t={t}
+                components={{
+                  1: (
+                    <a
+                      href='https://swetrix.com/docs/data-import'
+                      target='_blank'
+                      rel='noreferrer'
+                      className='text-indigo-600 hover:text-indigo-500 dark:text-slate-300 dark:hover:text-white'
+                    />
+                  ),
+                }}
+              />
+            </Text>
+
+            <FileUpload
+              accept={providerFileType}
+              loading={uploading}
+              onFile={handleUpload}
+              label={
+                uploading ? (
+                  t('project.settings.dataImport.uploadingProcessing')
+                ) : (
+                  <Text
+                    as='span'
+                    size='sm'
+                    colour='inherit'
+                    className='text-gray-600 dark:text-gray-300'
+                  >
+                    <Text
+                      as='span'
+                      weight='medium'
+                      colour='inherit'
+                      className='text-gray-900 dark:text-gray-100'
+                    >
+                      {t('project.settings.dataImport.clickToUpload')}
+                    </Text>{' '}
+                    {t('project.settings.dataImport.orDragDrop')}
+                  </Text>
+                )
+              }
+              hint={
+                uploading
+                  ? undefined
+                  : t('project.settings.dataImport.maxFileSize', {
+                      fileType: providerFileType.toUpperCase(),
+                      maxSize: 100,
+                    })
+              }
+            />
+          </div>
+        }
+        closeText={t('common.cancel')}
+      />
+
+      <Modal
+        isOpened={!!deleteTarget}
+        onClose={() => {
+          if (!deleting) setDeleteTarget(null)
+        }}
+        type='warning'
+        title={t('project.settings.dataImport.deleteImport')}
+        message={
+          <Text as='p'>
+            {t('project.settings.dataImport.deleteImportConfirm', {
+              count: deleteTarget?.importedRows || 0,
+            })}
+          </Text>
+        }
+        submitText={t('common.delete')}
+        closeText={t('common.cancel')}
+        submitType='danger'
+        onSubmit={handleDelete}
+        isLoading={deleting}
+      />
+    </div>
+  )
+}

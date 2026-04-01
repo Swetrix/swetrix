@@ -6,7 +6,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _some from 'lodash/some'
-import { ProhibitIcon, EyeIcon } from '@phosphor-icons/react'
+import { ProhibitIcon, EyeIcon, DownloadIcon } from '@phosphor-icons/react'
 import React, {
   useState,
   useEffect,
@@ -96,6 +96,7 @@ import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
+import Tooltip from '~/ui/Tooltip'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
 import routes from '~/utils/routes'
@@ -219,6 +220,29 @@ function TrafficDataResolver({
         customEventsData,
       })}
     </>
+  )
+}
+
+function HasImportedIndicator() {
+  const { t } = useTranslation('common')
+  const { hasImportedData: hasImportedDataPromise } =
+    useLoaderData<ProjectLoaderData>()
+
+  const hasImportedData = hasImportedDataPromise
+    ? use(hasImportedDataPromise)
+    : false
+
+  if (!hasImportedData) return null
+
+  return (
+    <Tooltip
+      text={t('project.settings.dataImport.statsIncludeImported')}
+      tooltipNode={
+        <span className='inline-flex rounded-md border border-transparent p-1.5'>
+          <DownloadIcon className='size-5 text-gray-700 dark:text-gray-50' />
+        </span>
+      }
+    />
   )
 }
 
@@ -1055,6 +1079,9 @@ const TrafficViewInner = ({
               onSwitch={setChartTypeOnClick}
               type={chartType}
             />
+            <Suspense fallback={null}>
+              <HasImportedIndicator />
+            </Suspense>
           </div>
           {!_isEmpty(overall) ? (
             <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>

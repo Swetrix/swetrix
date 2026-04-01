@@ -225,6 +225,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   setShowFiltersSearch: () => {},
   resetDateRange: () => {},
   refreshStats: async () => {},
+
   refCalendar: { current: null } as any,
   refCalendarCompare: { current: null } as any,
 

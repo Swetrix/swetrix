@@ -63,6 +63,51 @@ import {
   hasAuthTokens,
 } from '~/utils/session.server'
 
+function computeDateRangeForPeriod(
+  period: string,
+  from?: string,
+  to?: string,
+): { from: string; to: string } | null {
+  if (from && to) {
+    return { from: `${from} 00:00:00`, to: `${to} 23:59:59` }
+  }
+
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const fmt = (d: Date) =>
+    `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`
+
+  const subtract = (ms: number) => new Date(now.getTime() - ms)
+  const MS_HOUR = 3_600_000
+  const MS_DAY = 86_400_000
+
+  const periodMap: Record<string, () => { from: string; to: string }> = {
+    '1h': () => ({ from: fmt(subtract(MS_HOUR)), to: fmt(now) }),
+    today: () => {
+      const start = new Date(now)
+      start.setUTCHours(0, 0, 0, 0)
+      return { from: fmt(start), to: fmt(now) }
+    },
+    yesterday: () => {
+      const dayStart = new Date(now.getTime() - MS_DAY)
+      dayStart.setUTCHours(0, 0, 0, 0)
+      const dayEnd = new Date(now.getTime() - MS_DAY)
+      dayEnd.setUTCHours(23, 59, 59, 999)
+      return { from: fmt(dayStart), to: fmt(dayEnd) }
+    },
+    '1d': () => ({ from: fmt(subtract(MS_DAY)), to: fmt(now) }),
+    '7d': () => ({ from: fmt(subtract(7 * MS_DAY)), to: fmt(now) }),
+    '4w': () => ({ from: fmt(subtract(28 * MS_DAY)), to: fmt(now) }),
+    '3M': () => ({ from: fmt(subtract(90 * MS_DAY)), to: fmt(now) }),
+    '12M': () => ({ from: fmt(subtract(365 * MS_DAY)), to: fmt(now) }),
+    '24M': () => ({ from: fmt(subtract(730 * MS_DAY)), to: fmt(now) }),
+    all: () => ({ from: '2020-01-01 00:00:00', to: fmt(now) }),
+  }
+
+  const compute = periodMap[period]
+  return compute ? compute() : null
+}
+
 function formatDateForBackend(dateStr: string): string {
   if (!dateStr) return ''
 
@@ -269,6 +314,8 @@ export interface ProjectLoaderData {
   alertsData?: Promise<AlertsResponse | null>
   // Funnels data
   funnelData?: Promise<FunnelDataResponse | null>
+  // Data import
+  hasImportedData?: Promise<boolean>
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -386,6 +433,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   let goalsData: Promise<GoalsResponse | null> | undefined
   let alertsData: Promise<AlertsResponse | null> | undefined
   let funnelData: Promise<FunnelDataResponse | null> | undefined
+  let hasImportedData: Promise<boolean> | undefined
 
   // Only fetch data if project is valid and not locked
   if (project && !project.isLocked && projectId) {
@@ -510,6 +558,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         ).then((res) => res.data)
       }
     }
+
+    const importRange = computeDateRangeForPeriod(period, from, to)
+    if (importRange) {
+      hasImportedData = serverFetch<{ hasImportedData: boolean }>(
+        request,
+        `data-import/${projectId}/has-imported-data?from=${encodeURIComponent(importRange.from)}&to=${encodeURIComponent(importRange.to)}`,
+        {
+          headers: password ? { 'x-password': password } : undefined,
+        },
+      )
+        .then((res) => res.data?.hasImportedData === true)
+        .catch(() => false)
+    }
   }
 
   return data<ProjectLoaderData>(
@@ -532,6 +593,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       goalsData,
       alertsData,
       funnelData,
+      hasImportedData,
     },
     { headers: createHeadersWithCookies(cookies) },
   )

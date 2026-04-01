@@ -30,6 +30,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     ct Nullable(String) CODEC(ZSTD(3)),
     \`meta.key\` Array(String) CODEC(ZSTD(3)),
     \`meta.value\` Array(String) CODEC(ZSTD(3)),
+    importID Nullable(UInt8),
     created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
@@ -63,6 +64,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     ct Nullable(String) CODEC(ZSTD(3)),
     \`meta.key\` Array(String) CODEC(ZSTD(3)),
     \`meta.value\` Array(String) CODEC(ZSTD(3)),
+    importID Nullable(UInt8),
     created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()

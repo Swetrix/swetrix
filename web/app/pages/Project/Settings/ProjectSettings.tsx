@@ -21,6 +21,7 @@ import {
   NoteIcon,
   ShieldCheckIcon,
   CurrencyDollarIcon,
+  DownloadIcon,
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -64,6 +65,7 @@ import DangerZone from './tabs/DangerZone'
 import General from './tabs/General'
 import Revenue from './tabs/Revenue'
 import Shields from './tabs/Shields'
+import DataImportTab from './components/DataImportTab'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -355,6 +357,7 @@ const ProjectSettings = () => {
     | 'emails'
     | 'people'
     | 'annotations'
+    | 'import'
     | 'danger'
 
   const tabs = useMemo(
@@ -422,6 +425,14 @@ const ProjectSettings = () => {
           description: t('project.settings.tabs.peopleDesc'),
           icon: UserCircleIcon,
           iconColor: 'text-indigo-500',
+          visible: true,
+        },
+        {
+          id: 'import',
+          label: t('project.settings.tabs.import'),
+          description: t('project.settings.tabs.importDesc'),
+          icon: DownloadIcon,
+          iconColor: 'text-cyan-500',
           visible: true,
         },
         {
@@ -1043,6 +1054,17 @@ const ProjectSettings = () => {
                     project?.role === 'owner' || project?.role === 'admin'
                   }
                 />
+              </>
+            ) : null}
+            {activeTab === 'import' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <DataImportTab projectId={id} />
               </>
             ) : null}
 

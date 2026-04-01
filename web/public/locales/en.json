@@ -1702,7 +1702,9 @@
         "integrations": "Integrations",
         "integrationsDesc": "Connect external services to enrich your analytics.",
         "revenue": "Revenue",
-        "revenueDesc": "Track revenue and attribute sales to campaigns."
+        "revenueDesc": "Track revenue and attribute sales to campaigns.",
+        "import": "Import data",
+        "importDesc": "Import analytics data from other platforms"
       },
       "revenue": {
         "title": "Revenue Tracking",
@@ -1732,6 +1734,40 @@
           "title": "Revenue Attribution",
           "description": "Pass visitor and session IDs to your payment provider to attribute revenue to marketing channels.",
           "paddleExample": "Paddle Checkout Integration:"
+        }
+      },
+      "dataImport": {
+        "importFrom": "Import from",
+        "importFromDesc": "Select an analytics provider to import historical data from.",
+        "importHistory": "Import history",
+        "noImports": "No imports yet. Select a provider above to get started.",
+        "provider": "Provider",
+        "status": "Status",
+        "dateRange": "Date range",
+        "rows": "Rows",
+        "created": "Created",
+        "deleteImport": "Delete import",
+        "deleteImportConfirm": "This will permanently remove all imported data ({{count}} rows) from your analytics. This action cannot be undone.",
+        "importStarted": "Import started. Your data is being processed.",
+        "importDeleted": "Import deleted successfully",
+        "loadFailed": "Failed to load imports",
+        "uploadFailed": "Failed to upload file. Please try again.",
+        "deleteFailed": "Failed to delete import",
+        "clickToUpload": "Click to upload",
+        "orDragDrop": "or drag and drop",
+        "maxFileSize": "{{fileType}} file, max {{maxSize}} MB",
+        "uploadingProcessing": "Uploading and processing...",
+        "importFromProvider": "Import from {{provider}}",
+        "statsIncludeImported": "Stats include imported data",
+        "imported": "Imported",
+        "statusPending": "Pending",
+        "statusProcessing": "Processing",
+        "statusCompleted": "Completed",
+        "statusFailed": "Failed",
+        "uploadInstructions": "Please select your export file. Once started, the data will be imported in the background. Please allow for some time to complete. To learn more how to export 3rd party providers data, <1>see our docs</1>.",
+        "umami": {
+          "description": "Import pageviews and custom events from Umami export",
+          "fileType": ".zip"
         }
       },
       "captcha": {

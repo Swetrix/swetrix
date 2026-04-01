@@ -172,6 +172,22 @@ export interface AnalyticsFunnel {
   dropoffPercStep: number
 }
 
+export interface DataImport {
+  id: number
+  importId: number
+  projectId: string
+  provider: string
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  dateFrom: string | null
+  dateTo: string | null
+  totalRows: number
+  importedRows: number
+  invalidRows: number
+  errorMessage: string | null
+  createdAt: string
+  finishedAt: string | null
+}
+
 export interface Project {
   id: string
   name: string
