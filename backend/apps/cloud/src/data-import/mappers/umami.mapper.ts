@@ -1,7 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-import * as crypto from 'crypto'
 import { Unzip, UnzipInflate } from 'fflate'
 import { parse } from 'csv-parse'
 
@@ -10,6 +9,12 @@ import {
   ImportError,
   AnalyticsImportRow,
 } from './mapper.interface'
+import {
+  normalizeNull,
+  truncate,
+  sessionIdToPsid,
+  MOBILE_BROWSER_VARIANTS,
+} from './mapper.utils'
 
 const WEBSITE_EVENT_CSV = 'website_event.csv'
 const MAX_UMAMI_CSV_BYTES = 512 * 1024 * 1024
@@ -32,12 +37,6 @@ const BROWSER_MAP: Record<string, string> = {
   edge: 'Edge',
 }
 
-const MOBILE_BROWSER_VARIANTS: Record<string, string> = {
-  Chrome: 'Mobile Chrome',
-  Firefox: 'Mobile Firefox',
-  Safari: 'Mobile Safari',
-}
-
 const OS_MAP: Record<string, string> = {
   'mac os': 'macOS',
   'windows 10': 'Windows',
@@ -57,16 +56,6 @@ const DEVICE_MAP: Record<string, string> = {
   desktop: 'desktop',
   mobile: 'mobile',
   tablet: 'tablet',
-}
-
-function normalizeNull(value: string | undefined): string | null {
-  if (!value || value === '' || value === '\\N') return null
-  return value
-}
-
-function truncate(value: string | null, maxLen: number): string | null {
-  if (!value) return null
-  return value.length > maxLen ? value.slice(0, maxLen) : value
 }
 
 function mapBrowser(raw: string | null, device: string | null): string | null {
@@ -125,15 +114,6 @@ const DATE_REGEX =
 
 function isValidTimestamp(ts: string): boolean {
   return DATE_REGEX.test(ts)
-}
-
-function sessionIdToPsid(sessionId: string): string {
-  return crypto
-    .createHash('sha256')
-    .update(sessionId)
-    .digest()
-    .readBigUInt64BE(0)
-    .toString()
 }
 
 export class UmamiMapper implements ImportMapper {

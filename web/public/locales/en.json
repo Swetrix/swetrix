@@ -1768,6 +1768,10 @@
         "umami": {
           "description": "Import pageviews and custom events from Umami export",
           "fileType": ".zip"
+        },
+        "simple-analytics": {
+          "description": "Import pageviews and events from Simple Analytics export",
+          "fileType": ".csv"
         }
       },
       "captcha": {

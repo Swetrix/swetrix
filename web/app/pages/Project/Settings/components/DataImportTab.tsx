@@ -21,8 +21,22 @@ import Loader from '~/ui/Loader'
 import FileUpload from '~/ui/FileUpload'
 import { Text } from '~/ui/Text'
 import UmamiSVG from '~/ui/icons/Umami'
+import SimpleAnalyticsSVG from '~/ui/icons/SimpleAnalytics'
 
-const PROVIDERS = ['umami'] as const
+const PROVIDERS = ['umami', 'simple-analytics'] as const
+
+const PROVIDER_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  umami: UmamiSVG,
+  'simple-analytics': SimpleAnalyticsSVG,
+}
+
+const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
+  umami: 'Umami',
+  'simple-analytics': 'Simple Analytics',
+}
 
 const STATUS_ICONS = {
   pending: ClockIcon,
@@ -225,12 +239,11 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
 
         <div className='mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3'>
           {PROVIDERS.map((providerId) => {
-            const Icon = providerId === 'umami' ? UmamiSVG : FileTextIcon
+            const Icon = PROVIDER_ICONS[providerId] || FileTextIcon
             const hasActive = imports.some(
               (i) => i.status === 'pending' || i.status === 'processing',
             )
-            const name =
-              providerId.charAt(0).toUpperCase() + providerId.slice(1)
+            const name = PROVIDER_DISPLAY_NAMES[providerId] || providerId
             const fileType = t(
               `project.settings.dataImport.${providerId}.fileType`,
             )
@@ -346,7 +359,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                     className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'
                   >
                     <td className='px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 capitalize dark:text-gray-100'>
-                      {imp.provider}
+                      {PROVIDER_DISPLAY_NAMES[imp.provider] || imp.provider}
                     </td>
                     <td className='px-4 py-3'>
                       <StatusBadge
@@ -415,8 +428,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
         }}
         title={t('project.settings.dataImport.importFromProvider', {
           provider: selectedProvider
-            ? selectedProvider.charAt(0).toUpperCase() +
-              selectedProvider.slice(1)
+            ? PROVIDER_DISPLAY_NAMES[selectedProvider] || selectedProvider
             : '',
         })}
         size='medium'
