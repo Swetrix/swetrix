@@ -105,6 +105,10 @@ export class DataImportService {
     })
   }
 
+  async findById(id: number): Promise<DataImport | null> {
+    return this.dataImportRepository.findOneBy({ id })
+  }
+
   async findOne(projectId: string, importId: number): Promise<DataImport> {
     const dataImport = await this.dataImportRepository.findOne({
       where: { importId, projectId },

@@ -6,6 +6,7 @@ import { Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
 
 import { DataImportService } from './data-import.service'
+import { DataImportStatus } from './entity/data-import.entity'
 import { getMapper } from './mappers'
 import { clickhouse } from '../common/integrations/clickhouse'
 
@@ -38,6 +39,25 @@ export class DataImportProcessor extends WorkerHost {
       this.logger.log(
         `Processing import ${importId} for project ${projectId} (provider: ${provider})`,
       )
+
+      const dataImport = await this.dataImportService.findOne(
+        projectId,
+        importId,
+      )
+
+      if (dataImport.status === DataImportStatus.COMPLETED) {
+        this.logger.log(
+          `Import ${importId} already completed, skipping reprocessing`,
+        )
+        return
+      }
+
+      if (dataImport.status === DataImportStatus.PROCESSING) {
+        this.logger.warn(
+          `Import ${importId} has status PROCESSING (stalled job replay), cleaning up partial data before reprocessing`,
+        )
+        await this.dataImportService.cleanupImportedRows(projectId, importId)
+      }
 
       await this.dataImportService.markProcessing(importId, projectId)
 
