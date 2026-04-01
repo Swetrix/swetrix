@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
+import { randomUUID } from 'crypto'
 import {
   Controller,
   Post,
@@ -89,7 +90,7 @@ export class DataImportController {
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true })
     }
-    const tempFile = path.join(tempDir, `${projectId}-${Date.now()}${ext}`)
+    const tempFile = path.join(tempDir, `${Date.now()}-${randomUUID()}${ext}`)
     fs.writeFileSync(tempFile, file.buffer)
 
     const dataImport = await this.dataImportService.create(
