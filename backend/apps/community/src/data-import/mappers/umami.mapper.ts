@@ -318,7 +318,7 @@ export class UmamiMapper implements ImportMapper {
         try {
           fs.unlinkSync(csvPath)
         } catch {
-          // ignore
+          //
         }
       }
     }
