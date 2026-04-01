@@ -5,18 +5,7 @@ import {
 } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
-
-function toResponse(result: Awaited<ReturnType<typeof serverFetch>>) {
-  if (result.error) {
-    return data({ error: result.error }, { status: result.status })
-  }
-
-  return data(result.data, {
-    headers: result.cookies.length
-      ? { 'Set-Cookie': result.cookies.join(', ') }
-      : undefined,
-  })
-}
+import { createHeadersWithCookies } from '~/utils/session.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
@@ -26,7 +15,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return data({ error: 'endpoint param is required' }, { status: 400 })
   }
 
-  return toResponse(await serverFetch(request, endpoint))
+  const result = await serverFetch(request, endpoint)
+
+  if (result.error) {
+    return data(
+      { error: result.error },
+      { status: result.status, headers: createHeadersWithCookies(result.cookies) },
+    )
+  }
+
+  return data(result.data, {
+    headers: createHeadersWithCookies(result.cookies),
+  })
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -38,9 +38,18 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (request.method === 'DELETE') {
-    return toResponse(
-      await serverFetch(request, endpoint, { method: 'DELETE' }),
-    )
+    const result = await serverFetch(request, endpoint, { method: 'DELETE' })
+
+    if (result.error) {
+      return data(
+        { error: result.error },
+        { status: result.status, headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    return data(result.data, {
+      headers: createHeadersWithCookies(result.cookies),
+    })
   }
 
   const contentType = request.headers.get('content-type') || ''
@@ -57,9 +66,21 @@ export async function action({ request }: ActionFunctionArgs) {
       }
     }
 
-    return toResponse(
-      await serverFetch(request, endpoint, { method: 'POST', body: proxyForm }),
-    )
+    const result = await serverFetch(request, endpoint, {
+      method: 'POST',
+      body: proxyForm,
+    })
+
+    if (result.error) {
+      return data(
+        { error: result.error },
+        { status: result.status, headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    return data(result.data, {
+      headers: createHeadersWithCookies(result.cookies),
+    })
   }
 
   return data({ error: 'Unsupported content type' }, { status: 400 })
