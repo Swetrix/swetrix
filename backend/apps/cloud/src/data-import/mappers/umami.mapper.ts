@@ -207,18 +207,10 @@ export class UmamiMapper implements ImportMapper {
         foundEntry = true
 
         if (
-          typeof file.originalSize !== 'number' ||
-          !Number.isFinite(file.originalSize)
+          typeof file.originalSize === 'number' &&
+          Number.isFinite(file.originalSize) &&
+          file.originalSize > MAX_UMAMI_CSV_BYTES
         ) {
-          fail(
-            new ImportError(
-              `Unable to validate ${WEBSITE_EVENT_CSV} size in the ZIP archive.`,
-            ),
-          )
-          return
-        }
-
-        if (file.originalSize > MAX_UMAMI_CSV_BYTES) {
           fail(
             new ImportError(
               `${WEBSITE_EVENT_CSV} exceeds the ${MAX_UMAMI_CSV_BYTES} byte limit.`,
