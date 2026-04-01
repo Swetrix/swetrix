@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { DataImport } from '~/lib/models/Project'
 import Modal from '~/ui/Modal'
 import Loader from '~/ui/Loader'
+import FileUpload from '~/ui/FileUpload'
 import { Text } from '~/ui/Text'
 import UmamiSVG from '~/ui/icons/Umami'
 
@@ -81,7 +82,6 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
   const [uploading, setUploading] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<DataImport | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const statusLabels: Record<DataImport['status'], string> = {
@@ -438,59 +438,16 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
               </Text>
             </div>
 
-            {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-            <div
-              className={cx(
-                'group relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors',
-                uploading
-                  ? 'cursor-not-allowed border-gray-200 dark:border-slate-700'
-                  : 'border-gray-300 hover:border-gray-400 dark:border-slate-600 dark:hover:border-slate-500',
-              )}
-              onClick={() => {
-                if (!uploading) fileInputRef.current?.click()
-              }}
-              onDragOver={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-              }}
-              onDrop={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                if (uploading) return
-                const file = e.dataTransfer.files?.[0]
-                if (file) handleUpload(file)
-              }}
-            >
-              <input
-                ref={fileInputRef}
-                type='file'
-                className='hidden'
-                accept={providerFileType}
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handleUpload(file)
-                  e.target.value = ''
-                }}
-                disabled={uploading}
-              />
-
-              {uploading ? (
-                <div className='space-y-2'>
-                  <SpinnerIcon className='mx-auto size-8 animate-spin text-gray-400' />
+            <FileUpload
+              accept={providerFileType}
+              loading={uploading}
+              onFile={handleUpload}
+              label={
+                uploading ? (
+                  t('project.settings.dataImport.uploadingProcessing')
+                ) : (
                   <Text
-                    as='p'
-                    size='sm'
-                    colour='inherit'
-                    className='text-gray-500 dark:text-gray-400'
-                  >
-                    {t('project.settings.dataImport.uploadingProcessing')}
-                  </Text>
-                </div>
-              ) : (
-                <div className='space-y-2'>
-                  <UploadIcon className='mx-auto size-8 text-gray-400 dark:text-gray-500' />
-                  <Text
-                    as='p'
+                    as='span'
                     size='sm'
                     colour='inherit'
                     className='text-gray-600 dark:text-gray-300'
@@ -505,19 +462,16 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                     </Text>{' '}
                     {t('project.settings.dataImport.orDragDrop')}
                   </Text>
-                  <Text
-                    as='p'
-                    size='xs'
-                    colour='inherit'
-                    className='text-gray-500 dark:text-gray-400'
-                  >
-                    {t('project.settings.dataImport.maxFileSize', {
+                )
+              }
+              hint={
+                uploading
+                  ? undefined
+                  : t('project.settings.dataImport.maxFileSize', {
                       fileType: providerFileType.toUpperCase(),
-                    })}
-                  </Text>
-                </div>
-              )}
-            </div>
+                    })
+              }
+            />
           </div>
         }
         closeText={t('common.cancel')}
