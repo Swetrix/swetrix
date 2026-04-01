@@ -83,6 +83,7 @@ export class SimpleAnalyticsMapper implements ImportMapper {
   ): AsyncIterable<AnalyticsImportRow> {
     const parser = fs.createReadStream(filePath).pipe(
       parse({
+        bom: true,
         columns: true,
         skip_empty_lines: true,
         trim: true,
@@ -127,7 +128,7 @@ export class SimpleAnalyticsMapper implements ImportMapper {
         hostname,
       )
 
-      const cc = normalizeNull(row.country_code)
+      const cc = normalizeNull(row.country_code)?.toUpperCase() || null
       const validCC = cc && /^[A-Z]{2}$/.test(cc) ? cc : null
 
       const locale = buildLocale(
