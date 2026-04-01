@@ -11,6 +11,22 @@ import {
 
 const ISO_DATE_REGEX =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})$/
+const REQUIRED_COLUMNS = ['added_iso', 'datapoint', 'session_id'] as const
+
+function validateHeaders(headers: string[]): string[] {
+  const normalizedHeaders = headers.map((header) => header.trim())
+  const missingColumns = REQUIRED_COLUMNS.filter(
+    (column) => !normalizedHeaders.includes(column),
+  )
+
+  if (missingColumns.length > 0) {
+    throw new Error(
+      `CSV does not appear to be a Simple Analytics export. Missing required columns: ${missingColumns.join(', ')}.`,
+    )
+  }
+
+  return normalizedHeaders
+}
 
 function isoToClickHouseDateTime(iso: string): string {
   const d = new Date(iso)
@@ -77,9 +93,15 @@ export class SimpleAnalyticsMapper implements ImportMapper {
     pid: string,
     importID: number,
   ): AsyncIterable<AnalyticsImportRow> {
+    let headerChecked = false
+
     const parser = fs.createReadStream(filePath).pipe(
       parse({
-        columns: true,
+        bom: true,
+        columns: (headers) => {
+          headerChecked = true
+          return validateHeaders(headers)
+        },
         skip_empty_lines: true,
         trim: true,
         relax_quotes: true,
@@ -87,19 +109,7 @@ export class SimpleAnalyticsMapper implements ImportMapper {
       }),
     )
 
-    let headerChecked = false
-
     for await (const row of parser) {
-      if (!headerChecked) {
-        headerChecked = true
-
-        if (!('added_iso' in row) || !('datapoint' in row)) {
-          throw new Error(
-            'CSV does not appear to be a Simple Analytics export. Expected columns like "added_iso" and "datapoint".',
-          )
-        }
-      }
-
       if (row.is_robot === 'true') continue
 
       const addedIso = normalizeNull(row.added_iso)
@@ -169,6 +179,12 @@ export class SimpleAnalyticsMapper implements ImportMapper {
           data: { ...baseData, ev: truncate(datapoint, 256) || '' },
         }
       }
+    }
+
+    if (!headerChecked) {
+      throw new Error(
+        'CSV appears empty or is missing a header row. Please upload the raw CSV export from Simple Analytics.',
+      )
     }
   }
 }
