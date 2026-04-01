@@ -92,11 +92,23 @@ export class DataImportProcessor extends WorkerHost {
           }
 
           if (totalRows % 10000 === 0) {
-            await job.updateProgress({
+            const progress = {
               importedRows:
                 importedRows + analyticsBatch.length + customEVBatch.length,
               totalRows,
-            })
+            }
+
+            try {
+              await job.updateProgress(progress)
+            } catch (progressError) {
+              const errorMessage =
+                progressError instanceof Error
+                  ? progressError.message
+                  : String(progressError)
+              this.logger.error(
+                `Failed to update progress for import ${id} (importId=${importId}, importedRows=${progress.importedRows}, totalRows=${progress.totalRows}): ${errorMessage}`,
+              )
+            }
           }
         }
 
