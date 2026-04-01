@@ -18,6 +18,7 @@ import {
   Query,
   Logger,
   Headers,
+  Ip,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { diskStorage } from 'multer'
@@ -33,6 +34,8 @@ import { DataImportService } from './data-import.service'
 import { UploadImportDto } from './dto'
 import { getMapper, SUPPORTED_PROVIDERS } from './mappers'
 import { DataImportJobData, DATA_IMPORT_QUEUE } from './data-import.processor'
+import { trackCustom } from '../common/analytics'
+import { getIPFromHeaders } from '../common/utils'
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100 MB
 const IMPORT_TMP_DIR = path.resolve(os.tmpdir(), 'swetrix-imports')
@@ -83,6 +86,8 @@ export class DataImportController {
     @CurrentUserId() uid: string,
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: UploadImportDto,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
     const project = await this.projectService.getFullProject(projectId)
     this.projectService.allowedToManage(project, uid)
@@ -107,6 +112,9 @@ export class DataImportController {
       )
     }
 
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+    const userAgent = headers['user-agent'] || ''
+
     let dataImport
     try {
       dataImport = await this.dataImportService.create(projectId, dto.provider)
@@ -124,6 +132,8 @@ export class DataImportController {
           projectId,
           provider: dto.provider,
           fileName: file.filename,
+          ip,
+          userAgent,
         },
         {
           attempts: 1,
@@ -139,6 +149,11 @@ export class DataImportController {
         'Failed to start import. Please try again later.',
       )
     }
+
+    await trackCustom(ip, userAgent, {
+      ev: 'DATA_IMPORT_STARTED',
+      meta: { provider: dto.provider },
+    })
 
     return dataImport
   }

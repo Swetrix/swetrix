@@ -10,6 +10,7 @@ import { DataImportStatus } from './entity/data-import.entity'
 import { getMapper } from './mappers'
 import { ImportError } from './mappers/mapper.interface'
 import { clickhouse } from '../common/integrations/clickhouse'
+import { trackCustom } from '../common/analytics'
 
 const CLICKHOUSE_DB = process.env.CLICKHOUSE_DATABASE || 'analytics'
 const BATCH_SIZE = 5000
@@ -23,6 +24,8 @@ export interface DataImportJobData {
   projectId: string
   provider: string
   fileName: string
+  ip: string
+  userAgent: string
 }
 
 @Processor(DATA_IMPORT_QUEUE, { concurrency: 1 })
@@ -34,7 +37,8 @@ export class DataImportProcessor extends WorkerHost {
   }
 
   async process(job: Job<DataImportJobData>): Promise<void> {
-    const { id, importId, projectId, provider, fileName } = job.data
+    const { id, importId, projectId, provider, fileName, ip, userAgent } =
+      job.data
     const filePath = this.getImportFilePath(fileName)
 
     try {
@@ -160,6 +164,11 @@ export class DataImportProcessor extends WorkerHost {
         })
 
         this.logger.log(`Import ${id} completed: ${importedRows} rows imported`)
+
+        await trackCustom(ip, userAgent, {
+          ev: 'DATA_IMPORT_FINISHED',
+          meta: { provider, status: 'success', rows: importedRows },
+        })
       } catch (error) {
         this.logger.error(`Import ${id} failed: ${error.message}`, error.stack)
 
@@ -177,6 +186,11 @@ export class DataImportProcessor extends WorkerHost {
             : 'An unexpected error occurred while processing the import. Please try again or contact support.'
 
         await this.dataImportService.markFailed(id, userMessage)
+
+        await trackCustom(ip, userAgent, {
+          ev: 'DATA_IMPORT_FINISHED',
+          meta: { provider, status: 'error', rows: importedRows },
+        })
       }
     } finally {
       this.cleanupFile(fileName)
