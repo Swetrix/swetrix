@@ -12,8 +12,10 @@ import cx from 'clsx'
 import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 
 import { DataImport } from '~/lib/models/Project'
+import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
 import Modal from '~/ui/Modal'
 import Loader from '~/ui/Loader'
 import FileUpload from '~/ui/FileUpload'
@@ -79,10 +81,14 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
   const [imports, setImports] = useState<DataImport[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<DataImport | null>(null)
-  const [deleting, setDeleting] = useState(false)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const listFetcher = useFetcher<ProjectSettingsActionData>()
+  const uploadFetcher = useFetcher<ProjectSettingsActionData>()
+  const deleteFetcher = useFetcher<ProjectSettingsActionData>()
+
+  const settingsAction = `/projects/settings/${projectId}`
 
   const statusLabels: Record<DataImport['status'], string> = {
     pending: t('project.settings.dataImport.statusPending'),
@@ -91,25 +97,27 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
     failed: t('project.settings.dataImport.statusFailed'),
   }
 
-  const fetchImports = useCallback(async () => {
-    try {
-      const res = await fetch(
-        `/api/data-import?endpoint=${encodeURIComponent(`data-import/${projectId}`)}`,
-      )
-      if (res.ok) {
-        const data = await res.json()
-        setImports(Array.isArray(data) ? data : [])
-      }
-    } catch {
-      // silently fail on poll
-    } finally {
-      setLoading(false)
-    }
-  }, [projectId])
+  const fetchImports = useCallback(() => {
+    listFetcher.submit(
+      { intent: 'list-data-imports' },
+      { method: 'POST', action: settingsAction },
+    )
+  }, [listFetcher, settingsAction])
 
   useEffect(() => {
     fetchImports()
-  }, [fetchImports])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (listFetcher.state !== 'idle' || !listFetcher.data) return
+    if (listFetcher.data.intent !== 'list-data-imports') return
+
+    if (listFetcher.data.dataImports) {
+      setImports(listFetcher.data.dataImports)
+    }
+    setLoading(false)
+  }, [listFetcher.state, listFetcher.data])
 
   useEffect(() => {
     const hasActive = imports.some(
@@ -130,72 +138,66 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
     }
   }, [imports, fetchImports])
 
-  const handleUpload = async (file: File) => {
-    if (!selectedProvider) return
+  useEffect(() => {
+    if (uploadFetcher.state !== 'idle' || !uploadFetcher.data) return
+    if (uploadFetcher.data.intent !== 'upload-data-import') return
 
-    setUploading(true)
-
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('provider', selectedProvider)
-
-      const res = await fetch(
-        `/api/data-import?endpoint=${encodeURIComponent(`data-import/${projectId}/upload`)}`,
-        {
-          method: 'POST',
-          body: formData,
-        },
-      )
-
-      const result = await res.json()
-
-      if (!res.ok) {
-        toast.error(
-          result.error || t('project.settings.dataImport.uploadFailed'),
-        )
-        return
-      }
-
+    if (uploadFetcher.data.success) {
       toast.success(t('project.settings.dataImport.importStarted'))
       setSelectedProvider(null)
       fetchImports()
-    } catch {
-      toast.error(t('project.settings.dataImport.uploadFailed'))
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  const handleDelete = async () => {
-    if (!deleteTarget) return
-
-    setDeleting(true)
-
-    try {
-      const res = await fetch(
-        `/api/data-import?endpoint=${encodeURIComponent(`data-import/${projectId}/${deleteTarget.id}`)}`,
-        { method: 'DELETE' },
+    } else if (uploadFetcher.data.error) {
+      toast.error(
+        uploadFetcher.data.error ||
+          t('project.settings.dataImport.uploadFailed'),
       )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploadFetcher.state, uploadFetcher.data])
 
-      const result = await res.json()
+  useEffect(() => {
+    if (deleteFetcher.state !== 'idle' || !deleteFetcher.data) return
+    if (deleteFetcher.data.intent !== 'delete-data-import') return
 
-      if (!res.ok) {
-        toast.error(
-          result.error || t('project.settings.dataImport.deleteFailed'),
-        )
-        return
-      }
-
+    if (deleteFetcher.data.success) {
       toast.success(t('project.settings.dataImport.importDeleted'))
       setDeleteTarget(null)
       fetchImports()
-    } catch {
-      toast.error(t('project.settings.dataImport.deleteFailed'))
-    } finally {
-      setDeleting(false)
+    } else if (deleteFetcher.data.error) {
+      toast.error(
+        deleteFetcher.data.error ||
+          t('project.settings.dataImport.deleteFailed'),
+      )
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleteFetcher.state, deleteFetcher.data])
+
+  const handleUpload = (file: File) => {
+    if (!selectedProvider) return
+
+    const formData = new FormData()
+    formData.append('intent', 'upload-data-import')
+    formData.append('file', file)
+    formData.append('provider', selectedProvider)
+
+    uploadFetcher.submit(formData, {
+      method: 'POST',
+      action: settingsAction,
+      encType: 'multipart/form-data',
+    })
   }
+
+  const handleDelete = () => {
+    if (!deleteTarget) return
+
+    deleteFetcher.submit(
+      { intent: 'delete-data-import', importId: String(deleteTarget.id) },
+      { method: 'POST', action: settingsAction },
+    )
+  }
+
+  const uploading = uploadFetcher.state !== 'idle'
+  const deleting = deleteFetcher.state !== 'idle'
 
   const providerFileType = selectedProvider
     ? t(`project.settings.dataImport.${selectedProvider}.fileType`)

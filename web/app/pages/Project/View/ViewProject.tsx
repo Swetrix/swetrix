@@ -38,6 +38,7 @@ import { useTranslation } from 'react-i18next'
 import {
   useNavigate,
   useSearchParams,
+  useLoaderData,
   LinkProps,
   useFetcher,
 } from 'react-router'
@@ -71,7 +72,10 @@ import {
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import { ProjectViewActionData } from '~/routes/projects.$id'
+import {
+  ProjectViewActionData,
+  type ProjectLoaderData,
+} from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
@@ -423,66 +427,18 @@ const ViewProjectContent = () => {
     return null
   }, [period, searchParams])
 
+  const loaderData = useLoaderData<ProjectLoaderData>()
   const [hasImportedData, setHasImportedData] = useState(false)
 
   useEffect(() => {
-    if (!id) return
-
-    let from: string
-    let to: string
-
-    if (dateRange && dateRange.length >= 2) {
-      from = dayjs.utc(dateRange[0]).format('YYYY-MM-DD HH:mm:ss')
-      to = dayjs.utc(dateRange[1]).format('YYYY-MM-DD HH:mm:ss')
+    if (loaderData?.hasImportedData instanceof Promise) {
+      loaderData.hasImportedData
+        .then((value) => setHasImportedData(value))
+        .catch(() => setHasImportedData(false))
     } else {
-      const now = dayjs()
-      to = now.format('YYYY-MM-DD HH:mm:ss')
-
-      const periodMap: Record<string, [number, dayjs.ManipulateType]> = {
-        '1h': [1, 'hour'],
-        today: [0, 'day'],
-        yesterday: [1, 'day'],
-        '1d': [1, 'day'],
-        '7d': [7, 'day'],
-        '4w': [4, 'week'],
-        '3M': [3, 'month'],
-        '12M': [12, 'month'],
-        '24M': [24, 'month'],
-      }
-
-      const mapping = periodMap[period]
-      if (mapping) {
-        from = now
-          .subtract(mapping[0], mapping[1])
-          .format('YYYY-MM-DD HH:mm:ss')
-        if (period === 'today') {
-          from = now.startOf('day').format('YYYY-MM-DD HH:mm:ss')
-        } else if (period === 'yesterday') {
-          from = now
-            .subtract(1, 'day')
-            .startOf('day')
-            .format('YYYY-MM-DD HH:mm:ss')
-          to = now.subtract(1, 'day').endOf('day').format('YYYY-MM-DD HH:mm:ss')
-        }
-      } else if (period === 'all') {
-        from = '2020-01-01 00:00:00'
-      } else {
-        setHasImportedData(false)
-        return
-      }
+      setHasImportedData(false)
     }
-
-    const endpoint = `data-import/${id}/has-imported-data?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-
-    fetch(`/api/data-import?endpoint=${encodeURIComponent(endpoint)}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        setHasImportedData(data?.hasImportedData === true)
-      })
-      .catch(() => {
-        setHasImportedData(false)
-      })
-  }, [id, dateRange, period])
+  }, [loaderData?.hasImportedData])
 
   const periodPairs = useMemo<TBPeriodPairsProps[]>(() => {
     let tbs = null

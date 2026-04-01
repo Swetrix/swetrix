@@ -8,7 +8,7 @@ import { data, redirect } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
 import { getOgImageUrl } from '~/lib/constants'
-import { Project } from '~/lib/models/Project'
+import { Project, DataImport } from '~/lib/models/Project'
 import { Subscriber } from '~/lib/models/Subscriber'
 import ProjectSettings from '~/pages/Project/Settings'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -91,6 +91,8 @@ export interface ProjectSettingsActionData {
   gscAuthUrl?: string
   gscStatus?: GscStatus
   gscProperties?: GscProperty[]
+  dataImports?: DataImport[]
+  dataImport?: unknown
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -754,6 +756,92 @@ export async function action({ request, params }: ActionFunctionArgs) {
         {
           method: 'DELETE',
         },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'list-data-imports': {
+      const result = await serverFetch<DataImport[]>(
+        request,
+        `data-import/${id}`,
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        {
+          intent,
+          success: true,
+          dataImports: (result.data as DataImport[]) || [],
+        },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'upload-data-import': {
+      const file = formData.get('file') as File
+      const provider = formData.get('provider')?.toString()
+
+      if (!file || !provider) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'File and provider are required' },
+          { status: 400 },
+        )
+      }
+
+      const proxyForm = new FormData()
+      proxyForm.append('file', file, file.name)
+      proxyForm.append('provider', provider)
+
+      const result = await serverFetch(
+        request,
+        `data-import/${id}/upload`,
+        { method: 'POST', body: proxyForm },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, dataImport: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'delete-data-import': {
+      const importId = formData.get('importId')?.toString()
+
+      if (!importId) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Import ID is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch(
+        request,
+        `data-import/${id}/${importId}`,
+        { method: 'DELETE' },
       )
 
       if (result.error) {
