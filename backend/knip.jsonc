@@ -1,10 +1,8 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignoreDependencies": [
-    "@faker-js/faker", "@types/ioredis", "@types/multer"
-  ],
+  "ignoreDependencies": ["@faker-js/faker", "@types/ioredis"],
   "ignore": [],
   "exclude": ["enumMembers"],
   "entry": ["./apps/cloud/src/main.ts", "./apps/community/src/main.ts"],
-  "project": ["./apps/cloud/src/**/*.ts", "./apps/community/src/**/*.ts"]
+  "project": ["./apps/cloud/src/**/*.ts", "./apps/community/src/**/*.ts"],
 }
