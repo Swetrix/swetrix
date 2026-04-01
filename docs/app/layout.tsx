@@ -7,6 +7,9 @@ import Footer from "./components/Footer";
 import Analytics from "./components/Analytics";
 import "./global.css";
 
+const defaultOgImage =
+  "https://swetrix.com/api/og-image.png?title=Swetrix+Docs&description=Open-source%2C+privacy-first+web+analytics+documentation&label=Docs";
+
 export const metadata = {
   title: {
     template: "%s | Swetrix Docs",
@@ -14,6 +17,17 @@ export const metadata = {
   },
   description: "Swetrix documentation — turn traffic into insights.",
   icons: { icon: "/favicon.ico" },
+  openGraph: {
+    title: "Swetrix Docs",
+    description: "Swetrix documentation — turn traffic into insights.",
+    images: [{ url: defaultOgImage, width: 1800, height: 945, alt: "Swetrix Docs" }],
+  },
+  twitter: {
+    card: "summary_large_image" as const,
+    title: "Swetrix Docs",
+    description: "Swetrix documentation — turn traffic into insights.",
+    images: [defaultOgImage],
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
