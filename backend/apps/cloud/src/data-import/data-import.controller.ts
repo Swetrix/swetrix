@@ -17,6 +17,7 @@ import {
   Logger,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { diskStorage } from 'multer'
 import { ApiBearerAuth, ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger'
 import { InjectQueue } from '@nestjs/bullmq'
 import { Queue } from 'bullmq'
@@ -61,6 +62,17 @@ export class DataImportController {
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: MAX_FILE_SIZE },
+      storage: diskStorage({
+        destination: (_req, _file, cb) => {
+          const dir = path.join(os.tmpdir(), 'swetrix-imports')
+          fs.mkdirSync(dir, { recursive: true })
+          cb(null, dir)
+        },
+        filename: (_req, file, cb) => {
+          const ext = path.extname(file.originalname).toLowerCase()
+          cb(null, `${Date.now()}-${randomUUID()}${ext}`)
+        },
+      }),
     }),
   )
   async upload(
@@ -72,12 +84,13 @@ export class DataImportController {
     const project = await this.projectService.getFullProject(projectId)
     this.projectService.allowedToManage(project, uid)
 
-    if (!file || !file.buffer) {
+    if (!file?.path) {
       throw new BadRequestException('No file uploaded')
     }
 
     const mapper = getMapper(dto.provider)
     if (!mapper) {
+      this.cleanupFile(file.path)
       throw new BadRequestException(
         `Unsupported provider: ${dto.provider}. Supported: ${SUPPORTED_PROVIDERS.join(', ')}`,
       )
@@ -85,17 +98,11 @@ export class DataImportController {
 
     const ext = path.extname(file.originalname).toLowerCase()
     if (ext !== mapper.expectedFileExtension) {
+      this.cleanupFile(file.path)
       throw new BadRequestException(
         `Invalid file type. Expected a ${mapper.expectedFileExtension} file for ${dto.provider} import.`,
       )
     }
-
-    const tempDir = path.join(os.tmpdir(), 'swetrix-imports')
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true })
-    }
-    const tempFile = path.join(tempDir, `${Date.now()}-${randomUUID()}${ext}`)
-    fs.writeFileSync(tempFile, file.buffer)
 
     const dataImport = await this.dataImportService.create(
       projectId,
@@ -110,7 +117,7 @@ export class DataImportController {
           importId: dataImport.importId,
           projectId,
           provider: dto.provider,
-          filePath: tempFile,
+          filePath: file.path,
         },
         {
           attempts: 1,
@@ -121,7 +128,7 @@ export class DataImportController {
     } catch (error) {
       this.logger.error(`Failed to enqueue import job: ${error.message}`)
       await this.dataImportService.deleteImportRecord(dataImport.id)
-      this.cleanupFile(tempFile)
+      this.cleanupFile(file.path)
       throw new BadRequestException(
         'Failed to start import. Please try again later.',
       )
