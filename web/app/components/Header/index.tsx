@@ -117,7 +117,9 @@ const SolutionsMenu = () => {
   const solutions = getSolutions(t)
   const ctas = getCallsToAction(t)
   const [open, setOpen] = useState(false)
-  const closeTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
 
   const handleOpen = () => {
     clearTimeout(closeTimeout.current)

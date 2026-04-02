@@ -259,7 +259,7 @@ export const FeaturesGrid = () => {
                 <Text
                   as='p'
                   size='sm'
-                  colour='muted'
+                  colour='secondary'
                   className='mt-1 pl-7 leading-relaxed'
                 >
                   {t(`main.featuresAlt.${key}.desc`)}

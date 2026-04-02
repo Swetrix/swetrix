@@ -34,6 +34,7 @@ import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { FeaturesGrid } from '~/components/marketing/FeaturesGrid'
+import { WhySwitch } from '~/components/marketing/WhySwitch'
 import { Text } from '~/ui/Text'
 
 export const meta: MetaFunction = () => {
@@ -468,6 +469,8 @@ export default function Index() {
         <Integrations />
 
         <MarketingPricing metainfo={metainfo} />
+
+        <WhySwitch />
 
         <FAQ />
 
