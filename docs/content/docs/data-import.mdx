@@ -124,16 +124,32 @@ The page auto-refreshes while an import is processing. You can navigate away and
 
 ## Importing from Fathom Analytics
 
+<Callout type="warn">
+  Because Fathom Analytics exports aggregated, not raw data, the sessions will be imported with an
+  hourly precision. It's still mostly accurate, but some longer sessions may be slightly
+  misrepresented.
+</Callout>
+
 <Steps>
 <Step>
 ### Export Your Data from Fathom
 
 1. Log in to your [Fathom Analytics](https://usefathom.com) dashboard
-2. Go to your site's **Detailed export** page
-3. Select the date range and the dimensions you want to export — make sure to include at least **Browser**, **Country**, **City**, **Region**, **Device type**, **UTM parameters**, **Referrer**, **Page**, and **Operating system**
-4. Export pageviews and events as separate `.csv` files — Fathom provides separate exports for pageviews and custom events
+2. Go to your site's settings and go to the **Exports** tab
+3. Click **New export**
+4. (important) For **Date Grouping**, select **Hourly**
+5. Select all available **Dimensions** and **Metrics**
 
-You can learn more on how to export your data from Fathom on their [export documentation](https://usefathom.com/docs/features/detailed-csv-export).
+<img
+  alt="Fathom Analytics export data page"
+  src="/docs/img/sitesettings/data-import/fathom-export-data.png"
+/>
+
+If you have tracked custom events with Fathom, you can also export them (under the Events tab) - for custom events make sure to also select **Hourly** for **Date Grouping**, as well as all available **Dimensions** and **Metrics**.
+
+Fathom exports pageviews and events as separate CSV files. You will be able to import both of them to Swetrix one at a time.
+
+You can learn more on how to export your data from Fathom on their [export documentation](https://usefathom.com/docs/features/exporting).
 
 </Step>
 <Step>
@@ -141,11 +157,20 @@ You can learn more on how to export your data from Fathom on their [export docum
 
 1. Go to your project's **Settings** page in Swetrix
 2. Click the **Import data** tab
+
+<img
+  alt="Swetrix import data tab"
+  src="/docs/img/sitesettings/data-import/swetrix-import-data-tab.png"
+/>
+
 3. Click the **Fathom Analytics** provider card
 4. In the upload modal, either drag and drop your `.csv` file or click to browse
 5. Wait for the upload and processing to complete
 
-<Callout type="info">Fathom exports pageviews and events as separate CSV files. Upload them one at a time — you don't need to upload both at once. The imported data will be linked automatically.</Callout>
+<Callout type="info">
+  Fathom exports pageviews and events as separate CSV files. Upload them one at a time — you don't
+  need to upload both at once. The imported data will be linked automatically.
+</Callout>
 
 </Step>
 <Step>
