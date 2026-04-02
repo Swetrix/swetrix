@@ -4021,14 +4021,12 @@ export class AnalyticsService {
           toTimeZone(analytics.created, {timezone:String}) AS created,
           pid,
           psid,
-          groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
+          arrayFilter(x -> x.1 != '' AND x.2 != '', arrayZip(meta.key, meta.value)) AS metadata
         FROM analytics
-        LEFT ARRAY JOIN meta.key, meta.value
         WHERE
           pid = {pid:FixedString(12)}
           AND analytics.psid IS NOT NULL
           AND CAST(analytics.psid AS String) = {psid:String}
-        GROUP BY type, value, created, pid, psid
 
         UNION ALL
 
@@ -4038,14 +4036,12 @@ export class AnalyticsService {
           toTimeZone(customEV.created, {timezone:String}) AS created,
           pid,
           psid,
-          groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
+          arrayFilter(x -> x.1 != '' AND x.2 != '', arrayZip(meta.key, meta.value)) AS metadata
         FROM customEV
-        LEFT ARRAY JOIN meta.key, meta.value
         WHERE
           pid = {pid:FixedString(12)}
           AND customEV.psid IS NOT NULL
           AND CAST(customEV.psid AS String) = {psid:String}
-        GROUP BY type, value, created, pid, psid
         
         UNION ALL
 
@@ -4066,7 +4062,6 @@ export class AnalyticsService {
           pid = {pid:FixedString(12)}
           AND errors.psid IS NOT NULL
           AND CAST(errors.psid AS String) = {psid:String}
-        GROUP BY type, value, created, pid, psid, errors.message, errors.lineno, errors.colno, errors.filename
       )
 
       SELECT

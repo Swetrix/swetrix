@@ -1772,6 +1772,10 @@
         "simple-analytics": {
           "description": "Import pageviews and events from Simple Analytics export",
           "fileType": ".csv"
+        },
+        "fathom": {
+          "description": "Import pageviews and events from Fathom Analytics export",
+          "fileType": ".csv"
         }
       },
       "captcha": {
