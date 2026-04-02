@@ -632,6 +632,30 @@
       "api": "API dla programistów",
       "2fa": "Uwierzytelnianie dwuskładnikowe"
     },
+    "whySwitch": {
+      "heading": "Dlaczego ludzie przechodzą z Google Analytics na Swetrix",
+      "subheading": "Prosta, szanująca prywatność analityka ze wszystkim, czego potrzebujesz — bez skomplikowania, banerów cookies i danych, którym nie możesz ufać.",
+      "body": "Google Analytics stało się zbyt skomplikowane. Znalezienie podstawowych metryk wymaga teraz poruszania się po niekończących się menu, a jego zależność od plików cookie zmusza do używania irytujących banerów zgody - co kosztuje Cię utratę do 40% danych o ruchu, gdy użytkownicy odmawiają.\n\nSwetrix daje Ci przejrzysty panel w czasie rzeczywistym, który nie wymaga nauki. Nie używamy plików cookie, więc nie potrzebujesz banerów cookie, jesteś w 100% właścicielem swoich danych, a Twoja strona działa szybko.",
+      "compareLink": "Swetrix kontra Google Analytics",
+      "reasons": {
+        "privacy": {
+          "title": "Śledzenie bez plików cookie",
+          "desc": "Google Analytics wymaga banerów zgody na pliki cookie i gromadzi dane osobowe. Swetrix jest całkowicie wolny od plików cookie i szanuje prywatność - nie są potrzebne banery zgody na pliki cookie."
+        },
+        "simplicity": {
+          "title": "Funkcje, których faktycznie będziesz używać",
+          "desc": "Swetrix zapewnia analitykę ruchu, analizę sesji, lejki, profile, testy A/B - funkcje, które są faktycznie przydatne w przejrzystym i minimalistycznym panelu."
+        },
+        "opensource": {
+          "title": "Open source i możliwość samodzielnego hostowania",
+          "desc": "Google Analytics to czarna skrzynka. Swetrix jest w pełni open source i przejrzysty - daje Ci możliwość audytu kodu lub hostowania na własnej infrastrukturze za darmo."
+        },
+        "lightweight": {
+          "title": "Lekki, a nie uciążliwy",
+          "desc": "Skrypt śledzący GA waży ponad 75 KB i spowalnia Twoją stronę. Skrypt Swetrix ma poniżej 5 KB - Twoi odwiedzający nawet go nie zauważą."
+        }
+      }
+    },
     "freeToTry": "Wypróbuj za darmo",
     "easyToUse": "Łatwe w użyciu",
     "privacyFirst": "Prywatność przede wszystkim",
@@ -660,6 +684,14 @@
       "sessions": {
         "title": "Analiza sesji",
         "desc": "Śledź indywidualne ścieżki użytkowników między stronami. Zrozum, jak odwiedzający poruszają się po Twojej witrynie."
+      },
+      "experiments": {
+        "title": "Eksperymenty i flagi funkcji",
+        "desc": "Przeprowadzaj testy A/B, aby sprawdzić, co działa najlepiej. Wdrażaj funkcje stopniowo dzięki wbudowanym flagom funkcji."
+      },
+      "captcha": {
+        "title": "Wbudowana alternatywa dla reCAPTCHA",
+        "desc": "Chroń formularze przed botami dzięki niewidocznemu, stawiającemu prywatność na pierwszym miejscu wyzwaniu proof-of-work. Żadnych irytujących zagadek."
       },
       "opensource": {
         "title": "Open source",
@@ -1702,7 +1734,9 @@
         "integrations": "Integracje",
         "integrationsDesc": "Połącz usługi zewnętrzne, aby wzbogacić analitykę.",
         "revenue": "Przychody",
-        "revenueDesc": "Śledź przychody i przypisuj sprzedaż do kampanii."
+        "revenueDesc": "Śledź przychody i przypisuj sprzedaż do kampanii.",
+        "import": "Importuj dane",
+        "importDesc": "Importuj dane analityczne z innych platform"
       },
       "revenue": {
         "title": "Śledzenie przychodów",
@@ -1732,6 +1766,45 @@
           "title": "Atrybucja przychodów",
           "description": "Przekaż identyfikatory odwiedzającego i sesji do dostawcy płatności, aby przypisywać przychody do kanałów marketingowych.",
           "paddleExample": "Integracja Paddle Checkout:"
+        }
+      },
+      "dataImport": {
+        "importFrom": "Importuj z",
+        "importFromDesc": "Wybierz dostawcę analityki, z którego chcesz zaimportować dane historyczne.",
+        "importHistory": "Historia importu",
+        "noImports": "Brak importów. Wybierz dostawcę powyżej, aby rozpocząć.",
+        "provider": "Dostawca",
+        "status": "Status",
+        "dateRange": "Zakres dat",
+        "rows": "Wiersze",
+        "created": "Utworzono",
+        "deleteImport": "Usuń import",
+        "deleteImportConfirm": "Spowoduje to trwałe usunięcie wszystkich zaimportowanych danych ({{count}} wierszy) z Twojej analityki. Tej akcji nie można cofnąć.",
+        "importStarted": "Import rozpoczęty. Twoje dane są przetwarzane.",
+        "importDeleted": "Pomyślnie usunięto import",
+        "loadFailed": "Nie udało się załadować importów",
+        "uploadFailed": "Nie udało się przesłać pliku. Spróbuj ponownie.",
+        "deleteFailed": "Nie udało się usunąć importu",
+        "clickToUpload": "Nie udało się usunąć importu",
+        "orDragDrop": "lub przeciągnij i upuść",
+        "maxFileSize": "Plik {{fileType}}, maks. {{maxSize}} MB",
+        "uploadingProcessing": "Przesyłanie i przetwarzanie...",
+        "importFromProvider": "Importuj z {{provider}}",
+        "statsIncludeImported": "Statystyki uwzględniają zaimportowane dane",
+        "imported": "Zaimportowano",
+        "statusPending": "Oczekujące",
+        "statusProcessing": "Przetwarzanie",
+        "statusCompleted": "Zakończono",
+        "statusFailed": "Nieudane",
+        "uploadInstructions": "Wybierz plik eksportu. Po uruchomieniu dane zostaną zaimportowane w tle. Zakończenie tego procesu może chwilę potrwać. Aby dowiedzieć się więcej o eksportowaniu danych zewnętrznych dostawców, <1>zobacz naszą dokumentację</1>.",
+        "umami": {
+          "description": "Importuj odsłony i zdarzenia niestandardowe z eksportu Umami"
+        },
+        "simple-analytics": {
+          "description": "Importuj odsłony i zdarzenia z eksportu Simple Analytics"
+        },
+        "fathom": {
+          "description": "Importuj odsłony i zdarzenia z eksportu Fathom Analytics"
         }
       },
       "captcha": {

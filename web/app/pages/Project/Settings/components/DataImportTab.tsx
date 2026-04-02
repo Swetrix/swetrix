@@ -14,7 +14,11 @@ import dayjs from 'dayjs'
 import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 
-import { DataImport } from '~/lib/models/Project'
+import {
+  type DataImport,
+  type Provider,
+  IMPORT_PROVIDERS,
+} from '~/lib/models/Project'
 import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
 import Modal from '~/ui/Modal'
 import Loader from '~/ui/Loader'
@@ -23,8 +27,6 @@ import { Text } from '~/ui/Text'
 import UmamiSVG from '~/ui/icons/Umami'
 import SimpleAnalyticsSVG from '~/ui/icons/SimpleAnalytics'
 import FathomSVG from '~/ui/icons/Fathom'
-
-const PROVIDERS = ['fathom', 'simple-analytics', 'umami'] as const
 
 const PROVIDER_ICONS: Record<
   string,
@@ -35,11 +37,17 @@ const PROVIDER_ICONS: Record<
   fathom: FathomSVG,
 }
 
-const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
+const PROVIDER_DISPLAY_NAMES = {
   umami: 'Umami',
   'simple-analytics': 'Simple Analytics',
   fathom: 'Fathom Analytics',
-}
+} as const
+
+const PROVIDER_FILE_TYPES = {
+  umami: '.zip',
+  'simple-analytics': '.csv',
+  fathom: '.csv',
+} as const
 
 const STATUS_ICONS = {
   pending: ClockIcon,
@@ -97,7 +105,9 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
   const { t } = useTranslation('common')
   const [imports, setImports] = useState<DataImport[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedProvider, setSelectedProvider] = useState<string | null>(null)
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(
+    null,
+  )
   const [deleteTarget, setDeleteTarget] = useState<DataImport | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -241,22 +251,20 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
         </Text>
 
         <div className='mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-          {PROVIDERS.map((providerId) => {
-            const Icon = PROVIDER_ICONS[providerId] || FileTextIcon
+          {IMPORT_PROVIDERS.map((provider) => {
+            const Icon = PROVIDER_ICONS[provider] || FileTextIcon
             const hasActive = imports.some(
               (i) => i.status === 'pending' || i.status === 'processing',
             )
-            const name = PROVIDER_DISPLAY_NAMES[providerId] || providerId
-            const fileType = t(
-              `project.settings.dataImport.${providerId}.fileType`,
-            )
+            const name = PROVIDER_DISPLAY_NAMES[provider] || provider
+            const fileType = PROVIDER_FILE_TYPES[provider] || ''
 
             return (
               <button
-                key={providerId}
+                key={provider}
                 type='button'
                 disabled={hasActive}
-                onClick={() => setSelectedProvider(providerId)}
+                onClick={() => setSelectedProvider(provider)}
                 className={cx(
                   'group relative flex flex-col items-start rounded-lg border p-4 text-left transition-all',
                   hasActive
@@ -288,7 +296,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                   colour='inherit'
                   className='mt-2 text-gray-500 dark:text-gray-400'
                 >
-                  {t(`project.settings.dataImport.${providerId}.description`)}
+                  {t(`project.settings.dataImport.${provider}.description`)}
                 </Text>
               </button>
             )

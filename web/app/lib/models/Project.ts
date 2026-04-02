@@ -172,11 +172,15 @@ export interface AnalyticsFunnel {
   dropoffPercStep: number
 }
 
+export const IMPORT_PROVIDERS = ['umami', 'simple-analytics', 'fathom'] as const
+
+export type Provider = (typeof IMPORT_PROVIDERS)[number]
+
 export interface DataImport {
   id: number
   importId: number
   projectId: string
-  provider: string
+  provider: Provider
   status: 'pending' | 'processing' | 'completed' | 'failed'
   dateFrom: string | null
   dateTo: string | null

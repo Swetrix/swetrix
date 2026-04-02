@@ -632,6 +632,30 @@
       "api": "Developer API",
       "2fa": "Two-factor authentication"
     },
+    "whySwitch": {
+      "heading": "Why people switch from Google Analytics to Swetrix",
+      "subheading": "Simple, privacy-respecting analytics with everything you need — without the complexity, cookie banners, or data you can't trust.",
+      "body": "Google Analytics has become too complex. Finding basic metrics now requires navigating endless menus, and its reliance on cookies forces you to use annoying consent banners - costing you up to 40% of your traffic data when users decline.\n\nSwetrix gives you a clean, real-time dashboard with no learning curve. We don't use cookies, so you don't need cookie banners, you own 100% of your data, and your website stays fast.",
+      "compareLink": "Swetrix vs Google Analytics",
+      "reasons": {
+        "privacy": {
+          "title": "Cookie-less tracking",
+          "desc": "Google Analytics requires cookie consent banners and collects personal data. Swetrix is fully cookieless and privacy respectful - no cookie consent banners needed."
+        },
+        "simplicity": {
+          "title": "Features you will actually use",
+          "desc": "Swetrix provides traffic analytics, session analysis, funnels, profiles, A/B tests - features that are actually useful in a clean & minimalistic dashboard."
+        },
+        "opensource": {
+          "title": "Open source & self-hostable",
+          "desc": "Google Analytics is a black box. Swetrix is fully open source & transparent - giving you an ability to audit the code or self-host on your own infrastructure free of charge."
+        },
+        "lightweight": {
+          "title": "Lightweight, not a liability",
+          "desc": "GA's tracking script weighs 75KB+ and slows your site down. Swetrix's tracker is under 5KB - your visitors won't even notice it."
+        }
+      }
+    },
     "freeToTry": "Free to try",
     "easyToUse": "Easy to use",
     "privacyFirst": "Privacy-first",
@@ -1774,16 +1798,13 @@
         "statusFailed": "Failed",
         "uploadInstructions": "Please select your export file. Once started, the data will be imported in the background. Please allow for some time to complete. To learn more how to export 3rd party providers data, <1>see our docs</1>.",
         "umami": {
-          "description": "Import pageviews and custom events from Umami export",
-          "fileType": ".zip"
+          "description": "Import pageviews and custom events from Umami export"
         },
         "simple-analytics": {
-          "description": "Import pageviews and events from Simple Analytics export",
-          "fileType": ".csv"
+          "description": "Import pageviews and events from Simple Analytics export"
         },
         "fathom": {
-          "description": "Import pageviews and events from Fathom Analytics export",
-          "fileType": ".csv"
+          "description": "Import pageviews and events from Fathom Analytics export"
         }
       },
       "captcha": {

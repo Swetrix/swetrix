@@ -632,6 +632,30 @@
       "api": "Entwickler-API",
       "2fa": "Zwei-Faktor-Authentifizierung"
     },
+    "whySwitch": {
+      "heading": "Warum Leute von Google Analytics zu Swetrix wechseln",
+      "subheading": "Einfache, datenschutzfreundliche Analysen mit allem, was Sie brauchen – ohne die Komplexität, Cookie-Banner oder Daten, denen Sie nicht vertrauen können.",
+      "body": "Google Analytics ist zu komplex geworden. Das Finden grundlegender Metriken erfordert jetzt die Navigation durch endlose Menüs, und die Abhängigkeit von Cookies zwingt Sie zur Verwendung nerviger Consent-Banner – was Sie bis zu 40 % Ihrer Traffic-Daten kostet, wenn Nutzer ablehnen.\n\nSwetrix bietet Ihnen ein übersichtliches Echtzeit-Dashboard ohne Einarbeitungszeit. Wir verwenden keine Cookies, daher benötigen Sie keine Cookie-Banner, Ihnen gehören 100 % Ihrer Daten und Ihre Website bleibt schnell.",
+      "compareLink": "Swetrix vs. Google Analytics",
+      "reasons": {
+        "privacy": {
+          "title": "Cookie-loses Tracking",
+          "desc": "Google Analytics erfordert Cookie-Consent-Banner und sammelt personenbezogene Daten. Swetrix ist vollständig cookie-los und datenschutzfreundlich – es werden keine Cookie-Consent-Banner benötigt."
+        },
+        "simplicity": {
+          "title": "Funktionen, die Sie tatsächlich nutzen werden",
+          "desc": "Swetrix bietet Traffic-Analysen, Sitzungsanalysen, Funnels, Profile und A/B-Tests – Funktionen, die in einem übersichtlichen und minimalistischen Dashboard tatsächlich nützlich sind."
+        },
+        "opensource": {
+          "title": "Open Source & selbst-hostbar",
+          "desc": "Google Analytics ist eine Blackbox. Swetrix ist vollständig quelloffen und transparent – und gibt Ihnen die Möglichkeit, den Code zu überprüfen oder kostenlos auf Ihrer eigenen Infrastruktur zu hosten."
+        },
+        "lightweight": {
+          "title": "Leichtgewichtig, keine Belastung",
+          "desc": "Das Tracking-Skript von GA wiegt über 75 KB und verlangsamt Ihre Website. Der Tracker von Swetrix ist unter 5 KB groß – Ihre Besucher werden ihn nicht einmal bemerken."
+        }
+      }
+    },
     "freeToTry": "Kostenlos testen",
     "easyToUse": "Einfach zu bedienen",
     "privacyFirst": "Datenschutz an erster Stelle",
@@ -660,6 +684,14 @@
       "sessions": {
         "title": "Sitzungsanalyse",
         "desc": "Verfolgen Sie individuelle Nutzerpfade über mehrere Seiten hinweg. Verstehen Sie, wie Besucher durch Ihre Website navigieren."
+      },
+      "experiments": {
+        "title": "Experimente & Feature Flags",
+        "desc": "Führen Sie A/B-Tests durch, um herauszufinden, was am besten funktioniert. Führen Sie Funktionen schrittweise mit integrierten Feature Flags ein."
+      },
+      "captcha": {
+        "title": "Integrierte reCAPTCHA-Alternative",
+        "desc": "Schützen Sie Formulare vor Bots mit einer datenschutzorientierten, unsichtbaren Proof-of-Work-Herausforderung. Keine nervigen Rätsel."
       },
       "opensource": {
         "title": "Open Source",
@@ -1702,7 +1734,9 @@
         "integrations": "Integrationen",
         "integrationsDesc": "Verbinden Sie externe Dienste, um Ihre Analysen zu erweitern.",
         "revenue": "Umsatz",
-        "revenueDesc": "Verfolgen Sie Einnahmen und ordnen Sie Verkäufe Kampagnen zu."
+        "revenueDesc": "Verfolgen Sie Einnahmen und ordnen Sie Verkäufe Kampagnen zu.",
+        "import": "Daten importieren",
+        "importDesc": "Analysedaten von anderen Plattformen importieren"
       },
       "revenue": {
         "title": "Umsatz-Tracking",
@@ -1732,6 +1766,45 @@
           "title": "Umsatzzuordnung",
           "description": "Übermitteln Sie Besucher- und Sitzungs-IDs an Ihren Zahlungsanbieter, um Umsätze Marketingkanälen zuzuordnen.",
           "paddleExample": "Paddle-Checkout-Integration:"
+        }
+      },
+      "dataImport": {
+        "importFrom": "Importieren von",
+        "importFromDesc": "Wählen Sie einen Analyseanbieter aus, von dem historische Daten importiert werden sollen.",
+        "importHistory": "Importverlauf",
+        "noImports": "Noch keine Importe. Wählen Sie oben einen Anbieter aus, um zu beginnen.",
+        "provider": "Anbieter",
+        "status": "Status",
+        "dateRange": "Datumsbereich",
+        "rows": "Zeilen",
+        "created": "Erstellt am",
+        "deleteImport": "Import löschen",
+        "deleteImportConfirm": "Dadurch werden alle importierten Daten ({{count}} Zeilen) dauerhaft aus Ihren Analysen entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+        "importStarted": "Import gestartet. Ihre Daten werden verarbeitet.",
+        "importDeleted": "Import erfolgreich gelöscht",
+        "loadFailed": "Fehler beim Laden der Importe",
+        "uploadFailed": "Datei-Upload fehlgeschlagen. Bitte versuchen Sie es erneut.",
+        "deleteFailed": "Fehler beim Löschen des Imports",
+        "clickToUpload": "Zum Hochladen klicken",
+        "orDragDrop": "oder per Drag & Drop ziehen",
+        "maxFileSize": "{{fileType}}-Datei, max. {{maxSize}} MB",
+        "uploadingProcessing": "Wird hochgeladen und verarbeitet...",
+        "importFromProvider": "Von {{provider}} importieren",
+        "statsIncludeImported": "Statistiken beinhalten importierte Daten",
+        "imported": "Importiert",
+        "statusPending": "Ausstehend",
+        "statusProcessing": "Wird verarbeitet",
+        "statusCompleted": "Abgeschlossen",
+        "statusFailed": "Fehlgeschlagen",
+        "uploadInstructions": "Bitte wählen Sie Ihre Exportdatei aus. Sobald gestartet, werden die Daten im Hintergrund importiert. Bitte planen Sie etwas Zeit für die Fertigstellung ein. Um mehr darüber zu erfahren, wie Sie Daten von Drittanbietern exportieren können, <1>lesen Sie unsere Dokumentation</1>.",
+        "umami": {
+          "description": "Seitenaufrufe und benutzerdefinierte Ereignisse aus Umami-Export importieren"
+        },
+        "simple-analytics": {
+          "description": "Seitenaufrufe und Ereignisse aus Simple Analytics-Export importieren"
+        },
+        "fathom": {
+          "description": "Seitenaufrufe und Ereignisse aus Fathom Analytics-Export importieren"
         }
       },
       "captcha": {

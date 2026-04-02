@@ -632,6 +632,30 @@
       "api": "API développeur",
       "2fa": "Authentification à deux facteurs"
     },
+    "whySwitch": {
+      "heading": "Pourquoi les gens passent de Google Analytics à Swetrix",
+      "subheading": "Des analyses simples et respectueuses de la vie privée avec tout ce dont vous avez besoin — sans la complexité, les bannières de cookies ou les données auxquelles vous ne pouvez pas faire confiance.",
+      "body": "Google Analytics est devenu trop complexe. Trouver des métriques de base nécessite désormais de naviguer dans des menus interminables, et sa dépendance aux cookies vous oblige à utiliser des bannières de consentement ennuyeuses - ce qui vous coûte jusqu'à 40 % de vos données de trafic lorsque les utilisateurs refusent.\n\nSwetrix vous offre un tableau de bord clair et en temps réel sans courbe d'apprentissage. Nous n'utilisons pas de cookies, vous n'avez donc pas besoin de bannières de cookies, vous possédez 100 % de vos données et votre site web reste rapide.",
+      "compareLink": "Swetrix vs Google Analytics",
+      "reasons": {
+        "privacy": {
+          "title": "Suivi sans cookies",
+          "desc": "Google Analytics nécessite des bannières de consentement aux cookies et collecte des données personnelles. Swetrix est entièrement sans cookies et respectueux de la vie privée - aucune bannière de consentement n'est nécessaire."
+        },
+        "simplicity": {
+          "title": "Des fonctionnalités que vous utiliserez vraiment",
+          "desc": "Swetrix propose des analyses de trafic, l'analyse des sessions, des entonnoirs, des profils et des tests A/B - des fonctionnalités vraiment utiles dans un tableau de bord clair et minimaliste."
+        },
+        "opensource": {
+          "title": "Open source et auto-hébergeable",
+          "desc": "Google Analytics est une boîte noire. Swetrix est entièrement open source et transparent - vous donnant la possibilité d'auditer le code ou de l'auto-héberger sur votre propre infrastructure gratuitement."
+        },
+        "lightweight": {
+          "title": "Léger, pas un fardeau",
+          "desc": "Le script de suivi de GA pèse plus de 75 Ko et ralentit votre site. Le tracker de Swetrix fait moins de 5 Ko - vos visiteurs ne le remarqueront même pas."
+        }
+      }
+    },
     "freeToTry": "Essayez gratuitement",
     "easyToUse": "Facile à utiliser",
     "privacyFirst": "La confidentialité avant tout",
@@ -660,6 +684,14 @@
       "sessions": {
         "title": "Analyse des sessions",
         "desc": "Suivez les parcours individuels des utilisateurs d’une page à l’autre. Comprenez comment les visiteurs naviguent sur votre site."
+      },
+      "experiments": {
+        "title": "Expérimentations et Feature Flags",
+        "desc": "Lancez des tests A/B pour trouver ce qui fonctionne le mieux. Déployez des fonctionnalités progressivement avec des feature flags intégrés."
+      },
+      "captcha": {
+        "title": "Alternative intégrée à reCAPTCHA",
+        "desc": "Protégez les formulaires contre les robots avec un défi de preuve de travail invisible et axé sur la confidentialité. Pas de puzzles ennuyeux."
       },
       "opensource": {
         "title": "Open source",
@@ -1702,7 +1734,9 @@
         "integrations": "Intégrations",
         "integrationsDesc": "Connectez des services externes pour enrichir vos analyses.",
         "revenue": "Revenus",
-        "revenueDesc": "Suivez les revenus et attribuez les ventes aux campagnes."
+        "revenueDesc": "Suivez les revenus et attribuez les ventes aux campagnes.",
+        "import": "Importer des données",
+        "importDesc": "Importer des données d'analyse depuis d'autres plateformes"
       },
       "revenue": {
         "title": "Suivi des revenus",
@@ -1732,6 +1766,45 @@
           "title": "Attribution des revenus",
           "description": "Transmettez les identifiants de visiteur et de session à votre prestataire de paiement afin d’attribuer les revenus aux canaux marketing.",
           "paddleExample": "Intégration de Paddle Checkout :"
+        }
+      },
+      "dataImport": {
+        "importFrom": "Importer depuis",
+        "importFromDesc": "Sélectionnez un fournisseur d'analyses à partir duquel importer des données historiques.",
+        "importHistory": "Historique d'importation",
+        "noImports": "Aucune importation pour le moment. Sélectionnez un fournisseur ci-dessus pour commencer.",
+        "provider": "Fournisseur",
+        "status": "Statut",
+        "dateRange": "Plage de dates",
+        "rows": "Lignes",
+        "created": "Créé le",
+        "deleteImport": "Supprimer l'importation",
+        "deleteImportConfirm": "Cela supprimera définitivement toutes les données importées ({{count}} lignes) de vos analyses. Cette action est irréversible.",
+        "importStarted": "Importation commencée. Vos données sont en cours de traitement.",
+        "importDeleted": "Importation supprimée avec succès",
+        "loadFailed": "Échec du chargement des importations",
+        "uploadFailed": "Échec du téléversement du fichier. Veuillez réessayer.",
+        "deleteFailed": "Échec de la suppression de l'importation",
+        "clickToUpload": "Cliquez pour téléverser",
+        "orDragDrop": "ou glissez-déposez",
+        "maxFileSize": "Fichier {{fileType}}, max {{maxSize}} Mo",
+        "uploadingProcessing": "Téléversement et traitement en cours...",
+        "importFromProvider": "Importer depuis {{provider}}",
+        "statsIncludeImported": "Les statistiques incluent les données importées",
+        "imported": "Importé",
+        "statusPending": "En attente",
+        "statusProcessing": "En traitement",
+        "statusCompleted": "Terminé",
+        "statusFailed": "Échoué",
+        "uploadInstructions": "Veuillez sélectionner votre fichier d'exportation. Une fois démarrée, l'importation des données se fera en arrière-plan. Veuillez prévoir un certain temps pour qu'elle se termine. Pour en savoir plus sur l'exportation des données de fournisseurs tiers, <1>consultez notre documentation</1>.",
+        "umami": {
+          "description": "Importer les pages vues et les événements personnalisés depuis l'exportation Umami"
+        },
+        "simple-analytics": {
+          "description": "Importer les pages vues et les événements depuis l'exportation Simple Analytics"
+        },
+        "fathom": {
+          "description": "Importer les pages vues et les événements depuis l'exportation Fathom Analytics"
         }
       },
       "captcha": {
