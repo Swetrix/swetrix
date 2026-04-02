@@ -661,6 +661,14 @@
         "title": "Session analysis",
         "desc": "Follow individual user journeys across pages. Understand how visitors navigate your site."
       },
+      "experiments": {
+        "title": "Experiments & Feature Flags",
+        "desc": "Run A/B tests to find what works best. Roll out features gradually with built-in feature flags."
+      },
+      "captcha": {
+        "title": "Built-in reCAPTCHA alternative",
+        "desc": "Protect forms from bots with a privacy-first, invisible proof-of-work challenge. No annoying puzzles."
+      },
       "opensource": {
         "title": "Open source",
         "desc": "Fully open-source and auditable. Self-host on your own infrastructure or use our cloud."

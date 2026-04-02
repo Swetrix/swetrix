@@ -4,8 +4,10 @@ import {
   CaretDownIcon,
   CodeIcon,
   CursorClickIcon,
+  FlaskIcon,
   GaugeIcon,
   MegaphoneIcon,
+  CookieIcon,
   ShieldCheckIcon,
   TerminalWindowIcon,
   UserListIcon,
@@ -16,12 +18,14 @@ import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
 const FEATURES = [
-  { icon: ShieldCheckIcon, key: 'privacy', className: 'text-indigo-500' },
+  { icon: CookieIcon, key: 'privacy', className: 'text-indigo-500' },
   { icon: CursorClickIcon, key: 'events', className: 'text-purple-500' },
   { icon: MegaphoneIcon, key: 'campaigns', className: 'text-blue-500' },
   { icon: GaugeIcon, key: 'perf', className: 'text-amber-500' },
   { icon: BugIcon, key: 'errors', className: 'text-red-500' },
   { icon: UserListIcon, key: 'sessions', className: 'text-indigo-500' },
+  { icon: FlaskIcon, key: 'experiments', className: 'text-violet-500' },
+  { icon: ShieldCheckIcon, key: 'captcha', className: 'text-teal-500' },
   { icon: CodeIcon, key: 'opensource', className: 'text-green-500' },
   { icon: TerminalWindowIcon, key: 'devs', className: 'text-cyan-500' },
 ] as const
