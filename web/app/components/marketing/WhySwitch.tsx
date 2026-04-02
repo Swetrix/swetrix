@@ -4,6 +4,7 @@ import {
   ArrowRightIcon,
   WindIcon,
   SmileyIcon,
+  CaretRightIcon,
 } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -82,7 +83,7 @@ export const WhySwitch = () => {
               className='inline-flex items-center text-sm font-medium text-gray-700 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
             >
               {t('main.whySwitch.compareLink')}
-              <ArrowRightIcon className='ml-2 size-4' aria-hidden='true' />
+              <CaretRightIcon className='ml-1 size-3.5' aria-hidden='true' />
             </Link>
           </div>
         </div>

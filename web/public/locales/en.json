@@ -635,7 +635,7 @@
     "whySwitch": {
       "heading": "Why people switch from Google Analytics to Swetrix",
       "subheading": "Simple, privacy-respecting analytics with everything you need — without the complexity, cookie banners, or data you can't trust.",
-      "body": "Google Analytics has become a bloated, complex tool that takes weeks to learn. Finding basic stats like your top pages or bounce rate now requires navigating through endless confusing menus and building custom reports.\n\nWorse, GA's reliance on cookies means you're legally required to show the annoying cookie consent banners. Every time a user clicks \"Decline\", you lose their data, often resulting in a 20-40% drop in your recorded traffic depending on your audience.\n\nSwetrix solves this. We provide a clean, cookieless dashboard that gives you accurate, real-time insights instantly. You don't need cookie banners, you own 100% of your data, and our lightweight script won't slow down your website.",
+      "body": "Google Analytics has become too complex. Finding basic metrics now requires navigating endless menus, and its reliance on cookies forces you to use annoying consent banners - costing you up to 40% of your traffic data when users decline.\n\nSwetrix gives you a clean, real-time dashboard with no learning curve. We don't use cookies, so you don't need cookie banners, you own 100% of your data, and your website stays fast.",
       "compareLink": "Swetrix vs Google Analytics",
       "reasons": {
         "privacy": {
