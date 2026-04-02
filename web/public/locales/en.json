@@ -1798,16 +1798,13 @@
         "statusFailed": "Failed",
         "uploadInstructions": "Please select your export file. Once started, the data will be imported in the background. Please allow for some time to complete. To learn more how to export 3rd party providers data, <1>see our docs</1>.",
         "umami": {
-          "description": "Import pageviews and custom events from Umami export",
-          "fileType": ".zip"
+          "description": "Import pageviews and custom events from Umami export"
         },
         "simple-analytics": {
-          "description": "Import pageviews and events from Simple Analytics export",
-          "fileType": ".csv"
+          "description": "Import pageviews and events from Simple Analytics export"
         },
         "fathom": {
-          "description": "Import pageviews and events from Fathom Analytics export",
-          "fileType": ".csv"
+          "description": "Import pageviews and events from Fathom Analytics export"
         }
       },
       "captcha": {
