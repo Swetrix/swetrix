@@ -4,15 +4,12 @@ import {
   Menu,
   Disclosure,
   Dialog,
-  PopoverButton,
-  PopoverPanel,
   MenuButton,
   MenuItem,
   MenuItems,
   DialogPanel,
   DisclosureButton,
   DisclosurePanel,
-  PopoverBackdrop,
 } from '@headlessui/react'
 import cx from 'clsx'
 import { type t as i18nextT } from 'i18next'
@@ -44,7 +41,7 @@ import {
   TagIcon,
   BookOpenIcon,
 } from '@phosphor-icons/react'
-import { memo, Fragment, useState } from 'react'
+import { memo, Fragment, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
@@ -119,124 +116,145 @@ const SolutionsMenu = () => {
   const { t } = useTranslation('common')
   const solutions = getSolutions(t)
   const ctas = getCallsToAction(t)
+  const [open, setOpen] = useState(false)
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  const handleOpen = () => {
+    clearTimeout(closeTimeout.current)
+    setOpen(true)
+  }
+
+  const handleClose = () => {
+    closeTimeout.current = setTimeout(() => setOpen(false), 50)
+  }
+
+  const handleBlur = (e: React.FocusEvent) => {
+    if (e.currentTarget.contains(e.relatedTarget)) return
+    handleClose()
+  }
 
   return (
-    <Popover>
-      {({ open }) => (
-        <>
-          <PopoverButton className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
-            <span>{t('header.solutions.title')}</span>
-            <CaretDownIcon
-              className={cx('size-3 transition-transform', {
-                'rotate-180': open,
-              })}
-              aria-hidden='true'
-            />
-          </PopoverButton>
+    <div
+      className='relative'
+      onMouseEnter={handleOpen}
+      onMouseLeave={handleClose}
+      onFocus={handleOpen}
+      onBlur={handleBlur}
+    >
+      <button
+        type='button'
+        className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
+      >
+        <span>{t('header.solutions.title')}</span>
+        <CaretDownIcon
+          className={cx('size-3 transition-transform', {
+            'rotate-180': open,
+          })}
+          aria-hidden='true'
+        />
+      </button>
 
-          <PopoverBackdrop className='fixed inset-0 z-30 bg-transparent' />
-          <Transition
-            as={Fragment}
-            enter='transition-all ease-out duration-200'
-            enterFrom='opacity-0 translate-y-1'
-            enterTo='opacity-100 translate-y-0'
-            leave='transition-all ease-in duration-150'
-            leaveFrom='opacity-100 translate-y-0'
-            leaveTo='opacity-0 translate-y-1'
-          >
-            <PopoverPanel className='absolute z-40 mt-4 flex w-screen max-w-max backdrop-blur-md'>
-              <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-50/50 p-1.5 dark:divide-slate-700/60 dark:border-slate-700/60 dark:bg-slate-950/50'>
-                <div className='grid w-full grid-cols-2 gap-1 p-4'>
-                  {_map(solutions, (item) => (
-                    <div
+      <Transition
+        show={open}
+        as={Fragment}
+        enter='transition-all ease-out duration-200'
+        enterFrom='opacity-0 translate-y-1'
+        enterTo='opacity-100 translate-y-0'
+        leave='transition-all ease-in duration-150'
+        leaveFrom='opacity-100 translate-y-0'
+        leaveTo='opacity-0 translate-y-1'
+      >
+        <div className='absolute z-40 mt-4 flex w-screen max-w-max backdrop-blur-md'>
+          <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-50/50 p-1.5 dark:divide-slate-700/60 dark:border-slate-700/60 dark:bg-slate-950/50'>
+            <div className='grid w-full grid-cols-2 gap-1 p-4'>
+              {_map(solutions, (item) => (
+                <div
+                  key={item.name}
+                  className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
+                >
+                  <item.icon
+                    className={cn(
+                      'mt-1 h-5 w-5 text-gray-600 dark:text-gray-300',
+                      item.className,
+                    )}
+                    aria-hidden='true'
+                    weight='duotone'
+                  />
+                  <div>
+                    {_startsWith(item.link, '/') ? (
+                      <Link
+                        to={item.link}
+                        className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                      >
+                        {item.name}
+                        <span className='absolute inset-0' />
+                      </Link>
+                    ) : (
+                      <a
+                        href={item.link}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                      >
+                        {item.name}
+                        <span className='absolute inset-0' />
+                      </a>
+                    )}
+
+                    <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className='grid grid-cols-2 gap-1 px-4 py-2'>
+              {_map(ctas, (item) => {
+                if (_startsWith(item.link, '/')) {
+                  return (
+                    <Link
                       key={item.name}
-                      className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
+                      to={item.link}
+                      className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     >
                       <item.icon
                         className={cn(
-                          'mt-1 h-5 w-5 text-gray-600 dark:text-gray-300',
+                          'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
                           item.className,
                         )}
                         aria-hidden='true'
                         weight='duotone'
                       />
-                      <div>
-                        {_startsWith(item.link, '/') ? (
-                          <Link
-                            to={item.link}
-                            className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-                          >
-                            {item.name}
-                            <span className='absolute inset-0' />
-                          </Link>
-                        ) : (
-                          <a
-                            href={item.link}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-                          >
-                            {item.name}
-                            <span className='absolute inset-0' />
-                          </a>
-                        )}
+                      {item.name}
+                    </Link>
+                  )
+                }
 
-                        <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>
-                          {item.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className='grid grid-cols-2 gap-1 px-4 py-2'>
-                  {_map(ctas, (item) => {
-                    if (_startsWith(item.link, '/')) {
-                      return (
-                        <Link
-                          key={item.name}
-                          to={item.link}
-                          className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
-                        >
-                          <item.icon
-                            className={cn(
-                              'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
-                              item.className,
-                            )}
-                            aria-hidden='true'
-                            weight='duotone'
-                          />
-                          {item.name}
-                        </Link>
-                      )
-                    }
-
-                    return (
-                      <a
-                        key={item.name}
-                        href={item.link}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
-                      >
-                        <item.icon
-                          className={cn(
-                            'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
-                            item.className,
-                          )}
-                          aria-hidden='true'
-                          weight='duotone'
-                        />
-                        {item.name}
-                      </a>
-                    )
-                  })}
-                </div>
-              </div>
-            </PopoverPanel>
-          </Transition>
-        </>
-      )}
-    </Popover>
+                return (
+                  <a
+                    key={item.name}
+                    href={item.link}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                  >
+                    <item.icon
+                      className={cn(
+                        'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
+                        item.className,
+                      )}
+                      aria-hidden='true'
+                      weight='duotone'
+                    />
+                    {item.name}
+                  </a>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </div>
   )
 }
 
