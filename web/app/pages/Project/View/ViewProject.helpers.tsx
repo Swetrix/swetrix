@@ -2164,6 +2164,10 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   ca: t('project.mapping.ca'),
   te: t('project.mapping.te'),
   co: t('project.mapping.co'),
+  isp: t('project.mapping.isp'),
+  og: t('project.mapping.og'),
+  ut: t('project.mapping.ut'),
+  ctp: t('project.mapping.ctp'),
   ev: t('project.event'),
   userFlow: t('project.mapping.userFlow'),
   'tag:key': t('project.metamapping.tag.key'),
@@ -2174,6 +2178,7 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   location: t('project.location'),
   browser: t('project.browser'),
   devices: t('project.devices'),
+  network: t('project.network'),
   map: t('project.map'),
 })
 
@@ -2187,6 +2192,7 @@ const panelIconMapping = {
   br: <CompassIcon className={iconClassName} />,
   os: <MonitorPlayIcon className={iconClassName} />,
   so: <ShareIcon className={iconClassName} />,
+  isp: <GlobeIcon className={iconClassName} />,
 }
 
 export const deviceIconMapping = {

@@ -439,6 +439,7 @@ const TrafficViewInner = ({
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
     page: 'pg' | 'host' | 'userFlow' | 'entryPage' | 'exitPage'
     device: 'br' | 'os' | 'dv'
+    network: 'isp' | 'og' | 'ut' | 'ctp'
     source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co' | 'keywords'
     customEvMetadata: string
     pageviewMetadata: string
@@ -446,6 +447,7 @@ const TrafficViewInner = ({
     location: 'cc',
     page: 'pg',
     device: 'br',
+    network: 'isp',
     source: 'ref',
     customEvMetadata: '',
     pageviewMetadata: '',
@@ -1274,6 +1276,37 @@ const TrafficViewInner = ({
                           panelsActiveTabs.device === 'br' ? 'br' : 'os',
                         )
                       }
+                    />
+                  )
+                }
+
+                if (type === 'network') {
+                  const networkTabs = [
+                    { id: 'isp', label: t('project.mapping.isp') },
+                    { id: 'og', label: t('project.mapping.og') },
+                    { id: 'ut', label: t('project.mapping.ut') },
+                    { id: 'ctp', label: t('project.mapping.ctp') },
+                  ]
+
+                  return (
+                    <Panel
+                      key={panelsActiveTabs.network}
+                      icon={panelIconMapping.isp}
+                      id={panelsActiveTabs.network}
+                      getFilterLink={getFilterLink}
+                      name={t('project.network')}
+                      tabs={networkTabs}
+                      onTabChange={(tab) => setPanelTab('network', tab)}
+                      activeTabId={panelsActiveTabs.network}
+                      data={panelsData.data[panelsActiveTabs.network]}
+                      rowMapper={({ name: entryName }) => {
+                        if (!entryName) {
+                          return (
+                            <span className='italic'>{t('common.notSet')}</span>
+                          )
+                        }
+                        return entryName
+                      }}
                     />
                   )
                 }

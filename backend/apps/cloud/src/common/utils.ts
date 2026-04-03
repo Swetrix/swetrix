@@ -260,18 +260,24 @@ interface IPGeoDetails {
   region: string | null
   regionCode: string | null
   city: string | null
+  isp: string | null
+  organization: string | null
+  userType: string | null
+  connectionType: string | null
 }
 
 export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
-  // Stage 1: Using IP address based geo lookup
   const data = lookup.get(ip)
 
   const country = data?.country?.iso_code || null
-  // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
   const city = data?.city?.names?.en || null
-  // TODO: Store ISO code, not region name
   const region = data?.subdivisions?.[0]?.names?.en || null
   const regionCode = data?.subdivisions?.[0]?.iso_code || null
+
+  const isp = data?.traits?.isp || null
+  const organization = data?.traits?.organization || null
+  const userType = data?.traits?.user_type || null
+  const connectionType = data?.traits?.connection_type || null
 
   if (country) {
     return {
@@ -279,10 +285,13 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
       city,
       region,
       regionCode,
+      isp,
+      organization,
+      userType,
+      connectionType,
     }
   }
 
-  // Stage 2: Using timezone based geo lookup as a fallback
   const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
 
   return {
@@ -290,6 +299,10 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
     city: null,
     region: null,
     regionCode: null,
+    isp: null,
+    organization: null,
+    userType: null,
+    connectionType: null,
   }
 }
 

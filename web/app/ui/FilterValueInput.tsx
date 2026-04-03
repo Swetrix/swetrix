@@ -76,6 +76,10 @@ export const filterCategoryIcons: Record<string, ReactNode> = {
   co: <FileIcon className='size-4' />,
   lc: <TranslateIcon className='size-4' />,
   dv: <DevicesIcon className='size-4' />,
+  isp: <GlobeIcon className='size-4' />,
+  og: <BuildingIcon className='size-4' />,
+  ut: <CpuIcon className='size-4' />,
+  ctp: <LinkIcon className='size-4' />,
 }
 
 const deviceIconMapping: Record<string, ReactNode> = {
