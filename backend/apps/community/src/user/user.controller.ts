@@ -343,11 +343,14 @@ export class UserController {
         const hashed = await this.authService.hashPassword(userDTO.password)
         await this.userService.update(id, { password: hashed })
 
-        await this.mailerService.sendEmail(
-          originalUser.email,
-          LetterTemplate.PasswordChanged,
-        )
-        await this.authService.logoutAll(id)
+        await Promise.all([
+          this.mailerService.sendEmail(
+            originalUser.email,
+            LetterTemplate.PasswordChanged,
+          ),
+          this.authService.logoutAll(id),
+          this.authService.invalidatePasswordResetTokens(id),
+        ])
       }
 
       if (userDTO.email && userDTO.email !== originalUser.email) {

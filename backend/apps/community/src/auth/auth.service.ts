@@ -212,6 +212,42 @@ export class AuthService {
     )
   }
 
+  public async invalidatePasswordResetTokens(userId: string): Promise<void> {
+    try {
+      let cursor = '0'
+      const scanCount = 100
+
+      do {
+        const [nextCursor, keys] = await redis.scan(
+          cursor,
+          'MATCH',
+          'password_reset:*',
+          'COUNT',
+          scanCount,
+        )
+
+        if (keys && keys.length > 0) {
+          const values = await redis.mget(...keys)
+          const pipeline = redis.pipeline()
+
+          for (let i = 0; i < keys.length; i++) {
+            if (values[i] === userId) {
+              pipeline.del(keys[i])
+            }
+          }
+
+          await pipeline.exec()
+        }
+
+        cursor = nextCursor
+      } while (cursor !== '0')
+    } catch (reason) {
+      console.error(
+        `[ERROR][AuthService -> invalidatePasswordResetTokens]: ${reason}`,
+      )
+    }
+  }
+
   public async resetPassword(userId: string, password: string): Promise<void> {
     const hashedPassword = await this.hashPassword(password)
 

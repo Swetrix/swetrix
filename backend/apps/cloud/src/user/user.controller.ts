@@ -659,16 +659,18 @@ export class UserController {
       ])
       await this.userService.update(id, userToUpdate)
 
-      // If password should have been updated and there were no issues doing so, then...
       if (shouldUpdatePassword) {
-        // Send 'Password changed' email notification
-        await this.mailerService.sendEmail(
-          user.email,
-          LetterTemplate.PasswordChanged,
-        )
-
-        // Log out all user sessions
-        await this.authService.logoutAll(id)
+        await Promise.all([
+          this.mailerService.sendEmail(
+            user.email,
+            LetterTemplate.PasswordChanged,
+          ),
+          this.authService.logoutAll(id),
+          this.actionTokensService.deleteMultiple({
+            user: { id },
+            action: ActionTokenType.PASSWORD_RESET,
+          }),
+        ])
       }
 
       const updatedUser = await this.userService.findOne({ where: { id } })
