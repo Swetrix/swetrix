@@ -309,7 +309,7 @@ export class AuthService {
     })
   }
 
-  private async comparePassword(
+  public async comparePassword(
     password: string,
     hashedPassword: string,
   ): Promise<boolean> {

@@ -412,6 +412,7 @@ const UserSettings = () => {
     [t],
   )
   const [deletionFeedback, setDeletionFeedback] = useState('')
+  const [deletionPassword, setDeletionPassword] = useState('')
 
   const lastHandledData = useRef<UserSettingsActionData | null>(null)
   const passwordChangedRef = useRef(false)
@@ -485,7 +486,12 @@ const UserSettings = () => {
         })
         pendingToggles.current.delete('login-notifications')
       }
-      toast.error(fetcher.data.error)
+      const translated = t(`apiNotifications.${fetcher.data.error}`)
+      toast.error(
+        translated !== `apiNotifications.${fetcher.data.error}`
+          ? translated
+          : fetcher.data.error,
+      )
     }
   }, [fetcher.data, fetcher.state, mergeUser, t, logout, navigate, loadUser])
 
@@ -644,8 +650,12 @@ const UserSettings = () => {
   const onAccountDelete = () => {
     const formData = new FormData()
     formData.set('intent', 'delete-account')
+    formData.set('password', deletionPassword)
     formData.set('feedback', deletionFeedback)
     fetcher.submit(formData, { method: 'post' })
+    setTimeout(() => {
+      setDeletionPassword('')
+    }, 300)
   }
 
   const onEmailConfirm = () => {
@@ -1689,6 +1699,7 @@ const UserSettings = () => {
       <Modal
         onClose={() => {
           setDeletionFeedback('')
+          setDeletionPassword('')
           setShowModal(false)
         }}
         onSubmit={() => {
@@ -1700,9 +1711,20 @@ const UserSettings = () => {
         title={t('profileSettings.qDelete')}
         submitType='danger'
         type='error'
+        submitDisabled={!deletionPassword}
         message={
           <>
             {t('profileSettings.deactivateConfirmation')}
+            <div className='mt-4'>
+              <Input
+                name='deletePassword'
+                type='password'
+                label={t('profileSettings.enterPasswordToDelete')}
+                value={deletionPassword}
+                placeholder={t('auth.common.password')}
+                onChange={(e) => setDeletionPassword(e.target.value)}
+              />
+            </div>
             {isSelfhosted ? null : (
               <Textarea
                 classes={{

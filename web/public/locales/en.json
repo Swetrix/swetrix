@@ -867,6 +867,7 @@
     "notifications": "Notifications",
     "notificationsDesc": "Configure when and how you receive notifications.",
     "deactivateConfirmation": "Are you sure you want to deactivate your account?\nAll of your data will be permanently removed from our servers forever.\nThis action cannot be undone.",
+    "enterPasswordToDelete": "Enter your password to confirm",
     "deletionFeedbackLabel": "Why are you leaving? (optional)",
     "deletionFeedback": "We're sad to see you go, could you please tell us why you're leaving so we could improve our service?",
     "dataExport": "Data export",

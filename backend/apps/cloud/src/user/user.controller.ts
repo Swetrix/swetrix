@@ -211,11 +211,20 @@ export class UserController {
 
     const user = await this.userService.findOne({
       where: { id },
-      select: ['id', 'planCode'],
+      select: ['id', 'planCode', 'password'],
     })
 
     if (_isEmpty(user)) {
       throw new BadRequestException('User not found')
+    }
+
+    const isPasswordValid = await this.authService.comparePassword(
+      deleteSelfDTO.password,
+      user.password,
+    )
+
+    if (!isPasswordValid) {
+      throw new BadRequestException('incorrectPassword')
     }
 
     if (!_includes(UNPAID_PLANS, user.planCode)) {
