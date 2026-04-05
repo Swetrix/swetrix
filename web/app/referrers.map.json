@@ -6,8 +6,8 @@
     "name": "Yandex",
     "category": "search",
     "patterns": [
-      "yandex.ru",
       "yandex.com",
+      "yandex.ru",
       "yandex.kz",
       "yandex.by",
       "ya.ru",
@@ -19,11 +19,7 @@
   {
     "name": "Google",
     "category": "search",
-    "patterns": [
-      "google.com",
-      "doubleclick.net",
-      "android-app://com.google.android.gm/"
-    ]
+    "patterns": ["google.com", "doubleclick.net", "android-app://com.google.android.gm/"]
   },
   {
     "name": "Bing",
