@@ -54,7 +54,7 @@
   {
     "name": "Brave Search",
     "category": "search",
-    "patterns": ["search.brave.com"]
+    "patterns": ["brave.com", "search.brave.com"]
   },
   { "name": "Ecosia", "category": "search", "patterns": ["ecosia.org"] },
   { "name": "Baidu", "category": "search", "patterns": ["baidu.com"] },
