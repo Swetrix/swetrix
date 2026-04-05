@@ -282,7 +282,9 @@ export class GSCService {
         let dimension
         if (column === 'pg') dimension = 'page'
         else if (column === 'keywords') dimension = 'query'
-        else continue // Ignore unsupported dimensions for GSC
+        else if (column === 'country') dimension = 'country'
+        else if (column === 'device') dimension = 'device'
+        else continue
 
         let operator = 'equals'
         if (isExclusive) {
@@ -588,6 +590,132 @@ export class GSCService {
     }
   }
 
+  async getTopCountries(
+    pid: string,
+    from: string,
+    to: string,
+    limit = 50,
+    offset = 0,
+    filtersStr?: string,
+  ): Promise<
+    {
+      country: string
+      clicks: number
+      impressions: number
+      ctr: number
+      position: number
+    }[]
+  > {
+    const tokens = await this.ensurePropertyLinked(pid)
+    const auth = await this.getAuthedClientForPid(pid)
+    const sc = searchconsole({ version: 'v1', auth })
+
+    const startDate = dayjs(from).format('YYYY-MM-DD')
+    const endDate = dayjs(to).format('YYYY-MM-DD')
+
+    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
+
+    try {
+      const { data } = await sc.searchanalytics.query({
+        siteUrl: tokens.property_uri as string,
+        requestBody: {
+          startDate,
+          endDate,
+          dimensions: ['country'],
+          rowLimit: limit,
+          startRow: offset,
+          dataState: 'all',
+          ...(dimensionFilterGroups.length > 0
+            ? { dimensionFilterGroups }
+            : {}),
+        },
+      })
+
+      const rows = (data.rows || []) as Array<{
+        keys: string[]
+        clicks?: number
+        impressions?: number
+        ctr?: number
+        position?: number
+      }>
+
+      return rows.map((row) => ({
+        country: (row.keys?.[0] || '').toLowerCase(),
+        clicks: Math.round(row.clicks || 0),
+        impressions: Math.round(row.impressions || 0),
+        ctr: Number(Number((row.ctr || 0) * 100).toFixed(2)),
+        position: Number(Number(row.position || 0).toFixed(1)),
+      }))
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to fetch top countries from Search Console',
+      )
+    }
+  }
+
+  async getTopDevices(
+    pid: string,
+    from: string,
+    to: string,
+    limit = 50,
+    offset = 0,
+    filtersStr?: string,
+  ): Promise<
+    {
+      device: string
+      clicks: number
+      impressions: number
+      ctr: number
+      position: number
+    }[]
+  > {
+    const tokens = await this.ensurePropertyLinked(pid)
+    const auth = await this.getAuthedClientForPid(pid)
+    const sc = searchconsole({ version: 'v1', auth })
+
+    const startDate = dayjs(from).format('YYYY-MM-DD')
+    const endDate = dayjs(to).format('YYYY-MM-DD')
+
+    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
+
+    try {
+      const { data } = await sc.searchanalytics.query({
+        siteUrl: tokens.property_uri as string,
+        requestBody: {
+          startDate,
+          endDate,
+          dimensions: ['device'],
+          rowLimit: limit,
+          startRow: offset,
+          dataState: 'all',
+          ...(dimensionFilterGroups.length > 0
+            ? { dimensionFilterGroups }
+            : {}),
+        },
+      })
+
+      const rows = (data.rows || []) as Array<{
+        keys: string[]
+        clicks?: number
+        impressions?: number
+        ctr?: number
+        position?: number
+      }>
+
+      return rows.map((row) => ({
+        device: (row.keys?.[0] || '').toLowerCase(),
+        clicks: Math.round(row.clicks || 0),
+        impressions: Math.round(row.impressions || 0),
+        ctr: Number(Number((row.ctr || 0) * 100).toFixed(2)),
+        position: Number(Number(row.position || 0).toFixed(1)),
+      }))
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to fetch top devices from Search Console',
+      )
+    }
+  }
+
   async getDashboard(
     pid: string,
     from: string,
@@ -613,14 +741,23 @@ export class GSCService {
       .subtract(durationMs, 'millisecond')
       .format('YYYY-MM-DD HH:mm:ss')
 
-    const [summary, previousSummary, dateSeries, topPages, topQueries] =
-      await Promise.all([
-        this.getSummary(pid, from, to, filtersStr),
-        this.getSummary(pid, prevFrom, prevTo, filtersStr).catch(() => null),
-        this.getDateSeries(pid, from, to, timeBucket, filtersStr),
-        this.getTopPages(pid, from, to, 50, 0, filtersStr),
-        this.getKeywords(pid, from, to, 50, 0, filtersStr),
-      ])
+    const [
+      summary,
+      previousSummary,
+      dateSeries,
+      topPages,
+      topQueries,
+      topCountries,
+      topDevices,
+    ] = await Promise.all([
+      this.getSummary(pid, from, to, filtersStr),
+      this.getSummary(pid, prevFrom, prevTo, filtersStr).catch(() => null),
+      this.getDateSeries(pid, from, to, timeBucket, filtersStr),
+      this.getTopPages(pid, from, to, 50, 0, filtersStr),
+      this.getKeywords(pid, from, to, 50, 0, filtersStr),
+      this.getTopCountries(pid, from, to, 50, 0, filtersStr),
+      this.getTopDevices(pid, from, to, 50, 0, filtersStr),
+    ])
 
     return {
       notConnected: false,
@@ -629,6 +766,8 @@ export class GSCService {
       dateSeries,
       topPages,
       topQueries,
+      topCountries,
+      topDevices,
     }
   }
 }

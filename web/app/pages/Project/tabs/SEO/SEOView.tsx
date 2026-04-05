@@ -5,6 +5,7 @@ import {
   PlugIcon,
   RobotIcon,
   MagnifyingGlassIcon,
+  MapPinIcon,
 } from '@phosphor-icons/react'
 import type { ChartOptions } from 'billboard.js'
 import { area } from 'billboard.js'
@@ -39,16 +40,22 @@ import {
   useViewProjectContext,
   useRefreshTriggers,
 } from '~/pages/Project/View/ViewProject'
-import { panelIconMapping } from '~/pages/Project/View/ViewProject.helpers'
+import {
+  panelIconMapping,
+  getDeviceRowMapper,
+} from '~/pages/Project/View/ViewProject.helpers'
 import { MetricCard } from '~/pages/Project/tabs/Traffic/MetricCards'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
+import CCRow from '~/pages/Project/View/components/CCRow'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import { useTheme } from '~/providers/ThemeProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import { nFormatter } from '~/utils/generic'
+import countries from '~/utils/isoCountries'
 import { getSearchEngineReferrals, getAIReferrals } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
@@ -145,7 +152,11 @@ const aggregateDateSeries = (
 }
 
 const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+  const { theme } = useTheme()
   const { id } = useCurrentProject()
   const {
     period,
@@ -341,6 +352,48 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           }) as Entry & { impressions: number; ctr: number; position: number },
       ),
     [data?.topQueries],
+  )
+
+  const topCountriesAsEntries: Entry[] = useMemo(
+    () =>
+      (data?.topCountries || []).map((c) => {
+        const alpha2 =
+          countries.alpha3ToAlpha2(c.country.toUpperCase())?.toLowerCase() ||
+          c.country
+        return {
+          name: alpha2,
+          count: c.clicks,
+          impressions: c.impressions,
+          ctr: c.ctr,
+          position: c.position,
+        } as Entry & { impressions: number; ctr: number; position: number }
+      }),
+    [data?.topCountries],
+  )
+
+  const topDevicesAsEntries: Entry[] = useMemo(
+    () =>
+      (data?.topDevices || []).map(
+        (d) =>
+          ({
+            name: d.device,
+            count: d.clicks,
+            impressions: d.impressions,
+            ctr: d.ctr,
+            position: d.position,
+          }) as Entry & { impressions: number; ctr: number; position: number },
+      ),
+    [data?.topDevices],
+  )
+
+  const countryRowMapper = useCallback(
+    (entry: any) => <CCRow cc={entry.name} language={language} />,
+    [language],
+  )
+
+  const deviceRowMapper = useMemo(
+    () => getDeviceRowMapper('dv', theme, t),
+    [theme, t],
   )
 
   const anyMetricActive = Object.values(activeMetrics).some(Boolean)
@@ -778,6 +831,38 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           activeTabId='keywords'
           disableRowClick={false}
           getFilterLink={getFilterLink}
+          valuesHeaderName={t('dashboard.seoClicks')}
+          detailsExtraColumns={detailsExtraColumns}
+          hidePercentageInDetails
+          dataLoading={isLoading}
+        />
+      </div>
+
+      <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
+        <Panel
+          name={t('project.location')}
+          data={topCountriesAsEntries}
+          icon={<MapPinIcon className='h-5 w-5' />}
+          id='country'
+          activeTabId='cc'
+          disableRowClick
+          getFilterLink={noopFilterLink}
+          rowMapper={countryRowMapper}
+          valuesHeaderName={t('dashboard.seoClicks')}
+          detailsExtraColumns={detailsExtraColumns}
+          hidePercentageInDetails
+          dataLoading={isLoading}
+        />
+        <Panel
+          name={t('project.devices')}
+          data={topDevicesAsEntries}
+          icon={panelIconMapping.dv}
+          id='device'
+          activeTabId='dv'
+          disableRowClick
+          getFilterLink={noopFilterLink}
+          rowMapper={deviceRowMapper}
+          capitalize
           valuesHeaderName={t('dashboard.seoClicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails

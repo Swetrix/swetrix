@@ -2434,6 +2434,22 @@ interface GSCTopQueryEntry {
   ctr: number
 }
 
+interface GSCTopCountryEntry {
+  country: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+interface GSCTopDeviceEntry {
+  device: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
 export interface GSCDashboardResponse {
   notConnected?: boolean
   noProperty?: boolean
@@ -2452,6 +2468,8 @@ export interface GSCDashboardResponse {
   dateSeries?: GSCDateSeriesEntry[]
   topPages?: GSCTopPageEntry[]
   topQueries?: GSCTopQueryEntry[]
+  topCountries?: GSCTopCountryEntry[]
+  topDevices?: GSCTopDeviceEntry[]
 }
 
 export async function getGSCDashboardServer(
