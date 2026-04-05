@@ -19,7 +19,11 @@
   {
     "name": "Google",
     "category": "search",
-    "patterns": ["google.com", "doubleclick.net", "android-app://com.google.android.gm/"]
+    "patterns": [
+      "google.com",
+      "doubleclick.net",
+      "android-app://com.google.android.gm/"
+    ]
   },
   {
     "name": "Bing",

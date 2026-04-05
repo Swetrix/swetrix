@@ -725,7 +725,7 @@ const ViewProjectContent = () => {
       },
       {
         id: PROJECT_TABS.seo,
-        label: t('dashboard.seo'),
+        label: t('project.seo.title'),
         icon: MagnifyingGlassIcon,
       },
       {

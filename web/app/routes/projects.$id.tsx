@@ -167,7 +167,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const tabNames: Record<keyof typeof PROJECT_TABS | 'settings', string> = {
     [PROJECT_TABS.traffic]: t('dashboard.traffic'),
     [PROJECT_TABS.performance]: t('dashboard.performance'),
-    [PROJECT_TABS.seo]: t('dashboard.seo'),
+    [PROJECT_TABS.seo]: t('project.seo.title'),
     [PROJECT_TABS.profiles]: t('dashboard.profiles'),
     [PROJECT_TABS.sessions]: t('dashboard.sessions'),
     [PROJECT_TABS.errors]: t('dashboard.errors'),

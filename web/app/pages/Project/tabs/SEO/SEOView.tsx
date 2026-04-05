@@ -200,22 +200,22 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     () => [
       {
         id: SEO_METRICS.clicks,
-        label: t('dashboard.seoClicks'),
+        label: t('project.seo.clicks'),
         active: activeMetrics.clicks,
       },
       {
         id: SEO_METRICS.impressions,
-        label: t('dashboard.seoImpressions'),
+        label: t('project.seo.impressions'),
         active: activeMetrics.impressions,
       },
       {
         id: SEO_METRICS.position,
-        label: t('dashboard.seoAvgPosition'),
+        label: t('project.seo.avgPosition'),
         active: activeMetrics.position,
       },
       {
         id: SEO_METRICS.ctr,
-        label: t('dashboard.seoAvgCTR'),
+        label: t('project.seo.avgCTR'),
         active: activeMetrics.ctr,
       },
     ],
@@ -408,13 +408,13 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     let needsY2 = false
 
     if (activeMetrics.clicks) {
-      const label = t('dashboard.seoClicks')
+      const label = t('project.seo.clicks')
       columns.push([label, ...aggregatedSeries.map((d) => d.clicks)])
       colors[label] = '#3b82f6' // blue-500 - matching GSC
     }
 
     if (activeMetrics.impressions) {
-      const label = t('dashboard.seoImpressions')
+      const label = t('project.seo.impressions')
       columns.push([label, ...aggregatedSeries.map((d) => d.impressions)])
       colors[label] = '#5b21b6' // violet-800 - matching GSC
       if (activeMetrics.clicks) {
@@ -424,7 +424,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     }
 
     if (activeMetrics.position) {
-      const label = t('dashboard.seoAvgPosition')
+      const label = t('project.seo.avgPosition')
       columns.push([label, ...aggregatedSeries.map((d) => d.position)])
       colors[label] = '#d97706' // amber-600 - matching GSC
       if (activeMetrics.clicks || activeMetrics.impressions) {
@@ -434,7 +434,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     }
 
     if (activeMetrics.ctr) {
-      const label = t('dashboard.seoAvgCTR')
+      const label = t('project.seo.avgCTR')
       columns.push([label, ...aggregatedSeries.map((d) => d.ctr)])
       colors[label] = '#0d9488' // teal-600 - matching GSC
       if (activeMetrics.clicks || activeMetrics.impressions) {
@@ -538,8 +538,8 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${headerLabel}</li>
             ${items
               .map((el: any) => {
-                const isCtr = el.name === t('dashboard.seoAvgCTR')
-                const isPos = el.name === t('dashboard.seoAvgPosition')
+                const isCtr = el.name === t('project.seo.avgCTR')
+                const isPos = el.name === t('project.seo.avgPosition')
                 let formatted = nFormatter(el.value, 1)
                 if (isCtr) formatted = `${Number(el.value).toFixed(1)}%`
                 else if (isPos) formatted = Number(el.value).toFixed(1)
@@ -564,19 +564,19 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   const detailsExtraColumns = useMemo(
     () => [
       {
-        header: t('dashboard.seoImpressions'),
+        header: t('project.seo.impressions'),
         render: (entry: any) => nFormatter(entry.impressions ?? 0, 1),
         sortLabel: 'impressions',
         getSortValue: (entry: any) => entry.impressions ?? 0,
       },
       {
-        header: t('dashboard.seoCTR'),
+        header: t('project.seo.ctr'),
         render: (entry: any) => `${entry.ctr ?? 0}%`,
         sortLabel: 'ctr',
         getSortValue: (entry: any) => entry.ctr ?? 0,
       },
       {
-        header: t('dashboard.seoPosition'),
+        header: t('project.seo.position'),
         render: (entry: any) => entry.position ?? 0,
         sortLabel: 'position',
         getSortValue: (entry: any) => entry.position ?? 0,
@@ -618,14 +618,14 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             />
           </div>
           <Text size='xl' weight='bold' className='mb-2'>
-            {t('dashboard.seoConnectGSC')}
+            {t('project.seo.connectGSC')}
           </Text>
           <Text size='sm' className='mb-6 text-gray-500 dark:text-gray-400'>
-            {t('dashboard.seoConnectGSCDesc')}
+            {t('project.seo.connectGSCDesc')}
           </Text>
           {data?.noProperty ? (
             <Text size='sm' className='mb-4 text-amber-600 dark:text-amber-400'>
-              {t('dashboard.seoNoProperty')}
+              {t('project.seo.noProperty')}
             </Text>
           ) : null}
           <Link
@@ -633,13 +633,13 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             className='inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200'
           >
             <LinkIcon className='size-4' />
-            {t('dashboard.seoConnectButton')}
+            {t('project.seo.connectButton')}
           </Link>
 
           {refEntries.length > 0 ? (
             <div className='mt-10 grid w-full grid-cols-1 gap-3 sm:grid-cols-2'>
               <Panel
-                name={t('dashboard.seoSearchEngines')}
+                name={t('project.seo.searchEngines')}
                 data={searchEngineEntries}
                 icon={panelIconMapping.ref}
                 id='seo-search-engines'
@@ -650,7 +650,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
                 valuesHeaderName={t('project.visitors')}
               />
               <Panel
-                name={t('dashboard.seoAIReferrals')}
+                name={t('project.seo.aiReferrals')}
                 data={aiReferralEntries}
                 icon={<RobotIcon className='h-5 w-5' />}
                 id='seo-ai-referrals'
@@ -716,7 +716,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         </div>
         <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
           <MetricCard
-            label={t('dashboard.seoClicks')}
+            label={t('project.seo.clicks')}
             value={data?.summary?.clicks ?? 0}
             change={
               data?.previousSummary
@@ -729,7 +729,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             }
           />
           <MetricCard
-            label={t('dashboard.seoImpressions')}
+            label={t('project.seo.impressions')}
             value={data?.summary?.impressions ?? 0}
             change={
               data?.previousSummary
@@ -743,7 +743,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             }
           />
           <MetricCard
-            label={t('dashboard.seoAvgCTR')}
+            label={t('project.seo.avgCTR')}
             value={_round(data?.summary?.ctr ?? 0, 2)}
             change={
               data?.previousSummary
@@ -757,7 +757,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             }
           />
           <MetricCard
-            label={t('dashboard.seoAvgPosition')}
+            label={t('project.seo.avgPosition')}
             value={_round(data?.summary?.position ?? 0, 1)}
             change={
               data?.previousSummary
@@ -786,7 +786,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
 
       <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <Panel
-          name={t('dashboard.seoSearchEngines')}
+          name={t('project.seo.searchEngines')}
           data={searchEngineEntries}
           icon={panelIconMapping.ref}
           id='seo-search-engines'
@@ -797,7 +797,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           valuesHeaderName={t('project.visitors')}
         />
         <Panel
-          name={t('dashboard.seoAIReferrals')}
+          name={t('project.seo.aiReferrals')}
           data={aiReferralEntries}
           icon={<RobotIcon className='h-5 w-5' />}
           id='seo-ai-referrals'
@@ -811,27 +811,27 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
 
       <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <Panel
-          name={t('dashboard.seoTopPages')}
+          name={t('project.seo.topPages')}
           data={topPagesAsEntries}
           icon={panelIconMapping.pg}
           id='pg'
           activeTabId='pg'
           disableRowClick={false}
           getFilterLink={getFilterLink}
-          valuesHeaderName={t('dashboard.seoClicks')}
+          valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
           dataLoading={isLoading}
         />
         <Panel
-          name={t('dashboard.seoTopQueries')}
+          name={t('project.seo.topQueries')}
           data={topQueriesAsEntries}
           icon={<MagnifyingGlassIcon className='h-5 w-5' />}
           id='keywords'
           activeTabId='keywords'
           disableRowClick={false}
           getFilterLink={getFilterLink}
-          valuesHeaderName={t('dashboard.seoClicks')}
+          valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
           dataLoading={isLoading}
@@ -848,7 +848,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           disableRowClick
           getFilterLink={noopFilterLink}
           rowMapper={countryRowMapper}
-          valuesHeaderName={t('dashboard.seoClicks')}
+          valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
           dataLoading={isLoading}
@@ -863,7 +863,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           getFilterLink={noopFilterLink}
           rowMapper={deviceRowMapper}
           capitalize
-          valuesHeaderName={t('dashboard.seoClicks')}
+          valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
           dataLoading={isLoading}

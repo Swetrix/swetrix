@@ -2148,7 +2148,7 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   rg: t('project.mapping.rg'),
   ct: t('project.mapping.ct'),
   pg: t('project.mapping.pg'),
-  keywords: t('dashboard.seoTopQueries'),
+  keywords: t('project.seo.topQueries'),
   entryPage: t('project.entryPages'),
   exitPage: t('project.exitPages'),
   lc: t('project.mapping.lc'),
