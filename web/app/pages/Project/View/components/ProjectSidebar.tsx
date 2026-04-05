@@ -63,6 +63,7 @@ const ICON_COLORS: Record<string, string> = {
   // Web Analytics
   traffic: 'text-blue-500',
   performance: 'text-amber-500',
+  seo: 'text-green-500',
   funnels: 'text-teal-500',
   alerts: 'text-cyan-500',
   // Product Analytics
@@ -402,6 +403,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       [
         PROJECT_TABS.traffic,
         PROJECT_TABS.performance,
+        PROJECT_TABS.seo,
         PROJECT_TABS.funnels,
         PROJECT_TABS.alerts,
       ]

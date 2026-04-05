@@ -25,6 +25,8 @@ import type {
   ProjectDataCustomEventsResponse,
   UserFlowResponse,
   GSCKeywordsResponse,
+  GSCDashboardResponse,
+  GSCDetailsResponse,
   RevenueStatus,
   RevenueDataResponse,
   OverallObject,
@@ -837,6 +839,38 @@ export function useGSCKeywordsProxy() {
   )
 
   return { fetchKeywords, data, error, isLoading }
+}
+
+export function useGSCDashboardProxy() {
+  const [data, setData] = useState<GSCDashboardResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchDashboard = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams = {}) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const result = await postAnalytics<GSCDashboardResponse>({
+          action: 'getGSCDashboard',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
+  return { fetchDashboard, data, error, isLoading }
 }
 
 export function useRevenueProxy() {

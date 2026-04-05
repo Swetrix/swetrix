@@ -39,6 +39,7 @@ const validFilters = [
   'te',
   'co',
   'ev',
+  'keywords',
   'tag:key',
   'tag:value',
   'ev:key',

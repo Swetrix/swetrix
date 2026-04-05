@@ -2,12 +2,22 @@ import type { Entry } from '~/lib/models/Entry'
 
 import MAP from '../referrers.map.json'
 
+type ReferrerCategory = 'search' | 'ai'
+
 type ReferrerMapping = {
   name: string
   patterns: string[]
+  category?: ReferrerCategory
 }
 
 const REFERRER_MAP: ReferrerMapping[] = MAP as ReferrerMapping[]
+
+const SEARCH_ENGINE_NAMES = new Set(
+  REFERRER_MAP.filter((m) => m.category === 'search').map((m) => m.name),
+)
+const AI_REFERRAL_NAMES = new Set(
+  REFERRER_MAP.filter((m) => m.category === 'ai').map((m) => m.name),
+)
 
 const extractHostname = (value: string | null | undefined): string | null => {
   if (!value) return null
@@ -95,6 +105,16 @@ export const groupRefEntries = (entries: Entry[]): Entry[] => {
   }
 
   return list.sort((a, b) => b.count - a.count)
+}
+
+export const getSearchEngineReferrals = (entries: Entry[]): Entry[] => {
+  const grouped = groupRefEntries(entries)
+  return grouped.filter((e) => e.name && SEARCH_ENGINE_NAMES.has(e.name))
+}
+
+export const getAIReferrals = (entries: Entry[]): Entry[] => {
+  const grouped = groupRefEntries(entries)
+  return grouped.filter((e) => e.name && AI_REFERRAL_NAMES.has(e.name))
 }
 
 export const getFaviconHost = (value: string | null): string | null => {

@@ -499,6 +499,7 @@ const SELFHOSTED_PROJECT_TABS = {
 const PRODUCTION_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
+  seo: 'seo',
   profiles: 'profiles',
   funnels: 'funnels',
   sessions: 'sessions',

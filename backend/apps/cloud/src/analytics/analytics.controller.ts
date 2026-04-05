@@ -883,6 +883,147 @@ export class AnalyticsController {
     return { keywords }
   }
 
+  @Get('gsc-dashboard')
+  @Auth(true, true)
+  async getGSCDashboard(
+    @Query() data: GetKeywordsDto,
+    @Query('filters') filtersStr: string,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      timeBucket,
+    } = data
+    const filters = filtersStr || data.filters
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const finalTimeBucket =
+      timeBucket ||
+      (['1h', 'today', 'yesterday', '1d'].includes(period) ? 'hour' : 'day')
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, timeBucket: ${finalTimeBucket}, filters: ${filters}`,
+      'GET /analytics/gsc-dashboard',
+    )
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    return this.gscService.getDashboard(
+      pid,
+      groupFrom,
+      groupTo,
+      finalTimeBucket,
+      filters,
+    )
+  }
+
+  @Get('gsc-details')
+  @Auth(true, true)
+  async getGSCDetails(
+    @Query() data: GetKeywordsDto,
+    @Query('page') pageStr: string,
+    @Query('query') queryStr: string,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE } = data
+    const page = pageStr || data.page
+    const query = queryStr || data.query
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, page: ${page}, query: ${query}`,
+      'GET /analytics/gsc-details',
+    )
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    if (page) {
+      const keywords = await this.gscService.getKeywords(
+        pid,
+        groupFrom,
+        groupTo,
+        50,
+        0,
+        undefined,
+        page,
+      )
+      return { type: 'queries', data: keywords }
+    }
+
+    if (query) {
+      const pages = await this.gscService.getTopPages(
+        pid,
+        groupFrom,
+        groupTo,
+        50,
+        0,
+        undefined,
+        query,
+      )
+      return { type: 'pages', data: pages }
+    }
+
+    return { type: 'none', data: [] }
+  }
+
   @Get('birdseye')
   @Auth(true, true)
   // returns overall short statistics per project

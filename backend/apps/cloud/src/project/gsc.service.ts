@@ -270,10 +270,52 @@ export class GSCService {
     } as any)
   }
 
+  private parseFilters(filtersStr?: string) {
+    if (!filtersStr) return undefined
+    try {
+      const filters = JSON.parse(filtersStr)
+      const mappedFilters = []
+
+      for (const filter of filters) {
+        const { column, filter: value, isExclusive, isContains } = filter
+
+        let dimension
+        if (column === 'pg') dimension = 'page'
+        else if (column === 'keywords') dimension = 'query'
+        else continue // Ignore unsupported dimensions for GSC
+
+        let operator = 'equals'
+        if (isExclusive) {
+          operator = isContains ? 'notContains' : 'notEquals'
+        } else if (isContains) {
+          operator = 'contains'
+        }
+
+        const filterObj: any = { dimension, expression: value }
+        if (operator !== 'equals') {
+          filterObj.operator = operator
+        }
+
+        mappedFilters.push(filterObj)
+      }
+
+      if (mappedFilters.length > 0) {
+        return [{ groupType: 'and', filters: mappedFilters }]
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return undefined
+  }
+
   async getKeywords(
     pid: string,
     from: string,
     to: string,
+    limit = 250,
+    offset = 0,
+    filtersStr?: string,
+    page?: string,
   ): Promise<
     {
       name: string
@@ -293,9 +335,17 @@ export class GSCService {
     const auth = await this.getAuthedClientForPid(pid)
     const sc = searchconsole({ version: 'v1', auth })
 
-    // Dates must be YYYY-MM-DD
     const startDate = dayjs(from).format('YYYY-MM-DD')
     const endDate = dayjs(to).format('YYYY-MM-DD')
+
+    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
+
+    if (page) {
+      dimensionFilterGroups.push({
+        groupType: 'and',
+        filters: [{ dimension: 'page', expression: page }],
+      })
+    }
 
     try {
       const { data } = await sc.searchanalytics.query({
@@ -304,8 +354,12 @@ export class GSCService {
           startDate,
           endDate,
           dimensions: ['query'],
-          rowLimit: 250, // enough for UI panel
-          dataState: 'final',
+          rowLimit: limit,
+          startRow: offset,
+          dataState: 'all',
+          ...(dimensionFilterGroups.length > 0
+            ? { dimensionFilterGroups }
+            : {}),
         },
       })
 
@@ -322,13 +376,259 @@ export class GSCService {
           count: Math.round(row.clicks || 0),
           impressions: Math.round(row.impressions || 0),
           position: Number(Number(row.position || 0).toFixed(2)),
-          ctr: Number(Number((row.ctr || 0) * 100).toFixed(2)), // return CTR in percent
+          ctr: Number(Number((row.ctr || 0) * 100).toFixed(2)),
         }))
         .filter(Boolean)
     } catch {
       throw new InternalServerErrorException(
         'Failed to fetch keywords from Search Console',
       )
+    }
+  }
+
+  private async ensurePropertyLinked(pid: string) {
+    const tokens = await this.getStoredTokens(pid)
+    if (_isEmpty(tokens) || _isEmpty(tokens.property_uri)) {
+      throw new BadRequestException(
+        'Search Console property is not linked for this project',
+      )
+    }
+    return tokens
+  }
+
+  async getSummary(
+    pid: string,
+    from: string,
+    to: string,
+    filtersStr?: string,
+  ): Promise<{
+    clicks: number
+    impressions: number
+    ctr: number
+    position: number
+  }> {
+    const tokens = await this.ensurePropertyLinked(pid)
+    const auth = await this.getAuthedClientForPid(pid)
+    const sc = searchconsole({ version: 'v1', auth })
+
+    const startDate = dayjs(from).format('YYYY-MM-DD')
+    const endDate = dayjs(to).format('YYYY-MM-DD')
+
+    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
+
+    try {
+      const { data } = await sc.searchanalytics.query({
+        siteUrl: tokens.property_uri as string,
+        requestBody: {
+          startDate,
+          endDate,
+          dataState: 'all',
+          ...(dimensionFilterGroups.length > 0
+            ? { dimensionFilterGroups }
+            : {}),
+        },
+      })
+
+      const row = data.rows?.[0] as
+        | {
+            clicks?: number
+            impressions?: number
+            ctr?: number
+            position?: number
+          }
+        | undefined
+
+      return {
+        clicks: Math.round(row?.clicks || 0),
+        impressions: Math.round(row?.impressions || 0),
+        ctr: Number(Number((row?.ctr || 0) * 100).toFixed(2)),
+        position: Number(Number(row?.position || 0).toFixed(1)),
+      }
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to fetch summary from Search Console',
+      )
+    }
+  }
+
+  async getDateSeries(
+    pid: string,
+    from: string,
+    to: string,
+    timeBucket?: string,
+    filtersStr?: string,
+  ): Promise<
+    {
+      date: string
+      clicks: number
+      impressions: number
+      ctr: number
+      position: number
+    }[]
+  > {
+    const tokens = await this.ensurePropertyLinked(pid)
+    const auth = await this.getAuthedClientForPid(pid)
+    const sc = searchconsole({ version: 'v1', auth })
+
+    const startDate = dayjs(from).format('YYYY-MM-DD')
+    const endDate = dayjs(to).format('YYYY-MM-DD')
+
+    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
+    const isHourly = timeBucket === 'hour'
+
+    try {
+      const { data } = await sc.searchanalytics.query({
+        siteUrl: tokens.property_uri as string,
+        requestBody: {
+          startDate,
+          endDate,
+          dimensions: isHourly ? ['HOUR'] : ['date'],
+          rowLimit: 5000,
+          dataState: isHourly ? 'HOURLY_ALL' : 'all',
+          ...(dimensionFilterGroups.length > 0
+            ? { dimensionFilterGroups }
+            : {}),
+        },
+      })
+
+      const rows = (data.rows || []) as Array<{
+        keys: string[]
+        clicks?: number
+        impressions?: number
+        ctr?: number
+        position?: number
+      }>
+
+      return rows.map((row) => ({
+        date: row.keys?.[0]
+          ? isHourly
+            ? dayjs(row.keys[0]).format('YYYY-MM-DD HH:mm:ss')
+            : row.keys[0]
+          : '',
+        clicks: Math.round(row.clicks || 0),
+        impressions: Math.round(row.impressions || 0),
+        ctr: Number(Number((row.ctr || 0) * 100).toFixed(2)),
+        position: Number(Number(row.position || 0).toFixed(1)),
+      }))
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to fetch date series from Search Console',
+      )
+    }
+  }
+
+  async getTopPages(
+    pid: string,
+    from: string,
+    to: string,
+    limit = 50,
+    offset = 0,
+    filtersStr?: string,
+    query?: string,
+  ): Promise<
+    {
+      page: string
+      clicks: number
+      impressions: number
+      ctr: number
+      position: number
+    }[]
+  > {
+    const tokens = await this.ensurePropertyLinked(pid)
+    const auth = await this.getAuthedClientForPid(pid)
+    const sc = searchconsole({ version: 'v1', auth })
+
+    const startDate = dayjs(from).format('YYYY-MM-DD')
+    const endDate = dayjs(to).format('YYYY-MM-DD')
+
+    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
+
+    if (query) {
+      dimensionFilterGroups.push({
+        groupType: 'and',
+        filters: [{ dimension: 'query', expression: query }],
+      })
+    }
+
+    try {
+      const { data } = await sc.searchanalytics.query({
+        siteUrl: tokens.property_uri as string,
+        requestBody: {
+          startDate,
+          endDate,
+          dimensions: ['page'],
+          rowLimit: limit,
+          startRow: offset,
+          dataState: 'all',
+          ...(dimensionFilterGroups.length > 0
+            ? { dimensionFilterGroups }
+            : {}),
+        },
+      })
+
+      const rows = (data.rows || []) as Array<{
+        keys: string[]
+        clicks?: number
+        impressions?: number
+        ctr?: number
+        position?: number
+      }>
+
+      return rows.map((row) => ({
+        page: row.keys?.[0] || '(not set)',
+        clicks: Math.round(row.clicks || 0),
+        impressions: Math.round(row.impressions || 0),
+        ctr: Number(Number((row.ctr || 0) * 100).toFixed(2)),
+        position: Number(Number(row.position || 0).toFixed(1)),
+      }))
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to fetch top pages from Search Console',
+      )
+    }
+  }
+
+  async getDashboard(
+    pid: string,
+    from: string,
+    to: string,
+    timeBucket?: string,
+    filtersStr?: string,
+  ) {
+    const connected = await this.isConnected(pid)
+    if (!connected) {
+      return { notConnected: true }
+    }
+
+    const tokens = await this.getStoredTokens(pid)
+    if (_isEmpty(tokens.property_uri)) {
+      return { notConnected: true, noProperty: true }
+    }
+
+    const fromDate = dayjs(from)
+    const toDate = dayjs(to)
+    const durationMs = toDate.diff(fromDate)
+    const prevTo = fromDate.subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')
+    const prevFrom = fromDate
+      .subtract(durationMs, 'millisecond')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    const [summary, previousSummary, dateSeries, topPages, topQueries] =
+      await Promise.all([
+        this.getSummary(pid, from, to, filtersStr),
+        this.getSummary(pid, prevFrom, prevTo, filtersStr).catch(() => null),
+        this.getDateSeries(pid, from, to, timeBucket, filtersStr),
+        this.getTopPages(pid, from, to, 50, 0, filtersStr),
+        this.getKeywords(pid, from, to, 50, 0, filtersStr),
+      ])
+
+    return {
+      notConnected: false,
+      summary,
+      previousSummary,
+      dateSeries,
+      topPages,
+      topQueries,
     }
   }
 }
