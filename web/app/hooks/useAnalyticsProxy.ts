@@ -26,7 +26,6 @@ import type {
   UserFlowResponse,
   GSCKeywordsResponse,
   GSCDashboardResponse,
-  GSCDetailsResponse,
   RevenueStatus,
   RevenueDataResponse,
   OverallObject,

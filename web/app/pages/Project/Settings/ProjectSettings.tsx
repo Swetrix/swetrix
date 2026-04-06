@@ -286,6 +286,7 @@ interface Form extends Partial<Project> {
   ipBlacklist: string | null
   countryBlacklist: string[]
   websiteUrl?: string | null
+  brandKeywords?: string
 }
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
@@ -322,6 +323,7 @@ const ProjectSettings = () => {
       (initialProject.botsProtectionLevel as 'off' | 'basic') || 'basic',
     gscPropertyUri: initialProject.gscPropertyUri || null,
     websiteUrl: initialProject.websiteUrl || null,
+    brandKeywords: initialProject.brandKeywords?.join(', ') || '',
   }))
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -702,6 +704,8 @@ const ProjectSettings = () => {
       formData.set('countryBlacklist', JSON.stringify(data.countryBlacklist))
     if (data.websiteUrl !== undefined)
       formData.set('websiteUrl', data.websiteUrl || '')
+    if (data.brandKeywords !== undefined)
+      formData.set('brandKeywords', data.brandKeywords || '')
 
     fetcher.submit(formData, { method: 'post' })
   }

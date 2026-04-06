@@ -1805,11 +1805,28 @@ export class ProjectController {
         : null
     }
 
+    if (projectDTO.brandKeywords !== undefined) {
+      project.brandKeywords =
+        Array.isArray(projectDTO.brandKeywords) &&
+        projectDTO.brandKeywords.length > 0
+          ? JSON.stringify(projectDTO.brandKeywords.map((k) => _trim(k)))
+          : null
+    }
+
     await this.projectService.update({ id }, _omit(project, ['share', 'admin']))
 
     await deleteProjectRedis(id)
 
-    return _omit(project, ['admin', 'passwordHash', 'share'])
+    const result = _omit(project, ['admin', 'passwordHash', 'share']) as any
+    if (result.brandKeywords) {
+      try {
+        result.brandKeywords = JSON.parse(result.brandKeywords)
+      } catch {
+        result.brandKeywords = null
+      }
+    }
+
+    return result
   }
 
   // The routes related to sharing projects feature
@@ -1931,6 +1948,15 @@ export class ProjectController {
     const isManagerRole = role === 'owner' || role === 'admin'
     const isViewerRole = role === 'viewer'
 
+    let parsedBrandKeywords: string[] | null = null
+    if (project.brandKeywords) {
+      try {
+        parsedBrandKeywords = JSON.parse(project.brandKeywords)
+      } catch {
+        parsedBrandKeywords = null
+      }
+    }
+
     return {
       ..._omit(project, [
         'admin',
@@ -1944,6 +1970,7 @@ export class ProjectController {
         !isManagerRole && !isViewerRole && 'share',
         !isManagerRole && 'captchaSecretKey',
       ]),
+      brandKeywords: parsedBrandKeywords,
       isAccessConfirmed,
       isLocked: !!project.admin?.dashboardBlockReason,
       isDataExists,

@@ -1410,7 +1410,12 @@
       "benchmark": "Benchmark",
       "searchPages": "Search pages",
       "searchQueries": "Search queries",
-      "noProperty": "No Search Console property selected. Go to Settings to select one."
+      "noProperty": "No Search Console property selected. Go to Settings to select one.",
+      "branded": "Branded",
+      "nonBranded": "Non-branded",
+      "brandedTraffic": "Branded traffic",
+      "others": "Others",
+      "noBrandData": "No query data"
     },
     "passwordProtectedHint": "Please enter the password to view this dashboard.",
     "captchaCompletions": "CAPTCHA completions",
@@ -1895,6 +1900,9 @@
       "websiteUrl": "Website URL",
       "websiteUrlPlaceholder": "https://example.com",
       "websiteUrlHint": "Optional. Your website URL is used to display a favicon next to your project name and to make page paths clickable in analytics.",
+      "brandKeywords": "Brand keywords",
+      "brandKeywordsPlaceholder": "swetrix, swetrix analytics",
+      "brandKeywordsHint": "Comma-separated keywords to classify search queries as branded traffic. If empty, auto-detected from your website URL and project name.",
       "invalidUrl": "Please enter a valid URL (e.g., https://example.com)",
       "origins": "Allowed origins",
       "originsHint": "A list of origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, *.gov.ua",

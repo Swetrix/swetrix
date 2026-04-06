@@ -8,6 +8,7 @@ interface GeneralProps {
     name?: string
     id?: string
     websiteUrl?: string | null
+    brandKeywords?: string
   }
   errors: {
     name?: string
@@ -59,6 +60,16 @@ const General = ({
         className='mt-4'
         onChange={handleInput}
         error={beenSubmitted ? errors.websiteUrl : null}
+      />
+      <Input
+        name='brandKeywords'
+        label={t('project.settings.brandKeywords')}
+        hint={t('project.settings.brandKeywordsHint')}
+        value={form.brandKeywords || ''}
+        placeholder={t('project.settings.brandKeywordsPlaceholder')}
+        className='mt-4'
+        onChange={handleInput}
+        error={null}
       />
       <Input
         name='sharableLink'

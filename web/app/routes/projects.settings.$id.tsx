@@ -115,6 +115,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         ?.toString()
       const countryBlacklist = formData.get('countryBlacklist')?.toString()
       const websiteUrl = formData.get('websiteUrl')?.toString()
+      const brandKeywords = formData.get('brandKeywords')?.toString()
       const captchaDifficulty = formData.get('captchaDifficulty')?.toString()
 
       const fieldErrors: ProjectSettingsActionData['fieldErrors'] = {}
@@ -150,6 +151,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
           ? JSON.parse(countryBlacklist)
           : []
       if (websiteUrl !== undefined) updateData.websiteUrl = websiteUrl || null
+      if (brandKeywords !== undefined)
+        updateData.brandKeywords = brandKeywords
+          ? brandKeywords
+              .split(',')
+              .map((k) => k.trim())
+              .filter(Boolean)
+          : null
       if (captchaDifficulty !== undefined)
         updateData.captchaDifficulty = Number(captchaDifficulty)
 
