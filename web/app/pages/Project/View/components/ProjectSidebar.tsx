@@ -65,7 +65,6 @@ const ICON_COLORS: Record<string, string> = {
   performance: 'text-amber-500',
   seo: 'text-green-500',
   funnels: 'text-teal-500',
-  alerts: 'text-cyan-500',
   // Product Analytics
   profiles: 'text-fuchsia-500',
   sessions: 'text-indigo-500',
@@ -405,7 +404,6 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         PROJECT_TABS.seo,
         PROJECT_TABS.performance,
         PROJECT_TABS.funnels,
-        PROJECT_TABS.alerts,
       ]
         .filter(Boolean)
         .includes(tab.id as any),

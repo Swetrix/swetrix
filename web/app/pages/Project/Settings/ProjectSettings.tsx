@@ -22,6 +22,7 @@ import {
   ShieldCheckIcon,
   CurrencyDollarIcon,
   DownloadIcon,
+  BellRingingIcon,
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -65,6 +66,7 @@ import DangerZone from './tabs/DangerZone'
 import General from './tabs/General'
 import Revenue from './tabs/Revenue'
 import Shields from './tabs/Shields'
+import ProjectAlerts from './Alerts/ProjectAlertsView'
 import DataImportTab from './components/DataImportTab'
 
 const MAX_NAME_LENGTH = 50
@@ -357,6 +359,7 @@ const ProjectSettings = () => {
     | 'access'
     | 'captcha'
     | 'integrations'
+    | 'alerts'
     | 'revenue'
     | 'emails'
     | 'people'
@@ -406,6 +409,14 @@ const ProjectSettings = () => {
           icon: PuzzlePieceIcon,
           iconColor: 'text-purple-500',
           visible: !isSelfhosted,
+        },
+        {
+          id: 'alerts',
+          label: t('project.settings.tabs.alerts'),
+          description: t('project.settings.tabs.alertsDesc'),
+          icon: BellRingingIcon,
+          iconColor: 'text-cyan-500',
+          visible: !isSelfhosted && project?.role === 'owner',
         },
         {
           id: 'revenue',
@@ -1229,6 +1240,18 @@ const ProjectSettings = () => {
                   )}
                 </div>
               </div>
+            ) : null}
+
+            {activeTab === 'alerts' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <ProjectAlerts projectId={id} projectRole={project?.role} />
+              </>
             ) : null}
 
             {activeTab === 'captcha' && activeTabConfig ? (

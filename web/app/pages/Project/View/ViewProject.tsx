@@ -10,7 +10,6 @@ import {
   SunIcon,
   WarningIcon,
   GaugeIcon,
-  BellRingingIcon,
   ChartBarIcon,
   FunnelIcon,
   GearIcon,
@@ -83,7 +82,6 @@ import {
   useCurrentProject,
   useProjectPassword,
 } from '../../../providers/CurrentProjectProvider'
-import ProjectAlertsView from '../tabs/Alerts/ProjectAlertsView'
 import AskAIView from '../tabs/AskAI'
 import ErrorsView from '../tabs/Errors/ErrorsView'
 import ExperimentsView from '../tabs/Experiments/ExperimentsView'
@@ -792,11 +790,6 @@ const ViewProjectContent = () => {
         icon: SparkleIcon,
       },
       {
-        id: PROJECT_TABS.alerts,
-        label: t('dashboard.alerts'),
-        icon: BellRingingIcon,
-      },
-      {
         id: PROJECT_TABS.experiments,
         label: t('dashboard.experiments'),
         icon: FlaskIcon,
@@ -1146,10 +1139,6 @@ const ViewProjectContent = () => {
     }
 
     if (pair.period === 'compare') {
-      if (activeTab === PROJECT_TABS.alerts) {
-        return
-      }
-
       if (isActiveCompare) {
         compareDisable()
       } else {
@@ -1559,9 +1548,6 @@ const ViewProjectContent = () => {
                             ) : null}
                             {activeTab === PROJECT_TABS.funnels ? (
                               <FunnelsView />
-                            ) : null}
-                            {activeTab === PROJECT_TABS.alerts ? (
-                              <ProjectAlertsView />
                             ) : null}
                             {activeTab === PROJECT_TABS.profiles ? (
                               <ProfilesView tnMapping={tnMapping} />
