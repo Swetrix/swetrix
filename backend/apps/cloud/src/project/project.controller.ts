@@ -1821,7 +1821,11 @@ export class ProjectController {
     const result = _omit(project, ['admin', 'passwordHash', 'share']) as any
     if (result.brandKeywords) {
       try {
-        result.brandKeywords = JSON.parse(result.brandKeywords)
+        const parsed = JSON.parse(result.brandKeywords)
+        result.brandKeywords =
+          Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')
+            ? parsed
+            : null
       } catch {
         result.brandKeywords = null
       }
@@ -1952,7 +1956,11 @@ export class ProjectController {
     let parsedBrandKeywords: string[] | null = null
     if (project.brandKeywords) {
       try {
-        parsedBrandKeywords = JSON.parse(project.brandKeywords)
+        const parsed = JSON.parse(project.brandKeywords)
+        parsedBrandKeywords =
+          Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')
+            ? parsed
+            : null
       } catch {
         parsedBrandKeywords = null
       }
