@@ -206,7 +206,7 @@ const PanelContainer = ({
       ) : null}
       <div
         className={
-          contentClassName ||
+          contentClassName ??
           'relative flex h-[19.6rem] flex-col overflow-hidden'
         }
       >
