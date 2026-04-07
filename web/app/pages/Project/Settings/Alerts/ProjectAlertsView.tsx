@@ -311,7 +311,14 @@ const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
         setTotal(result.total)
       } else if (intent === 'delete-alert') {
         toast.success(t('alertsSettings.alertDeleted'))
-        loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+
+        if (page > 1 && alerts?.length === 1) {
+          const newPage = page - 1
+          setPage(newPage)
+          loadAlerts(DEFAULT_ALERTS_TAKE, (newPage - 1) * DEFAULT_ALERTS_TAKE)
+        } else {
+          loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+        }
       }
     } else if (fetcherError) {
       setError(fetcherError)
