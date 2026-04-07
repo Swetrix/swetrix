@@ -402,8 +402,8 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     const webAnalyticsTabs = tabs.filter((tab) =>
       [
         PROJECT_TABS.traffic,
-        PROJECT_TABS.performance,
         PROJECT_TABS.seo,
+        PROJECT_TABS.performance,
         PROJECT_TABS.funnels,
         PROJECT_TABS.alerts,
       ]
