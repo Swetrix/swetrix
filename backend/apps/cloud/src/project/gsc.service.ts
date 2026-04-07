@@ -1,6 +1,7 @@
 import { parse as parseDomain } from 'tldts'
 import _isEmpty from 'lodash/isEmpty'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import {
   Injectable,
   BadRequestException,
@@ -15,6 +16,8 @@ import CryptoJS from 'crypto-js'
 import { isDevelopment, PRODUCTION_ORIGIN, redis } from '../common/constants'
 import { ProjectService } from './project.service'
 import { deriveKey } from '../common/utils'
+
+dayjs.extend(utc)
 
 type StoredTokens = {
   access_token?: string
@@ -578,7 +581,7 @@ export class GSCService {
       return rows.map((row) => ({
         date: row.keys?.[0]
           ? isHourly
-            ? dayjs(row.keys[0]).format('YYYY-MM-DD HH:mm:ss')
+            ? dayjs.utc(row.keys[0]).format('YYYY-MM-DD HH:mm:ss')
             : row.keys[0]
           : '',
         clicks: Math.round(row.clicks || 0),
