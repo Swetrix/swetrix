@@ -323,7 +323,9 @@ const ProjectSettings = () => {
       (initialProject.botsProtectionLevel as 'off' | 'basic') || 'basic',
     gscPropertyUri: initialProject.gscPropertyUri || null,
     websiteUrl: initialProject.websiteUrl || null,
-    brandKeywords: initialProject.brandKeywords?.join(', ') || '',
+    ...(!isSelfhosted && {
+      brandKeywords: initialProject.brandKeywords?.join(', ') || '',
+    }),
   }))
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -704,7 +706,7 @@ const ProjectSettings = () => {
       formData.set('countryBlacklist', JSON.stringify(data.countryBlacklist))
     if (data.websiteUrl !== undefined)
       formData.set('websiteUrl', data.websiteUrl || '')
-    if (data.brandKeywords !== undefined)
+    if (!isSelfhosted && data.brandKeywords !== undefined)
       formData.set('brandKeywords', data.brandKeywords || '')
 
     fetcher.submit(formData, { method: 'post' })

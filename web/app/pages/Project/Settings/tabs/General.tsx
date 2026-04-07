@@ -2,6 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import Input from '~/ui/Input'
+import { isSelfhosted } from '~/lib/constants'
 
 interface GeneralProps {
   form: {
@@ -61,16 +62,18 @@ const General = ({
         onChange={handleInput}
         error={beenSubmitted ? errors.websiteUrl : null}
       />
-      <Input
-        name='brandKeywords'
-        label={t('project.settings.brandKeywords')}
-        hint={t('project.settings.brandKeywordsHint')}
-        value={form.brandKeywords || ''}
-        placeholder={t('project.settings.brandKeywordsPlaceholder')}
-        className='mt-4'
-        onChange={handleInput}
-        error={null}
-      />
+      {!isSelfhosted && (
+        <Input
+          name='brandKeywords'
+          label={t('project.settings.brandKeywords')}
+          hint={t('project.settings.brandKeywordsHint')}
+          value={form.brandKeywords || ''}
+          placeholder={t('project.settings.brandKeywordsPlaceholder')}
+          className='mt-4'
+          onChange={handleInput}
+          error={null}
+        />
+      )}
       <Input
         name='sharableLink'
         label={t('project.settings.sharableLink')}
