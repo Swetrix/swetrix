@@ -882,10 +882,10 @@ export class GSCService {
 
     const fromDate = dayjs(from)
     const toDate = dayjs(to)
-    const durationMs = toDate.diff(fromDate)
+    const days = toDate.diff(fromDate, 'day') + 1
     const prevTo = fromDate.subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')
     const prevFrom = fromDate
-      .subtract(durationMs, 'millisecond')
+      .subtract(days, 'day')
       .format('YYYY-MM-DD HH:mm:ss')
 
     const [
