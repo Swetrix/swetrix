@@ -59,7 +59,7 @@ import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
-import { nFormatter } from '~/utils/generic'
+import { escapeHtml, nFormatter } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 import { getSearchEngineReferrals, getAIReferrals } from '~/utils/referrers'
 import routes from '~/utils/routes'
@@ -725,7 +725,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           const imp = impressions[d.index]
 
           return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm shadow-md z-50'>
-            <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 break-all'>${name}</li>
+            <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 break-all'>${escapeHtml(name ?? '')}</li>
             <li class='flex justify-between items-center py-px leading-snug'>
               <span class='mr-4'>${t('project.seo.position')}:</span>
               <span class='font-mono whitespace-nowrap'>${d.x.toFixed(1)}</span>
