@@ -24,7 +24,6 @@ import type {
   LiveVisitorInfo,
   ProjectDataCustomEventsResponse,
   UserFlowResponse,
-  GSCKeywordsResponse,
   GSCDashboardResponse,
   RevenueStatus,
   RevenueDataResponse,
@@ -806,38 +805,6 @@ export function useUserFlowProxy() {
   )
 
   return { fetchUserFlow, data, error, isLoading }
-}
-
-export function useGSCKeywordsProxy() {
-  const [data, setData] = useState<GSCKeywordsResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-
-  const fetchKeywords = useCallback(
-    async (projectId: string, params: ClientAnalyticsParams = {}) => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const result = await postAnalytics<GSCKeywordsResponse>({
-          action: 'getGSCKeywords',
-          projectId,
-          params,
-        })
-        setData(result.data)
-        setError(result.error)
-        return result.data
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
-        return null
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [],
-  )
-
-  return { fetchKeywords, data, error, isLoading }
 }
 
 export function useGSCDashboardProxy() {
