@@ -1435,21 +1435,21 @@ const TrafficViewInner = ({
                         panelsActiveTabs.source === 'keywords'
                           ? [
                               {
-                                header: t('project.impressions'),
+                                header: t('project.seo.impressions'),
                                 render: (entry: any) => entry.impressions,
                                 sortLabel: 'impressions',
                                 getSortValue: (entry: any) =>
                                   Number(entry.impressions || 0),
                               },
                               {
-                                header: t('project.position'),
+                                header: t('project.seo.position'),
                                 render: (entry: any) => entry.position,
                                 sortLabel: 'position',
                                 getSortValue: (entry: any) =>
                                   Number(entry.position || 0),
                               },
                               {
-                                header: t('project.ctr'),
+                                header: t('project.seo.ctr'),
                                 render: (entry: any) => `${entry.ctr}%`,
                                 sortLabel: 'ctr',
                                 getSortValue: (entry: any) =>

@@ -1,14 +1,16 @@
 import {
   ArrowClockwiseIcon,
   EyeIcon,
+  InfoIcon,
   LinkIcon,
   PlugIcon,
   RobotIcon,
   MagnifyingGlassIcon,
   MapPinIcon,
+  TargetIcon,
 } from '@phosphor-icons/react'
 import type { ChartOptions } from 'billboard.js'
-import { area, donut } from 'billboard.js'
+import { area, donut, scatter } from 'billboard.js'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
@@ -23,7 +25,7 @@ import React, {
   use,
   useState,
 } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, useLoaderData, useSearchParams } from 'react-router'
 
 dayjs.extend(isoWeek)
@@ -37,7 +39,7 @@ import BillboardChart from '~/ui/BillboardChart'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { MainChart } from '~/pages/Project/View/components/MainChart'
 import Filters from '~/pages/Project/View/components/Filters'
-import { Panel } from '~/pages/Project/View/Panels'
+import { Panel, PanelContainer } from '~/pages/Project/View/Panels'
 import {
   useViewProjectContext,
   useRefreshTriggers,
@@ -56,6 +58,7 @@ import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
+import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 import { getSearchEngineReferrals, getAIReferrals } from '~/utils/referrers'
@@ -252,18 +255,14 @@ const CompactReferralPanel = ({
   if (_isEmpty(data)) {
     return (
       <div className='overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-1 text-gray-900 dark:text-gray-50'>
           {icon}
           <Text size='sm' weight='semibold'>
             {title}
           </Text>
         </div>
         <div className='flex h-32 items-center justify-center'>
-          <Text
-            size='xs'
-            colour='inherit'
-            className='text-gray-400 dark:text-gray-500'
-          >
+          <Text size='xs' colour='inherit'>
             {t('project.noParamData')}
           </Text>
         </div>
@@ -292,12 +291,7 @@ const CompactReferralPanel = ({
             <div className='min-w-0'>{rowMapper(entry)}</div>
           )}
           {isOther ? (
-            <Text
-              size='xs'
-              colour='inherit'
-              truncate
-              className='text-gray-500 italic dark:text-gray-400'
-            >
+            <Text size='xs' colour='inherit' truncate>
               {entry.name}
             </Text>
           ) : null}
@@ -306,7 +300,7 @@ const CompactReferralPanel = ({
           <Text
             size='xs'
             colour='inherit'
-            className='mr-1.5 hidden text-gray-500 group-hover:inline dark:text-gray-400'
+            className='mr-1.5 hidden group-hover:inline'
           >
             ({perc}%)
           </Text>
@@ -321,7 +315,7 @@ const CompactReferralPanel = ({
   return (
     <div className='overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
       <div className='mb-2 flex items-center justify-between'>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-1 text-gray-900 dark:text-gray-50'>
           {icon}
           <Text size='sm' weight='semibold'>
             {title}
@@ -531,7 +525,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [data?.topPages],
   )
 
-  const topQueriesAsEntries: Entry[] = useMemo(
+  const topQueriesAsEntries: (Entry & {
+    impressions: number
+    ctr: number
+    position: number
+  })[] = useMemo(
     () =>
       (data?.topQueries || []).map(
         (q) =>
@@ -634,7 +632,6 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
       size: {
         height: 180,
       },
-      padding: { top: 0, bottom: 0, left: 0, right: 0 },
     }
   }, [brandedTraffic, t, theme])
 
@@ -649,6 +646,122 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   )
 
   const anyMetricActive = Object.values(activeMetrics).some(Boolean)
+
+  const quadrantData = useMemo(() => {
+    if (!topQueriesAsEntries.length) return null
+    const positions = topQueriesAsEntries.map((q) => q.position)
+    const ctrs = topQueriesAsEntries.map((q) => q.ctr)
+    const impressions = topQueriesAsEntries.map((q) => q.impressions)
+    const names = topQueriesAsEntries.map((q) => q.name)
+
+    const maxImp = Math.max(...impressions) || 1
+    const minImp = Math.min(...impressions) || 0
+
+    return { positions, ctrs, impressions, names, maxImp, minImp }
+  }, [topQueriesAsEntries])
+
+  const quadrantChartOptions: ChartOptions = useMemo(() => {
+    if (!quadrantData) return {}
+
+    const { positions, ctrs, impressions, names, maxImp } = quadrantData
+    const avgCtr = data?.summary?.ctr ?? 5
+    const avgPos = data?.summary?.position ?? 10
+
+    return {
+      data: {
+        x: 'x',
+        columns: [
+          ['x', ...positions],
+          ['CTR', ...ctrs],
+        ],
+        type: scatter(),
+        colors: {
+          CTR: theme === 'dark' ? '#818cf8' : '#6366f1',
+        },
+      },
+      axis: {
+        x: {
+          min: 0,
+          label: {
+            text: t('project.seo.avgPosition'),
+            position: 'outer-center',
+          },
+          tick: {
+            fit: false,
+            format: (d: number) => Number(d).toFixed(0),
+          },
+        },
+        y: {
+          min: 0,
+          max: 100,
+          padding: { top: 0, bottom: 0 },
+          label: { text: t('project.seo.avgCTR'), position: 'outer-middle' },
+          tick: {
+            format: (d: number) => `${d}%`,
+          },
+        },
+      },
+      point: {
+        r: (d: any) => {
+          if (!d || d.index === undefined) return 4
+          const imp = impressions[d.index]
+          if (!imp) return 4
+          return 4 + 16 * Math.sqrt(imp / maxImp)
+        },
+      },
+      grid: {
+        x: {
+          lines: [
+            {
+              value: avgPos,
+              text: `${t('project.seo.avgPosition')}: ${avgPos.toFixed(1)}`,
+              position: 'start',
+              class: 'annotation-line',
+            },
+          ],
+        },
+        y: {
+          lines: [
+            {
+              value: avgCtr,
+              text: `${t('project.seo.avgCTR')}: ${avgCtr.toFixed(1)}%`,
+              position: 'start',
+              class: 'annotation-line',
+            },
+          ],
+        },
+      },
+      tooltip: {
+        contents: (items: any) => {
+          const d = items[0]
+          const name = names[d.index]
+          const imp = impressions[d.index]
+
+          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm shadow-md z-50'>
+            <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 break-all'>${name}</li>
+            <li class='flex justify-between items-center py-px leading-snug'>
+              <span class='mr-4'>${t('project.seo.position')}:</span>
+              <span class='font-mono whitespace-nowrap'>${d.x.toFixed(1)}</span>
+            </li>
+            <li class='flex justify-between items-center py-px leading-snug'>
+              <span class='mr-4'>${t('project.seo.ctr')}:</span>
+              <span class='font-mono whitespace-nowrap'>${d.value.toFixed(1)}%</span>
+            </li>
+            <li class='flex justify-between items-center py-px leading-snug'>
+              <span class='mr-4'>${t('project.seo.impressions')}:</span>
+              <span class='font-mono whitespace-nowrap'>${nFormatter(imp, 1)}</span>
+            </li>
+          </ul>`
+        },
+      },
+      legend: {
+        show: false,
+      },
+      transition: {
+        duration: 200,
+      },
+    }
+  }, [quadrantData, data?.summary, theme, t])
 
   const chartOptions: ChartOptions = useMemo(() => {
     if (!aggregatedSeries.length) return {}
@@ -1051,8 +1164,8 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           rowMapper={refRowMapper}
         />
         <div className='overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
-          <div className='mb-1 flex items-center gap-2'>
-            <MagnifyingGlassIcon className='size-5 text-gray-500 dark:text-gray-400' />
+          <div className='mb-1 flex items-center gap-1 text-gray-900 dark:text-gray-50'>
+            <MagnifyingGlassIcon className='size-5' />
             <Text size='sm' weight='semibold'>
               {t('project.seo.brandedTraffic')}
             </Text>
@@ -1065,11 +1178,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             />
           ) : (
             <div className='flex h-32 items-center justify-center'>
-              <Text
-                size='xs'
-                colour='inherit'
-                className='text-gray-400 dark:text-gray-500'
-              >
+              <Text size='xs' colour='inherit'>
                 {t('project.seo.noBrandData')}
               </Text>
             </div>
@@ -1104,6 +1213,46 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           hidePercentageInDetails
           dataLoading={isLoading}
         />
+      </div>
+
+      <div className='mt-3'>
+        <PanelContainer
+          name={t('project.seo.quadrant')}
+          icon={<TargetIcon className='size-5' />}
+          type='quadrant'
+          tooltip={
+            <Tooltip
+              text={
+                <span className='whitespace-pre-line'>
+                  <Trans
+                    i18nKey='project.seo.quadrantTooltip'
+                    components={{
+                      highlight: <span className='font-semibold' />,
+                    }}
+                  />
+                </span>
+              }
+              tooltipNode={
+                <InfoIcon className='size-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' />
+              }
+            />
+          }
+          contentClassName=''
+        >
+          {quadrantData ? (
+            <BillboardChart
+              options={quadrantChartOptions}
+              className='h-[400px] [&_.bb-circle]:fill-indigo-500/60 [&_.bb-circle]:stroke-indigo-600 [&_.bb-circle]:stroke-1 dark:[&_.bb-circle]:fill-indigo-400/60 dark:[&_.bb-circle]:stroke-indigo-300'
+              deps={[quadrantData, theme, t]}
+            />
+          ) : (
+            <div className='flex h-80 items-center justify-center'>
+              <Text size='xs' colour='inherit'>
+                {t('project.noParamData')}
+              </Text>
+            </div>
+          )}
+        </PanelContainer>
       </div>
 
       <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>

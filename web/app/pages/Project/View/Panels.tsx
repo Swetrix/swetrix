@@ -80,6 +80,8 @@ interface PanelContainerProps {
   icon?: React.ReactNode
   type: string
   hideHeader?: boolean
+  tooltip?: React.ReactNode
+  contentClassName?: string
   tabs?: Array<
     | {
         id: string
@@ -102,6 +104,8 @@ const PanelContainer = ({
   icon,
   type,
   hideHeader,
+  tooltip,
+  contentClassName,
   tabs,
   onTabChange,
   activeTabId,
@@ -131,6 +135,9 @@ const PanelContainer = ({
           >
             {icon ? <span className='mr-1'>{icon}</span> : null}
             {name}
+            {tooltip ? (
+              <span className='ml-1.5 flex items-center'>{tooltip}</span>
+            ) : null}
           </Text>
           <div className='scrollbar-thin flex items-center gap-2.5 overflow-x-auto'>
             {tabs && onTabChange ? (
@@ -197,7 +204,12 @@ const PanelContainer = ({
           </div>
         </div>
       ) : null}
-      <div className='relative flex h-[19.6rem] flex-col overflow-hidden'>
+      <div
+        className={
+          contentClassName ||
+          'relative flex h-[19.6rem] flex-col overflow-hidden'
+        }
+      >
         {children}
       </div>
       {onDetailsClick ? (
@@ -2501,6 +2513,7 @@ const MetadataKeyPanelMemo = memo(MetadataKeyPanel) as typeof MetadataKeyPanel
 const MetadataPanelMemo = memo(MetadataPanel) as typeof MetadataPanel
 
 export {
+  PanelContainer,
   PanelMemo as Panel,
   CustomEventsMemo as CustomEvents,
   MetadataKeyPanelMemo as MetadataKeyPanel,
