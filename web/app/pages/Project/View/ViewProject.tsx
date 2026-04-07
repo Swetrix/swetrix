@@ -717,11 +717,6 @@ const ViewProjectContent = () => {
         label: t('dashboard.traffic'),
         icon: ChartBarIcon,
       },
-      {
-        id: PROJECT_TABS.performance,
-        label: t('dashboard.performance'),
-        icon: GaugeIcon,
-      },
       ...(seoTabId
         ? [
             {
@@ -731,6 +726,11 @@ const ViewProjectContent = () => {
             },
           ]
         : []),
+      {
+        id: PROJECT_TABS.performance,
+        label: t('dashboard.performance'),
+        icon: GaugeIcon,
+      },
       {
         id: PROJECT_TABS.profiles,
         label: t('dashboard.profiles'),
