@@ -1,3 +1,4 @@
+import { parse as parseDomain } from 'tldts'
 import _isEmpty from 'lodash/isEmpty'
 import dayjs from 'dayjs'
 import {
@@ -368,14 +369,9 @@ export class GSCService {
 
     if (project.websiteUrl) {
       try {
-        const url = new URL(project.websiteUrl)
-        const domain = url.hostname.replace(/^www\./, '')
-        const parts = domain.split('.')
-        if (parts.length >= 2) {
-          const main = parts[parts.length - 2]
-          if (main && main.length >= 3) {
-            keywords.add(main.toLowerCase())
-          }
+        const { domainWithoutSuffix } = parseDomain(project.websiteUrl)
+        if (domainWithoutSuffix) {
+          keywords.add(domainWithoutSuffix.toLowerCase())
         }
       } catch {
         //

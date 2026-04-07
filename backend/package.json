@@ -96,6 +96,7 @@
     "sns-payload-validator": "^2.1.0",
     "socket.io": "^4.8.3",
     "telegraf": "^4.16.3",
+    "tldts": "^7.0.28",
     "typeorm": "^0.3.28",
     "validator": "^13.15.26",
     "zod": "^4.3.6"
