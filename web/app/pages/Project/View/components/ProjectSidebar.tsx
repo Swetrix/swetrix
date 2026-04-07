@@ -64,7 +64,6 @@ const ICON_COLORS: Record<string, string> = {
   traffic: 'text-blue-500',
   performance: 'text-amber-500',
   funnels: 'text-teal-500',
-  alerts: 'text-cyan-500',
   // Product Analytics
   profiles: 'text-fuchsia-500',
   sessions: 'text-indigo-500',
@@ -399,12 +398,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     const groups: TabGroup[] = []
 
     const webAnalyticsTabs = tabs.filter((tab) =>
-      [
-        PROJECT_TABS.traffic,
-        PROJECT_TABS.performance,
-        PROJECT_TABS.funnels,
-        PROJECT_TABS.alerts,
-      ]
+      [PROJECT_TABS.traffic, PROJECT_TABS.performance, PROJECT_TABS.funnels]
         .filter(Boolean)
         .includes(tab.id as any),
     )

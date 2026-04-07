@@ -506,7 +506,6 @@ const PRODUCTION_PROJECT_TABS = {
   goals: 'goals',
   experiments: 'experiments',
   featureFlags: 'featureFlags',
-  alerts: 'alerts',
   captcha: 'captcha',
   ai: 'ai',
 } as const

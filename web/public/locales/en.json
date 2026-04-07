@@ -1734,6 +1734,8 @@
         "dangerDesc": "Destructive actions that cannot be undone.",
         "integrations": "Integrations",
         "integrationsDesc": "Connect external services to enrich your analytics.",
+        "alerts": "Alerts",
+        "alertsDesc": "Get notified about traffic spikes, errors, and custom events.",
         "revenue": "Revenue",
         "revenueDesc": "Track revenue and attribute sales to campaigns.",
         "import": "Import data",

@@ -25,7 +25,6 @@ import {
   getErrorOverviewServer,
   getProjectFeatureFlagsServer,
   getProjectGoalsServer,
-  getProjectAlertsServer,
   getFunnelDataServer,
   type TrafficLogResponse,
   type OverallObject,
@@ -38,7 +37,6 @@ import {
   type ErrorOverviewResponse,
   type FeatureFlagsResponse,
   type GoalsResponse,
-  type AlertsResponse,
   type FunnelDataResponse,
   type AnalyticsFilter,
 } from '~/api/api.server'
@@ -175,7 +173,6 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     [PROJECT_TABS.featureFlags]: t('dashboard.featureFlags'),
     [PROJECT_TABS.captcha]: t('common.captcha'),
     [PROJECT_TABS.ai]: t('dashboard.askAi'),
-    [PROJECT_TABS.alerts]: t('dashboard.alerts'),
     [PROJECT_TABS.experiments]: t('dashboard.experiments'),
     settings: t('common.settings'),
   }
@@ -310,8 +307,6 @@ export interface ProjectLoaderData {
   featureFlagsData?: Promise<FeatureFlagsResponse | null>
   // Goals data
   goalsData?: Promise<GoalsResponse | null>
-  // Alerts data
-  alertsData?: Promise<AlertsResponse | null>
   // Funnels data
   funnelData?: Promise<FunnelDataResponse | null>
   // Data import
@@ -431,7 +426,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   let errorOverview: Promise<ErrorOverviewResponse | null> | undefined
   let featureFlagsData: Promise<FeatureFlagsResponse | null> | undefined
   let goalsData: Promise<GoalsResponse | null> | undefined
-  let alertsData: Promise<AlertsResponse | null> | undefined
   let funnelData: Promise<FunnelDataResponse | null> | undefined
   let hasImportedData: Promise<boolean> | undefined
 
@@ -535,10 +529,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       goalsData = getProjectGoalsServer(request, projectId).then(
         (res) => res.data,
       )
-    } else if (tab === PROJECT_TABS.alerts) {
-      alertsData = getProjectAlertsServer(request, projectId).then(
-        (res) => res.data,
-      )
     } else if (tab === PROJECT_TABS.funnels) {
       // Fetch funnel data if funnelId is in URL
       const funnelId = url.searchParams.get('funnelId')
@@ -591,7 +581,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       errorOverview,
       featureFlagsData,
       goalsData,
-      alertsData,
       funnelData,
       hasImportedData,
     },

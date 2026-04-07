@@ -17,30 +17,18 @@ import {
   FileTextIcon,
   BellSlashIcon,
 } from '@phosphor-icons/react'
-import { useMemo, useState, useEffect, useRef, Suspense, use } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Link,
-  useSearchParams,
-  useFetcher,
-  useLoaderData,
-  useRevalidator,
-} from 'react-router'
+import { Link, useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import type { AlertsResponse } from '~/api/api.server'
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
-import type {
-  ProjectLoaderData,
-  ProjectViewActionData,
-} from '~/routes/projects.$id'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import { Badge, type BadgeProps } from '~/ui/Badge'
 import Button from '~/ui/Button'
-import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import StatusPage from '~/ui/StatusPage'
@@ -48,7 +36,6 @@ import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 import ProjectAlertsSettings from './ProjectAlertsSettings'
-import { LoaderView } from '../../View/components/LoaderView'
 
 const NoNotificationChannelSet = () => {
   const { t } = useTranslation('common')
@@ -255,56 +242,29 @@ const AlertRow = ({
   )
 }
 
-interface DeferredAlertsData {
-  alertsData: AlertsResponse | null
+interface ProjectAlertsProps {
+  projectId: string
+  projectRole?: string
 }
 
-function AlertsDataResolver({
-  children,
-}: {
-  children: (data: DeferredAlertsData) => React.ReactNode
-}) {
-  const { alertsData: alertsDataPromise } = useLoaderData<ProjectLoaderData>()
-  const alertsData = alertsDataPromise ? use(alertsDataPromise) : null
-  return <>{children({ alertsData })}</>
-}
-
-function ProjectAlertsWrapper() {
-  return (
-    <Suspense fallback={<LoaderView />}>
-      <AlertsDataResolver>
-        {(deferredData) => <ProjectAlertsInner deferredData={deferredData} />}
-      </AlertsDataResolver>
-    </Suspense>
-  )
-}
-
-interface ProjectAlertsInnerProps {
-  deferredData: DeferredAlertsData
-}
-
-const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
-  const { id, project } = useCurrentProject()
-  const revalidator = useRevalidator()
+const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
+  const id = projectId
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuth()
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
-  const isEmbedded = searchParams.get('embedded') === 'true'
   const fetcher = useFetcher<ProjectViewActionData>()
   const lastHandledData = useRef<ProjectViewActionData | null>(null)
 
   // Track if we're in pagination mode
   const [isSearchMode, setIsSearchMode] = useState(false)
-  const [total, setTotal] = useState(() => deferredData.alertsData?.total || 0)
-  const [alerts, setAlerts] = useState<Alerts[]>(
-    () => deferredData.alertsData?.results || [],
-  )
+  const [total, setTotal] = useState(0)
+  const [alerts, setAlerts] = useState<Alerts[]>([])
   const [page, setPage] = useState(1)
 
   const [error, setError] = useState<string | null>(null)
 
-  const isLoading = revalidator.state === 'loading' || fetcher.state !== 'idle'
+  const isLoading = fetcher.state !== 'idle'
 
   const pageAmount = Math.ceil(total / DEFAULT_ALERTS_TAKE)
 
@@ -312,7 +272,7 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
   const isLimitReached = isAuthenticated && total >= limits?.maxAlerts
 
   // Check if user has permission to view alerts
-  const canManageAlerts = project?.role === 'owner' && isAuthenticated
+  const canManageAlerts = projectRole === 'owner' && isAuthenticated
 
   // Get active alert from URL params
   const activeAlertId = searchParams.get('alertId')
@@ -325,18 +285,6 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
     newSearchParams.delete('newAlert')
     return newSearchParams.toString()
   }, [searchParams])
-
-  // Sync state when loader provides new data
-  useEffect(() => {
-    if (
-      deferredData.alertsData &&
-      revalidator.state === 'idle' &&
-      !isSearchMode
-    ) {
-      setAlerts(deferredData.alertsData.results || [])
-      setTotal(deferredData.alertsData.total || 0)
-    }
-  }, [revalidator.state, deferredData.alertsData, isSearchMode])
 
   const loadAlerts = (take: number, skip: number) => {
     if (fetcher.state !== 'idle') return
@@ -363,18 +311,13 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
         setTotal(result.total)
       } else if (intent === 'delete-alert') {
         toast.success(t('alertsSettings.alertDeleted'))
-        if (page === 1) {
-          setIsSearchMode(false)
-          revalidator.revalidate()
-        } else {
-          loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
-        }
+        loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
       }
     } else if (fetcherError) {
       setError(fetcherError)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetcher.state, fetcher.data, t, page, revalidator])
+  }, [fetcher.state, fetcher.data, t, page])
 
   // Handle page changes - use fetcher for pagination
   useEffect(() => {
@@ -385,23 +328,15 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, canManageAlerts])
 
-  // Fallback load for client-side tab switches where deferred data is not present yet.
   useEffect(() => {
     if (!canManageAlerts) return
-    if (deferredData.alertsData) return
     if (isSearchMode) return
     if (fetcher.state !== 'idle') return
     if (!_isEmpty(alerts)) return
 
     loadAlerts(DEFAULT_ALERTS_TAKE, 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    canManageAlerts,
-    deferredData.alertsData,
-    isSearchMode,
-    fetcher.state,
-    alerts,
-  ])
+  }, [canManageAlerts, isSearchMode, fetcher.state, alerts])
 
   const queryMetricTMapping: Record<string, string> = useMemo(() => {
     const values = _values(QUERY_METRIC)
@@ -454,13 +389,7 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
 
   const handleAlertSaved = () => {
     closeAlertSettings()
-    // Reload alerts after saving
-    if (page === 1) {
-      setIsSearchMode(false)
-      revalidator.revalidate()
-    } else {
-      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
-    }
+    loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
   }
 
   const onDelete = (alertId: string) => {
@@ -474,12 +403,7 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
 
   if (!canManageAlerts) {
     return (
-      <div
-        className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
-          'min-h-including-header': !isEmbedded,
-          'min-h-screen': isEmbedded,
-        })}
-      >
+      <div className='flex flex-col'>
         <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
           <div className='flex items-center text-gray-50'>
             <BellRingingIcon className='mr-2 h-8 w-8' />
@@ -534,15 +458,9 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
 
   return (
     <>
-      {isLoading && !_isEmpty(alerts) ? <LoadingBar /> : null}
       <div className='mt-4'>
         {_isEmpty(alerts) ? (
-          <div
-            className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
-              'min-h-including-header': !isEmbedded,
-              'min-h-screen': isEmbedded,
-            })}
-          >
+          <div className='flex flex-col'>
             <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
               <div className='flex items-center text-gray-50'>
                 <BellRingingIcon className='mr-2 h-8 w-8' />
@@ -609,6 +527,6 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
   )
 }
 
-const ProjectAlerts = ProjectAlertsWrapper
+const ProjectAlerts = ProjectAlertsInner
 
 export default ProjectAlerts
