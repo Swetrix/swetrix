@@ -357,11 +357,11 @@ export class GSCService {
     try {
       filters = JSON.parse(filtersStr)
     } catch {
-      return undefined
+      throw new BadRequestException('Invalid filters parameter')
     }
 
     if (!Array.isArray(filters) || filters.length > MAX_FILTERS) {
-      return undefined
+      throw new BadRequestException('Invalid filters parameter')
     }
 
     const mappedFilters: Array<{
@@ -371,7 +371,9 @@ export class GSCService {
     }> = []
 
     for (const filter of filters) {
-      if (typeof filter !== 'object' || filter === null) continue
+      if (typeof filter !== 'object' || filter === null) {
+        throw new BadRequestException('Invalid filters parameter')
+      }
 
       const {
         column,
@@ -385,7 +387,9 @@ export class GSCService {
         isContains?: unknown
       }
 
-      if (typeof column !== 'string' || typeof value !== 'string') continue
+      if (typeof column !== 'string' || typeof value !== 'string') {
+        throw new BadRequestException('Invalid filters parameter')
+      }
       if (value.length > MAX_FILTER_EXPRESSION_LENGTH) continue
 
       let dimension: string | undefined
