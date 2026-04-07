@@ -48,6 +48,7 @@ import {
   PROJECT_TABS,
   getProjectOgImageUrl,
   getValidTimeBucket,
+  isSelfhosted,
   type Period,
 } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
@@ -164,10 +165,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const tab = (searchParams.get('tab') || PROJECT_TABS.traffic) as
     | keyof typeof PROJECT_TABS
     | 'settings'
-  const tabNames: Record<keyof typeof PROJECT_TABS | 'settings', string> = {
+  const seoTabId = !isSelfhosted ? PROJECT_TABS.seo : null
+  const tabNames: Record<string, string> = {
     [PROJECT_TABS.traffic]: t('dashboard.traffic'),
     [PROJECT_TABS.performance]: t('dashboard.performance'),
-    [PROJECT_TABS.seo]: t('project.seo.title'),
+    ...(seoTabId ? { [seoTabId]: t('project.seo.title') } : {}),
     [PROJECT_TABS.profiles]: t('dashboard.profiles'),
     [PROJECT_TABS.sessions]: t('dashboard.sessions'),
     [PROJECT_TABS.errors]: t('dashboard.errors'),
@@ -175,9 +177,13 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     [PROJECT_TABS.goals]: t('dashboard.goals'),
     [PROJECT_TABS.featureFlags]: t('dashboard.featureFlags'),
     [PROJECT_TABS.captcha]: t('common.captcha'),
-    [PROJECT_TABS.ai]: t('dashboard.askAi'),
-    [PROJECT_TABS.alerts]: t('dashboard.alerts'),
-    [PROJECT_TABS.experiments]: t('dashboard.experiments'),
+    ...(PROJECT_TABS.ai ? { [PROJECT_TABS.ai]: t('dashboard.askAi') } : {}),
+    ...(PROJECT_TABS.alerts
+      ? { [PROJECT_TABS.alerts]: t('dashboard.alerts') }
+      : {}),
+    ...(PROJECT_TABS.experiments
+      ? { [PROJECT_TABS.experiments]: t('dashboard.experiments') }
+      : {}),
     settings: t('common.settings'),
   }
   const tabName = tabNames[tab] || tabNames[PROJECT_TABS.traffic]
@@ -322,6 +328,7 @@ export interface ProjectLoaderData {
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { id: projectId } = params
   const url = new URL(request.url)
+  const seoTabId = !isSelfhosted ? PROJECT_TABS.seo : null
 
   const passwordFromQuery = url.searchParams.get('password') || ''
   const passwordFromCookie = getProjectPasswordCookie(request, projectId || '')
@@ -479,7 +486,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           customEvents,
         ).then((res) => res.data)
       }
-    } else if (tab === PROJECT_TABS.seo) {
+    } else if (seoTabId && tab === seoTabId) {
       // Fetch traffic data for referral breakdowns (search engines / AI referrals)
       trafficData = getProjectDataServer(
         request,

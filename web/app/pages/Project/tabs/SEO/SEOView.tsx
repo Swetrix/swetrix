@@ -34,11 +34,11 @@ dayjs.extend(quarterOfYear)
 import { useGSCDashboardProxy } from '~/hooks/useAnalyticsProxy'
 import type { TimeBucket } from '~/lib/constants'
 import type { Entry } from '~/lib/models/Entry'
-import type { Project } from '~/lib/models/Project'
 import BillboardChart from '~/ui/BillboardChart'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { MainChart } from '~/pages/Project/View/components/MainChart'
 import Filters from '~/pages/Project/View/components/Filters'
+import type { Filter } from '~/pages/Project/View/interfaces/traffic'
 import { Panel, PanelContainer } from '~/pages/Project/View/Panels'
 import {
   useViewProjectContext,
@@ -116,9 +116,7 @@ const aggregateDateSeries = (
     {
       clicks: number
       impressions: number
-      ctr: number
-      position: number
-      count: number
+      weightedPosition: number
     }
   >()
   const orderedKeys: string[] = []
@@ -129,17 +127,13 @@ const aggregateDateSeries = (
     if (existing) {
       existing.clicks += entry.clicks
       existing.impressions += entry.impressions
-      existing.ctr += entry.ctr
-      existing.position += entry.position
-      existing.count += 1
+      existing.weightedPosition += entry.position * entry.impressions
     } else {
       orderedKeys.push(key)
       buckets.set(key, {
         clicks: entry.clicks,
         impressions: entry.impressions,
-        ctr: entry.ctr,
-        position: entry.position,
-        count: 1,
+        weightedPosition: entry.position * entry.impressions,
       })
     }
   }
@@ -150,61 +144,58 @@ const aggregateDateSeries = (
       date: key,
       clicks: b.clicks,
       impressions: b.impressions,
-      ctr: Number((b.ctr / b.count).toFixed(2)),
-      position: Number((b.position / b.count).toFixed(1)),
+      ctr:
+        b.impressions > 0
+          ? Number(((b.clicks / b.impressions) * 100).toFixed(2))
+          : 0,
+      position:
+        b.impressions > 0
+          ? Number((b.weightedPosition / b.impressions).toFixed(1))
+          : 0,
     }
   })
 }
 
-const deriveBrandKeywords = (project: Project): string[] => {
-  if (project.brandKeywords?.length) {
-    return project.brandKeywords.map((k) => k.toLowerCase().trim())
-  }
+const getGSCCompatibleFilters = (filters: Filter[]): Filter[] => {
+  return filters.flatMap((filter) => {
+    if (filter.column === 'cc') {
+      const alpha3 = countries.alpha2ToAlpha3(filter.filter.toUpperCase())
+      if (!alpha3) return []
 
-  const keywords: string[] = []
-
-  if (project.websiteUrl) {
-    try {
-      const url = new URL(project.websiteUrl)
-      const domain = url.hostname.replace(/^www\./, '')
-      const parts = domain.split('.')
-      if (parts.length >= 2) {
-        const main = parts[parts.length - 2]
-        if (main && main.length >= 3) keywords.push(main.toLowerCase())
-      }
-    } catch {
-      // invalid URL, skip
+      return [
+        {
+          ...filter,
+          column: 'country',
+          filter: alpha3.toLowerCase(),
+        },
+      ]
     }
-  }
 
-  if (project.name) {
-    const name = project.name.toLowerCase().trim()
-    if (name.length >= 3 && !keywords.includes(name)) {
-      keywords.push(name)
+    if (filter.column === 'dv') {
+      return [
+        {
+          ...filter,
+          column: 'device',
+          filter: filter.filter.toLowerCase(),
+        },
+      ]
     }
-  }
 
-  return keywords
-}
-
-const classifyBrandedTraffic = (
-  queries: Array<{ name: string; count: number; impressions?: number }>,
-  brandKeywords: string[],
-): { branded: number; nonBranded: number } => {
-  let branded = 0
-  let nonBranded = 0
-
-  for (const q of queries) {
-    const lower = q.name.toLowerCase()
-    const isBranded = brandKeywords.some((kw) => lower.includes(kw))
-    if (isBranded) {
-      branded += q.count
-    } else {
-      nonBranded += q.count
+    if (filter.column === 'country' || filter.column === 'device') {
+      return [
+        {
+          ...filter,
+          filter: filter.filter.toLowerCase(),
+        },
+      ]
     }
-  }
 
-  return { branded, nonBranded }
+    if (filter.column === 'pg' || filter.column === 'keywords') {
+      return [filter]
+    }
+
+    return []
+  })
 }
 
 const COMPACT_MAX_ENTRIES = 10
@@ -343,7 +334,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     i18n: { language },
   } = useTranslation('common')
   const { theme } = useTheme()
-  const { id, project } = useCurrentProject()
+  const { id } = useCurrentProject()
   const {
     period,
     timezone,
@@ -443,6 +434,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   )
 
   const noopFilterLink = useCallback(() => '#', [])
+  const gscFilters = useMemo(() => getGSCCompatibleFilters(filters), [filters])
 
   const [isManualRefreshing, setIsManualRefreshing] = useState(false)
 
@@ -458,7 +450,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
       to,
       timezone,
       timeBucket,
-      filters,
+      filters: gscFilters,
     })
   }, [
     fetchDashboard,
@@ -468,7 +460,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     to,
     timezone,
     timeBucket,
-    filters,
+    gscFilters,
   ])
 
   useEffect(() => {
@@ -576,14 +568,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [data?.topDevices],
   )
 
-  const brandKeywords = useMemo(
-    () => (project ? deriveBrandKeywords(project) : []),
-    [project],
-  )
-
   const brandedTraffic = useMemo(
-    () => classifyBrandedTraffic(data?.topQueries || [], brandKeywords),
-    [data?.topQueries, brandKeywords],
+    () => data?.brandedTraffic || { branded: 0, nonBranded: 0 },
+    [data?.brandedTraffic],
   )
 
   const donutChartOptions: ChartOptions = useMemo(() => {

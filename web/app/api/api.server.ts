@@ -2470,6 +2470,10 @@ export interface GSCDashboardResponse {
   topQueries?: GSCTopQueryEntry[]
   topCountries?: GSCTopCountryEntry[]
   topDevices?: GSCTopDeviceEntry[]
+  brandedTraffic?: {
+    branded: number
+    nonBranded: number
+  }
 }
 
 export async function getGSCDashboardServer(

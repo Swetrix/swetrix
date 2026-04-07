@@ -282,8 +282,8 @@ export class GSCService {
         let dimension
         if (column === 'pg') dimension = 'page'
         else if (column === 'keywords') dimension = 'query'
-        else if (column === 'country') dimension = 'country'
-        else if (column === 'device') dimension = 'device'
+        else if (column === 'country' || column === 'cc') dimension = 'country'
+        else if (column === 'device' || column === 'dv') dimension = 'device'
         else continue
 
         let operator = 'equals'
@@ -308,6 +308,88 @@ export class GSCService {
       // Ignore parse errors
     }
     return undefined
+  }
+
+  private getDimensionFilterGroups(
+    filtersStr?: string,
+    extraFilters: Array<{ dimension: string; expression: string }> = [],
+  ) {
+    const baseGroups = this.parseFilters(filtersStr) || []
+
+    if (_isEmpty(extraFilters)) {
+      return baseGroups
+    }
+
+    if (_isEmpty(baseGroups)) {
+      return [{ groupType: 'and', filters: extraFilters }]
+    }
+
+    return baseGroups.map((group, index) =>
+      index === 0
+        ? {
+            ...group,
+            filters: [...(group.filters || []), ...extraFilters],
+          }
+        : group,
+    )
+  }
+
+  private async getProjectBrandKeywords(pid: string): Promise<string[]> {
+    const project = await this.projectService.findOne({
+      where: { id: pid },
+      select: ['name', 'websiteUrl', 'brandKeywords'],
+    })
+
+    if (!project) return []
+
+    if (project.brandKeywords) {
+      try {
+        const parsed = JSON.parse(project.brandKeywords)
+
+        if (Array.isArray(parsed)) {
+          return Array.from(
+            new Set(
+              parsed
+                .map((keyword) =>
+                  typeof keyword === 'string'
+                    ? keyword.toLowerCase().trim()
+                    : '',
+                )
+                .filter(Boolean),
+            ),
+          )
+        }
+      } catch {
+        //
+      }
+    }
+
+    const keywords = new Set<string>()
+
+    if (project.websiteUrl) {
+      try {
+        const url = new URL(project.websiteUrl)
+        const domain = url.hostname.replace(/^www\./, '')
+        const parts = domain.split('.')
+        if (parts.length >= 2) {
+          const main = parts[parts.length - 2]
+          if (main && main.length >= 3) {
+            keywords.add(main.toLowerCase())
+          }
+        }
+      } catch {
+        //
+      }
+    }
+
+    if (project.name) {
+      const name = project.name.toLowerCase().trim()
+      if (name.length >= 3) {
+        keywords.add(name)
+      }
+    }
+
+    return Array.from(keywords)
   }
 
   async getKeywords(
@@ -340,14 +422,10 @@ export class GSCService {
     const startDate = dayjs(from).format('YYYY-MM-DD')
     const endDate = dayjs(to).format('YYYY-MM-DD')
 
-    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
-
-    if (page) {
-      dimensionFilterGroups.push({
-        groupType: 'and',
-        filters: [{ dimension: 'page', expression: page }],
-      })
-    }
+    const dimensionFilterGroups = this.getDimensionFilterGroups(
+      filtersStr,
+      page ? [{ dimension: 'page', expression: page }] : [],
+    )
 
     try {
       const { data } = await sc.searchanalytics.query({
@@ -416,7 +494,7 @@ export class GSCService {
     const startDate = dayjs(from).format('YYYY-MM-DD')
     const endDate = dayjs(to).format('YYYY-MM-DD')
 
-    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
+    const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
 
     try {
       const { data } = await sc.searchanalytics.query({
@@ -475,7 +553,7 @@ export class GSCService {
     const startDate = dayjs(from).format('YYYY-MM-DD')
     const endDate = dayjs(to).format('YYYY-MM-DD')
 
-    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
+    const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
     const isHourly = timeBucket === 'hour'
 
     try {
@@ -543,14 +621,10 @@ export class GSCService {
     const startDate = dayjs(from).format('YYYY-MM-DD')
     const endDate = dayjs(to).format('YYYY-MM-DD')
 
-    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
-
-    if (query) {
-      dimensionFilterGroups.push({
-        groupType: 'and',
-        filters: [{ dimension: 'query', expression: query }],
-      })
-    }
+    const dimensionFilterGroups = this.getDimensionFilterGroups(
+      filtersStr,
+      query ? [{ dimension: 'query', expression: query }] : [],
+    )
 
     try {
       const { data } = await sc.searchanalytics.query({
@@ -613,7 +687,7 @@ export class GSCService {
     const startDate = dayjs(from).format('YYYY-MM-DD')
     const endDate = dayjs(to).format('YYYY-MM-DD')
 
-    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
+    const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
 
     try {
       const { data } = await sc.searchanalytics.query({
@@ -676,7 +750,7 @@ export class GSCService {
     const startDate = dayjs(from).format('YYYY-MM-DD')
     const endDate = dayjs(to).format('YYYY-MM-DD')
 
-    const dimensionFilterGroups = this.parseFilters(filtersStr) || []
+    const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
 
     try {
       const { data } = await sc.searchanalytics.query({
@@ -716,6 +790,80 @@ export class GSCService {
     }
   }
 
+  async getBrandedTraffic(
+    pid: string,
+    from: string,
+    to: string,
+    filtersStr?: string,
+  ): Promise<{ branded: number; nonBranded: number }> {
+    const brandKeywords = await this.getProjectBrandKeywords(pid)
+    if (_isEmpty(brandKeywords)) {
+      return { branded: 0, nonBranded: 0 }
+    }
+
+    const tokens = await this.ensurePropertyLinked(pid)
+    const auth = await this.getAuthedClientForPid(pid)
+    const sc = searchconsole({ version: 'v1', auth })
+
+    const startDate = dayjs(from).format('YYYY-MM-DD')
+    const endDate = dayjs(to).format('YYYY-MM-DD')
+    const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
+    const rowLimit = 25000
+    let startRow = 0
+    let branded = 0
+    let nonBranded = 0
+
+    try {
+      while (true) {
+        const { data } = await sc.searchanalytics.query({
+          siteUrl: tokens.property_uri as string,
+          requestBody: {
+            startDate,
+            endDate,
+            dimensions: ['query'],
+            rowLimit,
+            startRow,
+            dataState: 'all',
+            ...(dimensionFilterGroups.length > 0
+              ? { dimensionFilterGroups }
+              : {}),
+          },
+        })
+
+        const rows = (data.rows || []) as Array<{
+          keys: string[]
+          clicks?: number
+        }>
+
+        for (const row of rows) {
+          const query = (row.keys?.[0] || '').toLowerCase()
+          const clicks = row.clicks || 0
+
+          if (brandKeywords.some((keyword) => query.includes(keyword))) {
+            branded += clicks
+          } else {
+            nonBranded += clicks
+          }
+        }
+
+        if (rows.length < rowLimit) {
+          break
+        }
+
+        startRow += rowLimit
+      }
+
+      return {
+        branded: Math.round(branded),
+        nonBranded: Math.round(nonBranded),
+      }
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to fetch branded traffic from Search Console',
+      )
+    }
+  }
+
   async getDashboard(
     pid: string,
     from: string,
@@ -749,6 +897,7 @@ export class GSCService {
       topQueries,
       topCountries,
       topDevices,
+      brandedTraffic,
     ] = await Promise.all([
       this.getSummary(pid, from, to, filtersStr),
       this.getSummary(pid, prevFrom, prevTo, filtersStr).catch(() => null),
@@ -757,6 +906,7 @@ export class GSCService {
       this.getKeywords(pid, from, to, 50, 0, filtersStr),
       this.getTopCountries(pid, from, to, 50, 0, filtersStr),
       this.getTopDevices(pid, from, to, 50, 0, filtersStr),
+      this.getBrandedTraffic(pid, from, to, filtersStr),
     ])
 
     return {
@@ -768,6 +918,7 @@ export class GSCService {
       topQueries,
       topCountries,
       topDevices,
+      brandedTraffic,
     }
   }
 }

@@ -363,6 +363,7 @@ const ViewProjectContent = () => {
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const refCalendarCompare = useRef(null)
+  const seoTabId = !isSelfhosted ? PROJECT_TABS.seo : null
   const activeTab = useMemo(() => {
     const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
 
@@ -723,11 +724,15 @@ const ViewProjectContent = () => {
         label: t('dashboard.performance'),
         icon: GaugeIcon,
       },
-      {
-        id: PROJECT_TABS.seo,
-        label: t('project.seo.title'),
-        icon: MagnifyingGlassIcon,
-      },
+      ...(seoTabId
+        ? [
+            {
+              id: seoTabId,
+              label: t('project.seo.title'),
+              icon: MagnifyingGlassIcon,
+            },
+          ]
+        : []),
       {
         id: PROJECT_TABS.profiles,
         label: t('dashboard.profiles'),
@@ -804,7 +809,7 @@ const ViewProjectContent = () => {
     }
 
     return newTabs
-  }, [t, projectQueryTabs, allowedToManage])
+  }, [t, projectQueryTabs, allowedToManage, seoTabId])
 
   const activeTabLabel = useMemo(
     () => _find(tabs, (tab) => tab.id === activeTab)?.label,
@@ -930,13 +935,13 @@ const ViewProjectContent = () => {
           return
         }
 
-        if (activeTab === PROJECT_TABS.seo) {
+        if (seoTabId && activeTab === seoTabId) {
           setSeoRefreshTrigger((prev) => prev + 1)
           return
         }
       }
     },
-    [authLoading, dataLoading, activeTab],
+    [authLoading, dataLoading, activeTab, seoTabId],
   )
 
   useEffect(() => {
@@ -1549,7 +1554,7 @@ const ViewProjectContent = () => {
                             {activeTab === PROJECT_TABS.performance ? (
                               <PerformanceView tnMapping={tnMapping} />
                             ) : null}
-                            {activeTab === PROJECT_TABS.seo ? (
+                            {seoTabId && activeTab === seoTabId ? (
                               <SEOView projectId={id} tnMapping={tnMapping} />
                             ) : null}
                             {activeTab === PROJECT_TABS.funnels ? (
