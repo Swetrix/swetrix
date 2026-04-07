@@ -389,17 +389,15 @@ const ProjectAlertsSettings = ({
         showSearchButton={false}
         showRefreshButton={false}
         showPeriodSelector={false}
-        leftContent={
-          <Text
-            as='h2'
-            size='xl'
-            weight='bold'
-            className='wrap-break-word break-all'
-          >
-            {title}
-          </Text>
-        }
       />
+      <Text
+        as='h2'
+        size='xl'
+        weight='bold'
+        className='wrap-break-word break-all'
+      >
+        {title}
+      </Text>
       <fetcher.Form
         method='POST'
         action={`/projects/${projectId}`}
