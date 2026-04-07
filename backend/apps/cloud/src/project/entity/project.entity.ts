@@ -180,7 +180,7 @@ export class Project {
   @Column('varchar', { nullable: true, default: null, length: 512 })
   websiteUrl: string | null
 
-  @ApiProperty()
+  @ApiProperty({ type: [String], nullable: true })
   @Column('text', { nullable: true, default: null })
   brandKeywords: string | null
 }
