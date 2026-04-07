@@ -412,7 +412,7 @@ const ProjectSettings = () => {
           description: t('project.settings.tabs.alertsDesc'),
           icon: BellRingingIcon,
           iconColor: 'text-cyan-500',
-          visible: !isSelfhosted,
+          visible: !isSelfhosted && project?.role === 'owner',
         },
         {
           id: 'revenue',
