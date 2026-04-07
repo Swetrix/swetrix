@@ -93,10 +93,6 @@ export const aggregateDateSeries = (
   })
 }
 
-/**
- * Filters that the backend's GSC parseFilters can handle.
- * Country code conversion (alpha-2 → alpha-3) is now done server-side.
- */
 export const getGSCCompatibleFilters = (filters: Filter[]): Filter[] => {
   return filters.flatMap((filter) => {
     if (

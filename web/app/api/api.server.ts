@@ -2406,10 +2406,6 @@ export async function getGSCKeywordsServer(
   )
 }
 
-// ============================================================================
-// MARK: GSC Dashboard API
-// ============================================================================
-
 interface GSCDateSeriesEntry {
   date: string
   clicks: number
@@ -2510,10 +2506,6 @@ export async function getGSCDashboardServer(
     { headers },
   )
 }
-
-// ============================================================================
-// MARK: GSC Details API (Keyword-to-Page mapping)
-// ============================================================================
 
 export interface GSCDetailsResponse {
   type: 'queries' | 'pages' | 'none'

@@ -7,10 +7,6 @@ import type { TFunction } from 'i18next'
 import { escapeHtml, nFormatter } from '~/utils/generic'
 import type { DateSeriesEntry, SEOMetricKey } from './seo-utils'
 
-// ---------------------------------------------------------------------------
-// Main time-series chart
-// ---------------------------------------------------------------------------
-
 export function buildMainChartOptions(
   series: DateSeriesEntry[],
   activeMetrics: Record<SEOMetricKey, boolean>,
@@ -179,10 +175,6 @@ export function buildMainChartOptions(
   }
 }
 
-// ---------------------------------------------------------------------------
-// Quadrant scatter chart
-// ---------------------------------------------------------------------------
-
 export interface QuadrantData {
   positions: number[]
   ctrs: number[]
@@ -296,10 +288,6 @@ export function buildQuadrantChartOptions(
     },
   }
 }
-
-// ---------------------------------------------------------------------------
-// Branded traffic donut chart
-// ---------------------------------------------------------------------------
 
 export function buildDonutChartOptions(
   branded: number,

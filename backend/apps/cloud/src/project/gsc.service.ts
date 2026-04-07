@@ -350,10 +350,6 @@ export class GSCService {
     } as any)
   }
 
-  // ---------------------------------------------------------------------------
-  // Filter parsing with schema validation + country code normalization
-  // ---------------------------------------------------------------------------
-
   private parseFilters(filtersStr?: string) {
     if (!filtersStr) return undefined
 
@@ -401,7 +397,6 @@ export class GSCService {
         dimension = 'query'
       } else if (column === 'country' || column === 'cc') {
         dimension = 'country'
-        // Normalize alpha-2 → alpha-3 for GSC
         if (expression.length === 2) {
           const alpha3 = countries.alpha2ToAlpha3(expression.toUpperCase())
           if (!alpha3) continue
@@ -469,10 +464,6 @@ export class GSCService {
     )
   }
 
-  // ---------------------------------------------------------------------------
-  // Brand keywords
-  // ---------------------------------------------------------------------------
-
   private async getProjectBrandKeywords(pid: string): Promise<string[]> {
     const project = await this.projectService.findOne({
       where: { id: pid },
@@ -511,10 +502,6 @@ export class GSCService {
     return Array.from(keywords)
   }
 
-  // ---------------------------------------------------------------------------
-  // Generic GSC query helper (eliminates duplication across query methods)
-  // ---------------------------------------------------------------------------
-
   private async queryGSC(
     ctx: GSCContext,
     from: string,
@@ -550,10 +537,6 @@ export class GSCService {
   private static clampOffset(offset: number): number {
     return Math.max(0, offset || 0)
   }
-
-  // ---------------------------------------------------------------------------
-  // Public query methods
-  // ---------------------------------------------------------------------------
 
   async getKeywords(
     pid: string,
@@ -869,10 +852,6 @@ export class GSCService {
       )
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // Dashboard orchestrator — fetches GSC context once, passes to all sub-queries
-  // ---------------------------------------------------------------------------
 
   async getDashboard(
     pid: string,

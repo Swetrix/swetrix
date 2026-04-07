@@ -487,7 +487,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         ).then((res) => res.data)
       }
     } else if (seoTabId && tab === seoTabId) {
-      // Fetch traffic data for referral breakdowns (search engines / AI referrals)
       trafficData = getProjectDataServer(
         request,
         projectId,
