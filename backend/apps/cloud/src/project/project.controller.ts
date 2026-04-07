@@ -1823,7 +1823,8 @@ export class ProjectController {
       try {
         const parsed = JSON.parse(result.brandKeywords)
         result.brandKeywords =
-          Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')
+          Array.isArray(parsed) &&
+          parsed.every((item) => typeof item === 'string')
             ? parsed
             : null
       } catch {
@@ -1958,7 +1959,8 @@ export class ProjectController {
       try {
         const parsed = JSON.parse(project.brandKeywords)
         parsedBrandKeywords =
-          Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')
+          Array.isArray(parsed) &&
+          parsed.every((item) => typeof item === 'string')
             ? parsed
             : null
       } catch {
