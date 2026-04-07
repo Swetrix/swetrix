@@ -80,6 +80,8 @@ interface PanelContainerProps {
   icon?: React.ReactNode
   type: string
   hideHeader?: boolean
+  tooltip?: React.ReactNode
+  contentClassName?: string
   tabs?: Array<
     | {
         id: string
@@ -102,6 +104,8 @@ const PanelContainer = ({
   icon,
   type,
   hideHeader,
+  tooltip,
+  contentClassName,
   tabs,
   onTabChange,
   activeTabId,
@@ -131,6 +135,9 @@ const PanelContainer = ({
           >
             {icon ? <span className='mr-1'>{icon}</span> : null}
             {name}
+            {tooltip ? (
+              <span className='ml-1.5 flex items-center'>{tooltip}</span>
+            ) : null}
           </Text>
           <div className='scrollbar-thin flex items-center gap-2.5 overflow-x-auto'>
             {tabs && onTabChange ? (
@@ -197,7 +204,12 @@ const PanelContainer = ({
           </div>
         </div>
       ) : null}
-      <div className='relative flex h-[19.6rem] flex-col overflow-hidden'>
+      <div
+        className={
+          contentClassName ??
+          'relative flex h-[19.6rem] flex-col overflow-hidden'
+        }
+      >
         {children}
       </div>
       {onDetailsClick ? (
@@ -1529,6 +1541,8 @@ interface PanelProps {
   }>
   dataLoading?: boolean
   activeTab?: keyof typeof PROJECT_TABS
+  onRowClick?: (entryName: string) => void
+  selectedRow?: string | null
 }
 
 interface DetailsTableProps extends Pick<
@@ -1929,6 +1943,8 @@ const Panel = ({
   detailsExtraColumns,
   dataLoading: dataLoadingProp,
   activeTab: activeTabProp,
+  onRowClick,
+  selectedRow,
 }: PanelProps) => {
   const ctx = useViewProjectContext()
   const dataLoading = dataLoadingProp ?? ctx.dataLoading
@@ -2010,6 +2026,9 @@ const Panel = ({
 
               const link = getFilterLink(id, entryName)
 
+              const isSelected =
+                selectedRow != null && selectedRow === entryName
+
               return (
                 <div
                   key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
@@ -2022,10 +2041,19 @@ const Panel = ({
                         'group hover:bg-gray-50 dark:hover:bg-slate-900/60':
                           !hideFilters &&
                           !dataLoading &&
-                          (link || hasVersionsForItem),
+                          (link || hasVersionsForItem || onRowClick),
+                        'cursor-pointer': onRowClick && !dataLoading,
                         'cursor-wait': dataLoading,
+                        'bg-gray-50 ring-1 ring-slate-400/60 dark:bg-slate-800/60 dark:ring-slate-500/60':
+                          isSelected,
                       },
                     )}
+                    onClick={
+                      onRowClick && entryName
+                        ? () => onRowClick(entryName)
+                        : undefined
+                    }
+                    role='presentation'
                   >
                     <div
                       className={cx('absolute inset-0 rounded-sm', {
@@ -2485,6 +2513,7 @@ const MetadataKeyPanelMemo = memo(MetadataKeyPanel) as typeof MetadataKeyPanel
 const MetadataPanelMemo = memo(MetadataPanel) as typeof MetadataPanel
 
 export {
+  PanelContainer,
   PanelMemo as Panel,
   CustomEventsMemo as CustomEvents,
   MetadataKeyPanelMemo as MetadataKeyPanel,

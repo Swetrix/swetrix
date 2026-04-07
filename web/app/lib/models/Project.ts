@@ -224,4 +224,5 @@ export interface Project {
   isPinned?: boolean
   revenueCurrency?: string
   websiteUrl?: string | null
+  brandKeywords?: string[] | null
 }

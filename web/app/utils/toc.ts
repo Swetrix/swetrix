@@ -5,14 +5,7 @@ interface TocItem {
   children: TocItem[]
 }
 
-function escapeHtml(unsafe: string): string {
-  return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
+import { escapeHtml } from './generic'
 
 function stripHtmlTags(input: string): string {
   const tagRegex = /<[^>]*>/g

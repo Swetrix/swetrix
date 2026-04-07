@@ -23,7 +23,6 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import {
   useNavigate,
-  Link,
   useSearchParams,
   useLoaderData,
   useRevalidator,
@@ -37,7 +36,6 @@ import type {
 import {
   useCustomEventsMetadataProxy,
   usePropertyMetadataProxy,
-  useGSCKeywordsProxy,
   useRevenueProxy,
 } from '~/hooks/useAnalyticsProxy'
 import { useAnnotations } from '~/hooks/useAnnotations'
@@ -94,12 +92,10 @@ import { useTheme } from '~/providers/ThemeProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
-import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Tooltip from '~/ui/Tooltip'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
-import routes from '~/utils/routes'
 import { LoaderView } from '../../View/components/LoaderView'
 import { ChartTypeSwitcher } from '../../View/components/ChartTypeSwitcher'
 
@@ -113,12 +109,6 @@ interface PanelsData {
   customs?: Customs
   properties?: Properties
   meta?: TrafficMeta[]
-}
-
-type KeywordEntry = Entry & {
-  impressions: number
-  position: number
-  ctr: number
 }
 
 interface TrafficViewProps {
@@ -282,7 +272,6 @@ const TrafficViewInner = ({
   const { fetchMetadata: fetchCustomEventsMetadata } =
     useCustomEventsMetadataProxy()
   const { fetchMetadata: fetchPropertyMetadata } = usePropertyMetadataProxy()
-  const { fetchKeywords: fetchGSCKeywords } = useGSCKeywordsProxy()
   const { fetchRevenueStatus, fetchRevenueData } = useRevenueProxy()
   const { trafficRefreshTrigger } = useRefreshTriggers()
   const {
@@ -439,7 +428,7 @@ const TrafficViewInner = ({
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
     page: 'pg' | 'host' | 'userFlow' | 'entryPage' | 'exitPage'
     device: 'br' | 'os' | 'dv'
-    source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co' | 'keywords'
+    source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co'
     customEvMetadata: string
     pageviewMetadata: string
   }>({
@@ -450,11 +439,6 @@ const TrafficViewInner = ({
     customEvMetadata: '',
     pageviewMetadata: '',
   })
-
-  // GSC Keywords state
-  const [keywords, setKeywords] = useState<KeywordEntry[]>([])
-  const [keywordsLoading, setKeywordsLoading] = useState(false)
-  const [keywordsNotConnected, setKeywordsNotConnected] = useState(false)
 
   const isMountedRef = useRef(true)
 
@@ -831,57 +815,6 @@ const TrafficViewInner = ({
 
     return result || { result: [] }
   }
-
-  // Load GSC Keywords when the traffic sources panel switches to 'keywords'
-  useEffect(() => {
-    const loadKeywords = async () => {
-      if (!project) return
-      if (panelsActiveTabs.source !== 'keywords') return
-      if (keywordsLoading) return
-
-      // Skip if we already have keywords loaded and period/filters haven't changed
-      if (keywords.length > 0) return
-
-      setKeywordsLoading(true)
-      try {
-        let from
-        let to
-
-        if (dateRange) {
-          from = getFormatDate(dateRange[0])
-          to = getFormatDate(dateRange[1])
-        }
-
-        const data =
-          period === 'custom' && dateRange
-            ? await fetchGSCKeywords(id, { period: '', from, to, timezone })
-            : await fetchGSCKeywords(id, { period, timezone })
-
-        if (isMountedRef.current && data) {
-          if (data.notConnected) {
-            setKeywordsNotConnected(true)
-            setKeywords([])
-          } else {
-            setKeywordsNotConnected(false)
-            setKeywords(data.keywords || [])
-          }
-        }
-      } catch (error) {
-        console.error('[ERROR] Loading GSC keywords failed:', error)
-        if (isMountedRef.current) {
-          setKeywordsNotConnected(true)
-          setKeywords([])
-        }
-      } finally {
-        if (isMountedRef.current) {
-          setKeywordsLoading(false)
-        }
-      }
-    }
-
-    loadKeywords()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panelsActiveTabs.source, period, dateRange, timezone, id, project])
 
   // Load revenue data when revenue metric is enabled
   useEffect(() => {
@@ -1355,10 +1288,6 @@ const TrafficViewInner = ({
                   )
                   const trafficSourcesTabs = [
                     { id: 'ref', label: t('project.mapping.ref') },
-                    !isSelfhosted && {
-                      id: 'keywords',
-                      label: t('project.mapping.keywords'),
-                    },
                     [
                       { id: 'so', label: t('project.mapping.so') },
                       { id: 'me', label: t('project.mapping.me') },
@@ -1366,7 +1295,7 @@ const TrafficViewInner = ({
                       { id: 'te', label: t('project.mapping.te') },
                       { id: 'co', label: t('project.mapping.co') },
                     ],
-                  ].filter((x) => !!x)
+                  ]
 
                   const getTrafficSourcesRowMapper = (activeTab: string) => {
                     if (activeTab === 'ref') {
@@ -1404,89 +1333,22 @@ const TrafficViewInner = ({
                       onTabChange={(tab) => setPanelTab('source', tab)}
                       activeTabId={panelsActiveTabs.source}
                       data={
-                        panelsActiveTabs.source === 'keywords'
-                          ? keywords
-                          : panelsActiveTabs.source === 'ref'
-                            ? (() => {
-                                const raw = panelsData.data?.ref || []
-                                return hasRefNameFilter
-                                  ? (raw as unknown as Entry[])
-                                  : (groupRefEntries(
-                                      raw as any,
-                                    ) as unknown as Entry[])
-                              })()
-                            : (panelsData.data[
-                                panelsActiveTabs.source
-                              ] as unknown as Entry[])
-                      }
-                      valuesHeaderName={
-                        panelsActiveTabs.source === 'keywords'
-                          ? t('project.clicks')
-                          : undefined
+                        panelsActiveTabs.source === 'ref'
+                          ? (() => {
+                              const raw = panelsData.data?.ref || []
+                              return hasRefNameFilter
+                                ? (raw as unknown as Entry[])
+                                : (groupRefEntries(
+                                    raw as any,
+                                  ) as unknown as Entry[])
+                            })()
+                          : (panelsData.data[
+                              panelsActiveTabs.source
+                            ] as unknown as Entry[])
                       }
                       rowMapper={getTrafficSourcesRowMapper(
                         panelsActiveTabs.source,
                       )}
-                      disableRowClick={panelsActiveTabs.source === 'keywords'}
-                      hidePercentageInDetails={
-                        panelsActiveTabs.source === 'keywords'
-                      }
-                      detailsExtraColumns={
-                        panelsActiveTabs.source === 'keywords'
-                          ? [
-                              {
-                                header: t('project.impressions'),
-                                render: (entry: any) => entry.impressions,
-                                sortLabel: 'impressions',
-                                getSortValue: (entry: any) =>
-                                  Number(entry.impressions || 0),
-                              },
-                              {
-                                header: t('project.position'),
-                                render: (entry: any) => entry.position,
-                                sortLabel: 'position',
-                                getSortValue: (entry: any) =>
-                                  Number(entry.position || 0),
-                              },
-                              {
-                                header: t('project.ctr'),
-                                render: (entry: any) => `${entry.ctr}%`,
-                                sortLabel: 'ctr',
-                                getSortValue: (entry: any) =>
-                                  Number(entry.ctr || 0),
-                              },
-                            ]
-                          : undefined
-                      }
-                      customRenderer={
-                        panelsActiveTabs.source === 'keywords'
-                          ? keywordsLoading
-                            ? () => <Loader />
-                            : keywordsNotConnected
-                              ? () => (
-                                  <div className='mt-4 text-center'>
-                                    <p className='text-sm text-gray-800 dark:text-gray-200'>
-                                      {['owner', 'admin'].includes(
-                                        project?.role || '',
-                                      )
-                                        ? t('project.connectGsc')
-                                        : t('project.gscConnectionRequired')}
-                                    </p>
-                                    {['owner', 'admin'].includes(
-                                      project?.role || '',
-                                    ) ? (
-                                      <Link
-                                        to={`${routes.project_settings.replace(':id', id)}?tab=integrations`}
-                                        className='mt-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
-                                      >
-                                        {t('project.goToProjectSettings')}
-                                      </Link>
-                                    ) : null}
-                                  </div>
-                                )
-                              : undefined
-                          : undefined
-                      }
                     />
                   )
                 }

@@ -21,6 +21,7 @@ import {
   IdentificationCardIcon,
   UserListIcon,
   ToggleRightIcon,
+  MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
 import React, {
   useState,
@@ -90,6 +91,7 @@ import GoalsView from '../tabs/Goals/GoalsView'
 import PerformanceView from '../tabs/Performance/PerformanceView'
 import ProfilesView from '../tabs/Profiles/ProfilesView'
 import SessionsView from '../tabs/Sessions/SessionsView'
+import SEOView from '../tabs/SEO/SEOView'
 import TrafficView from '../tabs/Traffic/TrafficView'
 
 import AddAViewModal from './components/AddAViewModal'
@@ -181,6 +183,7 @@ interface RefreshTriggersContextType {
   trafficRefreshTrigger: number
   funnelsRefreshTrigger: number
   profilesRefreshTrigger: number
+  seoRefreshTrigger: number
 }
 
 const defaultViewProjectContext: ViewProjectContextType = {
@@ -243,6 +246,7 @@ const defaultRefreshTriggersContext: RefreshTriggersContextType = {
   trafficRefreshTrigger: 0,
   funnelsRefreshTrigger: 0,
   profilesRefreshTrigger: 0,
+  seoRefreshTrigger: 0,
 }
 
 export const ViewProjectContext = createContext<ViewProjectContextType>(
@@ -327,6 +331,7 @@ const ViewProjectContent = () => {
   const [trafficRefreshTrigger, setTrafficRefreshTrigger] = useState(0)
   const [funnelsRefreshTrigger, setFunnelsRefreshTrigger] = useState(0)
   const [profilesRefreshTrigger, setProfilesRefreshTrigger] = useState(0)
+  const [seoRefreshTrigger, setSeoRefreshTrigger] = useState(0)
   const [activeChartMetrics] = useState<
     Record<keyof typeof CHART_METRICS_MAPPING, boolean>
   >({
@@ -356,6 +361,7 @@ const ViewProjectContent = () => {
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const refCalendarCompare = useRef(null)
+  const seoTabId = !isSelfhosted ? PROJECT_TABS.seo : null
   const activeTab = useMemo(() => {
     const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
 
@@ -711,6 +717,15 @@ const ViewProjectContent = () => {
         label: t('dashboard.traffic'),
         icon: ChartBarIcon,
       },
+      ...(seoTabId
+        ? [
+            {
+              id: seoTabId,
+              label: t('project.seo.title'),
+              icon: MagnifyingGlassIcon,
+            },
+          ]
+        : []),
       {
         id: PROJECT_TABS.performance,
         label: t('dashboard.performance'),
@@ -787,7 +802,7 @@ const ViewProjectContent = () => {
     }
 
     return newTabs
-  }, [t, projectQueryTabs, allowedToManage])
+  }, [t, projectQueryTabs, allowedToManage, seoTabId])
 
   const activeTabLabel = useMemo(
     () => _find(tabs, (tab) => tab.id === activeTab)?.label,
@@ -912,9 +927,14 @@ const ViewProjectContent = () => {
           setTrafficRefreshTrigger((prev) => prev + 1)
           return
         }
+
+        if (seoTabId && activeTab === seoTabId) {
+          setSeoRefreshTrigger((prev) => prev + 1)
+          return
+        }
       }
     },
-    [authLoading, dataLoading, activeTab],
+    [authLoading, dataLoading, activeTab, seoTabId],
   )
 
   useEffect(() => {
@@ -1242,6 +1262,7 @@ const ViewProjectContent = () => {
       trafficRefreshTrigger,
       funnelsRefreshTrigger,
       profilesRefreshTrigger,
+      seoRefreshTrigger,
     }),
     [
       captchaRefreshTrigger,
@@ -1254,6 +1275,7 @@ const ViewProjectContent = () => {
       trafficRefreshTrigger,
       funnelsRefreshTrigger,
       profilesRefreshTrigger,
+      seoRefreshTrigger,
     ],
   )
 
@@ -1520,6 +1542,9 @@ const ViewProjectContent = () => {
                             ) : null}
                             {activeTab === PROJECT_TABS.performance ? (
                               <PerformanceView tnMapping={tnMapping} />
+                            ) : null}
+                            {seoTabId && activeTab === seoTabId ? (
+                              <SEOView projectId={id} tnMapping={tnMapping} />
                             ) : null}
                             {activeTab === PROJECT_TABS.funnels ? (
                               <FunnelsView />

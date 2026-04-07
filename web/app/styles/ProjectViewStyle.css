@@ -209,12 +209,14 @@ body.dark .bb-ygrid {
 }
 
 /* Annotation lines */
-.bb-xgrid-line.annotation-line {
+.bb-xgrid-line.annotation-line,
+.bb-ygrid-line.annotation-line {
   pointer-events: all;
   cursor: pointer;
 }
 
-.bb-xgrid-line.annotation-line line {
+.bb-xgrid-line.annotation-line line,
+.bb-ygrid-line.annotation-line line {
   stroke: var(--color-slate-500);
   stroke-width: 1;
   stroke-dasharray: 4 3;
@@ -225,7 +227,8 @@ body.dark .bb-ygrid {
   stroke: var(--color-slate-500);
 }
 
-.bb-xgrid-line.annotation-line text {
+.bb-xgrid-line.annotation-line text,
+.bb-ygrid-line.annotation-line text {
   font-size: 10px;
   font-weight: 600;
   fill: var(--color-gray-700);
@@ -239,7 +242,16 @@ body.dark .bb-ygrid {
   pointer-events: all;
 }
 
-body.dark .bb-xgrid-line.annotation-line text {
+.bb-ygrid-line.annotation-line text {
+  transform: translateY(-14px);
+}
+
+body.dark .bb-xgrid-line.annotation-line text,
+body.dark .bb-ygrid-line.annotation-line text {
   fill: var(--color-gray-300);
+  stroke: var(--color-slate-900);
+}
+
+body.dark .bb-chart-arc path {
   stroke: var(--color-slate-900);
 }

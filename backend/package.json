@@ -72,6 +72,7 @@
     "front-matter": "^4.0.2",
     "google-auth-library": "^10.6.1",
     "handlebars": "^4.7.8",
+    "i18n-iso-countries": "^7.14.0",
     "ioredis": "^5.10.0",
     "ip-range-check": "^0.2.0",
     "isbot": "^5.1.35",
@@ -96,6 +97,7 @@
     "sns-payload-validator": "^2.1.0",
     "socket.io": "^4.8.3",
     "telegraf": "^4.16.3",
+    "tldts": "^7.0.28",
     "typeorm": "^0.3.28",
     "validator": "^13.15.26",
     "zod": "^4.3.6"

@@ -18,4 +18,20 @@ export class GetKeywordsDto {
   @IsOptional()
   @IsString()
   timezone?: string
+
+  @IsOptional()
+  @IsString()
+  timeBucket?: string
+
+  @IsOptional()
+  @IsString()
+  filters?: string
+
+  @IsOptional()
+  @IsString()
+  page?: string
+
+  @IsOptional()
+  @IsString()
+  query?: string
 }

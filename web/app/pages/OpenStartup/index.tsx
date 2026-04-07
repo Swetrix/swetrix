@@ -388,12 +388,6 @@ const getSettings = () => {
         },
       },
     },
-    // area: {
-    //   linearGradient: true,
-    // },
-    // padding: {
-    //   right: rotateXAxias && 35,
-    // },
     bindto: '#open-startup',
   }
 }

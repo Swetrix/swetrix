@@ -46,6 +46,7 @@ import {
   PROJECT_TABS,
   getProjectOgImageUrl,
   getValidTimeBucket,
+  isSelfhosted,
   type Period,
 } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
@@ -162,9 +163,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const tab = (searchParams.get('tab') || PROJECT_TABS.traffic) as
     | keyof typeof PROJECT_TABS
     | 'settings'
-  const tabNames: Record<keyof typeof PROJECT_TABS | 'settings', string> = {
+  const seoTabId = !isSelfhosted ? PROJECT_TABS.seo : null
+  const tabNames: Record<string, string> = {
     [PROJECT_TABS.traffic]: t('dashboard.traffic'),
     [PROJECT_TABS.performance]: t('dashboard.performance'),
+    ...(seoTabId ? { [seoTabId]: t('project.seo.title') } : {}),
     [PROJECT_TABS.profiles]: t('dashboard.profiles'),
     [PROJECT_TABS.sessions]: t('dashboard.sessions'),
     [PROJECT_TABS.errors]: t('dashboard.errors'),
@@ -316,6 +319,7 @@ export interface ProjectLoaderData {
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { id: projectId } = params
   const url = new URL(request.url)
+  const seoTabId = !isSelfhosted ? PROJECT_TABS.seo : null
 
   const passwordFromQuery = url.searchParams.get('password') || ''
   const passwordFromCookie = getProjectPasswordCookie(request, projectId || '')
@@ -472,6 +476,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           customEvents,
         ).then((res) => res.data)
       }
+    } else if (seoTabId && tab === seoTabId) {
+      trafficData = getProjectDataServer(
+        request,
+        projectId,
+        analyticsParams,
+      ).then((res) => res.data)
     } else if (tab === PROJECT_TABS.performance) {
       // Use measure from URL, or 'quantiles' if perfMetric is quantiles
       const effectiveMeasure =

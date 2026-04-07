@@ -2379,6 +2379,154 @@ export async function getGSCKeywordsServer(
   )
 }
 
+interface GSCDateSeriesEntry {
+  date: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+interface GSCTopPageEntry {
+  page: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+interface GSCTopQueryEntry {
+  name: string
+  count: number
+  impressions: number
+  position: number
+  ctr: number
+}
+
+interface GSCTopCountryEntry {
+  country: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+interface GSCTopDeviceEntry {
+  device: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+export interface GSCDashboardResponse {
+  notConnected?: boolean
+  noProperty?: boolean
+  summary?: {
+    clicks: number
+    impressions: number
+    ctr: number
+    position: number
+  }
+  previousSummary?: {
+    clicks: number
+    impressions: number
+    ctr: number
+    position: number
+  } | null
+  dateSeries?: GSCDateSeriesEntry[]
+  topPages?: GSCTopPageEntry[]
+  topQueries?: GSCTopQueryEntry[]
+  topCountries?: GSCTopCountryEntry[]
+  topDevices?: GSCTopDeviceEntry[]
+  brandedTraffic?: {
+    branded: number
+    nonBranded: number
+  }
+}
+
+export async function getGSCDashboardServer(
+  request: Request,
+  pid: string,
+  params: {
+    period?: string
+    from?: string
+    to?: string
+    timezone?: string
+    password?: string
+    timeBucket?: string
+    filters?: AnalyticsFilter[]
+  } = {},
+): Promise<ServerFetchResult<GSCDashboardResponse>> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period || '7d')
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+  if (params.timeBucket) queryParams.append('timeBucket', params.timeBucket)
+  if (params.filters)
+    queryParams.append('filters', serializeFiltersForUrl(params.filters))
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<GSCDashboardResponse>(
+    request,
+    `log/gsc-dashboard?${queryParams.toString()}`,
+    { headers },
+  )
+}
+
+export interface GSCDetailsResponse {
+  type: 'queries' | 'pages' | 'none'
+  data: Array<{
+    name?: string
+    page?: string
+    count?: number
+    clicks?: number
+    impressions: number
+    ctr: number
+    position: number
+  }>
+}
+
+export async function getGSCDetailsServer(
+  request: Request,
+  pid: string,
+  params: {
+    period?: string
+    from?: string
+    to?: string
+    timezone?: string
+    password?: string
+    page?: string
+    query?: string
+  } = {},
+): Promise<ServerFetchResult<GSCDetailsResponse>> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period || '7d')
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+  if (params.page) queryParams.append('page', params.page)
+  if (params.query) queryParams.append('query', params.query)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<GSCDetailsResponse>(
+    request,
+    `log/gsc-details?${queryParams.toString()}`,
+    { headers },
+  )
+}
+
 // ============================================================================
 // MARK: Revenue API
 // ============================================================================

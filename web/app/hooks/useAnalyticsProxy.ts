@@ -24,7 +24,7 @@ import type {
   LiveVisitorInfo,
   ProjectDataCustomEventsResponse,
   UserFlowResponse,
-  GSCKeywordsResponse,
+  GSCDashboardResponse,
   RevenueStatus,
   RevenueDataResponse,
   OverallObject,
@@ -807,19 +807,19 @@ export function useUserFlowProxy() {
   return { fetchUserFlow, data, error, isLoading }
 }
 
-export function useGSCKeywordsProxy() {
-  const [data, setData] = useState<GSCKeywordsResponse | null>(null)
+export function useGSCDashboardProxy() {
+  const [data, setData] = useState<GSCDashboardResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchKeywords = useCallback(
+  const fetchDashboard = useCallback(
     async (projectId: string, params: ClientAnalyticsParams = {}) => {
       setIsLoading(true)
       setError(null)
 
       try {
-        const result = await postAnalytics<GSCKeywordsResponse>({
-          action: 'getGSCKeywords',
+        const result = await postAnalytics<GSCDashboardResponse>({
+          action: 'getGSCDashboard',
           projectId,
           params,
         })
@@ -836,7 +836,7 @@ export function useGSCKeywordsProxy() {
     [],
   )
 
-  return { fetchKeywords, data, error, isLoading }
+  return { fetchDashboard, data, error, isLoading }
 }
 
 export function useRevenueProxy() {
