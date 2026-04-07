@@ -1806,11 +1806,12 @@ export class ProjectController {
     }
 
     if (projectDTO.brandKeywords !== undefined) {
+      const trimmed = Array.isArray(projectDTO.brandKeywords)
+        ? projectDTO.brandKeywords.map((k) => _trim(k)).filter(Boolean)
+        : []
+
       project.brandKeywords =
-        Array.isArray(projectDTO.brandKeywords) &&
-        projectDTO.brandKeywords.length > 0
-          ? JSON.stringify(projectDTO.brandKeywords.map((k) => _trim(k)))
-          : null
+        trimmed.length > 0 ? JSON.stringify(trimmed) : null
     }
 
     await this.projectService.update({ id }, _omit(project, ['share', 'admin']))
