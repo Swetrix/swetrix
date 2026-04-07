@@ -281,7 +281,7 @@ const ModalMessage = ({
   )
 }
 
-interface Form extends Partial<Project> {
+interface Form extends Partial<Omit<Project, 'brandKeywords'>> {
   origins: string | null
   ipBlacklist: string | null
   countryBlacklist: string[]

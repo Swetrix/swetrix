@@ -2511,7 +2511,7 @@ export async function getGSCDashboardServer(
 // MARK: GSC Details API (Keyword-to-Page mapping)
 // ============================================================================
 
-interface GSCDetailsResponse {
+export interface GSCDetailsResponse {
   type: 'queries' | 'pages' | 'none'
   data: Array<{
     name?: string
