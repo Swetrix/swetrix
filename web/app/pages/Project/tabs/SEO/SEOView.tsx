@@ -975,27 +975,36 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           rightContent={manualRefreshButton}
           timeBucketSelectorItems={seoPeriodPairs}
         />
-        <div className='mx-auto flex max-w-lg flex-col items-center justify-center py-16 text-center'>
-          <div className='mb-4 flex size-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-slate-800'>
+        <div className='mx-auto w-full max-w-2xl py-16 text-center'>
+          <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900'>
             <PlugIcon
-              className='size-8 text-gray-400 dark:text-gray-500'
+              className='size-7 text-gray-700 dark:text-gray-200'
               weight='duotone'
             />
           </div>
-          <Text size='xl' weight='bold' className='mb-2'>
+          <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
             {t('project.seo.connectGSC')}
           </Text>
-          <Text size='sm' className='mb-6 text-gray-500 dark:text-gray-400'>
+          <Text
+            as='p'
+            size='sm'
+            colour='secondary'
+            className='mx-auto mt-2 max-w-md'
+          >
             {t('project.seo.connectGSCDesc')}
           </Text>
           {data?.noProperty ? (
-            <Text size='sm' className='mb-4 text-amber-600 dark:text-amber-400'>
+            <Text
+              as='p'
+              size='sm'
+              className='mx-auto mt-2 max-w-md text-amber-600 dark:text-amber-400'
+            >
               {t('project.seo.noProperty')}
             </Text>
           ) : null}
           <Link
             to={`${routes.project_settings.replace(':id', id)}?tab=integrations`}
-            className='inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200'
+            className='mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200'
           >
             <LinkIcon className='size-4' />
             {t('project.seo.connectButton')}
