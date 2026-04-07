@@ -9,12 +9,6 @@ import {
   MapPinIcon,
   TargetIcon,
 } from '@phosphor-icons/react'
-import type { ChartOptions } from 'billboard.js'
-import { area, donut, scatter } from 'billboard.js'
-import * as d3 from 'd3'
-import dayjs from 'dayjs'
-import isoWeek from 'dayjs/plugin/isoWeek'
-import quarterOfYear from 'dayjs/plugin/quarterOfYear'
 import _isEmpty from 'lodash/isEmpty'
 import _round from 'lodash/round'
 import React, {
@@ -28,9 +22,6 @@ import React, {
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useLoaderData, useSearchParams } from 'react-router'
 
-dayjs.extend(isoWeek)
-dayjs.extend(quarterOfYear)
-
 import { useGSCDashboardProxy } from '~/hooks/useAnalyticsProxy'
 import type { TimeBucket } from '~/lib/constants'
 import type { Entry } from '~/lib/models/Entry'
@@ -38,7 +29,6 @@ import BillboardChart from '~/ui/BillboardChart'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { MainChart } from '~/pages/Project/View/components/MainChart'
 import Filters from '~/pages/Project/View/components/Filters'
-import type { Filter } from '~/pages/Project/View/interfaces/traffic'
 import { Panel, PanelContainer } from '~/pages/Project/View/Panels'
 import {
   useViewProjectContext,
@@ -59,273 +49,28 @@ import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
-import { escapeHtml, nFormatter } from '~/utils/generic'
+import { nFormatter } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 import { getSearchEngineReferrals, getAIReferrals } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
+import CompactReferralPanel from './CompactReferralPanel'
+import {
+  SEO_METRICS,
+  type SEOMetricKey,
+  aggregateDateSeries,
+  getGSCCompatibleFilters,
+} from './seo-utils'
+import type { QuadrantData } from './seo-chart-options'
+import {
+  buildMainChartOptions,
+  buildQuadrantChartOptions,
+  buildDonutChartOptions,
+} from './seo-chart-options'
+
 interface SEOViewProps {
   projectId: string
   tnMapping: Record<string, string>
-}
-
-const SEO_METRICS = {
-  clicks: 'clicks',
-  impressions: 'impressions',
-  position: 'position',
-  ctr: 'ctr',
-} as const
-
-type SEOMetricKey = keyof typeof SEO_METRICS
-
-interface DateSeriesEntry {
-  date: string
-  clicks: number
-  impressions: number
-  ctr: number
-  position: number
-}
-
-const getBucketKey = (date: string, bucket: string): string => {
-  const d = dayjs(date)
-  switch (bucket) {
-    case 'hour':
-    case 'day':
-      return date
-    case 'week':
-      return d.startOf('isoWeek').format('YYYY-MM-DD')
-    case 'month':
-      return d.startOf('month').format('YYYY-MM-DD')
-    case 'quarter':
-      return d.startOf('quarter').format('YYYY-MM-DD')
-    case 'year':
-      return d.startOf('year').format('YYYY-MM-DD')
-    default:
-      return date
-  }
-}
-
-const aggregateDateSeries = (
-  series: DateSeriesEntry[],
-  bucket: string,
-): DateSeriesEntry[] => {
-  if (!series.length || bucket === 'day' || bucket === 'hour') return series
-
-  const buckets = new Map<
-    string,
-    {
-      clicks: number
-      impressions: number
-      weightedPosition: number
-    }
-  >()
-  const orderedKeys: string[] = []
-
-  for (const entry of series) {
-    const key = getBucketKey(entry.date, bucket)
-    const existing = buckets.get(key)
-    if (existing) {
-      existing.clicks += entry.clicks
-      existing.impressions += entry.impressions
-      existing.weightedPosition += entry.position * entry.impressions
-    } else {
-      orderedKeys.push(key)
-      buckets.set(key, {
-        clicks: entry.clicks,
-        impressions: entry.impressions,
-        weightedPosition: entry.position * entry.impressions,
-      })
-    }
-  }
-
-  return orderedKeys.map((key) => {
-    const b = buckets.get(key)!
-    return {
-      date: key,
-      clicks: b.clicks,
-      impressions: b.impressions,
-      ctr:
-        b.impressions > 0
-          ? Number(((b.clicks / b.impressions) * 100).toFixed(2))
-          : 0,
-      position:
-        b.impressions > 0
-          ? Number((b.weightedPosition / b.impressions).toFixed(1))
-          : 0,
-    }
-  })
-}
-
-const getGSCCompatibleFilters = (filters: Filter[]): Filter[] => {
-  return filters.flatMap((filter) => {
-    if (filter.column === 'cc') {
-      const alpha3 = countries.alpha2ToAlpha3(filter.filter.toUpperCase())
-      if (!alpha3) return []
-
-      return [
-        {
-          ...filter,
-          column: 'country',
-          filter: alpha3.toLowerCase(),
-        },
-      ]
-    }
-
-    if (filter.column === 'dv') {
-      return [
-        {
-          ...filter,
-          column: 'device',
-          filter: filter.filter.toLowerCase(),
-        },
-      ]
-    }
-
-    if (filter.column === 'country' || filter.column === 'device') {
-      return [
-        {
-          ...filter,
-          filter: filter.filter.toLowerCase(),
-        },
-      ]
-    }
-
-    if (filter.column === 'pg' || filter.column === 'keywords') {
-      return [filter]
-    }
-
-    return []
-  })
-}
-
-const COMPACT_MAX_ENTRIES = 10
-const COMPACT_ENTRIES_PER_COL = 5
-
-interface CompactReferralPanelProps {
-  title: string
-  data: Entry[]
-  icon: React.ReactNode
-  rowMapper: (entry: any) => React.ReactNode
-}
-
-const CompactReferralPanel = ({
-  title,
-  data,
-  icon,
-  rowMapper,
-}: CompactReferralPanelProps) => {
-  const { t } = useTranslation('common')
-  const total = useMemo(() => data.reduce((sum, e) => sum + e.count, 0), [data])
-
-  const { displayEntries, othersCount } = useMemo(() => {
-    if (data.length <= COMPACT_MAX_ENTRIES) {
-      return { displayEntries: data, othersCount: 0 }
-    }
-    const top = data.slice(0, COMPACT_MAX_ENTRIES - 1)
-    const rest = data.slice(COMPACT_MAX_ENTRIES - 1)
-    return {
-      displayEntries: top,
-      othersCount: rest.reduce((sum, e) => sum + e.count, 0),
-    }
-  }, [data])
-
-  const allRows: Array<{ entry: Entry; isOther: boolean }> = useMemo(() => {
-    const rows = displayEntries.map((e) => ({ entry: e, isOther: false }))
-    if (othersCount > 0) {
-      rows.push({
-        entry: { name: t('project.seo.others'), count: othersCount },
-        isOther: true,
-      })
-    }
-    return rows
-  }, [displayEntries, othersCount, t])
-
-  const col1 = allRows.slice(0, COMPACT_ENTRIES_PER_COL)
-  const col2 = allRows.slice(COMPACT_ENTRIES_PER_COL)
-
-  if (_isEmpty(data)) {
-    return (
-      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
-        <div className='flex items-center gap-1 text-gray-900 dark:text-gray-50'>
-          {icon}
-          <Text size='sm' weight='semibold'>
-            {title}
-          </Text>
-        </div>
-        <div className='flex h-32 items-center justify-center'>
-          <Text size='xs' colour='inherit'>
-            {t('project.noParamData')}
-          </Text>
-        </div>
-      </div>
-    )
-  }
-
-  const renderRow = (
-    { entry, isOther }: { entry: Entry; isOther: boolean },
-    idx: number,
-  ) => {
-    const perc = total > 0 ? _round((entry.count / total) * 100, 0) : 0
-    return (
-      <div
-        key={isOther ? 'others' : `${entry.name}-${idx}`}
-        className='group relative flex h-7 items-center justify-between rounded-sm px-1.5 hover:bg-gray-50 dark:hover:bg-slate-900/60'
-      >
-        <div
-          className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/30'
-          style={{ width: `${perc}%` }}
-        />
-        <div className='relative z-10 flex min-w-0 flex-1 items-center gap-1.5'>
-          {isOther ? (
-            <div className='size-5 shrink-0' />
-          ) : (
-            <div className='min-w-0'>{rowMapper(entry)}</div>
-          )}
-          {isOther ? (
-            <Text size='xs' colour='inherit' truncate>
-              {entry.name}
-            </Text>
-          ) : null}
-        </div>
-        <div className='relative z-10 flex min-w-fit items-center justify-end pl-2'>
-          <Text
-            size='xs'
-            colour='inherit'
-            className='mr-1.5 hidden group-hover:inline'
-          >
-            ({perc}%)
-          </Text>
-          <Text size='xs' weight='medium'>
-            {nFormatter(entry.count, 1)}
-          </Text>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className='overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
-      <div className='mb-2 flex items-center justify-between'>
-        <div className='flex items-center gap-1 text-gray-900 dark:text-gray-50'>
-          {icon}
-          <Text size='sm' weight='semibold'>
-            {title}
-          </Text>
-        </div>
-        <Text size='sm' weight='medium' className='tabular-nums'>
-          {nFormatter(total, 1)}
-        </Text>
-      </div>
-      <div className='grid grid-cols-2 gap-x-3'>
-        <div className='space-y-0.5'>
-          {col1.map((row, i) => renderRow(row, i))}
-        </div>
-        <div className='space-y-0.5'>
-          {col2.map((row, i) => renderRow(row, i + COMPACT_ENTRIES_PER_COL))}
-        </div>
-      </div>
-    </div>
-  )
 }
 
 const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
@@ -573,54 +318,16 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [data?.brandedTraffic],
   )
 
-  const donutChartOptions: ChartOptions = useMemo(() => {
-    const total = brandedTraffic.branded + brandedTraffic.nonBranded
-    if (total === 0) return {}
-
-    const brandedLabel = t('project.seo.branded')
-    const nonBrandedLabel = t('project.seo.nonBranded')
-
-    return {
-      data: {
-        columns: [
-          [brandedLabel, brandedTraffic.branded],
-          [nonBrandedLabel, brandedTraffic.nonBranded],
-        ],
-        type: donut(),
-        colors: {
-          [brandedLabel]: theme === 'dark' ? '#818cf8' : '#6366f1',
-          [nonBrandedLabel]: theme === 'dark' ? '#475569' : '#94a3b8',
-        },
-      },
-      donut: {
-        title: `${total > 0 ? _round((brandedTraffic.branded / total) * 100, 0) : 0}%`,
-        label: {
-          show: false,
-        },
-        width: 16,
-      },
-      transition: { duration: 200 },
-      resize: { auto: true },
-      legend: {
-        show: true,
-        position: 'bottom',
-        item: {
-          tile: { type: 'circle', width: 8, r: 4 },
-        },
-      },
-      tooltip: {
-        format: {
-          value: (value: number, ratio: number) => {
-            const pct = (ratio * 100).toFixed(1)
-            return `${nFormatter(value, 1)} (${pct}%)`
-          },
-        },
-      },
-      size: {
-        height: 180,
-      },
-    }
-  }, [brandedTraffic, t, theme])
+  const donutChartOptions = useMemo(
+    () =>
+      buildDonutChartOptions(
+        brandedTraffic.branded,
+        brandedTraffic.nonBranded,
+        theme,
+        t,
+      ),
+    [brandedTraffic, t, theme],
+  )
 
   const countryRowMapper = useCallback(
     (entry: any) => <CCRow cc={entry.name} language={language} />,
@@ -634,12 +341,12 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
 
   const anyMetricActive = Object.values(activeMetrics).some(Boolean)
 
-  const quadrantData = useMemo(() => {
+  const quadrantData: QuadrantData | null = useMemo(() => {
     if (!topQueriesAsEntries.length) return null
     const positions = topQueriesAsEntries.map((q) => q.position)
     const ctrs = topQueriesAsEntries.map((q) => q.ctr)
     const impressions = topQueriesAsEntries.map((q) => q.impressions)
-    const names = topQueriesAsEntries.map((q) => q.name)
+    const names = topQueriesAsEntries.map((q) => q.name ?? '')
 
     const maxImp = Math.max(...impressions) || 1
     const minImp = Math.min(...impressions) || 0
@@ -647,271 +354,17 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     return { positions, ctrs, impressions, names, maxImp, minImp }
   }, [topQueriesAsEntries])
 
-  const quadrantChartOptions: ChartOptions = useMemo(() => {
+  const quadrantChartOptions = useMemo(() => {
     if (!quadrantData) return {}
-
-    const { positions, ctrs, impressions, names, maxImp } = quadrantData
     const avgCtr = data?.summary?.ctr ?? 5
     const avgPos = data?.summary?.position ?? 10
-
-    return {
-      data: {
-        x: 'x',
-        columns: [
-          ['x', ...positions],
-          ['CTR', ...ctrs],
-        ],
-        type: scatter(),
-        colors: {
-          CTR: theme === 'dark' ? '#818cf8' : '#6366f1',
-        },
-      },
-      axis: {
-        x: {
-          min: 0,
-          label: {
-            text: t('project.seo.avgPosition'),
-            position: 'outer-center',
-          },
-          tick: {
-            fit: false,
-            format: (d: number) => Number(d).toFixed(0),
-          },
-        },
-        y: {
-          min: 0,
-          max: 100,
-          padding: { top: 0, bottom: 0 },
-          label: { text: t('project.seo.avgCTR'), position: 'outer-middle' },
-          tick: {
-            format: (d: number) => `${d}%`,
-          },
-        },
-      },
-      point: {
-        r: (d: any) => {
-          if (!d || d.index === undefined) return 4
-          const imp = impressions[d.index]
-          if (!imp) return 4
-          return 4 + 16 * Math.sqrt(imp / maxImp)
-        },
-      },
-      grid: {
-        x: {
-          lines: [
-            {
-              value: avgPos,
-              text: `${t('project.seo.avgPosition')}: ${avgPos.toFixed(1)}`,
-              position: 'start',
-              class: 'annotation-line',
-            },
-          ],
-        },
-        y: {
-          lines: [
-            {
-              value: avgCtr,
-              text: `${t('project.seo.avgCTR')}: ${avgCtr.toFixed(1)}%`,
-              position: 'start',
-              class: 'annotation-line',
-            },
-          ],
-        },
-      },
-      tooltip: {
-        contents: (items: any) => {
-          const d = items[0]
-          const name = names[d.index]
-          const imp = impressions[d.index]
-
-          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm shadow-md z-50'>
-            <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 break-all'>${escapeHtml(name ?? '')}</li>
-            <li class='flex justify-between items-center py-px leading-snug'>
-              <span class='mr-4'>${t('project.seo.position')}:</span>
-              <span class='font-mono whitespace-nowrap'>${d.x.toFixed(1)}</span>
-            </li>
-            <li class='flex justify-between items-center py-px leading-snug'>
-              <span class='mr-4'>${t('project.seo.ctr')}:</span>
-              <span class='font-mono whitespace-nowrap'>${d.value.toFixed(1)}%</span>
-            </li>
-            <li class='flex justify-between items-center py-px leading-snug'>
-              <span class='mr-4'>${t('project.seo.impressions')}:</span>
-              <span class='font-mono whitespace-nowrap'>${nFormatter(imp, 1)}</span>
-            </li>
-          </ul>`
-        },
-      },
-      legend: {
-        show: false,
-      },
-      transition: {
-        duration: 200,
-      },
-    }
+    return buildQuadrantChartOptions(quadrantData, avgCtr, avgPos, theme, t)
   }, [quadrantData, data?.summary, theme, t])
 
-  const chartOptions: ChartOptions = useMemo(() => {
-    if (!aggregatedSeries.length) return {}
-
-    const dates = aggregatedSeries.map((d) => d.date)
-    const columns: any[] = [['x', ...dates]]
-    const colors: Record<string, string> = {}
-    const axes: Record<string, string> = {}
-    let needsY2 = false
-
-    if (activeMetrics.clicks) {
-      const label = t('project.seo.clicks')
-      columns.push([label, ...aggregatedSeries.map((d) => d.clicks)])
-      colors[label] = '#3b82f6' // blue-500 - matching GSC
-    }
-
-    if (activeMetrics.impressions) {
-      const label = t('project.seo.impressions')
-      columns.push([label, ...aggregatedSeries.map((d) => d.impressions)])
-      colors[label] = '#5b21b6' // violet-800 - matching GSC
-      if (activeMetrics.clicks) {
-        axes[label] = 'y2'
-        needsY2 = true
-      }
-    }
-
-    if (activeMetrics.position) {
-      const label = t('project.seo.avgPosition')
-      columns.push([label, ...aggregatedSeries.map((d) => d.position)])
-      colors[label] = '#d97706' // amber-600 - matching GSC
-      if (activeMetrics.clicks || activeMetrics.impressions) {
-        axes[label] = 'y2'
-        needsY2 = true
-      }
-    }
-
-    if (activeMetrics.ctr) {
-      const label = t('project.seo.avgCTR')
-      columns.push([label, ...aggregatedSeries.map((d) => d.ctr)])
-      colors[label] = '#0d9488' // teal-600 - matching GSC
-      if (activeMetrics.clicks || activeMetrics.impressions) {
-        axes[label] = 'y2'
-        needsY2 = true
-      }
-    }
-
-    const tickFormatMap: Record<string, string> = {
-      hour: '%b %d %H:%M',
-      day: '%b %d',
-      week: '%b %d',
-      month: '%b %Y',
-      quarter: '%b %Y',
-      year: '%Y',
-    }
-    const tickFormat = tickFormatMap[timeBucket] || '%b %d'
-
-    return {
-      data: {
-        x: 'x',
-        xFormat: timeBucket === 'hour' ? '%Y-%m-%d %H:%M:%S' : '%Y-%m-%d',
-        columns,
-        type: area(),
-        axes,
-        colors,
-      },
-      area: {
-        linearGradient: true,
-      },
-      transition: {
-        duration: 200,
-      },
-      resize: {
-        auto: true,
-        timer: false,
-      },
-      axis: {
-        x: {
-          clipPath: false,
-          type: 'timeseries',
-          tick: {
-            fit: true,
-            format: tickFormat,
-            rotate: 0,
-          },
-        },
-        y: {
-          tick: {
-            format: (d: number) => nFormatter(d, 1),
-          },
-          show: true,
-          inner: true,
-          min: 0,
-          padding: { bottom: 0 },
-        },
-        y2: {
-          show: needsY2,
-          tick: {
-            format: (d: number) => nFormatter(d, 1),
-          },
-          inner: true,
-          min: 0,
-          padding: { bottom: 0 },
-        },
-      },
-      point: {
-        focus: {
-          only: dates.length > 1,
-        },
-        pattern: ['circle'],
-        r: 2,
-      },
-      grid: {
-        y: {
-          show: true,
-        },
-      },
-      legend: {
-        item: {
-          tile: {
-            type: 'circle',
-            width: 10,
-            r: 3,
-          },
-        },
-      },
-      tooltip: {
-        contents: (items, _defaultTitleFormat, _defaultValueFormat, color) => {
-          const tooltipFormatMap: Record<string, string> = {
-            hour: '%b %d, %Y %H:%M',
-            day: '%b %d, %Y',
-            week: 'Week of %b %d, %Y',
-            month: '%B %Y',
-            quarter: '%B %Y',
-            year: '%Y',
-          }
-          const tooltipFmt = tooltipFormatMap[timeBucket] || '%b %d, %Y'
-          const headerLabel = d3.timeFormat(tooltipFmt)(items[0].x)
-          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-md z-50'>
-            <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${headerLabel}</li>
-            ${items
-              .map((el: any) => {
-                const isCtr = el.name === t('project.seo.avgCTR')
-                const isPos = el.name === t('project.seo.avgPosition')
-                let formatted = nFormatter(el.value, 1)
-                if (isCtr) formatted = `${Number(el.value).toFixed(1)}%`
-                else if (isPos) formatted = Number(el.value).toFixed(1)
-
-                return `
-            <li class='flex justify-between items-center py-px leading-snug'>
-              <div class='flex items-center min-w-0 mr-4'>
-                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0' style=background-color:${color(el.id)}></div>
-                <span class="truncate">${el.name}</span>
-              </div>
-              <span class='font-mono whitespace-nowrap'>${formatted}</span>
-            </li>`
-              })
-              .join('')}
-          </ul>`
-        },
-      },
-      padding: { right: needsY2 ? 20 : undefined },
-    }
-  }, [aggregatedSeries, activeMetrics, timeBucket, t])
+  const chartOptions = useMemo(
+    () => buildMainChartOptions(aggregatedSeries, activeMetrics, timeBucket, t),
+    [aggregatedSeries, activeMetrics, timeBucket, t],
+  )
 
   const detailsExtraColumns = useMemo(
     () => [

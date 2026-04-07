@@ -1,4 +1,5 @@
 import { parse as parseDomain } from 'tldts'
+import countries from 'i18n-iso-countries'
 import _isEmpty from 'lodash/isEmpty'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -34,6 +35,50 @@ const GSC_REDIRECT_URL = isDevelopment
   : `${PRODUCTION_ORIGIN}/gsc-connected`
 
 const ENCRYPTION_KEY = deriveKey('gsc-token')
+
+const MAX_ROW_LIMIT = 25000
+const MAX_BRANDED_PAGES = 10
+const MAX_FILTER_EXPRESSION_LENGTH = 500
+const MAX_FILTERS = 20
+
+type GSCRow = {
+  keys: string[]
+  clicks?: number
+  impressions?: number
+  ctr?: number
+  position?: number
+}
+
+type GSCContext = {
+  sc: ReturnType<typeof searchconsole>
+  siteUrl: string
+}
+
+interface QueryGSCOptions {
+  dimensions?: string[]
+  rowLimit?: number
+  startRow?: number
+  dataState?: string
+  dimensionFilterGroups?: any[]
+}
+
+export function parseBrandKeywords(
+  raw: string | null | undefined,
+): string[] | null {
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw)
+    if (
+      Array.isArray(parsed) &&
+      parsed.every((item) => typeof item === 'string')
+    ) {
+      return parsed
+    }
+    return null
+  } catch {
+    return null
+  }
+}
 
 @Injectable()
 export class GSCService {
@@ -223,7 +268,6 @@ export class GSCService {
     const oauth2Client = this.getOAuthClient()
     oauth2Client.setCredentials(tokens)
 
-    // Refresh if expired
     if (tokens.expiry_date && tokens.expiry_date <= Date.now()) {
       const refreshed = await oauth2Client.getAccessToken()
       const newAccess =
@@ -240,6 +284,38 @@ export class GSCService {
     }
 
     return oauth2Client
+  }
+
+  private async getGSCContext(pid: string): Promise<GSCContext> {
+    const tokens = await this.getStoredTokens(pid)
+    if (_isEmpty(tokens) || _isEmpty(tokens.property_uri)) {
+      throw new BadRequestException(
+        'Search Console property is not linked for this project',
+      )
+    }
+
+    const oauth2Client = this.getOAuthClient()
+    oauth2Client.setCredentials(tokens)
+
+    if (tokens.expiry_date && tokens.expiry_date <= Date.now()) {
+      const refreshed = await oauth2Client.getAccessToken()
+      const newAccess =
+        typeof refreshed === 'string' ? refreshed : refreshed?.token
+      if (newAccess) {
+        const updated: StoredTokens = {
+          ...tokens,
+          access_token: newAccess,
+          expiry_date: Date.now() + 55 * 60 * 1000,
+        }
+        await this.setStoredTokens(pid, updated)
+        oauth2Client.setCredentials({ ...updated })
+      }
+    }
+
+    return {
+      sc: searchconsole({ version: 'v1', auth: oauth2Client }),
+      siteUrl: tokens.property_uri as string,
+    }
   }
 
   async listSites(
@@ -274,43 +350,98 @@ export class GSCService {
     } as any)
   }
 
+  // ---------------------------------------------------------------------------
+  // Filter parsing with schema validation + country code normalization
+  // ---------------------------------------------------------------------------
+
   private parseFilters(filtersStr?: string) {
     if (!filtersStr) return undefined
+
+    let filters: unknown
     try {
-      const filters = JSON.parse(filtersStr)
-      const mappedFilters = []
-
-      for (const filter of filters) {
-        const { column, filter: value, isExclusive, isContains } = filter
-
-        let dimension
-        if (column === 'pg') dimension = 'page'
-        else if (column === 'keywords') dimension = 'query'
-        else if (column === 'country' || column === 'cc') dimension = 'country'
-        else if (column === 'device' || column === 'dv') dimension = 'device'
-        else continue
-
-        let operator = 'equals'
-        if (isExclusive) {
-          operator = isContains ? 'notContains' : 'notEquals'
-        } else if (isContains) {
-          operator = 'contains'
-        }
-
-        const filterObj: any = { dimension, expression: value }
-        if (operator !== 'equals') {
-          filterObj.operator = operator
-        }
-
-        mappedFilters.push(filterObj)
-      }
-
-      if (mappedFilters.length > 0) {
-        return [{ groupType: 'and', filters: mappedFilters }]
-      }
+      filters = JSON.parse(filtersStr)
     } catch {
-      // Ignore parse errors
+      return undefined
     }
+
+    if (!Array.isArray(filters) || filters.length > MAX_FILTERS) {
+      return undefined
+    }
+
+    const mappedFilters: Array<{
+      dimension: string
+      expression: string
+      operator?: string
+    }> = []
+
+    for (const filter of filters) {
+      if (typeof filter !== 'object' || filter === null) continue
+
+      const {
+        column,
+        filter: value,
+        isExclusive,
+        isContains,
+      } = filter as {
+        column?: unknown
+        filter?: unknown
+        isExclusive?: unknown
+        isContains?: unknown
+      }
+
+      if (typeof column !== 'string' || typeof value !== 'string') continue
+      if (value.length > MAX_FILTER_EXPRESSION_LENGTH) continue
+
+      let dimension: string | undefined
+      let expression = value
+
+      if (column === 'pg') {
+        dimension = 'page'
+      } else if (column === 'keywords') {
+        dimension = 'query'
+      } else if (column === 'country' || column === 'cc') {
+        dimension = 'country'
+        // Normalize alpha-2 → alpha-3 for GSC
+        if (expression.length === 2) {
+          const alpha3 = countries.alpha2ToAlpha3(expression.toUpperCase())
+          if (!alpha3) continue
+          expression = alpha3.toLowerCase()
+        } else {
+          expression = expression.toLowerCase()
+        }
+      } else if (column === 'device' || column === 'dv') {
+        dimension = 'device'
+        expression = expression.toLowerCase()
+      } else {
+        continue
+      }
+
+      let operator = 'equals'
+      if (isExclusive) {
+        operator = isContains ? 'notContains' : 'notEquals'
+      } else if (isContains) {
+        operator = 'contains'
+      }
+
+      const filterObj: {
+        dimension: string
+        expression: string
+        operator?: string
+      } = {
+        dimension,
+        expression,
+      }
+      if (operator !== 'equals') {
+        filterObj.operator = operator
+      }
+
+      mappedFilters.push(filterObj)
+    }
+
+    if (mappedFilters.length > 0) {
+      return [{ groupType: 'and', filters: mappedFilters }]
+    }
+
     return undefined
   }
 
@@ -338,6 +469,10 @@ export class GSCService {
     )
   }
 
+  // ---------------------------------------------------------------------------
+  // Brand keywords
+  // ---------------------------------------------------------------------------
+
   private async getProjectBrandKeywords(pid: string): Promise<string[]> {
     const project = await this.projectService.findOne({
       where: { id: pid },
@@ -346,26 +481,11 @@ export class GSCService {
 
     if (!project) return []
 
-    if (project.brandKeywords) {
-      try {
-        const parsed = JSON.parse(project.brandKeywords)
-
-        if (Array.isArray(parsed)) {
-          return Array.from(
-            new Set(
-              parsed
-                .map((keyword) =>
-                  typeof keyword === 'string'
-                    ? keyword.toLowerCase().trim()
-                    : '',
-                )
-                .filter(Boolean),
-            ),
-          )
-        }
-      } catch {
-        //
-      }
+    const parsed = parseBrandKeywords(project.brandKeywords)
+    if (parsed && parsed.length > 0) {
+      return Array.from(
+        new Set(parsed.map((k) => k.toLowerCase().trim()).filter(Boolean)),
+      )
     }
 
     const keywords = new Set<string>()
@@ -391,6 +511,50 @@ export class GSCService {
     return Array.from(keywords)
   }
 
+  // ---------------------------------------------------------------------------
+  // Generic GSC query helper (eliminates duplication across query methods)
+  // ---------------------------------------------------------------------------
+
+  private async queryGSC(
+    ctx: GSCContext,
+    from: string,
+    to: string,
+    options: QueryGSCOptions = {},
+  ): Promise<GSCRow[]> {
+    const startDate = dayjs(from).format('YYYY-MM-DD')
+    const endDate = dayjs(to).format('YYYY-MM-DD')
+
+    const { data } = await ctx.sc.searchanalytics.query({
+      siteUrl: ctx.siteUrl,
+      requestBody: {
+        startDate,
+        endDate,
+        ...(options.dimensions ? { dimensions: options.dimensions } : {}),
+        ...(options.rowLimit != null ? { rowLimit: options.rowLimit } : {}),
+        ...(options.startRow != null ? { startRow: options.startRow } : {}),
+        dataState: options.dataState || 'all',
+        ...(options.dimensionFilterGroups &&
+        options.dimensionFilterGroups.length > 0
+          ? { dimensionFilterGroups: options.dimensionFilterGroups }
+          : {}),
+      },
+    })
+
+    return (data.rows || []) as GSCRow[]
+  }
+
+  private static clampLimit(limit: number, fallback = 50): number {
+    return Math.max(1, Math.min(limit || fallback, MAX_ROW_LIMIT))
+  }
+
+  private static clampOffset(offset: number): number {
+    return Math.max(0, offset || 0)
+  }
+
+  // ---------------------------------------------------------------------------
+  // Public query methods
+  // ---------------------------------------------------------------------------
+
   async getKeywords(
     pid: string,
     from: string,
@@ -399,6 +563,7 @@ export class GSCService {
     offset = 0,
     filtersStr?: string,
     page?: string,
+    ctx?: GSCContext,
   ): Promise<
     {
       name: string
@@ -408,47 +573,20 @@ export class GSCService {
       ctr: number
     }[]
   > {
-    const tokens = await this.getStoredTokens(pid)
-    if (_isEmpty(tokens) || _isEmpty(tokens.property_uri)) {
-      throw new BadRequestException(
-        'Search Console property is not linked for this project',
-      )
-    }
-
-    const auth = await this.getAuthedClientForPid(pid)
-    const sc = searchconsole({ version: 'v1', auth })
-
-    const startDate = dayjs(from).format('YYYY-MM-DD')
-    const endDate = dayjs(to).format('YYYY-MM-DD')
-
+    const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(
       filtersStr,
       page ? [{ dimension: 'page', expression: page }] : [],
     )
 
     try {
-      const { data } = await sc.searchanalytics.query({
-        siteUrl: tokens.property_uri as string,
-        requestBody: {
-          startDate,
-          endDate,
-          dimensions: ['query'],
-          rowLimit: limit,
-          startRow: offset,
-          dataState: 'all',
-          ...(dimensionFilterGroups.length > 0
-            ? { dimensionFilterGroups }
-            : {}),
-        },
+      const rows = await this.queryGSC(gsc, from, to, {
+        dimensions: ['query'],
+        rowLimit: GSCService.clampLimit(limit, 250),
+        startRow: GSCService.clampOffset(offset),
+        dimensionFilterGroups,
       })
 
-      const rows = (data.rows || []) as Array<{
-        keys: string[]
-        clicks?: number
-        impressions?: number
-        ctr?: number
-        position?: number
-      }>
       return rows
         .map((row) => ({
           name: row.keys?.[0] || '(not set)',
@@ -465,58 +603,27 @@ export class GSCService {
     }
   }
 
-  private async ensurePropertyLinked(pid: string) {
-    const tokens = await this.getStoredTokens(pid)
-    if (_isEmpty(tokens) || _isEmpty(tokens.property_uri)) {
-      throw new BadRequestException(
-        'Search Console property is not linked for this project',
-      )
-    }
-    return tokens
-  }
-
   async getSummary(
     pid: string,
     from: string,
     to: string,
     filtersStr?: string,
+    ctx?: GSCContext,
   ): Promise<{
     clicks: number
     impressions: number
     ctr: number
     position: number
   }> {
-    const tokens = await this.ensurePropertyLinked(pid)
-    const auth = await this.getAuthedClientForPid(pid)
-    const sc = searchconsole({ version: 'v1', auth })
-
-    const startDate = dayjs(from).format('YYYY-MM-DD')
-    const endDate = dayjs(to).format('YYYY-MM-DD')
-
+    const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
 
     try {
-      const { data } = await sc.searchanalytics.query({
-        siteUrl: tokens.property_uri as string,
-        requestBody: {
-          startDate,
-          endDate,
-          dataState: 'all',
-          ...(dimensionFilterGroups.length > 0
-            ? { dimensionFilterGroups }
-            : {}),
-        },
+      const rows = await this.queryGSC(gsc, from, to, {
+        dimensionFilterGroups,
       })
 
-      const row = data.rows?.[0] as
-        | {
-            clicks?: number
-            impressions?: number
-            ctr?: number
-            position?: number
-          }
-        | undefined
-
+      const row = rows[0]
       return {
         clicks: Math.round(row?.clicks || 0),
         impressions: Math.round(row?.impressions || 0),
@@ -536,6 +643,7 @@ export class GSCService {
     to: string,
     timeBucket?: string,
     filtersStr?: string,
+    ctx?: GSCContext,
   ): Promise<
     {
       date: string
@@ -545,38 +653,17 @@ export class GSCService {
       position: number
     }[]
   > {
-    const tokens = await this.ensurePropertyLinked(pid)
-    const auth = await this.getAuthedClientForPid(pid)
-    const sc = searchconsole({ version: 'v1', auth })
-
-    const startDate = dayjs(from).format('YYYY-MM-DD')
-    const endDate = dayjs(to).format('YYYY-MM-DD')
-
+    const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
     const isHourly = timeBucket === 'hour'
 
     try {
-      const { data } = await sc.searchanalytics.query({
-        siteUrl: tokens.property_uri as string,
-        requestBody: {
-          startDate,
-          endDate,
-          dimensions: isHourly ? ['HOUR'] : ['date'],
-          rowLimit: 5000,
-          dataState: isHourly ? 'HOURLY_ALL' : 'all',
-          ...(dimensionFilterGroups.length > 0
-            ? { dimensionFilterGroups }
-            : {}),
-        },
+      const rows = await this.queryGSC(gsc, from, to, {
+        dimensions: isHourly ? ['HOUR'] : ['date'],
+        rowLimit: 5000,
+        dataState: isHourly ? 'HOURLY_ALL' : 'all',
+        dimensionFilterGroups,
       })
-
-      const rows = (data.rows || []) as Array<{
-        keys: string[]
-        clicks?: number
-        impressions?: number
-        ctr?: number
-        position?: number
-      }>
 
       return rows.map((row) => ({
         date: row.keys?.[0]
@@ -604,6 +691,7 @@ export class GSCService {
     offset = 0,
     filtersStr?: string,
     query?: string,
+    ctx?: GSCContext,
   ): Promise<
     {
       page: string
@@ -613,41 +701,19 @@ export class GSCService {
       position: number
     }[]
   > {
-    const tokens = await this.ensurePropertyLinked(pid)
-    const auth = await this.getAuthedClientForPid(pid)
-    const sc = searchconsole({ version: 'v1', auth })
-
-    const startDate = dayjs(from).format('YYYY-MM-DD')
-    const endDate = dayjs(to).format('YYYY-MM-DD')
-
+    const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(
       filtersStr,
       query ? [{ dimension: 'query', expression: query }] : [],
     )
 
     try {
-      const { data } = await sc.searchanalytics.query({
-        siteUrl: tokens.property_uri as string,
-        requestBody: {
-          startDate,
-          endDate,
-          dimensions: ['page'],
-          rowLimit: limit,
-          startRow: offset,
-          dataState: 'all',
-          ...(dimensionFilterGroups.length > 0
-            ? { dimensionFilterGroups }
-            : {}),
-        },
+      const rows = await this.queryGSC(gsc, from, to, {
+        dimensions: ['page'],
+        rowLimit: GSCService.clampLimit(limit),
+        startRow: GSCService.clampOffset(offset),
+        dimensionFilterGroups,
       })
-
-      const rows = (data.rows || []) as Array<{
-        keys: string[]
-        clicks?: number
-        impressions?: number
-        ctr?: number
-        position?: number
-      }>
 
       return rows.map((row) => ({
         page: row.keys?.[0] || '(not set)',
@@ -670,6 +736,7 @@ export class GSCService {
     limit = 50,
     offset = 0,
     filtersStr?: string,
+    ctx?: GSCContext,
   ): Promise<
     {
       country: string
@@ -679,38 +746,16 @@ export class GSCService {
       position: number
     }[]
   > {
-    const tokens = await this.ensurePropertyLinked(pid)
-    const auth = await this.getAuthedClientForPid(pid)
-    const sc = searchconsole({ version: 'v1', auth })
-
-    const startDate = dayjs(from).format('YYYY-MM-DD')
-    const endDate = dayjs(to).format('YYYY-MM-DD')
-
+    const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
 
     try {
-      const { data } = await sc.searchanalytics.query({
-        siteUrl: tokens.property_uri as string,
-        requestBody: {
-          startDate,
-          endDate,
-          dimensions: ['country'],
-          rowLimit: limit,
-          startRow: offset,
-          dataState: 'all',
-          ...(dimensionFilterGroups.length > 0
-            ? { dimensionFilterGroups }
-            : {}),
-        },
+      const rows = await this.queryGSC(gsc, from, to, {
+        dimensions: ['country'],
+        rowLimit: GSCService.clampLimit(limit),
+        startRow: GSCService.clampOffset(offset),
+        dimensionFilterGroups,
       })
-
-      const rows = (data.rows || []) as Array<{
-        keys: string[]
-        clicks?: number
-        impressions?: number
-        ctr?: number
-        position?: number
-      }>
 
       return rows.map((row) => ({
         country: (row.keys?.[0] || '').toLowerCase(),
@@ -733,6 +778,7 @@ export class GSCService {
     limit = 50,
     offset = 0,
     filtersStr?: string,
+    ctx?: GSCContext,
   ): Promise<
     {
       device: string
@@ -742,38 +788,16 @@ export class GSCService {
       position: number
     }[]
   > {
-    const tokens = await this.ensurePropertyLinked(pid)
-    const auth = await this.getAuthedClientForPid(pid)
-    const sc = searchconsole({ version: 'v1', auth })
-
-    const startDate = dayjs(from).format('YYYY-MM-DD')
-    const endDate = dayjs(to).format('YYYY-MM-DD')
-
+    const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
 
     try {
-      const { data } = await sc.searchanalytics.query({
-        siteUrl: tokens.property_uri as string,
-        requestBody: {
-          startDate,
-          endDate,
-          dimensions: ['device'],
-          rowLimit: limit,
-          startRow: offset,
-          dataState: 'all',
-          ...(dimensionFilterGroups.length > 0
-            ? { dimensionFilterGroups }
-            : {}),
-        },
+      const rows = await this.queryGSC(gsc, from, to, {
+        dimensions: ['device'],
+        rowLimit: GSCService.clampLimit(limit),
+        startRow: GSCService.clampOffset(offset),
+        dimensionFilterGroups,
       })
-
-      const rows = (data.rows || []) as Array<{
-        keys: string[]
-        clicks?: number
-        impressions?: number
-        ctr?: number
-        position?: number
-      }>
 
       return rows.map((row) => ({
         device: (row.keys?.[0] || '').toLowerCase(),
@@ -794,45 +818,29 @@ export class GSCService {
     from: string,
     to: string,
     filtersStr?: string,
+    ctx?: GSCContext,
   ): Promise<{ branded: number; nonBranded: number }> {
     const brandKeywords = await this.getProjectBrandKeywords(pid)
     if (_isEmpty(brandKeywords)) {
       return { branded: 0, nonBranded: 0 }
     }
 
-    const tokens = await this.ensurePropertyLinked(pid)
-    const auth = await this.getAuthedClientForPid(pid)
-    const sc = searchconsole({ version: 'v1', auth })
-
-    const startDate = dayjs(from).format('YYYY-MM-DD')
-    const endDate = dayjs(to).format('YYYY-MM-DD')
+    const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
-    const rowLimit = 25000
+    const rowLimit = MAX_ROW_LIMIT
     let startRow = 0
     let branded = 0
     let nonBranded = 0
+    let pages = 0
 
     try {
-      while (true) {
-        const { data } = await sc.searchanalytics.query({
-          siteUrl: tokens.property_uri as string,
-          requestBody: {
-            startDate,
-            endDate,
-            dimensions: ['query'],
-            rowLimit,
-            startRow,
-            dataState: 'all',
-            ...(dimensionFilterGroups.length > 0
-              ? { dimensionFilterGroups }
-              : {}),
-          },
+      while (pages < MAX_BRANDED_PAGES) {
+        const rows = await this.queryGSC(gsc, from, to, {
+          dimensions: ['query'],
+          rowLimit,
+          startRow,
+          dimensionFilterGroups,
         })
-
-        const rows = (data.rows || []) as Array<{
-          keys: string[]
-          clicks?: number
-        }>
 
         for (const row of rows) {
           const query = (row.keys?.[0] || '').toLowerCase()
@@ -845,11 +853,10 @@ export class GSCService {
           }
         }
 
-        if (rows.length < rowLimit) {
-          break
-        }
+        if (rows.length < rowLimit) break
 
         startRow += rowLimit
+        pages++
       }
 
       return {
@@ -862,6 +869,10 @@ export class GSCService {
       )
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Dashboard orchestrator — fetches GSC context once, passes to all sub-queries
+  // ---------------------------------------------------------------------------
 
   async getDashboard(
     pid: string,
@@ -878,6 +889,13 @@ export class GSCService {
     const tokens = await this.getStoredTokens(pid)
     if (_isEmpty(tokens.property_uri)) {
       return { notConnected: true, noProperty: true }
+    }
+
+    let ctx: GSCContext
+    try {
+      ctx = await this.getGSCContext(pid)
+    } catch {
+      return { notConnected: true }
     }
 
     const fromDate = dayjs(from)
@@ -898,14 +916,14 @@ export class GSCService {
       topDevices,
       brandedTraffic,
     ] = await Promise.all([
-      this.getSummary(pid, from, to, filtersStr),
-      this.getSummary(pid, prevFrom, prevTo, filtersStr).catch(() => null),
-      this.getDateSeries(pid, from, to, timeBucket, filtersStr),
-      this.getTopPages(pid, from, to, 50, 0, filtersStr),
-      this.getKeywords(pid, from, to, 50, 0, filtersStr),
-      this.getTopCountries(pid, from, to, 50, 0, filtersStr),
-      this.getTopDevices(pid, from, to, 50, 0, filtersStr),
-      this.getBrandedTraffic(pid, from, to, filtersStr),
+      this.getSummary(pid, from, to, filtersStr, ctx),
+      this.getSummary(pid, prevFrom, prevTo, filtersStr, ctx).catch(() => null),
+      this.getDateSeries(pid, from, to, timeBucket, filtersStr, ctx),
+      this.getTopPages(pid, from, to, 50, 0, filtersStr, undefined, ctx),
+      this.getKeywords(pid, from, to, 50, 0, filtersStr, undefined, ctx),
+      this.getTopCountries(pid, from, to, 50, 0, filtersStr, ctx),
+      this.getTopDevices(pid, from, to, 50, 0, filtersStr, ctx),
+      this.getBrandedTraffic(pid, from, to, filtersStr, ctx),
     ])
 
     return {

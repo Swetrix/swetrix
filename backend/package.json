@@ -72,6 +72,7 @@
     "front-matter": "^4.0.2",
     "google-auth-library": "^10.6.1",
     "handlebars": "^4.7.8",
+    "i18n-iso-countries": "^7.14.0",
     "ioredis": "^5.10.0",
     "ip-range-check": "^0.2.0",
     "isbot": "^5.1.35",

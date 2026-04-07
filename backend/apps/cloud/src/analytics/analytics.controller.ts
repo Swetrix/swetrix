@@ -887,7 +887,6 @@ export class AnalyticsController {
   @Auth(true, true)
   async getGSCDashboard(
     @Query() data: GetKeywordsDto,
-    @Query('filters') filtersStr: string,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
@@ -898,8 +897,8 @@ export class AnalyticsController {
       to,
       timezone = DEFAULT_TIMEZONE,
       timeBucket,
+      filters,
     } = data
-    const filters = filtersStr || data.filters
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -952,14 +951,18 @@ export class AnalyticsController {
   @Auth(true, true)
   async getGSCDetails(
     @Query() data: GetKeywordsDto,
-    @Query('page') pageStr: string,
-    @Query('query') queryStr: string,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE } = data
-    const page = pageStr || data.page
-    const query = queryStr || data.query
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      page,
+      query,
+    } = data
 
     this.logger.log(
       `pid: ${pid}, period: ${period}, page: ${page}, query: ${query}`,

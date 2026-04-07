@@ -44,6 +44,7 @@ import _find from 'lodash/find'
 import dayjs from 'dayjs'
 
 import { hash } from 'bcrypt'
+import { parseBrandKeywords } from './gsc.service'
 import { Auth, Public } from '../auth/decorators'
 import { isValidDate } from '../analytics/analytics.service'
 import {
@@ -1819,18 +1820,7 @@ export class ProjectController {
     await deleteProjectRedis(id)
 
     const result = _omit(project, ['admin', 'passwordHash', 'share']) as any
-    if (result.brandKeywords) {
-      try {
-        const parsed = JSON.parse(result.brandKeywords)
-        result.brandKeywords =
-          Array.isArray(parsed) &&
-          parsed.every((item) => typeof item === 'string')
-            ? parsed
-            : null
-      } catch {
-        result.brandKeywords = null
-      }
-    }
+    result.brandKeywords = parseBrandKeywords(result.brandKeywords)
 
     return result
   }
@@ -1954,20 +1944,6 @@ export class ProjectController {
     const isManagerRole = role === 'owner' || role === 'admin'
     const isViewerRole = role === 'viewer'
 
-    let parsedBrandKeywords: string[] | null = null
-    if (project.brandKeywords) {
-      try {
-        const parsed = JSON.parse(project.brandKeywords)
-        parsedBrandKeywords =
-          Array.isArray(parsed) &&
-          parsed.every((item) => typeof item === 'string')
-            ? parsed
-            : null
-      } catch {
-        parsedBrandKeywords = null
-      }
-    }
-
     return {
       ..._omit(project, [
         'admin',
@@ -1981,7 +1957,7 @@ export class ProjectController {
         !isManagerRole && !isViewerRole && 'share',
         !isManagerRole && 'captchaSecretKey',
       ]),
-      brandKeywords: parsedBrandKeywords,
+      brandKeywords: parseBrandKeywords(project.brandKeywords),
       isAccessConfirmed,
       isLocked: !!project.admin?.dashboardBlockReason,
       isDataExists,
