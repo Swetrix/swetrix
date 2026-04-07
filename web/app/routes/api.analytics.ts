@@ -152,6 +152,8 @@ interface ProxyRequest {
     resultFilter?: string
     search?: string
     profileType?: 'all' | 'anonymous' | 'identified'
+    page?: string
+    query?: string
   }
 }
 
@@ -819,8 +821,8 @@ export async function action({ request }: ActionFunctionArgs) {
           to: formatDateForBackend(params.to),
           timezone: params.timezone,
           password: password || undefined,
-          page: (body as any).page,
-          query: (body as any).query,
+          page: params.page,
+          query: params.query,
         })
         return data<ProxyResponse<GSCDetailsResponse>>({
           data: result.data,
