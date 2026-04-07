@@ -1,4 +1,3 @@
-import { Alerts } from '~/lib/models/Alerts'
 import { Auth } from '~/lib/models/Auth'
 import { User } from '~/lib/models/User'
 import {
@@ -1416,32 +1415,6 @@ export async function getGoalChartServer(
   return serverFetch<{ chart: GoalChartData }>(
     request,
     `goal/${goalId}/chart?${params.toString()}`,
-  )
-}
-
-// ============================================================================
-// MARK: Alerts API (Deferred Loading)
-// ============================================================================
-
-export interface AlertsResponse {
-  results: Alerts[]
-  total: number
-}
-
-export async function getProjectAlertsServer(
-  request: Request,
-  projectId: string,
-  take = 25,
-  skip = 0,
-): Promise<ServerFetchResult<AlertsResponse>> {
-  const params = new URLSearchParams({
-    take: String(take),
-    skip: String(skip),
-  })
-
-  return serverFetch<AlertsResponse>(
-    request,
-    `alert/project/${projectId}?${params.toString()}`,
   )
 }
 
