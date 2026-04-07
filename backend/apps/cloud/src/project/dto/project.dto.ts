@@ -96,6 +96,7 @@ export class ProjectDTO {
       'Brand keywords used to classify search queries as branded vs non-branded traffic.',
   })
   @IsOptional()
+  @ValidateIf((o) => o.brandKeywords !== null && o.brandKeywords !== undefined)
   @IsArray()
   @IsString({ each: true })
   brandKeywords?: string[] | null
