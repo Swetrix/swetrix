@@ -259,7 +259,7 @@ const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
   // Track if we're in pagination mode
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [total, setTotal] = useState(0)
-  const [alerts, setAlerts] = useState<Alerts[]>([])
+  const [alerts, setAlerts] = useState<Alerts[] | null>(null)
   const [page, setPage] = useState(1)
 
   const [error, setError] = useState<string | null>(null)
@@ -332,7 +332,7 @@ const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
     if (!canManageAlerts) return
     if (isSearchMode) return
     if (fetcher.state !== 'idle') return
-    if (!_isEmpty(alerts)) return
+    if (alerts !== null) return
 
     loadAlerts(DEFAULT_ALERTS_TAKE, 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -459,7 +459,7 @@ const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
   return (
     <>
       <div className='mt-4'>
-        {_isEmpty(alerts) ? (
+        {alerts === null ? null : alerts.length === 0 ? (
           <div className='flex flex-col'>
             <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
               <div className='flex items-center text-gray-50'>
