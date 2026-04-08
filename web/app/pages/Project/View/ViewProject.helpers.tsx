@@ -64,6 +64,7 @@ import {
   getStringFromTime,
   sumArrays,
   nFormatter,
+  escapeHtml,
 } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
@@ -1648,6 +1649,7 @@ const getSettingsFunnels = (
   funnel: AnalyticsFunnel[],
   totalPageviews: number,
   t: typeof i18next.t,
+  language: string,
 ): ChartOptions => {
   const values = _map(funnel, (step) => {
     if (_startsWith(step.value, '/')) {
@@ -1691,6 +1693,17 @@ const getSettingsFunnels = (
       order: (a: any, b: any) => {
         return a.id < b.id
       },
+      onover: (_d: any, el: SVGElement) => {
+        el?.style?.setProperty('fill-opacity', '0.75', 'important')
+      },
+      onout: (_d: any, el: SVGElement) => {
+        el?.style?.removeProperty('fill-opacity')
+      },
+    },
+    bar: {
+      radius: {
+        ratio: 0.05,
+      },
     },
     transition: {
       duration: 200,
@@ -1717,92 +1730,215 @@ const getSettingsFunnels = (
         inner: true,
       },
     },
+    onrendered: function () {
+      const chart = this as any
+      if (!chart?.$?.bar?.bars) return
+
+      try {
+        const svg = chart.$.svg.node()
+        if (!svg) return
+
+        const ns = 'http://www.w3.org/2000/svg'
+
+        let defs = svg.querySelector('defs')
+        if (!defs) {
+          defs = document.createElementNS(ns, 'defs')
+          svg.insertBefore(defs, svg.firstChild)
+        }
+
+        if (!defs.querySelector('#funnel-dropoff-stripe')) {
+          const pattern = document.createElementNS(ns, 'pattern')
+          pattern.setAttribute('id', 'funnel-dropoff-stripe')
+          pattern.setAttribute('patternUnits', 'userSpaceOnUse')
+          pattern.setAttribute('width', '20')
+          pattern.setAttribute('height', '20')
+          pattern.setAttribute('patternTransform', 'rotate(-45)')
+
+          const band1 = document.createElementNS(ns, 'rect')
+          band1.setAttribute('width', '20')
+          band1.setAttribute('height', '20')
+          band1.style.fill = 'var(--funnel-stripe-1)'
+          pattern.appendChild(band1)
+
+          const band2 = document.createElementNS(ns, 'rect')
+          band2.setAttribute('x', '0')
+          band2.setAttribute('y', '0')
+          band2.setAttribute('width', '10')
+          band2.setAttribute('height', '20')
+          band2.style.fill = 'var(--funnel-stripe-2)'
+          pattern.appendChild(band2)
+
+          defs.appendChild(pattern)
+        }
+
+        chart.$.bar.bars.each(function (this: SVGPathElement, d: any) {
+          if (d?.id === 'dropoff') {
+            this.style.fill = 'url(#funnel-dropoff-stripe)'
+            this.style.stroke = 'none'
+          }
+        })
+      } catch {
+        // ignore
+      }
+    },
     tooltip: {
-      contents: (items: any, _: any, __: any, color: any) => {
+      contents: (items: any) => {
         const { index = 0 } = items[0] || {}
         const step = funnel[index]
-        const stepTitle = values[index]
-        const prevStepTitle = values[index - 1]
+        const stepTitle = escapeHtml(values[index] ?? '')
+        const prevStep = index > 0 ? funnel[index - 1] : null
+        const prevStepTitle = escapeHtml(values[index - 1] ?? '')
 
-        const prevStepHtml = prevStepTitle
-          ? `
-          <span>${prevStepTitle}</span>
-        `
-          : ''
+        const topSourcesEntries = Object.entries(step.topSources || {})
+        const topCountriesEntries = Object.entries(step.topCountries || {})
 
-        const title = `
-          <p class='font-semibold flex items-center gap-1 tracking-tight'>
-            ${prevStepHtml}
-            <span class='opacity-70'>→</span>
-            <span>${stepTitle}</span>
-          </p>
-        `
-        const events = `
-          <tr class='tracking-tight'>
-            <td class='pr-4'>
-              <div class='flex items-center gap-1.5'>
-                <div class='w-2.5 h-2.5 rounded-xs shrink-0' style=background-color:${color('events')}></div>
-                <span class='font-semibold'>
-                  ${_startsWith(step.value, '/') ? t('project.visitors') : t('project.events')}
-                </span>
+        const primary = 'text-gray-900 dark:text-gray-50'
+        const secondary = 'text-gray-700 dark:text-gray-200'
+        const success = 'text-green-600 dark:text-green-400'
+        const error = 'text-red-600 dark:text-red-400'
+
+        let headerHtml = ''
+
+        if (index === 0) {
+          const neverEntered = totalPageviews - step.events
+          headerHtml = `
+            <div class='flex items-center justify-between gap-6'>
+              <div class='flex items-center gap-1.5 min-w-0'>
+                <span class='${secondary}'>↳</span>
+                <span class='font-semibold truncate ${primary}'>${stepTitle}</span>
               </div>
-            </td>
-            <td class='pr-2 font-semibold text-right font-mono'>
-              ${step.events}
-            </td>
-            <td class='text-right font-mono'>
-              ${step.eventsPercStep}%
-            </td>
-          </tr>
-        `
-
-        const dropoff = `
-          <tr class='tracking-tight'>
-            <td class='pr-4'>
-              <div class='flex items-center gap-1.5'>
-                <div class='w-2.5 h-2.5 rounded-xs shrink-0' style="background-color:${color('dropoff')}"></div>
-                <span class='font-semibold'>
-                  ${index === 0 ? t('project.neverEnteredTheFunnel') : t('project.dropoff')}
-                </span>
+              <span class='font-mono font-semibold tabular-nums shrink-0 ${primary}'>${nFormatter(step.events, 1)}</span>
+            </div>
+            ${
+              neverEntered > 0
+                ? `
+              <div class='flex items-center justify-between gap-6 mt-1'>
+                <span class='${secondary}'>${t('project.neverEnteredTheFunnel')}</span>
+                <span class='font-mono tabular-nums ${error}'>-${nFormatter(neverEntered, 1)}</span>
               </div>
-            </td>
-            <td class='pr-2 font-semibold text-right font-mono'>
-              ${index === 0 ? totalPageviews - step.events : step.dropoff}
-            </td>
-            <td class='text-right font-mono'>
-              ${
-                index === 0
-                  ? _round(
-                      ((totalPageviews - step.events) / totalPageviews) * 100,
-                      2,
-                    )
-                  : step.dropoffPercStep
-              }%
-            </td>
-          </tr>
+            `
+                : ''
+            }
+          `
+        } else {
+          headerHtml = `
+            <div class='flex items-center justify-between gap-6'>
+              <div class='flex items-center gap-1.5 min-w-0'>
+                <span class='${secondary}'>↳</span>
+                <span class='font-medium truncate ${secondary}'>${prevStepTitle}</span>
+              </div>
+              <span class='font-mono font-medium tabular-nums shrink-0 ${secondary}'>${nFormatter(prevStep!.events, 1)}</span>
+            </div>
+            <div class='flex items-center justify-between gap-6 mt-1'>
+              <span class='${secondary}'>${t('project.dropoff')}</span>
+              <span class='font-mono tabular-nums ${error}'>-${nFormatter(step.dropoff, 1)}</span>
+            </div>
+            <div class='flex items-center justify-between gap-6 mt-1'>
+              <div class='flex items-center gap-1.5 min-w-0 pl-4'>
+                <span class='${secondary}'>↳</span>
+                <span class='font-semibold truncate ${primary}'>${stepTitle}</span>
+              </div>
+              <span class='font-mono font-semibold tabular-nums shrink-0 ${primary}'>${nFormatter(step.events, 1)}</span>
+            </div>
+          `
+        }
+
+        const conversionHtml = `
+          <div class='border-t border-gray-200 dark:border-slate-700/80 mt-2 pt-2'>
+            <div class='flex items-center justify-between gap-6'>
+              <span class='font-semibold ${primary}'>${t('project.conversion')}</span>
+              <span class='font-mono tabular-nums font-semibold ${success}'>${step.eventsPercStep}%</span>
+            </div>
+            <div class='flex items-center justify-between gap-6 mt-0.5'>
+              <span class='${secondary}'>${t('project.conversionFromStart')}</span>
+              <span class='font-mono tabular-nums ${success}'>${step.eventsPerc}%</span>
+            </div>
+          </div>
         `
 
-        const conversionFromStart = `
-          <tr class='tracking-tight'>
-            <td class='pr-4'>
-              <span class='font-semibold'>${t('project.conversionFromStart')}</span>
-            </td>
-            <td class='pr-2 font-semibold text-right font-mono'>${step.eventsPerc}%</td>
-            <td class='text-right'></td>
-          </tr>
-        `
+        let detailsHtml = ''
+        if (topSourcesEntries.length > 0 || topCountriesEntries.length > 0) {
+          const sourcesHtml =
+            topSourcesEntries.length > 0
+              ? `
+            <div class='flex-1 min-w-0'>
+              <p class='text-[10px] font-semibold uppercase tracking-wider ${secondary} mb-1.5'>
+                ${t('project.topSources')}
+              </p>
+              ${topSourcesEntries
+                .map(([domain, count]) => {
+                  const perc =
+                    step.events > 0
+                      ? Math.round((count / step.events) * 100)
+                      : 0
+                  const isDirect = domain === 'Direct / None'
+                  const safeDomain = escapeHtml(domain)
+                  const iconHtml = isDirect
+                    ? `
+                    <img src='/assets/icons/chain.svg' class='size-3.5 shrink-0 dark:hidden' alt='' />
+                    <img src='/assets/icons/chain-light.svg' class='size-3.5 shrink-0 hidden dark:inline' alt='' />
+                  `
+                    : `<img src='/api/favicon?domain=${encodeURIComponent(domain)}' class='size-3.5 rounded-sm shrink-0' loading='lazy' alt='' />`
+                  return `
+                  <div class='flex items-center justify-between gap-2 mt-1'>
+                    <div class='flex items-center gap-1.5 min-w-0'>
+                      ${iconHtml}
+                      <span class='truncate ${primary}'>${safeDomain}</span>
+                    </div>
+                    <span class='font-mono tabular-nums shrink-0 ${primary}'>${perc}%</span>
+                  </div>
+                `
+                })
+                .join('')}
+            </div>
+          `
+              : ''
+
+          const countriesHtml =
+            topCountriesEntries.length > 0
+              ? `
+            <div class='flex-1 min-w-0'>
+              <p class='text-[10px] font-semibold uppercase tracking-wider ${secondary} mb-1.5'>
+                ${t('project.topCountries')}
+              </p>
+              ${topCountriesEntries
+                .map(([cc, count]) => {
+                  const perc =
+                    step.events > 0
+                      ? Math.round((count / step.events) * 100)
+                      : 0
+                  const safeName = escapeHtml(
+                    countries.getName(cc, language) || cc,
+                  )
+                  const safeCC = encodeURIComponent(cc.toLowerCase())
+                  return `
+                  <div class='flex items-center justify-between gap-2 mt-1'>
+                    <div class='flex items-center gap-1.5 min-w-0'>
+                      <img src='/assets/flags/${safeCC}.svg' width='16' height='12' class='shrink-0 rounded-[2px]' loading='lazy' alt='' />
+                      <span class='truncate ${primary}'>${safeName}</span>
+                    </div>
+                    <span class='font-mono tabular-nums shrink-0 ${primary}'>${perc}%</span>
+                  </div>
+                `
+                })
+                .join('')}
+            </div>
+          `
+              : ''
+
+          detailsHtml = `
+            <div class='border-t border-gray-200 dark:border-slate-700/80 mt-2 pt-2 flex gap-5'>
+              ${sourcesHtml}
+              ${countriesHtml}
+            </div>
+          `
+        }
 
         return `
-          <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-w-xs md:max-w-sm max-h-[300px] md:max-h-[400px] overflow-y-auto shadow-md z-50'>
-            ${title}
-            <div class='border-b border-gray-200 dark:border-slate-800 my-1'></div>
-            <table class='w-auto'>
-              <tbody>
-                ${events}
-                ${dropoff}
-                ${conversionFromStart}
-              </tbody>
-            </table>
+          <div class='bg-gray-50 dark:bg-slate-900 rounded-lg ring-1 ring-black/10 dark:ring-white/10 px-3 py-2.5 text-xs md:text-sm max-w-sm md:max-w-md shadow-lg z-50'>
+            ${headerHtml}
+            ${conversionHtml}
+            ${detailsHtml}
           </div>
         `
       },

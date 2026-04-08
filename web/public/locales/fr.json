@@ -1566,8 +1566,10 @@
     "changeInSettings": "Modifiez cela dans les paramètres de votre compte",
     "events": "Événements",
     "dropoff": "Abandon",
-    "conversionFromStart": "Conversion depuis le début",
+    "conversionFromStart": "Depuis le début",
     "neverEnteredTheFunnel": "Jamais entré dans le tunnel",
+    "topSources": "Principales sources",
+    "topCountries": "Principaux pays",
     "aggregation": "Agrégation",
     "locked": {
       "title": "Tableau de bord verrouillé",

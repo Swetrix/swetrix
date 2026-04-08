@@ -1566,8 +1566,10 @@
     "changeInSettings": "Zmień to w ustawieniach konta",
     "events": "Zdarzenia",
     "dropoff": "Rezygnacja",
-    "conversionFromStart": "Konwersja od początku",
+    "conversionFromStart": "Od początku",
     "neverEnteredTheFunnel": "Nigdy nie wszedł do lejka",
+    "topSources": "Główne źródła",
+    "topCountries": "Główne kraje",
     "aggregation": "Agregacja",
     "locked": {
       "title": "Panel kontrolny zablokowany",
