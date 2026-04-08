@@ -8,6 +8,7 @@ const CACHE_TTL = 60 * 60 * 24 * 7 // 7 days
 const STALE_TTL = 60 * 60 * 24 * 30 // 30 days
 
 const FALLBACK_ICO = '/assets/icons/chain.svg'
+const VARY = 'Origin, Referer'
 
 function isOriginAllowed(request: Request): boolean {
   if (isSelfhosted || isDevelopment) return true
@@ -20,7 +21,7 @@ function isOriginAllowed(request: Request): boolean {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   if (!isOriginAllowed(request)) {
-    return new Response(null, { status: 403 })
+    return new Response(null, { status: 403, headers: { Vary: VARY } })
   }
 
   const url = new URL(request.url)
@@ -48,6 +49,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       headers: {
         'Content-Type': upstream.headers.get('Content-Type') || 'image/x-icon',
         'Cache-Control': `public, max-age=${CACHE_TTL}, stale-while-revalidate=${STALE_TTL}`,
+        Vary: VARY,
       },
     })
   } catch {
