@@ -1566,8 +1566,10 @@
     "changeInSettings": "Change this in your account settings",
     "events": "Events",
     "dropoff": "Dropoff",
-    "conversionFromStart": "Conversion from start",
+    "conversionFromStart": "from start",
     "neverEnteredTheFunnel": "Never entered the funnel",
+    "topSources": "Top sources",
+    "topCountries": "Top countries",
     "aggregation": "Aggregation",
     "locked": {
       "title": "Dashboard locked",

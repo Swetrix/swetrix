@@ -64,6 +64,7 @@ import {
   getStringFromTime,
   sumArrays,
   nFormatter,
+  escapeHtml,
 } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
@@ -1718,91 +1719,161 @@ const getSettingsFunnels = (
       },
     },
     tooltip: {
-      contents: (items: any, _: any, __: any, color: any) => {
+      contents: (items: any) => {
         const { index = 0 } = items[0] || {}
         const step = funnel[index]
-        const stepTitle = values[index]
-        const prevStepTitle = values[index - 1]
+        const stepTitle = escapeHtml(values[index] ?? '')
+        const prevStep = index > 0 ? funnel[index - 1] : null
+        const prevStepTitle = escapeHtml(values[index - 1] ?? '')
 
-        const prevStepHtml = prevStepTitle
-          ? `
-          <span>${prevStepTitle}</span>
-        `
-          : ''
+        const topSourcesEntries = Object.entries(step.topSources || {})
+        const topCountriesEntries = Object.entries(step.topCountries || {})
 
-        const title = `
-          <p class='font-semibold flex items-center gap-1 tracking-tight'>
-            ${prevStepHtml}
-            <span class='opacity-70'>→</span>
-            <span>${stepTitle}</span>
-          </p>
-        `
-        const events = `
-          <tr class='tracking-tight'>
-            <td class='pr-4'>
-              <div class='flex items-center gap-1.5'>
-                <div class='w-2.5 h-2.5 rounded-xs shrink-0' style=background-color:${color('events')}></div>
-                <span class='font-semibold'>
-                  ${_startsWith(step.value, '/') ? t('project.visitors') : t('project.events')}
-                </span>
+        const primary = 'text-gray-900 dark:text-gray-50'
+        const secondary = 'text-gray-700 dark:text-gray-200'
+        const success = 'text-green-600 dark:text-green-400'
+        const error = 'text-red-600 dark:text-red-400'
+
+        let headerHtml = ''
+
+        if (index === 0) {
+          const neverEntered = totalPageviews - step.events
+          headerHtml = `
+            <div class='flex items-center justify-between gap-6'>
+              <div class='flex items-center gap-1.5 min-w-0'>
+                <span class='${secondary}'>↳</span>
+                <span class='font-semibold truncate ${primary}'>${stepTitle}</span>
               </div>
-            </td>
-            <td class='pr-2 font-semibold text-right font-mono'>
-              ${step.events}
-            </td>
-            <td class='text-right font-mono'>
-              ${step.eventsPercStep}%
-            </td>
-          </tr>
-        `
-
-        const dropoff = `
-          <tr class='tracking-tight'>
-            <td class='pr-4'>
-              <div class='flex items-center gap-1.5'>
-                <div class='w-2.5 h-2.5 rounded-xs shrink-0' style="background-color:${color('dropoff')}"></div>
-                <span class='font-semibold'>
-                  ${index === 0 ? t('project.neverEnteredTheFunnel') : t('project.dropoff')}
-                </span>
+              <span class='font-mono font-semibold tabular-nums shrink-0 ${primary}'>${nFormatter(step.events, 1)}</span>
+            </div>
+            ${
+              neverEntered > 0
+                ? `
+              <div class='flex items-center justify-between gap-6 mt-1'>
+                <span class='${secondary}'>${t('project.neverEnteredTheFunnel')}</span>
+                <span class='font-mono tabular-nums ${error}'>-${nFormatter(neverEntered, 1)}</span>
               </div>
-            </td>
-            <td class='pr-2 font-semibold text-right font-mono'>
-              ${index === 0 ? totalPageviews - step.events : step.dropoff}
-            </td>
-            <td class='text-right font-mono'>
-              ${
-                index === 0
-                  ? _round(
-                      ((totalPageviews - step.events) / totalPageviews) * 100,
-                      2,
-                    )
-                  : step.dropoffPercStep
-              }%
-            </td>
-          </tr>
+            `
+                : ''
+            }
+          `
+        } else {
+          headerHtml = `
+            <div class='flex items-center justify-between gap-6'>
+              <div class='flex items-center gap-1.5 min-w-0'>
+                <span class='${secondary}'>↳</span>
+                <span class='font-medium truncate ${secondary}'>${prevStepTitle}</span>
+              </div>
+              <span class='font-mono font-medium tabular-nums shrink-0 ${secondary}'>${nFormatter(prevStep!.events, 1)}</span>
+            </div>
+            <div class='flex items-center justify-between gap-6 mt-1'>
+              <span class='${secondary}'>${t('project.dropoff')}</span>
+              <span class='font-mono tabular-nums ${error}'>-${nFormatter(step.dropoff, 1)}</span>
+            </div>
+            <div class='flex items-center justify-between gap-6 mt-1'>
+              <div class='flex items-center gap-1.5 min-w-0 pl-4'>
+                <span class='${secondary}'>↳</span>
+                <span class='font-semibold truncate ${primary}'>${stepTitle}</span>
+              </div>
+              <span class='font-mono font-semibold tabular-nums shrink-0 ${primary}'>${nFormatter(step.events, 1)}</span>
+            </div>
+          `
+        }
+
+        const conversionHtml = `
+          <div class='border-t border-gray-200 dark:border-slate-700/80 mt-2 pt-2'>
+            <div class='flex items-center justify-between gap-6'>
+              <span class='font-semibold ${primary}'>${t('project.conversion')}</span>
+              <span class='font-mono tabular-nums font-semibold ${success}'>${step.eventsPercStep}%</span>
+            </div>
+            <div class='flex items-center justify-between gap-6 mt-0.5'>
+              <span class='${secondary}'>${t('project.conversionFromStart')}</span>
+              <span class='font-mono tabular-nums ${success}'>${step.eventsPerc}%</span>
+            </div>
+          </div>
         `
 
-        const conversionFromStart = `
-          <tr class='tracking-tight'>
-            <td class='pr-4'>
-              <span class='font-semibold'>${t('project.conversionFromStart')}</span>
-            </td>
-            <td class='pr-2 font-semibold text-right font-mono'>${step.eventsPerc}%</td>
-            <td class='text-right'></td>
-          </tr>
-        `
+        let detailsHtml = ''
+        if (topSourcesEntries.length > 0 || topCountriesEntries.length > 0) {
+          const sourcesHtml =
+            topSourcesEntries.length > 0
+              ? `
+            <div class='flex-1 min-w-0'>
+              <p class='text-[10px] font-semibold uppercase tracking-wider ${secondary} mb-1.5'>
+                ${t('project.topSources')}
+              </p>
+              ${topSourcesEntries
+                .map(([domain, count]) => {
+                  const perc =
+                    step.events > 0
+                      ? Math.round((count / step.events) * 100)
+                      : 0
+                  const isDirect = domain === 'Direct / None'
+                  const safeDomain = escapeHtml(domain)
+                  const iconHtml = isDirect
+                    ? `
+                    <img src='/assets/icons/chain.svg' class='size-3.5 shrink-0 dark:hidden' alt='' />
+                    <img src='/assets/icons/chain-light.svg' class='size-3.5 shrink-0 hidden dark:inline' alt='' />
+                  `
+                    : `<img src='https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico' class='size-3.5 rounded-sm shrink-0' loading='lazy' alt='' />`
+                  return `
+                  <div class='flex items-center justify-between gap-2 mt-1'>
+                    <div class='flex items-center gap-1.5 min-w-0'>
+                      ${iconHtml}
+                      <span class='truncate ${primary}'>${safeDomain}</span>
+                    </div>
+                    <span class='font-mono tabular-nums shrink-0 ${primary}'>${perc}%</span>
+                  </div>
+                `
+                })
+                .join('')}
+            </div>
+          `
+              : ''
+
+          const countriesHtml =
+            topCountriesEntries.length > 0
+              ? `
+            <div class='flex-1 min-w-0'>
+              <p class='text-[10px] font-semibold uppercase tracking-wider ${secondary} mb-1.5'>
+                ${t('project.topCountries')}
+              </p>
+              ${topCountriesEntries
+                .map(([cc, count]) => {
+                  const perc =
+                    step.events > 0
+                      ? Math.round((count / step.events) * 100)
+                      : 0
+                  const safeName = escapeHtml(countries.getName(cc, 'en') || cc)
+                  const safeCC = encodeURIComponent(cc.toLowerCase())
+                  return `
+                  <div class='flex items-center justify-between gap-2 mt-1'>
+                    <div class='flex items-center gap-1.5 min-w-0'>
+                      <img src='/assets/flags/${safeCC}.svg' width='16' height='12' class='shrink-0 rounded-[2px]' loading='lazy' alt='' />
+                      <span class='truncate ${primary}'>${safeName}</span>
+                    </div>
+                    <span class='font-mono tabular-nums shrink-0 ${primary}'>${perc}%</span>
+                  </div>
+                `
+                })
+                .join('')}
+            </div>
+          `
+              : ''
+
+          detailsHtml = `
+            <div class='border-t border-gray-200 dark:border-slate-700/80 mt-2 pt-2 flex gap-5'>
+              ${sourcesHtml}
+              ${countriesHtml}
+            </div>
+          `
+        }
 
         return `
-          <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-w-xs md:max-w-sm max-h-[300px] md:max-h-[400px] overflow-y-auto shadow-md z-50'>
-            ${title}
-            <div class='border-b border-gray-200 dark:border-slate-800 my-1'></div>
-            <table class='w-auto'>
-              <tbody>
-                ${events}
-                ${dropoff}
-                ${conversionFromStart}
-              </tbody>
-            </table>
+          <div class='bg-gray-50 dark:bg-slate-900 rounded-lg ring-1 ring-black/10 dark:ring-white/10 px-3 py-2.5 text-xs md:text-sm max-w-sm md:max-w-md shadow-lg z-50'>
+            ${headerHtml}
+            ${conversionHtml}
+            ${detailsHtml}
           </div>
         `
       },
