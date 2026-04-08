@@ -65,7 +65,6 @@ async function hydrate() {
     .use(HTTPBackend)
     .init({
       ...i18n,
-      showSupportNotice: false,
       ns: getInitialNamespaces(),
       backend: { loadPath: `/locales/{{lng}}.json?cv=${I18N_CACHE_BREAKER}` },
       detection: {
