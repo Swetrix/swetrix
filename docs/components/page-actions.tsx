@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
-import { Check, ChevronDown, Copy, ExternalLinkIcon, TextIcon } from "lucide-react";
+import { CheckIcon, CaretDownIcon, CopyIcon, ArrowSquareOutIcon, FileTextIcon } from "@phosphor-icons/react";
 import { cn } from "../lib/cn";
 import { useCopyButton } from "fumadocs-ui/utils/use-copy-button";
 import { buttonVariants } from "./ui/button";
@@ -51,7 +51,7 @@ export function LLMCopyButton({
       )}
       onClick={onClick}
     >
-      {checked ? <Check /> : <Copy />}
+      {checked ? <CheckIcon /> : <CopyIcon />}
       Copy Markdown
     </button>
   );
@@ -94,7 +94,7 @@ export function ViewOptions({
       {
         title: "View as Markdown",
         href: markdownUrl,
-        icon: <TextIcon />,
+        icon: <FileTextIcon />,
       },
       {
         title: "Open in ChatGPT",
@@ -163,7 +163,7 @@ export function ViewOptions({
         )}
       >
         Open
-        <ChevronDown className="size-3.5 text-fd-muted-foreground" />
+        <CaretDownIcon className="size-3.5 text-fd-muted-foreground" />
       </PopoverTrigger>
       <PopoverContent className="flex flex-col">
         {items.map((item) => (
@@ -176,7 +176,7 @@ export function ViewOptions({
           >
             {item.icon}
             {item.title}
-            <ExternalLinkIcon className="text-fd-muted-foreground size-3.5 ms-auto" />
+            <ArrowSquareOutIcon className="text-fd-muted-foreground size-3.5 ms-auto" />
           </a>
         ))}
       </PopoverContent>
