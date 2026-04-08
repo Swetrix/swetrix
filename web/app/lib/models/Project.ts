@@ -172,7 +172,12 @@ export interface AnalyticsFunnel {
   dropoffPercStep: number
 }
 
-export const IMPORT_PROVIDERS = ['umami', 'simple-analytics', 'fathom'] as const
+export const IMPORT_PROVIDERS = [
+  'umami',
+  'simple-analytics',
+  'fathom',
+  'google-analytics',
+] as const
 
 export type Provider = (typeof IMPORT_PROVIDERS)[number]
 

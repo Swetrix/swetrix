@@ -9,9 +9,76 @@ Swetrix allows you to import historical analytics data from other platforms so y
 
 ## Supported Providers
 
+- Google Analytics 4
 - Umami
 - Simple Analytics
 - Fathom Analytics
+
+## Importing from Google Analytics 4
+
+Unlike file-based imports, Google Analytics 4 (GA4) import works by connecting your Google account directly. Swetrix uses the GA4 Data API to pull your historical analytics data automatically.
+
+<Callout type="info">
+  GA4 imports use aggregated data from Google's API. Some dimensions like language, region, city,
+  browser/OS versions, and UTM campaign/term/content are not available due to API limitations.
+  Data is imported with hourly precision.
+</Callout>
+
+<Steps>
+<Step>
+### Connect Your Google Account
+
+1. Go to your project's **Settings** page in Swetrix
+2. Click the **Import data** tab
+3. Click the **Google Analytics 4** provider card
+4. Click **Connect Google Account**
+5. You'll be redirected to Google's sign-in page. Sign in and grant Swetrix read-only access to your analytics data
+
+</Step>
+<Step>
+### Select a GA4 Property
+
+After connecting, you'll be redirected back to Swetrix. A dropdown will show all GA4 properties accessible from your Google account.
+
+1. Select the GA4 property you want to import data from
+2. Click **Start Import**
+
+</Step>
+<Step>
+### Monitor Progress
+
+After starting the import, it will appear in the **Import history** table below the provider cards. You can see:
+
+- **Status** — Pending, Processing, Completed, or Failed
+- **Date range** — The time span of the imported data
+- **Rows** — How many analytics events were imported
+
+The import fetches data from the GA4 API in monthly chunks. For properties with a lot of historical data, this may take several minutes. The page auto-refreshes while an import is processing.
+
+</Step>
+</Steps>
+
+### What data is imported from GA4?
+
+The following dimensions are imported for **pageviews**:
+
+- Date and hour
+- Hostname and page path
+- Device category (desktop, mobile, tablet)
+- Browser and operating system
+- Country, region, and city
+- Traffic source, medium, campaign, term, and content (UTM parameters)
+
+Source and UTM data is enriched from a separate report and matched by page and hour. For pages with traffic from multiple sources in the same hour, the most common source is used.
+
+For **custom events**, we import all non-standard GA4 events (excluding built-in events like `page_view`, `session_start`, `first_visit`, etc.) with device, browser, OS, country, and page dimensions.
+
+### What's not imported?
+
+- **Language / locale** is not included (GA4 API dimension limit)
+- **Browser and OS versions** are not available from GA4 aggregate reports
+- **Session duration** cannot be reconstructed from aggregated data
+- **Unique visitors** may differ from GA4 numbers due to day-level aggregation
 
 ## Importing from Umami
 
@@ -209,9 +276,10 @@ This permanently removes all analytics rows associated with that import. Your li
 
 ## Limitations
 
-- **File size**: Maximum 100 MB per upload
+- **File size**: Maximum 100 MB per upload (for file-based imports)
 - **One at a time**: Only one import can be active (pending or processing) per project at a time
 - **Timestamps**: Events with invalid timestamps are skipped during import
+- **GA4 dimensions**: Google Analytics 4 imports are subject to API limitations — see the [GA4 section](#what-s-not-imported) for details
 
 ## Troubleshooting
 
