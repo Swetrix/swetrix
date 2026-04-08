@@ -28,8 +28,6 @@ import _isString from 'lodash/isString'
 import _pick from 'lodash/pick'
 import _round from 'lodash/round'
 import { randomUUID } from 'crypto'
-import { HttpService } from '@nestjs/axios'
-
 import { Markup } from 'telegraf'
 
 import { Public, CurrentUserId, Auth } from '../auth/decorators'
@@ -82,7 +80,6 @@ export class UserController {
     private readonly mailerService: MailerService,
     private readonly logger: AppLoggerService,
     private readonly telegramService: TelegramService,
-    private readonly httpService: HttpService,
     private readonly organisationService: OrganisationService,
   ) {}
 

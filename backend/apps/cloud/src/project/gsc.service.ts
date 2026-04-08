@@ -11,7 +11,7 @@ import {
 import { ConfigService } from '@nestjs/config'
 import { OAuth2Client } from 'google-auth-library'
 import { searchconsole } from '@googleapis/searchconsole'
-import axios from 'axios'
+
 import CryptoJS from 'crypto-js'
 
 import { isDevelopment, PRODUCTION_ORIGIN, redis } from '../common/constants'
@@ -147,14 +147,12 @@ export class GSCService {
 
     let accountEmail: string | null = null
     try {
-      const { data } = await axios.get(
-        'https://www.googleapis.com/oauth2/v2/userinfo',
-        {
-          headers: {
-            Authorization: `Bearer ${tokens.access_token}`,
-          },
+      const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: {
+          Authorization: `Bearer ${tokens.access_token}`,
         },
-      )
+      })
+      const data = await res.json()
       accountEmail = data?.email || null
     } catch {
       //

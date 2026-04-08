@@ -32,7 +32,7 @@
     "@faker-js/faker": "^10.4.0",
     "@googleapis/searchconsole": "^6.0.1",
     "@nestjs-modules/mailer": "^2.3.4",
-    "@nestjs/axios": "^4.0.1",
+
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.1.18",
     "@nestjs/config": "^4.0.3",
@@ -54,7 +54,7 @@
     "@swetrix/node": "^3.1.1",
     "@ua-parser-js/pro-business": "^2.0.9",
     "ai": "^6.0.153",
-    "axios": "^1.14.0",
+
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.2",
     "bullmq": "^5.73.1",
