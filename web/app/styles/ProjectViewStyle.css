@@ -176,6 +176,16 @@ body.dark .bb-ygrid {
   stroke: var(--color-blue-700) !important;
 }
 
+:root {
+  --funnel-stripe-1: #e2e4ef;
+  --funnel-stripe-2: #d8dbed;
+}
+
+.dark {
+  --funnel-stripe-1: #1e2340;
+  --funnel-stripe-2: #2a3058;
+}
+
 .bb-target-dropoff .bb-bar {
   stroke: none !important;
   stroke-width: 0 !important;
