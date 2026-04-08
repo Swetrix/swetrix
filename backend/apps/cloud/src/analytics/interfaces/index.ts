@@ -125,6 +125,8 @@ export interface IFunnel {
   eventsPercStep: number
   dropoff: number
   dropoffPercStep: number
+  topCountries: Record<string, number>
+  topSources: Record<string, number>
 }
 
 export interface IGetFunnel {

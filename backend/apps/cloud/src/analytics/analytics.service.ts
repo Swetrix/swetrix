@@ -1400,6 +1400,8 @@ export class AnalyticsService {
         eventsPercStep,
         dropoff,
         dropoffPercStep,
+        topCountries: {} as Record<string, number>,
+        topSources: {} as Record<string, number>,
       }
     })
 
@@ -1453,6 +1455,8 @@ export class AnalyticsService {
       eventsPercStep: 0,
       dropoff: 0,
       dropoffPercStep: 0,
+      topCountries: {},
+      topSources: {},
     }))
   }
 
@@ -1516,6 +1520,116 @@ export class AnalyticsService {
     }
 
     return this.formatFunnel(_reverse(this.backfillFunnel(data, pages)), pages)
+  }
+
+  async getFunnelStepDetails(
+    pages: string[],
+    params: any,
+  ): Promise<{
+    countries: Record<number, Record<string, number>>
+    sources: Record<number, Record<string, number>>
+  }> {
+    const pageParams: Record<string, string> = {}
+
+    const pagesStr = _join(
+      _map(pages, (value, index) => {
+        pageParams[`v${index}`] = value
+        return `value={v${index}:String}`
+      }),
+      ',',
+    )
+
+    const query = `
+      WITH funnel_sessions AS (
+        SELECT
+          psid,
+          windowFunnel(86400)(created, ${pagesStr}) AS level
+        FROM (
+          SELECT psid, pg AS value, created
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)} AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          UNION ALL
+          SELECT psid, ev AS value, created
+          FROM customEV
+          WHERE pid = {pid:FixedString(12)} AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )
+        GROUP BY psid
+        HAVING level > 0
+      ),
+      expanded AS (
+        SELECT psid, arrayJoin(range(1, toUInt64(level + 1))) AS step
+        FROM funnel_sessions
+      ),
+      session_info AS (
+        SELECT
+          psid,
+          any(cc) AS cc,
+          any(if(domain(ref) != '', domain(ref), 'Direct / None')) AS source
+        FROM (
+          SELECT psid, cc, ref
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)} AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          UNION ALL
+          SELECT psid, cc, ref
+          FROM customEV
+          WHERE pid = {pid:FixedString(12)} AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )
+        GROUP BY psid
+      )
+      SELECT step, type, val, cnt FROM (
+        SELECT e.step AS step, 'cc' AS type, si.cc AS val, count() AS cnt
+        FROM expanded e
+        INNER JOIN session_info si ON e.psid = si.psid
+        WHERE si.cc != ''
+        GROUP BY e.step, si.cc
+
+        UNION ALL
+
+        SELECT e.step AS step, 'so' AS type, si.source AS val, count() AS cnt
+        FROM expanded e
+        INNER JOIN session_info si ON e.psid = si.psid
+        GROUP BY e.step, si.source
+      )
+      ORDER BY step, type, cnt DESC
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { ...params, ...pageParams },
+      })
+      .then((resultSet) =>
+        resultSet.json<{
+          step: number
+          type: string
+          val: string
+          cnt: number
+        }>(),
+      )
+
+    const countries: Record<number, Record<string, number>> = {}
+    const sources: Record<number, Record<string, number>> = {}
+
+    for (const row of data) {
+      const { step } = row
+      if (row.type === 'cc') {
+        if (!countries[step]) countries[step] = {}
+        if (Object.keys(countries[step]).length < 3) {
+          countries[step][row.val] = row.cnt
+        }
+      } else if (row.type === 'so') {
+        if (!sources[step]) sources[step] = {}
+        if (Object.keys(sources[step]).length < 3) {
+          sources[step][row.val] = row.cnt
+        }
+      }
+    }
+
+    return { countries, sources }
   }
 
   async getTotalPageviews(
