@@ -1565,15 +1565,15 @@ export class AnalyticsService {
       session_info AS (
         SELECT
           psid,
-          any(cc) AS cc,
-          any(if(domain(ref) != '', domain(ref), 'Direct / None')) AS source
+          argMin(cc, created) AS cc,
+          argMin(if(domain(ref) != '', domain(ref), 'Direct / None'), created) AS source
         FROM (
-          SELECT psid, cc, ref
+          SELECT psid, cc, ref, created
           FROM analytics
           WHERE pid = {pid:FixedString(12)} AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           UNION ALL
-          SELECT psid, cc, ref
+          SELECT psid, cc, ref, created
           FROM customEV
           WHERE pid = {pid:FixedString(12)} AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -1595,6 +1595,7 @@ export class AnalyticsService {
         GROUP BY e.step, si.source
       )
       ORDER BY step, type, cnt DESC
+      LIMIT 3 BY step, type
     `
 
     const { data } = await clickhouse
@@ -1618,14 +1619,10 @@ export class AnalyticsService {
       const { step } = row
       if (row.type === 'cc') {
         if (!countries[step]) countries[step] = {}
-        if (Object.keys(countries[step]).length < 3) {
-          countries[step][row.val] = row.cnt
-        }
+        countries[step][row.val] = row.cnt
       } else if (row.type === 'so') {
         if (!sources[step]) sources[step] = {}
-        if (Object.keys(sources[step]).length < 3) {
-          sources[step][row.val] = row.cnt
-        }
+        sources[step][row.val] = row.cnt
       }
     }
 
