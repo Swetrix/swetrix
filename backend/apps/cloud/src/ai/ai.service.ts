@@ -300,7 +300,20 @@ Available columns for filters:
             .string()
             .optional()
             .describe('Specific goal ID, or omit to get all goals'),
-          period: z.string().optional().describe('Time period (default: 7d)'),
+          period: z
+            .enum([
+              '1h',
+              'today',
+              'yesterday',
+              '1d',
+              '7d',
+              '4w',
+              '3M',
+              '12M',
+              '24M',
+            ])
+            .optional()
+            .describe('Time period (default: 7d)'),
           from: z
             .string()
             .optional()
@@ -337,7 +350,20 @@ Available columns for filters:
           'Get funnel analysis data showing step-by-step conversions',
         inputSchema: z.object({
           funnelId: z.string().describe('Funnel ID to query'),
-          period: z.string().optional().describe('Time period (default: 7d)'),
+          period: z
+            .enum([
+              '1h',
+              'today',
+              'yesterday',
+              '1d',
+              '7d',
+              '4w',
+              '3M',
+              '12M',
+              '24M',
+            ])
+            .optional()
+            .describe('Time period (default: 7d)'),
           from: z
             .string()
             .optional()

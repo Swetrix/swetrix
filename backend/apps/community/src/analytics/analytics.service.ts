@@ -381,7 +381,20 @@ export class AnalyticsService {
           )
         }
       } else {
-        const { hostname } = new URL(origin)
+        const urlString = /^https?:\/\//i.test(origin)
+          ? origin
+          : `https://${origin}`
+
+        let hostname: string
+
+        try {
+          hostname = new URL(urlString).hostname
+        } catch {
+          throw new BadRequestException(
+            "This origin is prohibited by the project's origins policy",
+          )
+        }
+
         if (!isValidOrigin(origins, hostname)) {
           throw new BadRequestException(
             "This origin is prohibited by the project's origins policy",
