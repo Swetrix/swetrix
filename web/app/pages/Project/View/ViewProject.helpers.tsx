@@ -1815,7 +1815,7 @@ const getSettingsFunnels = (
                     <img src='/assets/icons/chain.svg' class='size-3.5 shrink-0 dark:hidden' alt='' />
                     <img src='/assets/icons/chain-light.svg' class='size-3.5 shrink-0 hidden dark:inline' alt='' />
                   `
-                    : `<img src='https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico' class='size-3.5 rounded-sm shrink-0' loading='lazy' alt='' />`
+                    : `<img src='/api/favicon?domain=${encodeURIComponent(domain)}' class='size-3.5 rounded-sm shrink-0' loading='lazy' alt='' />`
                   return `
                   <div class='flex items-center justify-between gap-2 mt-1'>
                     <div class='flex items-center gap-1.5 min-w-0'>
