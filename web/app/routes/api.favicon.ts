@@ -1,8 +1,8 @@
 import { type LoaderFunctionArgs } from 'react-router'
 
-import { isSelfhosted } from '~/lib/constants'
+import { isSelfhosted, isDevelopment } from '~/lib/constants'
 
-const ALLOWED_ORIGIN_RE = /^https?:\/\/([a-z0-9-]+\.)*swetrix\.com$/i
+const ALLOWED_ORIGIN_RE = /^https?:\/\/([a-z0-9-]+\.)*swetrix\.com(\/|$)/i
 
 const CACHE_TTL = 60 * 60 * 24 * 7 // 7 days
 const STALE_TTL = 60 * 60 * 24 * 30 // 30 days
@@ -10,7 +10,7 @@ const STALE_TTL = 60 * 60 * 24 * 30 // 30 days
 const FALLBACK_ICO = '/assets/icons/chain.svg'
 
 function isOriginAllowed(request: Request): boolean {
-  if (isSelfhosted) return true
+  if (isSelfhosted || isDevelopment) return true
 
   const origin =
     request.headers.get('Origin') || request.headers.get('Referer') || ''
