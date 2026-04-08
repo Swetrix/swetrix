@@ -1,5 +1,6 @@
 import { ChartOptions } from 'billboard.js'
 import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { AnalyticsFunnel } from '~/lib/models/Project'
 
@@ -19,9 +20,11 @@ export const FunnelChart = ({
   t,
   className,
 }: FunnelChartProps) => {
+  const { i18n } = useTranslation()
+
   const options: ChartOptions = useMemo(() => {
-    return getSettingsFunnels(funnel, totalPageviews, t)
-  }, [funnel, totalPageviews, t])
+    return getSettingsFunnels(funnel, totalPageviews, t, i18n.language)
+  }, [funnel, totalPageviews, t, i18n.language])
 
   const dataNames = useMemo(
     () => ({
@@ -32,8 +35,8 @@ export const FunnelChart = ({
   )
 
   const deps = useMemo(
-    () => [funnel, totalPageviews, t],
-    [funnel, totalPageviews, t],
+    () => [funnel, totalPageviews, t, i18n.language],
+    [funnel, totalPageviews, t, i18n.language],
   )
 
   return (

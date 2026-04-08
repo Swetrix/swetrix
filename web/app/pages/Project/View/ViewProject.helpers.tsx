@@ -1649,6 +1649,7 @@ const getSettingsFunnels = (
   funnel: AnalyticsFunnel[],
   totalPageviews: number,
   t: typeof i18next.t,
+  language: string,
 ): ChartOptions => {
   const values = _map(funnel, (step) => {
     if (_startsWith(step.value, '/')) {
@@ -1844,7 +1845,7 @@ const getSettingsFunnels = (
                     step.events > 0
                       ? Math.round((count / step.events) * 100)
                       : 0
-                  const safeName = escapeHtml(countries.getName(cc, 'en') || cc)
+                  const safeName = escapeHtml(countries.getName(cc, language) || cc)
                   const safeCC = encodeURIComponent(cc.toLowerCase())
                   return `
                   <div class='flex items-center justify-between gap-2 mt-1'>
