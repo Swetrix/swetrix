@@ -1845,7 +1845,9 @@ const getSettingsFunnels = (
                     step.events > 0
                       ? Math.round((count / step.events) * 100)
                       : 0
-                  const safeName = escapeHtml(countries.getName(cc, language) || cc)
+                  const safeName = escapeHtml(
+                    countries.getName(cc, language) || cc,
+                  )
                   const safeCC = encodeURIComponent(cc.toLowerCase())
                   return `
                   <div class='flex items-center justify-between gap-2 mt-1'>
