@@ -1594,7 +1594,7 @@ export class AnalyticsService {
         INNER JOIN session_info si ON e.psid = si.psid
         GROUP BY e.step, si.source
       )
-      ORDER BY step, type, cnt DESC
+      ORDER BY step, type, cnt DESC, val ASC
       LIMIT 3 BY step, type
     `
 
