@@ -177,7 +177,20 @@ body.dark .bb-ygrid {
 }
 
 .bb-target-dropoff .bb-bar {
-  stroke: rgba(71, 85, 105, 0.4) !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+}
+
+.funnel-chart .bb-bar {
+  fill-opacity: 1 !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+  transition: fill-opacity 0.15s ease-out;
+}
+
+.funnel-chart .bb-target-events.bb-defocused .bb-bar,
+.funnel-chart .bb-target-dropoff.bb-defocused .bb-bar {
+  fill-opacity: 0.6 !important;
 }
 
 .bb-target-Technical-Expenses .bb-bar {

@@ -1,11 +1,12 @@
 import { ChartOptions } from 'billboard.js'
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { AnalyticsFunnel } from '~/lib/models/Project'
 
 import { MainChart } from '../../View/components/MainChart'
 import { getSettingsFunnels } from '../../View/ViewProject.helpers'
+import { cn } from '~/utils/generic'
 
 interface FunnelChartProps {
   funnel: AnalyticsFunnel[]
@@ -44,7 +45,7 @@ export const FunnelChart = ({
       chartId='funnel-chart'
       options={options}
       dataNames={dataNames}
-      className={className}
+      className={cn('funnel-chart', className)}
       deps={deps}
     />
   )

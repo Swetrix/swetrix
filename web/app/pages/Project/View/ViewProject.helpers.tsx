@@ -1693,6 +1693,17 @@ const getSettingsFunnels = (
       order: (a: any, b: any) => {
         return a.id < b.id
       },
+      onover: (_d: any, el: SVGElement) => {
+        el?.style?.setProperty('fill-opacity', '0.75', 'important')
+      },
+      onout: (_d: any, el: SVGElement) => {
+        el?.style?.removeProperty('fill-opacity')
+      },
+    },
+    bar: {
+      radius: {
+        ratio: 0.05,
+      },
     },
     transition: {
       duration: 200,
@@ -1718,6 +1729,59 @@ const getSettingsFunnels = (
         show: true,
         inner: true,
       },
+    },
+    onrendered: function () {
+      const chart = this as any
+      if (!chart?.$?.bar?.bars) return
+
+      try {
+        const svg = chart.$.svg.node()
+        if (!svg) return
+
+        const isDark = document.documentElement.classList.contains('dark')
+        const ns = 'http://www.w3.org/2000/svg'
+
+        let defs = svg.querySelector('defs')
+        if (!defs) {
+          defs = document.createElementNS(ns, 'defs')
+          svg.insertBefore(defs, svg.firstChild)
+        }
+
+        const old = defs.querySelector('#funnel-dropoff-stripe')
+        if (old) old.remove()
+
+        const pattern = document.createElementNS(ns, 'pattern')
+        pattern.setAttribute('id', 'funnel-dropoff-stripe')
+        pattern.setAttribute('patternUnits', 'userSpaceOnUse')
+        pattern.setAttribute('width', '20')
+        pattern.setAttribute('height', '20')
+        pattern.setAttribute('patternTransform', 'rotate(-45)')
+
+        const band1 = document.createElementNS(ns, 'rect')
+        band1.setAttribute('width', '20')
+        band1.setAttribute('height', '20')
+        band1.setAttribute('fill', isDark ? '#1e2340' : '#e2e4ef')
+        pattern.appendChild(band1)
+
+        const band2 = document.createElementNS(ns, 'rect')
+        band2.setAttribute('x', '0')
+        band2.setAttribute('y', '0')
+        band2.setAttribute('width', '10')
+        band2.setAttribute('height', '20')
+        band2.setAttribute('fill', isDark ? '#2a3058' : '#d8dbed')
+        pattern.appendChild(band2)
+
+        defs.appendChild(pattern)
+
+        chart.$.bar.bars.each(function (this: SVGPathElement, d: any) {
+          if (d?.id === 'dropoff') {
+            this.style.fill = 'url(#funnel-dropoff-stripe)'
+            this.style.stroke = 'none'
+          }
+        })
+      } catch {
+        // ignore
+      }
     },
     tooltip: {
       contents: (items: any) => {
