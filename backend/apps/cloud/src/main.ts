@@ -3,7 +3,7 @@ import './instrument'
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe, VersioningType } from '@nestjs/common'
 import cookieParser from 'cookie-parser'
-import bodyParser from 'body-parser'
+import express from 'express'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
 import { isDevelopment } from './common/constants'
@@ -60,10 +60,10 @@ async function bootstrap() {
     next()
   })
 
-  app.use('/webhook', bodyParser.raw({ type: 'application/json' }))
+  app.use('/webhook', express.raw({ type: 'application/json' }))
 
-  app.use('/webhook/sns', bodyParser.raw())
-  app.use('/webhook/sns', bodyParser.text())
+  app.use('/webhook/sns', express.raw())
+  app.use('/webhook/sns', express.text())
 
   app.enableShutdownHooks()
 

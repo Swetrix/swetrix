@@ -26,7 +26,6 @@ import utc from 'dayjs/plugin/utc'
 import dayjsTimezone from 'dayjs/plugin/timezone'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import ipRangeCheck from 'ip-range-check'
-import validator from 'validator'
 import {
   Injectable,
   BadRequestException,
@@ -102,6 +101,15 @@ import { extensions } from './utils/ua-parser'
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
 dayjs.extend(isSameOrBefore)
+
+const isValidLocale = (lc: string): boolean => {
+  try {
+    Intl.getCanonicalLocales(lc.replace(/_/g, '-'))
+    return true
+  } catch {
+    return false
+  }
+}
 
 // 2 minutes
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
@@ -440,7 +448,7 @@ export class AnalyticsService {
 
     // validate locale ('lc' param)
     if (!_isEmpty(lc)) {
-      if (validator.isLocale(lc)) {
+      if (isValidLocale(lc)) {
         // uppercase the locale after '-' char, so for example both 'en-gb' and 'en-GB' in result will be 'en-GB'
         const lcParted = _split(lc, '-')
 

@@ -3,7 +3,7 @@ import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
 import net from 'net'
-import randomstring from 'randomstring'
+
 import { CityResponse, Reader } from 'maxmind'
 import timezones from 'countries-and-timezones'
 import _join from 'lodash/join'
@@ -106,14 +106,15 @@ export const generateRandomId = (alphabet: string, size: number) => {
   return id
 }
 
-export const generateRandomString = (length: number): string =>
-  randomstring.generate(length)
+const ALPHANUMERIC =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
-export const generateRecoveryCode = () =>
-  randomstring.generate({
-    length: 30,
-    charset: 'alphabetic',
-  })
+export const generateRandomString = (length: number): string =>
+  generateRandomId(ALPHANUMERIC, length)
+
+const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+
+export const generateRecoveryCode = () => generateRandomId(ALPHA, 30)
 
 const RATE_LIMIT_REQUESTS_AMOUNT = 3
 const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
