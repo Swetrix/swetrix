@@ -1093,7 +1093,7 @@ const ViewProjectContent = () => {
   // 'Keyboard shortcuts' help modal
   useHotkeys('shift+?', () => {
     setIsHotkeysHelpOpened((val) => !val)
-  })
+  }, { useKey: true })
 
   // 'Tabs switching' shortcuts
   useHotkeys(SHORTCUTS_TABS_LISTENERS, ({ key }) => {

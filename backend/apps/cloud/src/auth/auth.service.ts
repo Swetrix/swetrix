@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
-import axios from 'axios'
+
 import { genSalt, hash, compare } from 'bcrypt'
 import { getCountry } from 'countries-and-timezones'
 import { OAuth2Client } from 'google-auth-library'
@@ -116,30 +116,27 @@ export class AuthService {
     const lastChars = sha1Hash.slice(5)
 
     try {
-      const response = await axios.get(
+      const response = await fetch(
         `https://api.pwnedpasswords.com/range/${firstFiveChars}`,
         {
-          timeout: 5000,
+          signal: AbortSignal.timeout(5000),
           headers: {
-            // Helps against traffic analysis; supported by HIBP.
             'Add-Padding': 'true',
             'User-Agent': 'Swetrix',
           },
         },
       )
 
-      if (response.status !== 200) {
+      if (!response.ok) {
         console.error(
           `[ERROR][AuthService -> checkIfLeaked]: Failed to get pwned passwords for ${firstFiveChars}: ${response.status}`,
         )
         return false
       }
 
-      // Response lines look like: "<HASH_SUFFIX>:<COUNT>"
+      const body = await response.text()
       const needle = `${lastChars}:`
-      return String(response.data)
-        .split('\n')
-        .some((line) => line.startsWith(needle))
+      return body.split('\n').some((line) => line.startsWith(needle))
     } catch (error) {
       console.error(
         `[ERROR][AuthService -> checkIfLeaked]: ${error} (prefix ${firstFiveChars})`,
@@ -980,39 +977,42 @@ export class AuthService {
     let tokenInfo
 
     try {
-      const response = await axios.post(
+      const tokenRes = await fetch(
         'https://github.com/login/oauth/access_token',
         {
-          client_id: GITHUB_OAUTH2_CLIENT_ID,
-          client_secret: GITHUB_OAUTH2_CLIENT_SECRET,
-          code,
-        },
-        {
+          method: 'POST',
           headers: {
+            'Content-Type': 'application/json',
             Accept: 'application/json',
           },
+          body: JSON.stringify({
+            client_id: GITHUB_OAUTH2_CLIENT_ID,
+            client_secret: GITHUB_OAUTH2_CLIENT_SECRET,
+            code,
+          }),
         },
       )
 
-      token = response.data.access_token
+      const tokenData = await tokenRes.json()
+      token = tokenData.access_token
     } catch (reason) {
       console.error(
-        `[ERROR][AuthService -> processGithubCode -> axios.post]: ${reason}`,
+        `[ERROR][AuthService -> processGithubCode -> fetch (token)]: ${reason}`,
       )
       throw new BadRequestException('Invalid Github code supplied')
     }
 
     try {
-      const response = await axios.get('https://api.github.com/user', {
+      const userRes = await fetch('https://api.github.com/user', {
         headers: {
           Authorization: `token ${token}`,
         },
       })
 
-      tokenInfo = response.data
+      tokenInfo = await userRes.json()
     } catch (reason) {
       console.error(
-        `[ERROR][AuthService -> processGithubCode -> axios.get]: ${reason}`,
+        `[ERROR][AuthService -> processGithubCode -> fetch (user)]: ${reason}`,
       )
       throw new BadRequestException('Invalid Github token')
     }
@@ -1022,13 +1022,13 @@ export class AuthService {
 
     if (!email) {
       try {
-        const response = await axios.get('https://api.github.com/user/emails', {
+        const emailsRes = await fetch('https://api.github.com/user/emails', {
           headers: {
             Authorization: `token ${token}`,
           },
         })
 
-        const emails = response.data
+        const emails = await emailsRes.json()
 
         if (_isEmpty(emails)) {
           console.error(
@@ -1040,7 +1040,7 @@ export class AuthService {
         email = _find(emails, (e) => e.primary).email
       } catch (reason) {
         console.error(
-          `[ERROR][AuthService -> processGithubCode -> axios.get (emails)]: ${reason}`,
+          `[ERROR][AuthService -> processGithubCode -> fetch (emails)]: ${reason}`,
         )
         throw new BadRequestException('Invalid Github token')
       }

@@ -8,7 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { genSalt, hash, compare } from 'bcrypt'
-import axios from 'axios'
+
 import _isEmpty from 'lodash/isEmpty'
 import { decode, JwtPayload, verify } from 'jsonwebtoken'
 import jwksClient from 'jwks-rsa'
@@ -62,18 +62,19 @@ export class AuthService {
     const firstFiveChars = sha1Hash.slice(0, 5)
     const lastChars = sha1Hash.slice(5)
 
-    const response = await axios.get(
+    const response = await fetch(
       `https://api.pwnedpasswords.com/range/${firstFiveChars}`,
     )
 
-    if (response.status !== 200) {
+    if (!response.ok) {
       console.error(
         `[ERROR][AuthService -> checkIfLeaked]: Failed to get pwned passwords for ${firstFiveChars}: ${response.status}`,
       )
       return false
     }
 
-    return response.data.includes(lastChars)
+    const body = await response.text()
+    return body.includes(lastChars)
   }
 
   public async hashPassword(password: string): Promise<string> {

@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { OAuth2Client } from 'google-auth-library'
-import axios from 'axios'
 import CryptoJS from 'crypto-js'
 
 import { isDevelopment, PRODUCTION_ORIGIN, redis } from '../common/constants'
@@ -158,14 +157,28 @@ export class Ga4ImportService {
     await redis.expire(REDIS_TOKEN_PREFIX + `${uid}:${pid}`, REDIS_TOKEN_TTL)
 
     try {
-      const { data } = await axios.get(
+      const url = new URL(
         'https://analyticsadmin.googleapis.com/v1beta/accountSummaries',
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { pageSize: 200 },
-        },
       )
+      url.searchParams.set('pageSize', '200')
 
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (response.status === 403) {
+        const body = await response.json()
+        throw new BadRequestException(
+          body?.error?.message ||
+            'Access denied by Google. Please ensure the "Google Analytics Admin API" is enabled in your Google Cloud project and that your Google account has access to at least one GA4 property.',
+        )
+      }
+
+      if (!response.ok) {
+        throw new Error(`Google API responded with status ${response.status}`)
+      }
+
+      const data = await response.json()
       const properties: Ga4Property[] = []
 
       for (const account of data.accountSummaries || []) {
@@ -179,13 +192,7 @@ export class Ga4ImportService {
 
       return properties
     } catch (error) {
-      const status = error?.response?.status
-      if (status === 403) {
-        throw new BadRequestException(
-          error?.response?.data?.error?.message ||
-            'Access denied by Google. Please ensure the "Google Analytics Admin API" is enabled in your Google Cloud project and that your Google account has access to at least one GA4 property.',
-        )
-      }
+      if (error instanceof BadRequestException) throw error
 
       throw new InternalServerErrorException(
         'Failed to fetch Google Analytics properties. Please try again.',
