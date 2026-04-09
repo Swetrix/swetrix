@@ -6,7 +6,7 @@ import {
 } from '@headlessui/react'
 import { XIcon, UsersIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { SessionsResponse } from '~/api/api.server'
@@ -62,9 +62,10 @@ export const SessionsDrawer = ({
   projectId,
   timezone,
   timeFormat,
-  filters = [],
+  filters,
 }: SessionsDrawerProps) => {
   const { t } = useTranslation('common')
+  const stableFilters = useMemo(() => filters ?? [], [filters])
   const [sessions, setSessions] = useState<SessionType[]>([])
   const [skip, setSkip] = useState(0)
   const [hasMore, setHasMore] = useState(true)
@@ -81,7 +82,7 @@ export const SessionsDrawer = ({
         from,
         to,
         timezone,
-        filters,
+        filters: stableFilters,
         take: SESSIONS_TAKE,
         skip: currentSkip,
       })
@@ -96,7 +97,7 @@ export const SessionsDrawer = ({
         setHasMore(newSessions.length >= SESSIONS_TAKE)
       }
     },
-    [projectId, from, to, timezone, filters],
+    [projectId, from, to, timezone, stableFilters],
   )
 
   useEffect(() => {
@@ -117,12 +118,14 @@ export const SessionsDrawer = ({
     loadingRef.current = true
     setLoadingMore(true)
 
-    const nextSkip = skip + SESSIONS_TAKE
-    setSkip(nextSkip)
-    await loadSessions(nextSkip, true)
-
-    loadingRef.current = false
-    setLoadingMore(false)
+    try {
+      const nextSkip = skip + SESSIONS_TAKE
+      setSkip(nextSkip)
+      await loadSessions(nextSkip, true)
+    } finally {
+      loadingRef.current = false
+      setLoadingMore(false)
+    }
   }, [skip, hasMore, loadSessions])
 
   useEffect(() => {
