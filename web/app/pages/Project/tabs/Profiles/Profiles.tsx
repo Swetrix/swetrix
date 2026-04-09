@@ -7,21 +7,28 @@ import {
   FileTextIcon,
   CursorClickIcon,
   UserListIcon,
-  CalendarDotsIcon,
   CaretRightIcon,
+  GlobeIcon,
 } from '@phosphor-icons/react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
+import {
+  BROWSER_LOGO_MAP,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
+} from '~/lib/constants'
 import { Profile as ProfileType } from '~/lib/models/Project'
+import { useTheme } from '~/providers/ThemeProvider'
 import { Badge } from '~/ui/Badge'
+import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
+import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
+import countries from '~/utils/isoCountries'
 import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
-
-import CCRow from '../../View/components/CCRow'
 
 dayjs.extend(relativeTime)
 
@@ -56,11 +63,60 @@ interface ProfileRowProps {
   timeFormat: '12-hour' | '24-hour'
 }
 
-const Separator = () => (
-  <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
-    <circle cx={1} cy={1} r={1} />
-  </svg>
-)
+const BrowserIcon = ({
+  browser,
+  className,
+}: {
+  browser: string | null
+  className?: string
+}) => {
+  if (!browser)
+    return (
+      <GlobeIcon
+        className={className || 'size-3.5 text-gray-400 dark:text-gray-500'}
+        weight='duotone'
+      />
+    )
+  const logoUrl = BROWSER_LOGO_MAP[browser as keyof typeof BROWSER_LOGO_MAP]
+  if (!logoUrl)
+    return (
+      <GlobeIcon
+        className={className || 'size-3.5 text-gray-400 dark:text-gray-500'}
+        weight='duotone'
+      />
+    )
+  return <img src={logoUrl} className={className || 'size-3.5'} alt={browser} />
+}
+
+const OSIcon = ({
+  os,
+  theme,
+  className,
+}: {
+  os: string | null
+  theme: string
+  className?: string
+}) => {
+  if (!os)
+    return (
+      <GlobeIcon
+        className={className || 'size-3.5 text-gray-400 dark:text-gray-500'}
+        weight='duotone'
+      />
+    )
+  const logoUrlLight = OS_LOGO_MAP[os as keyof typeof OS_LOGO_MAP]
+  const logoUrlDark = OS_LOGO_MAP_DARK[os as keyof typeof OS_LOGO_MAP_DARK]
+  let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
+  logoUrl ||= logoUrlLight
+  if (!logoUrl)
+    return (
+      <GlobeIcon
+        className={className || 'size-3.5 text-gray-400 dark:text-gray-500'}
+        weight='duotone'
+      />
+    )
+  return <img src={logoUrl} className={className || 'size-3.5'} alt={os} />
+}
 
 const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
   const {
@@ -68,6 +124,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
     i18n: { language },
   } = useTranslation('common')
   const location = useLocation()
+  const { theme } = useTheme()
 
   const displayName = useMemo(() => {
     return getProfileDisplayName(profile.profileId, profile.isIdentified)
@@ -77,9 +134,8 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
     return dayjs(profile.lastSeen)
       .toDate()
       .toLocaleDateString(language, {
-        day: 'numeric',
         month: 'short',
-        year: 'numeric',
+        day: 'numeric',
         hour: 'numeric',
         minute: 'numeric',
         hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
@@ -100,138 +156,198 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
   params.set('profileId', profile.profileId)
 
   return (
-    <Link to={{ search: params.toString() }}>
-      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
-        <div className='flex min-w-0 gap-x-3'>
-          <div className='relative shrink-0'>
-            <ProfileAvatar
-              className='mt-1'
-              profileId={profile.profileId}
-              size={40}
-            />
-            {onlineStatus === 'offline' ? null : (
-              <Tooltip
-                text={t('project.lastSeenAgo', { time: lastSeenAgo })}
-                className='absolute right-0 bottom-2'
-                tooltipNode={
-                  <span
-                    className={cx(
-                      'block h-3 w-3 rounded-full ring-2 ring-gray-50 dark:ring-slate-800',
-                      onlineStatus === 'online' && 'bg-green-500',
-                      onlineStatus === 'recently_active' && 'bg-yellow-500',
+    <li className='mb-2'>
+      <Link
+        to={{ search: params.toString() }}
+        className='block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
+      >
+        <div className='relative flex cursor-pointer items-center justify-between gap-x-4 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 transition-colors hover:bg-gray-200/70 sm:px-5 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
+          <div className='flex min-w-0 flex-1 items-center gap-x-3.5'>
+            <div className='relative shrink-0'>
+              <ProfileAvatar profileId={profile.profileId} size={32} />
+              {onlineStatus !== 'offline' && (
+                <Tooltip
+                  text={t('project.lastSeenAgo', { time: lastSeenAgo })}
+                  className='absolute -right-0.5 -bottom-0.5'
+                  tooltipNode={
+                    <span
+                      className={cx(
+                        'block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-900',
+                        onlineStatus === 'online'
+                          ? 'bg-emerald-500'
+                          : 'bg-amber-500',
+                      )}
+                    />
+                  }
+                />
+              )}
+            </div>
+
+            <div className='flex min-w-0 flex-1 flex-col justify-center gap-2'>
+              <div className='flex flex-wrap items-start justify-between gap-2 sm:gap-4'>
+                <div className='flex min-w-0 items-center gap-2'>
+                  <Text size='sm' weight='semibold' truncate>
+                    {displayName}
+                  </Text>
+                  {Boolean(profile.isIdentified) && (
+                    <Badge
+                      label={t('project.identified')}
+                      colour='indigo'
+                      className='text-[0.625rem] leading-3'
+                    />
+                  )}
+                </div>
+
+                {/* Mobile Date */}
+                <div className='mt-0.5 flex shrink-0 items-center sm:hidden'>
+                  <Text size='xs' colour='secondary' className='text-[11px]'>
+                    {lastSeenText}
+                  </Text>
+                </div>
+              </div>
+
+              <div className='flex items-center justify-between gap-4'>
+                <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
+                  <div className='flex items-center gap-1.5'>
+                    <Tooltip
+                      text={
+                        profile.cc
+                          ? countries.getName(profile.cc, language) ||
+                            profile.cc
+                          : t('project.unknownCountry')
+                      }
+                      tooltipNode={
+                        <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
+                          <Flag
+                            country={profile.cc}
+                            size={14}
+                            className='rounded-[2px]'
+                            aria-hidden='true'
+                          />
+                        </div>
+                      }
+                    />
+                    <Tooltip
+                      text={profile.os || t('project.unknown')}
+                      tooltipNode={
+                        <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
+                          <OSIcon
+                            os={profile.os}
+                            theme={theme}
+                            className='size-3.5'
+                          />
+                        </div>
+                      }
+                    />
+                    <Tooltip
+                      text={profile.br || t('project.unknown')}
+                      tooltipNode={
+                        <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
+                          <BrowserIcon
+                            browser={profile.br}
+                            className='size-3.5'
+                          />
+                        </div>
+                      }
+                    />
+                  </div>
+
+                  <div className='h-3 w-px bg-gray-200 dark:bg-slate-700' />
+
+                  <div className='flex items-center gap-3'>
+                    <Tooltip
+                      text={t('project.sessions')}
+                      tooltipNode={
+                        <Text
+                          as='span'
+                          size='xs'
+                          colour='secondary'
+                          weight='medium'
+                          className='flex items-center gap-1'
+                        >
+                          <UserListIcon className='size-3.5' />
+                          {profile.sessionsCount}
+                        </Text>
+                      }
+                    />
+
+                    <Tooltip
+                      text={t('dashboard.pageviews')}
+                      tooltipNode={
+                        <Text
+                          as='span'
+                          size='xs'
+                          colour='secondary'
+                          weight='medium'
+                          className='flex items-center gap-1'
+                        >
+                          <FileTextIcon className='size-3.5' />
+                          {profile.pageviewsCount}
+                        </Text>
+                      }
+                    />
+
+                    {profile.eventsCount > 0 && (
+                      <Tooltip
+                        text={t('dashboard.events')}
+                        tooltipNode={
+                          <Text
+                            as='span'
+                            size='xs'
+                            colour='secondary'
+                            weight='medium'
+                            className='flex items-center gap-1'
+                          >
+                            <CursorClickIcon className='size-3.5' />
+                            {profile.eventsCount}
+                          </Text>
+                        }
+                      />
                     )}
-                  />
-                }
-              />
-            )}
+
+                    {profile.errorsCount > 0 && (
+                      <Tooltip
+                        text={t('dashboard.errors')}
+                        tooltipNode={
+                          <Text
+                            as='span'
+                            size='xs'
+                            colour='error'
+                            weight='medium'
+                            className='flex items-center gap-1'
+                          >
+                            <WarningIcon className='size-3.5' />
+                            {profile.errorsCount}
+                          </Text>
+                        }
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className='min-w-0 flex-auto'>
-            <p className='flex items-center text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
-              <span className='truncate'>{displayName}</span>
-              {profile.isIdentified ? (
-                <Badge
-                  label={t('project.identified')}
-                  colour='indigo'
-                  className='ml-2'
-                />
-              ) : null}
-            </p>
-            <p className='mt-1 flex flex-wrap items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
-              <span className='flex items-center'>
-                {profile.cc ? (
-                  <CCRow size={18} cc={profile.cc} language={language} />
-                ) : (
-                  t('project.unknownCountry')
-                )}
-              </span>
-              <Separator />
-              {profile.os || t('project.unknown')}
-              <Separator />
-              {profile.br || t('project.unknown')}
-            </p>
-            <p className='mt-2 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
-              <span
-                className='mr-2 flex items-center'
-                title={t('project.sessions')}
-              >
-                <UserListIcon className='mr-1 size-4' /> {profile.sessionsCount}
-              </span>
-              <span
-                className='mr-2 flex items-center'
-                title={t('dashboard.pageviews')}
-              >
-                <FileTextIcon className='mr-1 size-4' />{' '}
-                {profile.pageviewsCount}
-              </span>
-              {profile.eventsCount > 0 ? (
-                <span
-                  className='mr-2 flex items-center'
-                  title={t('dashboard.events')}
-                >
-                  <CursorClickIcon className='mr-1 size-4' />{' '}
-                  {profile.eventsCount}
-                </span>
-              ) : null}
-              {profile.errorsCount > 0 ? (
-                <span
-                  className='flex items-center text-red-400'
-                  title={t('dashboard.errors')}
-                >
-                  <WarningIcon className='mr-1 size-4' /> {profile.errorsCount}
-                </span>
-              ) : null}
-            </p>
-          </div>
-        </div>
-        <div className='flex shrink-0 items-center gap-x-4'>
-          <div className='hidden sm:flex sm:flex-col sm:items-end'>
-            <div className='flex items-center gap-x-3 text-sm leading-6 text-gray-900 dark:text-gray-50'>
-              <span
-                className='flex items-center'
-                title={t('project.xSessions', { x: profile.sessionsCount })}
-              >
-                <UserListIcon className='mr-1 size-5' /> {profile.sessionsCount}
-              </span>
-              <span
-                className='flex items-center'
-                title={t('dashboard.xPageviews', { x: profile.pageviewsCount })}
-              >
-                <FileTextIcon className='mr-1 size-5' />{' '}
-                {profile.pageviewsCount}
-              </span>
-              {profile.eventsCount > 0 ? (
-                <span
-                  className='flex items-center'
-                  title={t('dashboard.xCustomEvents', {
-                    x: profile.eventsCount,
-                  })}
-                >
-                  <CursorClickIcon className='mr-1 size-5' />{' '}
-                  {profile.eventsCount}
-                </span>
-              ) : null}
-              {profile.errorsCount > 0 ? (
-                <span
-                  className='flex items-center text-red-500'
-                  title={t('dashboard.xErrors', { x: profile.errorsCount })}
-                >
-                  <WarningIcon className='mr-1 size-5' /> {profile.errorsCount}
-                </span>
-              ) : null}
+          <div className='hidden shrink-0 items-center gap-x-3 sm:flex'>
+            <div className='flex flex-col items-end'>
+              <Text as='p' size='xs' colour='secondary' className='text-[11px]'>
+                {lastSeenText}
+              </Text>
             </div>
-            <p className='mt-1 flex items-center text-xs leading-5 text-gray-500 dark:text-gray-400'>
-              <CalendarDotsIcon className='mr-1 size-3' />
-              {lastSeenText}
-            </p>
+            <CaretRightIcon
+              className='size-4 text-gray-400'
+              aria-hidden='true'
+            />
           </div>
-          <CaretRightIcon
-            className='h-5 w-5 flex-none text-gray-400'
-            aria-hidden='true'
-          />
+          <div className='flex shrink-0 items-center sm:hidden'>
+            <CaretRightIcon
+              className='size-4 text-gray-400'
+              aria-hidden='true'
+            />
+          </div>
         </div>
-      </li>
-    </Link>
+      </Link>
+    </li>
   )
 }
 
