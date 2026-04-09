@@ -1492,7 +1492,11 @@ const TrafficViewInner = ({
           onExploreSessions={
             contextMenu.date
               ? () => {
-                  const date = dayjs.tz(contextMenu.date, 'YYYY-MM-DD', timezone)
+                  const date = dayjs.tz(
+                    contextMenu.date,
+                    'YYYY-MM-DD',
+                    timezone,
+                  )
                   if (!date.isValid()) return
 
                   setSessionsDrawer({
@@ -1506,19 +1510,17 @@ const TrafficViewInner = ({
           existingAnnotation={contextMenu.annotation}
           allowedToManage={allowedToManage}
         />
-        {sessionsDrawer ? (
-          <SessionsDrawer
-            isOpen={!!sessionsDrawer}
-            onClose={() => setSessionsDrawer(null)}
-            from={sessionsDrawer.from}
-            to={sessionsDrawer.to}
-            label={sessionsDrawer.label}
-            projectId={id}
-            timezone={timezone}
-            timeFormat={timeFormat as '12-hour' | '24-hour'}
-            filters={filters}
-          />
-        ) : null}
+        <SessionsDrawer
+          isOpen={!!sessionsDrawer}
+          onClose={() => setSessionsDrawer(null)}
+          from={sessionsDrawer?.from || ''}
+          to={sessionsDrawer?.to || ''}
+          label={sessionsDrawer?.label || ''}
+          projectId={id}
+          timezone={timezone}
+          timeFormat={timeFormat as '12-hour' | '24-hour'}
+          filters={filters}
+        />
       </div>
     </>
   )

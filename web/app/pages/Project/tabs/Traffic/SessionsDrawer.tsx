@@ -1,9 +1,3 @@
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  DialogTitle,
-} from '@headlessui/react'
 import { XIcon, UsersIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -11,9 +5,16 @@ import { useTranslation } from 'react-i18next'
 
 import type { SessionsResponse } from '~/api/api.server'
 import type { Session as SessionType } from '~/lib/models/Project'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from '~/ui/Drawer'
 import Loader from '~/ui/Loader'
 import Spin from '~/ui/icons/Spin'
-import { Text } from '~/ui/Text'
 
 import { Session } from '../Sessions/Sessions'
 
@@ -127,13 +128,17 @@ export const SessionsDrawer = ({
     setSkip(0)
     setHasMore(true)
 
-    loadSessions(0, false, controller.signal).finally(() => {
-      if (!controller.signal.aborted) {
-        setInitialLoading(false)
-      }
-    })
+    // Delay fetching slightly to allow the drawer animation to run smoothly without layout shifts
+    const timer = setTimeout(() => {
+      loadSessions(0, false, controller.signal).finally(() => {
+        if (!controller.signal.aborted) {
+          setInitialLoading(false)
+        }
+      })
+    }, 200)
 
     return () => {
+      clearTimeout(timer)
       controller.abort()
     }
   }, [isOpen, from, to, loadSessions])
@@ -176,97 +181,84 @@ export const SessionsDrawer = ({
   }, [isOpen, initialLoading, hasMore, loadMore])
 
   return (
-    <Dialog className='relative z-50' open={isOpen} onClose={onClose}>
-      <DialogBackdrop
-        transition
-        className='fixed inset-0 bg-gray-500/50 transition-opacity duration-300 ease-out data-closed:opacity-0 dark:bg-black/60'
-      />
-
-      <div className='fixed inset-0 overflow-hidden'>
-        <div className='absolute inset-0 overflow-hidden'>
-          <div className='pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10'>
-            <DialogPanel
-              transition
-              className='pointer-events-auto w-screen max-w-lg transform-gpu transition-transform duration-300 ease-out data-closed:translate-x-full data-closed:duration-200'
-            >
-              <div className='flex h-full flex-col bg-white shadow-xl dark:bg-slate-900'>
-                {/* Header */}
-                <div className='border-b border-gray-200 px-4 py-4 sm:px-5 dark:border-slate-700/80'>
-                  <div className='flex items-start justify-between'>
-                    <div className='min-w-0'>
-                      <DialogTitle className='text-base font-semibold text-gray-900 dark:text-gray-50'>
-                        {t('project.sessions')}
-                      </DialogTitle>
-                      <Text className='mt-0.5 truncate text-sm'>{label}</Text>
-                    </div>
-                    <div className='ml-3 flex shrink-0 items-center gap-2'>
-                      {!initialLoading && sessions.length > 0 ? (
-                        <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
-                          <UsersIcon className='size-3.5' />
-                          {sessions.length}
-                          {hasMore ? '+' : ''}
-                        </span>
-                      ) : null}
-                      <button
-                        type='button'
-                        onClick={onClose}
-                        className='rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-300'
-                      >
-                        <span className='sr-only'>{t('common.close')}</span>
-                        <XIcon className='size-5' />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Body */}
-                <div
-                  ref={scrollContainerRef}
-                  className='flex-1 overflow-y-auto px-4 py-3 sm:px-5'
+    <Drawer
+      direction='right'
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+    >
+      <DrawerContent>
+        <DrawerHeader>
+          <div className='flex items-start justify-between'>
+            <div className='min-w-0'>
+              <DrawerTitle>{t('project.sessions')}</DrawerTitle>
+              <DrawerDescription>{label}</DrawerDescription>
+            </div>
+            <div className='ml-3 flex shrink-0 items-center gap-2'>
+              {!initialLoading && sessions.length > 0 ? (
+                <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
+                  <UsersIcon className='size-3.5' />
+                  {sessions.length}
+                  {hasMore ? '+' : ''}
+                </span>
+              ) : null}
+              <DrawerClose asChild>
+                <button
+                  type='button'
+                  className='rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-300'
                 >
-                  {initialLoading ? (
-                    <div className='flex items-center justify-center py-16'>
-                      <Loader />
-                    </div>
-                  ) : sessions.length === 0 ? (
-                    <div className='flex flex-col items-center justify-center py-16 text-center'>
-                      <UsersIcon
-                        className='size-10 text-gray-300 dark:text-slate-600'
-                        weight='duotone'
-                      />
-                      <Text className='mt-3 text-sm'>
-                        {t('project.noSessionsFound')}
-                      </Text>
-                    </div>
-                  ) : (
-                    <>
-                      <ul>
-                        {_map(sessions, (session) => (
-                          <Session
-                            key={session.psid}
-                            session={session}
-                            timeFormat={timeFormat}
-                          />
-                        ))}
-                      </ul>
-                      {hasMore ? (
-                        <div
-                          ref={sentinelRef}
-                          className='flex items-center justify-center py-4'
-                        >
-                          {loadingMore ? (
-                            <Spin className='text-gray-400 dark:text-slate-500' />
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </>
-                  )}
-                </div>
-              </div>
-            </DialogPanel>
+                  <span className='sr-only'>{t('common.close')}</span>
+                  <XIcon className='size-5' />
+                </button>
+              </DrawerClose>
+            </div>
           </div>
+        </DrawerHeader>
+
+        <div
+          ref={scrollContainerRef}
+          className='no-scrollbar flex-1 overflow-y-auto px-4 py-3 sm:px-5'
+        >
+          {initialLoading ? (
+            <div className='flex items-center justify-center py-16'>
+              <Loader />
+            </div>
+          ) : sessions.length === 0 ? (
+            <div className='flex flex-col items-center justify-center py-16 text-center'>
+              <UsersIcon
+                className='size-10 text-gray-300 dark:text-slate-600'
+                weight='duotone'
+              />
+              <span className='mt-3 text-sm text-gray-500 dark:text-gray-400'>
+                {t('project.noSessionsFound')}
+              </span>
+            </div>
+          ) : (
+            <>
+              <ul>
+                {_map(sessions, (session) => (
+                  <Session
+                    key={session.psid}
+                    session={session}
+                    timeFormat={timeFormat}
+                  />
+                ))}
+              </ul>
+              {hasMore ? (
+                <div
+                  ref={sentinelRef}
+                  className='flex items-center justify-center py-4'
+                >
+                  {loadingMore ? (
+                    <Spin className='text-gray-400 dark:text-slate-500' />
+                  ) : null}
+                </div>
+              ) : null}
+            </>
+          )}
         </div>
-      </div>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   )
 }
