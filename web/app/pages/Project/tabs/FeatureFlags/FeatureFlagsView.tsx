@@ -148,21 +148,20 @@ const FeatureFlagProfileRow = ({
         </div>
         <div className='flex shrink-0 items-center gap-x-2'>
           {/* Result indicator */}
-          <span
-            className={cx(
-              'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-              profile.lastResult
-                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
-            )}
-          >
-            {profile.lastResult ? (
-              <CheckIcon className='mr-1 size-3' />
-            ) : (
-              <XIcon className='mr-1 size-3' />
-            )}
-            {profile.lastResult ? 'true' : 'false'}
-          </span>
+          <Badge
+            label={
+              <span className='flex items-center gap-1'>
+                {profile.lastResult ? (
+                  <CheckIcon className='size-3' />
+                ) : (
+                  <XIcon className='size-3' />
+                )}
+                {profile.lastResult ? 'true' : 'false'}
+              </span>
+            }
+            colour={profile.lastResult ? 'green' : 'slate'}
+            className='text-[0.625rem] leading-3'
+          />
         </div>
       </li>
     </Link>
@@ -240,29 +239,30 @@ const FeatureFlagRow = ({
                   <span>{flag.key}</span>
                 </Text>
                 {/* Status badge */}
-                <span
-                  className={cx(
-                    'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                <Badge
+                  label={
                     flag.enabled
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
-                  )}
-                >
-                  {flag.enabled
-                    ? t('featureFlags.enabled')
-                    : t('featureFlags.disabled')}
-                </span>
+                      ? t('featureFlags.enabled')
+                      : t('featureFlags.disabled')
+                  }
+                  colour={flag.enabled ? 'green' : 'slate'}
+                  className='text-[0.625rem] leading-3'
+                />
                 {/* Flag type badge */}
-                <span className='inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'>
-                  {flag.flagType === 'rollout' ? (
-                    <>{flag.rolloutPercentage}%</>
-                  ) : (
-                    <>
-                      <ToggleRightIcon className='size-3' />
-                      {t('featureFlags.boolean')}
-                    </>
-                  )}
-                </span>
+                <Badge
+                  label={
+                    flag.flagType === 'rollout' ? (
+                      `${flag.rolloutPercentage}%`
+                    ) : (
+                      <span className='flex items-center gap-1'>
+                        <ToggleRightIcon className='size-3' />
+                        {t('featureFlags.boolean')}
+                      </span>
+                    )
+                  }
+                  colour='sky'
+                  className='text-[0.625rem] leading-3'
+                />
               </div>
               {flag.description ? (
                 <Text className='mt-1' as='p' size='sm' colour='secondary'>

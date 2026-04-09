@@ -177,10 +177,12 @@ const ExperimentRow = ({
                 <Badge
                   label={t(`experiments.status.${experiment.status}`)}
                   colour={statusBadgeColour}
+                  className='text-[0.625rem] leading-3'
                 />
                 <Badge
                   colour='indigo'
                   label={`${variantsCount} ${t('experiments.variants')}`}
+                  className='text-[0.625rem] leading-3'
                 />
               </div>
               {experiment.description ? (
