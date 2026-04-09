@@ -22,6 +22,7 @@ const SESSIONS_TAKE = 30
 async function fetchSessionsPage(
   projectId: string,
   params: Record<string, unknown>,
+  signal?: AbortSignal,
 ): Promise<SessionsResponse | null> {
   const response = await fetch('/api/analytics', {
     method: 'POST',
@@ -31,6 +32,7 @@ async function fetchSessionsPage(
       projectId,
       params,
     }),
+    signal,
   })
 
   if (!response.ok) return null
@@ -74,18 +76,31 @@ export const SessionsDrawer = ({
   const sentinelRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const loadingRef = useRef(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const loadSessions = useCallback(
-    async (currentSkip: number, append: boolean) => {
-      const result = await fetchSessionsPage(projectId, {
-        period: 'custom',
-        from,
-        to,
-        timezone,
-        filters: stableFilters,
-        take: SESSIONS_TAKE,
-        skip: currentSkip,
-      })
+    async (currentSkip: number, append: boolean, signal?: AbortSignal) => {
+      let result: SessionsResponse | null = null
+
+      try {
+        result = await fetchSessionsPage(
+          projectId,
+          {
+            period: 'custom',
+            from,
+            to,
+            timezone,
+            filters: stableFilters,
+            take: SESSIONS_TAKE,
+            skip: currentSkip,
+          },
+          signal,
+        )
+      } catch {
+        return
+      }
+
+      if (signal?.aborted) return
 
       if (result) {
         const newSessions = result.sessions ?? []
@@ -103,14 +118,24 @@ export const SessionsDrawer = ({
   useEffect(() => {
     if (!isOpen) return
 
+    abortControllerRef.current?.abort()
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     setInitialLoading(true)
     setSessions([])
     setSkip(0)
     setHasMore(true)
 
-    loadSessions(0, false).finally(() => {
-      setInitialLoading(false)
+    loadSessions(0, false, controller.signal).finally(() => {
+      if (!controller.signal.aborted) {
+        setInitialLoading(false)
+      }
     })
+
+    return () => {
+      controller.abort()
+    }
   }, [isOpen, from, to, loadSessions])
 
   const loadMore = useCallback(async () => {
@@ -121,7 +146,7 @@ export const SessionsDrawer = ({
     try {
       const nextSkip = skip + SESSIONS_TAKE
       setSkip(nextSkip)
-      await loadSessions(nextSkip, true)
+      await loadSessions(nextSkip, true, abortControllerRef.current?.signal)
     } finally {
       loadingRef.current = false
       setLoadingMore(false)
