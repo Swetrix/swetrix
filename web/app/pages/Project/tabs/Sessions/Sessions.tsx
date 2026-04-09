@@ -82,7 +82,7 @@ const Separator = () => (
   </svg>
 )
 
-const Session = ({
+export const Session = ({
   session,
   timeFormat,
   hideNewReturnBadge,

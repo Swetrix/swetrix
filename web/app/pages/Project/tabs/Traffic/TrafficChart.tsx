@@ -23,6 +23,7 @@ interface TrafficChartProps {
   annotations?: Annotation[]
   period?: string
   timezone?: string
+  onDataPointClick?: (d: { x: Date; index: number }) => void
 }
 
 export const TrafficChart = ({
@@ -42,6 +43,7 @@ export const TrafficChart = ({
   annotations,
   period,
   timezone,
+  onDataPointClick,
 }: TrafficChartProps) => {
   const options: ChartOptions = useMemo(() => {
     return getSettings(
@@ -59,6 +61,7 @@ export const TrafficChart = ({
       annotations,
       period,
       timezone,
+      onDataPointClick,
     )
   }, [
     chartData,
@@ -75,6 +78,7 @@ export const TrafficChart = ({
     annotations,
     period,
     timezone,
+    onDataPointClick,
   ])
 
   const deps = useMemo(
