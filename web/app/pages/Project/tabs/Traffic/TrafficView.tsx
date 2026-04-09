@@ -1,5 +1,7 @@
 import cx from 'clsx'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezonePlugin from 'dayjs/plugin/timezone'
 import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
@@ -99,6 +101,9 @@ import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
 import { LoaderView } from '../../View/components/LoaderView'
 import { ChartTypeSwitcher } from '../../View/components/ChartTypeSwitcher'
+
+dayjs.extend(utc)
+dayjs.extend(timezonePlugin)
 
 const InteractiveMap = lazy(
   () => import('~/pages/Project/View/components/InteractiveMap'),
@@ -336,7 +341,7 @@ const TrafficViewInner = ({
 
   const handleDataPointClick = useCallback(
     (d: { x: Date; index: number }) => {
-      const date = dayjs(d.x)
+      const date = dayjs(d.x).tz(timezone)
       let from: string
       let to: string
       let label: string
@@ -376,7 +381,7 @@ const TrafficViewInner = ({
 
       setSessionsDrawer({ from, to, label })
     },
-    [timeBucket, timeFormat],
+    [timeBucket, timeFormat, timezone],
   )
 
   const panelsData: PanelsData = useMemo(() => {
@@ -1487,7 +1492,7 @@ const TrafficViewInner = ({
           onExploreSessions={
             contextMenu.date
               ? () => {
-                  const date = dayjs(contextMenu.date, 'YYYY-MM-DD')
+                  const date = dayjs.tz(contextMenu.date, 'YYYY-MM-DD', timezone)
                   if (!date.isValid()) return
 
                   setSessionsDrawer({

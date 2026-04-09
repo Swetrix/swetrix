@@ -601,6 +601,7 @@ const getSettings = (
   period?: string,
   timezone?: string,
   onDataPointClick?: (d: { x: Date; index: number }) => void,
+  dataPointClickLabel?: string,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -909,7 +910,7 @@ const getSettings = (
             },
           ).join(
             '',
-          )}${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>Click to explore sessions</li>` : ''}</ul>`
+          )}${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>${dataPointClickLabel}</li>` : ''}</ul>`
         }
 
         // Get dates from first item
@@ -1004,7 +1005,7 @@ const getSettings = (
         <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-md z-50'>
           ${currentSection}
           ${compareSection}
-          ${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>Click to explore sessions</li>` : ''}
+          ${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>${dataPointClickLabel}</li>` : ''}
         </ul>`
       },
     },
