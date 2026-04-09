@@ -722,6 +722,8 @@ const getSettings = (
             }
           }
         : undefined,
+      onover: undefined,
+      onout: undefined,
       types: {
         unique: chartType === chartTypes.line ? area() : bar(),
         uniqueCompare: chartType === chartTypes.line ? line() : bar(),
@@ -1015,10 +1017,10 @@ const getSettings = (
         : {
             focus: {
               only: xAxisSize > 1,
-              expand: onDataPointClick ? { enabled: true, r: 5 } : undefined,
+              expand: onDataPointClick ? { enabled: true, r: 4 } : undefined,
             },
             pattern: ['circle'],
-            r: 2,
+            r: 4,
             sensitivity: onDataPointClick ? 50 : undefined,
           },
     legend: {
@@ -1094,6 +1096,45 @@ const getSettings = (
                 const eventRectsGroup = svg.querySelector('.bb-event-rects')
                 if (!eventRectsGroup || eventRectsGroup.__clickAttached) return
                 eventRectsGroup.__clickAttached = true
+
+                eventRectsGroup.addEventListener(
+                  'mousemove',
+                  (e: MouseEvent) => {
+                    const groupRect = eventRectsGroup.getBoundingClientRect()
+                    const mouseX = e.clientX - groupRect.left
+                    const mouseY = e.clientY - groupRect.top
+
+                    const circles = svg.querySelectorAll('.bb-circle')
+                    let closestCircle: Element | null = null
+                    let minDistance = 25 // 25px sensitivity for direct hover
+
+                    circles.forEach((c: Element) => {
+                      const cx = parseFloat(c.getAttribute('cx') || '0')
+                      const cy = parseFloat(c.getAttribute('cy') || '0')
+                      const distance = Math.hypot(cx - mouseX, cy - mouseY)
+
+                      if (distance < minDistance) {
+                        minDistance = distance
+                        closestCircle = c
+                      }
+                    })
+
+                    circles.forEach((c: Element) => {
+                      if (c === closestCircle) {
+                        c.classList.add('is-direct-hover')
+                      } else {
+                        c.classList.remove('is-direct-hover')
+                      }
+                    })
+                  },
+                )
+
+                eventRectsGroup.addEventListener('mouseleave', () => {
+                  const circles = svg.querySelectorAll('.bb-circle')
+                  circles.forEach((c: Element) => {
+                    c.classList.remove('is-direct-hover')
+                  })
+                })
 
                 eventRectsGroup.addEventListener('click', (e: MouseEvent) => {
                   const target = e.target as SVGRectElement

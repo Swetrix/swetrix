@@ -236,6 +236,16 @@ body.dark .bb-ygrid {
   cursor: pointer;
 }
 
+.bb-circle {
+  transition: transform 0.1s ease-in-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.bb-circle.is-direct-hover {
+  transform: scale(1.5);
+}
+
 #traffic-chart .bb-lines path,
 #traffic-chart .bb-areas path {
   pointer-events: stroke;
