@@ -15,8 +15,6 @@ function Drawer({
   )
 }
 
-const DrawerTrigger = DrawerPrimitive.Trigger
-
 const DrawerPortal = DrawerPrimitive.Portal
 
 const DrawerClose = DrawerPrimitive.Close
@@ -76,18 +74,6 @@ function DrawerHeader({
   )
 }
 
-function DrawerFooter({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn('mt-auto flex flex-col gap-2 p-4', className)}
-      {...props}
-    />
-  )
-}
-
 function DrawerTitle({
   className,
   ...props
@@ -120,13 +106,9 @@ function DrawerDescription({
 
 export {
   Drawer,
-  DrawerPortal,
-  DrawerOverlay,
-  DrawerTrigger,
   DrawerClose,
   DrawerContent,
   DrawerHeader,
-  DrawerFooter,
   DrawerTitle,
   DrawerDescription,
 }
