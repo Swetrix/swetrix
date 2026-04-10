@@ -8,18 +8,13 @@ import {
   CursorClickIcon,
   UserListIcon,
   CaretRightIcon,
-  GlobeIcon,
 } from '@phosphor-icons/react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
-import {
-  BROWSER_LOGO_MAP,
-  OS_LOGO_MAP,
-  OS_LOGO_MAP_DARK,
-} from '~/lib/constants'
+import { BrowserIcon, OSIcon } from '../SharedIcons'
 import { Profile as ProfileType } from '~/lib/models/Project'
 import { useTheme } from '~/providers/ThemeProvider'
 import { Badge } from '~/ui/Badge'
@@ -61,61 +56,6 @@ interface UsersProps {
 interface ProfileRowProps {
   profile: ProfileType
   timeFormat: '12-hour' | '24-hour'
-}
-
-const BrowserIcon = ({
-  browser,
-  className,
-}: {
-  browser: string | null
-  className?: string
-}) => {
-  if (!browser)
-    return (
-      <GlobeIcon
-        className={className || 'size-3.5 text-gray-400 dark:text-gray-500'}
-        weight='duotone'
-      />
-    )
-  const logoUrl = BROWSER_LOGO_MAP[browser as keyof typeof BROWSER_LOGO_MAP]
-  if (!logoUrl)
-    return (
-      <GlobeIcon
-        className={className || 'size-3.5 text-gray-400 dark:text-gray-500'}
-        weight='duotone'
-      />
-    )
-  return <img src={logoUrl} className={className || 'size-3.5'} alt={browser} />
-}
-
-const OSIcon = ({
-  os,
-  theme,
-  className,
-}: {
-  os: string | null
-  theme: string
-  className?: string
-}) => {
-  if (!os)
-    return (
-      <GlobeIcon
-        className={className || 'size-3.5 text-gray-400 dark:text-gray-500'}
-        weight='duotone'
-      />
-    )
-  const logoUrlLight = OS_LOGO_MAP[os as keyof typeof OS_LOGO_MAP]
-  const logoUrlDark = OS_LOGO_MAP_DARK[os as keyof typeof OS_LOGO_MAP_DARK]
-  let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
-  logoUrl ||= logoUrlLight
-  if (!logoUrl)
-    return (
-      <GlobeIcon
-        className={className || 'size-3.5 text-gray-400 dark:text-gray-500'}
-        weight='duotone'
-      />
-    )
-  return <img src={logoUrl} className={className || 'size-3.5'} alt={os} />
 }
 
 const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
