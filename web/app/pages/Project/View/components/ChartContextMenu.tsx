@@ -1,5 +1,10 @@
 import cx from 'clsx'
-import { PencilIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react'
+import {
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+  UsersIcon,
+} from '@phosphor-icons/react'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -13,6 +18,7 @@ interface ChartContextMenuProps {
   onAddAnnotation: () => void
   onEditAnnotation?: () => void
   onDeleteAnnotation?: () => void
+  onExploreSessions?: () => void
   existingAnnotation?: Annotation | null
   allowedToManage: boolean
 }
@@ -25,6 +31,7 @@ export const ChartContextMenu = ({
   onAddAnnotation,
   onEditAnnotation,
   onDeleteAnnotation,
+  onExploreSessions,
   existingAnnotation,
   allowedToManage,
 }: ChartContextMenuProps) => {
@@ -67,45 +74,29 @@ export const ChartContextMenu = ({
     return null
   }
 
-  // If not allowed to manage, show a message
-  if (!allowedToManage) {
-    return (
-      <div
-        ref={menuRef}
-        className='fixed z-[9999] min-w-[160px] rounded-md border border-gray-200 bg-white py-1 shadow-md dark:border-slate-700 dark:bg-slate-900'
-        style={{
-          left: x,
-          top: y,
-        }}
-      >
-        <div className='px-3 py-2 text-sm text-gray-500 dark:text-gray-400'>
-          {t('project.annotationsViewOnly')}
-        </div>
-      </div>
-    )
-  }
-
-  const menuItems = existingAnnotation
-    ? [
-        {
-          label: t('project.editAnnotation'),
-          icon: PencilIcon,
-          onClick: onEditAnnotation,
-        },
-        {
-          label: t('project.deleteAnnotation'),
-          icon: TrashIcon,
-          onClick: onDeleteAnnotation,
-          danger: true,
-        },
-      ]
-    : [
-        {
-          label: t('project.addAnnotation'),
-          icon: PlusIcon,
-          onClick: onAddAnnotation,
-        },
-      ]
+  const annotationItems = allowedToManage
+    ? existingAnnotation
+      ? [
+          {
+            label: t('project.editAnnotation'),
+            icon: PencilIcon,
+            onClick: onEditAnnotation,
+          },
+          {
+            label: t('project.deleteAnnotation'),
+            icon: TrashIcon,
+            onClick: onDeleteAnnotation,
+            danger: true,
+          },
+        ]
+      : [
+          {
+            label: t('project.addAnnotation'),
+            icon: PlusIcon,
+            onClick: onAddAnnotation,
+          },
+        ]
+    : []
 
   return (
     <div
@@ -116,7 +107,30 @@ export const ChartContextMenu = ({
         top: y,
       }}
     >
-      {menuItems.map((item) => (
+      {onExploreSessions ? (
+        <>
+          <button
+            type='button'
+            onClick={() => {
+              onExploreSessions()
+              onClose()
+            }}
+            className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-800'
+          >
+            <UsersIcon className='h-4 w-4' />
+            {t('project.exploreSessions')}
+          </button>
+          {annotationItems.length > 0 ? (
+            <div className='my-1 border-t border-gray-200 dark:border-slate-700' />
+          ) : null}
+        </>
+      ) : null}
+      {!allowedToManage && !onExploreSessions ? (
+        <div className='px-3 py-2 text-sm text-gray-500 dark:text-gray-400'>
+          {t('project.annotationsViewOnly')}
+        </div>
+      ) : null}
+      {annotationItems.map((item) => (
         <button
           key={item.label}
           type='button'

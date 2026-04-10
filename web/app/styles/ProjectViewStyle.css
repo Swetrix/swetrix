@@ -176,8 +176,31 @@ body.dark .bb-ygrid {
   stroke: var(--color-blue-700) !important;
 }
 
+:root {
+  --funnel-stripe-1: #e2e4ef;
+  --funnel-stripe-2: #d8dbed;
+}
+
+.dark {
+  --funnel-stripe-1: #1e2340;
+  --funnel-stripe-2: #2a3058;
+}
+
 .bb-target-dropoff .bb-bar {
-  stroke: rgba(71, 85, 105, 0.4) !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+}
+
+.funnel-chart .bb-bar {
+  fill-opacity: 1 !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+  transition: fill-opacity 0.15s ease-out;
+}
+
+.funnel-chart .bb-target-events.bb-defocused .bb-bar,
+.funnel-chart .bb-target-dropoff.bb-defocused .bb-bar {
+  fill-opacity: 0.6 !important;
 }
 
 .bb-target-Technical-Expenses .bb-bar {
@@ -206,6 +229,32 @@ body.dark .bb-ygrid {
     margin-right: calc(0.5rem * var(--tw-space-x-reverse)) !important;
     margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse))) !important;
   }
+}
+
+/* Clickable chart area */
+#traffic-chart .bb-event-rects .bb-event-rect {
+  cursor: pointer;
+}
+
+.bb-circle {
+  transition: transform 0.1s ease-in-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.bb-circle.is-direct-hover {
+  transform: scale(1.5);
+}
+
+#traffic-chart .bb-lines path,
+#traffic-chart .bb-areas path {
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+#traffic-chart .bb-circles circle,
+#traffic-chart .bb-bars path {
+  cursor: pointer;
 }
 
 /* Annotation lines */

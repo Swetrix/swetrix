@@ -170,6 +170,8 @@ export interface AnalyticsFunnel {
   dropoff: number
   dropoffPerc: number
   dropoffPercStep: number
+  topCountries: Record<string, number>
+  topSources: Record<string, number>
 }
 
 export const IMPORT_PROVIDERS = [

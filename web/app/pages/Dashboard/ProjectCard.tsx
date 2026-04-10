@@ -22,7 +22,7 @@ import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
-import { getFaviconHost } from '~/utils/referrers'
+import { getFaviconHost, getFaviconUrl } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
 import Sparkline from './Sparkline'
@@ -375,7 +375,7 @@ export const ProjectCard = ({
             {faviconHost ? (
               <img
                 className='size-6 shrink-0 rounded-sm'
-                src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
+                src={getFaviconUrl(faviconHost)}
                 loading='lazy'
                 alt=''
                 aria-hidden='true'

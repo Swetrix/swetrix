@@ -1431,6 +1431,8 @@ export interface FunnelDataResponse {
     dropoff: number
     dropoffPerc: number
     dropoffPercStep: number
+    topCountries: Record<string, number>
+    topSources: Record<string, number>
   }[]
   totalPageviews: number
 }

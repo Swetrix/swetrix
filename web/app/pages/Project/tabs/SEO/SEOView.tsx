@@ -449,33 +449,6 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             <LinkIcon className='size-4' />
             {t('project.seo.connectButton')}
           </Link>
-
-          {refEntries.length > 0 ? (
-            <div className='mt-10 grid w-full grid-cols-1 gap-3 sm:grid-cols-2'>
-              <Panel
-                name={t('project.seo.searchEngines')}
-                data={searchEngineEntries}
-                icon={panelIconMapping.ref}
-                id='seo-search-engines'
-                activeTabId='searchEngine'
-                disableRowClick
-                rowMapper={refRowMapper}
-                getFilterLink={noopFilterLink}
-                valuesHeaderName={t('project.visitors')}
-              />
-              <Panel
-                name={t('project.seo.aiReferrals')}
-                data={aiReferralEntries}
-                icon={<RobotIcon className='h-5 w-5' />}
-                id='seo-ai-referrals'
-                activeTabId='aiReferral'
-                disableRowClick
-                rowMapper={refRowMapper}
-                getFilterLink={noopFilterLink}
-                valuesHeaderName={t('project.visitors')}
-              />
-            </div>
-          ) : null}
         </div>
       </>
     )

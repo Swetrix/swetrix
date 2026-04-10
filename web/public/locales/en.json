@@ -1566,8 +1566,10 @@
     "changeInSettings": "Change this in your account settings",
     "events": "Events",
     "dropoff": "Dropoff",
-    "conversionFromStart": "Conversion from start",
+    "conversionFromStart": "from start",
     "neverEnteredTheFunnel": "Never entered the funnel",
+    "topSources": "Top sources",
+    "topCountries": "Top countries",
     "aggregation": "Aggregation",
     "locked": {
       "title": "Dashboard locked",
@@ -1619,6 +1621,8 @@
     "noProfilesFiltersDesc": "No profiles have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
     "noSessionsTitle": "No sessions yet",
     "noSessionsContent": "No sessions have been recorded for the specified period, please try a different period.",
+    "noSessionsFound": "No sessions found for this period.",
+    "exploreSessions": "Explore sessions",
     "noSessionsFiltersDesc": "No sessions have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
     "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
     "mapping": {

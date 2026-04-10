@@ -430,6 +430,10 @@ export class AnalyticsController {
 
     let funnel: IFunnel[] = []
     let totalPageviews: number = 0
+    let stepDetails: {
+      countries: Record<number, Record<string, number>>
+      sources: Record<number, Record<string, number>>
+    } = { countries: {}, sources: {} }
 
     const promises = [
       (async () => {
@@ -442,9 +446,24 @@ export class AnalyticsController {
           groupTo,
         )
       })(),
+      (async () => {
+        try {
+          stepDetails = await this.analyticsService.getFunnelStepDetails(
+            pagesArr,
+            params,
+          )
+        } catch (e) {
+          this.logger.error(e, 'GET /analytics/funnel - getFunnelStepDetails')
+        }
+      })(),
     ]
 
     await Promise.all(promises)
+
+    for (let i = 0; i < funnel.length; i++) {
+      funnel[i].topCountries = stepDetails.countries[i + 1] || {}
+      funnel[i].topSources = stepDetails.sources[i + 1] || {}
+    }
 
     return { funnel, totalPageviews }
   }

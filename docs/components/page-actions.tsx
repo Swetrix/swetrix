@@ -1,6 +1,12 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
-import { CheckIcon, CaretDownIcon, CopyIcon, ArrowSquareOutIcon, FileTextIcon } from "@phosphor-icons/react";
+import {
+  CheckIcon,
+  CaretDownIcon,
+  CopyIcon,
+  ArrowSquareOutIcon,
+  FileTextIcon,
+} from "@phosphor-icons/react";
 import { cn } from "../lib/cn";
 import { useCopyButton } from "fumadocs-ui/utils/use-copy-button";
 import { buttonVariants } from "./ui/button";
