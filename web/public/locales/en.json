@@ -1848,6 +1848,18 @@
         },
         "fathom": {
           "description": "Import pageviews and events from Fathom Analytics export"
+        },
+        "google-analytics": {
+          "description": "Import pageviews and events from Google Analytics 4",
+          "fileType": "Google OAuth",
+          "connectGoogle": "Connect Google Account",
+          "connectDesc": "Connect your Google account to import historical data from Google Analytics 4. We only request read-only access to your analytics data.",
+          "selectProperty": "Select a GA4 property",
+          "startImport": "Start Import",
+          "connecting": "Connecting...",
+          "loadingProperties": "Loading properties...",
+          "noProperties": "No GA4 properties found for this Google account.",
+          "importNote": "Data will be imported in the background. Language, region, city, and UTM campaign details are not available from GA4 aggregate exports."
         }
       },
       "captcha": {

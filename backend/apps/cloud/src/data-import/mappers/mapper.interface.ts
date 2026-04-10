@@ -12,11 +12,12 @@ export interface AnalyticsImportRow {
 
 export interface ImportMapper {
   readonly provider: string
-  readonly expectedFileExtension: string
+  readonly expectedFileExtension: string | null
 
   createRowStream(
-    filePath: string,
+    filePath: string | null,
     pid: string,
     importID: number,
+    context?: Record<string, unknown>,
   ): AsyncIterable<AnalyticsImportRow>
 }

@@ -31,7 +31,8 @@ import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { ProjectService } from '../project/project.service'
 import { DataImportService } from './data-import.service'
-import { UploadImportDto } from './dto'
+import { Ga4ImportService } from './ga4-import.service'
+import { UploadImportDto, StartGa4ImportDto } from './dto'
 import { getMapper, SUPPORTED_PROVIDERS } from './mappers'
 import { DataImportJobData, DATA_IMPORT_QUEUE } from './data-import.processor'
 import { trackCustom } from '../common/analytics'
@@ -49,9 +50,112 @@ export class DataImportController {
   constructor(
     private readonly dataImportService: DataImportService,
     private readonly projectService: ProjectService,
+    private readonly ga4ImportService: Ga4ImportService,
     @InjectQueue(DATA_IMPORT_QUEUE)
     private readonly importQueue: Queue<DataImportJobData>,
   ) {}
+
+  @Get('ga4/configured')
+  @Auth()
+  @ApiBearerAuth()
+  async ga4Configured() {
+    return { configured: this.ga4ImportService.isConfigured() }
+  }
+
+  @Post(':projectId/ga4/connect')
+  @Auth()
+  @ApiBearerAuth()
+  async ga4Connect(
+    @Param('projectId') projectId: string,
+    @CurrentUserId() uid: string,
+  ) {
+    return this.ga4ImportService.generateConnectURL(uid, projectId)
+  }
+
+  @Post('ga4/callback')
+  @Auth()
+  @ApiBearerAuth()
+  async ga4Callback(
+    @CurrentUserId() uid: string,
+    @Body() body: { code: string; state: string },
+  ) {
+    if (!body.code || !body.state) {
+      throw new BadRequestException('Missing code or state parameter')
+    }
+    return this.ga4ImportService.handleOAuthCallback(uid, body.code, body.state)
+  }
+
+  @Get(':projectId/ga4/properties')
+  @Auth()
+  @ApiBearerAuth()
+  async ga4Properties(
+    @Param('projectId') projectId: string,
+    @CurrentUserId() uid: string,
+  ) {
+    return this.ga4ImportService.listProperties(uid, projectId)
+  }
+
+  @Post(':projectId/ga4/start')
+  @Auth()
+  @ApiBearerAuth()
+  async ga4Start(
+    @Param('projectId') projectId: string,
+    @CurrentUserId() uid: string,
+    @Body() dto: StartGa4ImportDto,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
+    const project = await this.projectService.getFullProject(projectId)
+    this.projectService.allowedToManage(project, uid)
+
+    const { encryptedRefreshToken, clientId, clientSecret } =
+      await this.ga4ImportService.consumeTokenForImport(uid, projectId)
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+    const userAgent = headers['user-agent'] || ''
+
+    const dataImport = await this.dataImportService.create(
+      projectId,
+      'google-analytics',
+    )
+
+    try {
+      await this.importQueue.add(
+        'process-import',
+        {
+          id: dataImport.id,
+          importId: dataImport.importId,
+          projectId,
+          provider: 'google-analytics',
+          fileName: '',
+          ip,
+          userAgent,
+          ga4PropertyId: dto.propertyId,
+          encryptedRefreshToken,
+          ga4ClientId: clientId,
+          ga4ClientSecret: clientSecret,
+        },
+        {
+          attempts: 1,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      )
+    } catch (error) {
+      this.logger.error(`Failed to enqueue GA4 import job: ${error.message}`)
+      await this.dataImportService.deleteImportRecord(dataImport.id)
+      throw new ServiceUnavailableException(
+        'Failed to start import. Please try again later.',
+      )
+    }
+
+    await trackCustom(ip, userAgent, {
+      ev: 'DATA_IMPORT_STARTED',
+      meta: { provider: 'google-analytics' },
+    })
+
+    return dataImport
+  }
 
   @Post(':projectId/upload')
   @Auth()
@@ -101,6 +205,13 @@ export class DataImportController {
       this.cleanupFile(file.filename)
       throw new BadRequestException(
         `Unsupported provider: ${dto.provider}. Supported: ${SUPPORTED_PROVIDERS.join(', ')}`,
+      )
+    }
+
+    if (!mapper.expectedFileExtension) {
+      this.cleanupFile(file.filename)
+      throw new BadRequestException(
+        `${dto.provider} does not support file uploads. Use the dedicated import endpoint instead.`,
       )
     }
 

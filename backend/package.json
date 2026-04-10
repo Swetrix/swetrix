@@ -30,6 +30,7 @@
     "@ai-sdk/openai": "^3.0.52",
     "@clickhouse/client": "^1.18.2",
     "@faker-js/faker": "^10.4.0",
+    "@google-analytics/data": "^5.2.1",
     "@googleapis/searchconsole": "^6.0.1",
     "@nestjs-modules/mailer": "^2.3.4",
     "@nestjs/bullmq": "^11.0.4",
