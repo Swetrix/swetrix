@@ -75,21 +75,17 @@ import { getProjectPasswordCookie } from '~/utils/session.server'
 function formatDateForBackend(dateStr: string | undefined): string | undefined {
   if (!dateStr) return undefined
 
-  // If already in YYYY-MM-DD format, return as-is
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr
   }
 
-  // Convert ISO 8601 or other formats to YYYY-MM-DD
+  // Preserve full ISO 8601 timestamps so the backend can use precise time bounds
   const date = new Date(dateStr)
-  if (Number.isNaN(date.getTime())) {
+  if (!Number.isNaN(date.getTime())) {
     return dateStr
   }
 
-  const yyyy = date.getUTCFullYear()
-  const mm = String(date.getUTCMonth() + 1).padStart(2, '0')
-  const dd = String(date.getUTCDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
+  return dateStr
 }
 
 interface ProxyRequest {

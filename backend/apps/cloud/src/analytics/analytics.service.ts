@@ -183,6 +183,10 @@ export const isValidDate = (date: string, format = 'YYYY-MM-DD'): boolean => {
     return false
   }
 
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(date)) {
+    return dayjs(date).isValid()
+  }
+
   return dayjs(date, format).format(format) === date
 }
 

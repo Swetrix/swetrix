@@ -722,8 +722,6 @@ const getSettings = (
             }
           }
         : undefined,
-      onover: undefined,
-      onout: undefined,
       types: {
         unique: chartType === chartTypes.line ? area() : bar(),
         uniqueCompare: chartType === chartTypes.line ? line() : bar(),
@@ -1140,14 +1138,35 @@ const getSettings = (
                   const target = e.target as SVGRectElement
                   if (!target?.classList?.contains('bb-event-rect')) return
 
-                  const rects =
-                    eventRectsGroup.querySelectorAll('.bb-event-rect')
-                  const index = Array.from(rects).indexOf(target)
-                  if (index === -1) return
+                  const groupRect = eventRectsGroup.getBoundingClientRect()
+                  const mouseX = e.clientX - groupRect.left
+                  const mouseY = e.clientY - groupRect.top
 
-                  const xs = chartInstance.data.xs()
-                  const xValues = Object.values(xs)[0] as Date[] | undefined
-                  if (!xValues || index >= xValues.length) return
+                  const circles = svg.querySelectorAll('.bb-circle')
+                  let closestCircle: Element | null = null
+                  let minDistance = Infinity
+
+                  circles.forEach((c: Element) => {
+                    const cx = parseFloat(c.getAttribute('cx') || '0')
+                    const cy = parseFloat(c.getAttribute('cy') || '0')
+                    const distance = Math.hypot(cx - mouseX, cy - mouseY)
+
+                    if (distance < minDistance) {
+                      minDistance = distance
+                      closestCircle = c
+                    }
+                  })
+
+                  if (!closestCircle) return
+                  const circle = closestCircle as Element
+
+                  const classAttr = circle.getAttribute('class') || ''
+                  const indexMatch = classAttr.match(/bb-circle-(\d+)/)
+                  if (!indexMatch) return
+                  const index = parseInt(indexMatch[1], 10)
+
+                  const xValues = columns[0].slice(1) as Date[]
+                  if (index >= xValues.length) return
 
                   onDataPointClick({ x: xValues[index], index })
                 })

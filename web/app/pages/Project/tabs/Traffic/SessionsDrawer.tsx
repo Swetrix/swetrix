@@ -1,4 +1,4 @@
-import { XIcon, UsersIcon } from '@phosphor-icons/react'
+import { XIcon, UsersIcon, WarningCircleIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -36,11 +36,19 @@ async function fetchSessionsPage(
     signal,
   })
 
-  if (!response.ok) return null
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`)
+  }
 
   const result = (await response.json()) as {
     data: SessionsResponse | null
+    error: string | null
   }
+
+  if (result.error) {
+    throw new Error(result.error)
+  }
+
   return result.data
 }
 
@@ -74,13 +82,18 @@ export const SessionsDrawer = ({
   const [hasMore, setHasMore] = useState(true)
   const [initialLoading, setInitialLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const loadingRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const loadSessions = useCallback(
-    async (currentSkip: number, append: boolean, signal?: AbortSignal) => {
+    async (
+      currentSkip: number,
+      append: boolean,
+      signal?: AbortSignal,
+    ): Promise<boolean> => {
       let result: SessionsResponse | null = null
 
       try {
@@ -97,11 +110,19 @@ export const SessionsDrawer = ({
           },
           signal,
         )
-      } catch {
-        return
+      } catch (e) {
+        if (signal?.aborted) return false
+        setError(
+          e instanceof Error
+            ? e.message
+            : t('apiNotifications.somethingWentWrong'),
+        )
+        return false
       }
 
-      if (signal?.aborted) return
+      if (signal?.aborted) return false
+
+      setError(null)
 
       if (result) {
         const newSessions = result.sessions ?? []
@@ -112,8 +133,10 @@ export const SessionsDrawer = ({
         }
         setHasMore(newSessions.length >= SESSIONS_TAKE)
       }
+
+      return true
     },
-    [projectId, from, to, timezone, stableFilters],
+    [projectId, from, to, timezone, stableFilters, t],
   )
 
   useEffect(() => {
@@ -127,6 +150,7 @@ export const SessionsDrawer = ({
     setSessions([])
     setSkip(0)
     setHasMore(true)
+    setError(null)
 
     // Delay fetching slightly to allow the drawer animation to run smoothly without layout shifts
     const timer = setTimeout(() => {
@@ -150,8 +174,14 @@ export const SessionsDrawer = ({
 
     try {
       const nextSkip = skip + SESSIONS_TAKE
-      setSkip(nextSkip)
-      await loadSessions(nextSkip, true, abortControllerRef.current?.signal)
+      const success = await loadSessions(
+        nextSkip,
+        true,
+        abortControllerRef.current?.signal,
+      )
+      if (success) {
+        setSkip(nextSkip)
+      }
     } finally {
       loadingRef.current = false
       setLoadingMore(false)
@@ -223,6 +253,16 @@ export const SessionsDrawer = ({
           {initialLoading ? (
             <div className='flex items-center justify-center py-16'>
               <Loader />
+            </div>
+          ) : error && sessions.length === 0 ? (
+            <div className='flex flex-col items-center justify-center py-16 text-center'>
+              <WarningCircleIcon
+                className='size-10 text-red-400 dark:text-red-500'
+                weight='duotone'
+              />
+              <span className='mt-3 text-sm text-gray-500 dark:text-gray-400'>
+                {error}
+              </span>
             </div>
           ) : sessions.length === 0 ? (
             <div className='flex flex-col items-center justify-center py-16 text-center'>
