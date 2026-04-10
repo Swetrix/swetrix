@@ -23,7 +23,7 @@ const ENCRYPTION_KEY = deriveKey('ga4-token')
 
 const GA4_SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 
-interface Ga4Property {
+export interface Ga4Property {
   propertyId: string
   displayName: string
 }
