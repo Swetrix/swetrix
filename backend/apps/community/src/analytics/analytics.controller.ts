@@ -447,10 +447,14 @@ export class AnalyticsController {
         )
       })(),
       (async () => {
-        stepDetails = await this.analyticsService.getFunnelStepDetails(
-          pagesArr,
-          params,
-        )
+        try {
+          stepDetails = await this.analyticsService.getFunnelStepDetails(
+            pagesArr,
+            params,
+          )
+        } catch (e) {
+          this.logger.error(e, 'GET /analytics/funnel - getFunnelStepDetails')
+        }
       })(),
     ]
 

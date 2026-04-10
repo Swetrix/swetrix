@@ -600,6 +600,8 @@ const getSettings = (
   annotations?: Annotation[],
   period?: string,
   timezone?: string,
+  onDataPointClick?: (d: { x: Date; index: number }) => void,
+  dataPointClickLabel?: string,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -713,6 +715,13 @@ const getSettings = (
     data: {
       x: 'x',
       columns: [...columns, ...customEventsToArray],
+      onclick: onDataPointClick
+        ? (d: any) => {
+            if (d?.x) {
+              onDataPointClick({ x: d.x, index: d.index })
+            }
+          }
+        : undefined,
       types: {
         unique: chartType === chartTypes.line ? area() : bar(),
         uniqueCompare: chartType === chartTypes.line ? line() : bar(),
@@ -899,7 +908,9 @@ const getSettings = (
             </li>
             `
             },
-          ).join('')}</ul>`
+          ).join(
+            '',
+          )}${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>${dataPointClickLabel}</li>` : ''}</ul>`
         }
 
         // Get dates from first item
@@ -994,6 +1005,7 @@ const getSettings = (
         <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-md z-50'>
           ${currentSection}
           ${compareSection}
+          ${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>${dataPointClickLabel}</li>` : ''}
         </ul>`
       },
     },
@@ -1003,9 +1015,11 @@ const getSettings = (
         : {
             focus: {
               only: xAxisSize > 1,
+              expand: onDataPointClick ? { enabled: true, r: 4 } : undefined,
             },
             pattern: ['circle'],
-            r: 2,
+            r: 4,
+            sensitivity: onDataPointClick ? 50 : undefined,
           },
     legend: {
       item: {
@@ -1032,53 +1046,136 @@ const getSettings = (
         ratio: 0.15,
       },
     },
-    onrendered: activeChartMetrics.revenue
-      ? function () {
-          // Revenue chart styling:
-          // - revenue: solid orange stroke (handled by CSS)
-          // - refunds: dashed orange stroke + light fill
-          // - when refunds value is 0, remove stroke to avoid "cap" lines
-          const chart = this as any
+    onrendered:
+      activeChartMetrics.revenue || onDataPointClick
+        ? function () {
+            const chartInstance = this as any
 
-          // Guard against accessing chart internals after destruction
-          // This prevents "Cannot read properties of null" errors
-          if (!chart || !chart.$ || !chart.$.bar?.bars) {
-            return
-          }
+            if (!chartInstance || !chartInstance.$) return
 
-          try {
-            chart.$.bar.bars.each(function (this: SVGPathElement, d: any) {
-              const value = Number(d?.value || 0)
+            try {
+              if (activeChartMetrics.revenue && chartInstance.$.bar?.bars) {
+                chartInstance.$.bar.bars.each(function (
+                  this: SVGPathElement,
+                  d: any,
+                ) {
+                  const value = Number(d?.value || 0)
 
-              if (d?.id === 'refundsAmount') {
-                if (value > 0) {
-                  this.style.stroke = '#ea580c'
-                  this.style.strokeWidth = '1.5px'
-                  this.style.strokeDasharray = '6,4'
-                  this.style.display = ''
-                } else {
-                  this.style.strokeDasharray = ''
-                  this.style.strokeWidth = '0'
-                  this.style.stroke = 'none'
-                  this.style.display = 'none'
-                }
-              } else if (d?.id === 'revenue') {
-                if (value === 0) {
-                  this.style.strokeWidth = '0'
-                  this.style.stroke = 'none'
-                  this.style.display = 'none'
-                } else {
-                  this.style.strokeWidth = '1.5px'
-                  this.style.stroke = '#ea580c'
-                  this.style.display = ''
-                }
+                  if (d?.id === 'refundsAmount') {
+                    if (value > 0) {
+                      this.style.stroke = '#ea580c'
+                      this.style.strokeWidth = '1.5px'
+                      this.style.strokeDasharray = '6,4'
+                      this.style.display = ''
+                    } else {
+                      this.style.strokeDasharray = ''
+                      this.style.strokeWidth = '0'
+                      this.style.stroke = 'none'
+                      this.style.display = 'none'
+                    }
+                  } else if (d?.id === 'revenue') {
+                    if (value === 0) {
+                      this.style.strokeWidth = '0'
+                      this.style.stroke = 'none'
+                      this.style.display = 'none'
+                    } else {
+                      this.style.strokeWidth = '1.5px'
+                      this.style.stroke = '#ea580c'
+                      this.style.display = ''
+                    }
+                  }
+                })
               }
-            })
-          } catch {
-            // Ignore errors during render if chart is being destroyed
+
+              if (onDataPointClick) {
+                const svg = chartInstance.$.svg?.node()
+                if (!svg) return
+
+                const eventRectsGroup = svg.querySelector('.bb-event-rects')
+                if (!eventRectsGroup || eventRectsGroup.__clickAttached) return
+                eventRectsGroup.__clickAttached = true
+
+                eventRectsGroup.addEventListener(
+                  'mousemove',
+                  (e: MouseEvent) => {
+                    const groupRect = eventRectsGroup.getBoundingClientRect()
+                    const mouseX = e.clientX - groupRect.left
+                    const mouseY = e.clientY - groupRect.top
+
+                    const circles = svg.querySelectorAll('.bb-circle')
+                    let closestCircle: Element | null = null
+                    let minDistance = 25 // 25px sensitivity for direct hover
+
+                    circles.forEach((c: Element) => {
+                      const cx = parseFloat(c.getAttribute('cx') || '0')
+                      const cy = parseFloat(c.getAttribute('cy') || '0')
+                      const distance = Math.hypot(cx - mouseX, cy - mouseY)
+
+                      if (distance < minDistance) {
+                        minDistance = distance
+                        closestCircle = c
+                      }
+                    })
+
+                    circles.forEach((c: Element) => {
+                      if (c === closestCircle) {
+                        c.classList.add('is-direct-hover')
+                      } else {
+                        c.classList.remove('is-direct-hover')
+                      }
+                    })
+                  },
+                )
+
+                eventRectsGroup.addEventListener('mouseleave', () => {
+                  const circles = svg.querySelectorAll('.bb-circle')
+                  circles.forEach((c: Element) => {
+                    c.classList.remove('is-direct-hover')
+                  })
+                })
+
+                eventRectsGroup.addEventListener('click', (e: MouseEvent) => {
+                  const target = e.target as SVGRectElement
+                  if (!target?.classList?.contains('bb-event-rect')) return
+
+                  const groupRect = eventRectsGroup.getBoundingClientRect()
+                  const mouseX = e.clientX - groupRect.left
+                  const mouseY = e.clientY - groupRect.top
+
+                  const circles = svg.querySelectorAll('.bb-circle')
+                  let closestCircle: Element | null = null
+                  let minDistance = Infinity
+
+                  circles.forEach((c: Element) => {
+                    const cx = parseFloat(c.getAttribute('cx') || '0')
+                    const cy = parseFloat(c.getAttribute('cy') || '0')
+                    const distance = Math.hypot(cx - mouseX, cy - mouseY)
+
+                    if (distance < minDistance) {
+                      minDistance = distance
+                      closestCircle = c
+                    }
+                  })
+
+                  if (!closestCircle) return
+                  const circle = closestCircle as Element
+
+                  const classAttr = circle.getAttribute('class') || ''
+                  const indexMatch = classAttr.match(/bb-circle-(\d+)/)
+                  if (!indexMatch) return
+                  const index = parseInt(indexMatch[1], 10)
+
+                  const xValues = columns[0].slice(1) as Date[]
+                  if (index >= xValues.length) return
+
+                  onDataPointClick({ x: xValues[index], index })
+                })
+              }
+            } catch {
+              // ignore
+            }
           }
-        }
-      : undefined,
+        : undefined,
     zoom:
       onZoom && enableZoom !== false
         ? {

@@ -126,41 +126,42 @@ const FeatureFlagProfileRow = ({
           />
 
           <div className='min-w-0 flex-auto'>
-            <p className='flex items-center text-xs leading-5 font-semibold text-gray-900 dark:text-gray-50'>
-              <span className='truncate'>{displayName}</span>
-              {profile.isIdentified ? (
+            <div className='flex min-w-0 items-center gap-2'>
+              <Text size='sm' weight='semibold' truncate>
+                {displayName}
+              </Text>
+              {Boolean(profile.isIdentified) && (
                 <Badge
                   label={t('project.identified')}
                   colour='indigo'
-                  className='ml-1.5'
+                  className='text-[0.625rem] leading-3'
                 />
-              ) : null}
-            </p>
-            <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
+              )}
+            </div>
+            <Text as='p' size='xs' colour='muted' className='mt-0.5'>
               {t('featureFlags.xEvaluations', {
                 count: profile.evaluationCount,
               })}{' '}
               · {lastEvaluatedText}
-            </p>
+            </Text>
           </div>
         </div>
         <div className='flex shrink-0 items-center gap-x-2'>
           {/* Result indicator */}
-          <span
-            className={cx(
-              'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-              profile.lastResult
-                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
-            )}
-          >
-            {profile.lastResult ? (
-              <CheckIcon className='mr-1 size-3' />
-            ) : (
-              <XIcon className='mr-1 size-3' />
-            )}
-            {profile.lastResult ? 'true' : 'false'}
-          </span>
+          <Badge
+            label={
+              <span className='flex items-center gap-1'>
+                {profile.lastResult ? (
+                  <CheckIcon className='size-3' />
+                ) : (
+                  <XIcon className='size-3' />
+                )}
+                {profile.lastResult ? 'true' : 'false'}
+              </span>
+            }
+            colour={profile.lastResult ? 'green' : 'slate'}
+            className='text-[0.625rem] leading-3'
+          />
         </div>
       </li>
     </Link>
@@ -209,7 +210,7 @@ const FeatureFlagRow = ({
 
   return (
     <>
-      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-900/25'>
+      <li className='relative mb-2 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-900/25'>
         {/* Main row - clickable to expand */}
         <div
           onClick={() => onToggleExpand(flag.id)}
@@ -223,7 +224,7 @@ const FeatureFlagRow = ({
           // eslint-disable-next-line jsx-a11y/prefer-tag-over-role -- contains nested interactive elements
           role='button'
           tabIndex={0}
-          className='flex cursor-pointer justify-between gap-x-6 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:hover:bg-slate-900/60'
+          className='flex cursor-pointer justify-between gap-x-4 px-4 py-3 transition-colors hover:bg-gray-200/70 sm:px-5 dark:hover:bg-slate-900/60'
         >
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
@@ -238,29 +239,30 @@ const FeatureFlagRow = ({
                   <span>{flag.key}</span>
                 </Text>
                 {/* Status badge */}
-                <span
-                  className={cx(
-                    'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                <Badge
+                  label={
                     flag.enabled
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
-                  )}
-                >
-                  {flag.enabled
-                    ? t('featureFlags.enabled')
-                    : t('featureFlags.disabled')}
-                </span>
+                      ? t('featureFlags.enabled')
+                      : t('featureFlags.disabled')
+                  }
+                  colour={flag.enabled ? 'green' : 'slate'}
+                  className='text-[0.625rem] leading-3'
+                />
                 {/* Flag type badge */}
-                <span className='inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'>
-                  {flag.flagType === 'rollout' ? (
-                    <>{flag.rolloutPercentage}%</>
-                  ) : (
-                    <>
-                      <ToggleRightIcon className='size-3' />
-                      {t('featureFlags.boolean')}
-                    </>
-                  )}
-                </span>
+                <Badge
+                  label={
+                    flag.flagType === 'rollout' ? (
+                      `${flag.rolloutPercentage}%`
+                    ) : (
+                      <span className='flex items-center gap-1'>
+                        <ToggleRightIcon className='size-3' />
+                        {t('featureFlags.boolean')}
+                      </span>
+                    )
+                  }
+                  colour='sky'
+                  className='text-[0.625rem] leading-3'
+                />
               </div>
               {flag.description ? (
                 <Text className='mt-1' as='p' size='sm' colour='secondary'>
@@ -410,7 +412,7 @@ const FeatureFlagRow = ({
 
         {/* Expanded profiles section */}
         {isExpanded ? (
-          <div className='border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-slate-700'>
+          <div className='border-t border-gray-200 px-4 py-3 sm:px-5 dark:border-slate-700'>
             {/* Result filter toggle */}
             <div className='mb-3 flex items-center gap-2'>
               <Switch

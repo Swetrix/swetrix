@@ -360,116 +360,121 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
       : error.message
 
   return (
-    <Link to={{ search: params.toString() }}>
-      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
-        <div className='flex min-w-0 gap-x-4'>
-          <div className='min-w-0 flex-auto'>
-            <div className='flex items-center gap-x-2 leading-6'>
-              <Tooltip
-                text={error.name}
-                tooltipNode={
-                  <Text size='sm' weight='bold' className='pb-0.5'>
+    <li className='mb-2'>
+      <Link
+        to={{ search: params.toString() }}
+        className='block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
+      >
+        <div className='relative flex cursor-pointer items-center justify-between gap-x-4 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 transition-colors hover:bg-gray-200/70 sm:px-5 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
+          <div className='flex min-w-0 flex-1 items-center gap-x-3.5'>
+            <div className='flex min-w-0 flex-1 flex-col justify-center gap-1.5'>
+              <div className='flex flex-wrap items-start justify-between gap-2 sm:gap-4'>
+                <div className='flex min-w-0 items-center gap-2'>
+                  <Text size='sm' weight='semibold' truncate>
                     {displayName}
                   </Text>
-                }
-              />
-              {error.filename ? (
-                <>
-                  <svg
-                    viewBox='0 0 2 2'
-                    className='h-0.5 w-0.5 flex-none self-center fill-gray-400'
-                  >
-                    <circle cx={1} cy={1} r={1} />
-                  </svg>
-                  <Text
-                    size='xs'
-                    weight='normal'
-                    colour='muted'
-                    className='mx-1 max-w-[200px] truncate'
-                  >
-                    {error.filename}
+                  <Badge
+                    label={status.label}
+                    colour={status.colour}
+                    className='text-[0.625rem] leading-3'
+                  />
+                </div>
+
+                {/* Mobile Date */}
+                <div className='mt-0.5 flex shrink-0 items-center sm:hidden'>
+                  <Text size='xs' colour='secondary' className='text-[11px]'>
+                    {lastSeen}
                   </Text>
-                </>
+                </div>
+              </div>
+
+              {displayMessage ? (
+                <Text
+                  as='p'
+                  size='xs'
+                  colour='secondary'
+                  className='max-w-[90%] truncate'
+                >
+                  {displayMessage}
+                </Text>
               ) : null}
+
+              <div className='flex items-center justify-between gap-4'>
+                <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
+                  <div className='flex items-center gap-3'>
+                    <Tooltip
+                      text={t('dashboard.xOccurrences', { x: error.count })}
+                      tooltipNode={
+                        <Text
+                          as='span'
+                          size='xs'
+                          colour='secondary'
+                          weight='medium'
+                          className='flex items-center gap-1'
+                        >
+                          <WarningIcon className='size-3.5 text-red-500' />
+                          {error.count}
+                        </Text>
+                      }
+                    />
+
+                    <Tooltip
+                      text={t('project.affectedUsers')}
+                      tooltipNode={
+                        <Text
+                          as='span'
+                          size='xs'
+                          colour='secondary'
+                          weight='medium'
+                          className='flex items-center gap-1'
+                        >
+                          <UserIcon className='size-3.5' />
+                          {error.users}
+                        </Text>
+                      }
+                    />
+
+                    <Tooltip
+                      text={t('project.affectedSessions')}
+                      tooltipNode={
+                        <Text
+                          as='span'
+                          size='xs'
+                          colour='secondary'
+                          weight='medium'
+                          className='flex items-center gap-1'
+                        >
+                          <MonitorIcon className='size-3.5' />
+                          {error.sessions}
+                        </Text>
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-            {displayMessage ? (
-              <Tooltip
-                text={error.message}
-                tooltipNode={
-                  <Text
-                    as='p'
-                    size='sm'
-                    colour='muted'
-                    className='mt-1 flex text-left leading-5'
-                  >
-                    {displayMessage}
-                  </Text>
-                }
-              />
-            ) : null}
-            <p className='mt-1 flex items-center gap-x-2 text-sm leading-5 text-gray-500 dark:text-gray-300'>
-              <Badge
-                className='mr-2 sm:hidden'
-                label={status.label}
-                colour={status.colour}
-              />
-              {lastSeen}
-              <svg
-                viewBox='0 0 2 2'
-                className='h-0.5 w-0.5 flex-none fill-gray-400 sm:hidden'
-              >
-                <circle cx={1} cy={1} r={1} />
-              </svg>
-              <span className='sm:hidden'>
-                {t('dashboard.xOccurrences', {
-                  x: error.count,
-                })}
-              </span>
-            </p>
-            <p className='mt-2 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
-              <span
-                className='mr-3 flex items-center'
-                title={t('project.affectedUsers')}
-              >
-                <UserIcon className='mr-1 size-4' /> {error.users}
-              </span>
-              <span
-                className='flex items-center'
-                title={t('project.affectedSessions')}
-              >
-                <MonitorIcon className='mr-1 size-4' /> {error.sessions}
-              </span>
-            </p>
+          </div>
+
+          <div className='hidden shrink-0 items-center gap-x-3 sm:flex'>
+            <div className='flex flex-col items-end'>
+              <Text as='p' size='xs' colour='secondary' className='text-[11px]'>
+                {lastSeen}
+              </Text>
+            </div>
+            <CaretRightIcon
+              className='size-4 text-gray-400'
+              aria-hidden='true'
+            />
+          </div>
+          <div className='flex shrink-0 items-center sm:hidden'>
+            <CaretRightIcon
+              className='size-4 text-gray-400'
+              aria-hidden='true'
+            />
           </div>
         </div>
-        <div className='flex shrink-0 items-center gap-x-4'>
-          <div className='hidden gap-1 sm:flex sm:flex-col sm:items-end'>
-            <div className='flex items-center gap-x-3 text-sm leading-6 text-gray-900 dark:text-gray-50'>
-              <span
-                className='flex items-center'
-                title={t('dashboard.xOccurrences', { x: error.count })}
-              >
-                <WarningIcon className='mr-1 size-4' /> {error.count}
-              </span>
-              <span
-                className='flex items-center'
-                title={t('project.xAffectedUsers', { x: error.users })}
-              >
-                <UserIcon className='mr-1 size-4' /> {error.users}
-              </span>
-              <span
-                className='flex items-center'
-                title={t('project.xAffectedSessions', { x: error.sessions })}
-              >
-                <MonitorIcon className='mr-1 size-4' /> {error.sessions}
-              </span>
-            </div>
-            <Badge label={status.label} colour={status.colour} />
-          </div>
-          <CaretRightIcon className='h-5 w-5 flex-none text-gray-400' />
-        </div>
-      </li>
-    </Link>
+      </Link>
+    </li>
   )
 }
 
