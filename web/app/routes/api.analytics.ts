@@ -79,13 +79,12 @@ function formatDateForBackend(dateStr: string | undefined): string | undefined {
     return dateStr
   }
 
-  // Preserve full ISO 8601 timestamps so the backend can use precise time bounds
   const date = new Date(dateStr)
   if (!Number.isNaN(date.getTime())) {
-    return dateStr
+    return date.toISOString()
   }
 
-  return dateStr
+  return undefined
 }
 
 interface ProxyRequest {

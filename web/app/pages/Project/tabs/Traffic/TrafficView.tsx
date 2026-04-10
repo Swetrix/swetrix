@@ -341,7 +341,6 @@ const TrafficViewInner = ({
 
   const handleDataPointClick = useCallback(
     (d: { x: Date; index: number }) => {
-      console.log('handleDataPointClick:', d)
       const date = dayjs(d.x).tz(timezone)
       let from: string
       let to: string
