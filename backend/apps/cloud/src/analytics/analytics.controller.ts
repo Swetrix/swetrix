@@ -513,8 +513,10 @@ export class AnalyticsController {
       pid,
     )
 
-    if (step > pagesArr.length) {
-      throw new BadRequestException('Step exceeds the number of funnel steps')
+    if (step < 1 || step > pagesArr.length) {
+      throw new BadRequestException(
+        'Step must be between 1 and the number of funnel steps',
+      )
     }
 
     const take = this.analyticsService.getSafeNumber(data.take, 30)
