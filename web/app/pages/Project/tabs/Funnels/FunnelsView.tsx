@@ -4,7 +4,15 @@ import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import { FunnelIcon } from '@phosphor-icons/react'
-import { useState, useEffect, useMemo, useRef, Suspense, use } from 'react'
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  Suspense,
+  use,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Link,
@@ -40,6 +48,7 @@ import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
 import { nLocaleFormatter } from '~/utils/generic'
 import routes from '~/utils/routes'
+import { SessionsDrawer } from '../Traffic/SessionsDrawer'
 import { LoaderView } from '../../View/components/LoaderView'
 
 interface DeferredFunnelData {
@@ -76,7 +85,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   const revalidator = useRevalidator()
   const { isAuthenticated } = useAuth()
   const { funnelsRefreshTrigger } = useRefreshTriggers()
-  const { periodPairs } = useViewProjectContext()
+  const { periodPairs, period, timezone, timeFormat } = useViewProjectContext()
 
   // Filter periods to only include those valid for funnels
   const timeBucketSelectorItems = useMemo(() => {
@@ -98,6 +107,10 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
     undefined,
   )
   const [dataLoading, setDataLoading] = useState(false)
+  const [sessionsDrawer, setSessionsDrawer] = useState<{
+    stepIndex: number
+    label: string
+  } | null>(null)
 
   // Initialize funnelAnalytics from loader data
   const [funnelAnalytics, setFunnelAnalytics] = useState<{
@@ -260,6 +273,19 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
     }
   }, [funnelAnalytics])
 
+  const handleBarClick = useCallback(
+    (stepIndex: number) => {
+      if (!funnelAnalytics?.funnel?.[stepIndex]) return
+
+      const step = funnelAnalytics.funnel[stepIndex]
+      setSessionsDrawer({
+        stepIndex,
+        label: step.value,
+      })
+    },
+    [funnelAnalytics],
+  )
+
   // When activeFunnel changes (URL params) and we have loader data, sync it
   // The actual data fetching happens via the loader when URL changes
   useEffect(() => {
@@ -356,6 +382,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
               totalPageviews={funnelAnalytics.totalPageviews}
               t={t}
               className='mt-5 h-80 [&_svg]:!overflow-visible'
+              onBarClick={handleBarClick}
             />
           ) : null}
         </div>
@@ -377,6 +404,25 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
             await onFunnelCreate(name, steps)
           }}
           loading={funnelActionLoading}
+        />
+
+        <SessionsDrawer
+          isOpen={!!sessionsDrawer}
+          onClose={() => setSessionsDrawer(null)}
+          label={sessionsDrawer?.label || ''}
+          projectId={id}
+          timezone={timezone}
+          timeFormat={timeFormat}
+          period={period}
+          from={searchParams.get('from') || undefined}
+          to={searchParams.get('to') || undefined}
+          funnelId={activeFunnel?.id}
+          funnelStep={sessionsDrawer ? sessionsDrawer.stepIndex + 1 : undefined}
+          totalCount={
+            sessionsDrawer
+              ? funnelAnalytics?.funnel?.[sessionsDrawer.stepIndex]?.events
+              : undefined
+          }
         />
       </>
     )

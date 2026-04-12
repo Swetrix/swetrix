@@ -47,6 +47,7 @@ import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDto } from './dto/getUserFlow.dto'
 import { GetFunnelsDto } from './dto/getFunnels.dto'
+import { GetFunnelSessionsDto } from './dto/get-funnel-sessions.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
@@ -466,6 +467,91 @@ export class AnalyticsController {
     }
 
     return { funnel, totalPageviews }
+  }
+
+  @Get('funnel-sessions')
+  @Auth(true, true)
+  async getFunnelSessions(
+    @Query() data: GetFunnelSessionsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      pages,
+      funnelId,
+      step,
+    } = data
+
+    const pagesArr = await this.analyticsService.getPagesArray(
+      pages,
+      funnelId,
+      pid,
+    )
+
+    if (step > pagesArr.length) {
+      throw new BadRequestException(
+        `Step ${step} exceeds the number of funnel steps (${pagesArr.length})`,
+      )
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 150',
+      )
+    }
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, step: ${step}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/funnel-sessions',
+    )
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const params = { pid, groupFrom: groupFromUTC, groupTo: groupToUTC }
+
+    const sessions = await this.analyticsService.getFunnelSessionsList(
+      pagesArr,
+      params,
+      safeTimezone,
+      step,
+      take,
+      skip,
+    )
+
+    return { sessions, take, skip }
   }
 
   @Get('meta')

@@ -987,6 +987,50 @@ export async function getSessionsServer(
   )
 }
 
+export interface FunnelSessionsResponse {
+  sessions: Session[]
+  take: number
+  skip: number
+}
+
+export async function getFunnelSessionsServer(
+  request: Request,
+  pid: string,
+  params: {
+    period: string
+    from?: string
+    to?: string
+    timezone?: string
+    funnelId?: string
+    step: number
+    take?: number
+    skip?: number
+    password?: string
+  },
+): Promise<ServerFetchResult<FunnelSessionsResponse>> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period)
+  queryParams.append('step', String(params.step))
+  queryParams.append('take', String(params.take || 30))
+  queryParams.append('skip', String(params.skip || 0))
+  if (params.funnelId) queryParams.append('funnelId', params.funnelId)
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<FunnelSessionsResponse>(
+    request,
+    `log/funnel-sessions?${queryParams.toString()}`,
+    { headers },
+  )
+}
+
 interface PageflowItem {
   type: 'pageview' | 'event' | 'error'
   value: string

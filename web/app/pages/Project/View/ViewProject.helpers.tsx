@@ -1747,6 +1747,7 @@ const getSettingsFunnels = (
   totalPageviews: number,
   t: typeof i18next.t,
   language: string,
+  onBarClick?: (stepIndex: number) => void,
 ): ChartOptions => {
   const values = _map(funnel, (step) => {
     if (_startsWith(step.value, '/')) {
@@ -1796,6 +1797,13 @@ const getSettingsFunnels = (
       onout: (_d: any, el: SVGElement) => {
         el?.style?.removeProperty('fill-opacity')
       },
+      onclick: onBarClick
+        ? (d: any) => {
+            if (d?.index !== undefined) {
+              onBarClick(d.index)
+            }
+          }
+        : undefined,
     },
     bar: {
       radius: {

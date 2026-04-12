@@ -6,6 +6,7 @@ import {
 
 import {
   getSessionsServer,
+  getFunnelSessionsServer,
   getErrorsServer,
   getFeatureFlagStatsServer,
   getFeatureFlagProfilesServer,
@@ -40,6 +41,7 @@ import {
   type AnalyticsParams,
   type AnalyticsFilter,
   type SessionsResponse,
+  type FunnelSessionsResponse,
   type ErrorsResponse,
   type FeatureFlagStats,
   type FeatureFlagProfilesResponse,
@@ -121,6 +123,7 @@ interface ProxyRequest {
     | 'getRevenueStatus'
     | 'getRevenueData'
     | 'getOverallStats'
+    | 'getFunnelSessions'
   projectId: string
   pids?: string[]
   flagId?: string
@@ -149,6 +152,8 @@ interface ProxyRequest {
     profileType?: 'all' | 'anonymous' | 'identified'
     page?: string
     query?: string
+    funnelId?: string
+    step?: number
   }
 }
 
@@ -189,6 +194,28 @@ export async function action({ request }: ActionFunctionArgs) {
           analyticsParams,
         )
         return data<ProxyResponse<SessionsResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getFunnelSessions': {
+        const result = await getFunnelSessionsServer(request, projectId, {
+          period: analyticsParams.period,
+          from: analyticsParams.from,
+          to: analyticsParams.to,
+          timezone: analyticsParams.timezone,
+          funnelId: params.funnelId,
+          step: params.step ?? 1,
+          take: params.take,
+          skip: params.skip,
+          password: analyticsParams.password,
+        })
+        return data<ProxyResponse<FunnelSessionsResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)
