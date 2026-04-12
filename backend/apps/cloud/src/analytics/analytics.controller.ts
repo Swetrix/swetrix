@@ -543,7 +543,7 @@ export class AnalyticsController {
     }
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
       null,
@@ -552,7 +552,7 @@ export class AnalyticsController {
       diff,
     )
 
-    const params = { pid, groupFrom: groupFromUTC, groupTo: groupToUTC }
+    const params = { pid, groupFrom, groupTo }
 
     const sessions = await this.analyticsService.getFunnelSessionsList(
       pagesArr,

@@ -60,14 +60,16 @@ export class GetFunnelSessionsDto {
   @Min(1)
   step: number
 
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(0)
   @Max(150)
-  take: number
+  take?: number
 
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(0)
-  skip: number
+  skip?: number
 }
