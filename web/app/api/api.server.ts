@@ -1008,12 +1008,16 @@ export async function getFunnelSessionsServer(
     password?: string
   },
 ): Promise<ServerFetchResult<FunnelSessionsResponse>> {
+  const step = Math.max(1, Math.floor(Number(params.step) || 1))
+  const take = Math.min(150, Math.max(1, Math.floor(Number(params.take) || 30)))
+  const skip = Math.max(0, Math.floor(Number(params.skip) || 0))
+
   const queryParams = new URLSearchParams()
   queryParams.append('pid', pid)
   queryParams.append('period', params.period)
-  queryParams.append('step', String(params.step))
-  queryParams.append('take', String(params.take || 30))
-  queryParams.append('skip', String(params.skip || 0))
+  queryParams.append('step', String(step))
+  queryParams.append('take', String(take))
+  queryParams.append('skip', String(skip))
   if (params.funnelId) queryParams.append('funnelId', params.funnelId)
   if (params.from) queryParams.append('from', params.from)
   if (params.to) queryParams.append('to', params.to)

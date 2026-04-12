@@ -409,12 +409,12 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const res = await this.analyticsService.calculateTimeBucketForAllTime(
-        pid,
-        'analytics',
-      )
+      const [analyticsRes, customEVRes] = await Promise.all([
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'analytics'),
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'customEV'),
+      ])
 
-      diff = res.diff
+      diff = Math.max(analyticsRes.diff, customEVRes.diff)
     }
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -487,6 +487,12 @@ export class AnalyticsController {
       step,
     } = data
 
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
     const pagesArr = await this.analyticsService.getPagesArray(
       pages,
       funnelId,
@@ -494,16 +500,8 @@ export class AnalyticsController {
     )
 
     if (step > pagesArr.length) {
-      throw new BadRequestException(
-        `Step ${step} exceeds the number of funnel steps (${pagesArr.length})`,
-      )
+      throw new BadRequestException('Step exceeds the number of funnel steps')
     }
-
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
 
     const take = this.analyticsService.getSafeNumber(data.take, 30)
     const skip = this.analyticsService.getSafeNumber(data.skip, 0)
@@ -522,12 +520,12 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const res = await this.analyticsService.calculateTimeBucketForAllTime(
-        pid,
-        'analytics',
-      )
+      const [analyticsRes, customEVRes] = await Promise.all([
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'analytics'),
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'customEV'),
+      ])
 
-      diff = res.diff
+      diff = Math.max(analyticsRes.diff, customEVRes.diff)
     }
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
