@@ -191,6 +191,11 @@ body.dark .bb-ygrid {
   stroke-width: 0 !important;
 }
 
+.funnel-chart .bb-target-dropoff .bb-bar {
+  fill: url(#funnel-dropoff-stripe) !important;
+  opacity: 0.8;
+}
+
 .funnel-chart .bb-bar {
   fill-opacity: 1 !important;
   stroke: none !important;

@@ -49,12 +49,38 @@ export const FunnelChart = ({
   )
 
   return (
-    <MainChart
-      chartId='funnel-chart'
-      options={options}
-      dataNames={dataNames}
-      className={cn('funnel-chart', className)}
-      deps={deps}
-    />
+    <>
+      <svg width={0} height={0} className='absolute'>
+        <defs>
+          <pattern
+            id='funnel-dropoff-stripe'
+            patternUnits='userSpaceOnUse'
+            width={20}
+            height={20}
+            patternTransform='rotate(-45)'
+          >
+            <rect
+              width={20}
+              height={20}
+              style={{ fill: 'var(--funnel-stripe-1)' }}
+            />
+            <rect
+              x={0}
+              y={0}
+              width={10}
+              height={20}
+              style={{ fill: 'var(--funnel-stripe-2)' }}
+            />
+          </pattern>
+        </defs>
+      </svg>
+      <MainChart
+        chartId='funnel-chart'
+        options={options}
+        dataNames={dataNames}
+        className={cn('funnel-chart', className)}
+        deps={deps}
+      />
+    </>
   )
 }

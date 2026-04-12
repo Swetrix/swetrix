@@ -1835,57 +1835,6 @@ const getSettingsFunnels = (
         inner: true,
       },
     },
-    onrendered: function () {
-      const chart = this as any
-      if (!chart?.$?.bar?.bars) return
-
-      try {
-        const svg = chart.$.svg.node()
-        if (!svg) return
-
-        const ns = 'http://www.w3.org/2000/svg'
-
-        let defs = svg.querySelector('defs')
-        if (!defs) {
-          defs = document.createElementNS(ns, 'defs')
-          svg.insertBefore(defs, svg.firstChild)
-        }
-
-        if (!defs.querySelector('#funnel-dropoff-stripe')) {
-          const pattern = document.createElementNS(ns, 'pattern')
-          pattern.setAttribute('id', 'funnel-dropoff-stripe')
-          pattern.setAttribute('patternUnits', 'userSpaceOnUse')
-          pattern.setAttribute('width', '20')
-          pattern.setAttribute('height', '20')
-          pattern.setAttribute('patternTransform', 'rotate(-45)')
-
-          const band1 = document.createElementNS(ns, 'rect')
-          band1.setAttribute('width', '20')
-          band1.setAttribute('height', '20')
-          band1.style.fill = 'var(--funnel-stripe-1)'
-          pattern.appendChild(band1)
-
-          const band2 = document.createElementNS(ns, 'rect')
-          band2.setAttribute('x', '0')
-          band2.setAttribute('y', '0')
-          band2.setAttribute('width', '10')
-          band2.setAttribute('height', '20')
-          band2.style.fill = 'var(--funnel-stripe-2)'
-          pattern.appendChild(band2)
-
-          defs.appendChild(pattern)
-        }
-
-        chart.$.bar.bars.each(function (this: SVGPathElement, d: any) {
-          if (d?.id === 'dropoff') {
-            this.style.fill = 'url(#funnel-dropoff-stripe)'
-            this.style.stroke = 'none'
-          }
-        })
-      } catch {
-        // ignore
-      }
-    },
     tooltip: {
       contents: (items: any) => {
         const { index = 0 } = items[0] || {}
