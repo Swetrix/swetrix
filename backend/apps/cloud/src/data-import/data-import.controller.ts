@@ -108,16 +108,18 @@ export class DataImportController {
     const project = await this.projectService.getFullProject(projectId)
     this.projectService.allowedToManage(project, uid)
 
-    const { encryptedRefreshToken, clientId, clientSecret } =
-      await this.ga4ImportService.consumeTokenForImport(uid, projectId)
-
     const ip = getIPFromHeaders(headers) || requestIp || ''
     const userAgent = headers['user-agent'] || ''
 
+    // Create the import record first so we don't consume the OAuth token
+    // if the project already has an active import.
     const dataImport = await this.dataImportService.create(
       projectId,
       'google-analytics',
     )
+
+    const { encryptedRefreshToken, clientId, clientSecret } =
+      await this.ga4ImportService.consumeTokenForImport(uid, projectId)
 
     try {
       await this.importQueue.add(
@@ -144,6 +146,11 @@ export class DataImportController {
     } catch (error) {
       this.logger.error(`Failed to enqueue GA4 import job: ${error.message}`)
       await this.dataImportService.deleteImportRecord(dataImport.id)
+      await this.ga4ImportService.restoreToken(
+        uid,
+        projectId,
+        encryptedRefreshToken,
+      )
       throw new ServiceUnavailableException(
         'Failed to start import. Please try again later.',
       )

@@ -235,6 +235,15 @@ export class Ga4ImportService {
     return this.getAndDeleteToken(uid, pid)
   }
 
+  async restoreToken(
+    uid: string,
+    pid: string,
+    encryptedRefreshToken: string,
+  ): Promise<void> {
+    const key = REDIS_TOKEN_PREFIX + `${uid}:${pid}`
+    await redis.set(key, encryptedRefreshToken, 'EX', REDIS_TOKEN_TTL)
+  }
+
   private async getAndDeleteToken(
     uid: string,
     pid: string,

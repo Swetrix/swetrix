@@ -218,8 +218,8 @@ export class Ga4Mapper implements ImportMapper {
         const metrics = row.metricValues || []
 
         const dateHour = dims[0]?.value || ''
-        const host = dims[1]?.value || ''
-        const pagePath = dims[2]?.value || ''
+        const host = normalizeGA4Value(dims[1]?.value)
+        const pagePath = normalizeGA4Value(dims[2]?.value)
         const source = normalizeGA4Value(dims[3]?.value)
         const medium = normalizeGA4Value(dims[4]?.value)
         const campaign = normalizeGA4Value(dims[5]?.value)
@@ -229,7 +229,7 @@ export class Ga4Mapper implements ImportMapper {
         const count = parseInt(metrics[0]?.value || '0', 10)
         if (count <= 0) continue
 
-        const key = `${dateHour}|${host}|${pagePath}`
+        const key = `${dateHour}|${host || ''}|${pagePath || ''}`
         const existing = lookup.get(key)
 
         if (!existing || count > existing.count) {
