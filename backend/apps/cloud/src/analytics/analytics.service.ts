@@ -1633,6 +1633,168 @@ export class AnalyticsService {
     return { countries, sources }
   }
 
+  async getFunnelSessionsList(
+    pages: string[],
+    params: any,
+    safeTimezone: string,
+    step: number,
+    take = 30,
+    skip = 0,
+  ): Promise<object | void> {
+    const pageParams: Record<string, string> = {}
+
+    const pagesStr = _join(
+      _map(pages, (value, index) => {
+        pageParams[`v${index}`] = value
+        return `value={v${index}:String}`
+      }),
+      ',',
+    )
+
+    const query = `
+      WITH funnel_qualified AS (
+        SELECT psid
+        FROM (
+          SELECT
+            psid,
+            windowFunnel(86400)(created, ${pagesStr}) AS level
+          FROM (
+            SELECT psid, pg AS value, created
+            FROM analytics
+            WHERE pid = {pid:FixedString(12)} AND psid != 0
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            UNION ALL
+            SELECT psid, ev AS value, created
+            FROM customEV
+            WHERE pid = {pid:FixedString(12)} AND psid != 0
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          )
+          GROUP BY psid
+        )
+        WHERE level >= {step:UInt32}
+      ),
+      distinct_sessions AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          min(toTimeZone(created, {timezone:String})) AS sessionStart,
+          max(toTimeZone(created, {timezone:String})) AS lastActivity
+        FROM (
+          SELECT psid, pid, cc, os, br, created
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM funnel_qualified)
+          UNION ALL
+          SELECT psid, pid, cc, os, br, created
+          FROM customEV
+          WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM funnel_qualified)
+        )
+        GROUP BY psidCasted, pid
+      ),
+      pageview_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM funnel_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      event_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM funnel_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      error_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM errors
+        WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM funnel_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      session_duration_agg AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
+          argMax(profileId, lastSeen) as profileId
+        FROM sessions
+        WHERE pid = {pid:FixedString(12)}
+          AND psid IN (SELECT psid FROM funnel_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      first_session_per_profile AS (
+        SELECT
+          profileId,
+          argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+        GROUP BY profileId
+      )
+      SELECT
+        dsf.psidCasted AS psid,
+        dsf.cc,
+        dsf.os,
+        dsf.br,
+        COALESCE(pc.count, 0) AS pageviews,
+        COALESCE(ec.count, 0) AS customEvents,
+        COALESCE(errc.count, 0) AS errors,
+        dsf.sessionStart,
+        dsf.lastActivity,
+        if(dateDiff('second', dsf.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        sda.avg_duration AS sdur,
+        sda.profileId AS profileId,
+        if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
+        if(fsp.firstPsid = dsf.psidCasted, 1, 0) AS isFirstSession
+      FROM distinct_sessions dsf
+      LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
+      LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
+      LEFT JOIN error_counts errc ON dsf.psidCasted = errc.psidCasted AND dsf.pid = errc.pid
+      LEFT JOIN session_duration_agg sda ON dsf.psidCasted = sda.psidCasted AND dsf.pid = sda.pid
+      LEFT JOIN first_session_per_profile fsp ON sda.profileId = fsp.profileId
+      WHERE dsf.psidCasted IS NOT NULL
+      ORDER BY dsf.sessionStart DESC
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          ...params,
+          ...pageParams,
+          timezone: safeTimezone,
+          step,
+          take,
+          skip,
+        },
+      })
+      .then((resultSet) => resultSet.json())
+
+    return data
+  }
+
   async getTotalPageviews(
     pid: string,
     groupFrom: string,

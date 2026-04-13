@@ -13,6 +13,7 @@ interface FunnelChartProps {
   totalPageviews: number
   t: any
   className?: string
+  onBarClick?: (stepIndex: number) => void
 }
 
 export const FunnelChart = ({
@@ -20,12 +21,19 @@ export const FunnelChart = ({
   totalPageviews,
   t,
   className,
+  onBarClick,
 }: FunnelChartProps) => {
   const { i18n } = useTranslation()
 
   const options: ChartOptions = useMemo(() => {
-    return getSettingsFunnels(funnel, totalPageviews, t, i18n.language)
-  }, [funnel, totalPageviews, t, i18n.language])
+    return getSettingsFunnels(
+      funnel,
+      totalPageviews,
+      t,
+      i18n.language,
+      onBarClick,
+    )
+  }, [funnel, totalPageviews, t, i18n.language, onBarClick])
 
   const dataNames = useMemo(
     () => ({
@@ -36,17 +44,43 @@ export const FunnelChart = ({
   )
 
   const deps = useMemo(
-    () => [funnel, totalPageviews, t, i18n.language],
-    [funnel, totalPageviews, t, i18n.language],
+    () => [funnel, totalPageviews, t, i18n.language, onBarClick],
+    [funnel, totalPageviews, t, i18n.language, onBarClick],
   )
 
   return (
-    <MainChart
-      chartId='funnel-chart'
-      options={options}
-      dataNames={dataNames}
-      className={cn('funnel-chart', className)}
-      deps={deps}
-    />
+    <>
+      <svg width={0} height={0} className='absolute'>
+        <defs>
+          <pattern
+            id='funnel-dropoff-stripe'
+            patternUnits='userSpaceOnUse'
+            width={20}
+            height={20}
+            patternTransform='rotate(-45)'
+          >
+            <rect
+              width={20}
+              height={20}
+              style={{ fill: 'var(--funnel-stripe-1)' }}
+            />
+            <rect
+              x={0}
+              y={0}
+              width={10}
+              height={20}
+              style={{ fill: 'var(--funnel-stripe-2)' }}
+            />
+          </pattern>
+        </defs>
+      </svg>
+      <MainChart
+        chartId='funnel-chart'
+        options={options}
+        dataNames={dataNames}
+        className={cn('funnel-chart', className)}
+        deps={deps}
+      />
+    </>
   )
 }

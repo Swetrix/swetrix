@@ -48,6 +48,7 @@ import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDto } from './dto/getUserFlow.dto'
 import { GetFunnelsDto } from './dto/getFunnels.dto'
+import { GetFunnelSessionsDto } from './dto/get-funnel-sessions.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
@@ -420,12 +421,12 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const res = await this.analyticsService.calculateTimeBucketForAllTime(
-        pid,
-        'analytics',
-      )
+      const [analyticsRes, customEVRes] = await Promise.all([
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'analytics'),
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'customEV'),
+      ])
 
-      diff = res.diff
+      diff = Math.max(analyticsRes.diff, customEVRes.diff)
     }
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -478,6 +479,93 @@ export class AnalyticsController {
     }
 
     return { funnel, totalPageviews }
+  }
+
+  @Get('funnel-sessions')
+  @Auth(true, true)
+  async getFunnelSessions(
+    @Query() data: GetFunnelSessionsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      pages,
+      funnelId,
+      step,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const pagesArr = await this.analyticsService.getPagesArray(
+      pages,
+      funnelId,
+      pid,
+    )
+
+    if (step < 1 || step > pagesArr.length) {
+      throw new BadRequestException(
+        'Step must be between 1 and the number of funnel steps',
+      )
+    }
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 150',
+      )
+    }
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, step: ${step}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/funnel-sessions',
+    )
+
+    let diff
+
+    if (period === 'all') {
+      const [analyticsRes, customEVRes] = await Promise.all([
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'analytics'),
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'customEV'),
+      ])
+
+      diff = Math.max(analyticsRes.diff, customEVRes.diff)
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const params = { pid, groupFrom, groupTo }
+
+    const sessions = await this.analyticsService.getFunnelSessionsList(
+      pagesArr,
+      params,
+      safeTimezone,
+      step,
+      take,
+      skip,
+    )
+
+    return { sessions, take, skip }
   }
 
   @Get('meta')
