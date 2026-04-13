@@ -1,6 +1,6 @@
 import { BetaAnalyticsDataClient } from '@google-analytics/data'
 import { OAuth2Client } from 'google-auth-library'
-import CryptoJS from 'crypto-js'
+import * as crypto from 'crypto'
 import dayjs from 'dayjs'
 
 import {
@@ -15,7 +15,7 @@ import {
 } from './mapper.utils'
 import { deriveKey } from '../../common/utils'
 
-const ENCRYPTION_KEY = deriveKey('ga4-token')
+const ENCRYPTION_KEY = Buffer.from(deriveKey('ga4-token', 32), 'hex')
 
 const PAGE_SIZE = 100_000
 
@@ -74,9 +74,23 @@ function buildReferrer(source: string | null): string | null {
   return null
 }
 
-function decryptToken(encrypted: string): string {
-  const bytes = CryptoJS.Rabbit.decrypt(encrypted, ENCRYPTION_KEY)
-  return bytes.toString(CryptoJS.enc.Utf8)
+function decryptToken(ciphertext: string): string {
+  const parts = ciphertext.split(':')
+  if (parts.length !== 3) {
+    throw new Error('Invalid encrypted token format')
+  }
+  const [ivHex, encHex, tagHex] = parts
+  const decipher = crypto.createDecipheriv(
+    'aes-256-gcm',
+    ENCRYPTION_KEY,
+    Buffer.from(ivHex, 'hex'),
+  )
+  decipher.setAuthTag(Buffer.from(tagHex, 'hex'))
+  const decrypted = Buffer.concat([
+    decipher.update(Buffer.from(encHex, 'hex')),
+    decipher.final(),
+  ])
+  return decrypted.toString('utf8')
 }
 
 function getMonthChunks(

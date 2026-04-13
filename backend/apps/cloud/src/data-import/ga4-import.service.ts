@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { OAuth2Client } from 'google-auth-library'
-import CryptoJS from 'crypto-js'
+import * as crypto from 'crypto'
 
 import { isDevelopment, PRODUCTION_ORIGIN, redis } from '../common/constants'
 import { ProjectService } from '../project/project.service'
@@ -19,7 +19,37 @@ const GA4_REDIRECT_URL = isDevelopment
   ? 'http://localhost:3000/ga4-import-connected'
   : `${PRODUCTION_ORIGIN}/ga4-import-connected`
 
-const ENCRYPTION_KEY = deriveKey('ga4-token')
+const ENCRYPTION_KEY = Buffer.from(deriveKey('ga4-token', 32), 'hex')
+
+function encryptToken(plaintext: string): string {
+  const iv = crypto.randomBytes(12)
+  const cipher = crypto.createCipheriv('aes-256-gcm', ENCRYPTION_KEY, iv)
+  const encrypted = Buffer.concat([
+    cipher.update(plaintext, 'utf8'),
+    cipher.final(),
+  ])
+  const authTag = cipher.getAuthTag()
+  return `${iv.toString('hex')}:${encrypted.toString('hex')}:${authTag.toString('hex')}`
+}
+
+function decryptToken(ciphertext: string): string {
+  const parts = ciphertext.split(':')
+  if (parts.length !== 3) {
+    throw new Error('Invalid encrypted token format')
+  }
+  const [ivHex, encHex, tagHex] = parts
+  const decipher = crypto.createDecipheriv(
+    'aes-256-gcm',
+    ENCRYPTION_KEY,
+    Buffer.from(ivHex, 'hex'),
+  )
+  decipher.setAuthTag(Buffer.from(tagHex, 'hex'))
+  const decrypted = Buffer.concat([
+    decipher.update(Buffer.from(encHex, 'hex')),
+    decipher.final(),
+  ])
+  return decrypted.toString('utf8')
+}
 
 const GA4_SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 
@@ -110,10 +140,7 @@ export class Ga4ImportService {
       )
     }
 
-    const encrypted = CryptoJS.Rabbit.encrypt(
-      tokens.refresh_token,
-      ENCRYPTION_KEY,
-    ).toString()
+    const encrypted = encryptToken(tokens.refresh_token)
 
     await redis.set(
       REDIS_TOKEN_PREFIX + `${uid}:${pid}`,
@@ -138,10 +165,7 @@ export class Ga4ImportService {
       )
     }
 
-    const refreshToken = CryptoJS.Rabbit.decrypt(
-      encrypted,
-      ENCRYPTION_KEY,
-    ).toString(CryptoJS.enc.Utf8)
+    const refreshToken = decryptToken(encrypted)
 
     const oauth2Client = this.getOAuthClient()
     oauth2Client.setCredentials({ refresh_token: refreshToken })
