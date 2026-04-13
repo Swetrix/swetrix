@@ -45,10 +45,16 @@ At the top of the funnel view, you will find a summary:
 
 The chart visualizes the flow of users through each step:
 
-- **Visitors**: The green bar shows the number of users who successfully reached this step.
-- **Dropoff**: The red bar indicates the number of users who left the funnel at this step (did not proceed to the next one).
+- **Visitors**: The blue bar shows the number of users who successfully reached this step.
+- **Dropoff**: The striped bar indicates the number of users who left the funnel at this step (did not proceed to the next one).
 
 This visualization helps you instantly spot the "leaky" parts of your flow where you are losing the most users.
+
+### Exploring Sessions per Step
+
+You can click on any bar in the funnel chart to open a sessions drawer showing the individual sessions that reached that step. These are not just sessions that visited the page — they are sessions that completed every prior funnel step in order, matching the same sequential logic the funnel itself uses.
+
+For example, in a three-step funnel (`/pricing` → `/signup` → `/dashboard`), clicking the `/dashboard` bar will only show sessions where the visitor first viewed `/pricing`, then `/signup`, and then `/dashboard` — in that order.
 
 ## Managing Funnels
 

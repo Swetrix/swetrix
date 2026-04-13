@@ -3,7 +3,7 @@ import _map from 'lodash/map'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { SessionsResponse } from '~/api/api.server'
+import type { SessionsResponse, FunnelSessionsResponse } from '~/api/api.server'
 import type { Session as SessionType } from '~/lib/models/Project'
 import {
   Drawer,
@@ -20,16 +20,19 @@ import { Session } from '../Sessions/Sessions'
 
 const SESSIONS_TAKE = 30
 
+type SessionsPageResult = SessionsResponse | FunnelSessionsResponse
+
 async function fetchSessionsPage(
+  action: string,
   projectId: string,
   params: Record<string, unknown>,
   signal?: AbortSignal,
-): Promise<SessionsResponse | null> {
+): Promise<SessionsPageResult | null> {
   const response = await fetch('/api/analytics', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      action: 'getSessions',
+      action,
       projectId,
       params,
     }),
@@ -41,7 +44,7 @@ async function fetchSessionsPage(
   }
 
   const result = (await response.json()) as {
-    data: SessionsResponse | null
+    data: SessionsPageResult | null
     error: string | null
   }
 
@@ -55,13 +58,17 @@ async function fetchSessionsPage(
 interface SessionsDrawerProps {
   isOpen: boolean
   onClose: () => void
-  from: string
-  to: string
+  from?: string
+  to?: string
   label: string
   projectId: string
   timezone: string
   timeFormat: '12-hour' | '24-hour'
   filters?: any[]
+  period?: string
+  funnelId?: string
+  funnelStep?: number
+  totalCount?: number
 }
 
 export const SessionsDrawer = ({
@@ -74,9 +81,14 @@ export const SessionsDrawer = ({
   timezone,
   timeFormat,
   filters,
+  period = 'custom',
+  funnelId,
+  funnelStep,
+  totalCount,
 }: SessionsDrawerProps) => {
   const { t } = useTranslation('common')
   const stableFilters = useMemo(() => filters ?? [], [filters])
+  const isFunnelMode = !!(funnelId && funnelStep)
   const [sessions, setSessions] = useState<SessionType[]>([])
   const [skip, setSkip] = useState(0)
   const [hasMore, setHasMore] = useState(true)
@@ -94,22 +106,41 @@ export const SessionsDrawer = ({
       append: boolean,
       signal?: AbortSignal,
     ): Promise<boolean> => {
-      let result: SessionsResponse | null = null
+      let result: SessionsPageResult | null = null
 
       try {
-        result = await fetchSessionsPage(
-          projectId,
-          {
-            period: 'custom',
-            from,
-            to,
-            timezone,
-            filters: stableFilters,
-            take: SESSIONS_TAKE,
-            skip: currentSkip,
-          },
-          signal,
-        )
+        if (isFunnelMode) {
+          result = await fetchSessionsPage(
+            'getFunnelSessions',
+            projectId,
+            {
+              period,
+              from,
+              to,
+              timezone,
+              funnelId,
+              step: funnelStep,
+              take: SESSIONS_TAKE,
+              skip: currentSkip,
+            },
+            signal,
+          )
+        } else {
+          result = await fetchSessionsPage(
+            'getSessions',
+            projectId,
+            {
+              period,
+              from,
+              to,
+              timezone,
+              filters: stableFilters,
+              take: SESSIONS_TAKE,
+              skip: currentSkip,
+            },
+            signal,
+          )
+        }
       } catch (e) {
         if (signal?.aborted) return false
         setError(
@@ -136,7 +167,18 @@ export const SessionsDrawer = ({
 
       return true
     },
-    [projectId, from, to, timezone, stableFilters, t],
+    [
+      projectId,
+      period,
+      from,
+      to,
+      timezone,
+      isFunnelMode,
+      funnelId,
+      funnelStep,
+      stableFilters,
+      t,
+    ],
   )
 
   useEffect(() => {
@@ -165,7 +207,7 @@ export const SessionsDrawer = ({
       clearTimeout(timer)
       controller.abort()
     }
-  }, [isOpen, from, to, loadSessions])
+  }, [isOpen, period, from, to, loadSessions])
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || !hasMore) return
@@ -226,11 +268,18 @@ export const SessionsDrawer = ({
               <DrawerDescription>{label}</DrawerDescription>
             </div>
             <div className='ml-3 flex shrink-0 items-center gap-2'>
-              {!initialLoading && sessions.length > 0 ? (
+              {!initialLoading &&
+              (totalCount != null || sessions.length > 0) ? (
                 <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
                   <UsersIcon className='size-3.5' />
-                  {sessions.length}
-                  {hasMore ? '+' : ''}
+                  {totalCount != null ? (
+                    totalCount
+                  ) : (
+                    <>
+                      {sessions.length}
+                      {hasMore ? '+' : ''}
+                    </>
+                  )}
                 </span>
               ) : null}
               <DrawerClose asChild>
