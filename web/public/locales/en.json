@@ -1859,7 +1859,7 @@
           "connecting": "Connecting...",
           "loadingProperties": "Loading properties...",
           "noProperties": "No GA4 properties found for this Google account.",
-          "importNote": "Data will be imported in the background. Language, region, city, and UTM campaign details are not available from GA4 aggregate exports."
+          "importNote": "Data will be imported in the background. Some details like locale or browser/OS versions are not available from GA4 aggregate exports."
         }
       },
       "captcha": {
