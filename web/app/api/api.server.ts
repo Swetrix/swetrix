@@ -2386,6 +2386,21 @@ export async function processGSCTokenServer(
   })
 }
 
+// ============================================================================
+// MARK: Google Analytics 4 Import API
+// ============================================================================
+
+export async function processGA4ImportTokenServer(
+  request: Request,
+  code: string,
+  state: string,
+): Promise<ServerFetchResult<{ pid: string }>> {
+  return serverFetch<{ pid: string }>(request, 'data-import/ga4/callback', {
+    method: 'POST',
+    body: { code, state },
+  })
+}
+
 interface GSCKeyword {
   name: string
   count: number

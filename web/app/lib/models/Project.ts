@@ -1,3 +1,4 @@
+import { isSelfhosted } from '../constants'
 import { Organisation, Role } from './Organisation'
 
 interface OverallPeriodStats {
@@ -174,9 +175,18 @@ export interface AnalyticsFunnel {
   topSources: Record<string, number>
 }
 
-export const IMPORT_PROVIDERS = ['umami', 'simple-analytics', 'fathom'] as const
+export type Provider =
+  | 'umami'
+  | 'simple-analytics'
+  | 'fathom'
+  | 'google-analytics'
 
-export type Provider = (typeof IMPORT_PROVIDERS)[number]
+export const IMPORT_PROVIDERS: Provider[] = [
+  'fathom',
+  isSelfhosted ? null : 'google-analytics',
+  'simple-analytics',
+  'umami',
+].filter((x): x is Provider => !!x)
 
 export interface DataImport {
   id: number
