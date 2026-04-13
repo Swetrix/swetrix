@@ -31,7 +31,7 @@ import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { ProjectService } from '../project/project.service'
 import { DataImportService } from './data-import.service'
-import { Ga4ImportService } from './ga4-import.service'
+import { Ga4ImportService, Ga4Property } from './ga4-import.service'
 import { UploadImportDto, StartGa4ImportDto } from './dto'
 import { getMapper, SUPPORTED_PROVIDERS } from './mappers'
 import { DataImportJobData, DATA_IMPORT_QUEUE } from './data-import.processor'
@@ -91,7 +91,7 @@ export class DataImportController {
   async ga4Properties(
     @Param('projectId') projectId: string,
     @CurrentUserId() uid: string,
-  ) {
+  ): Promise<Ga4Property[]> {
     return this.ga4ImportService.listProperties(uid, projectId)
   }
 
