@@ -244,15 +244,13 @@ export class Ga4ImportService {
     clientSecret: string
   }> {
     const key = REDIS_TOKEN_PREFIX + `${uid}:${pid}`
-    const encrypted = await redis.get(key)
+    const encrypted = await redis.getdel(key)
 
     if (!encrypted) {
       throw new BadRequestException(
         'Google Analytics connection expired. Please connect again.',
       )
     }
-
-    await redis.del(key)
 
     const { clientId, clientSecret } = this.getCredentials()
 
