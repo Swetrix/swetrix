@@ -119,7 +119,12 @@ export class Ga4Mapper implements ImportMapper {
     importID: number,
     context?: Record<string, unknown>,
   ): AsyncIterable<AnalyticsImportRow> {
-    if (!context?.encryptedRefreshToken || !context?.ga4PropertyId) {
+    if (
+      !context?.encryptedRefreshToken ||
+      !context?.ga4PropertyId ||
+      !context?.ga4ClientId ||
+      !context?.ga4ClientSecret
+    ) {
       throw new ImportError(
         'GA4 import requires OAuth credentials and a property ID.',
       )

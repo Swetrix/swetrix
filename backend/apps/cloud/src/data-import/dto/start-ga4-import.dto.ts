@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator'
+import { IsNumberString } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
 
 export class StartGa4ImportDto {
@@ -7,6 +7,6 @@ export class StartGa4ImportDto {
       'GA4 property ID (numeric ID, not the "properties/" prefixed form)',
     example: '123456789',
   })
-  @IsString()
+  @IsNumberString()
   propertyId: string
 }
