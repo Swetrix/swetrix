@@ -119,6 +119,14 @@ export class DataImportProcessor extends WorkerHost {
           }
         : undefined
 
+      if (isApiBased && (!ga4ClientId || !ga4ClientSecret)) {
+        await this.dataImportService.markFailed(
+          id,
+          'GA4 import requires valid OAuth client credentials. Please reconnect your Google account.',
+        )
+        return
+      }
+
       try {
         for await (const row of mapper.createRowStream(
           filePath,
