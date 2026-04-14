@@ -11,6 +11,7 @@ import {
   linkBySSOHashServer,
   processSSOTokenServer,
   processGSCTokenServer,
+  processBWTTokenServer,
   processGA4ImportTokenServer,
   authMeServer,
   linkSSOWithPasswordServer,
@@ -31,6 +32,7 @@ interface ProxyRequest {
     | 'linkBySSOHash'
     | 'processSSOToken'
     | 'processGSCToken'
+    | 'processBWTToken'
     | 'processGA4ImportToken'
     | 'authMe'
     | 'linkSSOWithPassword'
@@ -218,6 +220,28 @@ export async function action({ request }: ActionFunctionArgs) {
             ? Array.isArray(result.error)
               ? result.error.join(', ')
               : result.error
+            : null,
+        })
+      }
+
+      case 'processBWTToken': {
+        if (!body.code || !body.state) {
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'code and state are required' },
+            { status: 400 },
+          )
+        }
+        const bwtResult = await processBWTTokenServer(
+          request,
+          body.code,
+          body.state,
+        )
+        return data<ProxyResponse<{ pid: string }>>({
+          data: bwtResult.data,
+          error: bwtResult.error
+            ? Array.isArray(bwtResult.error)
+              ? bwtResult.error.join(', ')
+              : bwtResult.error
             : null,
         })
       }

@@ -5,6 +5,8 @@ import { ProjectService } from './project.service'
 import { ProjectController } from './project.controller'
 import { GSCController } from './gsc.controller'
 import { GSCService } from './gsc.service'
+import { BWTController } from './bwt.controller'
+import { BWTService } from './bwt.service'
 import { UserModule } from '../user/user.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { MailerModule } from '../mailer/mailer.module'
@@ -42,8 +44,8 @@ import { PendingInvitationModule } from '../pending-invitation/pending-invitatio
     MailerModule,
     PendingInvitationModule,
   ],
-  providers: [ProjectService, ProjectsViewsRepository, GSCService],
-  exports: [ProjectService, ProjectsViewsRepository, GSCService],
-  controllers: [ProjectController, GSCController],
+  providers: [ProjectService, ProjectsViewsRepository, GSCService, BWTService],
+  exports: [ProjectService, ProjectsViewsRepository, GSCService, BWTService],
+  controllers: [ProjectController, GSCController, BWTController],
 })
 export class ProjectModule {}

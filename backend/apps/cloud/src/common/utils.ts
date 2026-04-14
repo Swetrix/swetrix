@@ -37,6 +37,7 @@ export const deriveKey = (
     | 'access-token'
     | 'gsc-token'
     | 'ga4-token'
+    | 'bwt-token'
     | 'revenue',
   length = 32,
 ) => {

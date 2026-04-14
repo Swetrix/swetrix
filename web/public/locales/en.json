@@ -1387,6 +1387,9 @@
       "desc": "Search performance for {{url}}",
       "connectGSC": "Connect Google Search Console to see search performance data",
       "connectGSCDesc": "Link your Google Search Console account to view clicks, impressions, search queries, and top pages from Google Search.",
+      "connectSearchEngine": "Connect a search engine to see performance data",
+      "connectSearchEngineDesc": "Link Google Search Console or Bing Webmaster Tools to view clicks, impressions, search queries, and top pages.",
+      "dataSources": "Data sources",
       "connectButton": "Connect Search Console",
       "searchEngines": "Search engines",
       "aiReferrals": "AI referrals",
@@ -1754,6 +1757,18 @@
         "websiteProperty": "Website property",
         "websitePropertyHint": "Select the Google Search Console property you want to see the keywords for. If you don't see your domain here, make sure you have added and verified it on the Google Search Console.",
         "linkedGoogleAccount": "Linked Google account"
+      },
+      "bwt": {
+        "title": "Bing Webmaster Tools",
+        "connect": "Connect your project to Bing Webmaster Tools to get search stats from Bing, including keywords, clicks, and impressions.",
+        "disconnected": "The project has been disconnected from Bing Webmaster Tools.",
+        "selectProperty": "Select a site",
+        "connectDisclaimer": "For the integration to work, make sure you have added your website on <url>Bing Webmaster Tools</url> first.",
+        "propertyConnected": "Selected site saved to your project",
+        "websiteProperty": "Website",
+        "websitePropertyHint": "Select the Bing Webmaster Tools site you want to see search data for. If you don't see your site here, make sure you have added and verified it on Bing Webmaster Tools.",
+        "linkedAccount": "Bing account",
+        "accountConnected": "Connected"
       },
       "tabs": {
         "general": "General",

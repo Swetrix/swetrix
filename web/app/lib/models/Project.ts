@@ -233,6 +233,7 @@ export interface Project {
   botsProtectionLevel: 'off' | 'basic'
   role?: Role
   gscPropertyUri?: string | null
+  bwtSiteUrl?: string | null
   isPinned?: boolean
   revenueCurrency?: string
   websiteUrl?: string | null

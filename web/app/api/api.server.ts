@@ -2387,6 +2387,21 @@ export async function processGSCTokenServer(
 }
 
 // ============================================================================
+// MARK: Bing Webmaster Tools API
+// ============================================================================
+
+export async function processBWTTokenServer(
+  request: Request,
+  code: string,
+  state: string,
+): Promise<ServerFetchResult<{ pid: string }>> {
+  return serverFetch<{ pid: string }>(request, 'v1/project/bwt/process-token', {
+    method: 'POST',
+    body: { code, state },
+  })
+}
+
+// ============================================================================
 // MARK: Google Analytics 4 Import API
 // ============================================================================
 
@@ -2487,6 +2502,10 @@ interface GSCTopDeviceEntry {
 export interface GSCDashboardResponse {
   notConnected?: boolean
   noProperty?: boolean
+  sources?: {
+    google: boolean
+    bing: boolean
+  }
   summary?: {
     clicks: number
     impressions: number

@@ -135,6 +135,22 @@ export function useAuthProxy() {
     [],
   )
 
+  const processBWTToken = useCallback(
+    async (code: string, state: string): Promise<{ pid: string }> => {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'processBWTToken', code, state }),
+      })
+      const result = (await response.json()) as ProxyResponse<{ pid: string }>
+      if (result.error || !result.data) {
+        throw new Error(result.error || 'Failed to process BWT token')
+      }
+      return result.data
+    },
+    [],
+  )
+
   const processGA4ImportToken = useCallback(
     async (code: string, state: string): Promise<{ pid: string }> => {
       const response = await fetch('/api/auth', {
@@ -207,6 +223,7 @@ export function useAuthProxy() {
     linkBySSOHash,
     processSSOToken,
     processGSCToken,
+    processBWTToken,
     processGA4ImportToken,
     authMe,
     linkSSOWithPassword,
