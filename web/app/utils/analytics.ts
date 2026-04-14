@@ -76,7 +76,7 @@ const PATHS_REPLACEMENT_MAP = [
   },
 ]
 
-const BLOG_PAGE_REGEX = /^\/blog\/.+$/
+const IGNORED_PAGE_REGEX = /^(\/blog\/.+|\/comparison)$/
 
 const checkIgnore = (path: string | undefined | null, ignore: RegExp[]) => {
   if (!path) {
@@ -125,7 +125,7 @@ export const trackViews = () => {
         ref,
       } as Swetrix.IPageViewPayload
 
-      if (pg && BLOG_PAGE_REGEX.test(pg)) {
+      if (pg && IGNORED_PAGE_REGEX.test(pg)) {
         return false
       }
 
