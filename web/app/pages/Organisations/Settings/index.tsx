@@ -3,6 +3,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import {
+  CaretLeftIcon,
   FolderSimpleIcon,
   SlidersHorizontalIcon,
   TrashIcon,
@@ -279,7 +280,14 @@ const OrganisationSettings = () => {
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-950'>
       <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+        <Link
+          to={routes.organisations}
+          className='flex max-w-max items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+        >
+          <CaretLeftIcon className='mr-1 size-3' />
+          {t('organisations.backToList')}
+        </Link>
+        <h2 className='mt-1 text-3xl font-bold text-gray-900 dark:text-gray-50'>
           {title}
         </h2>
         <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />

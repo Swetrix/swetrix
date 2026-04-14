@@ -977,6 +977,7 @@
   "organisations": {
     "create": "Créer une organisation",
     "organisations": "Organisations",
+    "backToList": "Retour aux organisations",
     "noOrganisations": "Aucune organisation pour le moment",
     "createOrganisation": "Vous n'avez encore créé ni rejoint aucune organisation. Commencez par créer votre première organisation.",
     "new": "Nouvelle organisation",
@@ -1848,6 +1849,18 @@
         },
         "fathom": {
           "description": "Importer les pages vues et les événements depuis l'exportation Fathom Analytics"
+        },
+        "google-analytics": {
+          "description": "Importer les pages vues et les événements depuis Google Analytics 4",
+          "fileType": "Google OAuth",
+          "connectGoogle": "Connecter un compte Google",
+          "connectDesc": "Connectez votre compte Google pour importer l'historique des données de Google Analytics 4. Nous ne demandons qu'un accès en lecture seule à vos données d'analyse.",
+          "selectProperty": "Sélectionner une propriété GA4",
+          "startImport": "Démarrer l'importation",
+          "connecting": "Connexion...",
+          "loadingProperties": "Chargement des propriétés...",
+          "noProperties": "Aucune propriété GA4 trouvée pour ce compte Google.",
+          "importNote": "Les données seront importées en arrière-plan. Certains détails comme les paramètres régionaux ou les versions du navigateur/système d'exploitation ne sont pas disponibles dans les exportations agrégées de GA4."
         }
       },
       "captcha": {

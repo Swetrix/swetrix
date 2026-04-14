@@ -977,6 +977,7 @@
   "organisations": {
     "create": "Create organisation",
     "organisations": "Organisations",
+    "backToList": "Back to organisations",
     "noOrganisations": "No organisations yet",
     "createOrganisation": "You haven't created or joined any organisations yet. Get started by creating your first organisation.",
     "new": "New organisation",

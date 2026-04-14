@@ -977,6 +977,7 @@
   "organisations": {
     "create": "Utwórz organizację",
     "organisations": "Organizacje",
+    "backToList": "Powrót do organizacji",
     "noOrganisations": "Nie ma jeszcze żadnych organizacji",
     "createOrganisation": "Nie utworzyłeś ani nie dołączyłeś jeszcze do żadnej organizacji. Zacznij od utworzenia pierwszej organizacji.",
     "new": "Nowa organizacja",
@@ -1848,6 +1849,18 @@
         },
         "fathom": {
           "description": "Importuj odsłony i zdarzenia z eksportu Fathom Analytics"
+        },
+        "google-analytics": {
+          "description": "Importuj odsłony i zdarzenia z Google Analytics 4",
+          "fileType": "Google OAuth",
+          "connectGoogle": "Połącz konto Google",
+          "connectDesc": "Połącz swoje konto Google, aby zaimportować dane historyczne z Google Analytics 4. Prosimy tylko o dostęp tylko do odczytu do Twoich danych analitycznych.",
+          "selectProperty": "Wybierz usługę GA4",
+          "startImport": "Rozpocznij import",
+          "connecting": "Łączenie...",
+          "loadingProperties": "Ładowanie usług...",
+          "noProperties": "Nie znaleziono usług GA4 dla tego konta Google.",
+          "importNote": "Dane będą importowane w tle. Niektóre szczegóły, takie jak ustawienia regionalne lub wersje przeglądarki/systemu operacyjnego, nie są dostępne w zagregowanych eksportach GA4."
         }
       },
       "captcha": {
