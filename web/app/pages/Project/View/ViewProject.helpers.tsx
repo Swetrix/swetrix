@@ -783,7 +783,7 @@ const getSettings = (
     },
     resize: {
       auto: true,
-      timer: false,
+      timer: true,
     },
     axis: {
       x: {
@@ -1334,7 +1334,7 @@ const getSettingsCustomEventsStacked = (
     },
     resize: {
       auto: true,
-      timer: false,
+      timer: true,
     },
     legend: {
       position: 'bottom',
@@ -1447,7 +1447,7 @@ const getSettingsSession = (
     },
     resize: {
       auto: true,
-      timer: false,
+      timer: true,
     },
     axis: {
       x: {
@@ -1651,7 +1651,7 @@ const getSettingsError = (
     },
     resize: {
       auto: true,
-      timer: false,
+      timer: true,
     },
     axis: {
       x: {
@@ -1815,7 +1815,7 @@ const getSettingsFunnels = (
     },
     resize: {
       auto: true,
-      timer: false,
+      timer: true,
     },
     grid: {
       y: {
@@ -2177,7 +2177,7 @@ const getSettingsPerf = (
     },
     resize: {
       auto: true,
-      timer: false,
+      timer: true,
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
@@ -2607,7 +2607,7 @@ const getSettingsCaptcha = (
     },
     resize: {
       auto: true,
-      timer: false,
+      timer: true,
     },
     axis: {
       x: {

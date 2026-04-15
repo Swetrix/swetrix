@@ -177,7 +177,7 @@ const getGoalChartSettings = (
     },
     resize: {
       auto: true,
-      timer: false,
+      timer: true,
     },
     axis: {
       x: {
