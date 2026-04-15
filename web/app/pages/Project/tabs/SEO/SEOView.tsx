@@ -393,14 +393,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   const seoGscRowTooltip = useCallback(
     (entry: any) => {
       const pos = entry.position ?? 0
-      const posOrdinal =
-        pos === 1
-          ? `\u{1F947} 1st`
-          : pos === 2
-            ? `2nd`
-            : pos === 3
-              ? `3rd`
-              : `${pos}th`
+      const posDisplay = Number(pos).toFixed(1)
 
       return (
         <ul className='m-0 max-h-[250px] list-none overflow-y-auto p-0 md:max-h-[350px]'>
@@ -435,7 +428,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
               colour='primary'
               className='font-mono whitespace-nowrap tabular-nums md:text-sm'
             >
-              {posOrdinal}
+              {posDisplay}
             </Text>
           </li>
           <li className='flex items-center justify-between py-px leading-snug'>
