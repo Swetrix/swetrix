@@ -35,6 +35,7 @@ import React, {
   useRef,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { createPortal } from 'react-dom'
 import { Link, LinkProps, useNavigate } from 'react-router'
 
 import { useProjectDataCustomEventsProxy } from '~/hooks/useAnalyticsProxy'
@@ -47,6 +48,12 @@ import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
+import {
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+  TooltipContent,
+} from '~/ui/Tooltip'
 import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
@@ -1543,6 +1550,9 @@ interface PanelProps {
   activeTab?: keyof typeof PROJECT_TABS
   onRowClick?: (entryName: string) => void
   selectedRow?: string | null
+  rowTooltipRenderer?: (entry: Entry) => React.ReactNode
+  /** When true with rowTooltipRenderer, tooltip is fixed to the cursor (chart-style) instead of Radix anchor positioning. */
+  rowTooltipFollowCursor?: boolean
 }
 
 interface DetailsTableProps extends Pick<
@@ -1945,6 +1955,8 @@ const Panel = ({
   activeTab: activeTabProp,
   onRowClick,
   selectedRow,
+  rowTooltipRenderer,
+  rowTooltipFollowCursor = false,
 }: PanelProps) => {
   const ctx = useViewProjectContext()
   const dataLoading = dataLoadingProp ?? ctx.dataLoading
@@ -1958,6 +1970,12 @@ const Panel = ({
   const [expandedItems, setExpandedItems] = useState<Set<string | null>>(
     new Set(),
   )
+  const [cursorRowTooltip, setCursorRowTooltip] = useState<{
+    entry: Entry
+    x: number
+    y: number
+    key: string
+  } | null>(null)
 
   const tnMapping = typeNameMapping(t)
 
@@ -2014,217 +2032,327 @@ const Panel = ({
             </span>
           </div>
 
-          <div className='space-y-0.5 overflow-auto'>
-            {_map(entriesToDisplay, (entry) => {
-              const { count, name: entryName, ...rest } = entry
-              const perc = _round((count / total) * 100, 2)
-              const rowData = rowMapper(entry)
-              const valueData = valueMapper(count)
-              const hasVersionsForItem = hasVersions(entryName)
-              const isExpanded = expandedItems.has(entryName)
-              const versions = entryName ? versionData?.[entryName] || [] : []
+          {(() => {
+            const panelRows = (
+              <div className='space-y-0.5 overflow-auto'>
+                {_map(entriesToDisplay, (entry) => {
+                  const { count, name: entryName, ...rest } = entry
+                  const perc = _round((count / total) * 100, 2)
+                  const rowData = rowMapper(entry)
+                  const valueData = valueMapper(count)
+                  const hasVersionsForItem = hasVersions(entryName)
+                  const isExpanded = expandedItems.has(entryName)
+                  const versions = entryName
+                    ? versionData?.[entryName] || []
+                    : []
 
-              const link = getFilterLink(id, entryName)
+                  const link = getFilterLink(id, entryName)
 
-              const isSelected =
-                selectedRow != null && selectedRow === entryName
+                  const isSelected =
+                    selectedRow != null && selectedRow === entryName
 
-              return (
-                <div
-                  key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
-                  className='space-y-0.5'
-                >
-                  <div
-                    className={cx(
-                      'relative flex h-8 items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
-                      {
-                        'group hover:bg-gray-50 dark:hover:bg-slate-900/60':
-                          !hideFilters &&
-                          !dataLoading &&
-                          (link || hasVersionsForItem || onRowClick),
-                        'cursor-pointer': onRowClick && !dataLoading,
-                        'cursor-wait': dataLoading,
-                        'bg-gray-50 ring-1 ring-slate-400/60 dark:bg-slate-800/60 dark:ring-slate-500/60':
-                          isSelected,
-                      },
-                    )}
-                    onClick={
-                      onRowClick && entryName
-                        ? () => onRowClick(entryName)
-                        : undefined
-                    }
-                    role='presentation'
-                  >
+                  const rowKey = `${id}-${entryName}-${Object.values(rest).join('-')}`
+
+                  const rowBarEl = (
                     <div
-                      className={cx('absolute inset-0 rounded-sm', {
-                        'bg-blue-50 dark:bg-blue-900/30':
-                          highlightColour === 'blue',
-                        'bg-red-50 dark:bg-slate-500/15':
-                          highlightColour === 'red',
-                        'bg-orange-50 dark:bg-slate-500/15':
-                          highlightColour === 'orange',
-                      })}
-                      style={{ width: `${perc}%` }}
-                    />
-
-                    <div className='relative z-10 flex min-w-0 flex-1 items-center'>
-                      {hasVersionsForItem ? (
-                        <button
-                          type='button'
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            toggleExpanded(entryName)
-                          }}
-                          className='mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-700/80'
-                          aria-label={
-                            isExpanded ? 'Collapse versions' : 'Expand versions'
-                          }
-                        >
-                          <CaretRightIcon
-                            className={cx(
-                              'h-4 w-4 text-gray-500 transition-transform dark:text-gray-400',
-                              {
-                                'rotate-90': isExpanded,
-                              },
-                            )}
-                          />
-                        </button>
-                      ) : null}
-
-                      <FilterWrapper
-                        as={!disableRowClick && link ? 'Link' : 'div'}
-                        to={link}
-                        className={cx('flex min-w-0 flex-1 items-center', {
-                          'cursor-pointer':
-                            !disableRowClick &&
+                      className={cx(
+                        'relative flex h-8 items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
+                        {
+                          'group hover:bg-gray-50 dark:hover:bg-slate-900/60':
                             !hideFilters &&
                             !dataLoading &&
-                            link,
+                            (link || hasVersionsForItem || onRowClick),
+                          'cursor-pointer': onRowClick && !dataLoading,
                           'cursor-wait': dataLoading,
-                        })}
-                      >
-                        {linkContent ? (
-                          <a
-                            className={cx(
-                              'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
-                              {
-                                capitalize,
-                              },
-                            )}
-                            href={rowData as string}
-                            target='_blank'
-                            rel='noopener noreferrer nofollow'
-                            aria-label={`${rowData} (opens in a new tab)`}
-                          >
-                            {rowData}
-                          </a>
-                        ) : (
-                          <span
-                            className={cx(
-                              'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-gray-900 dark:text-gray-100',
-                              {
-                                capitalize,
-                              },
-                            )}
-                          >
-                            {rowData}
-                          </span>
-                        )}
-                      </FilterWrapper>
-                    </div>
-                    <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
-                      <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
-                        ({perc}%)
-                      </span>
-                      <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>
-                        {activeTab === PROJECT_TABS.traffic
-                          ? nFormatter(valueData, 1)
-                          : valueData}
-                      </span>
-                    </div>
-                  </div>
-
-                  {hasVersionsForItem && isExpanded ? (
-                    <div className='ml-6 space-y-0.5'>
-                      {_map(versions, (versionEntry) => {
-                        const versionPerc = _round(
-                          (versionEntry.count / total) * 100,
-                          2,
-                        )
-                        const versionValueData = valueMapper(versionEntry.count)
-                        const versionLink = disableRowClick
-                          ? undefined
-                          : getVersionFilterLink?.(entryName, versionEntry.name)
-
-                        return (
-                          <FilterWrapper
-                            key={`${id}-${entryName}-${versionEntry.name}`}
-                            as={
-                              !disableRowClick && versionLink ? 'Link' : 'div'
+                          'bg-gray-50 ring-1 ring-slate-400/60 dark:bg-slate-800/60 dark:ring-slate-500/60':
+                            isSelected,
+                        },
+                      )}
+                      onClick={
+                        onRowClick && entryName
+                          ? () => onRowClick(entryName)
+                          : undefined
+                      }
+                      onMouseEnter={
+                        rowTooltipRenderer && rowTooltipFollowCursor
+                          ? (e) => {
+                              setCursorRowTooltip({
+                                entry,
+                                x: e.clientX,
+                                y: e.clientY,
+                                key: rowKey,
+                              })
                             }
-                            to={versionLink}
-                            className={cx(
-                              'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
-                              {
-                                'group cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-900/60':
-                                  !disableRowClick &&
-                                  !hideFilters &&
-                                  !dataLoading &&
-                                  versionLink,
-                                'cursor-wait': dataLoading,
-                              },
-                            )}
-                          >
-                            <div
-                              className={cx('absolute inset-0 rounded-sm', {
-                                'bg-blue-50 dark:bg-blue-900/10':
-                                  highlightColour === 'blue',
-                                'bg-red-50 dark:bg-slate-600/15':
-                                  highlightColour === 'red',
-                                'bg-orange-50 dark:bg-slate-600/15':
-                                  highlightColour === 'orange',
-                              })}
-                              style={{ width: `${versionPerc}%` }}
-                            />
+                          : undefined
+                      }
+                      onMouseMove={
+                        rowTooltipRenderer && rowTooltipFollowCursor
+                          ? (e) => {
+                              setCursorRowTooltip((prev) => {
+                                if (prev?.key !== rowKey) return prev
+                                return {
+                                  ...prev,
+                                  x: e.clientX,
+                                  y: e.clientY,
+                                }
+                              })
+                            }
+                          : undefined
+                      }
+                      onMouseLeave={
+                        rowTooltipRenderer && rowTooltipFollowCursor
+                          ? () => {
+                              setCursorRowTooltip((prev) =>
+                                prev?.key === rowKey ? null : prev,
+                              )
+                            }
+                          : undefined
+                      }
+                      role='presentation'
+                    >
+                      <div
+                        className={cx('absolute inset-0 rounded-sm', {
+                          'bg-blue-50 dark:bg-blue-900/30':
+                            highlightColour === 'blue',
+                          'bg-red-50 dark:bg-slate-500/15':
+                            highlightColour === 'red',
+                          'bg-orange-50 dark:bg-slate-500/15':
+                            highlightColour === 'orange',
+                        })}
+                        style={{ width: `${perc}%` }}
+                      />
 
-                            <div className='relative z-10 flex min-w-0 flex-1 items-center'>
-                              <span
+                      <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                        {hasVersionsForItem ? (
+                          <button
+                            type='button'
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              toggleExpanded(entryName)
+                            }}
+                            className='mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-700/80'
+                            aria-label={
+                              isExpanded
+                                ? 'Collapse versions'
+                                : 'Expand versions'
+                            }
+                          >
+                            <CaretRightIcon
+                              className={cx(
+                                'h-4 w-4 text-gray-500 transition-transform dark:text-gray-400',
+                                {
+                                  'rotate-90': isExpanded,
+                                },
+                              )}
+                            />
+                          </button>
+                        ) : null}
+
+                        <FilterWrapper
+                          as={!disableRowClick && link ? 'Link' : 'div'}
+                          to={link}
+                          className={cx('flex min-w-0 flex-1 items-center', {
+                            'cursor-pointer':
+                              !disableRowClick &&
+                              !hideFilters &&
+                              !dataLoading &&
+                              link,
+                            'cursor-wait': dataLoading,
+                          })}
+                        >
+                          {linkContent ? (
+                            <a
+                              className={cx(
+                                'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
+                                {
+                                  capitalize,
+                                },
+                              )}
+                              href={rowData as string}
+                              target='_blank'
+                              rel='noopener noreferrer nofollow'
+                              aria-label={`${rowData} (opens in a new tab)`}
+                            >
+                              {rowData}
+                            </a>
+                          ) : (
+                            <span
+                              className={cx(
+                                'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-gray-900 dark:text-gray-100',
+                                {
+                                  capitalize,
+                                },
+                              )}
+                            >
+                              {rowData}
+                            </span>
+                          )}
+                        </FilterWrapper>
+                      </div>
+                      <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                        <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
+                          ({perc}%)
+                        </span>
+                        <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>
+                          {activeTab === PROJECT_TABS.traffic
+                            ? nFormatter(valueData, 1)
+                            : valueData}
+                        </span>
+                      </div>
+                    </div>
+                  )
+
+                  return (
+                    <div
+                      key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
+                      className='space-y-0.5'
+                    >
+                      {rowTooltipRenderer && !rowTooltipFollowCursor ? (
+                        <TooltipRoot>
+                          <TooltipTrigger asChild>{rowBarEl}</TooltipTrigger>
+                          <TooltipContent className='max-w-xs rounded-md bg-gray-50 px-2 py-1 text-xs text-gray-900 shadow-md ring-1 ring-black/10 md:text-sm dark:bg-slate-900 dark:text-gray-50'>
+                            {rowTooltipRenderer(entry)}
+                          </TooltipContent>
+                        </TooltipRoot>
+                      ) : (
+                        rowBarEl
+                      )}
+
+                      {hasVersionsForItem && isExpanded ? (
+                        <div className='ml-6 space-y-0.5'>
+                          {_map(versions, (versionEntry) => {
+                            const versionPerc = _round(
+                              (versionEntry.count / total) * 100,
+                              2,
+                            )
+                            const versionValueData = valueMapper(
+                              versionEntry.count,
+                            )
+                            const versionLink = disableRowClick
+                              ? undefined
+                              : getVersionFilterLink?.(
+                                  entryName,
+                                  versionEntry.name,
+                                )
+
+                            return (
+                              <FilterWrapper
+                                key={`${id}-${entryName}-${versionEntry.name}`}
+                                as={
+                                  !disableRowClick && versionLink
+                                    ? 'Link'
+                                    : 'div'
+                                }
+                                to={versionLink}
                                 className={cx(
-                                  'flex items-center truncate text-sm text-gray-700 dark:text-gray-200',
+                                  'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                                   {
-                                    capitalize,
+                                    'group cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-900/60':
+                                      !disableRowClick &&
+                                      !hideFilters &&
+                                      !dataLoading &&
+                                      versionLink,
+                                    'cursor-wait': dataLoading,
                                   },
                                 )}
                               >
-                                {rowMapper
-                                  ? rowMapper({
-                                      ...entry,
-                                      name: entryName,
-                                      version: versionEntry.name,
-                                    })
-                                  : `${entryName} ${versionEntry.name}`}
-                              </span>
-                            </div>
-                            <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
-                              <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
-                                ({versionPerc}%)
-                              </span>
-                              <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
-                                {activeTab === PROJECT_TABS.traffic
-                                  ? nFormatter(versionValueData, 1)
-                                  : versionValueData}
-                              </span>
-                            </div>
-                          </FilterWrapper>
-                        )
-                      })}
+                                <div
+                                  className={cx('absolute inset-0 rounded-sm', {
+                                    'bg-blue-50 dark:bg-blue-900/10':
+                                      highlightColour === 'blue',
+                                    'bg-red-50 dark:bg-slate-600/15':
+                                      highlightColour === 'red',
+                                    'bg-orange-50 dark:bg-slate-600/15':
+                                      highlightColour === 'orange',
+                                  })}
+                                  style={{ width: `${versionPerc}%` }}
+                                />
+
+                                <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                                  <span
+                                    className={cx(
+                                      'flex items-center truncate text-sm text-gray-700 dark:text-gray-200',
+                                      {
+                                        capitalize,
+                                      },
+                                    )}
+                                  >
+                                    {rowMapper
+                                      ? rowMapper({
+                                          ...entry,
+                                          name: entryName,
+                                          version: versionEntry.name,
+                                        })
+                                      : `${entryName} ${versionEntry.name}`}
+                                  </span>
+                                </div>
+                                <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                                  <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
+                                    ({versionPerc}%)
+                                  </span>
+                                  <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
+                                    {activeTab === PROJECT_TABS.traffic
+                                      ? nFormatter(versionValueData, 1)
+                                      : versionValueData}
+                                  </span>
+                                </div>
+                              </FilterWrapper>
+                            )
+                          })}
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
+                  )
+                })}
+              </div>
+            )
+            if (rowTooltipRenderer && !rowTooltipFollowCursor) {
+              return (
+                <TooltipProvider delayDuration={150} disableHoverableContent>
+                  {panelRows}
+                </TooltipProvider>
               )
-            })}
-          </div>
+            }
+            return panelRows
+          })()}
+          {cursorRowTooltip &&
+          rowTooltipRenderer &&
+          rowTooltipFollowCursor &&
+          typeof document !== 'undefined'
+            ? createPortal(
+                <div
+                  className='pointer-events-none fixed z-50 max-w-xs rounded-md bg-gray-50 px-2 py-1 text-xs text-gray-900 shadow-md ring-1 ring-black/10 md:text-sm dark:bg-slate-900 dark:text-gray-50'
+                  style={{
+                    left: (() => {
+                      const pad = 8
+                      const offset = 14
+                      const estW = 288
+                      const x = cursorRowTooltip.x + offset
+                      if (typeof window === 'undefined') return x
+                      return Math.min(
+                        Math.max(pad, x),
+                        window.innerWidth - estW - pad,
+                      )
+                    })(),
+                    top: (() => {
+                      const pad = 8
+                      const offset = 14
+                      const estH = 220
+                      const y = cursorRowTooltip.y + offset
+                      if (typeof window === 'undefined') return y
+                      return Math.min(
+                        Math.max(pad, y),
+                        window.innerHeight - estH - pad,
+                      )
+                    })(),
+                  }}
+                >
+                  {rowTooltipRenderer(cursorRowTooltip.entry)}
+                </div>,
+                document.body,
+              )
+            : null}
         </>
       )}
 
