@@ -1,10 +1,11 @@
 import { CaretLeftIcon } from '@phosphor-icons/react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLoaderData, useLocation } from 'react-router'
 
 import ExitIntentPopup from '~/components/ExitIntentPopup'
 import NotFound from '~/pages/NotFound'
+import ArticleNav from '~/pages/Blog/ArticleNav'
 import { trackPageview } from '~/utils/analytics'
 
 interface Post {
@@ -23,6 +24,7 @@ export default function PostSlug() {
   const location = useLocation()
   const post = useLoaderData() as Post
   const { t } = useTranslation('common')
+  const articleRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const meta = post?.author
@@ -61,7 +63,7 @@ export default function PostSlug() {
                   {t('common.allPosts')}
                 </Link>
               )}
-              <article className='relative'>
+              <article ref={articleRef} className='relative'>
                 <div className='mb-2 font-mono text-sm leading-6 font-medium tracking-wide uppercase'>
                   <dl>
                     <dt className='sr-only'>Date</dt>
@@ -107,6 +109,7 @@ export default function PostSlug() {
                   <div dangerouslySetInnerHTML={{ __html: post.html }} />
                 </div>
               </article>
+              {!post.standalone && <ArticleNav articleRef={articleRef} />}
               {post.title ? (
                 <script
                   type='application/ld+json'
