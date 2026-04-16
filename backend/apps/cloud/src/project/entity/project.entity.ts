@@ -157,6 +157,25 @@ export class Project {
   @Column('varchar', { nullable: true, default: null, length: 256 })
   gscAccountEmail: string | null
 
+  // Bing Webmaster Tools integration
+  @Column('text', { nullable: true, default: null })
+  bwtAccessTokenEnc: string | null
+
+  @Column('text', { nullable: true, default: null })
+  bwtRefreshTokenEnc: string | null
+
+  @Column('bigint', { nullable: true, default: null })
+  bwtTokenExpiry: string | null
+
+  @Column('varchar', { nullable: true, default: null, length: 512 })
+  bwtScope: string | null
+
+  @Column('varchar', { nullable: true, default: null, length: 512 })
+  bwtSiteUrl: string | null
+
+  @Column('varchar', { nullable: true, default: null, length: 256 })
+  bwtAccountEmail: string | null
+
   // Revenue / Payment provider integration
   @Column('text', { nullable: true, default: null })
   paddleApiKeyEnc: string | null

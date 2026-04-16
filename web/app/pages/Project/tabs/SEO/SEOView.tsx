@@ -533,7 +533,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             />
           </div>
           <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
-            {t('project.seo.connectGSC')}
+            {t('project.seo.connectSearchEngine')}
           </Text>
           <Text
             as='p'
@@ -541,7 +541,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             colour='secondary'
             className='mx-auto mt-2 max-w-md'
           >
-            {t('project.seo.connectGSCDesc')}
+            {t('project.seo.connectSearchEngineDesc')}
           </Text>
           {data?.noProperty ? (
             <Text
@@ -564,6 +564,8 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     )
   }
 
+  const sources = data?.sources
+
   return (
     <>
       <DashboardHeader
@@ -572,6 +574,23 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         rightContent={manualRefreshButton}
         timeBucketSelectorItems={seoPeriodPairs}
       />
+      {sources ? (
+        <div className='mb-3 flex items-center gap-2'>
+          <Text size='xs' colour='secondary'>
+            {t('project.seo.dataSources')}:
+          </Text>
+          {sources.google ? (
+            <span className='inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-slate-800 dark:text-gray-300'>
+              Google
+            </span>
+          ) : null}
+          {sources.bing ? (
+            <span className='inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-slate-800 dark:text-gray-300'>
+              Bing
+            </span>
+          ) : null}
+        </div>
+      ) : null}
       {filters.length > 0 ? (
         <Filters className='mb-3' tnMapping={tnMapping} />
       ) : null}

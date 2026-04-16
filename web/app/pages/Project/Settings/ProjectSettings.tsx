@@ -494,6 +494,15 @@ const ProjectSettings = () => {
   >([])
   const [gscEmail, setGscEmail] = useState<string | null>(null)
 
+  // Bing Webmaster Tools integration state
+  const bwtFetcher = useFetcher<ProjectSettingsActionData>()
+  const [bwtConnected, setBwtConnected] = useState<boolean | null>(null)
+  const [bwtProperties, setBwtProperties] = useState<
+    { siteUrl: string; permissionLevel?: string }[]
+  >([])
+  const [bwtEmail, setBwtEmail] = useState<string | null>(null)
+  const [bwtSiteUrl, setBwtSiteUrl] = useState<string | null>(null)
+
   // CAPTCHA state
   const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(
     () => initialProject.captchaSecretKey || null,
@@ -551,6 +560,10 @@ const ProjectSettings = () => {
   const [gscPropertiesPending, setGscPropertiesPending] = useState(false)
   const lastHandledGscData = useRef<ProjectSettingsActionData | null>(null)
   const gscInitialized = useRef(false)
+
+  const [bwtPropertiesPending, setBwtPropertiesPending] = useState(false)
+  const lastHandledBwtData = useRef<ProjectSettingsActionData | null>(null)
+  const bwtInitialized = useRef(false)
 
   // Handle GSC fetcher responses
   useEffect(() => {
@@ -636,6 +649,88 @@ const ProjectSettings = () => {
     if (isSelfhosted || gscInitialized.current) return
     gscInitialized.current = true
     gscFetcher.submit({ intent: 'gsc-status' }, { method: 'post' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Handle BWT fetcher responses
+  useEffect(() => {
+    if (bwtFetcher.state !== 'idle' || !bwtFetcher.data) return
+    if (lastHandledBwtData.current === bwtFetcher.data) return
+    lastHandledBwtData.current = bwtFetcher.data
+
+    const {
+      intent,
+      success,
+      bwtStatus,
+      bwtProperties: properties,
+      bwtAuthUrl,
+      error: bwtError,
+    } = bwtFetcher.data as any
+
+    if (success) {
+      if (intent === 'bwt-status' && bwtStatus) {
+        setBwtConnected(bwtStatus.connected)
+        setBwtEmail(bwtStatus.email || null)
+        if (bwtStatus.connected) {
+          setBwtPropertiesPending(true)
+        } else {
+          setBwtProperties([])
+        }
+      } else if (intent === 'bwt-properties' && properties) {
+        setBwtProperties(properties)
+        setBwtPropertiesPending(false)
+      } else if (intent === 'bwt-connect' && bwtAuthUrl) {
+        const safeUrl = (() => {
+          try {
+            const parsed = new URL(bwtAuthUrl)
+            if (parsed.protocol !== 'https:') return null
+            if (parsed.username || parsed.password) return null
+            if (parsed.hostname !== 'www.bing.com') return null
+            return parsed.toString()
+          } catch {
+            return null
+          }
+        })()
+
+        if (!safeUrl) {
+          toast.error(t('apiNotifications.somethingWentWrong'))
+          return
+        }
+
+        window.location.href = safeUrl
+      } else if (intent === 'bwt-disconnect') {
+        setBwtConnected(false)
+        setBwtProperties([])
+        setBwtEmail(null)
+        setBwtSiteUrl(null)
+        toast.success(t('project.settings.bwt.disconnected'))
+      } else if (intent === 'bwt-set-property') {
+        toast.success(t('project.settings.bwt.propertyConnected'))
+      }
+    } else if (bwtError) {
+      toast.error(
+        typeof bwtError === 'string'
+          ? bwtError
+          : t('apiNotifications.somethingWentWrong'),
+      )
+      setBwtPropertiesPending(false)
+    }
+  }, [bwtFetcher.state, bwtFetcher.data, t])
+
+  // Fetch BWT properties after status confirms connected
+  useEffect(() => {
+    if (bwtPropertiesPending && bwtFetcher.state === 'idle') {
+      setBwtPropertiesPending(false)
+      bwtFetcher.submit({ intent: 'bwt-properties' }, { method: 'post' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bwtPropertiesPending, bwtFetcher.state])
+
+  // Initial BWT status fetch
+  useEffect(() => {
+    if (isSelfhosted || bwtInitialized.current) return
+    bwtInitialized.current = true
+    bwtFetcher.submit({ intent: 'bwt-status' }, { method: 'post' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -1228,6 +1323,151 @@ const ProjectSettings = () => {
                             url: (
                               <a
                                 href='https://search.google.com/search-console/about'
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='font-medium underline decoration-dashed hover:decoration-solid'
+                              />
+                            ),
+                          }}
+                        />
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                <div className='mt-4 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
+                  <h3 className='mb-2 flex items-center gap-2 text-lg font-medium text-gray-900 dark:text-gray-50'>
+                    <svg className='size-6' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                      <path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+                    </svg>
+                    {t('project.settings.bwt.title')}
+                  </h3>
+                  {bwtConnected === null ? (
+                    <Loader />
+                  ) : !bwtConnected ? (
+                    <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
+                      <p className='text-sm text-gray-800 dark:text-gray-200'>
+                        {t('project.settings.bwt.connect')}
+                      </p>
+                      <Button
+                        className='flex items-center gap-2'
+                        type='button'
+                        onClick={() => {
+                          bwtFetcher.submit(
+                            { intent: 'bwt-connect' },
+                            { method: 'post' },
+                          )
+                        }}
+                        loading={
+                          bwtFetcher.state !== 'idle'
+                            ? bwtFetcher.formData?.get('intent') ===
+                              'bwt-connect'
+                            : undefined
+                        }
+                        primary
+                        regular
+                      >
+                        {t('common.connect')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className='flex flex-col gap-3'>
+                      <Input
+                        className='lg:w-1/2'
+                        label={t('project.settings.bwt.linkedAccount')}
+                        value={bwtEmail === 'connected' ? t('project.settings.bwt.accountConnected') : (bwtEmail || '')}
+                        disabled
+                      />
+
+                      <Button
+                        type='button'
+                        className='max-w-max'
+                        semiDanger
+                        regular
+                        onClick={() => {
+                          bwtFetcher.submit(
+                            { intent: 'bwt-disconnect' },
+                            { method: 'post' },
+                          )
+                        }}
+                        loading={
+                          bwtFetcher.state !== 'idle'
+                            ? bwtFetcher.formData?.get('intent') ===
+                              'bwt-disconnect'
+                            : undefined
+                        }
+                      >
+                        {t('common.disconnect')}
+                      </Button>
+
+                      <Select
+                        fieldLabelClassName='mt-4 max-w-max'
+                        className='lg:w-1/2'
+                        hintClassName='lg:w-2/3'
+                        label={t('project.settings.bwt.websiteProperty')}
+                        hint={t('project.settings.bwt.websitePropertyHint')}
+                        items={_map(bwtProperties, (p) => ({
+                          key: p.siteUrl,
+                          label: p.siteUrl,
+                        }))}
+                        keyExtractor={(item) => item.key}
+                        labelExtractor={(item) => item.label}
+                        onSelect={(item: { key: string; label: string }) => {
+                          setBwtSiteUrl(item.key)
+                        }}
+                        title={
+                          bwtSiteUrl ||
+                          t('project.settings.bwt.selectProperty')
+                        }
+                        selectedItem={
+                          bwtSiteUrl
+                            ? {
+                                key: bwtSiteUrl,
+                                label: bwtSiteUrl,
+                              }
+                            : undefined
+                        }
+                      />
+
+                      <Button
+                        type='button'
+                        className='max-w-max'
+                        onClick={() => {
+                          if (!bwtSiteUrl) return
+                          bwtFetcher.submit(
+                            {
+                              intent: 'bwt-set-property',
+                              propertyUri: bwtSiteUrl,
+                            },
+                            { method: 'post' },
+                          )
+                        }}
+                        loading={
+                          bwtFetcher.state !== 'idle'
+                            ? bwtFetcher.formData?.get('intent') ===
+                              'bwt-set-property'
+                            : undefined
+                        }
+                        primary
+                        regular
+                      >
+                        {t('common.save')}
+                      </Button>
+                    </div>
+                  )}
+
+                  {bwtConnected ? null : (
+                    <>
+                      <hr className='-mx-4 mt-4 mb-4 border-gray-200 dark:border-slate-800' />
+
+                      <p className='text-sm text-gray-800 dark:text-gray-200'>
+                        <Trans
+                          t={t}
+                          i18nKey='project.settings.bwt.connectDisclaimer'
+                          components={{
+                            url: (
+                              <a
+                                href='https://www.bing.com/webmasters/about'
                                 target='_blank'
                                 rel='noopener noreferrer'
                                 className='font-medium underline decoration-dashed hover:decoration-solid'

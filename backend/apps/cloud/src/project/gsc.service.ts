@@ -909,6 +909,7 @@ export class GSCService {
 
     return {
       notConnected: false,
+      sources: { google: true, bing: false },
       summary,
       previousSummary,
       dateSeries,
@@ -917,6 +918,164 @@ export class GSCService {
       topCountries,
       topDevices,
       brandedTraffic,
+    }
+  }
+
+  static mergeDashboards(gscData: any, bwtData: any): any {
+    const gscConnected = gscData && !gscData.notConnected
+    const bwtConnected = bwtData && !bwtData.notConnected
+
+    if (!gscConnected && !bwtConnected) {
+      return gscData || bwtData || { notConnected: true }
+    }
+
+    if (!bwtConnected) return gscData
+    if (!gscConnected) {
+      return { ...bwtData, sources: { google: false, bing: true } }
+    }
+
+    const mergeSummary = (a: any, b: any) => {
+      if (!a && !b) return null
+      if (!a) return b
+      if (!b) return a
+
+      const clicks = (a.clicks || 0) + (b.clicks || 0)
+      const impressions = (a.impressions || 0) + (b.impressions || 0)
+      const totalImp = (a.impressions || 0) + (b.impressions || 0)
+
+      return {
+        clicks,
+        impressions,
+        ctr: Number(
+          (impressions > 0 ? (clicks / impressions) * 100 : 0).toFixed(2),
+        ),
+        position: Number(
+          (totalImp > 0
+            ? ((a.position || 0) * (a.impressions || 0) +
+                (b.position || 0) * (b.impressions || 0)) /
+              totalImp
+            : 0
+          ).toFixed(1),
+        ),
+      }
+    }
+
+    const mergeByKey = <T extends Record<string, any>>(
+      aItems: T[],
+      bItems: T[],
+      keyField: string,
+    ): T[] => {
+      const map = new Map<string, T>()
+
+      for (const item of aItems) {
+        map.set(item[keyField], { ...item })
+      }
+
+      for (const item of bItems) {
+        const key = item[keyField]
+        const existing = map.get(key)
+
+        if (existing) {
+          const totalImp =
+            (existing.impressions || 0) + (item.impressions || 0)
+          existing.clicks = (existing.clicks || 0) + (item.clicks || 0)
+          existing.count = (existing.count || 0) + (item.count || 0)
+          existing.impressions = totalImp
+          existing.ctr = Number(
+            (totalImp > 0
+              ? (existing.clicks / totalImp) * 100
+              : 0
+            ).toFixed(2),
+          )
+          existing.position = Number(
+            (totalImp > 0
+              ? ((existing.position || 0) *
+                  ((existing.impressions || 0) - (item.impressions || 0)) +
+                  (item.position || 0) * (item.impressions || 0)) /
+                totalImp
+              : 0
+            ).toFixed(1),
+          )
+        } else {
+          map.set(key, { ...item })
+        }
+      }
+
+      return Array.from(map.values())
+    }
+
+    const mergeDateSeries = (a: any[], b: any[]): any[] => {
+      const map = new Map<string, any>()
+
+      for (const item of a) {
+        map.set(item.date, { ...item })
+      }
+
+      for (const item of b) {
+        const existing = map.get(item.date)
+
+        if (existing) {
+          const totalClicks = (existing.clicks || 0) + (item.clicks || 0)
+          const totalImp =
+            (existing.impressions || 0) + (item.impressions || 0)
+          existing.clicks = totalClicks
+          existing.impressions = totalImp
+          existing.ctr = Number(
+            (totalImp > 0 ? (totalClicks / totalImp) * 100 : 0).toFixed(2),
+          )
+          if (item.position) {
+            existing.position = Number(
+              (totalImp > 0
+                ? ((existing.position || 0) *
+                    ((existing.impressions || 0) - (item.impressions || 0)) +
+                    (item.position || 0) * (item.impressions || 0)) /
+                  totalImp
+                : existing.position
+              ).toFixed(1),
+            )
+          }
+        } else {
+          map.set(item.date, { ...item })
+        }
+      }
+
+      return Array.from(map.values()).sort((x, y) =>
+        x.date.localeCompare(y.date),
+      )
+    }
+
+    return {
+      notConnected: false,
+      sources: { google: true, bing: true },
+      summary: mergeSummary(gscData.summary, bwtData.summary),
+      previousSummary: mergeSummary(
+        gscData.previousSummary,
+        bwtData.previousSummary,
+      ),
+      dateSeries: mergeDateSeries(
+        gscData.dateSeries || [],
+        bwtData.dateSeries || [],
+      ),
+      topPages: mergeByKey(
+        gscData.topPages || [],
+        bwtData.topPages || [],
+        'page',
+      ),
+      topQueries: mergeByKey(
+        gscData.topQueries || [],
+        bwtData.topQueries || [],
+        'name',
+      ),
+      topCountries: gscData.topCountries || [],
+      topDevices: gscData.topDevices || [],
+      brandedTraffic: {
+        branded:
+          (gscData.brandedTraffic?.branded || 0) +
+          (bwtData.brandedTraffic?.branded || 0),
+        nonBranded:
+          (gscData.brandedTraffic?.nonBranded || 0) +
+          (bwtData.brandedTraffic?.nonBranded || 0),
+      },
     }
   }
 }

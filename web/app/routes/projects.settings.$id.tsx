@@ -71,6 +71,16 @@ export interface GscProperty {
   permissionLevel?: string
 }
 
+export interface BwtStatus {
+  connected: boolean
+  email?: string | null
+}
+
+export interface BwtProperty {
+  siteUrl: string
+  permissionLevel?: string
+}
+
 export interface ProjectSettingsActionData {
   success?: boolean
   intent?: string
@@ -91,6 +101,9 @@ export interface ProjectSettingsActionData {
   gscAuthUrl?: string
   gscStatus?: GscStatus
   gscProperties?: GscProperty[]
+  bwtAuthUrl?: string
+  bwtStatus?: BwtStatus
+  bwtProperties?: BwtProperty[]
   dataImports?: DataImport[]
   dataImport?: unknown
   ga4AuthUrl?: string
@@ -766,6 +779,117 @@ export async function action({ request, params }: ActionFunctionArgs) {
         {
           method: 'DELETE',
         },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    // Bing Webmaster Tools
+    case 'bwt-connect': {
+      const result = await serverFetch<{ url: string }>(
+        request,
+        `v1/project/bwt/${id}/connect`,
+        { method: 'POST' },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, bwtAuthUrl: result.data?.url },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'bwt-status': {
+      const result = await serverFetch<BwtStatus>(
+        request,
+        `v1/project/bwt/${id}/status`,
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, bwtStatus: result.data as BwtStatus },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'bwt-properties': {
+      const result = await serverFetch<BwtProperty[]>(
+        request,
+        `v1/project/bwt/${id}/properties`,
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, bwtProperties: result.data as BwtProperty[] },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'bwt-set-property': {
+      const propertyUri = formData.get('propertyUri')?.toString()
+
+      if (!propertyUri) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Site URL is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch(
+        request,
+        `v1/project/bwt/${id}/property`,
+        {
+          method: 'POST',
+          body: { propertyUri },
+        },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'bwt-disconnect': {
+      const result = await serverFetch(
+        request,
+        `v1/project/bwt/${id}/disconnect`,
+        { method: 'DELETE' },
       )
 
       if (result.error) {

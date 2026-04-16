@@ -101,6 +101,7 @@ import { LiveVisitorsDto } from './dto/live-visitors.dto'
 import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 import { GetKeywordsDto } from './dto/get-keywords.dto'
 import { GSCService } from '../project/gsc.service'
+import { BWTService } from '../project/bwt.service'
 import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
 
 dayjs.extend(utc)
@@ -209,6 +210,7 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly gscService: GSCService,
+    private readonly bwtService: BWTService,
   ) {}
 
   @ApiBearerAuth()
@@ -1045,13 +1047,12 @@ export class AnalyticsController {
       diff,
     )
 
-    return this.gscService.getDashboard(
-      pid,
-      groupFrom,
-      groupTo,
-      finalTimeBucket,
-      filters,
-    )
+    const [gscData, bwtData] = await Promise.all([
+      this.gscService.getDashboard(pid, groupFrom, groupTo, finalTimeBucket, filters),
+      this.bwtService.getDashboard(pid, groupFrom, groupTo, finalTimeBucket, filters).catch(() => null),
+    ])
+
+    return GSCService.mergeDashboards(gscData, bwtData)
   }
 
   @Get('gsc-details')

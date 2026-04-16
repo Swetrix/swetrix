@@ -30,6 +30,7 @@ const routes = Object.freeze({
   transfer_reject: '/project/transfer/cancel',
   socialised: '/socialised',
   gsc_connected: '/gsc-connected',
+  bwt_connected: '/bwt-connected',
   ga4_import_connected: '/ga4-import-connected',
   open: '/open',
   blog: '/blog',
