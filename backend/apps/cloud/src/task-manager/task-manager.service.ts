@@ -58,6 +58,7 @@ import { SlackService } from '../integrations/slack/slack.service'
 import { RevenueService } from '../revenue/revenue.service'
 import { PaddleAdapter } from '../revenue/adapters/paddle.adapter'
 import { StripeAdapter } from '../revenue/adapters/stripe.adapter'
+import { ProxyDomainService } from '../project/proxy-domain.service'
 
 dayjs.extend(utc)
 
@@ -315,6 +316,7 @@ export class TaskManagerService {
     private readonly revenueService: RevenueService,
     private readonly paddleAdapter: PaddleAdapter,
     private readonly stripeAdapter: StripeAdapter,
+    private readonly proxyDomainService: ProxyDomainService,
   ) {}
 
   /**
@@ -2149,5 +2151,70 @@ export class TaskManagerService {
     }
 
     await this.userService.deleteRefreshTokensWhere(where)
+  }
+
+  // Verify managed reverse proxy domains: resolve CNAME -> probe TLS to advance
+  // the row's status (waiting -> issuing -> live).
+  @Cron(CronExpression.EVERY_MINUTE)
+  async verifyPendingProxyDomains() {
+    if (!isPrimaryNode()) {
+      return
+    }
+
+    try {
+      const pending =
+        await this.proxyDomainService.findPendingForVerification(200)
+
+      if (_isEmpty(pending)) {
+        return
+      }
+
+      await mapLimit(pending, 8, async (domain) => {
+        try {
+          await this.proxyDomainService.verifyDomain(domain)
+        } catch (err) {
+          this.logger.error(
+            `[CRON WORKER](verifyPendingProxyDomains) ${domain.hostname}: ${err}`,
+          )
+        }
+      })
+    } catch (err) {
+      this.logger.error(
+        `[CRON WORKER](verifyPendingProxyDomains) Error: ${err}`,
+      )
+    }
+  }
+
+  // Periodically re-check live domains so we notice when DNS / cert breaks
+  // (e.g. user removed the CNAME or revoked the cert).
+  @Cron(CronExpression.EVERY_6_HOURS)
+  async recheckLiveProxyDomains() {
+    if (!isPrimaryNode()) {
+      return
+    }
+
+    try {
+      const cutoff = dayjs.utc().subtract(6, 'hour').toDate()
+      const domains = await this.proxyDomainService.findLiveForRecheck(
+        cutoff,
+        500,
+      )
+
+      if (_isEmpty(domains)) {
+        return
+      }
+
+      await mapLimit(domains, 8, async (domain) => {
+        try {
+          await this.proxyDomainService.verifyDomain(domain)
+        } catch (err) {
+          this.logger.error(
+            `[CRON WORKER](recheckLiveProxyDomains) ${domain.hostname}: ${err}`,
+          )
+        }
+      })
+    } catch (err) {
+      this.logger.error(`[CRON WORKER](recheckLiveProxyDomains) Error: ${err}`)
+    }
   }
 }

@@ -23,6 +23,7 @@ import {
   CurrencyDollarIcon,
   DownloadIcon,
   BellRingingIcon,
+  GlobeIcon,
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -68,6 +69,7 @@ import Revenue from './tabs/Revenue'
 import Shields from './tabs/Shields'
 import ProjectAlerts from './Alerts/ProjectAlertsView'
 import DataImportTab from './components/DataImportTab'
+import ProxyDomainsTab from './components/ProxyDomainsTab'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -365,6 +367,7 @@ const ProjectSettings = () => {
     | 'people'
     | 'annotations'
     | 'import'
+    | 'proxy'
     | 'danger'
 
   const tabs = useMemo(
@@ -449,6 +452,14 @@ const ProjectSettings = () => {
           icon: DownloadIcon,
           iconColor: 'text-cyan-500',
           visible: true,
+        },
+        {
+          id: 'proxy',
+          label: t('project.settings.tabs.proxy'),
+          description: t('project.settings.tabs.proxyDesc'),
+          icon: GlobeIcon,
+          iconColor: 'text-fuchsia-500',
+          visible: !isSelfhosted,
         },
         {
           id: 'annotations',
@@ -1082,6 +1093,17 @@ const ProjectSettings = () => {
                   iconColorClass={activeTabConfig.iconColor}
                 />
                 <DataImportTab projectId={id} />
+              </>
+            ) : null}
+            {activeTab === 'proxy' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <ProxyDomainsTab projectId={id} />
               </>
             ) : null}
 
