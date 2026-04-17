@@ -188,6 +188,21 @@ export const IMPORT_PROVIDERS: Provider[] = [
   'umami',
 ].filter((x): x is Provider => !!x)
 
+export type ProxyDomainStatus = 'waiting' | 'issuing' | 'live' | 'error'
+
+export interface ProxyDomain {
+  id: string
+  hostname: string
+  proxyTargetId: string
+  proxyTarget: string
+  status: ProxyDomainStatus
+  errorMessage: string | null
+  lastCheckedAt: string | null
+  liveSince: string | null
+  statusChangedAt: string | null
+  created: string
+}
+
 export interface DataImport {
   id: number
   importId: number
