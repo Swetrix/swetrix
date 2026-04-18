@@ -10,6 +10,7 @@ import {
   NotFoundException,
   Query,
   Header,
+  UseGuards,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 
@@ -17,12 +18,9 @@ import { Auth, Public } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { isValidPID } from '../common/constants'
 import { ProjectService } from './project.service'
-import {
-  ProxyDomainService,
-  validateHostname,
-  PROXY_BASE_DOMAIN,
-} from './proxy-domain.service'
+import { ProxyDomainService, PROXY_BASE_DOMAIN } from './proxy-domain.service'
 import { ProxyDomainCreateDTO } from './dto'
+import { ProxyDomainEdgeGuard } from './proxy-domain-edge.guard'
 
 @ApiTags('Project - Managed Reverse Proxy')
 @Controller(['project', 'v1/project'])
@@ -128,9 +126,23 @@ export class ProxyDomainController {
   }
 }
 
-// Public endpoint consumed by the proxy.swetrix.org edge server.
+// Edge endpoints consumed by the proxy.swetrix.org edge server.
+//
+// These are gated by ProxyDomainEdgeGuard (shared-secret in `X-Edge-Api-Key`,
+// validated against the MANAGED_PROXY_EDGE_API_KEY env var with a constant-time
+// compare). Without the secret every request gets a generic 404 — same shape
+// as a real "not registered" response — so an unauthenticated probe can't
+// distinguish missing endpoint, missing secret, missing hostname, wrong
+// status, or suspended project.
+//
+// The endpoints themselves are not throttled at the Nest layer: the edge
+// caches positive answers for 30s and negative answers for 15s in
+// `proxy_domain_active` (lua_shared_dict, see proxy.swetrix.org.conf), and
+// auto-ssl only invokes `/allow` during ACME issuance. Combined with the
+// shared secret gate that's the throttle.
 @ApiTags('Project - Managed Reverse Proxy (edge)')
 @Controller(['v1/proxy-domain'])
+@UseGuards(ProxyDomainEdgeGuard)
 export class ProxyDomainEdgeController {
   constructor(private readonly proxyDomainService: ProxyDomainService) {}
 
@@ -142,18 +154,12 @@ export class ProxyDomainEdgeController {
       'Used by the edge proxy to decide whether to issue a Let\u2019s Encrypt certificate for a hostname',
   })
   async allow(@Query('domain') domain: string) {
-    let normalised: string
-    try {
-      normalised = validateHostname(domain || '').hostname
-    } catch {
-      throw new BadRequestException('Invalid domain')
-    }
-
-    const allowed =
-      await this.proxyDomainService.isHostnameAllowedForIssuance(normalised)
+    const allowed = await this.proxyDomainService.isHostnameAllowedForIssuance(
+      domain || '',
+    )
 
     if (!allowed) {
-      throw new NotFoundException('Hostname is not registered')
+      throw new NotFoundException()
     }
 
     return { allowed: true }
@@ -169,16 +175,10 @@ export class ProxyDomainEdgeController {
       'Used by the edge proxy to decide whether to serve runtime traffic for a hostname',
   })
   async active(@Query('domain') domain: string) {
-    let normalised: string
-    try {
-      normalised = validateHostname(domain || '').hostname
-    } catch {
-      throw new BadRequestException('Invalid domain')
-    }
+    const live = await this.proxyDomainService.isHostnameLive(domain || '')
 
-    const live = await this.proxyDomainService.isHostnameLive(normalised)
     if (!live) {
-      throw new NotFoundException('Hostname is not active')
+      throw new NotFoundException()
     }
 
     return { active: true }
