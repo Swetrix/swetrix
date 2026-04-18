@@ -128,10 +128,7 @@ export class ProxyDomainController {
   }
 }
 
-// Public endpoint consumed by the OpenResty edge server (lua-resty-auto-ssl
-// `allow_domain` callback). Lives under /v1 and is intentionally split out so
-// it can be exposed without `@ApiBearerAuth` and without going through the
-// authenticated controller paths above.
+// Public endpoint consumed by the proxy.swetrix.org edge server.
 @ApiTags('Project - Managed Reverse Proxy (edge)')
 @Controller(['v1/proxy-domain'])
 export class ProxyDomainEdgeController {
@@ -162,10 +159,8 @@ export class ProxyDomainEdgeController {
     return { allowed: true }
   }
 
-  // Per-request runtime gate consumed by `access_by_lua_block` on the edge.
-  // Returns 200 only when the hostname is currently `live`. The edge caches
-  // the answer in a `lua_shared_dict` for a short window so this endpoint
-  // sees roughly one request per worker per domain per cache TTL.
+  // Per-request runtime gate consumed by the proxy.swetrix.org edge server.
+  // Returns 200 only when the hostname is currently `live`.
   @Public()
   @Get('active')
   @Header('Cache-Control', 'no-store')
