@@ -2153,6 +2153,13 @@ export class TaskManagerService {
     await this.userService.deleteRefreshTokensWhere(where)
   }
 
+  // In-memory re-entrancy guards: the verifier batches up to 200 domains at
+  // a time and a single slow DNS/TLS probe can stretch a tick past the
+  // 60s cron interval. Without these flags the next tick would re-fire
+  // duplicate probes for everything still in flight.
+  private verifyingPendingProxyDomains = false
+  private recheckingLiveProxyDomains = false
+
   // Verify managed reverse proxy domains: resolve CNAME -> probe TLS to advance
   // the row's status (waiting -> issuing -> live).
   @Cron(CronExpression.EVERY_MINUTE)
@@ -2160,6 +2167,11 @@ export class TaskManagerService {
     if (!isPrimaryNode()) {
       return
     }
+
+    if (this.verifyingPendingProxyDomains) {
+      return
+    }
+    this.verifyingPendingProxyDomains = true
 
     try {
       const pending =
@@ -2182,6 +2194,8 @@ export class TaskManagerService {
       this.logger.error(
         `[CRON WORKER](verifyPendingProxyDomains) Error: ${err}`,
       )
+    } finally {
+      this.verifyingPendingProxyDomains = false
     }
   }
 
@@ -2192,6 +2206,11 @@ export class TaskManagerService {
     if (!isPrimaryNode()) {
       return
     }
+
+    if (this.recheckingLiveProxyDomains) {
+      return
+    }
+    this.recheckingLiveProxyDomains = true
 
     try {
       const cutoff = dayjs.utc().subtract(6, 'hour').toDate()
@@ -2215,6 +2234,8 @@ export class TaskManagerService {
       })
     } catch (err) {
       this.logger.error(`[CRON WORKER](recheckLiveProxyDomains) Error: ${err}`)
+    } finally {
+      this.recheckingLiveProxyDomains = false
     }
   }
 }

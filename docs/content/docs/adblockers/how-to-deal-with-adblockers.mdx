@@ -19,13 +19,13 @@ The advantage of this approach is that your site will only make first-party requ
 
 You have two options, summarised below. Pick the one that matches how much DevOps work you're willing to do:
 
-| | Managed reverse proxy | Self-hosted proxy |
-| --- | --- | --- |
-| **Setup effort** | A few minutes — add a CNAME record in your DNS, paste a snippet | Configure your own web server (Nginx, Netlify, Next.js, etc.) |
-| **Technical knowledge required** | Minimal | Moderate to high |
-| **SSL certificate** | Provisioned automatically by Swetrix | You provide it (or your platform does) |
-| **How it looks to ad blockers** | A request to a subdomain of your site to a Swetrix-controlled edge | A request to your own server, fully indistinguishable from any other request to your site |
-| **Detectability** | Low | **Lowest** — the most effective option |
+|                                  | Managed reverse proxy                                              | Self-hosted proxy                                                                         |
+| -------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| **Setup effort**                 | A few minutes — add a CNAME record in your DNS, paste a snippet    | Configure your own web server (Nginx, Netlify, Next.js, etc.)                             |
+| **Technical knowledge required** | Minimal                                                            | Moderate to high                                                                          |
+| **SSL certificate**              | Provisioned automatically by Swetrix                               | You provide it (or your platform does)                                                    |
+| **How it looks to ad blockers**  | A request to a subdomain of your site to a Swetrix-controlled edge | A request to your own server, fully indistinguishable from any other request to your site |
+| **Detectability**                | Low                                                                | **Lowest** — the most effective option                                                    |
 
 ### Best: Self-hosted proxy (least detectable)
 

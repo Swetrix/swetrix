@@ -99,7 +99,7 @@ function CopyableCode({ value }: { value: string }) {
       setTimeout(() => setCopied(false), 1500)
       toast.success(t('project.settings.proxy.copied'))
     } catch {
-      toast.error('Failed to copy')
+      toast.error(t('common.failedToCopy'))
     }
   }
 

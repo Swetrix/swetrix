@@ -9,11 +9,12 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, In } from 'typeorm'
+import { DataSource, QueryFailedError, Repository, In } from 'typeorm'
 import dayjs from 'dayjs'
 import { parse as parseDomain } from 'tldts'
 
 import { ProxyDomain, ProxyDomainStatus } from './entity/proxy-domain.entity'
+import { Project } from './entity/project.entity'
 import { redis } from '../common/constants'
 
 const DEFAULT_PROXY_BASE_DOMAIN = 'proxy.swetrix.org'
@@ -46,10 +47,9 @@ const RESERVED_HOSTNAME_SUFFIXES = [
 const BLOCKED_KEYWORDS_REGEX =
   /\b(analytics|tracking|telemetry|posthog|track|metrics?|stats?|count|pixel|tag(s|ger)?|ads?)\b/i
 
-// Same regex as RFC 1035 hostname (no trailing dot, no leading/trailing hyphen,
-// at least one dot meaning it must be a subdomain).
-const HOSTNAME_REGEX =
-  /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
+// Strict label check so we still reject things like leading/trailing hyphens
+// or labels longer than 63 chars after tldts has done its normalisation.
+const HOSTNAME_LABEL_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
 
 interface ValidatedHostname {
   hostname: string
@@ -61,38 +61,56 @@ export const validateHostname = (raw: string): ValidatedHostname => {
     throw new BadRequestException('Hostname must be a string')
   }
 
-  const hostname = raw.trim().toLowerCase().replace(/\.+$/, '')
+  const trimmed = raw.trim().toLowerCase()
 
-  if (!hostname) {
+  if (!trimmed) {
     throw new BadRequestException('Hostname is required')
   }
+
+  // Bound input size up front so we never run the parser over absurd input.
+  // 253 + a small slack for a trailing dot / leading whitespace already
+  // handled above.
+  if (trimmed.length > 254) {
+    throw new BadRequestException('Hostname is too long')
+  }
+
+  if (trimmed.includes('*')) {
+    throw new BadRequestException('Wildcard hostnames are not supported')
+  }
+
+  // Defer all normalisation to tldts: it strips trailing dots, validates the
+  // hostname against the public suffix list, and tells us about IPs and
+  // apex/subdomain split in one pass. This also avoids running our own
+  // regex over user-controlled input (CodeQL flag).
+  const parsed = parseDomain(trimmed)
+
+  if (parsed.isIp) {
+    throw new BadRequestException('IP addresses are not supported')
+  }
+
+  if (!parsed.hostname || !parsed.domain || !parsed.publicSuffix) {
+    throw new BadRequestException(
+      'Hostname does not look like a real internet domain',
+    )
+  }
+
+  const hostname = parsed.hostname
 
   if (hostname.length > 253) {
     throw new BadRequestException('Hostname is too long')
   }
 
-  if (hostname.includes('*')) {
-    throw new BadRequestException('Wildcard hostnames are not supported')
+  // Validate each label individually rather than the whole string with one
+  // big regex (avoids any catastrophic-backtracking concerns and keeps the
+  // failure mode predictable).
+  for (const label of hostname.split('.')) {
+    if (!HOSTNAME_LABEL_REGEX.test(label)) {
+      throw new BadRequestException('Hostname is not a valid subdomain')
+    }
   }
 
-  if (!HOSTNAME_REGEX.test(hostname)) {
-    throw new BadRequestException('Hostname is not a valid subdomain')
-  }
-
-  // Use the public suffix list to robustly distinguish a true subdomain
-  // ("foo.example.com", "foo.example.co.uk", "foo.pages.dev") from an apex
-  // ("example.com", "example.co.uk"). Apex domains cannot host the required
-  // CNAME so we reject them up front instead of leaving the user stuck in
-  // `waiting` forever.
-  const parsed = parseDomain(hostname)
-  if (parsed.isIp) {
-    throw new BadRequestException('IP addresses are not supported')
-  }
-  if (!parsed.domain || !parsed.publicSuffix) {
-    throw new BadRequestException(
-      'Hostname does not look like a real internet domain',
-    )
-  }
+  // Apex domains (`example.com`, `example.co.uk`) can't host a CNAME, so
+  // reject them up front instead of leaving the user stuck in `waiting`.
   if (!parsed.subdomain) {
     throw new BadRequestException(
       'Please use a subdomain (e.g. t.example.com) — a CNAME record cannot be set on the root domain',
@@ -119,6 +137,7 @@ export class ProxyDomainService {
   constructor(
     @InjectRepository(ProxyDomain)
     private readonly proxyDomainRepository: Repository<ProxyDomain>,
+    private readonly dataSource: DataSource,
   ) {}
 
   getProxyTarget(domain: ProxyDomain): string {
@@ -152,43 +171,73 @@ export class ProxyDomainService {
 
   async create(projectId: string, rawHostname: string) {
     const { hostname, blockedKeywordWarning } = validateHostname(rawHostname)
-
-    const existingForProject = await this.proxyDomainRepository.count({
-      where: { projectId },
-    })
-
-    if (existingForProject >= MAX_PROXY_DOMAINS_PER_PROJECT) {
-      throw new ConflictException(
-        `You can register up to ${MAX_PROXY_DOMAINS_PER_PROJECT} managed proxy domains per project`,
-      )
-    }
-
-    const existing = await this.proxyDomainRepository.findOne({
-      where: { hostname },
-    })
-
-    if (existing) {
-      throw new ConflictException(
-        'This hostname is already registered as a managed proxy',
-      )
-    }
-
     const proxyTargetId = this.generateProxyTargetId()
 
-    const domain = this.proxyDomainRepository.create({
-      projectId,
-      hostname,
-      proxyTargetId,
-      status: ProxyDomainStatus.WAITING,
-      statusChangedAt: new Date(),
-    })
+    let saved: ProxyDomain
+    try {
+      saved = await this.dataSource.transaction(async (manager) => {
+        // Lock the parent project row for the duration of the transaction so
+        // two concurrent creates on the same project can't both pass the
+        // per-project limit check. Mirrors the pattern used in
+        // DataImportService.create.
+        await manager.getRepository(Project).findOneOrFail({
+          where: { id: projectId },
+          lock: { mode: 'pessimistic_write' },
+        })
 
-    await this.proxyDomainRepository.save(domain)
+        const repo = manager.getRepository(ProxyDomain)
+
+        const projectDomains = await repo.find({
+          where: { projectId },
+          select: ['id', 'hostname'],
+        })
+
+        if (projectDomains.length >= MAX_PROXY_DOMAINS_PER_PROJECT) {
+          throw new ConflictException(
+            `You can register up to ${MAX_PROXY_DOMAINS_PER_PROJECT} managed proxy domains per project`,
+          )
+        }
+
+        if (projectDomains.some((d) => d.hostname === hostname)) {
+          throw new ConflictException(
+            'This hostname is already registered as a managed proxy',
+          )
+        }
+
+        const entity = repo.create({
+          projectId,
+          hostname,
+          proxyTargetId,
+          status: ProxyDomainStatus.WAITING,
+          statusChangedAt: new Date(),
+        })
+
+        return repo.save(entity)
+      })
+    } catch (err) {
+      // The hostname is globally unique (UQ_proxy_domain_hostname); a race
+      // between two projects trying to register the same hostname loses at
+      // commit time. Translate the resulting duplicate-key error so the
+      // caller sees the same ConflictException as the in-tx check above.
+      if (this.isUniqueConstraintError(err)) {
+        throw new ConflictException(
+          'This hostname is already registered as a managed proxy',
+        )
+      }
+      throw err
+    }
 
     return {
-      domain: this.serialise(domain),
+      domain: this.serialise(saved),
       blockedKeywordWarning,
     }
+  }
+
+  private isUniqueConstraintError(err: unknown): boolean {
+    if (!(err instanceof QueryFailedError)) return false
+    const driverErr = (err as QueryFailedError & { driverError?: unknown })
+      .driverError as { code?: string; errno?: number } | undefined
+    return driverErr?.code === 'ER_DUP_ENTRY' || driverErr?.errno === 1062
   }
 
   async delete(projectId: string, id: string) {
@@ -292,7 +341,7 @@ export class ProxyDomainService {
 
     let resolvedTarget: string | null = null
     try {
-      const records = await dns.resolveCname(domain.hostname)
+      const records = await this.resolveCnameWithTimeout(domain.hostname)
       const found = (records || []).find(
         (r) => r.replace(/\.$/, '').toLowerCase() === expectedTarget,
       )
@@ -300,7 +349,7 @@ export class ProxyDomainService {
         resolvedTarget = found
       }
     } catch {
-      // No CNAME yet (NXDOMAIN/NODATA) — treated as still waiting
+      // NXDOMAIN/NODATA/timeout — treated as still waiting
     }
 
     if (!resolvedTarget) {
@@ -386,16 +435,24 @@ export class ProxyDomainService {
   }
 
   async findPendingForVerification(limit = 200): Promise<ProxyDomain[]> {
-    return this.proxyDomainRepository.find({
-      where: {
+    // Order by oldest check first so an oversized backlog drains evenly
+    // (rather than starving rows that happen to sort late in the table).
+    // `id` is the deterministic tie-breaker. NULL `lastCheckedAt` rows
+    // (i.e. never-checked) sort first on MySQL where NULLs are less than
+    // any value with ASC ordering.
+    return this.proxyDomainRepository
+      .createQueryBuilder('pd')
+      .where({
         status: In([
           ProxyDomainStatus.WAITING,
           ProxyDomainStatus.ISSUING,
           ProxyDomainStatus.ERROR,
         ]),
-      },
-      take: limit,
-    })
+      })
+      .orderBy('pd.lastCheckedAt', 'ASC')
+      .addOrderBy('pd.id', 'ASC')
+      .take(limit)
+      .getMany()
   }
 
   async findLiveForRecheck(
@@ -408,8 +465,31 @@ export class ProxyDomainService {
       .andWhere('(pd.lastCheckedAt IS NULL OR pd.lastCheckedAt < :ts)', {
         ts: olderThan,
       })
+      .orderBy('pd.lastCheckedAt', 'ASC')
+      .addOrderBy('pd.id', 'ASC')
       .take(limit)
       .getMany()
+  }
+
+  // Node's `dns.resolveCname` honours OS timeouts but in practice can hang
+  // for tens of seconds on misbehaving authoritatives. Bound it ourselves so
+  // a single bad domain can't stall the verifier batch.
+  private async resolveCnameWithTimeout(
+    hostname: string,
+    timeoutMs = 10_000,
+  ): Promise<string[]> {
+    let timer: NodeJS.Timeout | undefined
+    const timeout = new Promise<string[]>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error('dns.resolveCname timed out')),
+        timeoutMs,
+      )
+    })
+    try {
+      return await Promise.race([dns.resolveCname(hostname), timeout])
+    } finally {
+      if (timer) clearTimeout(timer)
+    }
   }
 
   private async probeTLS(hostname: string): Promise<boolean> {
