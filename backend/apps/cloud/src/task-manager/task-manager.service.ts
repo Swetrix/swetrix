@@ -299,6 +299,14 @@ const EMAIL_REPORTS_MAP = {
 
 @Injectable()
 export class TaskManagerService {
+  // In-memory re-entrancy guards: the verifier batches up to 200 domains at
+  // a time and a single slow DNS/TLS probe can stretch a tick past the
+  // 60s cron interval. Without these flags the next tick would re-fire
+  // duplicate probes for everything still in flight.
+  private verifyingPendingProxyDomains = false
+
+  private recheckingLiveProxyDomains = false
+
   constructor(
     private readonly mailerService: MailerService,
     private readonly userService: UserService,
@@ -2152,13 +2160,6 @@ export class TaskManagerService {
 
     await this.userService.deleteRefreshTokensWhere(where)
   }
-
-  // In-memory re-entrancy guards: the verifier batches up to 200 domains at
-  // a time and a single slow DNS/TLS probe can stretch a tick past the
-  // 60s cron interval. Without these flags the next tick would re-fire
-  // duplicate probes for everything still in flight.
-  private verifyingPendingProxyDomains = false
-  private recheckingLiveProxyDomains = false
 
   // Verify managed reverse proxy domains: resolve CNAME -> probe TLS to advance
   // the row's status (waiting -> issuing -> live).

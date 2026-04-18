@@ -129,7 +129,7 @@ interface ProxyDomainsTabProps {
 }
 
 export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
-  const { t } = useTranslation('common')
+  const { t, i18n } = useTranslation('common')
 
   const listFetcher = useFetcher<ProjectSettingsActionData>()
   const addFetcher = useFetcher<ProjectSettingsActionData>()
@@ -145,6 +145,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
   const [hostnameError, setHostnameError] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<ProxyDomain | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const fetchDomainsRef = useRef<() => void>(() => {})
 
   const statusLabels: Record<ProxyDomainStatus, string> = {
     waiting: t('project.settings.proxy.statusWaiting'),
@@ -159,6 +160,8 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
       { method: 'POST', action: settingsAction },
     )
   }, [listFetcher, settingsAction])
+
+  fetchDomainsRef.current = fetchDomains
 
   useEffect(() => {
     fetchDomains()
@@ -179,17 +182,16 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
   }, [listFetcher.state, listFetcher.data])
 
   // Poll while any domain is still waiting/issuing so the UI advances quickly.
-  useEffect(() => {
-    const hasPending = domains.some(
-      (d) => d.status === 'waiting' || d.status === 'issuing',
-    )
+  const hasPending = domains.some(
+    (d) => d.status === 'waiting' || d.status === 'issuing',
+  )
 
-    if (hasPending) {
-      pollRef.current = setInterval(fetchDomains, 8000)
-    } else if (pollRef.current) {
-      clearInterval(pollRef.current)
-      pollRef.current = null
-    }
+  useEffect(() => {
+    if (!hasPending) return
+
+    pollRef.current = setInterval(() => {
+      fetchDomainsRef.current()
+    }, 8000)
 
     return () => {
       if (pollRef.current) {
@@ -197,7 +199,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
         pollRef.current = null
       }
     }
-  }, [domains, fetchDomains])
+  }, [hasPending])
 
   useEffect(() => {
     if (addFetcher.state !== 'idle' || !addFetcher.data) return
@@ -251,7 +253,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
   const submitAddDomain = () => {
     const validated = validateHostnameClient(hostnameInput)
     if (!validated) {
-      setHostnameError(t('project.settings.proxy.domainPlaceholder'))
+      setHostnameError(t('project.settings.proxy.invalidDomain'))
       return
     }
 
@@ -377,8 +379,11 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
                     </Text>
                     {domain.liveSince ? (
                       <Text as='p' size='xs' colour='muted' className='mt-0.5'>
-                        Live since{' '}
-                        {dayjs(domain.liveSince).format('MMM D, YYYY HH:mm')}
+                        {t('project.settings.proxy.liveSince', {
+                          date: dayjs(domain.liveSince)
+                            .locale(i18n.language)
+                            .format('lll'),
+                        })}
                       </Text>
                     ) : null}
                   </div>
