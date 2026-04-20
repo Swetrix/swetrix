@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
-import { NestjsFormDataModule } from 'nestjs-form-data'
 import { MailerModule as NodeMailerModule } from '@nestjs-modules/mailer'
 
 import { I18nModule } from 'nestjs-i18n'
@@ -64,7 +63,6 @@ const modules = [
   }),
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),
-  NestjsFormDataModule.config({ isGlobal: true }),
   BullModule.forRoot({
     connection: {
       host: process.env.REDIS_HOST,

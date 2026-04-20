@@ -1010,6 +1010,58 @@ A stringified JSON array of page paths to define the funnel steps.
 
 The ID of a saved funnel to retrieve.
 
+<hr />
+
+### GET /v1/log/funnel-sessions
+
+Returns paginated sessions that reached a specific step in a funnel. Sessions are filtered using the same `windowFunnel` logic as the funnel analysis — only sessions that completed every prior step in order are included.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/funnel-sessions?pid=YOUR_PROJECT_ID&funnelId=FUNNEL_ID&step=2&period=30d&take=30&skip=0'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "sessions": [
+    {
+      "psid": "123456789",
+      "cc": "US",
+      "os": "Mac OS",
+      "br": "Chrome",
+      "pageviews": 5,
+      "customEvents": 2,
+      "errors": 0,
+      "sessionStart": "2025-01-15 10:30:00",
+      "lastActivity": "2025-01-15 10:35:00",
+      "isLive": 0,
+      "sdur": 300,
+      "profileId": null,
+      "isIdentified": 0,
+      "isFirstSession": 1
+    }
+  ],
+  "take": 30,
+  "skip": 0
+}
+```
+
+#### Parameters
+
+The parameters are similar to the [`/log/funnel` endpoint](#get-v1logfunnel), with the addition of:
+
+**step** (required)
+
+The funnel step number to get sessions for (1-indexed). For example, `step=2` returns sessions that completed at least the first two funnel steps in order.
+
+**take** (optional, default: `30`, max: `150`)
+
+The number of sessions to return per page.
+
+**skip** (optional, default: `0`)
+
+The number of sessions to skip (for pagination).
+
 ### GET /v1/log/user-flow
 
 Returns the user flow diagram data, showing how users navigate through your website.

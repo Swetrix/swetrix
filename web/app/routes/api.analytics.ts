@@ -6,6 +6,7 @@ import {
 
 import {
   getSessionsServer,
+  getFunnelSessionsServer,
   getErrorsServer,
   getFeatureFlagStatsServer,
   getFeatureFlagProfilesServer,
@@ -40,6 +41,7 @@ import {
   type AnalyticsParams,
   type AnalyticsFilter,
   type SessionsResponse,
+  type FunnelSessionsResponse,
   type ErrorsResponse,
   type FeatureFlagStats,
   type FeatureFlagProfilesResponse,
@@ -75,21 +77,16 @@ import { getProjectPasswordCookie } from '~/utils/session.server'
 function formatDateForBackend(dateStr: string | undefined): string | undefined {
   if (!dateStr) return undefined
 
-  // If already in YYYY-MM-DD format, return as-is
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr
   }
 
-  // Convert ISO 8601 or other formats to YYYY-MM-DD
   const date = new Date(dateStr)
-  if (Number.isNaN(date.getTime())) {
-    return dateStr
+  if (!Number.isNaN(date.getTime())) {
+    return date.toISOString()
   }
 
-  const yyyy = date.getUTCFullYear()
-  const mm = String(date.getUTCMonth() + 1).padStart(2, '0')
-  const dd = String(date.getUTCDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
+  return undefined
 }
 
 interface ProxyRequest {
@@ -126,6 +123,7 @@ interface ProxyRequest {
     | 'getRevenueStatus'
     | 'getRevenueData'
     | 'getOverallStats'
+    | 'getFunnelSessions'
   projectId: string
   pids?: string[]
   flagId?: string
@@ -154,6 +152,8 @@ interface ProxyRequest {
     profileType?: 'all' | 'anonymous' | 'identified'
     page?: string
     query?: string
+    funnelId?: string
+    step?: number
   }
 }
 
@@ -194,6 +194,28 @@ export async function action({ request }: ActionFunctionArgs) {
           analyticsParams,
         )
         return data<ProxyResponse<SessionsResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getFunnelSessions': {
+        const result = await getFunnelSessionsServer(request, projectId, {
+          period: analyticsParams.period,
+          from: analyticsParams.from,
+          to: analyticsParams.to,
+          timezone: analyticsParams.timezone,
+          funnelId: params.funnelId,
+          step: params.step ?? 1,
+          take: params.take,
+          skip: params.skip,
+          password: analyticsParams.password,
+        })
+        return data<ProxyResponse<FunnelSessionsResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

@@ -13,7 +13,7 @@ import {
   Not,
   Repository,
 } from 'typeorm'
-import axios from 'axios'
+
 import crypto from 'crypto'
 import CryptoJS from 'crypto-js'
 import dayjs from 'dayjs'
@@ -393,21 +393,23 @@ export class UserService {
     let preview: any = {}
 
     try {
-      preview = await axios.post(url, {
-        vendor_id: Number(PADDLE_VENDOR_ID),
-        vendor_auth_code: PADDLE_API_KEY,
-        subscription_id: Number(user.subID),
-        plan_id: planID,
-        prorate: true,
-        bill_immediately: true,
-        currency: user.tierCurrency,
-        keep_modifiers: false,
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vendor_id: Number(PADDLE_VENDOR_ID),
+          vendor_auth_code: PADDLE_API_KEY,
+          subscription_id: Number(user.subID),
+          plan_id: planID,
+          prorate: true,
+          bill_immediately: true,
+          currency: user.tierCurrency,
+          keep_modifiers: false,
+        }),
       })
+      preview = { data: await res.json() }
     } catch (error) {
-      console.error(
-        '[ERROR] (previewSubscription):',
-        error?.response?.data?.error?.message || error,
-      )
+      console.error('[ERROR] (previewSubscription):', error)
       throw new BadRequestException('Something went wrong')
     }
 
@@ -458,17 +460,20 @@ export class UserService {
     const url = 'https://vendors.paddle.com/api/2.0/subscription/users/cancel'
 
     try {
-      const result = await axios.post(url, {
-        vendor_id: Number(PADDLE_VENDOR_ID),
-        vendor_auth_code: PADDLE_API_KEY,
-        subscription_id: Number(subID),
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vendor_id: Number(PADDLE_VENDOR_ID),
+          vendor_auth_code: PADDLE_API_KEY,
+          subscription_id: Number(subID),
+        }),
       })
 
-      if (!result.data?.success) {
-        console.error(
-          '[ERROR] (cancelSubscription) success -> false:',
-          result.data,
-        )
+      const data = await res.json()
+
+      if (!data?.success) {
+        console.error('[ERROR] (cancelSubscription) success -> false:', data)
         throw new InternalServerErrorException(
           'Failed to cancel subscription with payment provider',
         )
@@ -476,10 +481,7 @@ export class UserService {
     } catch (error) {
       if (error instanceof InternalServerErrorException) throw error
 
-      console.error(
-        '[ERROR] (cancelSubscription):',
-        error?.response?.data?.error?.message || error,
-      )
+      console.error('[ERROR] (cancelSubscription):', error)
       throw new BadRequestException(
         'Failed to cancel subscription. Please try again or contact support.',
       )
@@ -514,24 +516,26 @@ export class UserService {
     let result: any = {}
 
     try {
-      result = await axios.post(url, {
-        vendor_id: Number(PADDLE_VENDOR_ID),
-        vendor_auth_code: PADDLE_API_KEY,
-        subscription_id: Number(user.subID),
-        plan_id: planID,
-        prorate: true,
-        bill_immediately: true,
-        currency: user.tierCurrency,
-        keep_modifiers: false,
-        passthrough: JSON.stringify({
-          uid: id,
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vendor_id: Number(PADDLE_VENDOR_ID),
+          vendor_auth_code: PADDLE_API_KEY,
+          subscription_id: Number(user.subID),
+          plan_id: planID,
+          prorate: true,
+          bill_immediately: true,
+          currency: user.tierCurrency,
+          keep_modifiers: false,
+          passthrough: JSON.stringify({
+            uid: id,
+          }),
         }),
       })
+      result = { data: await res.json() }
     } catch (error) {
-      console.error(
-        '[ERROR] (updateSubscription):',
-        error?.response?.data?.error?.message || error,
-      )
+      console.error('[ERROR] (updateSubscription):', error)
       throw new BadRequestException('Something went wrong')
     }
 
@@ -573,24 +577,26 @@ export class UserService {
     try {
       const isTrial = !user.trialEndDate
 
-      result = await axios.post(url, {
-        vendor_id: Number(PADDLE_VENDOR_ID),
-        vendor_auth_code: PADDLE_API_KEY,
-        product_id: productId,
-        customer_email: user.email,
-        passthrough: JSON.stringify({ uid: id }),
-        ...(isTrial
-          ? {
-              trial_days: TRIAL_DURATION,
-              prices: ['USD:0', 'EUR:0', 'GBP:0'],
-            }
-          : {}),
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vendor_id: Number(PADDLE_VENDOR_ID),
+          vendor_auth_code: PADDLE_API_KEY,
+          product_id: productId,
+          customer_email: user.email,
+          passthrough: JSON.stringify({ uid: id }),
+          ...(isTrial
+            ? {
+                trial_days: TRIAL_DURATION,
+                prices: ['USD:0', 'EUR:0', 'GBP:0'],
+              }
+            : {}),
+        }),
       })
+      result = { data: await res.json() }
     } catch (error) {
-      console.error(
-        '[ERROR] (generatePayLink):',
-        error?.response?.data?.error?.message || error,
-      )
+      console.error('[ERROR] (generatePayLink):', error)
       throw new BadRequestException('Something went wrong')
     }
 

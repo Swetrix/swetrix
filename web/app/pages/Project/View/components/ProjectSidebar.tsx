@@ -23,7 +23,7 @@ import { PROJECT_TABS } from '~/lib/constants'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
-import { getFaviconHost } from '~/utils/referrers'
+import { getFaviconHost, getFaviconUrl } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
 const SIDEBAR_COLLAPSED_KEY = 'project-sidebar-collapsed'
@@ -474,7 +474,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
               faviconHost ? (
                 <img
                   className='size-6 shrink-0 rounded-sm'
-                  src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
+                  src={getFaviconUrl(faviconHost)}
                   loading='lazy'
                   alt={projectName}
                 />
@@ -500,7 +500,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                 {faviconHost ? (
                   <img
                     className='size-6 shrink-0 rounded-sm'
-                    src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
+                    src={getFaviconUrl(faviconHost)}
                     loading='lazy'
                     alt=''
                     aria-hidden='true'

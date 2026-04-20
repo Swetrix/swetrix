@@ -11,20 +11,42 @@ On average, [32% of users](https://backlinko.com/ad-blockers-users?ref=swetrix) 
 
 ## How to proxy Swetrix
 
-The most effective way to bypass ad blockers is to proxy the Swetrix script and calls to the Swetrix servers through this script.
+The most effective way to bypass ad blockers is to proxy the Swetrix script and calls to the Swetrix servers through your own infrastructure.
 
 A proxy is basically the mapping of our servers' URLs through your domain. So analytics requests will not be sent to `https://api.swetrix.com/log`, but instead to `https://<your domain>/path`.
 
 The advantage of this approach is that your site will only make first-party requests, preventing them from being blocked by adblockers.
 
-### How to proxy tracking script?
+You have two options, summarised below. Pick the one that matches how much DevOps work you're willing to do:
 
-If you've installed [Swetrix using npm](/install-script#install-swetrix-via-npm), you don't need to proxy it as it's already bundled into your web application's code (but you still need to proxy our API, see one of the proxy guides below).
+|                                  | Managed reverse proxy                                              | Self-hosted proxy                                                                         |
+| -------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| **Setup effort**                 | A few minutes — add a CNAME record in your DNS, paste a snippet    | Configure your own web server (Nginx, Netlify, Next.js, etc.)                             |
+| **Technical knowledge required** | Minimal                                                            | Moderate to high                                                                          |
+| **SSL certificate**              | Provisioned automatically by Swetrix                               | You provide it (or your platform does)                                                    |
+| **How it looks to ad blockers**  | A request to a subdomain of your site to a Swetrix-controlled edge | A request to your own server, fully indistinguishable from any other request to your site |
+| **Detectability**                | Low                                                                | **Lowest** — the most effective option                                                    |
 
-If you have installed Swetrix using our CDN (`swetrix.org/swetrix.js`), you will need to proxy it to bypass adblockers. Please refer to one of the guides below on how to do this.
+### Best: Self-hosted proxy (least detectable)
 
-### Managed proxy guides
+Routing analytics through a server you already operate is the **gold standard** for adblocker bypass. Because the request is served entirely by your own infrastructure, with the same IP and TLS certificate as the rest of your site, ad blockers have nothing to fingerprint — there's no third-party CNAME chain or shared edge IP they can list.
 
+The trade-off is that you have to set it up yourself. If you already run Nginx, deploy on Netlify, or use Next.js, this is straightforward — pick one of the guides below.
+
+- [Nginx](/adblockers/guides/nginx)
 - [Netlify](/adblockers/guides/netlify)
 - [Next.js](/adblockers/guides/nextjs)
-- [Nginx](/adblockers/guides/nginx)
+
+### Easiest: Managed reverse proxy (zero-config)
+
+If you don't want to maintain proxy configuration yourself, Swetrix Cloud can run a reverse proxy on your behalf. You add a CNAME record on a subdomain you control, and we handle the SSL certificate and proxying automatically.
+
+This is **highly effective for the majority of users**, but slightly more detectable than a self-hosted proxy because the requests still ultimately resolve to a Swetrix-controlled edge IP. Aggressive blocklists may eventually pick up on the shared edge.
+
+See **[Managed reverse proxy](/adblockers/managed-proxy)** for the full walkthrough.
+
+### A note on the tracking script
+
+If you've installed [Swetrix using npm](/install-script#install-swetrix-via-npm), you don't need to proxy the script as it's already bundled into your web application's code — but you still need to proxy our API (use either of the options above).
+
+If you've installed Swetrix using our CDN (`swetrix.org/swetrix.js`), you'll want to proxy that too — both options above cover the script as well as the API.

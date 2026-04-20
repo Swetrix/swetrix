@@ -135,6 +135,22 @@ export function useAuthProxy() {
     [],
   )
 
+  const processGA4ImportToken = useCallback(
+    async (code: string, state: string): Promise<{ pid: string }> => {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'processGA4ImportToken', code, state }),
+      })
+      const result = (await response.json()) as ProxyResponse<{ pid: string }>
+      if (result.error || !result.data) {
+        throw new Error(result.error || 'Failed to process GA4 import token')
+      }
+      return result.data
+    },
+    [],
+  )
+
   const authMe = useCallback(
     async (signal?: AbortSignal): Promise<AuthMeResponse> => {
       const response = await fetch('/api/auth', {
@@ -191,6 +207,7 @@ export function useAuthProxy() {
     linkBySSOHash,
     processSSOToken,
     processGSCToken,
+    processGA4ImportToken,
     authMe,
     linkSSOWithPassword,
   }

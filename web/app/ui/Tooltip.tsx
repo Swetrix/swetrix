@@ -77,4 +77,6 @@ const Tooltip = ({
   )
 }
 
+export { TooltipProvider, TooltipRoot, TooltipTrigger, TooltipContent }
+
 export default memo(Tooltip)

@@ -390,6 +390,116 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [t],
   )
 
+  const seoGscRowTooltip = useCallback(
+    (entry: any) => {
+      const pos = entry.position ?? 0
+      const posDisplay = Number(pos).toFixed(1)
+
+      return (
+        <ul className='m-0 max-h-[250px] list-none overflow-y-auto p-0 md:max-h-[350px]'>
+          <li className='sticky top-0 mb-1 border-b border-gray-200 bg-gray-50 pb-1 dark:border-slate-800 dark:bg-slate-900'>
+            <Text
+              as='div'
+              size='xs'
+              weight='semibold'
+              colour='primary'
+              truncate
+              className='max-w-[220px] md:text-sm'
+            >
+              {entry.name}
+            </Text>
+          </li>
+          <li className='flex items-center justify-between py-px leading-snug'>
+            <div className='mr-4 flex min-w-0 items-center'>
+              <Text
+                as='span'
+                size='xs'
+                colour='secondary'
+                truncate
+                className='md:text-sm'
+              >
+                {t('project.seo.position')}
+              </Text>
+            </div>
+            <Text
+              as='span'
+              size='xs'
+              weight='semibold'
+              colour='primary'
+              className='font-mono whitespace-nowrap tabular-nums md:text-sm'
+            >
+              {posDisplay}
+            </Text>
+          </li>
+          <li className='flex items-center justify-between py-px leading-snug'>
+            <div className='mr-4 flex min-w-0 items-center'>
+              <Text
+                as='span'
+                size='xs'
+                colour='secondary'
+                truncate
+                className='md:text-sm'
+              >
+                {t('project.seo.impressions')}
+              </Text>
+            </div>
+            <Text
+              as='span'
+              size='xs'
+              colour='primary'
+              className='font-mono whitespace-nowrap tabular-nums md:text-sm'
+            >
+              {nFormatter(entry.impressions ?? 0, 1)}
+            </Text>
+          </li>
+          <li className='flex items-center justify-between py-px leading-snug'>
+            <div className='mr-4 flex min-w-0 items-center'>
+              <Text
+                as='span'
+                size='xs'
+                colour='secondary'
+                truncate
+                className='md:text-sm'
+              >
+                {t('project.seo.clicks')}
+              </Text>
+            </div>
+            <Text
+              as='span'
+              size='xs'
+              colour='primary'
+              className='font-mono whitespace-nowrap tabular-nums md:text-sm'
+            >
+              {nFormatter(entry.count ?? 0, 1)}
+            </Text>
+          </li>
+          <li className='flex items-center justify-between py-px leading-snug'>
+            <div className='mr-4 flex min-w-0 items-center'>
+              <Text
+                as='span'
+                size='xs'
+                colour='secondary'
+                truncate
+                className='md:text-sm'
+              >
+                {t('project.seo.ctr')}
+              </Text>
+            </div>
+            <Text
+              as='span'
+              size='xs'
+              colour='primary'
+              className='font-mono whitespace-nowrap tabular-nums md:text-sm'
+            >
+              {entry.ctr ?? 0}%
+            </Text>
+          </li>
+        </ul>
+      )
+    },
+    [t],
+  )
+
   if (isLoading && !data) {
     return (
       <>
@@ -449,33 +559,6 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             <LinkIcon className='size-4' />
             {t('project.seo.connectButton')}
           </Link>
-
-          {refEntries.length > 0 ? (
-            <div className='mt-10 grid w-full grid-cols-1 gap-3 sm:grid-cols-2'>
-              <Panel
-                name={t('project.seo.searchEngines')}
-                data={searchEngineEntries}
-                icon={panelIconMapping.ref}
-                id='seo-search-engines'
-                activeTabId='searchEngine'
-                disableRowClick
-                rowMapper={refRowMapper}
-                getFilterLink={noopFilterLink}
-                valuesHeaderName={t('project.visitors')}
-              />
-              <Panel
-                name={t('project.seo.aiReferrals')}
-                data={aiReferralEntries}
-                icon={<RobotIcon className='h-5 w-5' />}
-                id='seo-ai-referrals'
-                activeTabId='aiReferral'
-                disableRowClick
-                rowMapper={refRowMapper}
-                getFilterLink={noopFilterLink}
-                valuesHeaderName={t('project.visitors')}
-              />
-            </div>
-          ) : null}
         </div>
       </>
     )
@@ -648,6 +731,8 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
           dataLoading={isLoading}
+          rowTooltipRenderer={seoGscRowTooltip}
+          rowTooltipFollowCursor
         />
         <Panel
           name={t('project.seo.topQueries')}
@@ -661,6 +746,8 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
           dataLoading={isLoading}
+          rowTooltipRenderer={seoGscRowTooltip}
+          rowTooltipFollowCursor
         />
       </div>
 

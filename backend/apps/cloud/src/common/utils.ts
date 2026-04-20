@@ -5,7 +5,7 @@ import net from 'net'
 import { Reader, CityResponse } from 'maxmind'
 import { HttpException } from '@nestjs/common'
 import timezones from 'countries-and-timezones'
-import randomstring from 'randomstring'
+
 import _sample from 'lodash/sample'
 import _toNumber from 'lodash/toNumber'
 import _replace from 'lodash/replace'
@@ -32,7 +32,12 @@ export const hash = (content: string): string => {
  * Derives a key from the SECRET_KEY_BASE environment variable using the HKDF algorithm.
  */
 export const deriveKey = (
-  purpose: 'refresh-token' | 'access-token' | 'gsc-token' | 'revenue',
+  purpose:
+    | 'refresh-token'
+    | 'access-token'
+    | 'gsc-token'
+    | 'ga4-token'
+    | 'revenue',
   length = 32,
 ) => {
   const baseStr = process.env.SECRET_KEY_BASE
@@ -179,18 +184,18 @@ export const calculateRelativePercentage = (
   return _round((1 - newVal / oldVal) * -100, round)
 }
 
-export const generateRecoveryCode = () =>
-  randomstring.generate({
-    length: 30,
-    charset: 'alphabetic',
-    capitalization: 'uppercase',
-  })
+const ALPHA_UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+export const generateRecoveryCode = () => generateRandomId(ALPHA_UPPER, 30)
 
 export const millisecondsToSeconds = (milliseconds: number) =>
   milliseconds / 1000
 
+const ALPHANUMERIC =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
 export const generateRandomString = (length: number): string =>
-  randomstring.generate(length)
+  generateRandomId(ALPHANUMERIC, length)
 
 /**
  * This is used to determine if the current node is the primary node.

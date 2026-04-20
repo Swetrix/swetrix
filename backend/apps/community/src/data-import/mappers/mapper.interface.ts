@@ -1,3 +1,10 @@
+export class ImportError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ImportError'
+  }
+}
+
 export interface AnalyticsImportRow {
   table: 'analytics' | 'customEV'
   data: Record<string, unknown>

@@ -987,6 +987,54 @@ export async function getSessionsServer(
   )
 }
 
+export interface FunnelSessionsResponse {
+  sessions: Session[]
+  take: number
+  skip: number
+}
+
+export async function getFunnelSessionsServer(
+  request: Request,
+  pid: string,
+  params: {
+    period: string
+    from?: string
+    to?: string
+    timezone?: string
+    funnelId?: string
+    step: number
+    take?: number
+    skip?: number
+    password?: string
+  },
+): Promise<ServerFetchResult<FunnelSessionsResponse>> {
+  const step = Math.max(1, Math.floor(Number(params.step) || 1))
+  const take = Math.min(150, Math.max(1, Math.floor(Number(params.take) || 30)))
+  const skip = Math.max(0, Math.floor(Number(params.skip) || 0))
+
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period)
+  queryParams.append('step', String(step))
+  queryParams.append('take', String(take))
+  queryParams.append('skip', String(skip))
+  if (params.funnelId) queryParams.append('funnelId', params.funnelId)
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<FunnelSessionsResponse>(
+    request,
+    `log/funnel-sessions?${queryParams.toString()}`,
+    { headers },
+  )
+}
+
 interface PageflowItem {
   type: 'pageview' | 'event' | 'error'
   value: string
@@ -1431,6 +1479,8 @@ export interface FunnelDataResponse {
     dropoff: number
     dropoffPerc: number
     dropoffPercStep: number
+    topCountries: Record<string, number>
+    topSources: Record<string, number>
   }[]
   totalPageviews: number
 }
@@ -2331,6 +2381,21 @@ export async function processGSCTokenServer(
   state: string,
 ): Promise<ServerFetchResult<{ pid: string }>> {
   return serverFetch<{ pid: string }>(request, 'v1/project/gsc/process-token', {
+    method: 'POST',
+    body: { code, state },
+  })
+}
+
+// ============================================================================
+// MARK: Google Analytics 4 Import API
+// ============================================================================
+
+export async function processGA4ImportTokenServer(
+  request: Request,
+  code: string,
+  state: string,
+): Promise<ServerFetchResult<{ pid: string }>> {
+  return serverFetch<{ pid: string }>(request, 'data-import/ga4/callback', {
     method: 'POST',
     body: { code, state },
   })

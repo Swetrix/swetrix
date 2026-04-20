@@ -7,17 +7,101 @@ description: Import historical analytics data from third-party platforms into Sw
 
 Swetrix allows you to import historical analytics data from other platforms so you can switch without losing your history. Imported data appears alongside your live-tracked data in dashboards, charts, and reports. It's tagged internally so it can be identified and, if needed, removed later without affecting your live-tracked data.
 
-## Supported Providers
+## Import Instructions
 
-- Umami
-- Simple Analytics
-- Fathom Analytics
+Select your analytics provider below to see the step-by-step import guide.
 
-## Importing from Umami
+<Tabs defaultValue="ga4">
+<TabsList>
+  <TabsTrigger value="ga4"><GoogleAnalyticsIcon /> Google Analytics 4</TabsTrigger>
+  <TabsTrigger value="umami"><UmamiIcon /> Umami</TabsTrigger>
+  <TabsTrigger value="simple"><SimpleAnalyticsIcon /> Simple Analytics</TabsTrigger>
+  <TabsTrigger value="fathom"><FathomIcon /> Fathom Analytics</TabsTrigger>
+  <TabsTrigger value="plausible"><PlausibleIcon /> Plausible Analytics</TabsTrigger>
+</TabsList>
+<TabsContent value="ga4">
+
+Unlike file-based imports, GA4 import works by connecting your Google account directly. Swetrix uses the GA4 Data API to pull your historical analytics data automatically.
+
+<Callout type="info">
+  GA4 imports use aggregated data from Google's API. Some dimensions like language and browser/OS
+  versions are not available due to API limitations. Data is imported with hourly precision.
+</Callout>
 
 <Steps>
 <Step>
-### Export Your Data from Umami
+<h3>Connect Your Google Account</h3>
+
+1. Go to your project's **Settings** page in Swetrix
+2. Click the **Import data** tab
+3. Click the **Google Analytics 4** provider card
+4. Click **Connect Google Account**
+   <img
+     alt="Google Analytics 4 import connect"
+     src="/docs/img/sitesettings/data-import/ga-import-connect.png"
+   />
+5. You'll be redirected to Google's sign-in page. Sign in and grant Swetrix read-only access to your analytics data
+   <img
+     alt="Google Analytics 4 consent screen"
+     src="/docs/img/sitesettings/data-import/ga-import-access-screen.png"
+   />
+
+</Step>
+<Step>
+<h3>Select a GA4 Property</h3>
+
+After connecting, you'll be redirected back to Swetrix. A dropdown will show all GA4 properties accessible from your Google account.
+
+1. Select the GA4 property you want to import data from
+   <img
+     alt="Google Analytics 4 property select"
+     src="/docs/img/sitesettings/data-import/ga-import-property-select.png"
+   />
+2. Click **Start Import**
+
+</Step>
+<Step>
+<h3>Monitor Progress</h3>
+
+After starting the import, it will appear in the **Import history** table below the provider cards. You can see:
+
+- **Status** — Pending, Processing, Completed, or Failed
+- **Date range** — The time span of the imported data
+- **Rows** — How many analytics events were imported
+
+The import fetches data from the GA4 API in monthly chunks. For properties with a lot of historical data, this may take several minutes. The page auto-refreshes while an import is processing.
+
+</Step>
+</Steps>
+
+<h3>What data is imported?</h3>
+
+The following dimensions are imported for **pageviews**:
+
+- Date and hour
+- Hostname and page path
+- Device category (desktop, mobile, tablet)
+- Browser and operating system
+- Country, region, and city
+- Traffic source, medium, campaign, term, and content (UTM parameters)
+
+Source and UTM data is enriched from a separate report and matched by page and hour. For pages with traffic from multiple sources in the same hour, the most common source is used.
+
+For **custom events**, we import all non-standard GA4 events (excluding built-in events like `page_view`, `session_start`, `first_visit`, etc.) with device, browser, OS, country, and page dimensions.
+
+<h3>What's not imported?</h3>
+
+- **Language / locale** is not included (GA4 API dimension limit)
+- **Browser and OS versions** are not available from GA4 aggregate reports
+- **Session duration** cannot be reconstructed from aggregated data
+- **Unique visitors** may differ from GA4 numbers due to day-level aggregation
+
+</TabsContent>
+<TabsContent value="umami">
+
+<Steps>
+<Step>
+<h3>Export Your Data from Umami</h3>
 
 1. Log in to your Umami instance
 2. Go to **Settings** → **Data**
@@ -30,7 +114,7 @@ You can learn more on how to export your data from Umami on their [data export d
 
 </Step>
 <Step>
-### Import into Swetrix
+<h3>Import into Swetrix</h3>
 
 1. Go to your project's **Settings** page in Swetrix
 2. Click the **Import data** tab
@@ -54,7 +138,7 @@ You can learn more on how to export your data from Umami on their [data export d
 
 </Step>
 <Step>
-### Monitor Progress
+<h3>Monitor Progress</h3>
 
 After uploading, the import will appear in the **Import history** table below the provider cards. You can see:
 
@@ -67,11 +151,12 @@ The page auto-refreshes while an import is processing. You can navigate away and
 </Step>
 </Steps>
 
-## Importing from Simple Analytics
+</TabsContent>
+<TabsContent value="simple">
 
 <Steps>
 <Step>
-### Export Your Data from Simple Analytics
+<h3>Export Your Data from Simple Analytics</h3>
 
 1. Log in to your Simple Analytics dashboard and go to their [Export data](https://dashboard.simpleanalytics.com/select-website/export) page
 2. Under the **Select the raw data you want to download** section, select **All** option to include both pageviews and events and the export time period. For type, choose **CSV**.
@@ -87,7 +172,7 @@ You can learn more on how to export your data from Simple Analytics on their [ex
 
 </Step>
 <Step>
-### Import into Swetrix
+<h3>Import into Swetrix</h3>
 
 1. Go to your project's **Settings** page in Swetrix
 2. Click the **Import data** tab
@@ -109,7 +194,7 @@ You can learn more on how to export your data from Simple Analytics on their [ex
 
 </Step>
 <Step>
-### Monitor Progress
+<h3>Monitor Progress</h3>
 
 After uploading, the import will appear in the **Import history** table below the provider cards. You can see:
 
@@ -122,7 +207,8 @@ The page auto-refreshes while an import is processing. You can navigate away and
 </Step>
 </Steps>
 
-## Importing from Fathom Analytics
+</TabsContent>
+<TabsContent value="fathom">
 
 <Callout type="warn">
   Because Fathom Analytics does not allow raw data exports, the sessions will be imported with
@@ -132,7 +218,7 @@ The page auto-refreshes while an import is processing. You can navigate away and
 
 <Steps>
 <Step>
-### Export Your Data from Fathom
+<h3>Export Your Data from Fathom</h3>
 
 1. Log in to your [Fathom Analytics](https://usefathom.com) dashboard
 2. Go to your site's settings and go to the **Exports** tab
@@ -153,7 +239,7 @@ You can learn more on how to export your data from Fathom on their [export docum
 
 </Step>
 <Step>
-### Import into Swetrix
+<h3>Import into Swetrix</h3>
 
 1. Go to your project's **Settings** page in Swetrix
 2. Click the **Import data** tab
@@ -174,7 +260,7 @@ You can learn more on how to export your data from Fathom on their [export docum
 
 </Step>
 <Step>
-### Monitor Progress
+<h3>Monitor Progress</h3>
 
 After uploading, the import will appear in the **Import history** table below the provider cards. You can see:
 
@@ -186,6 +272,83 @@ The page auto-refreshes while an import is processing. You can navigate away and
 
 </Step>
 </Steps>
+
+</TabsContent>
+<TabsContent value="plausible">
+
+<Callout type="warn">
+  Plausible only allows exporting daily aggregated data — there is no raw event export. Swetrix
+  reconstructs synthetic per-event rows from your aggregates so you can browse the data in
+  dashboards. Because the mapper samples each dimension's daily distribution independently with
+  replacement, single-dimension breakdowns (e.g. top browsers or top pages) are deterministic
+  approximations rather than guaranteed exact reproductions of Plausible's report. Only per-day
+  totals and the top-level generated counts (sessions, pageviews, custom events) are preserved
+  exactly.
+</Callout>
+
+<Steps>
+<Step>
+<h3>Export Your Data from Plausible</h3>
+
+1. Log in to your [Plausible Analytics](https://plausible.io) dashboard
+2. Open the site you want to export from
+3. Go to **Site Settings** → **Imports & Exports**
+4. Click **Export** in the **CSV export** section to download a `.zip` archive
+
+The archive contains one CSV per dimension (`imported_visitors_*.csv`, `imported_pages_*.csv`, `imported_browsers_*.csv`, `imported_devices_*.csv`, `imported_operating_systems_*.csv`, `imported_locations_*.csv`, `imported_sources_*.csv`, `imported_entry_pages_*.csv`, `imported_exit_pages_*.csv`, `imported_custom_events_*.csv`, `imported_custom_props_*.csv`).
+
+You can learn more on how to export your data from Plausible on their [export documentation](https://plausible.io/docs/export-stats).
+
+</Step>
+<Step>
+<h3>Import into Swetrix</h3>
+
+1. Go to your project's **Settings** page in Swetrix
+2. Click the **Import data** tab
+3. Click the **Plausible Analytics** provider card
+4. In the upload modal, either drag and drop the `.zip` file or click to browse
+5. Wait for the upload and processing to complete
+
+<Callout type="warn">
+  Upload the `.zip` file from Plausible directly — do not extract it first.
+</Callout>
+
+</Step>
+<Step>
+<h3>Monitor Progress</h3>
+
+After uploading, the import will appear in the **Import history** table below the provider cards. You can see:
+
+- **Status** — Pending, Processing, Completed, or Failed
+- **Date range** — The time span of the imported data
+- **Rows** — How many synthetic events were generated
+
+The page auto-refreshes while an import is processing.
+
+</Step>
+</Steps>
+
+<h3>How the approximation works</h3>
+
+For each day in the export, Swetrix:
+
+1. Reads `imported_visitors_*.csv` to get the day's `visits` (sessions) and `pageviews` totals
+2. Builds a probability distribution for each dimension (browser, OS, device, country/region, source/UTM, entry page, exit page, page) weighted by the visits/entrances/exits in the corresponding CSV
+3. Generates exactly `visits` synthetic sessions, sampling one value from each dimension's distribution independently with a deterministic PRNG seeded by the import ID and date
+4. Distributes the day's `pageviews` across sessions (first page = a sampled entry page, last page = a sampled exit page, middle pages sampled from the pages distribution)
+5. Spreads session start times evenly across the 24h window and pageview gaps within a session based on the average `visit_duration` per session
+
+This is deterministic — re-importing the same export produces identical rows.
+
+<h3>What's not imported?</h3>
+
+- **Custom event properties** (`imported_custom_props_*.csv`): Plausible reports property values aggregated separately from event occurrences with no way to attribute a value to a specific event, so these are skipped
+- **Cities**: Plausible exports only Geonames numeric city IDs without names, so the city field is left blank
+- **Exact session duration / bounce rate per session**: only daily averages are preserved
+- **Exact breakdowns**: each dimension is sampled independently with replacement per session, so single-dimension breakdowns are deterministic approximations rather than exact reproductions of Plausible's per-day report, and cross-dimension joints (e.g. "Firefox on macOS in GB") are sampled under an independence assumption and do not match Plausible's joint distributions
+
+</TabsContent>
+</Tabs>
 
 ## Viewing Imported Data
 
@@ -209,9 +372,10 @@ This permanently removes all analytics rows associated with that import. Your li
 
 ## Limitations
 
-- **File size**: Maximum 100 MB per upload
+- **File size**: Maximum 100 MB per upload (for file-based imports)
 - **One at a time**: Only one import can be active (pending or processing) per project at a time
 - **Timestamps**: Events with invalid timestamps are skipped during import
+- **GA4 dimensions**: Google Analytics 4 imports are subject to API limitations — see the "What's not imported?" section under the Google Analytics 4 tab for details
 
 ## Troubleshooting
 

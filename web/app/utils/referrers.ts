@@ -117,6 +117,9 @@ export const getAIReferrals = (entries: Entry[]): Entry[] => {
   return grouped.filter((e) => e.name && AI_REFERRAL_NAMES.has(e.name))
 }
 
+export const getFaviconUrl = (domain: string): string =>
+  `/api/favicon?domain=${encodeURIComponent(domain)}`
+
 export const getFaviconHost = (value: string | null): string | null => {
   if (!value) return null
 

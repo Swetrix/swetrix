@@ -1,5 +1,7 @@
 import cx from 'clsx'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezonePlugin from 'dayjs/plugin/timezone'
 import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
@@ -52,6 +54,7 @@ import {
 } from '~/pages/Project/tabs/Traffic/MetricCards'
 import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
+import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import { TrafficChart } from '~/pages/Project/tabs/Traffic/TrafficChart'
 import TrafficHeaderActions from '~/pages/Project/tabs/Traffic/TrafficHeaderActions'
 import UserFlow from '~/pages/Project/tabs/Traffic/UserFlow'
@@ -98,6 +101,9 @@ import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
 import { LoaderView } from '../../View/components/LoaderView'
 import { ChartTypeSwitcher } from '../../View/components/ChartTypeSwitcher'
+
+dayjs.extend(utc)
+dayjs.extend(timezonePlugin)
 
 const InteractiveMap = lazy(
   () => import('~/pages/Project/View/components/InteractiveMap'),
@@ -326,6 +332,57 @@ const TrafficViewInner = ({
     handleChartContextMenu,
     closeContextMenu,
   } = useAnnotations()
+
+  const [sessionsDrawer, setSessionsDrawer] = useState<{
+    from: string
+    to: string
+    label: string
+  } | null>(null)
+
+  const handleDataPointClick = useCallback(
+    (d: { x: Date; index: number }) => {
+      const date = dayjs(d.x).tz(timezone)
+      let from: string
+      let to: string
+      let label: string
+
+      switch (timeBucket) {
+        case 'minute':
+          from = date.startOf('minute').toISOString()
+          to = date.endOf('minute').toISOString()
+          label = date.format('MMM D, YYYY HH:mm')
+          break
+        case 'hour':
+          from = date.startOf('hour').toISOString()
+          to = date.endOf('hour').toISOString()
+          label = date.format(
+            timeFormat === '24-hour'
+              ? 'MMM D, YYYY HH:00 - HH:59'
+              : 'MMM D, YYYY h:00 - h:59 A',
+          )
+          break
+        case 'month':
+          from = date.startOf('month').toISOString()
+          to = date.endOf('month').toISOString()
+          label = date.format('MMMM YYYY')
+          break
+        case 'year':
+          from = date.startOf('year').toISOString()
+          to = date.endOf('year').toISOString()
+          label = date.format('YYYY')
+          break
+        case 'day':
+        default:
+          from = date.startOf('day').toISOString()
+          to = date.endOf('day').toISOString()
+          label = date.format('dddd, MMM D, YYYY')
+          break
+      }
+
+      setSessionsDrawer({ from, to, label })
+    },
+    [timeBucket, timeFormat, timezone],
+  )
 
   const panelsData: PanelsData = useMemo(() => {
     if (deferredData.trafficData) {
@@ -1072,6 +1129,7 @@ const TrafficViewInner = ({
                 className='mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'
                 annotations={filteredAnnotations}
                 period={activePeriod?.period}
+                onDataPointClick={handleDataPointClick}
                 timezone={timezone}
               />
             </div>
@@ -1431,8 +1489,37 @@ const TrafficViewInner = ({
                 }
               : undefined
           }
+          onExploreSessions={
+            contextMenu.date
+              ? () => {
+                  const date = dayjs.tz(
+                    contextMenu.date,
+                    'YYYY-MM-DD',
+                    timezone,
+                  )
+                  if (!date.isValid()) return
+
+                  setSessionsDrawer({
+                    from: date.startOf('day').toISOString(),
+                    to: date.endOf('day').toISOString(),
+                    label: date.format('dddd, MMM D, YYYY'),
+                  })
+                }
+              : undefined
+          }
           existingAnnotation={contextMenu.annotation}
           allowedToManage={allowedToManage}
+        />
+        <SessionsDrawer
+          isOpen={!!sessionsDrawer}
+          onClose={() => setSessionsDrawer(null)}
+          from={sessionsDrawer?.from || ''}
+          to={sessionsDrawer?.to || ''}
+          label={sessionsDrawer?.label || ''}
+          projectId={id}
+          timezone={timezone}
+          timeFormat={timeFormat as '12-hour' | '24-hour'}
+          filters={filters}
         />
       </div>
     </>

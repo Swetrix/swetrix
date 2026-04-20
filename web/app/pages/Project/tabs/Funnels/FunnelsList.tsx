@@ -4,8 +4,11 @@ import {
   SlidersHorizontalIcon,
   TrashIcon,
   FunnelIcon,
+  FileTextIcon,
+  CursorClickIcon,
+  ArrowRightIcon,
 } from '@phosphor-icons/react'
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 
@@ -31,6 +34,53 @@ interface FunnelCardProps {
 
 interface AddFunnelProps {
   openFunnelSettings: (funnel?: Funnel) => void
+}
+
+const STEPS_MAX_HEIGHT = 42
+
+const FunnelSteps = ({ steps }: { steps: string[] }) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  return (
+    <div
+      ref={containerRef}
+      style={{ maxHeight: STEPS_MAX_HEIGHT }}
+      className='mt-2.5 flex flex-wrap items-center gap-1 overflow-hidden'
+    >
+      {_map(steps, (step, index) => {
+        const isPage = step.startsWith('/')
+
+        return (
+          <div key={index} className='contents'>
+            {index > 0 && (
+              <ArrowRightIcon
+                weight='bold'
+                className='size-2.5 shrink-0 text-gray-600 dark:text-slate-300'
+              />
+            )}
+            <Text
+              as='span'
+              size='xxs'
+              weight='medium'
+              colour='secondary'
+              code
+              className='flex items-center gap-1'
+            >
+              {isPage ? (
+                <FileTextIcon weight='duotone' className='size-3 shrink-0' />
+              ) : (
+                <CursorClickIcon
+                  weight='duotone'
+                  className='size-3 shrink-0 text-lime-500 dark:text-lime-400'
+                />
+              )}
+              {step}
+            </Text>
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 const FunnelCard = ({
@@ -61,7 +111,7 @@ const FunnelCard = ({
           <Text as='p' size='base' weight='semibold' truncate>
             {funnel.name}
           </Text>
-          <div className='flex items-center gap-1'>
+          <div className='flex shrink-0 items-center gap-1'>
             <button
               type='button'
               onClick={(e) => {
@@ -95,6 +145,7 @@ const FunnelCard = ({
             ) : null}
           </div>
         </div>
+        {funnel.steps?.length > 0 && <FunnelSteps steps={funnel.steps} />}
       </div>
     </Link>
   )

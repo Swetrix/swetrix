@@ -12,7 +12,7 @@ import cx from 'clsx'
 import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import { Trans, useTranslation } from 'react-i18next'
-import { useFetcher } from 'react-router'
+import { useFetcher, useSearchParams } from 'react-router'
 
 import {
   type DataImport,
@@ -23,10 +23,14 @@ import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
 import Modal from '~/ui/Modal'
 import Loader from '~/ui/Loader'
 import FileUpload from '~/ui/FileUpload'
+import Button from '~/ui/Button'
+import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 import UmamiSVG from '~/ui/icons/Umami'
 import SimpleAnalyticsSVG from '~/ui/icons/SimpleAnalytics'
 import FathomSVG from '~/ui/icons/Fathom'
+import GoogleAnalyticsSVG from '~/ui/icons/GoogleAnalytics'
+import PlausibleSVG from '~/ui/icons/Plausible'
 
 const PROVIDER_ICONS: Record<
   string,
@@ -35,19 +39,31 @@ const PROVIDER_ICONS: Record<
   umami: UmamiSVG,
   'simple-analytics': SimpleAnalyticsSVG,
   fathom: FathomSVG,
+  'google-analytics': GoogleAnalyticsSVG,
+  plausible: PlausibleSVG,
 }
 
-const PROVIDER_DISPLAY_NAMES = {
+const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
   umami: 'Umami',
   'simple-analytics': 'Simple Analytics',
   fathom: 'Fathom Analytics',
-} as const
+  'google-analytics': 'Google Analytics 4',
+  plausible: 'Plausible Analytics',
+}
 
-const PROVIDER_FILE_TYPES = {
+const FILE_BASED_PROVIDERS = new Set([
+  'umami',
+  'simple-analytics',
+  'fathom',
+  'plausible',
+])
+
+const PROVIDER_FILE_TYPES: Record<string, string> = {
   umami: '.zip',
   'simple-analytics': '.csv',
   fathom: '.csv',
-} as const
+  plausible: '.zip',
+}
 
 const STATUS_ICONS = {
   pending: ClockIcon,
@@ -97,12 +113,18 @@ function StatusBadge({
   )
 }
 
+interface Ga4Property {
+  propertyId: string
+  displayName: string
+}
+
 interface DataImportTabProps {
   projectId: string
 }
 
 export default function DataImportTab({ projectId }: DataImportTabProps) {
   const { t } = useTranslation('common')
+  const [searchParams, setSearchParams] = useSearchParams()
   const [imports, setImports] = useState<DataImport[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(
@@ -111,9 +133,18 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
   const [deleteTarget, setDeleteTarget] = useState<DataImport | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  // GA4-specific state
+  const [ga4Connected, setGa4Connected] = useState(false)
+  const [ga4Properties, setGa4Properties] = useState<Ga4Property[]>([])
+  const [ga4SelectedProperty, setGa4SelectedProperty] = useState('')
+  const [ga4LoadingProperties, setGa4LoadingProperties] = useState(false)
+
   const listFetcher = useFetcher<ProjectSettingsActionData>()
   const uploadFetcher = useFetcher<ProjectSettingsActionData>()
   const deleteFetcher = useFetcher<ProjectSettingsActionData>()
+  const ga4ConnectFetcher = useFetcher<ProjectSettingsActionData>()
+  const ga4PropertiesFetcher = useFetcher<ProjectSettingsActionData>()
+  const ga4StartFetcher = useFetcher<ProjectSettingsActionData>()
 
   const settingsAction = `/projects/settings/${projectId}`
 
@@ -130,6 +161,23 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
       { method: 'POST', action: settingsAction },
     )
   }, [listFetcher, settingsAction])
+
+  // Check for GA4 OAuth redirect
+  useEffect(() => {
+    if (searchParams.get('ga4') === 'connected') {
+      setGa4Connected(true)
+      setSelectedProvider('google-analytics')
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          next.delete('ga4')
+          return next
+        },
+        { replace: true },
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     fetchImports()
@@ -204,6 +252,69 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deleteFetcher.state, deleteFetcher.data])
 
+  // GA4 connect response: redirect to Google OAuth
+  useEffect(() => {
+    if (ga4ConnectFetcher.state !== 'idle' || !ga4ConnectFetcher.data) return
+    if (ga4ConnectFetcher.data.intent !== 'ga4-connect') return
+
+    if (ga4ConnectFetcher.data.ga4AuthUrl) {
+      window.location.href = ga4ConnectFetcher.data.ga4AuthUrl
+    } else if (ga4ConnectFetcher.data.error) {
+      toast.error(ga4ConnectFetcher.data.error)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ga4ConnectFetcher.state, ga4ConnectFetcher.data])
+
+  // GA4 properties response
+  useEffect(() => {
+    if (ga4PropertiesFetcher.state !== 'idle' || !ga4PropertiesFetcher.data)
+      return
+    if (ga4PropertiesFetcher.data.intent !== 'ga4-properties') return
+
+    setGa4LoadingProperties(false)
+
+    if (ga4PropertiesFetcher.data.ga4Properties) {
+      setGa4Properties(ga4PropertiesFetcher.data.ga4Properties)
+      if (ga4PropertiesFetcher.data.ga4Properties.length > 0) {
+        setGa4SelectedProperty(
+          ga4PropertiesFetcher.data.ga4Properties[0].propertyId,
+        )
+      }
+    } else if (ga4PropertiesFetcher.data.error) {
+      toast.error(ga4PropertiesFetcher.data.error)
+      setGa4Connected(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ga4PropertiesFetcher.state, ga4PropertiesFetcher.data])
+
+  // GA4 start import response
+  useEffect(() => {
+    if (ga4StartFetcher.state !== 'idle' || !ga4StartFetcher.data) return
+    if (ga4StartFetcher.data.intent !== 'ga4-start-import') return
+
+    if (ga4StartFetcher.data.success) {
+      toast.success(t('project.settings.dataImport.importStarted'))
+      setSelectedProvider(null)
+      resetGa4State()
+      fetchImports()
+    } else if (ga4StartFetcher.data.error) {
+      toast.error(ga4StartFetcher.data.error)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ga4StartFetcher.state, ga4StartFetcher.data])
+
+  // Fetch GA4 properties when connected
+  useEffect(() => {
+    if (ga4Connected && selectedProvider === 'google-analytics') {
+      setGa4LoadingProperties(true)
+      ga4PropertiesFetcher.submit(
+        { intent: 'ga4-properties' },
+        { method: 'POST', action: settingsAction },
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ga4Connected, selectedProvider])
+
   const handleUpload = (file: File) => {
     if (!selectedProvider) return
 
@@ -228,12 +339,66 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
     )
   }
 
+  const handleGa4Connect = () => {
+    ga4ConnectFetcher.submit(
+      { intent: 'ga4-connect' },
+      { method: 'POST', action: settingsAction },
+    )
+  }
+
+  const handleGa4StartImport = () => {
+    if (!ga4SelectedProperty) return
+
+    ga4StartFetcher.submit(
+      {
+        intent: 'ga4-start-import',
+        propertyId: ga4SelectedProperty,
+      },
+      { method: 'POST', action: settingsAction },
+    )
+  }
+
+  const resetGa4State = () => {
+    setGa4Connected(false)
+    setGa4Properties([])
+    setGa4SelectedProperty('')
+  }
+
+  const handleProviderClick = (provider: Provider) => {
+    if (provider === 'google-analytics') {
+      setSelectedProvider(provider)
+    } else {
+      setSelectedProvider(provider)
+    }
+  }
+
+  const handleCloseModal = () => {
+    if (selectedProvider === 'google-analytics') {
+      if (ga4StartFetcher.state === 'idle') {
+        setSelectedProvider(null)
+        resetGa4State()
+      }
+    } else {
+      if (!uploading) setSelectedProvider(null)
+    }
+  }
+
   const uploading = uploadFetcher.state !== 'idle'
   const deleting = deleteFetcher.state !== 'idle'
+  const ga4Connecting = ga4ConnectFetcher.state !== 'idle'
+  const ga4Starting = ga4StartFetcher.state !== 'idle'
+
+  const isFileBased =
+    selectedProvider && FILE_BASED_PROVIDERS.has(selectedProvider)
+  const isGA4 = selectedProvider === 'google-analytics'
 
   const providerFileType = selectedProvider
-    ? t(`project.settings.dataImport.${selectedProvider}.fileType`)
+    ? PROVIDER_FILE_TYPES[selectedProvider] || ''
     : ''
+
+  const selectedGa4Property = ga4Properties.find(
+    (p) => p.propertyId === ga4SelectedProperty,
+  )
 
   return (
     <div className='space-y-8'>
@@ -241,12 +406,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
         <Text as='h3' size='base' weight='semibold' colour='primary'>
           {t('project.settings.dataImport.importFrom')}
         </Text>
-        <Text
-          as='p'
-          size='sm'
-          colour='inherit'
-          className='mt-1 text-gray-500 dark:text-gray-400'
-        >
+        <Text as='p' size='sm' colour='muted' className='mt-1'>
           {t('project.settings.dataImport.importFromDesc')}
         </Text>
 
@@ -257,14 +417,17 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
               (i) => i.status === 'pending' || i.status === 'processing',
             )
             const name = PROVIDER_DISPLAY_NAMES[provider] || provider
-            const fileType = PROVIDER_FILE_TYPES[provider] || ''
+            const subtitle =
+              provider === 'google-analytics'
+                ? t('project.settings.dataImport.google-analytics.fileType')
+                : PROVIDER_FILE_TYPES[provider] || ''
 
             return (
               <button
                 key={provider}
                 type='button'
                 disabled={hasActive}
-                onClick={() => setSelectedProvider(provider)}
+                onClick={() => handleProviderClick(provider)}
                 className={cx(
                   'group relative flex flex-col items-start rounded-lg border p-4 text-left transition-all',
                   hasActive
@@ -280,22 +443,12 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                     <Text as='p' size='sm' weight='semibold' colour='primary'>
                       {name}
                     </Text>
-                    <Text
-                      as='p'
-                      size='xs'
-                      colour='inherit'
-                      className='text-gray-500 dark:text-gray-400'
-                    >
-                      {fileType}
+                    <Text as='p' size='xs' colour='muted'>
+                      {subtitle}
                     </Text>
                   </div>
                 </div>
-                <Text
-                  as='p'
-                  size='xs'
-                  colour='inherit'
-                  className='mt-2 text-gray-500 dark:text-gray-400'
-                >
+                <Text as='p' size='xs' colour='muted' className='mt-2'>
                   {t(`project.settings.dataImport.${provider}.description`)}
                 </Text>
               </button>
@@ -316,12 +469,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
         ) : imports.length === 0 ? (
           <div className='mt-4 rounded-lg border border-dashed border-gray-300 py-8 text-center dark:border-slate-700'>
             <UploadIcon className='mx-auto size-8 text-gray-400 dark:text-gray-500' />
-            <Text
-              as='p'
-              size='sm'
-              colour='inherit'
-              className='mt-2 text-gray-500 dark:text-gray-400'
-            >
+            <Text as='p' size='sm' colour='muted' className='mt-2'>
               {t('project.settings.dataImport.noImports')}
             </Text>
           </div>
@@ -369,7 +517,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                     key={imp.id}
                     className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'
                   >
-                    <td className='px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 capitalize dark:text-gray-100'>
+                    <td className='px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-gray-100'>
                       {PROVIDER_DISPLAY_NAMES[imp.provider] || imp.provider}
                     </td>
                     <td className='px-4 py-3'>
@@ -432,11 +580,10 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
         )}
       </div>
 
+      {/* File upload modal for file-based providers */}
       <Modal
-        isOpened={!!selectedProvider}
-        onClose={() => {
-          if (!uploading) setSelectedProvider(null)
-        }}
+        isOpened={!!isFileBased}
+        onClose={handleCloseModal}
         title={t('project.settings.dataImport.importFromProvider', {
           provider: selectedProvider
             ? PROVIDER_DISPLAY_NAMES[selectedProvider] || selectedProvider
@@ -445,12 +592,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
         size='medium'
         message={
           <div className='space-y-4'>
-            <Text
-              as='p'
-              size='sm'
-              colour='inherit'
-              className='text-gray-600 dark:text-gray-400'
-            >
+            <Text as='p' size='sm' colour='muted'>
               <Trans
                 i18nKey='project.settings.dataImport.uploadInstructions'
                 t={t}
@@ -475,18 +617,8 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                 uploading ? (
                   t('project.settings.dataImport.uploadingProcessing')
                 ) : (
-                  <Text
-                    as='span'
-                    size='sm'
-                    colour='inherit'
-                    className='text-gray-600 dark:text-gray-300'
-                  >
-                    <Text
-                      as='span'
-                      weight='medium'
-                      colour='inherit'
-                      className='text-gray-900 dark:text-gray-100'
-                    >
+                  <Text as='span' size='sm' colour='muted'>
+                    <Text as='span' weight='medium' colour='primary'>
                       {t('project.settings.dataImport.clickToUpload')}
                     </Text>{' '}
                     {t('project.settings.dataImport.orDragDrop')}
@@ -505,6 +637,100 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
           </div>
         }
         closeText={t('common.cancel')}
+      />
+
+      {/* GA4 OAuth + property selection modal */}
+      <Modal
+        isOpened={!!isGA4}
+        onClose={handleCloseModal}
+        title={t('project.settings.dataImport.importFromProvider', {
+          provider: 'Google Analytics 4',
+        })}
+        size='medium'
+        submitText={
+          ga4Connected && ga4Properties.length > 0
+            ? t('project.settings.dataImport.google-analytics.startImport')
+            : undefined
+        }
+        onSubmit={
+          ga4Connected && ga4Properties.length > 0
+            ? handleGa4StartImport
+            : undefined
+        }
+        isLoading={ga4Starting}
+        closeText={t('common.cancel')}
+        message={
+          <div className='space-y-4'>
+            {!ga4Connected ? (
+              <>
+                <Text as='p' size='sm' colour='muted'>
+                  {t(
+                    'project.settings.dataImport.google-analytics.connectDesc',
+                  )}
+                </Text>
+                <Button
+                  secondary
+                  large
+                  onClick={handleGa4Connect}
+                  loading={ga4Connecting}
+                  className='flex w-full items-center justify-center gap-2'
+                >
+                  {!ga4Connecting && <GoogleAnalyticsSVG className='size-5' />}
+                  {ga4Connecting
+                    ? t(
+                        'project.settings.dataImport.google-analytics.connecting',
+                      )
+                    : t(
+                        'project.settings.dataImport.google-analytics.connectGoogle',
+                      )}
+                </Button>
+              </>
+            ) : ga4LoadingProperties ? (
+              <div className='space-y-4'>
+                <div className='flex items-center justify-center py-6'>
+                  <Loader className='pt-0' />
+                  <Text as='p' size='sm'>
+                    {t(
+                      'project.settings.dataImport.google-analytics.loadingProperties',
+                    )}
+                  </Text>
+                </div>
+              </div>
+            ) : ga4Properties.length === 0 ? (
+              <Text
+                as='p'
+                size='sm'
+                colour='muted'
+                className='py-4 text-center'
+              >
+                {t('project.settings.dataImport.google-analytics.noProperties')}
+              </Text>
+            ) : (
+              <>
+                <Select
+                  label={t(
+                    'project.settings.dataImport.google-analytics.selectProperty',
+                  )}
+                  items={ga4Properties}
+                  selectedItem={selectedGa4Property}
+                  title={
+                    selectedGa4Property
+                      ? `${selectedGa4Property.displayName} (${selectedGa4Property.propertyId})`
+                      : ''
+                  }
+                  keyExtractor={(prop) => prop.propertyId}
+                  labelExtractor={(prop) =>
+                    `${prop.displayName} (${prop.propertyId})`
+                  }
+                  onSelect={(prop) => setGa4SelectedProperty(prop.propertyId)}
+                />
+                <Text as='p' size='xs' colour='muted'>
+                  {t('project.settings.dataImport.google-analytics.importNote')}
+                </Text>
+              </>
+            )}
+          </div>
+        }
       />
 
       <Modal

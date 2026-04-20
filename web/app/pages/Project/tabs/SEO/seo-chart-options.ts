@@ -84,7 +84,7 @@ export function buildMainChartOptions(
     },
     resize: {
       auto: true,
-      timer: false,
+      timer: true,
     },
     axis: {
       x: {
