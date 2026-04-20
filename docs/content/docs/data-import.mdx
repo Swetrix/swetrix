@@ -279,9 +279,11 @@ The page auto-refreshes while an import is processing. You can navigate away and
 <Callout type="warn">
   Plausible only allows exporting daily aggregated data — there is no raw event export. Swetrix
   reconstructs synthetic per-event rows from your aggregates so you can browse the data in
-  dashboards, but cross-dimension breakdowns (e.g. "Firefox visits to /pricing from the US") are
-  approximated by sampling each dimension independently per day. Per-day totals (visitors, visits,
-  pageviews) and single-dimension breakdowns will match Plausible exactly.
+  dashboards. Because the mapper samples each dimension's daily distribution independently with
+  replacement, single-dimension breakdowns (e.g. top browsers or top pages) are deterministic
+  approximations rather than guaranteed exact reproductions of Plausible's report. Only per-day
+  totals and the top-level generated counts (sessions, pageviews, custom events) are preserved
+  exactly.
 </Callout>
 
 <Steps>
@@ -343,7 +345,7 @@ This is deterministic — re-importing the same export produces identical rows.
 - **Custom event properties** (`imported_custom_props_*.csv`): Plausible reports property values aggregated separately from event occurrences with no way to attribute a value to a specific event, so these are skipped
 - **Cities**: Plausible exports only Geonames numeric city IDs without names, so the city field is left blank
 - **Exact session duration / bounce rate per session**: only daily averages are preserved
-- **Cross-dimension joints**: combinations like "Firefox on macOS in GB" are sampled under an independence assumption — per-dimension daily totals match, but joint distributions don't
+- **Exact breakdowns**: each dimension is sampled independently with replacement per session, so single-dimension breakdowns are deterministic approximations rather than exact reproductions of Plausible's per-day report, and cross-dimension joints (e.g. "Firefox on macOS in GB") are sampled under an independence assumption and do not match Plausible's joint distributions
 
 </TabsContent>
 </Tabs>

@@ -257,96 +257,138 @@ function pickSiteHostname(pages: PageRow[]): string | null {
   return best
 }
 
-class WeightedDist<T> {
-  readonly items: T[]
-  readonly cumulative: number[]
-  readonly total: number
+const MAX_POOL_SIZE = 2_000_000
 
-  constructor(items: T[], weights: number[]) {
-    const safeItems: T[] = []
-    const safeWeights: number[] = []
+function buildShuffledPool<T>(
+  items: T[],
+  counts: number[],
+  prng: () => number,
+): T[] {
+  if (items.length === 0) return []
+
+  const safeCounts: number[] = new Array(items.length)
+  let total = 0
+  for (let i = 0; i < items.length; i++) {
+    const c = counts[i]
+    const safe = c > 0 ? c : 0
+    safeCounts[i] = safe
+    total += safe
+  }
+  if (total <= 0) return []
+
+  // Allocate per-item slots, scaling proportionally if the total would
+  // exceed MAX_POOL_SIZE. Largest-remainder method keeps the assigned
+  // counts as close to the original ratios as possible while preserving
+  // the exact target total.
+  let allocations: number[]
+  let poolSize: number
+  if (total > MAX_POOL_SIZE) {
+    allocations = new Array(items.length).fill(0)
+    const fractions: { idx: number; rem: number }[] = []
+    let assigned = 0
     for (let i = 0; i < items.length; i++) {
-      const w = weights[i]
-      if (w > 0) {
-        safeItems.push(items[i])
-        safeWeights.push(w)
-      }
+      if (safeCounts[i] === 0) continue
+      const scaled = (safeCounts[i] * MAX_POOL_SIZE) / total
+      const floor = Math.floor(scaled)
+      allocations[i] = floor
+      assigned += floor
+      fractions.push({ idx: i, rem: scaled - floor })
     }
-    this.items = safeItems
-    this.cumulative = []
-    let acc = 0
-    for (const w of safeWeights) {
-      acc += w
-      this.cumulative.push(acc)
+    fractions.sort((a, b) => b.rem - a.rem || a.idx - b.idx)
+    let remaining = MAX_POOL_SIZE - assigned
+    for (let i = 0; i < fractions.length && remaining > 0; i++) {
+      allocations[fractions[i].idx] += 1
+      remaining -= 1
     }
-    this.total = acc
+    poolSize = MAX_POOL_SIZE
+  } else {
+    allocations = safeCounts
+    poolSize = total
   }
 
-  get isEmpty(): boolean {
-    return this.items.length === 0
+  const pool: T[] = new Array(poolSize)
+  let p = 0
+  for (let i = 0; i < items.length; i++) {
+    const c = allocations[i]
+    for (let j = 0; j < c; j++) {
+      pool[p++] = items[i]
+    }
   }
 
-  sample(prng: () => number): T | null {
-    if (this.items.length === 0) return null
-    const r = prng() * this.total
-    let lo = 0
-    let hi = this.cumulative.length - 1
-    while (lo < hi) {
-      const mid = (lo + hi) >>> 1
-      if (this.cumulative[mid] >= r) {
-        hi = mid
-      } else {
-        lo = mid + 1
-      }
-    }
-    return this.items[lo]
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(prng() * (i + 1))
+    const tmp = pool[i]
+    pool[i] = pool[j]
+    pool[j] = tmp
   }
+
+  return pool
 }
 
-interface DistBundle {
-  browsers: WeightedDist<BrowserRow>
-  devices: WeightedDist<DeviceRow>
-  os: WeightedDist<OsRow>
-  locations: WeightedDist<LocationRow>
-  sources: WeightedDist<SourceRow>
-  pages: WeightedDist<PageRow>
-  entryPages: WeightedDist<EntryPageRow>
-  exitPages: WeightedDist<ExitPageRow>
+function pickFromPool<T>(pool: T[], idx: number): T | null {
+  if (pool.length === 0) return null
+  return pool[idx % pool.length]
 }
 
-function buildDists(daily: DailyData): DistBundle {
+interface PoolBundle {
+  browsers: BrowserRow[]
+  devices: DeviceRow[]
+  os: OsRow[]
+  locations: LocationRow[]
+  sources: SourceRow[]
+  pages: PageRow[]
+  entryPages: EntryPageRow[]
+  exitPages: ExitPageRow[]
+}
+
+function buildPools(
+  daily: DailyData,
+  importID: number,
+  date: string,
+): PoolBundle {
+  const seedFor = (label: string) =>
+    seededPrng(seedFromString(`${importID}|${date}|pool|${label}`))
+
   return {
-    browsers: new WeightedDist(
+    browsers: buildShuffledPool(
       daily.browsers,
       daily.browsers.map((r) => r.visits),
+      seedFor('browsers'),
     ),
-    devices: new WeightedDist(
+    devices: buildShuffledPool(
       daily.devices,
       daily.devices.map((r) => r.visits),
+      seedFor('devices'),
     ),
-    os: new WeightedDist(
+    os: buildShuffledPool(
       daily.os,
       daily.os.map((r) => r.visits),
+      seedFor('os'),
     ),
-    locations: new WeightedDist(
+    locations: buildShuffledPool(
       daily.locations,
       daily.locations.map((r) => r.visits),
+      seedFor('locations'),
     ),
-    sources: new WeightedDist(
+    sources: buildShuffledPool(
       daily.sources,
       daily.sources.map((r) => r.visits),
+      seedFor('sources'),
     ),
-    pages: new WeightedDist(
+    pages: buildShuffledPool(
       daily.pages,
       daily.pages.map((r) => r.pageviews),
+      seedFor('pages'),
     ),
-    entryPages: new WeightedDist(
+    entryPages: buildShuffledPool(
       daily.entryPages,
       daily.entryPages.map((r) => r.entrances),
+      seedFor('entryPages'),
     ),
-    exitPages: new WeightedDist(
+    exitPages: buildShuffledPool(
       daily.exitPages,
       daily.exitPages.map((r) => r.exits),
+      seedFor('exitPages'),
     ),
   }
 }
@@ -679,7 +721,7 @@ export class PlausibleMapper implements ImportMapper {
     const sessionCount = visits > 0 ? visits : pageviews > 0 ? 1 : 0
     if (sessionCount === 0) return
 
-    const dists = buildDists(daily)
+    const pools = buildPools(daily, importID, date)
     const fallbackHost = pickSiteHostname(daily.pages)
     const dayStartSec = dateToEpochSec(date)
     const sessionSpacingSec =
@@ -712,15 +754,13 @@ export class PlausibleMapper implements ImportMapper {
     const sessions: SessionInfo[] = []
 
     for (let i = 0; i < sessionCount; i++) {
-      const seed = seedFromString(`${importID}|${date}|${i}`)
-      const prng = seededPrng(seed)
       const psid = sessionIdToPsid(`${importID}|${date}|${i}`)
 
-      const browser = dists.browsers.sample(prng)
-      const device = dists.devices.sample(prng)
-      const os = dists.os.sample(prng)
-      const location = dists.locations.sample(prng)
-      const source = dists.sources.sample(prng)
+      const browser = pickFromPool(pools.browsers, i)
+      const device = pickFromPool(pools.devices, i)
+      const os = pickFromPool(pools.os, i)
+      const location = pickFromPool(pools.locations, i)
+      const source = pickFromPool(pools.sources, i)
 
       const startSec = dayStartSec + i * sessionSpacingSec
 
@@ -736,16 +776,15 @@ export class PlausibleMapper implements ImportMapper {
       })
     }
 
+    let middlePageIdx = 0
+
     for (let i = 0; i < sessions.length; i++) {
       const session = sessions[i]
       const pvCount = basePerSession + (i < remainder ? 1 : 0)
       if (pvCount <= 0) continue
 
-      const seed = seedFromString(`${importID}|${date}|${i}|pages`)
-      const prng = seededPrng(seed)
-
-      const entryPage = dists.entryPages.sample(prng)
-      const exitPage = dists.exitPages.sample(prng)
+      const entryPage = pickFromPool(pools.entryPages, i)
+      const exitPage = pickFromPool(pools.exitPages, i)
 
       const pages: PageRow[] = []
       const entryPagePath = entryPage?.entry_page ?? null
@@ -768,7 +807,7 @@ export class PlausibleMapper implements ImportMapper {
           })
           continue
         }
-        const sampled = dists.pages.sample(prng)
+        const sampled = pickFromPool(pools.pages, middlePageIdx++)
         if (sampled) {
           pages.push(sampled)
         } else if (entryPagePath || exitPagePath) {
