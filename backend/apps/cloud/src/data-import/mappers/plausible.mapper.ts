@@ -26,6 +26,7 @@ const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
 const MAX_SESSIONS_PER_DAY = 1_000_000
 const MAX_PAGEVIEWS_PER_SESSION = 1_000
 const MAX_EVENTS_PER_DAY = 1_000_000
+const MAX_GENERATED_ROWS_PER_IMPORT = 100_000_000
 const MAX_SAFE_COUNT = Number.MAX_SAFE_INTEGER
 
 const FILE_PATTERNS: Record<string, RegExp> = {
@@ -698,9 +699,18 @@ export class PlausibleMapper implements ImportMapper {
     const days = this.buildDailyData(csvs)
     const sortedDates = Array.from(days.keys()).sort()
 
+    let yielded = 0
     for (const date of sortedDates) {
       const daily = days.get(date)!
-      yield* this.synthesizeDay(daily, pid, importID)
+      for (const row of this.synthesizeDay(daily, pid, importID)) {
+        yielded += 1
+        if (yielded > MAX_GENERATED_ROWS_PER_IMPORT) {
+          throw new ImportError(
+            `Plausible export would generate more than ${MAX_GENERATED_ROWS_PER_IMPORT} rows. Please split the export into smaller archives and re-import.`,
+          )
+        }
+        yield row
+      }
     }
   }
 
@@ -724,6 +734,7 @@ export class PlausibleMapper implements ImportMapper {
     const pools = buildPools(daily, importID, date)
     const fallbackHost = pickSiteHostname(daily.pages)
     const dayStartSec = dateToEpochSec(date)
+    const dayEndSec = dayStartSec + 86399
     const sessionSpacingSec =
       sessionCount > 1 ? Math.floor(86400 / sessionCount) : 86400
 
@@ -830,7 +841,8 @@ export class PlausibleMapper implements ImportMapper {
 
       for (let j = 0; j < pages.length; j++) {
         const page = pages[j]
-        const tsSec = session.startSec + j * pageGapSec
+        const rawTsSec = session.startSec + j * pageGapSec
+        const tsSec = rawTsSec > dayEndSec ? dayEndSec : rawTsSec
         const created = formatDateTime(tsSec)
 
         const data = this.buildEventData({

@@ -4,7 +4,11 @@ import * as crypto from 'crypto'
 import { unzipSync, UnzipFileInfo } from 'fflate'
 import { parse as parseSync } from 'csv-parse/sync'
 
-import { ImportMapper, AnalyticsImportRow } from './mapper.interface'
+import {
+  ImportMapper,
+  ImportError,
+  AnalyticsImportRow,
+} from './mapper.interface'
 import {
   normalizeNull,
   truncate,
@@ -22,6 +26,7 @@ const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
 const MAX_SESSIONS_PER_DAY = 1_000_000
 const MAX_PAGEVIEWS_PER_SESSION = 1_000
 const MAX_EVENTS_PER_DAY = 1_000_000
+const MAX_GENERATED_ROWS_PER_IMPORT = 100_000_000
 const MAX_SAFE_COUNT = Number.MAX_SAFE_INTEGER
 
 const FILE_PATTERNS: Record<string, RegExp> = {
@@ -150,12 +155,12 @@ function toInt(value: string | undefined, fieldName = 'value'): number {
   if (value === undefined || value === null || value === '') return 0
   const n = parseInt(value, 10)
   if (!Number.isFinite(n) || Number.isNaN(n) || !Number.isSafeInteger(n)) {
-    throw new Error(
+    throw new ImportError(
       `Plausible export contains an invalid numeric ${fieldName}: ${value}`,
     )
   }
   if (n < 0) {
-    throw new Error(
+    throw new ImportError(
       `Plausible export contains a negative numeric ${fieldName}: ${value}`,
     )
   }
@@ -164,7 +169,7 @@ function toInt(value: string | undefined, fieldName = 'value'): number {
 
 function parseCsv(bytes: Uint8Array): Record<string, string>[] {
   if (bytes.length > MAX_CSV_BYTES) {
-    throw new Error(
+    throw new ImportError(
       `Plausible export contains a CSV larger than ${MAX_CSV_BYTES} bytes.`,
     )
   }
@@ -411,7 +416,7 @@ export class PlausibleMapper implements ImportMapper {
   private extractCsvs(zipPath: string): Map<string, Uint8Array> {
     const stat = fs.statSync(zipPath)
     if (stat.size > MAX_PLAUSIBLE_ZIP_BYTES) {
-      throw new Error(
+      throw new ImportError(
         `Plausible ZIP exceeds the ${MAX_PLAUSIBLE_ZIP_BYTES} byte limit.`,
       )
     }
@@ -421,7 +426,6 @@ export class PlausibleMapper implements ImportMapper {
     const matchedKeys = new Set<string>()
     const nameToKey = new Map<string, string>()
     let totalUncompressed = 0
-    let sizeError: Error | null = null
 
     const filter = (file: UnzipFileInfo): boolean => {
       const base = path.basename(file.name).toLowerCase()
@@ -434,25 +438,22 @@ export class PlausibleMapper implements ImportMapper {
           ? file.originalSize
           : -1
         if (declaredSize < 0) {
-          sizeError = new Error(
+          throw new ImportError(
             `Plausible ZIP entry ${file.name} reports an invalid uncompressed size.`,
           )
-          throw sizeError
         }
         if (declaredSize > MAX_CSV_BYTES) {
-          sizeError = new Error(
+          throw new ImportError(
             `Plausible ZIP entry ${file.name} exceeds the ${MAX_CSV_BYTES} byte CSV limit (declared ${declaredSize}).`,
           )
-          throw sizeError
         }
         if (
           totalUncompressed + declaredSize >
           MAX_PLAUSIBLE_UNCOMPRESSED_BYTES
         ) {
-          sizeError = new Error(
+          throw new ImportError(
             `Plausible ZIP uncompressed size exceeds the ${MAX_PLAUSIBLE_UNCOMPRESSED_BYTES} byte limit.`,
           )
-          throw sizeError
         }
         totalUncompressed += declaredSize
         matchedKeys.add(key)
@@ -469,8 +470,8 @@ export class PlausibleMapper implements ImportMapper {
         { filter },
       )
     } catch (err) {
-      if (sizeError && err === sizeError) throw err
-      throw new Error(
+      if (err instanceof ImportError) throw err
+      throw new ImportError(
         'Could not read the uploaded file as a ZIP archive. Please upload the export ZIP from Plausible.',
       )
     }
@@ -480,7 +481,7 @@ export class PlausibleMapper implements ImportMapper {
       const key = nameToKey.get(name)
       if (!key || found.has(key)) continue
       if (data.byteLength > MAX_CSV_BYTES) {
-        throw new Error(
+        throw new ImportError(
           `Plausible ZIP entry ${name} exceeds the ${MAX_CSV_BYTES} byte CSV limit after decompression.`,
         )
       }
@@ -495,7 +496,7 @@ export class PlausibleMapper implements ImportMapper {
   ): Map<string, DailyData> {
     const visitorsBytes = csvs.get('visitors')
     if (!visitorsBytes) {
-      throw new Error(
+      throw new ImportError(
         'ZIP does not contain imported_visitors_*.csv. Please upload the full export ZIP from Plausible.',
       )
     }
@@ -547,7 +548,9 @@ export class PlausibleMapper implements ImportMapper {
     }
 
     if (days.size === 0) {
-      throw new Error('imported_visitors_*.csv contains no valid daily rows.')
+      throw new ImportError(
+        'imported_visitors_*.csv contains no valid daily rows.',
+      )
     }
 
     const pagesBytes = csvs.get('pages')
@@ -696,9 +699,18 @@ export class PlausibleMapper implements ImportMapper {
     const days = this.buildDailyData(csvs)
     const sortedDates = Array.from(days.keys()).sort()
 
+    let yielded = 0
     for (const date of sortedDates) {
       const daily = days.get(date)!
-      yield* this.synthesizeDay(daily, pid, importID)
+      for (const row of this.synthesizeDay(daily, pid, importID)) {
+        yielded += 1
+        if (yielded > MAX_GENERATED_ROWS_PER_IMPORT) {
+          throw new ImportError(
+            `Plausible export would generate more than ${MAX_GENERATED_ROWS_PER_IMPORT} rows. Please split the export into smaller archives and re-import.`,
+          )
+        }
+        yield row
+      }
     }
   }
 
@@ -719,9 +731,10 @@ export class PlausibleMapper implements ImportMapper {
     const sessionCount = visits > 0 ? visits : pageviews > 0 ? 1 : 0
     if (sessionCount === 0) return
 
-    const dists = buildDists(daily)
+    const pools = buildPools(daily, importID, date)
     const fallbackHost = pickSiteHostname(daily.pages)
     const dayStartSec = dateToEpochSec(date)
+    const dayEndSec = dayStartSec + 86399
     const sessionSpacingSec =
       sessionCount > 1 ? Math.floor(86400 / sessionCount) : 86400
 
@@ -752,15 +765,13 @@ export class PlausibleMapper implements ImportMapper {
     const sessions: SessionInfo[] = []
 
     for (let i = 0; i < sessionCount; i++) {
-      const seed = seedFromString(`${importID}|${date}|${i}`)
-      const prng = seededPrng(seed)
       const psid = sessionIdToPsid(`${importID}|${date}|${i}`)
 
-      const browser = dists.browsers.sample(prng)
-      const device = dists.devices.sample(prng)
-      const os = dists.os.sample(prng)
-      const location = dists.locations.sample(prng)
-      const source = dists.sources.sample(prng)
+      const browser = pickFromPool(pools.browsers, i)
+      const device = pickFromPool(pools.devices, i)
+      const os = pickFromPool(pools.os, i)
+      const location = pickFromPool(pools.locations, i)
+      const source = pickFromPool(pools.sources, i)
 
       const startSec = dayStartSec + i * sessionSpacingSec
 
@@ -776,16 +787,15 @@ export class PlausibleMapper implements ImportMapper {
       })
     }
 
+    let middlePageIdx = 0
+
     for (let i = 0; i < sessions.length; i++) {
       const session = sessions[i]
       const pvCount = basePerSession + (i < remainder ? 1 : 0)
       if (pvCount <= 0) continue
 
-      const seed = seedFromString(`${importID}|${date}|${i}|pages`)
-      const prng = seededPrng(seed)
-
-      const entryPage = dists.entryPages.sample(prng)
-      const exitPage = dists.exitPages.sample(prng)
+      const entryPage = pickFromPool(pools.entryPages, i)
+      const exitPage = pickFromPool(pools.exitPages, i)
 
       const pages: PageRow[] = []
       const entryPagePath = entryPage?.entry_page ?? null
@@ -808,7 +818,7 @@ export class PlausibleMapper implements ImportMapper {
           })
           continue
         }
-        const sampled = dists.pages.sample(prng)
+        const sampled = pickFromPool(pools.pages, middlePageIdx++)
         if (sampled) {
           pages.push(sampled)
         } else if (entryPagePath || exitPagePath) {
@@ -831,7 +841,8 @@ export class PlausibleMapper implements ImportMapper {
 
       for (let j = 0; j < pages.length; j++) {
         const page = pages[j]
-        const tsSec = session.startSec + j * pageGapSec
+        const rawTsSec = session.startSec + j * pageGapSec
+        const tsSec = rawTsSec > dayEndSec ? dayEndSec : rawTsSec
         const created = formatDateTime(tsSec)
 
         const data = this.buildEventData({
