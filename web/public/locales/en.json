@@ -1853,6 +1853,9 @@
         "fathom": {
           "description": "Import pageviews and events from Fathom Analytics export"
         },
+        "plausible": {
+          "description": "Import historical aggregates from Plausible Analytics ZIP export (approximated)"
+        },
         "google-analytics": {
           "description": "Import pageviews and events from Google Analytics 4",
           "fileType": "Google OAuth",

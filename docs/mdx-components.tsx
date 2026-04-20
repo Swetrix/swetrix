@@ -7,6 +7,7 @@ import {
   UmamiIcon,
   SimpleAnalyticsIcon,
   FathomIcon,
+  PlausibleIcon,
 } from "@/components/provider-icons";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { File, Folder, Files } from "fumadocs-ui/components/files";
@@ -27,6 +28,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     UmamiIcon,
     SimpleAnalyticsIcon,
     FathomIcon,
+    PlausibleIcon,
     Accordion,
     Accordions,
     File,

@@ -1853,6 +1853,9 @@
         "fathom": {
           "description": "Імпорт переглядів сторінок та подій з експорту Fathom Analytics"
         },
+        "plausible": {
+          "description": "Імпортувати історичні агреговані дані з ZIP-експорту Plausible Analytics (наближені)"
+        },
         "google-analytics": {
           "description": "Імпортувати перегляди сторінок та події з Google Analytics 4",
           "fileType": "Google OAuth",

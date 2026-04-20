@@ -1853,6 +1853,9 @@
         "fathom": {
           "description": "Seitenaufrufe und Ereignisse aus Fathom Analytics-Export importieren"
         },
+        "plausible": {
+          "description": "Historische aggregierte Daten aus Plausible Analytics ZIP-Export importieren (approximiert)"
+        },
         "google-analytics": {
           "description": "Seitenaufrufe und Ereignisse aus Google Analytics 4 importieren",
           "fileType": "Google OAuth",

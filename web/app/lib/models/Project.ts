@@ -180,10 +180,12 @@ export type Provider =
   | 'simple-analytics'
   | 'fathom'
   | 'google-analytics'
+  | 'plausible'
 
 export const IMPORT_PROVIDERS: Provider[] = [
   'fathom',
   isSelfhosted ? null : 'google-analytics',
+  'plausible',
   'simple-analytics',
   'umami',
 ].filter((x): x is Provider => !!x)
