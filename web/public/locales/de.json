@@ -818,7 +818,7 @@
       "fair": "Mittel",
       "good": "Gut",
       "strong": "Stark",
-      "hint": "Verwenden Sie 12 oder mehr Zeichen mit Groß- und Kleinbuchstaben, Zahlen und Symbolen für ein starkes Passwort."
+      "hint": "Verwenden Sie {{amount}}+ oder mehr Zeichen mit Groß- und Kleinbuchstaben, Zahlen und Symbolen für ein starkes Passwort."
     }
   },
   "profileSettings": {

@@ -818,7 +818,7 @@
       "fair": "Moyen",
       "good": "Bon",
       "strong": "Fort",
-      "hint": "Utilisez 12 caractères ou plus avec des majuscules, des minuscules, des chiffres et des symboles pour un mot de passe fort."
+      "hint": "Utilisez {{amount}}+ caractères ou plus avec des majuscules, des minuscules, des chiffres et des symboles pour un mot de passe fort."
     }
   },
   "profileSettings": {

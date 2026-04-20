@@ -818,7 +818,7 @@
       "fair": "Średnie",
       "good": "Dobre",
       "strong": "Silne",
-      "hint": "Użyj co najmniej 12 znaków, w tym wielkich i małych liter, cyfr oraz symboli, aby utworzyć silne hasło."
+      "hint": "Użyj co najmniej {{amount}}+ znaków, w tym wielkich i małych liter, cyfr oraz symboli, aby utworzyć silne hasło."
     }
   },
   "profileSettings": {
