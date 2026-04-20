@@ -15,4 +15,4 @@ CREATE TABLE IF NOT EXISTS `proxy_domain` (
   UNIQUE KEY `UQ_proxy_domain_target` (`proxyTargetId`),
   KEY `IDX_proxy_domain_project` (`projectId`),
   KEY `IDX_proxy_domain_status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -16,4 +16,4 @@ CREATE TABLE IF NOT EXISTS `data_import` (
   PRIMARY KEY (`id`),
   KEY `FK_data_import_project` (`projectId`),
   CONSTRAINT `FK_data_import_project` FOREIGN KEY (`projectId`) REFERENCES `project` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
