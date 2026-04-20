@@ -29,6 +29,14 @@ const MAX_PROXY_DOMAINS_PER_PROJECT = 5
 // message instead of a perpetual spinner.
 const MAX_ISSUING_MINUTES = 30
 
+// WAITING/ERROR rows older than this are considered abandoned and can be
+// reclaimed by another owner when they try to register the same hostname
+// (or by the same project when they bump up against the per-project limit).
+// This prevents a user from indefinitely squatting on a hostname they never
+// finished verifying. 7 days matches the existing CNAME-not-found timeout
+// in `verifyDomain` so a row first hits ERROR and then becomes reclaimable.
+const RESERVATION_EXPIRY_DAYS = 7
+
 // Match the `prefix` used by lua-resty-auto-ssl in the edge nginx config
 // (see internal-docs/configs/nginx/sites/proxy.swetrix.org.conf). All cert
 // data for a hostname lives under `<prefix>:<hostname>:*`.
@@ -186,6 +194,44 @@ export class ProxyDomainService {
         })
 
         const repo = manager.getRepository(ProxyDomain)
+
+        // Reclaim abandoned reservations before counting/checking duplicates:
+        //   1. expired WAITING/ERROR rows in this project (free up the limit)
+        //   2. an expired WAITING/ERROR row globally for the requested
+        //      hostname (free up the global unique index for the new owner)
+        // Both happen inside the same transaction as the insert below so the
+        // window between cleanup and re-insert is atomic.
+        const expiredBefore = dayjs()
+          .subtract(RESERVATION_EXPIRY_DAYS, 'day')
+          .toDate()
+        const reclaimableStatuses = [
+          ProxyDomainStatus.WAITING,
+          ProxyDomainStatus.ERROR,
+        ]
+
+        await repo
+          .createQueryBuilder()
+          .delete()
+          .where('projectId = :projectId', { projectId })
+          .andWhere('status IN (:...statuses)', {
+            statuses: reclaimableStatuses,
+          })
+          .andWhere('COALESCE(statusChangedAt, created) < :expiredBefore', {
+            expiredBefore,
+          })
+          .execute()
+
+        await repo
+          .createQueryBuilder()
+          .delete()
+          .where('hostname = :hostname', { hostname })
+          .andWhere('status IN (:...statuses)', {
+            statuses: reclaimableStatuses,
+          })
+          .andWhere('COALESCE(statusChangedAt, created) < :expiredBefore', {
+            expiredBefore,
+          })
+          .execute()
 
         const projectDomains = await repo.find({
           where: { projectId },
