@@ -32,6 +32,7 @@ import type { SignupActionData } from '~/routes/signup'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
+import PasswordStrength from '~/ui/PasswordStrength'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
@@ -63,6 +64,7 @@ const Signup = () => {
 
   const [tos, setTos] = useState(false)
   const [checkIfLeaked, setCheckIfLeaked] = useState(true)
+  const [password, setPassword] = useState('')
 
   const [isSsoLoading, setIsSsoLoading] = useState(false)
 
@@ -300,15 +302,22 @@ const Signup = () => {
               disabled={isLoading}
               onChange={() => clearFieldError('email')}
             />
-            <Input
-              name='password'
-              type='password'
-              label={t('auth.common.password')}
-              hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-              error={getFieldError('password')}
-              disabled={isLoading}
-              onChange={() => clearFieldError('password')}
-            />
+            <div className='space-y-2'>
+              <Input
+                name='password'
+                type='password'
+                label={t('auth.common.password')}
+                hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+                error={getFieldError('password')}
+                disabled={isLoading}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  clearFieldError('password')
+                }}
+              />
+              <PasswordStrength password={password} />
+            </div>
             {/* Hidden fields for checkbox values since Headless UI Checkbox doesn't submit natively */}
             <input type='hidden' name='tos' value={tos ? 'true' : 'false'} />
             <input

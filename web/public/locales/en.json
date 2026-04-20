@@ -818,7 +818,7 @@
       "fair": "Fair",
       "good": "Good",
       "strong": "Strong",
-      "hint": "Use 12+ characters with uppercase, lowercase, numbers, and symbols for a strong password."
+      "hint": "Use {{amount}}+ characters with uppercase, lowercase, numbers, and symbols for a strong password."
     }
   },
   "profileSettings": {
