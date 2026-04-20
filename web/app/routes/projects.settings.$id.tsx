@@ -8,7 +8,7 @@ import { data, redirect } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
 import { getOgImageUrl } from '~/lib/constants'
-import { Project, DataImport } from '~/lib/models/Project'
+import { Project, DataImport, ProxyDomain } from '~/lib/models/Project'
 import { Subscriber } from '~/lib/models/Subscriber'
 import ProjectSettings from '~/pages/Project/Settings'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -95,6 +95,9 @@ export interface ProjectSettingsActionData {
   dataImport?: unknown
   ga4AuthUrl?: string
   ga4Properties?: { propertyId: string; displayName: string }[]
+  proxyDomains?: ProxyDomain[]
+  proxyDomain?: ProxyDomain
+  proxyDomainKeywordWarning?: boolean
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -934,6 +937,127 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
       return data<ProjectSettingsActionData>(
         { intent, success: true, dataImport: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'list-proxy-domains': {
+      const result = await serverFetch<{ domains: ProxyDomain[] }>(
+        request,
+        `project/${id}/proxy-domains`,
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        {
+          intent,
+          success: true,
+          proxyDomains: (result.data?.domains as ProxyDomain[]) || [],
+        },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'add-proxy-domain': {
+      const hostname = formData.get('hostname')?.toString()
+
+      if (!hostname) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Hostname is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch<{
+        domain: ProxyDomain
+        blockedKeywordWarning?: boolean
+      }>(request, `project/${id}/proxy-domains`, {
+        method: 'POST',
+        body: { hostname },
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        {
+          intent,
+          success: true,
+          proxyDomain: result.data?.domain,
+          proxyDomainKeywordWarning: !!result.data?.blockedKeywordWarning,
+        },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'delete-proxy-domain': {
+      const proxyDomainId = formData.get('id')?.toString()
+
+      if (!proxyDomainId) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Proxy domain ID is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch(
+        request,
+        `project/${id}/proxy-domains/${proxyDomainId}`,
+        { method: 'DELETE' },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'verify-proxy-domain': {
+      const proxyDomainId = formData.get('id')?.toString()
+
+      if (!proxyDomainId) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Proxy domain ID is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch<{ domain: ProxyDomain }>(
+        request,
+        `project/${id}/proxy-domains/${proxyDomainId}/verify`,
+        { method: 'POST' },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        {
+          intent,
+          success: true,
+          proxyDomain: result.data?.domain,
+        },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

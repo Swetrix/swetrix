@@ -16,7 +16,13 @@ import {
   ProjectShare,
   Annotation,
   PinnedProject,
+  ProxyDomain,
 } from './entity'
+import { ProxyDomainService } from './proxy-domain.service'
+import {
+  ProxyDomainController,
+  ProxyDomainEdgeController,
+} from './proxy-domain.controller'
 import { ProjectsViewsRepository } from './repositories/projects-views.repository'
 import { ProjectViewEntity } from './entity/project-view.entity'
 import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event.entity'
@@ -34,6 +40,7 @@ import { PendingInvitationModule } from '../pending-invitation/pending-invitatio
       ProjectViewEntity,
       ProjectViewCustomEventEntity,
       PinnedProject,
+      ProxyDomain,
     ]),
     forwardRef(() => UserModule),
     forwardRef(() => OrganisationModule),
@@ -42,8 +49,23 @@ import { PendingInvitationModule } from '../pending-invitation/pending-invitatio
     MailerModule,
     PendingInvitationModule,
   ],
-  providers: [ProjectService, ProjectsViewsRepository, GSCService],
-  exports: [ProjectService, ProjectsViewsRepository, GSCService],
-  controllers: [ProjectController, GSCController],
+  providers: [
+    ProjectService,
+    ProjectsViewsRepository,
+    GSCService,
+    ProxyDomainService,
+  ],
+  exports: [
+    ProjectService,
+    ProjectsViewsRepository,
+    GSCService,
+    ProxyDomainService,
+  ],
+  controllers: [
+    ProjectController,
+    GSCController,
+    ProxyDomainController,
+    ProxyDomainEdgeController,
+  ],
 })
 export class ProjectModule {}
