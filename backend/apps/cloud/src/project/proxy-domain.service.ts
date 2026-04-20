@@ -56,7 +56,7 @@ interface ValidatedHostname {
   blockedKeywordWarning: boolean
 }
 
-export const validateHostname = (raw: string): ValidatedHostname => {
+const validateHostname = (raw: string): ValidatedHostname => {
   if (typeof raw !== 'string') {
     throw new BadRequestException('Hostname must be a string')
   }
