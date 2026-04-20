@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
-import { unzipSync } from 'fflate'
+import { unzipSync, UnzipFileInfo } from 'fflate'
 import { parse as parseSync } from 'csv-parse/sync'
 
 import { ImportMapper, AnalyticsImportRow } from './mapper.interface'
@@ -13,10 +13,16 @@ import {
 } from './mapper.utils'
 
 const MAX_PLAUSIBLE_ZIP_BYTES = 100 * 1024 * 1024
+const MAX_PLAUSIBLE_UNCOMPRESSED_BYTES = 500 * 1024 * 1024
 const MAX_CSV_BYTES = 50 * 1024 * 1024
 const MIN_PAGE_GAP_SEC = 5
 const MAX_PAGE_GAP_SEC = 30 * 60
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
+
+const MAX_SESSIONS_PER_DAY = 1_000_000
+const MAX_PAGEVIEWS_PER_SESSION = 1_000
+const MAX_EVENTS_PER_DAY = 1_000_000
+const MAX_SAFE_COUNT = Number.MAX_SAFE_INTEGER
 
 const FILE_PATTERNS: Record<string, RegExp> = {
   visitors: /(^|\/)imported_visitors[^/]*\.csv$/i,
@@ -140,10 +146,20 @@ function seedFromString(s: string): number {
   return crypto.createHash('sha256').update(s).digest().readUInt32BE(0)
 }
 
-function toInt(value: string | undefined): number {
-  if (!value) return 0
+function toInt(value: string | undefined, fieldName = 'value'): number {
+  if (value === undefined || value === null || value === '') return 0
   const n = parseInt(value, 10)
-  return Number.isFinite(n) ? n : 0
+  if (!Number.isFinite(n) || Number.isNaN(n) || !Number.isSafeInteger(n)) {
+    throw new Error(
+      `Plausible export contains an invalid numeric ${fieldName}: ${value}`,
+    )
+  }
+  if (n < 0) {
+    throw new Error(
+      `Plausible export contains a negative numeric ${fieldName}: ${value}`,
+    )
+  }
+  return Math.min(n, MAX_SAFE_COUNT)
 }
 
 function parseCsv(bytes: Uint8Array): Record<string, string>[] {
@@ -359,12 +375,59 @@ export class PlausibleMapper implements ImportMapper {
     }
 
     const buf = fs.readFileSync(zipPath)
+
+    const matchedKeys = new Set<string>()
+    const nameToKey = new Map<string, string>()
+    let totalUncompressed = 0
+    let sizeError: Error | null = null
+
+    const filter = (file: UnzipFileInfo): boolean => {
+      const base = path.basename(file.name).toLowerCase()
+      if (!base.endsWith('.csv')) return false
+      for (const [key, pattern] of Object.entries(FILE_PATTERNS)) {
+        if (matchedKeys.has(key)) continue
+        if (!pattern.test(file.name)) continue
+
+        const declaredSize = Number.isSafeInteger(file.originalSize)
+          ? file.originalSize
+          : -1
+        if (declaredSize < 0) {
+          sizeError = new Error(
+            `Plausible ZIP entry ${file.name} reports an invalid uncompressed size.`,
+          )
+          throw sizeError
+        }
+        if (declaredSize > MAX_CSV_BYTES) {
+          sizeError = new Error(
+            `Plausible ZIP entry ${file.name} exceeds the ${MAX_CSV_BYTES} byte CSV limit (declared ${declaredSize}).`,
+          )
+          throw sizeError
+        }
+        if (
+          totalUncompressed + declaredSize >
+          MAX_PLAUSIBLE_UNCOMPRESSED_BYTES
+        ) {
+          sizeError = new Error(
+            `Plausible ZIP uncompressed size exceeds the ${MAX_PLAUSIBLE_UNCOMPRESSED_BYTES} byte limit.`,
+          )
+          throw sizeError
+        }
+        totalUncompressed += declaredSize
+        matchedKeys.add(key)
+        nameToKey.set(file.name, key)
+        return true
+      }
+      return false
+    }
+
     let entries: Record<string, Uint8Array>
     try {
       entries = unzipSync(
         new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength),
+        { filter },
       )
-    } catch {
+    } catch (err) {
+      if (sizeError && err === sizeError) throw err
       throw new Error(
         'Could not read the uploaded file as a ZIP archive. Please upload the export ZIP from Plausible.',
       )
@@ -372,15 +435,14 @@ export class PlausibleMapper implements ImportMapper {
 
     const found = new Map<string, Uint8Array>()
     for (const [name, data] of Object.entries(entries)) {
-      const base = path.basename(name).toLowerCase()
-      if (!base.endsWith('.csv')) continue
-      for (const [key, pattern] of Object.entries(FILE_PATTERNS)) {
-        if (found.has(key)) continue
-        if (pattern.test(name)) {
-          found.set(key, data)
-          break
-        }
+      const key = nameToKey.get(name)
+      if (!key || found.has(key)) continue
+      if (data.byteLength > MAX_CSV_BYTES) {
+        throw new Error(
+          `Plausible ZIP entry ${name} exceeds the ${MAX_CSV_BYTES} byte CSV limit after decompression.`,
+        )
       }
+      found.set(key, data)
     }
 
     return found
@@ -428,17 +490,17 @@ export class PlausibleMapper implements ImportMapper {
     for (const row of parseCsv(visitorsBytes)) {
       const date = normalizeNull(row.date)
       if (!date || !DATE_REGEX.test(date)) continue
-      const visits = toInt(row.visits)
-      const pageviews = toInt(row.pageviews)
+      const visits = toInt(row.visits, 'visits')
+      const pageviews = toInt(row.pageviews, 'pageviews')
       if (visits <= 0 && pageviews <= 0) continue
       const day = ensureDay(date)
       day.visitors = {
         date,
-        visitors: toInt(row.visitors),
+        visitors: toInt(row.visitors, 'visitors'),
         pageviews,
         visits,
-        bounces: toInt(row.bounces),
-        visit_duration: toInt(row.visit_duration),
+        bounces: toInt(row.bounces, 'bounces'),
+        visit_duration: toInt(row.visit_duration, 'visit_duration'),
       }
     }
 
@@ -574,7 +636,7 @@ export class PlausibleMapper implements ImportMapper {
         const date = normalizeNull(row.date)
         if (!date || !days.has(date)) continue
         const name = normalizeNull(row.name)
-        const events = toInt(row.events)
+        const events = toInt(row.events, 'events')
         if (!name || events <= 0) continue
         days.get(date)!.customEvents.push({ name, events })
       }
@@ -604,7 +666,10 @@ export class PlausibleMapper implements ImportMapper {
     importID: number,
   ): Iterable<AnalyticsImportRow> {
     const { date } = daily.visitors
-    const visits = Math.max(daily.visitors.visits, 0)
+    const visits = Math.min(
+      Math.max(daily.visitors.visits, 0),
+      MAX_SESSIONS_PER_DAY,
+    )
     const pageviews = Math.max(daily.visitors.pageviews, 0)
 
     if (pageviews === 0 && daily.customEvents.length === 0) return
@@ -618,8 +683,15 @@ export class PlausibleMapper implements ImportMapper {
     const sessionSpacingSec =
       sessionCount > 1 ? Math.floor(86400 / sessionCount) : 86400
 
-    const basePerSession = Math.floor(pageviews / sessionCount)
-    const remainder = pageviews % sessionCount
+    const cappedPageviews = Math.min(
+      pageviews,
+      sessionCount * MAX_PAGEVIEWS_PER_SESSION,
+    )
+    const basePerSession = Math.min(
+      Math.floor(cappedPageviews / sessionCount),
+      MAX_PAGEVIEWS_PER_SESSION,
+    )
+    const remainder = cappedPageviews % sessionCount
 
     const avgVisitDuration =
       sessionCount > 0 ? daily.visitors.visit_duration / sessionCount : 0
@@ -742,8 +814,9 @@ export class PlausibleMapper implements ImportMapper {
       for (const ev of daily.customEvents) {
         const eventSeed = seedFromString(`${importID}|${date}|ev|${ev.name}`)
         const evPrng = seededPrng(eventSeed)
+        const eventCount = Math.min(Math.max(ev.events, 0), MAX_EVENTS_PER_DAY)
 
-        for (let k = 0; k < ev.events; k++) {
+        for (let k = 0; k < eventCount; k++) {
           const sessionIdx = Math.floor(evPrng() * sessions.length)
           const session = sessions[Math.min(sessionIdx, sessions.length - 1)]
           const tsSec =
