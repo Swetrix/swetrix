@@ -94,7 +94,6 @@ const findHtmlLangAttribute = (element: Element): string | null => {
 const detectLanguage = (container: Element): SupportedLocale => {
   // First priority: data-lang attribute on the widget element
   const forcedLang = container.getAttribute('data-lang')
-  console.log('forcedLang', forcedLang)
   if (forcedLang) {
     return normalizeLocale(forcedLang)
   }

@@ -59,8 +59,6 @@ const getLocaleFromUrl = (): SupportedLocale => {
   const urlParams = new URLSearchParams(window.location.search)
   const lang = urlParams.get('lang')
 
-  logger.log('lang', lang)
-
   if (lang) {
     return normalizeLocale(lang)
   }
@@ -70,8 +68,6 @@ const getLocaleFromUrl = (): SupportedLocale => {
 
 const currentLocale = getLocaleFromUrl()
 const t = getTranslations(currentLocale)
-
-logger.log('t:', t)
 
 const sendMessageToLoader = (event: IFRAME_MESSAGE_TYPES, data = {}) => {
   window.parent.postMessage(
