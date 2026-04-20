@@ -17,6 +17,7 @@ Select your analytics provider below to see the step-by-step import guide.
   <TabsTrigger value="umami"><UmamiIcon /> Umami</TabsTrigger>
   <TabsTrigger value="simple"><SimpleAnalyticsIcon /> Simple Analytics</TabsTrigger>
   <TabsTrigger value="fathom"><FathomIcon /> Fathom Analytics</TabsTrigger>
+  <TabsTrigger value="plausible"><PlausibleIcon /> Plausible Analytics</TabsTrigger>
 </TabsList>
 <TabsContent value="ga4">
 
@@ -271,6 +272,78 @@ The page auto-refreshes while an import is processing. You can navigate away and
 
 </Step>
 </Steps>
+
+</TabsContent>
+<TabsContent value="plausible">
+
+<Callout type="warn">
+  Plausible only allows exporting daily aggregated data — there is no raw event export. Swetrix
+  reconstructs synthetic per-event rows from your aggregates so you can browse the data in
+  dashboards, but cross-dimension breakdowns (e.g. "Firefox visits to /pricing from the US") are
+  approximated by sampling each dimension independently per day. Per-day totals (visitors, visits,
+  pageviews) and single-dimension breakdowns will match Plausible exactly.
+</Callout>
+
+<Steps>
+<Step>
+<h3>Export Your Data from Plausible</h3>
+
+1. Log in to your [Plausible Analytics](https://plausible.io) dashboard
+2. Open the site you want to export from
+3. Go to **Site Settings** → **Imports & Exports**
+4. Click **Export** in the **CSV export** section to download a `.zip` archive
+
+The archive contains one CSV per dimension (`imported_visitors_*.csv`, `imported_pages_*.csv`, `imported_browsers_*.csv`, `imported_devices_*.csv`, `imported_operating_systems_*.csv`, `imported_locations_*.csv`, `imported_sources_*.csv`, `imported_entry_pages_*.csv`, `imported_exit_pages_*.csv`, `imported_custom_events_*.csv`, `imported_custom_props_*.csv`).
+
+You can learn more on how to export your data from Plausible on their [export documentation](https://plausible.io/docs/export-stats).
+
+</Step>
+<Step>
+<h3>Import into Swetrix</h3>
+
+1. Go to your project's **Settings** page in Swetrix
+2. Click the **Import data** tab
+3. Click the **Plausible Analytics** provider card
+4. In the upload modal, either drag and drop the `.zip` file or click to browse
+5. Wait for the upload and processing to complete
+
+<Callout type="warn">
+  Upload the `.zip` file from Plausible directly — do not extract it first.
+</Callout>
+
+</Step>
+<Step>
+<h3>Monitor Progress</h3>
+
+After uploading, the import will appear in the **Import history** table below the provider cards. You can see:
+
+- **Status** — Pending, Processing, Completed, or Failed
+- **Date range** — The time span of the imported data
+- **Rows** — How many synthetic events were generated
+
+The page auto-refreshes while an import is processing.
+
+</Step>
+</Steps>
+
+<h3>How the approximation works</h3>
+
+For each day in the export, Swetrix:
+
+1. Reads `imported_visitors_*.csv` to get the day's `visits` (sessions) and `pageviews` totals
+2. Builds a probability distribution for each dimension (browser, OS, device, country/region, source/UTM, entry page, exit page, page) weighted by the visits/entrances/exits in the corresponding CSV
+3. Generates exactly `visits` synthetic sessions, sampling one value from each dimension's distribution independently with a deterministic PRNG seeded by the import ID and date
+4. Distributes the day's `pageviews` across sessions (first page = a sampled entry page, last page = a sampled exit page, middle pages sampled from the pages distribution)
+5. Spreads session start times evenly across the 24h window and pageview gaps within a session based on the average `visit_duration` per session
+
+This is deterministic — re-importing the same export produces identical rows.
+
+<h3>What's not imported?</h3>
+
+- **Custom event properties** (`imported_custom_props_*.csv`): Plausible reports property values aggregated separately from event occurrences with no way to attribute a value to a specific event, so these are skipped
+- **Cities**: Plausible exports only Geonames numeric city IDs without names, so the city field is left blank
+- **Exact session duration / bounce rate per session**: only daily averages are preserved
+- **Cross-dimension joints**: combinations like "Firefox on macOS in GB" are sampled under an independence assumption — per-dimension daily totals match, but joint distributions don't
 
 </TabsContent>
 </Tabs>

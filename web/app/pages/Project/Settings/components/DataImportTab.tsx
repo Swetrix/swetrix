@@ -30,6 +30,7 @@ import UmamiSVG from '~/ui/icons/Umami'
 import SimpleAnalyticsSVG from '~/ui/icons/SimpleAnalytics'
 import FathomSVG from '~/ui/icons/Fathom'
 import GoogleAnalyticsSVG from '~/ui/icons/GoogleAnalytics'
+import PlausibleSVG from '~/ui/icons/Plausible'
 
 const PROVIDER_ICONS: Record<
   string,
@@ -39,6 +40,7 @@ const PROVIDER_ICONS: Record<
   'simple-analytics': SimpleAnalyticsSVG,
   fathom: FathomSVG,
   'google-analytics': GoogleAnalyticsSVG,
+  plausible: PlausibleSVG,
 }
 
 const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
@@ -46,14 +48,21 @@ const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
   'simple-analytics': 'Simple Analytics',
   fathom: 'Fathom Analytics',
   'google-analytics': 'Google Analytics 4',
+  plausible: 'Plausible Analytics',
 }
 
-const FILE_BASED_PROVIDERS = new Set(['umami', 'simple-analytics', 'fathom'])
+const FILE_BASED_PROVIDERS = new Set([
+  'umami',
+  'simple-analytics',
+  'fathom',
+  'plausible',
+])
 
 const PROVIDER_FILE_TYPES: Record<string, string> = {
   umami: '.zip',
   'simple-analytics': '.csv',
   fathom: '.csv',
+  plausible: '.zip',
 }
 
 const STATUS_ICONS = {
