@@ -57,7 +57,7 @@ const HOSTNAME_REGEX =
   /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
 
 const BLOCKED_KEYWORDS_REGEX =
-  /\b(analytics|tracking|telemetry|posthog|track|metrics?|stats?|count|pixel|tag(s|ger)?|ads?)\b/i
+  /\b(analytics|tracking|telemetry|swetrix|track|metrics?|stats?|count|pixel|tag(s|ger)?|ads?)\b/i
 
 const validateHostnameClient = (raw: string): string | null => {
   const value = raw.trim().toLowerCase()
