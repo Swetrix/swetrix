@@ -8,9 +8,11 @@ import {
   SimpleAnalyticsIcon,
   FathomIcon,
   PlausibleIcon,
+  NpmIcon,
 } from "@/components/provider-icons";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { File, Folder, Files } from "fumadocs-ui/components/files";
+import { CodeIcon } from "@phosphor-icons/react/dist/ssr";
 import type { MDXComponents } from "mdx/types";
 
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
@@ -29,6 +31,8 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     SimpleAnalyticsIcon,
     FathomIcon,
     PlausibleIcon,
+    NpmIcon,
+    CodeIcon,
     Accordion,
     Accordions,
     File,

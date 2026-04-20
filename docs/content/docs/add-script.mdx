@@ -14,8 +14,12 @@ See [CMS & website builder integrations](/integrations#cms--website-builders).
 
 </Callout>
 
-<Tabs items={["HTML script tag", "npm package"]}>
-<Tab value="HTML script tag">
+<Tabs defaultValue="html">
+<TabsList>
+  <TabsTrigger value="html"><CodeIcon /> HTML script tag</TabsTrigger>
+  <TabsTrigger value="npm"><NpmIcon /> npm package</TabsTrigger>
+</TabsList>
+<TabsContent value="html">
 
 The easiest way to add the tracking script to your website is to edit the HTML code of your website.
 To do this, paste the following code snippet into the Body section (`<body>` tag). You have to place the script within the `<body>...</body>` tags.
@@ -45,8 +49,8 @@ It's important to remember to replace `YOUR_PROJECT_ID` with your actual Project
 
 Done. Now you can start using Swetrix on your website.
 
-</Tab>
-<Tab value="npm package">
+</TabsContent>
+<TabsContent value="npm">
 
 If you are using a website based on a JavaScript framework such as React or Vue, you can install Swetrix via npm and use it on your website.
 
@@ -82,5 +86,5 @@ Swetrix.trackViews();
 </Step>
 </Steps>
 
-</Tab>
+</TabsContent>
 </Tabs>
