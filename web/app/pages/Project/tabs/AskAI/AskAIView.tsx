@@ -2,7 +2,7 @@ import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import {
-  PaperPlaneIcon,
+  ArrowUpIcon,
   CaretDownIcon,
   CaretRightIcon,
   SpinnerGapIcon,
@@ -19,6 +19,16 @@ import {
   TrashIcon,
   XIcon,
   LinkIcon,
+  CopyIcon,
+  ArrowCounterClockwiseIcon,
+  ThumbsUpIcon,
+  ThumbsDownIcon,
+  PencilSimpleIcon,
+  ShieldIcon,
+  FlagIcon,
+  FlaskIcon,
+  UsersIcon,
+  ListBulletsIcon,
 } from '@phosphor-icons/react'
 import { marked } from 'marked'
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
@@ -71,24 +81,50 @@ marked.setOptions({
   gfm: true,
 })
 
-const parseCharts = (content: string): { text: string; charts: any[] } => {
-  const charts: any[] = []
-  let text = content
+type ContentSegment =
+  | { kind: 'text'; text: string }
+  | { kind: 'chart'; chart: any; pending?: boolean }
 
-  const chartStartPattern = '{"type":"chart"'
-  let searchIndex = 0
+const CHART_START_PATTERN = '{"type":"chart"'
 
-  while (searchIndex < text.length) {
-    const startIndex = text.indexOf(chartStartPattern, searchIndex)
-    if (startIndex === -1) break
+const parseSegments = (content: string): ContentSegment[] => {
+  const segments: ContentSegment[] = []
+  let cursor = 0
+
+  while (cursor < content.length) {
+    const startIndex = content.indexOf(CHART_START_PATTERN, cursor)
+    if (startIndex === -1) {
+      const tail = content.slice(cursor)
+      if (tail) segments.push({ kind: 'text', text: tail })
+      break
+    }
+
+    if (startIndex > cursor) {
+      segments.push({ kind: 'text', text: content.slice(cursor, startIndex) })
+    }
 
     let braceCount = 0
     let endIndex = -1
+    let inString = false
+    let escape = false
 
-    for (let i = startIndex; i < text.length; i++) {
-      if (text[i] === '{') {
-        braceCount++
-      } else if (text[i] === '}') {
+    for (let i = startIndex; i < content.length; i++) {
+      const ch = content[i]
+      if (escape) {
+        escape = false
+        continue
+      }
+      if (ch === '\\') {
+        escape = true
+        continue
+      }
+      if (ch === '"') {
+        inString = !inString
+        continue
+      }
+      if (inString) continue
+      if (ch === '{') braceCount++
+      else if (ch === '}') {
         braceCount--
         if (braceCount === 0) {
           endIndex = i
@@ -98,27 +134,43 @@ const parseCharts = (content: string): { text: string; charts: any[] } => {
     }
 
     if (endIndex === -1) {
-      searchIndex = startIndex + chartStartPattern.length
-      continue
+      // Chart JSON still streaming – keep raw text out of view to avoid showing JSON
+      segments.push({ kind: 'chart', chart: null, pending: true })
+      cursor = content.length
+      break
     }
 
-    const jsonString = text.substring(startIndex, endIndex + 1)
-
+    const jsonString = content.substring(startIndex, endIndex + 1)
     try {
       const chartData = JSON.parse(jsonString)
-      if (chartData.type === 'chart') {
-        charts.push(chartData)
-        text = text.substring(0, startIndex) + text.substring(endIndex + 1)
-        continue
+      if (chartData?.type === 'chart') {
+        segments.push({ kind: 'chart', chart: chartData })
+      } else {
+        segments.push({ kind: 'text', text: jsonString })
       }
     } catch {
-      // Invalid JSON, skip
+      segments.push({ kind: 'chart', chart: null, pending: true })
     }
-
-    searchIndex = startIndex + chartStartPattern.length
+    cursor = endIndex + 1
   }
 
-  return { text: text.trim(), charts }
+  // Trim leading/trailing whitespace-only text segments
+  while (
+    segments.length &&
+    segments[0].kind === 'text' &&
+    !segments[0].text.trim()
+  ) {
+    segments.shift()
+  }
+  while (
+    segments.length &&
+    segments[segments.length - 1].kind === 'text' &&
+    !(segments[segments.length - 1] as { text: string }).text.trim()
+  ) {
+    segments.pop()
+  }
+
+  return segments
 }
 
 const renderMarkdown = (content: string): string => {
@@ -160,56 +212,24 @@ const getToolInfo = (
       label: t('project.askAi.tools.getFunnelData'),
       icon: GitBranchIcon,
     },
+    getFeatureFlagStats: {
+      label: t('project.askAi.tools.getFeatureFlagStats'),
+      icon: FlagIcon,
+    },
+    getExperimentResults: {
+      label: t('project.askAi.tools.getExperimentResults'),
+      icon: FlaskIcon,
+    },
+    getSessionsList: {
+      label: t('project.askAi.tools.getSessionsList'),
+      icon: ListBulletsIcon,
+    },
+    getProfilesOverview: {
+      label: t('project.askAi.tools.getProfilesOverview'),
+      icon: UsersIcon,
+    },
   }
   return toolMap[toolName] || { label: toolName, icon: InfoIcon }
-}
-
-const getAvailableTools = (t: any) => [
-  {
-    id: 'getData',
-    label: t('project.askAi.tools.queryData'),
-    icon: ChartBarIcon,
-  },
-  {
-    id: 'getGoalStats',
-    label: t('project.askAi.tools.goalStats'),
-    icon: TargetIcon,
-  },
-  {
-    id: 'getFunnelData',
-    label: t('project.askAi.tools.funnelData'),
-    icon: GitBranchIcon,
-  },
-]
-
-const ToolsTooltip = () => {
-  const { t } = useTranslation('common')
-  const AVAILABLE_TOOLS = getAvailableTools(t)
-  return (
-    <div className='space-y-1.5 py-1'>
-      {_map(AVAILABLE_TOOLS, (tool) => (
-        <div key={tool.id} className='flex items-center gap-2 text-gray-200'>
-          <tool.icon className='h-3.5 w-3.5 text-green-400' />
-          <span>{tool.label}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-const ToolsIndicator = () => {
-  const { t } = useTranslation('common')
-  const AVAILABLE_TOOLS = getAvailableTools(t)
-  return (
-    <Tooltip
-      text={<ToolsTooltip />}
-      tooltipNode={
-        <span className='flex cursor-help items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-900 dark:hover:text-gray-300'>
-          {t('project.askAi.tools.count', { count: AVAILABLE_TOOLS.length })}
-        </span>
-      }
-    />
-  )
 }
 
 const AICapabilitiesTooltip = () => {
@@ -263,8 +283,52 @@ const AICapabilitiesTooltip = () => {
             </span>
           </li>
           <li className='flex items-start gap-1.5'>
+            <ShieldIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>
+              <strong className='text-white'>
+                {t('project.askAi.capabilities.captchaStats')}
+              </strong>
+            </span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <FlagIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>
+              <strong className='text-white'>
+                {t('project.askAi.capabilities.featureFlags')}
+              </strong>
+            </span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <FlaskIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>
+              <strong className='text-white'>
+                {t('project.askAi.capabilities.experiments')}
+              </strong>
+            </span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <ListBulletsIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>
+              <strong className='text-white'>
+                {t('project.askAi.capabilities.sessions')}
+              </strong>
+            </span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <UsersIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>
+              <strong className='text-white'>
+                {t('project.askAi.capabilities.customEvents')}
+              </strong>
+            </span>
+          </li>
+          <li className='flex items-start gap-1.5'>
             <InfoIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
             <span>{t('project.askAi.capabilities.trafficPatterns')}</span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <InfoIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>{t('project.askAi.capabilities.customRanges')}</span>
           </li>
         </ul>
       </div>
@@ -399,39 +463,64 @@ const MessageContent = ({
   content: string
   isStreaming?: boolean
 }) => {
-  const { text, charts } = useMemo(() => parseCharts(content), [content])
+  const segments = useMemo(() => parseSegments(content), [content])
+  const hasAnyContent = segments.length > 0
 
   return (
-    <>
-      {text ? (
-        <div
-          className='prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:my-2 prose-ol:my-2 prose-ul:my-2 prose-li:my-0.5 prose-table:text-sm'
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
-        />
-      ) : null}
-      {isStreaming && !text ? (
+    <div className='space-y-3'>
+      {_map(segments, (segment, idx) => {
+        if (segment.kind === 'text') {
+          if (!segment.text.trim()) return null
+          return (
+            <div
+              key={idx}
+              className='prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:my-2 prose-ol:my-2 prose-ul:my-2 prose-li:my-0.5 prose-table:text-sm'
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(segment.text) }}
+            />
+          )
+        }
+        if (segment.kind === 'chart' && segment.chart) {
+          return <AIChart key={idx} chart={segment.chart} />
+        }
+        if (segment.kind === 'chart' && segment.pending) {
+          return (
+            <div
+              key={idx}
+              className='flex h-[200px] w-full items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 text-xs text-gray-400 dark:border-slate-700 dark:bg-slate-900/40 dark:text-gray-500'
+            >
+              <SpinnerGapIcon className='mr-2 h-4 w-4 animate-spin' />
+              Rendering chart...
+            </div>
+          )
+        }
+        return null
+      })}
+      {isStreaming && !hasAnyContent ? (
         <span className='ml-1 inline-block h-4 w-0.5 animate-pulse bg-gray-400' />
       ) : null}
-      {!_isEmpty(charts) ? (
-        <div className='mt-4 space-y-4'>
-          {_map(charts, (chart, idx) => (
-            <AIChart key={idx} chart={chart} />
-          ))}
-        </div>
-      ) : null}
-    </>
+    </div>
   )
 }
 
 const AssistantMessage = ({
   message,
   isStreaming,
+  onRegenerate,
+  onFeedback,
+  feedback,
+  canRegenerate,
 }: {
   message: Message
   isStreaming?: boolean
+  onRegenerate?: () => void
+  onFeedback?: (rating: 'good' | 'bad') => void
+  feedback?: 'good' | 'bad' | null
+  canRegenerate?: boolean
 }) => {
+  const { t } = useTranslation('common')
   const [userToggled, setUserToggled] = useState(false)
   const [userExpandedState, setUserExpandedState] = useState(false)
+  const [copied, setCopied] = useState(false)
   const hasContent = Boolean(message.content && message.content.trim())
 
   const isActivelyThinking = Boolean(
@@ -444,16 +533,24 @@ const AssistantMessage = ({
     setUserExpandedState(!isThoughtExpanded)
   }
 
-  // If we have parts, render them in sequence; otherwise fall back to old behavior
+  const handleCopy = () => {
+    if (!message.content) return
+    navigator.clipboard
+      .writeText(message.content)
+      .then(() => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      })
+      .catch(() => toast.error(t('project.askAi.error')))
+  }
+
   const hasParts = message.parts && message.parts.length > 0
 
-  // Determine if a tool call is still loading (it's the last part and we're streaming with no content after it)
   const isToolCallLoading = (partIndex: number) => {
     if (!isStreaming || !message.parts) return false
     const isLastPart = partIndex === message.parts.length - 1
     const part = message.parts[partIndex]
     if (part.type !== 'toolCall') return false
-    // Check if there's any text content after this tool call
     const hasTextAfter = message.parts
       .slice(partIndex + 1)
       .some((p) => p.type === 'text' && p.text?.trim())
@@ -470,7 +567,6 @@ const AssistantMessage = ({
         onToggle={handleToggle}
       />
       {hasParts ? (
-        // Render parts in sequence
         <>
           {_map(message.parts, (part, idx) => {
             if (part.type === 'text' && part.text) {
@@ -502,7 +598,6 @@ const AssistantMessage = ({
           })}
         </>
       ) : (
-        // Fall back to old behavior for messages without parts (e.g., loaded from saved chats)
         <>
           {message.toolCalls && message.toolCalls.length > 0 ? (
             <div className='mb-3 flex flex-wrap gap-2'>
@@ -518,15 +613,200 @@ const AssistantMessage = ({
           <MessageContent content={message.content} isStreaming={isStreaming} />
         </>
       )}
+
+      {!isStreaming && hasContent ? (
+        <div className='mt-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100'>
+          <button
+            type='button'
+            onClick={handleCopy}
+            className='flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-200'
+            title={t('project.askAi.copyMessage')}
+            aria-label={t('project.askAi.copyMessage')}
+          >
+            {copied ? (
+              <CheckIcon className='h-4 w-4' />
+            ) : (
+              <CopyIcon className='h-4 w-4' />
+            )}
+          </button>
+          {onRegenerate && canRegenerate ? (
+            <button
+              type='button'
+              onClick={onRegenerate}
+              className='flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-200'
+              title={t('project.askAi.regenerate')}
+              aria-label={t('project.askAi.regenerate')}
+            >
+              <ArrowCounterClockwiseIcon className='h-4 w-4' />
+            </button>
+          ) : null}
+          {onFeedback ? (
+            <>
+              <button
+                type='button'
+                onClick={() => onFeedback('good')}
+                disabled={feedback === 'bad'}
+                className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                  feedback === 'good'
+                    ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'
+                    : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-200',
+                  feedback === 'bad' && 'cursor-not-allowed opacity-40',
+                )}
+                title={t('project.askAi.goodResponse')}
+                aria-label={t('project.askAi.goodResponse')}
+              >
+                <ThumbsUpIcon className='h-4 w-4' />
+              </button>
+              <button
+                type='button'
+                onClick={() => onFeedback('bad')}
+                disabled={feedback === 'good'}
+                className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                  feedback === 'bad'
+                    ? 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30'
+                    : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-200',
+                  feedback === 'good' && 'cursor-not-allowed opacity-40',
+                )}
+                title={t('project.askAi.badResponse')}
+                aria-label={t('project.askAi.badResponse')}
+              >
+                <ThumbsDownIcon className='h-4 w-4' />
+              </button>
+            </>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }
 
-const UserMessage = ({ content }: { content: string }) => {
+const UserMessage = ({
+  content,
+  onEdit,
+  isLoading,
+}: {
+  content: string
+  onEdit?: (newContent: string) => void
+  isLoading?: boolean
+}) => {
+  const { t } = useTranslation('common')
+  const [copied, setCopied] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [draft, setDraft] = useState(content)
+  const editRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (isEditing && editRef.current) {
+      editRef.current.focus()
+      editRef.current.style.height = 'auto'
+      editRef.current.style.height = `${editRef.current.scrollHeight}px`
+    }
+  }, [isEditing])
+
+  const handleCopy = () => {
+    navigator.clipboard
+      .writeText(content)
+      .then(() => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      })
+      .catch(() => toast.error(t('project.askAi.error')))
+  }
+
+  const handleSaveEdit = () => {
+    const trimmed = draft.trim()
+    if (!trimmed || trimmed === content || !onEdit) {
+      setIsEditing(false)
+      setDraft(content)
+      return
+    }
+    onEdit(trimmed)
+    setIsEditing(false)
+  }
+
+  const handleCancelEdit = () => {
+    setDraft(content)
+    setIsEditing(false)
+  }
+
+  if (isEditing) {
+    return (
+      <div className='group flex justify-end'>
+        <div className='w-full max-w-[85%] rounded-2xl border border-gray-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900'>
+          <textarea
+            ref={editRef}
+            value={draft}
+            onChange={(e) => {
+              setDraft(e.target.value)
+              e.target.style.height = 'auto'
+              e.target.style.height = `${e.target.scrollHeight}px`
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault()
+                handleSaveEdit()
+              } else if (e.key === 'Escape') {
+                handleCancelEdit()
+              }
+            }}
+            className='block w-full resize-none rounded-md border-0 bg-transparent p-2 text-sm text-gray-900 ring-0 focus:ring-0 focus:outline-none dark:text-white'
+            rows={1}
+          />
+          <div className='mt-2 flex items-center justify-end gap-2'>
+            <button
+              type='button'
+              onClick={handleCancelEdit}
+              className='rounded-md px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800'
+            >
+              {t('project.askAi.cancelEdit')}
+            </button>
+            <button
+              type='button'
+              onClick={handleSaveEdit}
+              disabled={!draft.trim() || draft.trim() === content}
+              className='rounded-md bg-gray-900 px-3 py-1 text-xs font-medium text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900'
+            >
+              {t('project.askAi.saveEdit')}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className='flex justify-end'>
-      <div className='max-w-[85%] rounded-lg bg-gray-900 px-4 py-2.5 text-white dark:bg-gray-800'>
-        <p className='text-sm'>{content}</p>
+    <div className='group flex flex-col items-end'>
+      <div className='max-w-[85%] rounded-2xl bg-gray-100 px-4 py-2.5 text-gray-900 dark:bg-slate-800 dark:text-gray-50'>
+        <p className='text-sm whitespace-pre-wrap'>{content}</p>
+      </div>
+      <div className='mt-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100'>
+        <button
+          type='button'
+          onClick={handleCopy}
+          className='flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-200'
+          title={t('project.askAi.copyMessage')}
+          aria-label={t('project.askAi.copyMessage')}
+        >
+          {copied ? (
+            <CheckIcon className='h-4 w-4' />
+          ) : (
+            <CopyIcon className='h-4 w-4' />
+          )}
+        </button>
+        {onEdit ? (
+          <button
+            type='button'
+            onClick={() => setIsEditing(true)}
+            disabled={isLoading}
+            className='flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-slate-800 dark:hover:text-gray-200'
+            title={t('project.askAi.editMessage')}
+            aria-label={t('project.askAi.editMessage')}
+          >
+            <PencilSimpleIcon className='h-4 w-4' />
+          </button>
+        ) : null}
       </div>
     </div>
   )
@@ -585,20 +865,35 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
+  const [chatTitle, setChatTitle] = useState<string | null>(null)
   const [recentChats, setRecentChats] = useState<AIChatSummary[]>([])
   const [allChats, setAllChats] = useState<AIChatSummary[]>([])
   const [allChatsTotal, setAllChatsTotal] = useState(0)
   const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false)
   const [chatToDelete, setChatToDelete] = useState<string | null>(null)
+  const [feedbackMap, setFeedbackMap] = useState<
+    Record<string, 'good' | 'bad'>
+  >({})
   const hasInitializedRef = useRef(false)
+  const currentChatIdRef = useRef<string | null>(null)
+  const pendingMessagesToSaveRef = useRef<Message[] | null>(null)
 
   const recentChatsFetcher = useFetcher<ProjectViewActionData>()
   const allChatsFetcher = useFetcher<ProjectViewActionData>()
   const loadChatFetcher = useFetcher<ProjectViewActionData>()
-  const saveChatFetcher = useFetcher<ProjectViewActionData>()
+  const createChatFetcher = useFetcher<ProjectViewActionData>()
+  const updateChatFetcher = useFetcher<ProjectViewActionData>()
   const deleteChatFetcher = useFetcher<ProjectViewActionData>()
-  const lastProcessedSaveDataRef = useRef<ProjectViewActionData | null>(null)
+  const titleFetcher = useFetcher<ProjectViewActionData>()
+  const feedbackFetcher = useFetcher<ProjectViewActionData>()
+  const lastProcessedCreateDataRef = useRef<ProjectViewActionData | null>(null)
+  const lastProcessedUpdateDataRef = useRef<ProjectViewActionData | null>(null)
+  const lastProcessedTitleDataRef = useRef<ProjectViewActionData | null>(null)
   const lastProcessedLoadDataRef = useRef<ProjectViewActionData | null>(null)
+
+  useEffect(() => {
+    currentChatIdRef.current = currentChatId
+  }, [currentChatId])
 
   const isLoadingChats = allChatsFetcher.state !== 'idle'
 
@@ -718,6 +1013,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           })),
         )
         setCurrentChatId(chat.id)
+        setChatTitle(chat.name)
       } else if (loadChatFetcher.data.error) {
         console.error('Failed to load chat:', loadChatFetcher.data.error)
         const newParams = new URLSearchParams(searchParams)
@@ -739,61 +1035,130 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     [loadChat],
   )
 
-  // Handle save chat fetcher response
-  useEffect(() => {
-    if (saveChatFetcher.state === 'idle' && saveChatFetcher.data) {
-      // Skip if we've already processed this response
-      if (lastProcessedSaveDataRef.current === saveChatFetcher.data) return
-      lastProcessedSaveDataRef.current = saveChatFetcher.data
+  const updateChatMessages = useCallback(
+    (chatId: string, messagesToSave: Message[]) => {
+      const apiMessages = messagesToSave
+        .filter((m) => m.content.trim().length > 0)
+        .map((m) => ({ role: m.role, content: m.content }))
 
-      if (saveChatFetcher.data.success && saveChatFetcher.data.data) {
-        const result = saveChatFetcher.data.data as AIChat
-        if (result.branched || !currentChatId) {
+      if (apiMessages.length === 0) return
+
+      const formData = new FormData()
+      formData.append('intent', 'update-ai-chat')
+      formData.append('chatId', chatId)
+      formData.append('messages', JSON.stringify(apiMessages))
+      updateChatFetcher.submit(formData, { method: 'POST' })
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [updateChatFetcher.submit],
+  )
+
+  const createChatWithMessage = useCallback(
+    (firstMessages: Message[]) => {
+      const apiMessages = firstMessages
+        .filter((m) => m.content.trim().length > 0)
+        .map((m) => ({ role: m.role, content: m.content }))
+
+      if (apiMessages.length === 0) return
+
+      const formData = new FormData()
+      formData.append('intent', 'create-ai-chat')
+      formData.append('messages', JSON.stringify(apiMessages))
+      createChatFetcher.submit(formData, { method: 'POST' })
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [createChatFetcher.submit],
+  )
+
+  const generateTitleForChat = useCallback(
+    (chatId: string) => {
+      const formData = new FormData()
+      formData.append('intent', 'generate-ai-chat-title')
+      formData.append('chatId', chatId)
+      titleFetcher.submit(formData, { method: 'POST' })
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [titleFetcher.submit],
+  )
+
+  // Handle create-chat response: get instant chat ID and update URL
+  useEffect(() => {
+    if (createChatFetcher.state === 'idle' && createChatFetcher.data) {
+      if (lastProcessedCreateDataRef.current === createChatFetcher.data) return
+      lastProcessedCreateDataRef.current = createChatFetcher.data
+
+      if (createChatFetcher.data.success && createChatFetcher.data.data) {
+        const result = createChatFetcher.data.data as AIChat
+        setCurrentChatId(result.id)
+        currentChatIdRef.current = result.id
+        setChatTitle(result.name)
+        const newParams = new URLSearchParams(searchParams)
+        newParams.set('chat', result.id)
+        setSearchParams(newParams, { replace: true })
+        generateTitleForChat(result.id)
+
+        if (pendingMessagesToSaveRef.current) {
+          updateChatMessages(result.id, pendingMessagesToSaveRef.current)
+          pendingMessagesToSaveRef.current = null
+        }
+        loadRecentChats()
+      } else if (createChatFetcher.data.error) {
+        console.error('Failed to create chat:', createChatFetcher.data.error)
+      }
+    }
+  }, [
+    createChatFetcher.state,
+    createChatFetcher.data,
+    searchParams,
+    setSearchParams,
+    generateTitleForChat,
+    updateChatMessages,
+    loadRecentChats,
+  ])
+
+  // Handle update-chat response (refresh recent chats list)
+  useEffect(() => {
+    if (updateChatFetcher.state === 'idle' && updateChatFetcher.data) {
+      if (lastProcessedUpdateDataRef.current === updateChatFetcher.data) return
+      lastProcessedUpdateDataRef.current = updateChatFetcher.data
+
+      if (updateChatFetcher.data.success && updateChatFetcher.data.data) {
+        const result = updateChatFetcher.data.data as AIChat
+        if (result.branched) {
           setCurrentChatId(result.id)
+          currentChatIdRef.current = result.id
           const newParams = new URLSearchParams(searchParams)
           newParams.set('chat', result.id)
           setSearchParams(newParams, { replace: true })
         }
         loadRecentChats()
-      } else if (saveChatFetcher.data.error) {
-        console.error('Failed to save chat:', saveChatFetcher.data.error)
+      } else if (updateChatFetcher.data.error) {
+        console.error('Failed to update chat:', updateChatFetcher.data.error)
       }
     }
   }, [
-    saveChatFetcher.state,
-    saveChatFetcher.data,
-    currentChatId,
+    updateChatFetcher.state,
+    updateChatFetcher.data,
     searchParams,
     setSearchParams,
     loadRecentChats,
   ])
 
-  const saveChat = useCallback(
-    (messagesToSave: Message[]) => {
-      const apiMessages = messagesToSave
-        .filter((m) => m.content.trim().length > 0)
-        .map((m) => ({
-          role: m.role,
-          content: m.content,
-        }))
+  // Handle title generation response
+  useEffect(() => {
+    if (titleFetcher.state === 'idle' && titleFetcher.data) {
+      if (lastProcessedTitleDataRef.current === titleFetcher.data) return
+      lastProcessedTitleDataRef.current = titleFetcher.data
 
-      if (apiMessages.length === 0) return
-
-      const formData = new FormData()
-      formData.append('messages', JSON.stringify(apiMessages))
-
-      if (currentChatId) {
-        formData.append('intent', 'update-ai-chat')
-        formData.append('chatId', currentChatId)
-      } else {
-        formData.append('intent', 'create-ai-chat')
+      if (titleFetcher.data.success && titleFetcher.data.data) {
+        const result = titleFetcher.data.data as { id: string; name: string }
+        if (result.id === currentChatIdRef.current) {
+          setChatTitle(result.name)
+        }
+        loadRecentChats()
       }
-
-      saveChatFetcher.submit(formData, { method: 'POST' })
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [saveChatFetcher.submit, currentChatId],
-  )
+    }
+  }, [titleFetcher.state, titleFetcher.data, loadRecentChats])
 
   useEffect(() => {
     if (hasInitializedRef.current) return
@@ -809,7 +1174,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const handleNewChat = useCallback(() => {
     setMessages([])
     setCurrentChatId(null)
+    currentChatIdRef.current = null
+    setChatTitle(null)
     setStreamingMessage(null)
+    setFeedbackMap({})
+    pendingMessagesToSaveRef.current = null
     setError(null)
     const newParams = new URLSearchParams(searchParams)
     newParams.delete('chat')
@@ -870,11 +1239,163 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     deleteChatFetcher.submit(formData, { method: 'POST' })
   }
 
+  const runChatTurn = useCallback(
+    async (allMessages: Message[]) => {
+      setError(null)
+      setIsLoading(true)
+      setIsWaitingForResponse(true)
+
+      streamingContentRef.current = ''
+      streamingReasoningRef.current = ''
+      streamingToolCallsRef.current = []
+      streamingPartsRef.current = []
+      currentTextPartRef.current = ''
+
+      abortControllerRef.current = new AbortController()
+
+      try {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+        const messagesToSend = _filter(
+          allMessages,
+          (msg) => msg.content.trim().length > 0,
+        ).map((msg) => ({ role: msg.role, content: msg.content }))
+
+        await askAI(
+          projectId,
+          messagesToSend,
+          timezone,
+          {
+            onText: (chunk) => {
+              setIsWaitingForResponse(false)
+              streamingContentRef.current += chunk
+              currentTextPartRef.current += chunk
+
+              const displayParts = [...streamingPartsRef.current]
+              if (currentTextPartRef.current) {
+                displayParts.push({
+                  type: 'text',
+                  text: currentTextPartRef.current,
+                })
+              }
+
+              setStreamingMessage({
+                id: generateMessageId(),
+                role: 'assistant',
+                content: streamingContentRef.current,
+                reasoning: streamingReasoningRef.current,
+                toolCalls: [...streamingToolCallsRef.current],
+                parts: displayParts,
+              })
+            },
+            onToolCall: (toolName, args) => {
+              setIsWaitingForResponse(false)
+              streamingToolCallsRef.current.push({ toolName, args })
+
+              if (currentTextPartRef.current.trim()) {
+                streamingPartsRef.current.push({
+                  type: 'text',
+                  text: currentTextPartRef.current,
+                })
+                currentTextPartRef.current = ''
+              }
+              streamingPartsRef.current.push({
+                type: 'toolCall',
+                toolName,
+                args,
+              })
+
+              setStreamingMessage((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      toolCalls: [...streamingToolCallsRef.current],
+                      parts: [...streamingPartsRef.current],
+                    }
+                  : {
+                      id: generateMessageId(),
+                      role: 'assistant',
+                      content: '',
+                      toolCalls: [...streamingToolCallsRef.current],
+                      parts: [...streamingPartsRef.current],
+                    },
+              )
+            },
+            onReasoning: (chunk) => {
+              setIsWaitingForResponse(false)
+              streamingReasoningRef.current += chunk
+              setStreamingMessage((prev) =>
+                prev
+                  ? { ...prev, reasoning: streamingReasoningRef.current }
+                  : {
+                      id: generateMessageId(),
+                      role: 'assistant',
+                      content: '',
+                      reasoning: streamingReasoningRef.current,
+                    },
+              )
+            },
+            onComplete: () => {
+              const finalContent = streamingContentRef.current
+
+              if (currentTextPartRef.current.trim()) {
+                streamingPartsRef.current.push({
+                  type: 'text',
+                  text: currentTextPartRef.current,
+                })
+              }
+
+              if (
+                finalContent.trim() ||
+                streamingToolCallsRef.current.length > 0
+              ) {
+                const assistantMessage: Message = {
+                  id: generateMessageId(),
+                  role: 'assistant',
+                  content: finalContent,
+                  reasoning: streamingReasoningRef.current,
+                  toolCalls: streamingToolCallsRef.current,
+                  parts: streamingPartsRef.current,
+                }
+                setMessages((prev) => {
+                  const updatedMessages = [...prev, assistantMessage]
+                  const chatId = currentChatIdRef.current
+                  if (chatId) {
+                    updateChatMessages(chatId, updatedMessages)
+                  } else {
+                    pendingMessagesToSaveRef.current = updatedMessages
+                  }
+                  return updatedMessages
+                })
+              }
+              setStreamingMessage(null)
+              setIsLoading(false)
+              setIsWaitingForResponse(false)
+            },
+            onError: (err) => {
+              console.error('AI chat error:', err)
+              setError(err.message || t('project.askAi.error'))
+              setStreamingMessage(null)
+              setIsLoading(false)
+              setIsWaitingForResponse(false)
+            },
+          },
+          abortControllerRef.current.signal,
+        )
+      } catch (err) {
+        console.error('AI chat error:', err)
+        setError((err as Error).message || t('project.askAi.error'))
+        setIsLoading(false)
+        setIsWaitingForResponse(false)
+      }
+    },
+    [projectId, t, updateChatMessages],
+  )
+
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault()
     if (!input.trim() || isLoading) return
 
-    setError(null)
     const userMessage: Message = {
       id: generateMessageId(),
       role: 'user',
@@ -883,151 +1404,67 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     const newMessages = [...messages, userMessage]
     setMessages(newMessages)
     setInput('')
-    setIsLoading(true)
-    setIsWaitingForResponse(true)
 
-    streamingContentRef.current = ''
-    streamingReasoningRef.current = ''
-    streamingToolCallsRef.current = []
-    streamingPartsRef.current = []
-    currentTextPartRef.current = ''
-
-    abortControllerRef.current = new AbortController()
-
-    try {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-
-      const messagesToSend = _filter(
-        newMessages,
-        (msg) => msg.content.trim().length > 0,
-      ).map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }))
-
-      await askAI(
-        projectId,
-        messagesToSend,
-        timezone,
-        {
-          onText: (chunk) => {
-            setIsWaitingForResponse(false)
-            streamingContentRef.current += chunk
-            currentTextPartRef.current += chunk
-
-            // Build current parts for display: completed parts + current text being streamed
-            const displayParts = [...streamingPartsRef.current]
-            if (currentTextPartRef.current) {
-              displayParts.push({
-                type: 'text',
-                text: currentTextPartRef.current,
-              })
-            }
-
-            setStreamingMessage({
-              id: generateMessageId(),
-              role: 'assistant',
-              content: streamingContentRef.current,
-              reasoning: streamingReasoningRef.current,
-              toolCalls: [...streamingToolCallsRef.current],
-              parts: displayParts,
-            })
-          },
-          onToolCall: (toolName, args) => {
-            setIsWaitingForResponse(false)
-            streamingToolCallsRef.current.push({ toolName, args })
-
-            // Save current accumulated text as a part before adding tool call
-            if (currentTextPartRef.current.trim()) {
-              streamingPartsRef.current.push({
-                type: 'text',
-                text: currentTextPartRef.current,
-              })
-              currentTextPartRef.current = ''
-            }
-            // Add tool call as a part
-            streamingPartsRef.current.push({ type: 'toolCall', toolName, args })
-
-            setStreamingMessage((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    toolCalls: [...streamingToolCallsRef.current],
-                    parts: [...streamingPartsRef.current],
-                  }
-                : {
-                    id: generateMessageId(),
-                    role: 'assistant',
-                    content: '',
-                    toolCalls: [...streamingToolCallsRef.current],
-                    parts: [...streamingPartsRef.current],
-                  },
-            )
-          },
-          onReasoning: (chunk) => {
-            setIsWaitingForResponse(false)
-            streamingReasoningRef.current += chunk
-            setStreamingMessage((prev) =>
-              prev
-                ? { ...prev, reasoning: streamingReasoningRef.current }
-                : {
-                    id: generateMessageId(),
-                    role: 'assistant',
-                    content: '',
-                    reasoning: streamingReasoningRef.current,
-                  },
-            )
-          },
-          onComplete: () => {
-            const finalContent = streamingContentRef.current
-
-            // Finalize parts: add any remaining text
-            if (currentTextPartRef.current.trim()) {
-              streamingPartsRef.current.push({
-                type: 'text',
-                text: currentTextPartRef.current,
-              })
-            }
-
-            if (
-              finalContent.trim() ||
-              streamingToolCallsRef.current.length > 0
-            ) {
-              const assistantMessage: Message = {
-                id: generateMessageId(),
-                role: 'assistant',
-                content: finalContent,
-                reasoning: streamingReasoningRef.current,
-                toolCalls: streamingToolCallsRef.current,
-                parts: streamingPartsRef.current,
-              }
-              setMessages((prev) => {
-                const updatedMessages = [...prev, assistantMessage]
-                saveChat(updatedMessages)
-                return updatedMessages
-              })
-            }
-            setStreamingMessage(null)
-            setIsLoading(false)
-            setIsWaitingForResponse(false)
-          },
-          onError: (err) => {
-            console.error('AI chat error:', err)
-            setError(err.message || t('project.askAi.error'))
-            setStreamingMessage(null)
-            setIsLoading(false)
-            setIsWaitingForResponse(false)
-          },
-        },
-        abortControllerRef.current.signal,
-      )
-    } catch (err) {
-      console.error('AI chat error:', err)
-      setError((err as Error).message || t('project.askAi.error'))
-      setIsLoading(false)
-      setIsWaitingForResponse(false)
+    if (!currentChatIdRef.current) {
+      createChatWithMessage(newMessages)
     }
+
+    await runChatTurn(newMessages)
   }
+
+  const handleEditUserMessage = useCallback(
+    async (index: number, newContent: string) => {
+      if (isLoading) return
+      const trimmed = newContent.trim()
+      if (!trimmed) return
+
+      const truncated = messages
+        .slice(0, index)
+        .concat({ ...messages[index], content: trimmed })
+      setMessages(truncated)
+      const chatId = currentChatIdRef.current
+      if (chatId) {
+        updateChatMessages(chatId, truncated)
+      }
+      await runChatTurn(truncated)
+    },
+    [isLoading, messages, runChatTurn, updateChatMessages],
+  )
+
+  const handleRegenerate = useCallback(
+    async (assistantIndex: number) => {
+      if (isLoading) return
+      const truncated = messages.slice(0, assistantIndex)
+      if (truncated.length === 0) return
+      setMessages(truncated)
+      const chatId = currentChatIdRef.current
+      if (chatId) {
+        updateChatMessages(chatId, truncated)
+      }
+      await runChatTurn(truncated)
+    },
+    [isLoading, messages, runChatTurn, updateChatMessages],
+  )
+
+  const handleFeedback = useCallback(
+    (assistantIndex: number, messageId: string, rating: 'good' | 'bad') => {
+      const chatId = currentChatIdRef.current
+      if (!chatId) return
+      if (feedbackMap[messageId] === rating) return
+
+      setFeedbackMap((prev) => ({ ...prev, [messageId]: rating }))
+
+      const formData = new FormData()
+      formData.append('intent', 'submit-ai-chat-feedback')
+      formData.append('chatId', chatId)
+      formData.append('rating', rating)
+      formData.append('messageIndex', assistantIndex.toString())
+      feedbackFetcher.submit(formData, { method: 'POST' })
+      toast.success(t('project.askAi.feedbackSent'))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [feedbackFetcher.submit, feedbackMap, t],
+  )
 
   const handleStop = () => {
     if (abortControllerRef.current) {
@@ -1036,7 +1473,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       setIsWaitingForResponse(false)
       const finalContent = streamingContentRef.current
 
-      // Finalize parts: add any remaining text
       if (currentTextPartRef.current.trim()) {
         streamingPartsRef.current.push({
           type: 'text',
@@ -1055,7 +1491,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         }
         setMessages((prev) => {
           const updatedMessages = [...prev, assistantMessage]
-          saveChat(updatedMessages)
+          const chatId = currentChatIdRef.current
+          if (chatId) {
+            updateChatMessages(chatId, updatedMessages)
+          } else {
+            pendingMessagesToSaveRef.current = updatedMessages
+          }
           return updatedMessages
         })
       }
@@ -1112,22 +1553,33 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   }
 
   return (
-    <div className='flex h-[calc(100vh-140px)] min-h-[600px] flex-col bg-gray-50 dark:bg-slate-950'>
+    <div className='relative flex h-[calc(100vh-140px)] min-h-[600px] flex-col bg-gray-50 dark:bg-slate-950'>
       {isChatActive ? (
         <>
-          <div className='mx-auto flex w-full max-w-3xl items-center justify-between'>
-            <button
-              type='button'
-              onClick={handleNewChat}
-              className='flex items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-200 hover:bg-white hover:text-gray-900 dark:text-gray-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-white'
-              aria-label={t('project.askAi.newChat')}
-            >
-              <ArrowLeftIcon className='h-4 w-4' />
-            </button>
+          <div className='mx-auto flex w-full max-w-3xl items-center justify-between gap-3'>
+            <div className='flex min-w-0 items-center gap-2'>
+              <button
+                type='button'
+                onClick={handleNewChat}
+                className='flex shrink-0 items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-200 hover:bg-white hover:text-gray-900 dark:text-gray-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-white'
+                aria-label={t('project.askAi.newChat')}
+              >
+                <ArrowLeftIcon className='h-4 w-4' />
+              </button>
+              <h2
+                className='truncate text-sm font-semibold text-gray-800 dark:text-gray-100'
+                title={chatTitle ?? undefined}
+              >
+                {chatTitle ||
+                  (currentChatId
+                    ? t('project.askAi.untitledChat')
+                    : t('project.askAi.newChat'))}
+              </h2>
+            </div>
             <button
               type='button'
               onClick={handleCopyLink}
-              className='flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
+              className='flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
             >
               <LinkIcon className='h-4 w-4' />
               <span>{t('project.askAi.copyLink')}</span>
@@ -1222,14 +1674,13 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                                 <InfoIcon className='h-4 w-4 cursor-help text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300' />
                               }
                             />
-                            <ToolsIndicator />
                           </div>
                           <button
                             type='submit'
                             disabled={!input.trim() || isLoading}
-                            className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200 hover:dark:bg-slate-700'
+                            className='flex h-7 w-7 items-center justify-center rounded-lg bg-gray-900 text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900'
                           >
-                            <PaperPlaneIcon className='h-3.5 w-3.5' />
+                            <ArrowUpIcon className='h-3.5 w-3.5' />
                           </button>
                         </div>
                       </form>
@@ -1241,14 +1692,43 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 </div>
               </div>
             ) : (
-              <div className='mx-auto max-w-3xl space-y-6 px-4 py-6'>
-                {_map(messages, (msg) =>
-                  msg.role === 'user' ? (
-                    <UserMessage key={msg.id} content={msg.content} />
-                  ) : (
-                    <AssistantMessage key={msg.id} message={msg} />
-                  ),
-                )}
+              <div className='mx-auto max-w-3xl space-y-6 px-4 py-6 pb-40'>
+                {(() => {
+                  let lastAssistantIdx = -1
+                  for (let i = messages.length - 1; i >= 0; i--) {
+                    if (messages[i].role === 'assistant') {
+                      lastAssistantIdx = i
+                      break
+                    }
+                  }
+                  return _map(messages, (msg, idx) => {
+                    if (msg.role === 'user') {
+                      return (
+                        <UserMessage
+                          key={msg.id}
+                          content={msg.content}
+                          isLoading={isLoading}
+                          onEdit={(newContent) =>
+                            handleEditUserMessage(idx, newContent)
+                          }
+                        />
+                      )
+                    }
+                    const isLastAssistant = idx === lastAssistantIdx
+                    return (
+                      <AssistantMessage
+                        key={msg.id}
+                        message={msg}
+                        onRegenerate={() => handleRegenerate(idx)}
+                        onFeedback={(rating) =>
+                          handleFeedback(idx, msg.id, rating)
+                        }
+                        feedback={feedbackMap[msg.id] ?? null}
+                        canRegenerate={isLastAssistant && !isLoading}
+                      />
+                    )
+                  })
+                })()}
                 {isWaitingForResponse ? (
                   <div className='py-2'>
                     <ThinkingIndicator />
@@ -1268,9 +1748,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       </div>
 
       {!isEmpty ? (
-        <div className='border-t border-gray-200 bg-gray-50 px-4 py-4 dark:border-slate-800/60 dark:bg-slate-950'>
-          <div className='mx-auto max-w-3xl'>
-            <div className='rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-900/25'>
+        <div className='pointer-events-none absolute right-0 bottom-0 left-0 z-20 bg-linear-to-t from-gray-50 via-gray-50/95 to-transparent px-4 pt-10 pb-4 dark:from-slate-950 dark:via-slate-950/95'>
+          <div className='pointer-events-auto mx-auto max-w-3xl'>
+            <div className='rounded-xl border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-900'>
               <form onSubmit={handleSubmit} className='relative'>
                 <Textarea
                   ref={inputRef}
@@ -1293,25 +1773,25 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                         <InfoIcon className='h-4 w-4 cursor-help text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300' />
                       }
                     />
-                    <ToolsIndicator />
                   </div>
                   <div className='flex items-center gap-2'>
                     {isLoading ? (
                       <button
                         type='button'
                         onClick={handleStop}
-                        className='flex h-7 items-center gap-1.5 rounded-lg border border-red-300 bg-white px-2.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800/50 dark:bg-slate-900 dark:text-red-400 hover:dark:bg-red-900/20'
+                        className='flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-500 dark:text-white'
+                        aria-label={t('project.askAi.stop')}
+                        title={t('project.askAi.stop')}
                       >
                         <StopCircleIcon className='h-3.5 w-3.5' />
-                        <span>{t('project.askAi.stop')}</span>
                       </button>
                     ) : (
                       <button
                         type='submit'
                         disabled={!input.trim()}
-                        className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200 hover:dark:bg-slate-700'
+                        className='flex h-7 w-7 items-center justify-center rounded-lg bg-gray-900 text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900'
                       >
-                        <PaperPlaneIcon className='h-3.5 w-3.5' />
+                        <ArrowUpIcon className='h-3.5 w-3.5' />
                       </button>
                     )}
                   </div>

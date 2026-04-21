@@ -122,6 +122,31 @@ export class GetRecentChatsQueryDto {
   limit?: number
 }
 
+export class FeedbackDto {
+  @ApiProperty({
+    enum: ['good', 'bad'],
+    description: 'User feedback on the AI response',
+  })
+  @IsNotEmpty()
+  @IsIn(['good', 'bad'])
+  rating: 'good' | 'bad'
+
+  @ApiProperty({ required: false, description: 'Optional comment' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  comment?: string
+
+  @ApiProperty({
+    required: false,
+    description: 'Index of the assistant message the rating refers to',
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  messageIndex?: number
+}
+
 export class GetAllChatsQueryDto {
   @ApiProperty({
     required: false,

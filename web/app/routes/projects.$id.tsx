@@ -639,6 +639,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
     'create-ai-chat',
     'update-ai-chat',
     'delete-ai-chat',
+    'generate-ai-chat-title',
+    'submit-ai-chat-feedback',
   ])
 
   if (!intent || (!publicIntents.has(intent) && !hasAuthTokens(request))) {
@@ -1253,6 +1255,65 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
       return data<ProjectViewActionData>(
         { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'generate-ai-chat-title': {
+      const chatId = formData.get('chatId')?.toString()
+
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats/${chatId}/title`,
+        {
+          method: 'POST',
+          body: {},
+        },
+      )
+
+      if (result.error) {
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'submit-ai-chat-feedback': {
+      const chatId = formData.get('chatId')?.toString()
+      const rating = formData.get('rating')?.toString() as 'good' | 'bad'
+      const messageIndex = formData.get('messageIndex')?.toString()
+      const comment = formData.get('comment')?.toString()
+
+      const body: Record<string, unknown> = { rating }
+      if (messageIndex !== undefined && messageIndex !== '') {
+        body.messageIndex = Number(messageIndex)
+      }
+      if (comment) body.comment = comment
+
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats/${chatId}/feedback`,
+        {
+          method: 'POST',
+          body,
+        },
+      )
+
+      if (result.error) {
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

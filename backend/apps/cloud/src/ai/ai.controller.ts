@@ -35,6 +35,7 @@ import {
   UpdateChatDto,
   GetRecentChatsQueryDto,
   GetAllChatsQueryDto,
+  FeedbackDto,
 } from './dto/chat.dto'
 import { trackCustom } from '../common/analytics'
 
@@ -522,6 +523,27 @@ export class AiController {
       },
     )
 
+    if (
+      !createChatDto.name &&
+      createChatDto.messages?.length &&
+      process.env.OPENROUTER_API_KEY
+    ) {
+      const firstUserMsg = createChatDto.messages.find(
+        (m) => m.role === 'user',
+      )?.content
+      if (firstUserMsg) {
+        this.aiService
+          .generateChatTitle(firstUserMsg)
+          .then((title) => this.aiChatService.update(chat.id, { name: title }))
+          .catch((err) =>
+            this.logger.warn(
+              { err, chatId: chat.id },
+              'Background title generation failed',
+            ),
+          )
+      }
+    }
+
     return {
       id: chat.id,
       name: chat.name,
@@ -529,6 +551,103 @@ export class AiController {
       created: chat.created,
       updated: chat.updated,
     }
+  }
+
+  @ApiBearerAuth()
+  @Post(':pid/chats/:chatId/title')
+  @Auth(false, true)
+  @ApiOperation({
+    summary:
+      'Generate (or regenerate) a concise AI-generated title for a chat from its first user message',
+  })
+  @ApiResponse({ status: 200, description: 'Generated chat title' })
+  async generateChatTitle(
+    @Param('pid') pid: string,
+    @Param('chatId') chatId: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
+  ) {
+    this.logger.log({ uid, pid, chatId }, 'POST /ai/:pid/chats/:chatId/title')
+
+    await this.applyRateLimit(uid, headers, 'write')
+
+    if (!process.env.OPENROUTER_API_KEY) {
+      throw new HttpException(
+        'AI features are not configured. Please set OPENROUTER_API_KEY.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      )
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+    this.projectService.allowedToView(project, uid)
+
+    const chat = await this.aiChatService.verifyOwnerAccess(chatId, pid, uid)
+    if (!chat) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    const firstUserMsg = chat.messages.find((m) => m.role === 'user')?.content
+
+    if (!firstUserMsg) {
+      return { id: chat.id, name: chat.name }
+    }
+
+    const title = await this.aiService.generateChatTitle(firstUserMsg)
+    const updated = await this.aiChatService.update(chatId, { name: title })
+
+    return {
+      id: chatId,
+      name: updated?.name || title,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Post(':pid/chats/:chatId/feedback')
+  @Auth(false, true)
+  @ApiOperation({ summary: 'Submit feedback on an AI response' })
+  @ApiResponse({ status: 200, description: 'Feedback recorded' })
+  async submitChatFeedback(
+    @Param('pid') pid: string,
+    @Param('chatId') chatId: string,
+    @Body() feedbackDto: FeedbackDto,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
+  ) {
+    this.logger.log(
+      { uid, pid, chatId, rating: feedbackDto.rating },
+      'POST /ai/:pid/chats/:chatId/feedback',
+    )
+
+    await this.applyRateLimit(uid, headers, 'write')
+
+    const project = await this.projectService.getFullProject(pid)
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+    this.projectService.allowedToView(project, uid)
+
+    const chat = await this.aiChatService.verifyProjectAccess(chatId, pid)
+    if (!chat) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    await trackCustom(
+      getIPFromHeaders(headers) || 'unknown',
+      headers['user-agent'],
+      {
+        ev: `AI_CHAT_FEEDBACK_${feedbackDto.rating.toUpperCase()}`,
+        meta: {
+          chatId,
+          messageIndex: feedbackDto.messageIndex,
+          hasComment: !!feedbackDto.comment,
+        },
+      },
+    )
+
+    return { success: true }
   }
 
   @ApiBearerAuth()
