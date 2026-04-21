@@ -3,7 +3,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import { useState, useEffect, useCallback, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'

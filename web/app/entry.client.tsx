@@ -7,7 +7,7 @@ import { I18nextProvider, initReactI18next } from 'react-i18next'
 import { HydratedRouter } from 'react-router/dom'
 import { getInitialNamespaces } from 'remix-i18next/client'
 
-import { I18N_CACHE_BREAKER } from '~/lib/constants'
+import { I18N_CACHE_BREAKER, getLangFromPath } from '~/lib/constants'
 
 import i18n from './i18n'
 
@@ -58,6 +58,11 @@ window.addEventListener('unhandledrejection', (event) => {
 })
 
 async function hydrate() {
+  // The path is the source of truth for language now (/de/page > <html lang>).
+  // We still fall back to the htmlTag detector for unprefixed pages where the
+  // server-rendered <html lang="..."> reflects the cookie / Accept-Language.
+  const pathLang = getLangFromPath(window.location.pathname)
+
   // eslint-disable-next-line import/no-named-as-default-member
   await i18next
     .use(initReactI18next)
@@ -66,6 +71,7 @@ async function hydrate() {
     .init({
       ...i18n,
       ns: getInitialNamespaces(),
+      ...(pathLang ? { lng: pathLang } : {}),
       backend: { loadPath: `/locales/{{lng}}.json?cv=${I18N_CACHE_BREAKER}` },
       detection: {
         order: ['htmlTag'],

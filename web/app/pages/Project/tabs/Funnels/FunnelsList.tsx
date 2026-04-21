@@ -10,7 +10,8 @@ import {
 } from '@phosphor-icons/react'
 import { useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useSearchParams } from 'react-router'
 
 import { Funnel } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'

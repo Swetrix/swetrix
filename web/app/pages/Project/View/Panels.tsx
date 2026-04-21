@@ -36,7 +36,8 @@ import React, {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
-import { Link, LinkProps, useNavigate } from 'react-router'
+import { Link } from '~/ui/Link'
+import { LinkProps, useNavigate } from 'react-router'
 
 import { useProjectDataCustomEventsProxy } from '~/hooks/useAnalyticsProxy'
 import { PROJECT_TABS } from '~/lib/constants'

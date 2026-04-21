@@ -39,6 +39,11 @@ import {
   isDevelopment,
   MAIN_URL,
   defaultLanguage,
+  localisePath,
+  isUnlocalisedPath,
+  whitelist,
+  stripLangFromPath,
+  getLangFromPath,
 } from '~/lib/constants'
 import mainCss from '~/styles/index.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
@@ -274,6 +279,75 @@ const removeMultipleLngParams = (url: string): string => {
   return _replace(url, /%3Flng%3D[^%]*/g, '')
 }
 
+const readCookieLang = (request: Request): string | null => {
+  const cookie = request.headers.get('Cookie')
+  if (!cookie) return null
+
+  for (const segment of cookie.split(';')) {
+    const trimmed = segment.trim()
+    const eqIdx = trimmed.indexOf('=')
+    if (eqIdx === -1) continue
+    const name = trimmed.slice(0, eqIdx)
+    if (name !== 'i18next') continue
+
+    const rawValue = trimmed.slice(eqIdx + 1)
+    let value: string
+    try {
+      value = decodeURIComponent(rawValue)
+    } catch {
+      value = rawValue
+    }
+    return whitelist.includes(value) ? value : null
+  }
+
+  return null
+}
+
+// Decides whether to redirect an unprefixed URL to its localised counterpart
+// so the URL is always the source of truth for the rendered language.
+//
+// Priority of "preferred language" signals:
+//   1. Legacy `?lng=xx` query (301 — canonical migration of old links)
+//   2. `i18next` cookie set by the language switcher (302 — per-user pref)
+//
+// We deliberately ignore `Accept-Language` here to avoid surprise redirects
+// for bots, link previews, and shared screenshots.
+const buildLocaliseRedirect = (
+  request: Request,
+  urlObject: URL,
+): { url: string; status: 301 | 302 } | null => {
+  const { searchParams, pathname } = urlObject
+
+  // Already on a localised URL, or a path that should never be prefixed.
+  if (getLangFromPath(pathname)) return null
+  if (isUnlocalisedPath(pathname)) return null
+
+  // /en/dashboard → /dashboard (default lang should never be prefixed).
+  const firstSegment = pathname.match(/^\/([^/]+)(\/.*)?$/)
+  if (firstSegment && firstSegment[1] === defaultLanguage) {
+    const next = new URL(urlObject.toString())
+    next.pathname = firstSegment[2] || '/'
+    return { url: next.toString(), status: 301 }
+  }
+
+  const lngQuery = searchParams.get('lng')
+  if (lngQuery && whitelist.includes(lngQuery)) {
+    const next = new URL(urlObject.toString())
+    next.searchParams.delete('lng')
+    next.pathname = localisePath(pathname, lngQuery)
+    return { url: next.toString(), status: 301 }
+  }
+
+  const cookieLng = readCookieLang(request)
+  if (cookieLng && cookieLng !== defaultLanguage) {
+    const next = new URL(urlObject.toString())
+    next.pathname = localisePath(pathname, cookieLng)
+    return { url: next.toString(), status: 302 }
+  }
+
+  return null
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const { url } = request
   const removedLng = removeMultipleLngParams(url)
@@ -288,6 +362,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const nonWWWLink = _replace(url, 'www.', '')
     const httpToHttps = _replace(nonWWWLink, 'http://', 'https://')
     return redirect(httpToHttps, 301)
+  }
+
+  const localiseRedirect = buildLocaliseRedirect(request, urlObject)
+  if (localiseRedirect) {
+    return redirect(localiseRedirect.url, localiseRedirect.status)
   }
 
   const locale = detectLanguage(request)
@@ -322,7 +401,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const loaderData = {
     locale,
-    url,
     theme,
     REMIX_ENV,
     isAuthed: !!user,
@@ -368,24 +446,21 @@ const Body = () => {
 }
 
 export default function App() {
-  const { locale, url, theme, REMIX_ENV } = useLoaderData<typeof loader>()
+  const { locale, theme, REMIX_ENV } = useLoaderData<typeof loader>()
   const { pathname, search } = useLocation()
   const { i18n } = useTranslation('common')
   const [searchParams] = useSearchParams()
 
-  const urlObject = new URL(url)
-  urlObject.searchParams.delete('lng')
-
   const isEmbedded = searchParams.get('embedded') === 'true'
 
   const canonicalUrl = (() => {
-    const url = new URL(`${MAIN_URL}${pathname}${search}`)
-    if (i18n.language === defaultLanguage) {
-      url.searchParams.delete('lng')
-    } else {
-      url.searchParams.set('lng', i18n.language)
-    }
-    return url.toString()
+    const localisedPathname = localisePath(
+      stripLangFromPath(pathname),
+      i18n.language || defaultLanguage,
+    )
+    const next = new URL(`${MAIN_URL}${localisedPathname}${search}`)
+    next.searchParams.delete('lng')
+    return next.toString()
   })()
 
   return (

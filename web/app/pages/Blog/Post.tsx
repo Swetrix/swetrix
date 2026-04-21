@@ -1,7 +1,8 @@
 import { CaretLeftIcon } from '@phosphor-icons/react'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLoaderData, useLocation } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useLoaderData, useLocation } from 'react-router'
 
 import ExitIntentPopup from '~/components/ExitIntentPopup'
 import NotFound from '~/pages/NotFound'

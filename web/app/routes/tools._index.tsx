@@ -1,6 +1,7 @@
 import { ArrowRightIcon } from '@phosphor-icons/react'
 import type { MetaFunction } from 'react-router'
-import { Link, redirect } from 'react-router'
+import { Link } from '~/ui/Link'
+import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'

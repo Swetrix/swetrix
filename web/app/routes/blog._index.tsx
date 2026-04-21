@@ -4,7 +4,8 @@ import _map from 'lodash/map'
 import { CaretRightIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
-import { redirect, Link, useLoaderData } from 'react-router'
+import { Link } from '~/ui/Link'
+import { redirect, useLoaderData } from 'react-router'
 
 import { getBlogPosts } from '~/api/api.server'
 import {

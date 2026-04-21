@@ -26,8 +26,8 @@ import {
   use,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from '~/ui/Link'
 import {
-  Link,
   useLocation,
   useSearchParams,
   useNavigate,

@@ -34,7 +34,7 @@ import {
 import _map from 'lodash/map'
 import React, { memo, type FC } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import { changeLanguage } from '~/i18n'
 import {

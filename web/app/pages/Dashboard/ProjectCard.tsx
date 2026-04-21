@@ -11,7 +11,8 @@ import {
 } from '@phosphor-icons/react'
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useFetcher, useNavigate } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useFetcher, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { OverallObject, Project } from '~/lib/models/Project'

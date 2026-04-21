@@ -1,7 +1,7 @@
 import { XIcon } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 import { useAuth } from '~/providers/AuthProvider'
 
 import { Badge } from '~/ui/Badge'

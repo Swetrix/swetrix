@@ -43,7 +43,7 @@ import {
 } from '@phosphor-icons/react'
 import { memo, Fragment, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import { changeLanguage } from '~/i18n'
 import {

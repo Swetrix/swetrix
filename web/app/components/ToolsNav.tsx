@@ -17,8 +17,10 @@ import {
   PercentIcon,
 } from '@phosphor-icons/react'
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useLocation } from 'react-router'
 
+import { stripLangFromPath } from '~/lib/constants'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
@@ -137,6 +139,7 @@ interface ToolsNavProps {
 
 export function ToolsNav({ className }: ToolsNavProps) {
   const location = useLocation()
+  const strippedPath = stripLangFromPath(location.pathname)
 
   return (
     <nav
@@ -146,7 +149,7 @@ export function ToolsNav({ className }: ToolsNavProps) {
       )}
     >
       {TOOLS.map((tool, index) => {
-        const isActive = location.pathname === tool.href
+        const isActive = strippedPath === tool.href
         const Icon = tool.icon
 
         return (
@@ -192,8 +195,9 @@ export function ToolsNav({ className }: ToolsNavProps) {
 export function ToolsNavMobile({ className }: ToolsNavProps) {
   const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
+  const strippedPath = stripLangFromPath(location.pathname)
 
-  const currentTool = TOOLS.find((tool) => tool.href === location.pathname)
+  const currentTool = TOOLS.find((tool) => tool.href === strippedPath)
   const CurrentIcon = currentTool?.icon
 
   return (
@@ -231,7 +235,7 @@ export function ToolsNavMobile({ className }: ToolsNavProps) {
 
       {isOpen && (
         <div className='border-t border-gray-100 dark:border-slate-700'>
-          {TOOLS.filter((tool) => tool.href !== location.pathname).map(
+          {TOOLS.filter((tool) => tool.href !== strippedPath).map(
             (tool, index) => {
               const Icon = tool.icon
 
