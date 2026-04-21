@@ -27,7 +27,7 @@ import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
-import { AiService } from './ai.service'
+import { AiService, sanitiseAssistantContent } from './ai.service'
 import { AiChatService } from './ai-chat.service'
 import {
   ChatDto,
@@ -541,10 +541,16 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
+    const sanitisedCreateMessages = createChatDto.messages.map((m) =>
+      m.role === 'assistant'
+        ? { ...m, content: sanitiseAssistantContent(m.content) }
+        : m,
+    )
+
     const chat = await this.aiChatService.create({
       projectId: pid,
       userId: uid,
-      messages: createChatDto.messages,
+      messages: sanitisedCreateMessages,
       name: createChatDto.name,
     })
 
@@ -720,10 +726,18 @@ export class AiController {
     // Check if the current user owns this chat
     const isOwner = this.aiChatService.isOwner(existingChat, uid)
 
+    const sanitisedUpdateMessages = updateChatDto.messages
+      ? updateChatDto.messages.map((m) =>
+          m.role === 'assistant'
+            ? { ...m, content: sanitiseAssistantContent(m.content) }
+            : m,
+        )
+      : undefined
+
     if (isOwner) {
       // User owns the chat - update it directly
       const chat = await this.aiChatService.update(chatId, {
-        messages: updateChatDto.messages,
+        messages: sanitisedUpdateMessages,
         name: updateChatDto.name,
       })
 
@@ -745,7 +759,7 @@ export class AiController {
     const branchedChat = await this.aiChatService.create({
       projectId: pid,
       userId: uid,
-      messages: updateChatDto.messages || existingChat.messages,
+      messages: sanitisedUpdateMessages || existingChat.messages,
       name: updateChatDto.name,
     })
 

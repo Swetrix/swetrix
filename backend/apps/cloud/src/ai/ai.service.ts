@@ -43,9 +43,180 @@ const ALLOWED_FILTER_COLUMNS = new Set([
   'so',
   'me',
   'ca',
+  'te',
+  'co',
   'lc',
   'host',
 ])
+
+const ALLOWED_CHART_LINK_TABS = new Set([
+  'traffic',
+  'performance',
+  'errors',
+  'sessions',
+  'funnels',
+  'goals',
+  'experiments',
+  'featureFlags',
+  'captcha',
+  'profiles',
+])
+
+const ALLOWED_CHART_LINK_PERIODS = new Set([
+  '1h',
+  'today',
+  'yesterday',
+  '1d',
+  '7d',
+  '4w',
+  '3M',
+  '12M',
+  '24M',
+  'all',
+])
+
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+interface SanitisedChartLink {
+  tab: string
+  period?: string
+  from?: string
+  to?: string
+  filters?: Array<{
+    column: string
+    filter: string
+    isExclusive?: boolean
+    isContains?: boolean
+  }>
+}
+
+/**
+ * Defensively validates an AI-emitted chart `link` object. Returns null when the
+ * link is missing/invalid/unsafe so the frontend simply hides the affordance.
+ */
+const sanitiseChartLink = (raw: unknown): SanitisedChartLink | null => {
+  if (!raw || typeof raw !== 'object') return null
+  const link = raw as Record<string, unknown>
+
+  const tab = typeof link.tab === 'string' ? link.tab : null
+  if (!tab || !ALLOWED_CHART_LINK_TABS.has(tab)) return null
+
+  const out: SanitisedChartLink = { tab }
+
+  if (
+    typeof link.period === 'string' &&
+    ALLOWED_CHART_LINK_PERIODS.has(link.period)
+  ) {
+    out.period = link.period
+  }
+
+  if (typeof link.from === 'string' && ISO_DATE_PATTERN.test(link.from)) {
+    out.from = link.from
+  }
+  if (typeof link.to === 'string' && ISO_DATE_PATTERN.test(link.to)) {
+    out.to = link.to
+  }
+
+  if (Array.isArray(link.filters)) {
+    const filters = link.filters
+      .filter((f): f is Record<string, unknown> => !!f && typeof f === 'object')
+      .map((f) => ({
+        column: typeof f.column === 'string' ? f.column : '',
+        filter: typeof f.filter === 'string' ? f.filter : '',
+        isExclusive: f.isExclusive === true ? true : undefined,
+        isContains: f.isContains === true ? true : undefined,
+      }))
+      .filter(
+        (f) =>
+          f.column &&
+          f.filter &&
+          ALLOWED_FILTER_COLUMNS.has(f.column) &&
+          f.filter.length <= 500,
+      )
+      .slice(0, 10)
+
+    if (filters.length > 0) out.filters = filters
+  }
+
+  return out
+}
+
+/**
+ * Scans a piece of assistant content for embedded chart JSON blobs and rewrites
+ * each one to strip invalid/unknown chart `link` fields. Charts without a valid
+ * link will simply lack the field (rendering hides the affordance gracefully).
+ */
+export const sanitiseAssistantContent = (content: string): string => {
+  if (!content || !content.includes('{"type":"chart"')) return content
+
+  let cursor = 0
+  let result = ''
+
+  while (cursor < content.length) {
+    const start = content.indexOf('{"type":"chart"', cursor)
+    if (start === -1) {
+      result += content.slice(cursor)
+      break
+    }
+
+    result += content.slice(cursor, start)
+
+    let braceCount = 0
+    let inString = false
+    let escape = false
+    let end = -1
+    for (let i = start; i < content.length; i++) {
+      const ch = content[i]
+      if (escape) {
+        escape = false
+        continue
+      }
+      if (ch === '\\') {
+        escape = true
+        continue
+      }
+      if (ch === '"') {
+        inString = !inString
+        continue
+      }
+      if (inString) continue
+      if (ch === '{') braceCount++
+      else if (ch === '}') {
+        braceCount--
+        if (braceCount === 0) {
+          end = i
+          break
+        }
+      }
+    }
+
+    if (end === -1) {
+      result += content.slice(start)
+      break
+    }
+
+    const jsonStr = content.substring(start, end + 1)
+    try {
+      const parsed = JSON.parse(jsonStr)
+      if (parsed && typeof parsed === 'object' && parsed.type === 'chart') {
+        const safeLink = sanitiseChartLink(parsed.link)
+        if (safeLink) {
+          parsed.link = safeLink
+        } else if ('link' in parsed) {
+          delete parsed.link
+        }
+        result += JSON.stringify(parsed)
+      } else {
+        result += jsonStr
+      }
+    } catch {
+      result += jsonStr
+    }
+    cursor = end + 1
+  }
+
+  return result
+}
 
 // Regex pattern to validate timezone strings (only allows safe characters)
 // Valid timezones: UTC, America/New_York, Europe/London, Asia/Tokyo, etc.
@@ -310,15 +481,45 @@ Guidelines:
 To include a chart, emit this exact JSON on its own line at the position you want it rendered:
 
 Time-series (line, bar, area):
-{"type":"chart","chartType":"line","title":"Chart Title","data":{"x":["2024-01-01","2024-01-02"],"pageviews":[100,150],"visitors":[80,120]}}
+{"type":"chart","chartType":"line","title":"Chart Title","data":{"x":["2024-01-01","2024-01-02"],"pageviews":[100,150],"visitors":[80,120]},"link":{"tab":"traffic","period":"7d"}}
 
 Pie / donut (proportions):
-{"type":"chart","chartType":"pie","title":"Device Distribution","data":{"labels":["Desktop","Mobile","Tablet"],"values":[650,280,70]}}
-{"type":"chart","chartType":"donut","title":"Traffic Sources","data":{"labels":["Organic","Direct","Referral"],"values":[450,300,150]}}
+{"type":"chart","chartType":"pie","title":"Device Distribution","data":{"labels":["Desktop","Mobile","Tablet"],"values":[650,280,70]},"link":{"tab":"traffic","period":"7d"}}
+{"type":"chart","chartType":"donut","title":"Traffic Sources","data":{"labels":["Organic","Direct","Referral"],"values":[450,300,150]},"link":{"tab":"traffic","period":"7d"}}
 
 Supported chart types: "line", "bar", "area", "pie", "donut"
 - For line/bar/area: "x" for x-axis labels and named numeric arrays for each series.
-- For pie/donut: "labels" + "values" (raw numbers, NOT percentages).`
+- For pie/donut: "labels" + "values" (raw numbers, NOT percentages).
+
+Chart "link" field (REQUIRED whenever the chart corresponds to data the user can drill into in the dashboard):
+- ALWAYS include "link" so the chart can be opened in the project dashboard.
+- Mirror the EXACT period/from/to and filters used in the originating tool call so the dashboard view shows the same data.
+- Schema: { "tab": "traffic" | "performance" | "errors" | "sessions" | "funnels" | "goals" | "experiments" | "featureFlags" | "captcha" | "profiles", "period"?: "1h"|"today"|"yesterday"|"1d"|"7d"|"4w"|"3M"|"12M"|"24M"|"all", "from"?: "YYYY-MM-DD", "to"?: "YYYY-MM-DD", "filters"?: [{"column": string, "filter": string, "isExclusive"?: boolean, "isContains"?: boolean}] }
+- Pick the most relevant tab: pageviews/visitors/sessions/geo/devices => "traffic"; performance metrics => "performance"; errors => "errors"; user sessions => "sessions"; funnel charts => "funnels"; goal conversions => "goals"; A/B experiments => "experiments"; feature flags => "featureFlags"; CAPTCHA => "captcha"; profiles overview => "profiles".
+- Use either "period" OR ("from" + "to"), never both.
+- ALWAYS pass through every filter you used in the originating getData/tool call. If the chart is "Top countries in North America" and you filtered by cc=US, cc=CA, cc=MX, the link MUST include all three filter entries — never drop them. Same rule for any breakdown chart (e.g. "Top pages on /blog" must carry the pg filter).
+- Filters are an ARRAY: include one entry per value, even when filtering on the same column multiple times. Example for the North America case: "filters":[{"column":"cc","filter":"US"},{"column":"cc","filter":"CA"},{"column":"cc","filter":"MX"}].
+- Allowed filter columns and what they mean:
+  - pg: page path (e.g. "/blog", "/pricing")
+  - cc: country code, 2-letter ISO 3166-1 alpha-2 (e.g. "US", "GB", "DE")
+  - rg: region / state / province name
+  - ct: city name
+  - br: browser name (e.g. "Chrome", "Safari", "Firefox")
+  - os: operating system name (e.g. "Windows", "macOS", "iOS", "Android")
+  - dv: device type — one of "desktop", "mobile", "tablet", "smarttv", "wearable", "console", "xr", "embedded"
+  - ref: full referrer URL
+  - so: UTM source (utm_source)
+  - me: UTM medium (utm_medium)
+  - ca: UTM campaign (utm_campaign)
+  - te: UTM term (utm_term)
+  - co: UTM content (utm_content)
+  - lc: locale / language code (e.g. "en-US", "de-DE")
+  - host: hostname (e.g. "example.com")
+- Filter modifiers (combine freely):
+  - "isExclusive": true => EXCLUDE this value (NOT equal / NOT contains).
+  - "isContains": true => substring match (case-insensitive). Use this when filtering by a partial value such as "/blog" matching "/blog/foo", or referrers containing "google".
+  - Default (both omitted) is exact-match, include.
+- Omit "link" only for hypothetical/illustrative charts that don't map to real dashboard data.`
   }
 
   private buildTools(project: Project, timezone: string) {
@@ -407,11 +608,17 @@ Available filter columns:
 - os: operating system
 - dv: device type (desktop, mobile, tablet)
 - ref: referrer
-- so: source
-- me: medium
-- ca: campaign
+- so: utm_source
+- me: utm_medium
+- ca: utm_campaign
+- te: utm_term
+- co: utm_content
 - lc: locale/language
-- host: hostname`,
+- host: hostname
+
+Filter modifiers:
+- isExclusive: true => exclude this value (NOT equal / NOT contains)
+- isContains: true => case-insensitive substring match (e.g. pg contains "/blog")`,
         inputSchema: z.object({
           dataType: z
             .enum([
@@ -438,6 +645,12 @@ Available filter columns:
                   .boolean()
                   .optional()
                   .describe('If true, exclude this value'),
+                isContains: z
+                  .boolean()
+                  .optional()
+                  .describe(
+                    'If true, case-insensitive substring match instead of exact equality',
+                  ),
               }),
             )
             .optional()
@@ -770,6 +983,7 @@ Available filter columns:
         column?: string
         filter?: string
         isExclusive?: boolean
+        isContains?: boolean
       }>
       measure?: 'average' | 'median' | 'p95'
     },
@@ -787,8 +1001,14 @@ Available filter columns:
 
     // Filter out invalid filter entries
     const filters = rawFilters.filter(
-      (f): f is { column: string; filter: string; isExclusive?: boolean } =>
-        typeof f.column === 'string' && typeof f.filter === 'string',
+      (
+        f,
+      ): f is {
+        column: string
+        filter: string
+        isExclusive?: boolean
+        isContains?: boolean
+      } => typeof f.column === 'string' && typeof f.filter === 'string',
     )
 
     try {
@@ -883,6 +1103,7 @@ Available filter columns:
       column: string
       filter: string
       isExclusive?: boolean
+      isContains?: boolean
     }>,
   ) {
     const filterConditions = this.buildFilterConditions(filters)
@@ -1061,6 +1282,7 @@ Available filter columns:
       column: string
       filter: string
       isExclusive?: boolean
+      isContains?: boolean
     }>,
     measure: string,
   ) {
@@ -1464,6 +1686,7 @@ Available filter columns:
       column: string
       filter: string
       isExclusive?: boolean
+      isContains?: boolean
     }>,
   ) {
     const filterConditions = this.buildFilterConditions(filters)
@@ -2061,25 +2284,76 @@ Available filter columns:
       column: string
       filter: string
       isExclusive?: boolean
+      isContains?: boolean
     }>,
   ): { where: string; params: Record<string, string> } {
     if (_isEmpty(filters)) {
       return { where: '', params: {} }
     }
 
-    const conditions: string[] = []
-    const params: Record<string, string> = {}
+    // Group equality/contains filters by column so multiple values OR together,
+    // matching the dashboard's behaviour (e.g. cc=US OR cc=CA OR cc=MX).
+    const grouped = new Map<
+      string,
+      {
+        eqInclude: string[]
+        eqExclude: string[]
+        containsInclude: string[]
+        containsExclude: string[]
+      }
+    >()
 
-    filters.forEach((f, index) => {
+    filters.forEach((f) => {
       // Validate column name against allowlist to prevent SQL injection
       if (!ALLOWED_FILTER_COLUMNS.has(f.column)) {
         return // Skip invalid columns
       }
 
-      const paramName = `filter_${index}`
-      params[paramName] = f.filter
-      const operator = f.isExclusive ? '!=' : '='
-      conditions.push(`${f.column} ${operator} {${paramName}:String}`)
+      const bucket = grouped.get(f.column) ?? {
+        eqInclude: [],
+        eqExclude: [],
+        containsInclude: [],
+        containsExclude: [],
+      }
+
+      if (f.isContains && f.isExclusive) bucket.containsExclude.push(f.filter)
+      else if (f.isContains) bucket.containsInclude.push(f.filter)
+      else if (f.isExclusive) bucket.eqExclude.push(f.filter)
+      else bucket.eqInclude.push(f.filter)
+
+      grouped.set(f.column, bucket)
+    })
+
+    const conditions: string[] = []
+    const params: Record<string, string> = {}
+    let paramIndex = 0
+    const nextParam = (value: string): string => {
+      const name = `filter_${paramIndex++}`
+      params[name] = value
+      return name
+    }
+
+    grouped.forEach((bucket, column) => {
+      if (bucket.eqInclude.length > 0) {
+        const placeholders = bucket.eqInclude.map(
+          (v) => `${column} = {${nextParam(v)}:String}`,
+        )
+        conditions.push(`(${placeholders.join(' OR ')})`)
+      }
+      if (bucket.containsInclude.length > 0) {
+        const placeholders = bucket.containsInclude.map(
+          (v) => `${column} ILIKE concat('%', {${nextParam(v)}:String}, '%')`,
+        )
+        conditions.push(`(${placeholders.join(' OR ')})`)
+      }
+      bucket.eqExclude.forEach((v) => {
+        conditions.push(`${column} != {${nextParam(v)}:String}`)
+      })
+      bucket.containsExclude.forEach((v) => {
+        conditions.push(
+          `${column} NOT ILIKE concat('%', {${nextParam(v)}:String}, '%')`,
+        )
+      })
     })
 
     return {

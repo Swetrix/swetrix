@@ -1,13 +1,75 @@
 import type { ChartOptions } from 'billboard.js'
 import { line, area, bar, spline, pie, donut } from 'billboard.js'
+import { ArrowSquareOutIcon } from '@phosphor-icons/react'
 import dayjs from 'dayjs'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import React, { useMemo, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import BillboardChart from '~/ui/BillboardChart'
+import { cn } from '~/utils/generic'
+
+const VALID_LINK_TABS = new Set([
+  'traffic',
+  'performance',
+  'errors',
+  'sessions',
+  'funnels',
+  'goals',
+  'experiments',
+  'featureFlags',
+  'captcha',
+  'profiles',
+])
+
+const VALID_LINK_PERIODS = new Set([
+  '1h',
+  'today',
+  'yesterday',
+  '1d',
+  '7d',
+  '4w',
+  '3M',
+  '12M',
+  '24M',
+  'all',
+])
+
+const VALID_LINK_FILTER_COLUMNS = new Set([
+  'pg',
+  'cc',
+  'rg',
+  'ct',
+  'br',
+  'os',
+  'dv',
+  'ref',
+  'so',
+  'me',
+  'ca',
+  'te',
+  'co',
+  'lc',
+  'host',
+])
+
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+interface AIChartLink {
+  tab: string
+  period?: string
+  from?: string
+  to?: string
+  filters?: Array<{
+    column: string
+    filter: string
+    isExclusive?: boolean
+    isContains?: boolean
+  }>
+}
 
 interface AIChartData {
   type: 'chart'
@@ -19,10 +81,58 @@ interface AIChartData {
     values?: number[]
     [key: string]: number[] | string[] | undefined
   }
+  link?: AIChartLink
 }
 
 interface AIChartProps {
   chart: AIChartData
+  projectId?: string
+}
+
+const buildDashboardUrl = (
+  projectId: string,
+  link: AIChartLink,
+): string | null => {
+  if (!VALID_LINK_TABS.has(link.tab)) return null
+
+  const params = new URLSearchParams()
+  params.set('tab', link.tab)
+
+  const hasCustomRange =
+    typeof link.from === 'string' &&
+    ISO_DATE_PATTERN.test(link.from) &&
+    typeof link.to === 'string' &&
+    ISO_DATE_PATTERN.test(link.to)
+
+  if (hasCustomRange) {
+    params.set('period', 'custom')
+    params.set('from', link.from!)
+    params.set('to', link.to!)
+  } else if (link.period && VALID_LINK_PERIODS.has(link.period)) {
+    params.set('period', link.period)
+  }
+
+  if (Array.isArray(link.filters)) {
+    for (const f of link.filters) {
+      if (
+        !f ||
+        typeof f.column !== 'string' ||
+        typeof f.filter !== 'string' ||
+        !VALID_LINK_FILTER_COLUMNS.has(f.column)
+      ) {
+        continue
+      }
+      // Match the dashboard's URL convention from parseFilters():
+      //   `!` => exclusive, `~` => contains, `^` => exclusive + contains
+      let prefix = ''
+      if (f.isExclusive && f.isContains) prefix = '^'
+      else if (f.isExclusive) prefix = '!'
+      else if (f.isContains) prefix = '~'
+      params.append(`${prefix}${f.column}`, f.filter)
+    }
+  }
+
+  return `/projects/${projectId}?${params.toString()}`
 }
 
 const CHART_COLORS = [
@@ -136,7 +246,14 @@ const isPieOrDonutChart = (chartType: string): boolean => {
   return chartType === 'pie' || chartType === 'donut'
 }
 
-const AIChart: React.FC<AIChartProps> = ({ chart }) => {
+const AIChart: React.FC<AIChartProps> = ({ chart, projectId }) => {
+  const { t } = useTranslation('common')
+
+  const dashboardHref = useMemo(() => {
+    if (!projectId || !chart.link) return null
+    return buildDashboardUrl(projectId, chart.link)
+  }, [projectId, chart.link])
+
   const chartOptions = useMemo<ChartOptions>(() => {
     const isPieDonut = isPieOrDonutChart(chart.chartType)
 
@@ -435,21 +552,61 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
     }
   }
 
+  const cardClassName = cn(
+    'ai-chart group/chart relative block rounded-lg border bg-white p-4 transition-colors dark:bg-slate-900',
+    dashboardHref
+      ? 'border-gray-200 hover:border-gray-300 dark:border-slate-800 dark:hover:border-slate-700'
+      : 'border-gray-200 dark:border-slate-800',
+  )
+
+  const titleNode = chart.title ? (
+    <h4 className='mb-2 pr-8 text-sm font-medium text-gray-700 dark:text-gray-300'>
+      {chart.title}
+    </h4>
+  ) : null
+
+  const chartBody = (
+    <div className={isPieDonut ? 'h-[280px] w-full' : 'h-[220px] w-full'}>
+      <BillboardChart options={chartOptions} className='h-full w-full' />
+    </div>
+  )
+
+  const openInDashboardLabel = t('project.askAi.openInDashboard')
+
+  if (dashboardHref) {
+    return (
+      <a
+        href={dashboardHref}
+        target='_blank'
+        rel='noopener noreferrer'
+        className={cardClassName}
+        aria-label={openInDashboardLabel}
+        title={openInDashboardLabel}
+      >
+        <span
+          aria-hidden='true'
+          className='absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors group-hover/chart:bg-gray-100 group-hover/chart:text-gray-700 dark:group-hover/chart:bg-slate-800 dark:group-hover/chart:text-gray-200'
+        >
+          <ArrowSquareOutIcon className='h-4 w-4' />
+        </span>
+        {titleNode}
+        {chartBody}
+      </a>
+    )
+  }
+
   return (
-    <div className='ai-chart rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900'>
-      {chart.title ? (
-        <h4 className='mb-2 text-sm font-medium text-gray-700 dark:text-gray-300'>
-          {chart.title}
-        </h4>
-      ) : null}
-      <div className={isPieDonut ? 'h-[280px] w-full' : 'h-[220px] w-full'}>
-        <BillboardChart options={chartOptions} className='h-full w-full' />
-      </div>
+    <div className={cardClassName}>
+      {titleNode}
+      {chartBody}
     </div>
   )
 }
 
 // Memoize to prevent re-renders during streaming when chart data hasn't changed
 export default memo(AIChart, (prevProps, nextProps) => {
-  return JSON.stringify(prevProps.chart) === JSON.stringify(nextProps.chart)
+  return (
+    prevProps.projectId === nextProps.projectId &&
+    JSON.stringify(prevProps.chart) === JSON.stringify(nextProps.chart)
+  )
 })

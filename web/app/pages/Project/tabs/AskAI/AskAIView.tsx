@@ -461,9 +461,11 @@ const ToolCallBadge = ({
 const MessageContent = ({
   content,
   isStreaming,
+  projectId,
 }: {
   content: string
   isStreaming?: boolean
+  projectId?: string
 }) => {
   const segments = useMemo(() => parseSegments(content), [content])
   const hasAnyContent = segments.length > 0
@@ -482,7 +484,9 @@ const MessageContent = ({
           )
         }
         if (segment.kind === 'chart' && segment.chart) {
-          return <AIChart key={idx} chart={segment.chart} />
+          return (
+            <AIChart key={idx} chart={segment.chart} projectId={projectId} />
+          )
         }
         if (segment.kind === 'chart' && segment.pending) {
           return (
@@ -513,6 +517,7 @@ const AssistantMessage = ({
   canRegenerate,
   followUps,
   onFollowUpClick,
+  projectId,
 }: {
   message: Message
   isStreaming?: boolean
@@ -522,6 +527,7 @@ const AssistantMessage = ({
   canRegenerate?: boolean
   followUps?: string[]
   onFollowUpClick?: (prompt: string) => void
+  projectId?: string
 }) => {
   const { t } = useTranslation('common')
   const [userToggled, setUserToggled] = useState(false)
@@ -586,6 +592,7 @@ const AssistantMessage = ({
                   <MessageContent
                     content={part.text}
                     isStreaming={isStreaming ? isLastTextPart : undefined}
+                    projectId={projectId}
                   />
                 </div>
               )
@@ -616,7 +623,11 @@ const AssistantMessage = ({
               ))}
             </div>
           ) : null}
-          <MessageContent content={message.content} isStreaming={isStreaming} />
+          <MessageContent
+            content={message.content}
+            isStreaming={isStreaming}
+            projectId={projectId}
+          />
         </>
       )}
 
@@ -1809,6 +1820,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                       <AssistantMessage
                         key={msg.id}
                         message={msg}
+                        projectId={projectId}
                         onRegenerate={() => handleRegenerate(idx)}
                         onFeedback={(rating) =>
                           handleFeedback(idx, msg.id, rating)
@@ -1836,7 +1848,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                   </div>
                 ) : null}
                 {streamingMessage ? (
-                  <AssistantMessage message={streamingMessage} isStreaming />
+                  <AssistantMessage
+                    message={streamingMessage}
+                    isStreaming
+                    projectId={projectId}
+                  />
                 ) : null}
               </div>
             )}

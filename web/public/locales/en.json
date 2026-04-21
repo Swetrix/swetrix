@@ -2131,6 +2131,7 @@
       "badResponse": "Bad response",
       "feedbackSent": "Thanks for the feedback!",
       "untitledChat": "Untitled chat",
+      "openInDashboard": "Open in dashboard",
       "tools": {
         "getProjectInfo": "Fetched project info",
         "getData": "Queried data",
