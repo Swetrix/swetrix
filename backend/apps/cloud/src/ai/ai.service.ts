@@ -1542,7 +1542,9 @@ Filter modifiers:
       )
 
       if (goalId) {
-        const goal = await this.goalService.findOne({ where: { id: goalId } })
+        const goal = await this.goalService.findOne({
+          where: { id: goalId, project: { id: pid } },
+        })
         if (!goal) {
           return { error: 'Goal not found' }
         }
