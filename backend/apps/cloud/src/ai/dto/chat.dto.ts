@@ -7,10 +7,12 @@ import {
   IsIn,
   IsOptional,
   IsInt,
+  IsBoolean,
   Min,
   Max,
   ArrayMaxSize,
   MaxLength,
+  MinLength,
 } from 'class-validator'
 import { Type, Transform } from 'class-transformer'
 
@@ -19,6 +21,8 @@ const MAX_MESSAGE_LENGTH = 5000
 const MAX_CHAT_NAME_LENGTH = 200
 const MAX_TOOL_CALLS_PER_MESSAGE = 50
 const MAX_TOOL_NAME_LENGTH = 100
+export const MAX_TAGS_PER_CHAT = 5
+export const MAX_TAG_LENGTH = 30
 
 class ChatMessageToolCallDto {
   @ApiProperty({ description: 'Tool name that was invoked' })
@@ -158,18 +162,102 @@ export class UpdateChatDto {
   name?: string
 }
 
+const parseOptionalBool = ({ value }: { value: unknown }) => {
+  if (value === undefined || value === null || value === '') return undefined
+  if (typeof value === 'boolean') return value
+  const v = String(value).toLowerCase()
+  if (v === 'true' || v === '1') return true
+  if (v === 'false' || v === '0') return false
+  return undefined
+}
+
 export class GetRecentChatsQueryDto {
   @ApiProperty({
     required: false,
-    description: 'Maximum number of chats to return (1-50)',
+    description: 'Maximum number of chats to return (1-100)',
     default: 5,
   })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
   @Min(1)
-  @Max(50)
+  @Max(100)
   limit?: number
+
+  @ApiProperty({
+    required: false,
+    description: 'Number of chats to skip (0 or greater)',
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(0)
+  @Max(10000)
+  skip?: number
+
+  @ApiProperty({
+    required: false,
+    description: 'Number of chats to return (1-100)',
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  take?: number
+
+  @ApiProperty({
+    required: false,
+    description: 'Search query (matches chat names; falls back to messages)',
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(100)
+  search?: string
+
+  @ApiProperty({
+    required: false,
+    description: 'Filter by tag (single tag string)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(MAX_TAG_LENGTH)
+  tag?: string
+
+  @ApiProperty({
+    required: false,
+    description: 'When true, only pinned chats are returned',
+  })
+  @IsOptional()
+  @Transform(parseOptionalBool)
+  @IsBoolean()
+  pinned?: boolean
+}
+
+export class UpdateChatMetaDto {
+  @ApiProperty({ required: false, description: 'Whether the chat is pinned' })
+  @IsOptional()
+  @IsBoolean()
+  pinned?: boolean
+
+  @ApiProperty({
+    required: false,
+    type: [String],
+    description: `User-defined tag labels (max ${MAX_TAGS_PER_CHAT}, ${MAX_TAG_LENGTH} chars each)`,
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_TAGS_PER_CHAT)
+  @IsString({ each: true })
+  @MaxLength(MAX_TAG_LENGTH, { each: true })
+  tags?: string[]
+
+  @ApiProperty({ required: false, description: 'Custom name for the chat' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(MAX_CHAT_NAME_LENGTH)
+  name?: string
 }
 
 export class FeedbackDto {

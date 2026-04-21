@@ -38,6 +38,14 @@ export class AiChat {
   @Column('json')
   messages: ChatMessage[]
 
+  @ApiProperty()
+  @Column('boolean', { default: false })
+  pinned: boolean
+
+  @ApiProperty({ type: [String] })
+  @Column('simple-array', { nullable: true, default: null })
+  tags: string[]
+
   @ApiProperty({ type: () => Project })
   @ManyToOne(() => Project, { onDelete: 'CASCADE' })
   @JoinColumn()

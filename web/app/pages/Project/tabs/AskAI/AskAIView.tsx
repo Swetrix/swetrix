@@ -16,7 +16,6 @@ import {
   GitBranchIcon,
   InfoIcon,
   CheckIcon,
-  ChatIcon,
   TrashIcon,
   XIcon,
   LinkIcon,
@@ -32,6 +31,9 @@ import {
   ListBulletsIcon,
   MicrophoneIcon,
   MicrophoneSlashIcon,
+  TagIcon,
+  PushPinIcon,
+  MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
 import { marked } from 'marked'
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
@@ -44,7 +46,9 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { askAI } from '~/api'
 import useSpeechRecognition from '~/hooks/useSpeechRecognition'
 import { ProjectViewActionData } from '~/routes/projects.$id'
+import Button from '~/ui/Button'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
@@ -64,8 +68,29 @@ interface MessagePart {
 interface AIChatSummary {
   id: string
   name: string | null
+  pinned?: boolean
+  tags?: string[]
   created: string
   updated: string
+}
+
+const MAX_TAGS_PER_CHAT = 5
+const MAX_TAG_LENGTH = 30
+
+const sanitiseTagsClient = (tags: string[]): string[] => {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const raw of tags) {
+    if (typeof raw !== 'string') continue
+    const cleaned = raw.replace(/,/g, '').trim().slice(0, MAX_TAG_LENGTH)
+    if (!cleaned) continue
+    const key = cleaned.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(cleaned)
+    if (out.length >= MAX_TAGS_PER_CHAT) break
+  }
+  return out
 }
 
 interface MessageToolCall {
@@ -1153,10 +1178,581 @@ interface AIChat {
     followUps?: string[]
     toolCalls?: MessageToolCall[]
   }[]
+  pinned?: boolean
+  tags?: string[]
   isOwner?: boolean
   branched?: boolean
   created: string
   updated: string
+}
+
+interface ChatRowActions {
+  onOpen: (chatId: string) => void
+  onDelete: (chatId: string) => void
+  onTogglePin: (chat: AIChatSummary) => void
+  onSaveTags: (chatId: string, tags: string[]) => void
+  onRename: (chatId: string, name: string) => void
+  formatRelative: (dateStr: string) => string
+}
+
+const TagChip = ({
+  label,
+  active,
+  onClick,
+  onRemove,
+  className,
+}: {
+  label: string
+  active?: boolean
+  onClick?: () => void
+  onRemove?: () => void
+  className?: string
+}) => {
+  const baseClasses =
+    'inline-flex max-w-[180px] items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset transition-colors'
+  const activeClasses =
+    'bg-slate-900 text-gray-50 ring-slate-900 dark:bg-gray-50 dark:text-slate-900 dark:ring-gray-50'
+  const inactiveClasses =
+    'bg-slate-50 text-slate-700 ring-slate-500/10 dark:bg-slate-400/10 dark:text-slate-300 dark:ring-slate-400/20'
+  const interactiveHover = onClick
+    ? 'hover:bg-slate-100 dark:hover:bg-slate-700/40'
+    : ''
+
+  const content = (
+    <>
+      <span className='truncate'>{label}</span>
+      {onRemove ? (
+        <button
+          type='button'
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemove()
+          }}
+          aria-label='Remove tag'
+          className='rounded-full p-0.5 opacity-70 hover:opacity-100'
+        >
+          <XIcon className='h-3 w-3' />
+        </button>
+      ) : null}
+    </>
+  )
+
+  if (onClick) {
+    return (
+      <button
+        type='button'
+        onClick={onClick}
+        className={cn(
+          baseClasses,
+          active ? activeClasses : inactiveClasses,
+          interactiveHover,
+          className,
+        )}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return (
+    <span
+      className={cn(
+        baseClasses,
+        active ? activeClasses : inactiveClasses,
+        className,
+      )}
+    >
+      {content}
+    </span>
+  )
+}
+
+const TagEditor = ({
+  tags,
+  onSave,
+  onCancel,
+}: {
+  tags: string[]
+  onSave: (tags: string[]) => void
+  onCancel: () => void
+}) => {
+  const { t } = useTranslation('common')
+  const [draft, setDraft] = useState<string[]>(tags)
+  const [input, setInput] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  const addTag = (raw: string) => {
+    const cleaned = raw.replace(/,/g, '').trim()
+    if (!cleaned) {
+      setError(null)
+      return
+    }
+    if (cleaned.length > MAX_TAG_LENGTH) {
+      setError(t('project.askAi.tagInvalid', { max: MAX_TAG_LENGTH }))
+      return
+    }
+    if (draft.length >= MAX_TAGS_PER_CHAT) {
+      setError(t('project.askAi.tagsLimitReached', { max: MAX_TAGS_PER_CHAT }))
+      return
+    }
+    if (
+      draft.some((existing) => existing.toLowerCase() === cleaned.toLowerCase())
+    ) {
+      setError(t('project.askAi.tagAlreadyExists'))
+      return
+    }
+    setDraft((prev) => [...prev, cleaned])
+    setInput('')
+    setError(null)
+  }
+
+  const removeAt = (idx: number) => {
+    setDraft((prev) => prev.filter((_, i) => i !== idx))
+    setError(null)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      addTag(input)
+    } else if (e.key === 'Backspace' && !input && draft.length > 0) {
+      e.preventDefault()
+      removeAt(draft.length - 1)
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      onCancel()
+    }
+  }
+
+  const commit = () => {
+    const finalTags = input.trim() ? [...draft, input.trim()] : draft
+    onSave(sanitiseTagsClient(finalTags))
+  }
+
+  return (
+    <div
+      role='presentation'
+      className='flex flex-col gap-2 rounded-md border border-gray-200 bg-gray-50 p-2 dark:border-slate-700/80 dark:bg-slate-900/60'
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className='flex flex-wrap items-center gap-1.5'>
+        {_map(draft, (tag, idx) => (
+          <TagChip
+            key={`${tag}-${idx}`}
+            label={tag}
+            onRemove={() => removeAt(idx)}
+          />
+        ))}
+        <input
+          ref={inputRef}
+          type='text'
+          value={input}
+          onChange={(e) => {
+            setInput(e.target.value)
+            setError(null)
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={t('project.askAi.tagPlaceholder')}
+          maxLength={MAX_TAG_LENGTH}
+          className='min-w-[140px] flex-1 border-0 bg-transparent p-1 text-xs text-gray-900 placeholder-gray-400 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-500'
+        />
+      </div>
+      {error ? (
+        <Text size='xxs' colour='error'>
+          {error}
+        </Text>
+      ) : null}
+      <div className='flex items-center justify-end gap-2'>
+        <Button onClick={onCancel} secondary small className='py-1'>
+          {t('common.cancel')}
+        </Button>
+        <Button onClick={commit} primary small className='py-1'>
+          {t('project.askAi.saveTags')}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+const ChatRow = ({
+  chat,
+  actions,
+  variant = 'panel',
+}: {
+  chat: AIChatSummary
+  actions: ChatRowActions
+  variant?: 'panel' | 'compact'
+}) => {
+  const { t } = useTranslation('common')
+  const [isEditingTags, setIsEditingTags] = useState(false)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState(chat.name || '')
+  const nameInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (isEditingName) {
+      nameInputRef.current?.focus()
+      nameInputRef.current?.select()
+    }
+  }, [isEditingName])
+
+  const tags = chat.tags ?? []
+
+  if (variant === 'compact') {
+    return (
+      <button
+        type='button'
+        onClick={() => actions.onOpen(chat.id)}
+        className='group flex w-full items-center justify-between gap-3 py-1 text-left transition-colors'
+      >
+        <div className='flex min-w-0 items-center gap-2'>
+          {chat.pinned ? (
+            <PushPinIcon
+              className='h-3.5 w-3.5 shrink-0 text-amber-500 dark:text-amber-400'
+              weight='fill'
+            />
+          ) : null}
+          <Text
+            as='span'
+            size='sm'
+            weight='medium'
+            colour='primary'
+            truncate
+            className='group-hover:underline'
+          >
+            {chat.name || t('project.askAi.newChat')}
+          </Text>
+        </div>
+        <Text as='span' size='xs' colour='muted' className='shrink-0'>
+          {actions.formatRelative(chat.updated)}
+        </Text>
+      </button>
+    )
+  }
+
+  const submitRename = () => {
+    const trimmed = nameDraft.trim()
+    if (trimmed && trimmed !== chat.name) {
+      actions.onRename(chat.id, trimmed)
+    }
+    setIsEditingName(false)
+  }
+
+  const iconButtonCls =
+    'flex h-7 w-7 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-100'
+
+  return (
+    <div className='group rounded-md border border-gray-200 bg-white px-3 py-2 ring-1 ring-transparent transition-colors ring-inset hover:border-gray-300 hover:ring-gray-200/60 dark:border-slate-800/80 dark:bg-slate-900/40 hover:dark:border-slate-700 hover:dark:ring-slate-700/40'>
+      <div className='flex items-start gap-2'>
+        <button
+          type='button'
+          onClick={() => actions.onTogglePin(chat)}
+          className={cn(
+            'mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors',
+            chat.pinned
+              ? 'text-amber-500 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20'
+              : 'text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-slate-800 dark:hover:text-gray-200',
+          )}
+          title={
+            chat.pinned ? t('project.askAi.unpin') : t('project.askAi.pin')
+          }
+          aria-label={
+            chat.pinned ? t('project.askAi.unpin') : t('project.askAi.pin')
+          }
+        >
+          <PushPinIcon
+            className='h-4 w-4'
+            weight={chat.pinned ? 'fill' : 'regular'}
+          />
+        </button>
+
+        <div className='flex min-w-0 flex-1 flex-col items-start gap-0.5'>
+          {isEditingName ? (
+            <input
+              ref={nameInputRef}
+              type='text'
+              value={nameDraft}
+              maxLength={200}
+              onChange={(e) => setNameDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  submitRename()
+                } else if (e.key === 'Escape') {
+                  e.preventDefault()
+                  setNameDraft(chat.name || '')
+                  setIsEditingName(false)
+                }
+              }}
+              onBlur={submitRename}
+              className='w-full border-0 bg-transparent p-0 text-sm font-medium text-gray-900 focus:ring-0 focus:outline-none dark:text-gray-50'
+              placeholder={t('project.askAi.renameChatPlaceholder')}
+            />
+          ) : (
+            <Text
+              as='button'
+              size='sm'
+              weight='medium'
+              colour='primary'
+              truncate
+              type='button'
+              onClick={() => actions.onOpen(chat.id)}
+              className='block max-w-full text-left hover:underline'
+            >
+              {chat.name || t('project.askAi.newChat')}
+            </Text>
+          )}
+          <Text size='xxs' colour='muted'>
+            {actions.formatRelative(chat.updated)}
+          </Text>
+        </div>
+
+        <div className='flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100'>
+          <button
+            type='button'
+            onClick={(e) => {
+              e.stopPropagation()
+              setNameDraft(chat.name || '')
+              setIsEditingName(true)
+            }}
+            className={iconButtonCls}
+            aria-label={t('project.askAi.renameChat')}
+            title={t('project.askAi.renameChat')}
+          >
+            <PencilSimpleIcon className='h-3.5 w-3.5' />
+          </button>
+          <button
+            type='button'
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsEditingTags(true)
+            }}
+            className={iconButtonCls}
+            aria-label={t('project.askAi.manageTags')}
+            title={t('project.askAi.manageTags')}
+          >
+            <TagIcon className='h-3.5 w-3.5' />
+          </button>
+          <button
+            type='button'
+            onClick={(e) => {
+              e.stopPropagation()
+              actions.onDelete(chat.id)
+            }}
+            className={cn(
+              iconButtonCls,
+              'hover:text-red-600 dark:hover:text-red-400',
+            )}
+            aria-label={t('project.askAi.deleteChat')}
+            title={t('project.askAi.deleteChat')}
+          >
+            <TrashIcon className='h-3.5 w-3.5' />
+          </button>
+        </div>
+      </div>
+
+      {isEditingTags ? (
+        <div className='mt-2 ml-9'>
+          <TagEditor
+            tags={tags}
+            onSave={(next) => {
+              actions.onSaveTags(chat.id, next)
+              setIsEditingTags(false)
+            }}
+            onCancel={() => setIsEditingTags(false)}
+          />
+        </div>
+      ) : tags.length > 0 ? (
+        <div className='mt-1.5 ml-9 flex flex-wrap gap-1'>
+          {_map(tags, (tag) => (
+            <TagChip key={tag} label={tag} />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+const ChatHistoryPanel = ({
+  isOpen,
+  onClose,
+  search,
+  onSearchChange,
+  tagFilter,
+  onTagFilterChange,
+  availableTags,
+  chats,
+  total,
+  isLoading,
+  isFetchingMore,
+  actions,
+  onLoadMore,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  search: string
+  onSearchChange: (value: string) => void
+  tagFilter: string | null
+  onTagFilterChange: (tag: string | null) => void
+  availableTags: string[]
+  chats: AIChatSummary[]
+  total: number
+  isLoading: boolean
+  isFetchingMore: boolean
+  actions: ChatRowActions
+  onLoadMore: () => void
+}) => {
+  const { t } = useTranslation('common')
+  const isSearching = search.trim().length >= 2 || tagFilter !== null
+  const showEmpty = !isLoading && chats.length === 0
+  const pinned = useMemo(() => chats.filter((c) => c.pinned), [chats])
+  const others = useMemo(() => chats.filter((c) => !c.pinned), [chats])
+
+  return (
+    <Modal
+      isOpened={isOpen}
+      onClose={onClose}
+      title={t('project.askAi.allChats')}
+      size='large'
+      message={
+        <div className='mt-3 flex flex-col gap-4'>
+          <div className='relative'>
+            <MagnifyingGlassIcon className='pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500' />
+            <Input
+              type='search'
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={t('project.askAi.searchChatsPlaceholder')}
+              classes={{ input: 'pl-9' }}
+            />
+          </div>
+          {search.trim().length === 1 ? (
+            <Text size='xs' colour='muted' className='-mt-2'>
+              {t('project.askAi.searchHint')}
+            </Text>
+          ) : null}
+
+          {availableTags.length > 0 ? (
+            <div className='flex flex-wrap items-center gap-1.5'>
+              <Text size='xs' weight='medium' colour='muted' className='mr-1'>
+                {t('project.askAi.filterByTag')}:
+              </Text>
+              <TagChip
+                label={t('project.askAi.allTags')}
+                active={tagFilter === null}
+                onClick={() => onTagFilterChange(null)}
+              />
+              {_map(availableTags, (tag) => (
+                <TagChip
+                  key={tag}
+                  label={tag}
+                  active={tagFilter === tag}
+                  onClick={() =>
+                    onTagFilterChange(tagFilter === tag ? null : tag)
+                  }
+                />
+              ))}
+              {tagFilter ? (
+                <button
+                  type='button'
+                  onClick={() => onTagFilterChange(null)}
+                  className='ml-1 text-xs font-medium text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+                >
+                  {t('project.askAi.clearFilters')}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className='-mx-1 max-h-[60vh] overflow-y-auto px-1'>
+            {showEmpty ? (
+              <Text
+                as='p'
+                size='sm'
+                colour='muted'
+                className='py-8 text-center'
+              >
+                {isSearching
+                  ? t('project.askAi.noChatsMatch')
+                  : t('project.askAi.noChats')}
+              </Text>
+            ) : (
+              <div className='flex flex-col gap-4'>
+                {pinned.length > 0 ? (
+                  <div className='flex flex-col gap-2'>
+                    <div className='flex items-center gap-1.5'>
+                      <PushPinIcon
+                        className='h-3 w-3 text-amber-500 dark:text-amber-400'
+                        weight='fill'
+                      />
+                      <Text
+                        size='xxs'
+                        weight='semibold'
+                        colour='muted'
+                        tracking='wide'
+                        className='uppercase'
+                      >
+                        {t('project.askAi.pinned')}
+                      </Text>
+                    </div>
+                    <div className='flex flex-col gap-1.5'>
+                      {_map(pinned, (chat) => (
+                        <ChatRow key={chat.id} chat={chat} actions={actions} />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {others.length > 0 ? (
+                  <div className='flex flex-col gap-2'>
+                    {pinned.length > 0 ? (
+                      <Text
+                        size='xxs'
+                        weight='semibold'
+                        colour='muted'
+                        tracking='wide'
+                        className='uppercase'
+                      >
+                        {t('project.askAi.recentChats')}
+                      </Text>
+                    ) : null}
+                    <div className='flex flex-col gap-1.5'>
+                      {_map(others, (chat) => (
+                        <ChatRow key={chat.id} chat={chat} actions={actions} />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {chats.length < total ? (
+                  <Button
+                    secondary
+                    small
+                    onClick={onLoadMore}
+                    disabled={isFetchingMore}
+                    loading={isFetchingMore}
+                    className='justify-center self-center'
+                  >
+                    {t('project.askAi.loadMore')}
+                  </Button>
+                ) : null}
+              </div>
+            )}
+            {isLoading && chats.length === 0 ? (
+              <div className='flex items-center justify-center py-8'>
+                <SpinnerGapIcon className='h-6 w-6 animate-spin text-gray-400' />
+              </div>
+            ) : null}
+          </div>
+        </div>
+      }
+    />
+  )
 }
 
 const AskAIView = ({ projectId }: AskAIViewProps) => {
@@ -1187,8 +1783,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const [recentChats, setRecentChats] = useState<AIChatSummary[]>([])
   const [allChats, setAllChats] = useState<AIChatSummary[]>([])
   const [allChatsTotal, setAllChatsTotal] = useState(0)
-  const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false)
+  const [isHistoryPanelOpen, setIsHistoryPanelOpen] = useState(false)
   const [chatToDelete, setChatToDelete] = useState<string | null>(null)
+  const [historySearch, setHistorySearch] = useState('')
+  const [debouncedHistorySearch, setDebouncedHistorySearch] = useState('')
+  const [historyTagFilter, setHistoryTagFilter] = useState<string | null>(null)
+  const [availableTags, setAvailableTags] = useState<string[]>([])
   const [feedbackMap, setFeedbackMap] = useState<
     Record<string, 'good' | 'bad'>
   >({})
@@ -1198,9 +1798,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   const recentChatsFetcher = useFetcher<ProjectViewActionData>()
   const allChatsFetcher = useFetcher<ProjectViewActionData>()
+  const tagsFetcher = useFetcher<ProjectViewActionData>()
   const loadChatFetcher = useFetcher<ProjectViewActionData>()
   const createChatFetcher = useFetcher<ProjectViewActionData>()
   const updateChatFetcher = useFetcher<ProjectViewActionData>()
+  const updateMetaFetcher = useFetcher<ProjectViewActionData>()
   const deleteChatFetcher = useFetcher<ProjectViewActionData>()
   const titleFetcher = useFetcher<ProjectViewActionData>()
   const feedbackFetcher = useFetcher<ProjectViewActionData>()
@@ -1235,30 +1837,57 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     if (recentChatsFetcher.state !== 'idle') return
 
     const formData = new FormData()
-    formData.append('intent', 'get-recent-ai-chats')
-    formData.append('limit', '3')
+    formData.append('intent', 'list-ai-chats')
+    formData.append('take', '3')
 
     recentChatsFetcher.submit(formData, { method: 'POST' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recentChatsFetcher.submit])
 
-  // Handle recent chats fetcher response
   useEffect(() => {
     if (recentChatsFetcher.state === 'idle' && recentChatsFetcher.data) {
       if (recentChatsFetcher.data.success && recentChatsFetcher.data.data) {
-        setRecentChats(recentChatsFetcher.data.data as AIChatSummary[])
+        const payload = recentChatsFetcher.data.data as
+          | AIChatSummary[]
+          | { chats: AIChatSummary[]; total: number }
+        const list = Array.isArray(payload) ? payload : payload.chats
+        setRecentChats(list)
       }
     }
   }, [recentChatsFetcher.state, recentChatsFetcher.data])
 
+  const loadAvailableTags = useCallback(() => {
+    if (tagsFetcher.state !== 'idle') return
+
+    const formData = new FormData()
+    formData.append('intent', 'list-ai-chat-tags')
+    tagsFetcher.submit(formData, { method: 'POST' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tagsFetcher.submit])
+
+  useEffect(() => {
+    if (tagsFetcher.state === 'idle' && tagsFetcher.data) {
+      if (tagsFetcher.data.success && tagsFetcher.data.data) {
+        const payload = tagsFetcher.data.data as { tags?: string[] }
+        setAvailableTags(payload.tags || [])
+      }
+    }
+  }, [tagsFetcher.state, tagsFetcher.data])
+
   const loadAllChats = useCallback(
-    (skip: number = 0) => {
+    (skip: number = 0, opts: { search?: string; tag?: string | null } = {}) => {
       if (allChatsFetcher.state !== 'idle') return
 
       const formData = new FormData()
-      formData.append('intent', 'get-all-ai-chats')
+      formData.append('intent', 'list-ai-chats')
       formData.append('skip', skip.toString())
       formData.append('take', '20')
+      if (opts.search && opts.search.trim().length >= 2) {
+        formData.append('search', opts.search.trim())
+      }
+      if (opts.tag) {
+        formData.append('tag', opts.tag)
+      }
 
       allChatsFetcher.submit(formData, { method: 'POST' })
     },
@@ -1266,7 +1895,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     [allChatsFetcher.submit],
   )
 
-  // Handle all chats fetcher response
   const [pendingAllChatsSkip, setPendingAllChatsSkip] = useState<number | null>(
     null,
   )
@@ -1278,7 +1906,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           chats: AIChatSummary[]
           total: number
         }
-        if (pendingAllChatsSkip === 0) {
+        if (pendingAllChatsSkip === 0 || pendingAllChatsSkip === null) {
           setAllChats(result.chats)
         } else {
           setAllChats((prev) => [...prev, ...result.chats])
@@ -1290,11 +1918,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   }, [allChatsFetcher.state, allChatsFetcher.data, pendingAllChatsSkip])
 
   const loadAllChatsWithSkip = useCallback(
-    (skip: number) => {
+    (skip: number, opts: { search?: string; tag?: string | null } = {}) => {
       if (allChatsFetcher.state !== 'idle') return
 
       setPendingAllChatsSkip(skip)
-      loadAllChats(skip)
+      loadAllChats(skip, opts)
     },
     [allChatsFetcher.state, loadAllChats],
   )
@@ -1546,7 +2174,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   }, [searchParams, setSearchParams])
 
   const handleOpenChat = (chatId: string) => {
-    setIsViewAllModalOpen(false)
+    setIsHistoryPanelOpen(false)
     loadChatById(chatId)
     const newParams = new URLSearchParams(searchParams)
     newParams.set('chat', chatId)
@@ -1566,8 +2194,13 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         }
 
         loadRecentChats()
-        if (isViewAllModalOpen) {
-          loadAllChatsWithSkip(0)
+        loadAvailableTags()
+        if (isHistoryPanelOpen) {
+          const term = debouncedHistorySearch.trim()
+          loadAllChatsWithSkip(0, {
+            search: term.length >= 2 ? term : undefined,
+            tag: historyTagFilter,
+          })
         }
       } else if (deleteChatFetcher.data.error) {
         console.error('Failed to delete chat:', deleteChatFetcher.data.error)
@@ -1580,8 +2213,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     deleteChatFetcher.data,
     deletingChatId,
     currentChatId,
-    isViewAllModalOpen,
+    isHistoryPanelOpen,
+    debouncedHistorySearch,
+    historyTagFilter,
     loadRecentChats,
+    loadAvailableTags,
     loadAllChatsWithSkip,
     t,
     handleNewChat,
@@ -1598,6 +2234,129 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
     deleteChatFetcher.submit(formData, { method: 'POST' })
   }
+
+  const updateChatMeta = useCallback(
+    (
+      chatId: string,
+      patch: { pinned?: boolean; tags?: string[]; name?: string },
+    ) => {
+      const formData = new FormData()
+      formData.append('intent', 'update-ai-chat-meta')
+      formData.append('chatId', chatId)
+      if (patch.pinned !== undefined) {
+        formData.append('pinned', String(patch.pinned))
+      }
+      if (patch.tags !== undefined) {
+        formData.append('tags', JSON.stringify(patch.tags))
+      }
+      if (patch.name !== undefined) {
+        formData.append('name', patch.name)
+      }
+      updateMetaFetcher.submit(formData, { method: 'POST' })
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [updateMetaFetcher.submit],
+  )
+
+  const applyMetaToList = (
+    list: AIChatSummary[],
+    chatId: string,
+    patch: { pinned?: boolean; tags?: string[]; name?: string },
+  ): AIChatSummary[] =>
+    list.map((c) =>
+      c.id === chatId
+        ? {
+            ...c,
+            ...(patch.pinned !== undefined ? { pinned: patch.pinned } : {}),
+            ...(patch.tags !== undefined ? { tags: patch.tags } : {}),
+            ...(patch.name !== undefined ? { name: patch.name } : {}),
+          }
+        : c,
+    )
+
+  const handleTogglePin = useCallback(
+    (chat: AIChatSummary) => {
+      const nextPinned = !chat.pinned
+      setRecentChats((prev) =>
+        applyMetaToList(prev, chat.id, { pinned: nextPinned }),
+      )
+      setAllChats((prev) =>
+        applyMetaToList(prev, chat.id, { pinned: nextPinned }),
+      )
+      updateChatMeta(chat.id, { pinned: nextPinned })
+    },
+    [updateChatMeta],
+  )
+
+  const handleSaveTags = useCallback(
+    (chatId: string, nextTags: string[]) => {
+      const sanitised = sanitiseTagsClient(nextTags)
+      setRecentChats((prev) =>
+        applyMetaToList(prev, chatId, { tags: sanitised }),
+      )
+      setAllChats((prev) => applyMetaToList(prev, chatId, { tags: sanitised }))
+      updateChatMeta(chatId, { tags: sanitised })
+    },
+    [updateChatMeta],
+  )
+
+  const handleRenameChat = useCallback(
+    (chatId: string, name: string) => {
+      const trimmed = name.trim()
+      if (!trimmed) return
+      setRecentChats((prev) => applyMetaToList(prev, chatId, { name: trimmed }))
+      setAllChats((prev) => applyMetaToList(prev, chatId, { name: trimmed }))
+      if (chatId === currentChatIdRef.current) setChatTitle(trimmed)
+      updateChatMeta(chatId, { name: trimmed })
+    },
+    [updateChatMeta],
+  )
+
+  useEffect(() => {
+    if (updateMetaFetcher.state === 'idle' && updateMetaFetcher.data) {
+      if (updateMetaFetcher.data.success) {
+        loadRecentChats()
+        loadAvailableTags()
+      } else if (updateMetaFetcher.data.error) {
+        toast.error(t('project.askAi.error'))
+      }
+    }
+  }, [
+    updateMetaFetcher.state,
+    updateMetaFetcher.data,
+    loadRecentChats,
+    loadAvailableTags,
+    t,
+  ])
+
+  // Debounce history search input (250ms)
+  useEffect(() => {
+    if (!isHistoryPanelOpen) return
+    const handle = window.setTimeout(() => {
+      setDebouncedHistorySearch(historySearch)
+    }, 250)
+    return () => window.clearTimeout(handle)
+  }, [historySearch, isHistoryPanelOpen])
+
+  useEffect(() => {
+    if (!isHistoryPanelOpen) return
+    const term = debouncedHistorySearch.trim()
+    if (term.length === 1) return // wait for >=2 chars
+    loadAllChatsWithSkip(0, {
+      search: term.length >= 2 ? term : undefined,
+      tag: historyTagFilter,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedHistorySearch, historyTagFilter, isHistoryPanelOpen])
+
+  const openHistoryPanel = useCallback(() => {
+    setIsHistoryPanelOpen(true)
+    setHistorySearch('')
+    setDebouncedHistorySearch('')
+    setHistoryTagFilter(null)
+    loadAvailableTags()
+    loadAllChatsWithSkip(0)
+  }, [loadAvailableTags, loadAllChatsWithSkip])
 
   const runChatTurn = useCallback(
     async (allMessages: Message[]) => {
@@ -1960,23 +2719,39 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const isEmpty = _isEmpty(messages) && !streamingMessage
   const isChatActive = !isEmpty
 
-  const formatRelativeTime = (dateStr: string) => {
-    const date = new Date(dateStr)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
+  const formatRelativeTime = useCallback(
+    (dateStr: string) => {
+      const date = new Date(dateStr)
+      const now = new Date()
+      const diffMs = now.getTime() - date.getTime()
+      const diffMins = Math.floor(diffMs / 60000)
+      const diffHours = Math.floor(diffMs / 3600000)
+      const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return t('project.askAi.timeFormat.justNow')
-    if (diffMins < 60)
-      return t('project.askAi.timeFormat.minutes', { count: diffMins })
-    if (diffHours < 24)
-      return t('project.askAi.timeFormat.hours', { count: diffHours })
-    if (diffDays < 7)
-      return t('project.askAi.timeFormat.days', { count: diffDays })
-    return date.toLocaleDateString()
-  }
+      if (diffMins < 1) return t('project.askAi.timeFormat.justNow')
+      if (diffMins < 60)
+        return t('project.askAi.timeFormat.minutes', { count: diffMins })
+      if (diffHours < 24)
+        return t('project.askAi.timeFormat.hours', { count: diffHours })
+      if (diffDays < 7)
+        return t('project.askAi.timeFormat.days', { count: diffDays })
+      return date.toLocaleDateString()
+    },
+    [t],
+  )
+
+  const chatRowActions = useMemo<ChatRowActions>(
+    () => ({
+      onOpen: handleOpenChat,
+      onDelete: (chatId) => setChatToDelete(chatId),
+      onTogglePin: handleTogglePin,
+      onSaveTags: handleSaveTags,
+      onRename: handleRenameChat,
+      formatRelative: formatRelativeTime,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [handleTogglePin, handleSaveTags, handleRenameChat, formatRelativeTime],
+  )
 
   return (
     <div className='relative flex h-[calc(100vh-140px)] min-h-[600px] flex-col bg-gray-50 dark:bg-slate-950'>
@@ -2291,115 +3066,46 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             </Text>
             <button
               type='button'
-              onClick={() => {
-                setIsViewAllModalOpen(true)
-                loadAllChatsWithSkip(0)
-              }}
-              className='text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              onClick={openHistoryPanel}
+              className='text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
             >
               {t('project.askAi.viewAll')}
             </button>
           </div>
-          <div className='mt-4 space-y-3'>
-            {_map(recentChats, (chat) => (
-              <button
-                key={chat.id}
-                type='button'
-                onClick={() => handleOpenChat(chat.id)}
-                className='group flex w-full items-center justify-between text-left transition-colors'
-              >
-                <Text
-                  as='span'
-                  size='sm'
-                  weight='medium'
-                  truncate
-                  className='group-hover:underline'
-                >
-                  {chat.name || t('project.askAi.newChat')}
-                </Text>
-                <Text
-                  as='span'
-                  size='sm'
-                  weight='medium'
-                  colour='muted'
-                  className='ml-4 shrink-0'
-                >
-                  {formatRelativeTime(chat.updated)}
-                </Text>
-              </button>
+          <ul className='mt-3 divide-y divide-gray-200/70 dark:divide-slate-800/60'>
+            {_map(recentChats.slice(0, 3), (chat) => (
+              <li key={chat.id}>
+                <ChatRow
+                  chat={chat}
+                  variant='compact'
+                  actions={chatRowActions}
+                />
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       ) : null}
 
-      <Modal
-        isOpened={isViewAllModalOpen}
-        onClose={() => setIsViewAllModalOpen(false)}
-        title={t('project.askAi.allChats')}
-        size='medium'
-        message={
-          <div className='mt-2 max-h-96 overflow-y-auto'>
-            {_isEmpty(allChats) && !isLoadingChats ? (
-              <p className='py-8 text-center text-gray-500 dark:text-gray-400'>
-                {t('project.askAi.noChats')}
-              </p>
-            ) : (
-              <div className='space-y-2'>
-                {_map(allChats, (chat) => (
-                  <div
-                    key={chat.id}
-                    className='flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 transition-colors hover:bg-gray-50 dark:border-slate-800/60 dark:bg-slate-900/25 hover:dark:bg-slate-700'
-                  >
-                    <button
-                      type='button'
-                      onClick={() => handleOpenChat(chat.id)}
-                      className='flex flex-1 items-center gap-3 overflow-hidden text-left'
-                    >
-                      <ChatIcon className='h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500' />
-                      <div className='overflow-hidden'>
-                        <span className='block truncate text-sm text-gray-900 dark:text-white'>
-                          {chat.name || t('project.askAi.newChat')}
-                        </span>
-                        <span className='text-xs text-gray-500 dark:text-gray-400'>
-                          {formatRelativeTime(chat.updated)}
-                        </span>
-                      </div>
-                    </button>
-                    <button
-                      type='button'
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setChatToDelete(chat.id)
-                      }}
-                      className='ml-2 rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-500 dark:hover:bg-slate-600 dark:hover:text-red-400'
-                      aria-label={t('project.askAi.deleteChat')}
-                    >
-                      <TrashIcon className='h-4 w-4' />
-                    </button>
-                  </div>
-                ))}
-                {allChats.length < allChatsTotal ? (
-                  <button
-                    type='button'
-                    onClick={() => loadAllChatsWithSkip(allChats.length)}
-                    disabled={isLoadingChats}
-                    className='flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200 hover:dark:bg-slate-700'
-                  >
-                    {isLoadingChats ? (
-                      <SpinnerGapIcon className='h-4 w-4 animate-spin' />
-                    ) : null}
-                    {t('project.askAi.loadMore')}
-                  </button>
-                ) : null}
-              </div>
-            )}
-            {isLoadingChats && _isEmpty(allChats) ? (
-              <div className='flex items-center justify-center py-8'>
-                <SpinnerGapIcon className='h-6 w-6 animate-spin text-gray-400' />
-              </div>
-            ) : null}
-          </div>
-        }
+      <ChatHistoryPanel
+        isOpen={isHistoryPanelOpen}
+        onClose={() => setIsHistoryPanelOpen(false)}
+        search={historySearch}
+        onSearchChange={setHistorySearch}
+        tagFilter={historyTagFilter}
+        onTagFilterChange={setHistoryTagFilter}
+        availableTags={availableTags}
+        chats={allChats}
+        total={allChatsTotal}
+        isLoading={isLoadingChats && allChats.length === 0}
+        isFetchingMore={isLoadingChats && allChats.length > 0}
+        actions={chatRowActions}
+        onLoadMore={() => {
+          const term = debouncedHistorySearch.trim()
+          loadAllChatsWithSkip(allChats.length, {
+            search: term.length >= 2 ? term : undefined,
+            tag: historyTagFilter,
+          })
+        }}
       />
 
       <Modal

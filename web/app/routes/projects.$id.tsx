@@ -635,9 +635,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
     'get-version-filters',
     'get-recent-ai-chats',
     'get-all-ai-chats',
+    'list-ai-chats',
+    'list-ai-chat-tags',
     'get-ai-chat',
     'create-ai-chat',
     'update-ai-chat',
+    'update-ai-chat-meta',
     'delete-ai-chat',
     'generate-ai-chat-title',
     'submit-ai-chat-feedback',
@@ -1107,12 +1110,30 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     // AI Chat
-    case 'get-recent-ai-chats': {
-      const limit = Number(formData.get('limit') || '5')
+    case 'get-recent-ai-chats':
+    case 'get-all-ai-chats':
+    case 'list-ai-chats': {
+      const params = new URLSearchParams()
+      const limit = formData.get('limit')?.toString()
+      const skip = formData.get('skip')?.toString()
+      const take = formData.get('take')?.toString()
+      const search = formData.get('search')?.toString().trim()
+      const tag = formData.get('tag')?.toString()
+      const pinnedRaw = formData.get('pinned')?.toString()
 
+      if (limit) params.append('limit', limit)
+      if (skip) params.append('skip', skip)
+      if (take) params.append('take', take)
+      if (search && search.length >= 2) params.append('search', search)
+      if (tag) params.append('tag', tag)
+      if (pinnedRaw === 'true' || pinnedRaw === 'false') {
+        params.append('pinned', pinnedRaw)
+      }
+
+      const qs = params.toString()
       const result = await serverFetch(
         request,
-        `ai/${projectId}/chats?limit=${limit}`,
+        `ai/${projectId}/chats${qs ? `?${qs}` : ''}`,
         {
           method: 'GET',
         },
@@ -1131,17 +1152,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       )
     }
 
-    case 'get-all-ai-chats': {
-      const skip = Number(formData.get('skip') || '0')
-      const take = Number(formData.get('take') || '20')
-
-      const result = await serverFetch(
-        request,
-        `ai/${projectId}/chats/all?skip=${skip}&take=${take}`,
-        {
-          method: 'GET',
-        },
-      )
+    case 'list-ai-chat-tags': {
+      const result = await serverFetch(request, `ai/${projectId}/chats/tags`, {
+        method: 'GET',
+      })
 
       if (result.error) {
         return data<ProjectViewActionData>(
@@ -1218,6 +1232,47 @@ export async function action({ request, params }: ActionFunctionArgs) {
         `ai/${projectId}/chats/${chatId}`,
         {
           method: 'POST',
+          body,
+        },
+      )
+
+      if (result.error) {
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'update-ai-chat-meta': {
+      const chatId = formData.get('chatId')?.toString()
+      const pinnedRaw = formData.get('pinned')?.toString()
+      const tagsRaw = formData.get('tags')?.toString()
+      const name = formData.get('name')?.toString()
+
+      const body: Record<string, unknown> = {}
+      if (pinnedRaw === 'true' || pinnedRaw === 'false') {
+        body.pinned = pinnedRaw === 'true'
+      }
+      if (tagsRaw !== undefined) {
+        try {
+          body.tags = JSON.parse(tagsRaw)
+        } catch {
+          body.tags = []
+        }
+      }
+      if (name !== undefined) body.name = name
+
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats/${chatId}`,
+        {
+          method: 'PATCH',
           body,
         },
       )

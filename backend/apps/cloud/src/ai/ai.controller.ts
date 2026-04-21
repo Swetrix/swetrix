@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Delete,
+  Patch,
   Body,
   Param,
   Query,
@@ -12,6 +13,7 @@ import {
   ForbiddenException,
   HttpException,
   HttpStatus,
+  ValidationPipe,
 } from '@nestjs/common'
 import { Response } from 'express'
 import {
@@ -33,6 +35,7 @@ import {
   ChatDto,
   CreateChatDto,
   UpdateChatDto,
+  UpdateChatMetaDto,
   GetRecentChatsQueryDto,
   GetAllChatsQueryDto,
   FeedbackDto,
@@ -390,11 +393,15 @@ export class AiController {
   @ApiBearerAuth()
   @Get(':pid/chats')
   @Auth(false, true) // Allow optional auth for public projects
-  @ApiOperation({ summary: 'Get recent AI chats for a project' })
-  @ApiResponse({ status: 200, description: 'List of recent chats' })
-  async getRecentChats(
+  @ApiOperation({
+    summary:
+      'List AI chats for a project (supports search, tag, pinned filters and pagination)',
+  })
+  @ApiResponse({ status: 200, description: 'List of chats' })
+  async getChats(
     @Param('pid') pid: string,
-    @Query() query: GetRecentChatsQueryDto,
+    @Query(new ValidationPipe({ transform: true, whitelist: true }))
+    query: GetRecentChatsQueryDto,
     @CurrentUserId() uid: string | null,
     @Headers() headers: Record<string, string>,
   ) {
@@ -412,31 +419,80 @@ export class AiController {
 
     // Do not expose stored chat history to unauthenticated users (even on public projects).
     if (!uid) {
-      return []
+      return { chats: [], total: 0 }
     }
 
-    const chats = await this.aiChatService.findRecentByProject(
-      pid,
-      uid,
-      query.limit ?? 5,
-    )
+    const isLimitMode =
+      query.limit !== undefined &&
+      query.skip === undefined &&
+      query.take === undefined &&
+      !query.search &&
+      !query.tag &&
+      query.pinned === undefined
 
-    return chats.map((chat) => ({
-      id: chat.id,
-      name: chat.name,
-      created: chat.created,
-      updated: chat.updated,
-    }))
+    const take = isLimitMode ? (query.limit ?? 5) : (query.take ?? 20)
+
+    const result = await this.aiChatService.listByProject(pid, uid, {
+      search: query.search,
+      tag: query.tag,
+      pinned: query.pinned,
+      skip: query.skip ?? 0,
+      take,
+    })
+
+    return {
+      chats: result.chats.map((chat) => ({
+        id: chat.id,
+        name: chat.name,
+        pinned: chat.pinned,
+        tags: chat.tags ?? [],
+        created: chat.created,
+        updated: chat.updated,
+      })),
+      total: result.total,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get(':pid/chats/tags')
+  @Auth(false, true)
+  @ApiOperation({ summary: 'List distinct tags across the user’s chats' })
+  @ApiResponse({ status: 200, description: 'Sorted list of tag labels' })
+  async getChatTags(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
+  ) {
+    this.logger.log({ uid, pid }, 'GET /ai/:pid/chats/tags')
+
+    await this.applyRateLimit(uid, headers, 'read')
+
+    const project = await this.projectService.getFullProject(pid)
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+    this.projectService.allowedToView(project, uid)
+
+    if (!uid) {
+      return { tags: [] }
+    }
+
+    const tags = await this.aiChatService.listTagsByProject(pid, uid)
+    return { tags }
   }
 
   @ApiBearerAuth()
   @Get(':pid/chats/all')
   @Auth(false, true) // Allow optional auth for public projects
-  @ApiOperation({ summary: 'Get all AI chats for a project (paginated)' })
+  @ApiOperation({
+    summary:
+      'Get all AI chats for a project (paginated). Deprecated: use GET /:pid/chats with skip/take.',
+  })
   @ApiResponse({ status: 200, description: 'Paginated list of chats' })
   async getAllChats(
     @Param('pid') pid: string,
-    @Query() query: GetAllChatsQueryDto,
+    @Query(new ValidationPipe({ transform: true, whitelist: true }))
+    query: GetAllChatsQueryDto,
     @CurrentUserId() uid: string | null,
     @Headers() headers: Record<string, string>,
   ) {
@@ -452,22 +508,21 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
-    // Do not expose stored chat history to unauthenticated users (even on public projects).
     if (!uid) {
       return { chats: [], total: 0 }
     }
 
-    const result = await this.aiChatService.findAllByProject(
-      pid,
-      uid,
-      query.skip ?? 0,
-      query.take ?? 20,
-    )
+    const result = await this.aiChatService.listByProject(pid, uid, {
+      skip: query.skip ?? 0,
+      take: query.take ?? 20,
+    })
 
     return {
       chats: result.chats.map((chat) => ({
         id: chat.id,
         name: chat.name,
+        pinned: chat.pinned,
+        tags: chat.tags ?? [],
         created: chat.created,
         updated: chat.updated,
       })),
@@ -512,6 +567,8 @@ export class AiController {
       id: chat.id,
       name: chat.name,
       messages: chat.messages,
+      pinned: chat.pinned,
+      tags: chat.tags ?? [],
       created: chat.created,
       updated: chat.updated,
       isOwner,
@@ -775,6 +832,55 @@ export class AiController {
       created: branchedChat.created,
       updated: branchedChat.updated,
       branched: true,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Patch(':pid/chats/:chatId')
+  @Auth(false, true) // Allow optional auth for public projects
+  @ApiOperation({
+    summary: 'Update chat metadata (pinned, tags, name) — owner only',
+  })
+  @ApiResponse({ status: 200, description: 'Chat metadata updated' })
+  async updateChatMeta(
+    @Param('pid') pid: string,
+    @Param('chatId') chatId: string,
+    @Body() body: UpdateChatMetaDto,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
+  ) {
+    this.logger.log({ uid, pid, chatId }, 'PATCH /ai/:pid/chats/:chatId')
+
+    await this.applyRateLimit(uid, headers, 'write')
+
+    const project = await this.projectService.getFullProject(pid)
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+    this.projectService.allowedToView(project, uid)
+
+    const chat = await this.aiChatService.verifyOwnerAccess(chatId, pid, uid)
+    if (!chat) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    const updated = await this.aiChatService.updateMeta(chatId, {
+      pinned: body.pinned,
+      tags: body.tags,
+      name: body.name,
+    })
+
+    if (!updated) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      pinned: updated.pinned,
+      tags: updated.tags ?? [],
+      created: updated.created,
+      updated: updated.updated,
     }
   }
 
