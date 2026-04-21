@@ -1154,7 +1154,13 @@ Filter modifiers:
       }
 
       if (dataType === 'errors') {
-        return this.getErrorsData(pid, groupFromUTC, groupToUTC, safeTimezone)
+        return this.getErrorsData(
+          pid,
+          groupFromUTC,
+          groupToUTC,
+          safeTimezone,
+          filters,
+        )
       }
 
       if (dataType === 'captcha') {
@@ -1164,6 +1170,7 @@ Filter modifiers:
           groupToUTC,
           timeBucket,
           safeTimezone,
+          filters,
         )
       }
 
@@ -1471,8 +1478,15 @@ Filter modifiers:
     groupFrom: string,
     groupTo: string,
     _timezone: string,
+    filters: Array<{
+      column: string
+      filter: string
+      isExclusive?: boolean
+      isContains?: boolean
+    }> = [],
   ) {
-    // Get error counts
+    const filterConditions = this.buildFilterConditions(filters)
+
     const overallQuery = `
       SELECT
         count(*) as totalErrors,
@@ -1480,16 +1494,16 @@ Filter modifiers:
       FROM errors
       WHERE pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filterConditions.where}
     `
 
     const { data: overallData } = await clickhouse
       .query({
         query: overallQuery,
-        query_params: { pid, groupFrom, groupTo },
+        query_params: { pid, groupFrom, groupTo, ...filterConditions.params },
       })
       .then((r) => r.json())
 
-    // Get top errors
     const topErrorsQuery = `
       SELECT
         name,
@@ -1499,6 +1513,7 @@ Filter modifiers:
       FROM errors
       WHERE pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filterConditions.where}
       GROUP BY name, message
       ORDER BY count DESC
       LIMIT 10
@@ -1507,7 +1522,7 @@ Filter modifiers:
     const { data: topErrors } = await clickhouse
       .query({
         query: topErrorsQuery,
-        query_params: { pid, groupFrom, groupTo },
+        query_params: { pid, groupFrom, groupTo, ...filterConditions.params },
       })
       .then((r) => r.json())
 
@@ -1714,7 +1729,15 @@ Filter modifiers:
     groupTo: string,
     timeBucket: TimeBucketType,
     timezone: string,
+    filters: Array<{
+      column: string
+      filter: string
+      isExclusive?: boolean
+      isContains?: boolean
+    }> = [],
   ) {
+    const filterConditions = this.buildFilterConditions(filters)
+
     const overallQuery = `
       SELECT
         count(*) as total,
@@ -1723,6 +1746,7 @@ Filter modifiers:
       FROM captcha
       WHERE pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filterConditions.where}
     `
 
     const chartQuery = `
@@ -1733,6 +1757,7 @@ Filter modifiers:
       FROM captcha
       WHERE pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filterConditions.where}
       GROUP BY date
       ORDER BY date
     `
@@ -1743,12 +1768,19 @@ Filter modifiers:
       WHERE pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         AND ${column} IS NOT NULL AND ${column} != ''
+        ${filterConditions.where}
       GROUP BY ${column}
       ORDER BY count DESC
       LIMIT 10
     `
 
-    const params = { pid, groupFrom, groupTo, timezone }
+    const params = {
+      pid,
+      groupFrom,
+      groupTo,
+      timezone,
+      ...filterConditions.params,
+    }
 
     const [overall, chart, byCountry, byBrowser, byDevice] = await Promise.all([
       clickhouse
