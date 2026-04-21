@@ -910,6 +910,7 @@ export class AiController {
       created: branchedChat.created,
       updated: branchedChat.updated,
       branched: true,
+      parentChatId: branchedChat.parentChatId ?? existingChat.id,
     }
   }
 
