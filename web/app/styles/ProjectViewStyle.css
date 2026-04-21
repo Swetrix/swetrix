@@ -309,3 +309,70 @@ body.dark .bb-ygrid-line.annotation-line text {
 body.dark .bb-chart-arc path {
   stroke: var(--color-slate-900);
 }
+
+/* AI chat charts: keep bars/areas opaque since their series names don't match
+   the project view's stroke rules; without this they'd inherit the global
+   .bb-bar { fill-opacity: 0.3 } and look washed out. */
+.ai-chart .bb-bar {
+  fill-opacity: 0.85;
+  stroke: none;
+}
+
+.ai-chart .bb-area {
+  fill-opacity: 0.2;
+}
+
+.ai-chart .bb-axis text,
+.ai-chart .bb-legend text {
+  fill: var(--color-gray-700);
+}
+
+body.dark .ai-chart .bb-axis text,
+body.dark .ai-chart .bb-legend text {
+  fill: var(--color-gray-300);
+}
+
+.ai-chart .bb-grid line {
+  stroke: var(--color-gray-200);
+}
+
+body.dark .ai-chart .bb-grid line {
+  stroke: var(--color-slate-700);
+}
+
+.ai-chart .domain {
+  stroke: var(--color-gray-300);
+}
+
+body.dark .ai-chart .domain {
+  stroke: var(--color-slate-600);
+}
+
+/* AI chart anomaly annotations: orange dashed for spikes, blue dashed for dips */
+.ai-chart .bb-xgrid-line.annotation-spike line {
+  stroke: var(--color-orange-500);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.ai-chart .bb-xgrid-line.annotation-spike text {
+  fill: var(--color-orange-600);
+}
+
+body.dark .ai-chart .bb-xgrid-line.annotation-spike text {
+  fill: var(--color-orange-400);
+}
+
+.ai-chart .bb-xgrid-line.annotation-dip line {
+  stroke: var(--color-blue-500);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.ai-chart .bb-xgrid-line.annotation-dip text {
+  fill: var(--color-blue-600);
+}
+
+body.dark .ai-chart .bb-xgrid-line.annotation-dip text {
+  fill: var(--color-blue-400);
+}

@@ -11,9 +11,17 @@ import { ApiProperty } from '@nestjs/swagger'
 import { Project } from '../../project/entity/project.entity'
 import { User } from '../../user/entities/user.entity'
 
+export interface ChatMessageToolCall {
+  toolName: string
+  args?: unknown
+  timestamp?: string
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
+  followUps?: string[]
+  toolCalls?: ChatMessageToolCall[]
 }
 
 @Entity('ai_chat')
@@ -30,6 +38,14 @@ export class AiChat {
   @Column('json')
   messages: ChatMessage[]
 
+  @ApiProperty()
+  @Column('boolean', { default: false })
+  pinned: boolean
+
+  @ApiProperty({ type: [String], nullable: true })
+  @Column('simple-array', { nullable: true, default: null })
+  tags: string[] | null
+
   @ApiProperty({ type: () => Project })
   @ManyToOne(() => Project, { onDelete: 'CASCADE' })
   @JoinColumn()
@@ -39,6 +55,15 @@ export class AiChat {
   @ManyToOne(() => User, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   user: User | null
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column('varchar', { name: 'parent_chat_id', length: 36, nullable: true })
+  parentChatId: string | null
+
+  @ApiProperty({ type: () => AiChat, required: false, nullable: true })
+  @ManyToOne(() => AiChat, { nullable: true })
+  @JoinColumn({ name: 'parent_chat_id' })
+  parentChat: AiChat | null
 
   @ApiProperty()
   @CreateDateColumn()

@@ -8,6 +8,7 @@ interface AIStreamCallbacks {
   onToolCall?: (toolName: string, args: unknown) => void
   onToolResult?: (toolName: string, result: unknown) => void
   onReasoning?: (chunk: string) => void
+  onFollowUps?: (suggestions: string[]) => void
   onComplete: () => void
   onError: (error: Error) => void
 }
@@ -73,6 +74,14 @@ export const askAI = async (
               callbacks.onToolResult?.(parsed.toolName, parsed.result)
             } else if (parsed.type === 'reasoning') {
               callbacks.onReasoning?.(parsed.content)
+            } else if (parsed.type === 'followUps') {
+              if (Array.isArray(parsed.data)) {
+                callbacks.onFollowUps?.(
+                  parsed.data.filter(
+                    (item: unknown): item is string => typeof item === 'string',
+                  ),
+                )
+              }
             } else if (parsed.type === 'error') {
               callbacks.onError(new Error(parsed.content))
             } else if (parsed.type === 'done') {
