@@ -25,6 +25,7 @@ import {
   TRIAL_DAYS,
   isDisableMarketingPages,
   isSelfhosted,
+  localisePath,
 } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 import { cn } from '~/utils/generic'
@@ -146,9 +147,14 @@ const Testimonials = ({ className }: { className?: string }) => {
 }
 
 const LiveDemoPreview = () => {
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const { theme } = useTheme()
   const isUpToLg = !useBreakpoint('lg')
+
+  const localisedDemoPath = localisePath('/projects/STEzHcB1rALV', language)
 
   if (isUpToLg) {
     return (
@@ -186,7 +192,7 @@ const LiveDemoPreview = () => {
     <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/5 transition-shadow ease-out sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10'>
       <div className='pointer-events-none relative h-[580px] lg:h-[640px] xl:h-[700px]'>
         <iframe
-          src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=en`}
+          src={`https://swetrix.com${localisedDemoPath}?tab=traffic&theme=${theme}&embedded=true`}
           className='size-full'
           title='Swetrix Analytics Live Demo'
           style={{ pointerEvents: 'none' }}

@@ -27,6 +27,7 @@ import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
+import { localiseTo } from '~/utils/i18nHref'
 import routes from '~/utils/routes'
 import { MIN_PASSWORD_CHARS } from '~/utils/validator'
 
@@ -45,7 +46,7 @@ const Signin = () => {
   const actionData = useActionData<LoginActionData>()
   const twoFAFetcher = useFetcher<LoginActionData>()
   const [searchParams] = useSearchParams()
-  const { t } = useTranslation('common')
+  const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
 
   const [dontRemember, setDontRemember] = useState(false)
@@ -226,7 +227,7 @@ const Signin = () => {
           setIsAuthenticated(true)
           setTotalMonthlyEvents(totalMonthlyEvents)
 
-          navigate(decidePostAuthRedirect(user))
+          navigate(localiseTo(decidePostAuthRedirect(user), i18n.language))
 
           return
         } catch {
@@ -298,7 +299,7 @@ const Signin = () => {
         }),
       )
 
-      navigate(decidePostAuthRedirect(user))
+      navigate(localiseTo(decidePostAuthRedirect(user), i18n.language))
     } catch (error) {
       setLinkingError(
         error instanceof Error

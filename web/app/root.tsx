@@ -281,8 +281,26 @@ const removeMultipleLngParams = (url: string): string => {
 
 const readCookieLang = (request: Request): string | null => {
   const cookie = request.headers.get('Cookie')
-  const match = cookie?.match(/(?<=i18next=)[^;]*/)?.[0]
-  return match && whitelist.includes(match) ? match : null
+  if (!cookie) return null
+
+  for (const segment of cookie.split(';')) {
+    const trimmed = segment.trim()
+    const eqIdx = trimmed.indexOf('=')
+    if (eqIdx === -1) continue
+    const name = trimmed.slice(0, eqIdx)
+    if (name !== 'i18next') continue
+
+    const rawValue = trimmed.slice(eqIdx + 1)
+    let value: string
+    try {
+      value = decodeURIComponent(rawValue)
+    } catch {
+      value = rawValue
+    }
+    return whitelist.includes(value) ? value : null
+  }
+
+  return null
 }
 
 // Decides whether to redirect an unprefixed URL to its localised counterpart
@@ -383,7 +401,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const loaderData = {
     locale,
-    url,
     theme,
     REMIX_ENV,
     isAuthed: !!user,

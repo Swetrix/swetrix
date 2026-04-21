@@ -2,6 +2,7 @@ import { CaretDownIcon, XIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router'
 import { Link } from '~/ui/Link'
 
 import type { LiveVisitorInfo } from '~/api/api.server'
@@ -18,6 +19,7 @@ import { useCurrentProject } from '../../../../providers/CurrentProjectProvider'
 const LiveVisitorsDropdown = () => {
   const { id, liveVisitors, updateLiveVisitors } = useCurrentProject()
   const { t } = useTranslation()
+  const location = useLocation()
   const [isDropdownVisible, setIsDropdownVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [liveInfo, setLiveInfo] = useState<LiveVisitorInfo[]>([])
@@ -118,16 +120,15 @@ const LiveVisitorsDropdown = () => {
                 <div className='table w-full border-separate border-spacing-y-2'>
                   <div className='table-row-group'>
                     {_map(liveInfo, ({ psid, dv, br, os, cc }) => {
-                      const psidUrl = new URL(window.location.href)
-                      psidUrl.searchParams.set('psid', psid)
-                      psidUrl.searchParams.set('tab', PROJECT_TABS.sessions)
-                      const stringifiedUrl = psidUrl.toString()
+                      const params = new URLSearchParams(location.search)
+                      params.set('psid', psid)
+                      params.set('tab', PROJECT_TABS.sessions)
 
                       return (
                         <Link
                           key={psid}
                           className='group table-row cursor-pointer text-sm text-gray-900 dark:text-gray-50'
-                          to={stringifiedUrl}
+                          to={{ search: params.toString() }}
                         >
                           <div className='table-cell rounded-l-lg bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-900 dark:group-hover:bg-slate-700'>
                             <Flag
