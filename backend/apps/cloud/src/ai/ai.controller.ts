@@ -178,9 +178,16 @@ export class AiController {
       let hasContent = false
       let toolCallCount = 0
       let toolResultCount = 0
+      let toolErrorCount = 0
       let textDeltaCount = 0
+      let reasoningDeltaCount = 0
       let assistantText = ''
       let streamErrored = false
+      let streamErrorEventCount = 0
+      let stepCount = 0
+      let lastModelId: string | undefined
+      let lastProviderId: string | undefined
+      const streamStartedAt = Date.now()
       try {
         for await (const part of result.fullStream) {
           if (clientClosed) {
@@ -240,11 +247,13 @@ export class AiController {
             )
           } else if (part.type === 'reasoning-delta') {
             hasContent = true
+            reasoningDeltaCount++
             res.write(
               `data: ${JSON.stringify({ type: 'reasoning', content: part.text })}\n\n`,
             )
           } else if (part.type === 'error') {
             streamErrored = true
+            streamErrorEventCount++
             this.logger.error(
               { error: part.error, pid, uid },
               'Error event during AI stream',
@@ -253,33 +262,81 @@ export class AiController {
               `data: ${JSON.stringify({ type: 'error', content: 'A temporary error occurred, continuing...' })}\n\n`,
             )
           } else if (part.type === 'finish') {
+            const totalUsage = (part as any)?.totalUsage ?? {}
+            const durationMs = Date.now() - streamStartedAt
+            const inputTokens = totalUsage.inputTokens ?? 0
+            const outputTokens = totalUsage.outputTokens ?? 0
+            const totalTokens =
+              totalUsage.totalTokens ?? inputTokens + outputTokens
+            const reasoningTokens =
+              totalUsage.outputTokenDetails?.reasoningTokens ??
+              totalUsage.reasoningTokens ??
+              0
+            const cachedInputTokens =
+              totalUsage.inputTokenDetails?.cacheReadTokens ??
+              totalUsage.cachedInputTokens ??
+              0
+            const cacheWriteTokens =
+              totalUsage.inputTokenDetails?.cacheWriteTokens ?? 0
+
             this.logger.log(
               {
                 pid,
                 finishReason: (part as any).finishReason,
-                usage: (part as any).usage,
+                totalUsage,
+                durationMs,
               },
               'AI stream finish event',
             )
+
             await trackCustom(
               getIPFromHeaders(headers) || 'unknown',
               headers['user-agent'],
               {
                 ev: 'AI_CHAT_STREAM_FINISHED',
                 meta: {
-                  finishReason: (part as any)?.finishReason,
-                  promptTokens: (part as any)?.usage?.promptTokens ?? 0,
-                  completionTokens: (part as any)?.usage?.completionTokens ?? 0,
-                  totalTokens: (part as any)?.usage?.totalTokens ?? 0,
+                  finishReason: (part as any)?.finishReason ?? 'unknown',
+                  modelId: lastModelId,
+                  providerId: lastProviderId,
+                  durationMs,
+                  inputTokens,
+                  outputTokens,
+                  totalTokens,
+                  reasoningTokens,
+                  cachedInputTokens,
+                  cacheWriteTokens,
+                  stepCount,
+                  toolCallCount,
+                  toolResultCount,
+                  toolErrorCount,
+                  textDeltaCount,
+                  reasoningDeltaCount,
+                  assistantTextLength: assistantText.length,
+                  inboundMessageCount: messages.length,
+                  hasContent,
+                  streamErrored,
+                  streamErrorEventCount,
+                  authed: Boolean(uid),
                 },
               },
             )
           } else if (part.type === 'finish-step') {
+            stepCount++
+            const stepResponse = (part as any)?.response
+            if (stepResponse?.modelId) {
+              lastModelId = stepResponse.modelId
+            }
+            const stepProviderId =
+              stepResponse?.providerId ?? stepResponse?.provider
+            if (stepProviderId) {
+              lastProviderId = stepProviderId
+            }
             this.logger.log(
               {
                 pid,
                 finishReason: part.finishReason,
                 usage: part.usage,
+                modelId: lastModelId,
               },
               'AI stream finish-step event',
             )
@@ -302,6 +359,7 @@ export class AiController {
           } else if (part.type === 'tool-input-end') {
             this.logger.log({ pid }, 'AI tool input end')
           } else if (part.type === 'tool-error') {
+            toolErrorCount++
             this.logger.error(
               {
                 pid,
