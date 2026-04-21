@@ -350,14 +350,14 @@ const Dashboard = () => {
     <>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-950'>
         <div className='flex flex-col'>
-          <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
+          <div className='mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8'>
             <div className='mb-4 flex flex-wrap justify-between gap-2'>
               <div className='flex items-end justify-between'>
                 <Text
                   as='h1'
                   size='3xl'
                   weight='bold'
-                  className='mt-2 flex items-baseline gap-2'
+                  className='mt-2 flex items-center gap-2'
                 >
                   <span>{t('titles.dashboard')}</span>
                   {isSearchActive ? (
