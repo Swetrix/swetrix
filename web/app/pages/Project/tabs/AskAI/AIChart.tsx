@@ -71,6 +71,12 @@ interface AIChartLink {
   }>
 }
 
+interface AIChartAnnotation {
+  x: string
+  label?: string
+  kind?: 'spike' | 'dip'
+}
+
 interface AIChartData {
   type: 'chart'
   chartType: 'line' | 'bar' | 'area' | 'spline' | 'pie' | 'donut'
@@ -81,7 +87,61 @@ interface AIChartData {
     values?: number[]
     [key: string]: number[] | string[] | undefined
   }
+  annotations?: AIChartAnnotation[]
   link?: AIChartLink
+}
+
+const ANNOTATION_LABEL_MAX = 40
+
+const buildAnnotationLines = (
+  annotations: AIChartAnnotation[] | undefined,
+  xData: string[],
+): Array<{ value: Date; text: string; class: string; position: 'middle' }> => {
+  if (!Array.isArray(annotations) || annotations.length === 0) return []
+
+  const xValueSet = new Set(xData)
+
+  return annotations
+    .filter(
+      (a): a is AIChartAnnotation =>
+        !!a && typeof a === 'object' && typeof a.x === 'string',
+    )
+    .map((a) => {
+      const matchesX = xValueSet.has(a.x)
+      const parsed = dayjs(a.x)
+      if (!matchesX && !parsed.isValid()) return null
+
+      const date = parsed.isValid() ? parsed.toDate() : new Date(a.x)
+      if (Number.isNaN(date.getTime())) return null
+
+      const kind = a.kind === 'dip' ? 'dip' : 'spike'
+      const rawLabel = typeof a.label === 'string' ? a.label.trim() : ''
+      const text =
+        rawLabel.length > ANNOTATION_LABEL_MAX
+          ? `${rawLabel.slice(0, ANNOTATION_LABEL_MAX - 1)}…`
+          : rawLabel
+
+      return {
+        value: date,
+        text,
+        class:
+          kind === 'spike'
+            ? 'annotation-line annotation-spike'
+            : 'annotation-line annotation-dip',
+        position: 'middle' as const,
+      }
+    })
+    .filter(
+      (
+        x,
+      ): x is {
+        value: Date
+        text: string
+        class: string
+        position: 'middle'
+      } => x !== null,
+    )
+    .slice(0, 3)
 }
 
 interface AIChartProps {
@@ -405,6 +465,10 @@ const AIChart: React.FC<AIChartProps> = ({ chart, projectId }) => {
 
     const isBar = chart.chartType === 'bar'
 
+    const annotationLines = isDateAxis
+      ? buildAnnotationLines(chart.annotations, xData)
+      : []
+
     return {
       data: {
         x: 'x',
@@ -416,6 +480,9 @@ const AIChart: React.FC<AIChartProps> = ({ chart, projectId }) => {
         y: {
           show: true,
         },
+        ...(annotationLines.length > 0
+          ? { x: { lines: annotationLines } }
+          : {}),
       },
       transition: {
         duration: 200,

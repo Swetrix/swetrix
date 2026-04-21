@@ -347,3 +347,32 @@ body.dark .ai-chart .bb-grid line {
 body.dark .ai-chart .domain {
   stroke: var(--color-slate-600);
 }
+
+/* AI chart anomaly annotations: orange dashed for spikes, blue dashed for dips */
+.ai-chart .bb-xgrid-line.annotation-spike line {
+  stroke: var(--color-orange-500);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.ai-chart .bb-xgrid-line.annotation-spike text {
+  fill: var(--color-orange-600);
+}
+
+body.dark .ai-chart .bb-xgrid-line.annotation-spike text {
+  fill: var(--color-orange-400);
+}
+
+.ai-chart .bb-xgrid-line.annotation-dip line {
+  stroke: var(--color-blue-500);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.ai-chart .bb-xgrid-line.annotation-dip text {
+  fill: var(--color-blue-600);
+}
+
+body.dark .ai-chart .bb-xgrid-line.annotation-dip text {
+  fill: var(--color-blue-400);
+}

@@ -141,6 +141,92 @@ const sanitiseChartLink = (raw: unknown): SanitisedChartLink | null => {
   return out
 }
 
+interface SeriesAnomaly {
+  x: string
+  value: number
+  deviation: number
+  kind: 'spike' | 'dip'
+}
+
+/**
+ * Detects anomalies in a numeric time series using a median + MAD pass
+ * (modified z-score style). Flags any point whose absolute deviation from
+ * the median is more than 3.5 MADs and returns the top 3 by deviation.
+ *
+ * Returns an empty array when:
+ *   - inputs are mismatched/too short (<5 points)
+ *   - MAD is 0 (constant series, would divide by zero)
+ *   - no point exceeds the threshold
+ */
+const detectAnomalies = (
+  values: number[],
+  dates: string[],
+): SeriesAnomaly[] => {
+  if (!Array.isArray(values) || !Array.isArray(dates)) return []
+  if (values.length !== dates.length) return []
+  if (values.length < 5) return []
+
+  const numeric = values
+    .map((v, i) => ({ v: typeof v === 'number' ? v : Number(v), i }))
+    .filter(({ v }) => Number.isFinite(v))
+
+  if (numeric.length < 5) return []
+
+  const median = (arr: number[]): number => {
+    const n = arr.length
+    if (n === 0) return 0
+    const mid = Math.floor(n / 2)
+    return n % 2 === 0 ? (arr[mid - 1] + arr[mid]) / 2 : arr[mid]
+  }
+
+  const sortedValues = numeric.map(({ v }) => v).sort((a, b) => a - b)
+  const med = median(sortedValues)
+  const sortedAbsDev = sortedValues
+    .map((v) => Math.abs(v - med))
+    .sort((a, b) => a - b)
+  const mad = median(sortedAbsDev)
+
+  if (mad === 0) return []
+
+  return numeric
+    .map(({ v, i }) => ({
+      v,
+      i,
+      deviation: Math.abs(v - med) / mad,
+    }))
+    .filter(({ deviation }) => deviation > 3.5)
+    .sort((a, b) => b.deviation - a.deviation)
+    .slice(0, 3)
+    .map(({ v, i, deviation }) => ({
+      x: dates[i],
+      value: v,
+      deviation: Math.round(deviation * 100) / 100,
+      kind: v >= med ? 'spike' : 'dip',
+    }))
+}
+
+/**
+ * Computes anomalies for every named numeric series in a chart payload.
+ * Returns undefined when no series has any flagged points so callers can
+ * conditionally attach the `anomalies` key.
+ */
+const computeChartAnomalies = (
+  dates: string[],
+  series: Record<string, number[]>,
+): Record<string, SeriesAnomaly[]> | undefined => {
+  if (!Array.isArray(dates) || dates.length === 0) return undefined
+
+  const out: Record<string, SeriesAnomaly[]> = {}
+  for (const [name, values] of Object.entries(series)) {
+    const anomalies = detectAnomalies(values, dates)
+    if (anomalies.length > 0) {
+      out[name] = anomalies
+    }
+  }
+
+  return Object.keys(out).length > 0 ? out : undefined
+}
+
 /**
  * Scans a piece of assistant content for embedded chart JSON blobs and rewrites
  * each one to strip invalid/unknown chart `link` fields. Charts without a valid
@@ -470,7 +556,7 @@ Time periods:
 Guidelines:
 1. ALWAYS use tools to fetch real data before answering questions about analytics. NEVER make up, hallucinate, or estimate numbers.
 2. If a tool call fails or returns an error, tell the user there was an issue fetching the data. Do not invent numbers.
-3. Be concise, but proactive. Summarise key takeaways, surface anomalies/trends, and suggest follow-ups.
+3. Be concise, but proactive. Summarise key takeaways, surface anomalies/trends, and suggest follow-ups. When a tool result includes an "anomalies" object on a chart series, briefly call out the most notable ones in prose (mention the date, the value, and whether it was a spike or dip) AND mirror them in the chart JSON via "annotations" so they are highlighted visually. Don't invent anomalies that aren't present in the tool output.
 4. Default to the last 7 days when the user doesn't specify a period.
 5. Prefer charts when comparing series, showing trends over time, or breaking down distributions. Use tables/lists for short rankings.
 6. Round large numbers and percentages for readability.
@@ -481,7 +567,7 @@ Guidelines:
 To include a chart, emit this exact JSON on its own line at the position you want it rendered:
 
 Time-series (line, bar, area):
-{"type":"chart","chartType":"line","title":"Chart Title","data":{"x":["2024-01-01","2024-01-02"],"pageviews":[100,150],"visitors":[80,120]},"link":{"tab":"traffic","period":"7d"}}
+{"type":"chart","chartType":"line","title":"Chart Title","data":{"x":["2024-01-01","2024-01-02"],"pageviews":[100,150],"visitors":[80,120]},"annotations":[{"x":"2024-01-02","label":"Spike +50%","kind":"spike"}],"link":{"tab":"traffic","period":"7d"}}
 
 Pie / donut (proportions):
 {"type":"chart","chartType":"pie","title":"Device Distribution","data":{"labels":["Desktop","Mobile","Tablet"],"values":[650,280,70]},"link":{"tab":"traffic","period":"7d"}}
@@ -490,6 +576,12 @@ Pie / donut (proportions):
 Supported chart types: "line", "bar", "area", "pie", "donut"
 - For line/bar/area: "x" for x-axis labels and named numeric arrays for each series.
 - For pie/donut: "labels" + "values" (raw numbers, NOT percentages).
+
+Chart "annotations" field (OPTIONAL, time-series only — line/bar/area):
+- Use to highlight notable points on the x-axis such as spikes, dips, deploys, or campaign moments. Ignored for pie/donut charts.
+- Schema: [{ "x": "YYYY-MM-DD" (must match a value in data.x), "label": short string (<= 30 chars), "kind"?: "spike" | "dip" }]
+- Whenever a tool result includes "anomalies" for a series, surface them here. Pick a concise label (e.g. "Spike +312%", "Dip -64%", "Outage?").
+- Cap to at most 3 annotations per chart so the visual stays readable.
 
 Chart "link" field (REQUIRED whenever the chart corresponds to data the user can drill into in the dashboard):
 - ALWAYS include "link" so the chart can be opened in the project dashboard.
@@ -1256,12 +1348,18 @@ Filter modifiers:
       })
       .then((r) => r.json())
 
+    const dates = _map(chartData, (d: any) => d.date) as string[]
+    const pageviews = _map(chartData, (d: any) => Number(d.pageviews) || 0)
+    const sessions = _map(chartData, (d: any) => Number(d.sessions) || 0)
+    const anomalies = computeChartAnomalies(dates, { pageviews, sessions })
+
     return {
       overall: overallData[0] || {},
       chart: {
-        x: _map(chartData, (d: any) => d.date),
-        pageviews: _map(chartData, (d: any) => d.pageviews),
-        sessions: _map(chartData, (d: any) => d.sessions),
+        x: dates,
+        pageviews,
+        sessions,
+        ...(anomalies ? { anomalies } : {}),
       },
       topPages,
       topCountries,
@@ -1350,12 +1448,18 @@ Filter modifiers:
       })
       .then((r) => r.json())
 
+    const dates = _map(chartData, (d: any) => d.date) as string[]
+    const pageLoad = _map(chartData, (d: any) => Number(d.pageLoad) || 0)
+    const ttfb = _map(chartData, (d: any) => Number(d.ttfb) || 0)
+    const anomalies = computeChartAnomalies(dates, { pageLoad, ttfb })
+
     return {
       overall: overallData[0] || {},
       chart: {
-        x: _map(chartData, (d: any) => d.date),
-        pageLoad: _map(chartData, (d: any) => d.pageLoad),
-        ttfb: _map(chartData, (d: any) => d.ttfb),
+        x: dates,
+        pageLoad,
+        ttfb,
+        ...(anomalies ? { anomalies } : {}),
       },
       measure,
       period: { from: groupFrom, to: groupTo },
@@ -1662,12 +1766,27 @@ Filter modifiers:
         .then((r) => r.json()),
     ])
 
+    const dates = _map(chart.data as any[], (d) => d.date) as string[]
+    const challenges = _map(
+      chart.data as any[],
+      (d) => Number(d.challenges) || 0,
+    )
+    const manuallyPassed = _map(
+      chart.data as any[],
+      (d) => Number(d.manuallyPassed) || 0,
+    )
+    const anomalies = computeChartAnomalies(dates, {
+      challenges,
+      manuallyPassed,
+    })
+
     return {
       overall: (overall.data as any)[0] || {},
       chart: {
-        x: _map(chart.data as any[], (d) => d.date),
-        challenges: _map(chart.data as any[], (d) => d.challenges),
-        manuallyPassed: _map(chart.data as any[], (d) => d.manuallyPassed),
+        x: dates,
+        challenges,
+        manuallyPassed,
+        ...(anomalies ? { anomalies } : {}),
       },
       topCountries: byCountry.data,
       topBrowsers: byBrowser.data,
@@ -1746,13 +1865,19 @@ Filter modifiers:
         .then((r) => r.json()),
     ])
 
+    const dates = _map(chart.data as any[], (d) => d.date) as string[]
+    const events = _map(chart.data as any[], (d) => Number(d.events) || 0)
+    const sessions = _map(chart.data as any[], (d) => Number(d.sessions) || 0)
+    const anomalies = computeChartAnomalies(dates, { events, sessions })
+
     return {
       overall: (overall.data as any)[0] || {},
       topEvents: topEvents.data,
       chart: {
-        x: _map(chart.data as any[], (d) => d.date),
-        events: _map(chart.data as any[], (d) => d.events),
-        sessions: _map(chart.data as any[], (d) => d.sessions),
+        x: dates,
+        events,
+        sessions,
+        ...(anomalies ? { anomalies } : {}),
       },
       period: { from: groupFrom, to: groupTo },
     }
