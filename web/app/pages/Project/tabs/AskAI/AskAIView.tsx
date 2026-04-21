@@ -1780,6 +1780,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     const formData = new FormData()
     formData.append('intent', 'list-ai-chats')
     formData.append('take', '3')
+    formData.append('orderByPinned', 'false')
 
     recentChatsFetcher.submit(formData, { method: 'POST' })
     // eslint-disable-next-line react-hooks/exhaustive-deps

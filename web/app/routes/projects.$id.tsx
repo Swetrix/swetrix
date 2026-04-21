@@ -1120,6 +1120,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const search = formData.get('search')?.toString().trim()
       const tag = formData.get('tag')?.toString()
       const pinnedRaw = formData.get('pinned')?.toString()
+      const orderByPinnedRaw = formData.get('orderByPinned')?.toString()
 
       if (limit) params.append('limit', limit)
       if (skip) params.append('skip', skip)
@@ -1128,6 +1129,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (tag) params.append('tag', tag)
       if (pinnedRaw === 'true' || pinnedRaw === 'false') {
         params.append('pinned', pinnedRaw)
+      }
+      if (orderByPinnedRaw === 'true' || orderByPinnedRaw === 'false') {
+        params.append('orderByPinned', orderByPinnedRaw)
       }
 
       const qs = params.toString()

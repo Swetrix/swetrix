@@ -307,6 +307,16 @@ export class GetRecentChatsQueryDto {
   @Transform(parseOptionalBool)
   @IsBoolean()
   pinned?: boolean
+
+  @ApiProperty({
+    required: false,
+    description:
+      'When false, results are sorted by recency only (ignoring pinned status). Defaults to true.',
+  })
+  @IsOptional()
+  @Transform(parseOptionalBool)
+  @IsBoolean()
+  orderByPinned?: boolean
 }
 
 export class UpdateChatMetaDto {

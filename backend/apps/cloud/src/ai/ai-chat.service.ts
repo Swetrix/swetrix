@@ -10,6 +10,7 @@ interface ListChatsOptions {
   pinned?: boolean
   skip?: number
   take?: number
+  orderByPinned?: boolean
 }
 
 @Injectable()
@@ -56,7 +57,14 @@ export class AiChatService {
       return { chats: [], total: 0 }
     }
 
-    const { search, tag, pinned, skip = 0, take = 20 } = options
+    const {
+      search,
+      tag,
+      pinned,
+      skip = 0,
+      take = 20,
+      orderByPinned = true,
+    } = options
 
     const baseQuery = () =>
       this.aiChatRepository
@@ -77,12 +85,14 @@ export class AiChatService {
       return qb
     }
 
-    const orderAndPaginate = (qb: ReturnType<typeof baseQuery>) =>
-      qb
-        .orderBy('chat.pinned', 'DESC')
-        .addOrderBy('chat.updated', 'DESC')
-        .skip(skip)
-        .take(take)
+    const orderAndPaginate = (qb: ReturnType<typeof baseQuery>) => {
+      if (orderByPinned) {
+        qb.orderBy('chat.pinned', 'DESC').addOrderBy('chat.updated', 'DESC')
+      } else {
+        qb.orderBy('chat.updated', 'DESC')
+      }
+      return qb.skip(skip).take(take)
+    }
 
     if (search && search.trim().length > 0) {
       const term = `%${search.trim()}%`

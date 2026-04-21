@@ -508,6 +508,7 @@ export class AiController {
       pinned: query.pinned,
       skip: query.skip ?? 0,
       take,
+      orderByPinned: query.orderByPinned,
     })
 
     return {
