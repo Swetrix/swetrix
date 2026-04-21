@@ -637,8 +637,8 @@ export class AiController {
     // Check if the current user is the owner of this chat
     const isOwner = uid && chat.user?.id === uid
 
-    const parentChat = chat.parentChatId
-      ? await this.aiChatService.findParentSummary(chat.parentChatId, pid)
+    const parentChat = chat.parentChat
+      ? { id: chat.parentChat.id, name: chat.parentChat.name }
       : null
 
     return {

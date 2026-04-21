@@ -1352,9 +1352,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     case 'submit-ai-chat-feedback': {
       const chatId = formData.get('chatId')?.toString()
-      const rating = formData.get('rating')?.toString() as 'good' | 'bad'
+      const rawRating = formData.get('rating')?.toString()
       const messageIndex = formData.get('messageIndex')?.toString()
       const comment = formData.get('comment')?.toString()
+
+      if (rawRating !== 'good' && rawRating !== 'bad') {
+        return data<ProjectViewActionData>(
+          { intent, error: 'Invalid rating value' },
+          { status: 400 },
+        )
+      }
+      const rating: 'good' | 'bad' = rawRating
 
       const body: Record<string, unknown> = { rating }
       if (messageIndex !== undefined && messageIndex !== '') {

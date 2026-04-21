@@ -383,13 +383,18 @@ export class AiChatService {
     chatId: string,
     projectId: string,
   ): Promise<AiChat | null> {
-    return this.aiChatRepository.findOne({
-      where: {
-        id: chatId,
-        project: { id: projectId },
-      },
-      relations: ['user'],
-    })
+    return this.aiChatRepository
+      .createQueryBuilder('chat')
+      .leftJoinAndSelect('chat.user', 'user')
+      .leftJoin(
+        'chat.parentChat',
+        'parentChat',
+        'parentChat.projectId = chat.projectId',
+      )
+      .addSelect(['parentChat.id', 'parentChat.name'])
+      .where('chat.id = :chatId', { chatId })
+      .andWhere('chat.projectId = :projectId', { projectId })
+      .getOne()
   }
 
   /**

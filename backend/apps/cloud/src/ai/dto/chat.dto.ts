@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsInt,
   IsBoolean,
+  IsUUID,
   Min,
   Max,
   ArrayMaxSize,
@@ -208,8 +209,7 @@ export class CreateChatDto {
       'ID of the chat this conversation was branched from. Must belong to the same project.',
   })
   @IsOptional()
-  @IsString()
-  @MaxLength(36)
+  @IsUUID()
   parentChatId?: string
 }
 
@@ -242,7 +242,9 @@ const parseOptionalBool = ({ value }: { value: unknown }) => {
   const v = String(value).toLowerCase()
   if (v === 'true' || v === '1') return true
   if (v === 'false' || v === '0') return false
-  return undefined
+  // Preserve the original value so @IsBoolean fails validation (400) instead
+  // of @IsOptional silently treating an invalid input as absent.
+  return value
 }
 
 export class GetRecentChatsQueryDto {
@@ -285,6 +287,7 @@ export class GetRecentChatsQueryDto {
     description: 'Search query (matches chat names; falls back to messages)',
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   @MinLength(2)
   @MaxLength(100)
@@ -366,6 +369,7 @@ export class FeedbackDto {
   @IsOptional()
   @IsInt()
   @Min(0)
+  @Max(MAX_MESSAGES_PER_CHAT - 1)
   messageIndex?: number
 }
 

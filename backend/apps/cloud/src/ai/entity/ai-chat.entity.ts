@@ -60,6 +60,11 @@ export class AiChat {
   @Column('varchar', { name: 'parent_chat_id', length: 36, nullable: true })
   parentChatId: string | null
 
+  @ApiProperty({ type: () => AiChat, required: false, nullable: true })
+  @ManyToOne(() => AiChat, { nullable: true })
+  @JoinColumn({ name: 'parent_chat_id' })
+  parentChat: AiChat | null
+
   @ApiProperty()
   @CreateDateColumn()
   created: Date
