@@ -1,6 +1,4 @@
-import _filter from 'lodash/filter'
-import _isEmpty from 'lodash/isEmpty'
-import _map from 'lodash/map'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import {
   ArrowUpIcon,
   CaretDownIcon,
@@ -34,7 +32,12 @@ import {
   TagIcon,
   PushPinIcon,
   MagnifyingGlassIcon,
+  DownloadSimpleIcon,
+  ExportIcon,
 } from '@phosphor-icons/react'
+import _filter from 'lodash/filter'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
 import { marked } from 'marked'
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -56,6 +59,13 @@ import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 
 import AIChart from './AIChart'
+import { parseSegments } from './contentSegments'
+import {
+  chatToMarkdown,
+  downloadMarkdown,
+  ExportMessage,
+  getChatExportFilename,
+} from './exportHelpers'
 import { formatToolCallSummary, ToolCallSummary } from './toolFormatters'
 
 interface MessagePart {
@@ -118,98 +128,6 @@ marked.setOptions({
   breaks: true,
   gfm: true,
 })
-
-type ContentSegment =
-  | { kind: 'text'; text: string }
-  | { kind: 'chart'; chart: any; pending?: boolean }
-
-const CHART_START_PATTERN = '{"type":"chart"'
-
-const parseSegments = (content: string): ContentSegment[] => {
-  const segments: ContentSegment[] = []
-  let cursor = 0
-
-  while (cursor < content.length) {
-    const startIndex = content.indexOf(CHART_START_PATTERN, cursor)
-    if (startIndex === -1) {
-      const tail = content.slice(cursor)
-      if (tail) segments.push({ kind: 'text', text: tail })
-      break
-    }
-
-    if (startIndex > cursor) {
-      segments.push({ kind: 'text', text: content.slice(cursor, startIndex) })
-    }
-
-    let braceCount = 0
-    let endIndex = -1
-    let inString = false
-    let escape = false
-
-    for (let i = startIndex; i < content.length; i++) {
-      const ch = content[i]
-      if (escape) {
-        escape = false
-        continue
-      }
-      if (ch === '\\') {
-        escape = true
-        continue
-      }
-      if (ch === '"') {
-        inString = !inString
-        continue
-      }
-      if (inString) continue
-      if (ch === '{') braceCount++
-      else if (ch === '}') {
-        braceCount--
-        if (braceCount === 0) {
-          endIndex = i
-          break
-        }
-      }
-    }
-
-    if (endIndex === -1) {
-      // Chart JSON still streaming – keep raw text out of view to avoid showing JSON
-      segments.push({ kind: 'chart', chart: null, pending: true })
-      cursor = content.length
-      break
-    }
-
-    const jsonString = content.substring(startIndex, endIndex + 1)
-    try {
-      const chartData = JSON.parse(jsonString)
-      if (chartData?.type === 'chart') {
-        segments.push({ kind: 'chart', chart: chartData })
-      } else {
-        segments.push({ kind: 'text', text: jsonString })
-      }
-    } catch {
-      segments.push({ kind: 'chart', chart: null, pending: true })
-    }
-    cursor = endIndex + 1
-  }
-
-  // Trim leading/trailing whitespace-only text segments
-  while (
-    segments.length &&
-    segments[0].kind === 'text' &&
-    !segments[0].text.trim()
-  ) {
-    segments.shift()
-  }
-  while (
-    segments.length &&
-    segments[segments.length - 1].kind === 'text' &&
-    !(segments[segments.length - 1] as { text: string }).text.trim()
-  ) {
-    segments.pop()
-  }
-
-  return segments
-}
 
 const renderMarkdown = (content: string): string => {
   const html = marked.parse(content) as string
@@ -2709,6 +2627,58 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     toast.success(t('project.askAi.linkCopied'))
   }
 
+  const exportableMessages = useMemo<ExportMessage[]>(() => {
+    const list: ExportMessage[] = messages.map((m) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      parts: m.parts,
+      toolCalls: m.toolCalls,
+    }))
+    if (streamingMessage) {
+      list.push({
+        id: streamingMessage.id,
+        role: streamingMessage.role,
+        content: streamingMessage.content,
+        parts: streamingMessage.parts,
+        toolCalls: streamingMessage.toolCalls,
+      })
+    }
+    return list
+  }, [messages, streamingMessage])
+
+  const isExportDisabled = useMemo(() => {
+    return exportableMessages.every(
+      (m) =>
+        !(m.content && m.content.trim()) &&
+        !(m.parts && m.parts.length > 0) &&
+        !(m.toolCalls && m.toolCalls.length > 0),
+    )
+  }, [exportableMessages])
+
+  const handleCopyConversation = useCallback(() => {
+    if (isExportDisabled) return
+    const md = chatToMarkdown(exportableMessages, chatTitle, projectId, t)
+    navigator.clipboard
+      .writeText(md)
+      .then(() => toast.success(t('project.askAi.conversationCopied')))
+      .catch(() => toast.error(t('project.askAi.error')))
+  }, [chatTitle, exportableMessages, isExportDisabled, projectId, t])
+
+  const handleDownloadMarkdown = useCallback(() => {
+    if (isExportDisabled) return
+    const md = chatToMarkdown(exportableMessages, chatTitle, projectId, t)
+    const filename = getChatExportFilename(chatTitle, currentChatId)
+    downloadMarkdown(md, filename)
+  }, [
+    chatTitle,
+    currentChatId,
+    exportableMessages,
+    isExportDisabled,
+    projectId,
+    t,
+  ])
+
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = 'auto'
@@ -2777,14 +2747,54 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     : t('project.askAi.newChat'))}
               </h2>
             </div>
-            <button
-              type='button'
-              onClick={handleCopyLink}
-              className='flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
-            >
-              <LinkIcon className='h-4 w-4' />
-              <span>{t('project.askAi.copyLink')}</span>
-            </button>
+            <div className='flex shrink-0 items-center gap-2'>
+              <button
+                type='button'
+                onClick={handleCopyLink}
+                className='flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
+              >
+                <LinkIcon className='h-4 w-4' />
+                <span>{t('project.askAi.copyLink')}</span>
+              </button>
+              <Menu as='div' className='relative'>
+                <MenuButton
+                  disabled={isExportDisabled}
+                  className='flex shrink-0 items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
+                  aria-label={t('project.askAi.export')}
+                >
+                  <ExportIcon className='h-4 w-4' />
+                  <span>{t('project.askAi.export')}</span>
+                  <CaretDownIcon className='h-3.5 w-3.5' />
+                </MenuButton>
+                <MenuItems
+                  anchor={{ to: 'bottom end', offset: 8 }}
+                  modal={false}
+                  transition
+                  className='z-50 w-56 min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-gray-200 transition duration-100 ease-out focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 dark:bg-slate-900 dark:ring-slate-800'
+                >
+                  <MenuItem>
+                    <button
+                      type='button'
+                      onClick={handleCopyConversation}
+                      className='flex w-full items-center gap-2 rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-800'
+                    >
+                      <CopyIcon className='h-4 w-4' />
+                      {t('project.askAi.copyConversation')}
+                    </button>
+                  </MenuItem>
+                  <MenuItem>
+                    <button
+                      type='button'
+                      onClick={handleDownloadMarkdown}
+                      className='flex w-full items-center gap-2 rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-800'
+                    >
+                      <DownloadSimpleIcon className='h-4 w-4' />
+                      {t('project.askAi.downloadMarkdown')}
+                    </button>
+                  </MenuItem>
+                </MenuItems>
+              </Menu>
+            </div>
           </div>
           <hr className='mt-3 border-gray-200 dark:border-slate-800' />
         </>
