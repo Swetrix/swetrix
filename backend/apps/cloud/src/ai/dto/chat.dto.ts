@@ -34,6 +34,18 @@ class ChatMessageDto {
   @IsString()
   @MaxLength(MAX_MESSAGE_LENGTH)
   content: string
+
+  @ApiProperty({
+    required: false,
+    type: [String],
+    description: 'AI-suggested follow-up prompts for this assistant message',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(3)
+  @IsString({ each: true })
+  @MaxLength(140, { each: true })
+  followUps?: string[]
 }
 
 export class ChatDto {

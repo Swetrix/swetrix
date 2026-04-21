@@ -130,6 +130,107 @@ export class AiService {
   }
 
   /**
+   * Generates 0-3 short, project-specific follow-up prompts based on the just-completed
+   * assistant turn. Uses TITLE_MODEL so it doesn't add noticeable latency.
+   * Always resolves; on failure returns an empty array.
+   */
+  async generateFollowUps(
+    messages: ModelMessage[],
+    project: Project,
+  ): Promise<string[]> {
+    if (!process.env.OPENROUTER_API_KEY) {
+      return []
+    }
+
+    if (!messages || messages.length === 0) {
+      return []
+    }
+
+    // Take the tail of the conversation to keep the prompt cheap
+    const tail = messages.slice(-8)
+    const transcript = tail
+      .map((m) => {
+        const role =
+          m.role === 'user'
+            ? 'User'
+            : m.role === 'assistant'
+              ? 'Assistant'
+              : m.role === 'system'
+                ? 'System'
+                : 'Tool'
+        const raw = m.content
+        let content: string
+        if (typeof raw === 'string') {
+          content = raw
+        } else if (Array.isArray(raw)) {
+          content = raw
+            .map((part: any) => {
+              if (typeof part === 'string') return part
+              if (part?.type === 'text' && typeof part.text === 'string')
+                return part.text
+              return ''
+            })
+            .join(' ')
+        } else {
+          content = ''
+        }
+        content = content.trim().replace(/\s+/g, ' ')
+        if (content.length > 800) content = `${content.slice(0, 800)}...`
+        return `${role}: ${content}`
+      })
+      .filter((line) => line.length > line.indexOf(':') + 2)
+      .join('\n\n')
+
+    if (!transcript) return []
+
+    try {
+      const { text } = await generateText({
+        model: this.openrouter.chat(TITLE_MODEL),
+        system:
+          'Given this analytics conversation, suggest up to 3 short follow-up questions the user might naturally ask next. Each must be a complete question under 70 chars, specific to the data discussed, and answerable by the same toolset (analytics, performance, errors, goals, funnels, sessions, profiles, feature flags, A/B experiments, custom events). Avoid duplicates and avoid restating questions the user already asked. Return STRICT JSON: {"followUps": string[]}. Do not wrap in markdown.',
+        prompt: `Project: "${project.name}"\n\nConversation:\n${transcript}`,
+        temperature: 0.4,
+      })
+
+      const cleaned = (text || '').trim().replace(/^```(?:json)?|```$/g, '')
+      const jsonStart = cleaned.indexOf('{')
+      const jsonEnd = cleaned.lastIndexOf('}')
+      if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+        return []
+      }
+
+      let parsed: { followUps?: unknown }
+      try {
+        parsed = JSON.parse(cleaned.slice(jsonStart, jsonEnd + 1))
+      } catch {
+        return []
+      }
+
+      if (!Array.isArray(parsed?.followUps)) return []
+
+      const seen = new Set<string>()
+      const followUps: string[] = []
+      for (const item of parsed.followUps) {
+        if (typeof item !== 'string') continue
+        const trimmed = item.trim().replace(/\s+/g, ' ')
+        if (!trimmed || trimmed.length > 120) continue
+        const key = trimmed.toLowerCase()
+        if (seen.has(key)) continue
+        seen.add(key)
+        followUps.push(trimmed)
+        if (followUps.length === 3) break
+      }
+      return followUps
+    } catch (error) {
+      this.logger.warn(
+        { error, pid: project.id },
+        'Failed to generate follow-up suggestions',
+      )
+      return []
+    }
+  }
+
+  /**
    * Generates a short, descriptive chat title from the first user message
    * using a small/fast model so it doesn't slow down the main response.
    */

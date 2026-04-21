@@ -10,6 +10,7 @@ import {
   WarningCircleIcon,
   ArrowDownIcon,
   ArrowLeftIcon,
+  ArrowUpRightIcon,
   ChartBarIcon,
   TargetIcon,
   GitBranchIcon,
@@ -70,6 +71,7 @@ interface Message {
   reasoning?: string
   toolCalls?: Array<{ toolName: string; args: unknown; completed?: boolean }>
   parts?: MessagePart[]
+  followUps?: string[]
 }
 
 interface AskAIViewProps {
@@ -509,6 +511,8 @@ const AssistantMessage = ({
   onFeedback,
   feedback,
   canRegenerate,
+  followUps,
+  onFollowUpClick,
 }: {
   message: Message
   isStreaming?: boolean
@@ -516,6 +520,8 @@ const AssistantMessage = ({
   onFeedback?: (rating: 'good' | 'bad') => void
   feedback?: 'good' | 'bad' | null
   canRegenerate?: boolean
+  followUps?: string[]
+  onFollowUpClick?: (prompt: string) => void
 }) => {
   const { t } = useTranslation('common')
   const [userToggled, setUserToggled] = useState(false)
@@ -613,6 +619,33 @@ const AssistantMessage = ({
           <MessageContent content={message.content} isStreaming={isStreaming} />
         </>
       )}
+
+      {!isStreaming &&
+      hasContent &&
+      followUps &&
+      followUps.length > 0 &&
+      onFollowUpClick ? (
+        <div
+          role='group'
+          aria-label={t('project.askAi.followUps.title')}
+          className='mt-4 border-t border-gray-200/80 dark:border-slate-800/80'
+        >
+          {_map(followUps, (suggestion, idx) => (
+            <button
+              key={`${idx}-${suggestion}`}
+              type='button'
+              onClick={() => onFollowUpClick(suggestion)}
+              className='group/row flex w-full items-center justify-between gap-4 border-b border-gray-200/80 py-2.5 text-left text-sm text-gray-600 transition-colors last:border-b-0 hover:text-gray-900 dark:border-slate-800/80 dark:text-gray-400 dark:hover:text-white'
+            >
+              <span className='flex-1 leading-snug'>{suggestion}</span>
+              <ArrowUpRightIcon
+                weight='bold'
+                className='h-4 w-4 shrink-0 text-gray-300 transition-all group-hover/row:translate-x-0.5 group-hover/row:-translate-y-0.5 group-hover/row:text-gray-700 dark:text-slate-600 dark:group-hover/row:text-gray-200'
+              />
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {!isStreaming && hasContent ? (
         <div className='mt-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100'>
@@ -845,7 +878,11 @@ const getSuggestionPrompts = (t: any) => [
 interface AIChat {
   id: string
   name: string | null
-  messages: { role: 'user' | 'assistant'; content: string }[]
+  messages: {
+    role: 'user' | 'assistant'
+    content: string
+    followUps?: string[]
+  }[]
   isOwner?: boolean
   branched?: boolean
   created: string
@@ -910,6 +947,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   >([])
   const streamingPartsRef = useRef<MessagePart[]>([])
   const currentTextPartRef = useRef('')
+  const streamingFollowUpsRef = useRef<string[] | null>(null)
 
   const generateMessageId = () =>
     `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
@@ -1010,6 +1048,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             id: generateMessageId(),
             role: m.role,
             content: m.content,
+            followUps:
+              m.role === 'assistant' &&
+              Array.isArray(m.followUps) &&
+              m.followUps.length > 0
+                ? m.followUps
+                : undefined,
           })),
         )
         setCurrentChatId(chat.id)
@@ -1035,11 +1079,26 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     [loadChat],
   )
 
+  const serialiseMessageForApi = (m: Message) => {
+    const base: {
+      role: 'user' | 'assistant'
+      content: string
+      followUps?: string[]
+    } = {
+      role: m.role,
+      content: m.content,
+    }
+    if (m.role === 'assistant' && m.followUps && m.followUps.length > 0) {
+      base.followUps = m.followUps
+    }
+    return base
+  }
+
   const updateChatMessages = useCallback(
     (chatId: string, messagesToSave: Message[]) => {
       const apiMessages = messagesToSave
         .filter((m) => m.content.trim().length > 0)
-        .map((m) => ({ role: m.role, content: m.content }))
+        .map(serialiseMessageForApi)
 
       if (apiMessages.length === 0) return
 
@@ -1057,7 +1116,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     (firstMessages: Message[]) => {
       const apiMessages = firstMessages
         .filter((m) => m.content.trim().length > 0)
-        .map((m) => ({ role: m.role, content: m.content }))
+        .map(serialiseMessageForApi)
 
       if (apiMessages.length === 0) return
 
@@ -1250,6 +1309,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       streamingToolCallsRef.current = []
       streamingPartsRef.current = []
       currentTextPartRef.current = ''
+      streamingFollowUpsRef.current = null
 
       abortControllerRef.current = new AbortController()
 
@@ -1335,6 +1395,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     },
               )
             },
+            onFollowUps: (suggestions) => {
+              streamingFollowUpsRef.current = suggestions
+            },
             onComplete: () => {
               const finalContent = streamingContentRef.current
 
@@ -1349,6 +1412,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 finalContent.trim() ||
                 streamingToolCallsRef.current.length > 0
               ) {
+                const followUps = streamingFollowUpsRef.current
                 const assistantMessage: Message = {
                   id: generateMessageId(),
                   role: 'assistant',
@@ -1356,6 +1420,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                   reasoning: streamingReasoningRef.current,
                   toolCalls: streamingToolCallsRef.current,
                   parts: streamingPartsRef.current,
+                  followUps:
+                    followUps && followUps.length > 0 ? followUps : undefined,
                 }
                 setMessages((prev) => {
                   const updatedMessages = [...prev, assistantMessage]
@@ -1515,6 +1581,30 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     setInput(prompt)
     inputRef.current?.focus()
   }
+
+  const handleFollowUpClick = useCallback(
+    async (prompt: string) => {
+      if (isLoading) return
+      const trimmed = prompt.trim()
+      if (!trimmed) return
+
+      const userMessage: Message = {
+        id: generateMessageId(),
+        role: 'user',
+        content: trimmed,
+      }
+      const newMessages = [...messages, userMessage]
+      setMessages(newMessages)
+      setInput('')
+
+      if (!currentChatIdRef.current) {
+        createChatWithMessage(newMessages)
+      }
+
+      await runChatTurn(newMessages)
+    },
+    [createChatWithMessage, isLoading, messages, runChatTurn],
+  )
 
   const handleCopyLink = () => {
     const baseUrl = window.location.origin + window.location.pathname
@@ -1725,6 +1815,17 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                         }
                         feedback={feedbackMap[msg.id] ?? null}
                         canRegenerate={isLastAssistant && !isLoading}
+                        followUps={
+                          isLastAssistant &&
+                          !isLoading &&
+                          !streamingMessage &&
+                          !isWaitingForResponse
+                            ? msg.followUps
+                            : undefined
+                        }
+                        onFollowUpClick={
+                          isLastAssistant ? handleFollowUpClick : undefined
+                        }
                       />
                     )
                   })

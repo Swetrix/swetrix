@@ -176,6 +176,8 @@ export class AiController {
       let toolCallCount = 0
       let toolResultCount = 0
       let textDeltaCount = 0
+      let assistantText = ''
+      let streamErrored = false
       try {
         for await (const part of result.fullStream) {
           if (clientClosed) {
@@ -190,6 +192,7 @@ export class AiController {
           if (part.type === 'text-delta') {
             hasContent = true
             textDeltaCount++
+            assistantText += part.text
             res.write(
               `data: ${JSON.stringify({ type: 'text', content: part.text })}\n\n`,
             )
@@ -238,6 +241,7 @@ export class AiController {
               `data: ${JSON.stringify({ type: 'reasoning', content: part.text })}\n\n`,
             )
           } else if (part.type === 'error') {
+            streamErrored = true
             this.logger.error(
               { error: part.error, pid, uid },
               'Error event during AI stream',
@@ -317,6 +321,7 @@ export class AiController {
           'AI stream completed - summary',
         )
       } catch (streamError) {
+        streamErrored = true
         this.logger.error(
           { error: streamError, pid, uid },
           'Exception during AI stream iteration',
@@ -329,6 +334,34 @@ export class AiController {
         } else {
           res.write(
             `data: ${JSON.stringify({ type: 'error', content: 'Failed to get a response from the AI provider. Please try again.' })}\n\n`,
+          )
+        }
+      }
+
+      // Generate follow-up suggestions only when the assistant produced a real
+      // textual answer and the client is still connected. Capped with a short
+      // timeout so a slow model never delays the `done` event.
+      if (!clientClosed && !streamErrored && assistantText.trim().length > 0) {
+        try {
+          const FOLLOW_UPS_TIMEOUT_MS = 5_000
+          const followUps = await Promise.race([
+            this.aiService.generateFollowUps(
+              [...messages, { role: 'assistant', content: assistantText }],
+              project,
+            ),
+            new Promise<string[]>((resolve) =>
+              setTimeout(() => resolve([]), FOLLOW_UPS_TIMEOUT_MS),
+            ),
+          ])
+          if (!clientClosed && followUps.length > 0) {
+            res.write(
+              `data: ${JSON.stringify({ type: 'followUps', data: followUps })}\n\n`,
+            )
+          }
+        } catch (err) {
+          this.logger.warn(
+            { err, pid, uid },
+            'Follow-up suggestion generation threw',
           )
         }
       }

@@ -14,6 +14,7 @@ import { User } from '../../user/entities/user.entity'
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
+  followUps?: string[]
 }
 
 @Entity('ai_chat')

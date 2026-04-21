@@ -2170,6 +2170,9 @@
         "mobilePerformance": "How does my site perform on mobile?",
         "deviceTypesChart": "Create a pie chart of most common device types"
       },
+      "followUps": {
+        "title": "You might also ask"
+      },
       "dismiss": "Dismiss",
       "stop": "Stop",
       "loadMore": "Load more",
