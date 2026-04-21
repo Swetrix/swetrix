@@ -2,7 +2,7 @@
 import billboard, { bar, line } from 'billboard.js'
 import { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import { LIVE_DEMO_URL } from '~/lib/constants'
 import { Stats } from '~/lib/models/Stats'

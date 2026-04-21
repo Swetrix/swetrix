@@ -17,7 +17,8 @@ import {
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useFetcher, useLocation, useSearchParams } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useFetcher, useLocation, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'

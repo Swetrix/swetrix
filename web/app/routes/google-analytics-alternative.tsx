@@ -13,7 +13,8 @@ import {
 } from '@phosphor-icons/react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
-import { Link, redirect, useLoaderData } from 'react-router'
+import { Link } from '~/ui/Link'
+import { redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
 

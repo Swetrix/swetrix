@@ -1,7 +1,7 @@
 import React, { useState, memo, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
+import { Link } from '~/ui/Link'
 import {
-  Link,
   useNavigate,
   useSearchParams,
   Form,

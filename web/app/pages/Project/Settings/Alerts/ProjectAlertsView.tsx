@@ -19,7 +19,8 @@ import {
 } from '@phosphor-icons/react'
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams, useFetcher } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'

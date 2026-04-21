@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import { isSelfhosted } from '~/lib/constants'
 import { Text } from '~/ui/Text'

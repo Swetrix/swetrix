@@ -17,8 +17,10 @@ import {
   PercentIcon,
 } from '@phosphor-icons/react'
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useLocation } from 'react-router'
 
+import { stripLangFromPath } from '~/lib/constants'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
@@ -146,7 +148,7 @@ export function ToolsNav({ className }: ToolsNavProps) {
       )}
     >
       {TOOLS.map((tool, index) => {
-        const isActive = location.pathname === tool.href
+        const isActive = stripLangFromPath(location.pathname) === tool.href
         const Icon = tool.icon
 
         return (
@@ -193,7 +195,9 @@ export function ToolsNavMobile({ className }: ToolsNavProps) {
   const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
 
-  const currentTool = TOOLS.find((tool) => tool.href === location.pathname)
+  const currentTool = TOOLS.find(
+    (tool) => tool.href === stripLangFromPath(location.pathname),
+  )
   const CurrentIcon = currentTool?.icon
 
   return (
@@ -231,33 +235,33 @@ export function ToolsNavMobile({ className }: ToolsNavProps) {
 
       {isOpen && (
         <div className='border-t border-gray-100 dark:border-slate-700'>
-          {TOOLS.filter((tool) => tool.href !== location.pathname).map(
-            (tool, index) => {
-              const Icon = tool.icon
+          {TOOLS.filter(
+            (tool) => tool.href !== stripLangFromPath(location.pathname),
+          ).map((tool, index) => {
+            const Icon = tool.icon
 
-              return (
-                <Link
-                  key={tool.id}
-                  to={tool.href}
-                  className={cn(
-                    'flex items-start gap-3 px-4 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-slate-700/30',
-                    index !== 0 &&
-                      'border-t border-gray-100 dark:border-slate-700',
-                  )}
-                >
-                  <Icon className='mt-0.5 h-5 w-5 shrink-0 text-gray-400 dark:text-gray-500' />
-                  <div className='min-w-0'>
-                    <Text as='p' size='sm' weight='medium' colour='muted'>
-                      {tool.title}
-                    </Text>
-                    <Text as='p' size='xs' colour='muted'>
-                      {tool.description}
-                    </Text>
-                  </div>
-                </Link>
-              )
-            },
-          )}
+            return (
+              <Link
+                key={tool.id}
+                to={tool.href}
+                className={cn(
+                  'flex items-start gap-3 px-4 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-slate-700/30',
+                  index !== 0 &&
+                    'border-t border-gray-100 dark:border-slate-700',
+                )}
+              >
+                <Icon className='mt-0.5 h-5 w-5 shrink-0 text-gray-400 dark:text-gray-500' />
+                <div className='min-w-0'>
+                  <Text as='p' size='sm' weight='medium' colour='muted'>
+                    {tool.title}
+                  </Text>
+                  <Text as='p' size='xs' colour='muted'>
+                    {tool.description}
+                  </Text>
+                </div>
+              </Link>
+            )
+          })}
         </div>
       )}
     </div>

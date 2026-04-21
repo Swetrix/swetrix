@@ -2,7 +2,7 @@ import { CaretDownIcon, XIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import type { LiveVisitorInfo } from '~/api/api.server'
 import { useLiveVisitorsProxy } from '~/hooks/useAnalyticsProxy'

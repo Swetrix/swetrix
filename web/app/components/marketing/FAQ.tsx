@@ -1,7 +1,7 @@
 import _map from 'lodash/map'
 import { useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 import sanitizeHtml from 'sanitize-html'
 
 import { DOCS_URL, PLAN_LIMITS, TRIAL_DAYS, DISCORD_URL } from '~/lib/constants'

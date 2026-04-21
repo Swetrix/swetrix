@@ -9,6 +9,7 @@ import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
 import _toUpper from 'lodash/toUpper'
+import { Link } from '~/ui/Link'
 import {
   SlidersHorizontalIcon,
   ShieldIcon,
@@ -30,7 +31,6 @@ import { Trans, useTranslation } from 'react-i18next'
 import {
   useLoaderData,
   useNavigate,
-  Link,
   useSearchParams,
   useFetcher,
 } from 'react-router'

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link, Form, useActionData, useNavigation } from 'react-router'
+import { Link } from '~/ui/Link'
+import { Form, useActionData, useNavigation } from 'react-router'
 import { toast } from 'sonner'
 
 import type { CreateNewPasswordActionData } from '~/routes/password-reset.$id'

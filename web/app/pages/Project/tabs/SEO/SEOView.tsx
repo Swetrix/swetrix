@@ -20,7 +20,8 @@ import React, {
   useState,
 } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link, useLoaderData, useSearchParams } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useLoaderData, useSearchParams } from 'react-router'
 
 import { useGSCDashboardProxy } from '~/hooks/useAnalyticsProxy'
 import type { TimeBucket } from '~/lib/constants'

@@ -7,12 +7,14 @@ import { Toaster } from 'sonner'
 
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
+import { stripLangFromPath } from '~/lib/constants'
 import routesPath from '~/utils/routes'
 
 import { useTheme } from './providers/ThemeProvider'
 
 const App = () => {
-  const { pathname } = useLocation()
+  const { pathname: rawPathname } = useLocation()
+  const pathname = stripLangFromPath(rawPathname)
   const { theme } = useTheme()
 
   const isOnboardingPage = pathname === routesPath.onboarding

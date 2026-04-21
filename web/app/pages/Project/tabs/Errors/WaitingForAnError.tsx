@@ -1,6 +1,6 @@
 import { WarningIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import { ERROR_TRACKING_DOCS_URL } from '~/lib/constants'
 import { Text } from '~/ui/Text'

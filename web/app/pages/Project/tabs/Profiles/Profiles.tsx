@@ -11,7 +11,8 @@ import {
 } from '@phosphor-icons/react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useLocation } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { BrowserIcon, OSIcon } from '../SharedIcons'

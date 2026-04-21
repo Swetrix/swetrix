@@ -14,7 +14,7 @@ import {
 } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import {
   BROWSER_LOGO_MAP,

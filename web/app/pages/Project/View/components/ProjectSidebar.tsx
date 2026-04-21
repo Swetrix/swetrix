@@ -17,7 +17,8 @@ import React, {
   memo,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, LinkProps } from 'react-router'
+import { Link } from '~/ui/Link'
+import { LinkProps } from 'react-router'
 
 import { PROJECT_TABS } from '~/lib/constants'
 import { Text } from '~/ui/Text'

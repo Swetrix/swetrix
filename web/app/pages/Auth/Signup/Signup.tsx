@@ -7,13 +7,8 @@ import {
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import {
-  Link,
-  useNavigate,
-  Form,
-  useActionData,
-  useNavigation,
-} from 'react-router'
+import { Link } from '~/ui/Link'
+import { useNavigate, Form, useActionData, useNavigation } from 'react-router'
 import { toast } from 'sonner'
 
 import GithubAuth from '~/components/GithubAuth'
