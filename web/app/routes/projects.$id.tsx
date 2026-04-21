@@ -1267,7 +1267,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
         try {
           body.tags = JSON.parse(tagsRaw)
         } catch {
-          body.tags = []
+          return data<ProjectViewActionData>(
+            { intent, error: 'Malformed tags payload' },
+            { status: 400 },
+          )
         }
       }
       if (name !== undefined) body.name = name

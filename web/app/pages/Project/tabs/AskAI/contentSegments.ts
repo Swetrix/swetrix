@@ -66,7 +66,10 @@ export const parseSegments = (content: string): ContentSegment[] => {
         segments.push({ kind: 'text', text: jsonString })
       }
     } catch {
-      segments.push({ kind: 'chart', chart: null, pending: true })
+      // We have a fully balanced JSON-looking slice but it didn't parse.
+      // Treat it as plain text so we don't get stuck on a "pending" placeholder
+      // for content that will never become a valid chart.
+      segments.push({ kind: 'text', text: jsonString })
     }
     cursor = endIndex + 1
   }

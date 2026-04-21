@@ -9,6 +9,7 @@ import {
   Query,
   Res,
   Headers,
+  BadRequestException,
   NotFoundException,
   ForbiddenException,
   HttpException,
@@ -401,18 +402,27 @@ export class AiController {
 
       // Generate follow-up suggestions only when the assistant produced a real
       // textual answer and the client is still connected. Capped with a short
-      // timeout so a slow model never delays the `done` event.
+      // timeout so a slow model never delays the `done` event; on timeout we
+      // abort the in-flight OpenRouter request to avoid wasting quota.
       if (!clientClosed && !streamErrored && assistantText.trim().length > 0) {
+        const FOLLOW_UPS_TIMEOUT_MS = 5_000
+        const controller = new AbortController()
+        const timeoutHandle = setTimeout(
+          () => controller.abort(),
+          FOLLOW_UPS_TIMEOUT_MS,
+        )
         try {
-          const FOLLOW_UPS_TIMEOUT_MS = 5_000
           const followUps = await Promise.race([
             this.aiService.generateFollowUps(
               [...messages, { role: 'assistant', content: assistantText }],
               project,
+              controller.signal,
             ),
-            new Promise<string[]>((resolve) =>
-              setTimeout(() => resolve([]), FOLLOW_UPS_TIMEOUT_MS),
-            ),
+            new Promise<string[]>((resolve) => {
+              controller.signal.addEventListener('abort', () => resolve([]), {
+                once: true,
+              })
+            }),
           ])
           if (!clientClosed && followUps.length > 0) {
             res.write(
@@ -424,6 +434,8 @@ export class AiController {
             { err, pid, uid },
             'Follow-up suggestion generation threw',
           )
+        } finally {
+          clearTimeout(timeoutHandle)
         }
       }
 
@@ -674,9 +686,12 @@ export class AiController {
         createChatDto.parentChatId,
         pid,
       )
-      if (parent) {
-        parentChatId = parent.id
+      if (!parent) {
+        throw new BadRequestException(
+          'Invalid parentChatId: parent chat does not exist in this project',
+        )
       }
+      parentChatId = parent.id
     }
 
     const chat = await this.aiChatService.create({
@@ -704,9 +719,14 @@ export class AiController {
         (m) => m.role === 'user',
       )?.content
       if (firstUserMsg) {
+        const expectedName = chat.name
         this.aiService
           .generateChatTitle(firstUserMsg)
-          .then((title) => this.aiChatService.update(chat.id, { name: title }))
+          .then((title) =>
+            this.aiChatService.updateIfNameEquals(chat.id, expectedName, {
+              name: title,
+            }),
+          )
           .catch((err) =>
             this.logger.warn(
               { err, chatId: chat.id },

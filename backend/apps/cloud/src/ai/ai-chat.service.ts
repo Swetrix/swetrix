@@ -142,7 +142,8 @@ export class AiChatService {
       .andWhere("chat.tags <> ''")
       .getRawMany<{ tags: string | null }>()
 
-    const set = new Set<string>()
+    // Dedupe case-insensitively while preserving the first-seen casing
+    const map = new Map<string, string>()
     for (const row of rows) {
       if (!row.tags) continue
       // simple-array is comma-separated
@@ -150,10 +151,13 @@ export class AiChatService {
         .split(',')
         .map((t) => t.trim())
         .filter(Boolean)
-      for (const p of parts) set.add(p)
+      for (const part of parts) {
+        const key = part.toLowerCase()
+        if (!map.has(key)) map.set(key, part)
+      }
     }
 
-    return Array.from(set).sort((a, b) =>
+    return Array.from(map.values()).sort((a, b) =>
       a.localeCompare(b, undefined, { sensitivity: 'base' }),
     )
   }
@@ -189,6 +193,33 @@ export class AiChatService {
     return { id: parent.id, name: parent.name }
   }
 
+  /**
+   * Atomically updates the chat name only when the current value still matches
+   * `expectedName`. Used by background title generation so it can't clobber a
+   * user-provided rename that happened concurrently. Returns true if the row
+   * was actually updated.
+   */
+  async updateIfNameEquals(
+    id: string,
+    expectedName: string | null | undefined,
+    data: { name: string },
+  ): Promise<boolean> {
+    const qb = this.aiChatRepository
+      .createQueryBuilder()
+      .update(AiChat)
+      .set({ name: data.name })
+      .where('id = :id', { id })
+
+    if (expectedName === null || expectedName === undefined) {
+      qb.andWhere('name IS NULL')
+    } else {
+      qb.andWhere('name = :expectedName', { expectedName })
+    }
+
+    const result = await qb.execute()
+    return (result.affected ?? 0) > 0
+  }
+
   async update(
     id: string,
     data: { messages?: ChatMessage[]; name?: string },
@@ -216,9 +247,12 @@ export class AiChatService {
    *  - enforces per-tag length cap
    *  - dedupes case-insensitively (keeping first occurrence)
    *  - caps total tags at MAX_TAGS_PER_CHAT
+   *
+   * Returns null for an empty result so the simple-array column persists as NULL
+   * (avoids round-tripping `[]` → `''` → `['']`).
    */
-  sanitiseTags(input: unknown): string[] {
-    if (!Array.isArray(input)) return []
+  sanitiseTags(input: unknown): string[] | null {
+    if (!Array.isArray(input)) return null
     const seen = new Set<string>()
     const out: string[] = []
     for (const raw of input) {
@@ -232,7 +266,7 @@ export class AiChatService {
       out.push(trimmed)
       if (out.length >= MAX_TAGS_PER_CHAT) break
     }
-    return out
+    return out.length === 0 ? null : out
   }
 
   async updateMeta(

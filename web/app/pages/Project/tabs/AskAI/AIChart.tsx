@@ -26,6 +26,7 @@ import React, {
   Fragment,
   memo,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -542,6 +543,12 @@ const AIChart: React.FC<AIChartProps> = ({ chart, projectId }) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [displayType, setDisplayType] = useState<AIChartType>(chart.chartType)
   const [chartReady, setChartReady] = useState(false)
+
+  // Reset the user-selected display type whenever a new chart is provided so we
+  // don't carry stale compatibility decisions across distinct charts.
+  useEffect(() => {
+    setDisplayType(chart.chartType)
+  }, [chart.chartType])
 
   const handleChartReady = useCallback((instance: Chart | null) => {
     setChartReady(instance !== null)

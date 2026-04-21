@@ -65,7 +65,14 @@ const renderTextWithCharts = (text: string): string => {
       if (segment.chart) {
         const label = getChartLabel(segment.chart)
         const json = JSON.stringify(segment.chart, null, 2)
-        out.push(`_[Chart: ${label}]_\n\n\`\`\`json\n${json}\n\`\`\``)
+        // Use a code fence longer than any backtick run inside the JSON so the
+        // closing fence cannot be terminated prematurely by the content.
+        const longestBacktickRun = (json.match(/`+/g) || []).reduce(
+          (max, run) => Math.max(max, run.length),
+          0,
+        )
+        const fence = '`'.repeat(Math.max(3, longestBacktickRun + 1))
+        out.push(`_[Chart: ${label}]_\n\n${fence}json\n${json}\n${fence}`)
       } else {
         out.push('_[Chart: pending]_')
       }

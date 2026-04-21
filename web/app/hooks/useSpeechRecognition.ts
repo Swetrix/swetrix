@@ -50,7 +50,7 @@ interface UseSpeechRecognitionResult {
 }
 
 const useSpeechRecognition = (): UseSpeechRecognitionResult => {
-  const [isSupported] = useState<boolean>(() => getSpeechRecognition() !== null)
+  const [isSupported, setIsSupported] = useState<boolean>(false)
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [interimTranscript, setInterimTranscript] = useState('')
@@ -62,6 +62,7 @@ const useSpeechRecognition = (): UseSpeechRecognitionResult => {
   useEffect(() => {
     const Ctor = getSpeechRecognition()
     if (!Ctor) return
+    setIsSupported(true)
 
     const recognition = new Ctor()
     recognition.lang =

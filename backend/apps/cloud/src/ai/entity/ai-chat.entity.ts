@@ -42,9 +42,9 @@ export class AiChat {
   @Column('boolean', { default: false })
   pinned: boolean
 
-  @ApiProperty({ type: [String] })
+  @ApiProperty({ type: [String], nullable: true })
   @Column('simple-array', { nullable: true, default: null })
-  tags: string[]
+  tags: string[] | null
 
   @ApiProperty({ type: () => Project })
   @ManyToOne(() => Project, { onDelete: 'CASCADE' })

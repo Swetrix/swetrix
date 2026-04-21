@@ -394,12 +394,17 @@ export class AiService {
   async generateFollowUps(
     messages: ModelMessage[],
     project: Project,
+    abortSignal?: AbortSignal,
   ): Promise<string[]> {
     if (!process.env.OPENROUTER_API_KEY) {
       return []
     }
 
     if (!messages || messages.length === 0) {
+      return []
+    }
+
+    if (abortSignal?.aborted) {
       return []
     }
 
@@ -447,6 +452,7 @@ export class AiService {
           'Given this analytics conversation, suggest up to 3 short follow-up questions the user might naturally ask next. Each must be a complete question under 70 chars, specific to the data discussed, and answerable by the same toolset (analytics, performance, errors, goals, funnels, sessions, profiles, feature flags, A/B experiments, custom events). Avoid duplicates and avoid restating questions the user already asked. Return STRICT JSON: {"followUps": string[]}. Do not wrap in markdown.',
         prompt: `Project: "${project.name}"\n\nConversation:\n${transcript}`,
         temperature: 0.4,
+        abortSignal,
       })
 
       const cleaned = (text || '').trim().replace(/^```(?:json)?|```$/g, '')

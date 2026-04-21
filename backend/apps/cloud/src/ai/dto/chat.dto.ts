@@ -13,6 +13,9 @@ import {
   ArrayMaxSize,
   MaxLength,
   MinLength,
+  registerDecorator,
+  ValidationOptions,
+  ValidationArguments,
 } from 'class-validator'
 import { Type, Transform } from 'class-transformer'
 
@@ -23,6 +26,66 @@ const MAX_TOOL_CALLS_PER_MESSAGE = 50
 const MAX_TOOL_NAME_LENGTH = 100
 export const MAX_TAGS_PER_CHAT = 5
 export const MAX_TAG_LENGTH = 30
+
+const MAX_TOOL_ARGS_JSON_LENGTH = 4000
+const MAX_TOOL_ARGS_DEPTH = 8
+
+const measureJsonDepth = (value: unknown, depth = 0): number => {
+  if (depth > MAX_TOOL_ARGS_DEPTH) return depth
+  if (value === null || typeof value !== 'object') return depth
+  let max = depth
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const d = measureJsonDepth(item, depth + 1)
+      if (d > max) max = d
+      if (max > MAX_TOOL_ARGS_DEPTH) return max
+    }
+    return max
+  }
+  for (const key of Object.keys(value as Record<string, unknown>)) {
+    const d = measureJsonDepth(
+      (value as Record<string, unknown>)[key],
+      depth + 1,
+    )
+    if (d > max) max = d
+    if (max > MAX_TOOL_ARGS_DEPTH) return max
+  }
+  return max
+}
+
+/**
+ * Validates that a value is JSON-serialisable, has bounded serialised length,
+ * and bounded nesting depth. Used to defend the persisted chat payload from
+ * arbitrarily large/nested user-supplied tool args.
+ */
+function IsBoundedJson(validationOptions?: ValidationOptions) {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'isBoundedJson',
+      target: object.constructor,
+      propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: unknown) {
+          if (value === undefined || value === null) return true
+          let json: string
+          try {
+            json = JSON.stringify(value)
+          } catch {
+            return false
+          }
+          if (typeof json !== 'string') return false
+          if (json.length > MAX_TOOL_ARGS_JSON_LENGTH) return false
+          if (measureJsonDepth(value) > MAX_TOOL_ARGS_DEPTH) return false
+          return true
+        },
+        defaultMessage(args: ValidationArguments) {
+          return `${args.property} must be JSON-serialisable, at most ${MAX_TOOL_ARGS_JSON_LENGTH} chars when stringified, and nested no deeper than ${MAX_TOOL_ARGS_DEPTH} levels`
+        },
+      },
+    })
+  }
+}
 
 class ChatMessageToolCallDto {
   @ApiProperty({ description: 'Tool name that was invoked' })
@@ -35,6 +98,7 @@ class ChatMessageToolCallDto {
     description: 'Arguments the tool was called with (arbitrary JSON)',
   })
   @IsOptional()
+  @IsBoundedJson()
   args?: unknown
 
   @ApiProperty({
