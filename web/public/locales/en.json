@@ -2151,6 +2151,8 @@
       "messageCopied": "Copied to clipboard",
       "regenerate": "Regenerate response",
       "branchOff": "Branch off",
+      "branchOffConfirm": "This will create a new conversation starting from this message. The current chat will not be modified.",
+      "branchedFrom": "Branched from {{name}}",
       "editMessage": "Edit message",
       "saveEdit": "Save",
       "cancelEdit": "Cancel",

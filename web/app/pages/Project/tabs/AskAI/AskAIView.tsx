@@ -829,10 +829,12 @@ const AssistantMessage = ({
 const UserMessage = ({
   content,
   onEdit,
+  onBranch,
   isLoading,
 }: {
   content: string
   onEdit?: (newContent: string) => void
+  onBranch?: () => void
   isLoading?: boolean
 }) => {
   const { t } = useTranslation('common')
@@ -949,6 +951,18 @@ const UserMessage = ({
             aria-label={t('project.askAi.editMessage')}
           >
             <PencilSimpleIcon className='h-4 w-4' />
+          </button>
+        ) : null}
+        {onBranch ? (
+          <button
+            type='button'
+            onClick={onBranch}
+            disabled={isLoading}
+            className='flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-slate-800 dark:hover:text-gray-200'
+            title={t('project.askAi.branchOff')}
+            aria-label={t('project.askAi.branchOff')}
+          >
+            <GitBranchIcon className='h-4 w-4' />
           </button>
         ) : null}
       </div>
@@ -1100,6 +1114,8 @@ interface AIChat {
   tags?: string[]
   isOwner?: boolean
   branched?: boolean
+  parentChatId?: string | null
+  parentChat?: { id: string; name: string | null } | null
   created: string
   updated: string
 }
@@ -1698,6 +1714,13 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const [chatTitle, setChatTitle] = useState<string | null>(null)
+  const [parentChat, setParentChat] = useState<{
+    id: string
+    name: string | null
+  } | null>(null)
+  const [pendingBranchIndex, setPendingBranchIndex] = useState<number | null>(
+    null,
+  )
   const [recentChats, setRecentChats] = useState<AIChatSummary[]>([])
   const [allChats, setAllChats] = useState<AIChatSummary[]>([])
   const [allChatsTotal, setAllChatsTotal] = useState(0)
@@ -1893,6 +1916,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         )
         setCurrentChatId(chat.id)
         setChatTitle(chat.name)
+        setParentChat(chat.parentChat ?? null)
       } else if (loadChatFetcher.data.error) {
         console.error('Failed to load chat:', loadChatFetcher.data.error)
         const newParams = new URLSearchParams(searchParams)
@@ -1960,7 +1984,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   )
 
   const createChatWithMessage = useCallback(
-    (firstMessages: Message[]) => {
+    (firstMessages: Message[], opts: { parentChatId?: string | null } = {}) => {
       const apiMessages = firstMessages
         .filter((m) => m.content.trim().length > 0)
         .map(serialiseMessageForApi)
@@ -1970,6 +1994,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       const formData = new FormData()
       formData.append('intent', 'create-ai-chat')
       formData.append('messages', JSON.stringify(apiMessages))
+      if (opts.parentChatId) {
+        formData.append('parentChatId', opts.parentChatId)
+      }
       createChatFetcher.submit(formData, { method: 'POST' })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1998,6 +2025,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         setCurrentChatId(result.id)
         currentChatIdRef.current = result.id
         setChatTitle(result.name)
+        if (result.parentChat) {
+          setParentChat(result.parentChat)
+        } else if (!result.parentChatId) {
+          setParentChat(null)
+        }
         const newParams = new URLSearchParams(searchParams)
         newParams.set('chat', result.id)
         setSearchParams(newParams, { replace: true })
@@ -2082,6 +2114,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     setCurrentChatId(null)
     currentChatIdRef.current = null
     setChatTitle(null)
+    setParentChat(null)
     setStreamingMessage(null)
     setFeedbackMap({})
     pendingMessagesToSaveRef.current = null
@@ -2510,6 +2543,59 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     [isLoading, messages, runChatTurn, updateChatMessages],
   )
 
+  const performBranch = useCallback(
+    async (index: number) => {
+      if (isLoading) return
+      if (index < 0 || index >= messages.length) return
+      if (messages[index]?.role !== 'user') return
+
+      const truncated = messages.slice(0, index + 1)
+      const sourceChatId = currentChatIdRef.current
+
+      setMessages(truncated)
+      setCurrentChatId(null)
+      currentChatIdRef.current = null
+      setChatTitle(null)
+      setFeedbackMap({})
+      pendingMessagesToSaveRef.current = null
+      setStreamingMessage(null)
+      setError(null)
+
+      const newParams = new URLSearchParams(searchParams)
+      newParams.delete('chat')
+      setSearchParams(newParams, { replace: true })
+
+      createChatWithMessage(truncated, {
+        parentChatId: sourceChatId ?? null,
+      })
+      await runChatTurn(truncated)
+    },
+    [
+      createChatWithMessage,
+      isLoading,
+      messages,
+      runChatTurn,
+      searchParams,
+      setSearchParams,
+    ],
+  )
+
+  const handleBranch = useCallback(
+    (index: number) => {
+      if (isLoading) return
+      if (index < 0 || index >= messages.length) return
+      if (messages[index]?.role !== 'user') return
+
+      const hasMessagesAfter = index < messages.length - 1
+      if (hasMessagesAfter) {
+        setPendingBranchIndex(index)
+        return
+      }
+      void performBranch(index)
+    },
+    [isLoading, messages, performBranch],
+  )
+
   const handleRegenerate = useCallback(
     async (assistantIndex: number) => {
       if (isLoading) return
@@ -2737,15 +2823,38 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
               >
                 <ArrowLeftIcon className='h-4 w-4' />
               </button>
-              <h2
-                className='truncate text-sm font-semibold text-gray-800 dark:text-gray-100'
-                title={chatTitle ?? undefined}
-              >
-                {chatTitle ||
-                  (currentChatId
-                    ? t('project.askAi.untitledChat')
-                    : t('project.askAi.newChat'))}
-              </h2>
+              <div className='flex min-w-0 flex-col'>
+                <h2
+                  className='truncate text-sm font-semibold text-gray-800 dark:text-gray-100'
+                  title={chatTitle ?? undefined}
+                >
+                  {chatTitle ||
+                    (currentChatId
+                      ? t('project.askAi.untitledChat')
+                      : t('project.askAi.newChat'))}
+                </h2>
+                {parentChat ? (
+                  <button
+                    type='button'
+                    onClick={() => {
+                      const newParams = new URLSearchParams(searchParams)
+                      newParams.set('chat', parentChat.id)
+                      setSearchParams(newParams)
+                      loadChatById(parentChat.id)
+                    }}
+                    className='flex max-w-full items-center gap-1 truncate text-left text-xs text-gray-500 transition-colors hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+                    title={parentChat.name ?? t('project.askAi.untitledChat')}
+                  >
+                    <GitBranchIcon className='h-3 w-3 shrink-0' />
+                    <span className='truncate'>
+                      {t('project.askAi.branchedFrom', {
+                        name:
+                          parentChat.name ?? t('project.askAi.untitledChat'),
+                      })}
+                    </span>
+                  </button>
+                ) : null}
+              </div>
             </div>
             <div className='flex shrink-0 items-center gap-2'>
               <button
@@ -2941,6 +3050,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                           onEdit={(newContent) =>
                             handleEditUserMessage(idx, newContent)
                           }
+                          onBranch={() => handleBranch(idx)}
                         />
                       )
                     }
@@ -3127,6 +3237,22 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         submitText={t('common.delete')}
         closeText={t('common.cancel')}
         submitType='danger'
+      />
+
+      <Modal
+        isOpened={pendingBranchIndex !== null}
+        onClose={() => setPendingBranchIndex(null)}
+        onSubmit={() => {
+          if (pendingBranchIndex !== null) {
+            const idx = pendingBranchIndex
+            setPendingBranchIndex(null)
+            void performBranch(idx)
+          }
+        }}
+        title={t('project.askAi.branchOff')}
+        message={t('project.askAi.branchOffConfirm')}
+        submitText={t('project.askAi.branchOff')}
+        closeText={t('common.cancel')}
       />
     </div>
   )

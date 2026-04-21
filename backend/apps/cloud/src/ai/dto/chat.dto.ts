@@ -137,6 +137,16 @@ export class CreateChatDto {
   @IsString()
   @MaxLength(MAX_CHAT_NAME_LENGTH)
   name?: string
+
+  @ApiProperty({
+    required: false,
+    description:
+      'ID of the chat this conversation was branched from. Must belong to the same project.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(36)
+  parentChatId?: string
 }
 
 export class UpdateChatDto {

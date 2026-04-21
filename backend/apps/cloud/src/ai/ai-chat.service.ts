@@ -163,14 +163,30 @@ export class AiChatService {
     userId: string | null
     messages: ChatMessage[]
     name?: string
+    parentChatId?: string | null
   }): Promise<AiChat> {
     const chat = this.aiChatRepository.create({
       project: { id: data.projectId },
       user: data.userId ? { id: data.userId } : null,
       messages: data.messages,
       name: data.name || this.generateChatName(data.messages),
+      parentChatId: data.parentChatId ?? null,
     })
     return this.aiChatRepository.save(chat)
+  }
+
+  async findParentSummary(
+    parentChatId: string,
+    projectId: string,
+  ): Promise<{ id: string; name: string | null } | null> {
+    const parent = await this.aiChatRepository
+      .createQueryBuilder('chat')
+      .select(['chat.id', 'chat.name'])
+      .where('chat.id = :parentChatId', { parentChatId })
+      .andWhere('chat.projectId = :projectId', { projectId })
+      .getOne()
+    if (!parent) return null
+    return { id: parent.id, name: parent.name }
   }
 
   async update(

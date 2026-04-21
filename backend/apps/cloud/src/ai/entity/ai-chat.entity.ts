@@ -56,6 +56,10 @@ export class AiChat {
   @JoinColumn()
   user: User | null
 
+  @ApiProperty({ required: false, nullable: true })
+  @Column('varchar', { name: 'parent_chat_id', length: 36, nullable: true })
+  parentChatId: string | null
+
   @ApiProperty()
   @CreateDateColumn()
   created: Date

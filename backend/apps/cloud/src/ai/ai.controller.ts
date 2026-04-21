@@ -563,12 +563,18 @@ export class AiController {
     // Check if the current user is the owner of this chat
     const isOwner = uid && chat.user?.id === uid
 
+    const parentChat = chat.parentChatId
+      ? await this.aiChatService.findParentSummary(chat.parentChatId, pid)
+      : null
+
     return {
       id: chat.id,
       name: chat.name,
       messages: chat.messages,
       pinned: chat.pinned,
       tags: chat.tags ?? [],
+      parentChatId: chat.parentChatId,
+      parentChat,
       created: chat.created,
       updated: chat.updated,
       isOwner,
@@ -604,11 +610,23 @@ export class AiController {
         : m,
     )
 
+    let parentChatId: string | null = null
+    if (createChatDto.parentChatId) {
+      const parent = await this.aiChatService.findParentSummary(
+        createChatDto.parentChatId,
+        pid,
+      )
+      if (parent) {
+        parentChatId = parent.id
+      }
+    }
+
     const chat = await this.aiChatService.create({
       projectId: pid,
       userId: uid,
       messages: sanitisedCreateMessages,
       name: createChatDto.name,
+      parentChatId,
     })
 
     await trackCustom(
@@ -644,6 +662,7 @@ export class AiController {
       id: chat.id,
       name: chat.name,
       messages: chat.messages,
+      parentChatId: chat.parentChatId,
       created: chat.created,
       updated: chat.updated,
     }
@@ -818,6 +837,7 @@ export class AiController {
       userId: uid,
       messages: sanitisedUpdateMessages || existingChat.messages,
       name: updateChatDto.name,
+      parentChatId: existingChat.id,
     })
 
     this.logger.log(

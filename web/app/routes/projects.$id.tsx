@@ -1197,10 +1197,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'create-ai-chat': {
       const messages = JSON.parse(formData.get('messages')?.toString() || '[]')
       const name = formData.get('name')?.toString()
+      const parentChatId = formData.get('parentChatId')?.toString()
+
+      const body: Record<string, unknown> = { messages, name }
+      if (parentChatId) body.parentChatId = parentChatId
 
       const result = await serverFetch(request, `ai/${projectId}/chats`, {
         method: 'POST',
-        body: { messages, name },
+        body,
       })
 
       if (result.error) {
