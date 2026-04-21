@@ -2132,6 +2132,21 @@
       "feedbackSent": "Thanks for the feedback!",
       "untitledChat": "Untitled chat",
       "openInDashboard": "Open in dashboard",
+      "chart": {
+        "changeType": "Change chart type",
+        "downloadPng": "Download as PNG",
+        "downloadCsv": "Download as CSV",
+        "copyData": "Copy data",
+        "dataCopied": "Chart data copied to clipboard",
+        "types": {
+          "line": "Line",
+          "area": "Area",
+          "spline": "Spline",
+          "bar": "Bar",
+          "pie": "Pie",
+          "donut": "Donut"
+        }
+      },
       "tools": {
         "getProjectInfo": "Fetched project info",
         "getData": "Queried data",
