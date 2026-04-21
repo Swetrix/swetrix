@@ -95,10 +95,17 @@ export class AiChatService {
     }
 
     if (search && search.trim().length > 0) {
-      const term = `%${search.trim()}%`
+      // Escape backslash first, then LIKE metacharacters, so a user typing
+      // '%' / '_' matches the literal characters instead of acting as wildcards.
+      const escaped = search
+        .trim()
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_')
+      const term = `%${escaped}%`
 
       const nameQb = applyTagAndPinned(baseQuery()).andWhere(
-        'chat.name LIKE :term',
+        "chat.name LIKE :term ESCAPE '\\\\'",
         { term },
       )
 
@@ -111,7 +118,7 @@ export class AiChatService {
 
       // Fallback to content search across messages JSON
       const contentQb = applyTagAndPinned(baseQuery()).andWhere(
-        'CAST(chat.messages AS CHAR) LIKE :term',
+        "CAST(chat.messages AS CHAR) LIKE :term ESCAPE '\\\\'",
         { term },
       )
 
