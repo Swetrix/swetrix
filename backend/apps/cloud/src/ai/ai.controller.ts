@@ -411,6 +411,8 @@ export class AiController {
           () => controller.abort(),
           FOLLOW_UPS_TIMEOUT_MS,
         )
+        const onClientClose = () => controller.abort()
+        res.on('close', onClientClose)
         try {
           const followUps = await Promise.race([
             this.aiService.generateFollowUps(
@@ -436,6 +438,7 @@ export class AiController {
           )
         } finally {
           clearTimeout(timeoutHandle)
+          res.off('close', onClientClose)
         }
       }
 
