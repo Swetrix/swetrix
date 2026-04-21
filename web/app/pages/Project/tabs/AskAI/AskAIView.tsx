@@ -30,6 +30,8 @@ import {
   FlaskIcon,
   UsersIcon,
   ListBulletsIcon,
+  MicrophoneIcon,
+  MicrophoneSlashIcon,
 } from '@phosphor-icons/react'
 import { marked } from 'marked'
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
@@ -40,6 +42,7 @@ import { toast } from 'sonner'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { askAI } from '~/api'
+import useSpeechRecognition from '~/hooks/useSpeechRecognition'
 import { ProjectViewActionData } from '~/routes/projects.$id'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import Modal from '~/ui/Modal'
@@ -879,6 +882,107 @@ const ScrollToBottomButton = ({
   )
 }
 
+interface VoiceInputButtonProps {
+  isListening: boolean
+  isLoading: boolean
+  onStart: () => void
+  onStop: () => void
+}
+
+const HOLD_THRESHOLD_MS = 300
+
+const VoiceInputButton = ({
+  isListening,
+  isLoading,
+  onStart,
+  onStop,
+}: VoiceInputButtonProps) => {
+  const { t } = useTranslation('common')
+  const holdTimerRef = useRef<number | null>(null)
+  const holdActiveRef = useRef(false)
+
+  useEffect(() => {
+    return () => {
+      if (holdTimerRef.current) {
+        window.clearTimeout(holdTimerRef.current)
+      }
+    }
+  }, [])
+
+  const clearHoldTimer = () => {
+    if (holdTimerRef.current) {
+      window.clearTimeout(holdTimerRef.current)
+      holdTimerRef.current = null
+    }
+  }
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (isLoading) return
+    e.preventDefault()
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    holdActiveRef.current = false
+    clearHoldTimer()
+    holdTimerRef.current = window.setTimeout(() => {
+      holdActiveRef.current = true
+      if (!isListening) onStart()
+    }, HOLD_THRESHOLD_MS)
+  }
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (isLoading) return
+    e.currentTarget.releasePointerCapture?.(e.pointerId)
+    const wasHold = holdActiveRef.current
+    clearHoldTimer()
+    holdActiveRef.current = false
+    if (wasHold) {
+      if (isListening) onStop()
+      return
+    }
+    if (isListening) {
+      onStop()
+    } else {
+      onStart()
+    }
+  }
+
+  const handlePointerCancel = () => {
+    clearHoldTimer()
+    if (holdActiveRef.current && isListening) {
+      onStop()
+    }
+    holdActiveRef.current = false
+  }
+
+  const label = isListening
+    ? t('project.askAi.listening')
+    : t('project.askAi.voiceInput')
+
+  return (
+    <button
+      type='button'
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      disabled={isLoading}
+      aria-label={label}
+      aria-pressed={isListening}
+      title={label}
+      className={cn(
+        'flex h-7 w-7 items-center justify-center rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+        isListening
+          ? 'animate-pulse bg-red-500 text-white hover:bg-red-600'
+          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200',
+      )}
+    >
+      {isListening ? (
+        <MicrophoneSlashIcon className='h-4 w-4' weight='fill' />
+      ) : (
+        <MicrophoneIcon className='h-4 w-4' />
+      )}
+    </button>
+  )
+}
+
 const getSuggestionPrompts = (t: any) => [
   t('project.askAi.suggestions.compareVisitors'),
   t('project.askAi.suggestions.topTrafficSources'),
@@ -911,6 +1015,17 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const baseInputRef = useRef('')
+  const [voiceDisabled, setVoiceDisabled] = useState(false)
+  const {
+    isListening,
+    transcript: speechTranscript,
+    start: startSpeech,
+    stop: stopSpeech,
+    isSupported: isSpeechSupported,
+    error: speechError,
+  } = useSpeechRecognition()
+  const showVoice = isSpeechSupported && !voiceDisabled
 
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const [chatTitle, setChatTitle] = useState<string | null>(null)
@@ -1469,9 +1584,39 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     [projectId, t, updateChatMessages],
   )
 
+  useEffect(() => {
+    if (!speechTranscript) return
+    setInput(`${baseInputRef.current}${speechTranscript}`)
+  }, [speechTranscript])
+
+  useEffect(() => {
+    if (!speechError) return
+    if (
+      speechError === 'not-allowed' ||
+      speechError === 'service-not-allowed'
+    ) {
+      toast.error(t('project.askAi.voicePermissionDenied'))
+      setVoiceDisabled(true)
+    }
+  }, [speechError, t])
+
+  const handleStartVoice = useCallback(() => {
+    if (isLoading) return
+    baseInputRef.current = input ? `${input.replace(/\s+$/, '')} ` : ''
+    startSpeech()
+  }, [input, isLoading, startSpeech])
+
+  const handleStopVoice = useCallback(() => {
+    stopSpeech()
+  }, [stopSpeech])
+
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault()
     if (!input.trim() || isLoading) return
+
+    if (isListening) {
+      stopSpeech()
+    }
 
     const userMessage: Message = {
       id: generateMessageId(),
@@ -1481,6 +1626,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     const newMessages = [...messages, userMessage]
     setMessages(newMessages)
     setInput('')
+    baseInputRef.current = ''
 
     if (!currentChatIdRef.current) {
       createChatWithMessage(newMessages)
@@ -1776,18 +1922,37 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                               }
                             />
                           </div>
-                          <button
-                            type='submit'
-                            disabled={!input.trim() || isLoading}
-                            className='flex h-7 w-7 items-center justify-center rounded-lg bg-gray-900 text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900'
-                          >
-                            <ArrowUpIcon className='h-3.5 w-3.5' />
-                          </button>
+                          <div className='flex items-center gap-1.5'>
+                            {showVoice ? (
+                              <VoiceInputButton
+                                isListening={isListening}
+                                isLoading={isLoading}
+                                onStart={handleStartVoice}
+                                onStop={handleStopVoice}
+                              />
+                            ) : null}
+                            <button
+                              type='submit'
+                              disabled={!input.trim() || isLoading}
+                              className='flex h-7 w-7 items-center justify-center rounded-lg bg-gray-900 text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900'
+                            >
+                              <ArrowUpIcon className='h-3.5 w-3.5' />
+                            </button>
+                          </div>
                         </div>
                       </form>
                     </div>
-                    <p className='mt-2 text-center text-xs text-gray-400 dark:text-gray-500'>
-                      {t('project.askAi.disclaimer')}
+                    <p
+                      className={cn(
+                        'mt-2 text-center text-xs',
+                        isListening
+                          ? 'text-red-500 dark:text-red-400'
+                          : 'text-gray-400 dark:text-gray-500',
+                      )}
+                    >
+                      {isListening
+                        ? t('project.askAi.listening')
+                        : t('project.askAi.disclaimer')}
                     </p>
                   </div>
                 </div>
@@ -1891,7 +2056,15 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                       }
                     />
                   </div>
-                  <div className='flex items-center gap-2'>
+                  <div className='flex items-center gap-1.5'>
+                    {showVoice && !isLoading ? (
+                      <VoiceInputButton
+                        isListening={isListening}
+                        isLoading={isLoading}
+                        onStart={handleStartVoice}
+                        onStop={handleStopVoice}
+                      />
+                    ) : null}
                     {isLoading ? (
                       <button
                         type='button'
@@ -1915,8 +2088,17 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 </div>
               </form>
             </div>
-            <p className='mt-2 text-center text-xs text-gray-400 dark:text-gray-500'>
-              {t('project.askAi.disclaimer')}
+            <p
+              className={cn(
+                'mt-2 text-center text-xs',
+                isListening
+                  ? 'text-red-500 dark:text-red-400'
+                  : 'text-gray-400 dark:text-gray-500',
+              )}
+            >
+              {isListening
+                ? t('project.askAi.listening')
+                : t('project.askAi.disclaimer')}
             </p>
           </div>
         </div>

@@ -2177,6 +2177,10 @@
       "dismiss": "Dismiss",
       "stop": "Stop",
       "loadMore": "Load more",
+      "voiceInput": "Voice input",
+      "listening": "Listening… click again to stop",
+      "voiceUnsupported": "Voice input is not supported in this browser",
+      "voicePermissionDenied": "Microphone access denied",
       "timeFormat": {
         "justNow": "Just now",
         "minutes": "{{count}}m",
