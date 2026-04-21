@@ -17,6 +17,31 @@ import { Type, Transform } from 'class-transformer'
 const MAX_MESSAGES_PER_CHAT = 50
 const MAX_MESSAGE_LENGTH = 5000
 const MAX_CHAT_NAME_LENGTH = 200
+const MAX_TOOL_CALLS_PER_MESSAGE = 50
+const MAX_TOOL_NAME_LENGTH = 100
+
+class ChatMessageToolCallDto {
+  @ApiProperty({ description: 'Tool name that was invoked' })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(MAX_TOOL_NAME_LENGTH)
+  toolName: string
+
+  @ApiProperty({
+    description: 'Arguments the tool was called with (arbitrary JSON)',
+  })
+  @IsOptional()
+  args?: unknown
+
+  @ApiProperty({
+    required: false,
+    description: 'ISO timestamp when the tool call was issued',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  timestamp?: string
+}
 
 class ChatMessageDto {
   @ApiProperty({
@@ -46,6 +71,19 @@ class ChatMessageDto {
   @IsString({ each: true })
   @MaxLength(140, { each: true })
   followUps?: string[]
+
+  @ApiProperty({
+    required: false,
+    type: [ChatMessageToolCallDto],
+    description:
+      'Tool calls performed while producing this assistant message (used for the "How I got this" breakdown)',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_TOOL_CALLS_PER_MESSAGE)
+  @ValidateNested({ each: true })
+  @Type(() => ChatMessageToolCallDto)
+  toolCalls?: ChatMessageToolCallDto[]
 }
 
 export class ChatDto {

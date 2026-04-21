@@ -52,6 +52,7 @@ import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 
 import AIChart from './AIChart'
+import { formatToolCallSummary, ToolCallSummary } from './toolFormatters'
 
 interface MessagePart {
   type: 'text' | 'toolCall'
@@ -67,12 +68,19 @@ interface AIChatSummary {
   updated: string
 }
 
+interface MessageToolCall {
+  toolName: string
+  args: unknown
+  completed?: boolean
+  timestamp?: string
+}
+
 interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
   reasoning?: string
-  toolCalls?: Array<{ toolName: string; args: unknown; completed?: boolean }>
+  toolCalls?: MessageToolCall[]
   parts?: MessagePart[]
   followUps?: string[]
 }
@@ -511,6 +519,148 @@ const MessageContent = ({
   )
 }
 
+const formatRelativeTimestamp = (timestamp: string, t: any): string | null => {
+  const date = new Date(timestamp)
+  if (Number.isNaN(date.getTime())) return null
+  const diffMs = Date.now() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return t('project.askAi.timeFormat.justNow')
+  if (diffMins < 60)
+    return t('project.askAi.timeFormat.minutes', { count: diffMins })
+  if (diffHours < 24)
+    return t('project.askAi.timeFormat.hours', { count: diffHours })
+  if (diffDays < 7)
+    return t('project.askAi.timeFormat.days', { count: diffDays })
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const ToolCallSummaryDrawer = ({
+  toolCalls,
+}: {
+  toolCalls: MessageToolCall[]
+}) => {
+  const { t } = useTranslation('common')
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const summaries = useMemo<ToolCallSummary[]>(
+    () => toolCalls.map((tc) => formatToolCallSummary(tc.toolName, tc.args, t)),
+    [toolCalls, t],
+  )
+
+  if (toolCalls.length === 0) return null
+
+  const buttonLabel = t('project.askAi.howIGotThis', {
+    count: toolCalls.length,
+    defaultValue:
+      toolCalls.length === 1
+        ? 'How I got this · 1 step'
+        : `How I got this · ${toolCalls.length} steps`,
+  })
+
+  return (
+    <div className='mt-3'>
+      <button
+        type='button'
+        onClick={() => setIsExpanded((v) => !v)}
+        aria-expanded={isExpanded}
+        className='inline-flex items-center gap-1.5 rounded-md text-xs font-medium text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+      >
+        <span>{buttonLabel}</span>
+        {isExpanded ? (
+          <CaretDownIcon className='h-3 w-3' />
+        ) : (
+          <CaretRightIcon className='h-3 w-3' />
+        )}
+      </button>
+
+      {isExpanded ? (
+        <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900/40'>
+          <ol className='divide-y divide-gray-100 dark:divide-slate-800/80'>
+            {_map(summaries, (summary, idx) => {
+              const { label: toolLabel, icon: Icon } = getToolInfo(
+                summary.toolName,
+                t,
+              )
+              const timestamp = toolCalls[idx]?.timestamp
+              const relative = timestamp
+                ? formatRelativeTimestamp(timestamp, t)
+                : null
+              return (
+                <li key={idx} className='px-3 py-2.5'>
+                  <div className='flex items-start gap-2.5'>
+                    <span className='mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[10px] font-semibold text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
+                      {idx + 1}
+                    </span>
+                    <div className='min-w-0 flex-1'>
+                      <div className='flex flex-wrap items-center gap-1.5'>
+                        <Icon className='h-3.5 w-3.5 text-gray-500 dark:text-gray-400' />
+                        <span className='text-xs font-medium text-gray-800 dark:text-gray-100'>
+                          {toolLabel}
+                        </span>
+                        {relative ? (
+                          <span className='text-[11px] text-gray-400 dark:text-gray-500'>
+                            · {relative}
+                          </span>
+                        ) : null}
+                      </div>
+                      {summary.params.length === 0 ? (
+                        <p className='mt-1 text-xs text-gray-400 italic dark:text-gray-500'>
+                          {t('project.askAi.noParameters')}
+                        </p>
+                      ) : (
+                        <dl className='mt-1.5 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs'>
+                          {_map(summary.params, (param, pIdx) => (
+                            <React.Fragment key={pIdx}>
+                              <dt className='text-gray-500 dark:text-gray-400'>
+                                {t(param.labelKey, {
+                                  defaultValue: param.fallbackLabel,
+                                })}
+                              </dt>
+                              <dd className='min-w-0 text-gray-800 dark:text-gray-100'>
+                                {param.entries ? (
+                                  <ul className='space-y-0.5'>
+                                    {_map(param.entries, (entry, eIdx) => (
+                                      <li
+                                        key={eIdx}
+                                        className='wrap-break-word'
+                                      >
+                                        {entry}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : param.json ? (
+                                  <pre className='overflow-x-auto rounded-md bg-gray-50 p-2 font-mono text-[11px] leading-snug text-gray-700 dark:bg-slate-950/60 dark:text-gray-300'>
+                                    {param.json}
+                                  </pre>
+                                ) : (
+                                  <span className='wrap-break-word'>
+                                    {param.value}
+                                  </span>
+                                )}
+                              </dd>
+                            </React.Fragment>
+                          ))}
+                        </dl>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 const AssistantMessage = ({
   message,
   isStreaming,
@@ -633,6 +783,10 @@ const AssistantMessage = ({
           />
         </>
       )}
+
+      {!isStreaming && message.toolCalls && message.toolCalls.length > 0 ? (
+        <ToolCallSummaryDrawer toolCalls={message.toolCalls} />
+      ) : null}
 
       {!isStreaming &&
       hasContent &&
@@ -997,6 +1151,7 @@ interface AIChat {
     role: 'user' | 'assistant'
     content: string
     followUps?: string[]
+    toolCalls?: MessageToolCall[]
   }[]
   isOwner?: boolean
   branched?: boolean
@@ -1068,9 +1223,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   const streamingContentRef = useRef('')
   const streamingReasoningRef = useRef('')
-  const streamingToolCallsRef = useRef<
-    Array<{ toolName: string; args: unknown }>
-  >([])
+  const streamingToolCallsRef = useRef<MessageToolCall[]>([])
   const streamingPartsRef = useRef<MessagePart[]>([])
   const currentTextPartRef = useRef('')
   const streamingFollowUpsRef = useRef<string[] | null>(null)
@@ -1180,6 +1333,16 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
               m.followUps.length > 0
                 ? m.followUps
                 : undefined,
+            toolCalls:
+              m.role === 'assistant' &&
+              Array.isArray(m.toolCalls) &&
+              m.toolCalls.length > 0
+                ? m.toolCalls.map((tc) => ({
+                    toolName: tc.toolName,
+                    args: tc.args,
+                    timestamp: tc.timestamp,
+                  }))
+                : undefined,
           })),
         )
         setCurrentChatId(chat.id)
@@ -1210,12 +1373,24 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       role: 'user' | 'assistant'
       content: string
       followUps?: string[]
+      toolCalls?: Array<{
+        toolName: string
+        args: unknown
+        timestamp?: string
+      }>
     } = {
       role: m.role,
       content: m.content,
     }
     if (m.role === 'assistant' && m.followUps && m.followUps.length > 0) {
       base.followUps = m.followUps
+    }
+    if (m.role === 'assistant' && m.toolCalls && m.toolCalls.length > 0) {
+      base.toolCalls = m.toolCalls.map((tc) => ({
+        toolName: tc.toolName,
+        args: tc.args,
+        timestamp: tc.timestamp,
+      }))
     }
     return base
   }
@@ -1476,7 +1651,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             },
             onToolCall: (toolName, args) => {
               setIsWaitingForResponse(false)
-              streamingToolCallsRef.current.push({ toolName, args })
+              streamingToolCallsRef.current.push({
+                toolName,
+                args,
+                timestamp: new Date().toISOString(),
+              })
 
               if (currentTextPartRef.current.trim()) {
                 streamingPartsRef.current.push({

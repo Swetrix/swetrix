@@ -11,10 +11,17 @@ import { ApiProperty } from '@nestjs/swagger'
 import { Project } from '../../project/entity/project.entity'
 import { User } from '../../user/entities/user.entity'
 
+export interface ChatMessageToolCall {
+  toolName: string
+  args?: unknown
+  timestamp?: string
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   followUps?: string[]
+  toolCalls?: ChatMessageToolCall[]
 }
 
 @Entity('ai_chat')

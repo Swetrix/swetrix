@@ -2142,6 +2142,47 @@
         "getSessionsList": "Fetched recent sessions",
         "getProfilesOverview": "Fetched profiles overview"
       },
+      "howIGotThis_one": "How I got this · 1 step",
+      "howIGotThis_other": "How I got this · {{count}} steps",
+      "noParameters": "No parameters",
+      "params": {
+        "period": "Period",
+        "from": "From",
+        "to": "To",
+        "dateRange": "Date range",
+        "dataType": "Data type",
+        "timeBucket": "Granularity",
+        "measure": "Measure",
+        "filters": "Filters",
+        "goalId": "Goal",
+        "funnelId": "Funnel",
+        "flagId": "Feature flag",
+        "experimentId": "Experiment",
+        "country": "Country",
+        "page": "Page",
+        "take": "Limit",
+        "opContains": "contains",
+        "opNotContains": "does not contain",
+        "dataTypes": {
+          "analytics": "Traffic analytics",
+          "performance": "Performance",
+          "captcha": "CAPTCHA",
+          "errors": "Errors",
+          "customEvents": "Custom events"
+        },
+        "timeBuckets": {
+          "minute": "Minute",
+          "hour": "Hour",
+          "day": "Day",
+          "month": "Month",
+          "year": "Year"
+        },
+        "measures": {
+          "average": "Average",
+          "median": "Median",
+          "p95": "p95"
+        }
+      },
       "capabilities": {
         "title": "Swetrix AI can:",
         "queryAnalytics": "Query analytics including pageviews, visitors, and sessions",
