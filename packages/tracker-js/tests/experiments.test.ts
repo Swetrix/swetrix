@@ -1,5 +1,6 @@
 import { init, getExperiment, getExperiments, clearExperimentsCache } from '../src/index'
 import { Lib } from '../src/Lib'
+import { setLocation } from './testUtils'
 
 // Mock fetch globally
 const mockFetch = jest.fn()
@@ -16,15 +17,7 @@ describe('A/B Testing Experiments', () => {
     // Reset fetch mock
     mockFetch.mockReset()
 
-    Object.defineProperty(window, 'location', {
-      value: {
-        hostname: 'example.com',
-        pathname: '/test-page',
-        hash: '',
-        search: '',
-      },
-      writable: true,
-    })
+    setLocation({ hostname: 'example.com', pathname: '/test-page' })
   })
 
   describe('getExperiments', () => {

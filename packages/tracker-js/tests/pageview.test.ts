@@ -1,5 +1,6 @@
 import { init, pageview, trackViews } from '../src/index'
 import { Lib } from '../src/Lib'
+import { setLocation } from './testUtils'
 
 jest.mock('../src/Lib', () => {
   const originalModule = jest.requireActual('../src/Lib')
@@ -21,19 +22,12 @@ describe('Pageview Tracking', () => {
 
     libInstance = init(PROJECT_ID, { devMode: true }) as Lib
 
-    Object.defineProperty(window, 'location', {
-      value: {
-        hostname: 'example.com',
-        pathname: '/test-page',
-        hash: '',
-        search: '',
-      },
-      writable: true,
-    })
+    setLocation({ hostname: 'example.com', pathname: '/test-page' })
 
     Object.defineProperty(document, 'referrer', {
       value: 'https://google.com',
       writable: true,
+      configurable: true,
     })
   })
 
