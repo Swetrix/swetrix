@@ -91,9 +91,11 @@ You don't need to do anything for these — they're handled in our backend:
   and override any click‑ID inference.
 
 <Callout type="info">
-  For Swetrix to see click IDs on internal pageviews of single-page apps, enable `search: true` in
-  `trackViews()`. Without it, only the initial landing pageview will include the URL search string.
-  See the [script reference](/swetrix-js-reference#trackviews).
+  Click‑ID detection works automatically on every pageview, including internal navigation in
+  single-page apps. The tracker captures the URL query string on each pageview and forwards it to
+  our backend, where the click ID is matched against our map and discarded — only the inferred
+  `source` / `medium` is stored. Make sure you're on a recent version of the `swetrix` script if
+  you're not seeing this behaviour.
 </Callout>
 
 ## What you can do as a site owner

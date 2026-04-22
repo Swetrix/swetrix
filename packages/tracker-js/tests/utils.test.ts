@@ -116,6 +116,41 @@ describe('Utility Functions', () => {
     expect(utils.getReferrer()).toBeUndefined()
   })
 
+  test('getQueryString should return the URL query string without the leading ?', () => {
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/landing',
+        hash: '',
+        search: '?fbclid=AbCdEf123&utm_source=newsletter',
+      },
+      writable: true,
+    })
+    expect(utils.getQueryString()).toBe(
+      'fbclid=AbCdEf123&utm_source=newsletter',
+    )
+
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/landing',
+        hash: '',
+        search: '',
+      },
+      writable: true,
+    })
+    expect(utils.getQueryString()).toBeUndefined()
+
+    // Hash-routed SPAs sometimes carry the query string after the `#`.
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/',
+        hash: '#/landing?gclid=xyz',
+        search: '',
+      },
+      writable: true,
+    })
+    expect(utils.getQueryString()).toBe('gclid=xyz')
+  })
+
   test('getPath should handle different URL formats', () => {
     // Arrange
     Object.defineProperty(window, 'location', {

@@ -1,13 +1,39 @@
 {
   "name": "swetrix",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "The JavaScript analytics client for Swetrix Analytics",
+  "keywords": [
+    "analytics",
+    "metrics",
+    "monitoring",
+    "privacy",
+    "swetrix"
+  ],
+  "homepage": "https://docs.swetrix.com",
+  "bugs": {
+    "url": "https://github.com/Swetrix/swetrix-js/issues"
+  },
+  "license": "MIT",
+  "author": "Andrii Romasiun, Swetrix Ltd. <contact@swetrix.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Swetrix/swetrix-js.git"
+  },
+  "funding": "https://github.com/sponsors/Swetrix",
   "type": "module",
   "main": "dist/swetrix.cjs.js",
   "module": "dist/swetrix.es5.js",
   "browser": "dist/swetrix.js",
-  "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
+  "esnext": "dist/esnext/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esnext/index.js",
+      "require": "./dist/swetrix.cjs.js",
+      "types": "./dist/esnext/index.d.ts",
+      "default": "./dist/swetrix.js"
+    }
+  },
   "scripts": {
     "prebuild": "rimraf dist",
     "prepublish": "npm run build",
@@ -18,32 +44,6 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
-  "exports": {
-    ".": {
-      "import": "./dist/esnext/index.js",
-      "require": "./dist/swetrix.cjs.js",
-      "types": "./dist/esnext/index.d.ts",
-      "default": "./dist/swetrix.js"
-    }
-  },
-  "keywords": [
-    "swetrix",
-    "analytics",
-    "monitoring",
-    "metrics",
-    "privacy"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Swetrix/swetrix-js.git"
-  },
-  "author": "Andrii Romasiun, Swetrix Ltd. <contact@swetrix.com>",
-  "funding": "https://github.com/sponsors/Swetrix",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Swetrix/swetrix-js/issues"
-  },
-  "homepage": "https://docs.swetrix.com",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-node-resolve": "^16.0.1",
@@ -55,8 +55,8 @@
     "jest-environment-jsdom": "^29.7.0",
     "rimraf": "^6.0.1",
     "rollup": "^4.41.0",
-    "tslib": "^2.6.3",
     "ts-jest": "^29.3.4",
+    "tslib": "^2.6.3",
     "typescript": "^5.8.3"
   },
   "devEngines": {

@@ -116,21 +116,33 @@ const CLICK_ID_MAP: Record<string, ClickIdMapping> = {
 const CLICK_ID_KEYS = Object.keys(CLICK_ID_MAP)
 
 /**
- * Pulls the URL search string out of a `pg` value the tracker sent.
- *
- * The tracker only includes the search part when the user enables
- * `search: true` in `trackPageViews`. When it is included the value
- * looks like `/path?foo=bar&fbclid=abc` (or `/path#hash?foo=bar`).
+ * Pulls the URL search string out of a `pg` value when the tracker
+ * included it (i.e. when the user enabled `search: true` in
+ * `trackPageViews`). Returns the part after `?`, with any trailing
+ * `#hash` fragment stripped. This is a fallback for tracker versions
+ * that don't yet send the dedicated `qs` field.
  */
-const extractSearchString = (pg: string | null | undefined): string => {
+const extractSearchFromPg = (pg: string | null | undefined): string => {
   if (!pg) return ''
   const qIdx = pg.indexOf('?')
   if (qIdx === -1) return ''
   let search = pg.slice(qIdx + 1)
-  // Strip a trailing hash fragment if present (`?a=b#hash`)
   const hashIdx = search.indexOf('#')
   if (hashIdx !== -1) search = search.slice(0, hashIdx)
   return search
+}
+
+/**
+ * Normalises a query string the tracker sent in the `qs` field. We
+ * accept it with or without a leading `?` and strip a trailing
+ * `#hash` defensively.
+ */
+const normaliseQs = (qs: string | null | undefined): string => {
+  if (!qs) return ''
+  let result = qs.startsWith('?') ? qs.slice(1) : qs
+  const hashIdx = result.indexOf('#')
+  if (hashIdx !== -1) result = result.slice(0, hashIdx)
+  return result
 }
 
 /**
@@ -161,6 +173,13 @@ interface TrafficSourceFields {
   te?: string | null
   co?: string | null
   pg?: string | null
+  /**
+   * Raw URL query string (without leading `?`) the tracker captured
+   * from the landing page. Preferred over `pg` because `pg` only
+   * contains the search part when the site explicitly opts into
+   * `search: true` in `trackPageViews`.
+   */
+  qs?: string | null
 }
 
 /**
@@ -176,7 +195,7 @@ export const enrichTrafficSource = <T extends TrafficSourceFields>(
 ): T => {
   if (!payload) return payload
 
-  const search = extractSearchString(payload.pg)
+  const search = normaliseQs(payload.qs) || extractSearchFromPg(payload.pg)
   const mapping = findClickIdMapping(search)
   if (mapping) {
     if (!payload.so) payload.so = mapping.source

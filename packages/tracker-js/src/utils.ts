@@ -48,6 +48,28 @@ export const getReferrer = (): string | undefined => {
   return document.referrer || undefined
 }
 
+/**
+ * Returns the URL query string (without the leading `?`) of the current
+ * page, or `undefined` if there is none.
+ *
+ * Falls back to a query string embedded in `location.hash` (e.g. when a
+ * hash router uses `/#/path?foo=bar`) so we still capture click IDs in
+ * SPA hash-routed setups.
+ */
+export const getQueryString = (): string | undefined => {
+  if (location.search && location.search.length > 1) {
+    return location.search.slice(1)
+  }
+
+  const hashIndex = location.hash.indexOf('?')
+  if (hashIndex > -1) {
+    const hashQuery = location.hash.slice(hashIndex + 1)
+    if (hashQuery) return hashQuery
+  }
+
+  return undefined
+}
+
 export const getUTMSource = () => findInSearch(utmSourceRegex)
 
 export const getUTMMedium = () => findInSearch(utmMediumRegex) || getGclid()
