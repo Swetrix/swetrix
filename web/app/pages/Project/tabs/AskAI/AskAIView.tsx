@@ -759,7 +759,7 @@ const AssistantMessage = ({
       ) : null}
 
       {!isStreaming && hasContent ? (
-        <div className='mt-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100'>
+        <div className='mt-1 flex items-center gap-0.5 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:hover)]:opacity-0'>
           <button
             type='button'
             onClick={handleCopy}
