@@ -123,6 +123,14 @@ export interface TrackPageViewOptions {
   /** A campaign of the pageview (e.g. utm_campaign GET parameter) */
   ca?: string
 
+  /**
+   * Raw URL query string of the landing page (without the leading `?`).
+   * Used server-side to recover the traffic source from ad/social click
+   * IDs (gclid, fbclid, msclkid, ttclid, etc.) when the browser stripped
+   * the referrer. UTM parameters always take precedence over click IDs.
+   */
+  qs?: string
+
   /** If set to true, only unique visits will be saved */
   unique?: boolean
 
@@ -213,6 +221,14 @@ export interface TrackEventOptions {
 
   /** A campaign of the event (e.g. utm_campaign GET parameter) */
   ca?: string
+
+  /**
+   * Raw URL query string of the landing page (without the leading `?`).
+   * Used server-side to recover the traffic source from ad/social click
+   * IDs (gclid, fbclid, msclkid, ttclid, etc.) when the browser stripped
+   * the referrer. UTM parameters always take precedence over click IDs.
+   */
+  qs?: string
 
   /** Event-related metadata object with string values. */
   meta?: {
