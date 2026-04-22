@@ -11,13 +11,13 @@
   ],
   "homepage": "https://swetrix.com/captcha",
   "bugs": {
-    "url": "https://github.com/Swetrix/swetrix-captcha/issues"
+    "url": "https://github.com/Swetrix/swetrix/issues"
   },
   "license": "MIT",
   "author": "Swetrix Ltd <contact@swetrix.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Swetrix/swetrix-captcha.git"
+    "url": "git+https://github.com/Swetrix/swetrix.git"
   },
   "type": "module",
   "typings": "dist/esnext/index.d.ts",

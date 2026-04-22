@@ -11,13 +11,13 @@
   ],
   "homepage": "https://docs.swetrix.com",
   "bugs": {
-    "url": "https://github.com/Swetrix/swetrix-node/issues"
+    "url": "https://github.com/Swetrix/swetrix/issues"
   },
   "license": "MIT",
   "author": "Andrii R. <andrii@swetrix.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Swetrix/swetrix-node.git"
+    "url": "git+https://github.com/Swetrix/swetrix.git"
   },
   "funding": "https://ko-fi.com/andriir",
   "type": "module",

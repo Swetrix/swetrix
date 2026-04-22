@@ -11,13 +11,13 @@
   ],
   "homepage": "https://docs.swetrix.com",
   "bugs": {
-    "url": "https://github.com/Swetrix/swetrix-js/issues"
+    "url": "https://github.com/Swetrix/swetrix/issues"
   },
   "license": "MIT",
   "author": "Andrii Romasiun, Swetrix Ltd. <contact@swetrix.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Swetrix/swetrix-js.git"
+    "url": "git+https://github.com/Swetrix/swetrix.git"
   },
   "funding": "https://github.com/sponsors/Swetrix",
   "type": "module",
