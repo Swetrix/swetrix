@@ -1524,8 +1524,9 @@ export class AnalyticsService {
         HAVING level > 0
       ),
       expanded AS (
-        SELECT psid, arrayJoin(range(1, toUInt64(level + 1))) AS step
+        SELECT psid, arrayJoin(range(1, toUInt64(assumeNotNull(level) + 1))) AS step
         FROM funnel_sessions
+        WHERE level IS NOT NULL AND level > 0
       ),
       session_info AS (
         SELECT
