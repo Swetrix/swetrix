@@ -91,6 +91,7 @@ import {
   performanceTransformer,
   trafficTransformer,
 } from './utils/transformers'
+import { enrichTrafficSource } from './utils/clickIdSources'
 import {
   MAX_METRICS_IN_VIEW,
   ProjectViewCustomEventDto,
@@ -1583,6 +1584,8 @@ export class AnalyticsController {
       profileId,
     )
 
+    enrichTrafficSource(eventsDTO)
+
     const transformed = customEventTransformer(
       psid,
       profileId,
@@ -1722,6 +1725,8 @@ export class AnalyticsController {
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
+
+    enrichTrafficSource(logDTO)
 
     const transformed = trafficTransformer(
       psid,
