@@ -116,12 +116,6 @@ const CLICK_ID_MAP: Record<string, ClickIdMapping> = {
 const CLICK_ID_KEYS = Object.keys(CLICK_ID_MAP)
 
 /**
- * Placeholder value the JS tracker historically sent in the `me` field
- * when only a `gclid` was detected on the client. We rewrite it here.
- */
-const LEGACY_GCLID_PLACEHOLDER = '<gclid>'
-
-/**
  * Pulls the URL search string out of a `pg` value the tracker sent.
  *
  * The tracker only includes the search part when the user enables
@@ -182,15 +176,6 @@ export const enrichTrafficSource = <T extends TrafficSourceFields>(
 ): T => {
   if (!payload) return payload
 
-  // 1. Rewrite the legacy `<gclid>` placeholder the JS tracker emits.
-  if (payload.me === LEGACY_GCLID_PLACEHOLDER) {
-    const gclidMapping = CLICK_ID_MAP.gclid
-    payload.me = gclidMapping.medium
-    if (!payload.so) payload.so = gclidMapping.source
-    if (!payload.ref) payload.ref = gclidMapping.ref
-  }
-
-  // 2. Parse the page URL search string for any known click IDs.
   const search = extractSearchString(payload.pg)
   const mapping = findClickIdMapping(search)
   if (mapping) {
