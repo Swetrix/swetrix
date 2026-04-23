@@ -245,10 +245,15 @@ const AlertRow = ({
 
 interface ProjectAlertsProps {
   projectId: string
+  projectName?: string
   projectRole?: string
 }
 
-const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
+const ProjectAlertsInner = ({
+  projectId,
+  projectName,
+  projectRole,
+}: ProjectAlertsProps) => {
   const id = projectId
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuth()
@@ -456,6 +461,7 @@ const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
       <ProjectAlertsSettings
         alertId={activeAlertId}
         projectId={id}
+        projectName={projectName}
         isSettings={!!activeAlertId}
         onClose={closeAlertSettings}
         onSave={handleAlertSaved}

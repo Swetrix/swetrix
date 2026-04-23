@@ -54,7 +54,7 @@ We've been building Swetrix since 2021 with a goal to make web analytics simple 
 - **Error tracking**: capture client‑side errors with details and aggregated views.
 - **Shareable analytics**: public or password‑protected dashboards; invite teammates with roles, or manage access with organisations.
 - **Data portability**: export to CSV and access data via our [developer API](https://docs.swetrix.com/statistics-api).
-- **Alerts & notifications (Cloud)**: get notified on thresholds via Slack, Telegram or Discord.
+- **Alerts & notifications (Cloud)**: get notified on thresholds via Email, Slack, Telegram, Discord, generic outbound webhook or browser web push, with per-alert custom message templates.
 - **Feature flags**: manage feature rollouts and conduct safe releases.
 - **Experiments (Cloud)**: run A/B tests and experiments to optimize your site.
 - **Revenue analytics (Cloud)**: track MRR, churn and other financial metrics.

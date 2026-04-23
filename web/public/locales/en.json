@@ -149,6 +149,8 @@
     "communityEdition": "Community Edition",
     "allPosts": "All posts",
     "details": "Details",
+    "type": "Type",
+    "create": "Create",
     "unknown": "Unknown",
     "showMore": "Show {{count}} more",
     "showLess": "Show less"
@@ -990,6 +992,8 @@
         "peopleDesc": "Manage members and their roles.",
         "projects": "Projects",
         "projectsDesc": "Add or remove projects for this organisation.",
+        "channels": "Notification channels",
+        "channelsDesc": "Channels visible to every member of this organisation.",
         "danger": "Danger zone",
         "dangerDesc": "Irreversible actions for this organisation."
       }
@@ -1173,6 +1177,76 @@
       "online_users": "Online users",
       "custom_events": "Custom events",
       "errors": "Errors"
+    },
+    "noChannels": "No notification channels are linked to this project yet. Add one in <url>Notification channels</url>.",
+    "channels": {
+      "heading": "Notification channels",
+      "description": "Pick which channels should receive this alert. Channels are managed in your account, organisation, or project settings.",
+      "placeholder": "Select channels..."
+    },
+    "template": {
+      "heading": "Message template",
+      "description": "Customise the message Swetrix sends when this alert fires. Use the variables below to inject data from the alert context.",
+      "body": "Message body",
+      "bodyHint": "Markdown is supported. Leave empty to use the default template.",
+      "emailSubject": "Email subject",
+      "emailSubjectPlaceholder": "Swetrix alert: {{alert_name}}",
+      "insertVariable": "Insert variable",
+      "preview": "Preview",
+      "previewMode": "Preview",
+      "editMode": "Edit"
+    }
+  },
+  "notificationChannels": {
+    "heading": "Notification channels",
+    "description": "Connect channels (Email, Telegram, Discord, Slack, Webhook, Web push) and pick them per alert.",
+    "userScopeDescription": "Channels you connect here are visible across your projects.",
+    "add": "Add channel",
+    "empty": "No channels yet. Connect one to start receiving alerts.",
+    "createTitle": "Connect a channel",
+    "editTitle": "Edit channel",
+    "deleteTitle": "Remove channel?",
+    "deleteHint": "This will detach \"{{name}}\" from any alerts using it. This cannot be undone.",
+    "test": "Send test",
+    "verify": "Verify",
+    "testSent": "Test message sent.",
+    "verifyKickedOff": "Verification step started.",
+    "created": "Channel created.",
+    "updated": "Channel updated.",
+    "deleted": "Channel removed.",
+    "nameRequired": "Please enter a channel name.",
+    "typeLabel": "Channel type",
+    "webhookUrl": "Webhook URL",
+    "statusVerified": "Verified",
+    "statusPending": "Pending verification",
+    "statusUnsubscribed": "Unsubscribed",
+    "types": {
+      "email": "Email",
+      "telegram": "Telegram",
+      "discord": "Discord",
+      "slack": "Slack",
+      "webhook": "Webhook",
+      "webpush": "Web push"
+    },
+    "email": {
+      "address": "Email address",
+      "hint": "We'll send a confirmation email before this channel can be used."
+    },
+    "telegram": {
+      "hint": "Open {{bot}} and send /start. The bot will reply with your chat ID."
+    },
+    "webhook": {
+      "secret": "Signing secret (optional)",
+      "secretHint": "If set, requests will include an X-Swetrix-Signature header (HMAC-SHA256)."
+    },
+    "webpush": {
+      "enable": "Enable browser notifications",
+      "enabled": "Browser notifications are enabled on this device.",
+      "useButton": "Use the \"Enable browser notifications\" button to subscribe this device.",
+      "unsupported": "This browser does not support push notifications.",
+      "permissionDenied": "Notification permission was denied.",
+      "notConfigured": "Web push is not configured on this server.",
+      "subscribeFailed": "Could not subscribe to push notifications."
     }
   },
   "goals": {
@@ -1778,6 +1852,8 @@
         "integrationsDesc": "Connect external services to enrich your analytics.",
         "alerts": "Alerts",
         "alertsDesc": "Get notified about traffic spikes, errors, and custom events.",
+        "channels": "Notification channels",
+        "channelsDesc": "Project-scoped channels for sending alerts.",
         "revenue": "Revenue",
         "revenueDesc": "Track revenue and attribute sales to campaigns.",
         "import": "Import data",

@@ -14,6 +14,7 @@ import { DiscordModule } from '../integrations/discord/discord.module'
 import { SlackModule } from '../integrations/slack/slack.module'
 import { GoalModule } from '../goal/goal.module'
 import { RevenueModule } from '../revenue/revenue.module'
+import { NotificationChannelModule } from '../notification-channel/notification-channel.module'
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { RevenueModule } from '../revenue/revenue.module'
     SlackModule,
     GoalModule,
     RevenueModule,
+    NotificationChannelModule,
   ],
   providers: [TaskManagerService, TelegramService],
   exports: [TaskManagerService],

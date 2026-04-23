@@ -9,6 +9,9 @@ import {
   IsString,
   IsNumber,
   Matches,
+  IsArray,
+  IsUUID,
+  MaxLength,
 } from 'class-validator'
 
 export enum QueryMetric {
@@ -80,6 +83,24 @@ class AlertBaseDTO {
   @IsBoolean()
   @IsOptional()
   alertOnEveryCustomEvent?: boolean
+
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  channelIds?: string[]
+
+  @ApiProperty({ nullable: true })
+  @IsString()
+  @IsOptional()
+  @MaxLength(5000)
+  messageTemplate?: string | null
+
+  @ApiProperty({ nullable: true })
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  emailSubjectTemplate?: string | null
 }
 
 export class CreateAlertDTO extends AlertBaseDTO {

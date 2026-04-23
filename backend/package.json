@@ -51,6 +51,7 @@
     "@sentry/nestjs": "^10.47.0",
     "@sentry/profiling-node": "^10.47.0",
     "@swetrix/node": "^3.2.0",
+    "@types/web-push": "^3.6.4",
     "@ua-parser-js/pro-business": "^2.0.9",
     "ai": "^6.0.153",
     "bcrypt": "^6.0.0",
@@ -94,6 +95,7 @@
     "telegraf": "^4.16.3",
     "tldts": "^7.0.28",
     "typeorm": "^0.3.28",
+    "web-push": "^3.6.7",
     "zod": "^4.3.6"
   },
   "devDependencies": {

@@ -1,7 +1,15 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { Project } from '../../project/entity/project.entity'
+import { NotificationChannel } from '../../notification-channel/entity/notification-channel.entity'
 import { QueryCondition, QueryMetric, QueryTime } from '../dto/alert.dto'
 
 @Entity()
@@ -90,4 +98,20 @@ export class Alert {
     default: null,
   })
   queryCustomEvent: string
+
+  @ApiProperty()
+  @Column('text', { nullable: true, default: null })
+  messageTemplate: string | null
+
+  @ApiProperty()
+  @Column('varchar', { length: 255, nullable: true, default: null })
+  emailSubjectTemplate: string | null
+
+  @ManyToMany(() => NotificationChannel, (channel) => channel.alerts)
+  @JoinTable({
+    name: 'alert_channels',
+    joinColumn: { name: 'alertId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'channelId', referencedColumnName: 'id' },
+  })
+  channels: NotificationChannel[]
 }

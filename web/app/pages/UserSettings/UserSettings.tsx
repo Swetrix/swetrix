@@ -77,7 +77,7 @@ import {
   MIN_PASSWORD_CHARS,
 } from '~/utils/validator'
 
-import Integrations from './components/Integrations'
+import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
 import NoOrganisations from './components/NoOrganisations'
 import NoSharedProjects from './components/NoSharedProjects'
 import Organisations from './components/Organisations'
@@ -631,16 +631,6 @@ const UserSettings = () => {
     fetcher.submit(formData, { method: 'post' })
     // Optimistic update
     mergeUser({ receiveLoginNotifications: checked })
-  }
-
-  const handleIntegrationSave = (
-    data: Record<string, unknown>,
-    callback: (isSuccess: boolean) => void = () => {},
-  ) => {
-    if (validated) {
-      submitProfileUpdate(data)
-      callback(true)
-    }
   }
 
   const handleReportSave = () => {
@@ -1603,16 +1593,14 @@ const UserSettings = () => {
                   </div>
                 </SettingsSection>
 
-                {/* Integrations setup */}
+                {/* Notification channels */}
                 <SettingsSection
-                  title={t('profileSettings.integrations')}
-                  description={t('profileSettings.integrationsDesc')}
+                  title={t('notificationChannels.heading')}
+                  description={t('notificationChannels.userScopeDescription')}
                   isLast={!user?.isTelegramChatIdConfirmed}
                 >
                   <div id='integrations'>
-                    <Integrations
-                      handleIntegrationSave={handleIntegrationSave}
-                    />
+                    <NotificationChannels scope='user' />
                   </div>
                 </SettingsSection>
 

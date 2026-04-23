@@ -1,0 +1,25 @@
+-- Follow-up migration (DO NOT RUN until at least one release after
+-- 2026_04_23_notification_channels.sql is in production).
+--
+-- Phase 1 of the alerts rework backfills user.telegramChatId /
+-- user.slackWebhookUrl / user.discordWebhookUrl (and the matching confirmed
+-- flag) into rows in `notification_channel`. The legacy columns are kept
+-- intact for one release so we can roll back without losing data.
+--
+-- Once we are confident the new path is healthy in production, run this
+-- migration to remove the legacy plumbing:
+--
+--   ALTER TABLE `user`
+--     DROP COLUMN `telegramChatId`,
+--     DROP COLUMN `isTelegramChatIdConfirmed`,
+--     DROP COLUMN `slackWebhookUrl`,
+--     DROP COLUMN `discordWebhookUrl`;
+--
+-- Also remove the corresponding columns from the User entity, the legacy
+-- `remove-tg-integration` action in web/app/routes/user-settings.tsx, and
+-- the helpers in backend/apps/cloud/src/integrations that still write to
+-- those columns. The Telegram /start scene should be updated to create a
+-- `notification_channel` row directly instead of `user.telegramChatId`.
+--
+-- Rename this file to a real `YYYY_MM_DD_drop_legacy_user_notification_columns.sql`
+-- when you're ready to ship it.

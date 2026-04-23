@@ -68,6 +68,7 @@ import General from './tabs/General'
 import Revenue from './tabs/Revenue'
 import Shields from './tabs/Shields'
 import ProjectAlerts from './Alerts/ProjectAlertsView'
+import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
 import DataImportTab from './components/DataImportTab'
 import ProxyDomainsTab from './components/ProxyDomainsTab'
 
@@ -362,6 +363,7 @@ const ProjectSettings = () => {
     | 'captcha'
     | 'integrations'
     | 'alerts'
+    | 'channels'
     | 'revenue'
     | 'emails'
     | 'people'
@@ -419,6 +421,14 @@ const ProjectSettings = () => {
           description: t('project.settings.tabs.alertsDesc'),
           icon: BellRingingIcon,
           iconColor: 'text-cyan-500',
+          visible: !isSelfhosted && project?.role === 'owner',
+        },
+        {
+          id: 'channels',
+          label: t('project.settings.tabs.channels'),
+          description: t('project.settings.tabs.channelsDesc'),
+          icon: BellRingingIcon,
+          iconColor: 'text-pink-500',
           visible: !isSelfhosted && project?.role === 'owner',
         },
         {
@@ -1272,7 +1282,33 @@ const ProjectSettings = () => {
                   description={activeTabConfig.description}
                   iconColorClass={activeTabConfig.iconColor}
                 />
-                <ProjectAlerts projectId={id} projectRole={project?.role} />
+                <ProjectAlerts
+                  projectId={id}
+                  projectName={project?.name}
+                  projectRole={project?.role}
+                />
+              </>
+            ) : null}
+
+            {activeTab === 'channels' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <NotificationChannels
+                  scope='project'
+                  projectId={id}
+                  allowedTypes={[
+                    'email',
+                    'telegram',
+                    'discord',
+                    'slack',
+                    'webhook',
+                  ]}
+                />
               </>
             ) : null}
 

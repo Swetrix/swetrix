@@ -942,7 +942,7 @@ export class AiController {
   @Patch(':pid/chats/:chatId')
   @Auth(false, true) // Allow optional auth for public projects
   @ApiOperation({
-    summary: 'Update chat metadata (pinned, tags, name) — owner only',
+    summary: 'Update chat metadata (pinned, tags, name) - owner only',
   })
   @ApiResponse({ status: 200, description: 'Chat metadata updated' })
   async updateChatMeta(

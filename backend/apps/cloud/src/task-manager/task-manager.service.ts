@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan, In, Not, Between } from 'typeorm'
+import { IsNull, LessThan, Not, Between } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -59,6 +59,18 @@ import { RevenueService } from '../revenue/revenue.service'
 import { PaddleAdapter } from '../revenue/adapters/paddle.adapter'
 import { StripeAdapter } from '../revenue/adapters/stripe.adapter'
 import { ProxyDomainService } from '../project/proxy-domain.service'
+import { ChannelDispatcherService } from '../notification-channel/dispatchers/channel-dispatcher.service'
+import {
+  TemplateRendererService,
+  DEFAULT_EMAIL_SUBJECT_TEMPLATE,
+} from '../notification-channel/template-renderer.service'
+import {
+  AlertContext,
+  AlertContextErrors,
+  QUERY_CONDITION_LABEL,
+  QUERY_TIME_LABEL,
+} from '../notification-channel/alert-context'
+import { NotificationChannelType } from '../notification-channel/entity/notification-channel.entity'
 
 dayjs.extend(utc)
 
@@ -325,7 +337,34 @@ export class TaskManagerService {
     private readonly paddleAdapter: PaddleAdapter,
     private readonly stripeAdapter: StripeAdapter,
     private readonly proxyDomainService: ProxyDomainService,
+    private readonly channelDispatcher: ChannelDispatcherService,
+    private readonly templateRenderer: TemplateRendererService,
   ) {}
+
+  // Build a rendered alert message from a raw AlertContext using the alert's
+  // per-channel templates (falling back to the metric's default template).
+  private renderAlertMessage(
+    alert: {
+      messageTemplate: string | null
+      emailSubjectTemplate: string | null
+      name: string
+    },
+    context: AlertContext,
+    hasEmailChannel: boolean,
+  ) {
+    const template =
+      alert.messageTemplate?.trim() ||
+      this.templateRenderer.getDefaultTemplate(context.metric)
+    const ctxRecord = context as unknown as Record<string, unknown>
+    const body = this.templateRenderer.render(template, ctxRecord)
+    const subject = hasEmailChannel
+      ? this.templateRenderer.render(
+          alert.emailSubjectTemplate?.trim() || DEFAULT_EMAIL_SUBJECT_TEMPLATE,
+          ctxRecord,
+        )
+      : alert.name
+    return { body, subject, context: ctxRecord }
+  }
 
   /**
    * Build goal match condition for querying conversions
@@ -1514,57 +1553,31 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async checkOnlineUsersAlerts() {
-    const projects = await this.projectService.find({
-      where: [
-        {
-          admin: {
-            isTelegramChatIdConfirmed: true,
-            planCode: Not(PlanCode.none),
-            dashboardBlockReason: IsNull(),
-          },
-        },
-        {
-          admin: {
-            slackWebhookUrl: Not(IsNull()),
-            planCode: Not(PlanCode.none),
-            dashboardBlockReason: IsNull(),
-          },
-        },
-        {
-          admin: {
-            discordWebhookUrl: Not(IsNull()),
-            planCode: Not(PlanCode.none),
-            dashboardBlockReason: IsNull(),
-          },
-        },
-      ],
-      relations: ['admin'],
-    })
-
+    // Pull all online_users alerts on active accounts. Channel verification is
+    // enforced per-channel by the dispatcher (skip unverified/unsubscribed).
     const alerts = await this.alertService.find({
       where: {
-        project: In(_map(projects, 'id')),
         active: true,
         queryMetric: QueryMetric.ONLINE_USERS,
+        project: {
+          admin: {
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
       },
-      relations: ['project'],
+      relations: ['project', 'project.admin', 'channels'],
     })
 
     const promises = _map(alerts, async (alert) => {
       try {
-        const project = _find(projects, { id: alert.project.id })
-
-        if (!project) {
-          this.logger.warn(
-            `[CRON WORKER](checkOnlineUsersAlerts) Alert ${alert.id} references missing project ${alert.project?.id}`,
-          )
-          return
-        }
+        const project = alert.project
+        if (!project) return
+        if (!alert.channels || alert.channels.length === 0) return
 
         if (alert.lastTriggered !== null) {
           const lastTriggered = new Date(alert.lastTriggered)
           const now = new Date()
-
           if (now.getTime() - lastTriggered.getTime() < 24 * 60 * 60 * 1000) {
             return
           }
@@ -1573,44 +1586,35 @@ export class TaskManagerService {
         const online = await this.analyticsService.getOnlineUserCount(
           project.id,
         )
-        const alertName = this.telegramService.escapeTelegramMarkdown(
-          alert.name,
-        )
-        const projectName = this.telegramService.escapeTelegramMarkdown(
-          project.name,
-        )
-        const text = `🔔 Alert *${alertName}* got triggered!\nYour project *${projectName}* has *${online}* online users right now!`
 
         if (
-          checkQueryCondition(online, alert.queryValue, alert.queryCondition)
+          !checkQueryCondition(online, alert.queryValue, alert.queryCondition)
         ) {
-          // @ts-expect-error
-          await this.alertService.update(alert.id, {
-            lastTriggered: new Date(),
-          })
-          if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-            this.telegramService.addMessage(
-              project.admin.telegramChatId,
-              text,
-              {
-                parse_mode: 'Markdown',
-              },
-            )
-          }
-          if (project.admin.discordWebhookUrl) {
-            await this.discordService.sendWebhook(
-              project.admin.discordWebhookUrl,
-              text,
-            )
-          }
-
-          if (project.admin.slackWebhookUrl) {
-            await this.slackService.sendWebhook(
-              project.admin.slackWebhookUrl,
-              text,
-            )
-          }
+          return
         }
+
+        // @ts-expect-error TypeORM typing for partial update
+        await this.alertService.update(alert.id, { lastTriggered: new Date() })
+
+        const clientUrl = this.configService.get('CLIENT_URL')
+        const context: AlertContext = {
+          alert_name: alert.name,
+          project_name: project.name,
+          project_id: project.id,
+          dashboard_url: `${clientUrl}/projects/${project.id}`,
+          metric: QueryMetric.ONLINE_USERS,
+          value: online,
+          threshold: alert.queryValue,
+          condition: QUERY_CONDITION_LABEL[alert.queryCondition] || null,
+          time_window: 'now',
+          online_count: online,
+        } as AlertContext
+
+        const hasEmail = alert.channels.some(
+          (c) => c.type === NotificationChannelType.EMAIL,
+        )
+        const message = this.renderAlertMessage(alert, context, hasEmail)
+        await this.channelDispatcher.dispatch(alert.channels, message)
       } catch (reason) {
         this.logger.error(
           `[CRON WORKER](checkOnlineUsersAlerts) Failed to process alert ${alert.id}: ${reason}`,
@@ -1632,35 +1636,25 @@ export class TaskManagerService {
   async checkMetricAlerts() {
     const CRON_INTERVAL_SECONDS = 300
 
-    const projects = await this.projectService.find({
-      where: {
-        admin: {
-          planCode: Not(PlanCode.none),
-          dashboardBlockReason: IsNull(),
-        },
-      },
-      relations: ['admin'],
-    })
-
     const alerts = await this.alertService.find({
       where: {
-        project: In(_map(projects, 'id')),
         active: true,
         queryMetric: Not(QueryMetric.ONLINE_USERS),
+        project: {
+          admin: {
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
       },
-      relations: ['project'],
+      relations: ['project', 'project.admin', 'channels'],
     })
 
     const promises = _map(alerts, async (alert) => {
       try {
-        const project = _find(projects, { id: alert.project.id })
-
-        if (!project) {
-          this.logger.warn(
-            `[CRON WORKER](checkMetricAlerts) Alert ${alert.id} references missing project ${alert.project?.id}`,
-          )
-          return
-        }
+        const project = alert.project
+        if (!project) return
+        if (!alert.channels || alert.channels.length === 0) return
 
         if (
           alert.lastTriggered !== null &&
@@ -1838,145 +1832,85 @@ export class TaskManagerService {
           lastTriggered: new Date(),
         })
 
-        let queryMetricString = ''
-        switch (alert.queryMetric) {
-          case QueryMetric.CUSTOM_EVENTS:
-            queryMetricString = 'custom events'
-            break
-          case QueryMetric.UNIQUE_PAGE_VIEWS:
-            queryMetricString = 'unique page views'
-            break
-          case QueryMetric.PAGE_VIEWS:
-            queryMetricString = 'page views'
-            break
-          case QueryMetric.ERRORS:
-            queryMetricString = alert.alertOnNewErrorsOnly
-              ? 'new errors'
-              : 'errors'
-            break
-          default:
-            queryMetricString = alert.queryMetric
-        }
-
         const effectiveQueryTimeString =
           alert.queryMetric === QueryMetric.ERRORS
             ? `${CRON_INTERVAL_SECONDS / 60} minutes`
             : alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
                 alert.alertOnEveryCustomEvent
               ? `${CRON_INTERVAL_SECONDS / 60} minutes`
-              : getQueryTimeString(alert.queryTime as QueryTime)
-
-        let text = ``
+              : QUERY_TIME_LABEL[alert.queryTime as QueryTime] ||
+                getQueryTimeString(alert.queryTime as QueryTime)
 
         const clientUrl = this.configService.get('CLIENT_URL')
-        const escapedProjectLink = this.telegramService.escapeTelegramMarkdown(
-          `${clientUrl}/projects/${project.id}`,
-        )
+        const dashboardUrl = `${clientUrl}/projects/${project.id}`
+
+        if (alert.queryMetric === QueryMetric.ERRORS && !errorDetails) {
+          this.logger.warn(
+            `[CRON WORKER](checkMetricAlerts) Error details not found for alert ${alert.id}`,
+          )
+          return
+        }
+
+        let context: AlertContext
 
         if (alert.queryMetric === QueryMetric.ERRORS) {
-          if (!errorDetails) {
-            console.error(
-              `[CRON WORKER](checkMetricAlerts) Error details not found for alert ${alert.id}`,
-            )
-            console.error(queryResult)
-            return
-          }
-
-          const escapedErrorLink = this.telegramService.escapeTelegramMarkdown(
-            `${clientUrl}/projects/${project.id}?tab=errors&eid=${errorDetails.eid}`,
-          )
-
-          const alertName = this.telegramService.escapeTelegramMarkdown(
-            alert.name,
-          )
-          const projectName = this.telegramService.escapeTelegramMarkdown(
-            project.name,
-          )
-          const errorName = this.telegramService.escapeTelegramMarkdown(
-            errorDetails.name || 'N/A',
-          )
-          const errorMessage = this.telegramService.escapeTelegramMarkdown(
-            errorDetails.message || 'N/A',
-          )
-          const filename = this.telegramService.escapeTelegramMarkdown(
-            errorDetails.filename || 'N/A',
-          )
-
-          let locationInfo = 'Location: Not available'
-          if (
-            errorDetails.filename ||
-            errorDetails.lineno !== null ||
-            errorDetails.colno !== null
-          ) {
-            const ln =
-              errorDetails.lineno !== null
-                ? errorDetails.lineno.toString()
-                : 'N/A'
-            const cn =
-              errorDetails.colno !== null
-                ? errorDetails.colno.toString()
-                : 'N/A'
-            locationInfo = `File: ${filename}, Line: ${ln}, Col: ${cn}`
-          }
-
-          text =
-            `🐞 Error alert *${alertName}* triggered!\n\n` +
-            `Project: [${projectName}](${escapedProjectLink})\n` +
-            `Error: \`${errorName}\`\n` +
-            `Message: \`${errorMessage}\`\n\n` +
-            `${locationInfo}\n\n` +
-            `[View error](${escapedErrorLink})`
+          const errors_url = `${dashboardUrl}?tab=errors&eid=${errorDetails!.eid}`
+          context = {
+            alert_name: alert.name,
+            project_name: project.name,
+            project_id: project.id,
+            dashboard_url: dashboardUrl,
+            metric: QueryMetric.ERRORS,
+            value: count,
+            threshold: null,
+            condition: null,
+            time_window: effectiveQueryTimeString,
+            error_count: count,
+            error_message: errorDetails!.message || '',
+            error_name: errorDetails!.name || '',
+            errors_url,
+            is_new_only: !!alert.alertOnNewErrorsOnly,
+          } as AlertContextErrors
+        } else if (alert.queryMetric === QueryMetric.CUSTOM_EVENTS) {
+          context = {
+            alert_name: alert.name,
+            project_name: project.name,
+            project_id: project.id,
+            dashboard_url: dashboardUrl,
+            metric: QueryMetric.CUSTOM_EVENTS,
+            value: count,
+            threshold: alert.queryValue ?? null,
+            condition: alert.queryCondition
+              ? QUERY_CONDITION_LABEL[alert.queryCondition]
+              : null,
+            time_window: effectiveQueryTimeString,
+            event_name: alert.queryCustomEvent || '',
+            event_count: count,
+            every_event_mode: !!alert.alertOnEveryCustomEvent,
+          } as AlertContext
         } else {
-          const alertName = this.telegramService.escapeTelegramMarkdown(
-            alert.name,
-          )
-          const projectName = this.telegramService.escapeTelegramMarkdown(
-            project.name,
-          )
-
-          let customEventInfo = ''
-          if (
-            alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-            alert.queryCustomEvent
-          ) {
-            customEventInfo = ` "${alert.queryCustomEvent}"`
-          }
-
-          if (
-            alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-            alert.alertOnEveryCustomEvent
-          ) {
-            text =
-              `🔔 Alert *${alertName}* triggered!\n\n` +
-              `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} occur in the last *${effectiveQueryTimeString}*!`
-          } else {
-            text =
-              `🔔 Alert *${alertName}* triggered!\n\n` +
-              `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*!`
-          }
+          const isUnique = alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+          context = {
+            alert_name: alert.name,
+            project_name: project.name,
+            project_id: project.id,
+            dashboard_url: dashboardUrl,
+            metric: alert.queryMetric,
+            value: count,
+            threshold: alert.queryValue ?? null,
+            condition: alert.queryCondition
+              ? QUERY_CONDITION_LABEL[alert.queryCondition]
+              : null,
+            time_window: effectiveQueryTimeString,
+            ...(isUnique ? { unique_views: count } : { views: count }),
+          } as AlertContext
         }
 
-        if (project.admin?.isTelegramChatIdConfirmed) {
-          this.telegramService.addMessage(project.admin.telegramChatId, text, {
-            parse_mode: 'Markdown',
-            // @ts-expect-error It's not typed
-            disable_web_page_preview: true,
-          })
-        }
-
-        if (project.admin?.discordWebhookUrl) {
-          await this.discordService.sendWebhook(
-            project.admin.discordWebhookUrl,
-            text,
-          )
-        }
-
-        if (project.admin?.slackWebhookUrl) {
-          await this.slackService.sendWebhook(
-            project.admin.slackWebhookUrl,
-            text,
-          )
-        }
+        const hasEmail = alert.channels.some(
+          (c) => c.type === NotificationChannelType.EMAIL,
+        )
+        const message = this.renderAlertMessage(alert, context, hasEmail)
+        await this.channelDispatcher.dispatch(alert.channels, message)
       } catch (reason) {
         this.logger.error(
           `[CRON WORKER](checkMetricAlerts) Failed to process alert ${alert.id}: ${reason}`,

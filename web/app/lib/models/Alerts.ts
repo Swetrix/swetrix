@@ -1,4 +1,5 @@
 import { QUERY_METRIC, QUERY_CONDITION, QUERY_TIME } from '../constants'
+import type { NotificationChannel } from './NotificationChannel'
 
 export interface Alerts {
   id: string
@@ -14,4 +15,8 @@ export interface Alerts {
   alertOnNewErrorsOnly?: boolean
   alertOnEveryCustomEvent?: boolean
   created: string
+  channels?: NotificationChannel[]
+  channelIds?: string[]
+  messageTemplate?: string | null
+  emailSubjectTemplate?: string | null
 }

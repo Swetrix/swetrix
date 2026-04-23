@@ -15,23 +15,31 @@ import { toast } from 'sonner'
 
 import { QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
+import type { NotificationChannel } from '~/lib/models/NotificationChannel'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useAuth } from '~/providers/AuthProvider'
+import type { NotificationChannelActionData } from '~/routes/notification-channel'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
+import MultiSelect from '~/ui/MultiSelect'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
-const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
+import AlertTemplateEditor from './AlertTemplateEditor'
+
+const CHANNELS_TAB = `?tab=channels`
+const PROJECT_CHANNELS_LINK = (projectId: string) =>
+  `/projects/${projectId}/settings${CHANNELS_TAB}`
 
 interface ProjectAlertsSettingsProps {
   alertId?: string | null
   projectId: string
+  projectName?: string
   isSettings?: boolean
   onClose?: () => void
   onSave?: () => void
@@ -41,15 +49,17 @@ interface ProjectAlertsSettingsProps {
 const ProjectAlertsSettings = ({
   alertId,
   projectId,
+  projectName,
   isSettings,
   onClose,
   onSave,
   backLink,
 }: ProjectAlertsSettingsProps) => {
-  const { user, isLoading: authLoading } = useAuth()
+  const { isLoading: authLoading } = useAuth()
 
   const { t } = useTranslation('common')
   const fetcher = useFetcher<ProjectViewActionData>()
+  const channelsFetcher = useFetcher<NotificationChannelActionData>()
   const lastHandledData = useRef<ProjectViewActionData | null>(null)
 
   const [form, setForm] = useState<Partial<Alerts>>({
@@ -63,6 +73,9 @@ const ProjectAlertsSettings = ({
     queryCustomEvent: '',
     alertOnNewErrorsOnly: true,
     alertOnEveryCustomEvent: false,
+    channelIds: [],
+    messageTemplate: '',
+    emailSubjectTemplate: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
@@ -71,18 +84,29 @@ const ProjectAlertsSettings = ({
   const [alert, setAlert] = useState<Alerts | null>(null)
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [availableChannels, setAvailableChannels] = useState<
+    NotificationChannel[]
+  >([])
 
-  const isIntegrationLinked = useMemo(() => {
-    if (_isEmpty(user)) {
-      return false
+  useEffect(() => {
+    const fd = new FormData()
+    fd.set('intent', 'list-channels')
+    fd.set('projectId', projectId)
+    channelsFetcher.submit(fd, {
+      method: 'POST',
+      action: '/notification-channel',
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId])
+
+  useEffect(() => {
+    if (channelsFetcher.state !== 'idle' || !channelsFetcher.data) return
+    if (channelsFetcher.data.error) {
+      toast.error(channelsFetcher.data.error)
+      return
     }
-
-    return Boolean(
-      (user.telegramChatId && user.isTelegramChatIdConfirmed) ||
-      user.slackWebhookUrl ||
-      user.discordWebhookUrl,
-    )
-  }, [user])
+    setAvailableChannels(channelsFetcher.data.channels || [])
+  }, [channelsFetcher.state, channelsFetcher.data])
 
   // Handle fetcher responses
   useEffect(() => {
@@ -96,7 +120,13 @@ const ProjectAlertsSettings = ({
       if (intent === 'get-alert' && data) {
         const alertData = data as Alerts
         setAlert(alertData)
-        setForm(alertData)
+        setForm({
+          ...alertData,
+          channelIds:
+            alertData.channelIds ?? alertData.channels?.map((c) => c.id) ?? [],
+          messageTemplate: alertData.messageTemplate || '',
+          emailSubjectTemplate: alertData.emailSubjectTemplate || '',
+        })
         setIsLoading(false)
       } else if (intent === 'create-alert') {
         toast.success(t('alertsSettings.alertCreated'))
@@ -195,7 +225,12 @@ const ProjectAlertsSettings = ({
 
   useEffect(() => {
     if (!_isEmpty(alert)) {
-      setForm(alert)
+      setForm({
+        ...alert,
+        channelIds: alert.channelIds ?? alert.channels?.map((c) => c.id) ?? [],
+        messageTemplate: alert.messageTemplate || '',
+        emailSubjectTemplate: alert.emailSubjectTemplate || '',
+      })
     }
   }, [alert])
 
@@ -444,16 +479,16 @@ const ProjectAlertsSettings = ({
           <input type='hidden' name='queryTime' value={form.queryTime} />
         ) : null}
 
-        {!authLoading && !isIntegrationLinked ? (
+        {!authLoading && availableChannels.length === 0 ? (
           <div className='mt-2 flex items-center rounded-sm bg-blue-50 px-5 py-3 text-base whitespace-pre-wrap dark:bg-slate-900 dark:text-gray-50'>
             <WarningOctagonIcon className='mr-1 h-5 w-5' />
             <Trans
               t={t}
-              i18nKey='alert.noIntegration'
+              i18nKey='alert.noChannels'
               components={{
                 url: (
                   <Link
-                    to={INTEGRATIONS_LINK}
+                    to={PROJECT_CHANNELS_LINK(projectId)}
                     className='text-blue-600 hover:underline dark:text-blue-500'
                   />
                 ),
@@ -461,6 +496,19 @@ const ProjectAlertsSettings = ({
             />
           </div>
         ) : null}
+        {(form.channelIds || []).map((id) => (
+          <input key={id} type='hidden' name='channelIds' value={id} />
+        ))}
+        <input
+          type='hidden'
+          name='messageTemplate'
+          value={form.messageTemplate || ''}
+        />
+        <input
+          type='hidden'
+          name='emailSubjectTemplate'
+          value={form.emailSubjectTemplate || ''}
+        />
         <Input
           name='name'
           label={t('alert.name')}
@@ -632,6 +680,86 @@ const ProjectAlertsSettings = ({
             </div>
           </>
         ) : null}
+        <div className='mt-6'>
+          <Text as='h3' size='base' weight='bold'>
+            {t('alert.channels.heading')}
+          </Text>
+          <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
+            {t('alert.channels.description')}
+          </Text>
+          <div className='mt-3'>
+            <MultiSelect
+              placeholder={t('alert.channels.placeholder')}
+              items={availableChannels}
+              keyExtractor={(c: NotificationChannel) => c.id}
+              labelExtractor={(c: NotificationChannel) =>
+                `${c.name} (${c.type})`
+              }
+              itemExtractor={(c: NotificationChannel) =>
+                `${c.name} — ${c.type}${c.isVerified ? '' : ' (unverified)'}`
+              }
+              label={availableChannels.filter((c) =>
+                (form.channelIds || []).includes(c.id),
+              )}
+              onSelect={(c: NotificationChannel) => {
+                setForm((prev) => {
+                  const ids = new Set(prev.channelIds || [])
+                  if (ids.has(c.id)) ids.delete(c.id)
+                  else ids.add(c.id)
+                  return { ...prev, channelIds: Array.from(ids) }
+                })
+              }}
+              onRemove={(c: NotificationChannel) => {
+                setForm((prev) => ({
+                  ...prev,
+                  channelIds: (prev.channelIds || []).filter(
+                    (id) => id !== c.id,
+                  ),
+                }))
+              }}
+            />
+          </div>
+        </div>
+
+        <AlertTemplateEditor
+          projectId={projectId}
+          metric={form.queryMetric || QUERY_METRIC.PAGE_VIEWS}
+          body={form.messageTemplate || ''}
+          subject={form.emailSubjectTemplate || ''}
+          onBodyChange={(v) =>
+            setForm((prev) => ({ ...prev, messageTemplate: v }))
+          }
+          onSubjectChange={(v) =>
+            setForm((prev) => ({ ...prev, emailSubjectTemplate: v }))
+          }
+          showSubject={availableChannels
+            .filter((c) => (form.channelIds || []).includes(c.id))
+            .some((c) => c.type === 'email')}
+          sampleValues={{
+            alert_name: form.name,
+            project_name: projectName,
+            project_id: projectId,
+            dashboard_url:
+              typeof window !== 'undefined'
+                ? `${window.location.origin}/projects/${projectId}`
+                : undefined,
+            errors_url:
+              typeof window !== 'undefined'
+                ? `${window.location.origin}/projects/${projectId}?tab=errors`
+                : undefined,
+            threshold: form.queryValue,
+            condition: form.queryCondition
+              ? queryConditionTMapping[form.queryCondition]
+              : undefined,
+            time_window: form.queryTime
+              ? queryTimeTMapping[form.queryTime]
+              : undefined,
+            event_name: form.queryCustomEvent,
+            every_event_mode: form.alertOnEveryCustomEvent ? 'yes' : 'no',
+            is_new_only: form.alertOnNewErrorsOnly ? 'yes' : 'no',
+          }}
+        />
+
         {isSettings ? (
           <div className='mt-5 flex items-center justify-between'>
             <Button onClick={() => setShowModal(true)} danger semiSmall>
