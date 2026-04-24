@@ -1895,6 +1895,13 @@
         "proxy": "Managed proxy",
         "proxyDesc": "Route the tracker script and analytics events through your own domain to bypass ad blockers."
       },
+      "sidebarGroups": {
+        "general": "General",
+        "protection": "Protection",
+        "notifications": "Notifications",
+        "data": "Data",
+        "integrations": "Integrations"
+      },
       "revenue": {
         "title": "Revenue Tracking",
         "description": "Connect your payment provider to track revenue and attribute sales to marketing channels.",

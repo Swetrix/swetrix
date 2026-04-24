@@ -71,6 +71,7 @@ import ProjectAlerts from './Alerts/ProjectAlertsView'
 import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
 import DataImportTab from './components/DataImportTab'
 import ProxyDomainsTab from './components/ProxyDomainsTab'
+import SettingsSidebar, { SettingsTabConfig } from './SettingsSidebar'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -372,122 +373,124 @@ const ProjectSettings = () => {
     | 'proxy'
     | 'danger'
 
-  const tabs = useMemo(
+  const tabs = useMemo<SettingsTabConfig<SettingsTab>[]>(
     () =>
-      [
-        {
-          id: 'general',
-          label: t('project.settings.tabs.general'),
-          description: t('project.settings.tabs.generalDesc'),
-          icon: SlidersHorizontalIcon,
-          iconColor: 'text-blue-500',
-          visible: true,
-        },
-        {
-          id: 'access',
-          label: t('project.settings.tabs.access'),
-          description: t('project.settings.tabs.accessDesc'),
-          icon: LockIcon,
-          iconColor: 'text-amber-500',
-          visible: true,
-        },
-        {
-          id: 'shields',
-          label: t('project.settings.tabs.shields'),
-          description: t('project.settings.tabs.shieldsDesc'),
-          icon: ShieldIcon,
-          iconColor: 'text-emerald-500',
-          visible: true,
-        },
-        {
-          id: 'captcha',
-          label: t('project.settings.tabs.captcha'),
-          description: t('project.settings.tabs.captchaDesc'),
-          icon: ShieldCheckIcon,
-          iconColor: 'text-teal-500',
-          visible: true,
-        },
-        {
-          id: 'integrations',
-          label: t('project.settings.tabs.integrations'),
-          description: t('project.settings.tabs.integrationsDesc'),
-          icon: PuzzlePieceIcon,
-          iconColor: 'text-purple-500',
-          visible: !isSelfhosted,
-        },
-        {
-          id: 'alerts',
-          label: t('project.settings.tabs.alerts'),
-          description: t('project.settings.tabs.alertsDesc'),
-          icon: BellRingingIcon,
-          iconColor: 'text-cyan-500',
-          visible: !isSelfhosted && project?.role === 'owner',
-        },
-        {
-          id: 'channels',
-          label: t('project.settings.tabs.channels'),
-          description: t('project.settings.tabs.channelsDesc'),
-          icon: BellRingingIcon,
-          iconColor: 'text-pink-500',
-          visible: !isSelfhosted && project?.role === 'owner',
-        },
-        {
-          id: 'revenue',
-          label: t('project.settings.tabs.revenue'),
-          description: t('project.settings.tabs.revenueDesc'),
-          icon: CurrencyDollarIcon,
-          iconColor: 'text-green-500',
-          visible: !isSelfhosted,
-        },
-        {
-          id: 'emails',
-          label: t('project.settings.tabs.emails'),
-          description: t('project.settings.tabs.emailsDesc'),
-          icon: EnvelopeIcon,
-          iconColor: 'text-sky-500',
-          visible: !isSelfhosted,
-        },
-        {
-          id: 'people',
-          label: t('project.settings.tabs.people'),
-          description: t('project.settings.tabs.peopleDesc'),
-          icon: UserCircleIcon,
-          iconColor: 'text-indigo-500',
-          visible: true,
-        },
-        {
-          id: 'import',
-          label: t('project.settings.tabs.import'),
-          description: t('project.settings.tabs.importDesc'),
-          icon: DownloadIcon,
-          iconColor: 'text-cyan-500',
-          visible: true,
-        },
-        {
-          id: 'proxy',
-          label: t('project.settings.tabs.proxy'),
-          description: t('project.settings.tabs.proxyDesc'),
-          icon: GlobeIcon,
-          iconColor: 'text-fuchsia-500',
-          visible: !isSelfhosted,
-        },
-        {
-          id: 'annotations',
-          label: t('project.settings.tabs.annotations'),
-          description: t('project.settings.tabs.annotationsDesc'),
-          icon: NoteIcon,
-          iconColor: 'text-orange-500',
-          visible: true,
-        },
-        {
-          id: 'danger',
-          label: t('project.settings.tabs.danger'),
-          description: t('project.settings.tabs.dangerDesc'),
-          icon: WarningOctagonIcon,
-          iconColor: 'text-red-500',
-          visible: project?.role === 'owner',
-        },
-      ].filter((tab) => tab.visible),
+      (
+        [
+          {
+            id: 'general',
+            label: t('project.settings.tabs.general'),
+            description: t('project.settings.tabs.generalDesc'),
+            icon: SlidersHorizontalIcon,
+            iconColor: 'text-blue-500',
+            visible: true,
+          },
+          {
+            id: 'access',
+            label: t('project.settings.tabs.access'),
+            description: t('project.settings.tabs.accessDesc'),
+            icon: LockIcon,
+            iconColor: 'text-amber-500',
+            visible: true,
+          },
+          {
+            id: 'shields',
+            label: t('project.settings.tabs.shields'),
+            description: t('project.settings.tabs.shieldsDesc'),
+            icon: ShieldIcon,
+            iconColor: 'text-emerald-500',
+            visible: true,
+          },
+          {
+            id: 'captcha',
+            label: t('project.settings.tabs.captcha'),
+            description: t('project.settings.tabs.captchaDesc'),
+            icon: ShieldCheckIcon,
+            iconColor: 'text-teal-500',
+            visible: true,
+          },
+          {
+            id: 'integrations',
+            label: t('project.settings.tabs.integrations'),
+            description: t('project.settings.tabs.integrationsDesc'),
+            icon: PuzzlePieceIcon,
+            iconColor: 'text-purple-500',
+            visible: !isSelfhosted,
+          },
+          {
+            id: 'alerts',
+            label: t('project.settings.tabs.alerts'),
+            description: t('project.settings.tabs.alertsDesc'),
+            icon: BellRingingIcon,
+            iconColor: 'text-cyan-500',
+            visible: !isSelfhosted && project?.role === 'owner',
+          },
+          {
+            id: 'channels',
+            label: t('project.settings.tabs.channels'),
+            description: t('project.settings.tabs.channelsDesc'),
+            icon: BellRingingIcon,
+            iconColor: 'text-pink-500',
+            visible: !isSelfhosted && project?.role === 'owner',
+          },
+          {
+            id: 'revenue',
+            label: t('project.settings.tabs.revenue'),
+            description: t('project.settings.tabs.revenueDesc'),
+            icon: CurrencyDollarIcon,
+            iconColor: 'text-green-500',
+            visible: !isSelfhosted,
+          },
+          {
+            id: 'emails',
+            label: t('project.settings.tabs.emails'),
+            description: t('project.settings.tabs.emailsDesc'),
+            icon: EnvelopeIcon,
+            iconColor: 'text-sky-500',
+            visible: !isSelfhosted,
+          },
+          {
+            id: 'people',
+            label: t('project.settings.tabs.people'),
+            description: t('project.settings.tabs.peopleDesc'),
+            icon: UserCircleIcon,
+            iconColor: 'text-indigo-500',
+            visible: true,
+          },
+          {
+            id: 'import',
+            label: t('project.settings.tabs.import'),
+            description: t('project.settings.tabs.importDesc'),
+            icon: DownloadIcon,
+            iconColor: 'text-cyan-500',
+            visible: true,
+          },
+          {
+            id: 'proxy',
+            label: t('project.settings.tabs.proxy'),
+            description: t('project.settings.tabs.proxyDesc'),
+            icon: GlobeIcon,
+            iconColor: 'text-fuchsia-500',
+            visible: !isSelfhosted,
+          },
+          {
+            id: 'annotations',
+            label: t('project.settings.tabs.annotations'),
+            description: t('project.settings.tabs.annotationsDesc'),
+            icon: NoteIcon,
+            iconColor: 'text-orange-500',
+            visible: true,
+          },
+          {
+            id: 'danger',
+            label: t('project.settings.tabs.danger'),
+            description: t('project.settings.tabs.dangerDesc'),
+            icon: WarningOctagonIcon,
+            iconColor: 'text-red-500',
+            visible: project?.role === 'owner',
+          },
+        ] as const satisfies readonly SettingsTabConfig<SettingsTab>[]
+      ).filter((tab) => tab.visible) as SettingsTabConfig<SettingsTab>[],
     [t, project?.role],
   )
 
@@ -960,38 +963,11 @@ const ProjectSettings = () => {
           </div>
 
           <aside className='hidden w-56 shrink-0 md:block'>
-            <nav className='flex flex-col space-y-0.5' aria-label='Sidebar'>
-              {_map(tabs, (tab) => {
-                const isCurrent = tab.id === activeTab
-                const Icon = tab.icon
-
-                return (
-                  <button
-                    key={tab.id}
-                    type='button'
-                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                    className={cx(
-                      'group flex items-center rounded-md px-3 py-2 text-left text-sm text-gray-900 transition-colors',
-                      {
-                        'bg-gray-200 font-semibold dark:bg-slate-900 dark:text-gray-50':
-                          isCurrent,
-                        'hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-slate-900 dark:hover:text-gray-50':
-                          !isCurrent,
-                      },
-                    )}
-                    aria-current={isCurrent ? 'page' : undefined}
-                  >
-                    <Icon
-                      className={cx('mr-2 size-4 shrink-0 transition-colors', {
-                        'text-gray-900 dark:text-gray-50': isCurrent,
-                        'text-gray-600 dark:text-gray-300': !isCurrent,
-                      })}
-                    />
-                    <span className='truncate'>{tab.label}</span>
-                  </button>
-                )
-              })}
-            </nav>
+            <SettingsSidebar
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={(tabId) => setActiveTab(tabId)}
+            />
           </aside>
 
           <section className='flex-1'>
