@@ -38,18 +38,22 @@ import routes from '~/utils/routes'
 
 import ProjectAlertsSettings from './ProjectAlertsSettings'
 
-const NoNotificationChannelSet = () => {
+const NoNotificationChannelSet = ({
+  channelsLink,
+}: {
+  channelsLink: string
+}) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='mb-4 flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 dark:border-yellow-500/20 dark:bg-yellow-500/10'>
-      <WarningOctagonIcon className='size-5 shrink-0 text-yellow-600 dark:text-yellow-500' />
-      <p className='flex-1 text-sm text-yellow-800 dark:text-yellow-200'>
+    <div className='mb-4 flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center dark:border-amber-500/20 dark:bg-amber-500/10'>
+      <WarningOctagonIcon className='size-5 shrink-0 text-amber-600 dark:text-amber-400' />
+      <p className='flex-1 text-sm text-amber-800 dark:text-amber-200'>
         {t('alert.noNotificationChannel')}
       </p>
       <Link
-        to={routes.user_settings}
-        className='shrink-0 rounded-md bg-yellow-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-yellow-700 dark:bg-yellow-600 dark:hover:bg-yellow-500'
+        to={channelsLink}
+        className='shrink-0 self-start rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-700 sm:self-auto dark:bg-amber-600 dark:hover:bg-amber-500'
       >
         {t('common.fixIt')}
       </Link>
@@ -495,7 +499,11 @@ const ProjectAlertsInner = ({
           </div>
         ) : (
           <>
-            {!isIntegrationLinked ? <NoNotificationChannelSet /> : null}
+            {!isIntegrationLinked ? (
+              <NoNotificationChannelSet
+                channelsLink={`/projects/${projectId}/settings?tab=channels`}
+              />
+            ) : null}
 
             {/* Header with add button */}
             <div className='mb-4 flex items-center justify-between'>

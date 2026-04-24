@@ -47,9 +47,10 @@ export class ChannelDispatcherService {
   async dispatch(
     channels: NotificationChannel[],
     message: RenderedAlertMessage,
+    options: { ignoreVerification?: boolean } = {},
   ): Promise<void> {
     const tasks = channels
-      .filter((c) => this.isVerifiedAndActive(c))
+      .filter((c) => options.ignoreVerification || this.isVerifiedAndActive(c))
       .map(async (channel) => {
         const dispatcher = this.registry.get(channel.type)
         if (!dispatcher) {

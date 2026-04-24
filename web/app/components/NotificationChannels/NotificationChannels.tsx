@@ -1,11 +1,10 @@
 import {
-  CheckCircleIcon,
-  ClockIcon,
+  ArrowSquareOutIcon,
+  BellSimpleRingingIcon,
   PaperPlaneTiltIcon,
   PencilSimpleIcon,
   PlusIcon,
   TrashIcon,
-  XCircleIcon,
 } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -18,17 +17,15 @@ import type {
   NotificationChannelType,
 } from '~/lib/models/NotificationChannel'
 import type { NotificationChannelActionData } from '~/routes/notification-channel'
+import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
-import Discord from '~/ui/icons/Discord'
-import Slack from '~/ui/icons/Slack'
-import Telegram from '~/ui/icons/Telegram'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
-import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 
 import EnableWebPushButton from './EnableWebPushButton'
+import { ChannelTypeIcon, summariseConfig } from './utils'
 
 type ChannelScope = 'user' | 'organisation' | 'project'
 
@@ -54,13 +51,6 @@ const ALL_TYPES: NotificationChannelType[] = [
 ]
 
 const TG_BOT_URL = 'https://t.me/swetrixbot'
-
-const ChannelTypeIcon = ({ type }: { type: NotificationChannelType }) => {
-  if (type === 'telegram') return <Telegram className='size-5 shrink-0' />
-  if (type === 'discord') return <Discord className='size-5 shrink-0' />
-  if (type === 'slack') return <Slack className='size-5 shrink-0' />
-  return null
-}
 
 interface ChannelFormState {
   name: string
@@ -109,44 +99,20 @@ const ChannelStatusPill = ({ channel }: { channel: NotificationChannel }) => {
 
   if (isUnsubscribed) {
     return (
-      <span className='inline-flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400'>
-        <XCircleIcon className='size-4' aria-hidden />
-        {t('notificationChannels.statusUnsubscribed')}
-      </span>
+      <Badge
+        colour='red'
+        label={t('notificationChannels.statusUnsubscribed')}
+      />
     )
   }
   if (channel.isVerified) {
     return (
-      <span className='inline-flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400'>
-        <CheckCircleIcon className='size-4' aria-hidden />
-        {t('notificationChannels.statusVerified')}
-      </span>
+      <Badge colour='green' label={t('notificationChannels.statusVerified')} />
     )
   }
   return (
-    <span className='inline-flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400'>
-      <ClockIcon className='size-4' aria-hidden />
-      {t('notificationChannels.statusPending')}
-    </span>
+    <Badge colour='yellow' label={t('notificationChannels.statusPending')} />
   )
-}
-
-const summariseConfig = (channel: NotificationChannel): string => {
-  const cfg = channel.config as Record<string, any>
-  switch (channel.type) {
-    case 'email':
-      return cfg?.address || ''
-    case 'telegram':
-      return cfg?.chatId ? `chat ${cfg.chatId}` : ''
-    case 'slack':
-    case 'discord':
-    case 'webhook':
-      return cfg?.url || ''
-    case 'webpush':
-      return cfg?.userAgent || cfg?.endpoint || ''
-    default:
-      return ''
-  }
 }
 
 const NotificationChannels = ({
@@ -371,115 +337,174 @@ const NotificationChannels = ({
       ) : null}
 
       {isLoaded && channels.length === 0 && !isFormOpen ? (
-        <Text as='p' size='sm' colour='secondary' className='mt-4'>
-          {t('notificationChannels.empty')}
-        </Text>
-      ) : null}
-
-      {isLoaded && channels.length > 0 ? (
-        <div className='mt-4 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-950'>
-          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
-            <thead className='bg-gray-50 dark:bg-slate-900'>
-              <tr>
-                <th className='px-4 py-2 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'>
-                  {t('common.name')}
-                </th>
-                <th className='px-4 py-2 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'>
-                  {t('common.type')}
-                </th>
-                <th className='px-4 py-2 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'>
-                  {t('common.details')}
-                </th>
-                <th className='px-4 py-2 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'>
-                  {t('common.status')}
-                </th>
-                <th className='px-4 py-2' />
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
-              {_map(channels, (channel) => (
-                <tr
-                  key={channel.id}
-                  className='hover:bg-gray-50 dark:hover:bg-slate-900/50'
-                >
-                  <td className='px-4 py-3 align-top text-sm'>
-                    <div className='flex items-center gap-2'>
-                      <ChannelTypeIcon type={channel.type} />
-                      <span className='font-medium text-gray-900 dark:text-gray-100'>
-                        {channel.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className='px-4 py-3 align-top text-sm text-gray-700 capitalize dark:text-gray-300'>
-                    {t(`notificationChannels.types.${channel.type}` as any) ||
-                      channel.type}
-                  </td>
-                  <td className='px-4 py-3 align-top text-sm text-gray-600 dark:text-gray-400'>
-                    <span className='font-mono break-all'>
-                      {summariseConfig(channel)}
-                    </span>
-                  </td>
-                  <td className='px-4 py-3 align-top text-sm'>
-                    <ChannelStatusPill channel={channel} />
-                  </td>
-                  <td className='px-4 py-3 text-right align-top text-sm'>
-                    <div className='flex flex-wrap items-center justify-end gap-2'>
-                      <Button
-                        small
-                        secondary
-                        onClick={() => onTest(channel)}
-                        disabled={isMutating}
-                        title={t('notificationChannels.test')}
-                      >
-                        <PaperPlaneTiltIcon className='size-4' aria-hidden />
-                      </Button>
-                      {!channel.isVerified &&
-                      (channel.type === 'email' ||
-                        channel.type === 'webhook') ? (
-                        <Button
-                          small
-                          secondary
-                          onClick={() => onVerify(channel)}
-                          disabled={isMutating}
-                        >
-                          {t('notificationChannels.verify')}
-                        </Button>
-                      ) : null}
-                      <Button
-                        small
-                        secondary
-                        onClick={() => onEdit(channel)}
-                        disabled={isMutating}
-                        title={t('common.edit')}
-                      >
-                        <PencilSimpleIcon className='size-4' aria-hidden />
-                      </Button>
-                      <Button
-                        small
-                        danger
-                        onClick={() => setPendingDelete(channel)}
-                        disabled={isMutating}
-                        title={t('common.delete')}
-                      >
-                        <TrashIcon className='size-4' aria-hidden />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className='mt-6 rounded-lg border border-dashed border-gray-300 bg-gray-50/40 p-8 text-center dark:border-slate-700 dark:bg-slate-900/30'>
+          <div className='mx-auto flex size-12 items-center justify-center rounded-lg bg-white ring-1 ring-gray-200 ring-inset dark:bg-slate-950 dark:ring-slate-700'>
+            <BellSimpleRingingIcon
+              className='size-6 text-slate-500 dark:text-slate-400'
+              weight='duotone'
+            />
+          </div>
+          <Text as='p' size='base' weight='semibold' className='mt-4'>
+            {t('notificationChannels.emptyTitle')}
+          </Text>
+          <Text
+            as='p'
+            size='sm'
+            colour='secondary'
+            className='mx-auto mt-1 max-w-md'
+          >
+            {t('notificationChannels.emptyDescription')}
+          </Text>
+          <div className='mt-5 flex justify-center'>
+            <Button
+              primary
+              regular
+              onClick={() => {
+                setForm(blankForm(allowedTypes[0]))
+                setCreating(true)
+              }}
+            >
+              <span className='inline-flex items-center gap-1'>
+                <PlusIcon className='size-4' aria-hidden />
+                {t('notificationChannels.add')}
+              </span>
+            </Button>
+          </div>
         </div>
       ) : null}
 
+      {isLoaded && channels.length > 0 ? (
+        <ul className='mt-4 space-y-2'>
+          {_map(channels, (channel) => {
+            const summary = summariseConfig(channel)
+            const canVerify =
+              !channel.isVerified &&
+              (channel.type === 'email' || channel.type === 'webhook')
+
+            return (
+              <li
+                key={channel.id}
+                className='group flex flex-col gap-3 rounded-lg border border-gray-200 p-3 transition-colors hover:border-gray-300 sm:flex-row sm:items-center sm:gap-4 sm:p-4 dark:border-slate-800 dark:hover:border-slate-700'
+              >
+                <div className='flex size-10 shrink-0 items-center justify-center rounded-md bg-gray-100 dark:bg-slate-800/80'>
+                  <ChannelTypeIcon type={channel.type} />
+                </div>
+                <div className='min-w-0 flex-1'>
+                  <div className='flex items-center gap-2'>
+                    <Text
+                      as='span'
+                      weight='semibold'
+                      className='truncate text-gray-900 dark:text-gray-100'
+                    >
+                      {channel.name}
+                    </Text>
+                    <span className='shrink-0 rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-gray-600 uppercase dark:bg-slate-800 dark:text-gray-300'>
+                      {t(`notificationChannels.types.${channel.type}` as any) ||
+                        channel.type}
+                    </span>
+                  </div>
+                  <div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-1'>
+                    {summary ? (
+                      <span className='truncate font-mono text-xs text-gray-500 dark:text-gray-400'>
+                        {summary}
+                      </span>
+                    ) : null}
+                    <ChannelStatusPill channel={channel} />
+                  </div>
+                </div>
+                <div className='flex shrink-0 flex-wrap items-center gap-1.5'>
+                  {canVerify ? (
+                    <Button
+                      small
+                      secondary
+                      onClick={() => onVerify(channel)}
+                      disabled={isMutating}
+                    >
+                      {t('notificationChannels.verify')}
+                    </Button>
+                  ) : null}
+                  <button
+                    type='button'
+                    onClick={() => onTest(channel)}
+                    disabled={isMutating}
+                    title={t('notificationChannels.test')}
+                    className='inline-flex size-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-100'
+                  >
+                    <PaperPlaneTiltIcon className='size-4' aria-hidden />
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => onEdit(channel)}
+                    disabled={isMutating}
+                    title={t('common.edit')}
+                    className='inline-flex size-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-100'
+                  >
+                    <PencilSimpleIcon className='size-4' aria-hidden />
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => setPendingDelete(channel)}
+                    disabled={isMutating}
+                    title={t('common.delete')}
+                    className='inline-flex size-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-red-500/10 dark:hover:text-red-400'
+                  >
+                    <TrashIcon className='size-4' aria-hidden />
+                  </button>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      ) : null}
+
       {isFormOpen ? (
-        <div className='mt-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950'>
+        <div className='mt-4 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
           <Text as='h4' size='base' weight='bold'>
             {editing
               ? t('notificationChannels.editTitle')
               : t('notificationChannels.createTitle')}
           </Text>
-          <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
+
+          {!editing ? (
+            <div className='mt-4'>
+              <Text
+                as='p'
+                size='xs'
+                weight='semibold'
+                colour='secondary'
+                className='tracking-wider uppercase'
+              >
+                {t('notificationChannels.typeLabel')}
+              </Text>
+              <div className='mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6'>
+                {typeOptions.map((opt) => {
+                  const isActive = form.type === opt.type
+                  return (
+                    <button
+                      key={opt.type}
+                      type='button'
+                      onClick={() =>
+                        setForm((prev) => ({ ...prev, type: opt.type }))
+                      }
+                      aria-pressed={isActive}
+                      className={`flex flex-col items-center gap-2 rounded-md px-2 py-3 text-center ring-1 transition-colors ring-inset ${
+                        isActive
+                          ? 'bg-slate-900/3 ring-slate-900 dark:bg-slate-100/5 dark:ring-slate-100'
+                          : 'ring-gray-300 hover:bg-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-900/40'
+                      }`}
+                    >
+                      <ChannelTypeIcon type={opt.type} className='size-6' />
+                      <span className='text-xs font-medium text-gray-900 dark:text-gray-100'>
+                        {opt.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          <div className='mt-4'>
             <Input
               label={t('common.name')}
               value={form.name}
@@ -488,23 +513,6 @@ const NotificationChannels = ({
               }
               placeholder='My alerts channel'
             />
-            <div className={editing ? 'pointer-events-none opacity-50' : ''}>
-              <Select
-                label={t('notificationChannels.typeLabel')}
-                items={typeOptions.map((o) => o.label)}
-                title={
-                  typeOptions.find((o) => o.type === form.type)?.label ||
-                  form.type
-                }
-                onSelect={(label) => {
-                  const found = typeOptions.find((o) => o.label === label)
-                  if (found) setForm((prev) => ({ ...prev, type: found.type }))
-                }}
-                selectedItem={
-                  typeOptions.find((o) => o.type === form.type)?.label
-                }
-              />
-            </div>
           </div>
 
           <div className='mt-3 grid grid-cols-1 gap-3'>
@@ -521,10 +529,12 @@ const NotificationChannels = ({
               />
             ) : null}
             {form.type === 'telegram' ? (
-              <>
+              <div className='space-y-2'>
                 <Input
-                  label={t('profileSettings.chatID')}
+                  label={t('notificationChannels.telegram.chatId')}
                   value={form.chatId}
+                  inputMode='numeric'
+                  placeholder='123456789'
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, chatId: e.target.value }))
                   }
@@ -532,7 +542,16 @@ const NotificationChannels = ({
                     bot: TG_BOT_URL,
                   })}
                 />
-              </>
+                <a
+                  href={TG_BOT_URL}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                >
+                  <ArrowSquareOutIcon className='size-3.5' aria-hidden />
+                  {t('notificationChannels.telegram.openBot')}
+                </a>
+              </div>
             ) : null}
             {form.type === 'slack' ||
             form.type === 'discord' ||

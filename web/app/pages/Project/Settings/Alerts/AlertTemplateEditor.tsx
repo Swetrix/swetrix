@@ -1,4 +1,4 @@
-import { CodeIcon, EyeIcon } from '@phosphor-icons/react'
+import { CodeIcon, EyeIcon, PlusIcon } from '@phosphor-icons/react'
 import { marked } from 'marked'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -6,9 +6,13 @@ import { useFetcher } from 'react-router'
 import sanitizeHtml from 'sanitize-html'
 
 import type { ProjectViewActionData } from '~/routes/projects.$id'
+import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
-import Textarea from '~/ui/Textarea'
+
+import RichTemplateInput, {
+  type TemplateVariableInfo,
+} from './RichTemplateInput'
 
 interface TemplateVariablesResponse {
   variables: string[]
@@ -205,6 +209,20 @@ const AlertTemplateEditor = ({
     [variables, sampleValues],
   )
 
+  const variableInfos = useMemo<TemplateVariableInfo[]>(
+    () =>
+      variables.map((name) => {
+        const key = `alert.template.variables.${name}` as const
+        const translated = t(key as any)
+        return {
+          name,
+          description:
+            translated && translated !== key ? translated : undefined,
+        }
+      }),
+    [variables, t],
+  )
+
   const previewBodyHtml = useMemo(
     () => renderMarkdown(interpolate(body || defaultTemplate || '', sample)),
     [body, defaultTemplate, sample],
@@ -225,20 +243,23 @@ const AlertTemplateEditor = ({
             {t('alert.template.description')}
           </Text>
         </div>
-        <button
-          type='button'
-          className='inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
+        <Button
+          secondary
+          small
           onClick={() => setShowPreview((v) => !v)}
+          className='self-start sm:self-auto'
         >
-          {showPreview ? (
-            <CodeIcon className='size-3.5' aria-hidden />
-          ) : (
-            <EyeIcon className='size-3.5' aria-hidden />
-          )}
-          {showPreview
-            ? t('alert.template.editMode')
-            : t('alert.template.previewMode')}
-        </button>
+          <span className='inline-flex items-center gap-1'>
+            {showPreview ? (
+              <CodeIcon className='size-3.5' aria-hidden />
+            ) : (
+              <EyeIcon className='size-3.5' aria-hidden />
+            )}
+            {showPreview
+              ? t('alert.template.editMode')
+              : t('alert.template.previewMode')}
+          </span>
+        </Button>
       </div>
 
       {showSubject ? (
@@ -255,32 +276,43 @@ const AlertTemplateEditor = ({
       {!showPreview ? (
         <>
           <div className='mt-4'>
-            <Textarea
+            <RichTemplateInput
               ref={bodyRef as any}
               label={t('alert.template.body')}
-              rows={6}
+              rows={7}
               value={body}
               placeholder={defaultTemplate || ''}
-              onChange={(e) => onBodyChange(e.target.value)}
+              onChange={onBodyChange}
+              variables={variableInfos}
               hint={t('alert.template.bodyHint')}
             />
           </div>
 
-          {variables.length > 0 ? (
-            <div className='mt-3'>
-              <Text as='p' size='sm' weight='medium'>
+          {variableInfos.length > 0 ? (
+            <div className='mt-4'>
+              <Text
+                as='p'
+                size='xs'
+                weight='semibold'
+                colour='secondary'
+                className='tracking-wider uppercase'
+              >
                 {t('alert.template.insertVariable')}
               </Text>
               <div className='mt-2 flex flex-wrap gap-1.5'>
-                {variables.map((name) => (
+                {variableInfos.map((variable) => (
                   <button
                     type='button'
-                    key={name}
-                    onClick={() => insertAtCursor(`{{${name}}}`)}
-                    title={name}
-                    className='inline-flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 font-mono text-xs text-gray-700 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
+                    key={variable.name}
+                    onClick={() => insertAtCursor(`{{${variable.name}}}`)}
+                    title={variable.description || variable.name}
+                    className='group inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 font-mono text-[11px] text-indigo-700 ring-1 ring-indigo-100 transition-all hover:bg-indigo-100 hover:ring-indigo-300 dark:bg-indigo-500/15 dark:text-indigo-200 dark:ring-indigo-400/20 dark:hover:bg-indigo-500/25'
                   >
-                    {`{{${name}}}`}
+                    <PlusIcon
+                      className='size-3 opacity-60 transition-opacity group-hover:opacity-100'
+                      aria-hidden
+                    />
+                    {variable.name}
                   </button>
                 ))}
               </div>
@@ -294,7 +326,7 @@ const AlertTemplateEditor = ({
               <Text as='p' size='sm' weight='medium' className='mb-1'>
                 {t('alert.template.emailSubject')}
               </Text>
-              <div className='rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900'>
+              <div className='rounded-md bg-gray-50 px-3 py-2 text-sm ring-1 ring-gray-300 ring-inset dark:bg-slate-900 dark:ring-slate-700/80'>
                 {previewSubject}
               </div>
             </div>
@@ -304,7 +336,7 @@ const AlertTemplateEditor = ({
               {t('alert.template.preview')}
             </Text>
             <div
-              className='alert-preview prose prose-sm max-w-none rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 dark:prose-invert [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400 [&_p]:my-1 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0'
+              className='alert-preview prose prose-sm max-w-none rounded-md bg-gray-50 px-3 py-2 text-sm ring-1 ring-gray-300 ring-inset dark:bg-slate-900 dark:ring-slate-700/80 dark:prose-invert [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400 [&_p]:my-1 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0'
               dangerouslySetInnerHTML={{ __html: previewBodyHtml }}
             />
           </div>

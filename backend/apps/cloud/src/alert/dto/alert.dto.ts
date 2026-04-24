@@ -86,7 +86,7 @@ class AlertBaseDTO {
 
   @ApiProperty({ type: [String] })
   @IsArray()
-  @IsUUID('4', { each: true })
+  @IsUUID('all', { each: true })
   @IsOptional()
   channelIds?: string[]
 

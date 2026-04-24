@@ -1179,6 +1179,12 @@
       "errors": "Errors"
     },
     "noChannels": "No notification channels are linked to this project yet. Add one in <url>Notification channels</url>.",
+    "sections": {
+      "basics": "Alert basics",
+      "basicsDescription": "Give the alert a clear name and choose whether it's currently active.",
+      "trigger": "Trigger",
+      "triggerDescription": "Pick the metric and the condition that fires the alert."
+    },
     "channels": {
       "heading": "Notification channels",
       "description": "Pick which channels should receive this alert. Channels are managed in your account, organisation, or project settings.",
@@ -1186,23 +1192,49 @@
     },
     "template": {
       "heading": "Message template",
-      "description": "Customise the message Swetrix sends when this alert fires. Use the variables below to inject data from the alert context.",
+      "description": "Customise the message Swetrix sends when this alert fires. Type { or pick a variable below to insert dynamic values.",
       "body": "Message body",
-      "bodyHint": "Markdown is supported. Leave empty to use the default template.",
+      "bodyHint": "Markdown is supported. Type { to insert a variable. Leave blank to use the default template.",
       "emailSubject": "Email subject",
       "emailSubjectPlaceholder": "Swetrix alert: {{alert_name}}",
-      "insertVariable": "Insert variable",
+      "insertVariable": "Available variables",
       "preview": "Preview",
       "previewMode": "Preview",
-      "editMode": "Edit"
+      "editMode": "Edit",
+      "noVariables": "No variables match",
+      "unknownVariable": "Unknown variable. Type { to see all available variables.",
+      "variables": {
+        "alert_name": "The alert's name as configured in this form.",
+        "project_name": "The project this alert belongs to.",
+        "project_id": "The project's unique identifier.",
+        "dashboard_url": "Direct link to the project dashboard.",
+        "value": "The metric value that triggered the alert.",
+        "threshold": "The threshold the value was compared against.",
+        "condition": "The comparison operator (e.g. greater than).",
+        "time_window": "The time window the metric was measured over.",
+        "views": "Number of page views in the window.",
+        "unique_views": "Number of unique sessions in the window.",
+        "online_count": "Currently online users.",
+        "event_name": "Custom event name.",
+        "event_count": "Number of times the event fired.",
+        "every_event_mode": "\"yes\" if the alert fires on every occurrence.",
+        "error_count": "Number of errors that triggered the alert.",
+        "error_message": "The error message text.",
+        "error_name": "The error's class or name.",
+        "errors_url": "Direct link to the project's errors view.",
+        "is_new_only": "\"yes\" if the alert only fires for first-seen errors."
+      }
     }
   },
   "notificationChannels": {
     "heading": "Notification channels",
-    "description": "Connect channels (Email, Telegram, Discord, Slack, Webhook, Web push) and pick them per alert.",
-    "userScopeDescription": "Channels you connect here are visible across your projects.",
+    "description": "Wire up email, Telegram, Discord, Slack, custom webhooks or browser push, then attach them to alerts.",
+    "userScopeDescription": "Channels you connect here are available across all of your projects.",
+    "details": "Where it sends",
     "add": "Add channel",
     "empty": "No channels yet. Connect one to start receiving alerts.",
+    "emptyTitle": "No channels connected",
+    "emptyDescription": "Connect a channel below to start receiving alerts when your traffic, errors or events cross a threshold.",
     "createTitle": "Connect a channel",
     "editTitle": "Edit channel",
     "deleteTitle": "Remove channel?",
@@ -1233,7 +1265,9 @@
       "hint": "We'll send a confirmation email before this channel can be used."
     },
     "telegram": {
-      "hint": "Open {{bot}} and send /start. The bot will reply with your chat ID."
+      "chatId": "Telegram chat ID",
+      "hint": "Open {{bot}} on Telegram and send /start. The bot will reply with your numeric chat ID — paste it here.",
+      "openBot": "Open bot"
     },
     "webhook": {
       "secret": "Signing secret (optional)",

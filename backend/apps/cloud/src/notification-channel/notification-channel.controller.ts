@@ -107,7 +107,7 @@ export class NotificationChannelController {
   @Patch('/:id')
   @Auth()
   async update(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateChannelDTO,
     @CurrentUserId() userId: string,
   ) {
@@ -122,7 +122,7 @@ export class NotificationChannelController {
   @Delete('/:id')
   @Auth()
   async remove(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @CurrentUserId() userId: string,
   ) {
     await this.channelService.delete(id, userId)
@@ -133,17 +133,21 @@ export class NotificationChannelController {
   @Post('/:id/test')
   @Auth()
   async sendTest(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @CurrentUserId() userId: string,
   ) {
     const channel = await this.channelService.findById(id)
     if (!channel) throw new NotFoundException('Channel not found')
     await this.channelService.ensureCallerCanManage(channel, userId)
-    await this.dispatcherService.dispatch([channel], {
-      body: 'This is a test notification from Swetrix. Your channel is wired up correctly!',
-      subject: 'Swetrix test notification',
-      context: { test: true },
-    })
+    await this.dispatcherService.dispatch(
+      [channel],
+      {
+        body: 'This is a test notification from Swetrix. Your channel is wired up correctly!',
+        subject: 'Swetrix test notification',
+        context: { test: true },
+      },
+      { ignoreVerification: true },
+    )
     return { ok: true }
   }
 
@@ -151,7 +155,7 @@ export class NotificationChannelController {
   @Post('/:id/verify')
   @Auth()
   async kickoffVerification(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @CurrentUserId() userId: string,
   ) {
     const channel = await this.channelService.findById(id)
