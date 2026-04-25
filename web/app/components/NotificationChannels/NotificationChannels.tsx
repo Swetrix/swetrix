@@ -23,6 +23,7 @@ import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
+import Tooltip from '~/ui/Tooltip'
 
 import EnableWebPushButton from './EnableWebPushButton'
 import { ChannelTypeIcon, summariseConfig } from './utils'
@@ -423,33 +424,51 @@ const NotificationChannels = ({
                       {t('notificationChannels.verify')}
                     </Button>
                   ) : null}
-                  <button
-                    type='button'
-                    onClick={() => onTest(channel)}
-                    disabled={isMutating}
-                    title={t('notificationChannels.test')}
-                    className='inline-flex size-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-100'
-                  >
-                    <PaperPlaneTiltIcon className='size-4' aria-hidden />
-                  </button>
-                  <button
-                    type='button'
-                    onClick={() => onEdit(channel)}
-                    disabled={isMutating}
-                    title={t('common.edit')}
-                    className='inline-flex size-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-100'
-                  >
-                    <PencilSimpleIcon className='size-4' aria-hidden />
-                  </button>
-                  <button
-                    type='button'
-                    onClick={() => setPendingDelete(channel)}
-                    disabled={isMutating}
-                    title={t('common.delete')}
-                    className='inline-flex size-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-red-500/10 dark:hover:text-red-400'
-                  >
-                    <TrashIcon className='size-4' aria-hidden />
-                  </button>
+                  <Tooltip
+                    text={t('notificationChannels.test')}
+                    ariaLabel={t('notificationChannels.test')}
+                    asChild
+                    tooltipNode={
+                      <button
+                        type='button'
+                        onClick={() => onTest(channel)}
+                        disabled={isMutating}
+                        className='inline-flex size-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-100'
+                      >
+                        <PaperPlaneTiltIcon className='size-4' aria-hidden />
+                      </button>
+                    }
+                  />
+                  <Tooltip
+                    text={t('common.edit')}
+                    ariaLabel={t('common.edit')}
+                    asChild
+                    tooltipNode={
+                      <button
+                        type='button'
+                        onClick={() => onEdit(channel)}
+                        disabled={isMutating}
+                        className='inline-flex size-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-100'
+                      >
+                        <PencilSimpleIcon className='size-4' aria-hidden />
+                      </button>
+                    }
+                  />
+                  <Tooltip
+                    text={t('common.delete')}
+                    ariaLabel={t('common.delete')}
+                    asChild
+                    tooltipNode={
+                      <button
+                        type='button'
+                        onClick={() => setPendingDelete(channel)}
+                        disabled={isMutating}
+                        className='inline-flex size-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-red-500/10 dark:hover:text-red-400'
+                      >
+                        <TrashIcon className='size-4' aria-hidden />
+                      </button>
+                    }
+                  />
                 </div>
               </li>
             )
