@@ -23,7 +23,29 @@ import {
 import { WebhookChannelService } from './dispatchers/webhook-channel.service'
 
 const MAX_CHANNELS_PER_SCOPE = 50
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MAX_EMAIL_LENGTH = 254
+const MAX_EMAIL_LOCAL_PART_LENGTH = 64
+
+const hasWhitespace = (value: string) => {
+  for (const char of value) {
+    if (char.trim() === '') return true
+  }
+  return false
+}
+
+const isValidEmailAddress = (address: string) => {
+  if (!address || address.length > MAX_EMAIL_LENGTH || hasWhitespace(address)) {
+    return false
+  }
+
+  const atIndex = address.indexOf('@')
+  if (atIndex <= 0 || atIndex !== address.lastIndexOf('@')) return false
+  if (atIndex > MAX_EMAIL_LOCAL_PART_LENGTH) return false
+
+  const domain = address.slice(atIndex + 1)
+  const dotIndex = domain.indexOf('.')
+  return dotIndex > 0 && dotIndex < domain.length - 1
+}
 
 const isValidHttpsUrl = (url: string, allowedHostSuffix: string[] = []) => {
   try {
@@ -342,7 +364,7 @@ export class NotificationChannelService {
         const address = String(raw.address || '')
           .trim()
           .toLowerCase()
-        if (!EMAIL_REGEX.test(address)) {
+        if (!isValidEmailAddress(address)) {
           throw new BadRequestException('Invalid email address')
         }
         return { address, unsubscribed: false }
