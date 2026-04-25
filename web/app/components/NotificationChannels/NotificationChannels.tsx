@@ -457,158 +457,158 @@ const NotificationChannels = ({
         </ul>
       ) : null}
 
-      {isFormOpen ? (
-        <div className='mt-4 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
-          <Text as='h4' size='base' weight='bold'>
-            {editing
-              ? t('notificationChannels.editTitle')
-              : t('notificationChannels.createTitle')}
-          </Text>
-
-          {!editing ? (
-            <div className='mt-4'>
-              <Text
-                as='p'
-                size='xs'
-                weight='semibold'
-                colour='secondary'
-                className='tracking-wider uppercase'
-              >
-                {t('notificationChannels.typeLabel')}
-              </Text>
-              <div className='mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6'>
-                {typeOptions.map((opt) => {
-                  const isActive = form.type === opt.type
-                  return (
-                    <button
-                      key={opt.type}
-                      type='button'
-                      onClick={() =>
-                        setForm((prev) => ({ ...prev, type: opt.type }))
-                      }
-                      aria-pressed={isActive}
-                      className={`flex flex-col items-center gap-2 rounded-md px-2 py-3 text-center ring-1 transition-colors ring-inset ${
-                        isActive
-                          ? 'bg-slate-900/3 ring-slate-900 dark:bg-slate-100/5 dark:ring-slate-100'
-                          : 'ring-gray-300 hover:bg-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-900/40'
-                      }`}
-                    >
-                      <ChannelTypeIcon type={opt.type} className='size-6' />
-                      <span className='text-xs font-medium text-gray-900 dark:text-gray-100'>
-                        {opt.label}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          ) : null}
-
-          <div className='mt-4'>
-            <Input
-              label={t('common.name')}
-              value={form.name}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, name: e.target.value }))
-              }
-              placeholder='My alerts channel'
-            />
-          </div>
-
-          <div className='mt-3 grid grid-cols-1 gap-3'>
-            {form.type === 'email' ? (
-              <Input
-                type='email'
-                label={t('notificationChannels.email.address')}
-                value={form.email}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, email: e.target.value }))
-                }
-                hint={t('notificationChannels.email.hint')}
-                placeholder='alerts@example.com'
-              />
-            ) : null}
-            {form.type === 'telegram' ? (
-              <div className='space-y-2'>
-                <Input
-                  label={t('notificationChannels.telegram.chatId')}
-                  value={form.chatId}
-                  inputMode='numeric'
-                  placeholder='123456789'
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, chatId: e.target.value }))
-                  }
-                  hint={t('notificationChannels.telegram.hint', {
-                    bot: TG_BOT_URL,
-                  })}
-                />
-                <a
-                  href={TG_BOT_URL}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+      <Modal
+        isOpened={isFormOpen}
+        onClose={() => {
+          setCreating(false)
+          setEditing(null)
+        }}
+        size='medium'
+        title={
+          editing
+            ? t('notificationChannels.editTitle')
+            : t('notificationChannels.createTitle')
+        }
+        message={
+          <div className='mt-1'>
+            {!editing ? (
+              <div>
+                <Text
+                  as='p'
+                  size='xs'
+                  weight='semibold'
+                  colour='secondary'
+                  className='tracking-wider uppercase'
                 >
-                  <ArrowSquareOutIcon className='size-3.5' aria-hidden />
-                  {t('notificationChannels.telegram.openBot')}
-                </a>
+                  {t('notificationChannels.typeLabel')}
+                </Text>
+                <div className='mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3'>
+                  {typeOptions.map((opt) => {
+                    const isActive = form.type === opt.type
+                    return (
+                      <button
+                        key={opt.type}
+                        type='button'
+                        onClick={() =>
+                          setForm((prev) => ({ ...prev, type: opt.type }))
+                        }
+                        aria-pressed={isActive}
+                        className={`flex flex-col items-center gap-2 rounded-md px-2 py-3 text-center ring-1 transition-colors ring-inset ${
+                          isActive
+                            ? 'bg-slate-900/3 ring-slate-900 dark:bg-slate-100/5 dark:ring-slate-100'
+                            : 'ring-gray-300 hover:bg-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-900/40'
+                        }`}
+                      >
+                        <ChannelTypeIcon type={opt.type} className='size-6' />
+                        <span className='text-xs font-medium text-gray-900 dark:text-gray-100'>
+                          {opt.label}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             ) : null}
-            {form.type === 'slack' ||
-            form.type === 'discord' ||
-            form.type === 'webhook' ? (
-              <>
-                <Input
-                  label={t('notificationChannels.webhookUrl')}
-                  value={form.url}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, url: e.target.value }))
-                  }
-                  placeholder='https://...'
-                />
-                {form.type === 'webhook' ? (
-                  <Input
-                    label={t('notificationChannels.webhook.secret')}
-                    value={form.secret}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, secret: e.target.value }))
-                    }
-                    hint={t('notificationChannels.webhook.secretHint')}
-                  />
-                ) : null}
-              </>
-            ) : null}
-            {form.type === 'webpush' ? (
-              <Text as='p' size='sm' colour='secondary'>
-                {t('notificationChannels.webpush.useButton')}
-              </Text>
-            ) : null}
-          </div>
 
-          <div className='mt-4 flex items-center justify-end gap-2'>
-            <Button
-              secondary
-              regular
-              onClick={() => {
-                setCreating(false)
-                setEditing(null)
-              }}
-              disabled={isMutating}
-            >
-              {t('common.cancel')}
-            </Button>
-            {form.type !== 'webpush' ? (
-              <Button
-                primary
-                regular
-                onClick={editing ? onUpdate : onCreate}
-                loading={isMutating}
-              >
-                {editing ? t('common.save') : t('common.create')}
-              </Button>
-            ) : null}
+            <div className='mt-4'>
+              <Input
+                label={t('common.name')}
+                value={form.name}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, name: e.target.value }))
+                }
+                placeholder='My alerts channel'
+              />
+            </div>
+
+            <div className='mt-3 grid grid-cols-1 gap-3'>
+              {form.type === 'email' ? (
+                <Input
+                  type='email'
+                  label={t('notificationChannels.email.address')}
+                  value={form.email}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, email: e.target.value }))
+                  }
+                  hint={t('notificationChannels.email.hint')}
+                  placeholder='alerts@example.com'
+                />
+              ) : null}
+              {form.type === 'telegram' ? (
+                <div className='space-y-2'>
+                  <Input
+                    label={t('notificationChannels.telegram.chatId')}
+                    value={form.chatId}
+                    inputMode='numeric'
+                    placeholder='123456789'
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, chatId: e.target.value }))
+                    }
+                    hint={t('notificationChannels.telegram.hint', {
+                      bot: TG_BOT_URL,
+                    })}
+                  />
+                  <a
+                    href={TG_BOT_URL}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                  >
+                    <ArrowSquareOutIcon className='size-3.5' aria-hidden />
+                    {t('notificationChannels.telegram.openBot')}
+                  </a>
+                </div>
+              ) : null}
+              {form.type === 'slack' ||
+              form.type === 'discord' ||
+              form.type === 'webhook' ? (
+                <>
+                  <Input
+                    label={t('notificationChannels.webhookUrl')}
+                    value={form.url}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, url: e.target.value }))
+                    }
+                    placeholder={
+                      form.type === 'slack'
+                        ? 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
+                        : form.type === 'discord'
+                          ? 'https://discord.com/api/webhooks/000000000000000000/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+                          : 'https://example.com/webhook'
+                    }
+                  />
+                  {form.type === 'webhook' ? (
+                    <Input
+                      label={t('notificationChannels.webhook.secret')}
+                      value={form.secret}
+                      onChange={(e) =>
+                        setForm((prev) => ({ ...prev, secret: e.target.value }))
+                      }
+                      hint={t('notificationChannels.webhook.secretHint')}
+                    />
+                  ) : null}
+                </>
+              ) : null}
+              {form.type === 'webpush' ? (
+                <Text as='p' size='sm' colour='secondary'>
+                  {t('notificationChannels.webpush.useButton')}
+                </Text>
+              ) : null}
+            </div>
           </div>
-        </div>
-      ) : null}
+        }
+        closeText={t('common.cancel')}
+        submitText={
+          form.type !== 'webpush'
+            ? editing
+              ? t('common.save')
+              : t('common.create')
+            : undefined
+        }
+        onSubmit={editing ? onUpdate : onCreate}
+        isLoading={isMutating}
+        submitDisabled={isMutating}
+      />
 
       <Modal
         isOpened={!!pendingDelete}
