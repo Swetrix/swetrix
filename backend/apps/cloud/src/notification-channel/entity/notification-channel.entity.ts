@@ -36,7 +36,7 @@ export type NotificationChannelConfig =
 
 @Entity({ name: 'notification_channel' })
 @Check(
-  '`channel_scope_check`',
+  'channel_scope_check',
   '((`userId` IS NOT NULL) + (`organisationId` IS NOT NULL) + (`projectId` IS NOT NULL)) = 1',
 )
 export class NotificationChannel {
@@ -65,6 +65,9 @@ export class NotificationChannel {
 
   @Column('varchar', { length: 64, nullable: true, default: null })
   verificationToken: string | null
+
+  @Column('varchar', { length: 255, nullable: true, default: null })
+  disabledReason: string | null
 
   @ApiProperty()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

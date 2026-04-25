@@ -85,7 +85,7 @@ const buildConfig = (form: ChannelFormState) => {
     case 'webhook':
       return {
         url: form.url.trim(),
-        secret: form.secret.trim() || null,
+        ...(form.secret.trim() ? { secret: form.secret.trim() } : {}),
       }
     default:
       return {}
@@ -234,10 +234,15 @@ const NotificationChannels = ({
 
   const onUpdate = () => {
     if (!editing) return
+    const name = form.name.trim()
+    if (!name) {
+      toast.error(t('notificationChannels.nameRequired'))
+      return
+    }
     const formData = new FormData()
     formData.set('intent', 'update-channel')
     formData.set('channelId', editing.id)
-    formData.set('name', form.name.trim())
+    formData.set('name', name)
     formData.set('config', JSON.stringify(buildConfig(form)))
     submitMutate(formData)
   }

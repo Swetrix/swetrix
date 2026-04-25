@@ -102,9 +102,7 @@ const CollapsibleGroup = <TabId extends string>({
   activeTab: TabId
   onTabChange: (tabId: TabId) => void
 }) => {
-  const [isExpanded, setIsExpanded] = useState(() =>
-    getGroupExpandedState(group.id),
-  )
+  const [isExpanded, setIsExpanded] = useState(true)
 
   const hasActiveTab = useMemo(
     () => tabs.some((tab) => tab.id === activeTab),
@@ -112,6 +110,10 @@ const CollapsibleGroup = <TabId extends string>({
   )
 
   const prevHasActiveTab = useRef(hasActiveTab)
+
+  useEffect(() => {
+    setIsExpanded(getGroupExpandedState(group.id))
+  }, [group.id])
 
   useEffect(() => {
     if (hasActiveTab && !prevHasActiveTab.current && !isExpanded) {

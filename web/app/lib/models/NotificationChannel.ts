@@ -14,6 +14,7 @@ export interface NotificationChannel {
   type: NotificationChannelType
   config: Record<string, any>
   isVerified: boolean
+  disabledReason?: string | null
   scope: NotificationChannelScope
   userId?: string | null
   organisationId?: string | null

@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { createHmac } from 'crypto'
+// using node-fetch instead of undici because the native fetch does not support
+// 'agent' option (to prevent SSRF)
+import fetch from 'node-fetch'
+import { useAgent } from 'request-filtering-agent'
 import {
   NotificationChannel,
   NotificationChannelType,
@@ -59,16 +63,18 @@ export class WebhookChannelService implements ChannelDispatcher {
           .digest('hex')
         headers['X-Swetrix-Signature'] = `sha256=${sig}`
       }
-      const res = await fetch(cfg.url, {
+      const webhookUrl = cfg.url
+      const res = await fetch(webhookUrl, {
         method: 'POST',
         headers,
         body: bodyStr,
+        agent: useAgent(webhookUrl),
         signal: AbortSignal.timeout(10_000),
         redirect: 'error',
       })
       if (!res.ok) {
         this.logger.warn(
-          `Outbound webhook ${cfg.url} responded with status ${res.status}`,
+          `Outbound webhook ${webhookUrl} responded with status ${res.status}`,
         )
       }
     } catch (reason) {
@@ -95,6 +101,7 @@ export class WebhookChannelService implements ChannelDispatcher {
         method: 'POST',
         headers,
         body: payload,
+        agent: useAgent(url),
         signal: AbortSignal.timeout(5_000),
         redirect: 'error',
       })

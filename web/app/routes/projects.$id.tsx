@@ -886,11 +886,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (alertOnEveryCustomEvent !== undefined)
         body.alertOnEveryCustomEvent = alertOnEveryCustomEvent
 
-      if (formData.has('channelIds')) {
-        body.channelIds = formData
-          .getAll('channelIds')
-          .map((v) => v.toString())
-          .filter(Boolean)
+      const channelIds = formData
+        .getAll('channelIds')
+        .map((v) => v.toString())
+        .filter(Boolean)
+      if (formData.has('channelIdsProvided') || channelIds.length > 0) {
+        body.channelIds = channelIds
       }
       if (formData.has('messageTemplate')) {
         const v = formData.get('messageTemplate')?.toString() || ''

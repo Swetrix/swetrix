@@ -504,6 +504,10 @@ const ProjectAlertsSettings = ({
         {(form.channelIds || []).map((id) => (
           <input key={id} type='hidden' name='channelIds' value={id} />
         ))}
+        {(form.channelIds || []).length === 0 ? (
+          <input type='hidden' name='channelIds' value='' />
+        ) : null}
+        <input type='hidden' name='channelIdsProvided' value='true' />
         <input
           type='hidden'
           name='messageTemplate'

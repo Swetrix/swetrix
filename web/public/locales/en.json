@@ -1150,6 +1150,7 @@
     "queryValueError": "Please fill threshold and the query value has to be a number.",
     "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
     "noNotificationChannel": "You do not have a notification channel set up, please set it up to be notified when one of your alerts is triggered.",
+    "noChannelsBadge": "No channels",
     "lastTriggered": "Last Triggered",
     "never": "Never",
     "qDelete": "Delete the alert?",

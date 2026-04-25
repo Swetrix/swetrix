@@ -1599,8 +1599,10 @@ const UserSettings = () => {
                   description={t('notificationChannels.userScopeDescription')}
                   isLast={!user?.isTelegramChatIdConfirmed}
                 >
-                  <div id='integrations'>
-                    <NotificationChannels scope='user' />
+                  <div id='notification-channels'>
+                    <div id='integrations'>
+                      <NotificationChannels scope='user' />
+                    </div>
                   </div>
                 </SettingsSection>
 

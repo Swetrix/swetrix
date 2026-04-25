@@ -386,18 +386,29 @@ const RichTemplateInput = forwardRef<
     }
 
     const handleMouseMove = (e: React.MouseEvent<HTMLTextAreaElement>) => {
-      if (typeof document === 'undefined') return
-      // Use the underlying mirror to find the token at this point.
-      // The textarea is on top with transparent text; the mirror is behind.
-      const el = document.elementFromPoint(e.clientX, e.clientY)
-      let target = el as HTMLElement | null
-      while (target && !target.dataset?.templateToken) {
-        target = target.parentElement
+      const mirror = mirrorRef.current
+      if (!mirror) return
+
+      let target: HTMLElement | null = null
+      const tokenEls = mirror.querySelectorAll<HTMLElement>(
+        '[data-template-token]',
+      )
+      for (const el of tokenEls) {
+        const rect = el.getBoundingClientRect()
+        if (
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom
+        ) {
+          target = el
+          break
+        }
       }
       if (
         !target ||
         !target.dataset.templateToken ||
-        !mirrorRef.current?.contains(target)
+        !mirror.contains(target)
       ) {
         if (hoverDebounceRef.current !== null) {
           window.clearTimeout(hoverDebounceRef.current)

@@ -268,6 +268,7 @@ export class NotificationChannelController {
       type: channel.type,
       config: this.redactConfig(channel),
       isVerified: channel.isVerified,
+      disabledReason: channel.disabledReason,
       created: channel.created,
       updated: channel.updated,
       scope: channel.user
@@ -293,7 +294,10 @@ export class NotificationChannelController {
         userAgent?: string | null
       }
       return {
-        endpoint: cfg.endpoint.slice(0, 64) + '…',
+        endpoint:
+          cfg.endpoint.length > 64
+            ? cfg.endpoint.slice(0, 64) + '…'
+            : cfg.endpoint,
         userAgent: cfg.userAgent,
       }
     }

@@ -42,16 +42,28 @@ const escapeHtml = (s: string) =>
             : '&#39;',
   )
 
+const isAllowedLinkHref = (href: string) => {
+  try {
+    const { protocol } = new URL(href)
+    return (
+      protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:'
+    )
+  } catch {
+    return false
+  }
+}
+
 const simpleMarkdownToHtml = (md: string) => {
   // Tiny converter: bold, italics, links, code, line breaks. Anything fancier
   // stays as escaped text so we never inject raw HTML from a user template.
   let out = escapeHtml(md)
-  out = out.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" style="color: #2563eb;">$1</a>',
+  out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, href) =>
+    isAllowedLinkHref(href)
+      ? `<a href="${href}" style="color: #2563eb;">${text}</a>`
+      : text,
   )
   out = out.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-  out = out.replace(/\*(.+?)\*/g, '<strong>$1</strong>')
+  out = out.replace(/\*(?!\*)(.+?)\*(?!\*)/g, '<em>$1</em>')
   out = out.replace(/`([^`]+)`/g, '<code>$1</code>')
   out = out.replace(/\n/g, '<br/>')
   return out
@@ -68,13 +80,24 @@ export class EmailChannelService implements ChannelDispatcher {
     private readonly configService: ConfigService,
   ) {}
 
+  private getUnsubscribeSecret(): string {
+    const secret =
+      this.configService.get<string>('JWT_SECRET') ||
+      this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET')
+
+    if (!secret) {
+      throw new Error(
+        'JWT_SECRET or JWT_ACCESS_TOKEN_SECRET is required for email unsubscribe tokens',
+      )
+    }
+
+    return secret
+  }
+
   buildUnsubscribeToken(channelId: string) {
     // Stateless one-click unsubscribe: HMAC over channel id with the JWT secret.
     // Avoids storing per-channel tokens just for unsubscribe.
-    const secret =
-      this.configService.get<string>('JWT_SECRET') ||
-      this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET') ||
-      'swetrix-unsubscribe'
+    const secret = this.getUnsubscribeSecret()
     const sig = createHmac('sha256', secret).update(channelId).digest('hex')
     return `${channelId}.${sig}`
   }
@@ -84,7 +107,10 @@ export class EmailChannelService implements ChannelDispatcher {
     if (dot === -1) return null
     const channelId = token.slice(0, dot)
     const sig = token.slice(dot + 1)
-    const expected = this.buildUnsubscribeToken(channelId).split('.')[1]
+    const secret = this.getUnsubscribeSecret()
+    const expected = createHmac('sha256', secret)
+      .update(channelId)
+      .digest('hex')
     if (sig.length !== expected.length) return null
     let mismatch = 0
     for (let i = 0; i < sig.length; i++) {

@@ -182,21 +182,17 @@ export class MailerService {
     subject: string,
     html: string,
   ): Promise<void> {
-    try {
-      const message = {
-        from: `Swetrix <${process.env.FROM_EMAIL}>`,
-        to: email,
-        subject,
-        html,
-      }
+    const message = {
+      from: `Swetrix <${process.env.FROM_EMAIL}>`,
+      to: email,
+      subject,
+      html,
+    }
 
-      if (process.env.SMTP_MOCK) {
-        this.logger.log({ ...message }, 'sendRawEmail', true)
-      } else {
-        await this.nodeMailerService.sendMail(message)
-      }
-    } catch (reason) {
-      this.logger.error(reason, 'sendRawEmail', true)
+    if (process.env.SMTP_MOCK) {
+      this.logger.log({ ...message }, 'sendRawEmail', true)
+    } else {
+      await this.nodeMailerService.sendMail(message)
     }
   }
 

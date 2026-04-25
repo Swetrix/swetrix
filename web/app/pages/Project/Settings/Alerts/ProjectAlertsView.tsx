@@ -1,6 +1,5 @@
 import cx from 'clsx'
 import dayjs from 'dayjs'
-import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import _values from 'lodash/values'
@@ -98,6 +97,7 @@ interface AlertRowProps {
   active: boolean
   queryMetric: (typeof QUERY_METRIC)[keyof typeof QUERY_METRIC]
   lastTriggered: string | null
+  channels?: Alerts['channels']
   deleteAlert: (id: string) => void
   openAlert: (id: string) => void
   queryMetricTMapping: any
@@ -109,6 +109,7 @@ const AlertRow = ({
   active,
   queryMetric,
   lastTriggered,
+  channels,
   openAlert,
   deleteAlert,
   queryMetricTMapping,
@@ -122,6 +123,7 @@ const AlertRow = ({
   const MetricIcon = METRIC_ICON_MAPPING[queryMetric]?.icon || FileTextIcon
   const metricIconClass =
     METRIC_ICON_MAPPING[queryMetric]?.className || 'text-gray-500'
+  const hasChannels = Array.isArray(channels) && channels.length > 0
 
   const lastTriggeredText = lastTriggered
     ? language === 'en'
@@ -169,6 +171,12 @@ const AlertRow = ({
                   <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-slate-700 dark:text-gray-400'>
                     <BellSlashIcon className='size-3' />
                     {t('alert.disabled')}
+                  </span>
+                ) : null}
+                {!hasChannels ? (
+                  <span className='inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-0.5 text-xs text-amber-700 ring-1 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20'>
+                    <WarningOctagonIcon className='size-3' />
+                    {t('alert.noChannelsBadge')}
                   </span>
                 ) : null}
               </div>
@@ -368,17 +376,15 @@ const ProjectAlertsInner = ({
     )
   }, [t])
 
-  const isIntegrationLinked = useMemo(() => {
-    if (_isEmpty(user)) {
+  const hasAnyAlertWithChannels = useMemo(() => {
+    if (!alerts) {
       return false
     }
 
-    return Boolean(
-      (user.telegramChatId && user.isTelegramChatIdConfirmed) ||
-      user.slackWebhookUrl ||
-      user.discordWebhookUrl,
+    return alerts.some(
+      (alert) => Array.isArray(alert.channels) && alert.channels.length > 0,
     )
-  }, [user])
+  }, [alerts])
 
   const handleNewAlert = () => {
     if (isLimitReached) {
@@ -499,7 +505,7 @@ const ProjectAlertsInner = ({
           </div>
         ) : (
           <>
-            {!isIntegrationLinked ? (
+            {!hasAnyAlertWithChannels ? (
               <NoNotificationChannelSet
                 channelsLink={`/projects/${projectId}/settings?tab=channels`}
               />

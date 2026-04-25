@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, Repository, IsNull, Not } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import { randomBytes } from 'crypto'
 
 import {
@@ -121,28 +121,14 @@ export class NotificationChannelService {
   }
 
   private async getSharedProjectChannels(userId: string) {
-    // Channels owned by projects the user has admin share / org membership on.
-    // We resolve through the existing projectService permission code.
-    const allProjectChannels = await this.channelRepository.find({
-      where: { project: Not(IsNull()) },
+    const projectIds =
+      await this.projectService.getProjectIdsViewableByUser(userId)
+    if (projectIds.length === 0) return []
+
+    return this.channelRepository.find({
+      where: { project: { id: In(projectIds) } },
       relations: ['project'],
     })
-    if (allProjectChannels.length === 0) return []
-    const accessible: NotificationChannel[] = []
-    for (const channel of allProjectChannels) {
-      if (!channel.project) continue
-      const project = await this.projectService.getFullProject(
-        channel.project.id,
-      )
-      if (!project) continue
-      try {
-        this.projectService.allowedToView(project, userId)
-        accessible.push(channel)
-      } catch {
-        // ignore — not allowed
-      }
-    }
-    return accessible
   }
 
   /** Channels usable on a given project (project-owned + project owner's user channels + project's organisation channels). */
@@ -154,6 +140,14 @@ export class NotificationChannelService {
     if (!project) throw new NotFoundException('Project not found')
     this.projectService.allowedToView(project, userId)
 
+    let allowedToManage = false
+    try {
+      this.projectService.allowedToManage(project, userId)
+      allowedToManage = true
+    } catch {
+      allowedToManage = false
+    }
+
     const candidates: NotificationChannel[] = []
 
     const projectChannels = await this.channelRepository.find({
@@ -161,7 +155,7 @@ export class NotificationChannelService {
     })
     candidates.push(...projectChannels)
 
-    if (project.admin?.id) {
+    if (allowedToManage && project.admin?.id) {
       const ownerChannels = await this.channelRepository.find({
         where: { user: { id: project.admin.id } },
       })
@@ -322,7 +316,8 @@ export class NotificationChannelService {
     // (Slack/Discord use validated hooks; webhook still requires explicit ping).
     if (
       dto.type === NotificationChannelType.SLACK ||
-      dto.type === NotificationChannelType.DISCORD
+      dto.type === NotificationChannelType.DISCORD ||
+      dto.type === NotificationChannelType.WEBPUSH
     ) {
       partial.isVerified = true
     }
@@ -383,7 +378,7 @@ export class NotificationChannelService {
       }
       case NotificationChannelType.DISCORD: {
         const url = String(raw.url || '').trim()
-        if (!isValidHttpsUrl(url, ['discord.com'])) {
+        if (!isValidHttpsUrl(url, ['discord.com', 'discordapp.com'])) {
           throw new BadRequestException('Invalid Discord webhook URL')
         }
         return { url }
@@ -426,7 +421,17 @@ export class NotificationChannelService {
 
     if (dto.name) channel.name = dto.name
     if (dto.config) {
-      channel.config = this.normaliseConfig(channel.type, dto.config)
+      const config =
+        channel.type === NotificationChannelType.WEBHOOK &&
+        !Object.prototype.hasOwnProperty.call(dto.config, 'secret')
+          ? {
+              ...dto.config,
+              secret:
+                (channel.config as { secret?: string | null }).secret ?? null,
+            }
+          : dto.config
+
+      channel.config = this.normaliseConfig(channel.type, config)
       // Re-set isVerified based on type rules
       if (
         channel.type === NotificationChannelType.SLACK ||
@@ -434,12 +439,15 @@ export class NotificationChannelService {
         channel.type === NotificationChannelType.WEBPUSH
       ) {
         channel.isVerified = true
+        channel.disabledReason = null
       } else if (channel.type === NotificationChannelType.EMAIL) {
         channel.isVerified = false
         channel.verificationToken = randomBytes(24).toString('hex')
+        channel.disabledReason = null
       } else if (channel.type === NotificationChannelType.WEBHOOK) {
         channel.isVerified = false
         channel.verificationToken = randomBytes(24).toString('hex')
+        channel.disabledReason = null
       }
     }
     return this.channelRepository.save(channel)
@@ -455,11 +463,14 @@ export class NotificationChannelService {
   async markVerified(id: string) {
     await this.channelRepository.update(id, {
       isVerified: true,
+      disabledReason: null,
       verificationToken: null,
     })
   }
 
   async findByVerificationToken(token: string) {
+    if (!token || token.trim() === '') return null
+
     return this.channelRepository.findOne({
       where: { verificationToken: token },
     })
@@ -498,14 +509,13 @@ export class NotificationChannelService {
   }
 
   async deleteTelegramChannelsByChatId(chatId: string) {
-    const channels = await this.channelRepository.find({
-      where: { type: NotificationChannelType.TELEGRAM },
-    })
-    const matching = channels.filter(
-      (c) => (c.config as { chatId?: string })?.chatId === chatId,
-    )
-    if (matching.length > 0) {
-      await this.channelRepository.delete(matching.map((c) => c.id))
-    }
+    await this.channelRepository
+      .createQueryBuilder()
+      .delete()
+      .where('type = :type', { type: NotificationChannelType.TELEGRAM })
+      .andWhere("JSON_UNQUOTE(JSON_EXTRACT(config, '$.chatId')) = :chatId", {
+        chatId,
+      })
+      .execute()
   }
 }

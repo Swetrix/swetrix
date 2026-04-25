@@ -222,7 +222,7 @@ export class AlertController {
       validatedChannels.some((c) => c.type === NotificationChannelType.EMAIL) &&
       !alertDTO.emailSubjectTemplate
     ) {
-      // Use a sensible default if the user picked email but didn't supply a subject.
+      alertDTO.emailSubjectTemplate = 'Alert: {{alert.name}}'
     }
 
     try {

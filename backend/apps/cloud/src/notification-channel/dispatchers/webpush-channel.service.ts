@@ -76,12 +76,15 @@ export class WebpushChannelService implements ChannelDispatcher {
     try {
       await webpush.sendNotification(subscription, payload)
     } catch (reason: any) {
-      // 404/410 mean the subscription is dead — drop it.
+      // 404/410 mean the subscription is dead; keep alert links intact.
       if (reason?.statusCode === 404 || reason?.statusCode === 410) {
         this.logger.warn(
-          `Pruning expired webpush channel ${channel.id} (status ${reason.statusCode})`,
+          `Disabling expired webpush channel ${channel.id} (status ${reason.statusCode})`,
         )
-        await this.channelRepository.delete(channel.id)
+        await this.channelRepository.update(channel.id, {
+          isVerified: false,
+          disabledReason: `Expired: ${reason.statusCode} from WebPush server`,
+        })
         return
       }
       this.logger.error(`Failed to send webpush: ${reason?.message || reason}`)

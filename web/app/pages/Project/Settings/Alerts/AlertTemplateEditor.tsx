@@ -1,5 +1,5 @@
 import { CodeIcon, EyeIcon, PlusIcon } from '@phosphor-icons/react'
-import { marked } from 'marked'
+import { Marked } from 'marked'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -81,7 +81,7 @@ const interpolate = (
   })
 }
 
-marked.setOptions({ breaks: true, gfm: true })
+const markdownParser = new Marked({ breaks: true, gfm: true })
 
 // Channels like Telegram/Slack treat single `*text*` as bold (not italic).
 // Convert it to CommonMark-compatible `**text**` so the live preview matches
@@ -93,7 +93,9 @@ const normalizeChannelMarkdown = (input: string): string =>
   )
 
 const renderMarkdown = (markdown: string): string => {
-  const html = marked.parse(normalizeChannelMarkdown(markdown)) as string
+  const html = markdownParser.parse(
+    normalizeChannelMarkdown(markdown),
+  ) as string
   return sanitizeHtml(html, {
     allowedTags: [
       'a',

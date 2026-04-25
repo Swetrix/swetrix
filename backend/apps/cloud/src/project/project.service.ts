@@ -427,6 +427,33 @@ export class ProjectService {
     return _map(projects, 'id')
   }
 
+  async getProjectIdsViewableByUser(userId: string): Promise<string[]> {
+    const projects = await this.projectsRepository
+      .createQueryBuilder('project')
+      .select('project.id', 'id')
+      .distinct(true)
+      .leftJoin('project.admin', 'admin')
+      .leftJoin('project.share', 'share')
+      .leftJoin('share.user', 'sharedUser')
+      .leftJoin('project.organisation', 'organisation')
+      .leftJoin('organisation.members', 'organisationMembers')
+      .leftJoin('organisationMembers.user', 'organisationUser')
+      .where(
+        new Brackets((qb) => {
+          qb.where('project.public = true')
+            .orWhere('admin.id = :userId')
+            .orWhere('sharedUser.id = :userId AND share.confirmed = true')
+            .orWhere(
+              'organisationUser.id = :userId AND organisationMembers.confirmed = true',
+            )
+        }),
+      )
+      .setParameter('userId', userId)
+      .getRawMany<{ id: string }>()
+
+    return _map(projects, 'id')
+  }
+
   async create(project: DeepPartial<Project>) {
     return this.projectsRepository.save(project)
   }

@@ -24,7 +24,6 @@ export class TelegramChannelService implements ChannelDispatcher {
     if (!cfg?.chatId || !this.telegramService) return
     try {
       await this.telegramService.addMessage(cfg.chatId, message.body, {
-        parse_mode: 'Markdown',
         // @ts-expect-error untyped option
         disable_web_page_preview: true,
       })

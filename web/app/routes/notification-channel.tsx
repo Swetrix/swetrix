@@ -89,7 +89,10 @@ export async function action({ request }: ActionFunctionArgs) {
       if (result.error) {
         return data<NotificationChannelActionData>(
           { intent, error: result.error as string },
-          { status: 400 },
+          {
+            status: 400,
+            headers: createHeadersWithCookies(result.cookies),
+          },
         )
       }
 
@@ -121,7 +124,10 @@ export async function action({ request }: ActionFunctionArgs) {
       if (result.error) {
         return data<NotificationChannelActionData>(
           { intent, error: result.error as string },
-          { status: 400 },
+          {
+            status: 400,
+            headers: createHeadersWithCookies(result.cookies),
+          },
         )
       }
 
@@ -134,13 +140,22 @@ export async function action({ request }: ActionFunctionArgs) {
     case 'update-channel': {
       const channelId = formData.get('channelId')?.toString()
       const name = formData.get('name')?.toString()
-      const config = formData.has('config')
-        ? parseConfig(formData.get('config'))
-        : undefined
 
       const body: Record<string, unknown> = {}
       if (name !== undefined) body.name = name
-      if (config !== undefined) body.config = config
+      if (formData.has('config')) {
+        try {
+          const rawConfig = formData.get('config')?.toString() || ''
+          const parsed = JSON.parse(rawConfig)
+          body.config =
+            typeof parsed === 'object' && parsed !== null ? parsed : {}
+        } catch {
+          return data<NotificationChannelActionData>(
+            { intent, error: 'Invalid notification channel config JSON' },
+            { status: 400 },
+          )
+        }
+      }
 
       const result = await serverFetch<NotificationChannel>(
         request,
@@ -151,7 +166,10 @@ export async function action({ request }: ActionFunctionArgs) {
       if (result.error) {
         return data<NotificationChannelActionData>(
           { intent, error: result.error as string },
-          { status: 400 },
+          {
+            status: 400,
+            headers: createHeadersWithCookies(result.cookies),
+          },
         )
       }
 
@@ -173,7 +191,10 @@ export async function action({ request }: ActionFunctionArgs) {
       if (result.error) {
         return data<NotificationChannelActionData>(
           { intent, error: result.error as string },
-          { status: 400 },
+          {
+            status: 400,
+            headers: createHeadersWithCookies(result.cookies),
+          },
         )
       }
 
@@ -195,7 +216,10 @@ export async function action({ request }: ActionFunctionArgs) {
       if (result.error) {
         return data<NotificationChannelActionData>(
           { intent, error: result.error as string },
-          { status: 400 },
+          {
+            status: 400,
+            headers: createHeadersWithCookies(result.cookies),
+          },
         )
       }
 
@@ -217,7 +241,10 @@ export async function action({ request }: ActionFunctionArgs) {
       if (result.error) {
         return data<NotificationChannelActionData>(
           { intent, error: result.error as string },
-          { status: 400 },
+          {
+            status: 400,
+            headers: createHeadersWithCookies(result.cookies),
+          },
         )
       }
 
@@ -236,7 +263,10 @@ export async function action({ request }: ActionFunctionArgs) {
       if (result.error) {
         return data<NotificationChannelActionData>(
           { intent, error: result.error as string },
-          { status: 400 },
+          {
+            status: 400,
+            headers: createHeadersWithCookies(result.cookies),
+          },
         )
       }
 
@@ -274,7 +304,10 @@ export async function action({ request }: ActionFunctionArgs) {
       if (result.error) {
         return data<NotificationChannelActionData>(
           { intent, error: result.error as string },
-          { status: 400 },
+          {
+            status: 400,
+            headers: createHeadersWithCookies(result.cookies),
+          },
         )
       }
 

@@ -1827,11 +1827,6 @@ export class TaskManagerService {
           }
         }
 
-        // @ts-expect-error
-        await this.alertService.update(alert.id, {
-          lastTriggered: new Date(),
-        })
-
         const effectiveQueryTimeString =
           alert.queryMetric === QueryMetric.ERRORS
             ? `${CRON_INTERVAL_SECONDS / 60} minutes`
@@ -1911,6 +1906,11 @@ export class TaskManagerService {
         )
         const message = this.renderAlertMessage(alert, context, hasEmail)
         await this.channelDispatcher.dispatch(alert.channels, message)
+
+        // @ts-expect-error TypeORM typing for partial update
+        await this.alertService.update(alert.id, {
+          lastTriggered: new Date(),
+        })
       } catch (reason) {
         this.logger.error(
           `[CRON WORKER](checkMetricAlerts) Failed to process alert ${alert.id}: ${reason}`,
