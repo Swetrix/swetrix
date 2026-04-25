@@ -1,67 +1,438 @@
 ---
 id: alerts
-title: Alerts
+title: Alerts & Notifications
 sidebar_label: Alerts
 ---
 
 <Callout type="info" title="Cloud Exclusive">
 
-The Alerts feature is exclusively available on **Swetrix Cloud**. It is not currently available for self-hosted instances at the moment.
+Alerts and notification channels are exclusively available on **Swetrix Cloud**. They are not currently available for self-hosted instances.
 
 </Callout>
 
-Alerts allow you to monitor your website's performance in real-time and receive notifications when specific metrics cross a defined threshold. This helps you stay on top of traffic spikes, server errors, or important user interactions without constantly checking the dashboard.
+Alerts let you monitor your website in real-time and get notified the moment a metric crosses a threshold you care about — traffic spikes, drops in active users, JavaScript errors after a deployment, or important custom events like signups and purchases. You stay on top of what matters without keeping a tab open on the dashboard all day.
 
-<img alt="Alerts Dashboard" src="/docs/img/analytics-dashboard/alerts-list.png" />
+Each alert is wired to one or more **notification channels** that decide _where_ the message is sent (email, Telegram, Discord, Slack, browser push, or your own webhook).
 
-## Prerequisites
+<img alt="Alerts overview" src="/docs/img/analytics-dashboard/alerts-list.png" />
 
-Before setting up alerts, you must connect a notification channel to your account. Swetrix supports the following channels:
+## Notification channels
 
-- **Telegram**
-- **Discord**
-- **Slack**
+Before you can create an alert, you need at least one notification channel. Channels are managed independently of alerts so you can re-use the same destination across many alerts (or send a single alert to several places at once).
 
-To configure these, go to your **Account Settings** and follow the instructions for each integration. If no channel is connected, you will see a warning on the Alerts page.
+### Supported channel types
 
-<img
-  alt="Alert communication channels"
-  src="/docs/img/accountsettings/communication-channels.png"
-/>
+| Channel                                                                                                          | What it does                                                                             | Verification           |
+| ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------- |
+| <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><EmailChannelIcon /> **Email**</span>       | Delivers a rich HTML email with a one-click unsubscribe link.                            | Confirmation email     |
+| <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><TelegramChannelIcon /> **Telegram**</span> | Sends messages via the [@swetrixbot](https://t.me/swetrixbot) bot to your private chat.  | Linked through the bot |
+| <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><DiscordChannelIcon /> **Discord**</span>   | Posts to a Discord channel via an incoming webhook URL.                                  | Validated on save      |
+| <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><SlackChannelIcon /> **Slack**</span>       | Posts to a Slack channel via an incoming webhook URL.                                    | Validated on save      |
+| <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><WebhookChannelIcon /> **Webhook**</span>   | Sends a JSON `POST` to a URL of your choice with an optional HMAC-SHA256 signature.      | Webhook ping           |
+| <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><WebpushChannelIcon /> **Web push**</span>  | Native browser push notifications for the device you subscribe from (desktop or mobile). | Verified on subscribe  |
 
-## Creating an Alert
+### Channel scopes
 
-1.  Navigate to your project's **Settings** and click on the **Alerts** tab.
-2.  Click the **Add Alert** button.
-3.  Configure the alert settings:
-    - **Name**: A descriptive name for your alert (e.g., "High Traffic Warning").
-    - **Metric**: The data point you want to monitor (see below).
-    - **Condition**: The logic to trigger the alert (e.g., Greater than, Less than).
-    - **Value**: The threshold number.
-    - **Timeframe**: The period over which the data is analyzed (e.g., "Last 15 minutes").
+Channels live at one of three scopes, which controls who can use them and where they appear:
+
+- **User** — Personal channels you own. Available across all of your projects (and any project you have admin rights on). Manage them in **Account Settings → Communications → Notification channels**.
+- **Organisation** — Shared with everyone in an organisation. Useful for a team-wide #alerts Slack channel or an on-call email distribution list. Managed in **Organisation Settings → Notification channels** by organisation owners and admins.
+- **Project** — Specific to a single project. Handy when one site needs to notify a different audience than the rest. Managed in **Project Settings → Notification channels**.
+
+When you build an alert, you can pick from any channel that is in scope for that project — your personal channels, the project's organisation channels, and the project's own channels are all available in the picker.
+
+### Connecting a channel
+
+<Steps>
+
+<Step>
+
+### Open the right Notification channels page
+
+Decide which scope you want the channel to live at (User / Organisation / Project — see above) and open that scope's **Notification channels** section.
+
+</Step>
+
+<Step>
+
+### Click "Add channel" and pick a type
+
+<img alt="Connect a channel" src="/docs/img/analytics-dashboard/alert-conect-a-channel.png" />
+
+Each type has slightly different details. Pick the tab below that matches the destination you want to wire up.
+
+<Tabs defaultValue="email">
+<TabsList>
+  <TabsTrigger value="email"><EmailChannelIcon /> Email</TabsTrigger>
+  <TabsTrigger value="telegram"><TelegramChannelIcon /> Telegram</TabsTrigger>
+  <TabsTrigger value="discord"><DiscordChannelIcon /> Discord</TabsTrigger>
+  <TabsTrigger value="slack"><SlackChannelIcon /> Slack</TabsTrigger>
+  <TabsTrigger value="webhook"><WebhookChannelIcon /> Webhook</TabsTrigger>
+  <TabsTrigger value="webpush"><WebpushChannelIcon /> Web push</TabsTrigger>
+</TabsList>
+
+<TabsContent value="email">
+
+Enter the destination address. Swetrix sends a confirmation email with a one-click verification link — the channel stays in the **Pending verification** state until that link is clicked.
+
+Every alert email includes a one-click **Unsubscribe** link in the footer. If a recipient clicks it, the channel is marked **Unsubscribed** and Swetrix stops sending alerts to that address until you re-verify it.
+
+</TabsContent>
+
+<TabsContent value="telegram">
+
+1. Open [@swetrixbot](https://t.me/swetrixbot) on Telegram.
+2. Send `/start`. The bot replies with your numeric chat ID.
+3. Paste that chat ID into the **Telegram chat ID** field.
+
+The channel is verified automatically once linked through the bot.
+
+</TabsContent>
+
+<TabsContent value="discord">
+
+Paste the **incoming webhook URL** from your Discord server's channel settings (Server Settings → Integrations → Webhooks → New Webhook → Copy Webhook URL).
+
+Only `https://discord.com/...` URLs are accepted. The channel is validated and marked verified on save.
+
+</TabsContent>
+
+<TabsContent value="slack">
+
+Paste the **incoming webhook URL** from your Slack workspace ([Slack apps → Incoming Webhooks → Add New Webhook to Workspace](https://api.slack.com/messaging/webhooks)).
+
+Only `https://hooks.slack.com/...` URLs are accepted. The channel is validated and marked verified on save.
+
+</TabsContent>
+
+<TabsContent value="webhook">
+
+Enter any `https://` URL that should receive the JSON payload. Optionally add a **signing secret** — when set, every request includes an `X-Swetrix-Signature: sha256=<hex>` header so you can verify the body wasn't tampered with.
+
+Webhook channels stay **Pending verification** until you click **Verify** in the channel list — Swetrix sends a one-off ping that your endpoint must respond to with a `2xx` status within 5 seconds. See [Webhook payload](#webhook-payload) below for the exact JSON shape.
+
+</TabsContent>
+
+<TabsContent value="webpush">
+
+Web push is a **User-scope** channel only. From your account's notification channels page, click **Enable browser notifications**:
+
+1. Your browser asks for notification permission.
+2. Swetrix registers a service worker (`/sw.js`).
+3. The current device is registered as a channel and verified immediately.
+
+You can enable web push on multiple devices — each one becomes its own channel.
+
+<Callout type="warn">
+
+Push notifications only fire while the browser is running (or, on supported platforms, in the background). They are not a substitute for email or webhook delivery if you need guaranteed receipt.
+
+</Callout>
+
+</TabsContent>
+
+</Tabs>
+
+</Step>
+
+<Step>
+
+### Name the channel and save
+
+Give it a descriptive name (e.g. "Engineering Slack" or "On-call email") and click **Create**. Channels that need verification will show a **Pending verification** badge until they're confirmed.
+
+</Step>
+
+<Step>
+
+### Send a test message (optional)
+
+Use the **Send test** button (paper-plane icon) on the channel row to dispatch a sample message right away — it works even before verification, so you can confirm the destination is wired up correctly.
+
+</Step>
+
+</Steps>
+
+### Webhook payload
+
+Custom webhook channels receive a JSON `POST` with this shape:
+
+```json
+{
+  "type": "alert",
+  "subject": "[Swetrix] High traffic alert triggered",
+  "body": "🔔 Alert *High traffic alert* triggered!\n\nProject: ...",
+  "context": {
+    "alert_name": "High traffic alert",
+    "project_name": "My website",
+    "project_id": "abcdef",
+    "dashboard_url": "https://swetrix.com/projects/abcdef",
+    "value": 1234,
+    "threshold": 1000,
+    "condition": "greater than",
+    "time_window": "1 hour",
+    "metric": "page_views"
+  },
+  "timestamp": "2026-04-24T10:00:00.000Z"
+}
+```
+
+If you configured a signing secret, every request also carries this header:
+
+```
+X-Swetrix-Signature: sha256=<hmac of the raw body>
+```
+
+<Callout type="warn">
+
+Always verify the signature on your side. Compute `HMAC-SHA256(secret, raw_request_body)` and compare it to the value after `sha256=` using a constant-time comparison — this guarantees the request really came from Swetrix and wasn't replayed or modified in transit.
+
+</Callout>
+
+The verification ping uses the same headers but a smaller payload: `{ "type": "verification", "timestamp": "..." }`.
+
+## Creating an alert
+
+<Steps>
+
+<Step>
+
+### Open the project's alerts page
+
+In your project, go to **Settings → Alerts** and click **Add alert**.
+
+</Step>
+
+<Step>
+
+### Fill in the basics
+
+Give the alert a short, human-readable name (e.g. "Homepage traffic dip") and decide whether it should be **Enabled**. Disabled alerts never fire — useful for temporarily silencing an alert without deleting it.
+
+</Step>
+
+<Step>
+
+### Configure the trigger
+
+Pick **what** fires the alert:
+
+- **Metric** — Which data point to monitor (see [Supported metrics](#supported-metrics) below).
+- **Condition** — `greater than`, `greater than or equal to`, `less than`, or `less than or equal to`.
+- **Threshold** — The number the metric is compared against.
+- **Time window** — `15 minutes`, `30 minutes`, `1 hour`, `4 hours`, `24 hours`, or `48 hours`. Swetrix evaluates the metric over this rolling window.
+
+Two metric-specific options change the form:
+
+- **Custom events** — Provide the event name (e.g. `signup`). Tick **Alert on every custom event** to fire on _every_ occurrence and skip the threshold/time-window settings.
+- **Errors** — Tick **Alert on new errors only** to be notified just for the first occurrence of each new error (great for catching regressions after a release).
+
+</Step>
+
+<Step>
+
+### Pick the notification channels
+
+The picker shows every channel in scope for the project — personal, organisational, and project-specific — with their current verification status. Tick as many as you like (e.g. send to your team's Slack and your personal Telegram at the same time).
+
+If no channels are connected yet, the picker links straight to **Project Settings → Notification channels** so you can add one.
+
+</Step>
+
+<Step>
+
+### Customise the message (optional)
+
+Decide _what_ Swetrix says when the alert fires. Leave the message blank to use the sensible default for the chosen metric, or write your own using **Markdown** and **Handlebars** variables — see the next section.
+
+</Step>
+
+</Steps>
 
 <img alt="Create an alert" src="/docs/img/analytics-dashboard/create-an-alert.png" />
 
-### Supported Metrics
+## Message templates
 
-You can create alerts based on the following metrics:
+Type `{` in the editor (or click any chip below it) to insert a variable. The body supports a common subset of Markdown — bold, italics, links, inline `code`, lists, and line breaks. Use the **Preview** button to see exactly how the message will render with sample values.
 
-- **Pageviews**: Total number of pages viewed.
-- **Unique Pageviews**: Number of unique visitors.
-- **Online Users**: Current number of active users on your site.
-- **Custom Events**: Monitor specific interactions (e.g., "Signup Button Click"). You can track a specific event by name or alert on _every_ custom event.
-- **Errors**: Track JavaScript errors occurring on your site. You can choose to be notified about all errors or only **new** errors that haven't been seen before.
+<Callout type="info">
 
-## Managing Alerts
+Different destinations format Markdown a little differently — Telegram and Slack treat single `*text*` as **bold**, while CommonMark treats it as italic. Swetrix normalises this so the preview matches what your recipients actually see.
 
-Once created, your alerts will appear in a list on the Alerts tab in your project settings.
+</Callout>
 
-- **Edit**: Click the **Pencil** icon to modify the alert's threshold or settings.
-- **Delete**: Click the **Trash** icon to remove the alert permanently.
-- **Status**: Alerts show their last triggered time, helping you understand their frequency.
+### Common variables
 
-## Example Use Cases
+Available for every alert:
 
-- **Traffic Spike**: Notify me if **Online Users** is greater than **100**.
-- **Error Monitoring**: Notify me on **New Errors** (useful for post-deployment monitoring).
-- **Goal Tracking**: Notify me if **Custom Event** "Purchase" count is greater than **10** in the last **1 hour**.
+| Variable            | Meaning                                        |
+| ------------------- | ---------------------------------------------- |
+| `{{alert_name}}`    | The alert's name, as configured in the form.   |
+| `{{project_name}}`  | The project this alert belongs to.             |
+| `{{project_id}}`    | The project's unique identifier.               |
+| `{{dashboard_url}}` | Direct link to the project dashboard.          |
+| `{{value}}`         | The metric value that triggered the alert.     |
+| `{{threshold}}`     | The threshold the value was compared against.  |
+| `{{condition}}`     | The comparison operator (e.g. "greater than"). |
+| `{{time_window}}`   | The window the metric was measured over.       |
+
+### Metric-specific variables
+
+Each metric exposes a few extras of its own:
+
+<Accordions>
+
+<Accordion title="Page views">
+
+| Variable    | Meaning                             |
+| ----------- | ----------------------------------- |
+| `{{views}}` | Number of page views in the window. |
+
+</Accordion>
+
+<Accordion title="Unique sessions">
+
+| Variable           | Meaning                                  |
+| ------------------ | ---------------------------------------- |
+| `{{unique_views}}` | Number of unique sessions in the window. |
+
+</Accordion>
+
+<Accordion title="Online users">
+
+| Variable           | Meaning                 |
+| ------------------ | ----------------------- |
+| `{{online_count}}` | Currently online users. |
+
+</Accordion>
+
+<Accordion title="Custom events">
+
+| Variable               | Meaning                                        |
+| ---------------------- | ---------------------------------------------- |
+| `{{event_name}}`       | The custom event's name.                       |
+| `{{event_count}}`      | Number of times the event fired in the window. |
+| `{{every_event_mode}}` | `yes` if the alert fires on every occurrence.  |
+
+</Accordion>
+
+<Accordion title="Errors">
+
+| Variable            | Meaning                                              |
+| ------------------- | ---------------------------------------------------- |
+| `{{error_count}}`   | Number of errors that triggered the alert.           |
+| `{{error_message}}` | The error message text.                              |
+| `{{error_name}}`    | The error's class or name.                           |
+| `{{errors_url}}`    | Direct link to the project's errors view.            |
+| `{{is_new_only}}`   | `yes` if the alert only fires for first-seen errors. |
+
+</Accordion>
+
+</Accordions>
+
+### Default templates
+
+Swetrix ships with two defaults that use these variables:
+
+```
+🔔 Alert *{{alert_name}}* triggered!
+
+Project: [{{project_name}}]({{dashboard_url}})
+Value: *{{value}}* {{condition}} *{{threshold}}* in the last {{time_window}}.
+```
+
+For error alerts:
+
+```
+🐞 Error alert *{{alert_name}}* triggered!
+
+Project: [{{project_name}}]({{dashboard_url}})
+Error: `{{error_name}}`
+Message: `{{error_message}}`
+
+[View error]({{errors_url}})
+```
+
+### Email subject
+
+If at least one of the alert's selected channels is an **Email** channel, an **Email subject** field appears above the body. Variables work here too. The default is:
+
+```
+[Swetrix] {{alert_name}} triggered
+```
+
+<img alt="Alerts overview" src="/docs/img/analytics-dashboard/alert-template-editor.png" />
+
+## Supported metrics
+
+You can create alerts based on any of these metrics:
+
+- **Page views** — Total page views in the time window.
+- **Unique sessions** — Number of distinct sessions in the time window.
+- **Online users** — How many visitors are currently active on your site.
+- **Custom events** — Watch a specific event by name, or alert on _every_ custom event.
+- **Errors** — Track JavaScript errors. Choose between every error or only **new** ones (handy after a deployment).
+
+## Managing alerts
+
+All of a project's alerts are listed under **Project Settings → Alerts**. From there you can:
+
+- **Edit** — Click the pencil icon (or anywhere on the row) to change thresholds, channels, or the message template.
+- **Delete** — Click the trash icon to remove an alert permanently.
+- **Disable** — Toggle the **Enabled** switch in the alert form to silence it without deleting.
+- **See the last triggered time** — Each row displays when the alert most recently fired, so you can spot noisy alerts quickly.
+
+## Example use cases
+
+<Accordions>
+
+<Accordion title="Traffic spike — notify the team Slack">
+
+Pick the **Online users** metric, condition **greater than**, threshold `100`, time window **15 minutes**. Attach an organisation-scope **Slack** channel. The team gets pinged the moment your site goes viral.
+
+</Accordion>
+
+<Accordion title="Traffic drop — notify your personal email">
+
+Pick **Unique sessions**, condition **less than**, threshold `50`, time window **1 hour**. Attach a personal **Email** channel. You'll know immediately if a deployment took the site down or a tracking script broke.
+
+</Accordion>
+
+<Accordion title="Signup goal — fire a webhook on every signup">
+
+Pick the **Custom events** metric, set the event name to `signup`, and tick **Alert on every custom event**. Attach a **Webhook** channel pointing to your CRM/Zapier endpoint to record each new signup the moment it happens.
+
+</Accordion>
+
+<Accordion title="Post-deploy regressions — Telegram on new errors only">
+
+Pick the **Errors** metric and tick **Alert on new errors only**. Attach a personal **Telegram** channel. After every release you'll only hear about errors that have never been seen before — perfect for catching regressions without noise.
+
+</Accordion>
+
+<Accordion title="Revenue spike — Discord on big purchase volume">
+
+Pick **Custom events**, event name `purchase`, condition **greater than**, threshold `10`, time window **24 hours**. Attach a **Discord** channel pointing at your `#revenue` server channel.
+
+</Accordion>
+
+</Accordions>
+
+## Related
+
+<Cards>
+
+<Card title="Error tracking" href="/analytics-dashboard/error-tracking">
+  Pair error alerts with the dedicated error dashboard for stack traces, affected sessions, and
+  resolution workflow.
+</Card>
+
+<Card title="Email reports" href="/email-reports">
+  Recurring traffic summaries delivered to your inbox — complementary to real-time alerts.
+</Card>
+
+<Card title="Teams & Integrations" href="/teams-api-integrations">
+  Set up organisation-scope channels so your whole team gets the same alerts.
+</Card>
+
+</Cards>
