@@ -15,7 +15,8 @@
     "lint:tsc": "tsc --noEmit",
     "format": "oxfmt --write ./app",
     "format:check": "oxfmt --check ./app",
-    "knip": "knip"
+    "knip": "knip",
+    "translate": "node scripts/translate.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.10",
@@ -72,6 +73,8 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
+    "@crowdin/crowdin-api-client": "^1.55.1",
+    "@google/genai": "^1.50.1",
     "@react-router/dev": "^7.14.0",
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/typography": "^0.5.19",
