@@ -18,6 +18,7 @@
  *
  * Environment (read from the shell first, then web/.env as fallback):
  *   GEMINI_API_KEY      Required. Google AI Studio API key.
+ *   GEMINI_RPM          Optional. Max Gemini requests/min (default 20, free tier limit 25).
  *   CROWDIN_API_TOKEN   Optional. Overrides token from crowdin.yml.
  *   CROWDIN_PROJECT_ID  Optional. Overrides project_id from crowdin.yml.
  */
@@ -37,11 +38,14 @@ const DOTENV_PATH = path.join(WEB_DIR, '.env')
 const CONFIG = {
   GEMINI_MODEL: 'gemini-3.1-pro-preview',
   THINKING_LEVEL: 'medium',
+  // Free-tier Gemini quota for gemini-3.1-pro is 25 RPM. Stay safely under it.
+  // Override via GEMINI_RPM env var if you're on a higher tier.
+  GEMINI_RPM_DEFAULT: 20,
   BATCH_SIZE: 25,
   LANGUAGE_CONCURRENCY: 4,
-  PER_LANGUAGE_BATCH_CONCURRENCY: 2,
+  PER_LANGUAGE_BATCH_CONCURRENCY: 4,
   UPLOAD_CONCURRENCY: 8,
-  MAX_RETRIES: 4,
+  MAX_RETRIES: 6,
   INITIAL_RETRY_DELAY_MS: 1000,
 }
 
@@ -99,6 +103,7 @@ ${c.bold('Options')}
 
 ${c.bold('Environment')} (shell env wins, web/.env is used as fallback)
   GEMINI_API_KEY      Required. Google AI Studio API key.
+  GEMINI_RPM          Optional. Max Gemini requests/min (default 20; free tier limit is 25).
   CROWDIN_API_TOKEN   Optional. Overrides token from crowdin.yml.
   CROWDIN_PROJECT_ID  Optional. Overrides project_id from crowdin.yml.
 `)
@@ -190,12 +195,98 @@ async function withRetry(fn, { retries = CONFIG.MAX_RETRIES, baseDelay = CONFIG.
       const isClientError =
         typeof status === 'number' && status >= 400 && status < 500 && status !== 408 && status !== 429
       if (isLast || isClientError) throw e
-      const delay = baseDelay * 2 ** attempt + Math.floor(Math.random() * 250)
-      warn(`${label}: attempt ${attempt + 1} failed (${e?.message ?? e}); retrying in ${delay}ms`)
+
+      const apiRetryMs = status === 429 ? extractRetryDelayMs(e) : null
+      const delay =
+        apiRetryMs != null
+          ? apiRetryMs + 750
+          : baseDelay * 2 ** attempt + Math.floor(Math.random() * 250)
+
+      const reason = status === 429 ? 'rate limited (HTTP 429)' : (e?.message ?? String(e))
+      const human = delay >= 2000 ? `${(delay / 1000).toFixed(1)}s` : `${delay}ms`
+      warn(`${label}: attempt ${attempt + 1} failed (${truncate(reason, 120)}); retrying in ${human}`)
       await sleep(delay)
     }
   }
   throw lastErr
+}
+
+function truncate(s, n) {
+  return typeof s === 'string' && s.length > n ? `${s.slice(0, n - 1)}…` : s
+}
+
+/**
+ * Pulls `RetryInfo.retryDelay` (e.g. "56s") out of a Google API error payload.
+ * The @google/genai SDK puts the JSON body in `e.message` on 429s.
+ */
+function extractRetryDelayMs(e) {
+  const candidates = []
+  if (typeof e?.message === 'string') candidates.push(e.message)
+  if (typeof e?.body === 'string') candidates.push(e.body)
+  if (e?.response?.data) candidates.push(e.response.data)
+
+  for (const c of candidates) {
+    let payload = c
+    if (typeof payload === 'string') {
+      const start = payload.indexOf('{')
+      if (start < 0) continue
+      try {
+        payload = JSON.parse(payload.slice(start))
+      } catch {
+        continue
+      }
+    }
+    const details = payload?.error?.details
+    if (!Array.isArray(details)) continue
+    for (const d of details) {
+      const t = d?.['@type']
+      if (typeof t === 'string' && t.endsWith('RetryInfo') && typeof d.retryDelay === 'string') {
+        const m = /^(\d+(?:\.\d+)?)s$/.exec(d.retryDelay)
+        if (m) return Math.ceil(Number.parseFloat(m[1]) * 1000)
+      }
+    }
+  }
+  return null
+}
+
+/**
+ * Sliding-window rate limiter shared across all Gemini calls.
+ * Single-threaded JS makes the check-and-push atomic per microtask, so no mutex needed.
+ */
+class RateLimiter {
+  constructor(rpm) {
+    this.rpm = Math.max(1, rpm)
+    this.windowMs = 60_000
+    this.timestamps = []
+    this.pausedUntil = 0
+  }
+
+  pauseUntil(timestamp) {
+    if (timestamp > this.pausedUntil) this.pausedUntil = timestamp
+  }
+
+  async acquire() {
+    while (true) {
+      const now = Date.now()
+
+      if (now < this.pausedUntil) {
+        await sleep(this.pausedUntil - now + 100)
+        continue
+      }
+
+      while (this.timestamps.length > 0 && this.timestamps[0] <= now - this.windowMs) {
+        this.timestamps.shift()
+      }
+
+      if (this.timestamps.length < this.rpm) {
+        this.timestamps.push(now)
+        return
+      }
+
+      const waitFor = this.timestamps[0] + this.windowMs - now + 100
+      await sleep(Math.max(50, waitFor))
+    }
+  }
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -282,8 +373,9 @@ class CrowdinService {
 // ----------------------------------------------------------------- gemini --
 
 class GeminiTranslator {
-  constructor({ apiKey }) {
+  constructor({ apiKey, rateLimiter }) {
     this.ai = new GoogleGenAI({ apiKey })
+    this.rateLimiter = rateLimiter
   }
 
   buildSystemInstruction(language) {
@@ -329,30 +421,42 @@ class GeminiTranslator {
   async translateBatch(items, language) {
     const systemInstruction = this.buildSystemInstruction(language)
     const prompt = this.buildBatchPrompt(items)
+    const rateLimiter = this.rateLimiter
 
     const response = await withRetry(
-      () =>
-        this.ai.models.generateContent({
-          model: CONFIG.GEMINI_MODEL,
-          contents: prompt,
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: { type: 'integer' },
-                  text: { type: 'string' },
+      async () => {
+        await rateLimiter.acquire()
+        try {
+          return await this.ai.models.generateContent({
+            model: CONFIG.GEMINI_MODEL,
+            contents: prompt,
+            config: {
+              systemInstruction,
+              responseMimeType: 'application/json',
+              responseSchema: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'integer' },
+                    text: { type: 'string' },
+                  },
+                  required: ['id', 'text'],
+                  propertyOrdering: ['id', 'text'],
                 },
-                required: ['id', 'text'],
-                propertyOrdering: ['id', 'text'],
               },
+              thinkingConfig: { thinkingLevel: CONFIG.THINKING_LEVEL },
             },
-            thinkingConfig: { thinkingLevel: CONFIG.THINKING_LEVEL },
-          },
-        }),
+          })
+        } catch (e) {
+          // Drain other waiters too — if Google says wait Ns, no point firing another call sooner.
+          if (httpStatus(e) === 429) {
+            const ms = extractRetryDelayMs(e)
+            if (ms != null) rateLimiter.pauseUntil(Date.now() + ms)
+          }
+          throw e
+        }
+      },
       { label: `gemini.translate(${language.id}, n=${items.length})` },
     )
 
@@ -428,82 +532,94 @@ async function translateLanguage({ crowdin, gemini, language, untranslated, args
 
   const indexed = work.map((s, i) => ({ ...s, batchId: i }))
   const batches = chunk(indexed, CONFIG.BATCH_SIZE)
-  const translations = new Map()
+
+  const stats = { translated: 0, uploaded: 0, failed: 0, invalid: 0 }
+  const drySamples = []
   let batchesDone = 0
 
   await pMap(
     batches,
     async (batch) => {
-      const result = await gemini.translateBatch(batch, language)
+      let result
+      try {
+        result = await gemini.translateBatch(batch, language)
+      } catch (e) {
+        stats.invalid += batch.length
+        const status = httpStatus(e)
+        const reason = status === 429 ? 'rate limited' : truncate(e?.message ?? String(e), 200)
+        warn(`${label} batch translation failed (${batch.length} strings skipped): ${reason}`)
+        batchesDone++
+        info(`${label} batch ${batchesDone}/${batches.length} done — ${formatStats(stats)}`)
+        return
+      }
+
+      const valid = []
       for (const item of batch) {
         const t = result.get(item.batchId)
-        if (typeof t === 'string') translations.set(item.id, t)
+        if (typeof t !== 'string') {
+          stats.invalid++
+          warn(`${label} ${c.gray(item.key)} — Gemini returned no translation`)
+          continue
+        }
+        const v = validateTranslation(item.text, t)
+        if (!v.ok) {
+          stats.invalid++
+          warn(`${label} ${c.gray(item.key)} — ${v.reason}; src=${JSON.stringify(item.text)} got=${JSON.stringify(t)}`)
+          continue
+        }
+        valid.push({ stringId: item.id, key: item.key, text: t })
       }
+      stats.translated += valid.length
+
+      if (args.dryRun) {
+        for (const v of valid) {
+          if (drySamples.length < 5) drySamples.push(v)
+          else break
+        }
+      } else if (valid.length > 0) {
+        await pMap(
+          valid,
+          async (t) => {
+            try {
+              await crowdin.addTranslation({
+                stringId: t.stringId,
+                languageId: language.id,
+                text: t.text,
+              })
+              stats.uploaded++
+            } catch (e) {
+              stats.failed++
+              const status = httpStatus(e)
+              warn(`${label} upload failed for ${c.gray(t.key)} [HTTP ${status ?? '?'}]: ${truncate(e?.message ?? String(e), 200)}`)
+            }
+          },
+          CONFIG.UPLOAD_CONCURRENCY,
+        )
+      }
+
       batchesDone++
       const percent = Math.round((batchesDone / batches.length) * 100)
-      info(`${label} batch ${batchesDone}/${batches.length} done (${percent}%)`)
+      info(`${label} batch ${batchesDone}/${batches.length} done (${percent}%) — ${formatStats(stats)}`)
     },
     CONFIG.PER_LANGUAGE_BATCH_CONCURRENCY,
   )
 
-  let invalid = 0
-  const validTranslations = []
-  for (const s of work) {
-    const t = translations.get(s.id)
-    if (typeof t !== 'string') {
-      invalid++
-      warn(`${label} ${c.gray(s.key)} — Gemini returned no translation`)
-      continue
-    }
-    const v = validateTranslation(s.text, t)
-    if (!v.ok) {
-      invalid++
-      warn(`${label} ${c.gray(s.key)} — ${v.reason}; skipping. src=${JSON.stringify(s.text)} got=${JSON.stringify(t)}`)
-      continue
-    }
-    validTranslations.push({ stringId: s.id, key: s.key, text: t })
-  }
-
   if (args.dryRun) {
-    ok(`${label} dry-run complete — ${validTranslations.length} translations ready (not uploaded)`)
-    if (validTranslations.length > 0) {
-      const sample = validTranslations.slice(0, 5)
-      for (const s of sample) log(`     ${c.gray(s.key)} → ${JSON.stringify(s.text)}`)
-      if (validTranslations.length > sample.length) log(`     ${c.gray(`… +${validTranslations.length - sample.length} more`)}`)
-    }
-    return {
-      language: language.id,
-      translated: validTranslations.length,
-      uploaded: 0,
-      failed: 0,
-      invalid,
+    ok(`${label} dry-run complete — ${stats.translated} translations ready (not uploaded)`)
+    for (const s of drySamples) log(`     ${c.gray(s.key)} → ${JSON.stringify(s.text)}`)
+    if (stats.translated > drySamples.length) {
+      log(`     ${c.gray(`… +${stats.translated - drySamples.length} more`)}`)
     }
   }
 
-  let uploaded = 0
-  let failed = 0
-  await pMap(
-    validTranslations,
-    async (t) => {
-      try {
-        await crowdin.addTranslation({ stringId: t.stringId, languageId: language.id, text: t.text })
-        uploaded++
-      } catch (e) {
-        failed++
-        const status = httpStatus(e)
-        warn(`${label} upload failed for ${c.gray(t.key)} [HTTP ${status ?? '?'}]: ${e?.message ?? e}`)
-      }
-    },
-    CONFIG.UPLOAD_CONCURRENCY,
-  )
+  if (stats.failed === 0 && stats.invalid === 0) ok(`${label} ${formatStats(stats)}`)
+  else warn(`${label} ${formatStats(stats)}`)
 
-  const summary =
-    `translated=${validTranslations.length} uploaded=${uploaded} ` +
-    `failed=${failed} invalid=${invalid}`
-  if (failed === 0 && invalid === 0) ok(`${label} ${summary}`)
-  else warn(`${label} ${summary}`)
+  return { language: language.id, ...stats }
+}
 
-  return { language: language.id, translated: validTranslations.length, uploaded, failed, invalid }
+function formatStats(s) {
+  return `translated=${s.translated} uploaded=${s.uploaded} failed=${s.failed} invalid=${s.invalid}`
 }
 
 // ------------------------------------------------------------------ main ---
@@ -529,10 +645,20 @@ async function main() {
     process.exit(2)
   }
 
+  const rpmRaw = process.env.GEMINI_RPM
+  const rpm = rpmRaw ? Number.parseInt(rpmRaw, 10) : CONFIG.GEMINI_RPM_DEFAULT
+  if (!Number.isFinite(rpm) || rpm <= 0) {
+    fail(`Invalid GEMINI_RPM value: ${rpmRaw}`)
+    process.exit(2)
+  }
+
   const startedAt = Date.now()
   const { projectId, token } = await loadCrowdinConfig()
   const crowdin = new CrowdinService({ projectId, token })
-  const gemini = new GeminiTranslator({ apiKey: geminiApiKey })
+  const rateLimiter = new RateLimiter(rpm)
+  const gemini = new GeminiTranslator({ apiKey: geminiApiKey, rateLimiter })
+
+  info(`Gemini rate limit: ${c.bold(rpm)} requests/min`)
 
   info(`fetching project metadata (project_id=${projectId})…`)
   const allLanguages = await crowdin.getTargetLanguages()
@@ -569,8 +695,14 @@ async function main() {
 
   const results = await pMap(
     perLanguage,
-    async ({ language, untranslated }) =>
-      translateLanguage({ crowdin, gemini, language, untranslated, args }),
+    async ({ language, untranslated }) => {
+      try {
+        return await translateLanguage({ crowdin, gemini, language, untranslated, args })
+      } catch (e) {
+        fail(`[${language.id}] aborted: ${truncate(e?.message ?? String(e), 200)}`)
+        return { language: language.id, translated: 0, uploaded: 0, failed: 0, invalid: untranslated.length }
+      }
+    },
     CONFIG.LANGUAGE_CONCURRENCY,
   )
 
