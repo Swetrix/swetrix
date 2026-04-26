@@ -1843,13 +1843,14 @@ export class TaskManagerService {
           this.logger.warn(
             `[CRON WORKER](checkMetricAlerts) Error details not found for alert ${alert.id}`,
           )
-          return
         }
 
         let context: AlertContext
 
         if (alert.queryMetric === QueryMetric.ERRORS) {
-          const errors_url = `${dashboardUrl}?tab=errors&eid=${errorDetails!.eid}`
+          const errors_url = errorDetails?.eid
+            ? `${dashboardUrl}?tab=errors&eid=${errorDetails.eid}`
+            : `${dashboardUrl}?tab=errors`
           context = {
             alert_name: alert.name,
             project_name: project.name,
@@ -1861,8 +1862,8 @@ export class TaskManagerService {
             condition: null,
             time_window: effectiveQueryTimeString,
             error_count: count,
-            error_message: errorDetails!.message || '',
-            error_name: errorDetails!.name || '',
+            error_message: errorDetails?.message || '',
+            error_name: errorDetails?.name || '',
             errors_url,
             is_new_only: !!alert.alertOnNewErrorsOnly,
           } as AlertContextErrors
@@ -1904,13 +1905,13 @@ export class TaskManagerService {
         const hasEmail = alert.channels.some(
           (c) => c.type === NotificationChannelType.EMAIL,
         )
-        const message = this.renderAlertMessage(alert, context, hasEmail)
-        await this.channelDispatcher.dispatch(alert.channels, message)
-
         // @ts-expect-error TypeORM typing for partial update
         await this.alertService.update(alert.id, {
           lastTriggered: new Date(),
         })
+
+        const message = this.renderAlertMessage(alert, context, hasEmail)
+        await this.channelDispatcher.dispatch(alert.channels, message)
       } catch (reason) {
         this.logger.error(
           `[CRON WORKER](checkMetricAlerts) Failed to process alert ${alert.id}: ${reason}`,

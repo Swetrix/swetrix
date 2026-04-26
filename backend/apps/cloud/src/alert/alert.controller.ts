@@ -42,7 +42,10 @@ import { AlertService } from './alert.service'
 import { getIPFromHeaders } from '../common/utils'
 import { trackCustom } from '../common/analytics'
 import { NotificationChannelService } from '../notification-channel/notification-channel.service'
-import { TemplateRendererService } from '../notification-channel/template-renderer.service'
+import {
+  DEFAULT_EMAIL_SUBJECT_TEMPLATE,
+  TemplateRendererService,
+} from '../notification-channel/template-renderer.service'
 import { NotificationChannelType } from '../notification-channel/entity/notification-channel.entity'
 
 const ALERTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxAlerts
@@ -222,7 +225,7 @@ export class AlertController {
       validatedChannels.some((c) => c.type === NotificationChannelType.EMAIL) &&
       !alertDTO.emailSubjectTemplate
     ) {
-      alertDTO.emailSubjectTemplate = 'Alert: {{alert.name}}'
+      alertDTO.emailSubjectTemplate = DEFAULT_EMAIL_SUBJECT_TEMPLATE
     }
 
     try {

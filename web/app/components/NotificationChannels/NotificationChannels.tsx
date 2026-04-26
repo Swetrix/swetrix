@@ -243,7 +243,9 @@ const NotificationChannels = ({
     formData.set('intent', 'update-channel')
     formData.set('channelId', editing.id)
     formData.set('name', name)
-    formData.set('config', JSON.stringify(buildConfig(form)))
+    if (editing.type !== 'webpush') {
+      formData.set('config', JSON.stringify(buildConfig(form)))
+    }
     submitMutate(formData)
   }
 
@@ -299,6 +301,7 @@ const NotificationChannels = ({
 
   const isMutating = mutateFetcher.state !== 'idle'
   const isFormOpen = creating || !!editing
+  const canSubmitForm = !!editing || form.type !== 'webpush'
 
   return (
     <section>
@@ -623,13 +626,13 @@ const NotificationChannels = ({
         }
         closeText={t('common.cancel')}
         submitText={
-          form.type !== 'webpush'
+          canSubmitForm
             ? editing
               ? t('common.save')
               : t('common.create')
             : undefined
         }
-        onSubmit={editing ? onUpdate : onCreate}
+        onSubmit={canSubmitForm ? (editing ? onUpdate : onCreate) : undefined}
         isLoading={isMutating}
         submitDisabled={isMutating}
       />

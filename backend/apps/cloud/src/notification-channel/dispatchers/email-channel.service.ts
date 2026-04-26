@@ -7,6 +7,7 @@ import {
   NotificationChannelType,
 } from '../entity/notification-channel.entity'
 import { ChannelDispatcher, RenderedAlertMessage } from './types'
+import { buildNotificationChannelUnsubscribeUrl } from '../notification-channel.paths'
 
 const wrapEmailHtml = (
   body: string,
@@ -129,7 +130,10 @@ export class EmailChannelService implements ChannelDispatcher {
     try {
       const clientUrl =
         this.configService.get<string>('CLIENT_URL') || 'https://swetrix.com'
-      const unsubscribeUrl = `${clientUrl}/notification-channel/unsubscribe/${this.buildUnsubscribeToken(channel.id)}`
+      const unsubscribeUrl = buildNotificationChannelUnsubscribeUrl(
+        clientUrl,
+        this.buildUnsubscribeToken(channel.id),
+      )
       const subject = message.subject || 'Swetrix alert'
       const html = wrapEmailHtml(message.body, unsubscribeUrl, subject)
       await this.mailerService.sendRawEmail(cfg.address, subject, html)

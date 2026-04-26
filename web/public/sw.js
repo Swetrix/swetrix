@@ -49,7 +49,9 @@ self.addEventListener('notificationclick', (event) => {
             return client.focus()
           }
         }
-        if (self.clients.openWindow) return self.clients.openWindow(url)
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(targetUrl.href)
+        }
         return null
       }),
   )

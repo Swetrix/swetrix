@@ -37,6 +37,20 @@ import { EmailChannelService } from './dispatchers/email-channel.service'
 import { WebhookChannelService } from './dispatchers/webhook-channel.service'
 import { WebpushChannelService } from './dispatchers/webpush-channel.service'
 import { MailerService } from '../mailer/mailer.service'
+import { buildNotificationChannelVerifyUrl } from './notification-channel.paths'
+
+const escapeHtml = (value: string) =>
+  value.replace(/[&<>"']/g, (char) =>
+    char === '&'
+      ? '&amp;'
+      : char === '<'
+        ? '&lt;'
+        : char === '>'
+          ? '&gt;'
+          : char === '"'
+            ? '&quot;'
+            : '&#39;',
+  )
 
 @ApiTags('NotificationChannel')
 @Controller('notification-channel')
@@ -247,11 +261,16 @@ export class NotificationChannelController {
     if (!channel.verificationToken) return
     const clientUrl =
       this.configService.get<string>('CLIENT_URL') || 'https://swetrix.com'
-    const url = `${clientUrl}/api/notification-channel/verify/${channel.verificationToken}`
+    const url = buildNotificationChannelVerifyUrl(
+      clientUrl,
+      channel.verificationToken,
+    )
+    const safeAddress = escapeHtml(cfg.address)
+    const safeUrl = escapeHtml(url)
     const html = `<!DOCTYPE html><html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 24px; color: #111827;">
       <h2>Confirm your Swetrix notification channel</h2>
-      <p>Click the button below to confirm we can send alerts to <strong>${cfg.address}</strong>.</p>
-      <p><a href="${url}" style="display:inline-block; padding: 10px 18px; background: #2563eb; color: #fff; border-radius: 6px; text-decoration: none;">Confirm channel</a></p>
+      <p>Click the button below to confirm we can send alerts to <strong>${safeAddress}</strong>.</p>
+      <p><a href="${safeUrl}" style="display:inline-block; padding: 10px 18px; background: #2563eb; color: #fff; border-radius: 6px; text-decoration: none;">Confirm channel</a></p>
       <p style="color: #6b7280; font-size: 12px;">If you didn't set this up, ignore this email.</p>
     </body></html>`
     await this.mailerService.sendRawEmail(
