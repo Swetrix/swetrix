@@ -1,6 +1,5 @@
 import cx from 'clsx'
 import dayjs from 'dayjs'
-import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import _values from 'lodash/values'
@@ -38,18 +37,22 @@ import routes from '~/utils/routes'
 
 import ProjectAlertsSettings from './ProjectAlertsSettings'
 
-const NoNotificationChannelSet = () => {
+const NoNotificationChannelSet = ({
+  channelsLink,
+}: {
+  channelsLink: string
+}) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='mb-4 flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 dark:border-yellow-500/20 dark:bg-yellow-500/10'>
-      <WarningOctagonIcon className='size-5 shrink-0 text-yellow-600 dark:text-yellow-500' />
-      <p className='flex-1 text-sm text-yellow-800 dark:text-yellow-200'>
+    <div className='mb-4 flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center dark:border-amber-500/20 dark:bg-amber-500/10'>
+      <WarningOctagonIcon className='size-5 shrink-0 text-amber-600 dark:text-amber-400' />
+      <p className='flex-1 text-sm text-amber-800 dark:text-amber-200'>
         {t('alert.noNotificationChannel')}
       </p>
       <Link
-        to={routes.user_settings}
-        className='shrink-0 rounded-md bg-yellow-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-yellow-700 dark:bg-yellow-600 dark:hover:bg-yellow-500'
+        to={channelsLink}
+        className='shrink-0 self-start rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-700 sm:self-auto dark:bg-amber-600 dark:hover:bg-amber-500'
       >
         {t('common.fixIt')}
       </Link>
@@ -94,6 +97,7 @@ interface AlertRowProps {
   active: boolean
   queryMetric: (typeof QUERY_METRIC)[keyof typeof QUERY_METRIC]
   lastTriggered: string | null
+  channels?: Alerts['channels']
   deleteAlert: (id: string) => void
   openAlert: (id: string) => void
   queryMetricTMapping: any
@@ -105,6 +109,7 @@ const AlertRow = ({
   active,
   queryMetric,
   lastTriggered,
+  channels,
   openAlert,
   deleteAlert,
   queryMetricTMapping,
@@ -118,6 +123,7 @@ const AlertRow = ({
   const MetricIcon = METRIC_ICON_MAPPING[queryMetric]?.icon || FileTextIcon
   const metricIconClass =
     METRIC_ICON_MAPPING[queryMetric]?.className || 'text-gray-500'
+  const hasChannels = Array.isArray(channels) && channels.length > 0
 
   const lastTriggeredText = lastTriggered
     ? language === 'en'
@@ -165,6 +171,12 @@ const AlertRow = ({
                   <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-slate-700 dark:text-gray-400'>
                     <BellSlashIcon className='size-3' />
                     {t('alert.disabled')}
+                  </span>
+                ) : null}
+                {!hasChannels ? (
+                  <span className='inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-0.5 text-xs text-amber-700 ring-1 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20'>
+                    <WarningOctagonIcon className='size-3' />
+                    {t('alert.noChannelsBadge')}
                   </span>
                 ) : null}
               </div>
@@ -245,10 +257,15 @@ const AlertRow = ({
 
 interface ProjectAlertsProps {
   projectId: string
+  projectName?: string
   projectRole?: string
 }
 
-const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
+const ProjectAlertsInner = ({
+  projectId,
+  projectName,
+  projectRole,
+}: ProjectAlertsProps) => {
   const id = projectId
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuth()
@@ -359,17 +376,15 @@ const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
     )
   }, [t])
 
-  const isIntegrationLinked = useMemo(() => {
-    if (_isEmpty(user)) {
+  const hasAnyAlertWithChannels = useMemo(() => {
+    if (!alerts) {
       return false
     }
 
-    return Boolean(
-      (user.telegramChatId && user.isTelegramChatIdConfirmed) ||
-      user.slackWebhookUrl ||
-      user.discordWebhookUrl,
+    return alerts.some(
+      (alert) => Array.isArray(alert.channels) && alert.channels.length > 0,
     )
-  }, [user])
+  }, [alerts])
 
   const handleNewAlert = () => {
     if (isLimitReached) {
@@ -456,6 +471,7 @@ const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
       <ProjectAlertsSettings
         alertId={activeAlertId}
         projectId={id}
+        projectName={projectName}
         isSettings={!!activeAlertId}
         onClose={closeAlertSettings}
         onSave={handleAlertSaved}
@@ -489,7 +505,11 @@ const ProjectAlertsInner = ({ projectId, projectRole }: ProjectAlertsProps) => {
           </div>
         ) : (
           <>
-            {!isIntegrationLinked ? <NoNotificationChannelSet /> : null}
+            {!hasAnyAlertWithChannels ? (
+              <NoNotificationChannelSet
+                channelsLink={`/projects/${projectId}/settings?tab=channels`}
+              />
+            ) : null}
 
             {/* Header with add button */}
             <div className='mb-4 flex items-center justify-between'>

@@ -29,19 +29,19 @@ To manage your team, go to the Organisations page and click the **Settings** (ge
 
 You can assign a project to an organisation in the **Project Settings -> Access** tab. Once assigned, all members of the organisation will have access to the project according to their organisation role.
 
-## Integrations
+## Notification channels
 
-Swetrix can send you reports and alerts directly to your favourite communication tools.
+Swetrix can send alerts directly to your favourite communication tools through **notification channels**. A channel describes _where_ a message is sent — your inbox, a Slack workspace, a Telegram chat, your own webhook, or a browser push subscription.
 
-1.  Go to your **[Account Settings](https://swetrix.com/user-settings)**.
-2.  Open the **Communications** tab.
-3.  Scroll down to the **Integrations** section.
+You can connect channels at three different scopes:
 
-Supported integrations:
+- **Personal** — Available across all of your projects. Manage them in **[Account Settings → Communications → Notification channels](https://swetrix.com/user-settings?tab=communications)**.
+- **Organisation** — Shared with everyone in an organisation (configured by owners and admins from the organisation's settings page).
+- **Project** — Scoped to a single project, configured under **Project Settings → Notification channels**.
 
-- **Telegram**: Receive alerts via the Swetrix Bot.
-- **Slack**: Send notifications to a Slack channel via Webhook.
-- **Discord**: Send notifications to a Discord channel via Webhook.
+Supported channel types: **Email**, **Telegram** (via [@swetrixbot](https://t.me/swetrixbot)), **Discord** (incoming webhook), **Slack** (incoming webhook), **custom Webhook** (with optional HMAC signature), and **browser Web push** notifications.
+
+For the full setup walkthrough, payload format, message-template variables, and per-alert channel selection, see the [Alerts & Notifications](/analytics-dashboard/alerts) guide.
 
 ## Interface Settings
 

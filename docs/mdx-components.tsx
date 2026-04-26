@@ -10,6 +10,14 @@ import {
   PlausibleIcon,
   NpmIcon,
 } from "@/components/provider-icons";
+import {
+  EmailChannelIcon,
+  TelegramChannelIcon,
+  DiscordChannelIcon,
+  SlackChannelIcon,
+  WebhookChannelIcon,
+  WebpushChannelIcon,
+} from "@/components/channel-icons";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { File, Folder, Files } from "fumadocs-ui/components/files";
 import { CodeIcon } from "@phosphor-icons/react/dist/ssr";
@@ -32,6 +40,12 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     FathomIcon,
     PlausibleIcon,
     NpmIcon,
+    EmailChannelIcon,
+    TelegramChannelIcon,
+    DiscordChannelIcon,
+    SlackChannelIcon,
+    WebhookChannelIcon,
+    WebpushChannelIcon,
     CodeIcon,
     Accordion,
     Accordions,

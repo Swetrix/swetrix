@@ -35,6 +35,7 @@ import { BullModule } from '@nestjs/bullmq'
 import { ToolsModule } from './tools/tools.module'
 import { PendingInvitationModule } from './pending-invitation/pending-invitation.module'
 import { DataImportModule } from './data-import/data-import.module'
+import { NotificationChannelModule } from './notification-channel/notification-channel.module'
 
 const modules = [
   SentryModule.forRoot(),
@@ -101,6 +102,7 @@ const modules = [
   ToolsModule,
   PendingInvitationModule,
   DataImportModule,
+  NotificationChannelModule,
 ]
 
 @Module({

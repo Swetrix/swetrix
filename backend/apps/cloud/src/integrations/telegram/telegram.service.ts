@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common'
+import { forwardRef, Inject, Injectable, Optional } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectBot } from 'nestjs-telegraf'
 import { Markup, Telegraf } from 'telegraf'
@@ -8,6 +8,7 @@ import { Context } from './interface/context.interface'
 import { Message } from './entities/message.entity'
 import { UserService } from '../../user/user.service'
 import { ExtraReplyMessage } from 'telegraf/typings/telegram-types'
+import { NotificationChannelService } from '../../notification-channel/notification-channel.service'
 
 @Injectable()
 export class TelegramService {
@@ -17,6 +18,9 @@ export class TelegramService {
     private readonly configService: ConfigService,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
+    @Optional()
+    @Inject(forwardRef(() => NotificationChannelService))
+    private readonly notificationChannelService?: NotificationChannelService,
   ) {}
 
   async getStartMessage(telegramId: number) {
@@ -78,6 +82,10 @@ export class TelegramService {
     }
 
     await this.userService.updateUserTelegramId(userId, chatId, true)
+    await this.getNotificationChannelService().upsertTelegramChannel(
+      userId,
+      String(chatId),
+    )
   }
 
   async cancelLinkAccount(userId: string, chatId: number) {
@@ -113,7 +121,18 @@ export class TelegramService {
     if (!user) {
       return
     }
+    await this.getNotificationChannelService().deleteTelegramChannelsByChatId(
+      chatId.toString(),
+      user.id,
+    )
     await this.userService.updateUserTelegramId(user.id, null)
+  }
+
+  private getNotificationChannelService() {
+    if (!this.notificationChannelService) {
+      throw new Error('NotificationChannelService is not available')
+    }
+    return this.notificationChannelService
   }
 
   async addMessage(chatId: string, text: string, extra?: ExtraReplyMessage) {

@@ -177,6 +177,25 @@ export class MailerService {
     private readonly nodeMailerService: NodeMailerService,
   ) {}
 
+  async sendRawEmail(
+    email: string,
+    subject: string,
+    html: string,
+  ): Promise<void> {
+    const message = {
+      from: `Swetrix <${process.env.FROM_EMAIL}>`,
+      to: email,
+      subject,
+      html,
+    }
+
+    if (process.env.SMTP_MOCK) {
+      this.logger.log({ ...message }, 'sendRawEmail', true)
+    } else {
+      await this.nodeMailerService.sendMail(message)
+    }
+  }
+
   async sendEmail(
     email: string,
     templateName: LetterTemplate,

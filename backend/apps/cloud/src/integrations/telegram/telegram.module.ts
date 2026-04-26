@@ -1,4 +1,10 @@
-import { Module, OnModuleInit, Logger, Optional } from '@nestjs/common'
+import {
+  forwardRef,
+  Module,
+  OnModuleInit,
+  Logger,
+  Optional,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { TelegrafModule, InjectBot } from 'nestjs-telegraf'
 import { session, Telegraf } from 'telegraf'
@@ -15,6 +21,7 @@ import { ProjectModule } from '../../project/project.module'
 import { AnalyticsModule } from '../../analytics/analytics.module'
 import { isPrimaryNode, isPrimaryClusterNode } from '../../common/utils'
 import { Context } from './interface/context.interface'
+import { NotificationChannelModule } from '../../notification-channel/notification-channel.module'
 
 const shouldBotBeLaunched = isPrimaryNode() && isPrimaryClusterNode()
 const hasTelegramToken = !!process.env.TELEGRAM_BOT_TOKEN
@@ -35,6 +42,7 @@ const hasTelegramToken = !!process.env.TELEGRAM_BOT_TOKEN
     UserModule,
     ProjectModule,
     AnalyticsModule,
+    forwardRef(() => NotificationChannelModule),
   ].filter((m) => !!m),
   providers: [
     ...(shouldBotBeLaunched && hasTelegramToken

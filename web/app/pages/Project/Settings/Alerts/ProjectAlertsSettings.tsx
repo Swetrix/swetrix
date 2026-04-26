@@ -1,4 +1,9 @@
-import { WarningOctagonIcon, XCircleIcon } from '@phosphor-icons/react'
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  WarningOctagonIcon,
+  XCircleIcon,
+} from '@phosphor-icons/react'
 import _findKey from 'lodash/findKey'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
@@ -15,8 +20,9 @@ import { toast } from 'sonner'
 
 import { QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
-import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
+import type { NotificationChannel } from '~/lib/models/NotificationChannel'
 import { useAuth } from '~/providers/AuthProvider'
+import type { NotificationChannelActionData } from '~/routes/notification-channel'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
@@ -27,29 +33,42 @@ import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
-const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
+import {
+  ChannelTypeIcon,
+  summariseConfig,
+} from '~/components/NotificationChannels/utils'
+
+import AlertTemplateEditor from './AlertTemplateEditor'
+import { BackButton } from '../../View/components/BackButton'
+
+const CHANNELS_TAB = `?tab=channels`
+const PROJECT_CHANNELS_LINK = (projectId: string) =>
+  `/projects/${projectId}/settings${CHANNELS_TAB}`
 
 interface ProjectAlertsSettingsProps {
   alertId?: string | null
   projectId: string
+  projectName?: string
   isSettings?: boolean
   onClose?: () => void
   onSave?: () => void
-  backLink?: string
+  backLink: string
 }
 
 const ProjectAlertsSettings = ({
   alertId,
   projectId,
+  projectName,
   isSettings,
   onClose,
   onSave,
   backLink,
 }: ProjectAlertsSettingsProps) => {
-  const { user, isLoading: authLoading } = useAuth()
+  const { isLoading: authLoading } = useAuth()
 
   const { t } = useTranslation('common')
   const fetcher = useFetcher<ProjectViewActionData>()
+  const channelsFetcher = useFetcher<NotificationChannelActionData>()
   const lastHandledData = useRef<ProjectViewActionData | null>(null)
 
   const [form, setForm] = useState<Partial<Alerts>>({
@@ -63,6 +82,9 @@ const ProjectAlertsSettings = ({
     queryCustomEvent: '',
     alertOnNewErrorsOnly: true,
     alertOnEveryCustomEvent: false,
+    channelIds: [],
+    messageTemplate: '',
+    emailSubjectTemplate: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
@@ -71,18 +93,29 @@ const ProjectAlertsSettings = ({
   const [alert, setAlert] = useState<Alerts | null>(null)
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [availableChannels, setAvailableChannels] = useState<
+    NotificationChannel[]
+  >([])
 
-  const isIntegrationLinked = useMemo(() => {
-    if (_isEmpty(user)) {
-      return false
+  useEffect(() => {
+    const fd = new FormData()
+    fd.set('intent', 'list-channels')
+    fd.set('projectId', projectId)
+    channelsFetcher.submit(fd, {
+      method: 'POST',
+      action: '/notification-channel',
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId])
+
+  useEffect(() => {
+    if (channelsFetcher.state !== 'idle' || !channelsFetcher.data) return
+    if (channelsFetcher.data.error) {
+      toast.error(channelsFetcher.data.error)
+      return
     }
-
-    return Boolean(
-      (user.telegramChatId && user.isTelegramChatIdConfirmed) ||
-      user.slackWebhookUrl ||
-      user.discordWebhookUrl,
-    )
-  }, [user])
+    setAvailableChannels(channelsFetcher.data.channels || [])
+  }, [channelsFetcher.state, channelsFetcher.data])
 
   // Handle fetcher responses
   useEffect(() => {
@@ -96,7 +129,13 @@ const ProjectAlertsSettings = ({
       if (intent === 'get-alert' && data) {
         const alertData = data as Alerts
         setAlert(alertData)
-        setForm(alertData)
+        setForm({
+          ...alertData,
+          channelIds:
+            alertData.channelIds ?? alertData.channels?.map((c) => c.id) ?? [],
+          messageTemplate: alertData.messageTemplate || '',
+          emailSubjectTemplate: alertData.emailSubjectTemplate || '',
+        })
         setIsLoading(false)
       } else if (intent === 'create-alert') {
         toast.success(t('alertsSettings.alertCreated'))
@@ -195,7 +234,12 @@ const ProjectAlertsSettings = ({
 
   useEffect(() => {
     if (!_isEmpty(alert)) {
-      setForm(alert)
+      setForm({
+        ...alert,
+        channelIds: alert.channelIds ?? alert.channels?.map((c) => c.id) ?? [],
+        messageTemplate: alert.messageTemplate || '',
+        emailSubjectTemplate: alert.emailSubjectTemplate || '',
+      })
     }
   }, [alert])
 
@@ -384,13 +428,7 @@ const ProjectAlertsSettings = ({
 
   return (
     <div>
-      <DashboardHeader
-        backLink={backLink}
-        showLiveVisitors={false}
-        showSearchButton={false}
-        showRefreshButton={false}
-        showPeriodSelector={false}
-      />
+      <BackButton className='mb-2 max-w-max' to={backLink} />
       <Text
         as='h2'
         size='xl'
@@ -444,124 +482,160 @@ const ProjectAlertsSettings = ({
           <input type='hidden' name='queryTime' value={form.queryTime} />
         ) : null}
 
-        {!authLoading && !isIntegrationLinked ? (
-          <div className='mt-2 flex items-center rounded-sm bg-blue-50 px-5 py-3 text-base whitespace-pre-wrap dark:bg-slate-900 dark:text-gray-50'>
-            <WarningOctagonIcon className='mr-1 h-5 w-5' />
-            <Trans
-              t={t}
-              i18nKey='alert.noIntegration'
-              components={{
-                url: (
-                  <Link
-                    to={INTEGRATIONS_LINK}
-                    className='text-blue-600 hover:underline dark:text-blue-500'
-                  />
-                ),
-              }}
-            />
+        {!authLoading && availableChannels.length === 0 ? (
+          <div className='mt-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/10'>
+            <WarningOctagonIcon className='mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400' />
+            <p className='text-sm text-amber-800 dark:text-amber-200'>
+              <Trans
+                t={t}
+                i18nKey='alert.noChannels'
+                components={{
+                  url: (
+                    <Link
+                      to={PROJECT_CHANNELS_LINK(projectId)}
+                      className='font-medium underline hover:text-amber-900 dark:hover:text-amber-100'
+                    />
+                  ),
+                }}
+              />
+            </p>
           </div>
         ) : null}
-        <Input
-          name='name'
-          label={t('alert.name')}
-          value={form.name || ''}
-          placeholder={t('alert.name')}
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted ? errors.name : null}
+        {(form.channelIds || []).map((id) => (
+          <input key={id} type='hidden' name='channelIds' value={id} />
+        ))}
+        {(form.channelIds || []).length === 0 ? (
+          <input type='hidden' name='channelIds' value='' />
+        ) : null}
+        <input type='hidden' name='channelIdsProvided' value='true' />
+        <input
+          type='hidden'
+          name='messageTemplate'
+          value={form.messageTemplate || ''}
         />
-        <Checkbox
-          checked={Boolean(form.active)}
-          onChange={(checked) =>
-            setForm((prev) => ({
-              ...prev,
-              active: checked,
-            }))
-          }
-          classes={{
-            label: 'mt-4',
-          }}
-          label={t('alert.enabled')}
-          hint={t('alert.enabledHint')}
+        <input
+          type='hidden'
+          name='emailSubjectTemplate'
+          value={form.emailSubjectTemplate || ''}
         />
-        <div className='mt-4'>
-          <Select
-            id='queryMetric'
-            label={t('alert.metric')}
-            items={_values(queryMetricTMapping)}
-            title={
-              form.queryMetric ? queryMetricTMapping[form.queryMetric] : ''
-            }
-            onSelect={(item) => {
-              const key = _findKey(
-                queryMetricTMapping,
-                (predicate) => predicate === item,
-              )
 
-              // @ts-expect-error
-              setForm((prevForm) => ({
-                ...prevForm,
-                queryMetric: key,
-              }))
+        <div className='mt-6 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
+          <Text as='h3' size='base' weight='bold'>
+            {t('alert.sections.basics')}
+          </Text>
+          <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
+            {t('alert.sections.basicsDescription')}
+          </Text>
+          <div className='mt-4 max-w-md'>
+            <Input
+              name='name'
+              label={t('alert.name')}
+              value={form.name || ''}
+              placeholder={t('alert.name')}
+              onChange={handleInput}
+              error={beenSubmitted ? errors.name : null}
+            />
+          </div>
+          <Checkbox
+            classes={{
+              label: 'mt-4',
             }}
-            capitalise
-            selectedItem={
-              form.queryMetric
-                ? queryMetricTMapping[form.queryMetric]
-                : undefined
+            checked={Boolean(form.active)}
+            onChange={(checked) =>
+              setForm((prev) => ({
+                ...prev,
+                active: checked,
+              }))
             }
+            label={t('alert.enabled')}
           />
         </div>
-        {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
-          <Input
-            name='queryCustomEvent'
-            label={t('alert.customEvent')}
-            value={form.queryCustomEvent || ''}
-            placeholder={t('alert.customEvent')}
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted ? errors.queryCustomEvent : null}
-          />
-        ) : null}
-        {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
-          <Checkbox
-            checked={Boolean(form.alertOnEveryCustomEvent)}
-            onChange={(checked) =>
-              setForm((prev) => ({
-                ...prev,
-                alertOnEveryCustomEvent: checked,
-              }))
-            }
-            classes={{
-              label: 'mt-4',
-            }}
-            label={t('alert.alertOnEveryCustomEvent')}
-            hint={t('alert.alertOnEveryCustomEventHint')}
-          />
-        ) : null}
-        {form.queryMetric === QUERY_METRIC.ERRORS ? (
-          <Checkbox
-            checked={Boolean(form.alertOnNewErrorsOnly)}
-            onChange={(checked) =>
-              setForm((prev) => ({
-                ...prev,
-                alertOnNewErrorsOnly: checked,
-              }))
-            }
-            classes={{
-              label: 'mt-4',
-            }}
-            label={t('alert.newErrorsOnly')}
-            hint={t('alert.newErrorsOnlyHint')}
-          />
-        ) : null}
-        {form.queryMetric !== QUERY_METRIC.ERRORS &&
-        !(
-          form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
-          form.alertOnEveryCustomEvent
-        ) ? (
-          <>
-            <div className='mt-4'>
+
+        <div className='mt-6 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
+          <Text as='h3' size='base' weight='bold'>
+            {t('alert.sections.trigger')}
+          </Text>
+          <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
+            {t('alert.sections.triggerDescription')}
+          </Text>
+
+          <div className='mt-4'>
+            <Select
+              id='queryMetric'
+              label={t('alert.metric')}
+              items={_values(queryMetricTMapping)}
+              title={
+                form.queryMetric ? queryMetricTMapping[form.queryMetric] : ''
+              }
+              onSelect={(item) => {
+                const key = _findKey(
+                  queryMetricTMapping,
+                  (predicate) => predicate === item,
+                )
+
+                // @ts-expect-error
+                setForm((prevForm) => ({
+                  ...prevForm,
+                  queryMetric: key,
+                }))
+              }}
+              capitalise
+              selectedItem={
+                form.queryMetric
+                  ? queryMetricTMapping[form.queryMetric]
+                  : undefined
+              }
+            />
+          </div>
+          {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
+            <Input
+              name='queryCustomEvent'
+              label={t('alert.customEvent')}
+              value={form.queryCustomEvent || ''}
+              placeholder={t('alert.customEvent')}
+              className='mt-4'
+              onChange={handleInput}
+              error={beenSubmitted ? errors.queryCustomEvent : null}
+            />
+          ) : null}
+          {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
+            <Checkbox
+              checked={Boolean(form.alertOnEveryCustomEvent)}
+              onChange={(checked) =>
+                setForm((prev) => ({
+                  ...prev,
+                  alertOnEveryCustomEvent: checked,
+                }))
+              }
+              classes={{
+                label: 'mt-4',
+              }}
+              label={t('alert.alertOnEveryCustomEvent')}
+              hint={t('alert.alertOnEveryCustomEventHint')}
+            />
+          ) : null}
+          {form.queryMetric === QUERY_METRIC.ERRORS ? (
+            <Checkbox
+              checked={Boolean(form.alertOnNewErrorsOnly)}
+              onChange={(checked) =>
+                setForm((prev) => ({
+                  ...prev,
+                  alertOnNewErrorsOnly: checked,
+                }))
+              }
+              classes={{
+                label: 'mt-4',
+              }}
+              label={t('alert.newErrorsOnly')}
+              hint={t('alert.newErrorsOnlyHint')}
+            />
+          ) : null}
+          {form.queryMetric !== QUERY_METRIC.ERRORS &&
+          !(
+            form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+            form.alertOnEveryCustomEvent
+          ) ? (
+            <div className='mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3'>
               <Select
                 id='queryCondition'
                 label={t('alert.condition')}
@@ -590,17 +664,14 @@ const ProjectAlertsSettings = ({
                     : queryConditionTMapping[QUERY_CONDITION.GREATER_THAN]
                 }
               />
-            </div>
-            <Input
-              name='queryValue'
-              label={t('alert.threshold')}
-              value={form.queryValue ?? ''}
-              placeholder='10'
-              className='mt-4'
-              onChange={handleInput}
-              error={beenSubmitted ? errors.queryValue : null}
-            />
-            <div className='mt-4'>
+              <Input
+                name='queryValue'
+                label={t('alert.threshold')}
+                value={form.queryValue ?? ''}
+                placeholder='10'
+                onChange={handleInput}
+                error={beenSubmitted ? errors.queryValue : null}
+              />
               <Select
                 id='queryTime'
                 label={t('alert.time')}
@@ -630,8 +701,73 @@ const ProjectAlertsSettings = ({
                 }
               />
             </div>
-          </>
-        ) : null}
+          ) : null}
+        </div>
+
+        <div className='mt-6 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
+          <Text as='h3' size='base' weight='bold'>
+            {t('alert.channels.heading')}
+          </Text>
+          <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
+            {t('alert.channels.description')}
+          </Text>
+          <div className='mt-3'>
+            <ChannelPicker
+              available={availableChannels}
+              selected={new Set(form.channelIds || [])}
+              onToggle={(channel) => {
+                setForm((prev) => {
+                  const ids = new Set(prev.channelIds || [])
+                  if (ids.has(channel.id)) ids.delete(channel.id)
+                  else ids.add(channel.id)
+                  return { ...prev, channelIds: Array.from(ids) }
+                })
+              }}
+              projectChannelsLink={PROJECT_CHANNELS_LINK(projectId)}
+              t={t}
+            />
+          </div>
+        </div>
+
+        <AlertTemplateEditor
+          projectId={projectId}
+          metric={form.queryMetric || QUERY_METRIC.PAGE_VIEWS}
+          body={form.messageTemplate || ''}
+          subject={form.emailSubjectTemplate || ''}
+          onBodyChange={(v) =>
+            setForm((prev) => ({ ...prev, messageTemplate: v }))
+          }
+          onSubjectChange={(v) =>
+            setForm((prev) => ({ ...prev, emailSubjectTemplate: v }))
+          }
+          showSubject={availableChannels
+            .filter((c) => (form.channelIds || []).includes(c.id))
+            .some((c) => c.type === 'email')}
+          sampleValues={{
+            alert_name: form.name,
+            project_name: projectName,
+            project_id: projectId,
+            dashboard_url:
+              typeof window !== 'undefined'
+                ? `${window.location.origin}/projects/${projectId}`
+                : undefined,
+            errors_url:
+              typeof window !== 'undefined'
+                ? `${window.location.origin}/projects/${projectId}?tab=errors`
+                : undefined,
+            threshold: form.queryValue,
+            condition: form.queryCondition
+              ? queryConditionTMapping[form.queryCondition]
+              : undefined,
+            time_window: form.queryTime
+              ? queryTimeTMapping[form.queryTime]
+              : undefined,
+            event_name: form.queryCustomEvent,
+            every_event_mode: form.alertOnEveryCustomEvent ? 'yes' : 'no',
+            is_new_only: form.alertOnNewErrorsOnly ? 'yes' : 'no',
+          }}
+        />
+
         {isSettings ? (
           <div className='mt-5 flex items-center justify-between'>
             <Button onClick={() => setShowModal(true)} danger semiSmall>
@@ -681,6 +817,126 @@ const ProjectAlertsSettings = ({
         type='error'
         isOpened={showModal}
       />
+    </div>
+  )
+}
+
+interface ChannelPickerProps {
+  available: NotificationChannel[]
+  selected: Set<string>
+  onToggle: (channel: NotificationChannel) => void
+  projectChannelsLink: string
+  t: (key: string, options?: any) => string
+}
+
+const ChannelPicker = ({
+  available,
+  selected,
+  onToggle,
+  projectChannelsLink,
+  t,
+}: ChannelPickerProps) => {
+  if (available.length === 0) {
+    return (
+      <div className='rounded-md border border-dashed border-gray-300 bg-gray-50/50 p-4 text-center dark:border-slate-700 dark:bg-slate-900/30'>
+        <Text as='p' size='sm' colour='secondary'>
+          {t('alert.channels.placeholder')}
+        </Text>
+        <Link
+          to={projectChannelsLink}
+          className='mt-1 inline-block text-sm text-indigo-600 hover:underline dark:text-indigo-400'
+        >
+          {t('notificationChannels.add')}
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
+      {available.map((channel) => {
+        const isSelected = selected.has(channel.id)
+        const summary = summariseConfig(channel)
+        const isUnsubscribed =
+          channel.type === 'email' &&
+          (channel.config as { unsubscribed?: boolean })?.unsubscribed === true
+        return (
+          <button
+            key={channel.id}
+            type='button'
+            onClick={() => onToggle(channel)}
+            aria-pressed={isSelected}
+            className={`flex items-center gap-3 rounded-md p-3 text-left ring-1 transition-colors ring-inset ${
+              isSelected
+                ? 'bg-slate-900/3 ring-slate-900 dark:bg-slate-100/5 dark:ring-slate-100'
+                : 'ring-gray-300 hover:bg-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-900/40'
+            }`}
+          >
+            <div className='flex size-9 shrink-0 items-center justify-center rounded-md bg-gray-100 dark:bg-slate-800/80'>
+              <ChannelTypeIcon type={channel.type} />
+            </div>
+            <div className='min-w-0 flex-1'>
+              <div className='flex items-center gap-1.5 leading-5'>
+                <Text
+                  as='span'
+                  size='sm'
+                  weight='semibold'
+                  className='truncate text-gray-900 dark:text-gray-100'
+                >
+                  {channel.name}
+                </Text>
+                {isUnsubscribed ? (
+                  <XCircleIcon
+                    className='size-4 shrink-0 text-amber-500'
+                    weight='fill'
+                    aria-hidden
+                  />
+                ) : channel.isVerified ? (
+                  <CheckCircleIcon
+                    className='size-4 shrink-0 text-emerald-500'
+                    weight='fill'
+                    aria-hidden
+                  />
+                ) : (
+                  <ClockIcon
+                    className='size-4 shrink-0 text-amber-500'
+                    weight='fill'
+                    aria-hidden
+                  />
+                )}
+              </div>
+              <span className='mt-0.5 block truncate font-mono text-xs text-gray-500 dark:text-gray-400'>
+                {summary ||
+                  t(`notificationChannels.types.${channel.type}` as any)}
+              </span>
+            </div>
+            <div
+              className={`flex size-4 shrink-0 items-center justify-center rounded-sm ring-1 transition-colors ring-inset ${
+                isSelected
+                  ? 'bg-slate-900 ring-slate-900 dark:bg-slate-100 dark:ring-slate-100'
+                  : 'ring-gray-300 dark:ring-slate-700/80'
+              }`}
+              aria-hidden
+            >
+              {isSelected ? (
+                <svg
+                  viewBox='0 0 12 12'
+                  className='size-3 text-white dark:text-slate-900'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2.5'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    d='M2 6.5l2.5 2.5 5.5-5.5'
+                  />
+                </svg>
+              ) : null}
+            </div>
+          </button>
+        )
+      })}
     </div>
   )
 }

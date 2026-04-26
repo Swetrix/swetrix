@@ -34,6 +34,8 @@ interface TooltipProps {
   text: string | number | React.ReactNode
   className?: string
   tooltipNode?: React.ReactNode
+  ariaLabel?: string
+  asChild?: boolean
   delay?: number
   /**
    * When true, the tooltip content won't capture hover events,
@@ -46,10 +48,13 @@ const Tooltip = ({
   text,
   className,
   tooltipNode,
+  ariaLabel,
+  asChild,
   delay = 50,
   disableHoverableContent,
 }: TooltipProps) => {
   const { t } = useTranslation()
+  const triggerAriaLabel = ariaLabel || t('common.learnMore')
 
   return (
     <TooltipProvider
@@ -58,8 +63,9 @@ const Tooltip = ({
     >
       <TooltipRoot>
         <TooltipTrigger
+          asChild={asChild}
           className={className}
-          aria-label={t('common.learnMore')}
+          aria-label={triggerAriaLabel}
         >
           {tooltipNode || (
             <QuestionIcon className='size-4.5 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800' />
