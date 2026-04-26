@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { createHmac } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 import { MailerService } from '../../mailer/mailer.service'
 import {
   NotificationChannel,
@@ -113,11 +113,9 @@ export class EmailChannelService implements ChannelDispatcher {
       .update(channelId)
       .digest('hex')
     if (sig.length !== expected.length) return null
-    let mismatch = 0
-    for (let i = 0; i < sig.length; i++) {
-      mismatch |= sig.charCodeAt(i) ^ expected.charCodeAt(i)
-    }
-    return mismatch === 0 ? channelId : null
+    const sigBuffer = Buffer.from(sig, 'utf8')
+    const expectedBuffer = Buffer.from(expected, 'utf8')
+    return timingSafeEqual(sigBuffer, expectedBuffer) ? channelId : null
   }
 
   async send(

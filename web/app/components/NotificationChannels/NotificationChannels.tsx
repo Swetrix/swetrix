@@ -73,6 +73,8 @@ const blankForm = (
   secret: '',
 })
 
+const isRedactedUrl = (url: string) => url.includes('…') || url.includes('...')
+
 const buildConfig = (form: ChannelFormState) => {
   switch (form.type) {
     case 'email':
@@ -81,7 +83,9 @@ const buildConfig = (form: ChannelFormState) => {
       return { chatId: form.chatId.trim() }
     case 'slack':
     case 'discord':
-      return { url: form.url.trim() }
+      return form.url.trim() && !isRedactedUrl(form.url.trim())
+        ? { url: form.url.trim() }
+        : {}
     case 'webhook':
       return {
         url: form.url.trim(),
@@ -244,7 +248,13 @@ const NotificationChannels = ({
     formData.set('channelId', editing.id)
     formData.set('name', name)
     if (editing.type !== 'webpush') {
-      formData.set('config', JSON.stringify(buildConfig(form)))
+      const config = buildConfig(form)
+      if (
+        (editing.type !== 'slack' && editing.type !== 'discord') ||
+        Object.prototype.hasOwnProperty.call(config, 'url')
+      ) {
+        formData.set('config', JSON.stringify(config))
+      }
     }
     submitMutate(formData)
   }

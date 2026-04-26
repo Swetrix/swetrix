@@ -67,10 +67,17 @@ export class WebpushChannelService implements ChannelDispatcher {
       keys: cfg.keys,
     }
 
+    const context = message.context as {
+      dashboard_url?: string
+      errors_url?: string
+    }
+    const url = context?.errors_url || context?.dashboard_url
+
     const payload = JSON.stringify({
       title: message.subject || channel.name || 'Swetrix alert',
       body: message.body.replace(/[*_`]/g, '').slice(0, 240),
-      url: (message.context as { dashboard_url?: string })?.dashboard_url,
+      url,
+      tag: `${channel.id}:${url || message.subject || 'alert'}`,
     })
 
     try {

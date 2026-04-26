@@ -23,7 +23,9 @@ import { DiscordModule } from '../integrations/discord/discord.module'
 import { SlackModule } from '../integrations/slack/slack.module'
 
 const telegramImports =
-  process.env.ENABLE_TELEGRAM_INTEGRATION === 'true' ? [TelegramModule] : []
+  process.env.ENABLE_TELEGRAM_INTEGRATION === 'true'
+    ? [forwardRef(() => TelegramModule)]
+    : []
 
 @Module({
   imports: [

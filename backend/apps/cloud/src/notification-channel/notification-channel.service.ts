@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, Repository } from 'typeorm'
+import { EntityManager, In, Repository } from 'typeorm'
 import { randomBytes } from 'crypto'
 
 import {
@@ -16,6 +16,9 @@ import {
 import { ProjectService } from '../project/project.service'
 import { OrganisationService } from '../organisation/organisation.service'
 import { OrganisationRole } from '../organisation/entity/organisation-member.entity'
+import { Organisation } from '../organisation/entity/organisation.entity'
+import { Project } from '../project/entity/project.entity'
+import { User } from '../user/entities/user.entity'
 import {
   CreateChannelDTO,
   UpdateChannelDTO,
@@ -25,6 +28,12 @@ import { WebhookChannelService } from './dispatchers/webhook-channel.service'
 const MAX_CHANNELS_PER_SCOPE = 50
 const MAX_EMAIL_LENGTH = 254
 const MAX_EMAIL_LOCAL_PART_LENGTH = 64
+const WEB_PUSH_ALLOWED_EXACT_HOSTS = new Set([
+  'fcm.googleapis.com',
+  'updates.push.services.mozilla.com',
+  'web.push.apple.com',
+])
+const WEB_PUSH_ALLOWED_SUFFIX_HOSTS = ['notify.windows.com']
 
 const hasWhitespace = (value: string) => {
   for (const char of value) {
@@ -61,6 +70,16 @@ const isValidHttpsUrl = (url: string, allowedHostSuffix: string[] = []) => {
   }
 }
 
+const isAllowedWebPushEndpoint = (endpoint: string) => {
+  if (!isValidHttpsUrl(endpoint)) return false
+
+  const host = new URL(endpoint).hostname.toLowerCase()
+  return (
+    WEB_PUSH_ALLOWED_EXACT_HOSTS.has(host) ||
+    WEB_PUSH_ALLOWED_SUFFIX_HOSTS.some((suffix) => host.endsWith(`.${suffix}`))
+  )
+}
+
 @Injectable()
 export class NotificationChannelService {
   constructor(
@@ -88,7 +107,7 @@ export class NotificationChannelService {
   }
 
   private async getProjectChannelsForUserOwnedProjects(userId: string) {
-    const pids = await this.projectService.getProjectIdsByAdminId(userId)
+    const pids = await this.projectService.getProjectIdsViewableByUser(userId)
     if (pids.length === 0) return []
     return this.channelRepository.find({
       where: { project: { id: In(pids) } },
@@ -283,12 +302,6 @@ export class NotificationChannelService {
       partial.project = { id: dto.projectId! } as any
     }
 
-    await this.enforceScopeLimit(scope, {
-      userId: scope === 'user' ? userId : undefined,
-      organisationId: scope === 'organisation' ? dto.organisationId : undefined,
-      projectId: scope === 'project' ? dto.projectId : undefined,
-    })
-
     // Default verification for channel types where the address itself is the proof
     // (Slack/Discord use validated hooks; webhook still requires explicit ping).
     if (
@@ -307,25 +320,74 @@ export class NotificationChannelService {
       partial.verificationToken = randomBytes(24).toString('hex')
     }
 
-    return this.channelRepository.save(this.channelRepository.create(partial))
+    return this.saveWithinScopeLimit(
+      scope,
+      {
+        userId: scope === 'user' ? userId : undefined,
+        organisationId:
+          scope === 'organisation' ? dto.organisationId : undefined,
+        projectId: scope === 'project' ? dto.projectId : undefined,
+      },
+      partial,
+    )
   }
 
-  private async enforceScopeLimit(
+  private getScopeWhere(
     scope: 'user' | 'organisation' | 'project',
     ids: { userId?: string; organisationId?: string; projectId?: string },
   ) {
-    const where =
+    return scope === 'user'
+      ? { user: { id: ids.userId! } }
+      : scope === 'organisation'
+        ? { organisation: { id: ids.organisationId! } }
+        : { project: { id: ids.projectId! } }
+  }
+
+  private async saveWithinScopeLimit(
+    scope: 'user' | 'organisation' | 'project',
+    ids: { userId?: string; organisationId?: string; projectId?: string },
+    partial: Partial<NotificationChannel>,
+  ) {
+    return this.channelRepository.manager.transaction(async (manager) => {
+      await this.lockScopeParent(manager, scope, ids)
+
+      const channelRepository = manager.getRepository(NotificationChannel)
+      const count = await channelRepository.count({
+        where: this.getScopeWhere(scope, ids),
+      })
+      if (count >= MAX_CHANNELS_PER_SCOPE) {
+        throw new ForbiddenException(
+          `Maximum number of notification channels (${MAX_CHANNELS_PER_SCOPE}) reached for this scope.`,
+        )
+      }
+
+      return channelRepository.save(channelRepository.create(partial))
+    })
+  }
+
+  private async lockScopeParent(
+    manager: EntityManager,
+    scope: 'user' | 'organisation' | 'project',
+    ids: { userId?: string; organisationId?: string; projectId?: string },
+  ) {
+    const lock = { mode: 'pessimistic_write' as const }
+    const parent =
       scope === 'user'
-        ? { user: { id: ids.userId! } }
+        ? await manager.findOne(User, {
+            where: { id: ids.userId! },
+            lock,
+          })
         : scope === 'organisation'
-          ? { organisation: { id: ids.organisationId! } }
-          : { project: { id: ids.projectId! } }
-    const count = await this.channelRepository.count({ where })
-    if (count >= MAX_CHANNELS_PER_SCOPE) {
-      throw new ForbiddenException(
-        `Maximum number of notification channels (${MAX_CHANNELS_PER_SCOPE}) reached for this scope.`,
-      )
-    }
+          ? await manager.findOne(Organisation, {
+              where: { id: ids.organisationId! },
+              lock,
+            })
+          : await manager.findOne(Project, {
+              where: { id: ids.projectId! },
+              lock,
+            })
+
+    if (!parent) throw new NotFoundException('Scope not found')
   }
 
   normaliseConfig(
@@ -374,7 +436,12 @@ export class NotificationChannelService {
       case NotificationChannelType.WEBPUSH: {
         const endpoint = String(raw.endpoint || '').trim()
         const keys = raw.keys as { p256dh?: string; auth?: string }
-        if (!endpoint || !keys?.p256dh || !keys?.auth) {
+        if (
+          !endpoint ||
+          !isAllowedWebPushEndpoint(endpoint) ||
+          !keys?.p256dh ||
+          !keys?.auth
+        ) {
           throw new BadRequestException('Invalid web push subscription')
         }
         return {
@@ -474,6 +541,7 @@ export class NotificationChannelService {
     if (existing) {
       existing.config = { chatId }
       existing.isVerified = true
+      existing.disabledReason = null
       return this.channelRepository.save(existing)
     }
     return this.channelRepository.save(
@@ -487,7 +555,7 @@ export class NotificationChannelService {
     )
   }
 
-  async deleteTelegramChannelsByChatId(chatId: string) {
+  async deleteTelegramChannelsByChatId(chatId: string, userId: string) {
     await this.channelRepository
       .createQueryBuilder()
       .delete()
@@ -495,6 +563,7 @@ export class NotificationChannelService {
       .andWhere("JSON_UNQUOTE(JSON_EXTRACT(config, '$.chatId')) = :chatId", {
         chatId,
       })
+      .andWhere('userId = :userId', { userId })
       .execute()
   }
 }

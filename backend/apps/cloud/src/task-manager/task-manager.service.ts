@@ -1606,7 +1606,8 @@ export class TaskManagerService {
         // @ts-expect-error TypeORM typing for partial update
         await this.alertService.update(alert.id, { lastTriggered: new Date() })
 
-        const clientUrl = this.configService.get('CLIENT_URL')
+        const clientUrl =
+          this.configService.get<string>('CLIENT_URL') || 'https://swetrix.com'
         const context: AlertContext = {
           alert_name: alert.name,
           project_name: project.name,
@@ -1846,7 +1847,8 @@ export class TaskManagerService {
               : QUERY_TIME_LABEL[alert.queryTime as QueryTime] ||
                 getQueryTimeString(alert.queryTime as QueryTime)
 
-        const clientUrl = this.configService.get('CLIENT_URL')
+        const clientUrl =
+          this.configService.get<string>('CLIENT_URL') || 'https://swetrix.com'
         const dashboardUrl = `${clientUrl}/projects/${project.id}`
 
         if (alert.queryMetric === QueryMetric.ERRORS && !errorDetails) {
