@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { ProjectModule } from '../project/project.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { UserModule } from '../user/user.module'
+import { NotificationChannelModule } from '../notification-channel/notification-channel.module'
 import { AlertService } from './alert.service'
 import { Alert } from './entity/alert.entity'
 import { AlertController } from './alert.controller'
@@ -14,6 +15,7 @@ import { AlertController } from './alert.controller'
     ProjectModule,
     AppLoggerModule,
     UserModule,
+    NotificationChannelModule,
   ],
   providers: [AlertService],
   exports: [AlertService],

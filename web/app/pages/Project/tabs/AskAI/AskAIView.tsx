@@ -38,7 +38,7 @@ import {
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import { marked } from 'marked'
+import { Marked } from 'marked'
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams, useFetcher } from 'react-router'
@@ -124,13 +124,13 @@ interface AskAIViewProps {
   projectId: string
 }
 
-marked.setOptions({
+const markdownParser = new Marked({
   breaks: true,
   gfm: true,
 })
 
 const renderMarkdown = (content: string): string => {
-  const html = marked.parse(content) as string
+  const html = markdownParser.parse(content) as string
   return sanitizeHtml(html, {
     allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
     allowedAttributes: {

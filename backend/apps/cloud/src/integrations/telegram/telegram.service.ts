@@ -8,6 +8,10 @@ import { Context } from './interface/context.interface'
 import { Message } from './entities/message.entity'
 import { UserService } from '../../user/user.service'
 import { ExtraReplyMessage } from 'telegraf/typings/telegram-types'
+import {
+  NotificationChannel,
+  NotificationChannelType,
+} from '../../notification-channel/entity/notification-channel.entity'
 
 @Injectable()
 export class TelegramService {
@@ -17,6 +21,8 @@ export class TelegramService {
     private readonly configService: ConfigService,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
+    @InjectRepository(NotificationChannel)
+    private readonly channelRepository: Repository<NotificationChannel>,
   ) {}
 
   async getStartMessage(telegramId: number) {
@@ -78,6 +84,7 @@ export class TelegramService {
     }
 
     await this.userService.updateUserTelegramId(userId, chatId, true)
+    await this.upsertTelegramChannel(userId, String(chatId))
   }
 
   async cancelLinkAccount(userId: string, chatId: number) {
@@ -113,7 +120,45 @@ export class TelegramService {
     if (!user) {
       return
     }
+    await this.deleteTelegramChannelsByChatId(chatId.toString())
     await this.userService.updateUserTelegramId(user.id, null)
+  }
+
+  private async upsertTelegramChannel(userId: string, chatId: string) {
+    const existing = await this.channelRepository.findOne({
+      where: {
+        type: NotificationChannelType.TELEGRAM,
+        user: { id: userId },
+      },
+    })
+
+    if (existing) {
+      existing.config = { chatId }
+      existing.isVerified = true
+      existing.disabledReason = null
+      return this.channelRepository.save(existing)
+    }
+
+    return this.channelRepository.save(
+      this.channelRepository.create({
+        name: 'Telegram',
+        type: NotificationChannelType.TELEGRAM,
+        config: { chatId },
+        isVerified: true,
+        user: { id: userId } as any,
+      }),
+    )
+  }
+
+  private async deleteTelegramChannelsByChatId(chatId: string) {
+    await this.channelRepository
+      .createQueryBuilder()
+      .delete()
+      .where('type = :type', { type: NotificationChannelType.TELEGRAM })
+      .andWhere("JSON_UNQUOTE(JSON_EXTRACT(config, '$.chatId')) = :chatId", {
+        chatId,
+      })
+      .execute()
   }
 
   async addMessage(chatId: string, text: string, extra?: ExtraReplyMessage) {

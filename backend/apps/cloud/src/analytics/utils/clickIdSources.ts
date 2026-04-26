@@ -5,14 +5,14 @@
  * tracking parameter (a "click ID") to URLs they send users to. When the
  * referring app is a native mobile app or in-app browser (Twitter/X,
  * Reddit, Facebook, TikTok, Gmail iOS, Slack, ...) the HTTP `Referer`
- * header is almost always stripped — but the click ID is preserved in
+ * header is almost always stripped - but the click ID is preserved in
  * the destination URL.
  *
  * By detecting these click IDs server-side we can synthesize a sensible
  * `source` / `medium` (and a canonical `referrer`) for events that would
  * otherwise be bucketed as "Direct / None".
  *
- * Explicit UTM parameters set by the marketer always win — this only
+ * Explicit UTM parameters set by the marketer always win - this only
  * fills in gaps.
  */
 
@@ -110,7 +110,7 @@ const CLICK_ID_MAP: Record<string, ClickIdMapping> = {
 
 /**
  * Iteration order is deterministic in modern engines (insertion order),
- * which gives ad-network IDs priority over social/email — matching the
+ * which gives ad-network IDs priority over social/email - matching the
  * `CLICK_ID_MAP` declaration above.
  */
 const CLICK_ID_KEYS = Object.keys(CLICK_ID_MAP)
@@ -187,7 +187,7 @@ interface TrafficSourceFields {
  * source information derived from click IDs found in the URL.
  *
  * Mutates the passed object (and returns it) for ergonomic call-site
- * usage. UTM parameters explicitly set by the marketer always win — we
+ * usage. UTM parameters explicitly set by the marketer always win - we
  * only fill empty fields.
  */
 export const enrichTrafficSource = <T extends TrafficSourceFields>(

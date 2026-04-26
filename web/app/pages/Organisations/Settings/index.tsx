@@ -3,6 +3,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import {
+  BellRingingIcon,
   CaretLeftIcon,
   FolderSimpleIcon,
   SlidersHorizontalIcon,
@@ -37,12 +38,14 @@ import { TabHeader } from '~/ui/TabHeader'
 import Select from '~/ui/Select'
 import routes from '~/utils/routes'
 
+import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
+
 import People from './People'
 import { Projects } from './Projects'
 
 const MAX_NAME_LENGTH = 50
 
-type SettingsTab = 'general' | 'people' | 'projects' | 'danger'
+type SettingsTab = 'general' | 'people' | 'projects' | 'channels' | 'danger'
 
 const OrganisationSettings = () => {
   const { t } = useTranslation('common')
@@ -146,6 +149,14 @@ const OrganisationSettings = () => {
           description: t('organisations.settings.tabs.projectsDesc'),
           icon: FolderSimpleIcon,
           iconColor: 'text-emerald-500',
+          visible: true,
+        },
+        {
+          id: 'channels',
+          label: t('organisations.settings.tabs.channels'),
+          description: t('organisations.settings.tabs.channelsDesc'),
+          icon: BellRingingIcon,
+          iconColor: 'text-pink-500',
           visible: true,
         },
         {
@@ -399,6 +410,27 @@ const OrganisationSettings = () => {
                   iconColorClass={activeTabConfig.iconColor}
                 />
                 <Projects organisation={organisation} />
+              </>
+            ) : null}
+            {activeTab === 'channels' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <NotificationChannels
+                  scope='organisation'
+                  organisationId={organisation.id}
+                  allowedTypes={[
+                    'email',
+                    'telegram',
+                    'discord',
+                    'slack',
+                    'webhook',
+                  ]}
+                />
               </>
             ) : null}
             {activeTab === 'danger' && activeTabConfig ? (

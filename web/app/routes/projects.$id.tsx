@@ -813,6 +813,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
         false,
       )
 
+      const channelIds = formData
+        .getAll('channelIds')
+        .map((v) => v.toString())
+        .filter(Boolean)
+      const messageTemplate =
+        formData.get('messageTemplate')?.toString() ?? null
+      const emailSubjectTemplate =
+        formData.get('emailSubjectTemplate')?.toString() ?? null
+
       const result = await serverFetch(request, 'alert', {
         method: 'POST',
         body: {
@@ -826,6 +835,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
           alertOnNewErrorsOnly,
           alertOnEveryCustomEvent,
           active,
+          channelIds,
+          messageTemplate: messageTemplate || null,
+          emailSubjectTemplate: emailSubjectTemplate || null,
         },
       })
 
@@ -873,6 +885,22 @@ export async function action({ request, params }: ActionFunctionArgs) {
         body.alertOnNewErrorsOnly = alertOnNewErrorsOnly
       if (alertOnEveryCustomEvent !== undefined)
         body.alertOnEveryCustomEvent = alertOnEveryCustomEvent
+
+      const channelIds = formData
+        .getAll('channelIds')
+        .map((v) => v.toString())
+        .filter(Boolean)
+      if (formData.has('channelIdsProvided') || channelIds.length > 0) {
+        body.channelIds = channelIds
+      }
+      if (formData.has('messageTemplate')) {
+        const v = formData.get('messageTemplate')?.toString() || ''
+        body.messageTemplate = v || null
+      }
+      if (formData.has('emailSubjectTemplate')) {
+        const v = formData.get('emailSubjectTemplate')?.toString() || ''
+        body.emailSubjectTemplate = v || null
+      }
 
       const result = await serverFetch(request, `alert/${alertId}`, {
         method: 'PUT',
@@ -2143,6 +2171,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
         )
       }
 
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'get-alert-template-variables': {
+      const metric = formData.get('metric')?.toString() || ''
+      const result = await serverFetch(
+        request,
+        `alert/template-variables?metric=${encodeURIComponent(metric)}`,
+        { method: 'GET' },
+      )
+      if (result.error) {
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
       return data<ProjectViewActionData>(
         { intent, success: true, data: result.data },
         { headers: createHeadersWithCookies(result.cookies) },
