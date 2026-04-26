@@ -72,27 +72,16 @@ export class NotificationChannelService {
 
   // --- Scope helpers --------------------------------------------------------
 
-  /** All channel ids visible to the caller across user/orgs/projects. */
+  /** All channel ids manageable by the caller across user/orgs/projects. */
   async getVisibleChannels(userId: string): Promise<NotificationChannel[]> {
-    const [
-      userOwned,
-      ownedProjectChannels,
-      orgChannels,
-      sharedProjectChannels,
-    ] = await Promise.all([
+    const [userOwned, ownedProjectChannels, orgChannels] = await Promise.all([
       this.channelRepository.find({ where: { user: { id: userId } } }),
       this.getProjectChannelsForUserOwnedProjects(userId),
-      this.getOrgChannelsForUserMemberships(userId),
-      this.getSharedProjectChannels(userId),
+      this.getOrgChannelsForManagedOrganisations(userId),
     ])
 
     const map = new Map<string, NotificationChannel>()
-    for (const c of [
-      ...userOwned,
-      ...ownedProjectChannels,
-      ...orgChannels,
-      ...sharedProjectChannels,
-    ]) {
+    for (const c of [...userOwned, ...ownedProjectChannels, ...orgChannels]) {
       map.set(c.id, c)
     }
     return Array.from(map.values())
@@ -106,9 +95,13 @@ export class NotificationChannelService {
     })
   }
 
-  private async getOrgChannelsForUserMemberships(userId: string) {
+  private async getOrgChannelsForManagedOrganisations(userId: string) {
     const memberships = await this.organisationService.findMemberships({
-      where: { user: { id: userId }, confirmed: true },
+      where: {
+        user: { id: userId },
+        confirmed: true,
+        role: In([OrganisationRole.owner, OrganisationRole.admin]),
+      },
       relations: ['organisation'],
     })
     const orgIds = memberships
@@ -120,33 +113,14 @@ export class NotificationChannelService {
     })
   }
 
-  private async getSharedProjectChannels(userId: string) {
-    const projectIds =
-      await this.projectService.getProjectIdsViewableByUser(userId)
-    if (projectIds.length === 0) return []
-
-    return this.channelRepository.find({
-      where: { project: { id: In(projectIds) } },
-      relations: ['project'],
-    })
-  }
-
-  /** Channels usable on a given project (project-owned + project owner's user channels + project's organisation channels). */
+  /** Channels manageable and usable on a given project. */
   async getChannelsForProject(
     projectId: string,
     userId: string,
   ): Promise<NotificationChannel[]> {
     const project = await this.projectService.getFullProject(projectId)
     if (!project) throw new NotFoundException('Project not found')
-    this.projectService.allowedToView(project, userId)
-
-    let allowedToManage = false
-    try {
-      this.projectService.allowedToManage(project, userId)
-      allowedToManage = true
-    } catch {
-      allowedToManage = false
-    }
+    this.projectService.allowedToManage(project, userId)
 
     const candidates: NotificationChannel[] = []
 
@@ -155,7 +129,7 @@ export class NotificationChannelService {
     })
     candidates.push(...projectChannels)
 
-    if (allowedToManage && project.admin?.id) {
+    if (project.admin?.id) {
       const ownerChannels = await this.channelRepository.find({
         where: { user: { id: project.admin.id } },
       })
@@ -174,7 +148,7 @@ export class NotificationChannelService {
     return Array.from(map.values())
   }
 
-  /** Channels owned by an organisation, accessible by a user that is a confirmed member. */
+  /** Channels owned by an organisation, accessible by organisation managers. */
   async getChannelsForOrganisation(
     organisationId: string,
     userId: string,
@@ -184,10 +158,13 @@ export class NotificationChannelService {
         user: { id: userId },
         organisation: { id: organisationId },
         confirmed: true,
+        role: In([OrganisationRole.owner, OrganisationRole.admin]),
       },
     })
     if (memberships.length === 0) {
-      throw new ForbiddenException('You are not a member of this organisation')
+      throw new ForbiddenException(
+        'You are not allowed to manage this organisation',
+      )
     }
     return this.channelRepository.find({
       where: { organisation: { id: organisationId } },
@@ -317,6 +294,7 @@ export class NotificationChannelService {
     if (
       dto.type === NotificationChannelType.SLACK ||
       dto.type === NotificationChannelType.DISCORD ||
+      dto.type === NotificationChannelType.TELEGRAM ||
       dto.type === NotificationChannelType.WEBPUSH
     ) {
       partial.isVerified = true
@@ -436,6 +414,7 @@ export class NotificationChannelService {
       if (
         channel.type === NotificationChannelType.SLACK ||
         channel.type === NotificationChannelType.DISCORD ||
+        channel.type === NotificationChannelType.TELEGRAM ||
         channel.type === NotificationChannelType.WEBPUSH
       ) {
         channel.isVerified = true

@@ -15,6 +15,7 @@ import { ProjectModule } from '../../project/project.module'
 import { AnalyticsModule } from '../../analytics/analytics.module'
 import { isPrimaryNode, isPrimaryClusterNode } from '../../common/utils'
 import { Context } from './interface/context.interface'
+import { NotificationChannel } from '../../notification-channel/entity/notification-channel.entity'
 
 const shouldBotBeLaunched = isPrimaryNode() && isPrimaryClusterNode()
 const hasTelegramToken = !!process.env.TELEGRAM_BOT_TOKEN
@@ -31,7 +32,7 @@ const hasTelegramToken = !!process.env.TELEGRAM_BOT_TOKEN
           middlewares: [session()],
         }),
       }),
-    TypeOrmModule.forFeature([Message]),
+    TypeOrmModule.forFeature([Message, NotificationChannel]),
     UserModule,
     ProjectModule,
     AnalyticsModule,

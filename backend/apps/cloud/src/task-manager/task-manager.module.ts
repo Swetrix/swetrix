@@ -15,6 +15,7 @@ import { SlackModule } from '../integrations/slack/slack.module'
 import { GoalModule } from '../goal/goal.module'
 import { RevenueModule } from '../revenue/revenue.module'
 import { NotificationChannelModule } from '../notification-channel/notification-channel.module'
+import { NotificationChannel } from '../notification-channel/entity/notification-channel.entity'
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { NotificationChannelModule } from '../notification-channel/notification-
     AlertModule,
     forwardRef(() => AnalyticsModule),
     AppLoggerModule,
-    TypeOrmModule.forFeature([Message]),
+    TypeOrmModule.forFeature([Message, NotificationChannel]),
     DiscordModule,
     SlackModule,
     GoalModule,

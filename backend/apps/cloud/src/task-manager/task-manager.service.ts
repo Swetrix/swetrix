@@ -118,6 +118,7 @@ const CHUNK_SIZE = 5000
 const REPORTS_USERS_CONCURRENCY = 3
 const REPORTS_PROJECTS_CONCURRENCY = 5
 const NO_EVENTS_REMINDER_DELAY_DAYS = 2
+const TELEGRAM_MARKDOWN_URL_KEYS = new Set(['dashboard_url', 'errors_url'])
 
 const mapLimit = async <T, R>(
   items: T[],
@@ -357,13 +358,22 @@ export class TaskManagerService {
       this.templateRenderer.getDefaultTemplate(context.metric)
     const ctxRecord = context as unknown as Record<string, unknown>
     const body = this.templateRenderer.render(template, ctxRecord)
+    const telegramContext = Object.fromEntries(
+      Object.entries(ctxRecord).map(([key, value]) => {
+        if (typeof value !== 'string' || TELEGRAM_MARKDOWN_URL_KEYS.has(key)) {
+          return [key, value]
+        }
+        return [key, this.telegramService.escapeTelegramMarkdown(value)]
+      }),
+    )
+    const telegramBody = this.templateRenderer.render(template, telegramContext)
     const subject = hasEmailChannel
       ? this.templateRenderer.render(
           alert.emailSubjectTemplate?.trim() || DEFAULT_EMAIL_SUBJECT_TEMPLATE,
           ctxRecord,
         )
       : alert.name
-    return { body, subject, context: ctxRecord }
+    return { body, telegramBody, subject, context: ctxRecord }
   }
 
   /**

@@ -6,6 +6,8 @@ import {
 export interface RenderedAlertMessage {
   /** Plain/markdown body, rendered from the alert's messageTemplate. */
   body: string
+  /** Telegram Markdown body with interpolated values escaped for Telegram. */
+  telegramBody?: string
   /** Optional subject (used by email). Defaults to the alert name. */
   subject?: string
   /** The raw alert context, in case a dispatcher wants extra metadata. */

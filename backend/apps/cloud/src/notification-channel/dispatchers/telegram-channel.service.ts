@@ -23,10 +23,15 @@ export class TelegramChannelService implements ChannelDispatcher {
     const cfg = channel.config as { chatId?: string }
     if (!cfg?.chatId || !this.telegramService) return
     try {
-      await this.telegramService.addMessage(cfg.chatId, message.body, {
-        // @ts-expect-error untyped option
-        disable_web_page_preview: true,
-      })
+      await this.telegramService.addMessage(
+        cfg.chatId,
+        message.telegramBody || message.body,
+        {
+          parse_mode: 'Markdown',
+          // @ts-expect-error untyped option
+          disable_web_page_preview: true,
+        },
+      )
     } catch (reason) {
       this.logger.error(`Failed to queue Telegram alert: ${reason}`)
     }
