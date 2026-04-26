@@ -16,7 +16,7 @@
  *   --dry-run           Translate but skip uploading to Crowdin.
  *   --help, -h          Show help.
  *
- * Environment:
+ * Environment (read from the shell first, then web/.env as fallback):
  *   GEMINI_API_KEY      Required. Google AI Studio API key.
  *   CROWDIN_API_TOKEN   Optional. Overrides token from crowdin.yml.
  *   CROWDIN_PROJECT_ID  Optional. Overrides project_id from crowdin.yml.
@@ -32,10 +32,11 @@ import { GoogleGenAI } from '@google/genai'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WEB_DIR = path.resolve(__dirname, '..')
 const CROWDIN_YML = path.join(WEB_DIR, 'crowdin.yml')
+const DOTENV_PATH = path.join(WEB_DIR, '.env')
 
 const CONFIG = {
   GEMINI_MODEL: 'gemini-3.1-pro-preview',
-  THINKING_LEVEL: 'low',
+  THINKING_LEVEL: 'medium',
   BATCH_SIZE: 25,
   LANGUAGE_CONCURRENCY: 4,
   PER_LANGUAGE_BATCH_CONCURRENCY: 2,
@@ -96,11 +97,36 @@ ${c.bold('Options')}
   --dry-run           Fetch + translate but skip uploading to Crowdin.
   --help, -h          Show this help.
 
-${c.bold('Environment')}
+${c.bold('Environment')} (shell env wins, web/.env is used as fallback)
   GEMINI_API_KEY      Required. Google AI Studio API key.
   CROWDIN_API_TOKEN   Optional. Overrides token from crowdin.yml.
   CROWDIN_PROJECT_ID  Optional. Overrides project_id from crowdin.yml.
 `)
+}
+
+async function loadDotEnvFallback(filePath) {
+  let content
+  try {
+    content = await fs.readFile(filePath, 'utf8')
+  } catch (e) {
+    if (e?.code === 'ENOENT') return
+    throw e
+  }
+  for (const rawLine of content.split('\n')) {
+    const line = rawLine.trim()
+    if (!line || line.startsWith('#')) continue
+    const eq = line.indexOf('=')
+    if (eq <= 0) continue
+    const key = line.slice(0, eq).trim()
+    let value = line.slice(eq + 1).trim()
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1)
+    }
+    if (process.env[key] === undefined) process.env[key] = value
+  }
 }
 
 async function loadCrowdinConfig() {
@@ -495,9 +521,11 @@ async function main() {
     return
   }
 
+  await loadDotEnvFallback(DOTENV_PATH)
+
   const geminiApiKey = process.env.GEMINI_API_KEY
   if (!geminiApiKey) {
-    fail('GEMINI_API_KEY environment variable is required.')
+    fail(`GEMINI_API_KEY is required. Set it in your shell or in ${path.relative(process.cwd(), DOTENV_PATH)}.`)
     process.exit(2)
   }
 
