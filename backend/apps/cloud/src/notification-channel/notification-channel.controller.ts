@@ -9,6 +9,7 @@ import {
   Post,
   Query,
   Res,
+  HttpException,
   HttpStatus,
   NotFoundException,
   BadRequestException,
@@ -219,7 +220,21 @@ export class NotificationChannelController {
   @Public()
   @Get('/unsubscribe/:token')
   async unsubscribeEmail(@Param('token') token: string, @Res() res: Response) {
-    const channelId = this.emailDispatcher.verifyUnsubscribeToken(token)
+    let channelId: string | null
+    try {
+      channelId = this.emailDispatcher.verifyUnsubscribeToken(token)
+    } catch (reason) {
+      if (reason instanceof Error) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: reason.message,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        )
+      }
+      throw reason
+    }
     if (channelId) {
       await this.channelService.setEmailUnsubscribed(channelId, true)
     }

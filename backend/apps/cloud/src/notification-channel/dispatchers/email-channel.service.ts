@@ -8,6 +8,7 @@ import {
 } from '../entity/notification-channel.entity'
 import { ChannelDispatcher, RenderedAlertMessage } from './types'
 import { buildNotificationChannelUnsubscribeUrl } from '../notification-channel.paths'
+import { JWT_ACCESS_TOKEN_SECRET } from '../../common/constants'
 
 const wrapEmailHtml = (
   body: string,
@@ -82,13 +83,11 @@ export class EmailChannelService implements ChannelDispatcher {
   ) {}
 
   private getUnsubscribeSecret(): string {
-    const secret =
-      this.configService.get<string>('JWT_SECRET') ||
-      this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET')
+    const secret = JWT_ACCESS_TOKEN_SECRET
 
     if (!secret) {
       throw new Error(
-        'JWT_SECRET or JWT_ACCESS_TOKEN_SECRET is required for email unsubscribe tokens',
+        'JWT_ACCESS_TOKEN_SECRET is required for email unsubscribe tokens',
       )
     }
 

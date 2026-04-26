@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common'
+import { forwardRef, Module, OnModuleInit } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { NotificationChannel } from './entity/notification-channel.entity'
@@ -21,6 +21,7 @@ import { AppLoggerModule } from '../logger/logger.module'
 import { TelegramModule } from '../integrations/telegram/telegram.module'
 import { DiscordModule } from '../integrations/discord/discord.module'
 import { SlackModule } from '../integrations/slack/slack.module'
+import { JWT_ACCESS_TOKEN_SECRET } from '../common/constants'
 
 const telegramImports =
   process.env.ENABLE_TELEGRAM_INTEGRATION === 'true'
@@ -56,4 +57,12 @@ const telegramImports =
     ChannelDispatcherService,
   ],
 })
-export class NotificationChannelModule {}
+export class NotificationChannelModule implements OnModuleInit {
+  onModuleInit() {
+    if (!JWT_ACCESS_TOKEN_SECRET) {
+      throw new Error(
+        'JWT_ACCESS_TOKEN_SECRET must be set for email unsubscribe tokens',
+      )
+    }
+  }
+}

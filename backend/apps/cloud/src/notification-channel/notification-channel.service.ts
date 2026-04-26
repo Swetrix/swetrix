@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm'
 import { EntityManager, In, Repository } from 'typeorm'
 import { randomBytes } from 'crypto'
+import { isDeepStrictEqual } from 'util'
 
 import {
   NotificationChannel,
@@ -476,24 +477,28 @@ export class NotificationChannelService {
             }
           : dto.config
 
-      channel.config = this.normaliseConfig(channel.type, config)
-      // Re-set isVerified based on type rules
-      if (
-        channel.type === NotificationChannelType.SLACK ||
-        channel.type === NotificationChannelType.DISCORD ||
-        channel.type === NotificationChannelType.TELEGRAM ||
-        channel.type === NotificationChannelType.WEBPUSH
-      ) {
-        channel.isVerified = true
-        channel.disabledReason = null
-      } else if (channel.type === NotificationChannelType.EMAIL) {
-        channel.isVerified = false
-        channel.verificationToken = randomBytes(24).toString('hex')
-        channel.disabledReason = null
-      } else if (channel.type === NotificationChannelType.WEBHOOK) {
-        channel.isVerified = false
-        channel.verificationToken = randomBytes(24).toString('hex')
-        channel.disabledReason = null
+      const normalizedConfig = this.normaliseConfig(channel.type, config)
+
+      if (!isDeepStrictEqual(normalizedConfig, channel.config)) {
+        channel.config = normalizedConfig
+        // Re-set isVerified based on type rules
+        if (
+          channel.type === NotificationChannelType.SLACK ||
+          channel.type === NotificationChannelType.DISCORD ||
+          channel.type === NotificationChannelType.TELEGRAM ||
+          channel.type === NotificationChannelType.WEBPUSH
+        ) {
+          channel.isVerified = true
+          channel.disabledReason = null
+        } else if (channel.type === NotificationChannelType.EMAIL) {
+          channel.isVerified = false
+          channel.verificationToken = randomBytes(24).toString('hex')
+          channel.disabledReason = null
+        } else if (channel.type === NotificationChannelType.WEBHOOK) {
+          channel.isVerified = false
+          channel.verificationToken = randomBytes(24).toString('hex')
+          channel.disabledReason = null
+        }
       }
     }
     return this.channelRepository.save(channel)
