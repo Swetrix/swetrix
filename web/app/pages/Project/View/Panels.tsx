@@ -71,6 +71,13 @@ const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 const CUSTOM_EVENTS_TOP_LIMITS = [1, 3, 5, 10] as const
 
+const getPercentage = (value: number, total: number, precision = 2) => {
+  if (!total) return 0
+
+  const percentage = (value / total) * 100
+  return Number.isFinite(percentage) ? _round(percentage, precision) : 0
+}
+
 const PanelEmptyState = ({ message }: { message: string }) => (
   <div className='flex flex-col items-center justify-center py-8 text-center'>
     <div className='mb-3 flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-900'>
@@ -883,7 +890,7 @@ const CustomEvents = ({
                   <div
                     className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
                     style={{
-                      width: `${(eventsData[ev] / maxValue) * 100}%`,
+                      width: `${getPercentage(eventsData[ev], maxValue)}%`,
                     }}
                   />
 
@@ -1336,9 +1343,7 @@ const MetadataKeyPanel = ({
                   >
                     <div
                       className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                      style={{
-                        width: `${(count / maxValue) * 100}%`,
-                      }}
+                      style={{ width: `${getPercentage(count, maxValue)}%` }}
                     />
 
                     <div className='relative z-10 w-2/6 min-w-0 truncate'>
@@ -1426,9 +1431,7 @@ const MetadataKeyPanel = ({
                 >
                   <div
                     className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                    style={{
-                      width: `${(count / maxValue) * 100}%`,
-                    }}
+                    style={{ width: `${getPercentage(count, maxValue)}%` }}
                   />
 
                   <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
@@ -1812,7 +1815,7 @@ const DetailsTable = ({
               if (!entry) return null
 
               const { count, name: entryName, ...rest } = entry
-              const perc = _round((count / total) * 100, 2)
+              const perc = getPercentage(count, total)
               const rowData = rowMapper(entry)
               const valueData = valueMapper(count)
 
@@ -2038,7 +2041,7 @@ const Panel = ({
               <div className='space-y-0.5 overflow-auto'>
                 {_map(entriesToDisplay, (entry) => {
                   const { count, name: entryName, ...rest } = entry
-                  const perc = _round((count / total) * 100, 2)
+                  const perc = getPercentage(count, total)
                   const rowData = rowMapper(entry)
                   const valueData = valueMapper(count)
                   const hasVersionsForItem = hasVersions(entryName)
@@ -2223,9 +2226,9 @@ const Panel = ({
                       {hasVersionsForItem && isExpanded ? (
                         <div className='ml-6 space-y-0.5'>
                           {_map(versions, (versionEntry) => {
-                            const versionPerc = _round(
-                              (versionEntry.count / total) * 100,
-                              2,
+                            const versionPerc = getPercentage(
+                              versionEntry.count,
+                              total,
                             )
                             const versionValueData = valueMapper(
                               versionEntry.count,
