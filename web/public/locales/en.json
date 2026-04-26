@@ -1743,6 +1743,7 @@
       "pg": "Page",
       "host": "Host",
       "lc": "Locale",
+      "map": "Map",
       "ref": "Referrer",
       "dv": "Device type",
       "br": "Browser",

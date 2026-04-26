@@ -1144,7 +1144,7 @@ const TrafficViewInner = ({
                     { id: 'rg', label: t('project.mapping.rg') },
                     { id: 'ct', label: t('project.mapping.ct') },
                     { id: 'lc', label: t('project.mapping.lc') },
-                    { id: 'map', label: 'Map' },
+                    { id: 'map', label: t('project.mapping.map') },
                   ]
 
                   const rowMapper = (entry: CountryEntry) => {
