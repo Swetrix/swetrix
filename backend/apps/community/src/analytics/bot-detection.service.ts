@@ -45,7 +45,7 @@ const NEGATIVE: BotDetectionResult = {
 }
 
 const HEADLESS_PATTERN =
-  /HeadlessChrome|PhantomJS|SlimerJS|Selenium|WebDriver|Puppeteer|Playwright|Electron|Cypress|Nightmare|Splash/i
+  /HeadlessChrome|PhantomJS|SlimerJS|Selenium|WebDriver|Puppeteer|Playwright|Cypress|Nightmare|Splash/i
 
 // Paths that almost exclusively appear in vulnerability scans / probes.
 // Conservative on purpose: WordPress admin paths (`/wp-admin`, `/wp-login.php`),
@@ -73,8 +73,8 @@ const PROBE_PATH_PREFIXES: readonly string[] = [
   '/composer.phar',
   '/vendor/phpunit',
   '/vendor/composer',
-  '/owa/',
-  '/ecp/',
+  '/owa',
+  '/ecp',
   '/autodiscover.xml',
   '/HNAP1',
   '/boaform',

@@ -83,7 +83,7 @@ const BotProtectionReport = ({ pid }: BotProtectionReportProps) => {
 
   const isInitialLoading = isLoading && !stats
   const showData = !error && !isInitialLoading && total > 0
-  const showEmpty = !error && !isInitialLoading && stats !== null && total === 0
+  const showEmpty = !error && !isInitialLoading && total === 0
 
   return (
     <section className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-900/25'>

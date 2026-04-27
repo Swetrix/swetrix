@@ -369,21 +369,33 @@ export class AnalyticsService {
     path: string | null | undefined,
     endpoint: BotEndpoint,
   ): Promise<BotDetectionResult> {
-    const result = await this.botDetectionService.detect({
-      pid,
-      userAgent,
-      headers,
-      ip,
-      referrer: referrer ?? null,
-      path: path ?? null,
-      endpoint,
-    })
+    // Fail open: if bot detection itself errors (e.g. Redis is down inside
+    // getRedisProject), treat the request as legitimate so ingestion is not
+    // blocked by an unrelated infrastructure issue.
+    let result: BotDetectionResult
+    try {
+      result = await this.botDetectionService.detect({
+        pid,
+        userAgent,
+        headers,
+        ip,
+        referrer: referrer ?? null,
+        path: path ?? null,
+        endpoint,
+      })
+    } catch (reason) {
+      this.logger.warn(
+        `Bot detection failed for pid ${pid} (${endpoint}): ${reason}`,
+        'checkBot',
+      )
+      return { isBot: false, reason: null }
+    }
 
     if (result.isBot && result.reason) {
       const { country } = getIPDetails(ip)
 
-      try {
-        await clickhouse.insert({
+      clickhouse
+        .insert({
           table: 'bot_blocks',
           format: 'JSONEachRow',
           values: [
@@ -396,12 +408,12 @@ export class AnalyticsService {
           ],
           clickhouse_settings: { async_insert: 1 },
         })
-      } catch (reason) {
-        this.logger.warn(
-          `Failed to log bot_block for pid ${pid}: ${reason}`,
-          'checkBot',
-        )
-      }
+        .catch((reason) => {
+          this.logger.warn(
+            `Failed to log bot_block for pid ${pid}: ${reason}`,
+            'checkBot',
+          )
+        })
     }
 
     return result
