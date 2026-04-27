@@ -1128,6 +1128,10 @@ interface IPDetails {
   region: string | null
   regionCode: string | null
   city: string | null
+  isp: string | null
+  organization: string | null
+  userType: string | null
+  connectionType: string | null
   isHosting: boolean
 }
 
@@ -1151,12 +1155,21 @@ const getIPDetails = (ip: string, tz?: string): IPDetails => {
   const region = data?.subdivisions?.[0]?.names?.en || null
   const regionCode = data?.subdivisions?.[0]?.iso_code || null
 
+  const isp = data?.traits?.isp || null
+  const organization = data?.traits?.organization || null
+  const userType = data?.traits?.user_type || null
+  const connectionType = data?.traits?.connection_type || null
+
   if (country) {
     return {
       country,
       city,
       region,
       regionCode,
+      isp,
+      organization,
+      userType,
+      connectionType,
       isHosting,
     }
   }
@@ -1169,6 +1182,10 @@ const getIPDetails = (ip: string, tz?: string): IPDetails => {
     city: null,
     region: null,
     regionCode: null,
+    isp: null,
+    organization: null,
+    userType: null,
+    connectionType: null,
     isHosting,
   }
 }

@@ -77,6 +77,8 @@ import {
   typeNameMapping,
   panelIconMapping,
   getDeviceRowMapper,
+  getUsageTypeLabel,
+  getConnectionTypeLabel,
 } from '~/pages/Project/View/ViewProject.helpers'
 import {
   useCurrentProject,
@@ -1140,11 +1142,13 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                     { id: 'ctp', label: t('project.mapping.ctp') },
                   ]
 
+                  const activeNetworkTab = errorsActiveTabs.network
+
                   return (
                     <Panel
-                      key={errorsActiveTabs.network}
+                      key={activeNetworkTab}
                       icon={panelIconMapping.isp}
-                      id={errorsActiveTabs.network}
+                      id={activeNetworkTab}
                       getFilterLink={getFilterLink}
                       name={t('project.network')}
                       tabs={networkTabs}
@@ -1154,15 +1158,19 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                           network: tab as 'isp' | 'og' | 'ut' | 'ctp',
                         })
                       }
-                      activeTabId={errorsActiveTabs.network}
-                      data={
-                        activeError?.params?.[errorsActiveTabs.network] || []
-                      }
+                      activeTabId={activeNetworkTab}
+                      data={activeError?.params?.[activeNetworkTab] || []}
                       rowMapper={({ name: entryName }) => {
                         if (!entryName) {
                           return (
                             <span className='italic'>{t('common.notSet')}</span>
                           )
+                        }
+                        if (activeNetworkTab === 'ut') {
+                          return getUsageTypeLabel(entryName, t)
+                        }
+                        if (activeNetworkTab === 'ctp') {
+                          return getConnectionTypeLabel(entryName, t)
                         }
                         return entryName
                       }}

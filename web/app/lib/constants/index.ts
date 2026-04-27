@@ -230,8 +230,8 @@ export const TRAFFIC_PANELS_ORDER = [
   'location',
   'pg',
   'devices',
-  'network',
   'traffic-sources',
+  'network',
 ]
 export const PERFORMANCE_PANELS_ORDER = ['location', 'pg', 'devices', 'network']
 export const ERROR_PANELS_ORDER = ['location', 'pg', 'devices', 'network']

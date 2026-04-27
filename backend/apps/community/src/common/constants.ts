@@ -82,6 +82,10 @@ const TRAFFIC_COLUMNS = [
   'cc',
   'rg',
   'ct',
+  'isp',
+  'og',
+  'ut',
+  'ctp',
   'host',
   'pg',
   'lc',
@@ -112,11 +116,28 @@ const ERROR_COLUMNS = [
   'cc',
   'rg',
   'ct',
+  'isp',
+  'og',
+  'ut',
+  'ctp',
 ]
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev', 'entryPage', 'exitPage']
 
-const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'host', 'pg', 'dv', 'br', 'brv']
+const PERFORMANCE_COLUMNS = [
+  'cc',
+  'rg',
+  'ct',
+  'isp',
+  'og',
+  'ut',
+  'ctp',
+  'host',
+  'pg',
+  'dv',
+  'br',
+  'brv',
+]
 
 const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
 const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)

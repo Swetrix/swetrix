@@ -1103,7 +1103,16 @@ export class AnalyticsController {
       }
     }
 
-    const { city, region, regionCode, country } = getIPDetails(ip, eventsDTO.tz)
+    const {
+      city,
+      region,
+      regionCode,
+      country,
+      isp,
+      organization,
+      userType,
+      connectionType,
+    } = getIPDetails(ip, eventsDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1159,6 +1168,10 @@ export class AnalyticsController {
       region,
       regionCode,
       city,
+      isp,
+      organization,
+      userType,
+      connectionType,
       eventsDTO.meta,
     )
 
@@ -1282,7 +1295,16 @@ export class AnalyticsController {
       )
     }
 
-    const { city, region, regionCode, country } = getIPDetails(ip, logDTO.tz)
+    const {
+      city,
+      region,
+      regionCode,
+      country,
+      isp,
+      organization,
+      userType,
+      connectionType,
+    } = getIPDetails(ip, logDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1315,6 +1337,10 @@ export class AnalyticsController {
       region,
       regionCode,
       city,
+      isp,
+      organization,
+      userType,
+      connectionType,
       logDTO.meta,
     )
 
@@ -1343,6 +1369,10 @@ export class AnalyticsController {
         region,
         regionCode,
         city,
+        isp,
+        organization,
+        userType,
+        connectionType,
         dns,
         tls,
         conn,
@@ -1435,7 +1465,16 @@ export class AnalyticsController {
       profileId,
     )
 
-    const { city, region, regionCode, country } = getIPDetails(ip, null)
+    const {
+      city,
+      region,
+      regionCode,
+      country,
+      isp,
+      organization,
+      userType,
+      connectionType,
+    } = getIPDetails(ip, null)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1466,6 +1505,10 @@ export class AnalyticsController {
       region,
       regionCode,
       city,
+      isp,
+      organization,
+      userType,
+      connectionType,
       null,
     )
 
@@ -1796,7 +1839,16 @@ export class AnalyticsController {
       profileId,
     )
 
-    const { city, region, regionCode, country } = getIPDetails(ip, errorDTO.tz)
+    const {
+      city,
+      region,
+      regionCode,
+      country,
+      isp,
+      organization,
+      userType,
+      connectionType,
+    } = getIPDetails(ip, errorDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1828,6 +1880,10 @@ export class AnalyticsController {
       region,
       regionCode,
       city,
+      isp,
+      organization,
+      userType,
+      connectionType,
       name,
       message,
       lineno,

@@ -50,6 +50,8 @@ import {
   CHART_METRICS_MAPPING_PERF,
   CHART_MEASURES_MAPPING_PERF,
   getDeviceRowMapper,
+  getUsageTypeLabel,
+  getConnectionTypeLabel,
 } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -655,11 +657,13 @@ const PerformanceViewInner = ({
                     { id: 'ctp', label: t('project.mapping.ctp') },
                   ]
 
+                  const activeNetworkTab = activeTabs.network
+
                   return (
                     <Panel
-                      key={activeTabs.network}
+                      key={activeNetworkTab}
                       icon={panelIconMapping.isp}
-                      id={activeTabs.network}
+                      id={activeNetworkTab}
                       getFilterLink={getFilterLink}
                       name={t('project.network')}
                       tabs={networkTabs}
@@ -669,13 +673,19 @@ const PerformanceViewInner = ({
                           network: tab as 'isp' | 'og' | 'ut' | 'ctp',
                         })
                       }
-                      activeTabId={activeTabs.network}
-                      data={panelsData.data[activeTabs.network]}
+                      activeTabId={activeNetworkTab}
+                      data={panelsData.data[activeNetworkTab]}
                       rowMapper={({ name: entryName }) => {
                         if (!entryName) {
                           return (
                             <span className='italic'>{t('common.notSet')}</span>
                           )
+                        }
+                        if (activeNetworkTab === 'ut') {
+                          return getUsageTypeLabel(entryName, t)
+                        }
+                        if (activeNetworkTab === 'ctp') {
+                          return getConnectionTypeLabel(entryName, t)
                         }
                         return entryName
                       }}

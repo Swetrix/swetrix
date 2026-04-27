@@ -2548,6 +2548,22 @@ export const getDeviceRowMapper = (
   return undefined
 }
 
+const sanitiseNetworkKey = (value: string) =>
+  value.toLowerCase().replace(/[\s/]+/g, '_')
+
+export const getUsageTypeLabel = (value: string, t: typeof i18next.t): string =>
+  t(`project.usageTypeMapping.${sanitiseNetworkKey(value)}`, {
+    defaultValue: value,
+  }) as string
+
+export const getConnectionTypeLabel = (
+  value: string,
+  t: typeof i18next.t,
+): string =>
+  t(`project.connectionTypeMapping.${sanitiseNetworkKey(value)}`, {
+    defaultValue: value,
+  }) as string
+
 const getSettingsCaptcha = (
   chart: { x: string[]; results: number[] },
   timeBucket: string,
