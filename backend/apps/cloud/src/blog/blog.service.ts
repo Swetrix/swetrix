@@ -26,7 +26,7 @@ const getSlugFromFilename = (filename: string) => filename.substring(11)
 const getDateFromFilename = (filename: string) => filename.substring(0, 10)
 
 const findFilenameBySlug = (list: string[], handle: string) => {
-  return _find(list, (item) => _endsWith(item, `-${handle}.md`))
+  return _find(list, (item) => getSlugFromFilename(item) === `${handle}.md`)
 }
 
 interface IParseFontMatter {
@@ -64,14 +64,20 @@ const resolveBlogPostsPath = (...segments: string[]) => {
   return resolved
 }
 
+const isValidCategoryPath = (category: string): boolean => {
+  return category.split('/').every(isSafePathSegment)
+}
+
+const categorySegments = (category: string): string[] => category.split('/')
+
 const getFileNames = async (category?: string): Promise<string[]> => {
   try {
-    if (category && !isSafePathSegment(category)) {
+    if (category && !isValidCategoryPath(category)) {
       return []
     }
 
     const pathToRead = category
-      ? resolveBlogPostsPath(category)
+      ? resolveBlogPostsPath(...categorySegments(category))
       : resolveBlogPostsPath()
 
     const dirents = await fs.readdir(pathToRead, { withFileTypes: true })
@@ -91,7 +97,7 @@ const getPost = async (
   if (!isSafePathSegment(slug)) {
     return null
   }
-  if (category && !isSafePathSegment(category)) {
+  if (category && !isValidCategoryPath(category)) {
     return null
   }
 
@@ -103,7 +109,7 @@ const getPost = async (
   }
 
   const filepath = category
-    ? resolveBlogPostsPath(category, filename)
+    ? resolveBlogPostsPath(...categorySegments(category), filename)
     : resolveBlogPostsPath(filename)
 
   let file: Buffer
@@ -121,30 +127,41 @@ const getPost = async (
   return { attributes, body }
 }
 
-const getArticlesMetaData = async () => {
+const getArticlesFromDir = async (category?: string): Promise<any[]> => {
   try {
-    const dirents = await fs.readdir(resolveBlogPostsPath(), {
-      withFileTypes: true,
-    })
-    const filtered = _map(
-      _filter(dirents, (d) => d.isFile() && _endsWith(d.name, '.md')),
-      (d) => d.name,
+    const dirPath = category
+      ? resolveBlogPostsPath(category)
+      : resolveBlogPostsPath()
+
+    const dirents = await fs.readdir(dirPath, { withFileTypes: true })
+
+    const mdFiles = _filter(
+      dirents,
+      (d) => d.isFile() && _endsWith(d.name, '.md'),
     )
 
     const articles = await Promise.all(
-      _map(filtered, async (filename) => {
+      _map(mdFiles, async (d) => {
         try {
-          const file = await fs.readFile(resolveBlogPostsPath(filename))
+          const filePath = category
+            ? resolveBlogPostsPath(category, d.name)
+            : resolveBlogPostsPath(d.name)
+
+          const file = await fs.readFile(filePath)
           const { attributes }: IParseFontMatter = parseFrontMatter(
             file.toString(),
           )
+
+          const baseSlug = _replace(getSlugFromFilename(d.name), /\.md$/, '')
+
           return {
-            slug: _replace(getSlugFromFilename(filename), /\.md$/, ''),
+            slug: category ? `${category}/${baseSlug}` : baseSlug,
             title: attributes.title,
             hidden: attributes.hidden,
+            standalone: attributes.standalone,
             intro: attributes.intro,
             date: attributes.date,
-            _date: getDateFromFilename(filename),
+            _date: getDateFromFilename(d.name),
             author: attributes.author,
             nickname: attributes.nickname,
           }
@@ -154,13 +171,30 @@ const getArticlesMetaData = async () => {
       }),
     )
 
-    return _sortBy(
-      _filter(articles, (a) => !!a),
-      ['_date'],
-    ).reverse()
+    const subdirs = _filter(dirents, (d) => d.isDirectory())
+    let subArticles: any[] = []
+
+    for (const sub of subdirs) {
+      const subName = sub.name
+      if (!isSafePathSegment(subName)) continue
+      const nested = await getArticlesFromDir(
+        category ? `${category}/${subName}` : subName,
+      )
+      subArticles = [...subArticles, ...nested]
+    }
+
+    return [..._filter(articles, (a) => !!a), ...subArticles]
   } catch {
-    return null
+    return []
   }
+}
+
+const getArticlesMetaData = async () => {
+  const articles = await getArticlesFromDir()
+
+  if (_isEmpty(articles)) return null
+
+  return _sortBy(articles, ['_date']).reverse()
 }
 
 @Injectable()
@@ -206,7 +240,7 @@ export class BlogService {
       }
     }
 
-    if (category && !isSafePathSegment(category)) {
+    if (category && !isValidCategoryPath(category)) {
       return []
     }
 
@@ -214,7 +248,7 @@ export class BlogService {
 
     try {
       const dirPath = category
-        ? resolveBlogPostsPath(category)
+        ? resolveBlogPostsPath(...categorySegments(category))
         : BLOG_POSTS_BASE
       dirents = await fs.readdir(dirPath, { withFileTypes: true })
     } catch (reason) {
@@ -237,7 +271,10 @@ export class BlogService {
 
         try {
           const filePath = category
-            ? resolveBlogPostsPath(category, actualFilename)
+            ? resolveBlogPostsPath(
+                ...categorySegments(category),
+                actualFilename,
+              )
             : resolveBlogPostsPath(actualFilename)
 
           const file = await fs.readFile(filePath)
@@ -246,7 +283,6 @@ export class BlogService {
           )
 
           if (attributes.standalone === true) {
-            // Include category path for standalone articles in subfolders
             if (category) {
               return [category, slug]
             }
@@ -279,8 +315,12 @@ export class BlogService {
           continue
         }
 
+        const fullCategory = category
+          ? `${category}/${directoryName}`
+          : directoryName
+
         const _files = await this.getSitemapFileNames(
-          directoryName,
+          fullCategory,
           infiniteRecursive,
         )
         filesInDirectories = [...filesInDirectories, ..._files]

@@ -1,3 +1,4 @@
+import { isSelfhosted } from '../constants'
 import { Organisation, Role } from './Organisation'
 
 interface OverallPeriodStats {
@@ -170,6 +171,54 @@ export interface AnalyticsFunnel {
   dropoff: number
   dropoffPerc: number
   dropoffPercStep: number
+  topCountries: Record<string, number>
+  topSources: Record<string, number>
+}
+
+export type Provider =
+  | 'umami'
+  | 'simple-analytics'
+  | 'fathom'
+  | 'google-analytics'
+  | 'plausible'
+
+export const IMPORT_PROVIDERS: Provider[] = [
+  'fathom',
+  isSelfhosted ? null : 'google-analytics',
+  'plausible',
+  'simple-analytics',
+  'umami',
+].filter((x): x is Provider => !!x)
+
+export type ProxyDomainStatus = 'waiting' | 'issuing' | 'live' | 'error'
+
+export interface ProxyDomain {
+  id: string
+  hostname: string
+  proxyTargetId: string
+  proxyTarget: string
+  status: ProxyDomainStatus
+  errorMessage: string | null
+  lastCheckedAt: string | null
+  liveSince: string | null
+  statusChangedAt: string | null
+  created: string
+}
+
+export interface DataImport {
+  id: number
+  importId: number
+  projectId: string
+  provider: Provider
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  dateFrom: string | null
+  dateTo: string | null
+  totalRows: number
+  importedRows: number
+  invalidRows: number
+  errorMessage: string | null
+  createdAt: string
+  finishedAt: string | null
 }
 
 export interface Project {
@@ -198,10 +247,11 @@ export interface Project {
   isDataExists: boolean
   isErrorDataExists: boolean
   isCaptchaDataExists: boolean
-  botsProtectionLevel: 'off' | 'basic'
+  botsProtectionLevel: 'off' | 'basic' | 'strict'
   role?: Role
   gscPropertyUri?: string | null
   isPinned?: boolean
   revenueCurrency?: string
   websiteUrl?: string | null
+  brandKeywords?: string[] | null
 }

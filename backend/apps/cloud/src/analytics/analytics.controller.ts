@@ -48,6 +48,7 @@ import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDto } from './dto/getUserFlow.dto'
 import { GetFunnelsDto } from './dto/getFunnels.dto'
+import { GetFunnelSessionsDto } from './dto/get-funnel-sessions.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
@@ -57,11 +58,7 @@ import {
   REDIS_EVENTS_COUNT_KEY,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
-import {
-  checkRateLimit,
-  getGeoDetails,
-  getIPFromHeaders,
-} from '../common/utils'
+import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
 import { GetVersionFiltersDto } from './dto/get-version-filters.dto'
@@ -90,6 +87,7 @@ import {
   performanceTransformer,
   trafficTransformer,
 } from './utils/transformers'
+import { enrichTrafficSource } from './utils/clickIdSources'
 import {
   MAX_METRICS_IN_VIEW,
   ProjectViewCustomEventDto,
@@ -99,6 +97,7 @@ import { NoscriptDto } from './dto/noscript.dto'
 import { LiveVisitorsDto } from './dto/live-visitors.dto'
 import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 import { GetKeywordsDto } from './dto/get-keywords.dto'
+import { GetBotStatsDto } from './dto/get-bot-stats.dto'
 import { GSCService } from '../project/gsc.service'
 import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
 
@@ -420,12 +419,12 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const res = await this.analyticsService.calculateTimeBucketForAllTime(
-        pid,
-        'analytics',
-      )
+      const [analyticsRes, customEVRes] = await Promise.all([
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'analytics'),
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'customEV'),
+      ])
 
-      diff = res.diff
+      diff = Math.max(analyticsRes.diff, customEVRes.diff)
     }
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -442,6 +441,10 @@ export class AnalyticsController {
 
     let funnel: IFunnel[] = []
     let totalPageviews: number = 0
+    let stepDetails: {
+      countries: Record<number, Record<string, number>>
+      sources: Record<number, Record<string, number>>
+    } = { countries: {}, sources: {} }
 
     const promises = [
       (async () => {
@@ -454,11 +457,113 @@ export class AnalyticsController {
           groupTo,
         )
       })(),
+      (async () => {
+        try {
+          stepDetails = await this.analyticsService.getFunnelStepDetails(
+            pagesArr,
+            params,
+          )
+        } catch (e) {
+          this.logger.error(e, 'GET /analytics/funnel - getFunnelStepDetails')
+        }
+      })(),
     ]
 
     await Promise.all(promises)
 
+    for (let i = 0; i < funnel.length; i++) {
+      funnel[i].topCountries = stepDetails.countries[i + 1] || {}
+      funnel[i].topSources = stepDetails.sources[i + 1] || {}
+    }
+
     return { funnel, totalPageviews }
+  }
+
+  @Get('funnel-sessions')
+  @Auth(true, true)
+  async getFunnelSessions(
+    @Query() data: GetFunnelSessionsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      pages,
+      funnelId,
+      step,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const pagesArr = await this.analyticsService.getPagesArray(
+      pages,
+      funnelId,
+      pid,
+    )
+
+    if (step < 1 || step > pagesArr.length) {
+      throw new BadRequestException(
+        'Step must be between 1 and the number of funnel steps',
+      )
+    }
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 150',
+      )
+    }
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, step: ${step}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/funnel-sessions',
+    )
+
+    let diff
+
+    if (period === 'all') {
+      const [analyticsRes, customEVRes] = await Promise.all([
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'analytics'),
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'customEV'),
+      ])
+
+      diff = Math.max(analyticsRes.diff, customEVRes.diff)
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const params = { pid, groupFrom, groupTo }
+
+    const sessions = await this.analyticsService.getFunnelSessionsList(
+      pagesArr,
+      params,
+      safeTimezone,
+      step,
+      take,
+      skip,
+    )
+
+    return { sessions, take, skip }
   }
 
   @Get('meta')
@@ -883,6 +988,150 @@ export class AnalyticsController {
     return { keywords }
   }
 
+  @Get('gsc-dashboard')
+  @Auth(true, true)
+  async getGSCDashboard(
+    @Query() data: GetKeywordsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      timeBucket,
+      filters,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const finalTimeBucket =
+      timeBucket ||
+      (['1h', 'today', 'yesterday', '1d'].includes(period) ? 'hour' : 'day')
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, timeBucket: ${finalTimeBucket}, filters: ${filters}`,
+      'GET /analytics/gsc-dashboard',
+    )
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    return this.gscService.getDashboard(
+      pid,
+      groupFrom,
+      groupTo,
+      finalTimeBucket,
+      filters,
+    )
+  }
+
+  @Get('gsc-details')
+  @Auth(true, true)
+  async getGSCDetails(
+    @Query() data: GetKeywordsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      page,
+      query,
+    } = data
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, page: ${page}, query: ${query}`,
+      'GET /analytics/gsc-details',
+    )
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    if (page) {
+      const keywords = await this.gscService.getKeywords(
+        pid,
+        groupFrom,
+        groupTo,
+        50,
+        0,
+        undefined,
+        page,
+      )
+      return { type: 'queries', data: keywords }
+    }
+
+    if (query) {
+      const pages = await this.gscService.getTopPages(
+        pid,
+        groupFrom,
+        groupTo,
+        50,
+        0,
+        undefined,
+        query,
+      )
+      return { type: 'pages', data: pages }
+    }
+
+    return { type: 'none', data: [] }
+  }
+
   @Get('birdseye')
   @Auth(true, true)
   // returns overall short statistics per project
@@ -1149,6 +1398,30 @@ export class AnalyticsController {
     return data
   }
 
+  @Get('bot-stats')
+  @Auth(true, true)
+  async getBotStats(
+    @Query() data: GetBotStatsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, period = '30d' } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+    await this.analyticsService.checkBillingAccess(pid)
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}`,
+      'GET /analytics/bot-stats',
+    )
+
+    return this.analyticsService.getBotStats(pid, period)
+  }
+
   @Post('error')
   @Public()
   async logError(@Body() errorDTO: ErrorDto, @Headers() headers, @Ip() reqIP) {
@@ -1156,9 +1429,17 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(errorDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      errorDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      errorDTO.pg,
+      'error',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1192,7 +1473,7 @@ export class AnalyticsController {
       organization,
       userType,
       connectionType,
-    } = getGeoDetails(ip, errorDTO.tz)
+    } = getIPDetails(ip, errorDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1289,9 +1570,17 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(eventsDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      eventsDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      eventsDTO.ref || headers.referer || headers.referrer,
+      eventsDTO.pg,
+      'custom',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1320,7 +1609,7 @@ export class AnalyticsController {
       organization,
       userType,
       connectionType,
-    } = getGeoDetails(ip, eventsDTO.tz)
+    } = getIPDetails(ip, eventsDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1350,6 +1639,8 @@ export class AnalyticsController {
       eventsDTO.pid,
       profileId,
     )
+
+    enrichTrafficSource(eventsDTO)
 
     const transformed = customEventTransformer(
       psid,
@@ -1409,9 +1700,17 @@ export class AnalyticsController {
     const { pid } = logDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(logDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      logDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      logDTO.pg,
+      'heartbeat',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1452,9 +1751,17 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(logDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      logDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      logDTO.ref || headers.referer || headers.referrer,
+      logDTO.pg,
+      'pageview',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1495,7 +1802,7 @@ export class AnalyticsController {
       organization,
       userType,
       connectionType,
-    } = getGeoDetails(ip, logDTO.tz)
+    } = getIPDetails(ip, logDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1503,6 +1810,8 @@ export class AnalyticsController {
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
+
+    enrichTrafficSource(logDTO)
 
     const transformed = trafficTransformer(
       psid,
@@ -1613,16 +1922,24 @@ export class AnalyticsController {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = data
 
-    const isBot = await this.analyticsService.isBot(pid, userAgent)
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    if (isBot) {
+    const botResult = await this.analyticsService.checkBot(
+      pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      null,
+      'noscript',
+    )
+
+    if (botResult.isBot) {
       res.writeHead(200, { 'Content-Type': 'image/gif' })
       return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
     }
 
     const logDTO: PageviewsDto = { pid }
-
-    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
@@ -1653,7 +1970,7 @@ export class AnalyticsController {
       organization,
       userType,
       connectionType,
-    } = getGeoDetails(ip)
+    } = getIPDetails(ip)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -2332,13 +2649,16 @@ export class AnalyticsController {
       'GET /analytics/profile/sessions',
     )
 
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
     let timeBucket
     let diff
 
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'analytics',
+        customEVFilterApplied ? 'customEV' : 'analytics',
       )
 
       timeBucket = res.timeBucket[0]
@@ -2346,9 +2666,6 @@ export class AnalyticsController {
     } else {
       timeBucket = getLowestPossibleTimeBucket(period, from, to)
     }
-
-    const [filtersQuery, filtersParams, appliedFilters] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
@@ -2377,6 +2694,7 @@ export class AnalyticsController {
       safeTimezone,
       take,
       skip,
+      customEVFilterApplied,
     )
 
     return { sessions, appliedFilters, take, skip }

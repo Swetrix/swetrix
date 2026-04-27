@@ -1,0 +1,245 @@
+---
+title: How Swetrix identifies visitors (without cookies)
+slug: /visitor-identification
+icon: Fingerprint
+---
+
+Swetrix is a **cookieless** analytics platform. We never set a cookie
+on your visitors, never write to `localStorage`, and never read any
+client-side identifier — yet we can still tell you how many unique
+visitors you had today, how many sessions started on `/pricing`, and
+which of your campaigns are bringing back returning users.
+
+This page explains, in plain English, how that's possible, what the
+trade‑offs are (especially for schools and large companies behind a
+NAT), and how you can opt into more accurate identification when you
+control your users' identity.
+
+## How "no cookies" actually works
+
+Most analytics tools stamp every visitor with a cookie like
+`_ga=GA1.2.123456789` so they can recognise the same person on their
+next pageview. Swetrix doesn't do that. Instead, every time a pageview
+arrives at our servers we compute a short‑lived **anonymous fingerprint**
+from three pieces of information that are already part of the request:
+
+1. The visitor's IP address
+2. The visitor's User‑Agent string (browser + OS)
+3. Your project ID
+
+Those three values are combined with a **secret rotating salt** (a
+random string only our backend knows) and run through a one‑way hash
+function. The result is an opaque ID like `anon_8214637194021987452`.
+
+That ID is what we use to deduplicate pageviews — same ID = same
+visitor — but because the salt is rotated and the original IP / UA
+are never stored, there's no way to go from the ID back to a real
+person.
+
+<Callout type="info">
+  We use **two** salts that rotate on different schedules:
+
+- **Session salt** — rotates **every 24 hours** at UTC midnight. Used to
+  detect that two pageviews 5 minutes apart belong to the same browsing
+  session.
+- **Profile salt** — rotates **every month**. Used to detect returning
+  visitors over a longer period (DAU / WAU / MAU charts).
+
+When a salt rotates, the previous fingerprints become permanently
+unlinkable to the new ones. This design is what allows Swetrix to
+operate without persistent identifiers on the visitor's device.
+
+</Callout>
+
+### What we don't store
+
+We **never** persist your visitors' IP addresses or User‑Agent strings
+in their original form. The salted hash is computed at the edge,
+written to ClickHouse, and the raw values are discarded. After
+**30 minutes** (or at the next UTC midnight, whichever comes first)
+even the temporary in‑memory mapping is gone.
+
+### Why this is good enough for ~95% of sites
+
+For a typical content site, SaaS landing page, or e‑commerce store
+the IP+UA fingerprint is unique per visitor in well over 95% of cases.
+Two completely unrelated people would have to be on the same network,
+using the same browser version, on the same OS version, at the same
+time to collide.
+
+For the remaining 5% — and the edge cases where this assumption breaks
+down more often — read on.
+
+## When the cookieless model is less accurate
+
+There are a few situations where many real people share the same IP +
+User‑Agent fingerprint, which means Swetrix may **undercount unique
+visitors** (multiple real users → one fingerprint).
+
+<Accordions>
+  <Accordion title="Schools, universities and corporate offices (NAT)">
+    Hundreds (sometimes thousands) of devices behind a single corporate
+    or school NAT will share the same public IP address. If many of
+    those devices are on the same managed image — for example, a lab
+    full of identical Chromebooks running the same Chrome version — they
+    will hash to the **same** anonymous profile ID.
+
+    **What you'll see:** if 30 students from the same school visit your
+    docs page during a class, Swetrix may report somewhere between 1
+    and 30 unique visitors depending on how varied their browsers /
+    devices are. Pageviews are still counted accurately; only the
+    "unique visitors" and "sessions" numbers are affected.
+
+    **What to do:** if you serve a primarily B2B / education / enterprise
+    audience and you can identify your users (e.g. they sign in to your
+    app), use the [optional profile ID](#optional-accurate-tracking-with-profileid)
+    described below — it bypasses the IP-based fingerprint entirely.
+
+  </Accordion>
+  <Accordion title="Mobile carriers (CGNAT)">
+    Mobile networks routinely put thousands of subscribers behind a
+    single carrier‑grade NAT IP. The User‑Agent string still varies by
+    device, OS version, and browser, so collisions are less common than
+    in a homogeneous office, but they do happen.
+  </Accordion>
+  <Accordion title="Public Wi-Fi (cafes, airports, hotels)">
+    Same NAT problem as above, but with much more browser/device
+    diversity. Collisions are rare in practice.
+  </Accordion>
+  <Accordion title="Corporate VPNs">
+    Employees routed through a corporate VPN egress will all appear
+    from the same IP. Same trade-off as the NAT case.
+  </Accordion>
+  <Accordion title="Privacy tools that randomise the User-Agent">
+    Brave, Tor Browser, and some Firefox privacy add-ons can spoof or
+    randomise the UA string. This works the **other** way — the same
+    real person looks like several different visitors. The effect is
+    typically small (\<2% of traffic).
+  </Accordion>
+</Accordions>
+
+For consumer‑facing sites with broad audiences these edge cases tend
+to wash out in the aggregate. For internal dashboards, B2B SaaS,
+education products, or enterprise tools where the audience really is
+sitting behind a small number of NATs, the next section is for you.
+
+## Optional: accurate tracking with `profileId`
+
+If you already know who your visitors are — they sign in to your app,
+have an account, or even just have a stable client-side identifier you
+generate yourself — you can tell Swetrix about it and get **per‑user
+accuracy that doesn't depend on IP or User‑Agent at all.**
+
+Pass the `profileId` to any of the tracking methods. The script
+forwards it to the server, where it's salted and hashed with your
+project ID before being stored — so we still never see your raw user
+ID, and the ID stored in ClickHouse can't be reversed back to your
+database.
+
+```javascript
+// Set it once globally on init — every pageview, custom event, error,
+// feature flag, and experiment call inherits it automatically.
+swetrix.init("YOUR_PROJECT_ID", {
+  profileId: "user-12345",
+});
+
+swetrix.trackViews();
+
+// Or override per-call if you need to.
+swetrix.track({
+  ev: "Sign up",
+  profileId: "user-12345",
+});
+```
+
+`profileId` is supported on `init()`, `track()`, `pageview()`,
+`getFeatureFlags()` / `getFeatureFlag()`, and `getExperiments()` /
+`getExperiment()`. See the [script reference](/swetrix-js-reference)
+for the full list.
+
+### What you can use as a profile ID
+
+Anything stable, opaque to outsiders, and ideally per‑user. Some common
+choices:
+
+- **Your application's user ID** from your own database (e.g.
+  `user-12345`). The most accurate option for signed‑in users.
+- **A first‑party cookie or `localStorage` value** that you generate
+  yourself (e.g. `crypto.randomUUID()` stored on the client). This
+  works for anonymous users too, but because _you_ (not Swetrix) are
+  now setting a persistent identifier on the device, you should review
+  whether your local privacy regulations require user consent for it.
+- **A hashed email or account identifier** if you already use one for
+  other systems. Just make sure the hash is stable for the same user.
+- **A device or installation ID** in mobile or desktop apps embedding
+  a webview.
+
+<Callout type="warn">
+  Don't pass raw email addresses, full names, phone numbers, or any other personal data as
+  `profileId`. Hash or pseudonymise it on your side first. Swetrix anonymises whatever it receives,
+  but the cleanest approach is to never send PII in the first place.
+</Callout>
+
+### Notes on consent
+
+In its default cookieless mode, Swetrix does not set any identifier on
+the visitor's device — the IP+UA fingerprint is computed on our
+servers, salted with a rotating secret, and the raw inputs are
+discarded. Many teams operating in jurisdictions like the EU, UK, and
+Brazil have concluded that this design lets them run Swetrix without
+showing a cookie / consent banner, but the final call always depends
+on your specific use case and your legal advice.
+
+Once you opt into `profileId` _and_ persist that ID on the client (a
+cookie, `localStorage`, etc.), you've added a persistent identifier
+that local privacy regulations may treat differently. Two patterns we
+see most often:
+
+- **Signed‑in users** — many teams cover this under the same lawful
+  basis they already use for the user account itself, and disclose
+  analytics processing in their privacy policy.
+- **Anonymous users** with a client-generated `profileId` stored in a
+  cookie or `localStorage` — this is closer to traditional
+  cookie-based tracking, and most teams gate it behind their existing
+  consent flow.
+
+A common hybrid setup:
+
+```javascript
+// Cookieless analytics from the first pageview.
+swetrix.init("YOUR_PROJECT_ID");
+swetrix.trackViews();
+
+// Upgrade to accurate per-user tracking once the user signs in
+// (or once the user grants consent in your banner, if applicable).
+afterLogin((user) => {
+  swetrix.init("YOUR_PROJECT_ID", { profileId: user.id });
+});
+```
+
+This pattern gives you analytics on the public site immediately and
+accurate identified-user tracking inside the logged-in product, while
+keeping each surface aligned with whatever consent posture you've
+chosen.
+
+<Callout type="warn">
+  This page is not legal advice. Privacy regulations vary by jurisdiction and by use case — review
+  your specific setup with a qualified advisor before deciding whether you need a consent banner.
+</Callout>
+
+## Summary
+
+|                                       | Cookieless (default)                   | With `profileId`                        |
+| ------------------------------------- | -------------------------------------- | --------------------------------------- |
+| Persistent identifier on the device   | None                                   | Whatever you choose to persist          |
+| Identifier source                     | Hashed IP + User-Agent + rotating salt | Your application's user ID              |
+| Accuracy on a typical consumer site   | High — collisions are rare             | Per-user accurate (for signed-in users) |
+| Accuracy behind a school / office NAT | Lower — devices may collide            | Per-user accurate                       |
+| Cross-device tracking                 | No                                     | Yes (same `profileId` on each)          |
+| Works without JavaScript              | Yes (via the noscript pixel)           | No (needs the JS tracker)               |
+
+Pick the default for marketing sites, blogs, docs, and anywhere you
+want a low‑friction, no‑identifier setup. Layer in `profileId`
+whenever you need exact per‑user numbers — typically inside the
+authenticated parts of a SaaS product, in B2B / enterprise tools, or
+in any context where shared NAT is going to dominate the IP+UA signal.

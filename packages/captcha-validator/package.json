@@ -2,10 +2,28 @@
   "name": "@swetrix/captcha-validator",
   "version": "1.0.0",
   "description": "Swetrix CAPTCHA token validator package.",
+  "keywords": [
+    "analytics",
+    "captcha",
+    "privacy",
+    "swetrix",
+    "validation"
+  ],
+  "homepage": "https://swetrix.com/captcha",
+  "bugs": {
+    "url": "https://github.com/Swetrix/swetrix/issues"
+  },
+  "license": "MIT",
+  "author": "Andrii Romasiun <andrii@swetrix.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Swetrix/swetrix.git"
+  },
+  "funding": "https://ko-fi.com/andriir",
   "main": "dist/captcha-validator.cjs.js",
   "module": "dist/captcha-validator.es5.js",
-  "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
+  "esnext": "dist/esnext/index.js",
   "scripts": {
     "prebuild": "rimraf dist",
     "prepublish": "npm run build",
@@ -13,24 +31,6 @@
     "start": "rollup -c -w",
     "tsc": "tsc -p tsconfig.esnext.json"
   },
-  "keywords": [
-    "swetrix",
-    "analytics",
-    "captcha",
-    "validation",
-    "privacy"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Swetrix/captcha-validator.git"
-  },
-  "author": "Andrii Romasiun <andrii@swetrix.com>",
-  "funding": "https://ko-fi.com/andriir",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Swetrix/captcha-validator/issues"
-  },
-  "homepage": "https://captcha.swetrix.com",
   "dependencies": {
     "@types/node": "^18.15.3",
     "tslib": "^2.5.0"

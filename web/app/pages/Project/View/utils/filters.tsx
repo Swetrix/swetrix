@@ -43,6 +43,7 @@ const validFilters = [
   'ut',
   'ctp',
   'ev',
+  'keywords',
   'tag:key',
   'tag:value',
   'ev:key',

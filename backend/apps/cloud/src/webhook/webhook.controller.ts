@@ -142,6 +142,7 @@ export class WebhookController {
 
         const isTrialing = status === 'trialing'
         const shouldUnlock =
+          status === 'active' ||
           body.alert_name === 'subscription_created' ||
           isNextPlan(currentUser.planCode, plan.id)
 
@@ -231,11 +232,30 @@ export class WebhookController {
       }
 
       case 'subscription_payment_succeeded': {
-        const { subscription_id: subID, next_bill_date: nextBillDate } = body
+        const {
+          passthrough,
+          subscription_id: subID,
+          next_bill_date: nextBillDate,
+        } = body
 
-        const subscriber = await this.userService.findOne({
+        let uid
+        try {
+          uid = JSON.parse(passthrough)?.uid
+        } catch {
+          this.logger.error(
+            `[subscription_payment_succeeded] Cannot parse the uid: ${JSON.stringify(body)}`,
+          )
+        }
+
+        let subscriber = await this.userService.findOne({
           where: { subID },
         })
+
+        if (!subscriber && uid) {
+          subscriber = await this.userService.findOne({
+            where: { id: uid },
+          })
+        }
 
         if (!subscriber) {
           this.logger.error(
@@ -261,9 +281,13 @@ export class WebhookController {
           updateParams.dashboardBlockReason = null
         }
 
+        if (subscriber.isAccountBillingSuspended) {
+          updateParams.isAccountBillingSuspended = false
+        }
+
         if (Object.keys(updateParams).length > 0) {
-          await this.userService.updateBySubID(subID, updateParams)
-          await this.projectService.clearProjectsRedisCacheBySubId(subID)
+          await this.userService.update(subscriber.id, updateParams)
+          await this.projectService.clearProjectsRedisCache(subscriber.id)
         }
 
         break

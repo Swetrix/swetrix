@@ -22,9 +22,11 @@ import type {
   ErrorSessionsResponse,
   LiveStats,
   LiveVisitorInfo,
+  BotProtectionStats,
+  BotProtectionPeriod,
   ProjectDataCustomEventsResponse,
   UserFlowResponse,
-  GSCKeywordsResponse,
+  GSCDashboardResponse,
   RevenueStatus,
   RevenueDataResponse,
   OverallObject,
@@ -749,6 +751,30 @@ export function useLiveVisitorsProxy() {
   return { fetchLiveVisitors, fetchLiveVisitorsInfo }
 }
 
+export function useBotProtectionStatsProxy() {
+  const fetchBotProtectionStats = useCallback(
+    async (
+      projectId: string,
+      period: BotProtectionPeriod = '30d',
+    ): Promise<BotProtectionStats | null> => {
+      try {
+        const result = await postAnalytics<BotProtectionStats>({
+          action: 'getBotProtectionStats',
+          projectId,
+          params: { period },
+        })
+        return result.data
+      } catch (err) {
+        console.error('[useBotProtectionStatsProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
+
+  return { fetchBotProtectionStats }
+}
+
 export function useProjectDataCustomEventsProxy() {
   const fetchCustomEvents = useCallback(
     async (
@@ -807,19 +833,19 @@ export function useUserFlowProxy() {
   return { fetchUserFlow, data, error, isLoading }
 }
 
-export function useGSCKeywordsProxy() {
-  const [data, setData] = useState<GSCKeywordsResponse | null>(null)
+export function useGSCDashboardProxy() {
+  const [data, setData] = useState<GSCDashboardResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchKeywords = useCallback(
+  const fetchDashboard = useCallback(
     async (projectId: string, params: ClientAnalyticsParams = {}) => {
       setIsLoading(true)
       setError(null)
 
       try {
-        const result = await postAnalytics<GSCKeywordsResponse>({
-          action: 'getGSCKeywords',
+        const result = await postAnalytics<GSCDashboardResponse>({
+          action: 'getGSCDashboard',
           projectId,
           params,
         })
@@ -836,7 +862,7 @@ export function useGSCKeywordsProxy() {
     [],
   )
 
-  return { fetchKeywords, data, error, isLoading }
+  return { fetchDashboard, data, error, isLoading }
 }
 
 export function useRevenueProxy() {

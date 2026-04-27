@@ -64,6 +64,9 @@ const InteractiveMapCore = ({
   const [regionsGeoData, setRegionsGeoData] = useState<GeoJsonObject | null>(
     null,
   )
+  const [isCountriesGeoDataLoading, setIsCountriesGeoDataLoading] =
+    useState(true)
+  const [isRegionsGeoDataLoading, setIsRegionsGeoDataLoading] = useState(false)
   const [filteredRegionsGeoData, setFilteredRegionsGeoData] =
     useState<GeoJsonObject | null>(null)
   const [mapView, setMapView] = useState<'countries' | 'regions'>('countries')
@@ -84,25 +87,74 @@ const InteractiveMapCore = ({
   const isErrorsTab = activeTab === PROJECT_TABS.errors
   const isPerformanceTab = activeTab === PROJECT_TABS.performance
   const isGeoDataLoading =
-    mapView === 'regions' ? !regionsGeoData : !countriesGeoData
+    mapView === 'regions'
+      ? isRegionsGeoDataLoading && !regionsGeoData
+      : isCountriesGeoDataLoading && !countriesGeoData
 
   useEffect(() => {
-    const loadGeoData = async () => {
+    let isCancelled = false
+
+    const loadCountries = async () => {
+      setIsCountriesGeoDataLoading(true)
+
       try {
-        const [countries, regions] = await Promise.all([
-          loadCountriesGeoData(),
-          isSelfhosted ? Promise.resolve(null) : loadRegionsGeoData(),
-        ])
-        setCountriesGeoData(countries)
-        setRegionsGeoData(regions)
-        setFilteredRegionsGeoData(regions)
+        const countries = await loadCountriesGeoData()
+
+        if (!isCancelled) {
+          setCountriesGeoData(countries)
+        }
       } catch (reason) {
-        console.error('Failed to load geographic data:', reason)
+        if (!isCancelled) {
+          console.error('Failed to load countries geographic data:', reason)
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsCountriesGeoDataLoading(false)
+        }
       }
     }
 
-    loadGeoData()
+    loadCountries()
+
+    return () => {
+      isCancelled = true
+    }
   }, [])
+
+  useEffect(() => {
+    if (isSelfhosted || mapView !== 'regions' || regionsGeoData) {
+      return
+    }
+
+    let isCancelled = false
+
+    const loadRegions = async () => {
+      setIsRegionsGeoDataLoading(true)
+
+      try {
+        const regions = await loadRegionsGeoData()
+
+        if (!isCancelled) {
+          setRegionsGeoData(regions)
+          setFilteredRegionsGeoData(regions)
+        }
+      } catch (reason) {
+        if (!isCancelled) {
+          console.error('Failed to load regions geographic data:', reason)
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsRegionsGeoDataLoading(false)
+        }
+      }
+    }
+
+    loadRegions()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [mapView, regionsGeoData])
 
   useEffect(() => {
     setGeoJsonKey((v) => v + 1)

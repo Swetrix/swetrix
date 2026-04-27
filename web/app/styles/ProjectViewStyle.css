@@ -176,8 +176,36 @@ body.dark .bb-ygrid {
   stroke: var(--color-blue-700) !important;
 }
 
+:root {
+  --funnel-stripe-1: #e2e4ef;
+  --funnel-stripe-2: #d8dbed;
+}
+
+.dark {
+  --funnel-stripe-1: #1e2340;
+  --funnel-stripe-2: #2a3058;
+}
+
 .bb-target-dropoff .bb-bar {
-  stroke: rgba(71, 85, 105, 0.4) !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+}
+
+.funnel-chart .bb-target-dropoff .bb-bar {
+  fill: url(#funnel-dropoff-stripe) !important;
+  opacity: 0.8;
+}
+
+.funnel-chart .bb-bar {
+  fill-opacity: 1 !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+  transition: fill-opacity 0.15s ease-out;
+}
+
+.funnel-chart .bb-target-events.bb-defocused .bb-bar,
+.funnel-chart .bb-target-dropoff.bb-defocused .bb-bar {
+  fill-opacity: 0.6 !important;
 }
 
 .bb-target-Technical-Expenses .bb-bar {
@@ -208,13 +236,41 @@ body.dark .bb-ygrid {
   }
 }
 
+/* Clickable chart area */
+#traffic-chart .bb-event-rects .bb-event-rect {
+  cursor: pointer;
+}
+
+.bb-circle {
+  transition: transform 0.1s ease-in-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.bb-circle.is-direct-hover {
+  transform: scale(1.5);
+}
+
+#traffic-chart .bb-lines path,
+#traffic-chart .bb-areas path {
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+#traffic-chart .bb-circles circle,
+#traffic-chart .bb-bars path {
+  cursor: pointer;
+}
+
 /* Annotation lines */
-.bb-xgrid-line.annotation-line {
+.bb-xgrid-line.annotation-line,
+.bb-ygrid-line.annotation-line {
   pointer-events: all;
   cursor: pointer;
 }
 
-.bb-xgrid-line.annotation-line line {
+.bb-xgrid-line.annotation-line line,
+.bb-ygrid-line.annotation-line line {
   stroke: var(--color-slate-500);
   stroke-width: 1;
   stroke-dasharray: 4 3;
@@ -225,7 +281,8 @@ body.dark .bb-ygrid {
   stroke: var(--color-slate-500);
 }
 
-.bb-xgrid-line.annotation-line text {
+.bb-xgrid-line.annotation-line text,
+.bb-ygrid-line.annotation-line text {
   font-size: 10px;
   font-weight: 600;
   fill: var(--color-gray-700);
@@ -239,7 +296,83 @@ body.dark .bb-ygrid {
   pointer-events: all;
 }
 
-body.dark .bb-xgrid-line.annotation-line text {
+.bb-ygrid-line.annotation-line text {
+  transform: translateY(-14px);
+}
+
+body.dark .bb-xgrid-line.annotation-line text,
+body.dark .bb-ygrid-line.annotation-line text {
   fill: var(--color-gray-300);
   stroke: var(--color-slate-900);
+}
+
+body.dark .bb-chart-arc path {
+  stroke: var(--color-slate-900);
+}
+
+/* AI chat charts: keep bars/areas opaque since their series names don't match
+   the project view's stroke rules; without this they'd inherit the global
+   .bb-bar { fill-opacity: 0.3 } and look washed out. */
+.ai-chart .bb-bar {
+  fill-opacity: 0.85;
+  stroke: none;
+}
+
+.ai-chart .bb-area {
+  fill-opacity: 0.2;
+}
+
+.ai-chart .bb-axis text,
+.ai-chart .bb-legend text {
+  fill: var(--color-gray-700);
+}
+
+body.dark .ai-chart .bb-axis text,
+body.dark .ai-chart .bb-legend text {
+  fill: var(--color-gray-300);
+}
+
+.ai-chart .bb-grid line {
+  stroke: var(--color-gray-200);
+}
+
+body.dark .ai-chart .bb-grid line {
+  stroke: var(--color-slate-700);
+}
+
+.ai-chart .domain {
+  stroke: var(--color-gray-300);
+}
+
+body.dark .ai-chart .domain {
+  stroke: var(--color-slate-600);
+}
+
+/* AI chart anomaly annotations: orange dashed for spikes, blue dashed for dips */
+.ai-chart .bb-xgrid-line.annotation-spike line {
+  stroke: var(--color-orange-500);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.ai-chart .bb-xgrid-line.annotation-spike text {
+  fill: var(--color-orange-600);
+}
+
+body.dark .ai-chart .bb-xgrid-line.annotation-spike text {
+  fill: var(--color-orange-400);
+}
+
+.ai-chart .bb-xgrid-line.annotation-dip line {
+  stroke: var(--color-blue-500);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.ai-chart .bb-xgrid-line.annotation-dip text {
+  fill: var(--color-blue-600);
+}
+
+body.dark .ai-chart .bb-xgrid-line.annotation-dip text {
+  fill: var(--color-blue-400);
 }

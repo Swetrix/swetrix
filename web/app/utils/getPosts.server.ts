@@ -85,7 +85,7 @@ const CROSS_ICON_SVG = `<span class="inline-flex h-6 w-6 shrink-0 items-center j
 
 const WARNING_ICON_SVG = `<span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 align-middle"><svg class="h-3.5 w-3.5 overflow-visible text-amber-600 dark:text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Warning"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></span>`
 
-const SWETRIX_LOGO_HTML = `<span class="inline-flex items-center gap-[0.15em] select-none whitespace-nowrap align-baseline"><img class="h-[0.9em] w-auto dark:hidden" src="/assets/logo/blue.png" alt="" /><img class="h-[0.9em] w-auto hidden dark:inline" src="/assets/logo/white.png" alt="" /><span class="font-bold text-indigo-950 dark:text-white">Swetrix</span></span>`
+const SWETRIX_LOGO_HTML = `<span class="inline-flex items-center gap-[0.15em] select-none whitespace-nowrap align-baseline"><img class="h-[0.9em] w-auto dark:hidden" src="/assets/logo/dark.svg" alt="" /><img class="h-[0.9em] w-auto hidden dark:inline" src="/assets/logo/light.svg" alt="" /><span class="font-bold text-indigo-950 dark:text-white">Swetrix</span></span>`
 
 const ALERT_CONFIGS = {
   NOTE: {

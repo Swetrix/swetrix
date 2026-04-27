@@ -3,7 +3,7 @@ import _round from 'lodash/round'
 import { ArrowRightIcon, QuestionIcon, CheckIcon } from '@phosphor-icons/react'
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import {
   CURRENCIES,

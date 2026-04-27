@@ -41,6 +41,12 @@ import {
 import { AlertService } from './alert.service'
 import { getIPFromHeaders } from '../common/utils'
 import { trackCustom } from '../common/analytics'
+import { NotificationChannelService } from '../notification-channel/notification-channel.service'
+import {
+  DEFAULT_EMAIL_SUBJECT_TEMPLATE,
+  TemplateRendererService,
+} from '../notification-channel/template-renderer.service'
+import { NotificationChannelType } from '../notification-channel/entity/notification-channel.entity'
 
 const ALERTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxAlerts
 
@@ -52,7 +58,22 @@ export class AlertController {
     private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
+    private readonly channelService: NotificationChannelService,
+    private readonly templateRenderer: TemplateRendererService,
   ) {}
+
+  @ApiBearerAuth()
+  @Get('/template-variables')
+  @Auth()
+  async getTemplateVariables(@Query('metric') metric: QueryMetric) {
+    if (!metric || !Object.values(QueryMetric).includes(metric)) {
+      throw new BadRequestException('Unknown metric')
+    }
+    return {
+      variables: this.templateRenderer.getVariablesForMetric(metric),
+      defaultTemplate: this.templateRenderer.getDefaultTemplate(metric),
+    }
+  }
 
   @ApiBearerAuth()
   @Get('/:alertId')
@@ -66,7 +87,7 @@ export class AlertController {
 
     const alert = await this.alertService.findOne({
       where: { id: alertId },
-      relations: ['project'],
+      relations: ['project', 'channels'],
     })
 
     if (_isEmpty(alert)) {
@@ -109,7 +130,7 @@ export class AlertController {
     const result = await this.alertService.paginate(
       { take: safeTake, skip: safeSkip },
       { project: { id: projectId } },
-      ['project'],
+      ['project', 'channels'],
     )
 
     // @ts-expect-error
@@ -192,6 +213,21 @@ export class AlertController {
       )
     }
 
+    const channelIds = alertDTO.channelIds ?? []
+    const validatedChannels =
+      await this.channelService.validateChannelsForProject(
+        channelIds,
+        alertDTO.pid,
+        uid,
+      )
+
+    if (
+      validatedChannels.some((c) => c.type === NotificationChannelType.EMAIL) &&
+      !alertDTO.emailSubjectTemplate
+    ) {
+      alertDTO.emailSubjectTemplate = DEFAULT_EMAIL_SUBJECT_TEMPLATE
+    }
+
     try {
       const alert: Partial<Alert> = {
         name: alertDTO.name,
@@ -203,6 +239,9 @@ export class AlertController {
         queryCustomEvent: alertDTO.queryCustomEvent ?? null,
         alertOnNewErrorsOnly: alertDTO.alertOnNewErrorsOnly ?? true,
         alertOnEveryCustomEvent: alertDTO.alertOnEveryCustomEvent ?? false,
+        messageTemplate: alertDTO.messageTemplate ?? null,
+        emailSubjectTemplate: alertDTO.emailSubjectTemplate ?? null,
+        channels: validatedChannels,
         project,
       }
 
@@ -290,6 +329,8 @@ export class AlertController {
         'alertOnNewErrorsOnly',
         'alertOnEveryCustomEvent',
         'active',
+        'messageTemplate',
+        'emailSubjectTemplate',
       ]),
     }
 
@@ -323,10 +364,23 @@ export class AlertController {
 
     await this.alertService.update(
       id,
-      _omit(updatePayload, ['project', 'lastTriggered']),
+      _omit(updatePayload, ['project', 'lastTriggered', 'channels']),
     )
 
-    const updatedAlert = await this.alertService.findOne({ where: { id } })
+    if (Array.isArray(alertDTO.channelIds)) {
+      const validatedChannels =
+        await this.channelService.validateChannelsForProject(
+          alertDTO.channelIds,
+          alert.project.id,
+          uid,
+        )
+      await this.alertService.setChannels(id, validatedChannels)
+    }
+
+    const updatedAlert = await this.alertService.findOne({
+      where: { id },
+      relations: ['channels'],
+    })
     if (!updatedAlert)
       throw new NotFoundException('Alert not found after update')
 

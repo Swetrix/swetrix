@@ -3,6 +3,8 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import {
+  BellRingingIcon,
+  CaretLeftIcon,
   FolderSimpleIcon,
   SlidersHorizontalIcon,
   TrashIcon,
@@ -11,8 +13,8 @@ import {
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from '~/ui/Link'
 import {
-  Link,
   useNavigate,
   useFetcher,
   useLoaderData,
@@ -36,12 +38,14 @@ import { TabHeader } from '~/ui/TabHeader'
 import Select from '~/ui/Select'
 import routes from '~/utils/routes'
 
+import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
+
 import People from './People'
 import { Projects } from './Projects'
 
 const MAX_NAME_LENGTH = 50
 
-type SettingsTab = 'general' | 'people' | 'projects' | 'danger'
+type SettingsTab = 'general' | 'people' | 'projects' | 'channels' | 'danger'
 
 const OrganisationSettings = () => {
   const { t } = useTranslation('common')
@@ -145,6 +149,14 @@ const OrganisationSettings = () => {
           description: t('organisations.settings.tabs.projectsDesc'),
           icon: FolderSimpleIcon,
           iconColor: 'text-emerald-500',
+          visible: true,
+        },
+        {
+          id: 'channels',
+          label: t('organisations.settings.tabs.channels'),
+          description: t('organisations.settings.tabs.channelsDesc'),
+          icon: BellRingingIcon,
+          iconColor: 'text-pink-500',
           visible: true,
         },
         {
@@ -279,7 +291,14 @@ const OrganisationSettings = () => {
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-950'>
       <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+        <Link
+          to={routes.organisations}
+          className='flex max-w-max items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+        >
+          <CaretLeftIcon className='mr-1 size-3' />
+          {t('organisations.backToList')}
+        </Link>
+        <h2 className='mt-1 text-3xl font-bold text-gray-900 dark:text-gray-50'>
           {title}
         </h2>
         <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
@@ -391,6 +410,27 @@ const OrganisationSettings = () => {
                   iconColorClass={activeTabConfig.iconColor}
                 />
                 <Projects organisation={organisation} />
+              </>
+            ) : null}
+            {activeTab === 'channels' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <NotificationChannels
+                  scope='organisation'
+                  organisationId={organisation.id}
+                  allowedTypes={[
+                    'email',
+                    'telegram',
+                    'discord',
+                    'slack',
+                    'webhook',
+                  ]}
+                />
               </>
             ) : null}
             {activeTab === 'danger' && activeTabConfig ? (

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan, In, Not, Between } from 'typeorm'
+import { IsNull, LessThan, Not, Between } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -58,6 +58,19 @@ import { SlackService } from '../integrations/slack/slack.service'
 import { RevenueService } from '../revenue/revenue.service'
 import { PaddleAdapter } from '../revenue/adapters/paddle.adapter'
 import { StripeAdapter } from '../revenue/adapters/stripe.adapter'
+import { ProxyDomainService } from '../project/proxy-domain.service'
+import { ChannelDispatcherService } from '../notification-channel/dispatchers/channel-dispatcher.service'
+import {
+  TemplateRendererService,
+  DEFAULT_EMAIL_SUBJECT_TEMPLATE,
+} from '../notification-channel/template-renderer.service'
+import {
+  AlertContext,
+  AlertContextErrors,
+  QUERY_CONDITION_LABEL,
+  QUERY_TIME_LABEL,
+} from '../notification-channel/alert-context'
+import { NotificationChannelType } from '../notification-channel/entity/notification-channel.entity'
 
 dayjs.extend(utc)
 
@@ -105,6 +118,7 @@ const CHUNK_SIZE = 5000
 const REPORTS_USERS_CONCURRENCY = 3
 const REPORTS_PROJECTS_CONCURRENCY = 5
 const NO_EVENTS_REMINDER_DELAY_DAYS = 2
+const TELEGRAM_MARKDOWN_URL_KEYS = new Set(['dashboard_url', 'errors_url'])
 
 const mapLimit = async <T, R>(
   items: T[],
@@ -298,6 +312,14 @@ const EMAIL_REPORTS_MAP = {
 
 @Injectable()
 export class TaskManagerService {
+  // In-memory re-entrancy guards: the verifier batches up to 200 domains at
+  // a time and a single slow DNS/TLS probe can stretch a tick past the
+  // 60s cron interval. Without these flags the next tick would re-fire
+  // duplicate probes for everything still in flight.
+  private verifyingPendingProxyDomains = false
+
+  private recheckingLiveProxyDomains = false
+
   constructor(
     private readonly mailerService: MailerService,
     private readonly userService: UserService,
@@ -315,7 +337,44 @@ export class TaskManagerService {
     private readonly revenueService: RevenueService,
     private readonly paddleAdapter: PaddleAdapter,
     private readonly stripeAdapter: StripeAdapter,
+    private readonly proxyDomainService: ProxyDomainService,
+    private readonly channelDispatcher: ChannelDispatcherService,
+    private readonly templateRenderer: TemplateRendererService,
   ) {}
+
+  // Build a rendered alert message from a raw AlertContext using the alert's
+  // per-channel templates (falling back to the metric's default template).
+  private renderAlertMessage(
+    alert: {
+      messageTemplate: string | null
+      emailSubjectTemplate: string | null
+      name: string
+    },
+    context: AlertContext,
+    hasEmailChannel: boolean,
+  ) {
+    const template =
+      alert.messageTemplate?.trim() ||
+      this.templateRenderer.getDefaultTemplate(context.metric)
+    const ctxRecord = context as unknown as Record<string, unknown>
+    const body = this.templateRenderer.render(template, ctxRecord)
+    const telegramContext = Object.fromEntries(
+      Object.entries(ctxRecord).map(([key, value]) => {
+        if (typeof value !== 'string' || TELEGRAM_MARKDOWN_URL_KEYS.has(key)) {
+          return [key, value]
+        }
+        return [key, this.telegramService.escapeTelegramMarkdown(value)]
+      }),
+    )
+    const telegramBody = this.templateRenderer.render(template, telegramContext)
+    const subject = hasEmailChannel
+      ? this.templateRenderer.render(
+          alert.emailSubjectTemplate?.trim() || DEFAULT_EMAIL_SUBJECT_TEMPLATE,
+          ctxRecord,
+        )
+      : alert.name
+    return { body, telegramBody, subject, context: ctxRecord }
+  }
 
   /**
    * Build goal match condition for querying conversions
@@ -1504,57 +1563,31 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async checkOnlineUsersAlerts() {
-    const projects = await this.projectService.find({
-      where: [
-        {
-          admin: {
-            isTelegramChatIdConfirmed: true,
-            planCode: Not(PlanCode.none),
-            dashboardBlockReason: IsNull(),
-          },
-        },
-        {
-          admin: {
-            slackWebhookUrl: Not(IsNull()),
-            planCode: Not(PlanCode.none),
-            dashboardBlockReason: IsNull(),
-          },
-        },
-        {
-          admin: {
-            discordWebhookUrl: Not(IsNull()),
-            planCode: Not(PlanCode.none),
-            dashboardBlockReason: IsNull(),
-          },
-        },
-      ],
-      relations: ['admin'],
-    })
-
+    // Pull all online_users alerts on active accounts. Channel verification is
+    // enforced per-channel by the dispatcher (skip unverified/unsubscribed).
     const alerts = await this.alertService.find({
       where: {
-        project: In(_map(projects, 'id')),
         active: true,
         queryMetric: QueryMetric.ONLINE_USERS,
+        project: {
+          admin: {
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
       },
-      relations: ['project'],
+      relations: ['project', 'project.admin', 'channels'],
     })
 
     const promises = _map(alerts, async (alert) => {
       try {
-        const project = _find(projects, { id: alert.project.id })
-
-        if (!project) {
-          this.logger.warn(
-            `[CRON WORKER](checkOnlineUsersAlerts) Alert ${alert.id} references missing project ${alert.project?.id}`,
-          )
-          return
-        }
+        const project = alert.project
+        if (!project) return
+        if (!alert.channels || alert.channels.length === 0) return
 
         if (alert.lastTriggered !== null) {
           const lastTriggered = new Date(alert.lastTriggered)
           const now = new Date()
-
           if (now.getTime() - lastTriggered.getTime() < 24 * 60 * 60 * 1000) {
             return
           }
@@ -1563,44 +1596,36 @@ export class TaskManagerService {
         const online = await this.analyticsService.getOnlineUserCount(
           project.id,
         )
-        const alertName = this.telegramService.escapeTelegramMarkdown(
-          alert.name,
-        )
-        const projectName = this.telegramService.escapeTelegramMarkdown(
-          project.name,
-        )
-        const text = `🔔 Alert *${alertName}* got triggered!\nYour project *${projectName}* has *${online}* online users right now!`
 
         if (
-          checkQueryCondition(online, alert.queryValue, alert.queryCondition)
+          !checkQueryCondition(online, alert.queryValue, alert.queryCondition)
         ) {
-          // @ts-expect-error
-          await this.alertService.update(alert.id, {
-            lastTriggered: new Date(),
-          })
-          if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-            this.telegramService.addMessage(
-              project.admin.telegramChatId,
-              text,
-              {
-                parse_mode: 'Markdown',
-              },
-            )
-          }
-          if (project.admin.discordWebhookUrl) {
-            await this.discordService.sendWebhook(
-              project.admin.discordWebhookUrl,
-              text,
-            )
-          }
-
-          if (project.admin.slackWebhookUrl) {
-            await this.slackService.sendWebhook(
-              project.admin.slackWebhookUrl,
-              text,
-            )
-          }
+          return
         }
+
+        // @ts-expect-error TypeORM typing for partial update
+        await this.alertService.update(alert.id, { lastTriggered: new Date() })
+
+        const clientUrl =
+          this.configService.get<string>('CLIENT_URL') || 'https://swetrix.com'
+        const context: AlertContext = {
+          alert_name: alert.name,
+          project_name: project.name,
+          project_id: project.id,
+          dashboard_url: `${clientUrl}/projects/${project.id}`,
+          metric: QueryMetric.ONLINE_USERS,
+          value: online,
+          threshold: alert.queryValue,
+          condition: QUERY_CONDITION_LABEL[alert.queryCondition] || null,
+          time_window: 'now',
+          online_count: online,
+        } as AlertContext
+
+        const hasEmail = alert.channels.some(
+          (c) => c.type === NotificationChannelType.EMAIL,
+        )
+        const message = this.renderAlertMessage(alert, context, hasEmail)
+        await this.channelDispatcher.dispatch(alert.channels, message)
       } catch (reason) {
         this.logger.error(
           `[CRON WORKER](checkOnlineUsersAlerts) Failed to process alert ${alert.id}: ${reason}`,
@@ -1622,35 +1647,25 @@ export class TaskManagerService {
   async checkMetricAlerts() {
     const CRON_INTERVAL_SECONDS = 300
 
-    const projects = await this.projectService.find({
-      where: {
-        admin: {
-          planCode: Not(PlanCode.none),
-          dashboardBlockReason: IsNull(),
-        },
-      },
-      relations: ['admin'],
-    })
-
     const alerts = await this.alertService.find({
       where: {
-        project: In(_map(projects, 'id')),
         active: true,
         queryMetric: Not(QueryMetric.ONLINE_USERS),
+        project: {
+          admin: {
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
       },
-      relations: ['project'],
+      relations: ['project', 'project.admin', 'channels'],
     })
 
     const promises = _map(alerts, async (alert) => {
       try {
-        const project = _find(projects, { id: alert.project.id })
-
-        if (!project) {
-          this.logger.warn(
-            `[CRON WORKER](checkMetricAlerts) Alert ${alert.id} references missing project ${alert.project?.id}`,
-          )
-          return
-        }
+        const project = alert.project
+        if (!project) return
+        if (!alert.channels || alert.channels.length === 0) return
 
         if (
           alert.lastTriggered !== null &&
@@ -1823,150 +1838,92 @@ export class TaskManagerService {
           }
         }
 
-        // @ts-expect-error
-        await this.alertService.update(alert.id, {
-          lastTriggered: new Date(),
-        })
-
-        let queryMetricString = ''
-        switch (alert.queryMetric) {
-          case QueryMetric.CUSTOM_EVENTS:
-            queryMetricString = 'custom events'
-            break
-          case QueryMetric.UNIQUE_PAGE_VIEWS:
-            queryMetricString = 'unique page views'
-            break
-          case QueryMetric.PAGE_VIEWS:
-            queryMetricString = 'page views'
-            break
-          case QueryMetric.ERRORS:
-            queryMetricString = alert.alertOnNewErrorsOnly
-              ? 'new errors'
-              : 'errors'
-            break
-          default:
-            queryMetricString = alert.queryMetric
-        }
-
         const effectiveQueryTimeString =
           alert.queryMetric === QueryMetric.ERRORS
             ? `${CRON_INTERVAL_SECONDS / 60} minutes`
             : alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
                 alert.alertOnEveryCustomEvent
               ? `${CRON_INTERVAL_SECONDS / 60} minutes`
-              : getQueryTimeString(alert.queryTime as QueryTime)
+              : QUERY_TIME_LABEL[alert.queryTime as QueryTime] ||
+                getQueryTimeString(alert.queryTime as QueryTime)
 
-        let text = ``
+        const clientUrl =
+          this.configService.get<string>('CLIENT_URL') || 'https://swetrix.com'
+        const dashboardUrl = `${clientUrl}/projects/${project.id}`
 
-        const clientUrl = this.configService.get('CLIENT_URL')
-        const escapedProjectLink = this.telegramService.escapeTelegramMarkdown(
-          `${clientUrl}/projects/${project.id}`,
-        )
+        if (alert.queryMetric === QueryMetric.ERRORS && !errorDetails) {
+          this.logger.warn(
+            `[CRON WORKER](checkMetricAlerts) Error details not found for alert ${alert.id}`,
+          )
+        }
+
+        let context: AlertContext
 
         if (alert.queryMetric === QueryMetric.ERRORS) {
-          if (!errorDetails) {
-            console.error(
-              `[CRON WORKER](checkMetricAlerts) Error details not found for alert ${alert.id}`,
-            )
-            console.error(queryResult)
-            return
-          }
-
-          const escapedErrorLink = this.telegramService.escapeTelegramMarkdown(
-            `${clientUrl}/projects/${project.id}?tab=errors&eid=${errorDetails.eid}`,
-          )
-
-          const alertName = this.telegramService.escapeTelegramMarkdown(
-            alert.name,
-          )
-          const projectName = this.telegramService.escapeTelegramMarkdown(
-            project.name,
-          )
-          const errorName = this.telegramService.escapeTelegramMarkdown(
-            errorDetails.name || 'N/A',
-          )
-          const errorMessage = this.telegramService.escapeTelegramMarkdown(
-            errorDetails.message || 'N/A',
-          )
-          const filename = this.telegramService.escapeTelegramMarkdown(
-            errorDetails.filename || 'N/A',
-          )
-
-          let locationInfo = 'Location: Not available'
-          if (
-            errorDetails.filename ||
-            errorDetails.lineno !== null ||
-            errorDetails.colno !== null
-          ) {
-            const ln =
-              errorDetails.lineno !== null
-                ? errorDetails.lineno.toString()
-                : 'N/A'
-            const cn =
-              errorDetails.colno !== null
-                ? errorDetails.colno.toString()
-                : 'N/A'
-            locationInfo = `File: ${filename}, Line: ${ln}, Col: ${cn}`
-          }
-
-          text =
-            `🐞 Error alert *${alertName}* triggered!\n\n` +
-            `Project: [${projectName}](${escapedProjectLink})\n` +
-            `Error: \`${errorName}\`\n` +
-            `Message: \`${errorMessage}\`\n\n` +
-            `${locationInfo}\n\n` +
-            `[View error](${escapedErrorLink})`
+          const errors_url = errorDetails?.eid
+            ? `${dashboardUrl}?tab=errors&eid=${errorDetails.eid}`
+            : `${dashboardUrl}?tab=errors`
+          context = {
+            alert_name: alert.name,
+            project_name: project.name,
+            project_id: project.id,
+            dashboard_url: dashboardUrl,
+            metric: QueryMetric.ERRORS,
+            value: count,
+            threshold: null,
+            condition: null,
+            time_window: effectiveQueryTimeString,
+            error_count: count,
+            error_message: errorDetails?.message || '',
+            error_name: errorDetails?.name || '',
+            errors_url,
+            is_new_only: !!alert.alertOnNewErrorsOnly,
+          } as AlertContextErrors
+        } else if (alert.queryMetric === QueryMetric.CUSTOM_EVENTS) {
+          context = {
+            alert_name: alert.name,
+            project_name: project.name,
+            project_id: project.id,
+            dashboard_url: dashboardUrl,
+            metric: QueryMetric.CUSTOM_EVENTS,
+            value: count,
+            threshold: alert.queryValue ?? null,
+            condition: alert.queryCondition
+              ? QUERY_CONDITION_LABEL[alert.queryCondition]
+              : null,
+            time_window: effectiveQueryTimeString,
+            event_name: alert.queryCustomEvent || '',
+            event_count: count,
+            every_event_mode: !!alert.alertOnEveryCustomEvent,
+          } as AlertContext
         } else {
-          const alertName = this.telegramService.escapeTelegramMarkdown(
-            alert.name,
-          )
-          const projectName = this.telegramService.escapeTelegramMarkdown(
-            project.name,
-          )
-
-          let customEventInfo = ''
-          if (
-            alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-            alert.queryCustomEvent
-          ) {
-            customEventInfo = ` "${alert.queryCustomEvent}"`
-          }
-
-          if (
-            alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-            alert.alertOnEveryCustomEvent
-          ) {
-            text =
-              `🔔 Alert *${alertName}* triggered!\n\n` +
-              `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} occur in the last *${effectiveQueryTimeString}*!`
-          } else {
-            text =
-              `🔔 Alert *${alertName}* triggered!\n\n` +
-              `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*!`
-          }
+          const isUnique = alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+          context = {
+            alert_name: alert.name,
+            project_name: project.name,
+            project_id: project.id,
+            dashboard_url: dashboardUrl,
+            metric: alert.queryMetric,
+            value: count,
+            threshold: alert.queryValue ?? null,
+            condition: alert.queryCondition
+              ? QUERY_CONDITION_LABEL[alert.queryCondition]
+              : null,
+            time_window: effectiveQueryTimeString,
+            ...(isUnique ? { unique_views: count } : { views: count }),
+          } as AlertContext
         }
 
-        if (project.admin?.isTelegramChatIdConfirmed) {
-          this.telegramService.addMessage(project.admin.telegramChatId, text, {
-            parse_mode: 'Markdown',
-            // @ts-expect-error It's not typed
-            disable_web_page_preview: true,
-          })
-        }
+        const hasEmail = alert.channels.some(
+          (c) => c.type === NotificationChannelType.EMAIL,
+        )
+        // @ts-expect-error TypeORM typing for partial update
+        await this.alertService.update(alert.id, {
+          lastTriggered: new Date(),
+        })
 
-        if (project.admin?.discordWebhookUrl) {
-          await this.discordService.sendWebhook(
-            project.admin.discordWebhookUrl,
-            text,
-          )
-        }
-
-        if (project.admin?.slackWebhookUrl) {
-          await this.slackService.sendWebhook(
-            project.admin.slackWebhookUrl,
-            text,
-          )
-        }
+        const message = this.renderAlertMessage(alert, context, hasEmail)
+        await this.channelDispatcher.dispatch(alert.channels, message)
       } catch (reason) {
         this.logger.error(
           `[CRON WORKER](checkMetricAlerts) Failed to process alert ${alert.id}: ${reason}`,
@@ -2149,5 +2106,84 @@ export class TaskManagerService {
     }
 
     await this.userService.deleteRefreshTokensWhere(where)
+  }
+
+  // Verify managed reverse proxy domains: resolve CNAME -> probe TLS to advance
+  // the row's status (waiting -> issuing -> live).
+  @Cron(CronExpression.EVERY_MINUTE)
+  async verifyPendingProxyDomains() {
+    if (!isPrimaryNode()) {
+      return
+    }
+
+    if (this.verifyingPendingProxyDomains) {
+      return
+    }
+    this.verifyingPendingProxyDomains = true
+
+    try {
+      const pending =
+        await this.proxyDomainService.findPendingForVerification(200)
+
+      if (_isEmpty(pending)) {
+        return
+      }
+
+      await mapLimit(pending, 8, async (domain) => {
+        try {
+          await this.proxyDomainService.verifyDomain(domain)
+        } catch (err) {
+          this.logger.error(
+            `[CRON WORKER](verifyPendingProxyDomains) ${domain.hostname}: ${err}`,
+          )
+        }
+      })
+    } catch (err) {
+      this.logger.error(
+        `[CRON WORKER](verifyPendingProxyDomains) Error: ${err}`,
+      )
+    } finally {
+      this.verifyingPendingProxyDomains = false
+    }
+  }
+
+  // Periodically re-check live domains so we notice when DNS / cert breaks
+  // (e.g. user removed the CNAME or revoked the cert).
+  @Cron(CronExpression.EVERY_6_HOURS)
+  async recheckLiveProxyDomains() {
+    if (!isPrimaryNode()) {
+      return
+    }
+
+    if (this.recheckingLiveProxyDomains) {
+      return
+    }
+    this.recheckingLiveProxyDomains = true
+
+    try {
+      const cutoff = dayjs.utc().subtract(6, 'hour').toDate()
+      const domains = await this.proxyDomainService.findLiveForRecheck(
+        cutoff,
+        500,
+      )
+
+      if (_isEmpty(domains)) {
+        return
+      }
+
+      await mapLimit(domains, 8, async (domain) => {
+        try {
+          await this.proxyDomainService.verifyDomain(domain)
+        } catch (err) {
+          this.logger.error(
+            `[CRON WORKER](recheckLiveProxyDomains) ${domain.hostname}: ${err}`,
+          )
+        }
+      })
+    } catch (err) {
+      this.logger.error(`[CRON WORKER](recheckLiveProxyDomains) Error: ${err}`)
+    } finally {
+      this.recheckingLiveProxyDomains = false
+    }
   }
 }

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
-import { NestjsFormDataModule } from 'nestjs-form-data'
 import { MailerModule as NodeMailerModule } from '@nestjs-modules/mailer'
 
 import { I18nModule } from 'nestjs-i18n'
@@ -16,9 +15,11 @@ import { CaptchaModule } from './captcha/captcha.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { TwoFactorAuthModule } from './twoFactorAuth/twoFactorAuth.module'
+import { BullModule } from '@nestjs/bullmq'
 import { AppController } from './app.controller'
 import { isPrimaryNode } from './common/utils'
 import { MailerModule } from './mailer/mailer.module'
+import { DataImportModule } from './data-import/data-import.module'
 
 const modules = [
   ConfigModule.forRoot({
@@ -62,7 +63,14 @@ const modules = [
   }),
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),
-  NestjsFormDataModule.config({ isGlobal: true }),
+  BullModule.forRoot({
+    connection: {
+      host: process.env.REDIS_HOST,
+      port: Number(process.env.REDIS_PORT),
+      password: process.env.REDIS_PASSWORD,
+      username: process.env.REDIS_USER,
+    },
+  }),
   UserModule,
   MailerModule,
   ProjectModule,
@@ -73,6 +81,7 @@ const modules = [
   CaptchaModule,
   AuthModule,
   TwoFactorAuthModule,
+  DataImportModule,
 ]
 
 @Module({

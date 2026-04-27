@@ -1,12 +1,14 @@
 import cx from 'clsx'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezonePlugin from 'dayjs/plugin/timezone'
 import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _some from 'lodash/some'
-import { ProhibitIcon, EyeIcon } from '@phosphor-icons/react'
+import { ProhibitIcon, EyeIcon, DownloadIcon } from '@phosphor-icons/react'
 import React, {
   useState,
   useEffect,
@@ -23,7 +25,6 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import {
   useNavigate,
-  Link,
   useSearchParams,
   useLoaderData,
   useRevalidator,
@@ -37,7 +38,6 @@ import type {
 import {
   useCustomEventsMetadataProxy,
   usePropertyMetadataProxy,
-  useGSCKeywordsProxy,
   useRevenueProxy,
 } from '~/hooks/useAnalyticsProxy'
 import { useAnnotations } from '~/hooks/useAnnotations'
@@ -54,6 +54,7 @@ import {
 } from '~/pages/Project/tabs/Traffic/MetricCards'
 import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
+import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import { TrafficChart } from '~/pages/Project/tabs/Traffic/TrafficChart'
 import TrafficHeaderActions from '~/pages/Project/tabs/Traffic/TrafficHeaderActions'
 import UserFlow from '~/pages/Project/tabs/Traffic/UserFlow'
@@ -94,13 +95,15 @@ import { useTheme } from '~/providers/ThemeProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
-import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
+import Tooltip from '~/ui/Tooltip'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
-import routes from '~/utils/routes'
 import { LoaderView } from '../../View/components/LoaderView'
 import { ChartTypeSwitcher } from '../../View/components/ChartTypeSwitcher'
+
+dayjs.extend(utc)
+dayjs.extend(timezonePlugin)
 
 const InteractiveMap = lazy(
   () => import('~/pages/Project/View/components/InteractiveMap'),
@@ -112,12 +115,6 @@ interface PanelsData {
   customs?: Customs
   properties?: Properties
   meta?: TrafficMeta[]
-}
-
-type KeywordEntry = Entry & {
-  impressions: number
-  position: number
-  ctr: number
 }
 
 interface TrafficViewProps {
@@ -222,6 +219,29 @@ function TrafficDataResolver({
   )
 }
 
+function HasImportedIndicator() {
+  const { t } = useTranslation('common')
+  const { hasImportedData: hasImportedDataPromise } =
+    useLoaderData<ProjectLoaderData>()
+
+  const hasImportedData = hasImportedDataPromise
+    ? use(hasImportedDataPromise)
+    : false
+
+  if (!hasImportedData) return null
+
+  return (
+    <Tooltip
+      text={t('project.settings.dataImport.statsIncludeImported')}
+      tooltipNode={
+        <span className='inline-flex rounded-md border border-transparent p-1.5'>
+          <DownloadIcon className='size-5 text-gray-700 dark:text-gray-50' />
+        </span>
+      }
+    />
+  )
+}
+
 function TrafficViewWrapper(props: TrafficViewProps) {
   return (
     <TrafficErrorBoundary>
@@ -258,7 +278,6 @@ const TrafficViewInner = ({
   const { fetchMetadata: fetchCustomEventsMetadata } =
     useCustomEventsMetadataProxy()
   const { fetchMetadata: fetchPropertyMetadata } = usePropertyMetadataProxy()
-  const { fetchKeywords: fetchGSCKeywords } = useGSCKeywordsProxy()
   const { fetchRevenueStatus, fetchRevenueData } = useRevenueProxy()
   const { trafficRefreshTrigger } = useRefreshTriggers()
   const {
@@ -313,6 +332,57 @@ const TrafficViewInner = ({
     handleChartContextMenu,
     closeContextMenu,
   } = useAnnotations()
+
+  const [sessionsDrawer, setSessionsDrawer] = useState<{
+    from: string
+    to: string
+    label: string
+  } | null>(null)
+
+  const handleDataPointClick = useCallback(
+    (d: { x: Date; index: number }) => {
+      const date = dayjs(d.x).tz(timezone)
+      let from: string
+      let to: string
+      let label: string
+
+      switch (timeBucket) {
+        case 'minute':
+          from = date.startOf('minute').toISOString()
+          to = date.endOf('minute').toISOString()
+          label = date.format('MMM D, YYYY HH:mm')
+          break
+        case 'hour':
+          from = date.startOf('hour').toISOString()
+          to = date.endOf('hour').toISOString()
+          label = date.format(
+            timeFormat === '24-hour'
+              ? 'MMM D, YYYY HH:00 - HH:59'
+              : 'MMM D, YYYY h:00 - h:59 A',
+          )
+          break
+        case 'month':
+          from = date.startOf('month').toISOString()
+          to = date.endOf('month').toISOString()
+          label = date.format('MMMM YYYY')
+          break
+        case 'year':
+          from = date.startOf('year').toISOString()
+          to = date.endOf('year').toISOString()
+          label = date.format('YYYY')
+          break
+        case 'day':
+        default:
+          from = date.startOf('day').toISOString()
+          to = date.endOf('day').toISOString()
+          label = date.format('dddd, MMM D, YYYY')
+          break
+      }
+
+      setSessionsDrawer({ from, to, label })
+    },
+    [timeBucket, timeFormat, timezone],
+  )
 
   const panelsData: PanelsData = useMemo(() => {
     if (deferredData.trafficData) {
@@ -416,7 +486,7 @@ const TrafficViewInner = ({
     page: 'pg' | 'host' | 'userFlow' | 'entryPage' | 'exitPage'
     device: 'br' | 'os' | 'dv'
     network: 'isp' | 'og' | 'ut' | 'ctp'
-    source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co' | 'keywords'
+    source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co'
     customEvMetadata: string
     pageviewMetadata: string
   }>({
@@ -428,11 +498,6 @@ const TrafficViewInner = ({
     customEvMetadata: '',
     pageviewMetadata: '',
   })
-
-  // GSC Keywords state
-  const [keywords, setKeywords] = useState<KeywordEntry[]>([])
-  const [keywordsLoading, setKeywordsLoading] = useState(false)
-  const [keywordsNotConnected, setKeywordsNotConnected] = useState(false)
 
   const isMountedRef = useRef(true)
 
@@ -810,57 +875,6 @@ const TrafficViewInner = ({
     return result || { result: [] }
   }
 
-  // Load GSC Keywords when the traffic sources panel switches to 'keywords'
-  useEffect(() => {
-    const loadKeywords = async () => {
-      if (!project) return
-      if (panelsActiveTabs.source !== 'keywords') return
-      if (keywordsLoading) return
-
-      // Skip if we already have keywords loaded and period/filters haven't changed
-      if (keywords.length > 0) return
-
-      setKeywordsLoading(true)
-      try {
-        let from
-        let to
-
-        if (dateRange) {
-          from = getFormatDate(dateRange[0])
-          to = getFormatDate(dateRange[1])
-        }
-
-        const data =
-          period === 'custom' && dateRange
-            ? await fetchGSCKeywords(id, { period: '', from, to, timezone })
-            : await fetchGSCKeywords(id, { period, timezone })
-
-        if (isMountedRef.current && data) {
-          if (data.notConnected) {
-            setKeywordsNotConnected(true)
-            setKeywords([])
-          } else {
-            setKeywordsNotConnected(false)
-            setKeywords(data.keywords || [])
-          }
-        }
-      } catch (error) {
-        console.error('[ERROR] Loading GSC keywords failed:', error)
-        if (isMountedRef.current) {
-          setKeywordsNotConnected(true)
-          setKeywords([])
-        }
-      } finally {
-        if (isMountedRef.current) {
-          setKeywordsLoading(false)
-        }
-      }
-    }
-
-    loadKeywords()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panelsActiveTabs.source, period, dateRange, timezone, id, project])
-
   // Load revenue data when revenue metric is enabled
   useEffect(() => {
     loadRevenueData()
@@ -1057,6 +1071,9 @@ const TrafficViewInner = ({
               onSwitch={setChartTypeOnClick}
               type={chartType}
             />
+            <Suspense fallback={null}>
+              <HasImportedIndicator />
+            </Suspense>
           </div>
           {!_isEmpty(overall) ? (
             <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
@@ -1114,6 +1131,7 @@ const TrafficViewInner = ({
                 className='mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'
                 annotations={filteredAnnotations}
                 period={activePeriod?.period}
+                onDataPointClick={handleDataPointClick}
                 timezone={timezone}
               />
             </div>
@@ -1128,7 +1146,7 @@ const TrafficViewInner = ({
                     { id: 'rg', label: t('project.mapping.rg') },
                     { id: 'ct', label: t('project.mapping.ct') },
                     { id: 'lc', label: t('project.mapping.lc') },
-                    { id: 'map', label: 'Map' },
+                    { id: 'map', label: t('project.mapping.map') },
                   ]
 
                   const rowMapper = (entry: CountryEntry) => {
@@ -1361,10 +1379,6 @@ const TrafficViewInner = ({
                   )
                   const trafficSourcesTabs = [
                     { id: 'ref', label: t('project.mapping.ref') },
-                    !isSelfhosted && {
-                      id: 'keywords',
-                      label: t('project.mapping.keywords'),
-                    },
                     [
                       { id: 'so', label: t('project.mapping.so') },
                       { id: 'me', label: t('project.mapping.me') },
@@ -1372,7 +1386,7 @@ const TrafficViewInner = ({
                       { id: 'te', label: t('project.mapping.te') },
                       { id: 'co', label: t('project.mapping.co') },
                     ],
-                  ].filter((x) => !!x)
+                  ]
 
                   const getTrafficSourcesRowMapper = (activeTab: string) => {
                     if (activeTab === 'ref') {
@@ -1410,89 +1424,22 @@ const TrafficViewInner = ({
                       onTabChange={(tab) => setPanelTab('source', tab)}
                       activeTabId={panelsActiveTabs.source}
                       data={
-                        panelsActiveTabs.source === 'keywords'
-                          ? keywords
-                          : panelsActiveTabs.source === 'ref'
-                            ? (() => {
-                                const raw = panelsData.data?.ref || []
-                                return hasRefNameFilter
-                                  ? (raw as unknown as Entry[])
-                                  : (groupRefEntries(
-                                      raw as any,
-                                    ) as unknown as Entry[])
-                              })()
-                            : (panelsData.data[
-                                panelsActiveTabs.source
-                              ] as unknown as Entry[])
-                      }
-                      valuesHeaderName={
-                        panelsActiveTabs.source === 'keywords'
-                          ? t('project.clicks')
-                          : undefined
+                        panelsActiveTabs.source === 'ref'
+                          ? (() => {
+                              const raw = panelsData.data?.ref || []
+                              return hasRefNameFilter
+                                ? (raw as unknown as Entry[])
+                                : (groupRefEntries(
+                                    raw as any,
+                                  ) as unknown as Entry[])
+                            })()
+                          : (panelsData.data[
+                              panelsActiveTabs.source
+                            ] as unknown as Entry[])
                       }
                       rowMapper={getTrafficSourcesRowMapper(
                         panelsActiveTabs.source,
                       )}
-                      disableRowClick={panelsActiveTabs.source === 'keywords'}
-                      hidePercentageInDetails={
-                        panelsActiveTabs.source === 'keywords'
-                      }
-                      detailsExtraColumns={
-                        panelsActiveTabs.source === 'keywords'
-                          ? [
-                              {
-                                header: t('project.impressions'),
-                                render: (entry: any) => entry.impressions,
-                                sortLabel: 'impressions',
-                                getSortValue: (entry: any) =>
-                                  Number(entry.impressions || 0),
-                              },
-                              {
-                                header: t('project.position'),
-                                render: (entry: any) => entry.position,
-                                sortLabel: 'position',
-                                getSortValue: (entry: any) =>
-                                  Number(entry.position || 0),
-                              },
-                              {
-                                header: t('project.ctr'),
-                                render: (entry: any) => `${entry.ctr}%`,
-                                sortLabel: 'ctr',
-                                getSortValue: (entry: any) =>
-                                  Number(entry.ctr || 0),
-                              },
-                            ]
-                          : undefined
-                      }
-                      customRenderer={
-                        panelsActiveTabs.source === 'keywords'
-                          ? keywordsLoading
-                            ? () => <Loader />
-                            : keywordsNotConnected
-                              ? () => (
-                                  <div className='mt-4 text-center'>
-                                    <p className='text-sm text-gray-800 dark:text-gray-200'>
-                                      {['owner', 'admin'].includes(
-                                        project?.role || '',
-                                      )
-                                        ? t('project.connectGsc')
-                                        : t('project.gscConnectionRequired')}
-                                    </p>
-                                    {['owner', 'admin'].includes(
-                                      project?.role || '',
-                                    ) ? (
-                                      <Link
-                                        to={`${routes.project_settings.replace(':id', id)}?tab=integrations`}
-                                        className='mt-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
-                                      >
-                                        {t('project.goToProjectSettings')}
-                                      </Link>
-                                    ) : null}
-                                  </div>
-                                )
-                              : undefined
-                          : undefined
-                      }
                     />
                   )
                 }
@@ -1575,8 +1522,37 @@ const TrafficViewInner = ({
                 }
               : undefined
           }
+          onExploreSessions={
+            contextMenu.date
+              ? () => {
+                  const date = dayjs.tz(
+                    contextMenu.date,
+                    'YYYY-MM-DD',
+                    timezone,
+                  )
+                  if (!date.isValid()) return
+
+                  setSessionsDrawer({
+                    from: date.startOf('day').toISOString(),
+                    to: date.endOf('day').toISOString(),
+                    label: date.format('dddd, MMM D, YYYY'),
+                  })
+                }
+              : undefined
+          }
           existingAnnotation={contextMenu.annotation}
           allowedToManage={allowedToManage}
+        />
+        <SessionsDrawer
+          isOpen={!!sessionsDrawer}
+          onClose={() => setSessionsDrawer(null)}
+          from={sessionsDrawer?.from || ''}
+          to={sessionsDrawer?.to || ''}
+          label={sessionsDrawer?.label || ''}
+          projectId={id}
+          timezone={timezone}
+          timeFormat={timeFormat as '12-hour' | '24-hour'}
+          filters={filters}
         />
       </div>
     </>

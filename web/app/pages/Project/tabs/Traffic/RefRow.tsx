@@ -2,7 +2,7 @@ import { ArrowSquareOutIcon, LinkIcon } from '@phosphor-icons/react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { getFaviconHost } from '~/utils/referrers'
+import { getFaviconHost, getFaviconUrl } from '~/utils/referrers'
 
 const RefRow = ({ rowName }: { rowName: string | null }) => {
   const { t } = useTranslation('common')
@@ -43,7 +43,7 @@ const RefRow = ({ rowName }: { rowName: string | null }) => {
       {faviconHost ? (
         <img
           className='float-left mr-1.5 size-5'
-          src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
+          src={getFaviconUrl(faviconHost)}
           loading='lazy'
           alt=''
           aria-hidden='true'

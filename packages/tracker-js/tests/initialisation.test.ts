@@ -1,5 +1,6 @@
 import { init } from '../src/index'
 import { Lib } from '../src/Lib'
+import { setLocation } from './testUtils'
 
 jest.mock('../src/Lib', () => {
   const originalModule = jest.requireActual('../src/Lib')
@@ -19,19 +20,12 @@ describe('Library Initialisation', () => {
 
     jest.resetModules()
 
-    Object.defineProperty(window, 'location', {
-      value: {
-        hostname: 'example.com',
-        pathname: '/test-page',
-        hash: '',
-        search: '',
-      },
-      writable: true,
-    })
+    setLocation({ hostname: 'example.com', pathname: '/test-page' })
 
     Object.defineProperty(navigator, 'doNotTrack', {
       value: null,
       writable: true,
+      configurable: true,
     })
   })
 
@@ -45,15 +39,7 @@ describe('Library Initialisation', () => {
 
   test('init with devMode should work on localhost', () => {
     // Arrange
-    Object.defineProperty(window, 'location', {
-      value: {
-        hostname: 'localhost',
-        pathname: '/',
-        hash: '',
-        search: '',
-      },
-      writable: true,
-    })
+    setLocation({ hostname: 'localhost', pathname: '/' })
 
     // Act
     const instance = init('test-project-id', { devMode: true })
@@ -68,6 +54,7 @@ describe('Library Initialisation', () => {
     Object.defineProperty(navigator, 'doNotTrack', {
       value: '1',
       writable: true,
+      configurable: true,
     })
 
     // Act

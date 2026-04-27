@@ -28,8 +28,6 @@ import _isString from 'lodash/isString'
 import _pick from 'lodash/pick'
 import _round from 'lodash/round'
 import { randomUUID } from 'crypto'
-import { HttpService } from '@nestjs/axios'
-
 import { Markup } from 'telegraf'
 
 import { Public, CurrentUserId, Auth } from '../auth/decorators'
@@ -55,11 +53,7 @@ import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { DeleteSelfDTO } from './dto/delete-self.dto'
 import { CancelSubscriptionDTO } from './dto/cancel-subscription.dto'
-import {
-  checkRateLimit,
-  getGeoDetails,
-  getIPFromHeaders,
-} from '../common/utils'
+import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
 import { OrganisationService } from '../organisation/organisation.service'
@@ -82,7 +76,6 @@ export class UserController {
     private readonly mailerService: MailerService,
     private readonly logger: AppLoggerService,
     private readonly telegramService: TelegramService,
-    private readonly httpService: HttpService,
     private readonly organisationService: OrganisationService,
   ) {}
 
@@ -211,11 +204,20 @@ export class UserController {
 
     const user = await this.userService.findOne({
       where: { id },
-      select: ['id', 'planCode'],
+      select: ['id', 'planCode', 'password'],
     })
 
     if (_isEmpty(user)) {
       throw new BadRequestException('User not found')
+    }
+
+    const isPasswordValid = await this.authService.comparePassword(
+      deleteSelfDTO.password,
+      user.password,
+    )
+
+    if (!isPasswordValid) {
+      throw new BadRequestException('incorrectPassword')
     }
 
     if (!_includes(UNPAID_PLANS, user.planCode)) {
@@ -659,16 +661,18 @@ export class UserController {
       ])
       await this.userService.update(id, userToUpdate)
 
-      // If password should have been updated and there were no issues doing so, then...
       if (shouldUpdatePassword) {
-        // Send 'Password changed' email notification
-        await this.mailerService.sendEmail(
-          user.email,
-          LetterTemplate.PasswordChanged,
-        )
-
-        // Log out all user sessions
-        await this.authService.logoutAll(id)
+        await Promise.all([
+          this.mailerService.sendEmail(
+            user.email,
+            LetterTemplate.PasswordChanged,
+          ),
+          this.authService.logoutAll(id),
+          this.actionTokensService.deleteMultiple({
+            user: { id },
+            action: ActionTokenType.PASSWORD_RESET,
+          }),
+        ])
       }
 
       const updatedUser = await this.userService.findOne({ where: { id } })
@@ -685,7 +689,7 @@ export class UserController {
     @Ip() reqIP: string,
   ): Promise<IMetaInfo> {
     const ip = getIPFromHeaders(headers) || reqIP || ''
-    const { country, city, region } = getGeoDetails(ip)
+    const { country, city, region } = getIPDetails(ip)
 
     return {
       country,

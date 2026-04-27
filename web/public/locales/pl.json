@@ -125,6 +125,7 @@
     "copy": "Kopiuj",
     "copied": "Skopiowano",
     "failedToCopy": "Kopiowanie nie powiodło się",
+    "add": "Dodaj",
     "new": "Nowy",
     "all": "Wszystkie",
     "active": "Aktywne",
@@ -148,6 +149,8 @@
     "communityEdition": "Wersja Społecznościowa",
     "allPosts": "Wszystkie posty",
     "details": "Szczegóły",
+    "type": "Typ",
+    "create": "Utwórz",
     "unknown": "Nieznane",
     "showMore": "Pokaż {{count}} więcej",
     "showLess": "Pokaż mniej"
@@ -632,6 +635,30 @@
       "api": "API dla programistów",
       "2fa": "Uwierzytelnianie dwuskładnikowe"
     },
+    "whySwitch": {
+      "heading": "Dlaczego ludzie przechodzą z Google Analytics na Swetrix",
+      "subheading": "Prosta, szanująca prywatność analityka ze wszystkim, czego potrzebujesz — bez skomplikowania, banerów cookies i danych, którym nie możesz ufać.",
+      "body": "Google Analytics stało się zbyt skomplikowane. Znalezienie podstawowych metryk wymaga teraz poruszania się po niekończących się menu, a jego zależność od plików cookie zmusza do używania irytujących banerów zgody - co kosztuje Cię utratę do 40% danych o ruchu, gdy użytkownicy odmawiają.\n\nSwetrix daje Ci przejrzysty panel w czasie rzeczywistym, który nie wymaga nauki. Nie używamy plików cookie, więc nie potrzebujesz banerów cookie, jesteś w 100% właścicielem swoich danych, a Twoja strona działa szybko.",
+      "compareLink": "Swetrix kontra Google Analytics",
+      "reasons": {
+        "privacy": {
+          "title": "Śledzenie bez plików cookie",
+          "desc": "Google Analytics wymaga banerów zgody na pliki cookie i gromadzi dane osobowe. Swetrix jest całkowicie wolny od plików cookie i szanuje prywatność - nie są potrzebne banery zgody na pliki cookie."
+        },
+        "simplicity": {
+          "title": "Funkcje, których faktycznie będziesz używać",
+          "desc": "Swetrix zapewnia analitykę ruchu, analizę sesji, lejki, profile, testy A/B - funkcje, które są faktycznie przydatne w przejrzystym i minimalistycznym panelu."
+        },
+        "opensource": {
+          "title": "Open source i możliwość samodzielnego hostowania",
+          "desc": "Google Analytics to czarna skrzynka. Swetrix jest w pełni open source i przejrzysty - daje Ci możliwość audytu kodu lub hostowania na własnej infrastrukturze za darmo."
+        },
+        "lightweight": {
+          "title": "Lekki, a nie uciążliwy",
+          "desc": "Skrypt śledzący GA waży ponad 75 KB i spowalnia Twoją stronę. Skrypt Swetrix ma poniżej 5 KB - Twoi odwiedzający nawet go nie zauważą."
+        }
+      }
+    },
     "freeToTry": "Wypróbuj za darmo",
     "easyToUse": "Łatwe w użyciu",
     "privacyFirst": "Prywatność przede wszystkim",
@@ -660,6 +687,14 @@
       "sessions": {
         "title": "Analiza sesji",
         "desc": "Śledź indywidualne ścieżki użytkowników między stronami. Zrozum, jak odwiedzający poruszają się po Twojej witrynie."
+      },
+      "experiments": {
+        "title": "Eksperymenty i flagi funkcji",
+        "desc": "Przeprowadzaj testy A/B, aby sprawdzić, co działa najlepiej. Wdrażaj funkcje stopniowo dzięki wbudowanym flagom funkcji."
+      },
+      "captcha": {
+        "title": "Wbudowana alternatywa dla reCAPTCHA",
+        "desc": "Chroń formularze przed botami dzięki niewidocznemu, stawiającemu prywatność na pierwszym miejscu wyzwaniu proof-of-work. Żadnych irytujących zagadek."
       },
       "opensource": {
         "title": "Open source",
@@ -785,7 +820,7 @@
       "fair": "Średnie",
       "good": "Dobre",
       "strong": "Silne",
-      "hint": "Użyj co najmniej 12 znaków, w tym wielkich i małych liter, cyfr oraz symboli, aby utworzyć silne hasło."
+      "hint": "Użyj co najmniej {{amount}}+ znaków, w tym wielkich i małych liter, cyfr oraz symboli, aby utworzyć silne hasło."
     }
   },
   "profileSettings": {
@@ -835,6 +870,7 @@
     "notifications": "Powiadomienia",
     "notificationsDesc": "Skonfiguruj, kiedy i w jaki sposób otrzymujesz powiadomienia.",
     "deactivateConfirmation": "Czy na pewno chcesz dezaktywować swoje konto?\nWszystkie Twoje dane zostaną trwale usunięte z naszych serwerów na zawsze.\nTej czynności nie można cofnąć.",
+    "enterPasswordToDelete": "Wprowadź hasło, aby potwierdzić",
     "deletionFeedbackLabel": "Dlaczego odchodzisz? (opcjonalnie)",
     "deletionFeedback": "Z przykrością żegnamy się z Tobą, czy mógłbyś powiedzieć, dlaczego odchodzisz, abyśmy mogli ulepszyć nasze usługi?",
     "dataExport": "Eksport danych",
@@ -944,6 +980,7 @@
   "organisations": {
     "create": "Utwórz organizację",
     "organisations": "Organizacje",
+    "backToList": "Powrót do organizacji",
     "noOrganisations": "Nie ma jeszcze żadnych organizacji",
     "createOrganisation": "Nie utworzyłeś ani nie dołączyłeś jeszcze do żadnej organizacji. Zacznij od utworzenia pierwszej organizacji.",
     "new": "Nowa organizacja",
@@ -955,6 +992,8 @@
         "peopleDesc": "Zarządzaj członkami i ich rolami.",
         "projects": "Projekty",
         "projectsDesc": "Dodaj lub usuń projekty dla tej organizacji.",
+        "channels": "Kanały powiadomień",
+        "channelsDesc": "Kanały widoczne dla każdego członka tej organizacji.",
         "danger": "Strefa zagrożenia",
         "dangerDesc": "Nieodwracalne działania dla tej organizacji."
       }
@@ -1111,6 +1150,7 @@
     "queryValueError": "Proszę wypełnić próg, a wartość zapytania musi być liczbą.",
     "noIntegration": "Nie skonfigurowałeś jeszcze integracji. Utwórz ją w swoich <url>ustawieniach konta</url>.",
     "noNotificationChannel": "Nie masz skonfigurowanego kanału powiadomień, ustaw go, aby być powiadamianym, gdy jedno z Twoich alertów zostanie wywołane.",
+    "noChannelsBadge": "Brak kanałów",
     "lastTriggered": "Ostatnio uruchomione",
     "never": "Nigdy",
     "qDelete": "Usunąć alert?",
@@ -1138,6 +1178,110 @@
       "online_users": "Użytkownicy online",
       "custom_events": "Niestandardowe zdarzenia",
       "errors": "Błędy"
+    },
+    "noChannels": "Z tym projektem nie są jeszcze powiązane żadne kanały powiadomień. Dodaj jeden w <url>Kanały powiadomień</url>.",
+    "sections": {
+      "basics": "Podstawy alertu",
+      "basicsDescription": "Nadaj alertowi jasną nazwę i określ, czy jest obecnie aktywny.",
+      "trigger": "Wyzwalacz",
+      "triggerDescription": "Wybierz metrykę i warunek, który uruchamia alert."
+    },
+    "channels": {
+      "heading": "Kanały powiadomień",
+      "description": "Wybierz kanały, które powinny otrzymywać ten alert. Kanałami można zarządzać w ustawieniach konta, organizacji lub projektu.",
+      "placeholder": "Wybierz kanały..."
+    },
+    "template": {
+      "heading": "Szablon wiadomości",
+      "description": "Dostosuj wiadomość, którą wysyła Swetrix po uruchomieniu tego alertu. Wpisz { lub wybierz zmienną poniżej, aby wstawić dynamiczne wartości.",
+      "body": "Treść wiadomości",
+      "bodyHint": "Obsługiwany jest Markdown. Wpisz {, aby wstawić zmienną. Pozostaw puste, aby użyć domyślnego szablonu.",
+      "emailSubject": "Temat e-mail",
+      "emailSubjectPlaceholder": "Alert Swetrix: {{alert_name}}",
+      "insertVariable": "Dostępne zmienne",
+      "preview": "Podgląd",
+      "previewMode": "Podgląd",
+      "editMode": "Edytuj",
+      "noVariables": "Brak pasujących zmiennych",
+      "unknownVariable": "Nieznana zmienna. Wpisz {, aby zobaczyć wszystkie dostępne zmienne.",
+      "variables": {
+        "alert_name": "Nazwa alertu skonfigurowana w tym formularzu.",
+        "project_name": "Projekt, do którego należy ten alert.",
+        "project_id": "Unikalny identyfikator projektu.",
+        "dashboard_url": "Bezpośredni link do dashboardu projektu.",
+        "value": "Wartość metryki, która uruchomiła alert.",
+        "threshold": "Próg, z którym porównano wartość.",
+        "condition": "Operator porównania (np. większe niż).",
+        "time_window": "Przedział czasu, w którym mierzono metrykę.",
+        "views": "Liczba wyświetleń strony w przedziale czasu.",
+        "unique_views": "Liczba unikalnych sesji w przedziale czasu.",
+        "online_count": "Obecnie dostępni użytkownicy.",
+        "event_name": "Nazwa niestandardowego zdarzenia.",
+        "event_count": "Liczba wystąpień zdarzenia.",
+        "every_event_mode": "„tak”, jeśli alert uruchamia się przy każdym wystąpieniu.",
+        "error_count": "Liczba błędów, które uruchomiły alert.",
+        "error_message": "Tekst komunikatu o błędzie.",
+        "error_name": "Klasa lub nazwa błędu.",
+        "errors_url": "Bezpośredni link do widoku błędów w projekcie.",
+        "is_new_only": "„tak”, jeśli alert uruchamia się tylko dla nowo wykrytych błędów."
+      }
+    }
+  },
+  "notificationChannels": {
+    "heading": "Kanały powiadomień",
+    "description": "Podłącz e-mail, Telegram, Discord, Slack, niestandardowe webhooki lub powiadomienia push w przeglądarce, a następnie powiąż je z alertami.",
+    "userScopeDescription": "Kanały, które tu podłączysz, są dostępne we wszystkich Twoich projektach.",
+    "details": "Gdzie wysyła",
+    "add": "Dodaj kanał",
+    "empty": "Brak kanałów. Podłącz jeden, aby zacząć otrzymywać alerty.",
+    "emptyTitle": "Brak podłączonych kanałów",
+    "emptyDescription": "Podłącz kanał poniżej, aby zacząć otrzymywać alerty, gdy Twój ruch, błędy lub zdarzenia przekroczą próg.",
+    "createTitle": "Podłącz kanał",
+    "editTitle": "Edytuj kanał",
+    "deleteTitle": "Usunąć kanał?",
+    "deleteHint": "To odłączy \"{{name}}\" od wszystkich alertów, które go używają. Tej operacji nie można cofnąć.",
+    "test": "Wyślij test",
+    "verify": "Zweryfikuj",
+    "testSent": "Wiadomość testowa wysłana.",
+    "verifyKickedOff": "Rozpoczęto weryfikację.",
+    "created": "Kanał utworzony.",
+    "updated": "Kanał zaktualizowany.",
+    "deleted": "Kanał usunięty.",
+    "nameRequired": "Wprowadź nazwę kanału.",
+    "typeLabel": "Typ kanału",
+    "webhookUrl": "Webhook URL",
+    "statusVerified": "Zweryfikowany",
+    "statusPending": "Oczekuje na weryfikację",
+    "statusUnsubscribed": "Odsubskrybowano",
+    "types": {
+      "email": "E-mail",
+      "telegram": "Telegram",
+      "discord": "Discord",
+      "slack": "Slack",
+      "webhook": "Webhook",
+      "webpush": "Web push"
+    },
+    "email": {
+      "address": "Adres e-mail",
+      "hint": "Wyślemy e-mail z potwierdzeniem, zanim ten kanał będzie mógł być użyty."
+    },
+    "telegram": {
+      "chatId": "ID czatu Telegram",
+      "hint": "Otwórz {{bot}} na Telegramie i wyślij /start. Bot odpowie Twoim numerycznym ID czatu — wklej je tutaj.",
+      "openBot": "Otwórz bota"
+    },
+    "webhook": {
+      "secret": "Klucz podpisywania (opcjonalnie)",
+      "secretHint": "Jeśli ustawione, żądania będą zawierać nagłówek X-Swetrix-Signature (HMAC-SHA256)."
+    },
+    "webpush": {
+      "enable": "Włącz powiadomienia w przeglądarce",
+      "enabled": "Powiadomienia w przeglądarce są włączone na tym urządzeniu.",
+      "useButton": "Użyj przycisku \"Włącz powiadomienia w przeglądarce\", aby zasubskrybować to urządzenie.",
+      "unsupported": "Ta przeglądarka nie obsługuje powiadomień push.",
+      "permissionDenied": "Odmówiono uprawnień do powiadomień.",
+      "notConfigured": "Web push nie jest skonfigurowany na tym serwerze.",
+      "subscribeFailed": "Nie udało się zasubskrybować powiadomień push."
     }
   },
   "goals": {
@@ -1349,15 +1493,49 @@
     "unknownError": "Nieznany błąd"
   },
   "project": {
+    "seo": {
+      "title": "SEO",
+      "desc": "Wydajność wyszukiwania dla {{url}}",
+      "connectGSC": "Połącz z Google Search Console, aby zobaczyć dane o wydajności wyszukiwania",
+      "connectGSCDesc": "Połącz swoje konto Google Search Console, aby wyświetlać kliknięcia, wyświetlenia, zapytania oraz najpopularniejsze strony z wyszukiwarki Google.",
+      "connectButton": "Połącz z Search Console",
+      "searchEngines": "Wyszukiwarki",
+      "aiReferrals": "Odesłania z AI",
+      "clicks": "Kliknięcia",
+      "impressions": "Wyświetlenia",
+      "avgCTR": "Średni CTR",
+      "avgPosition": "Średnia pozycja",
+      "position": "Pozycja",
+      "ctr": "CTR",
+      "clicksAndImpressions": "Kliknięcia i wyświetlenia",
+      "avgPositionChart": "Średnia pozycja",
+      "ctrVsPosition": "CTR vs Pozycja",
+      "topPages": "Najlepsze strony",
+      "topQueries": "Najlepsze zapytania",
+      "queriesForPage": "Zapytania dla tej strony",
+      "pagesForQuery": "Strony rankujące dla tego zapytania",
+      "page": "Strona",
+      "query": "Zapytanie",
+      "lowerIsBetter": "Im mniej, tym lepiej",
+      "yourCTR": "Twój CTR",
+      "benchmark": "Benchmark",
+      "searchPages": "Strony wyszukiwania",
+      "searchQueries": "Zapytania wyszukiwania",
+      "noProperty": "Nie wybrano usługi Search Console. Przejdź do Ustawień, aby ją wybrać.",
+      "branded": "Brandowe",
+      "nonBranded": "Niebrandowe",
+      "brandedTraffic": "Ruch brandowy",
+      "others": "Inne",
+      "noBrandData": "Brak danych o zapytaniach",
+      "quadrant": "Kwadrant SEO",
+      "quadrantTooltip": "Każda bańka to zapytanie wyszukiwania. Oś X to pozycja w rankingu (po lewej = wyższa pozycja), oś Y to współczynnik klikalności (CTR), a rozmiar bańki odzwierciedla liczbę wyświetleń.\n\n<highlight>Lewy górny</highlight>: wysoka pozycja + wysoki CTR (twoje najlepsze wyniki).\n<highlight>Lewy dolny</highlight>: wysoka pozycja, ale niski CTR (popraw tytuł i opis).\n<highlight>Prawy górny</highlight>: niska pozycja, ale wysoki CTR (wypromuj je na 1. stronę, aby uzyskać duże korzyści).\n<highlight>Prawy dolny</highlight>: niska pozycja + niski CTR (najniższy priorytet)."
+    },
     "passwordProtectedHint": "Wprowadź hasło, aby wyświetlić ten panel.",
     "captchaCompletions": "Ukończenia CAPTCHA",
     "addAnnotation": "Dodaj adnotację",
     "editAnnotation": "Edytuj adnotację",
     "deleteAnnotation": "Usuń adnotację",
     "annotationsViewOnly": "Tylko menedżerowie projektu mogą dodawać adnotacje",
-    "impressions": "Wyświetlenia",
-    "position": "Pozycja",
-    "ctr": "CTR (współczynnik klikalności)",
     "backToStats": "Wróć do statystyk",
     "directNone": "Bezpośrednie / Brak",
     "loadingMapData": "Wczytywanie danych mapy...",
@@ -1499,8 +1677,10 @@
     "changeInSettings": "Zmień to w ustawieniach konta",
     "events": "Zdarzenia",
     "dropoff": "Rezygnacja",
-    "conversionFromStart": "Konwersja od początku",
+    "conversionFromStart": "Od początku",
     "neverEnteredTheFunnel": "Nigdy nie wszedł do lejka",
+    "topSources": "Główne źródła",
+    "topCountries": "Główne kraje",
     "aggregation": "Agregacja",
     "locked": {
       "title": "Panel kontrolny zablokowany",
@@ -1552,6 +1732,8 @@
     "noProfilesFiltersDesc": "Nie zarejestrowano żadnych profili dla wybranego okresu lub zastosowanych filtrów, spróbuj wybrać inny okres lub zmień zastosowane filtry.",
     "noSessionsTitle": "Brak sesji na razie",
     "noSessionsContent": "Nie zarejestrowano żadnych sesji dla wybranego okresu, spróbuj wybrać inny okres.",
+    "noSessionsFound": "Nie znaleziono sesji w tym okresie.",
+    "exploreSessions": "Przeglądaj sesje",
     "noSessionsFiltersDesc": "Nie zarejestrowano żadnych sesji dla wybranego okresu lub zastosowanych filtrów, spróbuj wybrać inny okres lub zmień zastosowane filtry.",
     "noCaptchaEv": "Nie przechwycono żadnych zdarzeń dla określonych ram czasowych.\nJeśli jeszcze nie skonfigurowałeś CAPTCHA, możesz sprawdzić nasze <url>Docs</url>, aby łatwo zintegrować go z aplikacją.",
     "mapping": {
@@ -1561,6 +1743,7 @@
       "pg": "Strona",
       "host": "Host",
       "lc": "Język",
+      "map": "Mapa",
       "ref": "Źródło",
       "dv": "Rodzaj urządzenia",
       "br": "Przeglądarka",
@@ -1576,7 +1759,9 @@
       "entryPage": "Strona wejścia",
       "exitPage": "Strona wyjścia",
       "keywords": "Słowa kluczowe",
-      "keyword": "Słowo kluczowe"
+      "keyword": "Słowo kluczowe",
+      "searchEngine": "Wyszukiwarka",
+      "aiReferral": "Odesłanie z AI"
     },
     "connectGsc": "Połącz Google Search Console, aby zobaczyć słowa kluczowe dla tego projektu.",
     "gscConnectionRequired": "Aby wyświetlać słowa kluczowe dla tego projektu, wymagane jest połączenie z Google Search Console. Poproś administratora projektu, aby najpierw nawiązał to połączenie.",
@@ -1701,8 +1886,23 @@
         "dangerDesc": "Niszczące działania, których nie można cofnąć.",
         "integrations": "Integracje",
         "integrationsDesc": "Połącz usługi zewnętrzne, aby wzbogacić analitykę.",
+        "alerts": "Alerty",
+        "alertsDesc": "Otrzymuj powiadomienia o skokach ruchu, błędach i zdarzeniach niestandardowych.",
+        "channels": "Kanały powiadomień",
+        "channelsDesc": "Kanały w ramach projektu do wysyłania alertów.",
         "revenue": "Przychody",
-        "revenueDesc": "Śledź przychody i przypisuj sprzedaż do kampanii."
+        "revenueDesc": "Śledź przychody i przypisuj sprzedaż do kampanii.",
+        "import": "Importuj dane",
+        "importDesc": "Importuj dane analityczne z innych platform",
+        "proxy": "Zarządzane proxy",
+        "proxyDesc": "Kieruj skrypt śledzący i zdarzenia analityczne przez własną domenę, aby ominąć programy blokujące reklamy."
+      },
+      "sidebarGroups": {
+        "general": "Ogólne",
+        "protection": "Ochrona",
+        "notifications": "Powiadomienia",
+        "data": "Dane",
+        "integrations": "Integracje"
       },
       "revenue": {
         "title": "Śledzenie przychodów",
@@ -1733,6 +1933,110 @@
           "description": "Przekaż identyfikatory odwiedzającego i sesji do dostawcy płatności, aby przypisywać przychody do kanałów marketingowych.",
           "paddleExample": "Integracja Paddle Checkout:"
         }
+      },
+      "dataImport": {
+        "importFrom": "Importuj z",
+        "importFromDesc": "Wybierz dostawcę analityki, z którego chcesz zaimportować dane historyczne.",
+        "importHistory": "Historia importu",
+        "noImports": "Brak importów. Wybierz dostawcę powyżej, aby rozpocząć.",
+        "provider": "Dostawca",
+        "status": "Status",
+        "dateRange": "Zakres dat",
+        "rows": "Wiersze",
+        "created": "Utworzono",
+        "deleteImport": "Usuń import",
+        "deleteImportConfirm": "Spowoduje to trwałe usunięcie wszystkich zaimportowanych danych ({{count}} wierszy) z Twojej analityki. Tej akcji nie można cofnąć.",
+        "importStarted": "Import rozpoczęty. Twoje dane są przetwarzane.",
+        "importDeleted": "Pomyślnie usunięto import",
+        "loadFailed": "Nie udało się załadować importów",
+        "uploadFailed": "Nie udało się przesłać pliku. Spróbuj ponownie.",
+        "deleteFailed": "Nie udało się usunąć importu",
+        "clickToUpload": "Nie udało się usunąć importu",
+        "orDragDrop": "lub przeciągnij i upuść",
+        "maxFileSize": "Plik {{fileType}}, maks. {{maxSize}} MB",
+        "uploadingProcessing": "Przesyłanie i przetwarzanie...",
+        "importFromProvider": "Importuj z {{provider}}",
+        "statsIncludeImported": "Statystyki uwzględniają zaimportowane dane",
+        "imported": "Zaimportowano",
+        "statusPending": "Oczekujące",
+        "statusProcessing": "Przetwarzanie",
+        "statusCompleted": "Zakończono",
+        "statusFailed": "Nieudane",
+        "uploadInstructions": "Wybierz plik eksportu. Po uruchomieniu dane zostaną zaimportowane w tle. Zakończenie tego procesu może chwilę potrwać. Aby dowiedzieć się więcej o eksportowaniu danych zewnętrznych dostawców, <1>zobacz naszą dokumentację</1>.",
+        "umami": {
+          "description": "Importuj odsłony i zdarzenia niestandardowe z eksportu Umami"
+        },
+        "simple-analytics": {
+          "description": "Importuj odsłony i zdarzenia z eksportu Simple Analytics"
+        },
+        "fathom": {
+          "description": "Importuj odsłony i zdarzenia z eksportu Fathom Analytics"
+        },
+        "plausible": {
+          "description": "Importuj historyczne dane zagregowane z eksportu ZIP Plausible Analytics (przybliżone)"
+        },
+        "google-analytics": {
+          "description": "Importuj odsłony i zdarzenia z Google Analytics 4",
+          "fileType": "Google OAuth",
+          "connectGoogle": "Połącz konto Google",
+          "connectDesc": "Połącz swoje konto Google, aby zaimportować dane historyczne z Google Analytics 4. Prosimy tylko o dostęp tylko do odczytu do Twoich danych analitycznych.",
+          "selectProperty": "Wybierz usługę GA4",
+          "startImport": "Rozpocznij import",
+          "connecting": "Łączenie...",
+          "loadingProperties": "Ładowanie usług...",
+          "noProperties": "Nie znaleziono usług GA4 dla tego konta Google.",
+          "importNote": "Dane będą importowane w tle. Niektóre szczegóły, takie jak ustawienia regionalne lub wersje przeglądarki/systemu operacyjnego, nie są dostępne w zagregowanych eksportach GA4."
+        }
+      },
+      "proxy": {
+        "title": "Zarządzane proxy",
+        "description": "Kieruj skrypt śledzący Swetrix i zdarzenia analityczne przez kontrolowaną przez siebie subdomenę. Programy blokujące reklamy nie znają nazwy hosta, więc nie mogą zablokować żądań, a Ty przestajesz tracić dane.",
+        "descriptionWithDocs": "Kieruj skrypt śledzący Swetrix i zdarzenia analityczne przez kontrolowaną przez siebie subdomenę. Programy blokujące reklamy nie znają nazwy hosta, więc nie mogą zablokować żądań. <1>Przeczytaj pełny poradnik konfiguracji</1>.",
+        "addDomain": "Dodaj domenę proxy",
+        "addDomainTitle": "Dodaj zarządzane reverse proxy",
+        "warningTitle": "Unikaj domen, które programy blokujące reklamy mogą oflagować jako związane z analityką lub reklamą.",
+        "warningSubdomain": "Nie używaj subdomen zawierających słowa związane ze śledzeniem, analityką, reklamami lub czymkolwiek podobnym (np. <1>analytics.mojadomena.pl</1>, <3>tracking.mojadomena.pl</3> lub <5>stats.mojadomena.pl</5>). Są one powszechnie blokowane przez programy blokujące reklamy i powodują utratę danych.",
+        "warningGeneric": "Zamiast tego użyj ogólnej subdomeny, takiej jak <1>t.mojadomena.pl</1>.",
+        "domain": "Domena",
+        "domainPlaceholder": "Wprowadź domenę (np. t.mojadomena.pl)",
+        "invalidDomain": "Wprowadź prawidłową subdomenę, np. t.mojadomena.pl.",
+        "domainKeywordWarning": "Uwaga: ta nazwa hosta zawiera słowo często blokowane przez programy blokujące reklamy (analytics, tracking itp.). Proxy zostanie skonfigurowane, ale nadal może być blokowane. Zalecamy użycie ogólnej subdomeny, np. t.mojadomena.pl.",
+        "noDomains": "Brak jeszcze domen proxy. Dodaj jedną, aby rozpocząć.",
+        "domainsTitle": "Zarządzane reverse proxy",
+        "liveSince": "Aktywne od {{date}}",
+        "addedOn": "Dodano {{date}}",
+        "domainColumn": "Domena",
+        "statusColumn": "Status",
+        "statusWaiting": "Oczekiwanie na DNS",
+        "statusIssuing": "Wystawianie certyfikatu",
+        "statusLive": "Aktywne",
+        "statusError": "Błąd",
+        "almostThere": "Prawie gotowe — skonfiguruj swój DNS",
+        "cnameInstructions": "Dodaj poniższy rekord <1>CNAME</1> u swojego dostawcy DNS, aby skierować subdomenę na naszą sieć.",
+        "issuingTitle": "Przygotowywanie certyfikatu",
+        "issuingDescription": "DNS został rozwiązany. Wystawiamy certyfikat Let's Encrypt — zajmuje to zazwyczaj niecałą minutę.",
+        "dnsRecordType": "Typ",
+        "dnsRecordName": "Nazwa",
+        "dnsRecordValue": "Wartość",
+        "dnsRecordTTL": "TTL",
+        "ttlAuto": "Auto",
+        "cloudflareTipTitle": "Używasz Cloudflare?",
+        "cloudflareTipBody": "Upewnij się, że rekord jest ustawiony na <1>Tylko DNS</1> (DNS only), a nie <3>Obsługiwane przez proxy</3> (Proxied). Proxy Cloudflare zakłóca proces wydawania naszego certyfikatu.",
+        "cloudflareProxied": "Obsługiwane przez proxy",
+        "cloudflareDnsOnly": "Tylko DNS",
+        "verifyNow": "Sprawdź status",
+        "deleteTitle": "Usunąć domenę proxy?",
+        "deleteConfirm": "Spowoduje to zatrzymanie akceptowania ruchu analitycznego na tej nazwie hosta. Upewnij się, że kod śledzący już na nią nie wskazuje.",
+        "deleted": "Domena proxy usunięta",
+        "added": "Domena proxy dodana. Skonfiguruj poniższy rekord CNAME, aby zakończyć.",
+        "installSnippetTitle": "Zainstaluj fragment kodu",
+        "installSnippetDescription": "Zastąp istniejący tag śledzący i wywołanie init następującym kodem:",
+        "scriptTagLabel": "Tag skryptu śledzącego",
+        "initLabel": "Zainicjuj tracker",
+        "copy": "Kopiuj",
+        "copied": "Skopiowano",
+        "learnMore": "Przeczytaj pełny poradnik konfiguracji",
+        "errorPrefix": "Błąd: "
       },
       "captcha": {
         "title": "Integracja CAPTCHA",
@@ -1789,6 +2093,9 @@
       "websiteUrl": "Adres URL witryny",
       "websiteUrlPlaceholder": "https://example.com",
       "websiteUrlHint": "Opcjonalnie. Adres URL Twojej witryny jest używany do wyświetlania favicony obok nazwy projektu oraz do tego, aby ścieżki stron były klikalne w analityce.",
+      "brandKeywords": "Brandowe słowa kluczowe",
+      "brandKeywordsPlaceholder": "swetrix, swetrix analytics",
+      "brandKeywordsHint": "Słowa kluczowe oddzielone przecinkami do klasyfikacji zapytań jako ruch brandowy. Jeśli pole jest puste, zostaną wykryte automatycznie na podstawie adresu URL witryny i nazwy projektu.",
       "invalidUrl": "Wprowadź prawidłowy adres URL (np. https://example.com)",
       "origins": "Dozwolone źródła",
       "originsHint": "Lista źródeł (domen), które mogą używać skryptu z twoim identyfikatorem projektu, oddzielonych przecinkami.\nPozostaw puste, aby zezwolić na wszystkie źródła (ustawienie domyślne).\nPrzykład: cornell.edu, app.example.com, *.gov.ua",
@@ -1923,24 +2230,121 @@
       "error": "Przepraszamy, coś poszło nie tak. Spróbuj ponownie.",
       "disclaimer": "Odpowiedzi AI nie zawsze są dokładne. Zweryfikuj ważne dane.",
       "recentChats": "Ostatnie czaty",
+      "pinnedChats": "Przypięte czaty",
       "viewAll": "Zobacz wszystkie",
       "allChats": "Wszystkie czaty",
       "noChats": "Brak historii czatu",
+      "noChatsMatch": "Brak czatów pasujących do wyszukiwania",
       "newChat": "Nowa rozmowa",
       "deleteChat": "Usuń czat",
       "deleteChatConfirm": "Czy na pewno chcesz usunąć ten czat?",
       "chatDeleted": "Czat usunięty",
+      "searchChatsPlaceholder": "Szukaj czatów po nazwie lub treści…",
+      "searchHint": "Wpisz co najmniej 2 znaki, aby wyszukać",
+      "filterByTag": "Filtruj według tagu",
+      "clearFilters": "Wyczyść filtry",
+      "allTags": "Wszystkie tagi",
+      "pin": "Przypnij czat",
+      "unpin": "Odepnij czat",
+      "pinned": "Przypięte",
+      "tags": "Tagi",
+      "addTag": "Dodaj tag",
+      "tagPlaceholder": "np. badania, rozliczenia, q4",
+      "tagsLimitReached": "Osiągnięto limit tagów (maks. {{max}})",
+      "tagAlreadyExists": "Tag został już dodany",
+      "tagInvalid": "Tag musi mieć 1-{{max}} znaków",
+      "renameChat": "Zmień nazwę czatu",
+      "renameChatPlaceholder": "Nazwa czatu",
+      "saveTags": "Zapisz tagi",
+      "doneEditing": "Gotowe",
+      "noTagsYet": "Brak tagów",
+      "manageTags": "Zarządzaj tagami",
+      "savingChanges": "Zapisywanie…",
       "copyLink": "Skopiuj link do czatu",
       "linkCopied": "Link skopiowano do schowka",
+      "export": "Eksportuj",
+      "copyConversation": "Kopiuj konwersację",
+      "downloadMarkdown": "Pobierz jako Markdown",
+      "conversationCopied": "Konwersacja skopiowana do schowka",
+      "copyMessage": "Skopiuj wiadomość",
+      "messageCopied": "Skopiowano do schowka",
+      "regenerate": "Wygeneruj ponownie odpowiedź",
+      "branchOff": "Odgałęzienie",
+      "branchOffConfirm": "To utworzy nową konwersację, zaczynając od tej wiadomości. Bieżący czat nie zostanie zmieniony.",
+      "branchedFrom": "Odgałęzienie od {{name}}",
+      "editMessage": "Edytuj wiadomość",
+      "saveEdit": "Zapisz",
+      "cancelEdit": "Anuluj",
+      "goodResponse": "Dobra odpowiedź",
+      "badResponse": "Zła odpowiedź",
+      "feedbackSent": "Dziękujemy za opinię!",
+      "untitledChat": "Czat bez nazwy",
+      "openInDashboard": "Otwórz w panelu",
+      "chart": {
+        "changeType": "Zmień typ wykresu",
+        "downloadPng": "Pobierz jako PNG",
+        "downloadCsv": "Pobierz jako CSV",
+        "copyData": "Skopiuj dane",
+        "dataCopied": "Dane wykresu skopiowane do schowka",
+        "types": {
+          "line": "Liniowy",
+          "area": "Obszarowy",
+          "spline": "Krzywa (Spline)",
+          "bar": "Słupkowy",
+          "pie": "Kołowy",
+          "donut": "Pierścieniowy"
+        }
+      },
       "tools": {
-        "count": "Narzędzia: {{count}}",
         "getProjectInfo": "Pobrano informacje o projekcie",
-        "getData": "Wykonano zapytanie do analityki",
+        "getData": "Odpytane dane",
         "getGoalStats": "Pobrano cele",
         "getFunnelData": "Wczytano lejek",
-        "queryData": "Odpytaj dane",
-        "goalStats": "Statystyki celów",
-        "funnelData": "Dane lejka"
+        "getFeatureFlagStats": "Pobrane statystyki flagi funkcji",
+        "getExperimentResults": "Pobrane wyniki eksperymentu",
+        "getSessionsList": "Pobrane ostatnie sesje",
+        "getProfilesOverview": "Pobrany przegląd profili"
+      },
+      "howIGotThis_one": "Jak to uzyskałem · 1 krok",
+      "howIGotThis_other": "Jak to uzyskałem · {{count}} kroków",
+      "noParameters": "Brak parametrów",
+      "params": {
+        "period": "Okres",
+        "from": "Od",
+        "to": "Do",
+        "dateRange": "Zakres dat",
+        "dataType": "Typ danych",
+        "timeBucket": "Ziarnistość",
+        "measure": "Miara",
+        "filters": "Filtry",
+        "goalId": "Cel",
+        "funnelId": "Lejek",
+        "flagId": "Flaga funkcji",
+        "experimentId": "Eksperyment",
+        "country": "Kraj",
+        "page": "Strona",
+        "take": "Limit",
+        "opContains": "zawiera",
+        "opNotContains": "nie zawiera",
+        "dataTypes": {
+          "analytics": "Analityka ruchu",
+          "performance": "Wydajność",
+          "captcha": "CAPTCHA",
+          "errors": "Błędy",
+          "customEvents": "Wydarzenia niestandardowe"
+        },
+        "timeBuckets": {
+          "minute": "Minuta",
+          "hour": "Godzina",
+          "day": "Dzień",
+          "month": "Miesiąc",
+          "year": "Rok"
+        },
+        "measures": {
+          "average": "Średnia",
+          "median": "Mediana",
+          "p95": "p95"
+        }
       },
       "capabilities": {
         "title": "Swetrix AI potrafi:",
@@ -1950,6 +2354,12 @@
         "performanceMetrics": "Metryki wydajności, takie jak czasy ładowania stron i TTFB",
         "errorTracking": "Dane śledzenia błędów i najczęstsze błędy",
         "trafficPatterns": "Analizuj wzorce ruchu (najpopularniejsze strony, kraje, przeglądarki, strony odsyłające)",
+        "captchaStats": "Zbadaj dane testów CAPTCHA (gdy włączone)",
+        "featureFlags": "Przejrzyj flagi funkcji i wyniki ich weryfikacji",
+        "experiments": "Analizuj wyświetlenia i konwersje testów A/B",
+        "sessions": "Zbadaj ostatnie sesje użytkowników i ścieżki",
+        "customEvents": "Rozbij wydarzenia niestandardowe według nazwy i częstotliwości",
+        "customRanges": "Użyj zdefiniowanych lub własnych zakresów dat od/do",
         "cannotTitle": "Swetrix AI nie może:",
         "cannotBrowse": "Przeglądać internetu",
         "cannotSeeOutside": "Zobaczyć danych spoza tego projektu Swetrix",
@@ -1965,9 +2375,16 @@
         "mobilePerformance": "Jak moja strona działa na urządzeniach mobilnych?",
         "deviceTypesChart": "Utwórz wykres kołowy najczęstszych typów urządzeń"
       },
+      "followUps": {
+        "title": "Możesz również zapytać"
+      },
       "dismiss": "Odrzuć",
       "stop": "Zatrzymaj",
       "loadMore": "Załaduj więcej",
+      "voiceInput": "Wprowadzanie głosowe",
+      "listening": "Słucham… kliknij ponownie, aby zatrzymać",
+      "voiceUnsupported": "Wprowadzanie głosowe nie jest obsługiwane w tej przeglądarce",
+      "voicePermissionDenied": "Brak dostępu do mikrofonu",
       "timeFormat": {
         "justNow": "Przed chwilą",
         "minutes": "{{count}} min",
@@ -2124,7 +2541,6 @@
     "dueToday": "Do zapłaty dzisiaj ({{days}} dni za darmo)",
     "next": "Rozpocznij darmowy okres próbny",
     "selectPlan": "Wybierz swój plan",
-    "termsDesc": "Kontynuując, akceptujesz <tos>Warunki korzystania</tos> obowiązujące dla Swetrix i potwierdzasz, że zapoznałeś się z naszą <privacy>Polityką prywatności</privacy>.",
     "customPlanTitle": "Potrzebujesz planu na ponad 20 mln odsłon?",
     "customPlanDesc": "Wybierz „Do {{count}} odsłon miesięcznie” i <contact>skontaktuj się z nami</contact>, aby uzyskać indywidualną wycenę."
   },
@@ -2328,6 +2744,8 @@
     "privacy": "Prywatność",
     "data-policy": "Polityka danych",
     "cookie": "Polityka plików cookie",
+    "dpa": "DPA",
+    "security": "Bezpieczeństwo",
     "terms": "Regulamin",
     "status": "Status",
     "supportUs": "Wesprzyj nas",

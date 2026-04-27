@@ -1,4 +1,4 @@
-export const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'pl', 'uk'] as const
+export const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'pl', 'uk', 'hu'] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
 
 export const DEFAULT_LOCALE: SupportedLocale = 'en'
@@ -82,6 +82,19 @@ export const translations: Record<SupportedLocale, Translations> = {
     srSuccess: 'Перевірка успішна!',
     srFailed: 'Перевірка не вдалася. Будь ласка, спробуйте ще раз.',
     ariaProgress: 'Прогрес перевірки',
+  },
+  hu: {
+    iAmHuman: 'Ember vagyok',
+    verificationFailed: 'Az ellenőrzés sikertelen, kattints az újrapróbálkozáshoz',
+    verifying: 'Ellenőrzés...',
+    ariaCheckbox: 'Emberi ellenőrző jelölőnégyzet. Nyomd meg az Entert vagy a Szóközt, hogy megerősítsd, ember vagy.',
+    ariaVerifying: 'Annak ellenőrzése, hogy ember vagy. Kérlek, várj.',
+    ariaSuccess: 'Az ellenőrzés sikeres. Emberként lettél megerősítve.',
+    ariaFailed: 'Az ellenőrzés sikertelen. Nyomd meg az Entert vagy a Szóközt az újrapróbálkozáshoz.',
+    srLoading: 'Az ellenőrzés folyamatban van. Kérlek, várj.',
+    srSuccess: 'Az ellenőrzés sikeres!',
+    srFailed: 'Az ellenőrzés sikertelen. Kérlek, próbáld újra.',
+    ariaProgress: 'Ellenőrzési folyamat',
   },
 }
 

@@ -7,13 +7,8 @@ import {
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import {
-  Link,
-  useNavigate,
-  Form,
-  useActionData,
-  useNavigation,
-} from 'react-router'
+import { Link } from '~/ui/Link'
+import { useNavigate, Form, useActionData, useNavigation } from 'react-router'
 import { toast } from 'sonner'
 
 import GithubAuth from '~/components/GithubAuth'
@@ -32,9 +27,11 @@ import type { SignupActionData } from '~/routes/signup'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
+import PasswordStrength from '~/ui/PasswordStrength'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
+import { localiseTo } from '~/utils/i18nHref'
 import routes from '~/utils/routes'
 import { MIN_PASSWORD_CHARS } from '~/utils/validator'
 
@@ -55,7 +52,7 @@ const featureKeys = [
 ] as const
 
 const Signup = () => {
-  const { t } = useTranslation('common')
+  const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
   const navigate = useNavigate()
   const navigation = useNavigation()
@@ -63,6 +60,7 @@ const Signup = () => {
 
   const [tos, setTos] = useState(false)
   const [checkIfLeaked, setCheckIfLeaked] = useState(true)
+  const [password, setPassword] = useState('')
 
   const [isSsoLoading, setIsSsoLoading] = useState(false)
 
@@ -182,7 +180,7 @@ const Signup = () => {
               'An account with this email already exists. Please sign in to link your account.',
             )
             setIsSsoLoading(false)
-            navigate(routes.signin)
+            navigate(localiseTo(routes.signin, i18n.language))
             return
           }
 
@@ -191,7 +189,12 @@ const Signup = () => {
 
           if (user.isTwoFactorAuthenticationEnabled) {
             setUser(user)
-            navigate(`${routes.signin}?show_2fa_screen=true`)
+            navigate(
+              localiseTo(
+                `${routes.signin}?show_2fa_screen=true`,
+                i18n.language,
+              ),
+            )
             setIsSsoLoading(false)
             return
           }
@@ -201,9 +204,9 @@ const Signup = () => {
           setTotalMonthlyEvents(totalMonthlyEvents)
 
           if (!user.hasCompletedOnboarding) {
-            navigate(routes.onboarding)
+            navigate(localiseTo(routes.onboarding, i18n.language))
           } else {
-            navigate(routes.dashboard)
+            navigate(localiseTo(routes.dashboard, i18n.language))
           }
 
           return
@@ -300,15 +303,22 @@ const Signup = () => {
               disabled={isLoading}
               onChange={() => clearFieldError('email')}
             />
-            <Input
-              name='password'
-              type='password'
-              label={t('auth.common.password')}
-              hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-              error={getFieldError('password')}
-              disabled={isLoading}
-              onChange={() => clearFieldError('password')}
-            />
+            <div className='space-y-2'>
+              <Input
+                name='password'
+                type='password'
+                label={t('auth.common.password')}
+                hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+                error={getFieldError('password')}
+                disabled={isLoading}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  clearFieldError('password')
+                }}
+              />
+              <PasswordStrength password={password} />
+            </div>
             {/* Hidden fields for checkbox values since Headless UI Checkbox doesn't submit natively */}
             <input type='hidden' name='tos' value={tos ? 'true' : 'false'} />
             <input

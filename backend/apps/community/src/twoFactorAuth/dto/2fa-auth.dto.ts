@@ -5,6 +5,6 @@ export class TwoFactorAuthDTO {
   @ApiProperty({ example: '123456', required: true })
   @IsNotEmpty()
   @IsString()
-  @Matches(/^\d{6}$/)
+  @Matches(/^[a-zA-Z0-9]{6,30}$/)
   twoFactorAuthenticationCode: string
 }

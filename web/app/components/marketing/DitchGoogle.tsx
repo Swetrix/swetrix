@@ -1,6 +1,6 @@
 import { ArrowRightIcon, CheckIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import routes from '~/utils/routes'
 

@@ -147,8 +147,15 @@ export class UserController {
   @ApiBearerAuth()
   @Delete('/')
   @HttpCode(204)
-  async deleteSelf(@CurrentUserId() id: string): Promise<any> {
+  async deleteSelf(
+    @CurrentUserId() id: string,
+    @Body() body: { password: string },
+  ): Promise<any> {
     this.logger.log({ id }, 'DELETE /user')
+
+    if (!body?.password) {
+      throw new BadRequestException('Password is required')
+    }
 
     const user = await this.userService.findOne({
       id,
@@ -156,6 +163,15 @@ export class UserController {
 
     if (_isEmpty(user)) {
       throw new BadRequestException('User not found')
+    }
+
+    const isPasswordValid = await this.authService.comparePassword(
+      body.password,
+      user.password,
+    )
+
+    if (!isPasswordValid) {
+      throw new BadRequestException('incorrectPassword')
     }
 
     const chResults = await getProjectsClickhouse(id)
@@ -343,11 +359,14 @@ export class UserController {
         const hashed = await this.authService.hashPassword(userDTO.password)
         await this.userService.update(id, { password: hashed })
 
-        await this.mailerService.sendEmail(
-          originalUser.email,
-          LetterTemplate.PasswordChanged,
-        )
-        await this.authService.logoutAll(id)
+        await Promise.all([
+          this.mailerService.sendEmail(
+            originalUser.email,
+            LetterTemplate.PasswordChanged,
+          ),
+          this.authService.logoutAll(id),
+          this.authService.invalidatePasswordResetTokens(id),
+        ])
       }
 
       if (userDTO.email && userDTO.email !== originalUser.email) {

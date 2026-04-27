@@ -6,7 +6,8 @@
   "compilerOptions": {
     "assets": [
       { "include": "common/templates/**/*", "watchAssets": true },
-      { "include": "i18n/**/*", "watchAssets": true }
+      { "include": "i18n/**/*", "watchAssets": true },
+      { "include": "analytics/data/**/*", "watchAssets": true }
     ],
     "tsConfigPath": "apps/cloud/tsconfig.app.json"
   },

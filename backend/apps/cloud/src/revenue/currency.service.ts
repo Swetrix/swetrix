@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import axios from 'axios'
+
 import { redis } from '../common/constants'
 import { AppLoggerService } from '../logger/logger.service'
 
@@ -70,8 +70,9 @@ export class CurrencyService {
         return JSON.parse(cached)
       }
 
-      const response = await axios.get(this.API_URL)
-      const rates = response.data?.conversions
+      const response = await fetch(this.API_URL)
+      const json = await response.json()
+      const rates = json?.conversions
 
       if (rates) {
         await redis.set(

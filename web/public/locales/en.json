@@ -125,6 +125,7 @@
     "copy": "Copy",
     "copied": "Copied",
     "failedToCopy": "Failed to copy",
+    "add": "Add",
     "new": "New",
     "all": "All",
     "active": "Active",
@@ -148,6 +149,8 @@
     "communityEdition": "Community Edition",
     "allPosts": "All posts",
     "details": "Details",
+    "type": "Type",
+    "create": "Create",
     "unknown": "Unknown",
     "showMore": "Show {{count}} more",
     "showLess": "Show less"
@@ -632,6 +635,30 @@
       "api": "Developer API",
       "2fa": "Two-factor authentication"
     },
+    "whySwitch": {
+      "heading": "Why people switch from Google Analytics to Swetrix",
+      "subheading": "Simple, privacy-respecting analytics with everything you need — without the complexity, cookie banners, or data you can't trust.",
+      "body": "Google Analytics has become too complex. Finding basic metrics now requires navigating endless menus, and its reliance on cookies forces you to use annoying consent banners - costing you up to 40% of your traffic data when users decline.\n\nSwetrix gives you a clean, real-time dashboard with no learning curve. We don't use cookies, so you don't need cookie banners, you own 100% of your data, and your website stays fast.",
+      "compareLink": "Swetrix vs Google Analytics",
+      "reasons": {
+        "privacy": {
+          "title": "Cookie-less tracking",
+          "desc": "Google Analytics requires cookie consent banners and collects personal data. Swetrix is fully cookieless and privacy respectful - no cookie consent banners needed."
+        },
+        "simplicity": {
+          "title": "Features you will actually use",
+          "desc": "Swetrix provides traffic analytics, session analysis, funnels, profiles, A/B tests - features that are actually useful in a clean & minimalistic dashboard."
+        },
+        "opensource": {
+          "title": "Open source & self-hostable",
+          "desc": "Google Analytics is a black box. Swetrix is fully open source & transparent - giving you an ability to audit the code or self-host on your own infrastructure free of charge."
+        },
+        "lightweight": {
+          "title": "Lightweight, not a liability",
+          "desc": "GA's tracking script weighs 75KB+ and slows your site down. Swetrix's tracker is under 5KB - your visitors won't even notice it."
+        }
+      }
+    },
     "freeToTry": "Free to try",
     "easyToUse": "Easy to use",
     "privacyFirst": "Privacy-first",
@@ -660,6 +687,14 @@
       "sessions": {
         "title": "Session analysis",
         "desc": "Follow individual user journeys across pages. Understand how visitors navigate your site."
+      },
+      "experiments": {
+        "title": "Experiments & Feature Flags",
+        "desc": "Run A/B tests to find what works best. Roll out features gradually with built-in feature flags."
+      },
+      "captcha": {
+        "title": "Built-in reCAPTCHA alternative",
+        "desc": "Protect forms from bots with a privacy-first, invisible proof-of-work challenge. No annoying puzzles."
       },
       "opensource": {
         "title": "Open source",
@@ -785,7 +820,7 @@
       "fair": "Fair",
       "good": "Good",
       "strong": "Strong",
-      "hint": "Use 12+ characters with uppercase, lowercase, numbers, and symbols for a strong password."
+      "hint": "Use {{amount}}+ characters with uppercase, lowercase, numbers, and symbols for a strong password."
     }
   },
   "profileSettings": {
@@ -835,6 +870,7 @@
     "notifications": "Notifications",
     "notificationsDesc": "Configure when and how you receive notifications.",
     "deactivateConfirmation": "Are you sure you want to deactivate your account?\nAll of your data will be permanently removed from our servers forever.\nThis action cannot be undone.",
+    "enterPasswordToDelete": "Enter your password to confirm",
     "deletionFeedbackLabel": "Why are you leaving? (optional)",
     "deletionFeedback": "We're sad to see you go, could you please tell us why you're leaving so we could improve our service?",
     "dataExport": "Data export",
@@ -944,6 +980,7 @@
   "organisations": {
     "create": "Create organisation",
     "organisations": "Organisations",
+    "backToList": "Back to organisations",
     "noOrganisations": "No organisations yet",
     "createOrganisation": "You haven't created or joined any organisations yet. Get started by creating your first organisation.",
     "new": "New organisation",
@@ -955,6 +992,8 @@
         "peopleDesc": "Manage members and their roles.",
         "projects": "Projects",
         "projectsDesc": "Add or remove projects for this organisation.",
+        "channels": "Notification channels",
+        "channelsDesc": "Channels visible to every member of this organisation.",
         "danger": "Danger zone",
         "dangerDesc": "Irreversible actions for this organisation."
       }
@@ -1111,6 +1150,7 @@
     "queryValueError": "Please fill threshold and the query value has to be a number.",
     "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
     "noNotificationChannel": "You do not have a notification channel set up, please set it up to be notified when one of your alerts is triggered.",
+    "noChannelsBadge": "No channels",
     "lastTriggered": "Last Triggered",
     "never": "Never",
     "qDelete": "Delete the alert?",
@@ -1138,6 +1178,110 @@
       "online_users": "Online users",
       "custom_events": "Custom events",
       "errors": "Errors"
+    },
+    "noChannels": "No notification channels are linked to this project yet. Add one in <url>Notification channels</url>.",
+    "sections": {
+      "basics": "Alert basics",
+      "basicsDescription": "Give the alert a clear name and choose whether it's currently active.",
+      "trigger": "Trigger",
+      "triggerDescription": "Pick the metric and the condition that fires the alert."
+    },
+    "channels": {
+      "heading": "Notification channels",
+      "description": "Pick which channels should receive this alert. Channels are managed in your account, organisation, or project settings.",
+      "placeholder": "Select channels..."
+    },
+    "template": {
+      "heading": "Message template",
+      "description": "Customise the message Swetrix sends when this alert fires. Type { or pick a variable below to insert dynamic values.",
+      "body": "Message body",
+      "bodyHint": "Markdown is supported. Type { to insert a variable. Leave blank to use the default template.",
+      "emailSubject": "Email subject",
+      "emailSubjectPlaceholder": "Swetrix alert: {{alert_name}}",
+      "insertVariable": "Available variables",
+      "preview": "Preview",
+      "previewMode": "Preview",
+      "editMode": "Edit",
+      "noVariables": "No variables match",
+      "unknownVariable": "Unknown variable. Type { to see all available variables.",
+      "variables": {
+        "alert_name": "The alert's name as configured in this form.",
+        "project_name": "The project this alert belongs to.",
+        "project_id": "The project's unique identifier.",
+        "dashboard_url": "Direct link to the project dashboard.",
+        "value": "The metric value that triggered the alert.",
+        "threshold": "The threshold the value was compared against.",
+        "condition": "The comparison operator (e.g. greater than).",
+        "time_window": "The time window the metric was measured over.",
+        "views": "Number of page views in the window.",
+        "unique_views": "Number of unique sessions in the window.",
+        "online_count": "Currently online users.",
+        "event_name": "Custom event name.",
+        "event_count": "Number of times the event fired.",
+        "every_event_mode": "\"yes\" if the alert fires on every occurrence.",
+        "error_count": "Number of errors that triggered the alert.",
+        "error_message": "The error message text.",
+        "error_name": "The error's class or name.",
+        "errors_url": "Direct link to the project's errors view.",
+        "is_new_only": "\"yes\" if the alert only fires for first-seen errors."
+      }
+    }
+  },
+  "notificationChannels": {
+    "heading": "Notification channels",
+    "description": "Wire up email, Telegram, Discord, Slack, custom webhooks or browser push, then attach them to alerts.",
+    "userScopeDescription": "Channels you connect here are available across all of your projects.",
+    "details": "Where it sends",
+    "add": "Add channel",
+    "empty": "No channels yet. Connect one to start receiving alerts.",
+    "emptyTitle": "No channels connected",
+    "emptyDescription": "Connect a channel below to start receiving alerts when your traffic, errors or events cross a threshold.",
+    "createTitle": "Connect a channel",
+    "editTitle": "Edit channel",
+    "deleteTitle": "Remove channel?",
+    "deleteHint": "This will detach \"{{name}}\" from any alerts using it. This cannot be undone.",
+    "test": "Send test",
+    "verify": "Verify",
+    "testSent": "Test message sent.",
+    "verifyKickedOff": "Verification step started.",
+    "created": "Channel created.",
+    "updated": "Channel updated.",
+    "deleted": "Channel removed.",
+    "nameRequired": "Please enter a channel name.",
+    "typeLabel": "Channel type",
+    "webhookUrl": "Webhook URL",
+    "statusVerified": "Verified",
+    "statusPending": "Pending verification",
+    "statusUnsubscribed": "Unsubscribed",
+    "types": {
+      "email": "Email",
+      "telegram": "Telegram",
+      "discord": "Discord",
+      "slack": "Slack",
+      "webhook": "Webhook",
+      "webpush": "Web push"
+    },
+    "email": {
+      "address": "Email address",
+      "hint": "We'll send a confirmation email before this channel can be used."
+    },
+    "telegram": {
+      "chatId": "Telegram chat ID",
+      "hint": "Open {{bot}} on Telegram and send /start. The bot will reply with your numeric chat ID — paste it here.",
+      "openBot": "Open bot"
+    },
+    "webhook": {
+      "secret": "Signing secret (optional)",
+      "secretHint": "If set, requests will include an X-Swetrix-Signature header (HMAC-SHA256)."
+    },
+    "webpush": {
+      "enable": "Enable browser notifications",
+      "enabled": "Browser notifications are enabled on this device.",
+      "useButton": "Use the \"Enable browser notifications\" button to subscribe this device.",
+      "unsupported": "This browser does not support push notifications.",
+      "permissionDenied": "Notification permission was denied.",
+      "notConfigured": "Web push is not configured on this server.",
+      "subscribeFailed": "Could not subscribe to push notifications."
     }
   },
   "goals": {
@@ -1349,15 +1493,49 @@
     "unknownError": "Unknown error"
   },
   "project": {
+    "seo": {
+      "title": "SEO",
+      "desc": "Search performance for {{url}}",
+      "connectGSC": "Connect Google Search Console to see search performance data",
+      "connectGSCDesc": "Link your Google Search Console account to view clicks, impressions, search queries, and top pages from Google Search.",
+      "connectButton": "Connect Search Console",
+      "searchEngines": "Search engines",
+      "aiReferrals": "AI referrals",
+      "clicks": "Clicks",
+      "impressions": "Impressions",
+      "avgCTR": "Average CTR",
+      "avgPosition": "Average Position",
+      "position": "Position",
+      "ctr": "CTR",
+      "clicksAndImpressions": "Clicks & Impressions",
+      "avgPositionChart": "Average Position",
+      "ctrVsPosition": "CTR vs Position",
+      "topPages": "Top pages",
+      "topQueries": "Top queries",
+      "queriesForPage": "Queries for this page",
+      "pagesForQuery": "Pages ranking for this query",
+      "page": "Page",
+      "query": "Query",
+      "lowerIsBetter": "Lower is better",
+      "yourCTR": "Your CTR",
+      "benchmark": "Benchmark",
+      "searchPages": "Search pages",
+      "searchQueries": "Search queries",
+      "noProperty": "No Search Console property selected. Go to Settings to select one.",
+      "branded": "Branded",
+      "nonBranded": "Non-branded",
+      "brandedTraffic": "Branded traffic",
+      "others": "Others",
+      "noBrandData": "No query data",
+      "quadrant": "SEO Quadrant",
+      "quadrantTooltip": "Each bubble is a search query. X-axis is ranking position (left = higher rank), Y-axis is click-through rate, and bubble size reflects impressions.\n\n<highlight>Top-left</highlight>: high rank + high CTR (your best performers).\n<highlight>Bottom-left</highlight>: high rank but low CTR (improve your title & description).\n<highlight>Top-right</highlight>: low rank but high CTR (boost these to page 1 for big gains).\n<highlight>Bottom-right</highlight>: low rank + low CTR (lowest priority)."
+    },
     "passwordProtectedHint": "Please enter the password to view this dashboard.",
     "captchaCompletions": "CAPTCHA completions",
     "addAnnotation": "Add annotation",
     "editAnnotation": "Edit annotation",
     "deleteAnnotation": "Delete annotation",
     "annotationsViewOnly": "Only project managers can add annotations",
-    "impressions": "Impressions",
-    "position": "Position",
-    "ctr": "CTR",
     "backToStats": "Back to stats",
     "directNone": "Direct / None",
     "loadingMapData": "Loading map data...",
@@ -1499,8 +1677,10 @@
     "changeInSettings": "Change this in your account settings",
     "events": "Events",
     "dropoff": "Dropoff",
-    "conversionFromStart": "Conversion from start",
+    "conversionFromStart": "from start",
     "neverEnteredTheFunnel": "Never entered the funnel",
+    "topSources": "Top sources",
+    "topCountries": "Top countries",
     "aggregation": "Aggregation",
     "locked": {
       "title": "Dashboard locked",
@@ -1552,6 +1732,8 @@
     "noProfilesFiltersDesc": "No profiles have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
     "noSessionsTitle": "No sessions yet",
     "noSessionsContent": "No sessions have been recorded for the specified period, please try a different period.",
+    "noSessionsFound": "No sessions found for this period.",
+    "exploreSessions": "Explore sessions",
     "noSessionsFiltersDesc": "No sessions have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
     "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
     "mapping": {
@@ -1561,6 +1743,7 @@
       "pg": "Page",
       "host": "Host",
       "lc": "Locale",
+      "map": "Map",
       "ref": "Referrer",
       "dv": "Device type",
       "br": "Browser",
@@ -1580,7 +1763,9 @@
       "isp": "ISP",
       "og": "Organisation",
       "ut": "Usage type",
-      "ctp": "Connection type"
+      "ctp": "Connection type",
+      "searchEngine": "Search engine",
+      "aiReferral": "AI referral"
     },
     "connectGsc": "Connect Google Search Console to see keywords for this project.",
     "gscConnectionRequired": "Google Search Console connection is required to view keywords for this project. Ask the project administrator to connect it first.",
@@ -1674,6 +1859,8 @@
       "deleteShort": "Permanently delete the project and all data.",
       "organisation": "Organisation",
       "shields": "Shields",
+      "blockedTraffic": "Blocked traffic",
+      "blockedTrafficHint": "Insights into the bot requests we filtered out before they reached your dashboard.",
       "access": "Access settings",
       "resetSuccess": "The project has been reset",
       "gsc": {
@@ -1705,8 +1892,23 @@
         "dangerDesc": "Destructive actions that cannot be undone.",
         "integrations": "Integrations",
         "integrationsDesc": "Connect external services to enrich your analytics.",
+        "alerts": "Alerts",
+        "alertsDesc": "Get notified about traffic spikes, errors, and custom events.",
+        "channels": "Notification channels",
+        "channelsDesc": "Project-scoped channels for sending alerts.",
         "revenue": "Revenue",
-        "revenueDesc": "Track revenue and attribute sales to campaigns."
+        "revenueDesc": "Track revenue and attribute sales to campaigns.",
+        "import": "Import data",
+        "importDesc": "Import analytics data from other platforms",
+        "proxy": "Managed proxy",
+        "proxyDesc": "Route the tracker script and analytics events through your own domain to bypass ad blockers."
+      },
+      "sidebarGroups": {
+        "general": "General",
+        "protection": "Protection",
+        "notifications": "Notifications",
+        "data": "Data",
+        "integrations": "Integrations"
       },
       "revenue": {
         "title": "Revenue Tracking",
@@ -1737,6 +1939,110 @@
           "description": "Pass visitor and session IDs to your payment provider to attribute revenue to marketing channels.",
           "paddleExample": "Paddle Checkout Integration:"
         }
+      },
+      "dataImport": {
+        "importFrom": "Import from",
+        "importFromDesc": "Select an analytics provider to import historical data from.",
+        "importHistory": "Import history",
+        "noImports": "No imports yet. Select a provider above to get started.",
+        "provider": "Provider",
+        "status": "Status",
+        "dateRange": "Date range",
+        "rows": "Rows",
+        "created": "Created",
+        "deleteImport": "Delete import",
+        "deleteImportConfirm": "This will permanently remove all imported data ({{count}} rows) from your analytics. This action cannot be undone.",
+        "importStarted": "Import started. Your data is being processed.",
+        "importDeleted": "Import deleted successfully",
+        "loadFailed": "Failed to load imports",
+        "uploadFailed": "Failed to upload file. Please try again.",
+        "deleteFailed": "Failed to delete import",
+        "clickToUpload": "Click to upload",
+        "orDragDrop": "or drag and drop",
+        "maxFileSize": "{{fileType}} file, max {{maxSize}} MB",
+        "uploadingProcessing": "Uploading and processing...",
+        "importFromProvider": "Import from {{provider}}",
+        "statsIncludeImported": "Stats include imported data",
+        "imported": "Imported",
+        "statusPending": "Pending",
+        "statusProcessing": "Processing",
+        "statusCompleted": "Completed",
+        "statusFailed": "Failed",
+        "uploadInstructions": "Please select your export file. Once started, the data will be imported in the background. Please allow for some time to complete. To learn more how to export 3rd party providers data, <1>see our docs</1>.",
+        "umami": {
+          "description": "Import pageviews and custom events from Umami export"
+        },
+        "simple-analytics": {
+          "description": "Import pageviews and events from Simple Analytics export"
+        },
+        "fathom": {
+          "description": "Import pageviews and events from Fathom Analytics export"
+        },
+        "plausible": {
+          "description": "Import historical aggregates from Plausible Analytics ZIP export (approximated)"
+        },
+        "google-analytics": {
+          "description": "Import pageviews and events from Google Analytics 4",
+          "fileType": "Google OAuth",
+          "connectGoogle": "Connect Google Account",
+          "connectDesc": "Connect your Google account to import historical data from Google Analytics 4. We only request read-only access to your analytics data.",
+          "selectProperty": "Select a GA4 property",
+          "startImport": "Start Import",
+          "connecting": "Connecting...",
+          "loadingProperties": "Loading properties...",
+          "noProperties": "No GA4 properties found for this Google account.",
+          "importNote": "Data will be imported in the background. Some details like locale or browser/OS versions are not available from GA4 aggregate exports."
+        }
+      },
+      "proxy": {
+        "title": "Managed proxy",
+        "description": "Route the Swetrix tracker script and analytics events through a subdomain you control. Ad blockers don't know the hostname, so they can't block the requests, and you stop losing data.",
+        "descriptionWithDocs": "Route the Swetrix tracker script and analytics events through a subdomain you control. Ad blockers don't know the hostname, so they can't block the requests. <1>Read the full setup guide</1>.",
+        "addDomain": "Add proxy domain",
+        "addDomainTitle": "Add managed reverse proxy",
+        "warningTitle": "Avoid domains that ad-blockers may flag as analytics or advertising related.",
+        "warningSubdomain": "Do not use subdomains containing words related to tracking, analytics, advertising, or anything similar (e.g. <1>analytics.mydomain.com</1>, <3>tracking.mydomain.com</3>, or <5>stats.mydomain.com</5>). These are commonly blocked by ad-blockers and will cause data loss.",
+        "warningGeneric": "Use a generic subdomain such as <1>t.mydomain.com</1> instead.",
+        "domain": "Domain",
+        "domainPlaceholder": "Enter a domain (e.g. t.mydomain.com)",
+        "invalidDomain": "Enter a valid subdomain like t.mydomain.com.",
+        "domainKeywordWarning": "Heads up: this hostname contains a word that ad blockers commonly flag (analytics, tracking, etc.). The proxy will be set up, but it may still be blocked. We recommend a generic subdomain like t.mydomain.com.",
+        "noDomains": "No proxy domains yet. Add one to get started.",
+        "domainsTitle": "Managed reverse proxies",
+        "liveSince": "Live since {{date}}",
+        "addedOn": "Added {{date}}",
+        "domainColumn": "Domain",
+        "statusColumn": "Status",
+        "statusWaiting": "Waiting for DNS",
+        "statusIssuing": "Issuing certificate",
+        "statusLive": "Live",
+        "statusError": "Error",
+        "almostThere": "Almost there — set up your DNS",
+        "cnameInstructions": "Add the following <1>CNAME</1> record at your DNS provider to point your subdomain at our edge.",
+        "issuingTitle": "Provisioning your certificate",
+        "issuingDescription": "DNS is resolved. We're issuing a Let's Encrypt certificate — this usually takes under a minute.",
+        "dnsRecordType": "Type",
+        "dnsRecordName": "Name",
+        "dnsRecordValue": "Value",
+        "dnsRecordTTL": "TTL",
+        "ttlAuto": "Auto",
+        "cloudflareTipTitle": "Using Cloudflare?",
+        "cloudflareTipBody": "Make sure the record is set to <1>DNS only</1>, not <3>Proxied</3>. Cloudflare's proxy interferes with our certificate provisioning.",
+        "cloudflareProxied": "Proxied",
+        "cloudflareDnsOnly": "DNS only",
+        "verifyNow": "Check status",
+        "deleteTitle": "Remove proxy domain?",
+        "deleteConfirm": "This will stop accepting analytics traffic on this hostname. Make sure your tracker code is no longer pointing at it.",
+        "deleted": "Proxy domain deleted",
+        "added": "Proxy domain added. Set up the CNAME record below to finish.",
+        "installSnippetTitle": "Install snippet",
+        "installSnippetDescription": "Replace your existing tracker tag and init call with the following:",
+        "scriptTagLabel": "Tracker script tag",
+        "initLabel": "Initialise the tracker",
+        "copy": "Copy",
+        "copied": "Copied",
+        "learnMore": "Read the full setup guide",
+        "errorPrefix": "Error: "
       },
       "captcha": {
         "title": "CAPTCHA Integration",
@@ -1774,9 +2080,42 @@
       "botsProtectionLevel": {
         "title": "Bots protection level",
         "levels": {
-          "off": "Off: we allow all incoming traffic",
-          "basic": "Basic: we detect bots based on their user agent (Googlebot, Bingbot, curl, etc.)"
+          "off": {
+            "title": "Off",
+            "description": "We allow all incoming traffic."
+          },
+          "basic": {
+            "title": "Basic",
+            "description": "We detect bots based on their user agent (Googlebot, Bingbot, curl, etc.)."
+          },
+          "strict": {
+            "title": "Strict",
+            "description": "On top of user agent checks, we also block headless browsers, datacenter IPs, vulnerability scanners, known referrer-spam sources, and requests with suspicious headers."
+          }
         }
+      },
+      "botProtectionReport": {
+        "subtitle_one": "bot request blocked",
+        "subtitle_other": "bot requests blocked",
+        "loading": "Loading bot protection report",
+        "classification": "Classification",
+        "topCountries": "Top countries",
+        "empty": "No bot traffic blocked in this period.",
+        "periodLabel": "Time period",
+        "periods": {
+          "7d": "7 days",
+          "30d": "30 days",
+          "90d": "90 days"
+        },
+        "reasons": {
+          "user_agent": "Bot user agent",
+          "headless_browser": "Headless browser",
+          "suspicious_headers": "Suspicious headers",
+          "probe_path": "Vulnerability scan",
+          "referrer_spam": "Referrer spam",
+          "datacenter_ip": "Datacenter IP"
+        },
+        "learnMore": "Learn how we block bots"
       },
       "updated": "The project's settings were updated",
       "created": "The project has been created",
@@ -1793,6 +2132,9 @@
       "websiteUrl": "Website URL",
       "websiteUrlPlaceholder": "https://example.com",
       "websiteUrlHint": "Optional. Your website URL is used to display a favicon next to your project name and to make page paths clickable in analytics.",
+      "brandKeywords": "Brand keywords",
+      "brandKeywordsPlaceholder": "swetrix, swetrix analytics",
+      "brandKeywordsHint": "Comma-separated keywords to classify search queries as branded traffic. If empty, auto-detected from your website URL and project name.",
       "invalidUrl": "Please enter a valid URL (e.g., https://example.com)",
       "origins": "Allowed origins",
       "originsHint": "A list of origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, *.gov.ua",
@@ -1927,24 +2269,121 @@
       "error": "Sorry, something went wrong. Please try again.",
       "disclaimer": "AI responses may not always be accurate. Verify important data.",
       "recentChats": "Recent chats",
+      "pinnedChats": "Pinned chats",
       "viewAll": "View all",
       "allChats": "All chats",
       "noChats": "No chat history yet",
+      "noChatsMatch": "No chats match your search",
       "newChat": "New conversation",
       "deleteChat": "Delete chat",
       "deleteChatConfirm": "Are you sure you want to delete this chat?",
       "chatDeleted": "Chat deleted",
+      "searchChatsPlaceholder": "Search chats by name or content…",
+      "searchHint": "Type at least 2 characters to search",
+      "filterByTag": "Filter by tag",
+      "clearFilters": "Clear filters",
+      "allTags": "All tags",
+      "pin": "Pin chat",
+      "unpin": "Unpin chat",
+      "pinned": "Pinned",
+      "tags": "Tags",
+      "addTag": "Add tag",
+      "tagPlaceholder": "e.g. research, billing, q4",
+      "tagsLimitReached": "Tags limit reached ({{max}} max)",
+      "tagAlreadyExists": "Tag already added",
+      "tagInvalid": "Tag must be 1-{{max}} characters",
+      "renameChat": "Rename chat",
+      "renameChatPlaceholder": "Chat name",
+      "saveTags": "Save tags",
+      "doneEditing": "Done",
+      "noTagsYet": "No tags yet",
+      "manageTags": "Manage tags",
+      "savingChanges": "Saving…",
       "copyLink": "Copy link to chat",
       "linkCopied": "Link copied to clipboard",
+      "export": "Export",
+      "copyConversation": "Copy conversation",
+      "downloadMarkdown": "Download as Markdown",
+      "conversationCopied": "Conversation copied to clipboard",
+      "copyMessage": "Copy message",
+      "messageCopied": "Copied to clipboard",
+      "regenerate": "Regenerate response",
+      "branchOff": "Branch off",
+      "branchOffConfirm": "This will create a new conversation starting from this message. The current chat will not be modified.",
+      "branchedFrom": "Branched from {{name}}",
+      "editMessage": "Edit message",
+      "saveEdit": "Save",
+      "cancelEdit": "Cancel",
+      "goodResponse": "Good response",
+      "badResponse": "Bad response",
+      "feedbackSent": "Thanks for the feedback!",
+      "untitledChat": "Untitled chat",
+      "openInDashboard": "Open in dashboard",
+      "chart": {
+        "changeType": "Change chart type",
+        "downloadPng": "Download as PNG",
+        "downloadCsv": "Download as CSV",
+        "copyData": "Copy data",
+        "dataCopied": "Chart data copied to clipboard",
+        "types": {
+          "line": "Line",
+          "area": "Area",
+          "spline": "Spline",
+          "bar": "Bar",
+          "pie": "Pie",
+          "donut": "Donut"
+        }
+      },
       "tools": {
-        "count": "Tools: {{count}}",
         "getProjectInfo": "Fetched project info",
-        "getData": "Queried analytics",
+        "getData": "Queried data",
         "getGoalStats": "Fetched goals",
         "getFunnelData": "Loaded funnel",
-        "queryData": "Query data",
-        "goalStats": "Goal stats",
-        "funnelData": "Funnel data"
+        "getFeatureFlagStats": "Fetched feature flag stats",
+        "getExperimentResults": "Fetched experiment results",
+        "getSessionsList": "Fetched recent sessions",
+        "getProfilesOverview": "Fetched profiles overview"
+      },
+      "howIGotThis_one": "How I got this · 1 step",
+      "howIGotThis_other": "How I got this · {{count}} steps",
+      "noParameters": "No parameters",
+      "params": {
+        "period": "Period",
+        "from": "From",
+        "to": "To",
+        "dateRange": "Date range",
+        "dataType": "Data type",
+        "timeBucket": "Granularity",
+        "measure": "Measure",
+        "filters": "Filters",
+        "goalId": "Goal",
+        "funnelId": "Funnel",
+        "flagId": "Feature flag",
+        "experimentId": "Experiment",
+        "country": "Country",
+        "page": "Page",
+        "take": "Limit",
+        "opContains": "contains",
+        "opNotContains": "does not contain",
+        "dataTypes": {
+          "analytics": "Traffic analytics",
+          "performance": "Performance",
+          "captcha": "CAPTCHA",
+          "errors": "Errors",
+          "customEvents": "Custom events"
+        },
+        "timeBuckets": {
+          "minute": "Minute",
+          "hour": "Hour",
+          "day": "Day",
+          "month": "Month",
+          "year": "Year"
+        },
+        "measures": {
+          "average": "Average",
+          "median": "Median",
+          "p95": "p95"
+        }
       },
       "capabilities": {
         "title": "Swetrix AI can:",
@@ -1954,6 +2393,12 @@
         "performanceMetrics": "Performance metrics like page load times and TTFB",
         "errorTracking": "Error tracking data and top errors",
         "trafficPatterns": "Analyze traffic patterns (top pages, countries, browsers, referrers)",
+        "captchaStats": "Inspect CAPTCHA challenge data (when enabled)",
+        "featureFlags": "Audit feature flags and their evaluation results",
+        "experiments": "Analyse A/B experiment exposures and conversions",
+        "sessions": "Inspect recent user sessions and journeys",
+        "customEvents": "Break down custom events by name and frequency",
+        "customRanges": "Use predefined or custom from/to date ranges",
         "cannotTitle": "Swetrix AI can't:",
         "cannotBrowse": "Browse the web",
         "cannotSeeOutside": "See data outside this Swetrix project",
@@ -1969,9 +2414,16 @@
         "mobilePerformance": "How does my site perform on mobile?",
         "deviceTypesChart": "Create a pie chart of most common device types"
       },
+      "followUps": {
+        "title": "You might also ask"
+      },
       "dismiss": "Dismiss",
       "stop": "Stop",
       "loadMore": "Load more",
+      "voiceInput": "Voice input",
+      "listening": "Listening… click again to stop",
+      "voiceUnsupported": "Voice input is not supported in this browser",
+      "voicePermissionDenied": "Microphone access denied",
       "timeFormat": {
         "justNow": "Just now",
         "minutes": "{{count}}m",
@@ -2331,6 +2783,8 @@
     "privacy": "Privacy",
     "data-policy": "Data Policy",
     "cookie": "Cookie Policy",
+    "dpa": "DPA",
+    "security": "Security",
     "terms": "Terms",
     "status": "Status",
     "supportUs": "Support us",

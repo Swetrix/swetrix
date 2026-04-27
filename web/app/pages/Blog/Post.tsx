@@ -1,10 +1,12 @@
 import { CaretLeftIcon } from '@phosphor-icons/react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLoaderData, useLocation } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useLoaderData, useLocation } from 'react-router'
 
 import ExitIntentPopup from '~/components/ExitIntentPopup'
 import NotFound from '~/pages/NotFound'
+import ArticleNav from '~/pages/Blog/ArticleNav'
 import { trackPageview } from '~/utils/analytics'
 
 interface Post {
@@ -23,6 +25,7 @@ export default function PostSlug() {
   const location = useLocation()
   const post = useLoaderData() as Post
   const { t } = useTranslation('common')
+  const articleRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const meta = post?.author
@@ -61,7 +64,7 @@ export default function PostSlug() {
                   {t('common.allPosts')}
                 </Link>
               )}
-              <article className='relative'>
+              <article ref={articleRef} className='relative'>
                 <div className='mb-2 font-mono text-sm leading-6 font-medium tracking-wide uppercase'>
                   <dl>
                     <dt className='sr-only'>Date</dt>
@@ -80,7 +83,7 @@ export default function PostSlug() {
                         <img
                           className='size-12 rounded-full'
                           src={`/assets/blog-authors/${post.twitter_handle}.png`}
-                          alt=''
+                          alt={post.author || ''}
                         />
                       ) : null}
                       <div className='flex flex-col gap-0.5 text-sm leading-4'>
@@ -107,6 +110,48 @@ export default function PostSlug() {
                   <div dangerouslySetInnerHTML={{ __html: post.html }} />
                 </div>
               </article>
+              {!post.standalone && <ArticleNav articleRef={articleRef} />}
+              {post.title ? (
+                <script
+                  type='application/ld+json'
+                  dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                      '@context': 'https://schema.org',
+                      '@type': 'BlogPosting',
+                      headline: post.title,
+                      ...(post.intro && { description: post.intro }),
+                      ...(post.date && {
+                        datePublished: post.date,
+                        dateModified: post.date,
+                      }),
+                      ...(post.author && {
+                        author: {
+                          '@type': 'Person',
+                          name: post.author,
+                          ...(post.twitter_handle && {
+                            url: `https://x.com/${post.twitter_handle}`,
+                          }),
+                        },
+                      }),
+                      publisher: {
+                        '@type': 'Organization',
+                        name: 'Swetrix',
+                        url: 'https://swetrix.com',
+                        logo: {
+                          '@type': 'ImageObject',
+                          url: 'https://swetrix.com/assets/logo_blue.png',
+                        },
+                      },
+                      mainEntityOfPage: {
+                        '@type': 'WebPage',
+                        '@id': `https://swetrix.com${location.pathname}`,
+                      },
+                    })
+                      .replace(/</g, '\\u003c')
+                      .replace(/\u2028|\u2029/g, ''),
+                  }}
+                />
+              ) : null}
             </main>
           </div>
         </div>

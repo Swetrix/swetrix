@@ -51,10 +51,12 @@ export class TwoFactorAuthService {
       const result = await verify({
         token: twoFactorAuthenticationCode,
         secret: user.twoFactorAuthenticationSecret,
+        epochTolerance: 30,
       })
 
       return result.valid
-    } catch {
+    } catch (error) {
+      console.error('[TwoFactorAuthService] TOTP verification error:', error)
       return false
     }
   }

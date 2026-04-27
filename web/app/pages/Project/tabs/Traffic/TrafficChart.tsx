@@ -1,5 +1,6 @@
 import { ChartOptions } from 'billboard.js'
 import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Annotation } from '~/lib/models/Project'
 
@@ -23,6 +24,7 @@ interface TrafficChartProps {
   annotations?: Annotation[]
   period?: string
   timezone?: string
+  onDataPointClick?: (d: { x: Date; index: number }) => void
 }
 
 export const TrafficChart = ({
@@ -42,7 +44,15 @@ export const TrafficChart = ({
   annotations,
   period,
   timezone,
+  onDataPointClick,
 }: TrafficChartProps) => {
+  const { t } = useTranslation()
+
+  const dataPointClickLabel = useMemo(
+    () => (onDataPointClick ? t('project.exploreSessions') : undefined),
+    [onDataPointClick, t],
+  )
+
   const options: ChartOptions = useMemo(() => {
     return getSettings(
       chartData,
@@ -59,6 +69,8 @@ export const TrafficChart = ({
       annotations,
       period,
       timezone,
+      onDataPointClick,
+      dataPointClickLabel,
     )
   }, [
     chartData,
@@ -75,6 +87,8 @@ export const TrafficChart = ({
     annotations,
     period,
     timezone,
+    onDataPointClick,
+    dataPointClickLabel,
   ])
 
   const deps = useMemo(

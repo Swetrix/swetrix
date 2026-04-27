@@ -1,0 +1,176 @@
+---
+title: Bypass adblockers with a managed reverse proxy
+slug: /adblockers/managed-proxy
+---
+
+Swetrix Cloud can run a reverse proxy for you on a subdomain you control, so the tracker script and analytics events are served from your own domain. Browsers (and ad blockers) see only first-party requests to your site, which means dramatically less data loss.
+
+This page walks you through setting one up. The whole process takes about 5 minutes plus DNS propagation time.
+
+<Callout type="info">
+  **Looking for the most effective option?** A [self-hosted
+  proxy](/adblockers/how-to#best-self-hosted-proxy-least-detectable) running on your own
+  infrastructure is the gold standard for adblocker bypass — it's fully indistinguishable from any
+  other request to your site. It requires more technical knowledge to set up. The managed reverse
+  proxy described here is highly effective for most users and far easier to configure, but the
+  request ultimately resolves to a Swetrix-controlled edge, which makes it slightly more detectable
+  to aggressive blocklists.
+</Callout>
+
+## How it works
+
+```
+Visitor's browser ──► t.example.com ─(CNAME)─► <random-id>.proxy.swetrix.org
+                                                       │
+                                                       ▼
+                                              Swetrix edge proxy
+                                             (Let's Encrypt cert
+                                             issued automatically)
+                                                       │
+                                          ┌────────────┴────────────┐
+                                          ▼                         ▼
+                                 swetrix.com/swetrix.js    api.swetrix.com/log
+```
+
+- You add a CNAME record on a subdomain you own — for example `t.example.com` — pointing at a target hostname Swetrix gives you (`<random-id>.proxy.swetrix.org`).
+- Our edge servers terminate TLS for your hostname, automatically issuing a Let's Encrypt certificate the first time a request hits the edge.
+- Two routes are exposed on your subdomain:
+  - `GET https://t.example.com/script.js` — the tracker script (cached at the edge).
+  - `POST https://t.example.com/log/*` — the analytics API (event ingestion, session/profile calls, etc.).
+
+The visitor's real IP address is preserved via `X-Forwarded-For`, and we strip cookies / authorisation headers before forwarding requests upstream.
+
+## Setup
+
+<Steps>
+<Step>
+<h3>Pick a subdomain</h3>
+
+Pick a subdomain on a domain you control. The subdomain should be something **generic** — try to avoid words ad blockers commonly target.
+
+| ✅ Good         | ❌ Avoid                |
+| --------------- | ----------------------- |
+| `t.example.com` | `analytics.example.com` |
+| `m.example.com` | `tracking.example.com`  |
+| `s.example.com` | `stats.example.com`     |
+| `i.example.com` | `telemetry.example.com` |
+
+You can register up to 5 managed proxy domains per project.
+
+</Step>
+<Step>
+<h3>Add the domain in Swetrix</h3>
+
+1. Open your project in the Swetrix dashboard.
+2. Go to **Settings → Managed proxy**.
+3. Click **Add managed reverse proxy**, enter your subdomain, and submit.
+
+You'll see the domain appear in the list with a `Waiting` status and a **CNAME target** that looks like `<random-id>.proxy.swetrix.org`.
+
+</Step>
+<Step>
+<h3>Add the CNAME record</h3>
+
+In your DNS provider, create a `CNAME` record:
+
+| Name                                   | Type    | Value                            | TTL              |
+| -------------------------------------- | ------- | -------------------------------- | ---------------- |
+| `t` (or whatever subdomain you picked) | `CNAME` | `<random-id>.proxy.swetrix.org.` | 3600 (or "Auto") |
+
+<Callout type="warn">
+A few common gotchas:
+
+- **Cloudflare users:** make sure the record is **DNS-only** (gray cloud, not orange). Cloudflare's proxy will interfere with our cert provisioning.
+- **Apex domains** (e.g. `example.com`) cannot be used directly because CNAME records aren't allowed on the root. Use a subdomain.
+- DNS propagation can take a few minutes.
+
+</Callout>
+
+</Step>
+<Step>
+<h3>Wait for the status to flip</h3>
+
+After the CNAME resolves, the status moves from `Waiting` → `Issuing` → `Live` automatically (we re-check every minute). You can also click the refresh icon to force a re-check.
+
+- `Waiting` — we haven't seen the CNAME resolve yet.
+- `Issuing` — DNS is good; Let's Encrypt is provisioning the cert (usually under a minute).
+- `Live` — your subdomain is fully operational.
+- `Error` — something went wrong. The reason is shown next to the domain.
+
+</Step>
+<Step>
+<h3>Update your tracker code</h3>
+
+Once your domain is `Live`, replace your existing tracker tag:
+
+<Tabs defaultValue="script">
+<TabsList>
+  <TabsTrigger value="script"><CodeIcon /> Script tag</TabsTrigger>
+  <TabsTrigger value="npm"><NpmIcon /> npm package</TabsTrigger>
+</TabsList>
+<TabsContent value="script">
+
+```html
+<script src="https://t.example.com/script.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    swetrix.init("YOUR_PROJECT_ID", {
+      apiURL: "https://t.example.com/log",
+    });
+    swetrix.trackViews();
+  });
+</script>
+```
+
+</TabsContent>
+<TabsContent value="npm">
+
+If you're using the [npm package](/install-script#install-swetrix-via-npm), only set the `apiURL` — the script itself is bundled with your app:
+
+```ts
+import * as swetrix from "swetrix";
+
+swetrix.init("YOUR_PROJECT_ID", {
+  apiURL: "https://t.example.com/log",
+});
+swetrix.trackViews();
+```
+
+</TabsContent>
+</Tabs>
+
+The `apiURL` option overrides the default API host for _all_ requests the tracker makes (events, session pings, profile identification, etc.) — there's nothing else to configure.
+
+</Step>
+</Steps>
+
+## Limits
+
+- Up to **5 proxy domains per project**.
+- One CNAME target per registered domain.
+- We rate-limit certificate issuance per hostname (Let's Encrypt has its own limits — be careful when renaming hostnames repeatedly).
+
+## Troubleshooting
+
+<Accordions>
+<Accordion title="The status is stuck on Waiting">
+
+The CNAME hasn't propagated yet. You can check from your machine with `dig CNAME t.example.com` — the answer should match the target Swetrix gave you. If you've waited more than an hour, double-check that the record is a CNAME (not an A) and that any DNS proxy (e.g. Cloudflare) is disabled for this record.
+
+</Accordion>
+<Accordion title="The status flipped to Error">
+
+The error message in the UI explains what's wrong. The most common causes are CNAME records pointing to the wrong target, DNS-level proxies (Cloudflare orange cloud) breaking the certificate validation, or the CNAME being removed.
+
+</Accordion>
+<Accordion title="Adblockers are still blocking my events">
+
+Most likely the subdomain you picked contains a flagged keyword (`analytics`, `track`, `stats`, etc.). Add a different subdomain with a generic name and switch your tracker code to it.
+
+</Accordion>
+<Accordion title="I removed the CNAME / I deleted the domain in Swetrix">
+
+That immediately stops accepting traffic on that hostname. Tracker calls will start failing — make sure your tracker code points at a domain that's still live.
+
+</Accordion>
+</Accordions>

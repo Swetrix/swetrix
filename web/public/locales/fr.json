@@ -125,6 +125,7 @@
     "copy": "Copier",
     "copied": "Copié",
     "failedToCopy": "Échec de la copie",
+    "add": "Ajouter",
     "new": "Nouveau",
     "all": "Tous",
     "active": "Actif",
@@ -148,6 +149,8 @@
     "communityEdition": "Édition Communautaire",
     "allPosts": "Tous les articles",
     "details": "Détails",
+    "type": "Type",
+    "create": "Créer",
     "unknown": "Inconnu",
     "showMore": "Afficher {{count}} de plus",
     "showLess": "Afficher moins"
@@ -632,6 +635,30 @@
       "api": "API développeur",
       "2fa": "Authentification à deux facteurs"
     },
+    "whySwitch": {
+      "heading": "Pourquoi les gens passent de Google Analytics à Swetrix",
+      "subheading": "Des analyses simples et respectueuses de la vie privée avec tout ce dont vous avez besoin — sans la complexité, les bannières de cookies ou les données auxquelles vous ne pouvez pas faire confiance.",
+      "body": "Google Analytics est devenu trop complexe. Trouver des métriques de base nécessite désormais de naviguer dans des menus interminables, et sa dépendance aux cookies vous oblige à utiliser des bannières de consentement ennuyeuses - ce qui vous coûte jusqu'à 40 % de vos données de trafic lorsque les utilisateurs refusent.\n\nSwetrix vous offre un tableau de bord clair et en temps réel sans courbe d'apprentissage. Nous n'utilisons pas de cookies, vous n'avez donc pas besoin de bannières de cookies, vous possédez 100 % de vos données et votre site web reste rapide.",
+      "compareLink": "Swetrix vs Google Analytics",
+      "reasons": {
+        "privacy": {
+          "title": "Suivi sans cookies",
+          "desc": "Google Analytics nécessite des bannières de consentement aux cookies et collecte des données personnelles. Swetrix est entièrement sans cookies et respectueux de la vie privée - aucune bannière de consentement n'est nécessaire."
+        },
+        "simplicity": {
+          "title": "Des fonctionnalités que vous utiliserez vraiment",
+          "desc": "Swetrix propose des analyses de trafic, l'analyse des sessions, des entonnoirs, des profils et des tests A/B - des fonctionnalités vraiment utiles dans un tableau de bord clair et minimaliste."
+        },
+        "opensource": {
+          "title": "Open source et auto-hébergeable",
+          "desc": "Google Analytics est une boîte noire. Swetrix est entièrement open source et transparent - vous donnant la possibilité d'auditer le code ou de l'auto-héberger sur votre propre infrastructure gratuitement."
+        },
+        "lightweight": {
+          "title": "Léger, pas un fardeau",
+          "desc": "Le script de suivi de GA pèse plus de 75 Ko et ralentit votre site. Le tracker de Swetrix fait moins de 5 Ko - vos visiteurs ne le remarqueront même pas."
+        }
+      }
+    },
     "freeToTry": "Essayez gratuitement",
     "easyToUse": "Facile à utiliser",
     "privacyFirst": "La confidentialité avant tout",
@@ -660,6 +687,14 @@
       "sessions": {
         "title": "Analyse des sessions",
         "desc": "Suivez les parcours individuels des utilisateurs d’une page à l’autre. Comprenez comment les visiteurs naviguent sur votre site."
+      },
+      "experiments": {
+        "title": "Expérimentations et Feature Flags",
+        "desc": "Lancez des tests A/B pour trouver ce qui fonctionne le mieux. Déployez des fonctionnalités progressivement avec des feature flags intégrés."
+      },
+      "captcha": {
+        "title": "Alternative intégrée à reCAPTCHA",
+        "desc": "Protégez les formulaires contre les robots avec un défi de preuve de travail invisible et axé sur la confidentialité. Pas de puzzles ennuyeux."
       },
       "opensource": {
         "title": "Open source",
@@ -785,7 +820,7 @@
       "fair": "Moyen",
       "good": "Bon",
       "strong": "Fort",
-      "hint": "Utilisez 12 caractères ou plus avec des majuscules, des minuscules, des chiffres et des symboles pour un mot de passe fort."
+      "hint": "Utilisez {{amount}}+ caractères ou plus avec des majuscules, des minuscules, des chiffres et des symboles pour un mot de passe fort."
     }
   },
   "profileSettings": {
@@ -835,6 +870,7 @@
     "notifications": "Notifications",
     "notificationsDesc": "Configurez quand et comment vous recevez des notifications.",
     "deactivateConfirmation": "Êtes-vous sûr de vouloir désactiver votre compte ?\nToutes vos données seront définitivement supprimées de nos serveurs.\nCette action est irréversible.",
+    "enterPasswordToDelete": "Entrez votre mot de passe pour confirmer",
     "deletionFeedbackLabel": "Pourquoi partez-vous\u0000? (facultatif)",
     "deletionFeedback": "Nous sommes désolés de vous voir partir, pourriez-vous nous dire pourquoi vous partez afin que nous puissions améliorer notre service ?",
     "dataExport": "Exportation des données",
@@ -944,6 +980,7 @@
   "organisations": {
     "create": "Créer une organisation",
     "organisations": "Organisations",
+    "backToList": "Retour aux organisations",
     "noOrganisations": "Aucune organisation pour le moment",
     "createOrganisation": "Vous n'avez encore créé ni rejoint aucune organisation. Commencez par créer votre première organisation.",
     "new": "Nouvelle organisation",
@@ -955,6 +992,8 @@
         "peopleDesc": "Gérer les membres et leurs rôles.",
         "projects": "Projets",
         "projectsDesc": "Ajouter ou supprimer des projets pour cette organisation.",
+        "channels": "Canaux de notification",
+        "channelsDesc": "Canaux visibles par tous les membres de cette organisation.",
         "danger": "Zone dangereuse",
         "dangerDesc": "Actions irréversibles pour cette organisation."
       }
@@ -1111,6 +1150,7 @@
     "queryValueError": "Veuillez entrer le seuil et la valeur de la requête doit être un nombre.",
     "noIntegration": "Vous n'avez pas encore configuré d'intégration. Créez-en une dans vos <url>paramètres du compte</url>.",
     "noNotificationChannel": "Vous n’avez pas configuré de canal de notification ; veuillez le configurer pour être notifié lorsqu’une de vos alertes est déclenchée.",
+    "noChannelsBadge": "Aucun canal",
     "lastTriggered": "Dernier déclenchement",
     "never": "Jamais",
     "qDelete": "Supprimer l'alerte ?",
@@ -1138,6 +1178,110 @@
       "online_users": "Utilisateurs en ligne",
       "custom_events": "Événements personnalisés",
       "errors": "Erreurs"
+    },
+    "noChannels": "Aucun canal de notification n'est encore lié à ce projet. Ajoutez-en un dans <url>Canaux de notification</url>.",
+    "sections": {
+      "basics": "Bases de l'alerte",
+      "basicsDescription": "Donnez à l'alerte un nom clair et choisissez si elle est actuellement active.",
+      "trigger": "Déclencheur",
+      "triggerDescription": "Choisissez la métrique et la condition qui déclenchent l'alerte."
+    },
+    "channels": {
+      "heading": "Canaux de notification",
+      "description": "Choisissez quels canaux doivent recevoir cette alerte. Les canaux se gèrent dans les paramètres de votre compte, organisation ou projet.",
+      "placeholder": "Sélectionner des canaux..."
+    },
+    "template": {
+      "heading": "Modèle de message",
+      "description": "Personnalisez le message que Swetrix envoie lorsque cette alerte se déclenche. Tapez { ou choisissez une variable ci-dessous pour insérer des valeurs dynamiques.",
+      "body": "Corps du message",
+      "bodyHint": "Le format Markdown est pris en charge. Tapez { pour insérer une variable. Laissez vide pour utiliser le modèle par défaut.",
+      "emailSubject": "Objet de l'e-mail",
+      "emailSubjectPlaceholder": "Alerte Swetrix : {{alert_name}}",
+      "insertVariable": "Variables disponibles",
+      "preview": "Aperçu",
+      "previewMode": "Aperçu",
+      "editMode": "Modifier",
+      "noVariables": "Aucune variable correspondante",
+      "unknownVariable": "Variable inconnue. Tapez { pour voir toutes les variables disponibles.",
+      "variables": {
+        "alert_name": "Le nom de l'alerte tel qu'il est configuré dans ce formulaire.",
+        "project_name": "Le projet auquel appartient cette alerte.",
+        "project_id": "L'identifiant unique du projet.",
+        "dashboard_url": "Lien direct vers le tableau de bord du projet.",
+        "value": "La valeur de la métrique qui a déclenché l'alerte.",
+        "threshold": "Le seuil auquel la valeur a été comparée.",
+        "condition": "L'opérateur de comparaison (par exemple, supérieur à).",
+        "time_window": "La fenêtre de temps sur laquelle la métrique a été mesurée.",
+        "views": "Le nombre de pages vues dans la fenêtre de temps.",
+        "unique_views": "Le nombre de sessions uniques dans la fenêtre de temps.",
+        "online_count": "Utilisateurs actuellement en ligne.",
+        "event_name": "Nom de l'événement personnalisé.",
+        "event_count": "Le nombre de fois que l'événement a été déclenché.",
+        "every_event_mode": "« yes » si l'alerte se déclenche à chaque occurrence.",
+        "error_count": "Le nombre d'erreurs qui ont déclenché l'alerte.",
+        "error_message": "Le texte du message d'erreur.",
+        "error_name": "La classe ou le nom de l'erreur.",
+        "errors_url": "Lien direct vers la vue des erreurs du projet.",
+        "is_new_only": "« yes » si l'alerte ne se déclenche que pour les erreurs rencontrées pour la première fois."
+      }
+    }
+  },
+  "notificationChannels": {
+    "heading": "Canaux de notification",
+    "description": "Configurez des e-mails, Telegram, Discord, Slack, des webhooks personnalisés ou des notifications push de navigateur, puis attachez-les aux alertes.",
+    "userScopeDescription": "Les canaux que vous connectez ici sont disponibles pour tous vos projets.",
+    "details": "Lieu d'envoi",
+    "add": "Ajouter un canal",
+    "empty": "Pas encore de canaux. Connectez-en un pour commencer à recevoir des alertes.",
+    "emptyTitle": "Aucun canal connecté",
+    "emptyDescription": "Connectez un canal ci-dessous pour commencer à recevoir des alertes lorsque votre trafic, vos erreurs ou vos événements franchissent un seuil.",
+    "createTitle": "Connecter un canal",
+    "editTitle": "Modifier le canal",
+    "deleteTitle": "Supprimer le canal ?",
+    "deleteHint": "Cela détachera \"{{name}}\" de toutes les alertes l'utilisant. Cette action est irréversible.",
+    "test": "Envoyer un test",
+    "verify": "Vérifier",
+    "testSent": "Message de test envoyé.",
+    "verifyKickedOff": "Étape de vérification démarrée.",
+    "created": "Canal créé.",
+    "updated": "Canal mis à jour.",
+    "deleted": "Canal supprimé.",
+    "nameRequired": "Veuillez entrer un nom de canal.",
+    "typeLabel": "Type de canal",
+    "webhookUrl": "URL du webhook",
+    "statusVerified": "Vérifié",
+    "statusPending": "En attente de vérification",
+    "statusUnsubscribed": "Désabonné",
+    "types": {
+      "email": "E-mail",
+      "telegram": "Telegram",
+      "discord": "Discord",
+      "slack": "Slack",
+      "webhook": "Webhook",
+      "webpush": "Push web"
+    },
+    "email": {
+      "address": "Adresse e-mail",
+      "hint": "Nous enverrons un e-mail de confirmation avant que ce canal puisse être utilisé."
+    },
+    "telegram": {
+      "chatId": "ID de chat Telegram",
+      "hint": "Ouvrez {{bot}} sur Telegram et envoyez /start. Le bot répondra avec votre ID de chat numérique — collez-le ici.",
+      "openBot": "Ouvrir le bot"
+    },
+    "webhook": {
+      "secret": "Secret de signature (facultatif)",
+      "secretHint": "S'il est défini, les requêtes incluront un en-tête X-Swetrix-Signature (HMAC-SHA256)."
+    },
+    "webpush": {
+      "enable": "Activer les notifications du navigateur",
+      "enabled": "Les notifications du navigateur sont activées sur cet appareil.",
+      "useButton": "Utilisez le bouton \"Activer les notifications du navigateur\" pour abonner cet appareil.",
+      "unsupported": "Ce navigateur ne prend pas en charge les notifications push.",
+      "permissionDenied": "L'autorisation de notification a été refusée.",
+      "notConfigured": "Le push web n'est pas configuré sur ce serveur.",
+      "subscribeFailed": "Impossible de s'abonner aux notifications push."
     }
   },
   "goals": {
@@ -1349,15 +1493,49 @@
     "unknownError": "Erreur inconnue"
   },
   "project": {
+    "seo": {
+      "title": "SEO",
+      "desc": "Performances de recherche pour {{url}}",
+      "connectGSC": "Connectez Google Search Console pour voir les données de performances de recherche",
+      "connectGSCDesc": "Associez votre compte Google Search Console pour voir les clics, les impressions, les requêtes de recherche et les meilleures pages provenant de la recherche Google.",
+      "connectButton": "Connecter Search Console",
+      "searchEngines": "Moteurs de recherche",
+      "aiReferrals": "Référents IA",
+      "clicks": "Clics",
+      "impressions": "Impressions",
+      "avgCTR": "CTR moyen",
+      "avgPosition": "Position moyenne",
+      "position": "Position",
+      "ctr": "CTR",
+      "clicksAndImpressions": "Clics & Impressions",
+      "avgPositionChart": "Position moyenne",
+      "ctrVsPosition": "CTR vs Position",
+      "topPages": "Meilleures pages",
+      "topQueries": "Meilleures requêtes",
+      "queriesForPage": "Requêtes pour cette page",
+      "pagesForQuery": "Pages classées pour cette requête",
+      "page": "Page",
+      "query": "Requête",
+      "lowerIsBetter": "Plus c'est bas, mieux c'est",
+      "yourCTR": "Votre CTR",
+      "benchmark": "Benchmark",
+      "searchPages": "Pages de recherche",
+      "searchQueries": "Requêtes de recherche",
+      "noProperty": "Aucune propriété Search Console sélectionnée. Allez dans les Paramètres pour en sélectionner une.",
+      "branded": "De marque",
+      "nonBranded": "Hors marque",
+      "brandedTraffic": "Trafic de marque",
+      "others": "Autres",
+      "noBrandData": "Aucune donnée de requête",
+      "quadrant": "Quadrant SEO",
+      "quadrantTooltip": "Chaque bulle est une requête de recherche. L'axe des X correspond à la position dans le classement (à gauche = meilleur classement), l'axe des Y au taux de clics (CTR) et la taille de la bulle reflète les impressions.\n\n<highlight>En haut à gauche</highlight> : classement élevé + CTR élevé (vos meilleures performances).\n<highlight>En bas à gauche</highlight> : classement élevé mais CTR faible (améliorez votre titre et description).\n<highlight>En haut à droite</highlight> : classement faible mais CTR élevé (boostez-les en page 1 pour des gains importants).\n<highlight>En bas à droite</highlight> : classement faible + CTR faible (priorité la plus basse)."
+    },
     "passwordProtectedHint": "Veuillez saisir le mot de passe pour afficher ce tableau de bord.",
     "captchaCompletions": "Résolutions de CAPTCHA",
     "addAnnotation": "Ajouter une annotation",
     "editAnnotation": "Modifier l'annotation",
     "deleteAnnotation": "Supprimer l'annotation",
     "annotationsViewOnly": "Seuls les chefs de projet peuvent ajouter des annotations",
-    "impressions": "Impressions",
-    "position": "Position",
-    "ctr": "CTR (taux de clics)",
     "backToStats": "Retour aux statistiques",
     "directNone": "Direct / Aucun",
     "loadingMapData": "Chargement des données de la carte...",
@@ -1499,8 +1677,10 @@
     "changeInSettings": "Modifiez cela dans les paramètres de votre compte",
     "events": "Événements",
     "dropoff": "Abandon",
-    "conversionFromStart": "Conversion depuis le début",
+    "conversionFromStart": "Depuis le début",
     "neverEnteredTheFunnel": "Jamais entré dans le tunnel",
+    "topSources": "Principales sources",
+    "topCountries": "Principaux pays",
     "aggregation": "Agrégation",
     "locked": {
       "title": "Tableau de bord verrouillé",
@@ -1552,6 +1732,8 @@
     "noProfilesFiltersDesc": "Aucun profil n’a été enregistré pour la période spécifiée ou avec les filtres appliqués, veuillez essayer une autre période ou modifier les filtres appliqués.",
     "noSessionsTitle": "Aucune session pour le moment",
     "noSessionsContent": "Aucune session n’a été enregistrée pour la période spécifiée, veuillez essayer une autre période.",
+    "noSessionsFound": "Aucune session trouvée pour cette période.",
+    "exploreSessions": "Explorer les sessions",
     "noSessionsFiltersDesc": "Aucune session n’a été enregistrée pour la période spécifiée ou avec les filtres appliqués, veuillez essayer une autre période ou modifier les filtres appliqués.",
     "noCaptchaEv": "Aucun événement n'a été capturé pour la période spécifiée.\nSi vous n'avez pas encore configuré CAPTCHA, vous pouvez consulter notre <url>Documentation</url> pour l'intégrer facilement dans votre application.",
     "mapping": {
@@ -1561,6 +1743,7 @@
       "pg": "Page",
       "host": "Hôte",
       "lc": "Paramètres régionaux",
+      "map": "Carte",
       "ref": "Référent",
       "dv": "Type d'appareil",
       "br": "Navigateur",
@@ -1576,7 +1759,9 @@
       "entryPage": "Page d'entrée",
       "exitPage": "Page de sortie",
       "keywords": "Mots-clés",
-      "keyword": "Mots-clé"
+      "keyword": "Mots-clé",
+      "searchEngine": "Moteur de recherche",
+      "aiReferral": "Référent IA"
     },
     "connectGsc": "Connectez Google Search Console pour afficher les mots-clés de ce projet.",
     "gscConnectionRequired": "Une connexion à Google Search Console est requise pour afficher les mots-clés de ce projet. Demandez à l’administrateur du projet d’établir d’abord la connexion.",
@@ -1701,8 +1886,23 @@
         "dangerDesc": "Actions destructrices qui ne peuvent pas être annulées.",
         "integrations": "Intégrations",
         "integrationsDesc": "Connectez des services externes pour enrichir vos analyses.",
+        "alerts": "Alertes",
+        "alertsDesc": "Soyez informé des pics de trafic, des erreurs et des événements personnalisés.",
+        "channels": "Canaux de notification",
+        "channelsDesc": "Canaux au niveau du projet pour l'envoi d'alertes.",
         "revenue": "Revenus",
-        "revenueDesc": "Suivez les revenus et attribuez les ventes aux campagnes."
+        "revenueDesc": "Suivez les revenus et attribuez les ventes aux campagnes.",
+        "import": "Importer des données",
+        "importDesc": "Importer des données d'analyse depuis d'autres plateformes",
+        "proxy": "Proxy géré",
+        "proxyDesc": "Acheminez le script de suivi et les événements d'analyse via votre propre domaine pour contourner les bloqueurs de publicités."
+      },
+      "sidebarGroups": {
+        "general": "Général",
+        "protection": "Protection",
+        "notifications": "Notifications",
+        "data": "Données",
+        "integrations": "Intégrations"
       },
       "revenue": {
         "title": "Suivi des revenus",
@@ -1733,6 +1933,110 @@
           "description": "Transmettez les identifiants de visiteur et de session à votre prestataire de paiement afin d’attribuer les revenus aux canaux marketing.",
           "paddleExample": "Intégration de Paddle Checkout :"
         }
+      },
+      "dataImport": {
+        "importFrom": "Importer depuis",
+        "importFromDesc": "Sélectionnez un fournisseur d'analyses à partir duquel importer des données historiques.",
+        "importHistory": "Historique d'importation",
+        "noImports": "Aucune importation pour le moment. Sélectionnez un fournisseur ci-dessus pour commencer.",
+        "provider": "Fournisseur",
+        "status": "Statut",
+        "dateRange": "Plage de dates",
+        "rows": "Lignes",
+        "created": "Créé le",
+        "deleteImport": "Supprimer l'importation",
+        "deleteImportConfirm": "Cela supprimera définitivement toutes les données importées ({{count}} lignes) de vos analyses. Cette action est irréversible.",
+        "importStarted": "Importation commencée. Vos données sont en cours de traitement.",
+        "importDeleted": "Importation supprimée avec succès",
+        "loadFailed": "Échec du chargement des importations",
+        "uploadFailed": "Échec du téléversement du fichier. Veuillez réessayer.",
+        "deleteFailed": "Échec de la suppression de l'importation",
+        "clickToUpload": "Cliquez pour téléverser",
+        "orDragDrop": "ou glissez-déposez",
+        "maxFileSize": "Fichier {{fileType}}, max {{maxSize}} Mo",
+        "uploadingProcessing": "Téléversement et traitement en cours...",
+        "importFromProvider": "Importer depuis {{provider}}",
+        "statsIncludeImported": "Les statistiques incluent les données importées",
+        "imported": "Importé",
+        "statusPending": "En attente",
+        "statusProcessing": "En traitement",
+        "statusCompleted": "Terminé",
+        "statusFailed": "Échoué",
+        "uploadInstructions": "Veuillez sélectionner votre fichier d'exportation. Une fois démarrée, l'importation des données se fera en arrière-plan. Veuillez prévoir un certain temps pour qu'elle se termine. Pour en savoir plus sur l'exportation des données de fournisseurs tiers, <1>consultez notre documentation</1>.",
+        "umami": {
+          "description": "Importer les pages vues et les événements personnalisés depuis l'exportation Umami"
+        },
+        "simple-analytics": {
+          "description": "Importer les pages vues et les événements depuis l'exportation Simple Analytics"
+        },
+        "fathom": {
+          "description": "Importer les pages vues et les événements depuis l'exportation Fathom Analytics"
+        },
+        "plausible": {
+          "description": "Importer les données agrégées historiques depuis l'export ZIP de Plausible Analytics (approximatives)"
+        },
+        "google-analytics": {
+          "description": "Importer les pages vues et les événements depuis Google Analytics 4",
+          "fileType": "Google OAuth",
+          "connectGoogle": "Connecter un compte Google",
+          "connectDesc": "Connectez votre compte Google pour importer l'historique des données de Google Analytics 4. Nous ne demandons qu'un accès en lecture seule à vos données d'analyse.",
+          "selectProperty": "Sélectionner une propriété GA4",
+          "startImport": "Démarrer l'importation",
+          "connecting": "Connexion...",
+          "loadingProperties": "Chargement des propriétés...",
+          "noProperties": "Aucune propriété GA4 trouvée pour ce compte Google.",
+          "importNote": "Les données seront importées en arrière-plan. Certains détails comme les paramètres régionaux ou les versions du navigateur/système d'exploitation ne sont pas disponibles dans les exportations agrégées de GA4."
+        }
+      },
+      "proxy": {
+        "title": "Proxy géré",
+        "description": "Acheminez le script de suivi Swetrix et les événements d'analyse via un sous-domaine que vous contrôlez. Les bloqueurs de publicités ne connaissent pas le nom d'hôte, ils ne peuvent donc pas bloquer les requêtes, et vous arrêtez de perdre des données.",
+        "descriptionWithDocs": "Acheminez le script de suivi Swetrix et les événements d'analyse via un sous-domaine que vous contrôlez. Les bloqueurs de publicités ne connaissent pas le nom d'hôte, ils ne peuvent donc pas bloquer les requêtes. <1>Lisez le guide de configuration complet</1>.",
+        "addDomain": "Ajouter un domaine proxy",
+        "addDomainTitle": "Ajouter un reverse proxy géré",
+        "warningTitle": "Évitez les domaines que les bloqueurs de publicités pourraient signaler comme étant liés à l'analyse ou à la publicité.",
+        "warningSubdomain": "N'utilisez pas de sous-domaines contenant des mots liés au suivi, à l'analyse, à la publicité ou quoi que ce soit de similaire (par ex. <1>analytics.mondomaine.com</1>, <3>tracking.mondomaine.com</3> ou <5>stats.mondomaine.com</5>). Ceux-ci sont couramment bloqués par les bloqueurs de publicités et entraîneront une perte de données.",
+        "warningGeneric": "Utilisez plutôt un sous-domaine générique tel que <1>t.mondomaine.com</1>.",
+        "domain": "Domaine",
+        "domainPlaceholder": "Entrez un domaine (par ex. t.mondomaine.com)",
+        "invalidDomain": "Entrez un sous-domaine valide comme t.mondomaine.com.",
+        "domainKeywordWarning": "Attention : ce nom d'hôte contient un mot que les bloqueurs de publicités signalent couramment (analytics, tracking, etc.). Le proxy sera configuré, mais il pourrait toujours être bloqué. Nous recommandons un sous-domaine générique comme t.mondomaine.com.",
+        "noDomains": "Aucun domaine proxy pour le moment. Ajoutez-en un pour commencer.",
+        "domainsTitle": "Reverse proxies gérés",
+        "liveSince": "En ligne depuis le {{date}}",
+        "addedOn": "Ajouté le {{date}}",
+        "domainColumn": "Domaine",
+        "statusColumn": "Statut",
+        "statusWaiting": "En attente du DNS",
+        "statusIssuing": "Émission du certificat",
+        "statusLive": "En ligne",
+        "statusError": "Erreur",
+        "almostThere": "Presque terminé — configurez votre DNS",
+        "cnameInstructions": "Ajoutez l'enregistrement <1>CNAME</1> suivant chez votre fournisseur DNS pour faire pointer votre sous-domaine vers notre réseau.",
+        "issuingTitle": "Génération de votre certificat",
+        "issuingDescription": "Le DNS est résolu. Nous émettons un certificat Let's Encrypt — cela prend généralement moins d'une minute.",
+        "dnsRecordType": "Type",
+        "dnsRecordName": "Nom",
+        "dnsRecordValue": "Valeur",
+        "dnsRecordTTL": "TTL",
+        "ttlAuto": "Auto",
+        "cloudflareTipTitle": "Vous utilisez Cloudflare ?",
+        "cloudflareTipBody": "Assurez-vous que l'enregistrement est défini sur <1>DNS uniquement</1> (DNS only), et non sur <3>Proxy activé</3> (Proxied). Le proxy de Cloudflare interfère avec la génération de notre certificat.",
+        "cloudflareProxied": "Proxy activé",
+        "cloudflareDnsOnly": "DNS uniquement",
+        "verifyNow": "Vérifier le statut",
+        "deleteTitle": "Supprimer le domaine proxy ?",
+        "deleteConfirm": "Cela cessera d'accepter le trafic d'analyse sur ce nom d'hôte. Assurez-vous que votre code de suivi ne pointe plus vers celui-ci.",
+        "deleted": "Domaine proxy supprimé",
+        "added": "Domaine proxy ajouté. Configurez l'enregistrement CNAME ci-dessous pour terminer.",
+        "installSnippetTitle": "Installer l'extrait de code",
+        "installSnippetDescription": "Remplacez votre balise de suivi existante et l'appel d'initialisation par ce qui suit :",
+        "scriptTagLabel": "Balise de script de suivi",
+        "initLabel": "Initialiser le suivi",
+        "copy": "Copier",
+        "copied": "Copié",
+        "learnMore": "Lire le guide de configuration complet",
+        "errorPrefix": "Erreur : "
       },
       "captcha": {
         "title": "Intégration CAPTCHA",
@@ -1789,6 +2093,9 @@
       "websiteUrl": "URL du site web",
       "websiteUrlPlaceholder": "https://example.com",
       "websiteUrlHint": "Facultatif. L’URL de votre site web est utilisée pour afficher un favicon à côté du nom de votre projet et pour rendre les chemins de page cliquables dans les analyses.",
+      "brandKeywords": "Mots-clés de marque",
+      "brandKeywordsPlaceholder": "swetrix, swetrix analytics",
+      "brandKeywordsHint": "Mots-clés séparés par des virgules pour classer les requêtes de recherche en tant que trafic de marque. Si vide, auto-détecté à partir de l'URL de votre site web et du nom de votre projet.",
       "invalidUrl": "Veuillez saisir une URL valide (p. ex. https://example.com )",
       "origins": "Origines autorisées",
       "originsHint": "Une liste d'origines (domaines) autorisées à utiliser le script avec votre ProjectID, séparées par des virgules.\nLaissez vide pour autoriser toutes les origines (paramètre par défaut).\nExemple : cornell.edu, app.example.com, *.gov.ua",
@@ -1923,24 +2230,121 @@
       "error": "Désolé, quelque chose s’est mal passé. Veuillez réessayer.",
       "disclaimer": "Les réponses de l’IA ne sont pas toujours exactes. Vérifiez les données importantes.",
       "recentChats": "Discussions récentes",
+      "pinnedChats": "Chats épinglés",
       "viewAll": "Tout voir",
       "allChats": "Toutes les discussions",
       "noChats": "Aucun historique de discussion pour l’instant",
+      "noChatsMatch": "Aucun chat ne correspond à votre recherche",
       "newChat": "Nouvelle conversation",
       "deleteChat": "Supprimer la discussion",
       "deleteChatConfirm": "Êtes-vous sûr de vouloir supprimer cette discussion ?",
       "chatDeleted": "Discussion supprimée",
+      "searchChatsPlaceholder": "Rechercher des chats par nom ou contenu…",
+      "searchHint": "Tapez au moins 2 caractères pour rechercher",
+      "filterByTag": "Filtrer par tag",
+      "clearFilters": "Effacer les filtres",
+      "allTags": "Tous les tags",
+      "pin": "Épingler le chat",
+      "unpin": "Désépingler le chat",
+      "pinned": "Épinglé",
+      "tags": "Tags",
+      "addTag": "Ajouter un tag",
+      "tagPlaceholder": "ex. recherche, facturation, t4",
+      "tagsLimitReached": "Limite de tags atteinte ({{max}} max)",
+      "tagAlreadyExists": "Tag déjà ajouté",
+      "tagInvalid": "Le tag doit comporter entre 1 et {{max}} caractères",
+      "renameChat": "Renommer le chat",
+      "renameChatPlaceholder": "Nom du chat",
+      "saveTags": "Enregistrer les tags",
+      "doneEditing": "Terminé",
+      "noTagsYet": "Pas encore de tags",
+      "manageTags": "Gérer les tags",
+      "savingChanges": "Enregistrement…",
       "copyLink": "Copier le lien vers la discussion",
       "linkCopied": "Lien copié dans le presse-papiers",
+      "export": "Exporter",
+      "copyConversation": "Copier la conversation",
+      "downloadMarkdown": "Télécharger en Markdown",
+      "conversationCopied": "Conversation copiée dans le presse-papiers",
+      "copyMessage": "Copier le message",
+      "messageCopied": "Copié dans le presse-papiers",
+      "regenerate": "Régénérer la réponse",
+      "branchOff": "Créer une branche",
+      "branchOffConfirm": "Cela créera une nouvelle conversation à partir de ce message. Le chat actuel ne sera pas modifié.",
+      "branchedFrom": "Branche issue de {{name}}",
+      "editMessage": "Modifier le message",
+      "saveEdit": "Enregistrer",
+      "cancelEdit": "Annuler",
+      "goodResponse": "Bonne réponse",
+      "badResponse": "Mauvaise réponse",
+      "feedbackSent": "Merci pour le retour !",
+      "untitledChat": "Chat sans titre",
+      "openInDashboard": "Ouvrir dans le tableau de bord",
+      "chart": {
+        "changeType": "Changer le type de graphique",
+        "downloadPng": "Télécharger en PNG",
+        "downloadCsv": "Télécharger en CSV",
+        "copyData": "Copier les données",
+        "dataCopied": "Données du graphique copiées dans le presse-papiers",
+        "types": {
+          "line": "Ligne",
+          "area": "Zone",
+          "spline": "Spline",
+          "bar": "Barres",
+          "pie": "Secteur",
+          "donut": "Anneau"
+        }
+      },
       "tools": {
-        "count": "Outils : {{count}}",
         "getProjectInfo": "Informations du projet récupérées",
-        "getData": "Données d’analyse interrogées",
+        "getData": "Données requêtées",
         "getGoalStats": "Objectifs récupérés",
         "getFunnelData": "Entonnoir chargé",
-        "queryData": "Données interrogées",
-        "goalStats": "Statistiques des objectifs",
-        "funnelData": "Données de l’entonnoir"
+        "getFeatureFlagStats": "Statistiques de feature flag récupérées",
+        "getExperimentResults": "Résultats d'expérience récupérés",
+        "getSessionsList": "Sessions récentes récupérées",
+        "getProfilesOverview": "Aperçu des profils récupéré"
+      },
+      "howIGotThis_one": "Comment j'ai obtenu ceci · 1 étape",
+      "howIGotThis_other": "Comment j'ai obtenu ceci · {{count}} étapes",
+      "noParameters": "Aucun paramètre",
+      "params": {
+        "period": "Période",
+        "from": "De",
+        "to": "À",
+        "dateRange": "Plage de dates",
+        "dataType": "Type de données",
+        "timeBucket": "Granularité",
+        "measure": "Mesure",
+        "filters": "Filtres",
+        "goalId": "Objectif",
+        "funnelId": "Entonnoir",
+        "flagId": "Feature flag",
+        "experimentId": "Expérience",
+        "country": "Pays",
+        "page": "Page",
+        "take": "Limite",
+        "opContains": "contient",
+        "opNotContains": "ne contient pas",
+        "dataTypes": {
+          "analytics": "Analyse du trafic",
+          "performance": "Performance",
+          "captcha": "CAPTCHA",
+          "errors": "Erreurs",
+          "customEvents": "Événements personnalisés"
+        },
+        "timeBuckets": {
+          "minute": "Minute",
+          "hour": "Heure",
+          "day": "Jour",
+          "month": "Mois",
+          "year": "Année"
+        },
+        "measures": {
+          "average": "Moyenne",
+          "median": "Médiane",
+          "p95": "p95"
+        }
       },
       "capabilities": {
         "title": "Swetrix IA peut :",
@@ -1950,6 +2354,12 @@
         "performanceMetrics": "Indicateurs de performance tels que les temps de chargement des pages et le TTFB",
         "errorTracking": "Données de suivi des erreurs et principales erreurs",
         "trafficPatterns": "Analyser les tendances de trafic (pages principales, pays, navigateurs, référents)",
+        "captchaStats": "Inspecter les données des défis CAPTCHA (si activé)",
+        "featureFlags": "Auditer les feature flags et leurs résultats d'évaluation",
+        "experiments": "Analyser les expositions et conversions des tests A/B",
+        "sessions": "Inspecter les sessions et parcours utilisateurs récents",
+        "customEvents": "Détailler les événements personnalisés par nom et fréquence",
+        "customRanges": "Utiliser des plages de dates (de/à) prédéfinies ou personnalisées",
         "cannotTitle": "Swetrix AI ne peut pas :",
         "cannotBrowse": "Parcourir le Web",
         "cannotSeeOutside": "Voir des données en dehors de ce projet Swetrix",
@@ -1965,9 +2375,16 @@
         "mobilePerformance": "Comment mon site se comporte-t-il sur mobile ?",
         "deviceTypesChart": "Créer un diagramme circulaire des types d’appareils les plus courants"
       },
+      "followUps": {
+        "title": "Vous pourriez aussi demander"
+      },
       "dismiss": "Ignorer",
       "stop": "Arrêter",
       "loadMore": "Charger plus",
+      "voiceInput": "Saisie vocale",
+      "listening": "Écoute en cours… cliquez à nouveau pour arrêter",
+      "voiceUnsupported": "La saisie vocale n'est pas prise en charge dans ce navigateur",
+      "voicePermissionDenied": "Accès au microphone refusé",
       "timeFormat": {
         "justNow": "À l’instant",
         "minutes": "{{count}} min",
@@ -2124,7 +2541,6 @@
     "dueToday": "Dû aujourd'hui ({{days}} jours gratuits)",
     "next": "Démarrer l'essai gratuit",
     "selectPlan": "Sélectionnez votre forfait",
-    "termsDesc": "En continuant, vous acceptez les <tos>Conditions d'utilisation</tos> applicables à Swetrix et confirmez avoir lu notre <privacy>Politique de confidentialité</privacy>.",
     "customPlanTitle": "Besoin d'un plan supérieur à 20M de pages vues ?",
     "customPlanDesc": "Sélectionnez « Jusqu'à {{count}} pages vues par mois » et <contact>contactez-nous</contact> pour un devis personnalisé."
   },
@@ -2328,6 +2744,8 @@
     "privacy": "Confidentialité",
     "data-policy": "Politique de données",
     "cookie": "Politique de Cookies",
+    "dpa": "DPA",
+    "security": "Sécurité",
     "terms": "Conditions",
     "status": "Statut",
     "supportUs": "Soutenez‑nous",

@@ -1,0 +1,186 @@
+---
+title: Traffic sources & reducing "Direct / None"
+slug: /traffic-sources
+icon: Compass
+---
+
+A common question we get is:
+
+> Why is so much of my traffic showing up as **Direct / None**? Are visitors really typing my URL into the address bar?
+
+Almost certainly not. "Direct / None" is a catch-all bucket for any visit that arrived **without a recognisable referrer or campaign tag**. A non‑zero amount of it is unavoidable — but on most sites a meaningful share of it is recoverable.
+
+This page explains where Direct/None comes from, what Swetrix already does for you automatically, and how you can configure your site and campaigns to attribute more traffic correctly.
+
+## Where "Direct / None" actually comes from
+
+A pageview is bucketed as Direct/None when **all** of the following are true:
+
+- The browser sent no `Referer` header (so `document.referrer` is empty), and
+- The URL had no `utm_*` parameters, and
+- The URL had no recognised ad/social click ID (Swetrix detects these — see below).
+
+In practice, the empty‑referrer case happens far more often than people expect:
+
+<Accordions>
+  <Accordion title="In-app browsers (the biggest cause)">
+    When a user taps a link inside the **X / Twitter, Reddit, Facebook,
+    Instagram, TikTok, LinkedIn, Slack, Discord, WhatsApp, Telegram,
+    Signal, Gmail iOS, Outlook iOS, or Notion** mobile apps, the link
+    usually opens in the app's embedded WebView or the system browser
+    via a deep link. Both routes typically **drop the HTTP `Referer`
+    header entirely**.
+
+    There is nothing your site can do about this — but ad/social click
+    IDs (e.g. `fbclid`, `ttclid`) usually survive, which is why they're
+    so important. Swetrix uses them to recover the source automatically.
+
+  </Accordion>
+  <Accordion title="HTTPS to HTTP downgrades">
+    If a user clicks a link **from an HTTPS page to an HTTP page**, all
+    modern browsers strip the referrer. The fix is to serve your whole
+    site over HTTPS (you should be doing this anyway).
+  </Accordion>
+  <Accordion title="Strict referrer policies on the source site">
+    If the referring page sets `Referrer-Policy: no-referrer` or
+    `Referrer-Policy: same-origin` (via response header or
+    `<meta name="referrer">`), no referrer is sent. You can't control
+    other sites' policies, but you should make sure **your own** site
+    doesn't accidentally do this on outbound links.
+  </Accordion>
+  <Accordion title="Privacy browsers and tracking protection">
+    Brave, Firefox in strict mode, Safari with ITP, and Tor all strip
+    or downgrade referrers aggressively for cross‑site navigation. This
+    is a permanent feature of the privacy‑first browser landscape.
+  </Accordion>
+  <Accordion title="Bookmarks, typed URLs, QR codes, document files">
+    Visitors who open your site from a browser bookmark, type the URL
+    in directly, scan a QR code, or click a link in a PDF / Word doc /
+    desktop email client send no referrer. These visits genuinely *are*
+    direct — but you can still tag QR codes and downloadable documents
+    with UTM parameters (see below).
+  </Accordion>
+</Accordions>
+
+## What Swetrix does automatically
+
+You don't need to do anything for these — they're handled in our backend:
+
+- **Browser‑reported referrer.** Whenever the browser sends a `Referer`
+  header (i.e. `document.referrer` is non‑empty), Swetrix uses it as
+  the primary source. The hostname is matched against an extensive
+  built‑in map so that, for example, `https://www.google.com/search?q=…`
+  is grouped under **Google**, `https://duckduckgo.com/` under
+  **DuckDuckGo**, `https://chat.openai.com/` under **ChatGPT**, and so
+  on across hundreds of search engines, AI assistants, social
+  networks, news aggregators, and mail providers. Anything we don't
+  recognise is shown under its raw hostname (e.g. `news.ycombinator.com`).
+- **Click‑ID detection.** When a URL contains a known ad or social click
+  ID (`gclid`, `gbraid`, `wbraid`, `dclid`, `fbclid`, `msclkid`, `ttclid`,
+  `twclid`, `li_fat_id`, `epik`, `rdt_cid`, `igshid`, `scclid`, `yclid`,
+  `mc_cid`, `_hsenc`, `irclid`, `sscid`, and a few more) and no UTM
+  parameters were set, Swetrix synthesizes a sensible source / medium
+  for you. For example, a user landing on `?fbclid=…` from the Facebook
+  app — with no `Referer` header — will be attributed to
+  `facebook / social` instead of `Direct / None`.
+- **In‑app referrer parsing.** Chrome on Android sometimes exposes the
+  source app via referrers like `android-app://com.reddit.frontpage/`.
+  Swetrix recognises these and maps them to the correct source.
+- **UTM parameters always win.** If you set `utm_source` / `utm_medium`
+  / `utm_campaign` on your campaign URLs, those values are used as‑is
+  and override any click‑ID inference.
+
+<Callout type="info">
+  Click‑ID detection works automatically on every pageview, including internal navigation in
+  single-page apps. The tracker captures the URL query string on each pageview and forwards it to
+  our backend, where the click ID is matched against our map and discarded — only the inferred
+  `source` / `medium` is stored. Make sure you're on a recent version of the `swetrix` script if
+  you're not seeing this behaviour.
+</Callout>
+
+## What you can do as a site owner
+
+### 1. Tag every campaign with UTM parameters
+
+UTM parameters are the **only** attribution mechanism that survives
+every browser, every privacy mode, every in‑app browser, and every
+referrer policy. If you only do one thing on this list, do this.
+
+A canonical campaign link looks like:
+
+```
+https://example.com/landing
+  ?utm_source=newsletter
+  &utm_medium=email
+  &utm_campaign=spring_sale_2026
+```
+
+Add UTMs to:
+
+- Every newsletter / transactional email link
+- Every social media post (Twitter/X, LinkedIn, Reddit, Bluesky, Mastodon, …)
+- Every ad creative (Google, Meta, TikTok, X Ads, LinkedIn Ads, …)
+- Every QR code (printed materials, packaging, conference booths)
+- Every PDF / whitepaper / slide deck link
+- Every partner / affiliate link
+- Every podcast show‑notes link
+- Every push notification deep link
+
+### 2. Serve your site over HTTPS
+
+If any part of your site is HTTP, links from HTTPS pages to it will
+lose their referrer. There's no good reason to be on HTTP in 2026 —
+[Let's Encrypt](https://letsencrypt.org/) is free, and most hosts
+provide automatic certificate management.
+
+### 3. Don't strip referrers on your own outbound links
+
+If you have a strict `Referrer-Policy` on your site (set via response
+header or `<meta name="referrer">`), other sites you link to won't see
+_you_ as a referrer either. The browser default,
+`strict-origin-when-cross-origin`, is fine — it sends the origin of
+your site (e.g. `https://example.com`) without the path.
+
+Avoid these on outbound links unless you have a specific privacy
+requirement:
+
+- `Referrer-Policy: no-referrer`
+- `Referrer-Policy: same-origin`
+- `<meta name="referrer" content="no-referrer">`
+- `<a rel="noreferrer">` on links you _want_ to be attributed
+
+`<a rel="noopener">` is safe and recommended — it does **not** strip
+the referrer.
+
+### 4. Use the noscript fallback for paranoid blockers
+
+If a non‑trivial share of your visitors uses an aggressive blocker that
+prevents the JS tracker from running, the
+[noscript pixel](/install-script#noscript) still records the pageview —
+but with no referrer, no UTMs, and no click IDs. Make sure to install
+both, not just one or the other.
+
+### 5. Audit your link sharing behaviour
+
+A few sneaky sources of avoidable Direct/None:
+
+- **URL shorteners** sometimes strip the referrer when redirecting.
+  Prefer shorteners that pass through your UTMs (most modern ones do).
+- **Open Graph previews** in messaging apps are pre‑rendered server‑side
+  and don't generate pageviews — but the click that follows comes with
+  no referrer. Append UTMs to the canonical URL the OG preview points to.
+- **Push notifications and webhook redirects** rarely set a referrer.
+  Always include UTMs in the deep‑link URL.
+
+## What's still going to be Direct/None — and why that's okay
+
+Even with everything above set up perfectly, expect a baseline of
+20–40% Direct/None on a typical content site, and higher on
+mobile‑heavy or app‑driven sites. That residual is real direct traffic
+plus the unfixable browser/protocol limitations described at the top
+of this page.
+
+The right way to think about Direct/None is as a **floor**, not a goal
+of zero. The fixable share is what tagging your campaigns recovers —
+and that share is exactly the part you actually care about for
+attribution and ROI reporting.

@@ -1,5 +1,6 @@
 import { init, track } from '../src/index'
 import { Lib } from '../src/Lib'
+import { setLocation } from './testUtils'
 
 jest.mock('../src/Lib', () => {
   const originalModule = jest.requireActual('../src/Lib')
@@ -21,15 +22,7 @@ describe('Custom Event Tracking', () => {
 
     libInstance = init(PROJECT_ID, { devMode: true }) as Lib
 
-    Object.defineProperty(window, 'location', {
-      value: {
-        hostname: 'example.com',
-        pathname: '/test-page',
-        hash: '',
-        search: '',
-      },
-      writable: true,
-    })
+    setLocation({ hostname: 'example.com', pathname: '/test-page' })
   })
 
   test('track function should track a custom event', async () => {

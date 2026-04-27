@@ -7,6 +7,9 @@ import Footer from "./components/Footer";
 import Analytics from "./components/Analytics";
 import "./global.css";
 
+const defaultOgImage =
+  "https://swetrix.com/api/og-image.png?title=Swetrix+Docs&description=Open-source%2C+privacy-first+web+analytics+documentation&label=Docs";
+
 export const metadata = {
   title: {
     template: "%s | Swetrix Docs",
@@ -14,6 +17,17 @@ export const metadata = {
   },
   description: "Swetrix documentation — turn traffic into insights.",
   icons: { icon: "/favicon.ico" },
+  openGraph: {
+    title: "Swetrix Docs",
+    description: "Swetrix documentation — turn traffic into insights.",
+    images: [{ url: defaultOgImage, width: 1800, height: 945, alt: "Swetrix Docs" }],
+  },
+  twitter: {
+    card: "summary_large_image" as const,
+    title: "Swetrix Docs",
+    description: "Swetrix documentation — turn traffic into insights.",
+    images: [defaultOgImage],
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -31,14 +45,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                     className="-translate-y-px dark:hidden"
                     height="28"
                     width="24"
-                    src="/docs/img/logo/blue.png"
+                    src="/assets/logo/dark.svg"
                     alt=""
                   />
                   <img
                     className="-translate-y-px hidden dark:block"
                     height="28"
                     width="24"
-                    src="/docs/img/logo/white.png"
+                    src="/assets/logo/light.svg"
                     alt=""
                   />
                   <span className="text-2xl leading-5 font-bold text-slate-900 dark:text-white">

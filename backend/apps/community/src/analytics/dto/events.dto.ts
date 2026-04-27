@@ -172,6 +172,17 @@ export class EventsDto {
   co?: string
 
   @ApiProperty({
+    example: 'fbclid=AbCdEf123&utm_source=newsletter',
+    description:
+      'Raw URL query string of the landing page (without leading ?). Used server-side to recover traffic source from ad/social click IDs when the browser stripped the referrer.',
+    maxLength: 2048,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  qs?: string
+
+  @ApiProperty({
     example: {
       affiliate: 'Yes',
       protocol: 'HTTPS',

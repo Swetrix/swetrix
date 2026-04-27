@@ -52,8 +52,25 @@ export async function generateMetadata(props: { params: Promise<{ slug?: string[
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
+  const ogParams = new URLSearchParams({ title: page.data.title, label: "Docs" });
+  if (page.data.description) {
+    ogParams.set("description", page.data.description);
+  }
+  const ogImageUrl = `https://swetrix.com/api/og-image.png?${ogParams.toString()}`;
+
   return {
     title: page.data.title,
     description: page.data.description,
+    openGraph: {
+      title: page.data.title,
+      description: page.data.description,
+      images: [{ url: ogImageUrl, width: 1800, height: 945, alt: page.data.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: page.data.title,
+      description: page.data.description,
+      images: [ogImageUrl],
+    },
   };
 }

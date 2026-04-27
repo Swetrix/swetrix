@@ -476,9 +476,68 @@ export const paddleLanguageMapping = {
   uk: 'en',
 } as Record<string, string>
 
+// Languages that get a URL prefix (/{lang}/...). The default language is served unprefixed.
+export const localisedLanguages = whitelist.filter(
+  (lng) => lng !== defaultLanguage,
+)
+
+// Pathname patterns that should NEVER receive a language prefix.
+// Blog and blog-style content (rendered through routes/$.tsx) stays unlocalised,
+// as do API routes and other internal endpoints.
+const UNLOCALISED_PATH_PATTERNS: RegExp[] = [
+  /^\/blog(\/|$)/,
+  /^\/api(\/|$)/,
+  /^\/backend(\/|$)/,
+  /^\/_internal_data/,
+  /^\/sitemap[^/]*\.xml$/,
+  /^\/robots\.txt$/,
+  /^\/ping$/,
+  /^\/favicon/,
+  /^\/locales\//,
+  /^\/assets\//,
+]
+
+export const isUnlocalisedPath = (pathname: string): boolean =>
+  UNLOCALISED_PATH_PATTERNS.some((re) => re.test(pathname))
+
+// If the pathname starts with /{whitelisted-lang}, return that language code,
+// otherwise null. The default language is never present in the path.
+export const getLangFromPath = (pathname: string): string | null => {
+  const match = pathname.match(/^\/([^/]+)(?:\/|$)/)
+  if (!match) return null
+  const candidate = match[1]
+  if (candidate === defaultLanguage) return null
+  if (localisedLanguages.includes(candidate)) return candidate
+  return null
+}
+
+export const stripLangFromPath = (pathname: string): string => {
+  const lang = getLangFromPath(pathname)
+  if (!lang) return pathname
+  const stripped = pathname.slice(`/${lang}`.length)
+  return stripped.length === 0 ? '/' : stripped
+}
+
+// Build the canonical URL pathname for a given language. The default language
+// is served unprefixed; other languages get a /{lang} prefix unless the path
+// is one of the always-unprefixed routes (blog, api, etc.).
+export const localisePath = (pathname: string, lang: string): string => {
+  if (!pathname.startsWith('/')) return pathname
+
+  const unprefixed = stripLangFromPath(pathname)
+
+  if (isUnlocalisedPath(unprefixed)) return unprefixed
+  if (lang === defaultLanguage || !localisedLanguages.includes(lang)) {
+    return unprefixed
+  }
+
+  if (unprefixed === '/') return `/${lang}`
+  return `/${lang}${unprefixed}`
+}
+
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 34
+export const I18N_CACHE_BREAKER = 37
 
 export const roles: Role[] = ['admin', 'viewer']
 
@@ -508,6 +567,7 @@ const SELFHOSTED_PROJECT_TABS = {
 const PRODUCTION_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
+  seo: 'seo',
   profiles: 'profiles',
   funnels: 'funnels',
   sessions: 'sessions',
@@ -515,7 +575,6 @@ const PRODUCTION_PROJECT_TABS = {
   goals: 'goals',
   experiments: 'experiments',
   featureFlags: 'featureFlags',
-  alerts: 'alerts',
   captcha: 'captcha',
   ai: 'ai',
 } as const

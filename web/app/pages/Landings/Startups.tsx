@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import Header from '~/components/Header'
 import { ComparisonTable } from '~/components/marketing/ComparisonTable'

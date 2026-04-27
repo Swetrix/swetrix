@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InfoIcon } from '@phosphor-icons/react'
 import Tooltip from './Tooltip'
+import { MIN_PASSWORD_CHARS } from '~/utils/validator'
 
 interface PasswordStrengthProps {
   password: string
@@ -23,8 +24,7 @@ const calculateStrength = (password: string): StrengthLevel => {
 
   let score = 0
 
-  if (password.length >= 8) score += 1
-  if (password.length >= 12) score += 1
+  if (password.length >= 8) score += 2
   if (/[a-z]/.test(password)) score += 1
   if (/[A-Z]/.test(password)) score += 1
   if (/[0-9]/.test(password)) score += 1
@@ -109,7 +109,9 @@ const PasswordStrength = ({ password, className }: PasswordStrengthProps) => {
             {currentConfig.label}
           </span>
           <Tooltip
-            text={t('auth.passwordStrength.hint')}
+            text={t('auth.passwordStrength.hint', {
+              amount: MIN_PASSWORD_CHARS,
+            })}
             tooltipNode={
               <InfoIcon className='size-4 cursor-help text-gray-400 dark:text-gray-500' />
             }

@@ -44,6 +44,7 @@ import _find from 'lodash/find'
 import dayjs from 'dayjs'
 
 import { hash } from 'bcrypt'
+import { parseBrandKeywords } from './gsc.service'
 import { Auth, Public } from '../auth/decorators'
 import { isValidDate } from '../analytics/analytics.service'
 import {
@@ -1805,11 +1806,23 @@ export class ProjectController {
         : null
     }
 
+    if (projectDTO.brandKeywords !== undefined) {
+      const trimmed = Array.isArray(projectDTO.brandKeywords)
+        ? projectDTO.brandKeywords.map((k) => _trim(k)).filter(Boolean)
+        : []
+
+      project.brandKeywords =
+        trimmed.length > 0 ? JSON.stringify(trimmed) : null
+    }
+
     await this.projectService.update({ id }, _omit(project, ['share', 'admin']))
 
     await deleteProjectRedis(id)
 
-    return _omit(project, ['admin', 'passwordHash', 'share'])
+    const result = _omit(project, ['admin', 'passwordHash', 'share']) as any
+    result.brandKeywords = parseBrandKeywords(result.brandKeywords)
+
+    return result
   }
 
   // The routes related to sharing projects feature
@@ -1944,6 +1957,7 @@ export class ProjectController {
         !isManagerRole && !isViewerRole && 'share',
         !isManagerRole && 'captchaSecretKey',
       ]),
+      brandKeywords: parseBrandKeywords(project.brandKeywords),
       isAccessConfirmed,
       isLocked: !!project.admin?.dashboardBlockReason,
       isDataExists,

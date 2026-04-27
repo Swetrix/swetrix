@@ -17,7 +17,8 @@ import {
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useFetcher, useLocation, useSearchParams } from 'react-router'
+import { Link } from '~/ui/Link'
+import { useFetcher, useLocation, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
@@ -163,8 +164,8 @@ const ExperimentRow = ({
 
   return (
     <>
-      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
-        <div className='flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-x-6 sm:px-6'>
+      <li className='relative mb-2 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
+        <div className='flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-x-4 sm:px-5'>
           <Link
             to={{ search: resultsSearch }}
             className='flex min-w-0 flex-auto gap-x-4 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900'
@@ -177,10 +178,12 @@ const ExperimentRow = ({
                 <Badge
                   label={t(`experiments.status.${experiment.status}`)}
                   colour={statusBadgeColour}
+                  className='text-[0.625rem] leading-3'
                 />
                 <Badge
                   colour='indigo'
                   label={`${variantsCount} ${t('experiments.variants')}`}
+                  className='text-[0.625rem] leading-3'
                 />
               </div>
               {experiment.description ? (
@@ -194,18 +197,18 @@ const ExperimentRow = ({
                 </Text>
               ) : null}
               {/* Timestamps */}
-              <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400'>
+              <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
                 {experiment.startedAt ? (
-                  <span>
+                  <Text as='span' size='xs' colour='muted'>
                     {t('experiments.startedAt')}:{' '}
                     {dayjs(experiment.startedAt).format('MMM D, YYYY')}
-                  </span>
+                  </Text>
                 ) : null}
                 {experiment.endedAt ? (
-                  <span>
+                  <Text as='span' size='xs' colour='muted'>
                     {t('experiments.endedAt')}:{' '}
                     {dayjs(experiment.endedAt).format('MMM D, YYYY')}
-                  </span>
+                  </Text>
                 ) : null}
               </div>
             </div>

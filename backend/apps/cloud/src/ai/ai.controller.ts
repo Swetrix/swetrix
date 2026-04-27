@@ -3,15 +3,18 @@ import {
   Post,
   Get,
   Delete,
+  Patch,
   Body,
   Param,
   Query,
   Res,
   Headers,
+  BadRequestException,
   NotFoundException,
   ForbiddenException,
   HttpException,
   HttpStatus,
+  ValidationPipe,
 } from '@nestjs/common'
 import { Response } from 'express'
 import {
@@ -27,14 +30,16 @@ import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
-import { AiService } from './ai.service'
+import { AiService, sanitiseAssistantContent } from './ai.service'
 import { AiChatService } from './ai-chat.service'
 import {
   ChatDto,
   CreateChatDto,
   UpdateChatDto,
+  UpdateChatMetaDto,
   GetRecentChatsQueryDto,
   GetAllChatsQueryDto,
+  FeedbackDto,
 } from './dto/chat.dto'
 import { trackCustom } from '../common/analytics'
 
@@ -174,7 +179,16 @@ export class AiController {
       let hasContent = false
       let toolCallCount = 0
       let toolResultCount = 0
+      let toolErrorCount = 0
       let textDeltaCount = 0
+      let reasoningDeltaCount = 0
+      let assistantText = ''
+      let streamErrored = false
+      let streamErrorEventCount = 0
+      let stepCount = 0
+      let lastModelId: string | undefined
+      let lastProviderId: string | undefined
+      const streamStartedAt = Date.now()
       try {
         for await (const part of result.fullStream) {
           if (clientClosed) {
@@ -189,6 +203,7 @@ export class AiController {
           if (part.type === 'text-delta') {
             hasContent = true
             textDeltaCount++
+            assistantText += part.text
             res.write(
               `data: ${JSON.stringify({ type: 'text', content: part.text })}\n\n`,
             )
@@ -233,10 +248,13 @@ export class AiController {
             )
           } else if (part.type === 'reasoning-delta') {
             hasContent = true
+            reasoningDeltaCount++
             res.write(
               `data: ${JSON.stringify({ type: 'reasoning', content: part.text })}\n\n`,
             )
           } else if (part.type === 'error') {
+            streamErrored = true
+            streamErrorEventCount++
             this.logger.error(
               { error: part.error, pid, uid },
               'Error event during AI stream',
@@ -245,33 +263,81 @@ export class AiController {
               `data: ${JSON.stringify({ type: 'error', content: 'A temporary error occurred, continuing...' })}\n\n`,
             )
           } else if (part.type === 'finish') {
+            const totalUsage = (part as any)?.totalUsage ?? {}
+            const durationMs = Date.now() - streamStartedAt
+            const inputTokens = totalUsage.inputTokens ?? 0
+            const outputTokens = totalUsage.outputTokens ?? 0
+            const totalTokens =
+              totalUsage.totalTokens ?? inputTokens + outputTokens
+            const reasoningTokens =
+              totalUsage.outputTokenDetails?.reasoningTokens ??
+              totalUsage.reasoningTokens ??
+              0
+            const cachedInputTokens =
+              totalUsage.inputTokenDetails?.cacheReadTokens ??
+              totalUsage.cachedInputTokens ??
+              0
+            const cacheWriteTokens =
+              totalUsage.inputTokenDetails?.cacheWriteTokens ?? 0
+
             this.logger.log(
               {
                 pid,
                 finishReason: (part as any).finishReason,
-                usage: (part as any).usage,
+                totalUsage,
+                durationMs,
               },
               'AI stream finish event',
             )
+
             await trackCustom(
               getIPFromHeaders(headers) || 'unknown',
               headers['user-agent'],
               {
                 ev: 'AI_CHAT_STREAM_FINISHED',
                 meta: {
-                  finishReason: (part as any)?.finishReason,
-                  promptTokens: (part as any)?.usage?.promptTokens ?? 0,
-                  completionTokens: (part as any)?.usage?.completionTokens ?? 0,
-                  totalTokens: (part as any)?.usage?.totalTokens ?? 0,
+                  finishReason: (part as any)?.finishReason ?? 'unknown',
+                  modelId: lastModelId,
+                  providerId: lastProviderId,
+                  durationMs,
+                  inputTokens,
+                  outputTokens,
+                  totalTokens,
+                  reasoningTokens,
+                  cachedInputTokens,
+                  cacheWriteTokens,
+                  stepCount,
+                  toolCallCount,
+                  toolResultCount,
+                  toolErrorCount,
+                  textDeltaCount,
+                  reasoningDeltaCount,
+                  assistantTextLength: assistantText.length,
+                  inboundMessageCount: messages.length,
+                  hasContent,
+                  streamErrored,
+                  streamErrorEventCount,
+                  authed: Boolean(uid),
                 },
               },
             )
           } else if (part.type === 'finish-step') {
+            stepCount++
+            const stepResponse = (part as any)?.response
+            if (stepResponse?.modelId) {
+              lastModelId = stepResponse.modelId
+            }
+            const stepProviderId =
+              stepResponse?.providerId ?? stepResponse?.provider
+            if (stepProviderId) {
+              lastProviderId = stepProviderId
+            }
             this.logger.log(
               {
                 pid,
                 finishReason: part.finishReason,
                 usage: part.usage,
+                modelId: lastModelId,
               },
               'AI stream finish-step event',
             )
@@ -294,6 +360,7 @@ export class AiController {
           } else if (part.type === 'tool-input-end') {
             this.logger.log({ pid }, 'AI tool input end')
           } else if (part.type === 'tool-error') {
+            toolErrorCount++
             this.logger.error(
               {
                 pid,
@@ -316,6 +383,7 @@ export class AiController {
           'AI stream completed - summary',
         )
       } catch (streamError) {
+        streamErrored = true
         this.logger.error(
           { error: streamError, pid, uid },
           'Exception during AI stream iteration',
@@ -329,6 +397,48 @@ export class AiController {
           res.write(
             `data: ${JSON.stringify({ type: 'error', content: 'Failed to get a response from the AI provider. Please try again.' })}\n\n`,
           )
+        }
+      }
+
+      // Generate follow-up suggestions only when the assistant produced a real
+      // textual answer and the client is still connected. Capped with a short
+      // timeout so a slow model never delays the `done` event; on timeout we
+      // abort the in-flight OpenRouter request to avoid wasting quota.
+      if (!clientClosed && !streamErrored && assistantText.trim().length > 0) {
+        const FOLLOW_UPS_TIMEOUT_MS = 5_000
+        const controller = new AbortController()
+        const timeoutHandle = setTimeout(
+          () => controller.abort(),
+          FOLLOW_UPS_TIMEOUT_MS,
+        )
+        const onClientClose = () => controller.abort()
+        res.on('close', onClientClose)
+        try {
+          const followUps = await Promise.race([
+            this.aiService.generateFollowUps(
+              [...messages, { role: 'assistant', content: assistantText }],
+              project,
+              controller.signal,
+            ),
+            new Promise<string[]>((resolve) => {
+              controller.signal.addEventListener('abort', () => resolve([]), {
+                once: true,
+              })
+            }),
+          ])
+          if (!clientClosed && followUps.length > 0) {
+            res.write(
+              `data: ${JSON.stringify({ type: 'followUps', data: followUps })}\n\n`,
+            )
+          }
+        } catch (err) {
+          this.logger.warn(
+            { err, pid, uid },
+            'Follow-up suggestion generation threw',
+          )
+        } finally {
+          clearTimeout(timeoutHandle)
+          res.off('close', onClientClose)
         }
       }
 
@@ -356,11 +466,15 @@ export class AiController {
   @ApiBearerAuth()
   @Get(':pid/chats')
   @Auth(false, true) // Allow optional auth for public projects
-  @ApiOperation({ summary: 'Get recent AI chats for a project' })
-  @ApiResponse({ status: 200, description: 'List of recent chats' })
-  async getRecentChats(
+  @ApiOperation({
+    summary:
+      'List AI chats for a project (supports search, tag, pinned filters and pagination)',
+  })
+  @ApiResponse({ status: 200, description: 'List of chats' })
+  async getChats(
     @Param('pid') pid: string,
-    @Query() query: GetRecentChatsQueryDto,
+    @Query(new ValidationPipe({ transform: true, whitelist: true }))
+    query: GetRecentChatsQueryDto,
     @CurrentUserId() uid: string | null,
     @Headers() headers: Record<string, string>,
   ) {
@@ -378,31 +492,81 @@ export class AiController {
 
     // Do not expose stored chat history to unauthenticated users (even on public projects).
     if (!uid) {
-      return []
+      return { chats: [], total: 0 }
     }
 
-    const chats = await this.aiChatService.findRecentByProject(
-      pid,
-      uid,
-      query.limit ?? 5,
-    )
+    const isLimitMode =
+      query.limit !== undefined &&
+      query.skip === undefined &&
+      query.take === undefined &&
+      !query.search &&
+      !query.tag &&
+      query.pinned === undefined
 
-    return chats.map((chat) => ({
-      id: chat.id,
-      name: chat.name,
-      created: chat.created,
-      updated: chat.updated,
-    }))
+    const take = isLimitMode ? (query.limit ?? 5) : (query.take ?? 20)
+
+    const result = await this.aiChatService.listByProject(pid, uid, {
+      search: query.search,
+      tag: query.tag,
+      pinned: query.pinned,
+      skip: query.skip ?? 0,
+      take,
+      orderByPinned: query.orderByPinned,
+    })
+
+    return {
+      chats: result.chats.map((chat) => ({
+        id: chat.id,
+        name: chat.name,
+        pinned: chat.pinned,
+        tags: chat.tags ?? [],
+        created: chat.created,
+        updated: chat.updated,
+      })),
+      total: result.total,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get(':pid/chats/tags')
+  @Auth(false, true)
+  @ApiOperation({ summary: 'List distinct tags across the user’s chats' })
+  @ApiResponse({ status: 200, description: 'Sorted list of tag labels' })
+  async getChatTags(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
+  ) {
+    this.logger.log({ uid, pid }, 'GET /ai/:pid/chats/tags')
+
+    await this.applyRateLimit(uid, headers, 'read')
+
+    const project = await this.projectService.getFullProject(pid)
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+    this.projectService.allowedToView(project, uid)
+
+    if (!uid) {
+      return { tags: [] }
+    }
+
+    const tags = await this.aiChatService.listTagsByProject(pid, uid)
+    return { tags }
   }
 
   @ApiBearerAuth()
   @Get(':pid/chats/all')
   @Auth(false, true) // Allow optional auth for public projects
-  @ApiOperation({ summary: 'Get all AI chats for a project (paginated)' })
+  @ApiOperation({
+    summary:
+      'Get all AI chats for a project (paginated). Deprecated: use GET /:pid/chats with skip/take.',
+  })
   @ApiResponse({ status: 200, description: 'Paginated list of chats' })
   async getAllChats(
     @Param('pid') pid: string,
-    @Query() query: GetAllChatsQueryDto,
+    @Query(new ValidationPipe({ transform: true, whitelist: true }))
+    query: GetAllChatsQueryDto,
     @CurrentUserId() uid: string | null,
     @Headers() headers: Record<string, string>,
   ) {
@@ -418,22 +582,21 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
-    // Do not expose stored chat history to unauthenticated users (even on public projects).
     if (!uid) {
       return { chats: [], total: 0 }
     }
 
-    const result = await this.aiChatService.findAllByProject(
-      pid,
-      uid,
-      query.skip ?? 0,
-      query.take ?? 20,
-    )
+    const result = await this.aiChatService.listByProject(pid, uid, {
+      skip: query.skip ?? 0,
+      take: query.take ?? 20,
+    })
 
     return {
       chats: result.chats.map((chat) => ({
         id: chat.id,
         name: chat.name,
+        pinned: chat.pinned,
+        tags: chat.tags ?? [],
         created: chat.created,
         updated: chat.updated,
       })),
@@ -474,10 +637,18 @@ export class AiController {
     // Check if the current user is the owner of this chat
     const isOwner = uid && chat.user?.id === uid
 
+    const parentChat = chat.parentChat
+      ? { id: chat.parentChat.id, name: chat.parentChat.name }
+      : null
+
     return {
       id: chat.id,
       name: chat.name,
       messages: chat.messages,
+      pinned: chat.pinned,
+      tags: chat.tags ?? [],
+      parentChatId: chat.parentChatId,
+      parentChat,
       created: chat.created,
       updated: chat.updated,
       isOwner,
@@ -507,11 +678,32 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
+    const sanitisedCreateMessages = createChatDto.messages.map((m) =>
+      m.role === 'assistant'
+        ? { ...m, content: sanitiseAssistantContent(m.content) }
+        : m,
+    )
+
+    let parentChatId: string | null = null
+    if (createChatDto.parentChatId) {
+      const parent = await this.aiChatService.findParentSummary(
+        createChatDto.parentChatId,
+        pid,
+      )
+      if (!parent) {
+        throw new BadRequestException(
+          'Invalid parentChatId: parent chat does not exist in this project',
+        )
+      }
+      parentChatId = parent.id
+    }
+
     const chat = await this.aiChatService.create({
       projectId: pid,
       userId: uid,
-      messages: createChatDto.messages,
+      messages: sanitisedCreateMessages,
       name: createChatDto.name,
+      parentChatId,
     })
 
     await trackCustom(
@@ -522,13 +714,137 @@ export class AiController {
       },
     )
 
+    if (
+      !createChatDto.name &&
+      createChatDto.messages?.length &&
+      process.env.OPENROUTER_API_KEY
+    ) {
+      const firstUserMsg = createChatDto.messages.find(
+        (m) => m.role === 'user',
+      )?.content
+      if (firstUserMsg) {
+        const expectedName = chat.name
+        this.aiService
+          .generateChatTitle(firstUserMsg)
+          .then((title) =>
+            this.aiChatService.updateIfNameEquals(chat.id, expectedName, {
+              name: title,
+            }),
+          )
+          .catch((err) =>
+            this.logger.warn(
+              { err, chatId: chat.id },
+              'Background title generation failed',
+            ),
+          )
+      }
+    }
+
     return {
       id: chat.id,
       name: chat.name,
       messages: chat.messages,
+      parentChatId: chat.parentChatId,
       created: chat.created,
       updated: chat.updated,
     }
+  }
+
+  @ApiBearerAuth()
+  @Post(':pid/chats/:chatId/title')
+  @Auth(false, true)
+  @ApiOperation({
+    summary:
+      'Generate (or regenerate) a concise AI-generated title for a chat from its first user message',
+  })
+  @ApiResponse({ status: 200, description: 'Generated chat title' })
+  async generateChatTitle(
+    @Param('pid') pid: string,
+    @Param('chatId') chatId: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
+  ) {
+    this.logger.log({ uid, pid, chatId }, 'POST /ai/:pid/chats/:chatId/title')
+
+    await this.applyRateLimit(uid, headers, 'write')
+
+    if (!process.env.OPENROUTER_API_KEY) {
+      throw new HttpException(
+        'AI features are not configured. Please set OPENROUTER_API_KEY.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      )
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+    this.projectService.allowedToView(project, uid)
+
+    const chat = await this.aiChatService.verifyOwnerAccess(chatId, pid, uid)
+    if (!chat) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    const firstUserMsg = chat.messages.find((m) => m.role === 'user')?.content
+
+    if (!firstUserMsg) {
+      return { id: chat.id, name: chat.name }
+    }
+
+    const title = await this.aiService.generateChatTitle(firstUserMsg)
+    const updated = await this.aiChatService.update(chatId, { name: title })
+
+    return {
+      id: chatId,
+      name: updated?.name || title,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Post(':pid/chats/:chatId/feedback')
+  @Auth(false, true)
+  @ApiOperation({ summary: 'Submit feedback on an AI response' })
+  @ApiResponse({ status: 200, description: 'Feedback recorded' })
+  async submitChatFeedback(
+    @Param('pid') pid: string,
+    @Param('chatId') chatId: string,
+    @Body() feedbackDto: FeedbackDto,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
+  ) {
+    this.logger.log(
+      { uid, pid, chatId, rating: feedbackDto.rating },
+      'POST /ai/:pid/chats/:chatId/feedback',
+    )
+
+    await this.applyRateLimit(uid, headers, 'write')
+
+    const project = await this.projectService.getFullProject(pid)
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+    this.projectService.allowedToView(project, uid)
+
+    const chat = await this.aiChatService.verifyProjectAccess(chatId, pid)
+    if (!chat) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    await trackCustom(
+      getIPFromHeaders(headers) || 'unknown',
+      headers['user-agent'],
+      {
+        ev: `AI_CHAT_FEEDBACK_${feedbackDto.rating.toUpperCase()}`,
+        meta: {
+          chatId,
+          messageIndex: feedbackDto.messageIndex,
+          hasComment: !!feedbackDto.comment,
+        },
+      },
+    )
+
+    return { success: true }
   }
 
   @ApiBearerAuth()
@@ -568,10 +884,18 @@ export class AiController {
     // Check if the current user owns this chat
     const isOwner = this.aiChatService.isOwner(existingChat, uid)
 
+    const sanitisedUpdateMessages = updateChatDto.messages
+      ? updateChatDto.messages.map((m) =>
+          m.role === 'assistant'
+            ? { ...m, content: sanitiseAssistantContent(m.content) }
+            : m,
+        )
+      : undefined
+
     if (isOwner) {
       // User owns the chat - update it directly
       const chat = await this.aiChatService.update(chatId, {
-        messages: updateChatDto.messages,
+        messages: sanitisedUpdateMessages,
         name: updateChatDto.name,
       })
 
@@ -593,8 +917,9 @@ export class AiController {
     const branchedChat = await this.aiChatService.create({
       projectId: pid,
       userId: uid,
-      messages: updateChatDto.messages || existingChat.messages,
+      messages: sanitisedUpdateMessages || existingChat.messages,
       name: updateChatDto.name,
+      parentChatId: existingChat.id,
     })
 
     this.logger.log(
@@ -609,6 +934,56 @@ export class AiController {
       created: branchedChat.created,
       updated: branchedChat.updated,
       branched: true,
+      parentChatId: branchedChat.parentChatId ?? existingChat.id,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Patch(':pid/chats/:chatId')
+  @Auth(false, true) // Allow optional auth for public projects
+  @ApiOperation({
+    summary: 'Update chat metadata (pinned, tags, name) - owner only',
+  })
+  @ApiResponse({ status: 200, description: 'Chat metadata updated' })
+  async updateChatMeta(
+    @Param('pid') pid: string,
+    @Param('chatId') chatId: string,
+    @Body() body: UpdateChatMetaDto,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
+  ) {
+    this.logger.log({ uid, pid, chatId }, 'PATCH /ai/:pid/chats/:chatId')
+
+    await this.applyRateLimit(uid, headers, 'write')
+
+    const project = await this.projectService.getFullProject(pid)
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+    this.projectService.allowedToView(project, uid)
+
+    const chat = await this.aiChatService.verifyOwnerAccess(chatId, pid, uid)
+    if (!chat) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    const updated = await this.aiChatService.updateMeta(chatId, {
+      pinned: body.pinned,
+      tags: body.tags,
+      name: body.name,
+    })
+
+    if (!updated) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      pinned: updated.pinned,
+      tags: updated.tags ?? [],
+      created: updated.created,
+      updated: updated.updated,
     }
   }
 

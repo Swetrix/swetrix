@@ -1,6 +1,7 @@
 export enum BotsProtectionLevel {
   OFF = 'off',
   BASIC = 'basic',
+  STRICT = 'strict',
 }
 
 export class Project {

@@ -16,7 +16,6 @@ import {
 } from 'react-router'
 import { toast } from 'sonner'
 
-import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import useDebounce from '~/hooks/useDebounce'
 import { ENTRIES_PER_PAGE_DASHBOARD } from '~/lib/constants'
 import type {
@@ -175,7 +174,6 @@ const Organisations = () => {
   return (
     <>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-950'>
-        <EventsRunningOutBanner />
         <div className='flex flex-col'>
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
             <div className='mb-6 flex flex-wrap justify-between gap-2'>

@@ -4,20 +4,14 @@ import {
   Menu,
   Disclosure,
   Dialog,
-  PopoverButton,
-  PopoverPanel,
   MenuButton,
   MenuItem,
   MenuItems,
   DialogPanel,
   DisclosureButton,
   DisclosurePanel,
-  PopoverBackdrop,
 } from '@headlessui/react'
 import cx from 'clsx'
-import dayjs from 'dayjs'
-import duration from 'dayjs/plugin/duration'
-import utc from 'dayjs/plugin/utc'
 import { type t as i18nextT } from 'i18next'
 import _map from 'lodash/map'
 import _startsWith from 'lodash/startsWith'
@@ -47,9 +41,9 @@ import {
   TagIcon,
   BookOpenIcon,
 } from '@phosphor-icons/react'
-import { memo, Fragment, useMemo, useState, useEffect } from 'react'
+import { memo, Fragment, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import { changeLanguage } from '~/i18n'
 import {
@@ -61,28 +55,16 @@ import {
   DISCORD_URL,
   GITHUB_URL,
   isDisableMarketingPages,
-  API_URL,
 } from '~/lib/constants'
-import { DashboardBlockReason } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
-import Modal from '~/ui/Modal'
 import routes from '~/utils/routes'
 import { cn } from '~/utils/generic'
+import { BannerManager } from './banners'
 
 const CONTACT_US_URL = `https://swetrix.com${routes.contact}`
-
-dayjs.extend(utc)
-dayjs.extend(duration)
-
-const TRIAL_STATUS_MAPPING = {
-  ENDED: 1,
-  ENDS_TODAY: 2,
-  ENDS_TOMORROW: 3,
-  ENDS_IN_X_DAYS: 4,
-}
 
 const getSolutions = (t: typeof i18nextT) => [
   {
@@ -134,124 +116,147 @@ const SolutionsMenu = () => {
   const { t } = useTranslation('common')
   const solutions = getSolutions(t)
   const ctas = getCallsToAction(t)
+  const [open, setOpen] = useState(false)
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
+
+  const handleOpen = () => {
+    clearTimeout(closeTimeout.current)
+    setOpen(true)
+  }
+
+  const handleClose = () => {
+    closeTimeout.current = setTimeout(() => setOpen(false), 50)
+  }
+
+  const handleBlur = (e: React.FocusEvent) => {
+    if (e.currentTarget.contains(e.relatedTarget)) return
+    handleClose()
+  }
 
   return (
-    <Popover>
-      {({ open }) => (
-        <>
-          <PopoverButton className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
-            <span>{t('header.solutions.title')}</span>
-            <CaretDownIcon
-              className={cx('size-3 transition-transform', {
-                'rotate-180': open,
-              })}
-              aria-hidden='true'
-            />
-          </PopoverButton>
+    <div
+      className='relative'
+      onMouseEnter={handleOpen}
+      onMouseLeave={handleClose}
+      onFocus={handleOpen}
+      onBlur={handleBlur}
+    >
+      <button
+        type='button'
+        className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
+      >
+        <span>{t('header.solutions.title')}</span>
+        <CaretDownIcon
+          className={cx('size-3 transition-transform', {
+            'rotate-180': open,
+          })}
+          aria-hidden='true'
+        />
+      </button>
 
-          <PopoverBackdrop className='fixed inset-0 z-30 bg-transparent' />
-          <Transition
-            as={Fragment}
-            enter='transition-all ease-out duration-200'
-            enterFrom='opacity-0 translate-y-1'
-            enterTo='opacity-100 translate-y-0'
-            leave='transition-all ease-in duration-150'
-            leaveFrom='opacity-100 translate-y-0'
-            leaveTo='opacity-0 translate-y-1'
-          >
-            <PopoverPanel className='absolute z-40 mt-4 flex w-screen max-w-max backdrop-blur-md'>
-              <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-50/50 p-1.5 dark:divide-slate-700/60 dark:border-slate-700/60 dark:bg-slate-950/50'>
-                <div className='grid w-full grid-cols-2 gap-1 p-4'>
-                  {_map(solutions, (item) => (
-                    <div
+      <Transition
+        show={open}
+        as={Fragment}
+        enter='transition-all ease-out duration-200'
+        enterFrom='opacity-0 translate-y-1'
+        enterTo='opacity-100 translate-y-0'
+        leave='transition-all ease-in duration-150'
+        leaveFrom='opacity-100 translate-y-0'
+        leaveTo='opacity-0 translate-y-1'
+      >
+        <div className='absolute z-40 mt-4 flex w-screen max-w-max backdrop-blur-md'>
+          <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-50/50 p-1.5 dark:divide-slate-700/60 dark:border-slate-700/60 dark:bg-slate-950/50'>
+            <div className='grid w-full grid-cols-2 gap-1 p-4'>
+              {_map(solutions, (item) => (
+                <div
+                  key={item.name}
+                  className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
+                >
+                  <item.icon
+                    className={cn(
+                      'mt-1 h-5 w-5 text-gray-600 dark:text-gray-300',
+                      item.className,
+                    )}
+                    aria-hidden='true'
+                    weight='duotone'
+                  />
+                  <div>
+                    {_startsWith(item.link, '/') ? (
+                      <Link
+                        to={item.link}
+                        className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                      >
+                        {item.name}
+                        <span className='absolute inset-0' />
+                      </Link>
+                    ) : (
+                      <a
+                        href={item.link}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                      >
+                        {item.name}
+                        <span className='absolute inset-0' />
+                      </a>
+                    )}
+
+                    <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className='grid grid-cols-2 gap-1 px-4 py-2'>
+              {_map(ctas, (item) => {
+                if (_startsWith(item.link, '/')) {
+                  return (
+                    <Link
                       key={item.name}
-                      className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
+                      to={item.link}
+                      className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     >
                       <item.icon
                         className={cn(
-                          'mt-1 h-5 w-5 text-gray-600 dark:text-gray-300',
+                          'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
                           item.className,
                         )}
                         aria-hidden='true'
                         weight='duotone'
                       />
-                      <div>
-                        {_startsWith(item.link, '/') ? (
-                          <Link
-                            to={item.link}
-                            className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-                          >
-                            {item.name}
-                            <span className='absolute inset-0' />
-                          </Link>
-                        ) : (
-                          <a
-                            href={item.link}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-                          >
-                            {item.name}
-                            <span className='absolute inset-0' />
-                          </a>
-                        )}
+                      {item.name}
+                    </Link>
+                  )
+                }
 
-                        <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>
-                          {item.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className='grid grid-cols-2 gap-1 px-4 py-2'>
-                  {_map(ctas, (item) => {
-                    if (_startsWith(item.link, '/')) {
-                      return (
-                        <Link
-                          key={item.name}
-                          to={item.link}
-                          className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
-                        >
-                          <item.icon
-                            className={cn(
-                              'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
-                              item.className,
-                            )}
-                            aria-hidden='true'
-                            weight='duotone'
-                          />
-                          {item.name}
-                        </Link>
-                      )
-                    }
-
-                    return (
-                      <a
-                        key={item.name}
-                        href={item.link}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
-                      >
-                        <item.icon
-                          className={cn(
-                            'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
-                            item.className,
-                          )}
-                          aria-hidden='true'
-                          weight='duotone'
-                        />
-                        {item.name}
-                      </a>
-                    )
-                  })}
-                </div>
-              </div>
-            </PopoverPanel>
-          </Transition>
-        </>
-      )}
-    </Popover>
+                return (
+                  <a
+                    key={item.name}
+                    href={item.link}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                  >
+                    <item.icon
+                      className={cn(
+                        'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
+                        item.className,
+                      )}
+                      aria-hidden='true'
+                      weight='duotone'
+                    />
+                    {item.name}
+                  </a>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </div>
   )
 }
 
@@ -476,210 +481,6 @@ const CommunityLinks = () => {
       </a>
     </span>
   )
-}
-
-interface TrialBannerProps {
-  status: string | null
-  rawStatus: number | null
-}
-
-const TrialBanner = ({ status, rawStatus }: TrialBannerProps) => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='header-banner w-full bg-slate-900 text-gray-100 dark:bg-slate-900/70'>
-      <div className='mx-auto max-w-7xl px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
-        <span className='font-medium'>{status}</span>
-        <span className='mx-1.5'>—</span>
-        <Link to={routes.billing} className='font-semibold underline'>
-          {t('header.trialBanner.pickAPlan')}
-        </Link>
-        <span className='ml-1.5'>
-          {rawStatus === TRIAL_STATUS_MAPPING.ENDED
-            ? t('header.trialBanner.keepUsingEnded')
-            : t('header.trialBanner.keepUsing')}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-const DashboardLockedBanner = () => {
-  const { t } = useTranslation('common')
-  const { user } = useAuth()
-  const [showMoreInfoModal, setShowMoreInfoModal] = useState(false)
-
-  const dashboardBlockReason = user?.dashboardBlockReason
-
-  const message = useMemo(() => {
-    if (dashboardBlockReason === DashboardBlockReason.exceeding_plan_limits) {
-      return t('project.locked.descExceedingTier')
-    }
-    if (dashboardBlockReason === DashboardBlockReason.trial_ended) {
-      return t('project.locked.descTialEnded')
-    }
-    if (dashboardBlockReason === DashboardBlockReason.payment_failed) {
-      return t('project.locked.descPaymentFailed')
-    }
-    if (dashboardBlockReason === DashboardBlockReason.subscription_cancelled) {
-      return t('project.locked.descSubCancelled')
-    }
-  }, [t, dashboardBlockReason])
-
-  return (
-    <>
-      <div className='header-banner w-full bg-amber-500 text-gray-50'>
-        <div className='mx-auto max-w-7xl space-x-2 px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
-          <span>{t('dashboard.accountLocked')}</span>
-          <button
-            type='button'
-            onClick={() => setShowMoreInfoModal(true)}
-            className='rounded-md bg-slate-100 px-2 py-0.5 font-medium text-gray-900'
-          >
-            {t('common.learnMore')}
-          </button>
-        </div>
-      </div>
-      <Modal
-        onClose={() => setShowMoreInfoModal(false)}
-        closeText={t('common.close')}
-        title={t('dashboard.accountLockedTitle')}
-        message={
-          <span>
-            {message}
-            <br />
-            <br />
-            {t('project.locked.resolve')}
-          </span>
-        }
-        type='warning'
-        isOpened={showMoreInfoModal}
-        customButtons={
-          <Link
-            to={routes.billing}
-            onClick={() => setShowMoreInfoModal(false)}
-            className='inline-flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-base font-medium text-white transition-colors hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
-          >
-            {t('main.goToBilling')}
-          </Link>
-        }
-      />
-    </>
-  )
-}
-
-const SelfhostedCantReachAPIBanner = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='header-banner w-full bg-amber-500 text-gray-50'>
-      <div className='mx-auto max-w-7xl space-x-2 px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
-        <span>{t('ce.cantReachBackend')}</span>
-      </div>
-    </div>
-  )
-}
-
-const BannerManager = () => {
-  const { t } = useTranslation('common')
-  const { user, isAuthenticated } = useAuth()
-  const [
-    showSelfhostedCantReachAPIBanner,
-    setShowSelfhostedCantReachAPIBanner,
-  ] = useState(false)
-
-  useEffect(() => {
-    const checkApiUrl = async () => {
-      if (!isSelfhosted) {
-        return
-      }
-
-      const response = await fetch(`${API_URL}ping`)
-      if (!response.ok) {
-        setShowSelfhostedCantReachAPIBanner(true)
-      }
-    }
-
-    checkApiUrl()
-  }, [])
-
-  const [rawStatus, status] = useMemo(() => {
-    const { trialEndDate } = user || {}
-
-    if (!trialEndDate) {
-      return [null, null]
-    }
-
-    const now = dayjs.utc()
-    const future = dayjs.utc(trialEndDate)
-    const diff = future.diff(now)
-
-    if (diff < 0) {
-      // trial has already ended
-      return [TRIAL_STATUS_MAPPING.ENDED, t('header.trialBanner.ended')]
-    }
-
-    if (diff < dayjs.duration(1, 'day').asMilliseconds()) {
-      // trial ends today or tomorrow
-      const isToday = future.isSame(now, 'day')
-      const isTomorrow = future.isSame(now.add(1, 'day'), 'day')
-
-      if (isToday) {
-        return [
-          TRIAL_STATUS_MAPPING.ENDS_TODAY,
-          t('header.trialBanner.endsToday'),
-        ]
-      }
-      if (isTomorrow) {
-        return [
-          TRIAL_STATUS_MAPPING.ENDS_TOMORROW,
-          t('header.trialBanner.endsTomorrow'),
-        ]
-      }
-    }
-
-    // trial ends in more than 1 day
-    const amount = Math.round(dayjs.duration(diff).asDays())
-    return [
-      TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
-      t('header.trialBanner.youHaveXDaysLeft', { amount }),
-    ]
-  }, [user, t])
-
-  const trialBannerHidden = useMemo(() => {
-    return (
-      !status || isSelfhosted || !isAuthenticated || user?.planCode !== 'trial'
-    )
-  }, [status, isAuthenticated, user?.planCode])
-
-  const isExpiredTrialWithoutSubscription = useMemo(() => {
-    return (
-      user?.dashboardBlockReason ===
-        DashboardBlockReason.subscription_cancelled &&
-      user?.planCode === 'none' &&
-      !!user?.trialEndDate &&
-      !user?.subID
-    )
-  }, [
-    user?.dashboardBlockReason,
-    user?.planCode,
-    user?.trialEndDate,
-    user?.subID,
-  ])
-
-  if (showSelfhostedCantReachAPIBanner) {
-    return <SelfhostedCantReachAPIBanner />
-  }
-
-  if (!trialBannerHidden || (isExpiredTrialWithoutSubscription && status)) {
-    return <TrialBanner status={status} rawStatus={rawStatus} />
-  }
-
-  if (user?.dashboardBlockReason) {
-    return <DashboardLockedBanner />
-  }
-
-  return null
 }
 
 const AuthedHeader = ({

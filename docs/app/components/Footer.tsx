@@ -289,6 +289,8 @@ const legal: LegalItem[] = [
   { name: "Privacy", href: `${SITE}/privacy` },
   { name: "Terms", href: `${SITE}/terms` },
   { name: "Cookie Policy", href: `${SITE}/cookie-policy` },
+  { name: "DPA", href: `${SITE}/dpa` },
+  { name: "Security", href: `${SITE}/security` },
   { name: "Legal notice", href: `${SITE}/imprint` },
 ];
 
@@ -385,7 +387,7 @@ export default function Footer() {
                   className="-translate-y-px"
                   height={28}
                   width={24}
-                  src="/docs/img/logo/white.png"
+                  src="/docs/img/logo/light.svg"
                   alt=""
                   loading="lazy"
                 />

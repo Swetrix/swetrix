@@ -1,7 +1,7 @@
 import { CheckCircleIcon, XCircleIcon, InfoIcon } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import { cn } from '~/utils/generic'
 

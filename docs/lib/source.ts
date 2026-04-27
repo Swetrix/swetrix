@@ -27,7 +27,6 @@ const SLUG_MAP: Record<string, string[]> = {
   "sitesettings/transfer-ownership": ["how-to-transfer-ownership-of-your-website"],
   "sitesettings/embed-your-analytics-dashboard-into-your-website": ["how-to-embed"],
   "sitesettings/get-analytics-email-reports": ["get-analytics-email-reports"],
-  "sitesettings/get-traffic-alerts": ["get-traffic-alerts"],
   "sitesettings/reset-sites-data": ["reset-sites-data"],
   "sitesettings/annotations": ["annotations"],
 

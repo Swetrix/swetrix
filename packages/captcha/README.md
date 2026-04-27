@@ -1,4 +1,8 @@
-<img src="/src/assets/logo_blue.png" alt="" height="80" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://swetrix.com/assets/logo_white.png?v=2">
+  <img alt="Swetrix" src="https://swetrix.com/assets/logo_blue.png?v=2" height="80">
+</picture>
+<br /><br />
 
 ## Description
 
@@ -31,11 +35,11 @@ See the full documentation at https://docs.swetrix.com/captcha/introduction
 | `data-project-id` | Your project ID | Valid project ID | Required |
 | `data-theme` | Color theme | `auto`, `light`, `dark` | `auto` |
 | `data-response-input-name` | Hidden input name | Any string | `swetrix-captcha-response` |
-| `data-lang` | Force a specific language | `en`, `de`, `fr`, `pl`, `uk` | Auto-detected |
+| `data-lang` | Force a specific language | `en`, `de`, `fr`, `pl`, `uk`, `hu` | Auto-detected |
 
 ### Language Support
 
-The widget supports **English**, **German**, **French**, **Polish**, and **Ukrainian**.
+The widget supports **English**, **German**, **French**, **Polish**, **Ukrainian**, and **Hungarian**.
 
 Language is detected automatically in this order:
 1. `data-lang` attribute on the widget element

@@ -257,15 +257,15 @@ const InfoRow = ({
   label: string
   value: React.ReactNode
 }) => (
-  <div className='flex items-center justify-between border-b border-gray-100 py-2 last:border-0 dark:border-slate-700/50'>
-    <Text size='sm' colour='muted'>
+  <div className='flex items-start justify-between gap-3 border-b border-gray-100 py-2 last:border-0 dark:border-slate-700/50'>
+    <Text size='sm' colour='muted' className='shrink-0'>
       {label}
     </Text>
     <Text
       size='sm'
       weight='medium'
       colour='primary'
-      className='flex items-center gap-1'
+      className='flex min-w-0 flex-wrap items-center justify-end gap-1 text-right'
     >
       {value}
     </Text>

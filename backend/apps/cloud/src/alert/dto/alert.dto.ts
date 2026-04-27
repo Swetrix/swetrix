@@ -1,4 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger'
+import { Transform } from 'class-transformer'
 import { PID_REGEX } from '../../common/constants'
 import {
   IsEnum,
@@ -9,6 +10,9 @@ import {
   IsString,
   IsNumber,
   Matches,
+  IsArray,
+  IsUUID,
+  MaxLength,
 } from 'class-validator'
 
 export enum QueryMetric {
@@ -33,6 +37,12 @@ export enum QueryTime {
   LAST_4_HOURS = 'last_4_hours',
   LAST_24_HOURS = 'last_24_hours',
   LAST_48_HOURS = 'last_48_hours',
+}
+
+const trimBlankToNull = ({ value }: { value: unknown }) => {
+  if (typeof value !== 'string') return value
+  const trimmed = value.trim()
+  return trimmed === '' ? null : trimmed
 }
 
 class AlertBaseDTO {
@@ -80,6 +90,26 @@ class AlertBaseDTO {
   @IsBoolean()
   @IsOptional()
   alertOnEveryCustomEvent?: boolean
+
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsUUID('all', { each: true })
+  @IsOptional()
+  channelIds?: string[]
+
+  @ApiProperty({ nullable: true })
+  @Transform(trimBlankToNull)
+  @IsString()
+  @IsOptional()
+  @MaxLength(5000)
+  messageTemplate?: string | null
+
+  @ApiProperty({ nullable: true })
+  @Transform(trimBlankToNull)
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  emailSubjectTemplate?: string | null
 }
 
 export class CreateAlertDTO extends AlertBaseDTO {

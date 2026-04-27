@@ -4,7 +4,6 @@ import { ConfigModule } from '@nestjs/config'
 import { APP_FILTER } from '@nestjs/core'
 import { SentryModule, SentryGlobalFilter } from '@sentry/nestjs/setup'
 import { ScheduleModule } from '@nestjs/schedule'
-import { NestjsFormDataModule } from 'nestjs-form-data'
 import { MailerModule as NodeMailerModule } from '@nestjs-modules/mailer'
 
 import { I18nModule } from 'nestjs-i18n'
@@ -32,8 +31,11 @@ import { AppController } from './app.controller'
 import { isPrimaryNode, isPrimaryClusterNode } from './common/utils'
 import { OrganisationModule } from './organisation/organisation.module'
 import { RevenueModule } from './revenue/revenue.module'
+import { BullModule } from '@nestjs/bullmq'
 import { ToolsModule } from './tools/tools.module'
 import { PendingInvitationModule } from './pending-invitation/pending-invitation.module'
+import { DataImportModule } from './data-import/data-import.module'
+import { NotificationChannelModule } from './notification-channel/notification-channel.module'
 
 const modules = [
   SentryModule.forRoot(),
@@ -70,7 +72,14 @@ const modules = [
   }),
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),
-  NestjsFormDataModule.config({ isGlobal: true }),
+  BullModule.forRoot({
+    connection: {
+      host: process.env.REDIS_HOST,
+      port: Number(process.env.REDIS_PORT),
+      password: process.env.REDIS_PASSWORD,
+      username: process.env.REDIS_USER,
+    },
+  }),
   BlogModule,
   UserModule,
   MailerModule,
@@ -92,6 +101,8 @@ const modules = [
   RevenueModule,
   ToolsModule,
   PendingInvitationModule,
+  DataImportModule,
+  NotificationChannelModule,
 ]
 
 @Module({

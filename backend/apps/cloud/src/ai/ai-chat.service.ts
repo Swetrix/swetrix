@@ -2,6 +2,16 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, FindManyOptions, FindOneOptions } from 'typeorm'
 import { AiChat, ChatMessage } from './entity/ai-chat.entity'
+import { MAX_TAGS_PER_CHAT, MAX_TAG_LENGTH } from './dto/chat.dto'
+
+interface ListChatsOptions {
+  search?: string
+  tag?: string
+  pinned?: boolean
+  skip?: number
+  take?: number
+  orderByPinned?: boolean
+}
 
 @Injectable()
 export class AiChatService {
@@ -31,32 +41,142 @@ export class AiChatService {
       .createQueryBuilder('chat')
       .where('chat.projectId = :projectId', { projectId })
       .andWhere('chat.userId = :userId', { userId })
-      .orderBy('chat.updated', 'DESC')
+      .orderBy('chat.pinned', 'DESC')
+      .addOrderBy('chat.updated', 'DESC')
       .take(limit)
 
     return queryBuilder.getMany()
   }
 
+  async listByProject(
+    projectId: string,
+    userId: string | null,
+    options: ListChatsOptions = {},
+  ): Promise<{ chats: AiChat[]; total: number }> {
+    if (!userId) {
+      return { chats: [], total: 0 }
+    }
+
+    const {
+      search,
+      tag,
+      pinned,
+      skip = 0,
+      take = 20,
+      orderByPinned = true,
+    } = options
+
+    const baseQuery = () =>
+      this.aiChatRepository
+        .createQueryBuilder('chat')
+        .where('chat.projectId = :projectId', { projectId })
+        .andWhere('chat.userId = :userId', { userId })
+
+    const applyTagAndPinned = (qb: ReturnType<typeof baseQuery>) => {
+      if (typeof pinned === 'boolean') {
+        qb.andWhere('chat.pinned = :pinned', { pinned })
+      }
+      if (tag) {
+        // simple-array stores tags as a comma-separated string
+        qb.andWhere('(FIND_IN_SET(:tag, chat.tags) > 0 OR chat.tags = :tag)', {
+          tag,
+        })
+      }
+      return qb
+    }
+
+    const orderAndPaginate = (qb: ReturnType<typeof baseQuery>) => {
+      if (orderByPinned) {
+        qb.orderBy('chat.pinned', 'DESC').addOrderBy('chat.updated', 'DESC')
+      } else {
+        qb.orderBy('chat.updated', 'DESC')
+      }
+      return qb.skip(skip).take(take)
+    }
+
+    if (search && search.trim().length > 0) {
+      // Escape backslash first, then LIKE metacharacters, so a user typing
+      // '%' / '_' matches the literal characters instead of acting as wildcards.
+      const escaped = search
+        .trim()
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_')
+      const term = `%${escaped}%`
+
+      const nameQb = applyTagAndPinned(baseQuery()).andWhere(
+        "chat.name LIKE :term ESCAPE '\\\\'",
+        { term },
+      )
+
+      const [nameChats, nameTotal] =
+        await orderAndPaginate(nameQb).getManyAndCount()
+
+      if (nameTotal > 0) {
+        return { chats: nameChats, total: nameTotal }
+      }
+
+      // Fallback to content search across messages JSON
+      const contentQb = applyTagAndPinned(baseQuery()).andWhere(
+        "CAST(chat.messages AS CHAR) LIKE :term ESCAPE '\\\\'",
+        { term },
+      )
+
+      const [contentChats, contentTotal] =
+        await orderAndPaginate(contentQb).getManyAndCount()
+      return { chats: contentChats, total: contentTotal }
+    }
+
+    const qb = orderAndPaginate(applyTagAndPinned(baseQuery()))
+    const [chats, total] = await qb.getManyAndCount()
+    return { chats, total }
+  }
+
+  /**
+   * @deprecated Use {@link listByProject} instead.
+   */
   async findAllByProject(
     projectId: string,
     userId: string | null,
     skip: number = 0,
     take: number = 20,
   ): Promise<{ chats: AiChat[]; total: number }> {
-    if (!userId) {
-      return { chats: [], total: 0 }
-    }
+    return this.listByProject(projectId, userId, { skip, take })
+  }
 
-    const queryBuilder = this.aiChatRepository
+  async listTagsByProject(
+    projectId: string,
+    userId: string | null,
+  ): Promise<string[]> {
+    if (!userId) return []
+
+    const rows = await this.aiChatRepository
       .createQueryBuilder('chat')
+      .select('chat.tags', 'tags')
       .where('chat.projectId = :projectId', { projectId })
       .andWhere('chat.userId = :userId', { userId })
-      .orderBy('chat.updated', 'DESC')
-      .skip(skip)
-      .take(take)
+      .andWhere('chat.tags IS NOT NULL')
+      .andWhere("chat.tags <> ''")
+      .getRawMany<{ tags: string | null }>()
 
-    const [chats, total] = await queryBuilder.getManyAndCount()
-    return { chats, total }
+    // Dedupe case-insensitively while preserving the first-seen casing
+    const map = new Map<string, string>()
+    for (const row of rows) {
+      if (!row.tags) continue
+      // simple-array is comma-separated
+      const parts = String(row.tags)
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean)
+      for (const part of parts) {
+        const key = part.toLowerCase()
+        if (!map.has(key)) map.set(key, part)
+      }
+    }
+
+    return Array.from(map.values()).sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: 'base' }),
+    )
   }
 
   async create(data: {
@@ -64,14 +184,57 @@ export class AiChatService {
     userId: string | null
     messages: ChatMessage[]
     name?: string
+    parentChatId?: string | null
   }): Promise<AiChat> {
     const chat = this.aiChatRepository.create({
       project: { id: data.projectId },
       user: data.userId ? { id: data.userId } : null,
       messages: data.messages,
       name: data.name || this.generateChatName(data.messages),
+      parentChatId: data.parentChatId ?? null,
     })
     return this.aiChatRepository.save(chat)
+  }
+
+  async findParentSummary(
+    parentChatId: string,
+    projectId: string,
+  ): Promise<{ id: string; name: string | null } | null> {
+    const parent = await this.aiChatRepository
+      .createQueryBuilder('chat')
+      .select(['chat.id', 'chat.name'])
+      .where('chat.id = :parentChatId', { parentChatId })
+      .andWhere('chat.projectId = :projectId', { projectId })
+      .getOne()
+    if (!parent) return null
+    return { id: parent.id, name: parent.name }
+  }
+
+  /**
+   * Atomically updates the chat name only when the current value still matches
+   * `expectedName`. Used by background title generation so it can't clobber a
+   * user-provided rename that happened concurrently. Returns true if the row
+   * was actually updated.
+   */
+  async updateIfNameEquals(
+    id: string,
+    expectedName: string | null | undefined,
+    data: { name: string },
+  ): Promise<boolean> {
+    const qb = this.aiChatRepository
+      .createQueryBuilder()
+      .update(AiChat)
+      .set({ name: data.name })
+      .where('id = :id', { id })
+
+    if (expectedName === null || expectedName === undefined) {
+      qb.andWhere('name IS NULL')
+    } else {
+      qb.andWhere('name = :expectedName', { expectedName })
+    }
+
+    const result = await qb.execute()
+    return (result.affected ?? 0) > 0
   }
 
   async update(
@@ -90,6 +253,55 @@ export class AiChatService {
     }
     if (data.name !== undefined) {
       chat.name = data.name
+    }
+
+    return this.aiChatRepository.save(chat)
+  }
+
+  /**
+   * Sanitises a list of user-supplied tag labels:
+   *  - trims, drops empty entries
+   *  - enforces per-tag length cap
+   *  - dedupes case-insensitively (keeping first occurrence)
+   *  - caps total tags at MAX_TAGS_PER_CHAT
+   *
+   * Returns null for an empty result so the simple-array column persists as NULL
+   * (avoids round-tripping `[]` → `''` → `['']`).
+   */
+  sanitiseTags(input: unknown): string[] | null {
+    if (!Array.isArray(input)) return null
+    const seen = new Set<string>()
+    const out: string[] = []
+    for (const raw of input) {
+      if (typeof raw !== 'string') continue
+      // simple-array uses comma as separator, so strip commas defensively
+      const trimmed = raw.replace(/,/g, '').trim().slice(0, MAX_TAG_LENGTH)
+      if (!trimmed) continue
+      const key = trimmed.toLowerCase()
+      if (seen.has(key)) continue
+      seen.add(key)
+      out.push(trimmed)
+      if (out.length >= MAX_TAGS_PER_CHAT) break
+    }
+    return out.length === 0 ? null : out
+  }
+
+  async updateMeta(
+    id: string,
+    data: { pinned?: boolean; tags?: string[]; name?: string },
+  ): Promise<AiChat | null> {
+    const chat = await this.aiChatRepository.findOne({ where: { id } })
+    if (!chat) return null
+
+    if (typeof data.pinned === 'boolean') {
+      chat.pinned = data.pinned
+    }
+    if (data.tags !== undefined) {
+      chat.tags = this.sanitiseTags(data.tags)
+    }
+    if (data.name !== undefined) {
+      const trimmed = data.name.trim()
+      chat.name = trimmed.length > 0 ? trimmed : null
     }
 
     return this.aiChatRepository.save(chat)
@@ -171,13 +383,18 @@ export class AiChatService {
     chatId: string,
     projectId: string,
   ): Promise<AiChat | null> {
-    return this.aiChatRepository.findOne({
-      where: {
-        id: chatId,
-        project: { id: projectId },
-      },
-      relations: ['user'],
-    })
+    return this.aiChatRepository
+      .createQueryBuilder('chat')
+      .leftJoinAndSelect('chat.user', 'user')
+      .leftJoin(
+        'chat.parentChat',
+        'parentChat',
+        'parentChat.projectId = chat.projectId',
+      )
+      .addSelect(['parentChat.id', 'parentChat.name'])
+      .where('chat.id = :chatId', { chatId })
+      .andWhere('chat.projectId = :projectId', { projectId })
+      .getOne()
   }
 
   /**

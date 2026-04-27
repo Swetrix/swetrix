@@ -5,6 +5,7 @@ import {
   getLocale,
   getTimezone,
   getReferrer,
+  getQueryString,
   getUTMCampaign,
   getUTMMedium,
   getUTMSource,
@@ -67,6 +68,13 @@ export interface IPageViewPayload {
   te?: string
   co?: string
   pg?: string | null
+
+  /**
+   * Raw URL query string of the landing page (without the leading `?`).
+   * Used server-side to recover the traffic source from ad/social click
+   * IDs (gclid, fbclid, etc.) when the browser stripped the referrer.
+   */
+  qs?: string
 
   /** Pageview-related metadata object with string values. */
   meta?: {
@@ -346,6 +354,7 @@ export class Lib {
       ca: getUTMCampaign(),
       te: getUTMTerm(),
       co: getUTMContent(),
+      qs: getQueryString(),
       profileId: event.profileId ?? this.options?.profileId,
     }
     await this.sendRequest('custom', data)
@@ -767,6 +776,7 @@ export class Lib {
       ca: getUTMCampaign(),
       te: getUTMTerm(),
       co: getUTMContent(),
+      qs: getQueryString(),
       profileId: this.options?.profileId,
       ...payload,
     }

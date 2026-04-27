@@ -10,7 +10,6 @@ import {
   SunIcon,
   WarningIcon,
   GaugeIcon,
-  BellRingingIcon,
   ChartBarIcon,
   FunnelIcon,
   GearIcon,
@@ -22,6 +21,7 @@ import {
   IdentificationCardIcon,
   UserListIcon,
   ToggleRightIcon,
+  MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
 import React, {
   useState,
@@ -32,6 +32,7 @@ import React, {
   createContext,
   useContext,
   lazy,
+  Suspense,
 } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
@@ -44,7 +45,6 @@ import {
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
 import useSize from '~/hooks/useSize'
@@ -83,8 +83,6 @@ import {
   useCurrentProject,
   useProjectPassword,
 } from '../../../providers/CurrentProjectProvider'
-import ProjectAlertsView from '../tabs/Alerts/ProjectAlertsView'
-import AskAIView from '../tabs/AskAI'
 import ErrorsView from '../tabs/Errors/ErrorsView'
 import ExperimentsView from '../tabs/Experiments/ExperimentsView'
 import FeatureFlagsView from '../tabs/FeatureFlags/FeatureFlagsView'
@@ -93,10 +91,12 @@ import GoalsView from '../tabs/Goals/GoalsView'
 import PerformanceView from '../tabs/Performance/PerformanceView'
 import ProfilesView from '../tabs/Profiles/ProfilesView'
 import SessionsView from '../tabs/Sessions/SessionsView'
+import SEOView from '../tabs/SEO/SEOView'
 import TrafficView from '../tabs/Traffic/TrafficView'
 
 import AddAViewModal from './components/AddAViewModal'
 import { ChartManagerProvider } from './components/ChartManager'
+const AskAIView = lazy(() => import('../tabs/AskAI'))
 const CaptchaView = lazy(() => import('../tabs/Captcha/CaptchaView'))
 import LockedDashboard from './components/LockedDashboard'
 import PasswordRequiredModal from './components/PasswordRequiredModal'
@@ -184,6 +184,7 @@ interface RefreshTriggersContextType {
   trafficRefreshTrigger: number
   funnelsRefreshTrigger: number
   profilesRefreshTrigger: number
+  seoRefreshTrigger: number
 }
 
 const defaultViewProjectContext: ViewProjectContextType = {
@@ -226,6 +227,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   setShowFiltersSearch: () => {},
   resetDateRange: () => {},
   refreshStats: async () => {},
+
   refCalendar: { current: null } as any,
   refCalendarCompare: { current: null } as any,
 
@@ -245,6 +247,7 @@ const defaultRefreshTriggersContext: RefreshTriggersContextType = {
   trafficRefreshTrigger: 0,
   funnelsRefreshTrigger: 0,
   profilesRefreshTrigger: 0,
+  seoRefreshTrigger: 0,
 }
 
 export const ViewProjectContext = createContext<ViewProjectContextType>(
@@ -329,6 +332,7 @@ const ViewProjectContent = () => {
   const [trafficRefreshTrigger, setTrafficRefreshTrigger] = useState(0)
   const [funnelsRefreshTrigger, setFunnelsRefreshTrigger] = useState(0)
   const [profilesRefreshTrigger, setProfilesRefreshTrigger] = useState(0)
+  const [seoRefreshTrigger, setSeoRefreshTrigger] = useState(0)
   const [activeChartMetrics] = useState<
     Record<keyof typeof CHART_METRICS_MAPPING, boolean>
   >({
@@ -358,6 +362,7 @@ const ViewProjectContent = () => {
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const refCalendarCompare = useRef(null)
+  const seoTabId = !isSelfhosted ? PROJECT_TABS.seo : null
   const activeTab = useMemo(() => {
     const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
 
@@ -713,6 +718,15 @@ const ViewProjectContent = () => {
         label: t('dashboard.traffic'),
         icon: ChartBarIcon,
       },
+      ...(seoTabId
+        ? [
+            {
+              id: seoTabId,
+              label: t('project.seo.title'),
+              icon: MagnifyingGlassIcon,
+            },
+          ]
+        : []),
       {
         id: PROJECT_TABS.performance,
         label: t('dashboard.performance'),
@@ -777,11 +791,6 @@ const ViewProjectContent = () => {
         icon: SparkleIcon,
       },
       {
-        id: PROJECT_TABS.alerts,
-        label: t('dashboard.alerts'),
-        icon: BellRingingIcon,
-      },
-      {
         id: PROJECT_TABS.experiments,
         label: t('dashboard.experiments'),
         icon: FlaskIcon,
@@ -794,7 +803,7 @@ const ViewProjectContent = () => {
     }
 
     return newTabs
-  }, [t, projectQueryTabs, allowedToManage])
+  }, [t, projectQueryTabs, allowedToManage, seoTabId])
 
   const activeTabLabel = useMemo(
     () => _find(tabs, (tab) => tab.id === activeTab)?.label,
@@ -919,9 +928,14 @@ const ViewProjectContent = () => {
           setTrafficRefreshTrigger((prev) => prev + 1)
           return
         }
+
+        if (seoTabId && activeTab === seoTabId) {
+          setSeoRefreshTrigger((prev) => prev + 1)
+          return
+        }
       }
     },
-    [authLoading, dataLoading, activeTab],
+    [authLoading, dataLoading, activeTab, seoTabId],
   )
 
   useEffect(() => {
@@ -1078,9 +1092,13 @@ const ViewProjectContent = () => {
   }
 
   // 'Keyboard shortcuts' help modal
-  useHotkeys('shift+?', () => {
-    setIsHotkeysHelpOpened((val) => !val)
-  })
+  useHotkeys(
+    'shift+?',
+    () => {
+      setIsHotkeysHelpOpened((val) => !val)
+    },
+    { useKey: true },
+  )
 
   // 'Tabs switching' shortcuts
   useHotkeys(SHORTCUTS_TABS_LISTENERS, ({ key }) => {
@@ -1126,10 +1144,6 @@ const ViewProjectContent = () => {
     }
 
     if (pair.period === 'compare') {
-      if (activeTab === PROJECT_TABS.alerts) {
-        return
-      }
-
       if (isActiveCompare) {
         compareDisable()
       } else {
@@ -1253,6 +1267,7 @@ const ViewProjectContent = () => {
       trafficRefreshTrigger,
       funnelsRefreshTrigger,
       profilesRefreshTrigger,
+      seoRefreshTrigger,
     }),
     [
       captchaRefreshTrigger,
@@ -1265,6 +1280,7 @@ const ViewProjectContent = () => {
       trafficRefreshTrigger,
       funnelsRefreshTrigger,
       profilesRefreshTrigger,
+      seoRefreshTrigger,
     ],
   )
 
@@ -1496,7 +1512,6 @@ const ViewProjectContent = () => {
                         )}
                         ref={dashboardRef}
                       >
-                        <EventsRunningOutBanner />
                         {!isMapFullscreen ? (
                           <div className='pointer-events-auto'>
                             <MobileSidebarTrigger
@@ -1514,7 +1529,9 @@ const ViewProjectContent = () => {
                             transition={{ duration: 0.15 }}
                           >
                             {activeTab === PROJECT_TABS.ai ? (
-                              <AskAIView projectId={id} />
+                              <Suspense fallback={<Loader />}>
+                                <AskAIView projectId={id} />
+                              </Suspense>
                             ) : null}
                             {activeTab === PROJECT_TABS.traffic ? (
                               <TrafficView
@@ -1533,11 +1550,11 @@ const ViewProjectContent = () => {
                             {activeTab === PROJECT_TABS.performance ? (
                               <PerformanceView tnMapping={tnMapping} />
                             ) : null}
+                            {seoTabId && activeTab === seoTabId ? (
+                              <SEOView projectId={id} tnMapping={tnMapping} />
+                            ) : null}
                             {activeTab === PROJECT_TABS.funnels ? (
                               <FunnelsView />
-                            ) : null}
-                            {activeTab === PROJECT_TABS.alerts ? (
-                              <ProjectAlertsView />
                             ) : null}
                             {activeTab === PROJECT_TABS.profiles ? (
                               <ProfilesView tnMapping={tnMapping} />

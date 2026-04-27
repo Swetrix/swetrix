@@ -140,6 +140,14 @@
     "jsx-a11y/scope": "error",
     "jsx-a11y/tabindex-no-positive": "error"
   },
+  "overrides": [
+    {
+      "files": ["*.cjs"],
+      "rules": {
+        "@typescript-eslint/no-require-imports": "off"
+      }
+    }
+  ],
   "globals": {
     "process": "readonly",
     "React": "readonly",

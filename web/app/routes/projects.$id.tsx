@@ -25,7 +25,6 @@ import {
   getErrorOverviewServer,
   getProjectFeatureFlagsServer,
   getProjectGoalsServer,
-  getProjectAlertsServer,
   getFunnelDataServer,
   type TrafficLogResponse,
   type OverallObject,
@@ -38,7 +37,6 @@ import {
   type ErrorOverviewResponse,
   type FeatureFlagsResponse,
   type GoalsResponse,
-  type AlertsResponse,
   type FunnelDataResponse,
   type AnalyticsFilter,
 } from '~/api/api.server'
@@ -48,6 +46,7 @@ import {
   PROJECT_TABS,
   getProjectOgImageUrl,
   getValidTimeBucket,
+  isSelfhosted,
   type Period,
 } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
@@ -62,6 +61,51 @@ import {
   createProjectPasswordCookie,
   hasAuthTokens,
 } from '~/utils/session.server'
+
+function computeDateRangeForPeriod(
+  period: string,
+  from?: string,
+  to?: string,
+): { from: string; to: string } | null {
+  if (from && to) {
+    return { from: `${from} 00:00:00`, to: `${to} 23:59:59` }
+  }
+
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const fmt = (d: Date) =>
+    `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`
+
+  const subtract = (ms: number) => new Date(now.getTime() - ms)
+  const MS_HOUR = 3_600_000
+  const MS_DAY = 86_400_000
+
+  const periodMap: Record<string, () => { from: string; to: string }> = {
+    '1h': () => ({ from: fmt(subtract(MS_HOUR)), to: fmt(now) }),
+    today: () => {
+      const start = new Date(now)
+      start.setUTCHours(0, 0, 0, 0)
+      return { from: fmt(start), to: fmt(now) }
+    },
+    yesterday: () => {
+      const dayStart = new Date(now.getTime() - MS_DAY)
+      dayStart.setUTCHours(0, 0, 0, 0)
+      const dayEnd = new Date(now.getTime() - MS_DAY)
+      dayEnd.setUTCHours(23, 59, 59, 999)
+      return { from: fmt(dayStart), to: fmt(dayEnd) }
+    },
+    '1d': () => ({ from: fmt(subtract(MS_DAY)), to: fmt(now) }),
+    '7d': () => ({ from: fmt(subtract(7 * MS_DAY)), to: fmt(now) }),
+    '4w': () => ({ from: fmt(subtract(28 * MS_DAY)), to: fmt(now) }),
+    '3M': () => ({ from: fmt(subtract(90 * MS_DAY)), to: fmt(now) }),
+    '12M': () => ({ from: fmt(subtract(365 * MS_DAY)), to: fmt(now) }),
+    '24M': () => ({ from: fmt(subtract(730 * MS_DAY)), to: fmt(now) }),
+    all: () => ({ from: '2020-01-01 00:00:00', to: fmt(now) }),
+  }
+
+  const compute = periodMap[period]
+  return compute ? compute() : null
+}
 
 function formatDateForBackend(dateStr: string): string {
   if (!dateStr) return ''
@@ -119,9 +163,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const tab = (searchParams.get('tab') || PROJECT_TABS.traffic) as
     | keyof typeof PROJECT_TABS
     | 'settings'
-  const tabNames: Record<keyof typeof PROJECT_TABS | 'settings', string> = {
+  const seoTabId = !isSelfhosted ? PROJECT_TABS.seo : null
+  const tabNames: Record<string, string> = {
     [PROJECT_TABS.traffic]: t('dashboard.traffic'),
     [PROJECT_TABS.performance]: t('dashboard.performance'),
+    ...(seoTabId ? { [seoTabId]: t('project.seo.title') } : {}),
     [PROJECT_TABS.profiles]: t('dashboard.profiles'),
     [PROJECT_TABS.sessions]: t('dashboard.sessions'),
     [PROJECT_TABS.errors]: t('dashboard.errors'),
@@ -130,7 +176,6 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     [PROJECT_TABS.featureFlags]: t('dashboard.featureFlags'),
     [PROJECT_TABS.captcha]: t('common.captcha'),
     [PROJECT_TABS.ai]: t('dashboard.askAi'),
-    [PROJECT_TABS.alerts]: t('dashboard.alerts'),
     [PROJECT_TABS.experiments]: t('dashboard.experiments'),
     settings: t('common.settings'),
   }
@@ -265,15 +310,16 @@ export interface ProjectLoaderData {
   featureFlagsData?: Promise<FeatureFlagsResponse | null>
   // Goals data
   goalsData?: Promise<GoalsResponse | null>
-  // Alerts data
-  alertsData?: Promise<AlertsResponse | null>
   // Funnels data
   funnelData?: Promise<FunnelDataResponse | null>
+  // Data import
+  hasImportedData?: Promise<boolean>
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { id: projectId } = params
   const url = new URL(request.url)
+  const seoTabId = !isSelfhosted ? PROJECT_TABS.seo : null
 
   const passwordFromQuery = url.searchParams.get('password') || ''
   const passwordFromCookie = getProjectPasswordCookie(request, projectId || '')
@@ -384,8 +430,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   let errorOverview: Promise<ErrorOverviewResponse | null> | undefined
   let featureFlagsData: Promise<FeatureFlagsResponse | null> | undefined
   let goalsData: Promise<GoalsResponse | null> | undefined
-  let alertsData: Promise<AlertsResponse | null> | undefined
   let funnelData: Promise<FunnelDataResponse | null> | undefined
+  let hasImportedData: Promise<boolean> | undefined
 
   // Only fetch data if project is valid and not locked
   if (project && !project.isLocked && projectId) {
@@ -430,6 +476,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           customEvents,
         ).then((res) => res.data)
       }
+    } else if (seoTabId && tab === seoTabId) {
+      trafficData = getProjectDataServer(
+        request,
+        projectId,
+        analyticsParams,
+      ).then((res) => res.data)
     } else if (tab === PROJECT_TABS.performance) {
       // Use measure from URL, or 'quantiles' if perfMetric is quantiles
       const effectiveMeasure =
@@ -487,10 +539,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       goalsData = getProjectGoalsServer(request, projectId).then(
         (res) => res.data,
       )
-    } else if (tab === PROJECT_TABS.alerts) {
-      alertsData = getProjectAlertsServer(request, projectId).then(
-        (res) => res.data,
-      )
     } else if (tab === PROJECT_TABS.funnels) {
       // Fetch funnel data if funnelId is in URL
       const funnelId = url.searchParams.get('funnelId')
@@ -509,6 +557,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           password || undefined,
         ).then((res) => res.data)
       }
+    }
+
+    const importRange = computeDateRangeForPeriod(period, from, to)
+    if (importRange) {
+      hasImportedData = serverFetch<{ hasImportedData: boolean }>(
+        request,
+        `data-import/${projectId}/has-imported-data?from=${encodeURIComponent(importRange.from)}&to=${encodeURIComponent(importRange.to)}`,
+        {
+          headers: password ? { 'x-password': password } : undefined,
+        },
+      )
+        .then((res) => res.data?.hasImportedData === true)
+        .catch(() => false)
     }
   }
 
@@ -530,8 +591,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       errorOverview,
       featureFlagsData,
       goalsData,
-      alertsData,
       funnelData,
+      hasImportedData,
     },
     { headers: createHeadersWithCookies(cookies) },
   )
@@ -574,10 +635,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
     'get-version-filters',
     'get-recent-ai-chats',
     'get-all-ai-chats',
+    'list-ai-chats',
+    'list-ai-chat-tags',
     'get-ai-chat',
     'create-ai-chat',
     'update-ai-chat',
+    'update-ai-chat-meta',
     'delete-ai-chat',
+    'generate-ai-chat-title',
+    'submit-ai-chat-feedback',
   ])
 
   if (!intent || (!publicIntents.has(intent) && !hasAuthTokens(request))) {
@@ -747,6 +813,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
         false,
       )
 
+      const channelIds = formData
+        .getAll('channelIds')
+        .map((v) => v.toString())
+        .filter(Boolean)
+      const messageTemplate =
+        formData.get('messageTemplate')?.toString() ?? null
+      const emailSubjectTemplate =
+        formData.get('emailSubjectTemplate')?.toString() ?? null
+
       const result = await serverFetch(request, 'alert', {
         method: 'POST',
         body: {
@@ -760,6 +835,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
           alertOnNewErrorsOnly,
           alertOnEveryCustomEvent,
           active,
+          channelIds,
+          messageTemplate: messageTemplate || null,
+          emailSubjectTemplate: emailSubjectTemplate || null,
         },
       })
 
@@ -807,6 +885,22 @@ export async function action({ request, params }: ActionFunctionArgs) {
         body.alertOnNewErrorsOnly = alertOnNewErrorsOnly
       if (alertOnEveryCustomEvent !== undefined)
         body.alertOnEveryCustomEvent = alertOnEveryCustomEvent
+
+      const channelIds = formData
+        .getAll('channelIds')
+        .map((v) => v.toString())
+        .filter(Boolean)
+      if (formData.has('channelIdsProvided') || channelIds.length > 0) {
+        body.channelIds = channelIds
+      }
+      if (formData.has('messageTemplate')) {
+        const v = formData.get('messageTemplate')?.toString() || ''
+        body.messageTemplate = v || null
+      }
+      if (formData.has('emailSubjectTemplate')) {
+        const v = formData.get('emailSubjectTemplate')?.toString() || ''
+        body.emailSubjectTemplate = v || null
+      }
 
       const result = await serverFetch(request, `alert/${alertId}`, {
         method: 'PUT',
@@ -1044,12 +1138,34 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     // AI Chat
-    case 'get-recent-ai-chats': {
-      const limit = Number(formData.get('limit') || '5')
+    case 'get-recent-ai-chats':
+    case 'get-all-ai-chats':
+    case 'list-ai-chats': {
+      const params = new URLSearchParams()
+      const limit = formData.get('limit')?.toString()
+      const skip = formData.get('skip')?.toString()
+      const take = formData.get('take')?.toString()
+      const search = formData.get('search')?.toString().trim()
+      const tag = formData.get('tag')?.toString()
+      const pinnedRaw = formData.get('pinned')?.toString()
+      const orderByPinnedRaw = formData.get('orderByPinned')?.toString()
 
+      if (limit) params.append('limit', limit)
+      if (skip) params.append('skip', skip)
+      if (take) params.append('take', take)
+      if (search && search.length >= 2) params.append('search', search)
+      if (tag) params.append('tag', tag)
+      if (pinnedRaw === 'true' || pinnedRaw === 'false') {
+        params.append('pinned', pinnedRaw)
+      }
+      if (orderByPinnedRaw === 'true' || orderByPinnedRaw === 'false') {
+        params.append('orderByPinned', orderByPinnedRaw)
+      }
+
+      const qs = params.toString()
       const result = await serverFetch(
         request,
-        `ai/${projectId}/chats?limit=${limit}`,
+        `ai/${projectId}/chats${qs ? `?${qs}` : ''}`,
         {
           method: 'GET',
         },
@@ -1068,17 +1184,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       )
     }
 
-    case 'get-all-ai-chats': {
-      const skip = Number(formData.get('skip') || '0')
-      const take = Number(formData.get('take') || '20')
-
-      const result = await serverFetch(
-        request,
-        `ai/${projectId}/chats/all?skip=${skip}&take=${take}`,
-        {
-          method: 'GET',
-        },
-      )
+    case 'list-ai-chat-tags': {
+      const result = await serverFetch(request, `ai/${projectId}/chats/tags`, {
+        method: 'GET',
+      })
 
       if (result.error) {
         return data<ProjectViewActionData>(
@@ -1120,10 +1229,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'create-ai-chat': {
       const messages = JSON.parse(formData.get('messages')?.toString() || '[]')
       const name = formData.get('name')?.toString()
+      const parentChatId = formData.get('parentChatId')?.toString()
+
+      const body: Record<string, unknown> = { messages, name }
+      if (parentChatId) body.parentChatId = parentChatId
 
       const result = await serverFetch(request, `ai/${projectId}/chats`, {
         method: 'POST',
-        body: { messages, name },
+        body,
       })
 
       if (result.error) {
@@ -1172,6 +1285,50 @@ export async function action({ request, params }: ActionFunctionArgs) {
       )
     }
 
+    case 'update-ai-chat-meta': {
+      const chatId = formData.get('chatId')?.toString()
+      const pinnedRaw = formData.get('pinned')?.toString()
+      const tagsRaw = formData.get('tags')?.toString()
+      const name = formData.get('name')?.toString()
+
+      const body: Record<string, unknown> = {}
+      if (pinnedRaw === 'true' || pinnedRaw === 'false') {
+        body.pinned = pinnedRaw === 'true'
+      }
+      if (tagsRaw !== undefined) {
+        try {
+          body.tags = JSON.parse(tagsRaw)
+        } catch {
+          return data<ProjectViewActionData>(
+            { intent, error: 'Malformed tags payload' },
+            { status: 400 },
+          )
+        }
+      }
+      if (name !== undefined) body.name = name
+
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats/${chatId}`,
+        {
+          method: 'PATCH',
+          body,
+        },
+      )
+
+      if (result.error) {
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
     case 'delete-ai-chat': {
       const chatId = formData.get('chatId')?.toString()
 
@@ -1192,6 +1349,73 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
       return data<ProjectViewActionData>(
         { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'generate-ai-chat-title': {
+      const chatId = formData.get('chatId')?.toString()
+
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats/${chatId}/title`,
+        {
+          method: 'POST',
+          body: {},
+        },
+      )
+
+      if (result.error) {
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'submit-ai-chat-feedback': {
+      const chatId = formData.get('chatId')?.toString()
+      const rawRating = formData.get('rating')?.toString()
+      const messageIndex = formData.get('messageIndex')?.toString()
+      const comment = formData.get('comment')?.toString()
+
+      if (rawRating !== 'good' && rawRating !== 'bad') {
+        return data<ProjectViewActionData>(
+          { intent, error: 'Invalid rating value' },
+          { status: 400 },
+        )
+      }
+      const rating: 'good' | 'bad' = rawRating
+
+      const body: Record<string, unknown> = { rating }
+      if (messageIndex !== undefined && messageIndex !== '') {
+        body.messageIndex = Number(messageIndex)
+      }
+      if (comment) body.comment = comment
+
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats/${chatId}/feedback`,
+        {
+          method: 'POST',
+          body,
+        },
+      )
+
+      if (result.error) {
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
@@ -1947,6 +2171,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
         )
       }
 
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'get-alert-template-variables': {
+      const metric = formData.get('metric')?.toString() || ''
+      const result = await serverFetch(
+        request,
+        `alert/template-variables?metric=${encodeURIComponent(metric)}`,
+        { method: 'GET' },
+      )
+      if (result.error) {
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
       return data<ProjectViewActionData>(
         { intent, success: true, data: result.data },
         { headers: createHeadersWithCookies(result.cookies) },

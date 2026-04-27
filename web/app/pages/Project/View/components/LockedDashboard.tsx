@@ -1,7 +1,7 @@
 import { LockIcon } from '@phosphor-icons/react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import { DashboardBlockReason } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'

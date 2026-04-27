@@ -5,7 +5,7 @@ import net from 'net'
 import { Reader, CityResponse } from 'maxmind'
 import { HttpException } from '@nestjs/common'
 import timezones from 'countries-and-timezones'
-import randomstring from 'randomstring'
+
 import _sample from 'lodash/sample'
 import _toNumber from 'lodash/toNumber'
 import _replace from 'lodash/replace'
@@ -32,7 +32,12 @@ export const hash = (content: string): string => {
  * Derives a key from the SECRET_KEY_BASE environment variable using the HKDF algorithm.
  */
 export const deriveKey = (
-  purpose: 'refresh-token' | 'access-token' | 'gsc-token' | 'revenue',
+  purpose:
+    | 'refresh-token'
+    | 'access-token'
+    | 'gsc-token'
+    | 'ga4-token'
+    | 'revenue',
   length = 32,
 ) => {
   const baseStr = process.env.SECRET_KEY_BASE
@@ -179,18 +184,18 @@ export const calculateRelativePercentage = (
   return _round((1 - newVal / oldVal) * -100, round)
 }
 
-export const generateRecoveryCode = () =>
-  randomstring.generate({
-    length: 30,
-    charset: 'alphabetic',
-    capitalization: 'uppercase',
-  })
+const ALPHA_UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+export const generateRecoveryCode = () => generateRandomId(ALPHA_UPPER, 30)
 
 export const millisecondsToSeconds = (milliseconds: number) =>
   milliseconds / 1000
 
+const ALPHANUMERIC =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
 export const generateRandomString = (length: number): string =>
-  randomstring.generate(length)
+  generateRandomId(ALPHANUMERIC, length)
 
 /**
  * This is used to determine if the current node is the primary node.
@@ -255,7 +260,7 @@ if (fs.existsSync(PRODUCTION_GEOIP_DB_PATH)) {
   lookup = new Reader<CityResponse>(buffer)
 }
 
-interface IPGeoDetails {
+interface IPDetails {
   country: string | null
   region: string | null
   regionCode: string | null
@@ -264,11 +269,22 @@ interface IPGeoDetails {
   organization: string | null
   userType: string | null
   connectionType: string | null
+  isHosting: boolean
 }
 
-export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
-  const data = lookup.get(ip)
+export const getIPDetails = (ip: string, tz?: string): IPDetails => {
+  let data
+  try {
+    data = ip ? lookup.get(ip) : null
+  } catch {
+    data = null
+  }
 
+  const traits = data?.traits ?? {}
+  const isHosting =
+    traits.is_hosting_provider === true || traits.user_type === 'hosting'
+
+  // Stage 1: Using IP address based geo lookup
   const country = data?.country?.iso_code || null
   const city = data?.city?.names?.en || null
   const region = data?.subdivisions?.[0]?.names?.en || null
@@ -289,6 +305,7 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
       organization,
       userType,
       connectionType,
+      isHosting,
     }
   }
 
@@ -303,6 +320,7 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
     organization: null,
     userType: null,
     connectionType: null,
+    isHosting,
   }
 }
 

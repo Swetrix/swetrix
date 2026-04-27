@@ -8,7 +8,7 @@ import { data, redirect } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
 import { getOgImageUrl } from '~/lib/constants'
-import { Project } from '~/lib/models/Project'
+import { Project, DataImport, ProxyDomain } from '~/lib/models/Project'
 import { Subscriber } from '~/lib/models/Subscriber'
 import ProjectSettings from '~/pages/Project/Settings'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -91,6 +91,13 @@ export interface ProjectSettingsActionData {
   gscAuthUrl?: string
   gscStatus?: GscStatus
   gscProperties?: GscProperty[]
+  dataImports?: DataImport[]
+  dataImport?: unknown
+  ga4AuthUrl?: string
+  ga4Properties?: { propertyId: string; displayName: string }[]
+  proxyDomains?: ProxyDomain[]
+  proxyDomain?: ProxyDomain
+  proxyDomainKeywordWarning?: boolean
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -113,6 +120,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         ?.toString()
       const countryBlacklist = formData.get('countryBlacklist')?.toString()
       const websiteUrl = formData.get('websiteUrl')?.toString()
+      const brandKeywords = formData.get('brandKeywords')?.toString()
       const captchaDifficulty = formData.get('captchaDifficulty')?.toString()
 
       const fieldErrors: ProjectSettingsActionData['fieldErrors'] = {}
@@ -148,6 +156,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
           ? JSON.parse(countryBlacklist)
           : []
       if (websiteUrl !== undefined) updateData.websiteUrl = websiteUrl || null
+      if (brandKeywords !== undefined)
+        updateData.brandKeywords = brandKeywords
+          ? brandKeywords
+              .split(',')
+              .map((k) => k.trim())
+              .filter(Boolean)
+          : null
       if (captchaDifficulty !== undefined)
         updateData.captchaDifficulty = Number(captchaDifficulty)
 
@@ -765,6 +780,284 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
       return data<ProjectSettingsActionData>(
         { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'list-data-imports': {
+      const result = await serverFetch<DataImport[]>(
+        request,
+        `data-import/${id}`,
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        {
+          intent,
+          success: true,
+          dataImports: (result.data as DataImport[]) || [],
+        },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'upload-data-import': {
+      const file = formData.get('file') as File
+      const provider = formData.get('provider')?.toString()
+
+      if (!file || !provider) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'File and provider are required' },
+          { status: 400 },
+        )
+      }
+
+      const proxyForm = new FormData()
+      proxyForm.append('file', file, file.name)
+      proxyForm.append('provider', provider)
+
+      const result = await serverFetch(request, `data-import/${id}/upload`, {
+        method: 'POST',
+        body: proxyForm,
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, dataImport: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'delete-data-import': {
+      const importId = formData.get('importId')?.toString()
+
+      if (!importId) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Import ID is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch(
+        request,
+        `data-import/${id}/${importId}`,
+        { method: 'DELETE' },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'ga4-connect': {
+      const result = await serverFetch<{ url: string }>(
+        request,
+        `data-import/${id}/ga4/connect`,
+        { method: 'POST' },
+      )
+
+      if (result.error || !result.data?.url) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: (result.error as string) || 'Failed to connect' },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, ga4AuthUrl: result.data.url },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'ga4-properties': {
+      const result = await serverFetch<
+        { propertyId: string; displayName: string }[]
+      >(request, `data-import/${id}/ga4/properties`)
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        {
+          intent,
+          success: true,
+          ga4Properties:
+            (result.data as { propertyId: string; displayName: string }[]) ||
+            [],
+        },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'ga4-start-import': {
+      const propertyId = formData.get('propertyId')?.toString()
+
+      if (!propertyId) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Property ID is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch(request, `data-import/${id}/ga4/start`, {
+        method: 'POST',
+        body: { propertyId },
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, dataImport: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'list-proxy-domains': {
+      const result = await serverFetch<{ domains: ProxyDomain[] }>(
+        request,
+        `project/${id}/proxy-domains`,
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        {
+          intent,
+          success: true,
+          proxyDomains: (result.data?.domains as ProxyDomain[]) || [],
+        },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'add-proxy-domain': {
+      const hostname = formData.get('hostname')?.toString()
+
+      if (!hostname) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Hostname is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch<{
+        domain: ProxyDomain
+        blockedKeywordWarning?: boolean
+      }>(request, `project/${id}/proxy-domains`, {
+        method: 'POST',
+        body: { hostname },
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        {
+          intent,
+          success: true,
+          proxyDomain: result.data?.domain,
+          proxyDomainKeywordWarning: !!result.data?.blockedKeywordWarning,
+        },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'delete-proxy-domain': {
+      const proxyDomainId = formData.get('id')?.toString()
+
+      if (!proxyDomainId) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Proxy domain ID is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch(
+        request,
+        `project/${id}/proxy-domains/${proxyDomainId}`,
+        { method: 'DELETE' },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'verify-proxy-domain': {
+      const proxyDomainId = formData.get('id')?.toString()
+
+      if (!proxyDomainId) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'Proxy domain ID is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch<{ domain: ProxyDomain }>(
+        request,
+        `project/${id}/proxy-domains/${proxyDomainId}/verify`,
+        { method: 'POST' },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: result.status || 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        {
+          intent,
+          success: true,
+          proxyDomain: result.data?.domain,
+        },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

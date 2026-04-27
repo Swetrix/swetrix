@@ -9,6 +9,7 @@ import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
 import _toUpper from 'lodash/toUpper'
+import { Link } from '~/ui/Link'
 import {
   SlidersHorizontalIcon,
   ShieldIcon,
@@ -21,13 +22,15 @@ import {
   NoteIcon,
   ShieldCheckIcon,
   CurrencyDollarIcon,
+  DownloadIcon,
+  BellRingingIcon,
+  GlobeIcon,
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
   useLoaderData,
   useNavigate,
-  Link,
   useSearchParams,
   useFetcher,
 } from 'react-router'
@@ -64,6 +67,12 @@ import DangerZone from './tabs/DangerZone'
 import General from './tabs/General'
 import Revenue from './tabs/Revenue'
 import Shields from './tabs/Shields'
+import ProjectAlerts from './Alerts/ProjectAlertsView'
+import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
+import BotProtectionReport from './components/BotProtectionReport'
+import DataImportTab from './components/DataImportTab'
+import ProxyDomainsTab from './components/ProxyDomainsTab'
+import SettingsSidebar, { SettingsTabConfig } from './SettingsSidebar'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -279,11 +288,12 @@ const ModalMessage = ({
   )
 }
 
-interface Form extends Partial<Project> {
+interface Form extends Partial<Omit<Project, 'brandKeywords'>> {
   origins: string | null
   ipBlacklist: string | null
   countryBlacklist: string[]
   websiteUrl?: string | null
+  brandKeywords?: string
 }
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
@@ -317,9 +327,13 @@ const ProjectSettings = () => {
     countryBlacklist: initialProject.countryBlacklist || [],
     active: initialProject.active !== false,
     botsProtectionLevel:
-      (initialProject.botsProtectionLevel as 'off' | 'basic') || 'basic',
+      (initialProject.botsProtectionLevel as 'off' | 'basic' | 'strict') ||
+      'basic',
     gscPropertyUri: initialProject.gscPropertyUri || null,
     websiteUrl: initialProject.websiteUrl || null,
+    ...(!isSelfhosted && {
+      brandKeywords: initialProject.brandKeywords?.join(', ') || '',
+    }),
   }))
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -351,96 +365,134 @@ const ProjectSettings = () => {
     | 'access'
     | 'captcha'
     | 'integrations'
+    | 'alerts'
+    | 'channels'
     | 'revenue'
     | 'emails'
     | 'people'
     | 'annotations'
+    | 'import'
+    | 'proxy'
     | 'danger'
 
-  const tabs = useMemo(
+  const tabs = useMemo<SettingsTabConfig<SettingsTab>[]>(
     () =>
-      [
-        {
-          id: 'general',
-          label: t('project.settings.tabs.general'),
-          description: t('project.settings.tabs.generalDesc'),
-          icon: SlidersHorizontalIcon,
-          iconColor: 'text-blue-500',
-          visible: true,
-        },
-        {
-          id: 'access',
-          label: t('project.settings.tabs.access'),
-          description: t('project.settings.tabs.accessDesc'),
-          icon: LockIcon,
-          iconColor: 'text-amber-500',
-          visible: true,
-        },
-        {
-          id: 'shields',
-          label: t('project.settings.tabs.shields'),
-          description: t('project.settings.tabs.shieldsDesc'),
-          icon: ShieldIcon,
-          iconColor: 'text-emerald-500',
-          visible: true,
-        },
-        {
-          id: 'captcha',
-          label: t('project.settings.tabs.captcha'),
-          description: t('project.settings.tabs.captchaDesc'),
-          icon: ShieldCheckIcon,
-          iconColor: 'text-teal-500',
-          visible: true,
-        },
-        {
-          id: 'integrations',
-          label: t('project.settings.tabs.integrations'),
-          description: t('project.settings.tabs.integrationsDesc'),
-          icon: PuzzlePieceIcon,
-          iconColor: 'text-purple-500',
-          visible: !isSelfhosted,
-        },
-        {
-          id: 'revenue',
-          label: t('project.settings.tabs.revenue'),
-          description: t('project.settings.tabs.revenueDesc'),
-          icon: CurrencyDollarIcon,
-          iconColor: 'text-green-500',
-          visible: !isSelfhosted,
-        },
-        {
-          id: 'emails',
-          label: t('project.settings.tabs.emails'),
-          description: t('project.settings.tabs.emailsDesc'),
-          icon: EnvelopeIcon,
-          iconColor: 'text-sky-500',
-          visible: !isSelfhosted,
-        },
-        {
-          id: 'people',
-          label: t('project.settings.tabs.people'),
-          description: t('project.settings.tabs.peopleDesc'),
-          icon: UserCircleIcon,
-          iconColor: 'text-indigo-500',
-          visible: true,
-        },
-        {
-          id: 'annotations',
-          label: t('project.settings.tabs.annotations'),
-          description: t('project.settings.tabs.annotationsDesc'),
-          icon: NoteIcon,
-          iconColor: 'text-orange-500',
-          visible: true,
-        },
-        {
-          id: 'danger',
-          label: t('project.settings.tabs.danger'),
-          description: t('project.settings.tabs.dangerDesc'),
-          icon: WarningOctagonIcon,
-          iconColor: 'text-red-500',
-          visible: project?.role === 'owner',
-        },
-      ].filter((tab) => tab.visible),
+      (
+        [
+          {
+            id: 'general',
+            label: t('project.settings.tabs.general'),
+            description: t('project.settings.tabs.generalDesc'),
+            icon: SlidersHorizontalIcon,
+            iconColor: 'text-blue-500',
+            visible: true,
+          },
+          {
+            id: 'access',
+            label: t('project.settings.tabs.access'),
+            description: t('project.settings.tabs.accessDesc'),
+            icon: LockIcon,
+            iconColor: 'text-amber-500',
+            visible: true,
+          },
+          {
+            id: 'shields',
+            label: t('project.settings.tabs.shields'),
+            description: t('project.settings.tabs.shieldsDesc'),
+            icon: ShieldIcon,
+            iconColor: 'text-emerald-500',
+            visible: true,
+          },
+          {
+            id: 'captcha',
+            label: t('project.settings.tabs.captcha'),
+            description: t('project.settings.tabs.captchaDesc'),
+            icon: ShieldCheckIcon,
+            iconColor: 'text-teal-500',
+            visible: true,
+          },
+          {
+            id: 'integrations',
+            label: t('project.settings.tabs.integrations'),
+            description: t('project.settings.tabs.integrationsDesc'),
+            icon: PuzzlePieceIcon,
+            iconColor: 'text-purple-500',
+            visible: !isSelfhosted,
+          },
+          {
+            id: 'alerts',
+            label: t('project.settings.tabs.alerts'),
+            description: t('project.settings.tabs.alertsDesc'),
+            icon: BellRingingIcon,
+            iconColor: 'text-cyan-500',
+            visible: !isSelfhosted && project?.role === 'owner',
+          },
+          {
+            id: 'channels',
+            label: t('project.settings.tabs.channels'),
+            description: t('project.settings.tabs.channelsDesc'),
+            icon: BellRingingIcon,
+            iconColor: 'text-pink-500',
+            visible: !isSelfhosted && project?.role === 'owner',
+          },
+          {
+            id: 'revenue',
+            label: t('project.settings.tabs.revenue'),
+            description: t('project.settings.tabs.revenueDesc'),
+            icon: CurrencyDollarIcon,
+            iconColor: 'text-green-500',
+            visible: !isSelfhosted,
+          },
+          {
+            id: 'emails',
+            label: t('project.settings.tabs.emails'),
+            description: t('project.settings.tabs.emailsDesc'),
+            icon: EnvelopeIcon,
+            iconColor: 'text-sky-500',
+            visible: !isSelfhosted,
+          },
+          {
+            id: 'people',
+            label: t('project.settings.tabs.people'),
+            description: t('project.settings.tabs.peopleDesc'),
+            icon: UserCircleIcon,
+            iconColor: 'text-indigo-500',
+            visible: true,
+          },
+          {
+            id: 'import',
+            label: t('project.settings.tabs.import'),
+            description: t('project.settings.tabs.importDesc'),
+            icon: DownloadIcon,
+            iconColor: 'text-cyan-500',
+            visible: true,
+          },
+          {
+            id: 'proxy',
+            label: t('project.settings.tabs.proxy'),
+            description: t('project.settings.tabs.proxyDesc'),
+            icon: GlobeIcon,
+            iconColor: 'text-fuchsia-500',
+            visible: !isSelfhosted,
+          },
+          {
+            id: 'annotations',
+            label: t('project.settings.tabs.annotations'),
+            description: t('project.settings.tabs.annotationsDesc'),
+            icon: NoteIcon,
+            iconColor: 'text-orange-500',
+            visible: true,
+          },
+          {
+            id: 'danger',
+            label: t('project.settings.tabs.danger'),
+            description: t('project.settings.tabs.dangerDesc'),
+            icon: WarningOctagonIcon,
+            iconColor: 'text-red-500',
+            visible: project?.role === 'owner',
+          },
+        ] as const satisfies readonly SettingsTabConfig<SettingsTab>[]
+      ).filter((tab) => tab.visible) as SettingsTabConfig<SettingsTab>[],
     [t, project?.role],
   )
 
@@ -483,11 +535,24 @@ const ProjectSettings = () => {
     return [
       {
         name: 'off',
-        title: t('project.settings.botsProtectionLevel.levels.off'),
+        title: t('project.settings.botsProtectionLevel.levels.off.title'),
+        description: t(
+          'project.settings.botsProtectionLevel.levels.off.description',
+        ),
       },
       {
         name: 'basic',
-        title: t('project.settings.botsProtectionLevel.levels.basic'),
+        title: t('project.settings.botsProtectionLevel.levels.basic.title'),
+        description: t(
+          'project.settings.botsProtectionLevel.levels.basic.description',
+        ),
+      },
+      {
+        name: 'strict',
+        title: t('project.settings.botsProtectionLevel.levels.strict.title'),
+        description: t(
+          'project.settings.botsProtectionLevel.levels.strict.description',
+        ),
       },
     ] as const
   }, [t])
@@ -691,6 +756,8 @@ const ProjectSettings = () => {
       formData.set('countryBlacklist', JSON.stringify(data.countryBlacklist))
     if (data.websiteUrl !== undefined)
       formData.set('websiteUrl', data.websiteUrl || '')
+    if (!isSelfhosted && data.brandKeywords !== undefined)
+      formData.set('brandKeywords', data.brandKeywords || '')
 
     fetcher.submit(formData, { method: 'post' })
   }
@@ -911,38 +978,11 @@ const ProjectSettings = () => {
           </div>
 
           <aside className='hidden w-56 shrink-0 md:block'>
-            <nav className='flex flex-col space-y-0.5' aria-label='Sidebar'>
-              {_map(tabs, (tab) => {
-                const isCurrent = tab.id === activeTab
-                const Icon = tab.icon
-
-                return (
-                  <button
-                    key={tab.id}
-                    type='button'
-                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                    className={cx(
-                      'group flex items-center rounded-md px-3 py-2 text-left text-sm text-gray-900 transition-colors',
-                      {
-                        'bg-gray-200 font-semibold dark:bg-slate-900 dark:text-gray-50':
-                          isCurrent,
-                        'hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-slate-900 dark:hover:text-gray-50':
-                          !isCurrent,
-                      },
-                    )}
-                    aria-current={isCurrent ? 'page' : undefined}
-                  >
-                    <Icon
-                      className={cx('mr-2 size-4 shrink-0 transition-colors', {
-                        'text-gray-900 dark:text-gray-50': isCurrent,
-                        'text-gray-600 dark:text-gray-300': !isCurrent,
-                      })}
-                    />
-                    <span className='truncate'>{tab.label}</span>
-                  </button>
-                )
-              })}
-            </nav>
+            <SettingsSidebar
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={(tabId) => setActiveTab(tabId)}
+            />
           </aside>
 
           <section className='flex-1'>
@@ -1007,6 +1047,20 @@ const ProjectSettings = () => {
               </form>
             ) : null}
 
+            {activeTab === 'shields' ? (
+              <div className='mt-8'>
+                <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+                  {t('project.settings.blockedTraffic')}
+                </h3>
+                <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                  {t('project.settings.blockedTrafficHint')}
+                </p>
+                <div className='mt-2'>
+                  <BotProtectionReport pid={id} />
+                </div>
+              </div>
+            ) : null}
+
             {activeTab === 'emails' && !isSelfhosted && activeTabConfig ? (
               <>
                 <TabHeader
@@ -1043,6 +1097,28 @@ const ProjectSettings = () => {
                     project?.role === 'owner' || project?.role === 'admin'
                   }
                 />
+              </>
+            ) : null}
+            {activeTab === 'import' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <DataImportTab projectId={id} />
+              </>
+            ) : null}
+            {activeTab === 'proxy' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <ProxyDomainsTab projectId={id} />
               </>
             ) : null}
 
@@ -1201,6 +1277,44 @@ const ProjectSettings = () => {
                   )}
                 </div>
               </div>
+            ) : null}
+
+            {activeTab === 'alerts' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <ProjectAlerts
+                  projectId={id}
+                  projectName={project?.name}
+                  projectRole={project?.role}
+                />
+              </>
+            ) : null}
+
+            {activeTab === 'channels' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <NotificationChannels
+                  scope='project'
+                  projectId={id}
+                  allowedTypes={[
+                    'email',
+                    'telegram',
+                    'discord',
+                    'slack',
+                    'webhook',
+                  ]}
+                />
+              </>
             ) : null}
 
             {activeTab === 'captcha' && activeTabConfig ? (

@@ -7,15 +7,16 @@ import { Toaster } from 'sonner'
 
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
+import { stripLangFromPath } from '~/lib/constants'
 import routesPath from '~/utils/routes'
 
 import { useTheme } from './providers/ThemeProvider'
 
 const App = () => {
-  const { pathname } = useLocation()
+  const { pathname: rawPathname } = useLocation()
+  const pathname = stripLangFromPath(rawPathname)
   const { theme } = useTheme()
 
-  const isReferralPage = _startsWith(pathname, '/ref/')
   const isOnboardingPage = pathname === routesPath.onboarding
   const isProjectViewPage =
     _startsWith(pathname, '/projects/') &&
@@ -39,7 +40,6 @@ const App = () => {
   return (
     <>
       {!_includes(routesWithOutHeader, pathname) &&
-      !isReferralPage &&
       !isProjectViewPage &&
       !isOnboardingPage ? (
         <Header />
@@ -51,9 +51,7 @@ const App = () => {
           duration: 5000,
         }}
       />
-      {!isReferralPage && !isProjectViewPage && !isOnboardingPage ? (
-        <Footer />
-      ) : null}
+      {!isProjectViewPage && !isOnboardingPage ? <Footer /> : null}
     </>
   )
 }

@@ -34,6 +34,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     ctp LowCardinality(Nullable(String)),
     \`meta.key\` Array(String) CODEC(ZSTD(3)),
     \`meta.value\` Array(String) CODEC(ZSTD(3)),
+    importID Nullable(UInt8),
     created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
@@ -71,6 +72,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     ctp LowCardinality(Nullable(String)),
     \`meta.key\` Array(String) CODEC(ZSTD(3)),
     \`meta.value\` Array(String) CODEC(ZSTD(3)),
+    importID Nullable(UInt8),
     created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
@@ -213,6 +215,19 @@ const CLICKHOUSE_INIT_QUERIES = [
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
+
+  // Bot block events table for advanced bot protection reporting
+  `CREATE TABLE IF NOT EXISTS ${dbName}.bot_blocks
+  (
+    pid FixedString(12),
+    reason LowCardinality(String),
+    cc Nullable(FixedString(2)),
+    created DateTime('UTC') CODEC(Delta(4), LZ4)
+  )
+  ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (pid, created)
+  TTL created + INTERVAL 90 DAY;`,
 
   // Revenue table for storing payment/transaction data from payment providers
   `CREATE TABLE IF NOT EXISTS ${dbName}.revenue

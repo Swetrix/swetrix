@@ -69,11 +69,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (
       !twoFactorAuthenticationCode ||
-      twoFactorAuthenticationCode.length !== 6
+      !/^[a-zA-Z0-9]{6,30}$/.test(twoFactorAuthenticationCode)
     ) {
       return data<LoginActionData>(
         {
-          fieldErrors: { twoFACode: 'Please enter a valid 6-digit code' },
+          fieldErrors: {
+            twoFACode: 'Please enter a valid 2FA or recovery code',
+          },
           timestamp: Date.now(),
         },
         { status: 400 },

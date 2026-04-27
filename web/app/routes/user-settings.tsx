@@ -269,10 +269,18 @@ export async function action({ request }: ActionFunctionArgs) {
 
     case 'delete-account': {
       const feedback = formData.get('feedback')?.toString() || ''
+      const password = formData.get('password')?.toString() || ''
+
+      if (!password) {
+        return data<UserSettingsActionData>(
+          { intent, error: 'Password is required' },
+          { status: 400 },
+        )
+      }
 
       const result = await serverFetch(request, 'user', {
         method: 'DELETE',
-        body: { feedback },
+        body: { password, feedback },
       })
 
       if (result.error) {

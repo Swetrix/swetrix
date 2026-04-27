@@ -1,6 +1,6 @@
 import _replace from 'lodash/replace'
 import { useEffect, useState } from 'react'
-import type { LoaderFunctionArgs } from 'react-router'
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { redirect, useLoaderData, useNavigate } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
@@ -9,10 +9,16 @@ import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { isSelfhosted } from '~/lib/constants'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
+import { getTitle } from '~/utils/seo'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
+
+export const meta: MetaFunction = () => [
+  ...getTitle('Google Search Console Connected'),
+  { name: 'robots', content: 'noindex' },
+]
 
 export interface GscConnectedLoaderData {
   error?: string

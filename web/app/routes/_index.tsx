@@ -11,7 +11,8 @@ import {
 import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
-import { Link, redirect, useLoaderData } from 'react-router'
+import { Link } from '~/ui/Link'
+import { redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
 
@@ -26,6 +27,7 @@ import {
   LIVE_DEMO_URL,
   isSelfhosted,
   isDisableMarketingPages,
+  localisePath,
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Stats } from '~/lib/models/Stats'
@@ -34,6 +36,8 @@ import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { FeaturesGrid } from '~/components/marketing/FeaturesGrid'
+import { WhySwitch } from '~/components/marketing/WhySwitch'
+import { Text } from '~/ui/Text'
 
 export const meta: MetaFunction = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -72,9 +76,14 @@ interface FeedbackHighlightProps {
 }
 
 const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
-  <span className='bg-yellow-100/80 font-medium dark:bg-yellow-900/60'>
-    &nbsp;{children}&nbsp;
-  </span>
+  <Text
+    as='span'
+    colour='primary'
+    size='lg'
+    className='rounded-sm bg-indigo-600/20 px-0.5 dark:bg-indigo-400/30'
+  >
+    {children}
+  </Text>
 )
 
 export const FeedbackDual = () => {
@@ -98,16 +107,16 @@ export const FeedbackDual = () => {
               loading='lazy'
             />
             <figure className='mt-10 flex flex-auto flex-col justify-between'>
-              <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
-                <p>
-                  "Swetrix has been a
+              <blockquote>
+                <Text as='p' size='lg' colour='secondary'>
+                  "Swetrix has been a{' '}
                   <FeedbackHighlight>
                     game changer for our analytics.
                   </FeedbackHighlight>{' '}
                   They've always been on top of feature requests and bug reports
                   and have been friendly every step of the way. I can't
                   recommend them enough."
-                </p>
+                </Text>
               </blockquote>
               <figcaption className='mt-10 flex items-center gap-x-6'>
                 <img
@@ -118,13 +127,13 @@ export const FeedbackDual = () => {
                   height={56}
                   loading='lazy'
                 />
-                <div className='text-base'>
-                  <div className='font-semibold text-gray-900 dark:text-gray-100'>
+                <div className='space-y-1'>
+                  <Text as='p' size='base' weight='medium' colour='primary'>
                     Alex Bowles
-                  </div>
-                  <div className='mt-1 text-gray-500 dark:text-gray-400'>
+                  </Text>
+                  <Text as='p' size='base' colour='muted'>
                     Co-founder of Casterlabs
-                  </div>
+                  </Text>
                 </div>
               </figcaption>
             </figure>
@@ -143,17 +152,17 @@ export const FeedbackDual = () => {
               loading='lazy'
             />
             <figure className='mt-10 flex flex-auto flex-col justify-between'>
-              <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
-                <p>
+              <blockquote>
+                <Text as='p' size='lg' colour='secondary'>
                   "I was confused by Google Analytics so much that I was getting
-                  zero actionable insights. Swetrix changed everything -
+                  zero actionable insights. Swetrix changed everything -{' '}
                   <FeedbackHighlight>
                     clean dashboard, instant understanding of user behavior, and
                     features that actually matter.
-                  </FeedbackHighlight>
+                  </FeedbackHighlight>{' '}
                   Finally, analytics that help me make better decisions instead
                   of irritating me."
-                </p>
+                </Text>
               </blockquote>
               <figcaption className='mt-10 flex items-center gap-x-6'>
                 <img
@@ -164,13 +173,13 @@ export const FeedbackDual = () => {
                   height={56}
                   loading='lazy'
                 />
-                <div className='text-base'>
-                  <div className='font-semibold text-gray-900 dark:text-gray-100'>
+                <div className='space-y-1'>
+                  <Text as='p' size='base' weight='medium' colour='primary'>
                     Alper Alkan
-                  </div>
-                  <div className='mt-1 text-gray-500 dark:text-gray-400'>
+                  </Text>
+                  <Text as='p' size='base' colour='muted'>
                     Co-founder of Phalcode
-                  </div>
+                  </Text>
                 </div>
               </figcaption>
             </figure>
@@ -303,11 +312,13 @@ const LiveDemoPreview = () => {
     )
   }
 
+  const localisedDemoPath = localisePath('/projects/STEzHcB1rALV', language)
+
   return (
-    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-gray-50 shadow-lg ring-1 ring-black/5 transition-shadow ease-out sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-950 dark:ring-white/10'>
+    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-gray-50 shadow-lg ring-1 ring-black/5 transition-shadow ease-out will-change-transform sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-950 dark:ring-white/10'>
       <div className='pointer-events-none relative h-[580px] lg:h-[640px] xl:h-[700px]'>
         <iframe
-          src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
+          src={`https://swetrix.com${localisedDemoPath}?tab=traffic&theme=${theme}&embedded=true`}
           className='size-full'
           title='Swetrix Analytics Live Demo'
           style={{ pointerEvents: 'none' }}
@@ -339,8 +350,6 @@ const Hero = () => {
       <div className='relative mx-2 overflow-hidden rounded-4xl'>
         <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
           <div className='absolute inset-0 rounded-4xl bg-linear-115 from-slate-100 from-28% via-purple-500 via-70% to-indigo-600 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-950 dark:opacity-45 dark:ring-white/10' />
-          <div className='absolute top-28 -left-24 size-[28rem] rounded-full bg-[radial-gradient(closest-side,#6366f1,transparent)] opacity-25 blur-3xl dark:opacity-15' />
-          <div className='absolute -right-16 bottom-[-3rem] size-[26rem] rounded-full bg-[radial-gradient(closest-side,#eef2ff,transparent)] opacity-30 blur-3xl dark:opacity-15' />
         </div>
         <Header transparent />
         <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
@@ -407,6 +416,48 @@ const Hero = () => {
   )
 }
 
+const SOFTWARE_APPLICATION_JSONLD = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Swetrix',
+  url: 'https://swetrix.com',
+  applicationCategory: 'WebApplication',
+  operatingSystem: 'All',
+  offers: {
+    '@type': 'AggregateOffer',
+    priceCurrency: 'USD',
+    lowPrice: '19',
+    highPrice: '419',
+    offerCount: '9',
+    description: '14-day free trial, then paid plans from $19/month',
+  },
+  description:
+    'Privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.',
+  featureList: [
+    'Cookie-free tracking',
+    'Traffic web analytics',
+    'Session analysis',
+    'Website speed analytics',
+    'Error tracking',
+    'Funnels',
+    'Feature flags',
+    'Experiments',
+    'reCAPTCHA alternative',
+    'API access',
+    'Team members',
+  ],
+  screenshot: 'https://swetrix.com/assets/screenshot_light.png',
+  softwareHelp: {
+    '@type': 'WebPage',
+    url: 'https://swetrix.com/docs',
+  },
+  author: {
+    '@type': 'Organization',
+    name: 'Swetrix',
+    url: 'https://swetrix.com',
+  },
+}
+
 export default function Index() {
   const { metainfo } = useLoaderData<typeof loader>()
 
@@ -423,10 +474,20 @@ export default function Index() {
 
         <MarketingPricing metainfo={metainfo} />
 
+        <WhySwitch />
+
         <FAQ />
 
         <DitchGoogle />
       </main>
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(SOFTWARE_APPLICATION_JSONLD)
+            .replace(/</g, '\\u003c')
+            .replace(/\u2028|\u2029/g, ''),
+        }}
+      />
     </div>
   )
 }

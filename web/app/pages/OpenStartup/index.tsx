@@ -2,7 +2,6 @@
 import billboard, { bar, line } from 'billboard.js'
 import { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link } from 'react-router'
 
 import { LIVE_DEMO_URL } from '~/lib/constants'
 import { Stats } from '~/lib/models/Stats'
@@ -388,12 +387,6 @@ const getSettings = () => {
         },
       },
     },
-    // area: {
-    //   linearGradient: true,
-    // },
-    // padding: {
-    //   right: rotateXAxias && 35,
-    // },
     bindto: '#open-startup',
   }
 }
@@ -488,8 +481,10 @@ const OpenStartup = ({ stats }: OpenStartupProps) => {
             i18nKey='open.usage.live'
             components={{
               livedemo: (
-                <Link
-                  to={LIVE_DEMO_URL}
+                <a
+                  href={LIVE_DEMO_URL}
+                  target='_blank'
+                  rel='noopener noreferrer'
                   className='font-medium underline decoration-dashed hover:decoration-solid'
                 />
               ),

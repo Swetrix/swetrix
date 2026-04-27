@@ -10,6 +10,12 @@ import MultiSelect from '~/ui/MultiSelect'
 import Select from '~/ui/Select'
 import countries from '~/utils/isoCountries'
 
+interface BotsProtectionLevelOption {
+  name: string
+  title: string
+  description: string
+}
+
 interface ShieldsProps {
   form: {
     origins: string | null
@@ -23,7 +29,7 @@ interface ShieldsProps {
   }
   beenSubmitted: boolean
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
-  botsProtectionLevels: readonly { name: string; title: string }[]
+  botsProtectionLevels: readonly BotsProtectionLevelOption[]
   setBotsLevel: (name: string) => void
   countryBlacklist: string[]
   setCountryBlacklist: (countries: string[]) => void
@@ -141,19 +147,25 @@ const Shields = ({
         />
       </div>
       <div className='mt-4'>
-        <Select
+        <Select<BotsProtectionLevelOption>
           id='botsProtectionLevel'
           label={t('project.settings.botsProtectionLevel.title')}
-          // @ts-expect-error
           items={botsProtectionLevels}
           title={
             botsProtectionLevels.find(
               (predicate) => predicate.name === form.botsProtectionLevel,
             )?.title || ''
           }
-          labelExtractor={(item: any) => item.title}
+          description={
+            botsProtectionLevels.find(
+              (predicate) => predicate.name === form.botsProtectionLevel,
+            )?.description || ''
+          }
+          labelExtractor={(item) => item.title}
+          descriptionExtractor={(item) => item.description}
+          keyExtractor={(item) => item.name}
           onSelect={(item) => setBotsLevel(item.name)}
-          capitalise
+          wrap
           selectedItem={botsProtectionLevels.find(
             (predicate) => predicate.name === form.botsProtectionLevel,
           )}

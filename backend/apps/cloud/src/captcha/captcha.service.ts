@@ -15,7 +15,7 @@ import {
   getRedisCaptchaKey,
   CAPTCHA_TOKEN_LIFETIME,
 } from '../common/constants'
-import { getGeoDetails } from '../common/utils'
+import { getIPDetails } from '../common/utils'
 import { GeneratedChallenge } from './interfaces/generated-captcha'
 import { captchaTransformer } from './utils/transformers'
 import { clickhouse } from '../common/integrations/clickhouse'
@@ -151,7 +151,7 @@ export class CaptchaService {
     const browserName = ua.browser.name
     const osName = ua.os.name
 
-    const { country } = getGeoDetails(ip)
+    const { country } = getIPDetails(ip)
     const transformed = captchaTransformer(
       pid,
       deviceType,

@@ -6,6 +6,7 @@ import {
 
 import {
   getSessionsServer,
+  getFunnelSessionsServer,
   getErrorsServer,
   getFeatureFlagStatsServer,
   getFeatureFlagProfilesServer,
@@ -29,15 +30,19 @@ import {
   getErrorSessionsServer,
   getLiveVisitorsServer,
   getLiveVisitorsInfoServer,
+  getBotProtectionStatsServer,
   getProjectDataCustomEventsServer,
   getUserFlowServer,
   getGSCKeywordsServer,
+  getGSCDashboardServer,
+  getGSCDetailsServer,
   getRevenueStatusServer,
   getRevenueDataServer,
   getOverallStatsServer,
   type AnalyticsParams,
   type AnalyticsFilter,
   type SessionsResponse,
+  type FunnelSessionsResponse,
   type ErrorsResponse,
   type FeatureFlagStats,
   type FeatureFlagProfilesResponse,
@@ -59,9 +64,13 @@ import {
   type ErrorSessionsResponse,
   type LiveStats,
   type LiveVisitorInfo,
+  type BotProtectionStats,
+  type BotProtectionPeriod,
   type ProjectDataCustomEventsResponse,
   type UserFlowResponse,
   type GSCKeywordsResponse,
+  type GSCDashboardResponse,
+  type GSCDetailsResponse,
   type RevenueStatus,
   type RevenueDataResponse,
   type OverallObject,
@@ -71,21 +80,16 @@ import { getProjectPasswordCookie } from '~/utils/session.server'
 function formatDateForBackend(dateStr: string | undefined): string | undefined {
   if (!dateStr) return undefined
 
-  // If already in YYYY-MM-DD format, return as-is
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr
   }
 
-  // Convert ISO 8601 or other formats to YYYY-MM-DD
   const date = new Date(dateStr)
-  if (Number.isNaN(date.getTime())) {
-    return dateStr
+  if (!Number.isNaN(date.getTime())) {
+    return date.toISOString()
   }
 
-  const yyyy = date.getUTCFullYear()
-  const mm = String(date.getUTCMonth() + 1).padStart(2, '0')
-  const dd = String(date.getUTCDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
+  return undefined
 }
 
 interface ProxyRequest {
@@ -114,12 +118,16 @@ interface ProxyRequest {
     | 'getErrorSessions'
     | 'getLiveVisitors'
     | 'getLiveVisitorsInfo'
+    | 'getBotProtectionStats'
     | 'getProjectDataCustomEvents'
     | 'getUserFlow'
     | 'getGSCKeywords'
+    | 'getGSCDashboard'
+    | 'getGSCDetails'
     | 'getRevenueStatus'
     | 'getRevenueData'
     | 'getOverallStats'
+    | 'getFunnelSessions'
   projectId: string
   pids?: string[]
   flagId?: string
@@ -146,6 +154,10 @@ interface ProxyRequest {
     resultFilter?: string
     search?: string
     profileType?: 'all' | 'anonymous' | 'identified'
+    page?: string
+    query?: string
+    funnelId?: string
+    step?: number
   }
 }
 
@@ -186,6 +198,28 @@ export async function action({ request }: ActionFunctionArgs) {
           analyticsParams,
         )
         return data<ProxyResponse<SessionsResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getFunnelSessions': {
+        const result = await getFunnelSessionsServer(request, projectId, {
+          period: analyticsParams.period,
+          from: analyticsParams.from,
+          to: analyticsParams.to,
+          timezone: analyticsParams.timezone,
+          funnelId: params.funnelId,
+          step: params.step ?? 1,
+          take: params.take,
+          skip: params.skip,
+          password: analyticsParams.password,
+        })
+        return data<ProxyResponse<FunnelSessionsResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)
@@ -723,6 +757,26 @@ export async function action({ request }: ActionFunctionArgs) {
         })
       }
 
+      case 'getBotProtectionStats': {
+        const period = (params.period as BotProtectionPeriod) || '30d'
+        const validPeriods: BotProtectionPeriod[] = ['7d', '30d', '90d']
+        const safePeriod = validPeriods.includes(period) ? period : '30d'
+        const result = await getBotProtectionStatsServer(
+          request,
+          projectId,
+          safePeriod,
+          password || undefined,
+        )
+        return data<ProxyResponse<BotProtectionStats>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
       case 'getProjectDataCustomEvents': {
         const result = await getProjectDataCustomEventsServer(
           request,
@@ -777,6 +831,46 @@ export async function action({ request }: ActionFunctionArgs) {
           password: password || undefined,
         })
         return data<ProxyResponse<GSCKeywordsResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getGSCDashboard': {
+        const result = await getGSCDashboardServer(request, projectId, {
+          period: params.period,
+          from: formatDateForBackend(params.from),
+          to: formatDateForBackend(params.to),
+          timezone: params.timezone,
+          password: password || undefined,
+          timeBucket: params.timeBucket,
+          filters: params.filters,
+        })
+        return data<ProxyResponse<GSCDashboardResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getGSCDetails': {
+        const result = await getGSCDetailsServer(request, projectId, {
+          period: params.period,
+          from: formatDateForBackend(params.from),
+          to: formatDateForBackend(params.to),
+          timezone: params.timezone,
+          password: password || undefined,
+          page: params.page,
+          query: params.query,
+        })
+        return data<ProxyResponse<GSCDetailsResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

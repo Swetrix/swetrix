@@ -17,13 +17,14 @@ import React, {
   memo,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, LinkProps } from 'react-router'
+import { Link } from '~/ui/Link'
+import { LinkProps } from 'react-router'
 
 import { PROJECT_TABS } from '~/lib/constants'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
-import { getFaviconHost } from '~/utils/referrers'
+import { getFaviconHost, getFaviconUrl } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
 const SIDEBAR_COLLAPSED_KEY = 'project-sidebar-collapsed'
@@ -63,8 +64,8 @@ const ICON_COLORS: Record<string, string> = {
   // Web Analytics
   traffic: 'text-blue-500',
   performance: 'text-amber-500',
+  seo: 'text-green-500',
   funnels: 'text-teal-500',
-  alerts: 'text-cyan-500',
   // Product Analytics
   profiles: 'text-fuchsia-500',
   sessions: 'text-indigo-500',
@@ -401,9 +402,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     const webAnalyticsTabs = tabs.filter((tab) =>
       [
         PROJECT_TABS.traffic,
+        PROJECT_TABS.seo,
         PROJECT_TABS.performance,
         PROJECT_TABS.funnels,
-        PROJECT_TABS.alerts,
       ]
         .filter(Boolean)
         .includes(tab.id as any),
@@ -474,7 +475,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
               faviconHost ? (
                 <img
                   className='size-6 shrink-0 rounded-sm'
-                  src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
+                  src={getFaviconUrl(faviconHost)}
                   loading='lazy'
                   alt={projectName}
                 />
@@ -500,7 +501,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                 {faviconHost ? (
                   <img
                     className='size-6 shrink-0 rounded-sm'
-                    src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
+                    src={getFaviconUrl(faviconHost)}
                     loading='lazy'
                     alt=''
                     aria-hidden='true'

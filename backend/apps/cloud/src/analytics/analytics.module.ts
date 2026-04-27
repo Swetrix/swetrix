@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { AnalyticsService } from './analytics.service'
 import { AnalyticsController } from './analytics.controller'
+import { BotDetectionService } from './bot-detection.service'
 import { HeartbeatGateway } from './heartbeat.gateway'
 import { SaltService } from './salt.service'
 import { Salt } from './entities/salt.entity'
@@ -19,8 +20,13 @@ import { RevenueModule } from '../revenue/revenue.module'
     ProjectModule,
     forwardRef(() => RevenueModule),
   ],
-  providers: [AnalyticsService, SaltService, HeartbeatGateway],
-  exports: [AnalyticsService, SaltService],
+  providers: [
+    AnalyticsService,
+    BotDetectionService,
+    SaltService,
+    HeartbeatGateway,
+  ],
+  exports: [AnalyticsService, BotDetectionService, SaltService],
   controllers: [AnalyticsController],
 })
 export class AnalyticsModule {}

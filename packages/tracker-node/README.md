@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://swetrix.com/assets/logo_white.png">
-  <img alt="" src="https://swetrix.com/assets/logo_blue.png" height="80">
+  <source media="(prefers-color-scheme: dark)" srcset="https://swetrix.com/assets/logo_white.png?v=2">
+  <img alt="" src="https://swetrix.com/assets/logo_blue.png?v=2" height="80">
 </picture>
 
 # `@swetrix/node` - Swetrix NodeJS integration
@@ -123,6 +123,14 @@ export interface TrackPageViewOptions {
   /** A campaign of the pageview (e.g. utm_campaign GET parameter) */
   ca?: string
 
+  /**
+   * Raw URL query string of the landing page (without the leading `?`).
+   * Used server-side to recover the traffic source from ad/social click
+   * IDs (gclid, fbclid, msclkid, ttclid, etc.) when the browser stripped
+   * the referrer. UTM parameters always take precedence over click IDs.
+   */
+  qs?: string
+
   /** If set to true, only unique visits will be saved */
   unique?: boolean
 
@@ -213,6 +221,14 @@ export interface TrackEventOptions {
 
   /** A campaign of the event (e.g. utm_campaign GET parameter) */
   ca?: string
+
+  /**
+   * Raw URL query string of the landing page (without the leading `?`).
+   * Used server-side to recover the traffic source from ad/social click
+   * IDs (gclid, fbclid, msclkid, ttclid, etc.) when the browser stripped
+   * the referrer. UTM parameters always take precedence over click IDs.
+   */
+  qs?: string
 
   /** Event-related metadata object with string values. */
   meta?: {

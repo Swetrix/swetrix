@@ -1,4 +1,3 @@
-import { Alerts } from '~/lib/models/Alerts'
 import { Auth } from '~/lib/models/Auth'
 import { User } from '~/lib/models/User'
 import {
@@ -46,7 +45,7 @@ async function fetchWithTimeout(
 
 interface ServerFetchOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-  body?: Record<string, unknown>
+  body?: Record<string, unknown> | FormData
   headers?: Record<string, string>
   /** Skip authentication - for public endpoints */
   skipAuth?: boolean
@@ -75,8 +74,10 @@ export async function serverFetch<T = unknown>(
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
   const url = `${API_URL}${cleanEndpoint}`
 
+  const isFormData = body instanceof FormData
+
   const fetchHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...customHeaders,
   }
 
@@ -97,11 +98,17 @@ export async function serverFetch<T = unknown>(
     }
   }
 
+  const serializedBody = body
+    ? isFormData
+      ? body
+      : JSON.stringify(body)
+    : undefined
+
   try {
     const response = await fetchWithTimeout(url, {
       method,
       headers: fetchHeaders,
-      body: body ? JSON.stringify(body) : undefined,
+      body: serializedBody,
     })
 
     if ((response.status === 401 || response.status === 403) && !skipAuth) {
@@ -114,7 +121,7 @@ export async function serverFetch<T = unknown>(
         const retryResponse = await fetchWithTimeout(url, {
           method,
           headers: fetchHeaders,
-          body: body ? JSON.stringify(body) : undefined,
+          body: serializedBody,
         })
 
         if (retryResponse.ok) {
@@ -980,6 +987,54 @@ export async function getSessionsServer(
   )
 }
 
+export interface FunnelSessionsResponse {
+  sessions: Session[]
+  take: number
+  skip: number
+}
+
+export async function getFunnelSessionsServer(
+  request: Request,
+  pid: string,
+  params: {
+    period: string
+    from?: string
+    to?: string
+    timezone?: string
+    funnelId?: string
+    step: number
+    take?: number
+    skip?: number
+    password?: string
+  },
+): Promise<ServerFetchResult<FunnelSessionsResponse>> {
+  const step = Math.max(1, Math.floor(Number(params.step) || 1))
+  const take = Math.min(150, Math.max(1, Math.floor(Number(params.take) || 30)))
+  const skip = Math.max(0, Math.floor(Number(params.skip) || 0))
+
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period)
+  queryParams.append('step', String(step))
+  queryParams.append('take', String(take))
+  queryParams.append('skip', String(skip))
+  if (params.funnelId) queryParams.append('funnelId', params.funnelId)
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<FunnelSessionsResponse>(
+    request,
+    `log/funnel-sessions?${queryParams.toString()}`,
+    { headers },
+  )
+}
+
 interface PageflowItem {
   type: 'pageview' | 'event' | 'error'
   value: string
@@ -1412,32 +1467,6 @@ export async function getGoalChartServer(
 }
 
 // ============================================================================
-// MARK: Alerts API (Deferred Loading)
-// ============================================================================
-
-export interface AlertsResponse {
-  results: Alerts[]
-  total: number
-}
-
-export async function getProjectAlertsServer(
-  request: Request,
-  projectId: string,
-  take = 25,
-  skip = 0,
-): Promise<ServerFetchResult<AlertsResponse>> {
-  const params = new URLSearchParams({
-    take: String(take),
-    skip: String(skip),
-  })
-
-  return serverFetch<AlertsResponse>(
-    request,
-    `alert/project/${projectId}?${params.toString()}`,
-  )
-}
-
-// ============================================================================
 // MARK: Funnels API (Deferred Loading)
 // ============================================================================
 
@@ -1450,6 +1479,8 @@ export interface FunnelDataResponse {
     dropoff: number
     dropoffPerc: number
     dropoffPercStep: number
+    topCountries: Record<string, number>
+    topSources: Record<string, number>
   }[]
   totalPageviews: number
 }
@@ -2054,6 +2085,37 @@ export async function getLiveVisitorsInfoServer(
 }
 
 // ============================================================================
+// MARK: Bot Protection Stats API
+// ============================================================================
+
+export type BotProtectionPeriod = '7d' | '30d' | '90d'
+
+export interface BotProtectionStats {
+  total: number
+  period: BotProtectionPeriod
+  byReason: { reason: string; count: number }[]
+  byCountry: { cc: string; count: number }[]
+}
+
+export async function getBotProtectionStatsServer(
+  request: Request,
+  pid: string,
+  period: BotProtectionPeriod,
+  password?: string,
+): Promise<ServerFetchResult<BotProtectionStats>> {
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<BotProtectionStats>(
+    request,
+    `log/bot-stats?pid=${pid}&period=${period}`,
+    { headers },
+  )
+}
+
+// ============================================================================
 // MARK: Custom Events Chart API
 // ============================================================================
 
@@ -2355,6 +2417,21 @@ export async function processGSCTokenServer(
   })
 }
 
+// ============================================================================
+// MARK: Google Analytics 4 Import API
+// ============================================================================
+
+export async function processGA4ImportTokenServer(
+  request: Request,
+  code: string,
+  state: string,
+): Promise<ServerFetchResult<{ pid: string }>> {
+  return serverFetch<{ pid: string }>(request, 'data-import/ga4/callback', {
+    method: 'POST',
+    body: { code, state },
+  })
+}
+
 interface GSCKeyword {
   name: string
   count: number
@@ -2394,6 +2471,154 @@ export async function getGSCKeywordsServer(
   return serverFetch<GSCKeywordsResponse>(
     request,
     `log/keywords?${queryParams.toString()}`,
+    { headers },
+  )
+}
+
+interface GSCDateSeriesEntry {
+  date: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+interface GSCTopPageEntry {
+  page: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+interface GSCTopQueryEntry {
+  name: string
+  count: number
+  impressions: number
+  position: number
+  ctr: number
+}
+
+interface GSCTopCountryEntry {
+  country: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+interface GSCTopDeviceEntry {
+  device: string
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+export interface GSCDashboardResponse {
+  notConnected?: boolean
+  noProperty?: boolean
+  summary?: {
+    clicks: number
+    impressions: number
+    ctr: number
+    position: number
+  }
+  previousSummary?: {
+    clicks: number
+    impressions: number
+    ctr: number
+    position: number
+  } | null
+  dateSeries?: GSCDateSeriesEntry[]
+  topPages?: GSCTopPageEntry[]
+  topQueries?: GSCTopQueryEntry[]
+  topCountries?: GSCTopCountryEntry[]
+  topDevices?: GSCTopDeviceEntry[]
+  brandedTraffic?: {
+    branded: number
+    nonBranded: number
+  }
+}
+
+export async function getGSCDashboardServer(
+  request: Request,
+  pid: string,
+  params: {
+    period?: string
+    from?: string
+    to?: string
+    timezone?: string
+    password?: string
+    timeBucket?: string
+    filters?: AnalyticsFilter[]
+  } = {},
+): Promise<ServerFetchResult<GSCDashboardResponse>> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period || '7d')
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+  if (params.timeBucket) queryParams.append('timeBucket', params.timeBucket)
+  if (params.filters)
+    queryParams.append('filters', serializeFiltersForUrl(params.filters))
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<GSCDashboardResponse>(
+    request,
+    `log/gsc-dashboard?${queryParams.toString()}`,
+    { headers },
+  )
+}
+
+export interface GSCDetailsResponse {
+  type: 'queries' | 'pages' | 'none'
+  data: Array<{
+    name?: string
+    page?: string
+    count?: number
+    clicks?: number
+    impressions: number
+    ctr: number
+    position: number
+  }>
+}
+
+export async function getGSCDetailsServer(
+  request: Request,
+  pid: string,
+  params: {
+    period?: string
+    from?: string
+    to?: string
+    timezone?: string
+    password?: string
+    page?: string
+    query?: string
+  } = {},
+): Promise<ServerFetchResult<GSCDetailsResponse>> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period || '7d')
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+  if (params.page) queryParams.append('page', params.page)
+  if (params.query) queryParams.append('query', params.query)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<GSCDetailsResponse>(
+    request,
+    `log/gsc-details?${queryParams.toString()}`,
     { headers },
   )
 }

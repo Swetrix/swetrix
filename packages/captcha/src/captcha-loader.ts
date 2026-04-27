@@ -2,7 +2,7 @@
 const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false
 
 const CAPTCHA_SELECTOR = '.swecaptcha'
-const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'pl', 'uk'] as const
+const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'pl', 'uk', 'hu'] as const
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
 const DEFAULT_LOCALE: SupportedLocale = 'en'
 const LIGHT_CAPTCHA_IFRAME_URL = isDevelopment ? './light.html' : 'https://cdn.swetrixcaptcha.com/pages/light'
@@ -94,7 +94,6 @@ const findHtmlLangAttribute = (element: Element): string | null => {
 const detectLanguage = (container: Element): SupportedLocale => {
   // First priority: data-lang attribute on the widget element
   const forcedLang = container.getAttribute('data-lang')
-  console.log('forcedLang', forcedLang)
   if (forcedLang) {
     return normalizeLocale(forcedLang)
   }

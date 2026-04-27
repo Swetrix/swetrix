@@ -35,7 +35,9 @@ import React, {
   useRef,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, LinkProps, useNavigate } from 'react-router'
+import { createPortal } from 'react-dom'
+import { Link } from '~/ui/Link'
+import { LinkProps, useNavigate } from 'react-router'
 
 import { useProjectDataCustomEventsProxy } from '~/hooks/useAnalyticsProxy'
 import { PROJECT_TABS } from '~/lib/constants'
@@ -47,6 +49,12 @@ import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
+import {
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+  TooltipContent,
+} from '~/ui/Tooltip'
 import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
@@ -62,6 +70,13 @@ import {
 const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 const CUSTOM_EVENTS_TOP_LIMITS = [1, 3, 5, 10] as const
+
+const getPercentage = (value: number, total: number, precision = 2) => {
+  if (!total) return 0
+
+  const percentage = (value / total) * 100
+  return Number.isFinite(percentage) ? _round(percentage, precision) : 0
+}
 
 const PanelEmptyState = ({ message }: { message: string }) => (
   <div className='flex flex-col items-center justify-center py-8 text-center'>
@@ -80,6 +95,8 @@ interface PanelContainerProps {
   icon?: React.ReactNode
   type: string
   hideHeader?: boolean
+  tooltip?: React.ReactNode
+  contentClassName?: string
   tabs?: Array<
     | {
         id: string
@@ -102,6 +119,8 @@ const PanelContainer = ({
   icon,
   type,
   hideHeader,
+  tooltip,
+  contentClassName,
   tabs,
   onTabChange,
   activeTabId,
@@ -131,6 +150,9 @@ const PanelContainer = ({
           >
             {icon ? <span className='mr-1'>{icon}</span> : null}
             {name}
+            {tooltip ? (
+              <span className='ml-1.5 flex items-center'>{tooltip}</span>
+            ) : null}
           </Text>
           <div className='scrollbar-thin flex items-center gap-2.5 overflow-x-auto'>
             {tabs && onTabChange ? (
@@ -197,7 +219,12 @@ const PanelContainer = ({
           </div>
         </div>
       ) : null}
-      <div className='relative flex h-[19.6rem] flex-col overflow-hidden'>
+      <div
+        className={
+          contentClassName ??
+          'relative flex h-[19.6rem] flex-col overflow-hidden'
+        }
+      >
         {children}
       </div>
       {onDetailsClick ? (
@@ -863,7 +890,7 @@ const CustomEvents = ({
                   <div
                     className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
                     style={{
-                      width: `${(eventsData[ev] / maxValue) * 100}%`,
+                      width: `${getPercentage(eventsData[ev], maxValue)}%`,
                     }}
                   />
 
@@ -1316,9 +1343,7 @@ const MetadataKeyPanel = ({
                   >
                     <div
                       className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                      style={{
-                        width: `${(count / maxValue) * 100}%`,
-                      }}
+                      style={{ width: `${getPercentage(count, maxValue)}%` }}
                     />
 
                     <div className='relative z-10 w-2/6 min-w-0 truncate'>
@@ -1406,9 +1431,7 @@ const MetadataKeyPanel = ({
                 >
                   <div
                     className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                    style={{
-                      width: `${(count / maxValue) * 100}%`,
-                    }}
+                    style={{ width: `${getPercentage(count, maxValue)}%` }}
                   />
 
                   <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
@@ -1529,6 +1552,11 @@ interface PanelProps {
   }>
   dataLoading?: boolean
   activeTab?: keyof typeof PROJECT_TABS
+  onRowClick?: (entryName: string) => void
+  selectedRow?: string | null
+  rowTooltipRenderer?: (entry: Entry) => React.ReactNode
+  /** When true with rowTooltipRenderer, tooltip is fixed to the cursor (chart-style) instead of Radix anchor positioning. */
+  rowTooltipFollowCursor?: boolean
 }
 
 interface DetailsTableProps extends Pick<
@@ -1787,7 +1815,7 @@ const DetailsTable = ({
               if (!entry) return null
 
               const { count, name: entryName, ...rest } = entry
-              const perc = _round((count / total) * 100, 2)
+              const perc = getPercentage(count, total)
               const rowData = rowMapper(entry)
               const valueData = valueMapper(count)
 
@@ -1929,6 +1957,10 @@ const Panel = ({
   detailsExtraColumns,
   dataLoading: dataLoadingProp,
   activeTab: activeTabProp,
+  onRowClick,
+  selectedRow,
+  rowTooltipRenderer,
+  rowTooltipFollowCursor = false,
 }: PanelProps) => {
   const ctx = useViewProjectContext()
   const dataLoading = dataLoadingProp ?? ctx.dataLoading
@@ -1942,6 +1974,12 @@ const Panel = ({
   const [expandedItems, setExpandedItems] = useState<Set<string | null>>(
     new Set(),
   )
+  const [cursorRowTooltip, setCursorRowTooltip] = useState<{
+    entry: Entry
+    x: number
+    y: number
+    key: string
+  } | null>(null)
 
   const tnMapping = typeNameMapping(t)
 
@@ -1998,205 +2036,327 @@ const Panel = ({
             </span>
           </div>
 
-          <div className='space-y-0.5 overflow-auto'>
-            {_map(entriesToDisplay, (entry) => {
-              const { count, name: entryName, ...rest } = entry
-              const perc = _round((count / total) * 100, 2)
-              const rowData = rowMapper(entry)
-              const valueData = valueMapper(count)
-              const hasVersionsForItem = hasVersions(entryName)
-              const isExpanded = expandedItems.has(entryName)
-              const versions = entryName ? versionData?.[entryName] || [] : []
+          {(() => {
+            const panelRows = (
+              <div className='space-y-0.5 overflow-auto'>
+                {_map(entriesToDisplay, (entry) => {
+                  const { count, name: entryName, ...rest } = entry
+                  const perc = getPercentage(count, total)
+                  const rowData = rowMapper(entry)
+                  const valueData = valueMapper(count)
+                  const hasVersionsForItem = hasVersions(entryName)
+                  const isExpanded = expandedItems.has(entryName)
+                  const versions = entryName
+                    ? versionData?.[entryName] || []
+                    : []
 
-              const link = getFilterLink(id, entryName)
+                  const link = getFilterLink(id, entryName)
 
-              return (
-                <div
-                  key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
-                  className='space-y-0.5'
-                >
-                  <div
-                    className={cx(
-                      'relative flex h-8 items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
-                      {
-                        'group hover:bg-gray-50 dark:hover:bg-slate-900/60':
-                          !hideFilters &&
-                          !dataLoading &&
-                          (link || hasVersionsForItem),
-                        'cursor-wait': dataLoading,
-                      },
-                    )}
-                  >
+                  const isSelected =
+                    selectedRow != null && selectedRow === entryName
+
+                  const rowKey = `${id}-${entryName}-${Object.values(rest).join('-')}`
+
+                  const rowBarEl = (
                     <div
-                      className={cx('absolute inset-0 rounded-sm', {
-                        'bg-blue-50 dark:bg-blue-900/30':
-                          highlightColour === 'blue',
-                        'bg-red-50 dark:bg-slate-500/15':
-                          highlightColour === 'red',
-                        'bg-orange-50 dark:bg-slate-500/15':
-                          highlightColour === 'orange',
-                      })}
-                      style={{ width: `${perc}%` }}
-                    />
-
-                    <div className='relative z-10 flex min-w-0 flex-1 items-center'>
-                      {hasVersionsForItem ? (
-                        <button
-                          type='button'
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            toggleExpanded(entryName)
-                          }}
-                          className='mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-700/80'
-                          aria-label={
-                            isExpanded ? 'Collapse versions' : 'Expand versions'
-                          }
-                        >
-                          <CaretRightIcon
-                            className={cx(
-                              'h-4 w-4 text-gray-500 transition-transform dark:text-gray-400',
-                              {
-                                'rotate-90': isExpanded,
-                              },
-                            )}
-                          />
-                        </button>
-                      ) : null}
-
-                      <FilterWrapper
-                        as={!disableRowClick && link ? 'Link' : 'div'}
-                        to={link}
-                        className={cx('flex min-w-0 flex-1 items-center', {
-                          'cursor-pointer':
-                            !disableRowClick &&
+                      className={cx(
+                        'relative flex h-8 items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
+                        {
+                          'group hover:bg-gray-50 dark:hover:bg-slate-900/60':
                             !hideFilters &&
                             !dataLoading &&
-                            link,
+                            (link || hasVersionsForItem || onRowClick),
+                          'cursor-pointer': onRowClick && !dataLoading,
                           'cursor-wait': dataLoading,
-                        })}
-                      >
-                        {linkContent ? (
-                          <a
-                            className={cx(
-                              'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
-                              {
-                                capitalize,
-                              },
-                            )}
-                            href={rowData as string}
-                            target='_blank'
-                            rel='noopener noreferrer nofollow'
-                            aria-label={`${rowData} (opens in a new tab)`}
-                          >
-                            {rowData}
-                          </a>
-                        ) : (
-                          <span
-                            className={cx(
-                              'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-gray-900 dark:text-gray-100',
-                              {
-                                capitalize,
-                              },
-                            )}
-                          >
-                            {rowData}
-                          </span>
-                        )}
-                      </FilterWrapper>
-                    </div>
-                    <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
-                      <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
-                        ({perc}%)
-                      </span>
-                      <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>
-                        {activeTab === PROJECT_TABS.traffic
-                          ? nFormatter(valueData, 1)
-                          : valueData}
-                      </span>
-                    </div>
-                  </div>
-
-                  {hasVersionsForItem && isExpanded ? (
-                    <div className='ml-6 space-y-0.5'>
-                      {_map(versions, (versionEntry) => {
-                        const versionPerc = _round(
-                          (versionEntry.count / total) * 100,
-                          2,
-                        )
-                        const versionValueData = valueMapper(versionEntry.count)
-                        const versionLink = disableRowClick
-                          ? undefined
-                          : getVersionFilterLink?.(entryName, versionEntry.name)
-
-                        return (
-                          <FilterWrapper
-                            key={`${id}-${entryName}-${versionEntry.name}`}
-                            as={
-                              !disableRowClick && versionLink ? 'Link' : 'div'
+                          'bg-gray-50 ring-1 ring-slate-400/60 dark:bg-slate-800/60 dark:ring-slate-500/60':
+                            isSelected,
+                        },
+                      )}
+                      onClick={
+                        onRowClick && entryName
+                          ? () => onRowClick(entryName)
+                          : undefined
+                      }
+                      onMouseEnter={
+                        rowTooltipRenderer && rowTooltipFollowCursor
+                          ? (e) => {
+                              setCursorRowTooltip({
+                                entry,
+                                x: e.clientX,
+                                y: e.clientY,
+                                key: rowKey,
+                              })
                             }
-                            to={versionLink}
-                            className={cx(
-                              'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
-                              {
-                                'group cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-900/60':
-                                  !disableRowClick &&
-                                  !hideFilters &&
-                                  !dataLoading &&
-                                  versionLink,
-                                'cursor-wait': dataLoading,
-                              },
-                            )}
-                          >
-                            <div
-                              className={cx('absolute inset-0 rounded-sm', {
-                                'bg-blue-50 dark:bg-blue-900/10':
-                                  highlightColour === 'blue',
-                                'bg-red-50 dark:bg-slate-600/15':
-                                  highlightColour === 'red',
-                                'bg-orange-50 dark:bg-slate-600/15':
-                                  highlightColour === 'orange',
-                              })}
-                              style={{ width: `${versionPerc}%` }}
-                            />
+                          : undefined
+                      }
+                      onMouseMove={
+                        rowTooltipRenderer && rowTooltipFollowCursor
+                          ? (e) => {
+                              setCursorRowTooltip((prev) => {
+                                if (prev?.key !== rowKey) return prev
+                                return {
+                                  ...prev,
+                                  x: e.clientX,
+                                  y: e.clientY,
+                                }
+                              })
+                            }
+                          : undefined
+                      }
+                      onMouseLeave={
+                        rowTooltipRenderer && rowTooltipFollowCursor
+                          ? () => {
+                              setCursorRowTooltip((prev) =>
+                                prev?.key === rowKey ? null : prev,
+                              )
+                            }
+                          : undefined
+                      }
+                      role='presentation'
+                    >
+                      <div
+                        className={cx('absolute inset-0 rounded-sm', {
+                          'bg-blue-50 dark:bg-blue-900/30':
+                            highlightColour === 'blue',
+                          'bg-red-50 dark:bg-slate-500/15':
+                            highlightColour === 'red',
+                          'bg-orange-50 dark:bg-slate-500/15':
+                            highlightColour === 'orange',
+                        })}
+                        style={{ width: `${perc}%` }}
+                      />
 
-                            <div className='relative z-10 flex min-w-0 flex-1 items-center'>
-                              <span
+                      <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                        {hasVersionsForItem ? (
+                          <button
+                            type='button'
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              toggleExpanded(entryName)
+                            }}
+                            className='mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-700/80'
+                            aria-label={
+                              isExpanded
+                                ? 'Collapse versions'
+                                : 'Expand versions'
+                            }
+                          >
+                            <CaretRightIcon
+                              className={cx(
+                                'h-4 w-4 text-gray-500 transition-transform dark:text-gray-400',
+                                {
+                                  'rotate-90': isExpanded,
+                                },
+                              )}
+                            />
+                          </button>
+                        ) : null}
+
+                        <FilterWrapper
+                          as={!disableRowClick && link ? 'Link' : 'div'}
+                          to={link}
+                          className={cx('flex min-w-0 flex-1 items-center', {
+                            'cursor-pointer':
+                              !disableRowClick &&
+                              !hideFilters &&
+                              !dataLoading &&
+                              link,
+                            'cursor-wait': dataLoading,
+                          })}
+                        >
+                          {linkContent ? (
+                            <a
+                              className={cx(
+                                'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
+                                {
+                                  capitalize,
+                                },
+                              )}
+                              href={rowData as string}
+                              target='_blank'
+                              rel='noopener noreferrer nofollow'
+                              aria-label={`${rowData} (opens in a new tab)`}
+                            >
+                              {rowData}
+                            </a>
+                          ) : (
+                            <span
+                              className={cx(
+                                'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-gray-900 dark:text-gray-100',
+                                {
+                                  capitalize,
+                                },
+                              )}
+                            >
+                              {rowData}
+                            </span>
+                          )}
+                        </FilterWrapper>
+                      </div>
+                      <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                        <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
+                          ({perc}%)
+                        </span>
+                        <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>
+                          {activeTab === PROJECT_TABS.traffic
+                            ? nFormatter(valueData, 1)
+                            : valueData}
+                        </span>
+                      </div>
+                    </div>
+                  )
+
+                  return (
+                    <div
+                      key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
+                      className='space-y-0.5'
+                    >
+                      {rowTooltipRenderer && !rowTooltipFollowCursor ? (
+                        <TooltipRoot>
+                          <TooltipTrigger asChild>{rowBarEl}</TooltipTrigger>
+                          <TooltipContent className='max-w-xs rounded-md bg-gray-50 px-2 py-1 text-xs text-gray-900 shadow-md ring-1 ring-black/10 md:text-sm dark:bg-slate-900 dark:text-gray-50'>
+                            {rowTooltipRenderer(entry)}
+                          </TooltipContent>
+                        </TooltipRoot>
+                      ) : (
+                        rowBarEl
+                      )}
+
+                      {hasVersionsForItem && isExpanded ? (
+                        <div className='ml-6 space-y-0.5'>
+                          {_map(versions, (versionEntry) => {
+                            const versionPerc = getPercentage(
+                              versionEntry.count,
+                              total,
+                            )
+                            const versionValueData = valueMapper(
+                              versionEntry.count,
+                            )
+                            const versionLink = disableRowClick
+                              ? undefined
+                              : getVersionFilterLink?.(
+                                  entryName,
+                                  versionEntry.name,
+                                )
+
+                            return (
+                              <FilterWrapper
+                                key={`${id}-${entryName}-${versionEntry.name}`}
+                                as={
+                                  !disableRowClick && versionLink
+                                    ? 'Link'
+                                    : 'div'
+                                }
+                                to={versionLink}
                                 className={cx(
-                                  'flex items-center truncate text-sm text-gray-700 dark:text-gray-200',
+                                  'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                                   {
-                                    capitalize,
+                                    'group cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-900/60':
+                                      !disableRowClick &&
+                                      !hideFilters &&
+                                      !dataLoading &&
+                                      versionLink,
+                                    'cursor-wait': dataLoading,
                                   },
                                 )}
                               >
-                                {rowMapper
-                                  ? rowMapper({
-                                      ...entry,
-                                      name: entryName,
-                                      version: versionEntry.name,
-                                    })
-                                  : `${entryName} ${versionEntry.name}`}
-                              </span>
-                            </div>
-                            <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
-                              <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
-                                ({versionPerc}%)
-                              </span>
-                              <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
-                                {activeTab === PROJECT_TABS.traffic
-                                  ? nFormatter(versionValueData, 1)
-                                  : versionValueData}
-                              </span>
-                            </div>
-                          </FilterWrapper>
-                        )
-                      })}
+                                <div
+                                  className={cx('absolute inset-0 rounded-sm', {
+                                    'bg-blue-50 dark:bg-blue-900/10':
+                                      highlightColour === 'blue',
+                                    'bg-red-50 dark:bg-slate-600/15':
+                                      highlightColour === 'red',
+                                    'bg-orange-50 dark:bg-slate-600/15':
+                                      highlightColour === 'orange',
+                                  })}
+                                  style={{ width: `${versionPerc}%` }}
+                                />
+
+                                <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                                  <span
+                                    className={cx(
+                                      'flex items-center truncate text-sm text-gray-700 dark:text-gray-200',
+                                      {
+                                        capitalize,
+                                      },
+                                    )}
+                                  >
+                                    {rowMapper
+                                      ? rowMapper({
+                                          ...entry,
+                                          name: entryName,
+                                          version: versionEntry.name,
+                                        })
+                                      : `${entryName} ${versionEntry.name}`}
+                                  </span>
+                                </div>
+                                <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                                  <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
+                                    ({versionPerc}%)
+                                  </span>
+                                  <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
+                                    {activeTab === PROJECT_TABS.traffic
+                                      ? nFormatter(versionValueData, 1)
+                                      : versionValueData}
+                                  </span>
+                                </div>
+                              </FilterWrapper>
+                            )
+                          })}
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
+                  )
+                })}
+              </div>
+            )
+            if (rowTooltipRenderer && !rowTooltipFollowCursor) {
+              return (
+                <TooltipProvider delayDuration={150} disableHoverableContent>
+                  {panelRows}
+                </TooltipProvider>
               )
-            })}
-          </div>
+            }
+            return panelRows
+          })()}
+          {cursorRowTooltip &&
+          rowTooltipRenderer &&
+          rowTooltipFollowCursor &&
+          typeof document !== 'undefined'
+            ? createPortal(
+                <div
+                  className='pointer-events-none fixed z-50 max-w-xs rounded-md bg-gray-50 px-2 py-1 text-xs text-gray-900 shadow-md ring-1 ring-black/10 md:text-sm dark:bg-slate-900 dark:text-gray-50'
+                  style={{
+                    left: (() => {
+                      const pad = 8
+                      const offset = 14
+                      const estW = 288
+                      const x = cursorRowTooltip.x + offset
+                      if (typeof window === 'undefined') return x
+                      return Math.min(
+                        Math.max(pad, x),
+                        window.innerWidth - estW - pad,
+                      )
+                    })(),
+                    top: (() => {
+                      const pad = 8
+                      const offset = 14
+                      const estH = 220
+                      const y = cursorRowTooltip.y + offset
+                      if (typeof window === 'undefined') return y
+                      return Math.min(
+                        Math.max(pad, y),
+                        window.innerHeight - estH - pad,
+                      )
+                    })(),
+                  }}
+                >
+                  {rowTooltipRenderer(cursorRowTooltip.entry)}
+                </div>,
+                document.body,
+              )
+            : null}
         </>
       )}
 
@@ -2485,6 +2645,7 @@ const MetadataKeyPanelMemo = memo(MetadataKeyPanel) as typeof MetadataKeyPanel
 const MetadataPanelMemo = memo(MetadataPanel) as typeof MetadataPanel
 
 export {
+  PanelContainer,
   PanelMemo as Panel,
   CustomEventsMemo as CustomEvents,
   MetadataKeyPanelMemo as MetadataKeyPanel,

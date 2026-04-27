@@ -53,17 +53,6 @@ export const nFormatterSeparated = (num: any, digits = 1) => {
   return [0, null]
 }
 
-export const secondsTillNextMonth = () => {
-  const now: any = new Date()
-  const date: any = new Date()
-
-  date.setMonth(date.getMonth() + 1)
-  date.setDate(1)
-  date.setHours(0, 0, 0, 0)
-
-  return 0 | ((date - now) / 1000)
-}
-
 type Time = {
   h: number
   m: number
@@ -168,4 +157,13 @@ export const delay = (ms: number) =>
 
 export const cn = (...args: ClassValue[]) => {
   return twMerge(clsx(args))
+}
+
+export const escapeHtml = (unsafe: string): string => {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 }

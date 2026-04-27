@@ -34,7 +34,7 @@ import {
 import _map from 'lodash/map'
 import React, { memo, type FC } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link } from '~/ui/Link'
 
 import { changeLanguage } from '~/i18n'
 import {
@@ -405,6 +405,8 @@ const productionNavigation = {
     { key: 'privacy', href: routesPath.privacy, internal: true },
     { key: 'terms', href: routesPath.terms, internal: true },
     { key: 'cookie', href: routesPath.cookiePolicy, internal: true },
+    { key: 'dpa', href: routesPath.dpa, internal: true },
+    { key: 'security', href: routesPath.security, internal: true },
     { key: 'imprint', href: routesPath.imprint, internal: true },
   ] as LegalItem[],
 }
@@ -817,7 +819,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
 
             {/* Column 4: About / Logo */}
             <div>
-              <SwetrixLogo theme='dark' lazy />
+              <SwetrixLogo theme='dark' />
 
               <p className='mt-4 max-w-72 text-sm text-gray-200'>
                 {isSelfhosted ? (

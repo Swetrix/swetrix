@@ -11,14 +11,17 @@ const MAX_TITLE_LENGTH = 65
 const MAX_DESCRIPTION_LENGTH = 200
 const MAX_PROJECT_NAME_LENGTH = 40
 
-const logoData = readFileSync(
-  join(process.cwd(), 'public', 'assets', 'logo', 'blue.png'),
+const logoBuffer = readFileSync(
+  join(process.cwd(), 'public', 'assets', 'logo', 'dark.svg'),
 )
 
 const persistentImages = [
   {
     src: 'swetrix-logo',
-    data: logoData.buffer as ArrayBuffer,
+    data: logoBuffer.buffer.slice(
+      logoBuffer.byteOffset,
+      logoBuffer.byteOffset + logoBuffer.byteLength,
+    ),
   },
 ]
 

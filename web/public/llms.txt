@@ -26,7 +26,7 @@ Swetrix is built with Nest.js backend (MySQL + ClickHouse databases) and Remix f
 - [Contributing Guide](https://raw.githubusercontent.com/Swetrix/swetrix/main/CONTRIBUTING.MD): How to contribute to Swetrix development, set up local environment
 - [Main Repository](https://github.com/Swetrix/swetrix): Full source code for both backend and frontend
 - [Public Roadmap](https://github.com/Swetrix/swetrix/issues): Current and planned features
-- [Live Demo](https://swetrix.com/projects/STEzHcB1rALV): Swetrix's own analytics dashboard as a live demo
+- [Live Demo](https://swetrix.com/demo): Swetrix's own analytics dashboard as a live demo
 
 ## Integration Guides
 
