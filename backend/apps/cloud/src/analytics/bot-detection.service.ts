@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { isbot } from 'isbot'
 import { parse as parseDomain } from 'tldts'
 
@@ -179,8 +179,6 @@ const headerValue = (
 
 @Injectable()
 export class BotDetectionService {
-  private readonly logger = new Logger(BotDetectionService.name)
-
   constructor(private readonly projectService: ProjectService) {}
 
   static get spamSetSize(): number {

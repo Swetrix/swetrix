@@ -1126,17 +1126,28 @@ if (SELFHOSTED_GEOIP_DB_PATH && fs.existsSync(SELFHOSTED_GEOIP_DB_PATH)) {
 interface IPDetails {
   country: string | null
   region: string | null
-  city: string | null
   regionCode: string | null
+  city: string | null
+  isHosting: boolean
 }
 
 const getIPDetails = (ip: string, tz?: string): IPDetails => {
-  // Stage 1: Using IP address based geo lookup
-  const data = lookup.get(ip)
+  let data
+  try {
+    data = ip ? lookup.get(ip) : null
+  } catch {
+    data = null
+  }
 
+  const traits = data?.traits ?? {}
+  const isHosting =
+    traits.is_hosting_provider === true || traits.user_type === 'hosting'
+
+  // Stage 1: Using IP address based geo lookup
   const country = data?.country?.iso_code || null
   // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
   const city = data?.city?.names?.en || null
+  // TODO: Store ISO code, not region name
   const region = data?.subdivisions?.[0]?.names?.en || null
   const regionCode = data?.subdivisions?.[0]?.iso_code || null
 
@@ -1146,6 +1157,7 @@ const getIPDetails = (ip: string, tz?: string): IPDetails => {
       city,
       region,
       regionCode,
+      isHosting,
     }
   }
 
@@ -1157,6 +1169,7 @@ const getIPDetails = (ip: string, tz?: string): IPDetails => {
     city: null,
     region: null,
     regionCode: null,
+    isHosting,
   }
 }
 

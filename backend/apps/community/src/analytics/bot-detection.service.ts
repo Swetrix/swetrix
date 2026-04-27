@@ -1,20 +1,20 @@
 import fs from 'fs'
 import path from 'path'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { isbot } from 'isbot'
 import { parse as parseDomain } from 'tldts'
 
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectService } from '../project/project.service'
+import { getIPDetails } from '../common/utils'
 
-// Swetrix CE omits `datacenter_ip` because that detection relies on the
-// paid DB-IP ip-to-location-isp MMDB (cloud only)
 export type BotReason =
   | 'user_agent'
   | 'headless_browser'
   | 'suspicious_headers'
   | 'probe_path'
   | 'referrer_spam'
+  | 'datacenter_ip'
 
 export type BotEndpoint =
   | 'pageview'
@@ -176,8 +176,6 @@ const headerValue = (
 
 @Injectable()
 export class BotDetectionService {
-  private readonly logger = new Logger(BotDetectionService.name)
-
   constructor(private readonly projectService: ProjectService) {}
 
   static get spamSetSize(): number {
@@ -241,6 +239,10 @@ export class BotDetectionService {
 
     if (this.matchReferrerSpam(input)) {
       return { isBot: true, reason: 'referrer_spam' }
+    }
+
+    if (input.ip && getIPDetails(input.ip).isHosting) {
+      return { isBot: true, reason: 'datacenter_ip' }
     }
 
     return NEGATIVE
