@@ -50,12 +50,9 @@ import { GetFunnelsDto } from './dto/getFunnels.dto'
 import { GetFunnelSessionsDto } from './dto/get-funnel-sessions.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { clickhouse } from '../common/integrations/clickhouse'
-import {
-  checkRateLimit,
-  getGeoDetails,
-  getIPFromHeaders,
-} from '../common/utils'
+import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
+import { GetBotStatsDto } from './dto/get-bot-stats.dto'
 import {
   IFunnel,
   IGetFunnel,
@@ -1076,9 +1073,17 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(eventsDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      eventsDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      eventsDTO.ref || headers.referer || headers.referrer,
+      eventsDTO.pg,
+      'custom',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1098,10 +1103,7 @@ export class AnalyticsController {
       }
     }
 
-    const { city, region, regionCode, country } = getGeoDetails(
-      ip,
-      eventsDTO.tz,
-    )
+    const { city, region, regionCode, country } = getIPDetails(ip, eventsDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1188,9 +1190,17 @@ export class AnalyticsController {
     const { pid } = logDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(logDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      logDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      logDTO.pg,
+      'heartbeat',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1230,9 +1240,17 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(logDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      logDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      logDTO.ref || headers.referer || headers.referrer,
+      logDTO.pg,
+      'pageview',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1264,7 +1282,7 @@ export class AnalyticsController {
       )
     }
 
-    const { city, region, regionCode, country } = getGeoDetails(ip, logDTO.tz)
+    const { city, region, regionCode, country } = getIPDetails(ip, logDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1378,14 +1396,22 @@ export class AnalyticsController {
 
     const logDTO: PageviewsDto = { pid }
 
-    const isBot = await this.analyticsService.isBot(pid, userAgent)
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    if (isBot) {
+    const botResult = await this.analyticsService.checkBot(
+      pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      null,
+      'noscript',
+    )
+
+    if (botResult.isBot) {
       res.writeHead(200, { 'Content-Type': 'image/gif' })
       return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
     }
-
-    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
@@ -1409,7 +1435,7 @@ export class AnalyticsController {
       profileId,
     )
 
-    const { city, region, regionCode, country } = getGeoDetails(ip, null)
+    const { city, region, regionCode, country } = getIPDetails(ip, null)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1705,6 +1731,29 @@ export class AnalyticsController {
     return this.analyticsService.getVersionFilters(pid, type, column)
   }
 
+  @Get('bot-stats')
+  @Auth(true, true)
+  async getBotStats(
+    @Query() data: GetBotStatsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, period = '30d' } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}`,
+      'GET /analytics/bot-stats',
+    )
+
+    return this.analyticsService.getBotStats(pid, period)
+  }
+
   @Post('error')
   @Public()
   async logError(@Body() errorDTO: ErrorDto, @Headers() headers, @Ip() reqIP) {
@@ -1712,9 +1761,17 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(errorDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      errorDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      errorDTO.pg,
+      'error',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1739,7 +1796,7 @@ export class AnalyticsController {
       profileId,
     )
 
-    const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
+    const { city, region, regionCode, country } = getIPDetails(ip, errorDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 

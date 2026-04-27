@@ -247,7 +247,7 @@ export interface Project {
   isDataExists: boolean
   isErrorDataExists: boolean
   isCaptchaDataExists: boolean
-  botsProtectionLevel: 'off' | 'basic'
+  botsProtectionLevel: 'off' | 'basic' | 'strict'
   role?: Role
   gscPropertyUri?: string | null
   isPinned?: boolean

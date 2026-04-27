@@ -22,6 +22,8 @@ import type {
   ErrorSessionsResponse,
   LiveStats,
   LiveVisitorInfo,
+  BotProtectionStats,
+  BotProtectionPeriod,
   ProjectDataCustomEventsResponse,
   UserFlowResponse,
   GSCDashboardResponse,
@@ -747,6 +749,30 @@ export function useLiveVisitorsProxy() {
   )
 
   return { fetchLiveVisitors, fetchLiveVisitorsInfo }
+}
+
+export function useBotProtectionStatsProxy() {
+  const fetchBotProtectionStats = useCallback(
+    async (
+      projectId: string,
+      period: BotProtectionPeriod = '30d',
+    ): Promise<BotProtectionStats | null> => {
+      try {
+        const result = await postAnalytics<BotProtectionStats>({
+          action: 'getBotProtectionStats',
+          projectId,
+          params: { period },
+        })
+        return result.data
+      } catch (err) {
+        console.error('[useBotProtectionStatsProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
+
+  return { fetchBotProtectionStats }
 }
 
 export function useProjectDataCustomEventsProxy() {

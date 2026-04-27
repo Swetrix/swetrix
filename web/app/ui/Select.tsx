@@ -12,28 +12,31 @@ import _map from 'lodash/map'
 import React, { Fragment, Key, memo } from 'react'
 
 interface SelectProps<T> {
-  title?: string
+  title?: React.ReactNode
+  description?: React.ReactNode
   label?: string
   hint?: string | React.ReactNode
   className?: string
-  // Optional className to customise the top field label (not the option labels)
   fieldLabelClassName?: string
   labelClassName?: string
   buttonClassName?: string
   hintClassName?: string
   capitalise?: boolean
-  items: T[]
+  items: readonly T[]
   id?: string
   labelExtractor?: (item: T, index: number) => React.ReactNode
   keyExtractor?: (item: T, index: number) => string
   iconExtractor?: (item: T, index: number) => React.ReactNode | null
+  descriptionExtractor?: (item: T, index: number) => React.ReactNode | null
   onSelect: (item: T) => void
-  // The currently selected item - used for comparison to show checkmark
   selectedItem?: T
+  // Allow the button label to wrap to multiple lines instead of truncating.
+  wrap?: boolean
 }
 
 function Select<T>({
   title,
+  description,
   label,
   hint,
   className,
@@ -41,6 +44,7 @@ function Select<T>({
   labelExtractor,
   keyExtractor,
   iconExtractor,
+  descriptionExtractor,
   onSelect,
   id,
   buttonClassName,
@@ -49,6 +53,7 @@ function Select<T>({
   fieldLabelClassName,
   selectedItem,
   hintClassName,
+  wrap,
 }: SelectProps<T>) {
   const isItemSelected = (item: T): boolean => {
     if (!selectedItem) return false
@@ -59,6 +64,9 @@ function Select<T>({
 
     return item === selectedItem
   }
+
+  // When descriptions exist, options need extra padding so the description has room.
+  const hasDescriptions = !!descriptionExtractor
 
   return (
     <Listbox as='div' id={id || ''} value={selectedItem} onChange={onSelect}>
@@ -82,12 +90,27 @@ function Select<T>({
               )}
             >
               <span
-                className={cx('block truncate', {
+                className={cx('block', {
+                  truncate: !wrap,
+                  'wrap-break-word': wrap,
                   'first-letter:capitalize': capitalise,
                 })}
               >
                 {title}
               </span>
+              {description ? (
+                <span
+                  className={cx(
+                    'mt-0.5 block text-xs font-normal text-gray-500 dark:text-gray-400',
+                    {
+                      truncate: !wrap,
+                      'wrap-break-word': wrap,
+                    },
+                  )}
+                >
+                  {description}
+                </span>
+              ) : null}
               <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
                 <CaretUpDownIcon
                   className='h-5 w-5 text-gray-400'
@@ -109,10 +132,13 @@ function Select<T>({
               <ListboxOptions
                 static
                 modal={false}
-                className='absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-950 dark:ring-slate-700/80'
+                className='absolute z-30 mt-1 max-h-72 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-950 dark:ring-slate-700/80'
               >
                 {_map(items, (item, index) => {
                   const selected = isItemSelected(item)
+                  const itemDescription = descriptionExtractor
+                    ? descriptionExtractor(item, index)
+                    : null
                   return (
                     <ListboxOption
                       key={
@@ -120,7 +146,8 @@ function Select<T>({
                       }
                       className={({ focus }) =>
                         cx(
-                          'relative mx-1 cursor-pointer rounded-md py-2 pr-4 pl-8 transition-colors select-none',
+                          'relative mx-1 cursor-pointer rounded-md pr-4 pl-8 transition-colors select-none',
+                          hasDescriptions ? 'py-2.5' : 'py-2',
                           {
                             'bg-gray-100 dark:bg-slate-900/80':
                               focus && !selected,
@@ -136,7 +163,7 @@ function Select<T>({
                       <>
                         <span
                           className={cx(
-                            'block truncate',
+                            'block wrap-break-word',
                             {
                               'font-semibold': selected,
                               'font-normal': !selected,
@@ -150,10 +177,21 @@ function Select<T>({
                             : (item as React.ReactNode)}
                         </span>
 
+                        {itemDescription ? (
+                          <span
+                            className={cx(
+                              'mt-0.5 block text-xs leading-snug font-normal wrap-break-word text-gray-500 dark:text-gray-400',
+                            )}
+                          >
+                            {itemDescription}
+                          </span>
+                        ) : null}
+
                         {iconExtractor ? (
                           <span
                             className={cx(
-                              'absolute inset-y-0 left-0 flex items-center pl-1.5',
+                              'absolute left-0 flex items-center pl-1.5',
+                              hasDescriptions ? 'top-2.5' : 'inset-y-0',
                             )}
                           >
                             {iconExtractor(item, index)}
@@ -163,7 +201,8 @@ function Select<T>({
                         {selected && !iconExtractor ? (
                           <span
                             className={cx(
-                              'absolute inset-y-0 left-0 flex items-center pl-1.5 text-gray-600 dark:text-gray-300',
+                              'absolute left-0 flex items-center pl-1.5 text-gray-600 dark:text-gray-300',
+                              hasDescriptions ? 'top-2.5' : 'inset-y-0',
                             )}
                           >
                             <CheckIcon className='h-5 w-5' aria-hidden='true' />

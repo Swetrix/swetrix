@@ -69,6 +69,7 @@ import Revenue from './tabs/Revenue'
 import Shields from './tabs/Shields'
 import ProjectAlerts from './Alerts/ProjectAlertsView'
 import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
+import BotProtectionReport from './components/BotProtectionReport'
 import DataImportTab from './components/DataImportTab'
 import ProxyDomainsTab from './components/ProxyDomainsTab'
 import SettingsSidebar, { SettingsTabConfig } from './SettingsSidebar'
@@ -326,7 +327,8 @@ const ProjectSettings = () => {
     countryBlacklist: initialProject.countryBlacklist || [],
     active: initialProject.active !== false,
     botsProtectionLevel:
-      (initialProject.botsProtectionLevel as 'off' | 'basic') || 'basic',
+      (initialProject.botsProtectionLevel as 'off' | 'basic' | 'strict') ||
+      'basic',
     gscPropertyUri: initialProject.gscPropertyUri || null,
     websiteUrl: initialProject.websiteUrl || null,
     ...(!isSelfhosted && {
@@ -533,11 +535,24 @@ const ProjectSettings = () => {
     return [
       {
         name: 'off',
-        title: t('project.settings.botsProtectionLevel.levels.off'),
+        title: t('project.settings.botsProtectionLevel.levels.off.title'),
+        description: t(
+          'project.settings.botsProtectionLevel.levels.off.description',
+        ),
       },
       {
         name: 'basic',
-        title: t('project.settings.botsProtectionLevel.levels.basic'),
+        title: t('project.settings.botsProtectionLevel.levels.basic.title'),
+        description: t(
+          'project.settings.botsProtectionLevel.levels.basic.description',
+        ),
+      },
+      {
+        name: 'strict',
+        title: t('project.settings.botsProtectionLevel.levels.strict.title'),
+        description: t(
+          'project.settings.botsProtectionLevel.levels.strict.description',
+        ),
       },
     ] as const
   }, [t])
@@ -1030,6 +1045,20 @@ const ProjectSettings = () => {
                   </Button>
                 </div>
               </form>
+            ) : null}
+
+            {activeTab === 'shields' ? (
+              <div className='mt-8'>
+                <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+                  {t('project.settings.blockedTraffic')}
+                </h3>
+                <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                  {t('project.settings.blockedTrafficHint')}
+                </p>
+                <div className='mt-2'>
+                  <BotProtectionReport pid={id} />
+                </div>
+              </div>
             ) : null}
 
             {activeTab === 'emails' && !isSelfhosted && activeTabConfig ? (

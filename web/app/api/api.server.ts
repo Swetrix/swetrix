@@ -2085,6 +2085,37 @@ export async function getLiveVisitorsInfoServer(
 }
 
 // ============================================================================
+// MARK: Bot Protection Stats API
+// ============================================================================
+
+export type BotProtectionPeriod = '7d' | '30d' | '90d'
+
+export interface BotProtectionStats {
+  total: number
+  period: BotProtectionPeriod
+  byReason: { reason: string; count: number }[]
+  byCountry: { cc: string; count: number }[]
+}
+
+export async function getBotProtectionStatsServer(
+  request: Request,
+  pid: string,
+  period: BotProtectionPeriod,
+  password?: string,
+): Promise<ServerFetchResult<BotProtectionStats>> {
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<BotProtectionStats>(
+    request,
+    `log/bot-stats?pid=${pid}&period=${period}`,
+    { headers },
+  )
+}
+
+// ============================================================================
 // MARK: Custom Events Chart API
 // ============================================================================
 

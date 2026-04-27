@@ -40,7 +40,7 @@ import {
   JWT_REFRESH_TOKEN_LIFETIME,
   JWT_REFRESH_TOKEN_SECRET,
 } from '../common/constants'
-import { getGeoDetails } from '../common/utils'
+import { getIPDetails } from '../common/utils'
 import { TelegramService } from '../integrations/telegram/telegram.service'
 import { TwoFactorAuthService } from '../twoFactorAuth/twoFactorAuth.service'
 import { SSOProviders } from './dtos'
@@ -351,7 +351,7 @@ export class AuthService {
     const browser = ua.browser.name || 'Unknown'
     const device = ua.device.type || 'Desktop'
     const os = ua.os.name || 'Unknown'
-    let { country } = getGeoDetails(ip)
+    let { country } = getIPDetails(ip)
 
     if (country) {
       country = getCountry(country)?.name

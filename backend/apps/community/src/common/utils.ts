@@ -1123,20 +1123,31 @@ if (SELFHOSTED_GEOIP_DB_PATH && fs.existsSync(SELFHOSTED_GEOIP_DB_PATH)) {
   lookup = new Reader<CityResponse>(buffer)
 }
 
-interface IPGeoDetails {
+interface IPDetails {
   country: string | null
   region: string | null
-  city: string | null
   regionCode: string | null
+  city: string | null
+  isHosting: boolean
 }
 
-const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
-  // Stage 1: Using IP address based geo lookup
-  const data = lookup.get(ip)
+const getIPDetails = (ip: string, tz?: string): IPDetails => {
+  let data
+  try {
+    data = ip ? lookup.get(ip) : null
+  } catch {
+    data = null
+  }
 
+  const traits = data?.traits ?? {}
+  const isHosting =
+    traits.is_hosting_provider === true || traits.user_type === 'hosting'
+
+  // Stage 1: Using IP address based geo lookup
   const country = data?.country?.iso_code || null
   // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
   const city = data?.city?.names?.en || null
+  // TODO: Store ISO code, not region name
   const region = data?.subdivisions?.[0]?.names?.en || null
   const regionCode = data?.subdivisions?.[0]?.iso_code || null
 
@@ -1146,6 +1157,7 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
       city,
       region,
       regionCode,
+      isHosting,
     }
   }
 
@@ -1157,6 +1169,7 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
     city: null,
     region: null,
     regionCode: null,
+    isHosting,
   }
 }
 
@@ -1314,7 +1327,7 @@ export {
   findRefreshTokenClickhouse,
   deleteRefreshTokenClickhouse,
   deleteAllRefreshTokensClickhouse,
-  getGeoDetails,
+  getIPDetails,
   getIPFromHeaders,
   sumArrays,
   assignUnassignedProjectsToUserClickhouse,
