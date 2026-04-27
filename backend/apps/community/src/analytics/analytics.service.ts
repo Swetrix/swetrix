@@ -51,10 +51,16 @@ import {
   TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
 import { SaltService } from './salt.service'
+import {
+  BotDetectionService,
+  BotEndpoint,
+  BotDetectionResult,
+} from './bot-detection.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { getDomainsForRefName } from './utils/referrers.map'
 import {
   getFunnelClickhouse,
+  getGeoDetails,
   hash,
   millisecondsToSeconds,
   sumArrays,
@@ -351,7 +357,55 @@ export class AnalyticsService {
   constructor(
     private readonly projectService: ProjectService,
     private readonly saltService: SaltService,
+    private readonly botDetectionService: BotDetectionService,
   ) {}
+
+  async checkBot(
+    pid: string,
+    userAgent: string | undefined,
+    headers: Record<string, string | string[] | undefined>,
+    ip: string,
+    referrer: string | null | undefined,
+    path: string | null | undefined,
+    endpoint: BotEndpoint,
+  ): Promise<BotDetectionResult> {
+    const result = await this.botDetectionService.detect({
+      pid,
+      userAgent,
+      headers,
+      ip,
+      referrer: referrer ?? null,
+      path: path ?? null,
+      endpoint,
+    })
+
+    if (result.isBot && result.reason) {
+      const { country } = getGeoDetails(ip)
+
+      clickhouse
+        .insert({
+          table: 'bot_blocks',
+          format: 'JSONEachRow',
+          values: [
+            {
+              pid,
+              reason: result.reason,
+              cc: country,
+              created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+            },
+          ],
+          clickhouse_settings: { async_insert: 1 },
+        })
+        .catch((reason) => {
+          this.logger.warn(
+            `Failed to log bot_block for pid ${pid}: ${reason}`,
+            'checkBot',
+          )
+        })
+    }
+
+    return result
+  }
 
   async checkProjectAccess(
     pid: string,
@@ -370,6 +424,66 @@ export class AnalyticsService {
     }
 
     return isbot(userAgent)
+  }
+
+  async getBotStats(
+    pid: string,
+    period: '7d' | '30d' | '90d',
+  ): Promise<{
+    total: number
+    period: '7d' | '30d' | '90d'
+    byReason: { reason: string; count: number }[]
+    byCountry: { cc: string; count: number }[]
+  }> {
+    const days = period === '7d' ? 7 : period === '30d' ? 30 : 90
+
+    const since = dayjs
+      .utc()
+      .subtract(days, 'day')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    const query = `
+      SELECT 'reason' AS kind, reason AS bucket, count() AS cnt
+      FROM bot_blocks
+      WHERE pid = {pid:FixedString(12)} AND created >= {since:DateTime}
+      GROUP BY reason
+      UNION ALL
+      SELECT 'country' AS kind, cc AS bucket, count() AS cnt
+      FROM bot_blocks
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND created >= {since:DateTime}
+        AND cc IS NOT NULL
+      GROUP BY cc
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, since },
+      })
+      .then((resultSet) =>
+        resultSet.json<{ kind: string; bucket: string; cnt: number }>(),
+      )
+
+    const byReason: { reason: string; count: number }[] = []
+    const byCountry: { cc: string; count: number }[] = []
+
+    for (const row of data) {
+      const count = Number(row.cnt) || 0
+      if (row.kind === 'reason') {
+        byReason.push({ reason: row.bucket, count })
+      } else if (row.kind === 'country' && row.bucket) {
+        byCountry.push({ cc: row.bucket, count })
+      }
+    }
+
+    byReason.sort((a, b) => b.count - a.count)
+    byCountry.sort((a, b) => b.count - a.count)
+
+    const total = byReason.reduce((sum, item) => sum + item.count, 0)
+
+    return { total, period, byReason, byCountry: byCountry.slice(0, 10) }
   }
 
   checkOrigin(project: Project, origin: string): void {

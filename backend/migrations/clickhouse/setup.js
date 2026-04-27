@@ -6,6 +6,7 @@ require('dotenv').config({
 const chalk = {
   green: text => `\x1b[32m${text}\x1b[0m`,
   red: text => `\x1b[31m${text}\x1b[0m`,
+  purple: text => `\x1b[35m${text}\x1b[0m`,
 }
 
 const clickhouse = createClient({
@@ -43,7 +44,7 @@ const clickhouseNoDatabase = createClient({
   },
 })
 
-const databaselessQueriesRunner = async queries => {
+const databaselessQueriesRunner = async (queries, log = true) => {
   let failed = false
   for (const query of queries) {
     if (failed) {
@@ -52,13 +53,20 @@ const databaselessQueriesRunner = async queries => {
 
     if (query) {
       try {
+        if (log) {
+          console.log(chalk.purple('Running query:'), query)
+        }
         await clickhouseNoDatabase.command({
           query,
         })
-        console.log(chalk.green('Query OK: '), query)
+        if (log) {
+          console.log(chalk.green('Query OK'))
+        }
       } catch (error) {
-        console.error(chalk.red('Query ERROR: '), query)
-        console.error(error)
+        if (log) {
+          console.error(chalk.red('Query ERROR: '), query)
+          console.error(error)
+        }
         failed = true
       }
     }
@@ -83,17 +91,20 @@ const queriesRunner = async (queries, log = true, params = {}) => {
 
     if (query) {
       try {
+        if (log) {
+          console.log(chalk.purple('Running query:'), query)
+        }
         await clickhouse.command({
           ...params,
           query,
         })
 
         if (log) {
-          console.log(chalk.green('Query OK: '), query)
+          console.log(chalk.green('Query OK'))
         }
       } catch (error) {
         if (log) {
-          console.error(chalk.red('Query ERROR: '), query)
+          console.error(chalk.red('Query ERROR'))
           console.error(error)
         }
         failed = true

@@ -101,6 +101,7 @@ import { NoscriptDto } from './dto/noscript.dto'
 import { LiveVisitorsDto } from './dto/live-visitors.dto'
 import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 import { GetKeywordsDto } from './dto/get-keywords.dto'
+import { GetBotStatsDto } from './dto/get-bot-stats.dto'
 import { GSCService } from '../project/gsc.service'
 import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
 
@@ -1401,6 +1402,30 @@ export class AnalyticsController {
     return data
   }
 
+  @Get('bot-stats')
+  @Auth(true, true)
+  async getBotStats(
+    @Query() data: GetBotStatsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, period = '30d' } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+    await this.analyticsService.checkBillingAccess(pid)
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}`,
+      'GET /analytics/bot-stats',
+    )
+
+    return this.analyticsService.getBotStats(pid, period)
+  }
+
   @Post('error')
   @Public()
   async logError(@Body() errorDTO: ErrorDto, @Headers() headers, @Ip() reqIP) {
@@ -1408,9 +1433,17 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(errorDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      errorDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      errorDTO.pg,
+      'error',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1528,9 +1561,17 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(eventsDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      eventsDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      eventsDTO.ref || headers.referer || headers.referrer,
+      eventsDTO.pg,
+      'custom',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1640,9 +1681,17 @@ export class AnalyticsController {
     const { pid } = logDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(logDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      logDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      logDTO.pg,
+      'heartbeat',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1683,9 +1732,17 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const isBot = await this.analyticsService.isBot(logDTO.pid, userAgent)
+    const botResult = await this.analyticsService.checkBot(
+      logDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      logDTO.ref || headers.referer || headers.referrer,
+      logDTO.pg,
+      'pageview',
+    )
 
-    if (isBot) {
+    if (botResult.isBot) {
       return BOT_RESPONSE
     }
 
@@ -1829,16 +1886,24 @@ export class AnalyticsController {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = data
 
-    const isBot = await this.analyticsService.isBot(pid, userAgent)
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    if (isBot) {
+    const botResult = await this.analyticsService.checkBot(
+      pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      null,
+      'noscript',
+    )
+
+    if (botResult.isBot) {
       res.writeHead(200, { 'Content-Type': 'image/gif' })
       return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
     }
 
     const logDTO: PageviewsDto = { pid }
-
-    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 

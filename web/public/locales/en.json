@@ -1855,6 +1855,8 @@
       "deleteShort": "Permanently delete the project and all data.",
       "organisation": "Organisation",
       "shields": "Shields",
+      "blockedTraffic": "Blocked traffic",
+      "blockedTrafficHint": "Insights into the bot requests we filtered out before they reached your dashboard.",
       "access": "Access settings",
       "resetSuccess": "The project has been reset",
       "gsc": {
@@ -2074,9 +2076,42 @@
       "botsProtectionLevel": {
         "title": "Bots protection level",
         "levels": {
-          "off": "Off: we allow all incoming traffic",
-          "basic": "Basic: we detect bots based on their user agent (Googlebot, Bingbot, curl, etc.)"
+          "off": {
+            "title": "Off",
+            "description": "We allow all incoming traffic."
+          },
+          "basic": {
+            "title": "Basic",
+            "description": "We detect bots based on their user agent (Googlebot, Bingbot, curl, etc.)."
+          },
+          "strict": {
+            "title": "Strict",
+            "description": "On top of user agent checks, we also block headless browsers, datacenter IPs, vulnerability scanners, known referrer-spam sources, and requests with suspicious headers."
+          }
         }
+      },
+      "botProtectionReport": {
+        "subtitle_one": "bot request blocked",
+        "subtitle_other": "bot requests blocked",
+        "loading": "Loading bot protection report",
+        "classification": "Classification",
+        "topCountries": "Top countries",
+        "empty": "No bot traffic blocked in this period.",
+        "periodLabel": "Time period",
+        "periods": {
+          "7d": "7 days",
+          "30d": "30 days",
+          "90d": "90 days"
+        },
+        "reasons": {
+          "user_agent": "Bot user agent",
+          "headless_browser": "Headless browser",
+          "suspicious_headers": "Suspicious headers",
+          "probe_path": "Vulnerability scan",
+          "referrer_spam": "Referrer spam",
+          "datacenter_ip": "Datacenter IP"
+        },
+        "learnMore": "Learn how we block bots"
       },
       "updated": "The project's settings were updated",
       "created": "The project has been created",

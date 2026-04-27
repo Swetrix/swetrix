@@ -17,6 +17,7 @@ import { Organisation } from '../../organisation/entity/organisation.entity'
 export enum BotsProtectionLevel {
   OFF = 'off',
   BASIC = 'basic',
+  STRICT = 'strict',
 }
 
 // In case of modifying some properties here add them to the GDPR data export email template

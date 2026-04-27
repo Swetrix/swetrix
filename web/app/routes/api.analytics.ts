@@ -30,6 +30,7 @@ import {
   getErrorSessionsServer,
   getLiveVisitorsServer,
   getLiveVisitorsInfoServer,
+  getBotProtectionStatsServer,
   getProjectDataCustomEventsServer,
   getUserFlowServer,
   getGSCKeywordsServer,
@@ -63,6 +64,8 @@ import {
   type ErrorSessionsResponse,
   type LiveStats,
   type LiveVisitorInfo,
+  type BotProtectionStats,
+  type BotProtectionPeriod,
   type ProjectDataCustomEventsResponse,
   type UserFlowResponse,
   type GSCKeywordsResponse,
@@ -115,6 +118,7 @@ interface ProxyRequest {
     | 'getErrorSessions'
     | 'getLiveVisitors'
     | 'getLiveVisitorsInfo'
+    | 'getBotProtectionStats'
     | 'getProjectDataCustomEvents'
     | 'getUserFlow'
     | 'getGSCKeywords'
@@ -744,6 +748,26 @@ export async function action({ request }: ActionFunctionArgs) {
           password || undefined,
         )
         return data<ProxyResponse<LiveVisitorInfo[]>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getBotProtectionStats': {
+        const period = (params.period as BotProtectionPeriod) || '30d'
+        const validPeriods: BotProtectionPeriod[] = ['7d', '30d', '90d']
+        const safePeriod = validPeriods.includes(period) ? period : '30d'
+        const result = await getBotProtectionStatsServer(
+          request,
+          projectId,
+          safePeriod,
+          password || undefined,
+        )
+        return data<ProxyResponse<BotProtectionStats>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

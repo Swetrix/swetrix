@@ -6,6 +6,7 @@ import { Organisation } from './organisation.entity.js'
 export enum BotsProtectionLevel {
   OFF = 'off',
   BASIC = 'basic',
+  STRICT = 'strict',
 }
 
 @Entity()

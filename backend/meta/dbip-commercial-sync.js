@@ -3,6 +3,7 @@ const fs = require('fs')
 const zlib = require('zlib')
 const path = require('path')
 
+const METADATA_DB = 'ip-to-location-isp'
 const DESTINATION_FILE = 'ip-geolocation-db.mmdb'
 const DESTINATION_FOLDER = path.join(__dirname, '../')
 const DESTINATION_PATH = path.join(DESTINATION_FOLDER, DESTINATION_FILE)
@@ -55,7 +56,7 @@ function followableGet(url, options = {}, maxRedirects = 5) {
 }
 
 async function fetchDbipAccountInfo(apiKey) {
-  const metadataUrl = `https://db-ip.com/account/${apiKey}/db/ip-to-location/`
+  const metadataUrl = `https://db-ip.com/account/${apiKey}/db/${METADATA_DB}/`
   const response = await followableGet(metadataUrl, {
     headers: { Accept: 'application/json' },
   })
@@ -151,7 +152,7 @@ function downloadMmdb(url, shouldGunzip, destinationPath) {
     const mmdbDate = metadata.mmdb.date || 'Unknown date'
     const mmdbName = metadata.mmdb.name || ''
 
-    console.log(`[INFO] Downloading DB-IP mmdb for: ${mmdbDate}`)
+    console.log(`[INFO] Downloading DB-IP ${METADATA_DB} mmdb for: ${mmdbDate}`)
 
     const shouldGunzip = mmdbName.endsWith('.gz')
     await downloadMmdb(mmdbUrl, shouldGunzip, DESTINATION_PATH)
