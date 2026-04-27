@@ -46,8 +46,11 @@ If you want to completely ignore traffic from specific countries, you can add th
 
 Swetrix has built-in bot detection. You can adjust the strictness of this protection:
 
-- **Basic**: Standard protection against common bots and crawlers.
-- **Strict**: More aggressive filtering. May result in fewer recorded visits but cleaner data.
+- **Off**: No bot detection. All traffic is recorded.
+- **Basic** _(default)_: Filters traffic by user-agent string and headless-browser fingerprints.
+- **Strict**: Adds suspicious-header, probe-path, referrer-spam, and (on cloud) datacenter-IP checks.
+
+Below the dropdown you'll find a per-project report showing how many requests were blocked, broken down by classification and country. See the dedicated [Bot Protection](/bot-protection) page for the full list of detection methods, privacy notes, and FAQ.
 
 ## Access Control
 
