@@ -58,11 +58,7 @@ import {
   REDIS_EVENTS_COUNT_KEY,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
-import {
-  checkRateLimit,
-  getGeoDetails,
-  getIPFromHeaders,
-} from '../common/utils'
+import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
 import { GetVersionFiltersDto } from './dto/get-version-filters.dto'
@@ -1468,7 +1464,7 @@ export class AnalyticsController {
       profileId,
     )
 
-    const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
+    const { city, region, regionCode, country } = getIPDetails(ip, errorDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1591,10 +1587,7 @@ export class AnalyticsController {
       }
     }
 
-    const { city, region, regionCode, country } = getGeoDetails(
-      ip,
-      eventsDTO.tz,
-    )
+    const { city, region, regionCode, country } = getIPDetails(ip, eventsDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1774,7 +1767,7 @@ export class AnalyticsController {
       )
     }
 
-    const { city, region, regionCode, country } = getGeoDetails(ip, logDTO.tz)
+    const { city, region, regionCode, country } = getIPDetails(ip, logDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1925,7 +1918,7 @@ export class AnalyticsController {
       profileId,
     )
 
-    const { city, region, regionCode, country } = getGeoDetails(ip)
+    const { city, region, regionCode, country } = getIPDetails(ip)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 

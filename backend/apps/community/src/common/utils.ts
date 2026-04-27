@@ -1123,14 +1123,14 @@ if (SELFHOSTED_GEOIP_DB_PATH && fs.existsSync(SELFHOSTED_GEOIP_DB_PATH)) {
   lookup = new Reader<CityResponse>(buffer)
 }
 
-interface IPGeoDetails {
+interface IPDetails {
   country: string | null
   region: string | null
   city: string | null
   regionCode: string | null
 }
 
-const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
+const getIPDetails = (ip: string, tz?: string): IPDetails => {
   // Stage 1: Using IP address based geo lookup
   const data = lookup.get(ip)
 
@@ -1314,7 +1314,7 @@ export {
   findRefreshTokenClickhouse,
   deleteRefreshTokenClickhouse,
   deleteAllRefreshTokensClickhouse,
-  getGeoDetails,
+  getIPDetails,
   getIPFromHeaders,
   sumArrays,
   assignUnassignedProjectsToUserClickhouse,

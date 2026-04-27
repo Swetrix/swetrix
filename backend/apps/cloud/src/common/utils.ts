@@ -260,52 +260,27 @@ if (fs.existsSync(PRODUCTION_GEOIP_DB_PATH)) {
   lookup = new Reader<CityResponse>(buffer)
 }
 
-interface IspDetails {
-  isHosting: boolean
-  isAnonymousProxy: boolean
-  isTorExitNode: boolean
-}
-
-const EMPTY_ISP_DETAILS: IspDetails = {
-  isHosting: false,
-  isAnonymousProxy: false,
-  isTorExitNode: false,
-}
-
-export const getIspDetails = (ip: string): IspDetails => {
-  if (!ip) return EMPTY_ISP_DETAILS
-
-  let data
-  try {
-    data = lookup.get(ip)
-  } catch {
-    return EMPTY_ISP_DETAILS
-  }
-
-  if (!data) return EMPTY_ISP_DETAILS
-
-  const traits = data.traits ?? {}
-  const isHosting =
-    traits.is_hosting_provider === true || traits.user_type === 'hosting'
-
-  return {
-    isHosting,
-    isAnonymousProxy: traits.is_anonymous_proxy === true,
-    isTorExitNode: traits.is_tor_exit_node === true,
-  }
-}
-
-interface IPGeoDetails {
+interface IPDetails {
   country: string | null
   region: string | null
   regionCode: string | null
   city: string | null
+  isHosting: boolean
 }
 
-export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
-  // Stage 1: Using IP address based geo lookup
-  const data = lookup.get(ip)
+export const getIPDetails = (ip: string, tz?: string): IPDetails => {
+  let data
+  try {
+    data = ip ? lookup.get(ip) : null
+  } catch {
+    data = null
+  }
 
+  const traits = data?.traits ?? {}
+  const isHosting =
+    traits.is_hosting_provider === true || traits.user_type === 'hosting'
+
+  // Stage 1: Using IP address based geo lookup
   const country = data?.country?.iso_code || null
   // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
   const city = data?.city?.names?.en || null
@@ -319,6 +294,7 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
       city,
       region,
       regionCode,
+      isHosting,
     }
   }
 
@@ -330,6 +306,7 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
     city: null,
     region: null,
     regionCode: null,
+    isHosting,
   }
 }
 

@@ -44,7 +44,7 @@ import {
 } from './dto/feature-flag.dto'
 import { FeatureFlagService } from './feature-flag.service'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { getIPFromHeaders, getGeoDetails } from '../common/utils'
+import { getIPFromHeaders, getIPDetails } from '../common/utils'
 
 const FEATURE_FLAGS_MAXIMUM = 50 // Maximum feature flags per project
 const FEATURE_FLAGS_PAGINATION_MAX_TAKE = 100
@@ -228,7 +228,7 @@ export class FeatureFlagController {
 
     // Derive attributes from request headers (like analytics does)
     const userAgent = headers['user-agent'] || ''
-    const { country, city, region } = getGeoDetails(ip)
+    const { country, city, region } = getIPDetails(ip)
     const { deviceType, browserName, osName } =
       await this.analyticsService.getRequestInformation(headers)
 

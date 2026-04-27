@@ -50,11 +50,7 @@ import { GetFunnelsDto } from './dto/getFunnels.dto'
 import { GetFunnelSessionsDto } from './dto/get-funnel-sessions.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { clickhouse } from '../common/integrations/clickhouse'
-import {
-  checkRateLimit,
-  getGeoDetails,
-  getIPFromHeaders,
-} from '../common/utils'
+import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetBotStatsDto } from './dto/get-bot-stats.dto'
 import {
@@ -1107,10 +1103,7 @@ export class AnalyticsController {
       }
     }
 
-    const { city, region, regionCode, country } = getGeoDetails(
-      ip,
-      eventsDTO.tz,
-    )
+    const { city, region, regionCode, country } = getIPDetails(ip, eventsDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1289,7 +1282,7 @@ export class AnalyticsController {
       )
     }
 
-    const { city, region, regionCode, country } = getGeoDetails(ip, logDTO.tz)
+    const { city, region, regionCode, country } = getIPDetails(ip, logDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1442,7 +1435,7 @@ export class AnalyticsController {
       profileId,
     )
 
-    const { city, region, regionCode, country } = getGeoDetails(ip, null)
+    const { city, region, regionCode, country } = getIPDetails(ip, null)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
@@ -1803,7 +1796,7 @@ export class AnalyticsController {
       profileId,
     )
 
-    const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
+    const { city, region, regionCode, country } = getIPDetails(ip, errorDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
 

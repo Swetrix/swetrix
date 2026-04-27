@@ -60,7 +60,7 @@ import { clickhouse } from '../common/integrations/clickhouse'
 import { getDomainsForRefName } from './utils/referrers.map'
 import {
   getFunnelClickhouse,
-  getGeoDetails,
+  getIPDetails,
   hash,
   millisecondsToSeconds,
   sumArrays,
@@ -380,7 +380,7 @@ export class AnalyticsService {
     })
 
     if (result.isBot && result.reason) {
-      const { country } = getGeoDetails(ip)
+      const { country } = getIPDetails(ip)
 
       try {
         await clickhouse.insert({

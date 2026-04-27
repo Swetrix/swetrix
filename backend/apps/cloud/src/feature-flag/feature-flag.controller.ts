@@ -52,7 +52,7 @@ import { FeatureFlagService } from './feature-flag.service'
 import { ExperimentService } from '../experiment/experiment.service'
 import { ExperimentStatus } from '../experiment/entity/experiment.entity'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { getIPFromHeaders, getGeoDetails } from '../common/utils'
+import { getIPFromHeaders, getIPDetails } from '../common/utils'
 import { getExperimentVariant } from './evaluation'
 import { trackCustom } from '../common/analytics'
 
@@ -283,7 +283,7 @@ export class FeatureFlagController {
 
     // Derive attributes from request headers (like analytics does)
     const userAgent = headers['user-agent'] || ''
-    const { country, city, region } = getGeoDetails(ip)
+    const { country, city, region } = getIPDetails(ip)
     const { deviceType, browserName, osName } =
       await this.analyticsService.getRequestInformation(headers)
 

@@ -6,7 +6,7 @@ import { parse as parseDomain } from 'tldts'
 
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectService } from '../project/project.service'
-import { getIspDetails } from '../common/utils'
+import { getIPDetails } from '../common/utils'
 
 export type BotReason =
   | 'user_agent'
@@ -259,7 +259,7 @@ export class BotDetectionService {
       return { isBot: true, reason: 'referrer_spam' }
     }
 
-    if (input.ip && getIspDetails(input.ip).isHosting) {
+    if (input.ip && getIPDetails(input.ip).isHosting) {
       return { isBot: true, reason: 'datacenter_ip' }
     }
 

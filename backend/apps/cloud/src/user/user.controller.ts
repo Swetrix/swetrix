@@ -53,11 +53,7 @@ import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { DeleteSelfDTO } from './dto/delete-self.dto'
 import { CancelSubscriptionDTO } from './dto/cancel-subscription.dto'
-import {
-  checkRateLimit,
-  getGeoDetails,
-  getIPFromHeaders,
-} from '../common/utils'
+import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
 import { OrganisationService } from '../organisation/organisation.service'
@@ -693,7 +689,7 @@ export class UserController {
     @Ip() reqIP: string,
   ): Promise<IMetaInfo> {
     const ip = getIPFromHeaders(headers) || reqIP || ''
-    const { country, city, region } = getGeoDetails(ip)
+    const { country, city, region } = getIPDetails(ip)
 
     return {
       country,
