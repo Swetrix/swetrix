@@ -91,9 +91,11 @@ Real users browse from residential, mobile, or business ISPs. Bots, scrapers, an
 This check runs at **Strict** only and is only available on **Swetrix Cloud**.
 
 <Callout type="warn">
-  Self-hosted installations do not include the commercial DB-IP ISP database out of the box, so the
-  `datacenter_ip` reason will simply not appear in the report. Strict mode still gives you the other
-  four checks, which already cover the vast majority of automated traffic.
+  Self-hosted installations do not include the commercial DB-IP ISP database out of the box, so only
+  the `datacenter_ip` reason is omitted from the report. Strict mode still runs the other three
+  non-cloud-only checks (`suspicious_headers`, `probe_path`, and `referrer_spam`) — five checks in
+  total once you count Basic's `user_agent` and `headless_browser` — which already cover the vast
+  majority of automated traffic.
 </Callout>
 
 ## Reading the report
@@ -153,7 +155,7 @@ We deliberately don't return `403`, `429`, or anything else that would tell the 
 
 If you self-host Swetrix Community, the bot protection feature works out of the box with one caveat: the `datacenter_ip` check is omitted because it depends on the commercial [DB-IP IP-to-Location-ISP](https://db-ip.com/db/ip-to-location-isp) database, which is not bundled with the open-source release.
 
-The other four detections (user agent, headless browser, suspicious headers, probe paths, referrer spam) run identically on community and cloud, and the report renders the same way.
+The other five detections (user agent, headless browser, suspicious headers, probe paths, referrer spam) run identically on community and cloud, and the report renders the same way.
 
 ## FAQ
 
