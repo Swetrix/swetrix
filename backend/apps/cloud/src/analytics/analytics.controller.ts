@@ -1488,27 +1488,27 @@ export class AnalyticsController {
     const { name, message, lineno, colno, filename, stackTrace, meta } =
       errorDTO
 
-    const transformed = errorEventTransformer(
+    const transformed = errorEventTransformer({
       psid,
       profileId,
-      this.analyticsService.getErrorID(errorDTO),
-      errorDTO.pid,
-      this.analyticsService.getHostFromOrigin(headers.origin),
-      errorDTO.pg,
-      deviceType,
-      browserName,
-      browserVersion,
-      osName,
-      osVersion,
-      errorDTO.lc,
-      country,
-      region,
-      regionCode,
-      city,
+      eid: this.analyticsService.getErrorID(errorDTO),
+      pid: errorDTO.pid,
+      host: this.analyticsService.getHostFromOrigin(headers.origin),
+      pg: errorDTO.pg,
+      dv: deviceType,
+      br: browserName,
+      brv: browserVersion,
+      os: osName,
+      osv: osVersion,
+      lc: errorDTO.lc,
+      cc: country,
+      rg: region,
+      rgc: regionCode,
+      ct: city,
       isp,
-      organization,
-      userType,
-      connectionType,
+      og: organization,
+      ut: userType,
+      ctp: connectionType,
       name,
       message,
       lineno,
@@ -1516,7 +1516,7 @@ export class AnalyticsController {
       filename,
       stackTrace,
       meta,
-    )
+    })
 
     try {
       await clickhouse.insert({
@@ -1642,35 +1642,35 @@ export class AnalyticsController {
 
     enrichTrafficSource(eventsDTO)
 
-    const transformed = customEventTransformer(
+    const transformed = customEventTransformer({
       psid,
       profileId,
-      eventsDTO.pid,
-      this.analyticsService.getHostFromOrigin(headers.origin),
-      eventsDTO.ev,
-      eventsDTO.pg,
-      deviceType,
-      browserName,
-      browserVersion,
-      osName,
-      osVersion,
-      eventsDTO.lc,
-      eventsDTO.ref,
-      eventsDTO.so,
-      eventsDTO.me,
-      eventsDTO.ca,
-      eventsDTO.te,
-      eventsDTO.co,
-      country,
-      region,
-      regionCode,
-      city,
+      pid: eventsDTO.pid,
+      host: this.analyticsService.getHostFromOrigin(headers.origin),
+      ev: eventsDTO.ev,
+      pg: eventsDTO.pg,
+      dv: deviceType,
+      br: browserName,
+      brv: browserVersion,
+      os: osName,
+      osv: osVersion,
+      lc: eventsDTO.lc,
+      ref: eventsDTO.ref,
+      so: eventsDTO.so,
+      me: eventsDTO.me,
+      ca: eventsDTO.ca,
+      te: eventsDTO.te,
+      co: eventsDTO.co,
+      cc: country,
+      rg: region,
+      rgc: regionCode,
+      ct: city,
       isp,
-      organization,
-      userType,
-      connectionType,
-      eventsDTO.meta,
-    )
+      og: organization,
+      ut: userType,
+      ctp: connectionType,
+      meta: eventsDTO.meta,
+    })
 
     try {
       await clickhouse.insert({
@@ -1813,34 +1813,34 @@ export class AnalyticsController {
 
     enrichTrafficSource(logDTO)
 
-    const transformed = trafficTransformer(
+    const transformed = trafficTransformer({
       psid,
       profileId,
-      logDTO.pid,
-      this.analyticsService.getHostFromOrigin(headers.origin),
-      logDTO.pg,
-      deviceType,
-      browserName,
-      browserVersion,
-      osName,
-      osVersion,
-      logDTO.lc,
-      logDTO.ref,
-      logDTO.so,
-      logDTO.me,
-      logDTO.ca,
-      logDTO.te,
-      logDTO.co,
-      country,
-      region,
-      regionCode,
-      city,
+      pid: logDTO.pid,
+      host: this.analyticsService.getHostFromOrigin(headers.origin),
+      pg: logDTO.pg,
+      dv: deviceType,
+      br: browserName,
+      brv: browserVersion,
+      os: osName,
+      osv: osVersion,
+      lc: logDTO.lc,
+      ref: logDTO.ref,
+      so: logDTO.so,
+      me: logDTO.me,
+      ca: logDTO.ca,
+      te: logDTO.te,
+      co: logDTO.co,
+      cc: country,
+      rg: region,
+      rgc: regionCode,
+      ct: city,
       isp,
-      organization,
-      userType,
-      connectionType,
-      logDTO.meta,
-    )
+      og: organization,
+      ut: userType,
+      ctp: connectionType,
+      meta: logDTO.meta,
+    })
 
     let perfTransformed = null
 
@@ -1856,21 +1856,21 @@ export class AnalyticsController {
         ttfb,
       } = logDTO.perf
 
-      perfTransformed = performanceTransformer(
-        logDTO.pid,
-        this.analyticsService.getHostFromOrigin(headers.origin),
-        logDTO.pg,
-        deviceType,
-        browserName,
-        browserVersion,
-        country,
-        region,
-        regionCode,
-        city,
+      perfTransformed = performanceTransformer({
+        pid: logDTO.pid,
+        host: this.analyticsService.getHostFromOrigin(headers.origin),
+        pg: logDTO.pg,
+        dv: deviceType,
+        br: browserName,
+        brv: browserVersion,
+        cc: country,
+        rg: region,
+        rgc: regionCode,
+        ct: city,
         isp,
-        organization,
-        userType,
-        connectionType,
+        og: organization,
+        ut: userType,
+        ctp: connectionType,
         dns,
         tls,
         conn,
@@ -1879,7 +1879,7 @@ export class AnalyticsController {
         domLoad,
         pageLoad,
         ttfb,
-      )
+      })
     }
 
     try {
@@ -1979,34 +1979,34 @@ export class AnalyticsController {
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
 
-    const transformed = trafficTransformer(
+    const transformed = trafficTransformer({
       psid,
       profileId,
-      logDTO.pid,
-      this.analyticsService.getHostFromOrigin(headers.origin),
-      null,
-      deviceType,
-      browserName,
-      browserVersion,
-      osName,
-      osVersion,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      country,
-      region,
-      regionCode,
-      city,
+      pid: logDTO.pid,
+      host: this.analyticsService.getHostFromOrigin(headers.origin),
+      pg: null,
+      dv: deviceType,
+      br: browserName,
+      brv: browserVersion,
+      os: osName,
+      osv: osVersion,
+      lc: null,
+      ref: null,
+      so: null,
+      me: null,
+      ca: null,
+      te: null,
+      co: null,
+      cc: country,
+      rg: region,
+      rgc: regionCode,
+      ct: city,
       isp,
-      organization,
-      userType,
-      connectionType,
-      null,
-    )
+      og: organization,
+      ut: userType,
+      ctp: connectionType,
+      meta: null,
+    })
 
     try {
       await clickhouse.insert({

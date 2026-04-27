@@ -23,34 +23,63 @@ const processMetaKV = (
   }
 }
 
-export const trafficTransformer = (
-  psid: string,
-  profileId: string,
-  pid: string,
-  host: string | null,
-  pg: string | null,
-  dv: string | null,
-  br: string | null,
-  brv: string | null,
-  os: string | null,
-  osv: string | null,
-  lc: string | null,
-  ref: string | null,
-  so: string | null,
-  me: string | null,
-  ca: string | null,
-  te: string | null,
-  co: string | null,
-  cc: string | null,
-  rg: string | null,
-  rgc: string | null,
-  ct: string | null,
-  isp: string | null,
-  og: string | null,
-  ut: string | null,
-  ctp: string | null,
-  meta: Record<string, string> | null,
-) => {
+interface TrafficTransformerOptions {
+  psid: string
+  profileId: string
+  pid: string
+  host?: string | null
+  pg?: string | null
+  dv?: string | null
+  br?: string | null
+  brv?: string | null
+  os?: string | null
+  osv?: string | null
+  lc?: string | null
+  ref?: string | null
+  so?: string | null
+  me?: string | null
+  ca?: string | null
+  te?: string | null
+  co?: string | null
+  cc?: string | null
+  rg?: string | null
+  rgc?: string | null
+  ct?: string | null
+  isp?: string | null
+  og?: string | null
+  ut?: string | null
+  ctp?: string | null
+  meta?: Record<string, string> | null
+}
+
+export const trafficTransformer = ({
+  psid,
+  profileId,
+  pid,
+  host,
+  pg,
+  dv,
+  br,
+  brv,
+  os,
+  osv,
+  lc,
+  ref,
+  so,
+  me,
+  ca,
+  te,
+  co,
+  cc,
+  rg,
+  rgc,
+  ct,
+  isp,
+  og,
+  ut,
+  ctp,
+  meta,
+}: TrafficTransformerOptions) => {
   return {
     psid,
     profileId,
@@ -82,35 +111,65 @@ export const trafficTransformer = (
   }
 }
 
-export const customEventTransformer = (
-  psid: string,
-  profileId: string,
-  pid: string,
-  host: string | null,
-  ev: string,
-  pg: string | null,
-  dv: string | null,
-  br: string | null,
-  brv: string | null,
-  os: string | null,
-  osv: string | null,
-  lc: string | null,
-  ref: string | null,
-  so: string | null,
-  me: string | null,
-  ca: string | null,
-  te: string | null,
-  co: string | null,
-  cc: string | null,
-  rg: string | null,
-  rgc: string | null,
-  ct: string | null,
-  isp: string | null,
-  og: string | null,
-  ut: string | null,
-  ctp: string | null,
-  meta: Record<string, string> | null,
-) => {
+interface CustomEventTransformerOptions {
+  psid: string
+  profileId: string
+  pid: string
+  host?: string | null
+  ev: string
+  pg?: string | null
+  dv?: string | null
+  br?: string | null
+  brv?: string | null
+  os?: string | null
+  osv?: string | null
+  lc?: string | null
+  ref?: string | null
+  so?: string | null
+  me?: string | null
+  ca?: string | null
+  te?: string | null
+  co?: string | null
+  cc?: string | null
+  rg?: string | null
+  rgc?: string | null
+  ct?: string | null
+  isp?: string | null
+  og?: string | null
+  ut?: string | null
+  ctp?: string | null
+  meta?: Record<string, string> | null
+}
+
+export const customEventTransformer = ({
+  psid,
+  profileId,
+  pid,
+  host,
+  ev,
+  pg,
+  dv,
+  br,
+  brv,
+  os,
+  osv,
+  lc,
+  ref,
+  so,
+  me,
+  ca,
+  te,
+  co,
+  cc,
+  rg,
+  rgc,
+  ct,
+  isp,
+  og,
+  ut,
+  ctp,
+  meta,
+}: CustomEventTransformerOptions) => {
   return {
     psid,
     profileId,
@@ -143,35 +202,65 @@ export const customEventTransformer = (
   }
 }
 
-export const errorEventTransformer = (
-  psid: string,
-  profileId: string,
-  eid: string,
-  pid: string,
-  host: string | null,
-  pg: string | null,
-  dv: string | null,
-  br: string | null,
-  brv: string | null,
-  os: string | null,
-  osv: string | null,
-  lc: string | null,
-  cc: string | null,
-  rg: string | null,
-  rgc: string | null,
-  ct: string | null,
-  isp: string | null,
-  og: string | null,
-  ut: string | null,
-  ctp: string | null,
-  name: string | null,
-  message: string | null,
-  lineno: number | null,
-  colno: number | null,
-  filename: string | null,
-  stackTrace: string | null,
-  meta: Record<string, string> | null,
-) => {
+interface ErrorEventTransformerOptions {
+  psid: string
+  profileId: string
+  eid: string
+  pid: string
+  host?: string | null
+  pg?: string | null
+  dv?: string | null
+  br?: string | null
+  brv?: string | null
+  os?: string | null
+  osv?: string | null
+  lc?: string | null
+  cc?: string | null
+  rg?: string | null
+  rgc?: string | null
+  ct?: string | null
+  isp?: string | null
+  og?: string | null
+  ut?: string | null
+  ctp?: string | null
+  name?: string | null
+  message?: string | null
+  lineno?: number | null
+  colno?: number | null
+  filename?: string | null
+  stackTrace?: string | null
+  meta?: Record<string, string> | null
+}
+
+export const errorEventTransformer = ({
+  psid,
+  profileId,
+  eid,
+  pid,
+  host,
+  pg,
+  dv,
+  br,
+  brv,
+  os,
+  osv,
+  lc,
+  cc,
+  rg,
+  rgc,
+  ct,
+  isp,
+  og,
+  ut,
+  ctp,
+  name,
+  message,
+  lineno,
+  colno,
+  filename,
+  stackTrace,
+  meta,
+}: ErrorEventTransformerOptions) => {
   return {
     psid,
     profileId,
@@ -204,30 +293,55 @@ export const errorEventTransformer = (
   }
 }
 
-export const performanceTransformer = (
-  pid: string,
-  host: string | null,
-  pg: string | null,
-  dv: string | null,
-  br: string | null,
-  brv: string | null,
-  cc: string | null,
-  rg: string | null,
-  rgc: string | null,
-  ct: string | null,
-  isp: string | null,
-  og: string | null,
-  ut: string | null,
-  ctp: string | null,
-  dns: number,
-  tls: number,
-  conn: number,
-  response: number,
-  render: number,
-  domLoad: number,
-  pageLoad: number,
-  ttfb: number,
-) => {
+interface PerformanceTransformerOptions {
+  pid: string
+  host?: string | null
+  pg?: string | null
+  dv?: string | null
+  br?: string | null
+  brv?: string | null
+  cc?: string | null
+  rg?: string | null
+  rgc?: string | null
+  ct?: string | null
+  isp?: string | null
+  og?: string | null
+  ut?: string | null
+  ctp?: string | null
+  dns: number
+  tls: number
+  conn: number
+  response: number
+  render: number
+  domLoad: number
+  pageLoad: number
+  ttfb: number
+}
+
+export const performanceTransformer = ({
+  pid,
+  host,
+  pg,
+  dv,
+  br,
+  brv,
+  cc,
+  rg,
+  rgc,
+  ct,
+  isp,
+  og,
+  ut,
+  ctp,
+  dns,
+  tls,
+  conn,
+  response,
+  render,
+  domLoad,
+  pageLoad,
+  ttfb,
+}: PerformanceTransformerOptions) => {
   return {
     pid,
     host: host || null,

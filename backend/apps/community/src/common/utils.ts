@@ -1155,10 +1155,10 @@ const getIPDetails = (ip: string, tz?: string): IPDetails => {
   const region = data?.subdivisions?.[0]?.names?.en || null
   const regionCode = data?.subdivisions?.[0]?.iso_code || null
 
-  const isp = data?.traits?.isp || null
-  const organization = data?.traits?.organization || null
-  const userType = data?.traits?.user_type || null
-  const connectionType = data?.traits?.connection_type || null
+  const isp = traits.isp || null
+  const organization = traits.organization || null
+  const userType = traits.user_type || null
+  const connectionType = traits.connection_type || null
 
   if (country) {
     return {
