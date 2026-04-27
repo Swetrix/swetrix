@@ -382,8 +382,8 @@ export class AnalyticsService {
     if (result.isBot && result.reason) {
       const { country } = getGeoDetails(ip)
 
-      clickhouse
-        .insert({
+      try {
+        await clickhouse.insert({
           table: 'bot_blocks',
           format: 'JSONEachRow',
           values: [
@@ -396,12 +396,12 @@ export class AnalyticsService {
           ],
           clickhouse_settings: { async_insert: 1 },
         })
-        .catch((reason) => {
-          this.logger.warn(
-            `Failed to log bot_block for pid ${pid}: ${reason}`,
-            'checkBot',
-          )
-        })
+      } catch (reason) {
+        this.logger.warn(
+          `Failed to log bot_block for pid ${pid}: ${reason}`,
+          'checkBot',
+        )
+      }
     }
 
     return result

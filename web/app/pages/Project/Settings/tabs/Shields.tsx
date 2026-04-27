@@ -150,9 +150,7 @@ const Shields = ({
         <Select<BotsProtectionLevelOption>
           id='botsProtectionLevel'
           label={t('project.settings.botsProtectionLevel.title')}
-          items={
-            botsProtectionLevels as readonly BotsProtectionLevelOption[] as BotsProtectionLevelOption[]
-          }
+          items={botsProtectionLevels}
           title={
             botsProtectionLevels.find(
               (predicate) => predicate.name === form.botsProtectionLevel,

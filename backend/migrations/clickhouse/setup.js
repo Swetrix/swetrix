@@ -45,30 +45,25 @@ const clickhouseNoDatabase = createClient({
 })
 
 const databaselessQueriesRunner = async (queries, log = true) => {
-  let failed = false
   for (const query of queries) {
-    if (failed) {
-      return
-    }
+    if (!query) continue
 
-    if (query) {
-      try {
-        if (log) {
-          console.log(chalk.purple('Running query:'), query)
-        }
-        await clickhouseNoDatabase.command({
-          query,
-        })
-        if (log) {
-          console.log(chalk.green('Query OK'))
-        }
-      } catch (error) {
-        if (log) {
-          console.error(chalk.red('Query ERROR: '), query)
-          console.error(error)
-        }
-        failed = true
+    try {
+      if (log) {
+        console.log(chalk.purple('Running query:'), query)
       }
+      await clickhouseNoDatabase.command({
+        query,
+      })
+      if (log) {
+        console.log(chalk.green('Query OK'))
+      }
+    } catch (error) {
+      if (log) {
+        console.error(chalk.red('Query ERROR: '), query)
+        console.error(error)
+      }
+      throw error
     }
   }
 }
@@ -82,33 +77,27 @@ const databaselessQueriesRunner = async (queries, log = true) => {
  * @returns
  */
 const queriesRunner = async (queries, log = true, params = {}) => {
-  let failed = false
-
   for (const query of queries) {
-    if (failed) {
-      return false
-    }
+    if (!query) continue
 
-    if (query) {
-      try {
-        if (log) {
-          console.log(chalk.purple('Running query:'), query)
-        }
-        await clickhouse.command({
-          ...params,
-          query,
-        })
-
-        if (log) {
-          console.log(chalk.green('Query OK'))
-        }
-      } catch (error) {
-        if (log) {
-          console.error(chalk.red('Query ERROR'))
-          console.error(error)
-        }
-        failed = true
+    try {
+      if (log) {
+        console.log(chalk.purple('Running query:'), query)
       }
+      await clickhouse.command({
+        ...params,
+        query,
+      })
+
+      if (log) {
+        console.log(chalk.green('Query OK'))
+      }
+    } catch (error) {
+      if (log) {
+        console.error(chalk.red('Query ERROR'))
+        console.error(error)
+      }
+      throw error
     }
   }
 

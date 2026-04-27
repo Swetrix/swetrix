@@ -22,7 +22,7 @@ interface SelectProps<T> {
   buttonClassName?: string
   hintClassName?: string
   capitalise?: boolean
-  items: T[]
+  items: readonly T[]
   id?: string
   labelExtractor?: (item: T, index: number) => React.ReactNode
   keyExtractor?: (item: T, index: number) => string

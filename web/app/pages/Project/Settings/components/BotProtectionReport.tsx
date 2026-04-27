@@ -77,14 +77,6 @@ const BotProtectionReport = ({ pid }: BotProtectionReportProps) => {
   const total = stats?.total ?? 0
 
   const formattedTotal = useMemo(() => nFormatter(total, 2), [total])
-  const reasonTotal = useMemo(
-    () => (stats?.byReason ?? []).reduce((sum, r) => sum + r.count, 0),
-    [stats],
-  )
-  const countryTotal = useMemo(
-    () => (stats?.byCountry ?? []).reduce((sum, r) => sum + r.count, 0),
-    [stats],
-  )
 
   const byReason = stats?.byReason ?? []
   const byCountry = stats?.byCountry ?? []
@@ -188,7 +180,7 @@ const BotProtectionReport = ({ pid }: BotProtectionReportProps) => {
                       </Text>
                     }
                     count={row.count}
-                    total={reasonTotal}
+                    total={total}
                   />
                 ))}
               </ReportColumn>
@@ -208,7 +200,7 @@ const BotProtectionReport = ({ pid }: BotProtectionReportProps) => {
                       </span>
                     }
                     count={row.count}
-                    total={countryTotal}
+                    total={total}
                   />
                 ))}
               </ReportColumn>
@@ -220,7 +212,7 @@ const BotProtectionReport = ({ pid }: BotProtectionReportProps) => {
       {!error ? (
         <div className='flex justify-end border-t border-gray-200 px-4 py-2 dark:border-slate-800/60'>
           <a
-            href='https://docs.swetrix.com/analytics-dashboard/bot-protection'
+            href='https://docs.swetrix.com/bot-protection'
             target='_blank'
             rel='noreferrer noopener'
             className='inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 underline-offset-2 hover:text-gray-900 hover:underline dark:text-slate-400 dark:hover:text-slate-100'
