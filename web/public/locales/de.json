@@ -1277,11 +1277,12 @@
     "webpush": {
       "enable": "Browser-Benachrichtigungen aktivieren",
       "enabled": "Browser-Benachrichtigungen sind auf diesem Gerät aktiviert.",
-      "useButton": "Verwende die Schaltfläche \"Browser-Benachrichtigungen aktivieren\", um dieses Gerät zu abonnieren.",
       "unsupported": "Dieser Browser unterstützt keine Push-Benachrichtigungen.",
       "permissionDenied": "Die Berechtigung für Benachrichtigungen wurde verweigert.",
       "notConfigured": "Web-Push ist auf diesem Server nicht konfiguriert.",
-      "subscribeFailed": "Konnte Push-Benachrichtigungen nicht abonnieren."
+      "subscribeFailed": "Konnte Push-Benachrichtigungen nicht abonnieren.",
+      "alertTitle": "Browser-Benachrichtigungen benötigen eine Berechtigung",
+      "alertDescription": "Um Web-Push-Warnungen auf diesem Gerät zu erhalten, erlauben Sie Swetrix, Ihnen Browser-Benachrichtigungen zu senden. Wir registrieren einen mit diesem Browser verknüpften Benachrichtigungskanal."
     }
   },
   "goals": {
@@ -1572,6 +1573,7 @@
     "location": "Standort",
     "pages": "Seiten",
     "devices": "Geräte",
+    "network": "Netzwerkanalyse",
     "trafficSources": "Traffic-Quellen",
     "metrics": {
       "xAvg": "\"{{x}}\" Durchschnitt",
@@ -1760,8 +1762,48 @@
       "exitPage": "Ausstiegsseite",
       "keywords": "Keywords",
       "keyword": "Keyword",
+      "isp": "ISP",
+      "og": "Organisation",
+      "ut": "Nutzungsart",
+      "ctp": "Verbindungstyp",
       "searchEngine": "Suchmaschine",
       "aiReferral": "KI-Verweis"
+    },
+    "usageTypeMapping": {
+      "business": "Unternehmen",
+      "cafe": "Café",
+      "cellular": "Mobilfunk",
+      "college": "Hochschule",
+      "consumer_privacy_network": "Verbraucher-Datenschutznetzwerk",
+      "content_delivery_network": "Content Delivery Network",
+      "dialup": "Einwahlverbindung",
+      "government": "Behörde",
+      "hosting": "Hosting",
+      "library": "Bibliothek",
+      "military": "Militär",
+      "organization": "Organisation",
+      "residential": "Privatanschluss",
+      "router": "Router",
+      "school": "Schule",
+      "search_engine_spider": "Suchmaschinen-Spider",
+      "traveler": "Reisende",
+      "commercial": "Kommerziell",
+      "isp": "ISP",
+      "mobile_isp": "Mobiler ISP",
+      "fixed_line_isp": "Festnetz-ISP",
+      "university": "Universität",
+      "educational": "Bildung",
+      "cdn": "Content Delivery Network",
+      "reserved": "Reserviert"
+    },
+    "connectionTypeMapping": {
+      "cable_dsl": "Kabel/DSL",
+      "cellular": "Mobilfunk",
+      "corporate": "Unternehmen",
+      "satellite": "Satellit",
+      "dialup": "Einwahl",
+      "fiber": "Glasfaser",
+      "wireless": "Drahtlos"
     },
     "connectGsc": "Stellen Sie eine Verbindung zur Google Search Console her, um die Keywords für dieses Projekt anzuzeigen.",
     "gscConnectionRequired": "Zum Anzeigen der Keywords für dieses Projekt ist eine Verbindung zur Google Search Console erforderlich. Bitten Sie den Projektadministrator, die Verbindung zuerst herzustellen.",
@@ -1855,6 +1897,8 @@
       "deleteShort": "Projekt und alle Daten dauerhaft löschen.",
       "organisation": "Organisation",
       "shields": "Schutzschilde",
+      "blockedTraffic": "Blockierter Traffic",
+      "blockedTrafficHint": "Einblicke in die Bot-Anfragen, die wir herausgefiltert haben, bevor sie Ihr Dashboard erreicht haben.",
       "access": "Zugangseinstellungen",
       "resetSuccess": "Das Projekt wurde zurückgesetzt",
       "gsc": {
@@ -2074,9 +2118,42 @@
       "botsProtectionLevel": {
         "title": "Bot-Schutz Level",
         "levels": {
-          "off": "Aus: Wir erlauben allen eingehenden Verkehr",
-          "basic": "Einfach: Wir erkennen Bots basierend auf ihrem User-Agent (Googlebot, Bingbot, curl, etc.)"
+          "off": {
+            "title": "Aus",
+            "description": "Wir lassen den gesamten eingehenden Traffic zu."
+          },
+          "basic": {
+            "title": "Basis",
+            "description": "Wir erkennen Bots anhand ihres User Agents (Googlebot, Bingbot, curl usw.)."
+          },
+          "strict": {
+            "title": "Strikt",
+            "description": "Zusätzlich zu User-Agent-Prüfungen blockieren wir auch Headless-Browser, Rechenzentrums-IPs, Schwachstellen-Scanner, bekannte Referrer-Spam-Quellen und Anfragen mit verdächtigen Headern."
+          }
         }
+      },
+      "botProtectionReport": {
+        "subtitle_one": "Bot-Anfrage blockiert",
+        "subtitle_other": "Bot-Anfragen blockiert",
+        "loading": "Bot-Schutzbericht wird geladen",
+        "classification": "Klassifizierung",
+        "topCountries": "Top-Länder",
+        "empty": "In diesem Zeitraum wurde kein Bot-Traffic blockiert.",
+        "periodLabel": "Zeitraum",
+        "periods": {
+          "7d": "7 Tage",
+          "30d": "30 Tage",
+          "90d": "90 Tage"
+        },
+        "reasons": {
+          "user_agent": "Bot User-Agent",
+          "headless_browser": "Headless Browser",
+          "suspicious_headers": "Verdächtige Header",
+          "probe_path": "Schwachstellen-Scan",
+          "referrer_spam": "Referrer-Spam",
+          "datacenter_ip": "Datacenter-IP"
+        },
+        "learnMore": "Erfahren Sie, wie wir Bots blockieren"
       },
       "updated": "Die Projekteinstellungen wurden aktualisiert",
       "created": "Das Projekt wurde erstellt",

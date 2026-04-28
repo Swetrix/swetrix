@@ -55,12 +55,20 @@ export class WebpushChannelService implements ChannelDispatcher {
     channel: NotificationChannel,
     message: RenderedAlertMessage,
   ): Promise<void> {
-    if (!this.vapidConfigured) return
+    if (!this.vapidConfigured) {
+      throw new Error(
+        'Web push is not configured on this server (missing or invalid VAPID keys).',
+      )
+    }
     const cfg = channel.config as {
       endpoint?: string
       keys?: { p256dh: string; auth: string }
     }
-    if (!cfg?.endpoint || !cfg?.keys?.p256dh || !cfg?.keys?.auth) return
+    if (!cfg?.endpoint || !cfg?.keys?.p256dh || !cfg?.keys?.auth) {
+      throw new Error(
+        `Web push channel ${channel.id} is missing endpoint or keys.`,
+      )
+    }
 
     const subscription: PushSubscription = {
       endpoint: cfg.endpoint,
@@ -83,7 +91,7 @@ export class WebpushChannelService implements ChannelDispatcher {
     try {
       await webpush.sendNotification(subscription, payload)
     } catch (reason: any) {
-      // 404/410 mean the subscription is dead; keep alert links intact.
+      // 404/410 mean the subscription is dead; mark it as such and rethrow.
       if (reason?.statusCode === 404 || reason?.statusCode === 410) {
         this.logger.warn(
           `Disabling expired webpush channel ${channel.id} (status ${reason.statusCode})`,
@@ -92,9 +100,18 @@ export class WebpushChannelService implements ChannelDispatcher {
           isVerified: false,
           disabledReason: `Expired: ${reason.statusCode} from WebPush server`,
         })
-        return
+        throw new Error(
+          `Push subscription is no longer valid (HTTP ${reason.statusCode}). The channel was disabled — re-enable browser notifications to subscribe again.`,
+        )
       }
-      this.logger.error(`Failed to send webpush: ${reason?.message || reason}`)
+      const detail =
+        reason?.body ||
+        reason?.message ||
+        (typeof reason === 'string' ? reason : 'Unknown error')
+      this.logger.error(
+        `Failed to send webpush to channel ${channel.id}: ${detail}`,
+      )
+      throw new Error(`Web push provider rejected the notification: ${detail}`)
     }
   }
 }

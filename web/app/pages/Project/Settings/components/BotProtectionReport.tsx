@@ -212,7 +212,7 @@ const BotProtectionReport = ({ pid }: BotProtectionReportProps) => {
       {!error ? (
         <div className='flex justify-end border-t border-gray-200 px-4 py-2 dark:border-slate-800/60'>
           <a
-            href='https://docs.swetrix.com/bot-protection'
+            href='https://swetrix.com/docs/sitesettings/bot-protection'
             target='_blank'
             rel='noreferrer noopener'
             className='inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 underline-offset-2 hover:text-gray-900 hover:underline dark:text-slate-400 dark:hover:text-slate-100'

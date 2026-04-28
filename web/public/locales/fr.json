@@ -1277,11 +1277,12 @@
     "webpush": {
       "enable": "Activer les notifications du navigateur",
       "enabled": "Les notifications du navigateur sont activées sur cet appareil.",
-      "useButton": "Utilisez le bouton \"Activer les notifications du navigateur\" pour abonner cet appareil.",
       "unsupported": "Ce navigateur ne prend pas en charge les notifications push.",
       "permissionDenied": "L'autorisation de notification a été refusée.",
       "notConfigured": "Le push web n'est pas configuré sur ce serveur.",
-      "subscribeFailed": "Impossible de s'abonner aux notifications push."
+      "subscribeFailed": "Impossible de s'abonner aux notifications push.",
+      "alertTitle": "Les notifications du navigateur nécessitent une autorisation",
+      "alertDescription": "Pour recevoir des alertes web push sur cet appareil, autorisez Swetrix à vous envoyer des notifications de navigateur. Nous enregistrerons un canal de notification lié à ce navigateur."
     }
   },
   "goals": {
@@ -1572,6 +1573,7 @@
     "location": "Localisation",
     "pages": "Pages",
     "devices": "Appareils",
+    "network": "Renseignements sur le réseau",
     "trafficSources": "Sources de trafic",
     "metrics": {
       "xAvg": "Moyenne de {{x}}",
@@ -1760,8 +1762,48 @@
       "exitPage": "Page de sortie",
       "keywords": "Mots-clés",
       "keyword": "Mots-clé",
+      "isp": "FAI",
+      "og": "Organisation",
+      "ut": "Type d'utilisation",
+      "ctp": "Type de connexion",
       "searchEngine": "Moteur de recherche",
       "aiReferral": "Référent IA"
+    },
+    "usageTypeMapping": {
+      "business": "Entreprise",
+      "cafe": "Café",
+      "cellular": "Cellulaire",
+      "college": "Université",
+      "consumer_privacy_network": "Réseau privé du consommateur",
+      "content_delivery_network": "Réseau de diffusion de contenu",
+      "dialup": "Bas débit",
+      "government": "Gouvernement",
+      "hosting": "Hébergement",
+      "library": "Bibliothèque",
+      "military": "Militaire",
+      "organization": "Organisation",
+      "residential": "Résidentiel",
+      "router": "Routeur",
+      "school": "École",
+      "search_engine_spider": "Robot de moteur de recherche",
+      "traveler": "Voyageur",
+      "commercial": "Commercial",
+      "isp": "FAI",
+      "mobile_isp": "FAI mobile",
+      "fixed_line_isp": "FAI fixe",
+      "university": "Université",
+      "educational": "Éducatif",
+      "cdn": "Réseau de diffusion de contenu",
+      "reserved": "Réservé"
+    },
+    "connectionTypeMapping": {
+      "cable_dsl": "Câble/DSL",
+      "cellular": "Cellulaire",
+      "corporate": "Entreprise",
+      "satellite": "Satellite",
+      "dialup": "Accès commuté",
+      "fiber": "Fibre",
+      "wireless": "Sans fil"
     },
     "connectGsc": "Connectez Google Search Console pour afficher les mots-clés de ce projet.",
     "gscConnectionRequired": "Une connexion à Google Search Console est requise pour afficher les mots-clés de ce projet. Demandez à l’administrateur du projet d’établir d’abord la connexion.",
@@ -1855,6 +1897,8 @@
       "deleteShort": "Supprimer définitivement le projet et toutes les données.",
       "organisation": "Organisation",
       "shields": "Boucliers",
+      "blockedTraffic": "Trafic bloqué",
+      "blockedTrafficHint": "Aperçu des requêtes de bots que nous avons filtrées avant qu'elles n'atteignent votre tableau de bord.",
       "access": "Paramètres d'accès",
       "resetSuccess": "Le projet a été réinitialisé",
       "gsc": {
@@ -2074,9 +2118,42 @@
       "botsProtectionLevel": {
         "title": "Niveau de protection contre les bots",
         "levels": {
-          "off": "Désactivé : nous autorisons tout le trafic entrant",
-          "basic": "Basique : nous détectons les bots en fonction de leur agent utilisateur (Googlebot, Bingbot, curl, etc.)"
+          "off": {
+            "title": "Désactivé",
+            "description": "Nous autorisons tout le trafic entrant."
+          },
+          "basic": {
+            "title": "Basique",
+            "description": "Nous détectons les bots en fonction de leur agent utilisateur (Googlebot, Bingbot, curl, etc.)."
+          },
+          "strict": {
+            "title": "Strict",
+            "description": "En plus des vérifications de l'agent utilisateur, nous bloquons également les navigateurs headless, les IP de centres de données, les scanners de vulnérabilités, les sources connues de spam de référent et les requêtes avec des en-têtes suspects."
+          }
         }
+      },
+      "botProtectionReport": {
+        "subtitle_one": "requête de bot bloquée",
+        "subtitle_other": "requêtes de bots bloquées",
+        "loading": "Chargement du rapport de protection contre les bots",
+        "classification": "Classification",
+        "topCountries": "Principaux pays",
+        "empty": "Aucun trafic de bot bloqué sur cette période.",
+        "periodLabel": "Période",
+        "periods": {
+          "7d": "7 jours",
+          "30d": "30 jours",
+          "90d": "90 jours"
+        },
+        "reasons": {
+          "user_agent": "User agent de bot",
+          "headless_browser": "Navigateur headless",
+          "suspicious_headers": "En-têtes suspects",
+          "probe_path": "Analyse de vulnérabilités",
+          "referrer_spam": "Spam de referrer",
+          "datacenter_ip": "IP de datacenter"
+        },
+        "learnMore": "Découvrez comment nous bloquons les bots"
       },
       "updated": "Les paramètres du projet ont été mis à jour",
       "created": "Le projet a été créé",

@@ -154,15 +154,17 @@ export class NotificationChannelController {
     const channel = await this.channelService.findById(id)
     if (!channel) throw new NotFoundException('Channel not found')
     await this.channelService.ensureCallerCanManage(channel, userId)
-    await this.dispatcherService.dispatch(
-      [channel],
-      {
+    try {
+      await this.dispatcherService.sendOne(channel, {
         body: 'This is a test notification from Swetrix. Your channel is wired up correctly!',
         subject: 'Swetrix test notification',
         context: { test: true },
-      },
-      { ignoreVerification: true },
-    )
+      })
+    } catch (reason: any) {
+      throw new BadRequestException(
+        `Failed to send test notification: ${reason?.message || reason}`,
+      )
+    }
     return { ok: true }
   }
 

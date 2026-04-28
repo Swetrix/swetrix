@@ -17,6 +17,7 @@ import type {
   NotificationChannelType,
 } from '~/lib/models/NotificationChannel'
 import type { NotificationChannelActionData } from '~/routes/notification-channel'
+import Alert from '~/ui/Alert'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
@@ -303,8 +304,6 @@ const NotificationChannels = ({
     [allowedTypes, t],
   )
 
-  const showWebpushButton = allowedTypes.includes('webpush') && scope === 'user'
-
   const headingTitle = title || t('notificationChannels.heading')
   const headingDescription =
     description || t('notificationChannels.description')
@@ -330,9 +329,6 @@ const NotificationChannels = ({
           </Text>
         </div>
         <div className='flex flex-wrap items-center gap-2'>
-          {showWebpushButton ? (
-            <EnableWebPushButton onSubscribed={triggerList} />
-          ) : null}
           <Button
             small
             primary
@@ -547,16 +543,18 @@ const NotificationChannels = ({
               </div>
             ) : null}
 
-            <div className='mt-4'>
-              <Input
-                label={t('common.name')}
-                value={form.name}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, name: e.target.value }))
-                }
-                placeholder='My alerts channel'
-              />
-            </div>
+            {form.type !== 'webpush' || !!editing ? (
+              <div className='mt-4'>
+                <Input
+                  label={t('common.name')}
+                  value={form.name}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  placeholder='My alerts channel'
+                />
+              </div>
+            ) : null}
 
             <div className='mt-3 grid grid-cols-1 gap-3'>
               {form.type === 'email' ? (
@@ -626,10 +624,21 @@ const NotificationChannels = ({
                   ) : null}
                 </>
               ) : null}
-              {form.type === 'webpush' ? (
-                <Text as='p' size='sm' colour='secondary'>
-                  {t('notificationChannels.webpush.useButton')}
-                </Text>
+              {form.type === 'webpush' && !editing ? (
+                <Alert
+                  variant='info'
+                  title={t('notificationChannels.webpush.alertTitle')}
+                >
+                  <p>{t('notificationChannels.webpush.alertDescription')}</p>
+                  <div className='mt-3'>
+                    <EnableWebPushButton
+                      onSubscribed={() => {
+                        setCreating(false)
+                        triggerList()
+                      }}
+                    />
+                  </div>
+                </Alert>
               ) : null}
             </div>
           </div>

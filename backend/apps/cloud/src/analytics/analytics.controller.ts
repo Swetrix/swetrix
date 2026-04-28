@@ -935,7 +935,7 @@ export class AnalyticsController {
     )
 
     const [filtersQuery, filtersParams, appliedFilters] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS, true)
 
     const params = { pid, groupFrom, groupTo, ...filtersParams }
 

@@ -1277,11 +1277,12 @@
     "webpush": {
       "enable": "Enable browser notifications",
       "enabled": "Browser notifications are enabled on this device.",
-      "useButton": "Use the \"Enable browser notifications\" button to subscribe this device.",
       "unsupported": "This browser does not support push notifications.",
       "permissionDenied": "Notification permission was denied.",
       "notConfigured": "Web push is not configured on this server.",
-      "subscribeFailed": "Could not subscribe to push notifications."
+      "subscribeFailed": "Could not subscribe to push notifications.",
+      "alertTitle": "Browser notifications need permission",
+      "alertDescription": "To receive web push alerts on this device, allow Swetrix to send you browser notifications. We'll register a notification channel tied to this browser."
     }
   },
   "goals": {
