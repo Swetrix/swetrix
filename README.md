@@ -108,13 +108,6 @@ See our [contributing guide](./CONTRIBUTING.MD) to get started. We welcome any c
 
 Feel free to go through our [open issues](https://github.com/Swetrix/swetrix/issues) and pick any task you want to work on.
 
-### Translations
-
-We welcome translation contributions.
-
-- We manage translations on our [Crowdin](https://crowdin.com/project/swetrix) page.
-- If you'd like to help regularly or add a new language, open an issue and we'll guide you through our translation workflow.
-
 ## ⭐️ Star History
 
 Star us on GitHub — your support motivates us a lot! 😊
