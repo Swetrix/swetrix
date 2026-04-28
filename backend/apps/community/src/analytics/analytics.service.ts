@@ -1646,7 +1646,7 @@ export class AnalyticsService {
       WITH funnel_sessions AS (
         SELECT
           psid,
-          windowFunnel(86400)(created, ${pagesStr}) AS level
+          CAST(windowFunnel(86400)(created, ${pagesStr}) AS UInt64) AS level
         FROM (
           SELECT psid, pg AS value, created
           FROM analytics
@@ -1662,9 +1662,8 @@ export class AnalyticsService {
         HAVING level > 0
       ),
       expanded AS (
-        SELECT psid, arrayJoin(range(1, toUInt64(assumeNotNull(level) + 1))) AS step
+        SELECT psid, arrayJoin(range(1, level + 1)) AS step
         FROM funnel_sessions
-        WHERE level IS NOT NULL AND level > 0
       ),
       session_info AS (
         SELECT
