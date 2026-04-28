@@ -38,6 +38,13 @@ const CLICKHOUSE_INIT_QUERIES = [
     isCaptchaProject Int8 DEFAULT 0,
     captchaSecretKey Nullable(String) CODEC(ZSTD(3)),
     captchaDifficulty UInt8 DEFAULT 4,
+    gscPropertyUri Nullable(String) DEFAULT NULL CODEC(ZSTD(3)),
+    gscAccessTokenEnc Nullable(String) DEFAULT NULL CODEC(ZSTD(3)),
+    gscRefreshTokenEnc Nullable(String) DEFAULT NULL CODEC(ZSTD(3)),
+    gscTokenExpiry Nullable(Int64) DEFAULT NULL,
+    gscScope Nullable(String) DEFAULT NULL CODEC(ZSTD(3)),
+    gscAccountEmail Nullable(String) DEFAULT NULL CODEC(ZSTD(3)),
+    brandKeywords Nullable(String) DEFAULT NULL CODEC(ZSTD(3)),
     created DateTime CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()

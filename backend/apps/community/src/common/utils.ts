@@ -85,7 +85,7 @@ export const hash = (content: string): string => {
  * Derives a key from the SECRET_KEY_BASE environment variable using the HKDF algorithm.
  */
 export const deriveKey = (
-  purpose: 'refresh-token' | 'access-token',
+  purpose: 'refresh-token' | 'access-token' | 'gsc-token',
   length = 32,
 ) => {
   const base = Buffer.from(process.env.SECRET_KEY_BASE || '', 'utf8')
@@ -132,9 +132,19 @@ const ALLOWED_KEYS = [
   'websiteUrl',
   'captchaSecretKey',
   'captchaDifficulty',
+  'brandKeywords',
 ]
 
-const CLICKHOUSE_PROJECT_UPDATABLE_KEYS = [...ALLOWED_KEYS, 'adminId']
+const CLICKHOUSE_PROJECT_UPDATABLE_KEYS = [
+  ...ALLOWED_KEYS,
+  'adminId',
+  'gscPropertyUri',
+  'gscAccessTokenEnc',
+  'gscRefreshTokenEnc',
+  'gscTokenExpiry',
+  'gscScope',
+  'gscAccountEmail',
+]
 
 const ALLOWED_FUNNEL_KEYS = ['name', 'steps']
 const ALLOWED_SHARE_KEYS = ['role', 'confirmed']
@@ -397,6 +407,15 @@ const updateProjectClickhouse = async (
 
   const INT8_COLUMNS = ['active', 'public', 'isPasswordProtected']
   const UINT8_COLUMNS = ['captchaDifficulty']
+  const NULLABLE_INT64_COLUMNS = ['gscTokenExpiry']
+  const NULLABLE_STRING_COLUMNS = [
+    'gscPropertyUri',
+    'gscAccessTokenEnc',
+    'gscRefreshTokenEnc',
+    'gscScope',
+    'gscAccountEmail',
+    'brandKeywords',
+  ]
   const params: Record<string, any> = { id: project.id }
 
   const assignments = _map(columns, (col) => {
@@ -406,6 +425,10 @@ const updateProjectClickhouse = async (
       type = 'Int8'
     } else if (UINT8_COLUMNS.includes(col)) {
       type = 'UInt8'
+    } else if (NULLABLE_INT64_COLUMNS.includes(col)) {
+      type = 'Nullable(Int64)'
+    } else if (NULLABLE_STRING_COLUMNS.includes(col)) {
+      type = 'Nullable(String)'
     }
     return `${col}={${col}:${type}}`
   }).join(', ')

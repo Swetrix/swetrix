@@ -331,9 +331,7 @@ const ProjectSettings = () => {
       'basic',
     gscPropertyUri: initialProject.gscPropertyUri || null,
     websiteUrl: initialProject.websiteUrl || null,
-    ...(!isSelfhosted && {
-      brandKeywords: initialProject.brandKeywords?.join(', ') || '',
-    }),
+    brandKeywords: initialProject.brandKeywords?.join(', ') || '',
   }))
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -417,7 +415,7 @@ const ProjectSettings = () => {
             description: t('project.settings.tabs.integrationsDesc'),
             icon: PuzzlePieceIcon,
             iconColor: 'text-purple-500',
-            visible: !isSelfhosted,
+            visible: true,
           },
           {
             id: 'alerts',
@@ -519,6 +517,7 @@ const ProjectSettings = () => {
     { siteUrl: string; permissionLevel?: string }[]
   >([])
   const [gscEmail, setGscEmail] = useState<string | null>(null)
+  const [gscAvailable, setGscAvailable] = useState<boolean>(true)
 
   // CAPTCHA state
   const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(
@@ -612,6 +611,7 @@ const ProjectSettings = () => {
       if (intent === 'gsc-status' && gscStatus) {
         setGscConnected(gscStatus.connected)
         setGscEmail(gscStatus.email || null)
+        setGscAvailable(gscStatus.available !== false)
         if (gscStatus.connected) {
           setGscPropertiesPending(true)
         } else {
@@ -672,7 +672,7 @@ const ProjectSettings = () => {
 
   // Initial GSC status fetch
   useEffect(() => {
-    if (isSelfhosted || gscInitialized.current) return
+    if (gscInitialized.current) return
     gscInitialized.current = true
     gscFetcher.submit({ intent: 'gsc-status' }, { method: 'post' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -756,7 +756,7 @@ const ProjectSettings = () => {
       formData.set('countryBlacklist', JSON.stringify(data.countryBlacklist))
     if (data.websiteUrl !== undefined)
       formData.set('websiteUrl', data.websiteUrl || '')
-    if (!isSelfhosted && data.brandKeywords !== undefined)
+    if (data.brandKeywords !== undefined)
       formData.set('brandKeywords', data.brandKeywords || '')
 
     fetcher.submit(formData, { method: 'post' })
@@ -1137,6 +1137,27 @@ const ProjectSettings = () => {
                   </h3>
                   {gscConnected === null ? (
                     <Loader />
+                  ) : !gscAvailable ? (
+                    <div className='rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100'>
+                      <Trans
+                        t={t}
+                        i18nKey='project.settings.gsc.notConfigured'
+                        defaults='Google Search Console is not configured on this server. To enable it, set <code>GOOGLE_GSC_CLIENT_ID</code>, <code>GOOGLE_GSC_CLIENT_SECRET</code> and <code>BASE_URL</code> in your API container environment, then restart it. <url>See the self-hosting guide</url>.'
+                        components={{
+                          code: (
+                            <code className='rounded bg-amber-100 px-1 py-0.5 font-mono text-xs dark:bg-amber-900/60' />
+                          ),
+                          url: (
+                            <a
+                              href='https://docs.swetrix.com/selfhosting/google-search-console'
+                              target='_blank'
+                              rel='noopener noreferrer'
+                              className='font-medium underline decoration-dashed hover:decoration-solid'
+                            />
+                          ),
+                        }}
+                      />
+                    </div>
                   ) : !gscConnected ? (
                     <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
                       <p className='text-sm text-gray-800 dark:text-gray-200'>
@@ -1253,7 +1274,7 @@ const ProjectSettings = () => {
                     </div>
                   )}
 
-                  {gscConnected ? null : (
+                  {gscConnected || !gscAvailable ? null : (
                     <>
                       <hr className='-mx-4 mt-4 mb-4 border-gray-200 dark:border-slate-800' />
 

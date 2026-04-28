@@ -6,7 +6,6 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
 import { useAuthProxy } from '~/hooks/useAuthProxy'
-import { isSelfhosted } from '~/lib/constants'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
 import { getTitle } from '~/utils/seo'
@@ -28,10 +27,6 @@ export interface GscConnectedLoaderData {
 export async function loader({
   request,
 }: LoaderFunctionArgs): Promise<GscConnectedLoaderData | Response> {
-  if (isSelfhosted) {
-    return redirect('/login', 302)
-  }
-
   const url = new URL(request.url)
 
   // Google sometimes redirects with hash instead of query params

@@ -5,8 +5,10 @@ import {
   IsOptional,
   Length,
   IsArray,
+  IsString,
   IsUrl,
   MaxLength,
+  ValidateIf,
 } from 'class-validator'
 import { BotsProtectionLevel } from '../entity'
 
@@ -92,4 +94,16 @@ export class ProjectDTO {
   @IsUrl({}, { message: 'websiteUrl must be a valid URL' })
   @MaxLength(512)
   websiteUrl?: string | null
+
+  @ApiProperty({
+    example: ['swetrix', 'swetrix analytics'],
+    required: false,
+    description:
+      'Brand keywords used to classify search queries as branded vs non-branded traffic.',
+  })
+  @IsOptional()
+  @ValidateIf((o) => o.brandKeywords !== null && o.brandKeywords !== undefined)
+  @IsArray()
+  @IsString({ each: true })
+  brandKeywords?: string[] | null
 }

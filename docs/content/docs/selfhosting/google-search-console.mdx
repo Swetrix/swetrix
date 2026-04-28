@@ -1,0 +1,115 @@
+---
+title: Google Search Console
+slug: /selfhosting/google-search-console
+---
+
+Swetrix Community Edition can integrate with Google Search Console (GSC) to power the [SEO dashboard](/analytics-dashboard/seo). Unlike the cloud version, self-hosted instances need their own Google Cloud OAuth client because Google requires every OAuth app to be registered against a specific domain.
+
+This guide walks you through everything you need to do once.
+
+<Callout type="info">
+Already have a Google Cloud project with an OAuth consent screen and a verified Search Console property? Skip to [Issue an OAuth client](#issue-an-oauth-client-and-secret).
+</Callout>
+
+## What you'll set up
+
+1. A Google Cloud project that owns the OAuth client.
+2. An OAuth consent screen for your Swetrix domain.
+3. A web-application OAuth client with the correct redirect URI.
+4. Verification of your domain in Google Search Console.
+5. The Google Search Console API enabled in the same Google Cloud project.
+6. Three environment variables on the Swetrix API container.
+
+## 1. Create a Google Cloud project
+
+Open the [Google Cloud console](https://console.cloud.google.com/) and either select an existing project or create a new one (we recommend a dedicated one for Swetrix).
+
+Make sure the project stays selected for every step below — Google sometimes silently switches you to a "default" project.
+
+## 2. Configure the OAuth consent screen
+
+In the left sidebar go to **APIs & Services** → **OAuth consent screen**.
+
+- **User type:** **External** (the **Internal** option requires a Google Workspace organization).
+- **App name:** anything recognisable, e.g. `Swetrix`.
+- **User support email** and **Developer contact information:** your email.
+- **Authorized domains:** add the bare domain Swetrix is hosted on (no scheme, no path), e.g. `analytics.example.com`.
+- **Scopes:** you can leave the optional scopes empty.
+- **Test users:** add the Google account(s) that will connect Search Console from Swetrix. Google will warn you that the app is unverified; this is fine for self-hosted use.
+
+Save and continue through the wizard until the consent screen is registered.
+
+## 3. Issue an OAuth client and secret
+
+Still in **APIs & Services**, open **Credentials** and click **+ Create credentials** → **OAuth client ID**.
+
+- **Application type:** **Web application**.
+- **Name:** `Swetrix CE` (or whatever you like).
+- **Authorized redirect URIs:** add **exactly one** entry:
+
+  ```
+  https://analytics.example.com/gsc-connected
+  ```
+
+  Replace `https://analytics.example.com` with the public URL you'll set as `BASE_URL` on the Swetrix API container. The path must be `/gsc-connected`.
+
+After you click **Create**, Google shows a **Client ID** and **Client secret**. Copy both — you'll need them in the next step.
+
+## 4. Verify your domain in Search Console
+
+Open the [Google Search Console](https://search.google.com/search-console/) and add your site as a property if you haven't already. Either the **Domain** or the **URL prefix** verification methods work — follow the in-product instructions.
+
+The Google account that owns the verified property is the same account you'll connect from Swetrix later, so make sure it appears in the OAuth test-users list from step 2.
+
+## 5. Enable the Search Console API
+
+Back in the Google Cloud console, go to **APIs & Services** → **Library** and search for **Google Search Console API**. Open it and click **Enable**.
+
+Without this step, every authorisation attempt from Swetrix will fail with `accessNotConfigured`.
+
+## 6. Configure the Swetrix API container
+
+Add the following variables to the `.env` file used by the `swetrix-api` container (or to your `docker-compose.yml`):
+
+```env
+# Public URL of your Swetrix CE instance. Must match the redirect URI you
+# registered in step 3 (without the /gsc-connected suffix).
+BASE_URL=https://analytics.example.com
+
+# OAuth client created in step 3
+GOOGLE_GSC_CLIENT_ID=1234567890-xxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
+GOOGLE_GSC_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Restart the API container so it picks up the new environment:
+
+```bash
+docker compose up -d swetrix-api
+```
+
+You can confirm the variables are visible to the container with:
+
+```bash
+docker compose exec swetrix-api sh -c 'echo $GOOGLE_GSC_CLIENT_ID'
+```
+
+## 7. Connect Search Console from Swetrix
+
+1. Open any project in Swetrix.
+2. Go to **Settings** → **Integrations**.
+3. Click **Connect** in the **Google Search Console** card. You'll be sent to Google's consent screen.
+4. Pick the Google account you added as a test user, click **Continue** through the unverified-app warnings, and approve the read-only Search Console scope.
+5. You'll be redirected back to the Swetrix integrations page. Pick the Search Console **Website Property** that matches this project from the dropdown and click **Save**.
+
+The **SEO** tab on the project dashboard will start showing data within a minute or two.
+
+## Troubleshooting
+
+- **"Google Search Console is not configured on this server"** in the integrations card — one of `GOOGLE_GSC_CLIENT_ID`, `GOOGLE_GSC_CLIENT_SECRET`, or `BASE_URL` is missing. Check the API container env and restart it.
+- **`redirect_uri_mismatch`** during the Google consent flow — the redirect URI you registered in step 3 doesn't exactly match `${BASE_URL}/gsc-connected`. They must match character-for-character (scheme, hostname, port, trailing slash).
+- **`accessNotConfigured`** or "API not enabled" errors — go back to step 5 and enable the Google Search Console API for the same Google Cloud project that owns the OAuth client.
+- **`Access blocked: This app's request is invalid`** — your test user is not on the OAuth consent screen test-users list. Add them in step 2.
+
+## Rotating credentials
+
+If you ever rotate `GOOGLE_GSC_CLIENT_SECRET` or `SECRET_KEY_BASE`, existing GSC connections become invalid. Users will need to disconnect and reconnect Search Console for each project.

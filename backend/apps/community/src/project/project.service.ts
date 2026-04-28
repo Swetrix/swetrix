@@ -445,6 +445,18 @@ export class ProjectService {
         : _join(updProject.countryBlacklist, ',')
     }
 
+    if (updProject.brandKeywords !== undefined) {
+      if (
+        updProject.brandKeywords === null ||
+        (Array.isArray(updProject.brandKeywords) &&
+          updProject.brandKeywords.length === 0)
+      ) {
+        updProject.brandKeywords = null
+      } else if (Array.isArray(updProject.brandKeywords)) {
+        updProject.brandKeywords = JSON.stringify(updProject.brandKeywords)
+      }
+    }
+
     return updProject
   }
 
@@ -466,6 +478,17 @@ export class ProjectService {
     updProject.countryBlacklist = _isEmpty(updProject.countryBlacklist)
       ? []
       : _split(updProject.countryBlacklist, ',')
+
+    if (updProject.brandKeywords && _isString(updProject.brandKeywords)) {
+      try {
+        const parsed = JSON.parse(updProject.brandKeywords)
+        updProject.brandKeywords = Array.isArray(parsed) ? parsed : null
+      } catch {
+        updProject.brandKeywords = null
+      }
+    } else if (updProject.brandKeywords === undefined) {
+      updProject.brandKeywords = null
+    }
 
     return updProject
   }
