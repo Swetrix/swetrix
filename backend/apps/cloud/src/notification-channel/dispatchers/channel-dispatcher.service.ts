@@ -44,6 +44,21 @@ export class ChannelDispatcherService {
     return true
   }
 
+  getDispatcher(type: NotificationChannelType): ChannelDispatcher | undefined {
+    return this.registry.get(type)
+  }
+
+  async sendOne(
+    channel: NotificationChannel,
+    message: RenderedAlertMessage,
+  ): Promise<void> {
+    const dispatcher = this.registry.get(channel.type)
+    if (!dispatcher) {
+      throw new Error(`No dispatcher registered for type ${channel.type}`)
+    }
+    await dispatcher.send(channel, message)
+  }
+
   async dispatch(
     channels: NotificationChannel[],
     message: RenderedAlertMessage,
