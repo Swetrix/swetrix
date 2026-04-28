@@ -651,10 +651,12 @@ const PerformanceViewInner = ({
 
                 if (type === 'network') {
                   const networkTabs = [
-                    { id: 'isp', label: t('project.mapping.isp') },
-                    { id: 'og', label: t('project.mapping.og') },
-                    { id: 'ut', label: t('project.mapping.ut') },
-                    { id: 'ctp', label: t('project.mapping.ctp') },
+                    [
+                      { id: 'isp', label: t('project.mapping.isp') },
+                      { id: 'og', label: t('project.mapping.og') },
+                      { id: 'ut', label: t('project.mapping.ut') },
+                      { id: 'ctp', label: t('project.mapping.ctp') },
+                    ],
                   ]
 
                   const activeNetworkTab = activeTabs.network
