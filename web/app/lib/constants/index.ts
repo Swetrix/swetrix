@@ -555,6 +555,7 @@ export const FUNNELS_PERIOD_PAIRS = [
 const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
+  seo: 'seo',
   funnels: 'funnels',
   profiles: 'profiles',
   sessions: 'sessions',

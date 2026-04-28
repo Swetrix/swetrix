@@ -23,6 +23,15 @@ export class Project {
   isCaptchaProject: boolean
   captchaSecretKey?: string
   captchaDifficulty?: number
+  // Google Search Console integration fields
+  gscPropertyUri?: string | null
+  gscAccessTokenEnc?: string | null
+  gscRefreshTokenEnc?: string | null
+  gscTokenExpiry?: string | number | null
+  gscScope?: string | null
+  gscAccountEmail?: string | null
+  // SEO branded traffic classification keywords
+  brandKeywords?: string | string[] | null
 }
 
 export enum Role {

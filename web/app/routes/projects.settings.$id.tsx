@@ -64,6 +64,7 @@ export interface RevenueStatus {
 export interface GscStatus {
   connected: boolean
   email?: string | null
+  available?: boolean
 }
 
 export interface GscProperty {

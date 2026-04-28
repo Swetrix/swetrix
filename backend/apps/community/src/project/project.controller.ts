@@ -1115,6 +1115,10 @@ export class ProjectController {
       project.captchaDifficulty = projectDTO.captchaDifficulty
     }
 
+    if (projectDTO.brandKeywords !== undefined) {
+      project.brandKeywords = projectDTO.brandKeywords
+    }
+
     await updateProjectClickhouse(
       this.projectService.formatToClickhouse(project),
     )

@@ -15,9 +15,13 @@ import { searchconsole } from '@googleapis/searchconsole'
 
 import CryptoJS from 'crypto-js'
 
-import { isDevelopment, PRODUCTION_ORIGIN, redis } from '../common/constants'
-import { ProjectService } from './project.service'
-import { deriveKey } from '../common/utils'
+import { redis } from '../common/constants'
+import { ProjectService, deleteProjectRedis } from './project.service'
+import {
+  deriveKey,
+  getProjectClickhouse,
+  updateProjectClickhouse,
+} from '../common/utils'
 
 dayjs.extend(utc)
 
@@ -30,10 +34,6 @@ type StoredTokens = {
 }
 
 const REDIS_STATE_PREFIX = 'gsc:state:'
-
-const GSC_REDIRECT_URL = isDevelopment
-  ? 'http://localhost:3000/gsc-connected'
-  : `${PRODUCTION_ORIGIN}/gsc-connected`
 
 const ENCRYPTION_KEY = deriveKey('gsc-token')
 
@@ -63,10 +63,13 @@ interface QueryGSCOptions {
   dimensionFilterGroups?: any[]
 }
 
-export function parseBrandKeywords(
-  raw: string | null | undefined,
+function parseBrandKeywords(
+  raw: string | string[] | null | undefined,
 ): string[] | null {
   if (!raw) return null
+  if (Array.isArray(raw)) {
+    return raw.every((item) => typeof item === 'string') ? raw : null
+  }
   try {
     const parsed = JSON.parse(raw)
     if (
@@ -81,12 +84,36 @@ export function parseBrandKeywords(
   }
 }
 
+const getBaseUrl = (): string | null => {
+  const raw = process.env.BASE_URL?.trim()
+  if (!raw) return null
+  return raw.replace(/\/+$/, '')
+}
+
 @Injectable()
 export class GSCService {
   constructor(
     private readonly configService: ConfigService,
     private readonly projectService: ProjectService,
   ) {}
+
+  isAvailable(): boolean {
+    const clientId = this.configService.get<string>('GOOGLE_GSC_CLIENT_ID')
+    const clientSecret = this.configService.get<string>(
+      'GOOGLE_GSC_CLIENT_SECRET',
+    )
+    return Boolean(clientId && clientSecret && getBaseUrl())
+  }
+
+  private getRedirectUrl(): string {
+    const base = getBaseUrl()
+    if (!base) {
+      throw new InternalServerErrorException(
+        'BASE_URL is not configured. Set BASE_URL on the API container to enable Google Search Console integration.',
+      )
+    }
+    return `${base}/gsc-connected`
+  }
 
   private getOAuthClient() {
     const clientId = this.configService.get<string>('GOOGLE_GSC_CLIENT_ID')
@@ -96,11 +123,11 @@ export class GSCService {
 
     if (!clientId || !clientSecret) {
       throw new InternalServerErrorException(
-        'Google GSC Client is not configured',
+        'Google GSC client is not configured. Set GOOGLE_GSC_CLIENT_ID and GOOGLE_GSC_CLIENT_SECRET on the API container.',
       )
     }
 
-    return new OAuth2Client(clientId, clientSecret, GSC_REDIRECT_URL)
+    return new OAuth2Client(clientId, clientSecret, this.getRedirectUrl())
   }
 
   async generateConnectURL(uid: string, pid: string): Promise<{ url: string }> {
@@ -174,20 +201,24 @@ export class GSCService {
       //
     }
 
+    const previous = await this.getStoredTokens(pid)
+
     const toStore: StoredTokens = {
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
       expiry_date: tokens.expiry_date,
       scope: tokens.scope,
-      // preserve previously selected property if any
-      ...(await this.getStoredTokens(pid)),
+      property_uri: previous.property_uri ?? null,
     }
 
     await this.setStoredTokens(pid, toStore)
 
-    await this.projectService.update({ id: pid }, {
-      gscAccountEmail: accountEmail,
-    } as any)
+    await updateProjectClickhouse(
+      { id: pid, gscAccountEmail: accountEmail },
+      { ignoreAllowedKeys: true },
+    )
+
+    await deleteProjectRedis(pid)
 
     await redis.del(REDIS_STATE_PREFIX + state)
 
@@ -195,16 +226,12 @@ export class GSCService {
   }
 
   private async getStoredTokens(pid: string): Promise<StoredTokens> {
-    const project = await this.projectService.findOne({
-      where: { id: pid },
-      select: [
-        'gscAccessTokenEnc',
-        'gscRefreshTokenEnc',
-        'gscTokenExpiry',
-        'gscScope',
-        'gscPropertyUri',
-      ],
-    })
+    let project: any
+    try {
+      project = await getProjectClickhouse(pid)
+    } catch {
+      return {}
+    }
 
     if (!project) return {}
 
@@ -218,9 +245,10 @@ export class GSCService {
       }
     }
 
-    const expiry = project.gscTokenExpiry
-      ? Number(project.gscTokenExpiry)
-      : undefined
+    const expiry =
+      project.gscTokenExpiry !== undefined && project.gscTokenExpiry !== null
+        ? Number(project.gscTokenExpiry)
+        : undefined
 
     return {
       access_token: decrypt(project.gscAccessTokenEnc),
@@ -235,24 +263,39 @@ export class GSCService {
     const encrypt = (val?: string) =>
       val ? CryptoJS.Rabbit.encrypt(val, ENCRYPTION_KEY).toString() : null
 
-    await this.projectService.update({ id: pid }, {
-      gscAccessTokenEnc: encrypt(tokens.access_token),
-      gscRefreshTokenEnc: encrypt(tokens.refresh_token),
-      gscTokenExpiry: tokens.expiry_date as any,
-      gscScope: tokens.scope || null,
-      gscPropertyUri: tokens.property_uri ?? null,
-    } as any)
+    await updateProjectClickhouse(
+      {
+        id: pid,
+        gscAccessTokenEnc: encrypt(tokens.access_token),
+        gscRefreshTokenEnc: encrypt(tokens.refresh_token),
+        gscTokenExpiry:
+          tokens.expiry_date !== undefined && tokens.expiry_date !== null
+            ? Number(tokens.expiry_date)
+            : null,
+        gscScope: tokens.scope || null,
+        gscPropertyUri: tokens.property_uri ?? null,
+      },
+      { ignoreAllowedKeys: true },
+    )
+
+    await deleteProjectRedis(pid)
   }
 
   async disconnect(pid: string) {
-    await this.projectService.update({ id: pid }, {
-      gscAccessTokenEnc: null,
-      gscRefreshTokenEnc: null,
-      gscTokenExpiry: null,
-      gscScope: null,
-      gscPropertyUri: null,
-      gscAccountEmail: null,
-    } as any)
+    await updateProjectClickhouse(
+      {
+        id: pid,
+        gscAccessTokenEnc: null,
+        gscRefreshTokenEnc: null,
+        gscTokenExpiry: null,
+        gscScope: null,
+        gscPropertyUri: null,
+        gscAccountEmail: null,
+      },
+      { ignoreAllowedKeys: true },
+    )
+
+    await deleteProjectRedis(pid)
   }
 
   async isConnected(pid: string) {
@@ -260,16 +303,30 @@ export class GSCService {
     return !_isEmpty(tokens?.refresh_token || tokens?.access_token)
   }
 
-  async getStatus(
-    pid: string,
-  ): Promise<{ connected: boolean; email: string | null }> {
-    const connected = await this.isConnected(pid)
-    if (!connected) return { connected, email: null }
-    const project = await this.projectService.findOne({
-      where: { id: pid },
-      select: ['gscAccountEmail'],
-    })
-    return { connected, email: project?.gscAccountEmail || null }
+  async getStatus(pid: string): Promise<{
+    connected: boolean
+    email: string | null
+    available: boolean
+  }> {
+    const available = this.isAvailable()
+    const connected = available ? await this.isConnected(pid) : false
+
+    if (!connected) {
+      return { connected, email: null, available }
+    }
+
+    let project: any
+    try {
+      project = await getProjectClickhouse(pid)
+    } catch {
+      return { connected, email: null, available }
+    }
+
+    return {
+      connected,
+      email: project?.gscAccountEmail || null,
+      available,
+    }
   }
 
   private async getAuthedClientForPid(pid: string) {
@@ -373,9 +430,11 @@ export class GSCService {
       )
     }
 
-    await this.projectService.update({ id: pid }, {
-      gscPropertyUri: propertyUri,
-    } as any)
+    await updateProjectClickhouse(
+      { id: pid, gscPropertyUri: propertyUri },
+      { ignoreAllowedKeys: true },
+    )
+    await deleteProjectRedis(pid)
   }
 
   private parseFilters(filtersStr?: string) {
@@ -497,10 +556,12 @@ export class GSCService {
   }
 
   private async getProjectBrandKeywords(pid: string): Promise<string[]> {
-    const project = await this.projectService.findOne({
-      where: { id: pid },
-      select: ['name', 'websiteUrl', 'brandKeywords'],
-    })
+    let project: any
+    try {
+      project = await getProjectClickhouse(pid)
+    } catch {
+      return []
+    }
 
     if (!project) return []
 
@@ -525,7 +586,7 @@ export class GSCService {
     }
 
     if (project.name) {
-      const name = project.name.toLowerCase().trim()
+      const name = String(project.name).toLowerCase().trim()
       if (name.length >= 3) {
         keywords.add(name)
       }
@@ -892,6 +953,10 @@ export class GSCService {
     timeBucket?: string,
     filtersStr?: string,
   ) {
+    if (!this.isAvailable()) {
+      return { notConnected: true }
+    }
+
     const connected = await this.isConnected(pid)
     if (!connected) {
       return { notConnected: true }
