@@ -66,3 +66,16 @@ Identify which parts of your site are the slowest.
 
 - **Pages**: Performance metrics for individual page paths (e.g., `/pricing`, `/blog`).
 - **Hosts**: If you track multiple subdomains or domains, this shows performance per host.
+
+### Network intelligence
+
+Slice load times by the network the visitor is connecting from. Helpful for spotting whether a slowdown is concentrated on a specific ISP or connection technology rather than your own infrastructure.
+
+- **ISP**: Compare load times across providers (e.g., is Comcast slower than AT&T?).
+- **Organisation**: Drill down to the registered network owner.
+- **Usage type**: See how `residential` users compare to `cellular` or `business` ones.
+- **Connection type**: Spot differences between `Cable/DSL`, `Cellular`, `Satellite`, etc.
+
+:::info
+Like the Traffic dashboard, Network intelligence is populated by your IP geolocation database. Self-hosted instances using the bundled DB-IP City Lite database will see the panel but with no data — point `IP_GEOLOCATION_DB_PATH` at a paid MaxMind GeoIP2 ISP / Insights database or a paid DB-IP database that includes ISP and usage-type information to enable it. See [Self-hosting → Configuring](/selfhosting/configuring).
+:::

@@ -2707,6 +2707,10 @@ interface IpLookupResponse {
   latitude: number | null
   longitude: number | null
   timezone: string | null
+  isp: string | null
+  organization: string | null
+  userType: string | null
+  connectionType: string | null
   isInEuropeanUnion: boolean
   ipVersion: 4 | 6
 }

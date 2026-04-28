@@ -75,7 +75,7 @@ import {
 import {
   Panel,
   CustomEvents,
-  MetadataKeyPanel,
+  CombinedMetadataPanel,
 } from '~/pages/Project/View/Panels'
 import { FILTER_CHART_METRICS_MAPPING_FOR_COMPARE } from '~/pages/Project/View/utils/filters'
 import {
@@ -89,6 +89,8 @@ import {
   CHART_METRICS_MAPPING,
   getDeviceRowMapper,
   onCSVExportClick,
+  getUsageTypeLabel,
+  getConnectionTypeLabel,
 } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -485,6 +487,7 @@ const TrafficViewInner = ({
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
     page: 'pg' | 'host' | 'userFlow' | 'entryPage' | 'exitPage'
     device: 'br' | 'os' | 'dv'
+    network: 'isp' | 'og' | 'ut' | 'ctp'
     source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co'
     customEvMetadata: string
     pageviewMetadata: string
@@ -492,6 +495,7 @@ const TrafficViewInner = ({
     location: 'cc',
     page: 'pg',
     device: 'br',
+    network: 'isp',
     source: 'ref',
     customEvMetadata: '',
     pageviewMetadata: '',
@@ -1269,6 +1273,45 @@ const TrafficViewInner = ({
                   )
                 }
 
+                if (type === 'network') {
+                  const networkTabs = [
+                    { id: 'isp', label: t('project.mapping.isp') },
+                    { id: 'og', label: t('project.mapping.og') },
+                    { id: 'ut', label: t('project.mapping.ut') },
+                    { id: 'ctp', label: t('project.mapping.ctp') },
+                  ]
+
+                  const activeNetworkTab = panelsActiveTabs.network
+
+                  return (
+                    <Panel
+                      key={activeNetworkTab}
+                      icon={panelIconMapping.isp}
+                      id={activeNetworkTab}
+                      getFilterLink={getFilterLink}
+                      name={t('project.network')}
+                      tabs={networkTabs}
+                      onTabChange={(tab) => setPanelTab('network', tab)}
+                      activeTabId={activeNetworkTab}
+                      data={panelsData.data[activeNetworkTab]}
+                      rowMapper={({ name: entryName }) => {
+                        if (!entryName) {
+                          return (
+                            <span className='italic'>{t('common.notSet')}</span>
+                          )
+                        }
+                        if (activeNetworkTab === 'ut') {
+                          return getUsageTypeLabel(entryName, t)
+                        }
+                        if (activeNetworkTab === 'ctp') {
+                          return getConnectionTypeLabel(entryName, t)
+                        }
+                        return entryName
+                      }}
+                    />
+                  )
+                }
+
                 if (type === 'pg') {
                   const pageTabs = [
                     { id: 'pg', label: t('project.mapping.pg') },
@@ -1414,6 +1457,27 @@ const TrafficViewInner = ({
                 return null
               })
             : null}
+          {/* Combined Metadata Panel - holds both pageview properties and custom event metadata */}
+          {!_isEmpty(panelsData.customs) || !_isEmpty(panelsData.properties) ? (
+            <CombinedMetadataPanel
+              title={t('project.metadata')}
+              property={{
+                metadataKeys: _keys(panelsData.properties),
+                getMetadataValues: _getPropertyMetadata,
+                activeKey: panelsActiveTabs.pageviewMetadata,
+                onKeyChange: (key) => setPanelTab('pageviewMetadata', key),
+              }}
+              customEvent={{
+                metadataKeys: _keys(panelsData.customs),
+                getMetadataValues: getCustomEventMetadata,
+                activeKey: panelsActiveTabs.customEvMetadata,
+                onKeyChange: (key) => setPanelTab('customEvMetadata', key),
+              }}
+              getFilterLink={getFilterLink}
+              chartData={chartData}
+              filters={filters}
+            />
+          ) : null}
           {/* Custom Events Panel - Full Width */}
           {!_isEmpty(panelsData.customs) ? (
             <CustomEvents
@@ -1422,36 +1486,6 @@ const TrafficViewInner = ({
               getFilterLink={getFilterLink}
               chartData={chartData}
               getCustomEventMetadata={getCustomEventMetadata}
-            />
-          ) : null}
-          {/* Custom Events Metadata Panel - Left */}
-          {!_isEmpty(panelsData.customs) ? (
-            <MetadataKeyPanel
-              title={t('project.customEvMetadata')}
-              metadataKeys={_keys(panelsData.customs)}
-              getMetadataValues={getCustomEventMetadata}
-              getFilterLink={getFilterLink}
-              chartData={chartData}
-              filters={filters}
-              activeKey={panelsActiveTabs.customEvMetadata}
-              onKeyChange={(key) => setPanelTab('customEvMetadata', key)}
-              filterPrefix='ev:key'
-              mode='customEvent'
-            />
-          ) : null}
-          {/* Pageview Metadata Panel - Right */}
-          {!_isEmpty(panelsData.properties) ? (
-            <MetadataKeyPanel
-              title={t('project.pageviewMetadata')}
-              metadataKeys={_keys(panelsData.properties)}
-              getMetadataValues={_getPropertyMetadata}
-              getFilterLink={getFilterLink}
-              chartData={chartData}
-              filters={filters}
-              activeKey={panelsActiveTabs.pageviewMetadata}
-              onKeyChange={(key) => setPanelTab('pageviewMetadata', key)}
-              filterPrefix='tag:key'
-              mode='property'
             />
           ) : null}
         </div>

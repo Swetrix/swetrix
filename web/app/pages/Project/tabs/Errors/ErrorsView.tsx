@@ -77,6 +77,8 @@ import {
   typeNameMapping,
   panelIconMapping,
   getDeviceRowMapper,
+  getUsageTypeLabel,
+  getConnectionTypeLabel,
 } from '~/pages/Project/View/ViewProject.helpers'
 import {
   useCurrentProject,
@@ -599,10 +601,12 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
     page: 'pg' | 'host'
     device: 'br' | 'os' | 'dv'
+    network: 'isp' | 'og' | 'ut' | 'ctp'
   }>({
     location: 'cc',
     page: 'pg',
     device: 'br',
+    network: 'isp',
   })
 
   const pureSearchParams = useMemo(() => {
@@ -965,20 +969,47 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
             to={dateRange ? getFormatDate(dateRange[1]) : undefined}
             timeBucket={timeBucket}
             projectPassword={projectPassword}
+            chart={
+              <ErrorChart
+                chart={activeError?.chart}
+                timeBucket={activeError?.timeBucket}
+                timeFormat={timeFormat}
+                rotateXAxis={rotateXAxis}
+                chartType={chartTypes.line}
+                dataNames={dataNames}
+                stats={[
+                  {
+                    key: 'occurrences',
+                    label: t('project.occurrences'),
+                    value: nFormatter(activeError.details.count || 0, 1),
+                  },
+                  {
+                    key: 'users',
+                    label: t('dashboard.users'),
+                    value: nFormatter(activeError.details.users || 0, 1),
+                  },
+                  {
+                    key: 'firstSeen',
+                    label: t('dashboard.firstSeen'),
+                    value:
+                      getRelativeDateIfPossible(
+                        activeError.details.first_seen,
+                        language,
+                      ) || '-',
+                  },
+                  {
+                    key: 'lastSeen',
+                    label: t('dashboard.lastSeen'),
+                    value:
+                      getRelativeDateIfPossible(
+                        activeError.details.last_seen,
+                        language,
+                      ) || '-',
+                  },
+                ]}
+              />
+            }
           />
-        ) : null}
-
-        {activeError?.chart ? (
-          <div className='mt-3'>
-            <ErrorChart
-              chart={activeError?.chart}
-              timeBucket={activeError?.timeBucket}
-              timeFormat={timeFormat}
-              rotateXAxis={rotateXAxis}
-              chartType={chartTypes.line}
-              dataNames={dataNames}
-            />
-          </div>
         ) : null}
 
         <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
@@ -1124,6 +1155,52 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                           errorsActiveTabs.device === 'br' ? 'br' : 'os',
                         )
                       }
+                      valuesHeaderName={t('project.occurrences')}
+                      highlightColour='red'
+                    />
+                  )
+                }
+
+                if (type === 'network') {
+                  const networkTabs = [
+                    { id: 'isp', label: t('project.mapping.isp') },
+                    { id: 'og', label: t('project.mapping.og') },
+                    { id: 'ut', label: t('project.mapping.ut') },
+                    { id: 'ctp', label: t('project.mapping.ctp') },
+                  ]
+
+                  const activeNetworkTab = errorsActiveTabs.network
+
+                  return (
+                    <Panel
+                      key={activeNetworkTab}
+                      icon={panelIconMapping.isp}
+                      id={activeNetworkTab}
+                      getFilterLink={getFilterLink}
+                      name={t('project.network')}
+                      tabs={networkTabs}
+                      onTabChange={(tab) =>
+                        setErrorsActiveTabs({
+                          ...errorsActiveTabs,
+                          network: tab as 'isp' | 'og' | 'ut' | 'ctp',
+                        })
+                      }
+                      activeTabId={activeNetworkTab}
+                      data={activeError?.params?.[activeNetworkTab] || []}
+                      rowMapper={({ name: entryName }) => {
+                        if (!entryName) {
+                          return (
+                            <span className='italic'>{t('common.notSet')}</span>
+                          )
+                        }
+                        if (activeNetworkTab === 'ut') {
+                          return getUsageTypeLabel(entryName, t)
+                        }
+                        if (activeNetworkTab === 'ctp') {
+                          return getConnectionTypeLabel(entryName, t)
+                        }
+                        return entryName
+                      }}
                       valuesHeaderName={t('project.occurrences')}
                       highlightColour='red'
                     />

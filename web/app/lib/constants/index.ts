@@ -231,9 +231,10 @@ export const TRAFFIC_PANELS_ORDER = [
   'pg',
   'devices',
   'traffic-sources',
+  'network',
 ]
-export const PERFORMANCE_PANELS_ORDER = ['location', 'pg', 'devices']
-export const ERROR_PANELS_ORDER = ['location', 'pg', 'devices']
+export const PERFORMANCE_PANELS_ORDER = ['location', 'pg', 'devices', 'network']
+export const ERROR_PANELS_ORDER = ['location', 'pg', 'devices', 'network']
 export const FILTERS_PANELS_ORDER = [
   'pg',
   'entryPage',
@@ -254,6 +255,10 @@ export const FILTERS_PANELS_ORDER = [
   'ca',
   'te',
   'co',
+  'isp',
+  'og',
+  'ut',
+  'ctp',
 ]
 export const ERRORS_FILTERS_PANELS_ORDER = [
   'cc',
@@ -266,6 +271,10 @@ export const ERRORS_FILTERS_PANELS_ORDER = [
   'osv',
   'lc',
   'dv',
+  'isp',
+  'og',
+  'ut',
+  'ctp',
 ]
 
 // the maximum amount of months user can go back when picking a date in flat picker (project view)

@@ -1022,23 +1022,31 @@ interface MetadataKeyPanelProps {
   mode: 'property' | 'customEvent'
 }
 
-const MetadataKeyPanel = ({
+interface MetadataKeyBodyProps extends Omit<
+  MetadataKeyPanelProps,
+  'onKeyChange' | 'metadataKeys'
+> {
+  hasMetadataKeys: boolean
+  onShowDetailsChange?: (canShowDetails: boolean) => void
+  detailsTrigger?: number
+}
+
+const MetadataKeyBody = ({
   title,
-  metadataKeys,
+  hasMetadataKeys,
   getMetadataValues,
   getFilterLink,
   chartData,
   filters,
   activeKey,
-  onKeyChange,
   filterPrefix,
   mode,
-}: MetadataKeyPanelProps) => {
+  onShowDetailsChange,
+  detailsTrigger,
+}: MetadataKeyBodyProps) => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
-  // For property mode: simple value/count pairs
-  // For customEvent mode: raw data with key/value/count (grouped by metadata key)
   const [valuesData, setValuesData] = useState<
     Array<{ value: string; count: number }>
   >([])
@@ -1049,7 +1057,6 @@ const MetadataKeyPanel = ({
 
   const uniques = _sum(chartData.uniques)
 
-  // Load values when activeKey changes
   useEffect(() => {
     if (!activeKey) {
       setValuesData([])
@@ -1062,15 +1069,12 @@ const MetadataKeyPanel = ({
       try {
         const { result } = await getMetadataValues(activeKey)
         if (mode === 'property') {
-          // For properties: filter by the selected key and extract values
           const values = result
             .filter((item) => item.key === activeKey)
             .map((item) => ({ value: item.value, count: item.count }))
           setValuesData(values)
         } else {
-          // For custom events: show all metadata (result is already for this event)
           setRawMetadata(result)
-          // Flatten for display purposes
           const values = result.map((item) => ({
             value: `${item.key}: ${item.value}`,
             count: item.count,
@@ -1079,7 +1083,7 @@ const MetadataKeyPanel = ({
         }
       } catch (error) {
         console.error(
-          `[ERROR](MetadataKeyPanel) Failed to load values for key ${activeKey}`,
+          `[ERROR](MetadataKeyBody) Failed to load values for key ${activeKey}`,
           error,
         )
         setValuesData([])
@@ -1092,7 +1096,6 @@ const MetadataKeyPanel = ({
     loadValues()
   }, [activeKey, getMetadataValues, mode])
 
-  // Reload values when filters change
   useEffect(() => {
     if (activeKey) {
       const loadValues = async () => {
@@ -1114,7 +1117,7 @@ const MetadataKeyPanel = ({
           }
         } catch (error) {
           console.error(
-            `[ERROR](MetadataKeyPanel) Failed to reload values for key ${activeKey}`,
+            `[ERROR](MetadataKeyBody) Failed to reload values for key ${activeKey}`,
             error,
           )
           setValuesData([])
@@ -1146,10 +1149,6 @@ const MetadataKeyPanel = ({
     // For properties: filter format is tag:key:propertyKey with value
     return getFilterLink(`${filterPrefix}:${activeKey}`, value)
   }
-
-  const dropdownItems = useMemo(() => {
-    return metadataKeys.map((key) => ({ id: key, label: key }))
-  }, [metadataKeys])
 
   const sortedRawMetadata = useMemo(
     () => _orderBy(rawMetadata, 'count', 'desc'),
@@ -1264,8 +1263,23 @@ const MetadataKeyPanel = ({
   const hasExistingData =
     mode === 'customEvent' ? !_isEmpty(rawMetadata) : !_isEmpty(valuesData)
 
+  const hasOverflowData =
+    mode === 'customEvent'
+      ? _size(rawMetadata) > ENTRIES_PER_PANEL
+      : _size(valuesData) > ENTRIES_PER_PANEL
+
+  useEffect(() => {
+    onShowDetailsChange?.(hasOverflowData)
+  }, [hasOverflowData, onShowDetailsChange])
+
+  useEffect(() => {
+    if (detailsTrigger && detailsTrigger > 0) {
+      setDetailsOpened(true)
+    }
+  }, [detailsTrigger])
+
   const renderContent = () => {
-    if (_isEmpty(metadataKeys)) {
+    if (!hasMetadataKeys) {
       return <PanelEmptyState message={t('project.noParamData')} />
     }
 
@@ -1468,27 +1482,174 @@ const MetadataKeyPanel = ({
     )
   }
 
-  const hasData =
-    mode === 'customEvent'
-      ? _size(rawMetadata) > ENTRIES_PER_PANEL
-      : _size(valuesData) > ENTRIES_PER_PANEL
+  return <>{renderContent()}</>
+}
+
+interface CombinedMetadataPanelProps {
+  title: string
+  property: {
+    metadataKeys: string[]
+    getMetadataValues: (key: string) => Promise<{
+      result: Array<{ key: string; value: string; count: number }>
+    }>
+    activeKey: string
+    onKeyChange: (key: string) => void
+  }
+  customEvent: {
+    metadataKeys: string[]
+    getMetadataValues: (key: string) => Promise<{
+      result: Array<{ key: string; value: string; count: number }>
+    }>
+    activeKey: string
+    onKeyChange: (key: string) => void
+  }
+  getFilterLink: (column: string, value: string | null) => LinkProps['to']
+  chartData: any
+  filters: Filter[]
+}
+
+const CombinedMetadataPanel = ({
+  title,
+  property,
+  customEvent,
+  getFilterLink,
+  chartData,
+  filters,
+}: CombinedMetadataPanelProps) => {
+  const { t } = useTranslation('common')
+  const hasProperty = !_isEmpty(property.metadataKeys)
+  const hasCustomEvent = !_isEmpty(customEvent.metadataKeys)
+
+  const [activeMode, setActiveMode] = useState<'property' | 'customEvent'>(
+    () => {
+      if (hasProperty) return 'property'
+      if (hasCustomEvent) return 'customEvent'
+      return 'property'
+    },
+  )
+
+  useEffect(() => {
+    if (activeMode === 'property' && !hasProperty && hasCustomEvent) {
+      setActiveMode('customEvent')
+    } else if (activeMode === 'customEvent' && !hasCustomEvent && hasProperty) {
+      setActiveMode('property')
+    }
+  }, [activeMode, hasProperty, hasCustomEvent])
+
+  const activeSection = activeMode === 'property' ? property : customEvent
+  const activeFilterPrefix: 'ev:key' | 'tag:key' =
+    activeMode === 'property' ? 'tag:key' : 'ev:key'
+
+  const dropdownItems = useMemo(
+    () => activeSection.metadataKeys.map((key) => ({ id: key, label: key })),
+    [activeSection.metadataKeys],
+  )
+
+  const modeTabs: Array<{ id: 'property' | 'customEvent'; label: string }> =
+    useMemo(() => {
+      const tabs: Array<{ id: 'property' | 'customEvent'; label: string }> = []
+      if (hasProperty) {
+        tabs.push({ id: 'property', label: t('project.pageviewMetadata') })
+      }
+      if (hasCustomEvent) {
+        tabs.push({ id: 'customEvent', label: t('project.customEvMetadata') })
+      }
+      return tabs
+    }, [hasProperty, hasCustomEvent, t])
+
+  const [canShowDetails, setCanShowDetails] = useState(false)
+  const [detailsTrigger, setDetailsTrigger] = useState(0)
+
+  const activeDropdownTab = dropdownItems.find(
+    (item) => item.id === activeSection.activeKey,
+  )
+  const dropdownTitle = activeDropdownTab
+    ? activeDropdownTab.label
+    : activeMode === 'customEvent'
+      ? t('project.selectEvent')
+      : t('project.selectProperty')
 
   return (
-    <PanelContainer
-      name={title}
-      type='metadataKey'
-      tabs={_isEmpty(dropdownItems) ? undefined : [dropdownItems]}
-      onTabChange={onKeyChange}
-      activeTabId={activeKey}
-      onDetailsClick={hasData ? () => setDetailsOpened(true) : undefined}
-      dropdownPlaceholder={
-        mode === 'customEvent'
-          ? t('project.selectEvent')
-          : t('project.selectProperty')
-      }
-    >
-      {renderContent()}
-    </PanelContainer>
+    <div className='isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pt-5 pb-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
+      <div className='mb-2 flex items-center justify-between gap-4'>
+        <Text
+          as='h3'
+          size='lg'
+          weight='semibold'
+          className='flex items-center leading-6 whitespace-nowrap'
+        >
+          {title}
+        </Text>
+        <div className='scrollbar-thin flex items-center gap-2.5 overflow-x-auto'>
+          {modeTabs.map((tab) => (
+            <button
+              key={tab.id}
+              type='button'
+              onClick={() => setActiveMode(tab.id)}
+              className={cx(
+                'relative border-b-2 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                {
+                  'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
+                    activeMode === tab.id,
+                  'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
+                    activeMode !== tab.id,
+                },
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+          {!_isEmpty(dropdownItems) ? (
+            <Dropdown
+              title={dropdownTitle}
+              items={dropdownItems}
+              labelExtractor={(item) => item.label}
+              keyExtractor={(item) => item.id}
+              onSelect={(item) => activeSection.onKeyChange(item.id)}
+              buttonClassName={cx(
+                'relative border-b-2 px-0 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200 md:px-0',
+                {
+                  'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
+                    !!activeDropdownTab,
+                  'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
+                    !activeDropdownTab,
+                },
+              )}
+              headless
+              chevron='mini'
+            />
+          ) : null}
+        </div>
+      </div>
+      <div className='relative flex h-[19.6rem] flex-col overflow-hidden'>
+        <MetadataKeyBody
+          key={activeMode}
+          title={title}
+          hasMetadataKeys={!_isEmpty(activeSection.metadataKeys)}
+          getMetadataValues={activeSection.getMetadataValues}
+          getFilterLink={getFilterLink}
+          chartData={chartData}
+          filters={filters}
+          activeKey={activeSection.activeKey}
+          filterPrefix={activeFilterPrefix}
+          mode={activeMode}
+          onShowDetailsChange={setCanShowDetails}
+          detailsTrigger={detailsTrigger}
+        />
+      </div>
+      {canShowDetails ? (
+        <div className='mt-2 flex items-center justify-center'>
+          <Button
+            className='max-w-max border border-transparent bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-200 hover:bg-gray-50 dark:text-gray-200 hover:dark:border-slate-700/80 hover:dark:bg-slate-950'
+            type='button'
+            onClick={() => setDetailsTrigger((n) => n + 1)}
+          >
+            <ScanIcon className='mr-1.5 size-4' />
+            <span>{t('common.details')}</span>
+          </Button>
+        </div>
+      ) : null}
+    </div>
   )
 }
 
@@ -2641,13 +2802,15 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
 
 const PanelMemo = memo(Panel) as typeof Panel
 const CustomEventsMemo = memo(CustomEvents) as typeof CustomEvents
-const MetadataKeyPanelMemo = memo(MetadataKeyPanel) as typeof MetadataKeyPanel
+const CombinedMetadataPanelMemo = memo(
+  CombinedMetadataPanel,
+) as typeof CombinedMetadataPanel
 const MetadataPanelMemo = memo(MetadataPanel) as typeof MetadataPanel
 
 export {
   PanelContainer,
   PanelMemo as Panel,
   CustomEventsMemo as CustomEvents,
-  MetadataKeyPanelMemo as MetadataKeyPanel,
+  CombinedMetadataPanelMemo as CombinedMetadataPanel,
   MetadataPanelMemo as MetadataPanel,
 }

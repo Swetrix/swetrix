@@ -103,6 +103,52 @@ If you have special needs for more requests, please [contact us](https://swetrix
 | `date` | `string` | `false`  | Date of the annotation (YYYY-MM-DD).      |
 | `text` | `string` | `false`  | Annotation text (max 120 characters).     |
 
+### Project views (Segments) manipulation
+
+Project views are the API representation of [Segments](/analytics-dashboard/segments) — saved combinations of dashboard filters and custom event metrics that users can switch between from the dashboard.
+
+#### Filter object
+
+The `filters` field on a view is an array of filter objects with the following shape:
+
+| Name          | Type      | Required | Description                                                                                                                                                                               |
+| ------------- | --------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `column`      | `string`  | `true`   | The traffic column to filter on. One of: `cc`, `rg`, `ct`, `host`, `pg`, `lc`, `br`, `brv`, `os`, `osv`, `dv`, `ref`, `so`, `me`, `ca`, `te`, `co`. Unsupported columns are stripped out. |
+| `filter`      | `string`  | `true`   | The value to match against.                                                                                                                                                               |
+| `isExclusive` | `boolean` | `true`   | If `true`, rows matching `filter` are excluded; otherwise only matching rows are kept.                                                                                                    |
+| `isContains`  | `boolean` | `false`  | If `true`, `filter` is treated as a substring match instead of an exact match.                                                                                                            |
+
+#### Custom event object
+
+Each entry in `customEvents` describes a custom-event metric to render on the dashboard alongside the view. Up to **3** custom events can be attached to a view.
+
+| Name              | Type                             | Required | Description                                                         |
+| ----------------- | -------------------------------- | -------- | ------------------------------------------------------------------- |
+| `customEventName` | `string`                         | `true`   | Name of the [custom event](/api/events) to aggregate (1–100 chars). |
+| `metricKey`       | `string`                         | `true`   | Display key for the metric on the dashboard (1–100 chars).          |
+| `metaKey`         | `string`                         | `false`  | Optional event metadata key to group on (max 100 chars).            |
+| `metaValue`       | `string`                         | `false`  | Optional event metadata value to filter on (max 100 chars).         |
+| `metaValueType`   | `string` or `integer` or `float` | `true`   | How to interpret `metaValue` when aggregating.                      |
+
+#### 'Create project view' payload
+
+| Name           | Type                       | Required | Description                                                                                            |
+| -------------- | -------------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| `name`         | `string`                   | `true`   | A display name for the view (1–20 chars).                                                              |
+| `type`         | `traffic` or `performance` | `true`   | Which dashboard the view applies to. Cannot be changed after creation.                                 |
+| `filters`      | `Array<Filter>`            | `false`  | Filters to pre-apply when the view is selected. See [Filter object](#filter-object).                   |
+| `customEvents` | `Array<CustomEvent>`       | `false`  | Custom-event metrics to display with the view. See [Custom event object](#custom-event-object). Max 3. |
+
+#### 'Update project view' payload
+
+All fields are optional; only those present are updated. The view `type` cannot be changed.
+
+| Name           | Type                 | Description                                                                                       |
+| -------------- | -------------------- | ------------------------------------------------------------------------------------------------- |
+| `name`         | `string`             | A display name for the view (1–20 chars).                                                         |
+| `filters`      | `Array<Filter>`      | Replaces the stored filters. See [Filter object](#filter-object).                                 |
+| `customEvents` | `Array<CustomEvent>` | Replaces the stored custom-event metrics. See [Custom event object](#custom-event-object). Max 3. |
+
 ## Endpoints
 
 ### GET /v1/project
@@ -325,6 +371,103 @@ Delete an annotation.
 ```bash title="Request"
 curl -i -X DELETE https://api.swetrix.com/v1/project/annotation/ANNOTATION_ID/WvZCYTrOPzSK \
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### GET /v1/project/:pid/views
+
+List all [Segments](/analytics-dashboard/segments) (project views) for a project. For password-protected projects, pass the dashboard password via the `X-Password` header.
+
+```bash title="Request"
+curl -i -X GET https://api.swetrix.com/v1/project/WvZCYTrOPzSK/views \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response (200 OK)"
+[
+  {
+    "id": "9d8b8b2f-7c7d-4e9c-b7c5-1f3b6f0a1d2e",
+    "projectId": "WvZCYTrOPzSK",
+    "name": "US Mobile Traffic",
+    "type": "traffic",
+    "filters": [
+      { "column": "cc", "filter": "US", "isExclusive": false },
+      { "column": "dv", "filter": "mobile", "isExclusive": false }
+    ],
+    "customEvents": [],
+    "createdAt": "2026-04-01T10:23:09.000Z",
+    "updatedAt": "2026-04-01T10:23:09.000Z"
+  }
+]
+```
+
+### GET /v1/project/:pid/views/:viewId
+
+Get a single project view. For password-protected projects, pass the dashboard password via the `X-Password` header.
+
+```bash title="Request"
+curl -i -X GET https://api.swetrix.com/v1/project/WvZCYTrOPzSK/views/VIEW_ID \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### POST /v1/project/:pid/views
+
+Create a new project view. Requires admin or owner access on the project.
+
+```bash title="Request"
+curl -i -X POST https://api.swetrix.com/v1/project/WvZCYTrOPzSK/views \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "US Mobile Traffic",
+    "type": "traffic",
+    "filters": [
+      { "column": "cc", "filter": "US", "isExclusive": false },
+      { "column": "dv", "filter": "mobile", "isExclusive": false }
+    ]
+  }'
+```
+
+```json title="Response (201 Created)"
+{
+  "id": "9d8b8b2f-7c7d-4e9c-b7c5-1f3b6f0a1d2e",
+  "projectId": "WvZCYTrOPzSK",
+  "name": "US Mobile Traffic",
+  "type": "traffic",
+  "filters": "[{\"column\":\"cc\",\"filter\":\"US\",\"isExclusive\":false},{\"column\":\"dv\",\"filter\":\"mobile\",\"isExclusive\":false}]",
+  "createdAt": "2026-04-01T10:23:09.000Z",
+  "updatedAt": "2026-04-01T10:23:09.000Z"
+}
+```
+
+### PATCH /v1/project/:pid/views/:viewId
+
+Update an existing project view. Requires admin or owner access on the project. The view `type` cannot be changed.
+
+```bash title="Request"
+curl -i -X PATCH https://api.swetrix.com/v1/project/WvZCYTrOPzSK/views/VIEW_ID \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "US Mobile (paid)",
+    "filters": [
+      { "column": "cc", "filter": "US", "isExclusive": false },
+      { "column": "dv", "filter": "mobile", "isExclusive": false },
+      { "column": "so", "filter": "google", "isExclusive": false }
+    ]
+  }'
+```
+
+### DELETE /v1/project/:pid/views/:viewId
+
+Delete a project view. Requires admin or owner access on the project.
+
+```bash title="Request"
+curl -i -X DELETE https://api.swetrix.com/v1/project/WvZCYTrOPzSK/views/VIEW_ID \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response (204 No Content)"
+
 ```
 
 ### GET /v1/organisation

@@ -264,7 +264,19 @@ export const getLowestPossibleTimeBucket = (
   return _head(tbMap.tb)
 }
 
-const EXCLUDE_NULL_FOR = ['so', 'me', 'ca', 'te', 'co', 'rg', 'ct']
+const EXCLUDE_NULL_FOR = [
+  'so',
+  'me',
+  'ca',
+  'te',
+  'co',
+  'rg',
+  'ct',
+  'isp',
+  'og',
+  'ut',
+  'ctp',
+]
 
 const generateParamsQuery = (
   col: string,
