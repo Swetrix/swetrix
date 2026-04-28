@@ -8,17 +8,17 @@ export class AppLoggerService extends Logger {
       Logger.log(value, route)
     }
   }
-  warn(value, route, forceLog = false) {
+  warn(value, route?: string, forceLog = false) {
     if (isDevelopment || forceLog) {
       Logger.warn(value, route)
     }
   }
-  debug(value, route, forceLog = false) {
+  debug(value, route?: string, forceLog = false) {
     if (isDevelopment || forceLog) {
       Logger.debug(value, route)
     }
   }
-  verbose(value, route, forceLog = false) {
+  verbose(value, route?: string, forceLog = false) {
     if (isDevelopment || forceLog) {
       Logger.verbose(value, route)
     }
