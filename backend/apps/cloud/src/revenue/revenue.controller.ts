@@ -473,8 +473,9 @@ export class RevenueAnalyticsController {
       })
     }
 
-    const targetCurrency =
-      project.revenueCurrency || (isFirstCall ? dto.currency : 'USD')
+    const targetCurrency = isFirstCall
+      ? dto.currency
+      : project.revenueCurrency || 'USD'
 
     const originalCurrency = dto.currency.toUpperCase()
     const originalAmount = dto.amount
