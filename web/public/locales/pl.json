@@ -1572,6 +1572,7 @@
     "location": "Lokalizacja",
     "pages": "Strony",
     "devices": "Urządzenia",
+    "network": "Inteligencja sieciowa",
     "trafficSources": "Źródła ruchu",
     "metrics": {
       "xAvg": "\"{{x}}\" średnia",
@@ -1760,8 +1761,48 @@
       "exitPage": "Strona wyjścia",
       "keywords": "Słowa kluczowe",
       "keyword": "Słowo kluczowe",
+      "isp": "ISP",
+      "og": "Organizacja",
+      "ut": "Typ użycia",
+      "ctp": "Typ połączenia",
       "searchEngine": "Wyszukiwarka",
       "aiReferral": "Odesłanie z AI"
+    },
+    "usageTypeMapping": {
+      "business": "Biznes",
+      "cafe": "Kawiarnia",
+      "cellular": "Komórkowe",
+      "college": "Uczelnia",
+      "consumer_privacy_network": "Konsumencka sieć prywatności",
+      "content_delivery_network": "Sieć dostarczania treści",
+      "dialup": "Dialup",
+      "government": "Rządowe",
+      "hosting": "Hosting",
+      "library": "Biblioteka",
+      "military": "Wojsko",
+      "organization": "Organizacja",
+      "residential": "Domowe",
+      "router": "Router",
+      "school": "Szkoła",
+      "search_engine_spider": "Robot wyszukiwarki",
+      "traveler": "Podróżny",
+      "commercial": "Komercyjne",
+      "isp": "ISP",
+      "mobile_isp": "Mobilny ISP",
+      "fixed_line_isp": "Operator stacjonarny",
+      "university": "Uniwersytet",
+      "educational": "Edukacyjne",
+      "cdn": "Content delivery network",
+      "reserved": "Zarezerwowane"
+    },
+    "connectionTypeMapping": {
+      "cable_dsl": "Kabel/DSL",
+      "cellular": "Sieć komórkowa",
+      "corporate": "Korporacyjne",
+      "satellite": "Satelitarne",
+      "dialup": "Dialup",
+      "fiber": "Światłowód",
+      "wireless": "Bezprzewodowe"
     },
     "connectGsc": "Połącz Google Search Console, aby zobaczyć słowa kluczowe dla tego projektu.",
     "gscConnectionRequired": "Aby wyświetlać słowa kluczowe dla tego projektu, wymagane jest połączenie z Google Search Console. Poproś administratora projektu, aby najpierw nawiązał to połączenie.",
@@ -1855,6 +1896,8 @@
       "deleteShort": "Usuń trwale projekt i wszystkie dane.",
       "organisation": "Organizacja",
       "shields": "Tarcze",
+      "blockedTraffic": "Zablokowany ruch",
+      "blockedTrafficHint": "Wgląd w żądania botów, które odfiltrowaliśmy, zanim dotarły do Twojego panelu.",
       "access": "Ustawienia dostępu",
       "resetSuccess": "Projekt został zresetowany",
       "gsc": {
@@ -2074,9 +2117,42 @@
       "botsProtectionLevel": {
         "title": "Poziom ochrony przed botami",
         "levels": {
-          "off": "Wyłączone: zezwalamy na cały ruch przychodzący",
-          "basic": "Podstawowe: wykrywamy boty na podstawie ich user agenta (Googlebot, Bingbot, curl itp.)"
+          "off": {
+            "title": "Wył.",
+            "description": "Zezwalamy na cały ruch przychodzący."
+          },
+          "basic": {
+            "title": "Podstawowy",
+            "description": "Wykrywamy boty na podstawie ich user agenta (Googlebot, Bingbot, curl itp.)."
+          },
+          "strict": {
+            "title": "Rygorystyczny",
+            "description": "Oprócz sprawdzania user agenta, blokujemy również przeglądarki headless, adresy IP centrów danych, skanery podatności, znane źródła spamu w refererach oraz żądania z podejrzanymi nagłówkami."
+          }
         }
+      },
+      "botProtectionReport": {
+        "subtitle_one": "zablokowane żądanie bota",
+        "subtitle_other": "zablokowanych żądań botów",
+        "loading": "Ładowanie raportu ochrony przed botami",
+        "classification": "Klasyfikacja",
+        "topCountries": "Najlepsze kraje",
+        "empty": "Brak zablokowanego ruchu botów w tym okresie.",
+        "periodLabel": "Przedział czasu",
+        "periods": {
+          "7d": "7 dni",
+          "30d": "30 dni",
+          "90d": "90 dni"
+        },
+        "reasons": {
+          "user_agent": "User agent bota",
+          "headless_browser": "Przeglądarka headless",
+          "suspicious_headers": "Podejrzane nagłówki",
+          "probe_path": "Skanowanie podatności",
+          "referrer_spam": "Spam w referrerze",
+          "datacenter_ip": "IP centrum danych"
+        },
+        "learnMore": "Dowiedz się, jak blokujemy boty"
       },
       "updated": "Ustawienia projektu zostały zaktualizowane",
       "created": "Projekt został utworzony",
