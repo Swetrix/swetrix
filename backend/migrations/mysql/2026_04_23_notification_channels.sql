@@ -19,14 +19,14 @@ CREATE TABLE IF NOT EXISTS `notification_channel` (
   CONSTRAINT `channel_scope_check` CHECK (
     ((`userId` IS NOT NULL) + (`organisationId` IS NOT NULL) + (`projectId` IS NOT NULL)) = 1
   )
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `alert_channels` (
   `alertId` varchar(36) NOT NULL,
   `channelId` varchar(36) NOT NULL,
   PRIMARY KEY (`alertId`, `channelId`),
   KEY `IDX_alert_channels_channel` (`channelId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 ALTER TABLE `alert`
   ADD COLUMN `messageTemplate` text DEFAULT NULL,
@@ -71,8 +71,6 @@ WHERE `discordWebhookUrl` IS NOT NULL AND `discordWebhookUrl` <> '';
 INSERT IGNORE INTO `alert_channels` (`alertId`, `channelId`)
 SELECT a.`id`, nc.`id`
 FROM `alert` a
-JOIN `project` p
-  ON p.`id` = a.`projectId` COLLATE utf8mb4_0900_ai_ci
-JOIN `notification_channel` nc
-  ON nc.`userId` COLLATE utf8mb4_0900_ai_ci = p.`adminId`
+JOIN `project` p ON p.`id` = a.`projectId`
+JOIN `notification_channel` nc ON nc.`userId` = p.`adminId`
 WHERE nc.`userId` IS NOT NULL;
