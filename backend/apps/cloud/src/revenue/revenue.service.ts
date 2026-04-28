@@ -77,6 +77,7 @@ export class RevenueService {
         paddleApiKeyPermissions: JSON.stringify(PADDLE_REQUIRED_PERMISSIONS),
         stripeApiKeyPermissions: null,
         revenueLastSyncAt: null,
+        revenueApiEnabled: false,
       })
 
       return { success: true }
@@ -102,6 +103,7 @@ export class RevenueService {
         stripeApiKeyPermissions: JSON.stringify(permissions),
         paddleApiKeyPermissions: null,
         revenueLastSyncAt: null,
+        revenueApiEnabled: false,
       })
 
       return { success: true }
@@ -109,6 +111,38 @@ export class RevenueService {
       this.logger.error({ error, projectId }, 'Failed to connect Stripe')
       return { success: false, message: 'Failed to save Stripe configuration' }
     }
+  }
+
+  async connectApi(
+    projectId: string,
+    currency: string = 'USD',
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      await this.projectRepository.update(projectId, {
+        revenueApiEnabled: true,
+        paddleApiKeyEnc: null,
+        stripeApiKeyEnc: null,
+        paddleApiKeyPermissions: null,
+        stripeApiKeyPermissions: null,
+        revenueCurrency: currency,
+        revenueLastSyncAt: null,
+      })
+
+      return { success: true }
+    } catch (error) {
+      this.logger.error({ error, projectId }, 'Failed to enable API revenue')
+      return {
+        success: false,
+        message: 'Failed to enable API revenue ingestion',
+      }
+    }
+  }
+
+  async disconnectApi(projectId: string): Promise<void> {
+    await this.projectRepository.update(projectId, {
+      revenueApiEnabled: false,
+      revenueLastSyncAt: null,
+    })
   }
 
   async disconnectPaddle(projectId: string): Promise<void> {
@@ -133,6 +167,7 @@ export class RevenueService {
       paddleApiKeyPermissions: null,
       stripeApiKeyEnc: null,
       stripeApiKeyPermissions: null,
+      revenueApiEnabled: false,
       revenueLastSyncAt: null,
     })
   }
@@ -143,14 +178,23 @@ export class RevenueService {
     currency?: string
     lastSyncAt?: string
   }> {
-    const connected = !!project.paddleApiKeyEnc || !!project.stripeApiKeyEnc
+    const connected =
+      !!project.paddleApiKeyEnc ||
+      !!project.stripeApiKeyEnc ||
+      !!project.revenueApiEnabled
+
+    let provider: string | undefined
+    if (project.paddleApiKeyEnc) {
+      provider = 'paddle'
+    } else if (project.stripeApiKeyEnc) {
+      provider = 'stripe'
+    } else if (project.revenueApiEnabled) {
+      provider = 'api'
+    }
+
     return {
       connected,
-      provider: connected
-        ? project.paddleApiKeyEnc
-          ? 'paddle'
-          : 'stripe'
-        : undefined,
+      provider,
       currency: project.revenueCurrency || undefined,
       lastSyncAt: project.revenueLastSyncAt?.toISOString() || undefined,
     }

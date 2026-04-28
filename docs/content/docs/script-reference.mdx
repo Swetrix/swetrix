@@ -302,7 +302,7 @@ Arguments:
 
 Gets the anonymous profile ID for the current visitor. If `profileId` was set via `init`, returns that. Otherwise, requests server to generate one from IP/UA hash.
 
-This ID is commonly used for [revenue attribution](/analytics-dashboard/revenue-tracking#user-attribution) — pass it as `swetrix_profile_id` in your payment provider's metadata to link transactions to specific visitors.
+This ID is commonly used for [revenue attribution](/analytics-dashboard/revenue-tracking#user-attribution) — pass it to your payment provider (`swetrix_profile_id` in Stripe metadata or Paddle `customData`) or include it in the request body when posting to [`/log/revenue`](/events-api#post-logrevenue) to link transactions to specific visitors.
 
 ```javascript
 const profileId = await swetrix.getProfileId();

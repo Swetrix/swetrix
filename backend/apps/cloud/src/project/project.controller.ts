@@ -1996,7 +1996,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Post(':projectId/views')
-  @Auth()
+  @Auth(true)
   async createProjectView(
     @Param() params: ProjectIdDto,
     @Body() body: CreateProjectViewDto,
@@ -2069,7 +2069,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Patch(':projectId/views/:viewId')
-  @Auth()
+  @Auth(true)
   async updateProjectView(
     @Param() params: ProjectViewIdsDto,
     @Body() body: UpdateProjectViewDto,
@@ -2116,7 +2116,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':projectId/views/:viewId')
-  @Auth()
+  @Auth(true)
   async deleteProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,

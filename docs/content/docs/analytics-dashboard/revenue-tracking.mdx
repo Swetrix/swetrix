@@ -3,48 +3,244 @@ title: Revenue Tracking
 slug: /analytics-dashboard/revenue-tracking
 ---
 
-Swetrix integrates with **Stripe** and **Paddle** to automatically track your revenue alongside your analytics data. Once connected, you can see revenue trends, refunds, and per-user attribution directly in your traffic dashboard — no code changes required.
+Swetrix can track your revenue alongside your analytics data and surface it in the same dashboard you already use. There are three ways to feed transactions in:
+
+- **Stripe** — connect a restricted, read-only API key. Sales, subscriptions, and refunds sync automatically every 30 minutes.
+- **Paddle** — connect a read-only API key. Sales, subscriptions, and refunds (adjustments) sync automatically every 30 minutes.
+- **API** — POST transactions to Swetrix from your own backend. Use this when you sell through a platform that isn't Stripe or Paddle (Shopify, JTL Shop, Lemon Squeezy, in-app purchases, custom checkouts, etc.) or when you want full control over which events count as revenue.
+
+Once connected, revenue appears as a metric in your [Traffic Analytics](/analytics-dashboard/traffic) chart, broken down by the same time periods, comparisons, and filters you already use.
 
 ## How it works
 
-1. You connect your payment provider (Stripe or Paddle) in your project settings.
-2. Swetrix syncs your transaction data every 30 minutes using read-only API access.
-3. Revenue appears as a metric in your [Traffic Analytics](/analytics-dashboard/traffic) chart, broken down by the same time periods and filters you already use.
+<Steps>
+  <Step>
+    ### Connect a source Open **Project Settings &gt; Revenue** and pick Stripe, Paddle, or the API.
+    Choose the display currency Swetrix should report in (USD, EUR, or GBP).
+  </Step>
+  <Step>
+    ### Send or sync transactions Stripe and Paddle are pulled automatically every 30 minutes via
+    read-only API access. With the API option you `POST` each transaction as it happens.
+  </Step>
+  <Step>
+    ### See it in your dashboard Net revenue shows up as solid bars on the Traffic chart, with
+    refunds stacked on top. You also get totals, AOV, MRR, and a transactions table.
+  </Step>
+</Steps>
 
-Revenue is displayed as stacked bars on the chart: net revenue in solid orange, with refunds overlaid on top.
+## Supported sources
 
-## Supported providers
+| Source                                                                                                            | Connection method                 | Transaction types                           | Sync model          |
+| ----------------------------------------------------------------------------------------------------------------- | --------------------------------- | ------------------------------------------- | ------------------- |
+| <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><StripeIcon /> Stripe</span>                 | Restricted API key (read-only)    | Sales, subscriptions, refunds               | Pulled every 30 min |
+| <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><PaddleIcon /> Paddle</span>                 | API key (read-only)               | Sales, subscriptions, refunds (adjustments) | Pulled every 30 min |
+| <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><RevenueApiIcon /> API (any platform)</span> | `POST /log/revenue` + `X-Api-Key` | Sales, subscriptions, refunds               | Pushed in real time |
 
-| Provider | Connection method              | Transaction types                           |
-| -------- | ------------------------------ | ------------------------------------------- |
-| Stripe   | Restricted API key (read-only) | Sales, subscriptions, refunds               |
-| Paddle   | API key                        | Sales, subscriptions, refunds (adjustments) |
+## Setting it up
 
-## Setting up Stripe
+<Tabs defaultValue="api">
+<TabsList>
+  <TabsTrigger value="api"><RevenueApiIcon /> API (any platform)</TabsTrigger>
+  <TabsTrigger value="stripe"><StripeIcon /> Stripe</TabsTrigger>
+  <TabsTrigger value="paddle"><PaddleIcon /> Paddle</TabsTrigger>
+</TabsList>
+<TabsContent value="api">
 
-1. Go to your project dashboard and open **Project Settings > Revenue**.
-2. Select **Stripe** as the provider.
-3. Create a restricted API key in your Stripe dashboard. Swetrix needs the following read-only permissions:
-   - Charges, Subscriptions, Customers, Payment Intents, Checkout Sessions, Invoices, Products (read)
-   - Webhooks (write — for real-time sync)
+Use this option to track revenue from any platform — JTL Shop, Shopify, WooCommerce, Lemon Squeezy, custom checkouts, mobile apps, etc. You `POST` each transaction to Swetrix as it happens.
 
 <Callout type="info">
-  The settings page includes a direct link to create a Stripe restricted key with the correct
-  permissions pre-selected — just click "Create key on Stripe" and confirm.
+  You don't have to set anything up in **Project Settings &gt; Revenue** first — sending your first
+  transaction automatically enables API revenue tracking for the project and locks in the display
+  currency you sent. You can change it later from the settings page.
 </Callout>
 
-4. Paste the restricted key (starts with `rk_live_`) into the API key field.
-5. Choose your preferred display currency (USD, EUR, or GBP). Swetrix will convert all transactions to this currency automatically.
-6. Click **Connect**.
+<Steps>
+  <Step>
+    ### Get your API key
 
-## Setting up Paddle
+    Open your [account settings](https://swetrix.com/user-settings) and copy your personal API key. It's the same key used for the [Statistics API](/statistics-api).
 
-1. Go to your project dashboard and open **Project Settings > Revenue**.
-2. Select **Paddle** as the provider.
-3. Generate an API key in your [Paddle dashboard](https://vendors.paddle.com/) with the following permissions:
-   - Transactions, Subscriptions, Customers, Products, Prices (read)
-4. Paste the API key (starts with `pdl_live_`) into the API key field.
-5. Choose your display currency and click **Connect**.
+    Treat the key like a password — never embed it in client-side code. The endpoint must be called from your backend.
+
+  </Step>
+  <Step>
+    ### POST a transaction
+
+    Send a request to `https://api.swetrix.com/log/revenue` for every sale, refund, or recurring charge. Pick the example below that matches your stack.
+
+    <Tabs items={["cURL", "PHP (JTL Shop)", "Node.js"]}>
+    <Tab value="cURL">
+
+    ```bash
+    curl -X POST https://api.swetrix.com/log/revenue \
+      -H "Content-Type: application/json" \
+      -H "X-Api-Key: YOUR_API_KEY" \
+      -d '{
+        "pid": "YOUR_PROJECT_ID",
+        "transactionId": "order_42891",
+        "type": "sale",
+        "amount": 49.99,
+        "currency": "EUR",
+        "productName": "Pro plan (yearly)",
+        "profileId": "user-12345"
+      }'
+    ```
+
+    </Tab>
+    <Tab value="PHP (JTL Shop)">
+
+    Drop this into a webhook handler that fires when an order is paid. The same shape works for any PHP-based shop — WooCommerce, custom Symfony / Laravel checkouts, etc.
+
+    ```php
+    <?php
+
+    $payload = [
+        'pid'           => 'YOUR_PROJECT_ID',
+        'transactionId' => $order->id,
+        'type'          => 'sale',
+        'amount'        => (float) $order->total,
+        'currency'      => $order->currency,
+        'productName'   => $order->lineItems[0]->name ?? null,
+        'profileId'     => $order->customerId,
+    ];
+
+    $ch = curl_init('https://api.swetrix.com/log/revenue');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'X-Api-Key: YOUR_API_KEY',
+        ],
+        CURLOPT_POSTFIELDS     => json_encode($payload),
+    ]);
+
+    curl_exec($ch);
+    curl_close($ch);
+    ```
+
+    </Tab>
+    <Tab value="Node.js">
+
+    ```javascript
+    await fetch("https://api.swetrix.com/log/revenue", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Api-Key": process.env.SWETRIX_API_KEY,
+      },
+      body: JSON.stringify({
+        pid: "YOUR_PROJECT_ID",
+        transactionId: order.id,
+        type: "sale",
+        amount: 49.99,
+        currency: "EUR",
+        productName: "Pro plan (yearly)",
+        profileId: user.id,
+      }),
+    });
+    ```
+
+    </Tab>
+    </Tabs>
+
+  </Step>
+  <Step>
+    ### Record refunds
+
+    Send a second request with `"type": "refund"` and the same `transactionId` shape you'd use for a sale. Always send a **positive** `amount` — Swetrix stores it as a negative value automatically so net revenue and the refunds chart line both come out right.
+
+    ```bash
+    curl -X POST https://api.swetrix.com/log/revenue \
+      -H "Content-Type: application/json" \
+      -H "X-Api-Key: YOUR_API_KEY" \
+      -d '{
+        "pid": "YOUR_PROJECT_ID",
+        "transactionId": "refund_for_order_42891",
+        "type": "refund",
+        "amount": 49.99,
+        "currency": "EUR"
+      }'
+    ```
+
+  </Step>
+</Steps>
+
+### Request fields
+
+| Field           | Type                                 | Required | Description                                                                                                                                |
+| --------------- | ------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pid`           | string                               | yes      | Your Swetrix project ID.                                                                                                                   |
+| `type`          | `sale` \| `refund` \| `subscription` | yes      | Transaction type. Use `refund` for refunds — the amount sign is handled automatically.                                                     |
+| `amount`        | number                               | yes      | Amount in major units (e.g. `49.99` for €49.99). Always send a positive number.                                                            |
+| `currency`      | string                               | yes      | ISO 4217 currency code (e.g. `USD`, `EUR`). Converted to your project's display currency automatically.                                    |
+| `transactionId` | string                               | no       | Stable unique identifier. Re-sending the same `transactionId` replaces the previous version (idempotent). If omitted, a UUID is generated. |
+| `productId`     | string                               | no       | Optional SKU / product identifier.                                                                                                         |
+| `productName`   | string                               | no       | Optional human-readable product name shown in the transactions table.                                                                      |
+| `profileId`     | string                               | no       | Profile ID for revenue attribution. Same value you'd pass to `swetrix.init({ profileId })`.                                                |
+| `sessionId`     | string                               | no       | Session ID for attributing revenue to a specific browsing session (from [`getSessionId()`](/swetrix-js-reference#getsessionid)).           |
+| `created`       | ISO 8601 string                      | no       | Transaction date. Defaults to the time Swetrix receives the request — useful when backfilling.                                             |
+| `metadata`      | object                               | no       | Arbitrary string key/value pairs stored alongside the transaction (max 100 keys, 2 KB total).                                              |
+
+<Callout type="info">
+  **Idempotency.** If your platform might retry webhooks (most do), pass a stable `transactionId`
+  like the order ID. Re-sending the same `transactionId` updates the existing record instead of
+  creating a duplicate.
+</Callout>
+
+</TabsContent>
+<TabsContent value="stripe">
+
+<Steps>
+  <Step>
+    ### Open the Revenue settings
+    Go to your project dashboard and open **Project Settings &gt; Revenue**, then select **Stripe** as the provider.
+  </Step>
+  <Step>
+    ### Create a restricted API key
+
+    The settings page includes a direct link to create a Stripe restricted key with the correct permissions pre-selected — just click "Create key on Stripe" and confirm.
+
+    Swetrix needs the following read-only permissions:
+
+    - Charges, Subscriptions, Customers, Payment Intents, Checkout Sessions, Invoices, Products (read)
+    - Webhooks (write — for real-time sync)
+
+  </Step>
+  <Step>
+    ### Connect
+
+    Paste the restricted key (starts with `rk_live_`) into the API key field, choose your display currency, and click **Connect**. Swetrix converts all transactions to this currency automatically.
+
+  </Step>
+</Steps>
+
+</TabsContent>
+<TabsContent value="paddle">
+
+<Steps>
+  <Step>
+    ### Open the Revenue settings
+    Go to your project dashboard and open **Project Settings &gt; Revenue**, then select **Paddle** as the provider.
+  </Step>
+  <Step>
+    ### Generate a Paddle API key
+
+    In your [Paddle dashboard](https://vendors.paddle.com/), create an API key with the following read-only permissions:
+
+    - Transactions, Subscriptions, Customers, Products, Prices (read)
+
+  </Step>
+  <Step>
+    ### Connect
+
+    Paste the API key (starts with `pdl_live_`) into the API key field, choose your display currency, and click **Connect**.
+
+  </Step>
+</Steps>
+
+</TabsContent>
+</Tabs>
 
 ## Viewing revenue data
 
@@ -61,16 +257,7 @@ You can combine revenue with any other metric (pageviews, sessions, etc.) and us
 
 Swetrix can attribute revenue to specific visitors using profile IDs. This lets you see which users generated revenue and connect purchases to browsing sessions.
 
-### How attribution works
-
-When Swetrix syncs transactions, it looks for a `swetrix_profile_id` field in the transaction metadata:
-
-- **Stripe**: checks `metadata.swetrix_profile_id` on the PaymentIntent or Charge
-- **Paddle**: checks `custom_data.swetrix_profile_id` on the Transaction
-
-If found, the transaction is linked to that visitor's profile in the [Profiles & Sessions](/analytics-dashboard/profiles-and-sessions) view.
-
-### Passing the profile ID to your payment provider
+### Getting the profile ID
 
 First, get the visitor's profile ID using the Swetrix script:
 
@@ -78,9 +265,43 @@ First, get the visitor's profile ID using the Swetrix script:
 const profileId = await swetrix.getProfileId();
 ```
 
-Then include it when creating a payment:
+You can also pass `swetrix_session_id` (from [`getSessionId()`](/swetrix-js-reference#getsessionid)) to attribute revenue to a specific browsing session.
 
-**Stripe example (server-side):**
+### Passing it through to Swetrix
+
+<Tabs defaultValue="api">
+<TabsList>
+  <TabsTrigger value="api"><RevenueApiIcon /> API</TabsTrigger>
+  <TabsTrigger value="stripe"><StripeIcon /> Stripe</TabsTrigger>
+  <TabsTrigger value="paddle"><PaddleIcon /> Paddle</TabsTrigger>
+</TabsList>
+<TabsContent value="api">
+
+Pass `profileId` and `sessionId` directly in the request body when you POST the transaction:
+
+```javascript
+await fetch("https://api.swetrix.com/log/revenue", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-Api-Key": process.env.SWETRIX_API_KEY,
+  },
+  body: JSON.stringify({
+    pid: "YOUR_PROJECT_ID",
+    transactionId: order.id,
+    type: "sale",
+    amount: 49.99,
+    currency: "EUR",
+    profileId,
+    sessionId,
+  }),
+});
+```
+
+</TabsContent>
+<TabsContent value="stripe">
+
+When Swetrix syncs Stripe transactions, it looks for `swetrix_profile_id` (and optionally `swetrix_session_id`) in `metadata` on the PaymentIntent or Charge.
 
 ```javascript
 const paymentIntent = await stripe.paymentIntents.create({
@@ -92,7 +313,10 @@ const paymentIntent = await stripe.paymentIntents.create({
 });
 ```
 
-**Paddle example (client-side checkout):**
+</TabsContent>
+<TabsContent value="paddle">
+
+When Swetrix syncs Paddle transactions, it looks for `swetrix_profile_id` (and optionally `swetrix_session_id`) in `custom_data` on the Transaction.
 
 ```javascript
 Paddle.Checkout.open({
@@ -103,7 +327,10 @@ Paddle.Checkout.open({
 });
 ```
 
-You can also pass `swetrix_session_id` (from [`getSessionId()`](/swetrix-js-reference#getsessionid)) to attribute revenue to a specific browsing session.
+</TabsContent>
+</Tabs>
+
+If a profile ID is found, the transaction is linked to that visitor's profile in the [Profiles &amp; Sessions](/analytics-dashboard/profiles-and-sessions) view.
 
 <Callout type="info">
   See the [Script Reference](/swetrix-js-reference#getprofileid) for full details on
@@ -112,6 +339,12 @@ You can also pass `swetrix_session_id` (from [`getSessionId()`](/swetrix-js-refe
 
 ## Managing your connection
 
-You can disconnect or change your payment provider at any time from **Project Settings > Revenue**. Disconnecting removes the API key but keeps previously synced revenue data in your dashboard.
+You can disconnect or change your revenue source at any time from **Project Settings &gt; Revenue**. Disconnecting removes the API key (or disables API ingestion) but keeps previously recorded revenue data in your dashboard.
 
 To change the display currency after connecting, use the currency selector on the same settings page. Currency conversion is applied to all transactions (past and future) based on exchange rates at sync time.
+
+<Callout type="info">
+  A project can only have one active revenue source at a time. If a Stripe or Paddle key is
+  connected and you try to POST to `/log/revenue`, the request returns `409 Conflict`. Disconnect
+  the existing source first.
+</Callout>
