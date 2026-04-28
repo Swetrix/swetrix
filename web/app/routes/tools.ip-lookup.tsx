@@ -1,5 +1,11 @@
-import { MagnifyingGlassIcon } from '@phosphor-icons/react'
-import { useState, useEffect } from 'react'
+import {
+  ArrowSquareOutIcon,
+  CheckIcon,
+  ClockIcon,
+  CopyIcon,
+  MagnifyingGlassIcon,
+} from '@phosphor-icons/react'
+import { useState, useEffect, useMemo } from 'react'
 import type { MetaFunction } from 'react-router'
 import { redirect, useFetcher, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
@@ -9,18 +15,20 @@ import { getIpLookupServer, getClientIP } from '~/api/api.server'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
 import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
+import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import Flag from '~/ui/Flag'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import { FAQ } from '~/ui/FAQ'
 import Spin from '~/ui/icons/Spin'
+import { cn } from '~/utils/generic'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
   const title = 'Free IP Address Lookup tool - What is my IP address?'
   const description =
-    'Find your public IP address instantly and look up any IPv4 or IPv6 for detailed geolocation and network data—country, region, city, coordinates, timezone, ISP, organization, connection type, and EU status—plus an interactive map. Free, no registration or limits.'
+    'Find your public IP address instantly and look up any IPv4 or IPv6 for detailed geolocation and network data: country, region, city, coordinates, timezone, ISP, organization, connection type, and EU status, plus an interactive map. Free, no registration or limits.'
   return [
     ...getTitle(title),
     ...getDescription(description),
@@ -71,77 +79,109 @@ export async function action({ request }: { request: Request }) {
 interface LocationMapProps {
   latitude: number
   longitude: number
-  city?: string | null
-  country?: string | null
 }
 
-function LocationMap({ latitude, longitude, city, country }: LocationMapProps) {
-  const [MapComponents, setMapComponents] = useState<{
-    MapContainer: any
-    TileLayer: any
-    Marker: any
-    Popup: any
-  } | null>(null)
+const MAP_MARKER_STYLE = `
+@keyframes ipMarkerPing {
+  0%   { transform: scale(1);   opacity: 0.55; }
+  80%  { transform: scale(2.6); opacity: 0;    }
+  100% { transform: scale(2.6); opacity: 0;    }
+}
+.ip-marker { pointer-events: none; }
+.leaflet-container { background: transparent; font-family: inherit; }
+.leaflet-control-zoom { border: none !important; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important; border-radius: 0.5rem !important; overflow: hidden; }
+.leaflet-control-zoom a { background-color: rgb(255 255 255 / 0.95) !important; color: rgb(15 23 42) !important; border: none !important; transition: background-color 150ms ease; }
+.leaflet-control-zoom a:hover { background-color: rgb(255 255 255) !important; color: rgb(15 23 42) !important; }
+.dark .leaflet-control-zoom a { background-color: rgb(15 23 42 / 0.95) !important; color: rgb(241 245 249) !important; }
+.dark .leaflet-control-zoom a:hover { background-color: rgb(15 23 42) !important; color: rgb(255 255 255) !important; }
+`
+
+function LocationMap({ latitude, longitude }: LocationMapProps) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+
+  const [modules, setModules] = useState<{
+    rl: typeof import('react-leaflet') | null
+    L: typeof import('leaflet') | null
+  }>({ rl: null, L: null })
 
   useEffect(() => {
-    import('react-leaflet').then((module) => {
-      setMapComponents({
-        MapContainer: module.MapContainer,
-        TileLayer: module.TileLayer,
-        Marker: module.Marker,
-        Popup: module.Popup,
-      })
-    })
-
-    import('leaflet').then((L) => {
-      delete (L.Icon.Default.prototype as any)._getIconUrl
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl:
-          'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-        iconUrl:
-          'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-        shadowUrl:
-          'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-      })
-    })
+    Promise.all([import('react-leaflet'), import('leaflet')]).then(
+      ([rl, L]) => {
+        setModules({ rl, L })
+      },
+    )
   }, [])
 
-  if (!MapComponents) {
+  const icon = useMemo(() => {
+    if (!modules.L) return null
+    const dot = isDark ? '#f1f5f9' : '#0f172a'
+    const ring = isDark ? '#0f172a' : '#ffffff'
+    const html = `
+      <span style="position:absolute;inset:0;border-radius:9999px;background:${dot};opacity:0.55;animation:ipMarkerPing 2s cubic-bezier(0.16,1,0.3,1) infinite;transform-origin:center;"></span>
+      <span style="position:absolute;inset:0;border-radius:9999px;background:${dot};border:2px solid ${ring};box-shadow:0 1px 6px rgba(15,23,42,0.45);"></span>
+    `
+    return modules.L.divIcon({
+      className: 'ip-marker',
+      html: `<div style="position:relative;width:14px;height:14px;">${html}</div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+    })
+  }, [modules.L, isDark])
+
+  if (!modules.rl || !icon) {
     return (
-      <div className='flex h-96 items-center justify-center rounded-lg bg-gray-50 dark:bg-slate-800'>
+      <div className='flex h-[420px] items-center justify-center bg-gray-50 sm:h-[480px] dark:bg-slate-900'>
         <Spin />
       </div>
     )
   }
 
-  const { MapContainer, TileLayer, Marker, Popup } = MapComponents
+  const { MapContainer, TileLayer, Marker } = modules.rl
+
+  const tileUrl = isDark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+
+  const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
 
   return (
-    <>
+    <div className='relative isolate'>
       <link
         rel='stylesheet'
         href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'
       />
+      <style>{MAP_MARKER_STYLE}</style>
       <MapContainer
+        key={isDark ? 'dark' : 'light'}
         center={[latitude, longitude]}
-        zoom={10}
-        scrollWheelZoom={true}
-        style={{ height: '384px', width: '100%', borderRadius: '0.5rem' }}
+        zoom={11}
+        scrollWheelZoom
+        zoomControl
         attributionControl={false}
+        style={{
+          height: '480px',
+          width: '100%',
+          background: isDark ? 'rgb(15 23 42)' : 'rgb(249 250 251)',
+        }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url={tileUrl}
         />
-        <Marker position={[latitude, longitude]}>
-          <Popup>
-            {city && country
-              ? `${city}, ${country}`
-              : city || country || 'Location'}
-          </Popup>
-        </Marker>
+        <Marker position={[latitude, longitude]} icon={icon} />
       </MapContainer>
-    </>
+
+      <a
+        href={gmapsUrl}
+        target='_blank'
+        rel='noopener noreferrer'
+        className='absolute right-3 bottom-3 inline-flex items-center gap-1.5 rounded-md bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:text-gray-900 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:text-white'
+      >
+        Open in Google Maps
+        <ArrowSquareOutIcon className='size-3' weight='bold' />
+      </a>
+    </div>
   )
 }
 
@@ -174,12 +214,12 @@ const FAQ_ITEMS = [
   {
     question: 'What is the difference between ISP and organization?',
     answer:
-      'The ISP (Internet Service Provider) is the company that delivers internet connectivity to the IP address, such as Comcast, Vodafone, or Deutsche Telekom. The organization is the entity that has been allocated or is using that IP block — often the same as the ISP, but for corporate, hosting, or government IPs it can be a specific company, data center provider, or institution.',
+      'The ISP (Internet Service Provider) is the company that delivers internet connectivity to the IP address, such as Comcast, Vodafone, or Deutsche Telekom. The organization is the entity that has been allocated or is using that IP block. It is often the same as the ISP, but for corporate, hosting, or government IPs it can be a specific company, data center provider, or institution.',
   },
   {
     question: 'What do user type and connection type mean?',
     answer:
-      'User type describes the kind of network behind the IP address — common values include residential, business, cellular, hosting, school, government, and library. Connection type describes the underlying network technology, such as Cable/DSL, Cellular, Corporate, Dialup, or Satellite. Together they help identify whether traffic is coming from a home user, a mobile network, a data center, or an enterprise.',
+      'User type describes the kind of network behind the IP address. Common values include residential, business, cellular, hosting, school, government, and library. Connection type describes the underlying network technology, such as Cable/DSL, Cellular, Corporate, Dialup, or Satellite. Together they help identify whether traffic is coming from a home user, a mobile network, a data center, or an enterprise.',
   },
   {
     question: 'What is the difference between IPv4 and IPv6?',
@@ -198,49 +238,133 @@ const FAQ_ITEMS = [
   },
 ]
 
-function DataRow({
-  label,
-  value,
-  secondary,
-}: {
+interface RowProps {
   label: string
-  value: string | null | undefined
+  value: React.ReactNode
   secondary?: string | null
-}) {
+  leading?: React.ReactNode
+  mono?: boolean
+}
+
+function Row({ label, value, secondary, leading, mono }: RowProps) {
+  if (value === null || value === undefined || value === '') return null
+
   return (
-    <div className='flex items-baseline justify-between gap-4 border-b border-gray-100 py-3 last:border-0 dark:border-slate-700/50'>
-      <dt className='shrink-0'>
-        <Text size='sm' colour='muted'>
-          {label}
-        </Text>
+    <div className='flex flex-col gap-0.5 py-3 sm:flex-row sm:items-baseline sm:gap-6 sm:py-3.5'>
+      <dt className='text-sm text-gray-500 sm:w-44 sm:shrink-0 dark:text-slate-400'>
+        {label}
       </dt>
-      <dd className='min-w-0 text-right'>
-        <Text weight='medium' className='wrap-break-word'>
-          {value || '—'}
+      <dd className='flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1'>
+        {leading}
+        <Text
+          weight='medium'
+          size='sm'
+          className={cn(
+            'min-w-0 wrap-break-word',
+            mono && 'font-mono tabular-nums',
+          )}
+        >
+          {value}
         </Text>
-        {secondary && (
-          <Text size='sm' colour='muted' className='ml-2'>
+        {secondary ? (
+          <Text
+            size='xs'
+            colour='muted'
+            className='font-mono uppercase tabular-nums'
+          >
             {secondary}
           </Text>
-        )}
+        ) : null}
       </dd>
     </div>
   )
 }
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
+function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
     <Text
       as='h3'
-      size='xxs'
+      size='xs'
       weight='semibold'
       colour='muted'
       tracking='wide'
-      className='mb-1 uppercase'
+      className='uppercase'
     >
       {children}
     </Text>
   )
+}
+
+function Dot() {
+  return (
+    <span
+      aria-hidden='true'
+      className='size-0.5 rounded-full bg-gray-300 dark:bg-slate-600'
+    />
+  )
+}
+
+function CopyButton({
+  value,
+  ariaLabel = 'Copy',
+}: {
+  value: string
+  ariaLabel?: string
+}) {
+  const [copied, setCopied] = useState(false)
+
+  const onCopy = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1600)
+    } catch {
+      // ignore
+    }
+  }
+
+  return (
+    <button
+      type='button'
+      onClick={onCopy}
+      aria-label={copied ? 'Copied' : ariaLabel}
+      className='inline-flex shrink-0 items-center justify-center rounded-md p-1.5 text-gray-500 ring-1 ring-transparent transition-colors hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus-visible:ring-gray-300 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 dark:focus-visible:ring-slate-700'
+    >
+      {copied ? (
+        <CheckIcon className='size-4' weight='bold' />
+      ) : (
+        <CopyIcon className='size-4' />
+      )}
+    </button>
+  )
+}
+
+const formatLocalTime = (timezone: string): string => {
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: timezone,
+    }).format(new Date())
+  } catch {
+    return ''
+  }
+}
+
+function LocalTime({ timezone }: { timezone: string }) {
+  const [time, setTime] = useState(() => formatLocalTime(timezone))
+
+  useEffect(() => {
+    setTime(formatLocalTime(timezone))
+    const id = setInterval(() => setTime(formatLocalTime(timezone)), 30_000)
+    return () => clearInterval(id)
+  }, [timezone])
+
+  if (!time) return null
+  return <span className='font-mono tabular-nums'>{time}</span>
 }
 
 const formatTraitValue = (value: string | null | undefined): string | null => {
@@ -301,10 +425,20 @@ export default function IpLookup() {
     data?.latitude !== undefined &&
     data?.longitude !== undefined
 
-  const formatLocation = () => {
-    const parts = [data?.city, data?.region, data?.countryName].filter(Boolean)
-    return parts.join(', ') || null
-  }
+  const locationLine = data
+    ? [data.city, data.region, data.countryName].filter(Boolean).join(', ') ||
+      null
+    : null
+
+  const networkHasData = !!(
+    data &&
+    (data.isp || data.organization || data.userType || data.connectionType)
+  )
+
+  const isHosting = data?.userType === 'hosting'
+
+  const showUseMyIp =
+    !!userIp && !!ipInput && ipInput.trim() !== userIp && !isLoading
 
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-slate-950'>
@@ -318,136 +452,146 @@ export default function IpLookup() {
             </Text>
             <Text as='p' size='lg' colour='muted' className='mt-4'>
               Find your IP address and get detailed geolocation and network
-              data—ISP, organization, and connection type—for any public IP.
+              data, including ISP, organization, and connection type, for any
+              public IP.
             </Text>
 
             <div className='mt-10'>
-              <form onSubmit={handleSubmit} className='flex items-start gap-3'>
+              <form
+                onSubmit={handleSubmit}
+                className='flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3'
+              >
                 <Input
                   type='text'
                   placeholder='Enter IP address (e.g., 8.8.8.8)'
                   value={ipInput}
                   onChange={handleInputChange}
                   error={displayError}
-                  className='flex-1'
+                  className='sm:flex-1'
+                  spellCheck={false}
+                  autoCapitalize='off'
+                  autoComplete='off'
                 />
                 <Button
                   type='submit'
                   primary
                   regular
                   disabled={isLoading}
-                  className='mt-px'
+                  className='sm:mt-px'
                   loading={isLoading}
                 >
                   {isLoading ? null : (
-                    <>
-                      <MagnifyingGlassIcon className='mr-1.5 h-4 w-4' />
-                    </>
+                    <MagnifyingGlassIcon className='mr-1.5 h-4 w-4' />
                   )}
                   Lookup
                 </Button>
               </form>
+
+              {showUseMyIp ? (
+                <div className='mt-2'>
+                  <button
+                    type='button'
+                    onClick={() => {
+                      setIpInput(userIp)
+                      setInputError(null)
+                      fetcher.submit({ ip: userIp }, { method: 'post' })
+                    }}
+                    className='text-xs font-medium text-gray-600 underline-offset-2 hover:underline dark:text-slate-400 dark:hover:text-slate-200'
+                  >
+                    Use my IP ({userIp})
+                  </button>
+                </div>
+              ) : null}
             </div>
 
-            {data && (
-              <div className='mt-6 space-y-8'>
-                <section className='overflow-hidden rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                  <div className='mb-6 flex items-start gap-4'>
-                    {data.country && (
+            {data ? (
+              <div
+                className={cn(
+                  'mt-12 transition-opacity duration-200',
+                  isLoading && 'pointer-events-none opacity-60',
+                )}
+              >
+                <header className='flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between'>
+                  <div className='flex min-w-0 items-start gap-4'>
+                    {data.country ? (
                       <Flag
-                        className='shrink-0 rounded-xs'
                         country={data.country}
                         size={40}
                         alt={data.countryName || data.country}
+                        className='mt-1.5 shrink-0 rounded-xs ring-1 ring-gray-200/80 dark:ring-slate-700/60'
                       />
-                    )}
+                    ) : null}
                     <div className='min-w-0 flex-1'>
-                      <Text
-                        as='p'
-                        size='2xl'
-                        weight='semibold'
-                        className='font-mono break-all'
-                      >
-                        {data.ip}
-                      </Text>
-                      {formatLocation() && (
+                      <div className='flex items-center gap-1'>
                         <Text
                           as='p'
-                          colour='muted'
-                          className='mt-0.5 wrap-break-word'
+                          size='3xl'
+                          weight='semibold'
+                          tracking='tight'
+                          className='font-mono break-all'
                         >
-                          {formatLocation()}
+                          {data.ip}
                         </Text>
+                        <CopyButton
+                          value={data.ip}
+                          ariaLabel='Copy IP address'
+                        />
+                      </div>
+                      {locationLine ? (
+                        <Text
+                          as='p'
+                          size='lg'
+                          colour='muted'
+                          className='mt-1 wrap-break-word'
+                        >
+                          {locationLine}
+                        </Text>
+                      ) : null}
+                      <div className='mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm'>
+                        {data.ipVersion ? (
+                          <Text size='sm' colour='muted'>
+                            IPv{data.ipVersion}
+                          </Text>
+                        ) : null}
+                        {data.isInEuropeanUnion ? (
+                          <>
+                            <Dot />
+                            <Text size='sm' colour='muted'>
+                              European Union
+                            </Text>
+                          </>
+                        ) : null}
+                        {isHosting ? (
+                          <>
+                            <Dot />
+                            <Text size='sm' colour='warning'>
+                              Data center
+                            </Text>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
+                  {data.timezone ? (
+                    <ClientOnly fallback={null}>
+                      {() => (
+                        <div className='inline-flex shrink-0 items-center gap-1.5 text-gray-500 dark:text-slate-400'>
+                          <ClockIcon className='size-4' weight='duotone' />
+                          <Text size='sm' colour='muted'>
+                            <LocalTime timezone={data.timezone!} /> local
+                          </Text>
+                        </div>
                       )}
-                    </div>
-                  </div>
+                    </ClientOnly>
+                  ) : null}
+                </header>
 
-                  <div className='space-y-6'>
-                    <div>
-                      <SectionHeading>Location</SectionHeading>
-                      <dl>
-                        <DataRow
-                          label='IP Version'
-                          value={data.ipVersion ? `IPv${data.ipVersion}` : null}
-                        />
-                        <DataRow
-                          label='Country'
-                          value={data.countryName}
-                          secondary={data.country}
-                        />
-                        <DataRow
-                          label='Region'
-                          value={data.region}
-                          secondary={data.regionCode}
-                        />
-                        <DataRow label='City' value={data.city} />
-                        <DataRow label='Postal Code' value={data.postalCode} />
-                        <DataRow
-                          label='Continent'
-                          value={data.continentName}
-                          secondary={data.continentCode}
-                        />
-                        <DataRow
-                          label='Coordinates'
-                          value={
-                            hasCoordinates
-                              ? `${data.latitude?.toFixed(4)}, ${data.longitude?.toFixed(4)}`
-                              : null
-                          }
-                        />
-                        <DataRow label='Timezone' value={data.timezone} />
-                        {data.isInEuropeanUnion && (
-                          <DataRow label='EU Member' value='Yes' />
-                        )}
-                      </dl>
-                    </div>
-
-                    <div>
-                      <SectionHeading>Network</SectionHeading>
-                      <dl>
-                        <DataRow label='ISP' value={data.isp} />
-                        <DataRow
-                          label='Organization'
-                          value={data.organization}
-                        />
-                        <DataRow
-                          label='User Type'
-                          value={formatTraitValue(data.userType)}
-                        />
-                        <DataRow
-                          label='Connection Type'
-                          value={formatTraitValue(data.connectionType)}
-                        />
-                      </dl>
-                    </div>
-                  </div>
-                </section>
-
-                {hasCoordinates && (
-                  <section className='overflow-hidden rounded-xl ring-1 ring-gray-200 dark:ring-slate-700'>
+                {hasCoordinates ? (
+                  <div className='relative mt-8 overflow-hidden rounded-lg ring-1 ring-black/5 dark:ring-white/10'>
                     <ClientOnly
                       fallback={
-                        <div className='flex h-96 items-center justify-center bg-gray-50 dark:bg-slate-800'>
+                        <div className='flex h-[420px] items-center justify-center bg-gray-100 sm:h-[480px] dark:bg-slate-900'>
                           <Spin />
                         </div>
                       }
@@ -456,15 +600,81 @@ export default function IpLookup() {
                         <LocationMap
                           latitude={data.latitude!}
                           longitude={data.longitude!}
-                          city={data.city}
-                          country={data.countryName}
                         />
                       )}
                     </ClientOnly>
-                  </section>
-                )}
+                  </div>
+                ) : null}
+
+                <div
+                  className={cn(
+                    hasCoordinates ? 'mt-10' : 'mt-8',
+                    networkHasData && 'xl:grid xl:grid-cols-2 xl:gap-x-12',
+                  )}
+                >
+                  <div>
+                    <SectionHeader>Location</SectionHeader>
+                    <dl className='mt-3 divide-y divide-gray-100 border-y border-gray-100 dark:divide-slate-800/70 dark:border-slate-800/70'>
+                      <Row
+                        label='Country'
+                        value={data.countryName}
+                        secondary={data.country}
+                        leading={
+                          data.country ? (
+                            <Flag
+                              country={data.country}
+                              size={18}
+                              alt={data.countryName || data.country}
+                              className='shrink-0 rounded-xs ring-1 ring-gray-200/70 dark:ring-slate-700/70'
+                            />
+                          ) : null
+                        }
+                      />
+                      <Row
+                        label='Region'
+                        value={data.region}
+                        secondary={data.regionCode}
+                      />
+                      <Row label='City' value={data.city} />
+                      <Row label='Postal code' value={data.postalCode} />
+                      <Row
+                        label='Continent'
+                        value={data.continentName}
+                        secondary={data.continentCode}
+                      />
+                      <Row
+                        label='Coordinates'
+                        mono
+                        value={
+                          hasCoordinates
+                            ? `${data.latitude?.toFixed(4)}, ${data.longitude?.toFixed(4)}`
+                            : null
+                        }
+                      />
+                      <Row label='Timezone' value={data.timezone} mono />
+                    </dl>
+                  </div>
+
+                  {networkHasData ? (
+                    <div className='mt-10 xl:mt-0'>
+                      <SectionHeader>Network</SectionHeader>
+                      <dl className='mt-3 divide-y divide-gray-100 border-y border-gray-100 dark:divide-slate-800/70 dark:border-slate-800/70'>
+                        <Row label='ISP' value={data.isp} />
+                        <Row label='Organization' value={data.organization} />
+                        <Row
+                          label='User type'
+                          value={formatTraitValue(data.userType)}
+                        />
+                        <Row
+                          label='Connection type'
+                          value={formatTraitValue(data.connectionType)}
+                        />
+                      </dl>
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            )}
+            ) : null}
 
             <section className='mt-20 border-t border-gray-200 pt-16 dark:border-slate-700'>
               <Text as='h2' size='3xl' weight='bold' tracking='tight'>
@@ -479,7 +689,7 @@ export default function IpLookup() {
                 Wondering "what is my IP address?" Our free IP lookup tool
                 instantly shows your public IP address and provides detailed
                 geolocation data including country, city, region, coordinates,
-                and timezone—plus network details like ISP, organization, user
+                and timezone, plus network details like ISP, organization, user
                 type, and connection type. You can also look up any IPv4 or IPv6
                 address to find its location and network information.
               </Text>
