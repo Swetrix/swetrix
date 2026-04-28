@@ -8,11 +8,14 @@ import {
   Body,
   NotFoundException,
   BadRequestException,
+  ConflictException,
   Ip,
   Headers,
+  HttpCode,
 } from '@nestjs/common'
 import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import _isEmpty from 'lodash/isEmpty'
+import * as crypto from 'crypto'
 
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
@@ -23,18 +26,25 @@ import {
 import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { RevenueService } from './revenue.service'
+import { CurrencyService } from './currency.service'
 import { PaddleAdapter } from './adapters/paddle.adapter'
 import { StripeAdapter } from './adapters/stripe.adapter'
 import { UpdateRevenueCurrencyDto } from './dto/update-revenue-currency.dto'
 import { ConnectRevenueDto } from './dto/connect-revenue.dto'
 import { GetRevenueDto, GetRevenueTransactionsDto } from './dto/get-revenue.dto'
+import { LogRevenueDto } from './dto/log-revenue.dto'
 import {
   RevenueStatsDto,
   RevenueChartDto,
   RevenueTransactionDto,
   RevenueStatusDto,
 } from './dto/revenue-stats.dto'
-import { STRIPE_REQUIRED_PERMISSIONS } from './interfaces/revenue.interface'
+import {
+  RevenueProvider,
+  RevenueStatus,
+  RevenueType,
+  STRIPE_REQUIRED_PERMISSIONS,
+} from './interfaces/revenue.interface'
 import { trackCustom } from '../common/analytics'
 import { getIPFromHeaders } from '../common/utils'
 
@@ -98,6 +108,27 @@ export class RevenueController {
     )
 
     const currency = dto.currency || 'USD'
+
+    if (dto.provider === 'api') {
+      const result = await this.revenueService.connectApi(pid, currency)
+
+      if (!result.success) {
+        throw new BadRequestException(result.message)
+      }
+
+      await trackCustom(ip, headers['user-agent'], {
+        ev: 'REVENUE_SETUP',
+        meta: {
+          provider: 'api',
+        },
+      })
+
+      return { success: true }
+    }
+
+    if (!dto.apiKey) {
+      throw new BadRequestException('API key is required for this provider')
+    }
 
     if (dto.provider === 'paddle') {
       // Validate API key with Paddle
@@ -255,10 +286,11 @@ export class RevenueController {
 }
 
 @ApiTags('Revenue Analytics')
-@Controller('log/revenue')
+@Controller(['log/revenue', 'v1/log/revenue'])
 export class RevenueAnalyticsController {
   constructor(
     private readonly revenueService: RevenueService,
+    private readonly currencyService: CurrencyService,
     private readonly projectService: ProjectService,
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
@@ -285,7 +317,11 @@ export class RevenueAnalyticsController {
 
     this.projectService.allowedToView(project, userId)
 
-    if (!project.paddleApiKeyEnc && !project.stripeApiKeyEnc) {
+    if (
+      !project.paddleApiKeyEnc &&
+      !project.stripeApiKeyEnc &&
+      !project.revenueApiEnabled
+    ) {
       throw new BadRequestException(
         'Revenue tracking is not configured for this project',
       )
@@ -351,7 +387,11 @@ export class RevenueAnalyticsController {
 
     this.projectService.allowedToView(project, userId)
 
-    if (!project.paddleApiKeyEnc && !project.stripeApiKeyEnc) {
+    if (
+      !project.paddleApiKeyEnc &&
+      !project.stripeApiKeyEnc &&
+      !project.revenueApiEnabled
+    ) {
       throw new BadRequestException(
         'Revenue tracking is not configured for this project',
       )
@@ -377,5 +417,116 @@ export class RevenueAnalyticsController {
       dto.type,
       dto.status,
     )
+  }
+
+  @ApiBearerAuth()
+  @Post()
+  @Auth(true, false)
+  @HttpCode(201)
+  @ApiResponse({ status: 201 })
+  async logRevenue(
+    @CurrentUserId() userId: string,
+    @Body() dto: LogRevenueDto,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ): Promise<{ success: true; transactionId: string }> {
+    this.logger.log(
+      { userId, pid: dto.pid, type: dto.type },
+      'POST /log/revenue',
+    )
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
+    const project = await this.projectService.getFullProject(dto.pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToManage(
+      project,
+      userId,
+      'You are not allowed to ingest revenue for this project',
+    )
+
+    if (project.paddleApiKeyEnc || project.stripeApiKeyEnc) {
+      throw new ConflictException(
+        'This project already has a payment provider connected (Stripe or Paddle). Disconnect it from Project Settings > Revenue before sending revenue via the API, otherwise transactions would be double-counted.',
+      )
+    }
+
+    const isFirstCall = !project.revenueApiEnabled
+
+    if (isFirstCall) {
+      const result = await this.revenueService.connectApi(dto.pid, dto.currency)
+
+      if (!result.success) {
+        throw new BadRequestException(result.message)
+      }
+
+      await trackCustom(ip, headers['user-agent'], {
+        ev: 'REVENUE_SETUP',
+        meta: {
+          provider: 'api',
+          autoEnabled: 'true',
+        },
+      })
+    }
+
+    const targetCurrency =
+      project.revenueCurrency || (isFirstCall ? dto.currency : 'USD')
+
+    const originalCurrency = dto.currency.toUpperCase()
+    const originalAmount = dto.amount
+
+    const convertedAmount = await this.currencyService.convert(
+      originalAmount,
+      originalCurrency,
+      targetCurrency,
+    )
+
+    const isRefund = dto.type === 'refund'
+
+    const type =
+      dto.type === 'refund'
+        ? RevenueType.REFUND
+        : dto.type === 'subscription'
+          ? RevenueType.SUBSCRIPTION
+          : RevenueType.SALE
+
+    const status = isRefund ? RevenueStatus.REFUNDED : RevenueStatus.COMPLETED
+
+    const transactionId = dto.transactionId || crypto.randomUUID()
+    const created = dto.created ? new Date(dto.created) : new Date()
+
+    await this.revenueService.insertTransaction({
+      pid: dto.pid,
+      transactionId,
+      provider: RevenueProvider.API,
+      type,
+      status,
+      amount: isRefund ? -Math.abs(convertedAmount) : convertedAmount,
+      originalAmount: isRefund ? -Math.abs(originalAmount) : originalAmount,
+      originalCurrency,
+      currency: targetCurrency,
+      profileId: dto.profileId || null,
+      sessionId: dto.sessionId || null,
+      productId: dto.productId || null,
+      productName: dto.productName || null,
+      metadata: dto.metadata || {},
+      created,
+      syncedAt: new Date(),
+    })
+
+    await this.revenueService.updateLastSyncAt(dto.pid)
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'REVENUE_API_INGEST',
+      meta: {
+        type: dto.type,
+      },
+    })
+
+    return { success: true, transactionId }
   }
 }

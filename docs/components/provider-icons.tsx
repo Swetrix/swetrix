@@ -1,3 +1,57 @@
+import { useId } from "react";
+import { CodeIcon } from "@phosphor-icons/react/dist/ssr";
+
+const REVENUE_ICON_DEFAULT_CLASSNAME = "inline-block size-4 align-[-0.125em] shrink-0";
+
+export const StripeIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className ?? REVENUE_ICON_DEFAULT_CLASSNAME}
+    viewBox="0 0 32 32"
+    fill="#5f6bea"
+    aria-hidden
+  >
+    <path
+      d="M69.164 8.47l-.302-1.434h-4.196V24.04h4.848V12.5c1.147-1.5 3.082-1.208 3.698-1.017V7.038c-.646-.232-2.913-.658-4.048 1.43zm-9.73-5.646L54.698 3.83l-.02 15.562c0 2.87 2.158 4.993 5.038 4.993 1.585 0 2.756-.302 3.405-.643v-3.95c-.622.248-3.683 1.138-3.683-1.72v-6.9h3.683V7.035h-3.683zM46.3 11.97c0-.758.63-1.05 1.648-1.05a10.868 10.868 0 0 1 4.83 1.25V7.6a12.815 12.815 0 0 0-4.83-.888c-3.924 0-6.557 2.056-6.557 5.488 0 5.37 7.375 4.498 7.375 6.813 0 .906-.78 1.186-1.863 1.186-1.606 0-3.68-.664-5.307-1.55v4.63a13.461 13.461 0 0 0 5.307 1.117c4.033 0 6.813-1.992 6.813-5.485 0-5.796-7.417-4.76-7.417-6.943zM13.88 9.515c0-1.37 1.14-1.9 2.982-1.9A19.661 19.661 0 0 1 25.6 9.876v-8.27A23.184 23.184 0 0 0 16.862.001C9.762.001 5 3.72 5 9.93c0 9.716 13.342 8.138 13.342 12.326 0 1.638-1.4 2.146-3.37 2.146-2.905 0-6.657-1.202-9.6-2.802v8.378A24.353 24.353 0 0 0 14.973 32C22.27 32 27.3 28.395 27.3 22.077c0-10.486-13.42-8.613-13.42-12.56z"
+      fillRule="evenodd"
+    />
+  </svg>
+);
+
+export const PaddleIcon = ({ className }: { className?: string }) => {
+  const id = useId();
+
+  return (
+    <svg
+      className={className ?? REVENUE_ICON_DEFAULT_CLASSNAME}
+      viewBox="0 0 100 100"
+      fill="none"
+      aria-hidden
+    >
+      <g clipPath={`url(#${id})`}>
+        <rect width="100" height="100" fill="white" />
+        <path d="M100 0H0V100H100V0Z" fill="#FFDD35" />
+        <path
+          d="M18.9297 41.5476V38.7972C22.3173 38.7972 25.5679 37.4582 27.9715 35.0788C30.367 32.7075 31.714 29.4731 31.7221 26.1016H34.2789C34.2789 29.4811 35.6179 32.7155 38.0215 35.095C40.4251 37.4905 43.6837 38.8294 47.0713 38.8214V41.5718C43.6837 41.5718 40.4332 42.9107 38.0295 45.2901C35.634 47.6615 34.287 50.8959 34.2789 54.2674H31.7221C31.7221 50.8878 30.3831 47.6534 27.9795 45.274C25.5679 42.8865 22.3173 41.5476 18.9297 41.5476Z"
+          fill="#040F11"
+        />
+        <path
+          d="M31.7229 21.3354H53.7184C64.4621 21.3354 72.1407 28.9576 72.1407 40.1288C72.1407 51.2999 64.4701 58.9221 53.7184 58.9221H31.7148V90.9273H40.9179V67.0525H53.7103C69.1644 67.0525 81.3438 54.9618 81.3438 40.1288C81.3438 25.2957 69.1644 13.2051 53.7103 13.2051H31.7148V21.3354H31.7229Z"
+          fill="#040F11"
+        />
+      </g>
+      <defs>
+        <clipPath id={id}>
+          <rect width="100" height="100" fill="white" />
+        </clipPath>
+      </defs>
+    </svg>
+  );
+};
+
+export const RevenueApiIcon = ({ className }: { className?: string }) => (
+  <CodeIcon className={className ?? REVENUE_ICON_DEFAULT_CLASSNAME} weight="duotone" aria-hidden />
+);
+
 export const GoogleAnalyticsIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 192 192" width="16" height="16">
     <g>

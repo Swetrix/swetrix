@@ -1,6 +1,7 @@
 export enum RevenueProvider {
   STRIPE = 'stripe',
   PADDLE = 'paddle',
+  API = 'api',
 }
 
 export enum RevenueType {

@@ -104,6 +104,29 @@ All of the values are numbers in milliseconds.
 | ----- | -------- | -------- | ---------------------------------------------- |
 | `pid` | `string` | `true`   | A project ID to record the heartbeat event for |
 
+### Revenue event structure
+
+<Callout type="info">
+  Unlike other `/log/*` endpoints, `POST /log/revenue` requires authentication with your personal
+  API key (`X-Api-Key` header) — the same key used by the [Statistics API](/statistics-api). Revenue
+  is financial data, so it must be sent from your server, never from the browser. See the [Revenue
+  Tracking guide](/analytics-dashboard/revenue-tracking) for the full setup walkthrough.
+</Callout>
+
+| Name            | Type                                   | Required | Description                                                                                                                                |
+| --------------- | -------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pid`           | `string`                               | `true`   | A project ID to record the revenue event for                                                                                               |
+| `type`          | `'sale' \| 'refund' \| 'subscription'` | `true`   | Transaction type. Use `refund` for refunds — the amount sign is handled automatically.                                                     |
+| `amount`        | `number`                               | `true`   | Amount in major units (e.g. `49.99` for €49.99). Always send a positive number; the sign is flipped server-side for refunds.               |
+| `currency`      | `string`                               | `true`   | ISO 4217 currency code (e.g. `USD`, `EUR`). Converted to your project's display currency automatically.                                    |
+| `transactionId` | `string`                               | `false`  | Stable unique identifier. Re-sending the same `transactionId` replaces the previous version (idempotent). If omitted, a UUID is generated. |
+| `productId`     | `string`                               | `false`  | Optional SKU / product identifier.                                                                                                         |
+| `productName`   | `string`                               | `false`  | Optional human-readable product name shown in the transactions table.                                                                      |
+| `profileId`     | `string`                               | `false`  | Profile ID for revenue attribution. Same value you'd pass to `swetrix.init({ profileId })`.                                                |
+| `sessionId`     | `string`                               | `false`  | Session ID for attributing revenue to a specific browsing session.                                                                         |
+| `created`       | `string`                               | `false`  | Transaction date as ISO 8601. Defaults to the time Swetrix receives the request — useful when backfilling.                                 |
+| `metadata`      | `object`                               | `false`  | Arbitrary string key/value pairs stored alongside the transaction (max 100 keys, 2000 characters total).                                   |
+
 ## Endpoints
 
 ### POST /log
@@ -211,6 +234,35 @@ curl -i -X POST https://api.swetrix.com/log/error \
 {}
 ```
 
+### POST /log/revenue
+
+This endpoint records revenue transactions (sales, subscription charges, and refunds). Use it when you sell through a platform that isn't Stripe or Paddle (Shopify, JTL Shop, Lemon Squeezy, in-app purchases, custom checkouts, etc.). For Stripe and Paddle, prefer the built-in integrations under **Project Settings &gt; Revenue** instead — they sync automatically every 30 minutes.
+
+<Callout type="warn">
+  This endpoint requires the `X-Api-Key` header with your personal API key (it does **not** use the
+  public `pid`-only auth model of the other `/log/*` endpoints). Never call it from the browser.
+</Callout>
+
+The first call against a project automatically enables API revenue tracking and locks in the `currency` you sent as the project's display currency. You can change it later from **Project Settings &gt; Revenue**.
+
+```bash title="Request"
+curl -i -X POST https://api.swetrix.com/log/revenue \
+  -H "X-Api-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"pid":"YOUR_PROJECT_ID","transactionId":"order_42891","type":"sale","amount":49.99,"currency":"EUR","productName":"Pro plan (yearly)","profileId":"user-12345"}'
+```
+
+```json title="Response (201 Created)"
+{
+  "success": true,
+  "transactionId": "order_42891"
+}
+```
+
+Returns `409 Conflict` if a Stripe or Paddle key is already connected for this project — disconnect it from Project Settings first to avoid double-counting.
+
+See the [Revenue Tracking guide](/analytics-dashboard/revenue-tracking) for full setup walkthroughs (cURL, PHP / JTL Shop, Node.js), idempotency rules, and user attribution.
+
 ## Status and error codes
 
 ### 201 Created
@@ -227,7 +279,11 @@ This error is usually returned when the project is not active (i.e. the subscrip
 
 ### 403 Forbidden
 
-This error is usually returned when the `unique` parameter is set to `true` and the event is not unique, i.e. the pageview event has already been recorded for this session.
+This error is usually returned when the `unique` parameter is set to `true` and the event is not unique, i.e. the pageview event has already been recorded for this session. For `POST /log/revenue` it indicates that your API key does not have permission to manage the target project.
+
+### 409 Conflict
+
+Returned by `POST /log/revenue` when a Stripe or Paddle key is already connected for the project. Disconnect the existing source from **Project Settings &gt; Revenue** before sending revenue via the API, otherwise transactions would be double-counted.
 
 ### 500 Internal Server Error
 

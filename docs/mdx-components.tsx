@@ -9,6 +9,9 @@ import {
   FathomIcon,
   PlausibleIcon,
   NpmIcon,
+  StripeIcon,
+  PaddleIcon,
+  RevenueApiIcon,
 } from "@/components/provider-icons";
 import {
   EmailChannelIcon,
@@ -40,6 +43,9 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     FathomIcon,
     PlausibleIcon,
     NpmIcon,
+    StripeIcon,
+    PaddleIcon,
+    RevenueApiIcon,
     EmailChannelIcon,
     TelegramChannelIcon,
     DiscordChannelIcon,
