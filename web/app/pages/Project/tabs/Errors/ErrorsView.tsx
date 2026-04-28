@@ -77,6 +77,8 @@ import {
   typeNameMapping,
   panelIconMapping,
   getDeviceRowMapper,
+  getUsageTypeLabel,
+  getConnectionTypeLabel,
 } from '~/pages/Project/View/ViewProject.helpers'
 import {
   useCurrentProject,
@@ -599,10 +601,12 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
     page: 'pg' | 'host'
     device: 'br' | 'os' | 'dv'
+    network: 'isp' | 'og' | 'ut' | 'ctp'
   }>({
     location: 'cc',
     page: 'pg',
     device: 'br',
+    network: 'isp',
   })
 
   const pureSearchParams = useMemo(() => {
@@ -1124,6 +1128,52 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                           errorsActiveTabs.device === 'br' ? 'br' : 'os',
                         )
                       }
+                      valuesHeaderName={t('project.occurrences')}
+                      highlightColour='red'
+                    />
+                  )
+                }
+
+                if (type === 'network') {
+                  const networkTabs = [
+                    { id: 'isp', label: t('project.mapping.isp') },
+                    { id: 'og', label: t('project.mapping.og') },
+                    { id: 'ut', label: t('project.mapping.ut') },
+                    { id: 'ctp', label: t('project.mapping.ctp') },
+                  ]
+
+                  const activeNetworkTab = errorsActiveTabs.network
+
+                  return (
+                    <Panel
+                      key={activeNetworkTab}
+                      icon={panelIconMapping.isp}
+                      id={activeNetworkTab}
+                      getFilterLink={getFilterLink}
+                      name={t('project.network')}
+                      tabs={networkTabs}
+                      onTabChange={(tab) =>
+                        setErrorsActiveTabs({
+                          ...errorsActiveTabs,
+                          network: tab as 'isp' | 'og' | 'ut' | 'ctp',
+                        })
+                      }
+                      activeTabId={activeNetworkTab}
+                      data={activeError?.params?.[activeNetworkTab] || []}
+                      rowMapper={({ name: entryName }) => {
+                        if (!entryName) {
+                          return (
+                            <span className='italic'>{t('common.notSet')}</span>
+                          )
+                        }
+                        if (activeNetworkTab === 'ut') {
+                          return getUsageTypeLabel(entryName, t)
+                        }
+                        if (activeNetworkTab === 'ctp') {
+                          return getConnectionTypeLabel(entryName, t)
+                        }
+                        return entryName
+                      }}
                       valuesHeaderName={t('project.occurrences')}
                       highlightColour='red'
                     />

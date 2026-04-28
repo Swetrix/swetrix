@@ -78,6 +78,19 @@ Identify how visitors find your website:
 Looking for search keywords, top pages, and other SEO data? Check out the dedicated **[SEO dashboard](/analytics-dashboard/seo)**, powered by your Google Search Console integration.
 :::
 
+### Network intelligence
+
+The Network intelligence panel breaks down traffic by the network the visitor is coming from. It's particularly useful for spotting bot or hosting-provider traffic, distinguishing residential users from corporate ones, and understanding how your audience connects.
+
+- **ISP**: The Internet Service Provider serving the visitor (e.g., `Comcast`, `Vodafone`, `Hetzner`).
+- **Organisation**: The registered owner of the IP block (often the same as the ISP, but can also be a specific company, university, or hosting tenant).
+- **Usage type**: How the IP block is classified — for example `residential`, `business`, `hosting`, `cellular`, `government`, `school`, or `search_engine_spider`. This is one of the easiest ways to surface unwanted hosting / datacenter traffic at a glance.
+- **Connection type**: The connection technology behind the IP — typically `Cable/DSL`, `Cellular`, `Corporate`, `Satellite`, or `Dialup`.
+
+:::info
+Network intelligence is powered by your IP geolocation database. Swetrix Cloud ships with a premium GeoIP database, so all four breakdowns are populated out of the box. Self-hosted instances using the bundled DB-IP City Lite database will see the panel but with empty data — to populate ISP, organisation, usage type, and connection type, point `IP_GEOLOCATION_DB_PATH` at a paid MaxMind GeoIP2 ISP / Insights database or a paid DB-IP database that includes those fields. See [Self-hosting → Configuring](/selfhosting/configuring) for details.
+:::
+
 ## Custom Events & Metadata
 
 Swetrix allows you to track specific interactions beyond standard pageviews.

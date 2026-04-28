@@ -265,6 +265,10 @@ interface IPDetails {
   region: string | null
   regionCode: string | null
   city: string | null
+  isp: string | null
+  organization: string | null
+  userType: string | null
+  connectionType: string | null
   isHosting: boolean
 }
 
@@ -282,11 +286,14 @@ export const getIPDetails = (ip: string, tz?: string): IPDetails => {
 
   // Stage 1: Using IP address based geo lookup
   const country = data?.country?.iso_code || null
-  // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
   const city = data?.city?.names?.en || null
-  // TODO: Store ISO code, not region name
   const region = data?.subdivisions?.[0]?.names?.en || null
   const regionCode = data?.subdivisions?.[0]?.iso_code || null
+
+  const isp = traits.isp || null
+  const organization = traits.organization || null
+  const userType = traits.user_type || null
+  const connectionType = traits.connection_type || null
 
   if (country) {
     return {
@@ -294,11 +301,14 @@ export const getIPDetails = (ip: string, tz?: string): IPDetails => {
       city,
       region,
       regionCode,
+      isp,
+      organization,
+      userType,
+      connectionType,
       isHosting,
     }
   }
 
-  // Stage 2: Using timezone based geo lookup as a fallback
   const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
 
   return {
@@ -306,6 +316,10 @@ export const getIPDetails = (ip: string, tz?: string): IPDetails => {
     city: null,
     region: null,
     regionCode: null,
+    isp: null,
+    organization: null,
+    userType: null,
+    connectionType: null,
     isHosting,
   }
 }

@@ -2354,6 +2354,10 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   ca: t('project.mapping.ca'),
   te: t('project.mapping.te'),
   co: t('project.mapping.co'),
+  isp: t('project.mapping.isp'),
+  og: t('project.mapping.og'),
+  ut: t('project.mapping.ut'),
+  ctp: t('project.mapping.ctp'),
   ev: t('project.event'),
   userFlow: t('project.mapping.userFlow'),
   'tag:key': t('project.metamapping.tag.key'),
@@ -2366,6 +2370,7 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   location: t('project.location'),
   browser: t('project.browser'),
   devices: t('project.devices'),
+  network: t('project.network'),
   map: t('project.map'),
 })
 
@@ -2379,6 +2384,7 @@ const panelIconMapping = {
   br: <CompassIcon className={iconClassName} />,
   os: <MonitorPlayIcon className={iconClassName} />,
   so: <ShareIcon className={iconClassName} />,
+  isp: <GlobeIcon className={iconClassName} />,
 }
 
 export const deviceIconMapping = {
@@ -2541,6 +2547,22 @@ export const getDeviceRowMapper = (
 
   return undefined
 }
+
+const sanitiseNetworkKey = (value: string) =>
+  value.toLowerCase().replace(/[\s/]+/g, '_')
+
+export const getUsageTypeLabel = (value: string, t: typeof i18next.t): string =>
+  t(`project.usageTypeMapping.${sanitiseNetworkKey(value)}`, {
+    defaultValue: value,
+  }) as string
+
+export const getConnectionTypeLabel = (
+  value: string,
+  t: typeof i18next.t,
+): string =>
+  t(`project.connectionTypeMapping.${sanitiseNetworkKey(value)}`, {
+    defaultValue: value,
+  }) as string
 
 const getSettingsCaptcha = (
   chart: { x: string[]; results: number[] },
