@@ -1277,11 +1277,12 @@
     "webpush": {
       "enable": "Włącz powiadomienia w przeglądarce",
       "enabled": "Powiadomienia w przeglądarce są włączone na tym urządzeniu.",
-      "useButton": "Użyj przycisku \"Włącz powiadomienia w przeglądarce\", aby zasubskrybować to urządzenie.",
       "unsupported": "Ta przeglądarka nie obsługuje powiadomień push.",
       "permissionDenied": "Odmówiono uprawnień do powiadomień.",
       "notConfigured": "Web push nie jest skonfigurowany na tym serwerze.",
-      "subscribeFailed": "Nie udało się zasubskrybować powiadomień push."
+      "subscribeFailed": "Nie udało się zasubskrybować powiadomień push.",
+      "alertTitle": "Powiadomienia przeglądarki wymagają uprawnień",
+      "alertDescription": "Aby otrzymywać alerty web push na tym urządzeniu, zezwól Swetrix na wysyłanie powiadomień w przeglądarce. Zarejestrujemy kanał powiadomień powiązany z tą przeglądarką."
     }
   },
   "goals": {

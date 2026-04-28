@@ -32,11 +32,17 @@ const arrayBufferToBase64 = (buffer: ArrayBuffer | null): string => {
 
 interface EnableWebPushButtonProps {
   onSubscribed?: () => void
+  /** Render style. "button" (default) shows a Button; "link" shows an underlined inline link. */
+  variant?: 'button' | 'link'
+  className?: string
 }
 
-const EnableWebPushButton = ({ onSubscribed }: EnableWebPushButtonProps) => {
+const EnableWebPushButton = ({
+  onSubscribed,
+  variant = 'button',
+  className,
+}: EnableWebPushButtonProps) => {
   const { t } = useTranslation('common')
-  const keyFetcher = useFetcher<NotificationChannelActionData>()
   const subscribeFetcher = useFetcher<NotificationChannelActionData>()
   const lastSubscribeData = useRef<NotificationChannelActionData | null>(null)
   const [busy, setBusy] = useState(false)
@@ -90,6 +96,12 @@ const EnableWebPushButton = ({ onSubscribed }: EnableWebPushButtonProps) => {
         method: 'POST',
         body: keyData,
       })
+      const contentType = keyResp.headers.get('content-type') || ''
+      if (!keyResp.ok || !contentType.includes('application/json')) {
+        toast.error(t('notificationChannels.webpush.subscribeFailed'))
+        setBusy(false)
+        return
+      }
       const keyJson = (await keyResp.json()) as {
         publicKey?: string | null
         error?: string
@@ -148,12 +160,33 @@ const EnableWebPushButton = ({ onSubscribed }: EnableWebPushButtonProps) => {
 
   if (!supported) return null
 
+  const loading = busy || subscribeFetcher.state !== 'idle'
+
+  if (variant === 'link') {
+    return (
+      <button
+        type='button'
+        onClick={onClick}
+        disabled={loading}
+        className={
+          className ||
+          'font-medium text-amber-900 underline decoration-dashed underline-offset-2 hover:decoration-solid disabled:opacity-50 dark:text-amber-50'
+        }
+      >
+        {loading
+          ? t('common.loading')
+          : t('notificationChannels.webpush.enable')}
+      </button>
+    )
+  }
+
   return (
     <Button
       secondary
       small
       onClick={onClick}
-      loading={busy || keyFetcher.state !== 'idle'}
+      loading={loading}
+      className={className}
     >
       <span className='inline-flex items-center gap-1'>
         <BellRingingIcon className='size-4' aria-hidden />

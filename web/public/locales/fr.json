@@ -1277,11 +1277,12 @@
     "webpush": {
       "enable": "Activer les notifications du navigateur",
       "enabled": "Les notifications du navigateur sont activées sur cet appareil.",
-      "useButton": "Utilisez le bouton \"Activer les notifications du navigateur\" pour abonner cet appareil.",
       "unsupported": "Ce navigateur ne prend pas en charge les notifications push.",
       "permissionDenied": "L'autorisation de notification a été refusée.",
       "notConfigured": "Le push web n'est pas configuré sur ce serveur.",
-      "subscribeFailed": "Impossible de s'abonner aux notifications push."
+      "subscribeFailed": "Impossible de s'abonner aux notifications push.",
+      "alertTitle": "Les notifications du navigateur nécessitent une autorisation",
+      "alertDescription": "Pour recevoir des alertes web push sur cet appareil, autorisez Swetrix à vous envoyer des notifications de navigateur. Nous enregistrerons un canal de notification lié à ce navigateur."
     }
   },
   "goals": {

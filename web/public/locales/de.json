@@ -1277,11 +1277,12 @@
     "webpush": {
       "enable": "Browser-Benachrichtigungen aktivieren",
       "enabled": "Browser-Benachrichtigungen sind auf diesem Gerät aktiviert.",
-      "useButton": "Verwende die Schaltfläche \"Browser-Benachrichtigungen aktivieren\", um dieses Gerät zu abonnieren.",
       "unsupported": "Dieser Browser unterstützt keine Push-Benachrichtigungen.",
       "permissionDenied": "Die Berechtigung für Benachrichtigungen wurde verweigert.",
       "notConfigured": "Web-Push ist auf diesem Server nicht konfiguriert.",
-      "subscribeFailed": "Konnte Push-Benachrichtigungen nicht abonnieren."
+      "subscribeFailed": "Konnte Push-Benachrichtigungen nicht abonnieren.",
+      "alertTitle": "Browser-Benachrichtigungen benötigen eine Berechtigung",
+      "alertDescription": "Um Web-Push-Warnungen auf diesem Gerät zu erhalten, erlauben Sie Swetrix, Ihnen Browser-Benachrichtigungen zu senden. Wir registrieren einen mit diesem Browser verknüpften Benachrichtigungskanal."
     }
   },
   "goals": {

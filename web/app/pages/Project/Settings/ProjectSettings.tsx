@@ -1312,6 +1312,7 @@ const ProjectSettings = () => {
                     'discord',
                     'slack',
                     'webhook',
+                    'webpush',
                   ]}
                 />
               </>
