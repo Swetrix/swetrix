@@ -969,20 +969,47 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
             to={dateRange ? getFormatDate(dateRange[1]) : undefined}
             timeBucket={timeBucket}
             projectPassword={projectPassword}
+            chart={
+              <ErrorChart
+                chart={activeError?.chart}
+                timeBucket={activeError?.timeBucket}
+                timeFormat={timeFormat}
+                rotateXAxis={rotateXAxis}
+                chartType={chartTypes.line}
+                dataNames={dataNames}
+                stats={[
+                  {
+                    key: 'occurrences',
+                    label: t('project.occurrences'),
+                    value: nFormatter(activeError.details.count || 0, 1),
+                  },
+                  {
+                    key: 'users',
+                    label: t('dashboard.users'),
+                    value: nFormatter(activeError.details.users || 0, 1),
+                  },
+                  {
+                    key: 'firstSeen',
+                    label: t('dashboard.firstSeen'),
+                    value:
+                      getRelativeDateIfPossible(
+                        activeError.details.first_seen,
+                        language,
+                      ) || '-',
+                  },
+                  {
+                    key: 'lastSeen',
+                    label: t('dashboard.lastSeen'),
+                    value:
+                      getRelativeDateIfPossible(
+                        activeError.details.last_seen,
+                        language,
+                      ) || '-',
+                  },
+                ]}
+              />
+            }
           />
-        ) : null}
-
-        {activeError?.chart ? (
-          <div className='mt-3'>
-            <ErrorChart
-              chart={activeError?.chart}
-              timeBucket={activeError?.timeBucket}
-              timeFormat={timeFormat}
-              rotateXAxis={rotateXAxis}
-              chartType={chartTypes.line}
-              dataNames={dataNames}
-            />
-          </div>
         ) : null}
 
         <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
