@@ -20,7 +20,7 @@ import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 export const meta: MetaFunction = () => {
   const title = 'Free IP Address Lookup tool - What is my IP address?'
   const description =
-    'Find your public IP address instantly and look up any IPv4 or IPv6 for detailed geolocation data—country, region, city, coordinates, timezone, and EU status—plus an interactive map. Free, no registration or limits.'
+    'Find your public IP address instantly and look up any IPv4 or IPv6 for detailed geolocation and network data—country, region, city, coordinates, timezone, ISP, organization, connection type, and EU status—plus an interactive map. Free, no registration or limits.'
   return [
     ...getTitle(title),
     ...getDescription(description),
@@ -172,6 +172,16 @@ const FAQ_ITEMS = [
       'ASN (Autonomous System Number) is a unique identifier assigned to networks on the internet. It helps identify which organization owns and operates a particular block of IP addresses, such as an ISP, company, or university.',
   },
   {
+    question: 'What is the difference between ISP and organization?',
+    answer:
+      'The ISP (Internet Service Provider) is the company that delivers internet connectivity to the IP address, such as Comcast, Vodafone, or Deutsche Telekom. The organization is the entity that has been allocated or is using that IP block — often the same as the ISP, but for corporate, hosting, or government IPs it can be a specific company, data center provider, or institution.',
+  },
+  {
+    question: 'What do user type and connection type mean?',
+    answer:
+      'User type describes the kind of network behind the IP address — common values include residential, business, cellular, hosting, school, government, and library. Connection type describes the underlying network technology, such as Cable/DSL, Cellular, Corporate, Dialup, or Satellite. Together they help identify whether traffic is coming from a home user, a mobile network, a data center, or an enterprise.',
+  },
+  {
     question: 'What is the difference between IPv4 and IPv6?',
     answer:
       'IPv4 uses 32-bit addresses (e.g., 192.168.1.1) and supports about 4.3 billion addresses. IPv6 uses 128-bit addresses (e.g., 2001:0db8:85a3::8a2e:0370:7334) and provides virtually unlimited addresses. Both formats are supported by our IP lookup tool.',
@@ -216,6 +226,34 @@ function DataRow({
       </dd>
     </div>
   )
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <Text
+      as='h3'
+      size='xxs'
+      weight='semibold'
+      colour='muted'
+      tracking='wide'
+      className='mb-1 uppercase'
+    >
+      {children}
+    </Text>
+  )
+}
+
+const formatTraitValue = (value: string | null | undefined): string | null => {
+  if (!value) return null
+  return value
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map((word) =>
+      /^[A-Z0-9/]+$/.test(word)
+        ? word
+        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+    )
+    .join(' ')
 }
 
 export default function IpLookup() {
@@ -279,8 +317,8 @@ export default function IpLookup() {
               IP Address Lookup
             </Text>
             <Text as='p' size='lg' colour='muted' className='mt-4'>
-              Find your IP address and get detailed geolocation data for any
-              public IP.
+              Find your IP address and get detailed geolocation and network
+              data—ISP, organization, and connection type—for any public IP.
             </Text>
 
             <div className='mt-10'>
@@ -344,41 +382,65 @@ export default function IpLookup() {
                     </div>
                   </div>
 
-                  <dl>
-                    <DataRow
-                      label='IP Version'
-                      value={data.ipVersion ? `IPv${data.ipVersion}` : null}
-                    />
-                    <DataRow
-                      label='Country'
-                      value={data.countryName}
-                      secondary={data.country}
-                    />
-                    <DataRow
-                      label='Region'
-                      value={data.region}
-                      secondary={data.regionCode}
-                    />
-                    <DataRow label='City' value={data.city} />
-                    <DataRow label='Postal Code' value={data.postalCode} />
-                    <DataRow
-                      label='Continent'
-                      value={data.continentName}
-                      secondary={data.continentCode}
-                    />
-                    <DataRow
-                      label='Coordinates'
-                      value={
-                        hasCoordinates
-                          ? `${data.latitude?.toFixed(4)}, ${data.longitude?.toFixed(4)}`
-                          : null
-                      }
-                    />
-                    <DataRow label='Timezone' value={data.timezone} />
-                    {data.isInEuropeanUnion && (
-                      <DataRow label='EU Member' value='Yes' />
-                    )}
-                  </dl>
+                  <div className='space-y-6'>
+                    <div>
+                      <SectionHeading>Location</SectionHeading>
+                      <dl>
+                        <DataRow
+                          label='IP Version'
+                          value={data.ipVersion ? `IPv${data.ipVersion}` : null}
+                        />
+                        <DataRow
+                          label='Country'
+                          value={data.countryName}
+                          secondary={data.country}
+                        />
+                        <DataRow
+                          label='Region'
+                          value={data.region}
+                          secondary={data.regionCode}
+                        />
+                        <DataRow label='City' value={data.city} />
+                        <DataRow label='Postal Code' value={data.postalCode} />
+                        <DataRow
+                          label='Continent'
+                          value={data.continentName}
+                          secondary={data.continentCode}
+                        />
+                        <DataRow
+                          label='Coordinates'
+                          value={
+                            hasCoordinates
+                              ? `${data.latitude?.toFixed(4)}, ${data.longitude?.toFixed(4)}`
+                              : null
+                          }
+                        />
+                        <DataRow label='Timezone' value={data.timezone} />
+                        {data.isInEuropeanUnion && (
+                          <DataRow label='EU Member' value='Yes' />
+                        )}
+                      </dl>
+                    </div>
+
+                    <div>
+                      <SectionHeading>Network</SectionHeading>
+                      <dl>
+                        <DataRow label='ISP' value={data.isp} />
+                        <DataRow
+                          label='Organization'
+                          value={data.organization}
+                        />
+                        <DataRow
+                          label='User Type'
+                          value={formatTraitValue(data.userType)}
+                        />
+                        <DataRow
+                          label='Connection Type'
+                          value={formatTraitValue(data.connectionType)}
+                        />
+                      </dl>
+                    </div>
+                  </div>
                 </section>
 
                 {hasCoordinates && (
@@ -417,8 +479,9 @@ export default function IpLookup() {
                 Wondering "what is my IP address?" Our free IP lookup tool
                 instantly shows your public IP address and provides detailed
                 geolocation data including country, city, region, coordinates,
-                and timezone. You can also look up any IPv4 or IPv6 address to
-                find its location and network information.
+                and timezone—plus network details like ISP, organization, user
+                type, and connection type. You can also look up any IPv4 or IPv6
+                address to find its location and network information.
               </Text>
 
               <div className='mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2'>
@@ -546,6 +609,25 @@ export default function IpLookup() {
                           IP version
                         </Text>{' '}
                         - Whether the address is IPv4 or IPv6
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          ISP &amp; organization
+                        </Text>{' '}
+                        - The internet service provider and the organization
+                        operating the IP block
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          User &amp; connection type
+                        </Text>{' '}
+                        - Whether the IP belongs to a residential, business,
+                        cellular, or hosting network, and the underlying
+                        connection (Cable/DSL, cellular, corporate, etc.)
                       </Text>
                     </li>
                     <li>

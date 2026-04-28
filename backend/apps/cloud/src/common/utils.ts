@@ -336,6 +336,10 @@ interface ExtendedGeoDetails {
   latitude: number | null
   longitude: number | null
   timezone: string | null
+  isp: string | null
+  organization: string | null
+  userType: string | null
+  connectionType: string | null
 }
 
 export const getExtendedGeoDetails = (ip: string): ExtendedGeoDetails => {
@@ -354,8 +358,14 @@ export const getExtendedGeoDetails = (ip: string): ExtendedGeoDetails => {
       latitude: null,
       longitude: null,
       timezone: null,
+      isp: null,
+      organization: null,
+      userType: null,
+      connectionType: null,
     }
   }
+
+  const traits = data.traits ?? {}
 
   return {
     country: data.country?.iso_code || null,
@@ -369,6 +379,10 @@ export const getExtendedGeoDetails = (ip: string): ExtendedGeoDetails => {
     latitude: data.location?.latitude || null,
     longitude: data.location?.longitude || null,
     timezone: data.location?.time_zone || null,
+    isp: traits.isp || null,
+    organization: traits.organization || null,
+    userType: traits.user_type || null,
+    connectionType: traits.connection_type || null,
   }
 }
 

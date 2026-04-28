@@ -52,6 +52,10 @@ export class ToolsService {
       latitude: geo.latitude,
       longitude: geo.longitude,
       timezone: geo.timezone,
+      isp: geo.isp,
+      organization: geo.organization,
+      userType: geo.userType,
+      connectionType: geo.connectionType,
       isInEuropeanUnion: geo.country ? EU_COUNTRIES.has(geo.country) : false,
       ipVersion,
     }

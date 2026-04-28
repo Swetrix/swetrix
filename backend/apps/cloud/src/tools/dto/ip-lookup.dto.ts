@@ -48,6 +48,26 @@ export class IpLookupResponseDto {
   @ApiPropertyOptional({ description: 'Timezone (IANA format)' })
   timezone: string | null
 
+  @ApiPropertyOptional({ description: 'Internet Service Provider name' })
+  isp: string | null
+
+  @ApiPropertyOptional({
+    description:
+      'Organization associated with the IP address (may differ from ISP)',
+  })
+  organization: string | null
+
+  @ApiPropertyOptional({
+    description:
+      'User type (e.g. residential, business, hosting, cellular, school)',
+  })
+  userType: string | null
+
+  @ApiPropertyOptional({
+    description: 'Connection type (e.g. cable/DSL, cellular, corporate)',
+  })
+  connectionType: string | null
+
   @ApiPropertyOptional({ description: 'Whether the country is in the EU' })
   isInEuropeanUnion: boolean
 
