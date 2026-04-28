@@ -99,6 +99,9 @@ const BOT_RESPONSE = { message: 'Bot traffic detected, request is ignored' }
 
 const ONLINE_VISITORS_WINDOW_MINUTES = 5 // minutes
 
+// Maximum range for "all time" GSC queries (~16 months, GSC's data retention)
+const GSC_ALL_TIME_DAYS = 480
+
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
 const isPerformanceValid = (perf: any) => {
@@ -2572,16 +2575,7 @@ export class AnalyticsController {
 
     this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/keywords')
 
-    let diff
-
-    if (period === 'all') {
-      const res = await this.analyticsService.calculateTimeBucketForAllTime(
-        pid,
-        'analytics',
-      )
-
-      diff = res.diff
-    }
+    const diff = period === 'all' ? GSC_ALL_TIME_DAYS : undefined
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
@@ -2629,16 +2623,7 @@ export class AnalyticsController {
       'GET /analytics/gsc-dashboard',
     )
 
-    let diff
-
-    if (period === 'all') {
-      const res = await this.analyticsService.calculateTimeBucketForAllTime(
-        pid,
-        'analytics',
-      )
-
-      diff = res.diff
-    }
+    const diff = period === 'all' ? GSC_ALL_TIME_DAYS : undefined
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
@@ -2687,16 +2672,7 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    let diff
-
-    if (period === 'all') {
-      const res = await this.analyticsService.calculateTimeBucketForAllTime(
-        pid,
-        'analytics',
-      )
-
-      diff = res.diff
-    }
+    const diff = period === 'all' ? GSC_ALL_TIME_DAYS : undefined
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(

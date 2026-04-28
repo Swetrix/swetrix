@@ -658,6 +658,12 @@ const ProjectSettings = () => {
           : t('apiNotifications.somethingWentWrong'),
       )
       setGscPropertiesPending(false)
+
+      if (intent === 'gsc-status') {
+        setGscConnected(false)
+        setGscEmail(null)
+        setGscProperties([])
+      }
     }
   }, [gscFetcher.state, gscFetcher.data, t])
 

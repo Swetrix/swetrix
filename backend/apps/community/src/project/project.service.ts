@@ -479,14 +479,21 @@ export class ProjectService {
       ? []
       : _split(updProject.countryBlacklist, ',')
 
-    if (updProject.brandKeywords && _isString(updProject.brandKeywords)) {
-      try {
-        const parsed = JSON.parse(updProject.brandKeywords)
-        updProject.brandKeywords = Array.isArray(parsed) ? parsed : null
-      } catch {
+    if (_isString(updProject.brandKeywords)) {
+      const trimmed = updProject.brandKeywords.trim()
+
+      if (trimmed.length === 0) {
         updProject.brandKeywords = null
+      } else {
+        try {
+          const parsed = JSON.parse(trimmed)
+          updProject.brandKeywords =
+            Array.isArray(parsed) && parsed.length > 0 ? parsed : null
+        } catch {
+          updProject.brandKeywords = null
+        }
       }
-    } else if (updProject.brandKeywords === undefined) {
+    } else if (!Array.isArray(updProject.brandKeywords)) {
       updProject.brandKeywords = null
     }
 

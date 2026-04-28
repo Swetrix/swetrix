@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { parse as parseDomain } from 'tldts'
 import countries from 'i18n-iso-countries'
 import _isEmpty from 'lodash/isEmpty'
@@ -135,7 +136,7 @@ export class GSCService {
 
     const oauth2Client = this.getOAuthClient()
 
-    const state = `${pid}:${uid}:${Date.now()}`
+    const state = randomBytes(32).toString('hex')
     await redis.set(
       REDIS_STATE_PREFIX + state,
       JSON.stringify({ uid, pid }),
@@ -157,12 +158,27 @@ export class GSCService {
   }
 
   async handleOAuthCallback(uid: string, code: string, state: string) {
+    if (!state) {
+      throw new BadRequestException('Invalid or expired OAuth state')
+    }
+
     const cached = await redis.get(REDIS_STATE_PREFIX + state)
     if (!cached) {
       throw new BadRequestException('Invalid or expired OAuth state')
     }
 
-    const { pid } = JSON.parse(cached)
+    let payload: { uid?: string; pid?: string }
+    try {
+      payload = JSON.parse(cached)
+    } catch {
+      throw new BadRequestException('Invalid or expired OAuth state')
+    }
+
+    if (!payload?.pid || !payload?.uid || payload.uid !== uid) {
+      throw new BadRequestException('Invalid or expired OAuth state')
+    }
+
+    const { pid } = payload
 
     const project = await this.projectService.getRedisProject(pid)
 
@@ -394,14 +410,28 @@ export class GSCService {
   }
 
   async setProperty(pid: string, propertyUri: string) {
+    if (typeof propertyUri !== 'string' || propertyUri.trim().length === 0) {
+      throw new BadRequestException('propertyUri is required')
+    }
+
     const tokens = await this.getStoredTokens(pid)
     if (_isEmpty(tokens)) {
       throw new BadRequestException(
         'Search Console is not connected for this project',
       )
     }
+
+    const sites = await this.listSites(pid)
+    const isOwned = sites.some((site) => site.siteUrl === propertyUri)
+
+    if (!isOwned) {
+      throw new BadRequestException(
+        'The provided propertyUri is not available for the connected account',
+      )
+    }
+
     await updateProjectClickhouse(
-      { id: pid, gscPropertyUri: propertyUri ?? null },
+      { id: pid, gscPropertyUri: propertyUri },
       { ignoreAllowedKeys: true },
     )
     await deleteProjectRedis(pid)
@@ -946,10 +976,12 @@ export class GSCService {
 
     const fromDate = dayjs(from)
     const toDate = dayjs(to)
-    const days = toDate.diff(fromDate, 'day') + 1
-    const prevTo = fromDate.subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')
+    const durationMs = toDate.diff(fromDate)
+    const prevTo = fromDate
+      .subtract(1, 'millisecond')
+      .format('YYYY-MM-DD HH:mm:ss')
     const prevFrom = fromDate
-      .subtract(days, 'day')
+      .subtract(durationMs, 'millisecond')
       .format('YYYY-MM-DD HH:mm:ss')
 
     const [
