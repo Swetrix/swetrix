@@ -458,11 +458,11 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   const sidebarContent = (
     <aside
       className={cn(
-        'sticky top-2 flex shrink-0 flex-col self-start overflow-hidden border border-gray-200 bg-white dark:border-slate-800/60',
+        'sticky top-2 flex shrink-0 flex-col self-start overflow-hidden',
         isMobileOpen
-          ? 'h-screen w-64 dark:bg-slate-950'
+          ? 'h-screen w-64 border-r border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-950'
           : cn(
-              'rounded-lg duration-300 ease-in-out dark:bg-slate-900/25',
+              'duration-300 ease-in-out',
               isEmbedded
                 ? 'h-[calc(100vh-1rem)] transition-[width]'
                 : cn(
@@ -476,7 +476,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         className,
       )}
     >
-      <div className='sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 px-4 py-2 dark:border-slate-800/60'>
+      <div className='flex items-center justify-between px-3 py-2'>
         {isCollapsed && !isMobileOpen ? (
           <Tooltip
             text={projectName}
@@ -646,7 +646,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         ))}
       </div>
 
-      <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-200 px-2 py-2 dark:border-slate-800/60'>
+      <div className='flex flex-col gap-0.5 px-2 py-2'>
         {!isMobileOpen ? (
           <button
             type='button'
