@@ -22,6 +22,8 @@ import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import { SWETRIX_PID } from '~/utils/analytics'
 import routesPath from '~/utils/routes'
+import { LogoCloud } from '~/components/marketing/LogoCloud'
+import { FeedbackDual } from '~/routes/_index'
 
 declare global {
   interface Window {
@@ -162,6 +164,8 @@ const Captcha = () => {
             </section>
           </div>
         </div>
+
+        <LogoCloud />
 
         <div className='mx-auto mt-20 max-w-7xl bg-gray-50 px-4 pb-16 dark:bg-slate-950'>
           <div className='text-center'>
@@ -388,6 +392,8 @@ const Captcha = () => {
         </div>
 
         <MarketingPricing />
+
+        <FeedbackDual />
 
         <DitchGoogle />
       </main>

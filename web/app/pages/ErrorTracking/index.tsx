@@ -9,6 +9,8 @@ import MarketingPricing from '~/components/pricing/MarketingPricing'
 import { ERROR_TRACKING_LIVE_DEMO_URL } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 import routesPath from '~/utils/routes'
+import { LogoCloud } from '~/components/marketing/LogoCloud'
+import { FeedbackDual } from '~/routes/_index'
 
 const ErrorTracking = () => {
   const { t } = useTranslation('common')
@@ -111,6 +113,8 @@ const ErrorTracking = () => {
           </div>
         </div>
 
+        <LogoCloud />
+
         <div className='mx-auto mt-12 max-w-7xl bg-white px-4 pb-16 whitespace-pre-line dark:bg-slate-950'>
           <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>
             {t('errors.fast.title')}
@@ -168,6 +172,8 @@ const ErrorTracking = () => {
         </div>
 
         <MarketingPricing />
+
+        <FeedbackDual />
 
         <DitchGoogle />
       </main>
