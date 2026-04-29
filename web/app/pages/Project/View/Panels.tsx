@@ -1870,10 +1870,13 @@ const DetailsTable = ({
           className='w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-50'
         />
       </div>
-      <div ref={parentRef} className='max-h-[500px] overflow-y-auto'>
-        <table className='w-full border-separate border-spacing-y-1'>
+      <div
+        ref={parentRef}
+        className='scrollbar-thin max-h-[500px] overflow-x-auto overflow-y-auto'
+      >
+        <table className='w-full min-w-[640px] border-separate border-spacing-y-1'>
           <thead className='sticky top-0 z-10 bg-white dark:bg-slate-950'>
-            <tr className='text-base text-gray-900 dark:text-gray-50'>
+            <tr className='text-sm text-gray-900 sm:text-base dark:text-gray-50'>
               <th
                 className='flex cursor-pointer items-center pl-2 text-left hover:opacity-90'
                 style={{ width: '40%' }}
@@ -1980,6 +1983,8 @@ const DetailsTable = ({
               const rowData = rowMapper(entry)
               const valueData = valueMapper(count)
 
+              const isOddRow = virtualRow.index % 2 === 1
+
               return (
                 <tr
                   key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
@@ -1988,11 +1993,14 @@ const DetailsTable = ({
                     top: 0,
                     transform: `translateY(${virtualRow.start}px)`,
                     width: '100%',
+                    height: `${virtualRow.size}px`,
                     display: 'flex',
+                    alignItems: 'center',
                   }}
                   className={cx(
-                    'group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800',
+                    'group cursor-pointer text-sm text-gray-900 hover:bg-gray-100 sm:text-base dark:text-gray-50 hover:dark:bg-slate-800',
                     {
+                      'bg-gray-50 dark:bg-slate-900': isOddRow,
                       'cursor-default': disableRowClick,
                     },
                   )}
@@ -2809,6 +2817,7 @@ const MetadataPanelMemo = memo(MetadataPanel) as typeof MetadataPanel
 
 export {
   PanelContainer,
+  PanelEmptyState,
   PanelMemo as Panel,
   CustomEventsMemo as CustomEvents,
   CombinedMetadataPanelMemo as CombinedMetadataPanel,
