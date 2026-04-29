@@ -32,7 +32,8 @@ const LOGOS: ImageLogo[] = [
   {
     type: 'image',
     name: 'Caritas',
-    light: '/assets/users/caritas.svg',
+    light: '/assets/users/caritas-light.svg',
+    dark: '/assets/users/caritas-dark.svg',
     heightClass: 'h-7',
   },
   {
