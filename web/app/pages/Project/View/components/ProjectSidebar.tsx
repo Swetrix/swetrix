@@ -104,6 +104,7 @@ interface ProjectSidebarProps {
   allowedToManage?: boolean
   isMobileOpen?: boolean
   onMobileClose?: () => void
+  isEmbedded?: boolean
 }
 
 const CollapsibleGroup: React.FC<{
@@ -331,6 +332,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   allowedToManage,
   isMobileOpen = false,
   onMobileClose,
+  isEmbedded = false,
   className,
 }) => {
   const faviconHost = useMemo(
@@ -348,13 +350,15 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
+    if (isEmbedded) return undefined
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 40)
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [isEmbedded])
 
   const toggleCollapsed = useCallback(() => {
     setIsCollapsed((prev) => {
@@ -458,10 +462,15 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         isMobileOpen
           ? 'h-screen w-64 dark:bg-slate-950'
           : cn(
-              'rounded-lg transition-[width,height] duration-300 ease-in-out dark:bg-slate-900/25',
-              isScrolled
-                ? 'h-[calc(100vh-var(--banner-height)-1.5rem)]'
-                : 'h-[calc(100vh-var(--header-total-height)-1rem)]',
+              'rounded-lg duration-300 ease-in-out dark:bg-slate-900/25',
+              isEmbedded
+                ? 'h-[calc(100vh-1rem)] transition-[width]'
+                : cn(
+                    'transition-[width,height]',
+                    isScrolled
+                      ? 'h-[calc(100vh-var(--banner-height)-1.5rem)]'
+                      : 'h-[calc(100vh-var(--header-total-height)-1rem)]',
+                  ),
               isCollapsed ? 'w-14' : 'w-56',
             ),
         className,
@@ -750,6 +759,7 @@ const MemoizedProjectSidebar = memo(ProjectSidebar, (prevProps, nextProps) => {
     prevProps.dataLoading === nextProps.dataLoading &&
     prevProps.allowedToManage === nextProps.allowedToManage &&
     prevProps.isMobileOpen === nextProps.isMobileOpen &&
+    prevProps.isEmbedded === nextProps.isEmbedded &&
     prevProps.className === nextProps.className &&
     prevProps.searchParams.toString() === nextProps.searchParams.toString() &&
     prevProps.tabs === nextProps.tabs &&

@@ -1296,6 +1296,7 @@ const ViewProjectContent = () => {
                 dataLoading={false}
                 searchParams={searchParams}
                 allowedToManage={false}
+                isEmbedded={isEmbedded}
                 className='hidden md:flex'
               />
 
@@ -1394,6 +1395,7 @@ const ViewProjectContent = () => {
                 dataLoading={dataLoading}
                 searchParams={searchParams}
                 allowedToManage={allowedToManage}
+                isEmbedded={isEmbedded}
                 className='hidden md:flex'
               />
               {/* Mobile Sidebar */}
@@ -1477,6 +1479,7 @@ const ViewProjectContent = () => {
                           dataLoading={dataLoading}
                           searchParams={searchParams}
                           allowedToManage={allowedToManage}
+                          isEmbedded={isEmbedded}
                           className='pointer-events-auto z-20 hidden md:flex'
                         />
                       ) : null}
