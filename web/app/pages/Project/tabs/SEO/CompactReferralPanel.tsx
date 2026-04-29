@@ -4,6 +4,7 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { Entry } from '~/lib/models/Entry'
+import { PanelEmptyState } from '~/pages/Project/View/Panels'
 import { Text } from '~/ui/Text'
 import { nFormatter } from '~/utils/generic'
 
@@ -61,11 +62,7 @@ const CompactReferralPanel = ({
             {title}
           </Text>
         </div>
-        <div className='flex h-32 items-center justify-center'>
-          <Text size='xs' colour='inherit'>
-            {t('project.noParamData')}
-          </Text>
-        </div>
+        <PanelEmptyState message={t('project.noParamData')} />
       </div>
     )
   }

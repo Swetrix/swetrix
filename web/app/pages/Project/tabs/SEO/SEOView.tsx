@@ -30,7 +30,11 @@ import BillboardChart from '~/ui/BillboardChart'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { MainChart } from '~/pages/Project/View/components/MainChart'
 import Filters from '~/pages/Project/View/components/Filters'
-import { Panel, PanelContainer } from '~/pages/Project/View/Panels'
+import {
+  Panel,
+  PanelContainer,
+  PanelEmptyState,
+} from '~/pages/Project/View/Panels'
 import {
   useViewProjectContext,
   useRefreshTriggers,
@@ -710,11 +714,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
               deps={[brandedTraffic, theme]}
             />
           ) : (
-            <div className='flex h-32 items-center justify-center'>
-              <Text size='xs' colour='inherit'>
-                {t('project.seo.noBrandData')}
-              </Text>
-            </div>
+            <PanelEmptyState message={t('project.seo.noBrandData')} />
           )}
         </div>
       </div>
@@ -783,11 +783,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
               deps={[quadrantData, theme, t]}
             />
           ) : (
-            <div className='flex h-80 items-center justify-center'>
-              <Text size='xs' colour='inherit'>
-                {t('project.noParamData')}
-              </Text>
-            </div>
+            <PanelEmptyState message={t('project.noParamData')} />
           )}
         </PanelContainer>
       </div>
