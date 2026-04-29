@@ -616,6 +616,9 @@
       "description": "Swetrix integrates with everything. Our lightweight script is just a few kilobytes in your source code. You can add it to any CMS, framework or technology you're already using.",
       "andMore": "+{{count}} more"
     },
+    "logoCloud": {
+      "title": "Trusted by teams who care about their data"
+    },
     "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",
     "whyDitch": "Tired of the frustration, complexity and privacy issues of Google Analytics? We were too. That's why we built Swetrix - the ethical, open source and fully cookieless alternative.",
     "users": "Registered users",

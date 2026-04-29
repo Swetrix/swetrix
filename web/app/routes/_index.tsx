@@ -36,6 +36,7 @@ import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { FeaturesGrid } from '~/components/marketing/FeaturesGrid'
+import { LogoCloud } from '~/components/marketing/LogoCloud'
 import { WhySwitch } from '~/components/marketing/WhySwitch'
 import { Text } from '~/ui/Text'
 
@@ -90,100 +91,98 @@ export const FeedbackDual = () => {
   const { theme } = useTheme()
 
   return (
-    <section className='rounded-b-4xl bg-gray-100/80 py-24 sm:py-32 dark:bg-slate-900/50'>
-      <div className='mx-auto max-w-7xl px-4 lg:px-8'>
-        <div className='mx-auto grid max-w-2xl grid-cols-1 lg:mx-0 lg:max-w-none lg:grid-cols-2'>
-          <div className='flex flex-col pb-10 sm:pb-16 lg:pr-8 lg:pb-0 xl:pr-20'>
-            <img
-              alt='Casterlabs'
-              src={
-                theme === 'dark'
-                  ? '/assets/users/casterlabs-dark.svg'
-                  : '/assets/users/casterlabs-light.svg'
-              }
-              className='h-12 w-auto self-start'
-              width={157}
-              height={48}
-              loading='lazy'
-            />
-            <figure className='mt-10 flex flex-auto flex-col justify-between'>
-              <blockquote>
-                <Text as='p' size='lg' colour='secondary'>
-                  "Swetrix has been a{' '}
-                  <FeedbackHighlight>
-                    game changer for our analytics.
-                  </FeedbackHighlight>{' '}
-                  They've always been on top of feature requests and bug reports
-                  and have been friendly every step of the way. I can't
-                  recommend them enough."
+    <section className='mx-auto max-w-7xl px-4 py-20 sm:py-24 lg:px-8'>
+      <div className='mx-auto grid max-w-2xl grid-cols-1 lg:max-w-none lg:grid-cols-2'>
+        <div className='flex flex-col pb-10 sm:pb-16 lg:pr-8 lg:pb-0 xl:pr-20'>
+          <img
+            alt='Casterlabs'
+            src={
+              theme === 'dark'
+                ? '/assets/users/casterlabs-dark.svg'
+                : '/assets/users/casterlabs-light.svg'
+            }
+            className='h-12 w-auto self-start'
+            width={157}
+            height={48}
+            loading='lazy'
+          />
+          <figure className='mt-10 flex flex-auto flex-col justify-between'>
+            <blockquote>
+              <Text as='p' size='lg' colour='secondary'>
+                "Swetrix has been a{' '}
+                <FeedbackHighlight>
+                  game changer for our analytics.
+                </FeedbackHighlight>{' '}
+                They've always been on top of feature requests and bug reports
+                and have been friendly every step of the way. I can't recommend
+                them enough."
+              </Text>
+            </blockquote>
+            <figcaption className='mt-10 flex items-center gap-x-6'>
+              <img
+                alt='Alex Bowles'
+                src='/assets/users/alex-casterlabs.jpg'
+                className='size-14 rounded-full bg-gray-50 object-cover dark:bg-gray-800'
+                width={56}
+                height={56}
+                loading='lazy'
+              />
+              <div className='space-y-1'>
+                <Text as='p' size='base' weight='medium' colour='primary'>
+                  Alex Bowles
                 </Text>
-              </blockquote>
-              <figcaption className='mt-10 flex items-center gap-x-6'>
-                <img
-                  alt='Alex Bowles'
-                  src='/assets/users/alex-casterlabs.jpg'
-                  className='size-14 rounded-full bg-gray-50 object-cover dark:bg-gray-800'
-                  width={56}
-                  height={56}
-                  loading='lazy'
-                />
-                <div className='space-y-1'>
-                  <Text as='p' size='base' weight='medium' colour='primary'>
-                    Alex Bowles
-                  </Text>
-                  <Text as='p' size='base' colour='muted'>
-                    Co-founder of Casterlabs
-                  </Text>
-                </div>
-              </figcaption>
-            </figure>
-          </div>
-          <div className='flex flex-col border-t border-gray-900/10 pt-10 sm:pt-16 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8 xl:pl-20 dark:border-gray-100/10'>
-            <img
-              alt='Phalcode'
-              src={
-                theme === 'dark'
-                  ? '/assets/users/phalcode-dark.svg'
-                  : '/assets/users/phalcode-light.svg'
-              }
-              className='h-8 w-auto self-start'
-              width={200}
-              height={32}
-              loading='lazy'
-            />
-            <figure className='mt-10 flex flex-auto flex-col justify-between'>
-              <blockquote>
-                <Text as='p' size='lg' colour='secondary'>
-                  "I was confused by Google Analytics so much that I was getting
-                  zero actionable insights. Swetrix changed everything -{' '}
-                  <FeedbackHighlight>
-                    clean dashboard, instant understanding of user behavior, and
-                    features that actually matter.
-                  </FeedbackHighlight>{' '}
-                  Finally, analytics that help me make better decisions instead
-                  of irritating me."
+                <Text as='p' size='base' colour='muted'>
+                  Co-founder of Casterlabs
                 </Text>
-              </blockquote>
-              <figcaption className='mt-10 flex items-center gap-x-6'>
-                <img
-                  alt='Alper Alkan'
-                  src='/assets/users/alper-phalcode.jpg'
-                  className='size-14 rounded-full bg-gray-50 object-cover dark:bg-gray-800'
-                  width={56}
-                  height={56}
-                  loading='lazy'
-                />
-                <div className='space-y-1'>
-                  <Text as='p' size='base' weight='medium' colour='primary'>
-                    Alper Alkan
-                  </Text>
-                  <Text as='p' size='base' colour='muted'>
-                    Co-founder of Phalcode
-                  </Text>
-                </div>
-              </figcaption>
-            </figure>
-          </div>
+              </div>
+            </figcaption>
+          </figure>
+        </div>
+        <div className='flex flex-col border-t border-gray-900/10 pt-10 sm:pt-16 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8 xl:pl-20 dark:border-gray-100/10'>
+          <img
+            alt='Phalcode'
+            src={
+              theme === 'dark'
+                ? '/assets/users/phalcode-dark.svg'
+                : '/assets/users/phalcode-light.svg'
+            }
+            className='h-8 w-auto self-start'
+            width={200}
+            height={32}
+            loading='lazy'
+          />
+          <figure className='mt-10 flex flex-auto flex-col justify-between'>
+            <blockquote>
+              <Text as='p' size='lg' colour='secondary'>
+                "I was confused by Google Analytics so much that I was getting
+                zero actionable insights. Swetrix changed everything -{' '}
+                <FeedbackHighlight>
+                  clean dashboard, instant understanding of user behavior, and
+                  features that actually matter.
+                </FeedbackHighlight>{' '}
+                Finally, analytics that help me make better decisions instead of
+                irritating me."
+              </Text>
+            </blockquote>
+            <figcaption className='mt-10 flex items-center gap-x-6'>
+              <img
+                alt='Alper Alkan'
+                src='/assets/users/alper-phalcode.jpg'
+                className='size-14 rounded-full bg-gray-50 object-cover dark:bg-gray-800'
+                width={56}
+                height={56}
+                loading='lazy'
+              />
+              <div className='space-y-1'>
+                <Text as='p' size='base' weight='medium' colour='primary'>
+                  Alper Alkan
+                </Text>
+                <Text as='p' size='base' colour='muted'>
+                  Co-founder of Phalcode
+                </Text>
+              </div>
+            </figcaption>
+          </figure>
         </div>
       </div>
     </section>
@@ -466,13 +465,15 @@ export default function Index() {
       <main className='bg-gray-50 dark:bg-slate-950'>
         <Hero />
 
-        <FeedbackDual />
+        <LogoCloud />
 
         <FeaturesGrid />
 
         <Integrations />
 
         <MarketingPricing metainfo={metainfo} />
+
+        <FeedbackDual />
 
         <WhySwitch />
 
