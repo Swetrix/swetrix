@@ -76,8 +76,6 @@ const PATHS_REPLACEMENT_MAP = [
   },
 ]
 
-const IGNORED_PAGE_REGEX = /^(\/blog\/.+|\/comparison)$/
-
 const checkIgnore = (path: string | undefined | null, ignore: RegExp[]) => {
   if (!path) {
     return false
@@ -125,10 +123,6 @@ export const trackViews = () => {
         ref,
       } as Swetrix.IPageViewPayload
 
-      if (pg && IGNORED_PAGE_REGEX.test(pg)) {
-        return false
-      }
-
       result.pg = getNewPath(pg)
 
       if (checkIgnore(ref, REFS_TO_IGNORE)) {
@@ -139,14 +133,6 @@ export const trackViews = () => {
     },
     heartbeatOnBackground: true,
   })
-}
-
-export const trackPageview = (options: Swetrix.IPageviewOptions) => {
-  if (isSelfhosted || isIframe) {
-    return
-  }
-
-  Swetrix.pageview(options)
 }
 
 export const trackErrors = () => {
