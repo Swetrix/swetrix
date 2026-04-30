@@ -246,8 +246,8 @@ const AlertTemplateEditor = ({
           </Text>
         </div>
         <Button
-          secondary
-          small
+          variant='secondary'
+          size='xs'
           onClick={() => setShowPreview((v) => !v)}
           className='self-start sm:self-auto'
         >

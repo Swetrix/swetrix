@@ -2,6 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import Input from '~/ui/Input'
+import { Text } from '~/ui/Text'
 
 interface GeneralProps {
   form: {
@@ -30,9 +31,9 @@ const General = ({
 
   return (
     <>
-      <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+      <Text as='h3' size='lg' weight='bold'>
         {t('profileSettings.general')}
-      </h3>
+      </Text>
       <Input
         name='name'
         label={t('project.settings.name')}

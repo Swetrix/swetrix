@@ -374,19 +374,18 @@ const Signin = () => {
 
                 <div className='flex flex-col gap-3 pt-2'>
                   <Button
+                    size='xl'
                     type='submit'
                     loading={isLinkingLoading}
-                    primary
-                    giant
                     className='w-full justify-center'
                   >
                     {t('auth.linkAccount.linkButton')}
                   </Button>
                   <Button
+                    size='xl'
                     type='button'
                     onClick={handleCancelLinking}
                     disabled={isLinkingLoading}
-                    giant
                     className='w-full justify-center'
                   >
                     {t('auth.linkAccount.returnToSignIn')}
@@ -451,7 +450,7 @@ const Signin = () => {
                       />
                     ) : null}
                   </Text>
-                  <Button type='submit' loading={is2FALoading} primary large>
+                  <Button size='lg' type='submit' loading={is2FALoading}>
                     {t('common.continue')}
                   </Button>
                 </div>
@@ -576,11 +575,10 @@ const Signin = () => {
                 </div>
 
                 <Button
+                  size='xl'
                   className='mt-6 w-full justify-center'
                   type='submit'
                   loading={isFormSubmitting}
-                  primary
-                  giant
                 >
                   {t('auth.signin.button')}
                 </Button>

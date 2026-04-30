@@ -578,8 +578,6 @@ export const ProfileDetails = ({
                   disabled={!!sessionsLoading}
                   loading={!!sessionsLoading}
                   className='mt-4 w-full'
-                  primary
-                  regular
                 >
                   {t('project.loadMore')}
                 </Button>

@@ -7,6 +7,7 @@ import { useLoaderData, useLocation } from 'react-router'
 import ExitIntentPopup from '~/components/ExitIntentPopup'
 import NotFound from '~/pages/NotFound'
 import ArticleNav from '~/pages/Blog/ArticleNav'
+import { Text } from '~/ui/Text'
 import { trackPageview } from '~/utils/analytics'
 
 interface Post {
@@ -73,9 +74,14 @@ export default function PostSlug() {
                     </dd>
                   </dl>
                 </div>
-                <h1 className='inline-block max-w-3xl text-[2.5rem]/10 tracking-tight text-pretty text-gray-950 max-lg:font-medium lg:text-6xl dark:text-gray-200'>
+                <Text
+                  as='h1'
+                  weight='bold'
+                  tracking='tight'
+                  className='inline-block max-w-3xl text-[2.5rem]/10 text-pretty max-lg:font-medium lg:text-6xl'
+                >
                   {post.title}
-                </h1>
+                </Text>
                 <div className='mt-6'>
                   <ul className='-mx-5 -mt-6 flex flex-wrap text-sm leading-6'>
                     <li className='mt-6 flex items-center gap-4 px-5 font-medium whitespace-nowrap'>

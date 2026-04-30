@@ -186,21 +186,19 @@ const Organisations = () => {
                 >
                   <span>{t('titles.organisations')}</span>
                   {isSearchActive ? (
-                    <button
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
-                      type='button'
+                    <Button
+                      variant='icon'
                       onClick={() => {
                         setSearch('')
                         setIsSearchActive(false)
                       }}
                       aria-label={t('common.close')}
                     >
-                      <XIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
-                    </button>
+                      <XIcon className='size-5' />
+                    </Button>
                   ) : (
-                    <button
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
-                      type='button'
+                    <Button
+                      variant='icon'
                       onClick={() => {
                         setIsSearchActive(true)
                         setTimeout(() => {
@@ -209,8 +207,8 @@ const Organisations = () => {
                       }}
                       aria-label={t('project.search')}
                     >
-                      <MagnifyingGlassIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
-                    </button>
+                      <MagnifyingGlassIcon className='size-5' />
+                    </Button>
                   )}
                 </Text>
                 {isSearchActive ? (
@@ -235,7 +233,7 @@ const Organisations = () => {
                   </div>
                 ) : null}
               </div>
-              <Button onClick={onNewOrganisation} primary large>
+              <Button size='lg' onClick={onNewOrganisation}>
                 <BuildingOfficeIcon className='mr-1 h-5 w-5' />
                 {t('organisations.new')}
               </Button>

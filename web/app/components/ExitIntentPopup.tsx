@@ -5,6 +5,7 @@ import { Link } from '~/ui/Link'
 import { useAuth } from '~/providers/AuthProvider'
 
 import { Badge } from '~/ui/Badge'
+import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 import { getCookie, setCookie } from '~/utils/cookie'
 
@@ -119,13 +120,23 @@ export default function ExitIntentPopup({
           />
         </div>
 
-        <h2 className='mb-4 max-w-3xl text-[2.5rem]/10 font-semibold tracking-tight text-pretty text-gray-950 lg:text-5xl dark:text-gray-200'>
+        <Text
+          as='h2'
+          weight='semibold'
+          tracking='tight'
+          className='mb-4 max-w-3xl text-[2.5rem]/10 text-pretty lg:text-5xl'
+        >
           {t('exitIntentPopup.title')}
-        </h2>
+        </Text>
 
-        <p className='mb-8 text-xl leading-relaxed text-gray-950 dark:text-gray-200'>
+        <Text
+          as='p'
+          size='xl'
+          colour='secondary'
+          className='mb-8 leading-relaxed'
+        >
           {t('exitIntentPopup.desc')}
-        </p>
+        </Text>
 
         <Link
           to='/'

@@ -47,9 +47,13 @@ const NoNotificationChannelSet = ({
   return (
     <div className='mb-4 flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center dark:border-amber-500/20 dark:bg-amber-500/10'>
       <WarningOctagonIcon className='size-5 shrink-0 text-amber-600 dark:text-amber-400' />
-      <p className='flex-1 text-sm text-amber-800 dark:text-amber-200'>
+      <Text
+        as='p'
+        size='sm'
+        className='flex-1 text-amber-800 dark:text-amber-200'
+      >
         {t('alert.noNotificationChannel')}
-      </p>
+      </Text>
       <Link
         to={channelsLink}
         className='shrink-0 self-start rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-700 sm:self-auto dark:bg-amber-600 dark:hover:bg-amber-500'
@@ -426,23 +430,32 @@ const ProjectAlertsInner = ({
 
   if (!canManageAlerts) {
     return (
-      <div className='flex flex-col'>
-        <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
-          <div className='flex items-center text-gray-50'>
-            <BellRingingIcon className='mr-2 h-8 w-8' />
-            <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
-          </div>
-          <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
-            {t('dashboard.alertsDesc')}
-          </p>
-          <Link
-            to={routes.signup}
-            className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
-            aria-label={t('titles.signup')}
-          >
-            {t('header.startForFree')}
-          </Link>
+      <div className='mx-auto w-full max-w-2xl py-16 text-center'>
+        <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900'>
+          <BellRingingIcon className='size-7 text-gray-700 dark:text-gray-200' />
         </div>
+        <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
+          {t('dashboard.alerts')}
+        </Text>
+        <Text
+          as='p'
+          size='sm'
+          colour='secondary'
+          className='mx-auto mt-2 max-w-md whitespace-pre-wrap'
+        >
+          {t('dashboard.alertsDesc')}
+        </Text>
+        {!isAuthenticated ? (
+          <div className='mt-6'>
+            <Link
+              to={routes.signup}
+              aria-label={t('titles.signup')}
+              className='inline-flex items-center justify-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
+            >
+              {t('header.startForFree')}
+            </Link>
+          </div>
+        ) : null}
       </div>
     )
   }
@@ -484,21 +497,24 @@ const ProjectAlertsInner = ({
     <>
       <div className='mt-4'>
         {alerts === null ? null : alerts.length === 0 ? (
-          <div className='flex flex-col'>
-            <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
-              <div className='flex items-center text-gray-50'>
-                <BellRingingIcon className='mr-2 h-8 w-8' />
-                <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
-              </div>
-              <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
-                {t('dashboard.alertsDesc')}
-              </p>
-              <Button
-                onClick={handleNewAlert}
-                className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
-                secondary
-                large
-              >
+          <div className='mx-auto w-full max-w-2xl py-16 text-center'>
+            <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900'>
+              <BellRingingIcon className='size-7 text-gray-700 dark:text-gray-200' />
+            </div>
+            <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
+              {t('dashboard.alerts')}
+            </Text>
+            <Text
+              as='p'
+              size='sm'
+              colour='secondary'
+              className='mx-auto mt-2 max-w-md whitespace-pre-wrap'
+            >
+              {t('dashboard.alertsDesc')}
+            </Text>
+            <div className='mt-6'>
+              <Button size='lg' onClick={handleNewAlert}>
+                <PlusIcon className='mr-1.5 size-4' />
                 {t('alert.add')}
               </Button>
             </div>
@@ -516,7 +532,7 @@ const ProjectAlertsInner = ({
               <Text as='p' size='sm' colour='muted'>
                 {t('alert.totalCount', { count: total })}
               </Text>
-              <Button onClick={handleNewAlert} primary regular>
+              <Button onClick={handleNewAlert}>
                 <PlusIcon className='mr-1.5 size-4' />
                 {t('alert.add')}
               </Button>

@@ -314,16 +314,25 @@ const LiveDemoPreview = () => {
   const localisedDemoPath = localisePath('/projects/STEzHcB1rALV', language)
 
   return (
-    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-gray-50 shadow-lg ring-1 ring-black/5 transition-shadow ease-out will-change-transform sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-950 dark:ring-white/10'>
-      <div className='pointer-events-none relative h-[580px] lg:h-[640px] xl:h-[700px]'>
+    <div
+      className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-gray-50 shadow-lg ring-1 ring-black/5 transition-shadow ease-out sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-950 dark:ring-white/10'
+      style={{
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
+        willChange: 'transform',
+        contain: 'paint',
+        WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+      }}
+    >
+      <div className='pointer-events-none relative h-[580px] overflow-hidden rounded-2xl lg:h-[640px] xl:h-[700px]'>
         <iframe
           src={`https://swetrix.com${localisedDemoPath}?tab=traffic&theme=${theme}&embedded=true`}
-          className='size-full'
+          className='size-full rounded-2xl'
           title='Swetrix Analytics Live Demo'
           style={{ pointerEvents: 'none' }}
           tabIndex={-1}
         />
-        <div className='pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-900/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100'>
+        <div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-slate-900/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100'>
           <a
             href={LIVE_DEMO_URL}
             target='_blank'
@@ -353,12 +362,17 @@ const Hero = () => {
         <Header transparent />
         <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
           <div className='z-20 col-span-6 flex flex-col items-start'>
-            <h1 className='max-w-5xl text-left text-5xl font-semibold tracking-tight text-pretty text-slate-900 sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl dark:text-white'>
+            <Text
+              as='h1'
+              weight='semibold'
+              tracking='tight'
+              className='max-w-5xl text-left text-5xl text-pretty sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl'
+            >
               {t('main.slogan')}
-            </h1>
-            <p className='mt-4 max-w-2xl text-left text-lg text-slate-900 dark:text-gray-50'>
+            </Text>
+            <Text as='p' size='lg' className='mt-4 max-w-2xl text-left'>
               {t('main.description')}
-            </p>
+            </Text>
             <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
               <Link
                 to={routesPath.signup}

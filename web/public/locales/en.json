@@ -153,7 +153,11 @@
     "create": "Create",
     "unknown": "Unknown",
     "showMore": "Show {{count}} more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "toggleOptions": "Toggle options",
+    "paginationNavLabel": "Pagination",
+    "jumpToPage": "Jump to page {{page}}",
+    "pageNumber": "Page {{page}}"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",

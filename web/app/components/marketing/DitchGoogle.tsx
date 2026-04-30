@@ -1,6 +1,7 @@
 import { ArrowRightIcon, CheckIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
+import { Text } from '~/ui/Text'
 
 import routes from '~/utils/routes'
 
@@ -15,20 +16,29 @@ export const DitchGoogle = () => {
         </div>
         <div className='rounded-xl p-8 backdrop-blur-xl sm:p-12 lg:p-16'>
           <div className='mx-auto max-w-4xl'>
-            <h2 className='mb-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl dark:text-white'>
+            <Text
+              as='h2'
+              size='4xl'
+              weight='bold'
+              tracking='tight'
+              className='mb-6 sm:text-5xl lg:text-6xl'
+            >
               <Trans
                 t={t}
                 i18nKey='main.timeToDitchGoogleAnalytics'
                 components={{
-                  colour: (
-                    <span className='bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent' />
-                  ),
+                  colour: <span className='text-red-600 dark:text-red-400' />,
                 }}
               />
-            </h2>
-            <p className='mx-auto mb-10 max-w-2xl text-xl leading-relaxed text-slate-900 dark:text-slate-200'>
+            </Text>
+            <Text
+              as='p'
+              size='xl'
+              colour='secondary'
+              className='mx-auto mb-10 max-w-2xl leading-relaxed'
+            >
               {t('main.whyDitch')}
-            </p>
+            </Text>
             <div className='mb-8 flex flex-col items-center justify-center gap-4 sm:flex-row'>
               <Link
                 to={routes.signup}

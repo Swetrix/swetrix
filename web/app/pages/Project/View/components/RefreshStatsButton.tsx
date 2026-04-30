@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '~/providers/AuthProvider'
+import Button from '~/ui/Button'
+import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 
 import { useViewProjectContext } from '../ViewProject'
@@ -52,12 +54,16 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
         hasTriggeredRefresh.current = true
         ;(async () => {
           setIsRefreshing(true)
-          await onRefresh(false)
-          setIsRefreshing(false)
-          // Reset timer after refresh completes
-          startTimeRef.current = Date.now()
-          hasTriggeredRefresh.current = false
-          setProgress(0)
+          try {
+            await onRefresh(false)
+          } catch (error) {
+            console.error('Auto refresh failed', error)
+          } finally {
+            setIsRefreshing(false)
+            startTimeRef.current = Date.now()
+            hasTriggeredRefresh.current = false
+            setProgress(0)
+          }
         })()
       }
 
@@ -75,8 +81,13 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
     startTimeRef.current = Date.now()
     hasTriggeredRefresh.current = false
     setProgress(0)
-    await onRefresh(true)
-    setIsRefreshing(false)
+    try {
+      await onRefresh(true)
+    } catch (error) {
+      console.error('Manual refresh failed', error)
+    } finally {
+      setIsRefreshing(false)
+    }
   }
 
   const remainingSeconds = Math.max(
@@ -85,48 +96,48 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
   )
   const showSpinner = isRefreshing || dataLoading
 
+  const tooltipText = showSpinner
+    ? t('project.refreshing')
+    : t('project.refreshingIn', { seconds: remainingSeconds })
+
   return (
-    <button
-      type='button'
-      title={t('project.refreshStats')}
-      onClick={handleManualRefresh}
-      className={cn(
-        'group relative rounded-md border border-transparent p-2 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
-        {
-          'cursor-not-allowed opacity-50': authLoading,
-        },
-      )}
-    >
-      <div className='relative h-5 w-5'>
-        <ArrowClockwiseIcon
-          className={cn(
-            'absolute inset-0 h-5 w-5 text-gray-400/80 dark:text-slate-600',
-            {
-              'animate-spin': showSpinner,
-            },
-          )}
-        />
-        {!showSpinner ? (
-          <div
-            className='absolute inset-0'
-            style={{
-              maskImage: `conic-gradient(from 100deg, black ${progress}%, transparent ${progress}%)`,
-              WebkitMaskImage: `conic-gradient(from 100deg, black ${progress}%, transparent ${progress}%)`,
-            }}
-          >
-            <ArrowClockwiseIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
-          </div>
-        ) : null}
-        {showSpinner ? (
-          <ArrowClockwiseIcon className='absolute inset-0 h-5 w-5 animate-spin text-gray-700 dark:text-gray-50' />
-        ) : null}
-      </div>
-      <div className='pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-slate-700'>
-        {showSpinner
-          ? t('project.refreshing')
-          : t('project.refreshingIn', { seconds: remainingSeconds })}
-        <div className='absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-slate-700' />
-      </div>
-    </button>
+    <Tooltip
+      text={tooltipText}
+      ariaLabel={t('project.refreshStats')}
+      asChild
+      tooltipNode={
+        <Button
+          variant='icon'
+          onClick={handleManualRefresh}
+          aria-label={t('project.refreshStats')}
+          disabled={authLoading || dataLoading || isRefreshing}
+        >
+          <span className='relative size-5'>
+            <ArrowClockwiseIcon
+              className={cn(
+                'absolute inset-0 size-5 text-gray-400/80 dark:text-slate-600',
+                {
+                  'animate-spin': showSpinner,
+                },
+              )}
+            />
+            {!showSpinner ? (
+              <span
+                className='absolute inset-0'
+                style={{
+                  maskImage: `conic-gradient(from 100deg, black ${progress}%, transparent ${progress}%)`,
+                  WebkitMaskImage: `conic-gradient(from 100deg, black ${progress}%, transparent ${progress}%)`,
+                }}
+              >
+                <ArrowClockwiseIcon className='size-5 text-gray-700 dark:text-gray-50' />
+              </span>
+            ) : null}
+            {showSpinner ? (
+              <ArrowClockwiseIcon className='absolute inset-0 size-5 animate-spin text-gray-700 dark:text-gray-50' />
+            ) : null}
+          </span>
+        </Button>
+      }
+    />
   )
 }

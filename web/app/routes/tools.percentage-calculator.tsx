@@ -223,9 +223,9 @@ export default function PercentageCalculator() {
 
                 {mode === 'of' && (
                   <div>
-                    <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                    <Text as='h2' size='2xl' weight='semibold' className='mb-6'>
                       What is X% of Y?
-                    </h2>
+                    </Text>
 
                     <div className='flex items-end gap-3'>
                       <div className='flex-1'>
@@ -258,7 +258,7 @@ export default function PercentageCalculator() {
                     </div>
 
                     <div className='mt-6'>
-                      <Button onClick={reset} secondary regular>
+                      <Button variant='secondary' onClick={reset}>
                         Reset
                       </Button>
                     </div>
@@ -292,9 +292,9 @@ export default function PercentageCalculator() {
 
                 {mode === 'is' && (
                   <div>
-                    <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                    <Text as='h2' size='2xl' weight='semibold' className='mb-6'>
                       X is what percent of Y?
-                    </h2>
+                    </Text>
 
                     <div className='flex items-end gap-3'>
                       <div className='flex-1'>
@@ -327,7 +327,7 @@ export default function PercentageCalculator() {
                     </div>
 
                     <div className='mt-6'>
-                      <Button onClick={reset} secondary regular>
+                      <Button variant='secondary' onClick={reset}>
                         Reset
                       </Button>
                     </div>
@@ -362,9 +362,9 @@ export default function PercentageCalculator() {
 
                 {mode === 'change' && (
                   <div>
-                    <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                    <Text as='h2' size='2xl' weight='semibold' className='mb-6'>
                       Percentage Change
-                    </h2>
+                    </Text>
 
                     <div className='flex items-end gap-3'>
                       <div className='flex-1'>
@@ -397,7 +397,7 @@ export default function PercentageCalculator() {
                     </div>
 
                     <div className='mt-6'>
-                      <Button onClick={reset} secondary regular>
+                      <Button variant='secondary' onClick={reset}>
                         Reset
                       </Button>
                     </div>
@@ -548,9 +548,14 @@ export default function PercentageCalculator() {
             </section>
 
             <div className='mt-16'>
-              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+              <Text
+                as='h2'
+                size='3xl'
+                weight='bold'
+                className='mb-8 text-center'
+              >
                 Frequently Asked Questions
-              </h2>
+              </Text>
 
               <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>

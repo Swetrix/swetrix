@@ -588,9 +588,8 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
             {t('project.settings.proxy.domainsTitle')}
           </Text>
           <Button
+            size='xs'
             type='button'
-            primary
-            small
             onClick={() => {
               setHostnameInput('')
               setHostnameError(null)

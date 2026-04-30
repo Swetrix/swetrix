@@ -98,6 +98,7 @@ import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import LoadingBar from '~/ui/LoadingBar'
+import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
@@ -163,13 +164,22 @@ class TrafficErrorBoundary extends Component<
     if (this.state.hasError) {
       return (
         <div className='flex min-h-[300px] flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50 p-8 dark:border-red-800/50 dark:bg-red-900/20'>
-          <p className='text-center text-lg font-semibold text-red-600 dark:text-red-400'>
+          <Text
+            as='p'
+            size='lg'
+            weight='semibold'
+            className='text-center text-red-600 dark:text-red-400'
+          >
             Failed to load traffic data
-          </p>
-          <p className='mt-2 text-center text-sm text-red-500 dark:text-red-300'>
+          </Text>
+          <Text
+            as='p'
+            size='sm'
+            className='mt-2 text-center text-red-500 dark:text-red-300'
+          >
             {this.state.error?.message ||
               'An unexpected error occurred. Please try again.'}
-          </p>
+          </Text>
           <button
             type='button'
             onClick={() => window.location.reload()}

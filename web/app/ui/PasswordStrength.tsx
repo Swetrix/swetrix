@@ -15,7 +15,7 @@ type StrengthLevel = 'empty' | 'weak' | 'fair' | 'good' | 'strong'
 interface StrengthConfig {
   label: string
   color: string
-  bgColor: string
+  textColor: string
   segments: number
 }
 
@@ -45,32 +45,32 @@ const PasswordStrength = ({ password, className }: PasswordStrengthProps) => {
     () => ({
       empty: {
         label: '',
-        color: 'bg-gray-300 dark:bg-slate-700',
-        bgColor: 'bg-gray-200 dark:bg-slate-900',
+        color: 'bg-gray-200 dark:bg-slate-800',
+        textColor: '',
         segments: 0,
       },
       weak: {
         label: t('auth.passwordStrength.weak'),
         color: 'bg-red-500',
-        bgColor: 'bg-gray-200 dark:bg-slate-700',
+        textColor: 'text-red-600 dark:text-red-400',
         segments: 1,
       },
       fair: {
         label: t('auth.passwordStrength.fair'),
         color: 'bg-amber-500',
-        bgColor: 'bg-gray-200 dark:bg-slate-700',
+        textColor: 'text-amber-600 dark:text-amber-400',
         segments: 2,
       },
       good: {
         label: t('auth.passwordStrength.good'),
         color: 'bg-yellow-500',
-        bgColor: 'bg-gray-200 dark:bg-slate-700',
+        textColor: 'text-yellow-600 dark:text-yellow-500',
         segments: 3,
       },
       strong: {
         label: t('auth.passwordStrength.strong'),
         color: 'bg-emerald-500',
-        bgColor: 'bg-gray-200 dark:bg-slate-700',
+        textColor: 'text-emerald-600 dark:text-emerald-400',
         segments: 4,
       },
     }),
@@ -79,33 +79,34 @@ const PasswordStrength = ({ password, className }: PasswordStrengthProps) => {
 
   const currentConfig = config[strength]
   const totalSegments = 4
+  const trackBg = 'bg-gray-200 dark:bg-slate-800'
 
   return (
-    <div className={cx('space-y-1.5', className)}>
-      <div className='flex gap-1'>
+    <div
+      className={cx('space-y-1.5', className)}
+      role='progressbar'
+      aria-valuemin={0}
+      aria-valuemax={totalSegments}
+      aria-valuenow={currentConfig.segments}
+      aria-valuetext={currentConfig.label || undefined}
+      aria-label={t('auth.passwordStrength.label', {
+        defaultValue: 'Password strength',
+      })}
+    >
+      <div className='flex gap-1.5'>
         {Array.from({ length: totalSegments }).map((_, index) => (
           <div
             key={index}
             className={cx(
-              'h-1 flex-1 rounded-full transition-colors duration-200',
-              index < currentConfig.segments
-                ? currentConfig.color
-                : currentConfig.bgColor,
+              'h-1.5 flex-1 rounded-full transition-colors duration-200 ease-out',
+              index < currentConfig.segments ? currentConfig.color : trackBg,
             )}
           />
         ))}
       </div>
       {strength !== 'empty' && (
         <div className='flex items-center justify-end gap-1'>
-          <span
-            className={cx(
-              'text-xs font-medium',
-              strength === 'weak' && 'text-red-600 dark:text-red-400',
-              strength === 'fair' && 'text-amber-600 dark:text-amber-400',
-              strength === 'good' && 'text-yellow-600 dark:text-yellow-400',
-              strength === 'strong' && 'text-emerald-600 dark:text-emerald-400',
-            )}
-          >
+          <span className={cx('text-xs font-medium', currentConfig.textColor)}>
             {currentConfig.label}
           </span>
           <Tooltip

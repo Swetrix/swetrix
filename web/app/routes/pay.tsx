@@ -5,6 +5,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { ExternalScriptsHandle } from 'remix-utils/external-scripts'
 
 import { isSelfhosted } from '~/lib/constants'
+import { Text } from '~/ui/Text'
 import { getTitle } from '~/utils/seo'
 
 export const sitemap: SitemapFunction = () => ({
@@ -61,9 +62,9 @@ export default function Index() {
   return (
     <div className='min-h-page bg-gray-50 dark:bg-slate-950'>
       <div className='mx-auto px-4 pt-12 pb-16 sm:px-6 md:w-4/5 lg:px-8'>
-        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>
+        <Text as='h1' size='4xl' weight='bold'>
           Swetrix Payment
-        </h1>
+        </Text>
       </div>
     </div>
   )

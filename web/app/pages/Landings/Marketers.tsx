@@ -13,6 +13,7 @@ import {
   LIVE_DEMO_URL,
 } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
+import { Text } from '~/ui/Text'
 import routesPath from '~/utils/routes'
 
 const Marketers = () => {
@@ -71,20 +72,29 @@ const Marketers = () => {
         <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
           <div className='relative z-20 flex flex-col content-between justify-center'>
             <div className='relative mx-auto flex flex-col px-4 text-left'>
-              <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold text-slate-900 sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%] dark:text-white'>
+              <Text
+                as='h1'
+                size='4xl'
+                weight='bold'
+                tracking='tight'
+                className='mx-auto max-w-4xl text-center text-balance sm:text-5xl sm:leading-none xl:text-6xl xl:leading-[110%]'
+              >
                 <Trans
                   t={t}
                   i18nKey='marketers.slogan'
                   components={{
-                    span: (
-                      <span className='bg-gradient-to-r from-indigo-700 to-pink-700 bg-clip-text text-transparent dark:from-indigo-600 dark:to-indigo-400' />
-                    ),
+                    span: <span className='text-indigo-600 dark:text-white' />,
                   }}
                 />
-              </h1>
-              <p className='mx-auto mt-4 max-w-6xl text-center text-base leading-8 text-slate-900 sm:text-xl lg:text-lg xl:text-lg dark:text-slate-300'>
+              </Text>
+              <Text
+                as='p'
+                size='base'
+                colour='secondary'
+                className='mx-auto mt-4 max-w-6xl text-center leading-8 text-pretty sm:text-xl lg:text-lg xl:text-lg'
+              >
                 {t('marketers.description')}
-              </p>
+              </Text>
               <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
                 <Link
                   to={routesPath.signup}
@@ -142,13 +152,18 @@ const Marketers = () => {
         {_map(
           t('marketers.whyUs', { returnObjects: true }),
           (item: { name: string; desc: string[] }) => (
-            <div
-              key={item.name}
-              className='mb-10 text-slate-900 last:mb-0 dark:text-white'
-            >
-              <h2 className='mb-5 text-4xl font-extrabold'>{item.name}</h2>
+            <div key={item.name} className='mb-10 last:mb-0'>
+              <Text
+                as='h2'
+                size='4xl'
+                weight='bold'
+                tracking='tight'
+                className='mb-5'
+              >
+                {item.name}
+              </Text>
               {_map(item.desc, (descText) => (
-                <p key={descText} className='mb-5 text-lg'>
+                <Text key={descText} as='p' size='lg' className='mb-5'>
                   <Trans
                     t={t}
                     components={{
@@ -173,7 +188,7 @@ const Marketers = () => {
                   >
                     {descText}
                   </Trans>
-                </p>
+                </Text>
               ))}
             </div>
           ),

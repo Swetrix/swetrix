@@ -1,9 +1,10 @@
-import { CheckIcon, CaretUpDownIcon } from '@phosphor-icons/react'
+import { Transition } from '@headlessui/react'
+import { CheckIcon, CaretUpDownIcon, XIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useId, useMemo } from 'react'
 
 interface MultiSelectProps {
   className?: string
@@ -34,8 +35,11 @@ const MultiSelect = ({
 }: MultiSelectProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
+  const [activeIndex, setActiveIndex] = useState(-1)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const listboxId = useId()
+  const optionIdPrefix = useId()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -45,6 +49,7 @@ const MultiSelect = ({
       ) {
         setIsOpen(false)
         setSearchValue('')
+        setActiveIndex(-1)
         if (onSearch) {
           onSearch('')
         }
@@ -55,9 +60,23 @@ const MultiSelect = ({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [onSearch])
 
+  useEffect(() => {
+    if (!isOpen) {
+      setActiveIndex(-1)
+    }
+  }, [isOpen, items])
+
+  const itemKey = useMemo(
+    () => (item: any) =>
+      keyExtractor ? keyExtractor(item) : (itemExtractor?.(item) ?? item),
+    [keyExtractor, itemExtractor],
+  )
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchValue(value)
+    setActiveIndex(value && items.length > 0 ? 0 : -1)
+    if (!isOpen) setIsOpen(true)
     if (onSearch) {
       onSearch(value)
     }
@@ -67,24 +86,60 @@ const MultiSelect = ({
     setIsOpen(true)
   }
 
+  const handleSelectItem = (item: any) => {
+    onSelect(item)
+    setSearchValue('')
+    setActiveIndex(-1)
+    if (onSearch) {
+      onSearch('')
+    }
+    inputRef.current?.focus()
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') {
       setIsOpen(false)
       setSearchValue('')
-      if (onSearch) {
-        onSearch('')
-      }
+      setActiveIndex(-1)
+      if (onSearch) onSearch('')
       inputRef.current?.blur()
+      return
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (!isOpen) setIsOpen(true)
+      if (items.length === 0) return
+      setActiveIndex((prev) => (prev + 1) % items.length)
+      return
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (!isOpen) setIsOpen(true)
+      if (items.length === 0) return
+      setActiveIndex((prev) => (prev <= 0 ? items.length - 1 : prev - 1))
+      return
+    }
+
+    if (e.key === 'Enter') {
+      if (activeIndex >= 0 && activeIndex < items.length) {
+        e.preventDefault()
+        handleSelectItem(items[activeIndex])
+      }
+      return
+    }
+
+    if (e.key === 'Backspace' && !searchValue && label.length > 0) {
+      e.preventDefault()
+      onRemove(label[label.length - 1])
     }
   }
 
-  const handleSelectItem = (item: any) => {
-    onSelect(item)
-    setSearchValue('')
-    if (onSearch) {
-      onSearch('')
-    }
-  }
+  const activeOptionId =
+    activeIndex >= 0 && items[activeIndex]
+      ? `${optionIdPrefix}-${activeIndex}`
+      : undefined
 
   return (
     <div
@@ -95,80 +150,98 @@ const MultiSelect = ({
         <input
           ref={inputRef}
           type='text'
-          className='w-full cursor-text rounded-md border-0 bg-white py-2 pr-10 pl-3 text-sm font-medium ring-1 ring-gray-300 transition-colors ring-inset placeholder:text-gray-400 hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:placeholder:text-gray-500 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
+          role='combobox'
+          aria-expanded={isOpen}
+          aria-controls={listboxId}
+          aria-autocomplete='list'
+          aria-activedescendant={activeOptionId}
+          className='block w-full rounded-md border-0 bg-white py-2 pr-9 pl-3 text-sm font-medium text-gray-900 ring-1 ring-gray-300 transition-[background-color,box-shadow] duration-150 ease-out ring-inset placeholder:text-gray-400 hover:ring-gray-400 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:placeholder:text-gray-500 dark:hover:ring-slate-600 dark:focus:ring-slate-300'
           placeholder={placeholder}
           value={searchValue}
           onChange={handleInputChange}
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
         />
-        <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
-          <CaretUpDownIcon
-            className='h-5 w-5 text-gray-400'
-            aria-hidden='true'
-          />
+        <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 dark:text-gray-500'>
+          <CaretUpDownIcon className='size-4' aria-hidden='true' />
         </span>
 
-        <div
-          className={cx(
-            'absolute top-full z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/80',
-            'transition-opacity duration-100 ease-in',
-            isOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
-          )}
+        <Transition
+          show={isOpen}
+          enter='transition-[opacity,transform] duration-150 ease-out'
+          enterFrom='-translate-y-0.5 opacity-0'
+          enterTo='translate-y-0 opacity-100'
+          leave='transition-[opacity,transform] duration-150 ease-out'
+          leaveFrom='translate-y-0 opacity-100'
+          leaveTo='-translate-y-0.5 opacity-0'
         >
-          {_isEmpty(items) ? (
-            <div className='mx-1 px-3 py-2 text-gray-500 dark:text-gray-400'>
-              No options available
-            </div>
-          ) : (
-            _map(items, (item) => {
-              const isSelected = _includes(label, item)
-              return (
-                <button
-                  type='button'
-                  key={
-                    keyExtractor
-                      ? `${keyExtractor(item)}select`
-                      : `${item}select`
-                  }
-                  onClick={() => handleSelectItem(item)}
-                  className={cx(
-                    'relative mx-1 flex w-[calc(100%-0.5rem)] cursor-pointer items-center rounded-md py-2 pr-4 pl-8 text-left text-sm transition-colors select-none',
-                    {
-                      'bg-gray-200 dark:bg-slate-900/80': isSelected,
-                      'hover:bg-gray-100 dark:hover:bg-slate-900/80':
-                        !isSelected,
-                      'text-gray-900 dark:text-white': isSelected,
-                      'text-gray-700 dark:text-gray-50': !isSelected,
-                    },
-                  )}
-                >
-                  {isSelected ? (
-                    <span className='absolute inset-y-0 left-0 flex items-center pl-1.5 text-gray-600 dark:text-gray-300'>
-                      <CheckIcon className='h-5 w-5' aria-hidden='true' />
-                    </span>
-                  ) : null}
-                  <span
-                    className={cx('block truncate', {
-                      'font-semibold': isSelected,
-                      'font-normal': !isSelected,
-                    })}
+          <div
+            id={listboxId}
+            role='listbox'
+            aria-multiselectable='true'
+            className='absolute top-full z-30 mt-1.5 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/60'
+          >
+            {_isEmpty(items) ? (
+              <div className='mx-1 px-3 py-2 text-gray-500 dark:text-gray-400'>
+                No options available
+              </div>
+            ) : (
+              _map(items, (item, index) => {
+                const isSelected = _includes(label, item)
+                const isActive = index === activeIndex
+                const optionId = `${optionIdPrefix}-${index}`
+                return (
+                  <button
+                    type='button'
+                    id={optionId}
+                    role='option'
+                    aria-selected={isSelected}
+                    key={`${itemKey(item)}-select`}
+                    onClick={() => handleSelectItem(item)}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    className={cx(
+                      'relative mx-1 flex w-[calc(100%-0.5rem)] cursor-pointer items-center rounded-md py-2 pr-8 pl-3 text-left text-sm transition-colors duration-100 ease-out select-none',
+                      {
+                        'bg-gray-100 text-gray-900 dark:bg-slate-800/80 dark:text-white':
+                          isActive,
+                        'text-gray-700 dark:text-gray-50':
+                          !isActive && !isSelected,
+                        'text-gray-900 dark:text-white':
+                          isSelected && !isActive,
+                      },
+                    )}
                   >
-                    {itemExtractor ? itemExtractor(item) : item}
-                  </span>
-                </button>
-              )
-            })
-          )}
-        </div>
+                    <span
+                      className={cx('block truncate', {
+                        'font-semibold': isSelected,
+                        'font-normal': !isSelected,
+                      })}
+                    >
+                      {itemExtractor ? itemExtractor(item) : item}
+                    </span>
+                    {isSelected ? (
+                      <span className='absolute inset-y-0 right-2 flex items-center text-slate-900 dark:text-slate-100'>
+                        <CheckIcon
+                          weight='bold'
+                          className='size-4'
+                          aria-hidden='true'
+                        />
+                      </span>
+                    ) : null}
+                  </button>
+                )
+              })
+            )}
+          </div>
+        </Transition>
       </div>
 
       {!_isEmpty(label) ? (
-        <div className='mt-2 flex flex-wrap gap-2'>
+        <div className='mt-2 flex flex-wrap gap-1.5'>
           {_map(label, (item) => (
             <span
-              key={keyExtractor ? keyExtractor(item) : item}
-              className='inline-flex items-center gap-1.5 rounded-md bg-gray-100 py-1.5 pr-2 pl-2.5 text-sm font-medium text-gray-700 dark:bg-slate-900 dark:text-gray-200'
+              key={itemKey(item)}
+              className='inline-flex items-center gap-1.5 rounded-md bg-gray-100 py-1 pr-1.5 pl-2.5 text-xs font-medium text-gray-800 ring-1 ring-gray-200/70 ring-inset dark:bg-slate-800/60 dark:text-gray-100 dark:ring-slate-700/60'
             >
               <span className='flex items-center gap-1.5'>
                 {labelExtractor ? labelExtractor(item) : item}
@@ -180,21 +253,10 @@ const MultiSelect = ({
                   e.stopPropagation()
                   onRemove(item)
                 }}
-                className='inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 focus:bg-gray-300 focus:text-gray-700 focus:outline-hidden dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200'
+                aria-label={`Remove ${labelExtractor ? labelExtractor(item) : item}`}
+                className='inline-flex size-4 shrink-0 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-800 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:text-gray-400 dark:hover:bg-slate-700 dark:hover:text-gray-100 dark:focus-visible:ring-slate-300'
               >
-                <span className='sr-only'>Remove</span>
-                <svg
-                  className='h-2.5 w-2.5'
-                  stroke='currentColor'
-                  fill='none'
-                  viewBox='0 0 8 8'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeWidth='1.5'
-                    d='m1 1 6 6m0-6-6 6'
-                  />
-                </svg>
+                <XIcon className='size-3' weight='bold' aria-hidden='true' />
               </button>
             </span>
           ))}
@@ -202,7 +264,7 @@ const MultiSelect = ({
       ) : null}
 
       {hint ? (
-        <p className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>
+        <p className='mt-1.5 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400'>
           {hint}
         </p>
       ) : null}

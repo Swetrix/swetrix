@@ -435,8 +435,8 @@ export default function SchemaMarkupGenerator() {
                         </div>
                       ))}
                       <Button
+                        variant='secondary'
                         type='button'
-                        secondary
                         onClick={() =>
                           setFaqData((p) => [
                             ...p,
@@ -457,12 +457,17 @@ export default function SchemaMarkupGenerator() {
                 <div className='mb-4 flex items-center justify-between'>
                   <div className='flex items-center gap-2'>
                     <CodeIcon className='h-5 w-5 text-gray-400' />
-                    <h3 className='text-lg font-medium text-white'>
+                    <Text
+                      as='h3'
+                      size='lg'
+                      weight='medium'
+                      className='text-white'
+                    >
                       Generated JSON-LD
-                    </h3>
+                    </Text>
                   </div>
                   <Button
-                    secondary
+                    variant='secondary'
                     onClick={handleCopy}
                     className='h-auto! border-slate-700! bg-slate-800! px-3! py-1.5! text-gray-300! hover:bg-slate-700! hover:text-white!'
                   >
@@ -497,9 +502,9 @@ export default function SchemaMarkupGenerator() {
               </Text>
 
               <div className='mt-12'>
-                <h3 className='mb-8 text-2xl font-bold text-gray-900 dark:text-white'>
+                <Text as='h3' size='2xl' weight='bold' className='mb-8'>
                   Frequently Asked Questions
-                </h3>
+                </Text>
 
                 <FAQ items={FAQ_ITEMS} withStructuredData />
               </div>

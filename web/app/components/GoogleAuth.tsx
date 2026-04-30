@@ -15,10 +15,9 @@ const GoogleAuth = ({ onClick, className, disabled }: GoogleAuthProps) => {
 
   return (
     <Button
+      variant='secondary'
       className={cx(className, 'flex items-center justify-center')}
       onClick={onClick}
-      secondary
-      regular
       disabled={disabled}
     >
       <>

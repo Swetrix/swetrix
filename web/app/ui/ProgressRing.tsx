@@ -21,6 +21,8 @@ interface ProgressRingProps {
   showValue?: boolean
   /** Custom thresholds for colour coding. Default: { green: 80, amber: 40 } */
   thresholds?: ColourThresholds
+  /** Accessible label for screen readers */
+  ariaLabel?: string
 }
 
 const DEFAULT_THRESHOLDS: ColourThresholds = {
@@ -31,8 +33,8 @@ const DEFAULT_THRESHOLDS: ColourThresholds = {
 const getColourClasses = (value: number, thresholds: ColourThresholds) => {
   if (value >= thresholds.green) {
     return {
-      stroke: 'stroke-green-500 dark:stroke-green-400',
-      text: 'text-green-600 dark:text-green-400',
+      stroke: 'stroke-emerald-500 dark:stroke-emerald-400',
+      text: 'text-emerald-600 dark:text-emerald-400',
     }
   }
 
@@ -56,11 +58,12 @@ const ProgressRing = ({
   className,
   showValue = true,
   thresholds = DEFAULT_THRESHOLDS,
+  ariaLabel,
 }: ProgressRingProps) => {
-  const normalizedValue = useMemo(
-    () => Math.min(100, Math.max(0, value)),
-    [value],
-  )
+  const normalizedValue = useMemo(() => {
+    const safeValue = Number.isFinite(value) ? value : 0
+    return Math.min(100, Math.max(0, safeValue))
+  }, [value])
 
   const { radius, circumference, strokeDashoffset } = useMemo(() => {
     const r = (size - strokeWidth) / 2
@@ -80,6 +83,7 @@ const ProgressRing = ({
   )
 
   const center = size / 2
+  const displayValue = Math.floor(normalizedValue)
 
   return (
     <div
@@ -87,9 +91,13 @@ const ProgressRing = ({
         'relative inline-flex items-center justify-center',
         className,
       )}
+      role='progressbar'
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={displayValue}
+      aria-label={ariaLabel ?? `Progress: ${displayValue}%`}
     >
-      <svg width={size} height={size} className='-rotate-90'>
-        {/* Background circle */}
+      <svg width={size} height={size} className='-rotate-90' aria-hidden='true'>
         <circle
           cx={center}
           cy={center}
@@ -98,7 +106,6 @@ const ProgressRing = ({
           strokeWidth={strokeWidth}
           className='stroke-gray-200 dark:stroke-slate-800'
         />
-        {/* Progress circle */}
         <circle
           cx={center}
           cy={center}
@@ -109,7 +116,7 @@ const ProgressRing = ({
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           className={cn(
-            'transition-all duration-300 ease-out',
+            'transition-[stroke-dashoffset] duration-500 ease-out',
             colourClasses.stroke,
           )}
         />
@@ -117,12 +124,12 @@ const ProgressRing = ({
       {showValue ? (
         <span
           className={cn(
-            'absolute text-center font-semibold',
+            'absolute text-center font-semibold tabular-nums',
             colourClasses.text,
           )}
           style={{ fontSize: size * 0.22 }}
         >
-          {Math.round(normalizedValue)}%
+          {displayValue}%
         </span>
       ) : null}
     </div>

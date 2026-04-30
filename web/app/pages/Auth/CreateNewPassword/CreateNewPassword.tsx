@@ -28,9 +28,14 @@ const CreateNewPassword = () => {
     <div>
       <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-950'>
         <div className='sm:mx-auto sm:w-full sm:max-w-md'>
-          <h2 className='text-center text-2xl leading-9 font-bold text-gray-900 dark:text-gray-50'>
+          <Text
+            as='h2'
+            size='2xl'
+            weight='bold'
+            className='text-center leading-9'
+          >
             {t('auth.recovery.title')}
-          </h2>
+          </Text>
         </div>
         <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
           <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-950 dark:ring-slate-800'>
@@ -51,11 +56,10 @@ const CreateNewPassword = () => {
                 disabled={isSubmitting}
               />
               <Button
+                size='xl'
                 className='w-full justify-center'
                 type='submit'
                 loading={isSubmitting}
-                primary
-                giant
               >
                 {t('auth.recovery.save')}
               </Button>

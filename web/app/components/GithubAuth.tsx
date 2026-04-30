@@ -18,10 +18,9 @@ const GithubAuth = ({ className, onClick, disabled }: GoogleAuthProps) => {
 
   return (
     <Button
+      variant='secondary'
       className={cx(className, 'flex items-center justify-center')}
       onClick={onClick}
-      secondary
-      regular
       disabled={disabled}
     >
       <>

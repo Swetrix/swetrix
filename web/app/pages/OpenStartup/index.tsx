@@ -5,6 +5,7 @@ import { useTranslation, Trans } from 'react-i18next'
 
 import { LIVE_DEMO_URL } from '~/lib/constants'
 import { Stats } from '~/lib/models/Stats'
+import { Text } from '~/ui/Text'
 import { nFormatterSeparated } from '~/utils/generic'
 
 // This should be generated on the API side, will be done later.
@@ -412,70 +413,58 @@ const OpenStartup = ({ stats }: OpenStartupProps) => {
   return (
     <div className='min-h-page bg-gray-50 dark:bg-slate-950'>
       <div className='mx-auto px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
-        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>
+        <Text as='h1' size='4xl' weight='bold' tracking='tight'>
           {t('titles.open')}
-        </h1>
+        </Text>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
+        <Text as='p' size='lg' className='mt-2'>
           {t('open.desc')}
-        </p>
+        </Text>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
+        <Text as='p' size='lg' className='mt-2'>
           {t('open.updated')}
-        </p>
+        </Text>
 
-        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50'>
+        <Text as='h2' size='2xl' weight='bold' className='mt-8 tracking-tight'>
           {t('open.finance.title')}
-        </h2>
+        </Text>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
+        <Text as='p' size='lg' className='mt-2'>
           {t('open.finance.desc')}
-        </p>
+        </Text>
 
         <div className='mt-4 h-80' id='open-startup' />
 
-        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50'>
+        <Text as='h2' size='2xl' weight='bold' className='mt-8 tracking-tight'>
           {t('open.usage.title')}
-        </h2>
+        </Text>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
+        <Text as='p' size='lg' className='mt-2'>
           {t('open.usage.desc')}
-        </p>
+        </Text>
 
-        <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
+        <Text as='p' size='base' className='mt-2'>
           {t('main.users')}
           {': '}
           {users[0]}
-          {users[1] ? (
-            <span className='text-gray-900 dark:text-indigo-200'>
-              {users[1]}+
-            </span>
-          ) : null}
-        </p>
+          {users[1] ? <span>{users[1]}+</span> : null}
+        </Text>
 
-        <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
+        <Text as='p' size='base' className='mt-2'>
           {t('main.websites')}
           {': '}
           {websites[0]}
-          {websites[1] ? (
-            <span className='text-gray-900 dark:text-indigo-200'>
-              {websites[1]}+
-            </span>
-          ) : null}
-        </p>
+          {websites[1] ? <span>{websites[1]}+</span> : null}
+        </Text>
 
-        <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
+        <Text as='p' size='base' className='mt-2'>
           {t('main.pageviews')}
           {': '}
           {events[0]}
-          {events[1] ? (
-            <span className='text-gray-900 dark:text-indigo-200'>
-              {events[1]}+
-            </span>
-          ) : null}
-        </p>
+          {events[1] ? <span>{events[1]}+</span> : null}
+        </Text>
 
-        <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
+        <Text as='p' size='base' className='mt-2'>
           <Trans
             t={t}
             i18nKey='open.usage.live'
@@ -490,7 +479,7 @@ const OpenStartup = ({ stats }: OpenStartupProps) => {
               ),
             }}
           />
-        </p>
+        </Text>
       </div>
     </div>
   )

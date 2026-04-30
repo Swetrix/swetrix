@@ -49,10 +49,11 @@ import GoogleGSVG from '~/ui/icons/GoogleG'
 import GoogleSearchConsoleSVG from '~/ui/icons/GoogleSearchConsole'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
-import { TabHeader } from '~/ui/TabHeader'
 import Modal from '~/ui/Modal'
 import MultiSelect from '~/ui/MultiSelect'
 import Select from '~/ui/Select'
+import { TabHeader } from '~/ui/TabHeader'
+import { Text } from '~/ui/Text'
 // Select is used inside tab components
 import countries from '~/utils/isoCountries'
 import routes from '~/utils/routes'
@@ -146,9 +147,13 @@ const ModalMessage = ({
 
   return (
     <>
-      <p className='mt-1 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
+      <Text
+        as='p'
+        size='sm'
+        className='mt-1 mb-4 text-gray-500 italic dark:text-gray-300'
+      >
         {t('project.settings.resetHint')}
-      </p>
+      </Text>
       <div className='mt-6'>
         <nav className='-mb-px flex space-x-6'>
           {_map(DELETE_DATA_MODAL_TABS, (tabDelete) => (
@@ -173,12 +178,20 @@ const ModalMessage = ({
       </div>
       {tab === DELETE_DATA_MODAL_TABS[1].name ? (
         <>
-          <p className='mt-4 mb-2 text-sm text-gray-500 dark:text-gray-300'>
+          <Text
+            as='p'
+            size='sm'
+            className='mt-4 mb-2 text-gray-500 dark:text-gray-300'
+          >
             {t('project.settings.reseted.partiallyDesc')}
-          </p>
-          <p className='mt-1 mb-2 text-sm text-gray-500 italic dark:text-gray-300'>
+          </Text>
+          <Text
+            as='p'
+            size='sm'
+            className='mt-1 mb-2 text-gray-500 italic dark:text-gray-300'
+          >
             {t('project.settings.reseted.partiallyHint')}
-          </p>
+          </Text>
           <input
             type='text'
             className='m-0 h-0 w-0 border-0 p-0 focus:border-transparent focus:text-transparent focus:shadow-none focus:ring-transparent'
@@ -195,15 +208,23 @@ const ModalMessage = ({
         </>
       ) : null}
       {tab === DELETE_DATA_MODAL_TABS[0].name ? (
-        <p className='mt-4 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
+        <Text
+          as='p'
+          size='sm'
+          className='mt-4 mb-4 text-gray-500 italic dark:text-gray-300'
+        >
           {t('project.settings.reseted.allHint')}
-        </p>
+        </Text>
       ) : null}
       {tab === DELETE_DATA_MODAL_TABS[2].name ? (
         <div className='min-h-[410px]'>
-          <p className='mt-4 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
+          <Text
+            as='p'
+            size='sm'
+            className='mt-4 mb-4 text-gray-500 italic dark:text-gray-300'
+          >
             {t('project.settings.reseted.viaFiltersHint')}
-          </p>
+          </Text>
           <div>
             <Dropdown
               className='min-w-[160px]'
@@ -277,9 +298,13 @@ const ModalMessage = ({
                 }
               />
             ) : (
-              <p className='mt-4 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
+              <Text
+                as='p'
+                size='sm'
+                className='mt-4 mb-4 text-gray-500 italic dark:text-gray-300'
+              >
                 {t('project.settings.reseted.noFilters')}
-              </p>
+              </Text>
             )}
           </div>
         </div>
@@ -958,9 +983,15 @@ const ProjectSettings = () => {
           <CaretLeftIcon className='mr-1 size-3' />
           {t('project.backToStats')}
         </Link>
-        <h2 className='mt-1 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+        <Text
+          as='h2'
+          size='3xl'
+          weight='bold'
+          tracking='tight'
+          className='mt-1'
+        >
           {title}
-        </h2>
+        </Text>
 
         <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
 
@@ -1046,7 +1077,7 @@ const ProjectSettings = () => {
                 ) : null}
 
                 <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
-                  <Button type='submit' loading={isSaving} primary regular>
+                  <Button type='submit' loading={isSaving}>
                     {t('common.save')}
                   </Button>
                 </div>
@@ -1055,12 +1086,12 @@ const ProjectSettings = () => {
 
             {activeTab === 'shields' ? (
               <div className='mt-8'>
-                <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+                <Text as='h3' size='lg' weight='bold'>
                   {t('project.settings.blockedTraffic')}
-                </h3>
-                <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                </Text>
+                <Text as='p' size='sm' colour='muted' className='mt-1'>
                   {t('project.settings.blockedTrafficHint')}
-                </p>
+                </Text>
                 <div className='mt-2'>
                   <BotProtectionReport pid={id} />
                 </div>
@@ -1137,10 +1168,15 @@ const ProjectSettings = () => {
                   iconColorClass={activeTabConfig.iconColor}
                 />
                 <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
-                  <h3 className='mb-2 flex items-center gap-2 text-lg font-medium text-gray-900 dark:text-gray-50'>
+                  <Text
+                    as='h3'
+                    size='lg'
+                    weight='medium'
+                    className='mb-2 flex items-center gap-2'
+                  >
                     <GoogleSearchConsoleSVG className='size-6' />
                     Google Search Console
-                  </h3>
+                  </Text>
                   {gscConnected === null ? (
                     <Loader />
                   ) : !gscAvailable ? (
@@ -1166,9 +1202,13 @@ const ProjectSettings = () => {
                     </div>
                   ) : !gscConnected ? (
                     <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
-                      <p className='text-sm text-gray-800 dark:text-gray-200'>
+                      <Text
+                        as='p'
+                        size='sm'
+                        className='text-gray-800 dark:text-gray-200'
+                      >
                         {t('project.settings.gsc.connect')}
-                      </p>
+                      </Text>
                       <Button
                         className='flex items-center gap-2'
                         type='button'
@@ -1184,8 +1224,6 @@ const ProjectSettings = () => {
                               'gsc-connect'
                             : undefined
                         }
-                        primary
-                        regular
                       >
                         <GoogleGSVG className='size-4' />
                         {t('common.connect')}
@@ -1201,10 +1239,9 @@ const ProjectSettings = () => {
                       />
 
                       <Button
+                        variant='danger-outline'
                         type='button'
                         className='max-w-max'
-                        semiDanger
-                        regular
                         onClick={() => {
                           gscFetcher.submit(
                             { intent: 'gsc-disconnect' },
@@ -1272,8 +1309,6 @@ const ProjectSettings = () => {
                               'gsc-set-property'
                             : undefined
                         }
-                        primary
-                        regular
                       >
                         {t('common.save')}
                       </Button>
@@ -1284,7 +1319,11 @@ const ProjectSettings = () => {
                     <>
                       <hr className='-mx-4 mt-4 mb-4 border-gray-200 dark:border-slate-800' />
 
-                      <p className='text-sm text-gray-800 dark:text-gray-200'>
+                      <Text
+                        as='p'
+                        size='sm'
+                        className='text-gray-800 dark:text-gray-200'
+                      >
                         <Trans
                           t={t}
                           i18nKey='project.settings.gsc.connectDisclamer'
@@ -1299,7 +1338,7 @@ const ProjectSettings = () => {
                             ),
                           }}
                         />
-                      </p>
+                      </Text>
                     </>
                   )}
                 </div>
@@ -1354,12 +1393,12 @@ const ProjectSettings = () => {
                   iconColorClass={activeTabConfig.iconColor}
                 />
                 <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
-                  <h3 className='mb-2 text-lg font-medium text-gray-900 dark:text-gray-50'>
+                  <Text as='h3' size='lg' weight='medium' className='mb-2'>
                     {t('project.settings.captcha.title')}
-                  </h3>
-                  <p className='mb-4 text-sm text-gray-600 dark:text-gray-300'>
+                  </Text>
+                  <Text as='p' size='sm' colour='muted' className='mb-4'>
                     {t('project.settings.captcha.description')}
-                  </p>
+                  </Text>
 
                   {captchaSecretKey ? (
                     <>
@@ -1373,10 +1412,9 @@ const ProjectSettings = () => {
                       />
                       <div className='mt-4 flex gap-2'>
                         <Button
+                          variant='danger'
                           type='button'
                           onClick={() => setShowRegenerateSecret(true)}
-                          danger
-                          regular
                         >
                           {t('project.settings.captcha.regenerateKey')}
                         </Button>
@@ -1464,8 +1502,6 @@ const ProjectSettings = () => {
                             )
                             fetcher.submit(formData, { method: 'post' })
                           }}
-                          primary
-                          regular
                         >
                           {t('common.save')}
                         </Button>
@@ -1473,15 +1509,10 @@ const ProjectSettings = () => {
                     </>
                   ) : (
                     <>
-                      <p className='mb-4 text-sm text-gray-600 dark:text-gray-300'>
+                      <Text as='p' size='sm' colour='muted' className='mb-4'>
                         {t('project.settings.captcha.noKeyGenerated')}
-                      </p>
-                      <Button
-                        type='button'
-                        onClick={onRegenerateCaptchaKey}
-                        primary
-                        regular
-                      >
+                      </Text>
+                      <Button type='button' onClick={onRegenerateCaptchaKey}>
                         {t('project.settings.captcha.generateKey')}
                       </Button>
                     </>
@@ -1577,9 +1608,13 @@ const ProjectSettings = () => {
         title={t('project.settings.protected')}
         message={
           <div>
-            <p className='mt-1 mb-4 text-sm text-gray-500 dark:text-gray-300'>
+            <Text
+              as='p'
+              size='sm'
+              className='mt-1 mb-4 text-gray-500 dark:text-gray-300'
+            >
               {t('project.settings.protectedHint')}
-            </p>
+            </Text>
             <Input
               name='password'
               type='password'
@@ -1601,14 +1636,14 @@ const ProjectSettings = () => {
         closeText={t('common.cancel')}
         message={
           <div>
-            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
+            <Text as='h2' size='xl' weight='bold' colour='secondary'>
               {t('project.settings.transferTo')}
-            </h2>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+            </Text>
+            <Text as='p' colour='secondary' className='mt-2'>
               {t('project.settings.transferHint', {
                 name: form.name || DEFAULT_PROJECT_NAME,
               })}
-            </p>
+            </Text>
             <Input
               name='email'
               type='email'

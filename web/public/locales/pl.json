@@ -153,7 +153,11 @@
     "create": "Utwórz",
     "unknown": "Nieznane",
     "showMore": "Pokaż {{count}} więcej",
-    "showLess": "Pokaż mniej"
+    "showLess": "Pokaż mniej",
+    "toggleOptions": "Przełącz opcje",
+    "paginationNavLabel": "Paginacja",
+    "jumpToPage": "Przejdź do strony {{page}}",
+    "pageNumber": "Strona {{page}}"
   },
   "performance": {
     "slogan": "Monitorowanie <span>wydajności</span> końcowego użytkownika, aby dostarczać szybkie strony internetowe.",

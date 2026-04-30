@@ -60,6 +60,7 @@ import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 import { cn } from '~/utils/generic'
 import { BannerManager } from './banners'
@@ -203,9 +204,13 @@ const SolutionsMenu = () => {
                       </a>
                     )}
 
-                    <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>
+                    <Text
+                      as='p'
+                      size='xs'
+                      className='mt-1 text-gray-600 dark:text-neutral-100'
+                    >
                       {item.description}
-                    </p>
+                    </Text>
                   </div>
                 </div>
               ))}
@@ -812,9 +817,13 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                                     </a>
                                   )}
 
-                                  <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>
+                                  <Text
+                                    as='p'
+                                    size='xs'
+                                    className='mt-1 text-gray-600 dark:text-neutral-100'
+                                  >
                                     {item.description}
-                                  </p>
+                                  </Text>
                                 </div>
                               </DisclosureButton>
                             ))}

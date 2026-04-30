@@ -5,6 +5,7 @@ import { Link } from '~/ui/Link'
 
 import { cn } from '~/utils/generic'
 
+import { buttonClasses } from './Button'
 import Spin from './icons/Spin'
 import { Text } from './Text'
 
@@ -38,28 +39,31 @@ interface StatusPageProps {
 const iconMap: Record<StatusType, ReactNode> = {
   success: (
     <CheckCircleIcon
-      className='size-8 text-green-500 dark:text-green-400'
+      className='size-6 text-emerald-600 dark:text-emerald-400'
+      weight='duotone'
       aria-hidden='true'
     />
   ),
   error: (
     <XCircleIcon
-      className='size-8 text-red-500 dark:text-red-400'
+      className='size-6 text-red-600 dark:text-red-400'
+      weight='duotone'
       aria-hidden='true'
     />
   ),
   info: (
     <InfoIcon
-      className='size-8 text-amber-500 dark:text-amber-400'
+      className='size-6 text-amber-600 dark:text-amber-400'
+      weight='duotone'
       aria-hidden='true'
     />
   ),
 }
 
 const iconBgMap: Record<StatusType, string> = {
-  success: 'bg-green-100 dark:bg-green-500/10',
-  error: 'bg-red-100 dark:bg-red-500/10',
-  info: 'bg-amber-100 dark:bg-amber-500/10',
+  success: 'bg-emerald-100/70 dark:bg-emerald-500/10',
+  error: 'bg-red-100/70 dark:bg-red-500/10',
+  info: 'bg-amber-100/70 dark:bg-amber-500/10',
 }
 
 const StatusPage = ({
@@ -75,7 +79,11 @@ const StatusPage = ({
   if (loading) {
     return (
       <div className='flex min-h-page items-center justify-center bg-gray-50 dark:bg-slate-950'>
-        <div className='flex flex-col items-center'>
+        <div
+          className='flex flex-col items-center'
+          role='status'
+          aria-live='polite'
+        >
           <Spin />
           <span className='sr-only'>{t('common.loading')}</span>
         </div>
@@ -90,7 +98,7 @@ const StatusPage = ({
       <div className='mx-auto w-full max-w-md text-center'>
         <div
           className={cn(
-            'mx-auto mb-6 flex size-14 items-center justify-center rounded-xl',
+            'mx-auto mb-5 flex size-12 items-center justify-center rounded-2xl',
             iconBgMap[type],
           )}
         >
@@ -98,31 +106,37 @@ const StatusPage = ({
         </div>
 
         {title ? (
-          <Text as='h1' size='xl' weight='semibold' className='tracking-tight'>
+          <Text
+            as='h1'
+            size='xl'
+            weight='semibold'
+            className='tracking-tight text-balance'
+          >
             {title}
           </Text>
         ) : null}
 
         {description ? (
-          <Text as='p' size='base' colour='secondary' className='mt-2'>
+          <Text
+            as='p'
+            size='base'
+            colour='secondary'
+            className='mt-2 text-pretty'
+          >
             {description}
           </Text>
         ) : null}
 
         {actions && actions.length > 0 ? (
-          <div className='mt-6 flex flex-wrap items-center justify-center gap-3'>
-            {actions.map((action, index) =>
-              isActionLink(action) ? (
-                <Link
-                  key={action.to}
-                  to={action.to}
-                  className={cn(
-                    'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-hidden',
-                    action.primary
-                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-slate-900 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900',
-                  )}
-                >
+          <div className='mt-6 flex flex-wrap items-center justify-center gap-2.5'>
+            {actions.map((action, index) => {
+              const className = buttonClasses({
+                variant: action.primary ? 'primary' : 'secondary',
+                size: 'lg',
+              })
+
+              return isActionLink(action) ? (
+                <Link key={action.to} to={action.to} className={className}>
                   {action.label}
                 </Link>
               ) : (
@@ -130,17 +144,12 @@ const StatusPage = ({
                   key={index}
                   type='button'
                   onClick={action.onClick}
-                  className={cn(
-                    'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-hidden',
-                    action.primary
-                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-slate-900 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900',
-                  )}
+                  className={className}
                 >
                   {action.label}
                 </button>
-              ),
-            )}
+              )
+            })}
           </div>
         ) : null}
       </div>

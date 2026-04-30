@@ -67,31 +67,34 @@ function Dropdown<T>({
       {({ open, close }) => (
         <>
           {!_isEmpty(desc) ? (
-            <p className='mb-2 text-sm text-gray-900'>{desc}</p>
+            <p className='mb-2 text-sm text-gray-900 dark:text-gray-200'>
+              {desc}
+            </p>
           ) : null}
           <MenuButton
             onClick={onClick}
             disabled={disabled}
             className={cn(
-              'transition-colors',
+              'transition-[background-color,color,box-shadow] duration-150 ease-out',
               {
                 'justify-between': aside,
                 'justify-center': !aside,
-                'inline-flex w-full rounded-md border-0 bg-white px-3 py-2 text-sm font-medium ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden md:px-4 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300':
+                'inline-flex w-full rounded-md border-0 bg-white px-3 py-2 text-sm font-medium ring-1 ring-gray-300 ring-inset hover:bg-gray-50 hover:ring-gray-400 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden md:px-4 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-900 dark:hover:ring-slate-600 dark:focus-visible:ring-slate-300':
                   !headless,
                 'group inline-flex w-full px-3 py-2 text-sm font-medium outline-hidden md:px-4':
                   headless,
                 'text-gray-700 dark:text-gray-50': !disabled,
-                'cursor-not-allowed text-gray-500 dark:text-gray-400': disabled,
+                'cursor-not-allowed text-gray-500 opacity-60 dark:text-gray-400':
+                  disabled,
               },
               buttonClassName,
             )}
           >
-            <span>{title}</span>
+            <span className='truncate'>{title}</span>
             {chevron === 'regular' ? (
               <CaretDownIcon
                 className={cn(
-                  'ml-2 h-5 w-5 transform-gpu transition-transform',
+                  'ml-2 size-4 shrink-0 transform-gpu transition-transform duration-200 ease-out',
                   {
                     'rotate-180': open,
                   },
@@ -102,7 +105,7 @@ function Dropdown<T>({
             {chevron === 'mini' ? (
               <CaretDownIcon
                 className={cn(
-                  'ml-1 h-5 w-5 transform-gpu transition-transform',
+                  'ml-1 size-4 shrink-0 transform-gpu transition-transform duration-200 ease-out',
                   {
                     'rotate-180': open,
                   },
@@ -115,32 +118,35 @@ function Dropdown<T>({
           <Transition
             show={open}
             as={Fragment}
-            enter='transition ease-out duration-100'
-            enterFrom='transform opacity-0 scale-95'
-            enterTo='transform opacity-100 scale-100'
-            leave='transition ease-in duration-75'
-            leaveFrom='transform opacity-100 scale-100'
-            leaveTo='transform opacity-0 scale-95'
+            enter='transition ease-out duration-150'
+            enterFrom='transform opacity-0 scale-95 -translate-y-0.5'
+            enterTo='transform opacity-100 scale-100 translate-y-0'
+            leave='transition ease-in duration-100'
+            leaveFrom='transform opacity-100 scale-100 translate-y-0'
+            leaveTo='transform opacity-0 scale-95 -translate-y-0.5'
           >
             <MenuItems
               anchor={{
                 to: position === 'down' ? 'bottom end' : 'top end',
-                offset: 8,
+                offset: 6,
               }}
               modal={false}
               className={cn(
-                'z-50 w-40 min-w-max rounded-md bg-white p-1 ring-1 ring-gray-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800',
+                'z-50 w-40 min-w-max rounded-lg bg-white p-1 shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-700/60',
                 menuItemsClassName,
               )}
             >
               {header ? (
-                <p className='mb-1 p-2 text-sm font-medium text-gray-700 dark:text-gray-50'>
-                  {header}
-                </p>
+                <>
+                  <p className='px-2 pt-1.5 pb-1 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400'>
+                    {header}
+                  </p>
+                  <div className='mb-1 h-px bg-gray-100 dark:bg-slate-800' />
+                </>
               ) : null}
               {loading ? (
-                <div className='px-4 py-2'>
-                  <Spin className='!ml-0' />
+                <div className='flex items-center justify-center px-4 py-3'>
+                  <Spin className='mr-0! ml-0!' />
                   <span className='sr-only'>Loading...</span>
                 </div>
               ) : (
@@ -152,7 +158,7 @@ function Dropdown<T>({
                   >
                     <span
                       className={cn(
-                        'block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-800',
+                        'block cursor-pointer rounded-md px-2 py-1.5 text-sm text-gray-700 transition-colors duration-100 ease-out hover:bg-gray-100 hover:text-gray-900 data-focus:bg-gray-100 data-focus:text-gray-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:hover:text-white dark:data-focus:bg-slate-800 dark:data-focus:text-white',
                         selectItemClassName,
                       )}
                       role='menuitem'

@@ -33,9 +33,10 @@ import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
+import Select from '~/ui/Select'
 import StatusPage from '~/ui/StatusPage'
 import { TabHeader } from '~/ui/TabHeader'
-import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
@@ -298,9 +299,15 @@ const OrganisationSettings = () => {
           <CaretLeftIcon className='mr-1 size-3' />
           {t('organisations.backToList')}
         </Link>
-        <h2 className='mt-1 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+        <Text
+          as='h2'
+          size='3xl'
+          weight='bold'
+          tracking='tight'
+          className='mt-1'
+        >
           {title}
-        </h2>
+        </Text>
         <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
         <div className='mt-6 flex flex-col gap-6 md:flex-row'>
           <div className='md:hidden'>
@@ -374,16 +381,15 @@ const OrganisationSettings = () => {
                 <div className='mt-8 flex flex-wrap justify-center gap-2 sm:justify-between'>
                   <div className='flex flex-wrap items-center gap-2'>
                     <Button
+                      variant='secondary'
                       className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
                       as={Link}
                       // @ts-expect-error
                       to={routes.organisations}
-                      secondary
-                      regular
                     >
                       {t('common.cancel')}
                     </Button>
-                    <Button type='submit' loading={isSaving} primary regular>
+                    <Button type='submit' loading={isSaving}>
                       {t('common.save')}
                     </Button>
                   </div>
@@ -442,18 +448,17 @@ const OrganisationSettings = () => {
                   iconColorClass={activeTabConfig.iconColor}
                 />
                 <div className='rounded-lg border border-gray-200 p-5 dark:border-slate-800'>
-                  <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-50'>
+                  <Text as='h3' size='lg' weight='semibold'>
                     {t('organisations.delete')}
-                  </h3>
-                  <p className='mt-2 text-sm text-gray-600 dark:text-gray-300'>
+                  </Text>
+                  <Text as='p' size='sm' colour='muted' className='mt-2'>
                     {t('organisations.modals.delete.message')}
-                  </p>
+                  </Text>
                   <Button
+                    variant='danger'
                     className='mt-4'
                     onClick={() => setShowDelete(true)}
                     disabled={isDeleting}
-                    danger
-                    regular
                   >
                     <TrashIcon className='mr-1 h-5 w-5' />
                     {t('organisations.delete')}

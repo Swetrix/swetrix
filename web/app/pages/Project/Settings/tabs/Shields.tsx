@@ -8,6 +8,7 @@ import Flag from '~/ui/Flag'
 import Input from '~/ui/Input'
 import MultiSelect from '~/ui/MultiSelect'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 import countries from '~/utils/isoCountries'
 
 interface BotsProtectionLevelOption {
@@ -107,9 +108,9 @@ const Shields = ({
 
   return (
     <>
-      <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+      <Text as='h3' size='lg' weight='bold'>
         {t('project.settings.shields')}
-      </h3>
+      </Text>
       <Input
         name='origins'
         label={t('project.settings.origins')}
@@ -129,9 +130,15 @@ const Shields = ({
         error={beenSubmitted ? errors.ipBlacklist : null}
       />
       <div className='mt-4'>
-        <label className='block text-sm font-medium text-gray-700 dark:text-gray-200'>
+        <Text
+          as='label'
+          size='sm'
+          weight='medium'
+          colour='secondary'
+          className='block'
+        >
           {t('project.settings.countryBlacklist')}
-        </label>
+        </Text>
         <MultiSelect
           className='mt-1'
           items={searchedCountries}

@@ -461,7 +461,6 @@ const ExperimentsView = ({
   const { timeBucket } = useViewProjectContext()
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
-  const isEmbedded = searchParams.get('embedded') === 'true'
   const listFetcher = useFetcher<ProjectViewActionData>()
   const actionFetcher = useFetcher<ProjectViewActionData>()
 
@@ -816,26 +815,24 @@ const ExperimentsView = ({
       <div>
         {isLoading && !_isEmpty(experiments) ? <LoadingBar /> : null}
         {_isEmpty(experiments) && !filterQuery ? (
-          <div
-            className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
-              'min-h-including-header': !isEmbedded,
-              'min-h-screen': isEmbedded,
-            })}
-          >
-            <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
-              <div className='flex items-center text-gray-50'>
-                <FlaskIcon className='mr-2 h-8 w-8' />
-                <p className='text-3xl font-bold'>{t('experiments.title')}</p>
-              </div>
-              <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
-                {t('experiments.description')}
-              </p>
-              <Button
-                onClick={handleNewExperiment}
-                className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
-                secondary
-                large
-              >
+          <div className='mx-auto w-full max-w-2xl py-16 text-center'>
+            <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900'>
+              <FlaskIcon className='size-7 text-gray-700 dark:text-gray-200' />
+            </div>
+            <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
+              {t('experiments.title')}
+            </Text>
+            <Text
+              as='p'
+              size='sm'
+              colour='secondary'
+              className='mx-auto mt-2 max-w-md whitespace-pre-wrap'
+            >
+              {t('experiments.description')}
+            </Text>
+            <div className='mt-6'>
+              <Button size='lg' onClick={handleNewExperiment}>
+                <PlusIcon className='mr-1.5 size-4' />
                 {t('experiments.create')}
               </Button>
             </div>
@@ -853,7 +850,7 @@ const ExperimentsView = ({
                   className='w-full rounded-lg border-0 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 focus:outline-none sm:w-64 dark:bg-slate-950 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
                 />
               </div>
-              <Button onClick={handleNewExperiment} primary regular>
+              <Button onClick={handleNewExperiment}>
                 <PlusIcon className='mr-1.5 size-4' />
                 {t('experiments.create')}
               </Button>
@@ -874,9 +871,14 @@ const ExperimentsView = ({
             </ul>
 
             {_isEmpty(experiments) && filterQuery ? (
-              <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
+              <Text
+                as='p'
+                size='sm'
+                colour='muted'
+                className='py-8 text-center'
+              >
                 {t('experiments.noExperimentsMatchFilter')}
-              </p>
+              </Text>
             ) : null}
           </>
         )}

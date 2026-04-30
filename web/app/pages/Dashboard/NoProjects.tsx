@@ -1,6 +1,7 @@
 import { FolderSimpleIcon, FolderPlusIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 
+import Button from '~/ui/Button'
 import { Text } from '~/ui/Text'
 
 interface NoProjectsProps {
@@ -40,14 +41,10 @@ export const NoProjects = ({ onClick, search }: NoProjectsProps) => {
         {t('dashboard.createProject')}
       </Text>
       <div className='mt-6'>
-        <button
-          type='button'
-          onClick={onClick}
-          className='inline-flex items-center justify-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:border-gray-800 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
-        >
-          <FolderPlusIcon className='mr-2 h-5 w-5' />
+        <Button size='lg' onClick={onClick}>
+          <FolderPlusIcon className='mr-2 size-5' />
           {t('dashboard.newProject')}
-        </button>
+        </Button>
       </div>
     </div>
   )

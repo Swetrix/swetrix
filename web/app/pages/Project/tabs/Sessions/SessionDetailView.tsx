@@ -449,9 +449,15 @@ export const SessionDetailView = ({
       </div>
 
       <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
-        <h3 className='mb-4 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+        <Text
+          as='h3'
+          size='xs'
+          weight='semibold'
+          tracking='wide'
+          className='mb-4 uppercase'
+        >
           {t('project.pageflow')}
-        </h3>
+        </Text>
         <Pageflow
           pages={activeSession?.pages || []}
           timeFormat={timeFormat}

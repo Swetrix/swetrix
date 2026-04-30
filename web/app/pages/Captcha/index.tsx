@@ -378,9 +378,8 @@ const Captcha = () => {
                   ) : null}
 
                   <Button
+                    size='xl'
                     type='submit'
-                    primary
-                    giant
                     className='w-full justify-center'
                   >
                     {t('captchaPage.demo.submit')}

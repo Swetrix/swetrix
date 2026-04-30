@@ -15,10 +15,9 @@ const OIDCAuth = ({ onClick, className, disabled }: OIDCAuthProps) => {
 
   return (
     <Button
+      variant='secondary'
       className={cx(className, 'flex items-center justify-center')}
       onClick={onClick}
-      secondary
-      regular
       disabled={disabled}
     >
       <KeyIcon className='mr-2 size-5' />

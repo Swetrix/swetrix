@@ -675,8 +675,6 @@ export default function SitemapValidator() {
                 />
                 <Button
                   type='submit'
-                  primary
-                  regular
                   disabled={isLoading}
                   className='mt-px'
                   loading={isLoading}

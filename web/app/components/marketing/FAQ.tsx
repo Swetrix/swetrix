@@ -6,6 +6,7 @@ import sanitizeHtml from 'sanitize-html'
 
 import { DOCS_URL, PLAN_LIMITS, TRIAL_DAYS, DISCORD_URL } from '~/lib/constants'
 import { FAQ as FAQAccordion } from '~/ui/FAQ'
+import { Text } from '~/ui/Text'
 import routesPath from '~/utils/routes'
 
 interface FAQProps {
@@ -133,9 +134,15 @@ const FAQ = ({ includeGAQuestions = false }: FAQProps) => {
 
   return (
     <section className='relative mx-auto max-w-5xl px-2 py-14 lg:px-8'>
-      <h2 className='text-center text-3xl font-extrabold text-slate-900 sm:text-4xl dark:text-white'>
+      <Text
+        as='h2'
+        size='3xl'
+        weight='bold'
+        tracking='tight'
+        className='text-center sm:text-4xl'
+      >
         {t('main.faq.title')}
-      </h2>
+      </Text>
       <div className='mt-8 flex flex-col'>
         <FAQAccordion items={formattedItems} withPadding />
       </div>

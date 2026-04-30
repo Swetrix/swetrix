@@ -71,6 +71,15 @@ interface MetaData {
   twitterHandle: string
 }
 
+const getHostnameFromUrl = (url: string): string => {
+  if (!url) return 'example.com'
+  try {
+    return new URL(url.startsWith('http') ? url : `https://${url}`).hostname
+  } catch {
+    return 'example.com'
+  }
+}
+
 export default function MetaTagsGenerator() {
   const [data, setData] = useState<MetaData>({
     title: 'Swetrix - Privacy-focused web analytics',
@@ -124,9 +133,9 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
             <div className='mt-12 grid gap-8 lg:grid-cols-2'>
               {/* Input Section */}
               <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                <h2 className='mb-6 text-xl font-semibold text-gray-900 dark:text-white'>
+                <Text as='h2' size='xl' weight='semibold' className='mb-6'>
                   Page Information
-                </h2>
+                </Text>
                 <div className='space-y-4'>
                   <Input
                     type='text'
@@ -222,9 +231,14 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                 <div className='mb-4 flex items-center justify-between'>
                   <div className='flex items-center gap-2'>
                     <CodeIcon className='h-5 w-5 text-gray-400' />
-                    <h3 className='text-lg font-medium text-white'>
+                    <Text
+                      as='h3'
+                      size='lg'
+                      weight='medium'
+                      className='text-white'
+                    >
                       Generated HTML
-                    </h3>
+                    </Text>
                   </div>
                 </div>
 
@@ -236,9 +250,9 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
 
             {/* Social Preview section (Simplified) */}
             <div className='mt-8 rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-              <h2 className='mb-6 text-xl font-semibold text-gray-900 dark:text-white'>
+              <Text as='h2' size='xl' weight='semibold' className='mb-6'>
                 Social Preview Example (Twitter/X)
-              </h2>
+              </Text>
               <div className='mx-auto max-w-md overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900'>
                 {data.imageUrl ? (
                   <div className='aspect-[1.91/1] w-full overflow-hidden bg-gray-100 dark:bg-slate-800'>
@@ -268,21 +282,20 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                   </div>
                 )}
                 <div className='border-t border-gray-200 p-3 dark:border-slate-800'>
-                  <p className='truncate text-sm text-gray-500 dark:text-gray-400'>
-                    {data.url
-                      ? new URL(
-                          data.url.startsWith('http')
-                            ? data.url
-                            : `https://${data.url}`,
-                        ).hostname
-                      : 'example.com'}
-                  </p>
-                  <p className='mt-0.5 truncate font-semibold text-gray-900 dark:text-white'>
+                  <Text as='p' size='sm' colour='muted' className='truncate'>
+                    {getHostnameFromUrl(data.url)}
+                  </Text>
+                  <Text as='p' weight='semibold' className='mt-0.5 truncate'>
                     {data.title || 'Page Title'}
-                  </p>
-                  <p className='mt-1 line-clamp-2 text-sm text-gray-500 dark:text-gray-400'>
+                  </Text>
+                  <Text
+                    as='p'
+                    size='sm'
+                    colour='muted'
+                    className='mt-1 line-clamp-2'
+                  >
                     {data.description || 'Page description goes here...'}
-                  </p>
+                  </Text>
                 </div>
               </div>
             </div>
@@ -379,9 +392,14 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
             </section>
 
             <div className='mt-16'>
-              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+              <Text
+                as='h2'
+                size='3xl'
+                weight='bold'
+                className='mb-8 text-center'
+              >
                 Frequently Asked Questions
-              </h2>
+              </Text>
 
               <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>

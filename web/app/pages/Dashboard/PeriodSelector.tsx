@@ -10,6 +10,8 @@ import { CalendarDotsIcon, CaretDownIcon } from '@phosphor-icons/react'
 import { Fragment, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { buttonClasses } from '~/ui/Button'
+
 interface PeriodSelectorProps {
   activePeriod: string
   setActivePeriod: (period: string) => void
@@ -66,12 +68,14 @@ export const PeriodSelector = ({
     <Popover className='relative'>
       {({ open }) => (
         <>
-          <PopoverButton className='inline-flex w-full rounded-md border border-transparent bg-gray-50 p-2 text-sm font-medium text-gray-700 outline-hidden transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'>
-            <CalendarDotsIcon className='mr-1 h-5 w-5' />
+          <PopoverButton
+            className={buttonClasses({ variant: 'icon', className: 'w-full' })}
+          >
+            <CalendarDotsIcon className='mr-1 size-5' />
             <span>{period}</span>
             <CaretDownIcon
               className={cx(
-                'ml-2 h-5 w-5 transform-gpu text-gray-700 transition ease-in-out dark:text-gray-50',
+                'ml-2 size-5 transform-gpu text-gray-700 transition ease-in-out dark:text-gray-50',
                 {
                   'rotate-180': open,
                 },

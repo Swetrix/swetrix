@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from '~/lib/constants'
 import { Funnel } from '~/lib/models/Project'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
@@ -163,9 +164,8 @@ const NewFunnel = ({
                 disabled={!allowedToManage}
               />
               {steps.length > MIN_FUNNEL_STEPS && allowedToManage ? (
-                <button
-                  type='button'
-                  className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+                <Button
+                  variant='icon'
                   onClick={() => {
                     const newSteps = [...steps]
                     newSteps.splice(index, 1)
@@ -174,7 +174,7 @@ const NewFunnel = ({
                   aria-label='Remove step'
                 >
                   <TrashIcon className='size-5' />
-                </button>
+                </Button>
               ) : null}
             </div>
           ))}

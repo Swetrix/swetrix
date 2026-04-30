@@ -6,24 +6,36 @@ export interface BadgeProps {
   label: React.ReactNode
   className?: string
   colour?: 'red' | 'yellow' | 'green' | 'indigo' | 'slate' | 'sky'
+  size?: 'sm' | 'md'
 }
 
-export const Badge = ({ label, className, colour }: BadgeProps) => (
+const sizeClasses: Record<NonNullable<BadgeProps['size']>, string> = {
+  sm: 'px-1.5 py-0.5 text-[11px]',
+  md: 'px-2 py-1 text-xs',
+}
+
+export const Badge = ({
+  label,
+  className,
+  colour,
+  size = 'md',
+}: BadgeProps) => (
   <span
     className={cn(
-      'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset',
+      'inline-flex items-center rounded-md font-medium ring-1 ring-inset',
+      sizeClasses[size],
       {
-        'bg-slate-50 text-slate-700 ring-slate-500/10 dark:bg-slate-400/10 dark:text-slate-400 dark:ring-slate-400/20':
+        'bg-slate-50 text-slate-700 ring-slate-500/15 dark:bg-slate-400/10 dark:text-slate-300 dark:ring-slate-400/20':
           colour === 'slate',
-        'bg-indigo-50 text-indigo-700 ring-indigo-700/10 dark:bg-indigo-400/10 dark:text-indigo-400 dark:ring-indigo-400/30':
+        'bg-indigo-50 text-indigo-700 ring-indigo-700/15 dark:bg-indigo-400/10 dark:text-indigo-300 dark:ring-indigo-400/30':
           colour === 'indigo',
-        'bg-yellow-50 text-yellow-800 ring-yellow-600/20 dark:bg-yellow-400/10 dark:text-yellow-500 dark:ring-yellow-400/20':
+        'bg-amber-50 text-amber-800 ring-amber-600/20 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20':
           colour === 'yellow',
-        'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/20':
+        'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20':
           colour === 'green',
-        'bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-400/10 dark:text-red-400 dark:ring-red-400/20':
+        'bg-red-50 text-red-700 ring-red-600/15 dark:bg-red-400/10 dark:text-red-300 dark:ring-red-400/20':
           colour === 'red',
-        'bg-sky-50 text-sky-700 ring-sky-600/20 dark:bg-sky-400/10 dark:text-sky-400 dark:ring-sky-400/20':
+        'bg-sky-50 text-sky-700 ring-sky-600/20 dark:bg-sky-400/10 dark:text-sky-300 dark:ring-sky-400/20':
           colour === 'sky',
       },
       className,

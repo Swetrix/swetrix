@@ -100,23 +100,28 @@ const CodeBlock = ({ code, onCopy }: CodeBlockProps) => {
 
   return (
     <div className='group relative'>
-      <pre className='overflow-x-auto rounded-lg bg-white p-4 font-mono text-xs leading-relaxed text-gray-800 ring-1 ring-gray-200 dark:bg-slate-950 dark:text-gray-200 dark:ring-slate-700'>
+      <pre className='overflow-x-auto rounded-lg bg-white p-4 pr-12 font-mono text-xs leading-relaxed text-gray-800 ring-1 ring-gray-200 dark:bg-slate-950 dark:text-gray-200 dark:ring-slate-800'>
         <code>{highlighted}</code>
       </pre>
       <button
         type='button'
         onClick={handleCopy}
-        className='absolute top-2.5 right-2.5 flex items-center gap-1.5 rounded-md bg-gray-100 px-2 py-1.5 text-xs font-medium text-gray-600 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700'
+        aria-label={copied ? t('common.copied') : t('common.copy')}
+        className='absolute top-2.5 right-2.5 inline-flex items-center gap-1.5 rounded-md bg-white/90 px-2 py-1.5 text-xs font-medium text-gray-700 ring-1 ring-gray-200 backdrop-blur-sm transition-[background-color,color,box-shadow] duration-150 ease-out hover:bg-gray-100 hover:text-gray-900 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:bg-slate-900/80 dark:text-gray-200 dark:ring-slate-700 dark:hover:bg-slate-800 dark:hover:text-white dark:focus-visible:ring-slate-300'
       >
         {copied ? (
           <>
-            <CheckIcon className='size-3.5' />
-            {t('common.copied')}
+            <CheckIcon
+              className='size-3.5 text-emerald-600 dark:text-emerald-400'
+              weight='bold'
+              aria-hidden='true'
+            />
+            <span>{t('common.copied')}</span>
           </>
         ) : (
           <>
-            <CopyIcon className='size-3.5' />
-            {t('common.copy')}
+            <CopyIcon className='size-3.5' aria-hidden='true' />
+            <span>{t('common.copy')}</span>
           </>
         )}
       </button>

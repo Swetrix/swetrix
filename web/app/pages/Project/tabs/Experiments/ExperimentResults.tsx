@@ -879,13 +879,13 @@ const ExperimentResults = ({
             }
             tooltipNode={
               <Button
+                variant='ghost'
+                size='xs'
                 type='button'
                 onClick={() => setIsSettingsOpen(true)}
                 disabled={
                   results.status === 'running' || results.status === 'completed'
                 }
-                ghost
-                small
               >
                 <PencilIcon className='mr-1 size-4' />
                 {t('common.edit')}

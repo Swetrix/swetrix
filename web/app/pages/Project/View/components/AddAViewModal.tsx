@@ -17,6 +17,7 @@ import Combobox from '~/ui/Combobox'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 import countries from '~/utils/isoCountries'
 
 import {
@@ -97,7 +98,7 @@ const EditMetric = ({
     <div className='py-4'>
       <Input
         label={
-          <p className='flex w-full items-center justify-between'>
+          <Text as='p' className='flex w-full items-center justify-between'>
             <span>{t('project.customEvent')}</span>
             <button
               type='button'
@@ -107,7 +108,7 @@ const EditMetric = ({
             >
               <XIcon className='size-5' />
             </button>
-          </p>
+          </Text>
         }
         maxLength={100}
         value={metric.customEventName}
@@ -437,9 +438,15 @@ const AddAViewModal = ({
           />
           {filterType && !_isEmpty(searchList) ? (
             <>
-              <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>
+              <Text
+                as='p'
+                size='sm'
+                weight='medium'
+                colour='secondary'
+                className='mt-5'
+              >
                 {t('project.filters')}
-              </p>
+              </Text>
               <Combobox
                 items={searchList}
                 labelExtractor={(item) => {
@@ -517,9 +524,14 @@ const AddAViewModal = ({
             )}
           </div>
           <hr className='my-4' />
-          <p className='text-sm font-medium text-gray-700 dark:text-gray-100'>
+          <Text
+            as='p'
+            size='sm'
+            weight='medium'
+            className='text-gray-700 dark:text-gray-100'
+          >
             {t('project.customEventsAndMetrics')}
-          </p>
+          </Text>
           <div className='divide-y divide-gray-300/80 dark:divide-slate-900/60'>
             {_map(customEvents, (ev) => (
               <EditMetric

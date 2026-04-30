@@ -228,9 +228,9 @@ export default function RobotsTxtGenerator() {
               {/* Input Section */}
               <div className='space-y-6'>
                 <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                  <h2 className='mb-4 text-xl font-semibold text-gray-900 dark:text-white'>
+                  <Text as='h2' size='xl' weight='semibold' className='mb-4'>
                     Global Settings
-                  </h2>
+                  </Text>
                   <Input
                     type='url'
                     label='Sitemap URL'
@@ -247,9 +247,9 @@ export default function RobotsTxtGenerator() {
                     className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-900'
                   >
                     <div className='mb-4 flex items-center justify-between'>
-                      <h2 className='text-xl font-semibold text-gray-900 dark:text-white'>
+                      <Text as='h2' size='xl' weight='semibold'>
                         Crawler Rules {groupIndex + 1}
-                      </h2>
+                      </Text>
                       {agentGroups.length > 1 && (
                         <button
                           type='button'
@@ -374,9 +374,8 @@ export default function RobotsTxtGenerator() {
                           </div>
                         ))}
                         <Button
+                          variant='secondary'
                           type='button'
-                          regular
-                          secondary
                           onClick={() => addRule(groupIndex)}
                           className='mt-2 w-full text-sm text-gray-900 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:bg-slate-700'
                         >
@@ -389,8 +388,6 @@ export default function RobotsTxtGenerator() {
 
                 <Button
                   type='button'
-                  regular
-                  primary
                   onClick={addAgentGroup}
                   className='w-full'
                 >
@@ -403,13 +400,18 @@ export default function RobotsTxtGenerator() {
                 <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
                   <div className='flex items-center gap-2'>
                     <CodeIcon className='h-5 w-5 text-gray-400' />
-                    <h3 className='text-lg font-medium text-white'>
+                    <Text
+                      as='h3'
+                      size='lg'
+                      weight='medium'
+                      className='text-white'
+                    >
                       robots.txt
-                    </h3>
+                    </Text>
                   </div>
                   <div className='flex items-center gap-2'>
                     <Button
-                      secondary
+                      variant='secondary'
                       onClick={handleCopy}
                       className='h-auto! border-slate-700! bg-slate-800! px-3! py-1.5! text-gray-300! hover:bg-slate-700! hover:text-white!'
                     >
@@ -421,7 +423,7 @@ export default function RobotsTxtGenerator() {
                       {copied ? 'Copied' : 'Copy'}
                     </Button>
                     <Button
-                      secondary
+                      variant='secondary'
                       onClick={handleDownload}
                       className='h-auto! border-slate-700! bg-slate-800! px-3! py-1.5! text-gray-300! hover:bg-slate-700! hover:text-white!'
                     >
@@ -453,9 +455,9 @@ export default function RobotsTxtGenerator() {
               </Text>
 
               <div className='mt-12'>
-                <h3 className='mb-8 text-2xl font-bold text-gray-900 dark:text-white'>
+                <Text as='h3' size='2xl' weight='bold' className='mb-8'>
                   Frequently Asked Questions
-                </h3>
+                </Text>
 
                 <FAQ items={FAQ_ITEMS} withStructuredData />
               </div>

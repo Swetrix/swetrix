@@ -153,7 +153,11 @@
     "create": "Створити",
     "unknown": "Невідомо",
     "showMore": "Показати ще {{count}}",
-    "showLess": "Показати менше"
+    "showLess": "Показати менше",
+    "toggleOptions": "Перемкнути опції",
+    "paginationNavLabel": "Пагінація",
+    "jumpToPage": "Перейти на сторінку {{page}}",
+    "pageNumber": "Сторінка {{page}}"
   },
   "performance": {
     "slogan": "<span>Моніторинг ефективності</span> для створення швидких вебсайтів.",

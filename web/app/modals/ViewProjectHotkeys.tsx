@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { Period } from '~/lib/constants'
 import { Badge } from '~/ui/Badge'
 import Modal from '~/ui/Modal'
+import { Text } from '~/ui/Text'
 
 interface ViewProjectHotkeysProps {
   onClose: () => void
@@ -67,21 +68,25 @@ const getHotkeys = (t: TFunction) => ({
 const HotkeysList = ({ title, hotkeys }: HotkeysListProps) => (
   <div className='mt-2 first:mt-0'>
     <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-700'>
+      <caption className='sr-only'>{title}</caption>
       <thead>
         <tr>
-          <th className='pb-2 text-left text-base font-semibold text-gray-900 dark:text-gray-50'>
-            {title}
+          <th scope='colgroup' colSpan={2} className='pb-2 text-left'>
+            <Text as='span' size='base' weight='semibold'>
+              {title}
+            </Text>
           </th>
-          <th />
         </tr>
       </thead>
       <tbody className='divide-y divide-gray-200 dark:divide-gray-800'>
         {_map(hotkeys, (action, label) => (
           <tr key={label}>
-            <td className='py-2 pr-3 pl-4 text-left text-sm whitespace-nowrap text-gray-900 sm:pl-0 dark:text-gray-50'>
-              {label}
+            <td className='py-2 pr-3 pl-4 text-left whitespace-nowrap sm:pl-0'>
+              <Text as='span' size='sm'>
+                {label}
+              </Text>
             </td>
-            <td className='py-2 pr-3 pl-4 text-left text-sm whitespace-nowrap text-gray-900 sm:pl-0 dark:text-gray-50'>
+            <td className='py-2 pr-3 pl-4 text-left whitespace-nowrap sm:pl-0'>
               <Badge colour='slate' label={action} />
             </td>
           </tr>

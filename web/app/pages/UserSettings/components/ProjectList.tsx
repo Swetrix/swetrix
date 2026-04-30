@@ -91,9 +91,9 @@ const ProjectList = ({ item }: ProjectListProps) => {
       <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
         {confirmed ? (
           <Button
+            variant='danger'
+            size='xs'
             onClick={() => setShowDeleteModal(true)}
-            danger
-            small
             loading={isPending}
           >
             {t('common.quit')}
@@ -101,15 +101,15 @@ const ProjectList = ({ item }: ProjectListProps) => {
         ) : (
           <>
             <Button
+              variant='secondary'
+              size='xs'
               className='mr-2'
               onClick={() => setShowDeleteModal(true)}
-              primary
-              small
               loading={isPending}
             >
               {t('common.reject')}
             </Button>
-            <Button onClick={onAccept} primary small loading={isPending}>
+            <Button size='xs' onClick={onAccept} loading={isPending}>
               {t('common.accept')}
             </Button>
           </>

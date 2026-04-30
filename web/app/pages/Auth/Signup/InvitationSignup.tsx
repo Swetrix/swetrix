@@ -100,7 +100,7 @@ const InvitationSignup = () => {
         </div>
 
         <Alert variant='info' className='mb-6'>
-          <p className='font-semibold'>
+          <Text as='p' weight='semibold'>
             <Trans
               t={t}
               i18nKey='auth.invitation.invitedToJoin'
@@ -109,7 +109,7 @@ const InvitationSignup = () => {
                 target: <span className='font-bold' />,
               }}
             />
-          </p>
+          </Text>
           <Trans
             t={t}
             i18nKey='auth.invitation.invitedByAs'
@@ -223,11 +223,10 @@ const InvitationSignup = () => {
           </div>
 
           <Button
+            size='xl'
             className='mt-6 flex w-full items-center justify-center gap-1'
             type='submit'
             loading={isFormSubmitting}
-            primary
-            giant
           >
             <span>
               {t('auth.invitation.createAndJoin', { type: typeLabel })}

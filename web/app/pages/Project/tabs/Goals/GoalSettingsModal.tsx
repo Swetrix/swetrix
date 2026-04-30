@@ -17,6 +17,7 @@ import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 
 const GOAL_TYPES = [
   { value: 'pageview', label: 'Pageview' },
@@ -227,11 +228,11 @@ const GoalSettingsModal = ({
                         selectedItem={GOAL_TYPES.find((t) => t.value === type)}
                         capitalise
                       />
-                      <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                      <Text as='p' size='xs' colour='muted' className='mt-1'>
                         {type === 'pageview'
                           ? t('goals.typePageviewDesc')
                           : t('goals.typeCustomEventDesc')}
-                      </p>
+                      </Text>
                     </div>
 
                     <div>
@@ -333,19 +334,19 @@ const GoalSettingsModal = ({
                           ))}
                         </div>
                       ) : (
-                        <p className='text-sm text-gray-500 dark:text-gray-400'>
+                        <Text as='p' size='sm' colour='muted'>
                           {t('goals.noMetadataFilters')}
-                        </p>
+                        </Text>
                       )}
                     </div>
                   </div>
                 </div>
 
                 <div className='flex justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-slate-700'>
-                  <Button type='button' onClick={onClose} secondary regular>
+                  <Button variant='secondary' type='button' onClick={onClose}>
                     {t('common.cancel')}
                   </Button>
-                  <Button type='submit' primary regular loading={isSaving}>
+                  <Button type='submit' loading={isSaving}>
                     {isNew ? t('goals.create') : t('goals.save')}
                   </Button>
                 </div>

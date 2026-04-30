@@ -797,10 +797,10 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                 </div>
 
                 <div className='flex justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-slate-700'>
-                  <Button type='button' onClick={onClose} secondary regular>
+                  <Button variant='secondary' type='button' onClick={onClose}>
                     {t('common.cancel')}
                   </Button>
-                  <Button type='submit' primary regular loading={isSaving}>
+                  <Button type='submit' loading={isSaving}>
                     {isNew ? t('featureFlags.create') : t('featureFlags.save')}
                   </Button>
                 </div>

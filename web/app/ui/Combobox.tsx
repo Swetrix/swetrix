@@ -52,11 +52,11 @@ const Combobox = ({
 
   return (
     <HeadlessCombobox disabled={disabled} value={title} onChange={onSelect}>
-      <div className={cx('relative mt-1', className)}>
-        <div className='relative w-full cursor-default rounded-lg'>
+      <div className={cx('relative', className)}>
+        <div className='relative w-full'>
           <ComboboxInput
             className={cx(
-              'relative w-full cursor-default rounded-md border-0 bg-white py-2 pr-10 pl-3 text-left ring-1 ring-gray-300 ring-inset focus:ring-2 focus:ring-slate-900 focus:outline-hidden sm:text-sm dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:focus:ring-slate-300',
+              'block w-full rounded-md border-0 bg-white py-2 pr-9 pl-3 text-left text-sm text-gray-900 ring-1 ring-gray-300 transition-[background-color,box-shadow] duration-150 ease-out ring-inset placeholder:text-gray-400 hover:ring-gray-400 focus:ring-2 focus:ring-slate-900 focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:placeholder:text-gray-500 dark:hover:ring-slate-600 dark:focus:ring-slate-300',
               buttonClassName,
             )}
             // @ts-expect-error
@@ -66,23 +66,26 @@ const Combobox = ({
             onChange={(event) => setQuery(event.target.value)}
             placeholder={placeholder}
           />
-          <ComboboxButton className='absolute inset-y-0 right-0 flex items-center pr-2'>
-            <CaretUpDownIcon
-              className='h-5 w-5 text-gray-400'
-              aria-hidden='true'
-            />
+          <ComboboxButton
+            className='absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 dark:text-gray-500'
+            aria-label={t('common.toggleOptions')}
+          >
+            <CaretUpDownIcon className='size-4' aria-hidden='true' />
           </ComboboxButton>
         </div>
         <Transition
           as={Fragment}
+          enter='transition ease-out duration-150'
+          enterFrom='opacity-0 -translate-y-0.5'
+          enterTo='opacity-100 translate-y-0'
           leave='transition ease-in duration-100'
-          leaveFrom='opacity-100'
-          leaveTo='opacity-0'
+          leaveFrom='opacity-100 translate-y-0'
+          leaveTo='opacity-0 -translate-y-0.5'
           afterLeave={() => setQuery('')}
         >
-          <ComboboxOptions className='absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-950 dark:ring-slate-700/80'>
+          <ComboboxOptions className='absolute z-30 mt-1.5 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/60'>
             {_isEmpty(filteredItems) && !_isEmpty(query) ? (
-              <div className='relative cursor-default px-4 py-2 text-gray-900 select-none dark:text-white'>
+              <div className='relative px-3 py-2 text-gray-500 select-none dark:text-gray-400'>
                 {t('common.nothingFound')}
               </div>
             ) : (
@@ -90,32 +93,34 @@ const Combobox = ({
                 <ComboboxOption
                   key={keyExtractor ? keyExtractor(item, index) : item}
                   className={({ active }) =>
-                    cx('relative cursor-default py-2 pr-4 pl-8 select-none', {
-                      'bg-gray-100 text-gray-900 dark:bg-slate-800 dark:text-white':
-                        active,
-                      'text-gray-900 dark:text-white': !active,
-                    })
+                    cx(
+                      'relative mx-1 cursor-pointer rounded-md py-2 pr-8 pl-3 transition-colors duration-100 ease-out select-none',
+                      {
+                        'bg-gray-100 text-gray-900 dark:bg-slate-800/80 dark:text-white':
+                          active,
+                        'text-gray-700 dark:text-gray-50': !active,
+                      },
+                    )
                   }
                   value={labelExtractor ? labelExtractor(item, index) : item}
                 >
-                  {({ selected, active }) => (
+                  {({ selected }) => (
                     <>
                       <span
-                        className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}
+                        className={cx(
+                          'block truncate',
+                          selected ? 'font-semibold' : 'font-normal',
+                        )}
                       >
                         {labelExtractor ? labelExtractor(item, index) : item}
                       </span>
                       {selected ? (
-                        <span
-                          className={cx(
-                            'absolute inset-y-0 left-0 flex items-center pl-1.5',
-                            {
-                              'text-gray-900 dark:text-white': active,
-                              'text-gray-600 dark:text-gray-300': !active,
-                            },
-                          )}
-                        >
-                          <CheckIcon className='h-5 w-5' aria-hidden='true' />
+                        <span className='absolute inset-y-0 right-2 flex items-center text-slate-900 dark:text-slate-100'>
+                          <CheckIcon
+                            weight='bold'
+                            className='size-4'
+                            aria-hidden='true'
+                          />
                         </span>
                       ) : null}
                     </>

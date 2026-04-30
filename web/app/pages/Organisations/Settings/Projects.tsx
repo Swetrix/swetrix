@@ -23,6 +23,7 @@ import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
+import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import routes from '~/utils/routes'
 
@@ -106,9 +107,14 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
                 >
                   <div className='flex items-center px-4 py-4 sm:px-6'>
                     <div className='min-w-0 flex-1'>
-                      <p className='truncate text-sm font-medium text-gray-900 dark:text-white'>
+                      <Text
+                        as='p'
+                        size='sm'
+                        weight='medium'
+                        className='truncate'
+                      >
                         {project.name}
-                      </p>
+                      </Text>
                     </div>
                   </div>
                 </li>
@@ -137,10 +143,10 @@ const NoProjects = () => {
 
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>
+      <div className='mx-auto w-full max-w-7xl'>
+        <Text as='h2' size='xl' className='mb-8 px-4 text-center leading-snug'>
           {t('organisations.noProjectsFound')}
-        </h2>
+        </Text>
       </div>
     </div>
   )
@@ -180,7 +186,7 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
             />
           ) : null}
 
-          <Button onClick={() => onRemove(project)} danger small>
+          <Button variant='danger' size='xs' onClick={() => onRemove(project)}>
             {t('common.remove')}
           </Button>
         </div>
@@ -265,11 +271,16 @@ export const Projects = ({ organisation }: ProjectsProps) => {
   return (
     <div className='mt-6 mb-6'>
       <div className='mb-3 flex items-center justify-between'>
-        <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+        <Text
+          as='h3'
+          size='lg'
+          weight='bold'
+          className='mt-2 flex items-center'
+        >
           {t('organisations.projects')}
           {isSearchActive ? (
             <XIcon
-              className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+              className='ml-2 size-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
               onClick={() => {
                 setSearch('')
                 setIsSearchActive(false)
@@ -277,17 +288,15 @@ export const Projects = ({ organisation }: ProjectsProps) => {
             />
           ) : (
             <MagnifyingGlassIcon
-              className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+              className='ml-2 size-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
               onClick={() => {
                 setIsSearchActive(true)
               }}
             />
           )}
-        </h3>
+        </Text>
         <Button
           className='h-8 pl-2'
-          primary
-          regular
           type='button'
           onClick={() => {
             setShowAddProjectModal(true)
@@ -381,9 +390,9 @@ export const Projects = ({ organisation }: ProjectsProps) => {
         })}
         message={
           <div>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+            <Text as='p' size='base' colour='secondary' className='mt-2'>
               {t('organisations.modals.addProject.message')}
-            </p>
+            </Text>
 
             {selectedProject ? (
               <div className='mt-4 flex items-center justify-between rounded-lg border border-gray-200 p-4 dark:border-slate-600'>

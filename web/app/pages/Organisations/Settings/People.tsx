@@ -29,17 +29,21 @@ import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
+import { RadioCardGroup } from '~/ui/RadioCardGroup'
+import { Text } from '~/ui/Text'
 import { isValidEmail } from '~/utils/validator'
+
+type InviteRole = Exclude<Role, 'owner'>
 
 const NoPeople = () => {
   const { t } = useTranslation('common')
 
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>
+      <div className='mx-auto w-full max-w-7xl'>
+        <Text as='h2' size='xl' className='mb-8 px-4 text-center leading-snug'>
           {t('project.settings.noPeople')}
-        </h2>
+        </Text>
       </div>
     </div>
   )
@@ -123,12 +127,22 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
                           className='flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800'
                         >
                           <div>
-                            <p className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                            <Text
+                              as='p'
+                              size='sm'
+                              weight='semibold'
+                              className='text-gray-900 dark:text-gray-100'
+                            >
                               {t(`organisations.role.${itRole}.name`)}
-                            </p>
-                            <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>
+                            </Text>
+                            <Text
+                              as='p'
+                              size='sm'
+                              colour='muted'
+                              className='mt-0.5'
+                            >
                               {t(`organisations.role.${itRole}.desc`)}
-                            </p>
+                            </Text>
                           </div>
                           {member.role === itRole ? (
                             <CheckIcon className='ml-2 h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-500' />
@@ -158,8 +172,16 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
               className='mr-3'
               label={t('common.pending')}
             />
-            <Button type='button' white small onClick={() => onRemove(member)}>
-              <TrashIcon className='h-4 w-4' />
+            <Button
+              variant='white'
+              size='xs'
+              type='button'
+              onClick={() => onRemove(member)}
+              aria-label={t('project.settings.removeUser', {
+                user: member.user.email,
+              })}
+            >
+              <TrashIcon className='h-4 w-4' aria-hidden='true' />
             </Button>
           </div>
         )}
@@ -179,7 +201,7 @@ const People = ({ organisation }: PeopleProps) => {
 
   const [form, setForm] = useState<{
     email: string
-    role: Role
+    role: InviteRole
   }>({
     email: '',
     role: 'viewer',
@@ -301,17 +323,15 @@ const People = ({ organisation }: PeopleProps) => {
     <div className='mt-6 mb-6'>
       <div className='mb-3 flex items-center justify-between'>
         <div>
-          <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <Text as='h3' size='lg' weight='bold' className='mt-2'>
             {t('project.settings.people')}
-          </h3>
-          <p className='text-sm text-gray-500 dark:text-gray-400'>
+          </Text>
+          <Text as='p' size='sm' colour='muted'>
             {t('project.settings.inviteCoworkers')}
-          </p>
+          </Text>
         </div>
         <Button
           className='h-8 pl-2'
-          primary
-          regular
           type='button'
           onClick={() => setShowModal(true)}
         >
@@ -388,16 +408,16 @@ const People = ({ organisation }: PeopleProps) => {
         closeText={t('common.cancel')}
         message={
           <div>
-            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
+            <Text as='h2' size='xl' weight='bold' colour='secondary'>
               {t('organisations.invite.title', {
                 organisation: name,
               })}
-            </h2>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+            </Text>
+            <Text as='p' colour='secondary' className='mt-2'>
               {t('organisations.invite.desc', {
                 expiresIn: INVITATION_EXPIRES_IN,
               })}
-            </p>
+            </Text>
             <Input
               name='email'
               type='email'
@@ -408,118 +428,26 @@ const People = ({ organisation }: PeopleProps) => {
               onChange={handleInput}
               error={beenSubmitted ? errors.email : null}
             />
-            <fieldset className='mt-4'>
-              {}
-              <label
-                className='block text-sm font-medium text-gray-700 dark:text-gray-300'
-                htmlFor='role'
-              >
-                {t('project.settings.role')}
-              </label>
-              <div
-                className={cx(
-                  'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-950',
-                  {
-                    'border border-red-300': errors.role,
-                  },
-                )}
-              >
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                <label
-                  className={cx(
-                    'relative flex cursor-pointer rounded-tl-md rounded-tr-md border border-gray-200 p-4 dark:border-slate-600',
-                    {
-                      'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-                        form.role === 'admin',
-                      'border-gray-200': form.role !== 'admin',
-                    },
-                  )}
-                >
-                  <input
-                    name='role'
-                    className='h-4 w-4 border-gray-300 text-slate-900 focus:ring-slate-900 dark:text-slate-100 dark:focus:ring-slate-300'
-                    id='role_admin'
-                    type='radio'
-                    value='admin'
-                    onChange={handleInput}
-                    checked={form.role === 'admin'}
-                  />
-                  <div className='ml-3 flex flex-col'>
-                    <span
-                      className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white':
-                          form.role === 'admin',
-                        'text-gray-700 dark:text-gray-200':
-                          form.role !== 'admin',
-                      })}
-                    >
-                      {t('organisations.role.admin.name')}
-                    </span>
-                    <span
-                      className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100':
-                          form.role === 'admin',
-                        'text-gray-700 dark:text-gray-200':
-                          form.role !== 'admin',
-                      })}
-                    >
-                      {t('organisations.role.admin.desc')}
-                    </span>
-                  </div>
-                </label>
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                <label
-                  className={cx(
-                    'relative flex cursor-pointer rounded-br-md rounded-bl-md border border-gray-200 p-4 dark:border-gray-500',
-                    {
-                      'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-                        form.role === 'viewer',
-                      'border-gray-200': form.role !== 'viewer',
-                    },
-                  )}
-                >
-                  <input
-                    name='role'
-                    className='h-4 w-4 border-gray-300 text-slate-900 focus:ring-slate-900 dark:text-slate-100 dark:focus:ring-slate-300'
-                    id='role_viewer'
-                    type='radio'
-                    value='viewer'
-                    onChange={handleInput}
-                    checked={form.role === 'viewer'}
-                  />
-                  <div className='ml-3 flex flex-col'>
-                    <span
-                      className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white':
-                          form.role === 'viewer',
-                        'text-gray-700 dark:text-gray-200':
-                          form.role !== 'viewer',
-                      })}
-                    >
-                      {t('organisations.role.viewer.name')}
-                    </span>
-                    <span
-                      className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100':
-                          form.role === 'viewer',
-                        'text-gray-700 dark:text-gray-200':
-                          form.role !== 'viewer',
-                      })}
-                    >
-                      {t('organisations.role.viewer.desc')}
-                    </span>
-                  </div>
-                </label>
-              </div>
-              {errors.role ? (
-                <p
-                  className='mt-2 text-sm text-red-600 dark:text-red-500'
-                  id='email-error'
-                >
-                  {errors.role}
-                </p>
-              ) : null}
-            </fieldset>
+            <RadioCardGroup<InviteRole>
+              name='role'
+              label={t('project.settings.role')}
+              className='mt-4'
+              value={form.role || null}
+              onChange={(role) => setForm((prev) => ({ ...prev, role }))}
+              error={errors.role}
+              options={[
+                {
+                  value: 'admin',
+                  label: t('organisations.role.admin.name'),
+                  description: t('organisations.role.admin.desc'),
+                },
+                {
+                  value: 'viewer',
+                  label: t('organisations.role.viewer.name'),
+                  description: t('organisations.role.viewer.desc'),
+                },
+              ]}
+            />
           </div>
         }
         isOpened={showModal}

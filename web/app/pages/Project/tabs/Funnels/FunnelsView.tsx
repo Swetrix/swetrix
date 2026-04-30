@@ -3,7 +3,7 @@ import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
-import { FunnelIcon } from '@phosphor-icons/react'
+import { FunnelIcon, PlusIcon } from '@phosphor-icons/react'
 import {
   useState,
   useEffect,
@@ -43,6 +43,7 @@ import type {
   ProjectLoaderData,
   ProjectViewActionData,
 } from '~/routes/projects.$id'
+import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
@@ -358,7 +359,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
         <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
           {funnelSummary ? (
             <>
-              <p className='font-medium text-gray-900 lg:text-left dark:text-gray-50'>
+              <Text as='p' weight='medium' className='lg:text-left'>
                 {t('project.funnelSummary.xStepFunnel', {
                   x: funnelSummary.stepsCount,
                 })}
@@ -366,14 +367,14 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
                 {t('project.funnelSummary.conversionRateShort', {
                   x: funnelSummary.conversionRate,
                 })}
-              </p>
-              <p className='text-center text-gray-900 lg:text-left dark:text-gray-50'>
+              </Text>
+              <Text as='p' className='text-center lg:text-left'>
                 {t('project.funnelSummary.startShort')}:{' '}
                 {nLocaleFormatter(funnelSummary.startVisitors)}
                 <span className='mx-1'>→</span>
                 {t('project.funnelSummary.endShort')}:{' '}
                 {nLocaleFormatter(funnelSummary.endVisitors)}
-              </p>
+              </Text>
             </>
           ) : null}
           {funnelAnalytics?.funnel ? (
@@ -471,33 +472,32 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   // Render empty state
   return (
     <>
-      <div
-        className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
-          'min-h-including-header': !isEmbedded,
-          'min-h-screen': isEmbedded,
-        })}
-      >
-        <div className='mt-5 rounded-xl bg-slate-700 p-5 dark:bg-slate-900'>
-          <div className='flex items-center text-gray-50'>
-            <FunnelIcon className='mr-2 h-8 w-8' />
-            <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
-          </div>
-          <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
-            {t('dashboard.funnelsDesc')}
-          </p>
+      <div className='mx-auto w-full max-w-2xl py-16 text-center'>
+        <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900'>
+          <FunnelIcon className='size-7 text-gray-700 dark:text-gray-200' />
+        </div>
+        <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
+          {t('dashboard.funnels')}
+        </Text>
+        <Text
+          as='p'
+          size='sm'
+          colour='secondary'
+          className='mx-auto mt-2 max-w-md whitespace-pre-wrap'
+        >
+          {t('dashboard.funnelsDesc')}
+        </Text>
+        <div className='mt-6'>
           {isAuthenticated ? (
-            <button
-              type='button'
-              onClick={() => setIsNewFunnelOpened(true)}
-              className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
-            >
+            <Button size='lg' onClick={() => setIsNewFunnelOpened(true)}>
+              <PlusIcon className='mr-1.5 size-4' />
               {t('dashboard.newFunnel')}
-            </button>
+            </Button>
           ) : (
             <Link
               to={routes.signup}
-              className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
               aria-label={t('titles.signup')}
+              className='inline-flex items-center justify-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
             >
               {t('header.startForFree')}
             </Link>

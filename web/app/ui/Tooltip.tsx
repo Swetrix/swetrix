@@ -11,23 +11,42 @@ const TooltipRoot = TooltipPrimitive.Root
 
 const TooltipTrigger = TooltipPrimitive.Trigger
 
+interface TooltipContentExtraProps {
+  withArrow?: boolean
+}
+
 const TooltipContent = forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 2, ...props }, ref) => (
-  <TooltipPrimitive.Portal>
-    <TooltipPrimitive.Content
-      ref={ref}
-      forceMount
-      sideOffset={sideOffset}
-      className={cn(
-        'tooltip-content z-50 max-w-80 overflow-hidden rounded-md bg-slate-800 px-3 py-1.5 text-xs text-white ring-1 ring-slate-900/80',
-        className,
-      )}
-      {...props}
-    />
-  </TooltipPrimitive.Portal>
-))
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content> &
+    TooltipContentExtraProps
+>(
+  (
+    { className, sideOffset = 6, withArrow = true, children, ...props },
+    ref,
+  ) => (
+    <TooltipPrimitive.Portal>
+      <TooltipPrimitive.Content
+        ref={ref}
+        forceMount
+        sideOffset={sideOffset}
+        className={cn(
+          'tooltip-content z-50 max-w-80 origin-(--radix-tooltip-content-transform-origin) overflow-hidden rounded-md bg-slate-900 px-2.5 py-1.5 text-xs leading-relaxed font-medium text-slate-50 shadow-lg ring-1 ring-white/10 dark:bg-slate-800 dark:ring-white/5',
+          className,
+        )}
+        {...props}
+      >
+        {children}
+        {withArrow ? (
+          <TooltipPrimitive.Arrow
+            className='fill-slate-900 dark:fill-slate-800'
+            width={10}
+            height={5}
+          />
+        ) : null}
+      </TooltipPrimitive.Content>
+    </TooltipPrimitive.Portal>
+  ),
+)
 TooltipContent.displayName = TooltipPrimitive.Content.displayName
 
 interface TooltipProps {

@@ -12,6 +12,7 @@ import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Spin from '~/ui/icons/Spin'
 import OutsideClickHandler from '~/ui/OutsideClickHandler'
+import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
 import { useCurrentProject } from '../../../../providers/CurrentProjectProvider'
@@ -93,9 +94,9 @@ const LiveVisitorsDropdown = () => {
         >
           <div className='flex w-full flex-col'>
             <div className='flex items-center justify-between border-b border-black/10 bg-white p-2 dark:border-slate-700/50 dark:bg-slate-950'>
-              <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>
+              <Text as='p' size='sm' weight='semibold'>
                 {t('dashboard.liveVisitors')}
-              </p>
+              </Text>
 
               <button
                 className='-m-1 rounded-md p-1 transition-colors hover:bg-gray-200 dark:hover:bg-slate-800'
@@ -107,15 +108,15 @@ const LiveVisitorsDropdown = () => {
             </div>
             <div className='scrollbar-thin max-h-[200px] overflow-y-auto px-2'>
               {isLoading ? (
-                <p className='flex items-center py-2 text-sm text-gray-900 dark:text-gray-50'>
+                <Text as='p' size='sm' className='flex items-center py-2'>
                   <Spin className='ml-0' />
 
                   {t('common.loading')}
-                </p>
+                </Text>
               ) : liveInfo.length === 0 ? (
-                <p className='py-2 text-sm text-gray-900 dark:text-gray-50'>
+                <Text as='p' size='sm' className='py-2'>
                   {t('project.noData')}
-                </p>
+                </Text>
               ) : (
                 <div className='table w-full border-separate border-spacing-y-2'>
                   <div className='table-row-group'>
@@ -146,7 +147,9 @@ const LiveVisitorsDropdown = () => {
                             {br}
                           </div>
                           <div className='table-cell rounded-r-lg bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-900 dark:group-hover:bg-slate-700'>
-                            <p className='capitalize'>{dv}</p>
+                            <Text as='p' className='capitalize'>
+                              {dv}
+                            </Text>
                           </div>
                         </Link>
                       )
