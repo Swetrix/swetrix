@@ -22,9 +22,10 @@ const MultiProgress = ({ progress, className }: MultiProgressProps) => {
     <div className='relative'>
       <div
         className={cx(
-          'flex h-5 overflow-hidden rounded-sm bg-gray-200 text-xs dark:bg-slate-900',
+          'flex h-2.5 overflow-hidden rounded-full bg-gray-200 ring-1 ring-gray-200/40 ring-inset dark:bg-slate-800 dark:ring-slate-700/30',
           className,
         )}
+        role='progressbar'
       >
         {_map(progress, ({ value, lightColour, darkColour }) => (
           <div
@@ -33,7 +34,7 @@ const MultiProgress = ({ progress, className }: MultiProgressProps) => {
               width: `${value}%`,
               backgroundColor: theme === 'dark' ? darkColour : lightColour,
             }}
-            className='flex flex-col justify-center text-center whitespace-nowrap text-white shadow-none'
+            className='h-full transition-[width] duration-300 ease-out'
           />
         ))}
       </div>

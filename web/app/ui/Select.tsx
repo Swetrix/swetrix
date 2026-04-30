@@ -65,7 +65,6 @@ function Select<T>({
     return item === selectedItem
   }
 
-  // When descriptions exist, options need extra padding so the description has room.
   const hasDescriptions = !!descriptionExtractor
 
   return (
@@ -75,7 +74,7 @@ function Select<T>({
           {label ? (
             <Label
               className={cx(
-                'mb-1 block text-sm font-medium whitespace-pre-line text-gray-700 dark:text-gray-100',
+                'mb-1 block text-sm font-medium whitespace-pre-line text-gray-900 dark:text-gray-200',
                 fieldLabelClassName,
               )}
             >
@@ -85,7 +84,7 @@ function Select<T>({
           <div className={cx('relative', className)}>
             <ListboxButton
               className={cx(
-                'relative w-full rounded-md border-0 bg-white py-2 pr-10 pl-3 text-left font-medium ring-1 ring-gray-300 transition-colors ring-inset hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden sm:text-sm dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
+                'relative w-full rounded-md border-0 bg-white py-2 pr-9 pl-3 text-left text-sm font-medium text-gray-900 ring-1 ring-gray-300 transition-[background-color,box-shadow] duration-150 ease-out ring-inset hover:ring-gray-400 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:ring-slate-600 dark:focus-visible:ring-slate-300',
                 buttonClassName,
               )}
             >
@@ -113,7 +112,7 @@ function Select<T>({
               ) : null}
               <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
                 <CaretUpDownIcon
-                  className='h-5 w-5 text-gray-400'
+                  className='size-4 text-gray-400 dark:text-gray-500'
                   aria-hidden='true'
                 />
               </span>
@@ -122,17 +121,17 @@ function Select<T>({
             <Transition
               show={open}
               as={Fragment}
-              enter='transition ease-in duration-100'
-              enterFrom='opacity-0'
-              enterTo='opacity-100'
+              enter='transition ease-out duration-150'
+              enterFrom='opacity-0 -translate-y-0.5'
+              enterTo='opacity-100 translate-y-0'
               leave='transition ease-in duration-100'
-              leaveFrom='opacity-100'
-              leaveTo='opacity-0'
+              leaveFrom='opacity-100 translate-y-0'
+              leaveTo='opacity-0 -translate-y-0.5'
             >
               <ListboxOptions
                 static
                 modal={false}
-                className='absolute z-30 mt-1 max-h-72 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-950 dark:ring-slate-700/80'
+                className='absolute z-30 mt-1.5 max-h-72 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/60'
               >
                 {_map(items, (item, index) => {
                   const selected = isItemSelected(item)
@@ -146,12 +145,10 @@ function Select<T>({
                       }
                       className={({ focus }) =>
                         cx(
-                          'relative mx-1 cursor-pointer rounded-md pr-4 pl-8 transition-colors select-none',
+                          'relative mx-1 cursor-pointer rounded-md pr-8 pl-3 transition-colors duration-100 ease-out select-none',
                           hasDescriptions ? 'py-2.5' : 'py-2',
                           {
-                            'bg-gray-100 dark:bg-slate-900/80':
-                              focus && !selected,
-                            'bg-gray-200 dark:bg-slate-900/80': selected,
+                            'bg-gray-100 dark:bg-slate-900': focus || selected,
                             'text-gray-700 dark:text-gray-50':
                               !focus && !selected,
                             'text-gray-900 dark:text-white': focus || selected,
@@ -161,9 +158,21 @@ function Select<T>({
                       value={item}
                     >
                       <>
+                        {iconExtractor ? (
+                          <span
+                            className={cx(
+                              'absolute left-2 flex items-center',
+                              hasDescriptions ? 'top-2.5' : 'inset-y-0',
+                            )}
+                          >
+                            {iconExtractor(item, index)}
+                          </span>
+                        ) : null}
+
                         <span
                           className={cx(
                             'block wrap-break-word',
+                            iconExtractor && 'pl-6',
                             {
                               'font-semibold': selected,
                               'font-normal': !selected,
@@ -181,31 +190,25 @@ function Select<T>({
                           <span
                             className={cx(
                               'mt-0.5 block text-xs leading-snug font-normal wrap-break-word text-gray-500 dark:text-gray-400',
+                              iconExtractor && 'pl-6',
                             )}
                           >
                             {itemDescription}
                           </span>
                         ) : null}
 
-                        {iconExtractor ? (
+                        {selected ? (
                           <span
                             className={cx(
-                              'absolute left-0 flex items-center pl-1.5',
+                              'absolute right-2 flex items-center text-slate-900 dark:text-slate-100',
                               hasDescriptions ? 'top-2.5' : 'inset-y-0',
                             )}
                           >
-                            {iconExtractor(item, index)}
-                          </span>
-                        ) : null}
-
-                        {selected && !iconExtractor ? (
-                          <span
-                            className={cx(
-                              'absolute left-0 flex items-center pl-1.5 text-gray-600 dark:text-gray-300',
-                              hasDescriptions ? 'top-2.5' : 'inset-y-0',
-                            )}
-                          >
-                            <CheckIcon className='h-5 w-5' aria-hidden='true' />
+                            <CheckIcon
+                              weight='bold'
+                              className='size-4'
+                              aria-hidden='true'
+                            />
                           </span>
                         ) : null}
                       </>
@@ -218,7 +221,7 @@ function Select<T>({
           {hint ? (
             <p
               className={cx(
-                'mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300',
+                'mt-1.5 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400',
                 hintClassName,
               )}
             >

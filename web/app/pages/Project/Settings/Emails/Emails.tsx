@@ -25,10 +25,15 @@ import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
+import { RadioCardGroup } from '~/ui/RadioCardGroup'
+import { Text } from '~/ui/Text'
 import { isValidEmail } from '~/utils/validator'
 
 interface ModalMessageProps {
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
+  setForm: React.Dispatch<
+    React.SetStateAction<{ email: string; reportFrequency: string }>
+  >
   beenSubmitted: boolean
   errors: {
     email?: string
@@ -42,6 +47,7 @@ interface ModalMessageProps {
 
 const ModalMessage = ({
   handleInput,
+  setForm,
   beenSubmitted,
   errors,
   form,
@@ -66,91 +72,21 @@ const ModalMessage = ({
         onChange={handleInput}
         error={beenSubmitted ? errors.email : null}
       />
-      <fieldset className='mt-4'>
-        <legend className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
-          {t('project.emails.reportFrequency')}
-        </legend>
-        <div
-          className={cx(
-            'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-950',
-            {
-              'border border-red-300': errors.reportFrequency,
-            },
-          )}
-        >
-          {reportFrequencyForEmailsOptions.map((item, index) => (
-            <ReportFrequencyOption
-              key={item.value}
-              item={item}
-              index={index}
-              form={form}
-              handleInput={handleInput}
-              totalOptions={reportFrequencyForEmailsOptions.length}
-            />
-          ))}
-        </div>
-        {errors.reportFrequency ? (
-          <p
-            className='mt-2 text-sm text-red-600 dark:text-red-500'
-            id='reportFrequency-error'
-          >
-            {errors.reportFrequency}
-          </p>
-        ) : null}
-      </fieldset>
-    </div>
-  )
-}
-
-interface ReportFrequencyOptionProps {
-  item: { value: string; label: string }
-  index: number
-  form: { reportFrequency: string }
-  handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
-  totalOptions: number
-}
-
-const ReportFrequencyOption = ({
-  item,
-  index,
-  form,
-  handleInput,
-  totalOptions,
-}: ReportFrequencyOptionProps) => {
-  const { t } = useTranslation('common')
-
-  return (
-    <label
-      className={cx(
-        'relative flex cursor-pointer border border-gray-200 p-4 dark:border-slate-600',
-        {
-          'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-            item.value === form.reportFrequency,
-          'border-gray-200': form.reportFrequency !== item.value,
-          'rounded-t-md': index === 0,
-          'rounded-b-md': index === totalOptions - 1,
-        },
-      )}
-    >
-      <input
+      <RadioCardGroup
         name='reportFrequency'
-        className='h-4 w-4 border-gray-300 text-indigo-600 focus:ring-slate-900 dark:focus:ring-slate-300'
-        type='radio'
-        value={item.value}
-        onChange={handleInput}
-        checked={form.reportFrequency === item.value}
+        label={t('project.emails.reportFrequency')}
+        className='mt-4'
+        value={form.reportFrequency || null}
+        onChange={(reportFrequency) =>
+          setForm((prev) => ({ ...prev, reportFrequency }))
+        }
+        error={errors.reportFrequency}
+        options={reportFrequencyForEmailsOptions.map((item) => ({
+          value: item.value,
+          label: t(`profileSettings.${item.value}`),
+        }))}
       />
-      <span
-        className={cx('ml-3 block text-sm font-medium', {
-          'text-indigo-900 dark:text-white':
-            form.reportFrequency === item.value,
-          'text-gray-700 dark:text-gray-200':
-            form.reportFrequency !== item.value,
-        })}
-      >
-        {t(`profileSettings.${item.value}`)}
-      </span>
-    </label>
+    </div>
   )
 }
 
@@ -505,26 +441,18 @@ const Emails = ({ projectId }: { projectId: string }) => {
 
   return (
     <div>
-      <div className='mb-3 flex flex-col items-start justify-between gap-y-2 sm:flex-row sm:items-center'>
+      <div className='mb-4 flex flex-col items-start justify-between gap-y-2 sm:flex-row sm:items-center'>
         <div>
-          <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <Text as='h3' size='lg' weight='bold'>
             {t('project.emails.title')}
-          </h3>
-          <p className='text-sm text-gray-500 dark:text-gray-400'>
+          </Text>
+          <Text as='p' size='sm' colour='muted' className='mt-1 max-w-prose'>
             {t('project.emails.description')}
-          </p>
+          </Text>
         </div>
-        <Button
-          className='h-8 pl-2 whitespace-nowrap'
-          primary
-          regular
-          type='button'
-          onClick={() => setShowModal(true)}
-        >
-          <>
-            <EnvelopeSimpleIcon className='mr-1 h-5 w-5' />
-            {t('project.emails.add')}
-          </>
+        <Button small primary type='button' onClick={() => setShowModal(true)}>
+          <EnvelopeSimpleIcon className='mr-1 size-4' />
+          {t('project.emails.add')}
         </Button>
       </div>
       <div>
@@ -586,6 +514,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
         message={
           <ModalMessage
             form={form}
+            setForm={setForm}
             handleInput={handleInput}
             errors={errors}
             beenSubmitted={beenSubmitted}

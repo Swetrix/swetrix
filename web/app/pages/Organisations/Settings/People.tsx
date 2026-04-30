@@ -29,6 +29,7 @@ import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
+import { RadioCardGroup } from '~/ui/RadioCardGroup'
 import { isValidEmail } from '~/utils/validator'
 
 const NoPeople = () => {
@@ -408,118 +409,26 @@ const People = ({ organisation }: PeopleProps) => {
               onChange={handleInput}
               error={beenSubmitted ? errors.email : null}
             />
-            <fieldset className='mt-4'>
-              {}
-              <label
-                className='block text-sm font-medium text-gray-700 dark:text-gray-300'
-                htmlFor='role'
-              >
-                {t('project.settings.role')}
-              </label>
-              <div
-                className={cx(
-                  'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-950',
-                  {
-                    'border border-red-300': errors.role,
-                  },
-                )}
-              >
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                <label
-                  className={cx(
-                    'relative flex cursor-pointer rounded-tl-md rounded-tr-md border border-gray-200 p-4 dark:border-slate-600',
-                    {
-                      'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-                        form.role === 'admin',
-                      'border-gray-200': form.role !== 'admin',
-                    },
-                  )}
-                >
-                  <input
-                    name='role'
-                    className='h-4 w-4 border-gray-300 text-slate-900 focus:ring-slate-900 dark:text-slate-100 dark:focus:ring-slate-300'
-                    id='role_admin'
-                    type='radio'
-                    value='admin'
-                    onChange={handleInput}
-                    checked={form.role === 'admin'}
-                  />
-                  <div className='ml-3 flex flex-col'>
-                    <span
-                      className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white':
-                          form.role === 'admin',
-                        'text-gray-700 dark:text-gray-200':
-                          form.role !== 'admin',
-                      })}
-                    >
-                      {t('organisations.role.admin.name')}
-                    </span>
-                    <span
-                      className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100':
-                          form.role === 'admin',
-                        'text-gray-700 dark:text-gray-200':
-                          form.role !== 'admin',
-                      })}
-                    >
-                      {t('organisations.role.admin.desc')}
-                    </span>
-                  </div>
-                </label>
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                <label
-                  className={cx(
-                    'relative flex cursor-pointer rounded-br-md rounded-bl-md border border-gray-200 p-4 dark:border-gray-500',
-                    {
-                      'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-                        form.role === 'viewer',
-                      'border-gray-200': form.role !== 'viewer',
-                    },
-                  )}
-                >
-                  <input
-                    name='role'
-                    className='h-4 w-4 border-gray-300 text-slate-900 focus:ring-slate-900 dark:text-slate-100 dark:focus:ring-slate-300'
-                    id='role_viewer'
-                    type='radio'
-                    value='viewer'
-                    onChange={handleInput}
-                    checked={form.role === 'viewer'}
-                  />
-                  <div className='ml-3 flex flex-col'>
-                    <span
-                      className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white':
-                          form.role === 'viewer',
-                        'text-gray-700 dark:text-gray-200':
-                          form.role !== 'viewer',
-                      })}
-                    >
-                      {t('organisations.role.viewer.name')}
-                    </span>
-                    <span
-                      className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100':
-                          form.role === 'viewer',
-                        'text-gray-700 dark:text-gray-200':
-                          form.role !== 'viewer',
-                      })}
-                    >
-                      {t('organisations.role.viewer.desc')}
-                    </span>
-                  </div>
-                </label>
-              </div>
-              {errors.role ? (
-                <p
-                  className='mt-2 text-sm text-red-600 dark:text-red-500'
-                  id='email-error'
-                >
-                  {errors.role}
-                </p>
-              ) : null}
-            </fieldset>
+            <RadioCardGroup<'admin' | 'viewer'>
+              name='role'
+              label={t('project.settings.role')}
+              className='mt-4'
+              value={(form.role as 'admin' | 'viewer') || null}
+              onChange={(role) => setForm((prev) => ({ ...prev, role }))}
+              error={errors.role}
+              options={[
+                {
+                  value: 'admin',
+                  label: t('organisations.role.admin.name'),
+                  description: t('organisations.role.admin.desc'),
+                },
+                {
+                  value: 'viewer',
+                  label: t('organisations.role.viewer.name'),
+                  description: t('organisations.role.viewer.desc'),
+                },
+              ]}
+            />
           </div>
         }
         isOpened={showModal}

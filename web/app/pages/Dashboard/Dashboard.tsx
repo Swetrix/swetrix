@@ -361,21 +361,19 @@ const Dashboard = () => {
                 >
                   <span>{t('titles.dashboard')}</span>
                   {isSearchActive ? (
-                    <button
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
-                      type='button'
+                    <Button
+                      icon
                       onClick={() => {
                         setSearch('')
                         setIsSearchActive(false)
                       }}
                       aria-label={t('common.close')}
                     >
-                      <XIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
-                    </button>
+                      <XIcon className='size-5' />
+                    </Button>
                   ) : (
-                    <button
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
-                      type='button'
+                    <Button
+                      icon
                       onClick={() => {
                         setIsSearchActive(true)
                         setTimeout(() => {
@@ -384,8 +382,8 @@ const Dashboard = () => {
                       }}
                       aria-label={t('project.search')}
                     >
-                      <MagnifyingGlassIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
-                    </button>
+                      <MagnifyingGlassIcon className='size-5' />
+                    </Button>
                   )}
                 </Text>
                 {isSearchActive ? (
@@ -423,26 +421,24 @@ const Dashboard = () => {
                 />
                 <div className='hidden lg:block'>
                   {viewMode === DASHBOARD_VIEW.GRID ? (
-                    <button
-                      type='button'
+                    <Button
+                      icon
                       title={t('dashboard.listView')}
+                      aria-label={t('dashboard.listView')}
                       onClick={() => handleViewModeChange(DASHBOARD_VIEW.LIST)}
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
                     >
-                      <RowsIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
-                    </button>
+                      <RowsIcon className='size-5' />
+                    </Button>
                   ) : null}
                   {viewMode === DASHBOARD_VIEW.LIST ? (
-                    <button
-                      type='button'
+                    <Button
+                      icon
                       title={t('dashboard.gridView')}
-                      onClick={() => {
-                        handleViewModeChange(DASHBOARD_VIEW.GRID)
-                      }}
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
+                      aria-label={t('dashboard.gridView')}
+                      onClick={() => handleViewModeChange(DASHBOARD_VIEW.GRID)}
                     >
-                      <SquaresFourIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
-                    </button>
+                      <SquaresFourIcon className='size-5' />
+                    </Button>
                   ) : null}
                 </div>
                 <Button onClick={onNewProject} primary large>

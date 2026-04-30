@@ -44,19 +44,30 @@ export function FAQ({
           >
             <summary
               className={cn(
-                'flex w-full cursor-pointer items-center justify-between py-4',
+                'flex w-full cursor-pointer list-none items-center justify-between gap-x-4 py-4 transition-colors',
+                'focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:focus-visible:ring-slate-300',
                 withPadding && 'px-4',
               )}
             >
-              <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-white'>
+              <span className='text-base font-medium text-slate-900 transition-colors group-hover:text-slate-700 dark:text-white dark:group-hover:text-slate-200'>
                 {item.question}
               </span>
-              <CaretDownIcon className='size-4 shrink-0 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-200' />
+              <CaretDownIcon
+                className='size-4 shrink-0 text-slate-500 transition-transform duration-200 ease-out group-open:rotate-180 dark:text-slate-400'
+                aria-hidden='true'
+              />
             </summary>
-            <div className={cn('pb-4', withPadding && 'px-4')}>
-              <p className='text-sm whitespace-pre-line text-slate-900 dark:text-gray-100'>
-                {item.answer}
-              </p>
+            <div
+              className={cn(
+                'pb-4 text-sm whitespace-pre-line text-slate-700 dark:text-gray-300',
+                withPadding && 'px-4',
+              )}
+            >
+              {typeof item.answer === 'string' ? (
+                <p>{item.answer}</p>
+              ) : (
+                item.answer
+              )}
             </div>
           </details>
         )

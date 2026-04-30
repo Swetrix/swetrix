@@ -14,6 +14,7 @@ import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
+import { Text } from '~/ui/Text'
 
 const ANNOTATIONS_PER_PAGE = 10
 
@@ -167,18 +168,18 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
 
   return (
     <div>
-      <div className='mb-4 flex items-center justify-between'>
+      <div className='mb-4 flex flex-col items-start justify-between gap-y-2 sm:flex-row sm:items-center'>
         <div>
-          <h3 className='text-lg font-medium text-gray-900 dark:text-gray-50'>
+          <Text as='h3' size='lg' weight='bold'>
             {t('project.settings.annotations.title')}
-          </h3>
-          <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+          </Text>
+          <Text as='p' size='sm' colour='muted' className='mt-1 max-w-prose'>
             {t('project.settings.annotations.description')}
-          </p>
+          </Text>
         </div>
         {allowedToManage ? (
-          <Button type='button' onClick={openCreateModal} primary regular>
-            <PlusIcon className='mr-1 h-4 w-4' />
+          <Button type='button' onClick={openCreateModal} primary small>
+            <PlusIcon className='mr-1 size-4' />
             {t('project.settings.annotations.add')}
           </Button>
         ) : null}

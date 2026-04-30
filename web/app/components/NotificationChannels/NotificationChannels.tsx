@@ -314,35 +314,26 @@ const NotificationChannels = ({
 
   return (
     <section>
-      <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+      <div className='mb-4 flex flex-col items-start justify-between gap-y-2 sm:flex-row sm:items-center'>
         <div>
           <Text as='h3' size='lg' weight='bold'>
             {headingTitle}
           </Text>
-          <Text
-            as='p'
-            size='sm'
-            colour='secondary'
-            className='mt-1 max-w-prose'
-          >
+          <Text as='p' size='sm' colour='muted' className='mt-1 max-w-prose'>
             {headingDescription}
           </Text>
         </div>
-        <div className='flex flex-wrap items-center gap-2'>
-          <Button
-            small
-            primary
-            onClick={() => {
-              setForm(blankForm(allowedTypes[0]))
-              setCreating(true)
-            }}
-          >
-            <span className='inline-flex items-center gap-1'>
-              <PlusIcon className='size-4' aria-hidden />
-              {t('notificationChannels.add')}
-            </span>
-          </Button>
-        </div>
+        <Button
+          small
+          primary
+          onClick={() => {
+            setForm(blankForm(allowedTypes[0]))
+            setCreating(true)
+          }}
+        >
+          <PlusIcon className='mr-1 size-4' aria-hidden />
+          {t('notificationChannels.add')}
+        </Button>
       </div>
 
       {!isLoaded ? (

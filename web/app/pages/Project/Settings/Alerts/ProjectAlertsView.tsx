@@ -426,19 +426,26 @@ const ProjectAlertsInner = ({
 
   if (!canManageAlerts) {
     return (
-      <div className='flex flex-col'>
-        <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
-          <div className='flex items-center text-gray-50'>
-            <BellRingingIcon className='mr-2 h-8 w-8' />
-            <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
-          </div>
-          <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
-            {t('dashboard.alertsDesc')}
-          </p>
+      <div className='mx-auto w-full max-w-2xl py-16 text-center'>
+        <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900'>
+          <BellRingingIcon className='size-7 text-gray-700 dark:text-gray-200' />
+        </div>
+        <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
+          {t('dashboard.alerts')}
+        </Text>
+        <Text
+          as='p'
+          size='sm'
+          colour='secondary'
+          className='mx-auto mt-2 max-w-md whitespace-pre-wrap'
+        >
+          {t('dashboard.alertsDesc')}
+        </Text>
+        <div className='mt-6'>
           <Link
             to={routes.signup}
-            className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
             aria-label={t('titles.signup')}
+            className='inline-flex items-center justify-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
           >
             {t('header.startForFree')}
           </Link>
@@ -484,21 +491,24 @@ const ProjectAlertsInner = ({
     <>
       <div className='mt-4'>
         {alerts === null ? null : alerts.length === 0 ? (
-          <div className='flex flex-col'>
-            <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
-              <div className='flex items-center text-gray-50'>
-                <BellRingingIcon className='mr-2 h-8 w-8' />
-                <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
-              </div>
-              <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
-                {t('dashboard.alertsDesc')}
-              </p>
-              <Button
-                onClick={handleNewAlert}
-                className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
-                secondary
-                large
-              >
+          <div className='mx-auto w-full max-w-2xl py-16 text-center'>
+            <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900'>
+              <BellRingingIcon className='size-7 text-gray-700 dark:text-gray-200' />
+            </div>
+            <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
+              {t('dashboard.alerts')}
+            </Text>
+            <Text
+              as='p'
+              size='sm'
+              colour='secondary'
+              className='mx-auto mt-2 max-w-md whitespace-pre-wrap'
+            >
+              {t('dashboard.alertsDesc')}
+            </Text>
+            <div className='mt-6'>
+              <Button onClick={handleNewAlert} primary large>
+                <PlusIcon className='mr-1.5 size-4' />
                 {t('alert.add')}
               </Button>
             </div>

@@ -50,23 +50,21 @@ const SwitchTrack = ({
     <span
       aria-hidden='true'
       className={cx(
-        'pointer-events-none inline-block size-3 transform rounded-full shadow-lg ring-0 transition duration-200 ease-in-out',
+        'pointer-events-none inline-block size-3 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-out',
         {
           'translate-x-3': checked,
           'translate-x-0': !checked,
-          'bg-white dark:bg-slate-950': checked,
-          'bg-white': !checked,
         },
       )}
     />
   )
 
   const baseClassName =
-    'relative inline-flex h-4 w-7 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out'
+    'relative inline-flex h-4 w-7 shrink-0 items-center justify-start rounded-full border-2 border-transparent transition-colors duration-200 ease-out'
 
   const stateClassName = cx({
     'bg-slate-900 dark:bg-slate-200': checked,
-    'bg-gray-300 dark:bg-slate-600': !checked,
+    'bg-gray-300 dark:bg-slate-700': !checked,
     'cursor-not-allowed opacity-50': disabled,
   })
 
@@ -88,7 +86,7 @@ const SwitchTrack = ({
       onClick={onClick}
       className={cx(
         baseClassName,
-        'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900',
+        'cursor-pointer focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus-visible:outline-hidden dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-950',
         stateClassName,
       )}
     >
@@ -112,7 +110,7 @@ const SwitchLabel = ({
         size='sm'
         colour='primary'
         htmlFor={htmlFor}
-        className={cx('ml-2', {
+        className={cx('ml-2 select-none', {
           'cursor-pointer': !disabled,
           'cursor-not-allowed opacity-50': disabled,
         })}
@@ -127,7 +125,7 @@ const SwitchLabel = ({
       as='span'
       size='sm'
       colour='primary'
-      className={cx('ml-2', {
+      className={cx('ml-2 select-none', {
         'opacity-50': disabled,
       })}
     >

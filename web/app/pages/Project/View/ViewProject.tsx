@@ -73,6 +73,7 @@ import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import { ProjectViewActionData } from '~/routes/projects.$id'
+import Button from '~/ui/Button'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
@@ -1643,14 +1644,13 @@ const ViewProjectContent = () => {
                                 headless
                               />
                               <div className='flex items-center gap-2'>
-                                <button
-                                  type='button'
+                                <Button
+                                  icon
                                   onClick={() => setIsHotkeysHelpOpened(true)}
                                   aria-label={t('modals.shortcuts.title')}
-                                  className='relative rounded-md border border-transparent bg-gray-50 p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
                                 >
-                                  <KeyboardIcon className='h-6 w-6 text-slate-700 dark:text-gray-200' />
-                                </button>
+                                  <KeyboardIcon className='size-6 text-slate-700 dark:text-gray-200' />
+                                </Button>
                                 <Dropdown
                                   title={
                                     <span className='flex items-center justify-center'>
