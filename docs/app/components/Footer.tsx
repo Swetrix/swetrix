@@ -387,7 +387,7 @@ export default function Footer() {
                   className="-translate-y-px"
                   height={28}
                   width={24}
-                  src="/docs/img/logo/light.svg"
+                  src="/assets/logo/light.svg"
                   alt=""
                   loading="lazy"
                 />
