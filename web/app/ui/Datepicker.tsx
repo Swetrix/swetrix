@@ -25,6 +25,8 @@ interface DatePickerProps {
   maxRange?: number
   className?: string
   mode?: 'single' | 'range'
+  inputId?: string
+  ariaLabelledBy?: string
 }
 
 type DatePickerHandle = {
@@ -109,6 +111,8 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
       maxRange = 0,
       className,
       mode = 'range',
+      inputId,
+      ariaLabelledBy,
     },
     ref,
   ) {
@@ -340,6 +344,8 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
         {options ? (
           <input
             readOnly
+            id={inputId}
+            aria-labelledby={ariaLabelledBy}
             onClick={() => setOpen(true)}
             value={label || ''}
             placeholder={

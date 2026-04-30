@@ -54,12 +54,16 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
         hasTriggeredRefresh.current = true
         ;(async () => {
           setIsRefreshing(true)
-          await onRefresh(false)
-          setIsRefreshing(false)
-          // Reset timer after refresh completes
-          startTimeRef.current = Date.now()
-          hasTriggeredRefresh.current = false
-          setProgress(0)
+          try {
+            await onRefresh(false)
+          } catch (error) {
+            console.error('Auto refresh failed', error)
+          } finally {
+            setIsRefreshing(false)
+            startTimeRef.current = Date.now()
+            hasTriggeredRefresh.current = false
+            setProgress(0)
+          }
         })()
       }
 
@@ -77,8 +81,11 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
     startTimeRef.current = Date.now()
     hasTriggeredRefresh.current = false
     setProgress(0)
-    await onRefresh(true)
-    setIsRefreshing(false)
+    try {
+      await onRefresh(true)
+    } finally {
+      setIsRefreshing(false)
+    }
   }
 
   const remainingSeconds = Math.max(

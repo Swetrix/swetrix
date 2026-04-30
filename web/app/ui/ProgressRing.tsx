@@ -83,7 +83,8 @@ const ProgressRing = ({
   )
 
   const center = size / 2
-  const displayValue = Math.floor(normalizedValue)
+  const isFinite = Number.isFinite(normalizedValue)
+  const displayValue = isFinite ? Math.floor(normalizedValue) : 0
 
   return (
     <div
@@ -94,7 +95,7 @@ const ProgressRing = ({
       role='progressbar'
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={displayValue}
+      aria-valuenow={isFinite ? displayValue : undefined}
       aria-label={ariaLabel ?? `Progress: ${displayValue}%`}
     >
       <svg width={size} height={size} className='-rotate-90' aria-hidden='true'>

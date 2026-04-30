@@ -138,7 +138,7 @@ const MultiSelect = ({
 
   const activeOptionId =
     activeIndex >= 0 && items[activeIndex]
-      ? `${optionIdPrefix}-${itemKey(items[activeIndex])}`
+      ? `${optionIdPrefix}-${activeIndex}`
       : undefined
 
   return (
@@ -189,7 +189,7 @@ const MultiSelect = ({
               _map(items, (item, index) => {
                 const isSelected = _includes(label, item)
                 const isActive = index === activeIndex
-                const optionId = `${optionIdPrefix}-${itemKey(item)}`
+                const optionId = `${optionIdPrefix}-${index}`
                 return (
                   <button
                     type='button'

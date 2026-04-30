@@ -154,11 +154,19 @@ const ErrorTracking = () => {
             />
           </Text>
           <ul className='mt-2 list-inside list-disc'>
-            {_map(t('errors.fast.list', { returnObjects: true }), (item) => (
-              <Text as='li' size='lg' key={item} className='mb-2'>
-                {item}
-              </Text>
-            ))}
+            {_map(
+              t('errors.fast.list', { returnObjects: true }),
+              (item, idx) => (
+                <Text
+                  as='li'
+                  size='lg'
+                  key={`error-fast-${idx}`}
+                  className='mb-2'
+                >
+                  {item}
+                </Text>
+              ),
+            )}
           </ul>
 
           <Text

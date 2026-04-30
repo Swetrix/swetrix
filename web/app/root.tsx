@@ -255,6 +255,8 @@ export function ErrorBoundary() {
                       <button
                         type='button'
                         onClick={() => setCrashStackShown((prev) => !prev)}
+                        aria-expanded={crashStackShown}
+                        aria-controls='crash-stack'
                         className='flex cursor-pointer items-center justify-center text-base text-gray-800 hover:underline dark:text-gray-300'
                       >
                         {crashStackShown ? (
@@ -270,7 +272,11 @@ export function ErrorBoundary() {
                         )}
                       </button>
                       {crashStackShown ? (
-                        <span className='text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'>
+                        <span
+                          id='crash-stack'
+                          role='region'
+                          className='text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'
+                        >
                           {error.stack}
                         </span>
                       ) : null}

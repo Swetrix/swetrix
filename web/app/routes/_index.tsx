@@ -332,7 +332,7 @@ const LiveDemoPreview = () => {
           style={{ pointerEvents: 'none' }}
           tabIndex={-1}
         />
-        <div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-slate-900/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100'>
+        <div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-slate-900/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100'>
           <a
             href={LIVE_DEMO_URL}
             target='_blank'

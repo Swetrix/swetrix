@@ -175,8 +175,11 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
               size='xs'
               type='button'
               onClick={() => onRemove(member)}
+              aria-label={t('project.settings.removeUser', {
+                user: member.user.email,
+              })}
             >
-              <TrashIcon className='h-4 w-4' />
+              <TrashIcon className='h-4 w-4' aria-hidden='true' />
             </Button>
           </div>
         )}

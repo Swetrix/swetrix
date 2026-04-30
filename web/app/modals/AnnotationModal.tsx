@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Annotation } from '~/lib/models/Project'
@@ -46,6 +46,8 @@ const AnnotationModal = ({
 
   const [date, setDate] = useState(initialDate)
   const [text, setText] = useState(initialText)
+
+  const dateInputId = useId()
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing initial state with UI
@@ -124,6 +126,7 @@ const AnnotationModal = ({
           <div>
             <Text
               as='label'
+              htmlFor={dateInputId}
               size='sm'
               weight='medium'
               colour='secondary'
@@ -134,6 +137,7 @@ const AnnotationModal = ({
             </Text>
             <Datepicker
               mode='single'
+              inputId={dateInputId}
               value={date ? [new Date(date + 'T00:00:00')] : []}
               onChange={(dates) => {
                 if (dates.length > 0 && allowedToManage) {

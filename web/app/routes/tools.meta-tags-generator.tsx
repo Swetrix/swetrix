@@ -71,6 +71,15 @@ interface MetaData {
   twitterHandle: string
 }
 
+const getHostnameFromUrl = (url: string): string => {
+  if (!url) return 'example.com'
+  try {
+    return new URL(url.startsWith('http') ? url : `https://${url}`).hostname
+  } catch {
+    return 'example.com'
+  }
+}
+
 export default function MetaTagsGenerator() {
   const [data, setData] = useState<MetaData>({
     title: 'Swetrix - Privacy-focused web analytics',
@@ -274,13 +283,7 @@ ${imageUrl ? `<meta property="twitter:image" content="${imageUrl}" />\n` : ''}${
                 )}
                 <div className='border-t border-gray-200 p-3 dark:border-slate-800'>
                   <Text as='p' size='sm' colour='muted' className='truncate'>
-                    {data.url
-                      ? new URL(
-                          data.url.startsWith('http')
-                            ? data.url
-                            : `https://${data.url}`,
-                        ).hostname
-                      : 'example.com'}
+                    {getHostnameFromUrl(data.url)}
                   </Text>
                   <Text as='p' weight='semibold' className='mt-0.5 truncate'>
                     {data.title || 'Page Title'}
