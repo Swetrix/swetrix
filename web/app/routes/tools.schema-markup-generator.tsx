@@ -435,8 +435,8 @@ export default function SchemaMarkupGenerator() {
                         </div>
                       ))}
                       <Button
+                        variant='secondary'
                         type='button'
-                        secondary
                         onClick={() =>
                           setFaqData((p) => [
                             ...p,
@@ -462,7 +462,7 @@ export default function SchemaMarkupGenerator() {
                     </h3>
                   </div>
                   <Button
-                    secondary
+                    variant='secondary'
                     onClick={handleCopy}
                     className='h-auto! border-slate-700! bg-slate-800! px-3! py-1.5! text-gray-300! hover:bg-slate-700! hover:text-white!'
                   >

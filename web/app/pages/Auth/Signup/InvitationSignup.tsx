@@ -223,11 +223,10 @@ const InvitationSignup = () => {
           </div>
 
           <Button
+            size='xl'
             className='mt-6 flex w-full items-center justify-center gap-1'
             type='submit'
             loading={isFormSubmitting}
-            primary
-            giant
           >
             <span>
               {t('auth.invitation.createAndJoin', { type: typeLabel })}

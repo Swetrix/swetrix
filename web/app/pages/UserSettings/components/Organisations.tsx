@@ -93,20 +93,23 @@ const Organisations = ({ membership }: OrganisationsProps) => {
       </td>
       <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
         {role === 'owner' ? null : confirmed ? (
-          <Button onClick={() => setShowDeleteModal(true)} danger small>
+          <Button
+            variant='danger'
+            size='xs'
+            onClick={() => setShowDeleteModal(true)}
+          >
             {t('common.quit')}
           </Button>
         ) : (
           <>
             <Button
+              size='xs'
               className='mr-2'
               onClick={() => setShowDeleteModal(true)}
-              primary
-              small
             >
               {t('common.reject')}
             </Button>
-            <Button onClick={onAccept} loading={isLoading} primary small>
+            <Button size='xs' onClick={onAccept} loading={isLoading}>
               {t('common.accept')}
             </Button>
           </>

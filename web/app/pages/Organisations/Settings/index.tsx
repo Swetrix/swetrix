@@ -374,16 +374,15 @@ const OrganisationSettings = () => {
                 <div className='mt-8 flex flex-wrap justify-center gap-2 sm:justify-between'>
                   <div className='flex flex-wrap items-center gap-2'>
                     <Button
+                      variant='secondary'
                       className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
                       as={Link}
                       // @ts-expect-error
                       to={routes.organisations}
-                      secondary
-                      regular
                     >
                       {t('common.cancel')}
                     </Button>
-                    <Button type='submit' loading={isSaving} primary regular>
+                    <Button type='submit' loading={isSaving}>
                       {t('common.save')}
                     </Button>
                   </div>
@@ -449,11 +448,10 @@ const OrganisationSettings = () => {
                     {t('organisations.modals.delete.message')}
                   </p>
                   <Button
+                    variant='danger'
                     className='mt-4'
                     onClick={() => setShowDelete(true)}
                     disabled={isDeleting}
-                    danger
-                    regular
                   >
                     <TrashIcon className='mr-1 h-5 w-5' />
                     {t('organisations.delete')}

@@ -178,7 +178,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
           </Text>
         </div>
         {allowedToManage ? (
-          <Button type='button' onClick={openCreateModal} primary small>
+          <Button size='xs' type='button' onClick={openCreateModal}>
             <PlusIcon className='mr-1 size-4' />
             {t('project.settings.annotations.add')}
           </Button>
@@ -191,13 +191,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
             {t('project.settings.annotations.empty')}
           </p>
           {allowedToManage ? (
-            <Button
-              type='button'
-              onClick={openCreateModal}
-              className='mt-4'
-              primary
-              regular
-            >
+            <Button type='button' onClick={openCreateModal} className='mt-4'>
               <PlusIcon className='mr-1 h-4 w-4' />
               {t('project.settings.annotations.addFirst')}
             </Button>

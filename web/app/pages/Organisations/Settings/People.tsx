@@ -159,7 +159,12 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
               className='mr-3'
               label={t('common.pending')}
             />
-            <Button type='button' white small onClick={() => onRemove(member)}>
+            <Button
+              variant='white'
+              size='xs'
+              type='button'
+              onClick={() => onRemove(member)}
+            >
               <TrashIcon className='h-4 w-4' />
             </Button>
           </div>
@@ -311,8 +316,6 @@ const People = ({ organisation }: PeopleProps) => {
         </div>
         <Button
           className='h-8 pl-2'
-          primary
-          regular
           type='button'
           onClick={() => setShowModal(true)}
         >

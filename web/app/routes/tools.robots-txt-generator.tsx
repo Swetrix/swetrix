@@ -374,9 +374,8 @@ export default function RobotsTxtGenerator() {
                           </div>
                         ))}
                         <Button
+                          variant='secondary'
                           type='button'
-                          regular
-                          secondary
                           onClick={() => addRule(groupIndex)}
                           className='mt-2 w-full text-sm text-gray-900 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:bg-slate-700'
                         >
@@ -389,8 +388,6 @@ export default function RobotsTxtGenerator() {
 
                 <Button
                   type='button'
-                  regular
-                  primary
                   onClick={addAgentGroup}
                   className='w-full'
                 >
@@ -409,7 +406,7 @@ export default function RobotsTxtGenerator() {
                   </div>
                   <div className='flex items-center gap-2'>
                     <Button
-                      secondary
+                      variant='secondary'
                       onClick={handleCopy}
                       className='h-auto! border-slate-700! bg-slate-800! px-3! py-1.5! text-gray-300! hover:bg-slate-700! hover:text-white!'
                     >
@@ -421,7 +418,7 @@ export default function RobotsTxtGenerator() {
                       {copied ? 'Copied' : 'Copy'}
                     </Button>
                     <Button
-                      secondary
+                      variant='secondary'
                       onClick={handleDownload}
                       className='h-auto! border-slate-700! bg-slate-800! px-3! py-1.5! text-gray-300! hover:bg-slate-700! hover:text-white!'
                     >

@@ -235,13 +235,13 @@ const Socialisations = () => {
                   <div className='flex items-center justify-end gap-2'>
                     {connected && !unlinkable ? (
                       <Button
+                        variant='danger'
+                        size='xs'
                         onClick={() =>
                           toast.error(
                             t('profileSettings.cantUnlinkSocialisation'),
                           )
                         }
-                        small
-                        danger
                       >
                         {t('common.unlink')}
                       </Button>
@@ -249,10 +249,10 @@ const Socialisations = () => {
 
                     {connected && unlinkable ? (
                       <Button
+                        variant='danger'
+                        size='xs'
                         onClick={() => onUnlinkSSO(key)}
                         loading={isUnlinking}
-                        small
-                        danger
                       >
                         {t('common.unlink')}
                       </Button>
@@ -260,10 +260,9 @@ const Socialisations = () => {
 
                     {!connected ? (
                       <Button
+                        size='xs'
                         onClick={() => linkSSO(key)}
                         loading={isLoading}
-                        small
-                        primary
                       >
                         {t('common.link')}
                       </Button>

@@ -166,13 +166,13 @@ const Modal = ({
             <div className='mt-5 flex flex-col-reverse gap-2 sm:mt-4 sm:flex-row sm:justify-end'>
               {closeText ? (
                 <Button
+                  variant='secondary'
+                  size='lg'
                   onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.preventDefault()
                     e.stopPropagation()
                     onClose?.()
                   }}
-                  secondary
-                  large
                   className='w-full justify-center sm:w-auto'
                 >
                   {closeText}
@@ -180,12 +180,11 @@ const Modal = ({
               ) : null}
               {submitText ? (
                 <Button
+                  size='lg'
                   onClick={onSubmit}
                   disabled={submitDisabled}
                   loading={isLoading}
-                  primary={submitType === 'regular'}
-                  danger={submitType === 'danger'}
-                  large
+                  variant={submitType === 'danger' ? 'danger' : 'primary'}
                   className='w-full justify-center sm:w-auto'
                 >
                   {submitText}

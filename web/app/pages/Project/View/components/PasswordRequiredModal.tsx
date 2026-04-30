@@ -103,16 +103,15 @@ const PasswordRequiredModal = ({
 
           <div className='flex flex-col-reverse gap-2 sm:flex-row sm:justify-end'>
             <Button
+              variant='secondary'
               className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
               as={Link}
               // @ts-expect-error
               to={routes.main}
-              secondary
-              regular
             >
               {t('common.cancel')}
             </Button>
-            <Button type='submit' loading={isLoading} primary regular>
+            <Button type='submit' loading={isLoading}>
               {t('common.continue')}
             </Button>
           </div>

@@ -1645,7 +1645,7 @@ const ViewProjectContent = () => {
                               />
                               <div className='flex items-center gap-2'>
                                 <Button
-                                  icon
+                                  variant='icon'
                                   onClick={() => setIsHotkeysHelpOpened(true)}
                                   aria-label={t('modals.shortcuts.title')}
                                 >

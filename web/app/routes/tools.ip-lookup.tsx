@@ -474,8 +474,6 @@ export default function IpLookup() {
                 />
                 <Button
                   type='submit'
-                  primary
-                  regular
                   disabled={isLoading}
                   className='sm:mt-px'
                   loading={isLoading}

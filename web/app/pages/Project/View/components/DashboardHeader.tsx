@@ -1,4 +1,3 @@
-import cx from 'clsx'
 import dayjs from 'dayjs'
 import _find from 'lodash/find'
 import { MagnifyingGlassIcon, UsersIcon } from '@phosphor-icons/react'
@@ -12,6 +11,7 @@ import {
   TBPeriodPairsProps,
 } from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
+import Button from '~/ui/Button'
 import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
 
@@ -185,27 +185,15 @@ const DashboardHeader = ({
           <RefreshStatsButton onRefresh={refreshStats} />
         ) : null}
         {showSearchButton ? (
-          <div className='border-gray-200 dark:border-slate-800'>
-            <button
-              type='button'
-              title={t('project.search')}
-              onClick={() => {
-                if (dataLoading) {
-                  return
-                }
-
-                setShowFiltersSearch(true)
-              }}
-              className={cx(
-                'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
-                {
-                  'cursor-not-allowed opacity-50': authLoading || dataLoading,
-                },
-              )}
-            >
-              <MagnifyingGlassIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
-            </button>
-          </div>
+          <Button
+            variant='icon'
+            title={t('project.search')}
+            aria-label={t('project.search')}
+            disabled={authLoading || dataLoading}
+            onClick={() => setShowFiltersSearch(true)}
+          >
+            <MagnifyingGlassIcon className='size-5 text-gray-700 dark:text-gray-50' />
+          </Button>
         ) : null}
         {rightContent}
         {showPeriodSelector ? (

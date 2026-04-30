@@ -382,19 +382,18 @@ const Subscribe = () => {
             )}
 
             <div className='mt-3'>
-              <button
-                type='button'
+              <Button
+                variant='ghost'
+                size='xs'
                 onClick={() => setShowAllPlans((v) => !v)}
-                className='rounded-full bg-gray-100 px-3.5 py-1.5 transition-colors hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800'
+                className='rounded-full'
               >
-                <Text as='p' size='xs' weight='semibold'>
-                  {showAllPlans
-                    ? t('common.showLess')
-                    : t('common.showMore', {
-                        count: STANDARD_PLANS.length - INITIAL_VISIBLE_PLANS,
-                      })}
-                </Text>
-              </button>
+                {showAllPlans
+                  ? t('common.showLess')
+                  : t('common.showMore', {
+                      count: STANDARD_PLANS.length - INITIAL_VISIBLE_PLANS,
+                    })}
+              </Button>
             </div>
           </div>
 
@@ -440,10 +439,9 @@ const Subscribe = () => {
               </div>
             ) : (
               <Button
+                size='xl'
                 className='w-full justify-center'
                 onClick={handleStartCheckout}
-                primary
-                giant
                 loading={generatePayLinkFetcher.state !== 'idle'}
                 disabled={generatePayLinkFetcher.state !== 'idle'}
               >

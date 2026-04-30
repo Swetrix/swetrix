@@ -41,7 +41,7 @@ const DangerZone = ({
           hint={t('project.settings.enabledHint')}
         />
         <div className='mt-4 flex'>
-          <Button type='submit' loading={isSaving} primary regular>
+          <Button type='submit' loading={isSaving}>
             {t('common.save')}
           </Button>
         </div>
@@ -60,10 +60,9 @@ const DangerZone = ({
             </p>
           </div>
           <Button
+            variant='danger-outline'
             type='button'
             onClick={() => setShowTransfer(true)}
-            semiDanger
-            regular
             className='shrink-0'
           >
             {t('project.settings.transfer')}
@@ -82,11 +81,10 @@ const DangerZone = ({
             </p>
           </div>
           <Button
+            variant='danger-outline'
             type='button'
             onClick={() => !setResetting && setShowReset(true)}
             loading={setResetting}
-            semiDanger
-            regular
             className='shrink-0'
           >
             {t('project.settings.reset')}
@@ -105,11 +103,10 @@ const DangerZone = ({
             </p>
           </div>
           <Button
+            variant='danger'
             type='button'
             onClick={() => !isDeleting && setShowDelete(true)}
             loading={isDeleting}
-            danger
-            regular
             className='shrink-0'
           >
             {t('project.settings.delete')}

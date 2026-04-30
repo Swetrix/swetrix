@@ -182,8 +182,8 @@ const EnableWebPushButton = ({
 
   return (
     <Button
-      secondary
-      small
+      variant='secondary'
+      size='xs'
       onClick={onClick}
       loading={loading}
       className={className}

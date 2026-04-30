@@ -180,7 +180,7 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
             />
           ) : null}
 
-          <Button onClick={() => onRemove(project)} danger small>
+          <Button variant='danger' size='xs' onClick={() => onRemove(project)}>
             {t('common.remove')}
           </Button>
         </div>
@@ -286,8 +286,6 @@ export const Projects = ({ organisation }: ProjectsProps) => {
         </h3>
         <Button
           className='h-8 pl-2'
-          primary
-          regular
           type='button'
           onClick={() => {
             setShowAddProjectModal(true)

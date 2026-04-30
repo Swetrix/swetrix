@@ -547,10 +547,10 @@ const ExperimentSettingsModal = ({
                           />
                         </div>
                         <Button
+                          variant='secondary'
+                          size='sm'
                           type='button'
                           onClick={distributeEvenly}
-                          semiSmall
-                          secondary
                         >
                           {t('experiments.distributeEvenly')}
                         </Button>
@@ -655,11 +655,11 @@ const ExperimentSettingsModal = ({
 
                             {variants.length > 2 ? (
                               <Button
+                                variant='secondary'
+                                size='sm'
                                 type='button'
                                 className='p-1.5'
                                 onClick={() => handleRemoveVariant(index)}
-                                semiSmall
-                                secondary
                               >
                                 <TrashIcon className='size-4' />
                               </Button>
@@ -670,10 +670,10 @@ const ExperimentSettingsModal = ({
 
                       <div className='mt-2 flex items-center justify-between'>
                         <Button
+                          variant='secondary'
+                          size='sm'
                           type='button'
                           onClick={handleAddVariant}
-                          semiSmall
-                          secondary
                           className='gap-1.5'
                         >
                           <PlusIcon className='size-4' />
@@ -813,9 +813,11 @@ const ExperimentSettingsModal = ({
                                 type='button'
                                 onClick={() => setFeatureFlagMode('create')}
                                 className='flex-1 justify-center'
-                                regular
-                                primary={featureFlagMode === 'create'}
-                                secondary={featureFlagMode !== 'create'}
+                                variant={
+                                  featureFlagMode === 'create'
+                                    ? 'primary'
+                                    : 'secondary'
+                                }
                               >
                                 Create new
                               </Button>
@@ -823,9 +825,11 @@ const ExperimentSettingsModal = ({
                                 type='button'
                                 onClick={() => setFeatureFlagMode('link')}
                                 className='flex-1 justify-center'
-                                regular
-                                primary={featureFlagMode === 'link'}
-                                secondary={featureFlagMode !== 'link'}
+                                variant={
+                                  featureFlagMode === 'link'
+                                    ? 'primary'
+                                    : 'secondary'
+                                }
                               >
                                 Link existing
                               </Button>
@@ -886,9 +890,11 @@ const ExperimentSettingsModal = ({
                                   setExposureTrigger('feature_flag')
                                 }
                                 className='flex-1 justify-center'
-                                regular
-                                primary={exposureTrigger === 'feature_flag'}
-                                secondary={exposureTrigger !== 'feature_flag'}
+                                variant={
+                                  exposureTrigger === 'feature_flag'
+                                    ? 'primary'
+                                    : 'secondary'
+                                }
                               >
                                 Default
                               </Button>
@@ -898,9 +904,11 @@ const ExperimentSettingsModal = ({
                                   setExposureTrigger('custom_event')
                                 }
                                 className='flex-1 justify-center'
-                                regular
-                                primary={exposureTrigger === 'custom_event'}
-                                secondary={exposureTrigger !== 'custom_event'}
+                                variant={
+                                  exposureTrigger === 'custom_event'
+                                    ? 'primary'
+                                    : 'secondary'
+                                }
                               >
                                 Custom event
                               </Button>
@@ -958,10 +966,10 @@ const ExperimentSettingsModal = ({
                                   setMultipleVariantHandling('exclude')
                                 }
                                 className='flex-1 justify-center'
-                                regular
-                                primary={multipleVariantHandling === 'exclude'}
-                                secondary={
-                                  multipleVariantHandling !== 'exclude'
+                                variant={
+                                  multipleVariantHandling === 'exclude'
+                                    ? 'primary'
+                                    : 'secondary'
                                 }
                               >
                                 Exclude
@@ -972,12 +980,10 @@ const ExperimentSettingsModal = ({
                                   setMultipleVariantHandling('first_exposure')
                                 }
                                 className='flex-1 justify-center'
-                                regular
-                                primary={
+                                variant={
                                   multipleVariantHandling === 'first_exposure'
-                                }
-                                secondary={
-                                  multipleVariantHandling !== 'first_exposure'
+                                    ? 'primary'
+                                    : 'secondary'
                                 }
                               >
                                 First only
@@ -991,10 +997,10 @@ const ExperimentSettingsModal = ({
                 </div>
 
                 <div className='flex justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-slate-700'>
-                  <Button type='button' onClick={onClose} secondary regular>
+                  <Button variant='secondary' type='button' onClick={onClose}>
                     {t('common.cancel')}
                   </Button>
-                  <Button type='submit' primary regular loading={isSaving}>
+                  <Button type='submit' loading={isSaving}>
                     {isEditing ? t('common.save') : t('experiments.create')}
                   </Button>
                 </div>

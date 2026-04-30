@@ -242,12 +242,7 @@ const CaptchaDemo = () => {
                   })).find((opt) => opt.value === config.dummySecret)}
                 />
               </div>
-              <Button
-                type='button'
-                primary
-                regular
-                onClick={handleValidateToken}
-              >
+              <Button type='button' onClick={handleValidateToken}>
                 {t('captchaPage.demoPage.validateButton')}
               </Button>
             </div>

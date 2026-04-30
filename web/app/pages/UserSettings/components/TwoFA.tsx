@@ -127,7 +127,7 @@ const TwoFA = () => {
           {t('profileSettings.2faRecoveryNote')}
         </p>
         <Input className='mt-4' value={twoFARecovery} disabled />
-        <Button className='mt-4' onClick={recoverySaved} primary large>
+        <Button size='lg' className='mt-4' onClick={recoverySaved}>
           {t('profileSettings.2faRecoverySaved')}
         </Button>
       </div>
@@ -153,11 +153,11 @@ const TwoFA = () => {
               disabled={isLoading}
             />
             <Button
+              variant='danger'
+              size='lg'
               className={twoFACodeError ? 'mb-5' : ''}
               onClick={_disable2FA}
               loading={isLoading}
-              danger
-              large
             >
               {t('common.disable')}
             </Button>
@@ -175,10 +175,10 @@ const TwoFA = () => {
           {t('profileSettings.2faEnabled')}
         </p>
         <Button
+          variant='danger'
+          size='lg'
           className='mt-4'
           onClick={() => setTwoFADisabling(true)}
-          danger
-          large
         >
           {t('profileSettings.2faDisableBtn')}
         </Button>
@@ -216,11 +216,10 @@ const TwoFA = () => {
             disabled={isLoading}
           />
           <Button
+            size='lg'
             className={twoFACodeError ? 'mb-5' : ''}
             onClick={_enable2FA}
             loading={isLoading}
-            primary
-            large
           >
             {t('common.enable')}
           </Button>
@@ -238,7 +237,7 @@ const TwoFA = () => {
       >
         {t('profileSettings.2faSecurityRecommendation')}
       </Alert>
-      <Button onClick={_generate2FA} loading={isLoading} primary large>
+      <Button size='lg' onClick={_generate2FA} loading={isLoading}>
         <LockIcon className='mr-2 size-4' weight='duotone' />
         {t('profileSettings.2faEnableBtn')}
       </Button>

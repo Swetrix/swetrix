@@ -378,12 +378,7 @@ export default function UTMGenerator() {
                       className='w-full font-mono text-sm tracking-tight'
                       disabled={!generatedURL}
                     />
-                    <Button
-                      onClick={copyToClipboard}
-                      disabled={!generatedURL}
-                      primary
-                      regular
-                    >
+                    <Button onClick={copyToClipboard} disabled={!generatedURL}>
                       <CopyIcon className='mr-1 h-4 w-4' />
                       {copied ? 'Copied!' : 'Copy'}
                     </Button>

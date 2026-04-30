@@ -1046,7 +1046,7 @@ const ProjectSettings = () => {
                 ) : null}
 
                 <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
-                  <Button type='submit' loading={isSaving} primary regular>
+                  <Button type='submit' loading={isSaving}>
                     {t('common.save')}
                   </Button>
                 </div>
@@ -1184,8 +1184,6 @@ const ProjectSettings = () => {
                               'gsc-connect'
                             : undefined
                         }
-                        primary
-                        regular
                       >
                         <GoogleGSVG className='size-4' />
                         {t('common.connect')}
@@ -1201,10 +1199,9 @@ const ProjectSettings = () => {
                       />
 
                       <Button
+                        variant='danger-outline'
                         type='button'
                         className='max-w-max'
-                        semiDanger
-                        regular
                         onClick={() => {
                           gscFetcher.submit(
                             { intent: 'gsc-disconnect' },
@@ -1272,8 +1269,6 @@ const ProjectSettings = () => {
                               'gsc-set-property'
                             : undefined
                         }
-                        primary
-                        regular
                       >
                         {t('common.save')}
                       </Button>
@@ -1373,10 +1368,9 @@ const ProjectSettings = () => {
                       />
                       <div className='mt-4 flex gap-2'>
                         <Button
+                          variant='danger'
                           type='button'
                           onClick={() => setShowRegenerateSecret(true)}
-                          danger
-                          regular
                         >
                           {t('project.settings.captcha.regenerateKey')}
                         </Button>
@@ -1464,8 +1458,6 @@ const ProjectSettings = () => {
                             )
                             fetcher.submit(formData, { method: 'post' })
                           }}
-                          primary
-                          regular
                         >
                           {t('common.save')}
                         </Button>
@@ -1476,12 +1468,7 @@ const ProjectSettings = () => {
                       <p className='mb-4 text-sm text-gray-600 dark:text-gray-300'>
                         {t('project.settings.captcha.noKeyGenerated')}
                       </p>
-                      <Button
-                        type='button'
-                        onClick={onRegenerateCaptchaKey}
-                        primary
-                        regular
-                      >
+                      <Button type='button' onClick={onRegenerateCaptchaKey}>
                         {t('project.settings.captcha.generateKey')}
                       </Button>
                     </>

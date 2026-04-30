@@ -204,9 +204,7 @@ export default function CTRCalculator() {
                   </div>
 
                   <div className='mt-6'>
-                    <Button onClick={reset} regular>
-                      Reset
-                    </Button>
+                    <Button onClick={reset}>Reset</Button>
                   </div>
                 </div>
 

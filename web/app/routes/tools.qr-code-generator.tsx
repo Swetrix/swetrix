@@ -197,8 +197,6 @@ export default function QRCodeGenerator() {
 
                   <Button
                     onClick={downloadSVG}
-                    primary
-                    regular
                     disabled={!value}
                     className='w-full max-w-xs'
                   >

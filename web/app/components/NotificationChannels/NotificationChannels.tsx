@@ -324,8 +324,7 @@ const NotificationChannels = ({
           </Text>
         </div>
         <Button
-          small
-          primary
+          size='xs'
           onClick={() => {
             setForm(blankForm(allowedTypes[0]))
             setCreating(true)
@@ -363,8 +362,6 @@ const NotificationChannels = ({
           </Text>
           <div className='mt-5 flex justify-center'>
             <Button
-              primary
-              regular
               onClick={() => {
                 setForm(blankForm(allowedTypes[0]))
                 setCreating(true)
@@ -421,8 +418,8 @@ const NotificationChannels = ({
                 <div className='flex shrink-0 flex-wrap items-center gap-1.5'>
                   {canVerify ? (
                     <Button
-                      small
-                      secondary
+                      variant='secondary'
+                      size='xs'
                       onClick={() => onVerify(channel)}
                       disabled={isMutating}
                     >

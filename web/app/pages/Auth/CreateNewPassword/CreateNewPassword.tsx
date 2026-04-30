@@ -51,11 +51,10 @@ const CreateNewPassword = () => {
                 disabled={isSubmitting}
               />
               <Button
+                size='xl'
                 className='w-full justify-center'
                 type='submit'
                 loading={isSubmitting}
-                primary
-                giant
               >
                 {t('auth.recovery.save')}
               </Button>

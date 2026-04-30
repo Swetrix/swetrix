@@ -175,7 +175,7 @@ const TableUserRow = ({
               className='mr-3'
               label={t('common.pending')}
             />
-            <Button type='button' white small onClick={onRemove}>
+            <Button variant='white' size='xs' type='button' onClick={onRemove}>
               <TrashIcon className='h-4 w-4' />
             </Button>
           </div>
@@ -330,7 +330,7 @@ const People = ({ project }: PeopleProps) => {
             {t('project.settings.inviteCoworkers')}
           </Text>
         </div>
-        <Button small primary type='button' onClick={() => setShowModal(true)}>
+        <Button size='xs' type='button' onClick={() => setShowModal(true)}>
           <UserCirclePlusIcon className='mr-1 size-4' />
           {t('project.settings.invite')}
         </Button>
@@ -408,8 +408,7 @@ const People = ({ project }: PeopleProps) => {
         onClose={closeModal}
         customButtons={
           <Button
-            primary
-            large
+            size='lg'
             onClick={handleSubmit}
             className='w-full justify-center sm:ml-3 sm:w-auto'
           >

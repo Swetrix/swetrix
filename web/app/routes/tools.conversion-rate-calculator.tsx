@@ -299,7 +299,7 @@ export default function ConversionRateCalculator() {
                     </div>
 
                     <div className='mt-6'>
-                      <Button onClick={reset} secondary regular>
+                      <Button variant='secondary' onClick={reset}>
                         Reset
                       </Button>
                     </div>
@@ -416,7 +416,7 @@ export default function ConversionRateCalculator() {
                     </div>
 
                     <div className='mt-6'>
-                      <Button onClick={reset} secondary regular>
+                      <Button variant='secondary' onClick={reset}>
                         Reset
                       </Button>
                     </div>
@@ -506,7 +506,7 @@ export default function ConversionRateCalculator() {
                     </div>
 
                     <div className='mt-6'>
-                      <Button onClick={reset} secondary regular>
+                      <Button variant='secondary' onClick={reset}>
                         Reset
                       </Button>
                     </div>

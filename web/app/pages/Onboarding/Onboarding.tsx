@@ -880,12 +880,12 @@ const Onboarding = () => {
                   {currentStepIndex > 0 &&
                     STEPS.indexOf(currentStep) <
                       STEPS.indexOf('setup_tracking') && (
-                      <Button onClick={goBack} secondary large>
+                      <Button variant='secondary' size='lg' onClick={goBack}>
                         {t('common.back')}
                       </Button>
                     )}
                   {currentStep === 'language' && (
-                    <Button onClick={handleLanguageConfirm} primary large>
+                    <Button size='lg' onClick={handleLanguageConfirm}>
                       {t('common.next')}
                     </Button>
                   )}
@@ -893,16 +893,15 @@ const Onboarding = () => {
                     currentStep === 'feature_traffic' ||
                     currentStep === 'feature_errors' ||
                     currentStep === 'feature_sessions') && (
-                    <Button onClick={goNext} primary large>
+                    <Button size='lg' onClick={goNext}>
                       {t('common.next')}
                     </Button>
                   )}
                   {currentStep === 'create_project' && (
                     <Button
+                      size='lg'
                       onClick={() => handleCreateProject()}
                       loading={isLoading}
-                      primary
-                      large
                     >
                       {t('common.continue')}
                     </Button>
@@ -910,18 +909,17 @@ const Onboarding = () => {
                   {currentStep === 'setup_tracking' && (
                     <>
                       <Button
+                        variant='secondary'
+                        size='lg'
                         onClick={() => handleCompleteOnboarding(true)}
-                        secondary
-                        large
                       >
                         {t('onboarding.installTracking.skipForNow')}
                       </Button>
                       <Button
+                        size='lg'
                         onClick={() => {
                           handleCompleteOnboarding(false)
                         }}
-                        primary
-                        large
                       >
                         {t('common.continue')}
                       </Button>

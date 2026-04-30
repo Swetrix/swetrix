@@ -507,7 +507,7 @@ const ProjectAlertsInner = ({
               {t('dashboard.alertsDesc')}
             </Text>
             <div className='mt-6'>
-              <Button onClick={handleNewAlert} primary large>
+              <Button size='lg' onClick={handleNewAlert}>
                 <PlusIcon className='mr-1.5 size-4' />
                 {t('alert.add')}
               </Button>
@@ -526,7 +526,7 @@ const ProjectAlertsInner = ({
               <Text as='p' size='sm' colour='muted'>
                 {t('alert.totalCount', { count: total })}
               </Text>
-              <Button onClick={handleNewAlert} primary regular>
+              <Button onClick={handleNewAlert}>
                 <PlusIcon className='mr-1.5 size-4' />
                 {t('alert.add')}
               </Button>

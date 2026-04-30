@@ -590,12 +590,12 @@ export const ErrorDetails = ({
               </div>
               {canLoadMoreSessions ? (
                 <Button
+                  variant='secondary'
+                  size='sm'
                   onClick={() => loadSessions()}
                   disabled={!!sessionsLoading}
                   loading={!!sessionsLoading}
                   className='mx-2 mb-1 justify-center'
-                  secondary
-                  semiSmall
                 >
                   {t('project.loadMore')}
                 </Button>

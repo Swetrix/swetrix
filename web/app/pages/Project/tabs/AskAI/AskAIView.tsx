@@ -1302,10 +1302,15 @@ const TagEditor = ({
         </Text>
       ) : null}
       <div className='flex items-center justify-end gap-2'>
-        <Button onClick={onCancel} secondary small className='py-1'>
+        <Button
+          variant='secondary'
+          size='xs'
+          onClick={onCancel}
+          className='py-1'
+        >
           {t('common.cancel')}
         </Button>
-        <Button onClick={commit} primary small className='py-1'>
+        <Button size='xs' onClick={commit} className='py-1'>
           {t('project.askAi.saveTags')}
         </Button>
       </div>
@@ -1665,8 +1670,8 @@ const ChatHistoryPanel = ({
 
                 {chats.length < total ? (
                   <Button
-                    secondary
-                    small
+                    variant='secondary'
+                    size='xs'
                     onClick={onLoadMore}
                     disabled={isFetchingMore}
                     loading={isFetchingMore}

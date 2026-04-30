@@ -770,7 +770,11 @@ const ProjectAlertsSettings = ({
 
         {isSettings ? (
           <div className='mt-5 flex items-center justify-between'>
-            <Button onClick={() => setShowModal(true)} danger semiSmall>
+            <Button
+              variant='danger'
+              size='sm'
+              onClick={() => setShowModal(true)}
+            >
               <>
                 <WarningOctagonIcon className='mr-1 h-5 w-5' />
                 {t('alert.delete')}
@@ -778,31 +782,25 @@ const ProjectAlertsSettings = ({
             </Button>
             <div className='flex items-center justify-between'>
               <Button
+                variant='secondary'
                 className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
                 onClick={onClose}
-                secondary
-                regular
               >
                 {t('common.cancel')}
               </Button>
-              <Button type='submit' primary regular>
-                {t('common.save')}
-              </Button>
+              <Button type='submit'>{t('common.save')}</Button>
             </div>
           </div>
         ) : (
           <div className='mt-5 flex items-center justify-between'>
             <Button
+              variant='secondary'
               className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
               onClick={onClose}
-              secondary
-              regular
             >
               {t('common.cancel')}
             </Button>
-            <Button type='submit' primary regular>
-              {t('common.save')}
-            </Button>
+            <Button type='submit'>{t('common.save')}</Button>
           </div>
         )}
       </fetcher.Form>

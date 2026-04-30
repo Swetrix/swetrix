@@ -669,8 +669,8 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                   )}
                 </Text>
                 <Button
-                  secondary
-                  large
+                  variant='secondary'
+                  size='lg'
                   onClick={handleGa4Connect}
                   loading={ga4Connecting}
                   className='flex w-full items-center justify-center gap-2'

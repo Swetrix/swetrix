@@ -362,7 +362,7 @@ const Dashboard = () => {
                   <span>{t('titles.dashboard')}</span>
                   {isSearchActive ? (
                     <Button
-                      icon
+                      variant='icon'
                       onClick={() => {
                         setSearch('')
                         setIsSearchActive(false)
@@ -373,7 +373,7 @@ const Dashboard = () => {
                     </Button>
                   ) : (
                     <Button
-                      icon
+                      variant='icon'
                       onClick={() => {
                         setIsSearchActive(true)
                         setTimeout(() => {
@@ -422,7 +422,7 @@ const Dashboard = () => {
                 <div className='hidden lg:block'>
                   {viewMode === DASHBOARD_VIEW.GRID ? (
                     <Button
-                      icon
+                      variant='icon'
                       title={t('dashboard.listView')}
                       aria-label={t('dashboard.listView')}
                       onClick={() => handleViewModeChange(DASHBOARD_VIEW.LIST)}
@@ -432,7 +432,7 @@ const Dashboard = () => {
                   ) : null}
                   {viewMode === DASHBOARD_VIEW.LIST ? (
                     <Button
-                      icon
+                      variant='icon'
                       title={t('dashboard.gridView')}
                       aria-label={t('dashboard.gridView')}
                       onClick={() => handleViewModeChange(DASHBOARD_VIEW.GRID)}
@@ -441,7 +441,7 @@ const Dashboard = () => {
                     </Button>
                   ) : null}
                 </div>
-                <Button onClick={onNewProject} primary large>
+                <Button size='lg' onClick={onNewProject}>
                   <FolderPlusIcon className='mr-1 h-5 w-5' />
                   {t('dashboard.newProject')}
                 </Button>

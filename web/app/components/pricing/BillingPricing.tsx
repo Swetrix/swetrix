@@ -454,6 +454,7 @@ const BillingPricing = ({
                   </span>
                 </div>
                 <Button
+                  size='xs'
                   onClick={() => {
                     const action = getActionLabel(tier)
 
@@ -466,8 +467,6 @@ const BillingPricing = ({
                   type='button'
                   loading={planCodeLoading === tier.planCode}
                   disabled={isDisabledForTier(tier)}
-                  small
-                  primary
                 >
                   {getActionLabel(tier)}
                 </Button>

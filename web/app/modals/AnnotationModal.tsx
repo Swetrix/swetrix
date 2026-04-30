@@ -1,10 +1,10 @@
-import { InfoIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Annotation } from '~/lib/models/Project'
+import Alert from '~/ui/Alert'
+import Button from '~/ui/Button'
 import Datepicker from '~/ui/Datepicker'
-import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import Textarea from '~/ui/Textarea'
 import { cn } from '~/utils/generic'
@@ -85,34 +85,36 @@ const AnnotationModal = ({
       customButtons={
         <div className='flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-between'>
           {isEditMode && onDelete && allowedToManage ? (
-            <button
-              type='button'
+            <Button
+              variant='danger-outline'
+              size='lg'
               onClick={_onDelete}
               disabled={loading}
-              className='inline-flex w-full justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-base font-medium text-red-700 transition-colors hover:bg-red-50 sm:w-auto sm:text-sm dark:border-red-600 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-900/20'
+              className='w-full justify-center sm:w-auto'
             >
               {t('common.delete')}
-            </button>
+            </Button>
           ) : (
             <div />
           )}
           <div className='flex flex-col-reverse gap-2 sm:flex-row'>
-            <button
-              type='button'
+            <Button
+              variant='secondary'
+              size='lg'
               onClick={_onClose}
-              className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto sm:text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-gray-700'
+              className='w-full justify-center sm:w-auto'
             >
               {t('common.cancel')}
-            </button>
-            <button
-              type='button'
+            </Button>
+            <Button
+              size='lg'
               onClick={_onSubmit}
-              disabled={!date || !text.trim() || !allowedToManage || loading}
-              className='inline-flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-base font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto sm:text-sm'
+              disabled={!date || !text.trim() || !allowedToManage}
+              loading={loading}
+              className='w-full justify-center sm:w-auto'
             >
-              {loading ? <Spin alwaysLight /> : null}
               {t('common.save')}
-            </button>
+            </Button>
           </div>
         </div>
       }
@@ -162,12 +164,7 @@ const AnnotationModal = ({
               {text.length}/{MAX_ANNOTATION_LENGTH}
             </p>
           </div>
-          <div className='flex items-start gap-2 rounded-md bg-blue-50 p-3 dark:bg-blue-900/20'>
-            <InfoIcon className='mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400' />
-            <p className='text-xs text-blue-700 dark:text-blue-300'>
-              {t('modals.annotation.warning')}
-            </p>
-          </div>
+          <Alert variant='info'>{t('modals.annotation.warning')}</Alert>
         </div>
       }
       title={

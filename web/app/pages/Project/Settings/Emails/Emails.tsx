@@ -216,9 +216,9 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
               label={t('common.pending')}
             />
             <Button
+              size='xs'
               type='button'
               className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
-              small
               onClick={onRemove}
             >
               <TrashIcon className='h-4 w-4' />
@@ -450,7 +450,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
             {t('project.emails.description')}
           </Text>
         </div>
-        <Button small primary type='button' onClick={() => setShowModal(true)}>
+        <Button size='xs' type='button' onClick={() => setShowModal(true)}>
           <EnvelopeSimpleIcon className='mr-1 size-4' />
           {t('project.emails.add')}
         </Button>

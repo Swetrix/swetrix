@@ -56,11 +56,10 @@ const ForgotPassword = () => {
                 disabled={isSubmitting}
               />
               <Button
+                size='xl'
                 className='w-full justify-center'
                 type='submit'
                 loading={isSubmitting}
-                primary
-                giant
               >
                 {t('auth.forgot.reset')}
               </Button>

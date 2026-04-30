@@ -187,7 +187,7 @@ const Organisations = () => {
                   <span>{t('titles.organisations')}</span>
                   {isSearchActive ? (
                     <Button
-                      icon
+                      variant='icon'
                       onClick={() => {
                         setSearch('')
                         setIsSearchActive(false)
@@ -198,7 +198,7 @@ const Organisations = () => {
                     </Button>
                   ) : (
                     <Button
-                      icon
+                      variant='icon'
                       onClick={() => {
                         setIsSearchActive(true)
                         setTimeout(() => {
@@ -233,7 +233,7 @@ const Organisations = () => {
                   </div>
                 ) : null}
               </div>
-              <Button onClick={onNewOrganisation} primary large>
+              <Button size='lg' onClick={onNewOrganisation}>
                 <BuildingOfficeIcon className='mr-1 h-5 w-5' />
                 {t('organisations.new')}
               </Button>

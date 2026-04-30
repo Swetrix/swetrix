@@ -267,12 +267,11 @@ const Revenue = ({ projectId }: Props) => {
             ) : null}
 
             <Button
+              variant='danger-outline'
               type='button'
               className='max-w-max'
               onClick={handleDisconnect}
               loading={isDisconnecting}
-              semiDanger
-              regular
             >
               {t('common.disconnect')}
             </Button>
@@ -332,8 +331,6 @@ const Revenue = ({ projectId }: Props) => {
               className='max-w-max'
               onClick={handleConnect}
               loading={isConnecting}
-              primary
-              regular
             >
               {t('common.connect')}
             </Button>
@@ -371,8 +368,6 @@ const Revenue = ({ projectId }: Props) => {
             className='max-w-max'
             onClick={handleCurrencyChange}
             loading={isSavingCurrency}
-            primary
-            regular
             disabled={!isConnected}
           >
             {t('common.save')}

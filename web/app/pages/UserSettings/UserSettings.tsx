@@ -802,7 +802,7 @@ const UserSettings = () => {
                           onChange={handleInput}
                           error={emailBeenSubmitted ? errors.email : null}
                         />
-                        <Button onClick={handleEmailSubmit} primary large>
+                        <Button size='lg' onClick={handleEmailSubmit}>
                           {t('profileSettings.update')}
                         </Button>
                       </div>
@@ -829,10 +829,10 @@ const UserSettings = () => {
                         />
                       </div>
                       <Button
+                        variant='danger'
+                        size='lg'
                         className='mt-4'
                         onClick={() => setShowAPIDeleteModal(true)}
-                        danger
-                        large
                       >
                         {t('profileSettings.deleteApiKeyBtn')}
                       </Button>
@@ -847,7 +847,7 @@ const UserSettings = () => {
                       >
                         {t('profileSettings.noApiKey')}
                       </Text>
-                      <Button onClick={onApiKeyGenerate} primary large>
+                      <Button size='lg' onClick={onApiKeyGenerate}>
                         {t('profileSettings.addApiKeyBtn')}
                       </Button>
                     </>
@@ -1034,9 +1034,9 @@ const UserSettings = () => {
                   isLast
                 >
                   <Button
+                    variant='danger-outline'
+                    size='sm'
                     onClick={() => setShowModal(true)}
-                    semiSmall
-                    semiDanger
                   >
                     <>
                       <WarningOctagonIcon className='mr-1 h-5 w-5' />
@@ -1082,10 +1082,9 @@ const UserSettings = () => {
                       error={passwordBeenSubmitted ? errors.repeat : null}
                     />
                     <Button
+                      size='lg'
                       onClick={handlePasswordSubmit}
                       disabled={!form.password || !form.repeat}
-                      primary
-                      large
                     >
                       {t('profileSettings.updatePassword')}
                     </Button>
@@ -1110,11 +1109,11 @@ const UserSettings = () => {
                     {t('profileSettings.logoutAllWarning')}
                   </Alert>
                   <Button
+                    variant='danger-outline'
+                    size='lg'
                     onClick={() => {
                       logout(true)
                     }}
-                    semiDanger
-                    large
                   >
                     {t('profileSettings.logoutAll')}
                   </Button>
@@ -1139,10 +1138,9 @@ const UserSettings = () => {
                   <div className='max-w-md'>
                     <TimezonePicker value={timezone} onChange={setTimezone} />
                     <Button
+                      size='lg'
                       className='mt-4'
                       onClick={handleTimezoneSave}
-                      primary
-                      large
                     >
                       {t('common.save')}
                     </Button>
@@ -1182,10 +1180,9 @@ const UserSettings = () => {
                       }
                     />
                     <Button
+                      size='lg'
                       className='mt-4'
                       onClick={setAsyncTimeFormat}
-                      primary
-                      large
                     >
                       {t('common.save')}
                     </Button>
@@ -1515,20 +1512,19 @@ const UserSettings = () => {
                       <div className='mt-4 flex flex-wrap gap-3'>
                         {subUpdateURL && !cancellationEffectiveDate ? (
                           <Button
+                            size='lg'
                             onClick={onUpdatePaymentDetails}
                             type='button'
-                            primary
-                            large
                           >
                             {t('billing.update')}
                           </Button>
                         ) : null}
                         {subCancelURL && !cancellationEffectiveDate ? (
                           <Button
+                            variant='danger-outline'
+                            size='lg'
                             onClick={() => setIsCancelSubModalOpened(true)}
                             type='button'
-                            semiDanger
-                            large
                           >
                             {t('billing.cancelSub')}
                           </Button>
@@ -1583,10 +1579,9 @@ const UserSettings = () => {
                       }
                     />
                     <Button
+                      size='lg'
                       className='mt-4'
                       onClick={handleReportSave}
-                      primary
-                      large
                     >
                       {t('common.save')}
                     </Button>
