@@ -253,6 +253,7 @@ export function ErrorBoundary() {
                       <span>{error.message}</span>
                       <br />
                       <button
+                        id='crash-stack-toggle'
                         type='button'
                         onClick={() => setCrashStackShown((prev) => !prev)}
                         aria-expanded={crashStackShown}
@@ -275,6 +276,7 @@ export function ErrorBoundary() {
                         <span
                           id='crash-stack'
                           role='region'
+                          aria-labelledby='crash-stack-toggle'
                           className='text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'
                         >
                           {error.stack}

@@ -33,6 +33,8 @@ import { RadioCardGroup } from '~/ui/RadioCardGroup'
 import { Text } from '~/ui/Text'
 import { isValidEmail } from '~/utils/validator'
 
+type InviteRole = Exclude<Role, 'owner'>
+
 const NoPeople = () => {
   const { t } = useTranslation('common')
 
@@ -199,7 +201,7 @@ const People = ({ organisation }: PeopleProps) => {
 
   const [form, setForm] = useState<{
     email: string
-    role: Role
+    role: InviteRole
   }>({
     email: '',
     role: 'viewer',
@@ -426,11 +428,11 @@ const People = ({ organisation }: PeopleProps) => {
               onChange={handleInput}
               error={beenSubmitted ? errors.email : null}
             />
-            <RadioCardGroup<'admin' | 'viewer'>
+            <RadioCardGroup<InviteRole>
               name='role'
               label={t('project.settings.role')}
               className='mt-4'
-              value={(form.role as 'admin' | 'viewer') || null}
+              value={form.role || null}
               onChange={(role) => setForm((prev) => ({ ...prev, role }))}
               error={errors.role}
               options={[

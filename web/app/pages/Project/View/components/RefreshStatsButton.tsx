@@ -83,6 +83,8 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
     setProgress(0)
     try {
       await onRefresh(true)
+    } catch (error) {
+      console.error('Manual refresh failed', error)
     } finally {
       setIsRefreshing(false)
     }

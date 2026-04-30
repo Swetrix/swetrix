@@ -60,10 +60,10 @@ const ProgressRing = ({
   thresholds = DEFAULT_THRESHOLDS,
   ariaLabel,
 }: ProgressRingProps) => {
-  const normalizedValue = useMemo(
-    () => Math.min(100, Math.max(0, value)),
-    [value],
-  )
+  const normalizedValue = useMemo(() => {
+    const safeValue = Number.isFinite(value) ? value : 0
+    return Math.min(100, Math.max(0, safeValue))
+  }, [value])
 
   const { radius, circumference, strokeDashoffset } = useMemo(() => {
     const r = (size - strokeWidth) / 2
@@ -83,8 +83,7 @@ const ProgressRing = ({
   )
 
   const center = size / 2
-  const isFinite = Number.isFinite(normalizedValue)
-  const displayValue = isFinite ? Math.floor(normalizedValue) : 0
+  const displayValue = Math.floor(normalizedValue)
 
   return (
     <div
@@ -95,7 +94,7 @@ const ProgressRing = ({
       role='progressbar'
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={isFinite ? displayValue : undefined}
+      aria-valuenow={displayValue}
       aria-label={ariaLabel ?? `Progress: ${displayValue}%`}
     >
       <svg width={size} height={size} className='-rotate-90' aria-hidden='true'>
