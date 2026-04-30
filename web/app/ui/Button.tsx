@@ -74,7 +74,7 @@ const BUTTON_VARIANT_CLASSES: Record<ButtonVariant, string> = {
     'border-transparent bg-red-500 text-gray-50 shadow-xs hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500',
   'danger-outline':
     'border-red-500 text-red-600 hover:bg-red-50 dark:border-red-400/70 dark:text-red-400 dark:hover:bg-red-500/15',
-  icon: 'border-transparent bg-gray-50 p-2 text-sm text-gray-700 hover:border-gray-300 hover:bg-white dark:bg-slate-950 dark:text-gray-200 dark:hover:border-slate-700/80 dark:hover:bg-slate-900',
+  icon: 'border-transparent bg-transparent p-2 text-sm text-gray-700 hover:border-gray-300 hover:bg-white dark:text-gray-200 dark:hover:border-slate-700/80 dark:hover:bg-slate-900',
 }
 
 const BUTTON_SIZE_CLASSES: Record<ButtonSize, string> = {
