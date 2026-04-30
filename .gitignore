@@ -73,5 +73,8 @@ docs/.cache-loader
 
 .cursorrules
 .cursor
+PRODUCT.md
+DESIGN.md
+DESIGN.json
 
 next-env.d.ts
