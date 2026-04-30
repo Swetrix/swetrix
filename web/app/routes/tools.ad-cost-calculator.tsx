@@ -135,9 +135,9 @@ export default function AdCostCalculator() {
               {/* Input Section */}
               <div className='lg:col-span-2'>
                 <div className='rounded-lg bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                  <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                  <Text as='h2' size='2xl' weight='semibold' className='mb-6'>
                     Campaign Data
-                  </h2>
+                  </Text>
 
                   <div className='grid gap-6 md:grid-cols-2'>
                     <Input
@@ -219,9 +219,9 @@ export default function AdCostCalculator() {
               <div className='lg:col-span-1'>
                 <div className='sticky top-8 space-y-6'>
                   <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                    <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
+                    <Text as='h3' size='lg' weight='semibold' className='mb-4'>
                       Cost Analysis
-                    </h3>
+                    </Text>
 
                     <div className='space-y-4'>
                       <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
@@ -262,9 +262,15 @@ export default function AdCostCalculator() {
                     </div>
 
                     <div className='mt-6 border-t border-gray-100 pt-6 dark:border-gray-700'>
-                      <h4 className='mb-4 text-sm font-medium text-gray-500 dark:text-gray-400'>
+                      <Text
+                        as='h4'
+                        size='sm'
+                        weight='medium'
+                        colour='muted'
+                        className='mb-4'
+                      >
                         Performance Rates
-                      </h4>
+                      </Text>
                       <div className='space-y-3'>
                         <div className='flex items-center justify-between'>
                           <span className='text-sm text-gray-600 dark:text-gray-300'>
@@ -359,9 +365,14 @@ export default function AdCostCalculator() {
             </section>
 
             <div className='mt-16'>
-              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+              <Text
+                as='h2'
+                size='3xl'
+                weight='bold'
+                className='mb-8 text-center'
+              >
                 Frequently Asked Questions
-              </h2>
+              </Text>
 
               <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>

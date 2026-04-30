@@ -871,9 +871,14 @@ const ExperimentsView = ({
             </ul>
 
             {_isEmpty(experiments) && filterQuery ? (
-              <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
+              <Text
+                as='p'
+                size='sm'
+                colour='muted'
+                className='py-8 text-center'
+              >
                 {t('experiments.noExperimentsMatchFilter')}
-              </p>
+              </Text>
             ) : null}
           </>
         )}

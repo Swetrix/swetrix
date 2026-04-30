@@ -47,6 +47,7 @@ import {
 } from '~/lib/constants'
 import mainCss from '~/styles/index.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
+import { Text } from '~/ui/Text'
 import { trackViews, trackErrors, trackError } from '~/utils/analytics'
 import { getCookie } from '~/utils/cookie'
 import { detectTheme, isWWW } from '~/utils/server'
@@ -171,14 +172,19 @@ export function ErrorBoundary() {
               </div>
               <div className='py-8'>
                 <div className='text-center'>
-                  <h1 className='text-3xl font-bold text-gray-900 sm:text-4xl dark:text-gray-50'>
+                  <Text
+                    as='h1'
+                    size='3xl'
+                    weight='bold'
+                    className='sm:text-4xl'
+                  >
                     {t('errorBoundary.connectionLost')}
-                  </h1>
-                  <p className='mt-3 text-base text-gray-600 dark:text-gray-400'>
+                  </Text>
+                  <Text as='p' size='base' colour='muted' className='mt-3'>
                     {t('errorBoundary.connectionLostDesc')}
                     <br />
                     {t('errorBoundary.connectionLostHint')}
-                  </p>
+                  </Text>
                   <button
                     type='button'
                     onClick={() => window.location.reload()}
@@ -216,15 +222,25 @@ export function ErrorBoundary() {
             </div>
             <div className='py-8'>
               <div className='text-center'>
-                <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
+                <Text as='h1' size='4xl' weight='bold' className='sm:text-5xl'>
                   {t('errorBoundary.crashTitle')}
-                </h1>
-                <p className='mt-2 text-base font-medium text-gray-800 dark:text-gray-300'>
+                </Text>
+                <Text
+                  as='p'
+                  size='base'
+                  weight='medium'
+                  className='mt-2 text-gray-800 dark:text-gray-300'
+                >
                   {t('errorBoundary.crashDesc')}
                   <br />
                   {t('errorBoundary.crashContact', { email: CONTACT_EMAIL })}
-                </p>
-                <p className='mt-6 flex flex-col justify-center text-base font-medium text-gray-800 dark:text-gray-300'>
+                </Text>
+                <Text
+                  as='p'
+                  size='base'
+                  weight='medium'
+                  className='mt-6 flex flex-col justify-center text-gray-800 dark:text-gray-300'
+                >
                   {isRouteErrorResponse(error) ? (
                     <>
                       <span>
@@ -262,7 +278,7 @@ export function ErrorBoundary() {
                   ) : (
                     <>{t('errorBoundary.unknownError')}</>
                   )}
-                </p>
+                </Text>
               </div>
             </div>
           </div>

@@ -1772,7 +1772,7 @@ const UserSettings = () => {
         submitDisabled={isCancellingSubscription}
         message={
           <div className='space-y-4'>
-            <p>
+            <Text as='p'>
               <Trans
                 t={t}
                 i18nKey='pricing.cancelDesc'
@@ -1780,24 +1780,16 @@ const UserSettings = () => {
                   email: CONTACT_EMAIL,
                 }}
               />
-            </p>
-            <div>
-              <label
-                htmlFor='cancellation-feedback'
-                className='block text-sm font-medium text-gray-700 dark:text-gray-300'
-              >
-                {t('billing.cancellationFeedbackLabel')}
-              </label>
-              <textarea
-                id='cancellation-feedback'
-                className='mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white'
-                rows={3}
-                placeholder={t('billing.cancellationFeedbackPlaceholder')}
-                value={cancellationFeedback}
-                onChange={(e) => setCancellationFeedback(e.target.value)}
-                disabled={isCancellingSubscription}
-              />
-            </div>
+            </Text>
+            <Textarea
+              id='cancellation-feedback'
+              label={t('billing.cancellationFeedbackLabel')}
+              rows={3}
+              placeholder={t('billing.cancellationFeedbackPlaceholder')}
+              value={cancellationFeedback}
+              onChange={(e) => setCancellationFeedback(e.target.value)}
+              disabled={isCancellingSubscription}
+            />
           </div>
         }
         isOpened={isCancelSubModalOpened}

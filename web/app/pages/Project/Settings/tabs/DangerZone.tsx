@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
+import { Text } from '~/ui/Text'
 
 interface DangerZoneProps {
   isActive: boolean
@@ -28,9 +29,9 @@ const DangerZone = ({
 
   return (
     <div>
-      <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+      <Text as='h3' size='lg' weight='bold'>
         {t('project.settings.tabs.danger')}
-      </h3>
+      </Text>
 
       <div className='mt-6 mb-8'>
         <Checkbox
@@ -52,12 +53,12 @@ const DangerZone = ({
       <div className='flex flex-col gap-6'>
         <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between'>
           <div>
-            <div className='text-sm font-medium text-gray-900 dark:text-gray-50'>
+            <Text as='div' size='sm' weight='medium'>
               {t('project.settings.transfer')}
-            </div>
-            <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+            </Text>
+            <Text as='p' size='sm' colour='muted' className='mt-1'>
               {t('project.settings.transferShort')}
-            </p>
+            </Text>
           </div>
           <Button
             variant='danger-outline'
@@ -73,12 +74,12 @@ const DangerZone = ({
 
         <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between'>
           <div>
-            <div className='text-sm font-medium text-gray-900 dark:text-gray-50'>
+            <Text as='div' size='sm' weight='medium'>
               {t('project.settings.reset')}
-            </div>
-            <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+            </Text>
+            <Text as='p' size='sm' colour='muted' className='mt-1'>
               {t('project.settings.resetShort')}
-            </p>
+            </Text>
           </div>
           <Button
             variant='danger-outline'
@@ -95,12 +96,12 @@ const DangerZone = ({
 
         <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between'>
           <div>
-            <div className='text-sm font-medium text-gray-900 dark:text-gray-50'>
+            <Text as='div' size='sm' weight='medium'>
               {t('project.settings.delete')}
-            </div>
-            <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+            </Text>
+            <Text as='p' size='sm' colour='muted' className='mt-1'>
               {t('project.settings.deleteShort')}
-            </p>
+            </Text>
           </div>
           <Button
             variant='danger'

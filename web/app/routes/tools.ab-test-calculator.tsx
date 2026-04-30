@@ -200,9 +200,9 @@ export default function ABTestCalculator() {
                 <div className='grid gap-6 md:grid-cols-2'>
                   {/* Control Group */}
                   <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                    <h2 className='mb-4 text-xl font-semibold text-gray-900 dark:text-white'>
+                    <Text as='h2' size='xl' weight='semibold' className='mb-4'>
                       Control (Variant A)
-                    </h2>
+                    </Text>
                     <div className='space-y-4'>
                       <Input
                         type='number'
@@ -243,9 +243,9 @@ export default function ABTestCalculator() {
 
                   {/* Variant Group */}
                   <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                    <h2 className='mb-4 text-xl font-semibold text-gray-900 dark:text-white'>
+                    <Text as='h2' size='xl' weight='semibold' className='mb-4'>
                       Variant (Variant B)
-                    </h2>
+                    </Text>
                     <div className='space-y-4'>
                       <Input
                         type='number'
@@ -313,14 +313,14 @@ export default function ABTestCalculator() {
               <div className='lg:col-span-1'>
                 <div className='sticky top-8 space-y-6'>
                   <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                    <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
+                    <Text as='h3' size='lg' weight='semibold' className='mb-4'>
                       Test Results
-                    </h3>
+                    </Text>
 
                     {!results ? (
-                      <p className='text-sm text-gray-500 dark:text-gray-400'>
+                      <Text as='p' size='sm' colour='muted'>
                         Enter valid data to see results.
-                      </p>
+                      </Text>
                     ) : (
                       <div className='space-y-6'>
                         <div
@@ -336,18 +336,18 @@ export default function ABTestCalculator() {
                             <WarningCircleIcon className='h-6 w-6 shrink-0 text-gray-500 dark:text-gray-400' />
                           )}
                           <div>
-                            <p className='font-semibold'>
+                            <Text as='p' weight='semibold'>
                               {results.isSignificant
                                 ? 'Statistically Significant!'
                                 : 'Not Significant'}
-                            </p>
-                            <p className='mt-1 text-sm opacity-90'>
+                            </Text>
+                            <Text as='p' size='sm' className='mt-1 opacity-90'>
                               {results.isSignificant
                                 ? `The variant's performance is significantly different from the control at a ${
                                     confidenceLevel * 100
                                   }% confidence level.`
                                 : `The results are not statistically significant. You may need more data or the variation has no real impact.`}
-                            </p>
+                            </Text>
                           </div>
                         </div>
 
@@ -480,9 +480,14 @@ export default function ABTestCalculator() {
             </section>
 
             <div className='mt-16'>
-              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+              <Text
+                as='h2'
+                size='3xl'
+                weight='bold'
+                className='mb-8 text-center'
+              >
                 Frequently Asked Questions
-              </h2>
+              </Text>
 
               <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>

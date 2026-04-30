@@ -406,7 +406,11 @@ export const ErrorDetails = ({
       )
     }
 
-    return <p className='block text-gray-800 dark:text-slate-200'>{line}</p>
+    return (
+      <Text as='p' className='block text-gray-800 dark:text-slate-200'>
+        {line}
+      </Text>
+    )
   }
 
   const stackPreviewLines = stackTraceLines.slice(0, STACK_PREVIEW_LINES_COUNT)
@@ -436,13 +440,24 @@ export const ErrorDetails = ({
         </div>
 
         <div className='space-y-1'>
-          <h2 className='text-2xl leading-tight font-bold tracking-tight wrap-break-word text-gray-900 dark:text-white'>
+          <Text
+            as='h2'
+            size='2xl'
+            weight='bold'
+            tracking='tight'
+            className='leading-tight wrap-break-word'
+          >
             {details.name}
-          </h2>
+          </Text>
           {details.message ? (
-            <p className='font-mono text-sm wrap-break-word text-gray-600 dark:text-gray-400'>
+            <Text
+              as='p'
+              size='sm'
+              colour='muted'
+              className='font-mono wrap-break-word'
+            >
               {details.message}
-            </p>
+            </Text>
           ) : null}
         </div>
 

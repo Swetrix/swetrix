@@ -31,6 +31,7 @@ import FilterValueInput, {
   parseVersionValue,
 } from '~/ui/FilterValueInput'
 import Modal from '~/ui/Modal'
+import { Text } from '~/ui/Text'
 import countries from '~/utils/isoCountries'
 
 import { Filter as FilterType } from '../interfaces/traffic'
@@ -605,9 +606,15 @@ const SearchFilters = ({
           {/* Currently Applied Filters */}
           {!_isEmpty(filters) ? (
             <div className='border-t border-gray-200 pt-4 dark:border-gray-700'>
-              <p className='mb-2 text-xs font-medium text-gray-500 uppercase dark:text-gray-400'>
+              <Text
+                as='p'
+                size='xs'
+                weight='medium'
+                colour='muted'
+                className='mb-2 uppercase'
+              >
                 {t('project.currentFilters')}
-              </p>
+              </Text>
               <div className='flex flex-wrap gap-2'>
                 {filters.map(({ column, filter, isExclusive, isContains }) => {
                   let displayFilter = filter

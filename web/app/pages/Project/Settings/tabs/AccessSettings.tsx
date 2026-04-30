@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { isSelfhosted } from '~/lib/constants'
 import Checkbox from '~/ui/Checkbox'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 
 interface AccessSettingsProps {
   form: {
@@ -28,9 +29,9 @@ const AccessSettings = ({
 
   return (
     <>
-      <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+      <Text as='h3' size='lg' weight='bold'>
         {t('project.settings.access')}
-      </h3>
+      </Text>
       <Checkbox
         checked={Boolean(form.public)}
         onChange={(checked) => {

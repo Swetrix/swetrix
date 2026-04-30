@@ -56,12 +56,12 @@ const ModalMessage = ({
 
   return (
     <div>
-      <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
+      <Text as='h2' size='xl' weight='bold' colour='secondary'>
         {t('project.settings.addARecipient')}
-      </h2>
-      <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+      </Text>
+      <Text as='p' colour='secondary' className='mt-2'>
         {t('project.settings.addARecipientDesc')}
-      </p>
+      </Text>
       <Input
         name='email'
         type='email'
@@ -186,9 +186,14 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
                     key={item.value}
                   >
                     <div>
-                      <p className='font-bold text-gray-700 group-hover:text-gray-200 dark:text-gray-200'>
+                      <Text
+                        as='p'
+                        weight='bold'
+                        colour='secondary'
+                        className='group-hover:text-gray-200'
+                      >
                         {t(`profileSettings.${_toLower(item.label)}`)}
-                      </p>
+                      </Text>
                     </div>
                     {reportFrequency === item.value ? (
                       <span className='text-indigo-600 group-hover:text-gray-200'>
@@ -201,9 +206,13 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
                   onClick={onRemove}
                   className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
-                  <p className='font-bold text-red-600 dark:text-red-500'>
+                  <Text
+                    as='p'
+                    weight='bold'
+                    className='text-red-600 dark:text-red-500'
+                  >
                     {t('project.settings.removeMember')}
-                  </p>
+                  </Text>
                 </li>
               </ul>
             ) : null}
@@ -235,10 +244,10 @@ const NoSubscribers = () => {
 
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>
+      <div className='mx-auto w-full max-w-7xl'>
+        <Text as='h2' size='xl' className='mb-8 px-4 text-center leading-snug'>
           {t('project.settings.noPeople')}
-        </h2>
+        </Text>
       </div>
     </div>
   )

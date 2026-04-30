@@ -144,9 +144,9 @@ export default function LTVCalculator() {
               {/* Input Section */}
               <div className='lg:col-span-2'>
                 <div className='rounded-lg bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                  <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                  <Text as='h2' size='2xl' weight='semibold' className='mb-6'>
                     Business Metrics
-                  </h2>
+                  </Text>
 
                   <div className='grid gap-6 md:grid-cols-2'>
                     <Input
@@ -248,28 +248,33 @@ export default function LTVCalculator() {
               <div className='lg:col-span-1'>
                 <div className='sticky top-8 space-y-6'>
                   <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                    <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
+                    <Text as='h3' size='lg' weight='semibold' className='mb-4'>
                       LTV Results
-                    </h3>
+                    </Text>
 
                     <div className='space-y-6'>
                       <div>
-                        <p className='mb-1 text-sm text-gray-600 dark:text-gray-400'>
+                        <Text as='p' size='sm' colour='muted' className='mb-1'>
                           Profit LTV
-                        </p>
-                        <p className='flex items-center gap-2 text-3xl font-bold text-gray-900 dark:text-white'>
+                        </Text>
+                        <Text
+                          as='p'
+                          size='3xl'
+                          weight='bold'
+                          className='flex items-center gap-2'
+                        >
                           <ChartLineUpIcon className='h-6 w-6 text-indigo-500' />
                           {formatCurrency(profitLtv)}
-                        </p>
-                        <p className='mt-1 text-xs text-gray-500'>
+                        </Text>
+                        <Text as='p' size='xs' colour='muted' className='mt-1'>
                           Revenue LTV: {formatCurrency(ltv)}
-                        </p>
+                        </Text>
                       </div>
 
                       <div className='border-t border-gray-100 pt-4 dark:border-gray-700'>
-                        <p className='mb-1 text-sm text-gray-600 dark:text-gray-400'>
+                        <Text as='p' size='sm' colour='muted' className='mb-1'>
                           LTV:CAC Ratio
-                        </p>
+                        </Text>
                         <p
                           className={`text-2xl font-bold ${getRatioColor(
                             ltvCacRatio,
@@ -277,13 +282,13 @@ export default function LTVCalculator() {
                         >
                           {ltvCacRatio.toFixed(2)}:1
                         </p>
-                        <p className='mt-1 text-xs text-gray-500'>
+                        <Text as='p' size='xs' colour='muted' className='mt-1'>
                           {ltvCacRatio >= 3
                             ? 'Excellent ratio! Healthy growth potential.'
                             : ltvCacRatio >= 1
                               ? 'Needs improvement. Low profitability.'
                               : 'Unsustainable. You lose money on each customer.'}
-                        </p>
+                        </Text>
                       </div>
                     </div>
                   </div>
@@ -362,9 +367,14 @@ export default function LTVCalculator() {
             </section>
 
             <div className='mt-16'>
-              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+              <Text
+                as='h2'
+                size='3xl'
+                weight='bold'
+                className='mb-8 text-center'
+              >
                 Frequently Asked Questions
-              </h2>
+              </Text>
 
               <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>

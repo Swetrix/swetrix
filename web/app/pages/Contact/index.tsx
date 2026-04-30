@@ -9,6 +9,7 @@ import {
   DOCS_URL,
   BOOK_A_CALL_URL,
 } from '~/lib/constants'
+import { Text } from '~/ui/Text'
 
 interface PanelProps {
   href: string
@@ -23,13 +24,16 @@ const Panel = ({ href, title, description }: PanelProps) => (
     rel='noopener noreferrer'
     className='relative block rounded-2xl border border-gray-300/80 bg-gray-100 p-10 transition-colors hover:bg-gray-200 dark:border-slate-900/80 dark:bg-slate-800/80 dark:hover:bg-slate-900'
   >
-    <ArrowSquareOutIcon className='absolute top-5 right-5 h-5 w-5 text-gray-900 dark:text-gray-100' />
-    <h3 className='text-lg leading-7 font-semibold text-gray-900 dark:text-gray-100'>
+    <ArrowSquareOutIcon
+      aria-hidden='true'
+      className='absolute top-5 right-5 size-5 text-gray-900 dark:text-gray-100'
+    />
+    <Text as='h3' size='lg' weight='semibold' className='leading-7'>
       {title}
-    </h3>
-    <p className='mt-3 text-sm leading-6 text-gray-600 dark:text-gray-200'>
+    </Text>
+    <Text as='p' size='sm' colour='secondary' className='mt-3 leading-6'>
       {description}
-    </p>
+    </Text>
   </a>
 )
 
@@ -39,10 +43,10 @@ const Contact = () => {
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-950'>
       <div className='mx-auto px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
-        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>
+        <Text as='h1' size='4xl' weight='bold' className='tracking-tight'>
           {t('titles.contact')}
-        </h1>
-        <div className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
+        </Text>
+        <Text as='div' size='lg' className='mt-2'>
           <Trans
             t={t}
             i18nKey='contact.description'
@@ -68,7 +72,7 @@ const Contact = () => {
               ),
             }}
           />
-        </div>
+        </Text>
         <div className='mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:col-span-2 lg:gap-8'>
           <Panel
             href={DOCS_URL}

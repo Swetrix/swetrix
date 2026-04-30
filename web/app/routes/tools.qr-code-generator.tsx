@@ -104,9 +104,9 @@ export default function QRCodeGenerator() {
             <div className='mt-12 grid gap-8 lg:grid-cols-2'>
               {/* Input Section */}
               <div className='rounded-lg bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                <h2 className='mb-6 text-xl font-semibold text-gray-900 dark:text-white'>
+                <Text as='h2' size='xl' weight='semibold' className='mb-6'>
                   Configuration
-                </h2>
+                </Text>
 
                 <div className='space-y-6'>
                   <div>
@@ -157,20 +157,24 @@ export default function QRCodeGenerator() {
                   </div>
 
                   <div className='rounded-md bg-blue-50 p-4 dark:bg-blue-900/20'>
-                    <p className='text-sm text-blue-800 dark:text-blue-300'>
+                    <Text
+                      as='p'
+                      size='sm'
+                      className='text-blue-800 dark:text-blue-300'
+                    >
                       <strong>Pro tip:</strong> Pair this with our UTM Generator
                       tool to track how many people scan your QR codes in your
                       analytics dashboard!
-                    </p>
+                    </Text>
                   </div>
                 </div>
               </div>
 
               {/* Preview & Download Section */}
               <div className='flex flex-col items-center rounded-lg bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                <h3 className='mb-6 text-xl font-semibold text-gray-900 dark:text-white'>
+                <Text as='h3' size='xl' weight='semibold' className='mb-6'>
                   Preview
-                </h3>
+                </Text>
 
                 <div className='flex flex-col items-center justify-center space-y-8'>
                   <div className='rounded-xl bg-gray-50 p-6 ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-700'>
@@ -301,9 +305,14 @@ export default function QRCodeGenerator() {
             </section>
 
             <div className='mt-16'>
-              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+              <Text
+                as='h2'
+                size='3xl'
+                weight='bold'
+                className='mb-8 text-center'
+              >
                 Frequently Asked Questions
-              </h2>
+              </Text>
 
               <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>

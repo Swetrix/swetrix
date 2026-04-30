@@ -222,9 +222,9 @@ export default function UTMGenerator() {
             <div className='mt-12 rounded-lg bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
               <div className='space-y-6'>
                 <div>
-                  <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                  <Text as='h2' size='2xl' weight='semibold' className='mb-6'>
                     Build your UTM link
-                  </h2>
+                  </Text>
 
                   <div className='space-y-6'>
                     <Input
@@ -238,9 +238,14 @@ export default function UTMGenerator() {
 
                     <div className='grid gap-6 md:grid-cols-2'>
                       <div>
-                        <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                        <Text
+                          as='h3'
+                          size='lg'
+                          weight='medium'
+                          className='mb-4'
+                        >
                           Campaign parameters
-                        </h3>
+                        </Text>
 
                         <div className='space-y-4'>
                           <div>
@@ -312,9 +317,14 @@ export default function UTMGenerator() {
                       </div>
 
                       <div>
-                        <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                        <Text
+                          as='h3'
+                          size='lg'
+                          weight='medium'
+                          className='mb-4'
+                        >
                           Optional parameters
-                        </h3>
+                        </Text>
 
                         <div className='space-y-4'>
                           <div>
@@ -365,9 +375,9 @@ export default function UTMGenerator() {
                 </div>
 
                 <div className='border-t border-gray-200 pt-6 dark:border-gray-700'>
-                  <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                  <Text as='h3' size='lg' weight='medium' className='mb-4'>
                     Result
-                  </h3>
+                  </Text>
                   <div className='flex flex-col items-center gap-2 md:flex-row'>
                     <Input
                       type='text'
@@ -477,9 +487,14 @@ export default function UTMGenerator() {
             </section>
 
             <div className='mt-16'>
-              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+              <Text
+                as='h2'
+                size='3xl'
+                weight='bold'
+                className='mb-8 text-center'
+              >
                 Frequently Asked Questions
-              </h2>
+              </Text>
 
               <div className='space-y-4'>
                 <FAQ items={FAQ_ITEMS} withStructuredData />

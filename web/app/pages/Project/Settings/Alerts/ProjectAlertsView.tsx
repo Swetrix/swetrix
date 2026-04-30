@@ -47,9 +47,13 @@ const NoNotificationChannelSet = ({
   return (
     <div className='mb-4 flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center dark:border-amber-500/20 dark:bg-amber-500/10'>
       <WarningOctagonIcon className='size-5 shrink-0 text-amber-600 dark:text-amber-400' />
-      <p className='flex-1 text-sm text-amber-800 dark:text-amber-200'>
+      <Text
+        as='p'
+        size='sm'
+        className='flex-1 text-amber-800 dark:text-amber-200'
+      >
         {t('alert.noNotificationChannel')}
-      </p>
+      </Text>
       <Link
         to={channelsLink}
         className='shrink-0 self-start rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-700 sm:self-auto dark:bg-amber-600 dark:hover:bg-amber-500'

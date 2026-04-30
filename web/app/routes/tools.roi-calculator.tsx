@@ -233,9 +233,9 @@ export default function ROICalculator() {
               {/* Input Section */}
               <div className='lg:col-span-2'>
                 <div className='rounded-lg bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                  <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                  <Text as='h2' size='2xl' weight='semibold' className='mb-6'>
                     Campaign Metrics
-                  </h2>
+                  </Text>
 
                   <div className='space-y-6'>
                     <Input
@@ -385,9 +385,9 @@ export default function ROICalculator() {
                 <div className='sticky top-8 space-y-6'>
                   {/* Primary Metrics */}
                   <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                    <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
+                    <Text as='h3' size='lg' weight='semibold' className='mb-4'>
                       Key Performance Metrics
-                    </h3>
+                    </Text>
 
                     <div className='space-y-4'>
                       <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
@@ -436,9 +436,9 @@ export default function ROICalculator() {
 
                   {/* Secondary Metrics */}
                   <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                    <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
+                    <Text as='h3' size='lg' weight='semibold' className='mb-4'>
                       Detailed Metrics
-                    </h3>
+                    </Text>
 
                     <div className='space-y-3'>
                       <div className='flex justify-between'>
@@ -513,10 +513,15 @@ export default function ROICalculator() {
                   {/* Performance Indicator */}
                   {metrics.adSpend > 0 ? (
                     <div className='rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white'>
-                      <h3 className='mb-2 text-lg font-semibold'>
+                      <Text
+                        as='h3'
+                        size='lg'
+                        weight='semibold'
+                        className='mb-2'
+                      >
                         Campaign Performance
-                      </h3>
-                      <p className='text-sm opacity-90'>
+                      </Text>
+                      <Text as='p' size='sm' className='opacity-90'>
                         {calculated.roas >= 4
                           ? 'Excellent! Your campaign is highly profitable.'
                           : calculated.roas >= 2
@@ -524,7 +529,7 @@ export default function ROICalculator() {
                             : calculated.roas >= 1
                               ? 'Breaking even. Optimization needed to improve profitability.'
                               : 'Campaign is not profitable. Major adjustments required.'}
-                      </p>
+                      </Text>
                     </div>
                   ) : null}
                 </div>
@@ -601,9 +606,14 @@ export default function ROICalculator() {
             </section>
 
             <div className='mt-16'>
-              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+              <Text
+                as='h2'
+                size='3xl'
+                weight='bold'
+                className='mb-8 text-center'
+              >
                 Frequently Asked Questions
-              </h2>
+              </Text>
 
               <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>

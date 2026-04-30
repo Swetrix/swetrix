@@ -27,6 +27,7 @@ import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import { Switch } from '~/ui/Switch'
+import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
@@ -369,9 +370,9 @@ const BillingPricing = ({
     <>
       <div className='rounded-xl border border-gray-200 p-4 sm:p-6 dark:border-white/10'>
         <div className='mb-3 flex items-center justify-between'>
-          <h2 className='text-2xl font-bold text-black dark:text-gray-50'>
+          <Text as='h2' size='2xl' weight='bold' tracking='tight'>
             {t('common.billing')}
-          </h2>
+          </Text>
           <button
             type='button'
             onClick={toggleBillingFrequency}
@@ -483,9 +484,9 @@ const BillingPricing = ({
             <span className='text-base font-medium'>
               {t('pricing.overXEvents', { amount: formatEventsLong(20000000) })}
             </span>
-            <p className='text-sm group-hover:underline'>
+            <Text as='p' size='sm' className='group-hover:underline'>
               {t('pricing.contactUs')}
-            </p>
+            </Text>
           </a>
         </div>
       </div>
@@ -528,7 +529,7 @@ const BillingPricing = ({
           <>
             {subUpdatePreview === null ? <Loader /> : null}
             {subUpdatePreview === false ? (
-              <p className='whitespace-pre-line'>
+              <Text as='p' className='whitespace-pre-line'>
                 <Trans
                   t={t}
                   i18nKey='billing.previewLoadingError'
@@ -543,12 +544,16 @@ const BillingPricing = ({
                     ),
                   }}
                 />
-              </p>
+              </Text>
             ) : null}
             {subUpdatePreview && typeof subUpdatePreview === 'object' ? (
               <div>
-                <h2 className='text-base font-bold'>{t('billing.dueNow')}</h2>
-                <p className='text-sm'>{t('billing.dueNowDescription')}</p>
+                <Text as='h2' size='base' weight='bold'>
+                  {t('billing.dueNow')}
+                </Text>
+                <Text as='p' size='sm'>
+                  {t('billing.dueNowDescription')}
+                </Text>
                 <div className='mt-2 overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-slate-700'>
                     <thead className='bg-gray-50 dark:bg-slate-900'>
@@ -590,7 +595,7 @@ const BillingPricing = ({
                   </table>
                 </div>
                 {(subUpdatePreview as any).immediatePayment.amount < 0 ? (
-                  <p className='mt-2 italic'>
+                  <Text as='p' className='mt-2 italic'>
                     {t('billing.negativePayment', {
                       currency: (subUpdatePreview as any).immediatePayment
                         .symbol,
@@ -611,11 +616,11 @@ const BillingPricing = ({
                       nextPaymentAmount: (subUpdatePreview as any).nextPayment
                         .amount,
                     })}
-                  </p>
+                  </Text>
                 ) : null}
-                <h2 className='mt-5 text-base font-bold'>
+                <Text as='h2' size='base' weight='bold' className='mt-5'>
                   {t('billing.nextPayment')}
-                </h2>
+                </Text>
                 <div className='mt-2 overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-slate-700'>
                     <thead className='bg-gray-50 dark:bg-slate-900'>

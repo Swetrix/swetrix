@@ -13,6 +13,9 @@ type TextElement =
   | 'h6'
   | 'label'
   | 'div'
+  | 'li'
+  | 'dt'
+  | 'dd'
 type TextSize =
   | 'xxs'
   | 'xs'

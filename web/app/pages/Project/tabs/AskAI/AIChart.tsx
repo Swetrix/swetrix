@@ -35,6 +35,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import BillboardChart from '~/ui/BillboardChart'
+import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
 const VALID_LINK_TABS = new Set([
@@ -1020,9 +1021,15 @@ const AIChart: React.FC<AIChartProps> = ({ chart, projectId }) => {
   )
 
   const titleNode = chart.title ? (
-    <h4 className='mb-2 pr-36 text-sm font-medium text-gray-700 dark:text-gray-300'>
+    <Text
+      as='h4'
+      size='sm'
+      weight='medium'
+      colour='secondary'
+      className='mb-2 pr-36'
+    >
       {chart.title}
-    </h4>
+    </Text>
   ) : null
 
   return (

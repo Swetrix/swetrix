@@ -28,6 +28,7 @@ import {
   localisePath,
 } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
+import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 import { getGeneralStats } from '~/api/api.server'
@@ -230,12 +231,17 @@ const Hero = () => {
         <Header transparent />
         <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
           <div className='z-20 col-span-6 flex flex-col items-start'>
-            <h1 className='max-w-5xl text-left text-5xl font-semibold tracking-tight text-pretty text-slate-900 sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl dark:text-white'>
+            <Text
+              as='h1'
+              weight='semibold'
+              tracking='tight'
+              className='max-w-5xl text-left text-5xl text-pretty sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl'
+            >
               {t('gaAlternative.hero.title')}
-            </h1>
-            <p className='mt-4 max-w-2xl text-left text-lg text-slate-900 dark:text-gray-50'>
+            </Text>
+            <Text as='p' size='lg' className='mt-4 max-w-2xl text-left'>
               {t('gaAlternative.hero.subtitle')}
-            </p>
+            </Text>
 
             <div className='mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center'>
               <Link
@@ -314,12 +320,16 @@ const ComparisonTable = () => {
   return (
     <section className='relative mx-auto max-w-7xl px-2 py-14 lg:px-8'>
       <div className='mx-auto max-w-3xl text-center'>
-        <h2 className='text-4xl font-bold text-slate-900 sm:text-5xl dark:text-white'>
+        <Text as='h2' size='4xl' weight='bold' className='sm:text-5xl'>
           {t('gaAlternative.comparison.title')}
-        </h2>
-        <p className='mt-4 text-lg text-slate-700 dark:text-gray-200'>
+        </Text>
+        <Text
+          as='p'
+          size='lg'
+          className='mt-4 text-slate-700 dark:text-gray-200'
+        >
           {t('gaAlternative.comparison.subtitle')}
-        </p>
+        </Text>
       </div>
 
       <div className='mt-10 overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
@@ -388,10 +398,22 @@ const WhySwitch = () => {
       <div className='grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16'>
         {/* Left column - headline and primary benefit */}
         <div className='lg:col-span-5'>
-          <p className='text-sm font-medium tracking-wide text-indigo-600 uppercase dark:text-indigo-400'>
+          <Text
+            as='p'
+            size='sm'
+            weight='medium'
+            tracking='wide'
+            className='text-indigo-600 uppercase dark:text-indigo-400'
+          >
             {t('gaAlternative.whySwitch.label')}
-          </p>
-          <h2 className='mt-3 text-3xl leading-snug font-bold tracking-tight text-slate-900 sm:text-4xl sm:leading-snug dark:text-white'>
+          </Text>
+          <Text
+            as='h2'
+            size='3xl'
+            weight='bold'
+            tracking='tight'
+            className='mt-3 leading-snug sm:text-4xl sm:leading-snug'
+          >
             <Trans
               i18nKey='gaAlternative.whySwitch.title'
               components={{
@@ -400,10 +422,14 @@ const WhySwitch = () => {
                 ),
               }}
             />
-          </h2>
-          <p className='mt-5 text-base leading-relaxed text-slate-600 dark:text-slate-300'>
+          </Text>
+          <Text
+            as='p'
+            size='base'
+            className='mt-5 leading-relaxed text-slate-600 dark:text-slate-300'
+          >
             {t('gaAlternative.whySwitch.subtitle')}
-          </p>
+          </Text>
 
           {/* Primary benefit - visually distinct */}
           <div className='mt-10 border-l-2 border-indigo-500 pl-6'>
@@ -412,13 +438,17 @@ const WhySwitch = () => {
                 className='size-5 text-indigo-600 dark:text-indigo-400'
                 weight='duotone'
               />
-              <h3 className='text-lg font-semibold text-slate-900 dark:text-white'>
+              <Text as='h3' size='lg' weight='semibold'>
                 {t('gaAlternative.whySwitch.privacy.title')}
-              </h3>
+              </Text>
             </div>
-            <p className='mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400'>
+            <Text
+              as='p'
+              size='sm'
+              className='mt-2 leading-relaxed text-slate-600 dark:text-slate-400'
+            >
               {t('gaAlternative.whySwitch.privacy.description')}
-            </p>
+            </Text>
           </div>
         </div>
 
@@ -426,29 +456,47 @@ const WhySwitch = () => {
         <div className='lg:col-span-7 lg:pt-16'>
           <div className='space-y-10'>
             <div>
-              <h3 className='flex items-center gap-2.5 text-lg font-semibold text-slate-900 dark:text-white'>
+              <Text
+                as='h3'
+                size='lg'
+                weight='semibold'
+                className='flex items-center gap-2.5'
+              >
                 <GlobeIcon
                   className='size-5 text-indigo-600 dark:text-indigo-400'
                   weight='duotone'
                 />
                 {t('gaAlternative.whySwitch.understandable.title')}
-              </h3>
-              <p className='mt-2 text-sm leading-relaxed text-slate-600 lg:pl-7 dark:text-slate-400'>
+              </Text>
+              <Text
+                as='p'
+                size='sm'
+                className='mt-2 leading-relaxed text-slate-600 lg:pl-7 dark:text-slate-400'
+              >
                 {t('gaAlternative.whySwitch.understandable.description')}
-              </p>
+              </Text>
             </div>
 
             <div className='lg:pl-8'>
-              <h3 className='flex items-center gap-2.5 text-lg font-semibold text-slate-900 dark:text-white'>
+              <Text
+                as='h3'
+                size='lg'
+                weight='semibold'
+                className='flex items-center gap-2.5'
+              >
                 <LightningIcon
                   className='size-5 text-amber-500 dark:text-amber-400'
                   weight='duotone'
                 />
                 {t('gaAlternative.whySwitch.actionable.title')}
-              </h3>
-              <p className='mt-2 text-sm leading-relaxed text-slate-600 lg:pl-7 dark:text-slate-400'>
+              </Text>
+              <Text
+                as='p'
+                size='sm'
+                className='mt-2 leading-relaxed text-slate-600 lg:pl-7 dark:text-slate-400'
+              >
                 {t('gaAlternative.whySwitch.actionable.description')}
-              </p>
+              </Text>
             </div>
           </div>
 
@@ -491,51 +539,79 @@ const Migration = () => {
     <section className='relative mx-auto max-w-7xl px-4 py-20 lg:px-8 lg:py-28'>
       <div className='grid grid-cols-1 gap-16 lg:grid-cols-2'>
         <div>
-          <p className='text-sm font-medium tracking-wide text-indigo-600 uppercase dark:text-indigo-400'>
+          <Text
+            as='p'
+            size='sm'
+            weight='medium'
+            tracking='wide'
+            className='text-indigo-600 uppercase dark:text-indigo-400'
+          >
             {t('gaAlternative.migration.label')}
-          </p>
-          <h2 className='mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white'>
+          </Text>
+          <Text
+            as='h2'
+            size='3xl'
+            weight='bold'
+            tracking='tight'
+            className='mt-3 sm:text-4xl'
+          >
             {t('gaAlternative.migration.title')}
-          </h2>
-          <p className='mt-5 text-base leading-relaxed text-slate-600 dark:text-slate-300'>
+          </Text>
+          <Text
+            as='p'
+            size='base'
+            className='mt-5 leading-relaxed text-slate-600 dark:text-slate-300'
+          >
             {t('gaAlternative.migration.subtitle')}
-          </p>
+          </Text>
 
           <div className='mt-10 space-y-8'>
             <div className='border-l-2 border-slate-200 pl-6 dark:border-slate-700'>
               <span className='inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300'>
                 1
               </span>
-              <h3 className='mt-2 text-base font-semibold text-slate-900 dark:text-white'>
+              <Text as='h3' size='base' weight='semibold' className='mt-2'>
                 {t('gaAlternative.migration.steps.1.title')}
-              </h3>
-              <p className='mt-1 text-sm text-slate-600 dark:text-slate-400'>
+              </Text>
+              <Text
+                as='p'
+                size='sm'
+                className='mt-1 text-slate-600 dark:text-slate-400'
+              >
                 {t('gaAlternative.migration.steps.1.description')}
-              </p>
+              </Text>
             </div>
 
             <div className='border-l-2 border-slate-200 pl-6 dark:border-slate-700'>
               <span className='inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300'>
                 2
               </span>
-              <h3 className='mt-2 text-base font-semibold text-slate-900 dark:text-white'>
+              <Text as='h3' size='base' weight='semibold' className='mt-2'>
                 {t('gaAlternative.migration.steps.2.title')}
-              </h3>
-              <p className='mt-1 text-sm text-slate-600 dark:text-slate-400'>
+              </Text>
+              <Text
+                as='p'
+                size='sm'
+                className='mt-1 text-slate-600 dark:text-slate-400'
+              >
                 {t('gaAlternative.migration.steps.2.description')}
-              </p>
+              </Text>
             </div>
 
             <div className='border-l-2 border-indigo-500 pl-6'>
               <span className='inline-block rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'>
                 3
               </span>
-              <h3 className='mt-2 text-base font-semibold text-slate-900 dark:text-white'>
+              <Text as='h3' size='base' weight='semibold' className='mt-2'>
                 {t('gaAlternative.migration.steps.3.title')}
-              </h3>
-              <p className='mt-1 text-sm text-slate-600 dark:text-slate-400'>
+              </Text>
+              <Text
+                as='p'
+                size='sm'
+                className='mt-1 text-slate-600 dark:text-slate-400'
+              >
                 {t('gaAlternative.migration.steps.3.description')}
-              </p>
+              </Text>
             </div>
           </div>
         </div>

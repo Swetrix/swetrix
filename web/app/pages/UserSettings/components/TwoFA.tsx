@@ -10,6 +10,7 @@ import type { UserSettingsActionData } from '~/routes/user-settings'
 import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
+import { Text } from '~/ui/Text'
 
 const TwoFA = () => {
   const { user, mergeUser } = useAuth()
@@ -123,9 +124,9 @@ const TwoFA = () => {
         <Alert variant='warning' className='mb-4'>
           {t('profileSettings.2faRecoveryWarning')}
         </Alert>
-        <p className='mb-4 text-base text-gray-900 dark:text-gray-50'>
+        <Text as='p' className='mb-4'>
           {t('profileSettings.2faRecoveryNote')}
-        </p>
+        </Text>
         <Input className='mt-4' value={twoFARecovery} disabled />
         <Button size='lg' className='mt-4' onClick={recoverySaved}>
           {t('profileSettings.2faRecoverySaved')}
@@ -138,9 +139,9 @@ const TwoFA = () => {
     if (twoFADisabling) {
       return (
         <>
-          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+          <Text as='p' className='max-w-prose'>
             {t('profileSettings.2faDisableHint')}
-          </p>
+          </Text>
           <div className='mt-4 flex items-end gap-2'>
             <Input
               label={t('profileSettings.enter2faToDisable')}
@@ -171,9 +172,9 @@ const TwoFA = () => {
         <Alert variant='success' className='mb-4'>
           {t('profileSettings.2faEnabledSuccess')}
         </Alert>
-        <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+        <Text as='p' className='max-w-prose'>
           {t('profileSettings.2faEnabled')}
-        </p>
+        </Text>
         <Button
           variant='danger'
           size='lg'
@@ -189,16 +190,20 @@ const TwoFA = () => {
   if (twoFAConfigurating) {
     return (
       <>
-        <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+        <Text as='p' className='max-w-prose'>
           {t('profileSettings.2faDesc')}
-        </p>
+        </Text>
         <div className='mt-4 w-max bg-white p-4'>
           <QRCode value={twoFAConfigData?.otpauthUrl || ''} />
         </div>
 
         <Alert variant='info' className='mt-4 max-w-prose'>
-          <p className='font-medium'>{t('profileSettings.2faQRTitle')}</p>
-          <p className='mt-1'>{t('profileSettings.2faQRHint')}</p>
+          <Text as='p' weight='medium' colour='inherit'>
+            {t('profileSettings.2faQRTitle')}
+          </Text>
+          <Text as='p' colour='inherit' className='mt-1'>
+            {t('profileSettings.2faQRHint')}
+          </Text>
           <code className='mt-2 block rounded bg-sky-100 p-2 font-mono text-sm dark:bg-sky-900/50'>
             {twoFAConfigData?.secret || ''}
           </code>

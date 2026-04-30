@@ -35,6 +35,7 @@ import _map from 'lodash/map'
 import React, { memo, type FC } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
+import { Text } from '~/ui/Text'
 
 import { changeLanguage } from '~/i18n'
 import {
@@ -673,9 +674,14 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
             {/* Column 1: Products + Free Tools */}
             <div className='space-y-8'>
               <div>
-                <h3 className='mb-4 text-sm font-semibold text-gray-200'>
+                <Text
+                  as='h3'
+                  size='sm'
+                  weight='semibold'
+                  className='mb-4 text-gray-200'
+                >
                   {t('footer.products')}
-                </h3>
+                </Text>
                 <ul className='space-y-2.5'>
                   {_map(
                     navigation.products,
@@ -696,9 +702,14 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
               </div>
 
               <div>
-                <h3 className='mb-4 text-sm font-semibold text-gray-200'>
+                <Text
+                  as='h3'
+                  size='sm'
+                  weight='semibold'
+                  className='mb-4 text-gray-200'
+                >
                   {t('footer.freeTools')}
-                </h3>
+                </Text>
                 <ul className='space-y-2.5'>
                   {_map(
                     navigation.freeTools,
@@ -722,9 +733,14 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
             {/* Column 2: Resources + Comparisons */}
             <div className='space-y-8'>
               <div>
-                <h3 className='mb-4 text-sm font-semibold text-gray-200'>
+                <Text
+                  as='h3'
+                  size='sm'
+                  weight='semibold'
+                  className='mb-4 text-gray-200'
+                >
                   {t('footer.resources')}
-                </h3>
+                </Text>
                 <ul className='space-y-2.5'>
                   {_map(
                     navigation.resources,
@@ -745,9 +761,14 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
               </div>
 
               <div>
-                <h3 className='mb-4 text-sm font-semibold text-gray-200'>
+                <Text
+                  as='h3'
+                  size='sm'
+                  weight='semibold'
+                  className='mb-4 text-gray-200'
+                >
                   {t('footer.comparisons')}
-                </h3>
+                </Text>
                 <ul className='space-y-2.5'>
                   {_map(
                     navigation.comparisons,
@@ -771,9 +792,14 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
             {/* Column 3: Company + Community */}
             <div className='space-y-8'>
               <div>
-                <h3 className='mb-4 text-sm font-semibold text-gray-200'>
+                <Text
+                  as='h3'
+                  size='sm'
+                  weight='semibold'
+                  className='mb-4 text-gray-200'
+                >
                   {t('footer.company')}
-                </h3>
+                </Text>
                 <ul className='space-y-2.5'>
                   {_map(
                     navigation.company,
@@ -794,9 +820,14 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
               </div>
 
               <div>
-                <h3 className='mb-4 text-sm font-semibold text-gray-200'>
+                <Text
+                  as='h3'
+                  size='sm'
+                  weight='semibold'
+                  className='mb-4 text-gray-200'
+                >
                   {t('footer.community')}
-                </h3>
+                </Text>
                 <ul className='space-y-2.5'>
                   {_map(
                     navigation.community,
@@ -821,7 +852,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
             <div>
               <SwetrixLogo theme='dark' />
 
-              <p className='mt-4 max-w-72 text-sm text-gray-200'>
+              <Text as='p' size='sm' className='mt-4 max-w-72 text-gray-200'>
                 {isSelfhosted ? (
                   <Trans
                     t={t}
@@ -840,7 +871,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                 ) : (
                   t('footer.description')
                 )}
-              </p>
+              </Text>
 
               {isSelfhosted ? null : (
                 <div className='mt-2 flex text-sm text-gray-200'>

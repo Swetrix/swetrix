@@ -187,9 +187,9 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
 
       {_isEmpty(annotations) ? (
         <div className='rounded-lg border border-dashed border-gray-300 p-8 text-center dark:border-slate-700'>
-          <p className='text-gray-500 dark:text-gray-400'>
+          <Text as='p' colour='muted'>
             {t('project.settings.annotations.empty')}
-          </p>
+          </Text>
           {allowedToManage ? (
             <Button type='button' onClick={openCreateModal} className='mt-4'>
               <PlusIcon className='mr-1 h-4 w-4' />

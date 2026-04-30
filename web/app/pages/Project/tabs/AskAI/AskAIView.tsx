@@ -194,9 +194,9 @@ const AICapabilitiesTooltip = () => {
   return (
     <div className='max-w-sm space-y-3 py-1 text-left'>
       <div>
-        <p className='mb-1.5 font-semibold text-white'>
+        <Text as='p' weight='semibold' className='mb-1.5 text-white'>
           {t('project.askAi.capabilities.title')}
-        </p>
+        </Text>
         <ul className='space-y-1 text-gray-300'>
           <li className='flex items-start gap-1.5'>
             <ChartBarIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
@@ -289,9 +289,9 @@ const AICapabilitiesTooltip = () => {
         </ul>
       </div>
       <div>
-        <p className='mb-1.5 font-semibold text-white'>
+        <Text as='p' weight='semibold' className='mb-1.5 text-white'>
           {t('project.askAi.capabilities.cannotTitle')}
-        </p>
+        </Text>
         <ul className='space-y-1 text-gray-300'>
           <li className='flex items-start gap-1.5'>
             <XIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400' />
@@ -554,9 +554,13 @@ const ToolCallSummaryDrawer = ({
                         ) : null}
                       </div>
                       {summary.params.length === 0 ? (
-                        <p className='mt-1 text-xs text-gray-400 italic dark:text-gray-500'>
+                        <Text
+                          as='p'
+                          size='xs'
+                          className='mt-1 text-gray-400 italic dark:text-gray-500'
+                        >
                           {t('project.askAi.noParameters')}
-                        </p>
+                        </Text>
                       ) : (
                         <dl className='mt-1.5 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs'>
                           {_map(summary.params, (param, pIdx) => (
@@ -925,7 +929,9 @@ const UserMessage = ({
   return (
     <div className='group flex flex-col items-end'>
       <div className='max-w-[85%] rounded-2xl bg-gray-100 px-4 py-2.5 text-gray-900 dark:bg-slate-800 dark:text-gray-50'>
-        <p className='text-sm whitespace-pre-wrap'>{content}</p>
+        <Text as='p' size='sm' className='whitespace-pre-wrap'>
+          {content}
+        </Text>
       </div>
       <div className='mt-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100'>
         <button
@@ -2919,9 +2925,13 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         <div className='mx-auto w-full max-w-3xl px-4 pt-4'>
           <div className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20'>
             <WarningCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
-            <p className='flex-1 text-sm text-red-700 dark:text-red-400'>
+            <Text
+              as='p'
+              size='sm'
+              className='flex-1 text-red-700 dark:text-red-400'
+            >
               {error}
-            </p>
+            </Text>
             <button
               type='button'
               onClick={() => setError(null)}

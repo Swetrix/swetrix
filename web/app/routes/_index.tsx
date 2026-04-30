@@ -353,12 +353,17 @@ const Hero = () => {
         <Header transparent />
         <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
           <div className='z-20 col-span-6 flex flex-col items-start'>
-            <h1 className='max-w-5xl text-left text-5xl font-semibold tracking-tight text-pretty text-slate-900 sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl dark:text-white'>
+            <Text
+              as='h1'
+              weight='semibold'
+              tracking='tight'
+              className='max-w-5xl text-left text-5xl text-pretty sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl'
+            >
               {t('main.slogan')}
-            </h1>
-            <p className='mt-4 max-w-2xl text-left text-lg text-slate-900 dark:text-gray-50'>
+            </Text>
+            <Text as='p' size='lg' className='mt-4 max-w-2xl text-left'>
               {t('main.description')}
-            </p>
+            </Text>
             <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
               <Link
                 to={routesPath.signup}

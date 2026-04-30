@@ -6,6 +6,7 @@ import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
 import Datepicker from '~/ui/Datepicker'
 import Modal from '~/ui/Modal'
+import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import { cn } from '~/utils/generic'
 
@@ -121,10 +122,16 @@ const AnnotationModal = ({
       message={
         <div className='space-y-4'>
           <div>
-            <label className='mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200'>
+            <Text
+              as='label'
+              size='sm'
+              weight='medium'
+              colour='secondary'
+              className='mb-1 block'
+            >
               {t('modals.annotation.date')}
               <span className='text-red-600'>*</span>
-            </label>
+            </Text>
             <Datepicker
               mode='single'
               value={date ? [new Date(date + 'T00:00:00')] : []}
@@ -160,9 +167,9 @@ const AnnotationModal = ({
               disabled={!allowedToManage}
               rows={3}
             />
-            <p className='mt-1 text-right text-xs text-gray-500 dark:text-gray-400'>
+            <Text as='p' size='xs' colour='muted' className='mt-1 text-right'>
               {text.length}/{MAX_ANNOTATION_LENGTH}
-            </p>
+            </Text>
           </div>
           <Alert variant='info'>{t('modals.annotation.warning')}</Alert>
         </div>

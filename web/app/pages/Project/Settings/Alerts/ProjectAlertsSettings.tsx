@@ -28,8 +28,10 @@ import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
+import Alert from '~/ui/Alert'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
+import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
@@ -388,41 +390,19 @@ const ProjectAlertsSettings = ({
 
   if (error && !isLoading) {
     return (
-      <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
-        <div className='mx-auto max-w-max'>
-          <main className='sm:flex'>
-            <XCircleIcon
-              className='h-12 w-12 text-red-400'
-              aria-hidden='true'
-            />
-            <div className='sm:ml-6'>
-              <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
-                <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
-                  {t('apiNotifications.somethingWentWrong')}
-                </h1>
-                <p className='mt-4 text-2xl font-medium text-gray-700 dark:text-gray-200'>
-                  {t('apiNotifications.errorCode', { error })}
-                </p>
-              </div>
-              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
-                <button
-                  type='button'
-                  onClick={() => window.location.reload()}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 focus:outline-hidden dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900'
-                >
-                  {t('dashboard.reloadPage')}
-                </button>
-                <Link
-                  to={routes.contact}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:focus:ring-slate-300 dark:focus:ring-offset-slate-900'
-                >
-                  {t('notFoundPage.support')}
-                </Link>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
+      <StatusPage
+        type='error'
+        title={t('apiNotifications.somethingWentWrong')}
+        description={t('apiNotifications.errorCode', { error })}
+        actions={[
+          {
+            label: t('dashboard.reloadPage'),
+            onClick: () => window.location.reload(),
+            primary: true,
+          },
+          { label: t('notFoundPage.support'), to: routes.contact },
+        ]}
+      />
     )
   }
 
@@ -483,23 +463,20 @@ const ProjectAlertsSettings = ({
         ) : null}
 
         {!authLoading && availableChannels.length === 0 ? (
-          <div className='mt-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/10'>
-            <WarningOctagonIcon className='mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400' />
-            <p className='text-sm text-amber-800 dark:text-amber-200'>
-              <Trans
-                t={t}
-                i18nKey='alert.noChannels'
-                components={{
-                  url: (
-                    <Link
-                      to={PROJECT_CHANNELS_LINK(projectId)}
-                      className='font-medium underline hover:text-amber-900 dark:hover:text-amber-100'
-                    />
-                  ),
-                }}
-              />
-            </p>
-          </div>
+          <Alert variant='warning' className='mt-4'>
+            <Trans
+              t={t}
+              i18nKey='alert.noChannels'
+              components={{
+                url: (
+                  <Link
+                    to={PROJECT_CHANNELS_LINK(projectId)}
+                    className='font-medium underline hover:text-amber-900 dark:hover:text-amber-100'
+                  />
+                ),
+              }}
+            />
+          </Alert>
         ) : null}
         {(form.channelIds || []).map((id) => (
           <input key={id} type='hidden' name='channelIds' value={id} />

@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useUserFlowProxy } from '~/hooks/useAnalyticsProxy'
 import type { UserFlowResponse } from '~/api/api.server'
 import Loader from '~/ui/Loader'
+import { Text } from '~/ui/Text'
 
 import { useCurrentProject } from '../../../../providers/CurrentProjectProvider'
 import { useViewProjectContext } from '../../View/ViewProject'
@@ -84,9 +85,9 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
   ) {
     return (
       <>
-        <p className='text-md mt-4 flex items-center justify-center text-gray-900 dark:text-gray-50'>
+        <Text as='p' className='text-md mt-4 flex items-center justify-center'>
           {t('project.userFlow.noData')}
-        </p>
+        </Text>
         <button
           type='button'
           onClick={() => {

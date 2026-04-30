@@ -942,18 +942,18 @@ const ExperimentSettingsModal = ({
                               <Tooltip
                                 text={
                                   <div>
-                                    <p className='font-medium'>
+                                    <Text as='p' weight='medium'>
                                       What happens if a user sees multiple
                                       variants?
-                                    </p>
-                                    <p className='mt-1'>
+                                    </Text>
+                                    <Text as='p' className='mt-1'>
                                       <strong>Exclude:</strong> Remove them from
                                       analysis (recommended)
-                                    </p>
-                                    <p className='mt-0.5'>
+                                    </Text>
+                                    <Text as='p' className='mt-0.5'>
                                       <strong>First exposure:</strong> Only
                                       count their first variant
-                                    </p>
+                                    </Text>
                                   </div>
                                 }
                                 className='flex items-center'

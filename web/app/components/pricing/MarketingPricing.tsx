@@ -15,6 +15,7 @@ import {
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { useAuth } from '~/providers/AuthProvider'
 import { Switch } from '~/ui/Switch'
+import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import routes from '~/utils/routes'
 
@@ -69,14 +70,26 @@ const MarketingPricing = ({
       <div className='rounded-xl bg-slate-900 py-16 sm:py-20 dark:bg-slate-900/50'>
         <div className='mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:gap-10 lg:px-8'>
           <div className='col-span-12 lg:col-span-5'>
-            <h2 className='text-3xl font-extrabold tracking-tight text-white sm:text-4xl'>
+            <Text
+              as='h2'
+              size='3xl'
+              weight='bold'
+              tracking='tight'
+              colour='inherit'
+              className='text-white sm:text-4xl'
+            >
               {t('pricing.title')}
-            </h2>
-            <p className='mt-2 max-w-md text-sm text-gray-100'>
+            </Text>
+            <Text
+              as='p'
+              size='sm'
+              colour='inherit'
+              className='mt-2 max-w-md text-gray-100'
+            >
               {t('pricing.adv', {
                 amount: TRIAL_DAYS,
               })}
-            </p>
+            </Text>
 
             <div className='mt-8 space-y-3'>
               {[
@@ -233,9 +246,9 @@ const MarketingPricing = ({
                     amount: formatEventsLong(20000000),
                   })}
                 </span>
-                <p className='text-sm group-hover:underline'>
+                <Text as='p' size='sm' className='group-hover:underline'>
                   {t('pricing.contactUs')}
-                </p>
+                </Text>
               </a>
             </div>
           </div>

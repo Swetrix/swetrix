@@ -285,9 +285,9 @@ export default function OGPreview() {
 
             <div className='mt-12 rounded-lg bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
               <div className='space-y-6'>
-                <h2 className='text-2xl font-semibold text-gray-900 dark:text-white'>
+                <Text as='h2' size='2xl' weight='semibold'>
                   Enter your Open Graph data
-                </h2>
+                </Text>
 
                 <div className='space-y-4'>
                   <Input
@@ -335,9 +335,9 @@ export default function OGPreview() {
                 </div>
 
                 <div className='border-t border-gray-200 pt-6 dark:border-gray-700'>
-                  <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                  <Text as='h3' size='lg' weight='medium' className='mb-4'>
                     Preview
-                  </h3>
+                  </Text>
 
                   <div className='mb-4 flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-slate-900'>
                     {PLATFORMS.map((p) => (
@@ -465,9 +465,14 @@ export default function OGPreview() {
             </section>
 
             <div className='mt-16'>
-              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+              <Text
+                as='h2'
+                size='3xl'
+                weight='bold'
+                className='mb-8 text-center'
+              >
                 Frequently Asked Questions
-              </h2>
+              </Text>
 
               <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>

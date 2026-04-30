@@ -47,9 +47,9 @@ export default function Posts() {
   if (_filter(posts, (post) => !post.hidden).length === 0) {
     return (
       <div className='flex min-h-min-footer items-center justify-center'>
-        <h1 className='text-3xl font-bold text-slate-900 dark:text-slate-200'>
+        <Text as='h1' size='3xl' weight='bold'>
           No posts found
-        </h1>
+        </Text>
       </div>
     )
   }
@@ -83,9 +83,14 @@ export default function Posts() {
                   </svg>
                   <div className='relative'>
                     <Link to={post.standalone ? `/${post.slug}` : post.slug}>
-                      <h3 className='pt-8 text-base font-semibold text-slate-900 lg:pt-0 dark:text-slate-200'>
+                      <Text
+                        as='h3'
+                        size='base'
+                        weight='semibold'
+                        className='pt-8 lg:pt-0'
+                      >
                         {post.title}
-                      </h3>
+                      </Text>
                     </Link>
                     {post.intro ? (
                       <div className='prose mt-2 mb-4 line-clamp-3 text-sm leading-7 prose-slate dark:text-slate-400'>

@@ -30,6 +30,7 @@ import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import { RadioCardGroup } from '~/ui/RadioCardGroup'
+import { Text } from '~/ui/Text'
 import { isValidEmail } from '~/utils/validator'
 
 const NoPeople = () => {
@@ -37,10 +38,10 @@ const NoPeople = () => {
 
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>
+      <div className='mx-auto w-full max-w-7xl'>
+        <Text as='h2' size='xl' className='mb-8 px-4 text-center leading-snug'>
           {t('project.settings.noPeople')}
-        </h2>
+        </Text>
       </div>
     </div>
   )
@@ -124,12 +125,22 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
                           className='flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800'
                         >
                           <div>
-                            <p className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                            <Text
+                              as='p'
+                              size='sm'
+                              weight='semibold'
+                              className='text-gray-900 dark:text-gray-100'
+                            >
                               {t(`organisations.role.${itRole}.name`)}
-                            </p>
-                            <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>
+                            </Text>
+                            <Text
+                              as='p'
+                              size='sm'
+                              colour='muted'
+                              className='mt-0.5'
+                            >
                               {t(`organisations.role.${itRole}.desc`)}
-                            </p>
+                            </Text>
                           </div>
                           {member.role === itRole ? (
                             <CheckIcon className='ml-2 h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-500' />
@@ -307,12 +318,12 @@ const People = ({ organisation }: PeopleProps) => {
     <div className='mt-6 mb-6'>
       <div className='mb-3 flex items-center justify-between'>
         <div>
-          <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <Text as='h3' size='lg' weight='bold' className='mt-2'>
             {t('project.settings.people')}
-          </h3>
-          <p className='text-sm text-gray-500 dark:text-gray-400'>
+          </Text>
+          <Text as='p' size='sm' colour='muted'>
             {t('project.settings.inviteCoworkers')}
-          </p>
+          </Text>
         </div>
         <Button
           className='h-8 pl-2'
@@ -392,16 +403,16 @@ const People = ({ organisation }: PeopleProps) => {
         closeText={t('common.cancel')}
         message={
           <div>
-            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
+            <Text as='h2' size='xl' weight='bold' colour='secondary'>
               {t('organisations.invite.title', {
                 organisation: name,
               })}
-            </h2>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+            </Text>
+            <Text as='p' colour='secondary' className='mt-2'>
               {t('organisations.invite.desc', {
                 expiresIn: INVITATION_EXPIRES_IN,
               })}
-            </p>
+            </Text>
             <Input
               name='email'
               type='email'

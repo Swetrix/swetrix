@@ -163,9 +163,9 @@ export default function CTRCalculator() {
             <div className='mt-12 rounded-lg bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
               <div className='space-y-6'>
                 <div>
-                  <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                  <Text as='h2' size='2xl' weight='semibold' className='mb-6'>
                     Calculate Your CTR
-                  </h2>
+                  </Text>
 
                   <div className='grid gap-6 md:grid-cols-2'>
                     <div>
@@ -180,9 +180,9 @@ export default function CTRCalculator() {
                         className='w-full'
                         min='0'
                       />
-                      <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                      <Text as='p' size='sm' colour='muted' className='mt-1'>
                         How many times your ad was clicked
-                      </p>
+                      </Text>
                     </div>
 
                     <div>
@@ -197,9 +197,9 @@ export default function CTRCalculator() {
                         className='w-full'
                         min='1'
                       />
-                      <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                      <Text as='p' size='sm' colour='muted' className='mt-1'>
                         How many times your ad was shown
-                      </p>
+                      </Text>
                     </div>
                   </div>
 
@@ -210,9 +210,9 @@ export default function CTRCalculator() {
 
                 {result ? (
                   <div className='border-t border-gray-200 pt-6 dark:border-gray-700'>
-                    <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                    <Text as='h3' size='lg' weight='medium' className='mb-4'>
                       Results
-                    </h3>
+                    </Text>
 
                     <div className='rounded-lg bg-gray-50 p-6 dark:bg-slate-700/50'>
                       <div className='text-center'>
@@ -250,11 +250,20 @@ export default function CTRCalculator() {
                     </div>
 
                     <div className='mt-6 rounded-lg bg-indigo-50 p-4 dark:bg-indigo-900/20'>
-                      <h4 className='flex items-center text-lg font-medium text-indigo-900 dark:text-indigo-300'>
+                      <Text
+                        as='h4'
+                        size='lg'
+                        weight='medium'
+                        className='flex items-center text-indigo-900 dark:text-indigo-300'
+                      >
                         <TrendUpIcon className='mr-2 h-5 w-5' />
                         Performance Insights
-                      </h4>
-                      <p className='mt-2 text-sm text-indigo-800 dark:text-indigo-200'>
+                      </Text>
+                      <Text
+                        as='p'
+                        size='sm'
+                        className='mt-2 text-indigo-800 dark:text-indigo-200'
+                      >
                         {result.performance === 'Excellent'
                           ? 'Outstanding CTR! Your ads are highly engaging and relevant to your audience. Keep up the great work!'
                           : null}
@@ -270,7 +279,7 @@ export default function CTRCalculator() {
                         {result.performance === 'Poor'
                           ? 'Low CTR indicates your ads may not be resonating with your audience. Consider a comprehensive review of your campaign strategy.'
                           : null}
-                      </p>
+                      </Text>
                     </div>
                   </div>
                 ) : null}
@@ -368,9 +377,14 @@ export default function CTRCalculator() {
             </section>
 
             <div className='mt-16'>
-              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+              <Text
+                as='h2'
+                size='3xl'
+                weight='bold'
+                className='mb-8 text-center'
+              >
                 Frequently Asked Questions
-              </h2>
+              </Text>
 
               <FAQ items={FAQ_ITEMS} withStructuredData />
             </div>

@@ -393,14 +393,14 @@ const GoalRow = ({
                 </div>
               ) : stats ? (
                 <>
-                  <p className='text-sm leading-6'>
+                  <Text as='p' size='sm' className='leading-6'>
                     <Text as='span' size='sm' weight='semibold'>
                       {stats.conversions.toLocaleString()}
                     </Text>{' '}
                     <Text as='span' size='sm' colour='secondary'>
                       {t('goals.conversions').toLowerCase()}
                     </Text>
-                  </p>
+                  </Text>
                   <ProgressRing
                     value={stats.conversionRate}
                     size={44}
@@ -913,9 +913,14 @@ const GoalsViewInner = ({
             </ul>
 
             {_isEmpty(goals) && filterQuery ? (
-              <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
+              <Text
+                as='p'
+                size='sm'
+                colour='muted'
+                className='py-8 text-center'
+              >
                 {t('goals.noGoalsMatchFilter')}
-              </p>
+              </Text>
             ) : null}
           </>
         )}

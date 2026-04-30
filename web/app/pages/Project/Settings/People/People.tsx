@@ -39,10 +39,10 @@ const NoPeople = () => {
 
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>
+      <div className='mx-auto w-full max-w-7xl'>
+        <Text as='h2' size='xl' className='mb-8 px-4 text-center leading-snug'>
           {t('project.settings.noPeople')}
-        </h2>
+        </Text>
       </div>
     </div>
   )
@@ -140,12 +140,22 @@ const TableUserRow = ({
                           className='flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800'
                         >
                           <div>
-                            <p className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                            <Text
+                              as='p'
+                              size='sm'
+                              weight='semibold'
+                              className='text-gray-900 dark:text-gray-100'
+                            >
                               {t(`project.settings.roles.${itRole}.name`)}
-                            </p>
-                            <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>
+                            </Text>
+                            <Text
+                              as='p'
+                              size='sm'
+                              colour='muted'
+                              className='mt-0.5'
+                            >
                               {t(`project.settings.roles.${itRole}.shortDesc`)}
-                            </p>
+                            </Text>
                           </div>
                           {role === itRole ? (
                             <CheckIcon className='ml-2 h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-500' />
@@ -418,21 +428,21 @@ const People = ({ project }: PeopleProps) => {
         closeText={t('common.cancel')}
         message={
           <div>
-            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
+            <Text as='h2' size='xl' weight='bold' colour='secondary'>
               {t('project.settings.inviteTo', { project: name })}
-            </h2>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+            </Text>
+            <Text as='p' colour='secondary' className='mt-2'>
               {t(
                 isSelfhosted
                   ? 'project.settings.inviteDescSelfhosted'
                   : 'project.settings.inviteDesc',
               )}
-            </p>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+            </Text>
+            <Text as='p' colour='secondary' className='mt-2'>
               {t('project.settings.inviteExpity', {
                 amount: INVITATION_EXPIRES_IN,
               })}
-            </p>
+            </Text>
             <Input
               name='email'
               type='email'

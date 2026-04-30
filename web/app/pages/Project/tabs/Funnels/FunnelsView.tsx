@@ -359,7 +359,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
         <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
           {funnelSummary ? (
             <>
-              <p className='font-medium text-gray-900 lg:text-left dark:text-gray-50'>
+              <Text as='p' weight='medium' className='lg:text-left'>
                 {t('project.funnelSummary.xStepFunnel', {
                   x: funnelSummary.stepsCount,
                 })}
@@ -367,14 +367,14 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
                 {t('project.funnelSummary.conversionRateShort', {
                   x: funnelSummary.conversionRate,
                 })}
-              </p>
-              <p className='text-center text-gray-900 lg:text-left dark:text-gray-50'>
+              </Text>
+              <Text as='p' className='text-center lg:text-left'>
                 {t('project.funnelSummary.startShort')}:{' '}
                 {nLocaleFormatter(funnelSummary.startVisitors)}
                 <span className='mx-1'>→</span>
                 {t('project.funnelSummary.endShort')}:{' '}
                 {nLocaleFormatter(funnelSummary.endVisitors)}
-              </p>
+              </Text>
             </>
           ) : null}
           {funnelAnalytics?.funnel ? (

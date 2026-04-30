@@ -8,6 +8,7 @@ import { Link } from '~/ui/Link'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 const MAX_PASSWORD_LENGTH = 80
@@ -80,15 +81,20 @@ const PasswordRequiredModal = ({
       message={
         <form onSubmit={handleSubmit} className='space-y-4'>
           <div className='flex flex-col items-center text-center'>
-            <div className='mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30'>
-              <LockIcon className='h-6 w-6 text-amber-600 dark:text-amber-400' />
+            <div className='mx-auto flex size-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-500/15'>
+              <LockIcon className='size-6 text-amber-600 dark:text-amber-400' />
             </div>
-            <h3 className='mt-4 text-lg font-semibold text-gray-900 dark:text-gray-50'>
+            <Text
+              as='h3'
+              size='lg'
+              weight='semibold'
+              className='mt-4 tracking-tight'
+            >
               {t('titles.passwordProtected')}
-            </h3>
-            <p className='mt-2 text-sm text-gray-600 dark:text-gray-400'>
+            </Text>
+            <Text as='p' size='sm' colour='muted' className='mt-2'>
               {t('project.passwordProtectedHint')}
-            </p>
+            </Text>
           </div>
 
           <Input

@@ -1038,9 +1038,14 @@ const FeatureFlagsViewInner = ({
             </ul>
 
             {_isEmpty(flags) && filterQuery ? (
-              <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
+              <Text
+                as='p'
+                size='sm'
+                colour='muted'
+                className='py-8 text-center'
+              >
                 {t('featureFlags.noFlagsMatchFilter')}
-              </p>
+              </Text>
             ) : null}
           </>
         )}
