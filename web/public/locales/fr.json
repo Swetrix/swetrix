@@ -153,7 +153,11 @@
     "create": "Créer",
     "unknown": "Inconnu",
     "showMore": "Afficher {{count}} de plus",
-    "showLess": "Afficher moins"
+    "showLess": "Afficher moins",
+    "toggleOptions": "Basculer les options",
+    "paginationNavLabel": "Pagination",
+    "jumpToPage": "Aller à la page {{page}}",
+    "pageNumber": "Page {{page}}"
   },
   "performance": {
     "slogan": "<span>Contrôle des performances</span> de l'utilisateur final afin de fournir des sites web rapides.",

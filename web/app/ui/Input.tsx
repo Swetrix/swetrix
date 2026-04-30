@@ -94,11 +94,16 @@ const Input = ({
           {inputElement}
           <button
             type='button'
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => {
+              if (disabled || readOnly) return
+              setShowPassword(!showPassword)
+            }}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
             aria-pressed={showPassword}
-            tabIndex={disabled ? -1 : 0}
-            className='absolute inset-y-0 right-0 my-1 mr-1 flex items-center rounded-md px-2 text-gray-400 transition-colors hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:text-gray-500 dark:hover:text-gray-200 dark:focus-visible:ring-slate-300'
+            disabled={disabled || readOnly}
+            aria-disabled={disabled || readOnly || undefined}
+            tabIndex={disabled || readOnly ? -1 : 0}
+            className='absolute inset-y-0 right-0 my-1 mr-1 flex items-center rounded-md px-2 text-gray-400 transition-colors hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:text-gray-400 dark:text-gray-500 dark:hover:text-gray-200 dark:focus-visible:ring-slate-300 dark:disabled:hover:text-gray-500'
           >
             {showPassword ? (
               <EyeSlashIcon className='size-4.5' />

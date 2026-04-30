@@ -118,7 +118,9 @@ export default function FileUpload({
         <div className='space-y-2'>
           <div
             className={cn(
-              'mx-auto flex size-10 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition-colors duration-200 ease-out group-hover:bg-gray-200 group-hover:text-gray-700 dark:bg-slate-800/80 dark:text-gray-400 dark:group-hover:bg-slate-800 dark:group-hover:text-gray-200',
+              'mx-auto flex size-10 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition-colors duration-200 ease-out dark:bg-slate-800/80 dark:text-gray-400',
+              !isDisabled &&
+                'group-hover:bg-gray-200 group-hover:text-gray-700 dark:group-hover:bg-slate-800 dark:group-hover:text-gray-200',
               dragOver &&
                 'bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-white',
             )}

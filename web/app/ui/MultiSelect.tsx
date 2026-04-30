@@ -1,3 +1,4 @@
+import { Transition } from '@headlessui/react'
 import { CheckIcon, CaretUpDownIcon, XIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import _includes from 'lodash/includes'
@@ -165,69 +166,74 @@ const MultiSelect = ({
           <CaretUpDownIcon className='size-4' aria-hidden='true' />
         </span>
 
-        <div
-          id={listboxId}
-          role='listbox'
-          aria-multiselectable='true'
-          className={cx(
-            'absolute top-full z-30 mt-1.5 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/60',
-            'transition-[opacity,transform] duration-150 ease-out',
-            isOpen
-              ? 'translate-y-0 opacity-100'
-              : 'pointer-events-none -translate-y-0.5 opacity-0',
-          )}
+        <Transition
+          show={isOpen}
+          enter='transition-[opacity,transform] duration-150 ease-out'
+          enterFrom='-translate-y-0.5 opacity-0'
+          enterTo='translate-y-0 opacity-100'
+          leave='transition-[opacity,transform] duration-150 ease-out'
+          leaveFrom='translate-y-0 opacity-100'
+          leaveTo='-translate-y-0.5 opacity-0'
         >
-          {_isEmpty(items) ? (
-            <div className='mx-1 px-3 py-2 text-gray-500 dark:text-gray-400'>
-              No options available
-            </div>
-          ) : (
-            _map(items, (item, index) => {
-              const isSelected = _includes(label, item)
-              const isActive = index === activeIndex
-              const optionId = `${optionIdPrefix}-${itemKey(item)}`
-              return (
-                <button
-                  type='button'
-                  id={optionId}
-                  role='option'
-                  aria-selected={isSelected}
-                  key={`${itemKey(item)}-select`}
-                  onClick={() => handleSelectItem(item)}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  className={cx(
-                    'relative mx-1 flex w-[calc(100%-0.5rem)] cursor-pointer items-center rounded-md py-2 pr-8 pl-3 text-left text-sm transition-colors duration-100 ease-out select-none',
-                    {
-                      'bg-gray-100 text-gray-900 dark:bg-slate-800/80 dark:text-white':
-                        isActive,
-                      'text-gray-700 dark:text-gray-50':
-                        !isActive && !isSelected,
-                      'text-gray-900 dark:text-white': isSelected && !isActive,
-                    },
-                  )}
-                >
-                  <span
-                    className={cx('block truncate', {
-                      'font-semibold': isSelected,
-                      'font-normal': !isSelected,
-                    })}
+          <div
+            id={listboxId}
+            role='listbox'
+            aria-multiselectable='true'
+            className='absolute top-full z-30 mt-1.5 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/60'
+          >
+            {_isEmpty(items) ? (
+              <div className='mx-1 px-3 py-2 text-gray-500 dark:text-gray-400'>
+                No options available
+              </div>
+            ) : (
+              _map(items, (item, index) => {
+                const isSelected = _includes(label, item)
+                const isActive = index === activeIndex
+                const optionId = `${optionIdPrefix}-${itemKey(item)}`
+                return (
+                  <button
+                    type='button'
+                    id={optionId}
+                    role='option'
+                    aria-selected={isSelected}
+                    key={`${itemKey(item)}-select`}
+                    onClick={() => handleSelectItem(item)}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    className={cx(
+                      'relative mx-1 flex w-[calc(100%-0.5rem)] cursor-pointer items-center rounded-md py-2 pr-8 pl-3 text-left text-sm transition-colors duration-100 ease-out select-none',
+                      {
+                        'bg-gray-100 text-gray-900 dark:bg-slate-800/80 dark:text-white':
+                          isActive,
+                        'text-gray-700 dark:text-gray-50':
+                          !isActive && !isSelected,
+                        'text-gray-900 dark:text-white':
+                          isSelected && !isActive,
+                      },
+                    )}
                   >
-                    {itemExtractor ? itemExtractor(item) : item}
-                  </span>
-                  {isSelected ? (
-                    <span className='absolute inset-y-0 right-2 flex items-center text-slate-900 dark:text-slate-100'>
-                      <CheckIcon
-                        weight='bold'
-                        className='size-4'
-                        aria-hidden='true'
-                      />
+                    <span
+                      className={cx('block truncate', {
+                        'font-semibold': isSelected,
+                        'font-normal': !isSelected,
+                      })}
+                    >
+                      {itemExtractor ? itemExtractor(item) : item}
                     </span>
-                  ) : null}
-                </button>
-              )
-            })
-          )}
-        </div>
+                    {isSelected ? (
+                      <span className='absolute inset-y-0 right-2 flex items-center text-slate-900 dark:text-slate-100'>
+                        <CheckIcon
+                          weight='bold'
+                          className='size-4'
+                          aria-hidden='true'
+                        />
+                      </span>
+                    ) : null}
+                  </button>
+                )
+              })
+            )}
+          </div>
+        </Transition>
       </div>
 
       {!_isEmpty(label) ? (

@@ -50,9 +50,9 @@ const SwitchTrack = ({
     <span
       aria-hidden='true'
       className={cx(
-        'pointer-events-none inline-block size-3 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-out',
+        'pointer-events-none inline-block size-3 transform rounded-full bg-white shadow-sm ring-0 transition-[transform,background-color] duration-200 ease-out',
         {
-          'translate-x-3': checked,
+          'translate-x-3 dark:bg-slate-900': checked,
           'translate-x-0': !checked,
         },
       )}

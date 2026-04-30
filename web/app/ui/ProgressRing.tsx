@@ -83,7 +83,7 @@ const ProgressRing = ({
   )
 
   const center = size / 2
-  const rounded = Math.round(normalizedValue)
+  const displayValue = Math.floor(normalizedValue)
 
   return (
     <div
@@ -94,8 +94,8 @@ const ProgressRing = ({
       role='progressbar'
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={rounded}
-      aria-label={ariaLabel}
+      aria-valuenow={displayValue}
+      aria-label={ariaLabel ?? `Progress: ${displayValue}%`}
     >
       <svg width={size} height={size} className='-rotate-90' aria-hidden='true'>
         <circle
@@ -129,7 +129,7 @@ const ProgressRing = ({
           )}
           style={{ fontSize: size * 0.22 }}
         >
-          {rounded}%
+          {displayValue}%
         </span>
       ) : null}
     </div>

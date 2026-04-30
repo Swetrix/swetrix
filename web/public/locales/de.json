@@ -153,7 +153,11 @@
     "create": "Erstellen",
     "unknown": "Unbekannt",
     "showMore": "{{count}} weitere anzeigen",
-    "showLess": "Weniger anzeigen"
+    "showLess": "Weniger anzeigen",
+    "toggleOptions": "Optionen umschalten",
+    "paginationNavLabel": "Seitennavigation",
+    "jumpToPage": "Zu Seite {{page}} springen",
+    "pageNumber": "Seite {{page}}"
   },
   "performance": {
     "slogan": "Endbenutzer <span>Leistungsüberwachung</span> um schnelle Webseiten zu liefern.",

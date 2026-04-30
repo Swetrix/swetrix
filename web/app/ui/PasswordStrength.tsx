@@ -88,6 +88,7 @@ const PasswordStrength = ({ password, className }: PasswordStrengthProps) => {
       aria-valuemin={0}
       aria-valuemax={totalSegments}
       aria-valuenow={currentConfig.segments}
+      aria-valuetext={currentConfig.label || undefined}
       aria-label={t('auth.passwordStrength.label', {
         defaultValue: 'Password strength',
       })}

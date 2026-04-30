@@ -103,6 +103,7 @@ const Organisations = ({ membership }: OrganisationsProps) => {
         ) : (
           <>
             <Button
+              variant='secondary'
               size='xs'
               className='mr-2'
               onClick={() => setShowDeleteModal(true)}

@@ -445,15 +445,17 @@ const ProjectAlertsInner = ({
         >
           {t('dashboard.alertsDesc')}
         </Text>
-        <div className='mt-6'>
-          <Link
-            to={routes.signup}
-            aria-label={t('titles.signup')}
-            className='inline-flex items-center justify-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
-          >
-            {t('header.startForFree')}
-          </Link>
-        </div>
+        {!isAuthenticated ? (
+          <div className='mt-6'>
+            <Link
+              to={routes.signup}
+              aria-label={t('titles.signup')}
+              className='inline-flex items-center justify-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
+            >
+              {t('header.startForFree')}
+            </Link>
+          </div>
+        ) : null}
       </div>
     )
   }

@@ -101,7 +101,7 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
           variant='icon'
           onClick={handleManualRefresh}
           aria-label={t('project.refreshStats')}
-          disabled={authLoading}
+          disabled={authLoading || dataLoading || isRefreshing}
         >
           <span className='relative size-5'>
             <ArrowClockwiseIcon

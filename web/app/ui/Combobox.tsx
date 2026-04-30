@@ -68,7 +68,7 @@ const Combobox = ({
           />
           <ComboboxButton
             className='absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 dark:text-gray-500'
-            aria-label='Toggle options'
+            aria-label={t('common.toggleOptions')}
           >
             <CaretUpDownIcon className='size-4' aria-hidden='true' />
           </ComboboxButton>

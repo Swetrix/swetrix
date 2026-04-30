@@ -108,7 +108,7 @@ const Pagination = ({
           ) : null}
           <nav
             className='inline-flex items-center gap-0.5'
-            aria-label='Pagination'
+            aria-label={t('common.paginationNavLabel')}
           >
             <button
               type='button'
@@ -125,21 +125,19 @@ const Pagination = ({
             </button>
             {_map(paginationRange, (item, index) => {
               if (item === DOTS) {
+                const lastShownPage = paginationRange[index - 1] as number
+                const nextShownPage = paginationRange[index + 1] as number
+                const middlePage = Math.floor(
+                  (lastShownPage + nextShownPage) / 2,
+                )
+
                 return (
                   <button
                     type='button'
                     key={`dots-${index}`}
-                    onClick={() => {
-                      const lastShownPage = paginationRange[index - 1] as number
-                      const nextShownPage = paginationRange[index + 1] as number
-                      const middlePage = Math.floor(
-                        (lastShownPage + nextShownPage) / 2,
-                      )
-
-                      setPage(middlePage)
-                    }}
+                    onClick={() => setPage(middlePage)}
                     className={cx(navButtonClasses, 'tabular-nums')}
-                    aria-label={`Jump to page ${Math.floor(((paginationRange[index - 1] as number) + (paginationRange[index + 1] as number)) / 2)}`}
+                    aria-label={t('common.jumpToPage', { page: middlePage })}
                   >
                     {DOTS}
                   </button>
@@ -154,7 +152,7 @@ const Pagination = ({
                   key={item}
                   onClick={() => setPage(item)}
                   aria-current={isActive ? 'page' : undefined}
-                  aria-label={`Page ${item}`}
+                  aria-label={t('common.pageNumber', { page: item })}
                   className={cx(
                     'inline-flex size-8 items-center justify-center rounded-md text-sm font-medium tabular-nums transition-[background-color,color,box-shadow] duration-150 ease-out focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:focus-visible:ring-slate-300',
                     isActive

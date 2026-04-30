@@ -101,6 +101,7 @@ const ProjectList = ({ item }: ProjectListProps) => {
         ) : (
           <>
             <Button
+              variant='secondary'
               size='xs'
               className='mr-2'
               onClick={() => setShowDeleteModal(true)}
