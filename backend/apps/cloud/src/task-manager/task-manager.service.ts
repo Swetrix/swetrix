@@ -402,7 +402,7 @@ export class TaskManagerService {
 
     if (goal.matchType === GoalMatchType.CONTAINS) {
       params[paramKey] = `%${goalValue}%`
-      return { condition: `${column} LIKE {${paramKey}:String}`, params }
+      return { condition: `${column} ILIKE {${paramKey}:String}`, params }
     }
 
     // Regex goal

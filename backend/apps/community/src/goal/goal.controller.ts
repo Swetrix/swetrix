@@ -263,6 +263,9 @@ export class GoalController {
         params.goalValue = goal.value || ''
         return { condition: `event_name = {goalValue:String}`, params }
       }
+      if ((goal.value || '').trim() === '') {
+        return { condition: '1=0', params: {} }
+      }
       params.goalValue = goal.value || ''
       return {
         condition: `event_name ILIKE concat('%', {goalValue:String}, '%')`,
@@ -273,6 +276,9 @@ export class GoalController {
     if (goal.matchType === GoalMatchType.EXACT) {
       params.goalValue = goal.value || ''
       return { condition: `pg = {goalValue:String}`, params }
+    }
+    if ((goal.value || '').trim() === '') {
+      return { condition: '1=0', params: {} }
     }
     params.goalValue = goal.value || ''
     return {

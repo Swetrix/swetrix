@@ -948,6 +948,8 @@ export class ExperimentController {
       let matchCondition = ''
       if (experiment.goal.matchType === 'exact') {
         matchCondition = `c.${matchColumn} = {goalValue:String}`
+      } else if (goalValue.trim() === '') {
+        matchCondition = '1=0'
       } else {
         matchCondition = `c.${matchColumn} ILIKE concat('%', {goalValue:String}, '%')`
       }
@@ -1191,6 +1193,8 @@ export class ExperimentController {
       let matchCondition = ''
       if (experiment.goal.matchType === 'exact') {
         matchCondition = `c.${matchColumn} = {goalValue:String}`
+      } else if (goalValue.trim() === '') {
+        matchCondition = '1=0'
       } else {
         matchCondition = `c.${matchColumn} ILIKE concat('%', {goalValue:String}, '%')`
       }

@@ -1017,7 +1017,11 @@ export class ProjectController {
     try {
       await deleteProjectSharesByProjectClickhouse(id)
       await clickhouse.command({
-        query: `ALTER TABLE events DELETE WHERE pid={pid:FixedString(12)} AND type IN ('pageview', 'custom_event')`,
+        query: `ALTER TABLE events DELETE WHERE pid={pid:FixedString(12)} AND type IN ('pageview', 'custom_event', 'error', 'performance', 'captcha')`,
+        query_params: { pid: id },
+      })
+      await clickhouse.command({
+        query: `ALTER TABLE error_statuses DELETE WHERE pid={pid:FixedString(12)}`,
         query_params: { pid: id },
       })
       await deleteProjectRedis(id)

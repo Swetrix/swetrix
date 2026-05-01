@@ -270,6 +270,14 @@ const EXCLUDE_NULL_FOR = [
   'ctp',
 ]
 
+const ERROR_COLUMN_MAP: Record<string, string> = {
+  name: 'error_name',
+  message: 'error_message',
+  filename: 'error_filename',
+}
+
+const mapErrorColumn = (type: string): string => ERROR_COLUMN_MAP[type] || type
+
 const generateParamsQuery = (
   col: string,
   subQuery: string,
@@ -277,7 +285,8 @@ const generateParamsQuery = (
   type: 'traffic' | 'performance' | 'errors' | 'captcha',
   measure?: PerfMeasure,
 ): string => {
-  let columns = [`${col} as name`]
+  const sqlCol = type === 'errors' ? mapErrorColumn(col) : col
+  let columns = [`${sqlCol} as name`]
 
   // For regions and cities we'll return an array of objects, that will also include the country code and region code
   // We need the conutry code to display the flag next to the region/city name
@@ -301,15 +310,15 @@ const generateParamsQuery = (
 
     const fn = MEASURES_MAP[processedMeasure]
 
-    if (col === 'pg' || col === 'host') {
+    if (sqlCol === 'pg' || sqlCol === 'host') {
       return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
     }
 
-    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(sqlCol) ? `AND ${sqlCol} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'errors') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(sqlCol) ? `AND ${sqlCol} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'captcha') {
@@ -665,13 +674,7 @@ export class AnalyticsService {
       )
     }
 
-    // Public ERROR_COLUMNS use legacy short names; map to new column names.
-    const errorColMap: Record<string, string> = {
-      name: 'error_name',
-      message: 'error_message',
-      filename: 'error_filename',
-    }
-    const sqlCol = errorColMap[type] || type
+    const sqlCol = mapErrorColumn(type)
 
     const query = `SELECT ${sqlCol} AS ${type} FROM events WHERE pid={pid:FixedString(12)} AND type = 'error' AND ${sqlCol} IS NOT NULL GROUP BY ${sqlCol}`
 
@@ -1204,7 +1207,8 @@ export class AnalyticsService {
         }
 
         const { filter, isExclusive, isContains } = converted[column][f]
-        let sqlColumn = column
+        let sqlColumn =
+          dataType === DataType.ERRORS ? mapErrorColumn(column) : column
         let isArrayDataset = false
 
         const param = `qf_${col}_${f}`

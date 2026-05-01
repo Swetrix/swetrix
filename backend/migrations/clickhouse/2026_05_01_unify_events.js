@@ -1,6 +1,9 @@
 const { queriesRunner, dbName } = require('./setup')
 
 const queries = [
+  `DROP TABLE IF EXISTS ${dbName}.events_tmp;`,
+  `DROP TABLE IF EXISTS ${dbName}.events_backup;`,
+
   `CREATE TABLE IF NOT EXISTS ${dbName}.events
   (
     type LowCardinality(String),
@@ -54,41 +57,46 @@ const queries = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, type, created);`,
 
-  `INSERT INTO ${dbName}.events
+  `CREATE TABLE ${dbName}.events_tmp AS ${dbName}.events;`,
+
+  `INSERT INTO ${dbName}.events_tmp
     (type, pid, psid, profileId, host, pg, dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, rgc, ct, isp, og, ut, ctp, \`meta.key\`, \`meta.value\`, importID, created)
   SELECT
     'pageview', pid, psid, profileId, host, pg, dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, rgc, ct, isp, og, ut, ctp, \`meta.key\`, \`meta.value\`, importID, created
   FROM ${dbName}.analytics;`,
 
-  `INSERT INTO ${dbName}.events
+  `INSERT INTO ${dbName}.events_tmp
     (type, pid, psid, profileId, host, pg, dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, rgc, ct, isp, og, ut, ctp, \`meta.key\`, \`meta.value\`, importID, event_name, created)
   SELECT
     'custom_event', pid, psid, profileId, host, pg, dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, rgc, ct, isp, og, ut, ctp, \`meta.key\`, \`meta.value\`, importID, ev, created
   FROM ${dbName}.customEV;`,
 
-  `INSERT INTO ${dbName}.events
+  `INSERT INTO ${dbName}.events_tmp
     (type, pid, psid, profileId, host, pg, dv, br, brv, os, osv, lc, cc, rg, rgc, ct, isp, og, ut, ctp, \`meta.key\`, \`meta.value\`, eid, error_name, error_message, stackTrace, lineno, colno, error_filename, created)
   SELECT
     'error', pid, psid, profileId, host, pg, dv, br, brv, os, osv, lc, cc, rg, rgc, ct, isp, og, ut, ctp, \`meta.key\`, \`meta.value\`, eid, name, message, stackTrace, lineno, colno, filename, created
   FROM ${dbName}.errors;`,
 
-  `INSERT INTO ${dbName}.events
+  `INSERT INTO ${dbName}.events_tmp
     (type, pid, host, pg, dv, br, brv, cc, rg, rgc, ct, isp, og, ut, ctp, dns, tls, conn, response, render, domLoad, pageLoad, ttfb, created)
   SELECT
     'performance', pid, host, pg, dv, br, brv, cc, rg, rgc, ct, isp, og, ut, ctp, dns, tls, conn, response, render, domLoad, pageLoad, ttfb, created
   FROM ${dbName}.performance;`,
 
-  `INSERT INTO ${dbName}.events
+  `INSERT INTO ${dbName}.events_tmp
     (type, pid, dv, br, os, cc, created)
   SELECT
     'captcha', pid, dv, br, os, cc, created
   FROM ${dbName}.captcha;`,
+
+  `RENAME TABLE ${dbName}.events TO ${dbName}.events_backup, ${dbName}.events_tmp TO ${dbName}.events;`,
 
   `DROP TABLE IF EXISTS ${dbName}.analytics;`,
   `DROP TABLE IF EXISTS ${dbName}.customEV;`,
   `DROP TABLE IF EXISTS ${dbName}.errors;`,
   `DROP TABLE IF EXISTS ${dbName}.performance;`,
   `DROP TABLE IF EXISTS ${dbName}.captcha;`,
+  `DROP TABLE IF EXISTS ${dbName}.events_backup;`,
 ]
 
 queriesRunner(queries)
