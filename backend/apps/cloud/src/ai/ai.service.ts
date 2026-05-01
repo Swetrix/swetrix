@@ -1746,9 +1746,7 @@ Filter modifiers:
 
     const overallQuery = `
       SELECT
-        count(*) as total,
-        countIf(manuallyPassed = 1) as manuallyPassed,
-        countIf(manuallyPassed = 0) as autoPassed
+        count(*) as total
       FROM captcha
       WHERE pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -1758,8 +1756,7 @@ Filter modifiers:
     const chartQuery = `
       SELECT
         ${this.getTimeBucketSelect(timeBucket, timezone)} as date,
-        count(*) as challenges,
-        countIf(manuallyPassed = 1) as manuallyPassed
+        count(*) as challenges
       FROM captcha
       WHERE pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -1811,13 +1808,8 @@ Filter modifiers:
       chart.data as any[],
       (d) => Number(d.challenges) || 0,
     )
-    const manuallyPassed = _map(
-      chart.data as any[],
-      (d) => Number(d.manuallyPassed) || 0,
-    )
     const anomalies = computeChartAnomalies(dates, {
       challenges,
-      manuallyPassed,
     })
 
     return {
@@ -1825,7 +1817,6 @@ Filter modifiers:
       chart: {
         x: dates,
         challenges,
-        manuallyPassed,
         ...(anomalies ? { anomalies } : {}),
       },
       topCountries: byCountry.data,

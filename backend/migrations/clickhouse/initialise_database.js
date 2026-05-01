@@ -209,7 +209,6 @@ const CLICKHOUSE_INIT_QUERIES = [
     br LowCardinality(Nullable(String)),
     os Nullable(String) CODEC(ZSTD(3)),
     cc Nullable(FixedString(2)),
-    manuallyPassed UInt8,
     created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
