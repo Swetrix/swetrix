@@ -85,8 +85,7 @@ export class DataImportProcessor extends WorkerHost {
       let minDate: string | null = null
       let maxDate: string | null = null
 
-      const analyticsBatch: Record<string, unknown>[] = []
-      const customEVBatch: Record<string, unknown>[] = []
+      const eventsBatch: Record<string, unknown>[] = []
 
       try {
         for await (const row of mapper.createRowStream(
@@ -102,28 +101,17 @@ export class DataImportProcessor extends WorkerHost {
             if (!maxDate || created > maxDate) maxDate = created
           }
 
-          if (row.table === 'analytics') {
-            analyticsBatch.push(row.data)
-          } else {
-            customEVBatch.push(row.data)
-          }
+          eventsBatch.push({ type: row.type, ...row.data })
 
-          if (analyticsBatch.length >= BATCH_SIZE) {
-            await this.flushBatch('analytics', analyticsBatch)
-            importedRows += analyticsBatch.length
-            analyticsBatch.length = 0
-          }
-
-          if (customEVBatch.length >= BATCH_SIZE) {
-            await this.flushBatch('customEV', customEVBatch)
-            importedRows += customEVBatch.length
-            customEVBatch.length = 0
+          if (eventsBatch.length >= BATCH_SIZE) {
+            await this.flushBatch(eventsBatch)
+            importedRows += eventsBatch.length
+            eventsBatch.length = 0
           }
 
           if (totalRows % 10000 === 0) {
             const progress = {
-              importedRows:
-                importedRows + analyticsBatch.length + customEVBatch.length,
+              importedRows: importedRows + eventsBatch.length,
               totalRows,
             }
 
@@ -141,14 +129,9 @@ export class DataImportProcessor extends WorkerHost {
           }
         }
 
-        if (analyticsBatch.length > 0) {
-          await this.flushBatch('analytics', analyticsBatch)
-          importedRows += analyticsBatch.length
-        }
-
-        if (customEVBatch.length > 0) {
-          await this.flushBatch('customEV', customEVBatch)
-          importedRows += customEVBatch.length
+        if (eventsBatch.length > 0) {
+          await this.flushBatch(eventsBatch)
+          importedRows += eventsBatch.length
         }
 
         await this.dataImportService.markCompleted(importId, projectId, {
@@ -187,12 +170,9 @@ export class DataImportProcessor extends WorkerHost {
     }
   }
 
-  private async flushBatch(
-    table: 'analytics' | 'customEV',
-    batch: Record<string, unknown>[],
-  ): Promise<void> {
+  private async flushBatch(batch: Record<string, unknown>[]): Promise<void> {
     await clickhouse.insert({
-      table: `${CLICKHOUSE_DB}.${table}`,
+      table: `${CLICKHOUSE_DB}.events`,
       values: batch,
       format: 'JSONEachRow',
     })

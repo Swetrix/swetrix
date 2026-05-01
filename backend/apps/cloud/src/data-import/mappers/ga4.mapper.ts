@@ -357,7 +357,7 @@ export class Ga4Mapper implements ImportMapper {
         }
 
         for (let i = 0; i < count; i++) {
-          yield { table: 'analytics', data }
+          yield { type: 'pageview', data }
         }
       }
 
@@ -441,7 +441,7 @@ export class Ga4Mapper implements ImportMapper {
           pid,
           host: truncate(host, 253),
           pg: truncate(pagePath, 2048),
-          ev: truncate(eventName, 256),
+          event_name: truncate(eventName, 256),
           dv: device,
           br: truncate(browser, 30),
           brv: null,
@@ -465,7 +465,7 @@ export class Ga4Mapper implements ImportMapper {
         }
 
         for (let i = 0; i < count; i++) {
-          yield { table: 'customEV', data }
+          yield { type: 'custom_event', data }
         }
       }
 

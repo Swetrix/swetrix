@@ -745,12 +745,8 @@ export class ProjectController {
     }
 
     const queries = [
-      'ALTER TABLE analytics DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER TABLE customEV DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER TABLE performance DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER TABLE errors DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE events DELETE WHERE pid={pid:FixedString(12)}',
       'ALTER TABLE error_statuses DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER TABLE captcha DELETE WHERE pid={pid:FixedString(12)}',
     ]
 
     try {
@@ -1607,12 +1603,8 @@ export class ProjectController {
     }
 
     const queries = [
-      'ALTER TABLE analytics DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER TABLE customEV DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER TABLE performance DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER TABLE errors DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE events DELETE WHERE pid={pid:FixedString(12)}',
       'ALTER TABLE error_statuses DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER TABLE captcha DELETE WHERE pid={pid:FixedString(12)}',
     ]
 
     try {

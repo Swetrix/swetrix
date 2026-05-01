@@ -489,12 +489,8 @@ export class ProjectService {
 
     const projectIds = _map(projects, 'id')
     const queries = [
-      'ALTER TABLE analytics DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-      'ALTER TABLE customEV DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-      'ALTER TABLE performance DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-      'ALTER TABLE errors DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+      'ALTER TABLE events DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
       'ALTER TABLE error_statuses DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-      'ALTER TABLE captcha DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
     ]
 
     await Promise.all(
@@ -654,7 +650,7 @@ export class ProjectService {
       )
     }
 
-    let query = `ALTER TABLE analytics DELETE WHERE pid={pid:FixedString(12)} AND (`
+    let query = `ALTER TABLE events DELETE WHERE pid={pid:FixedString(12)} AND type = 'pageview' AND (`
 
     const params = {
       pid,
@@ -684,10 +680,7 @@ export class ProjectService {
     to: string,
   ): Promise<void> {
     const queries = [
-      'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
-      'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
-      'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
-      'ALTER TABLE errors DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      "ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ('pageview', 'custom_event', 'performance', 'error') AND created BETWEEN {from:String} AND {to:String}",
       'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
     ]
 
@@ -820,52 +813,37 @@ export class ProjectService {
           monthEnd,
         }
 
-        const selector = `
+        const query = `
+          SELECT
+            countIf(type = 'pageview') AS pageviews,
+            countIf(type = 'custom_event') AS customEvents,
+            countIf(type = 'captcha') AS captcha,
+            countIf(type = 'error') AS errors
+          FROM events
           WHERE created BETWEEN {monthStart:String} AND {monthEnd:String}
-          AND pid IN ({pids:Array(FixedString(12))})
+            AND pid IN ({pids:Array(FixedString(12))})
+            AND type IN ('pageview', 'custom_event', 'captcha', 'error')
         `
 
-        const countEVQuery = `SELECT count() FROM analytics ${selector}`
-        const countCustomEVQuery = `SELECT count() FROM customEV ${selector}`
-        const countCaptchaQuery = `SELECT count() FROM captcha ${selector}`
-        const countErrorsQuery = `SELECT count() FROM errors ${selector}`
+        const { data: counts } = await clickhouse
+          .query({
+            query,
+            query_params: params,
+          })
+          .then((resultSet) =>
+            resultSet.json<{
+              pageviews: string | number
+              customEvents: string | number
+              captcha: string | number
+              errors: string | number
+            }>(),
+          )
 
-        const [
-          { data: pageviews },
-          { data: customEvents },
-          { data: captcha },
-          { data: errors },
-        ] = await Promise.all([
-          clickhouse
-            .query({
-              query: countEVQuery,
-              query_params: params,
-            })
-            .then((resultSet) => resultSet.json()),
-          clickhouse
-            .query({
-              query: countCustomEVQuery,
-              query_params: params,
-            })
-            .then((resultSet) => resultSet.json()),
-          clickhouse
-            .query({
-              query: countCaptchaQuery,
-              query_params: params,
-            })
-            .then((resultSet) => resultSet.json()),
-          clickhouse
-            .query({
-              query: countErrorsQuery,
-              query_params: params,
-            })
-            .then((resultSet) => resultSet.json()),
-        ])
-
-        totalPageviews += pageviews[0]['count()']
-        totalCustomEvents += customEvents[0]['count()']
-        totalCaptcha += captcha[0]['count()']
-        totalErrors += errors[0]['count()']
+        const row = counts[0]
+        totalPageviews += Number(row?.pageviews) || 0
+        totalCustomEvents += Number(row?.customEvents) || 0
+        totalCaptcha += Number(row?.captcha) || 0
+        totalErrors += Number(row?.errors) || 0
       }
 
       count = totalPageviews + totalCustomEvents + totalCaptcha + totalErrors
@@ -918,52 +896,37 @@ export class ProjectService {
         const pidChunk = pids.slice(i, i + CHUNK_SIZE)
         const params = { pids: pidChunk }
 
-        const selector = `
-        WHERE pid IN ({pids:Array(FixedString(12))})
-        AND created BETWEEN '${monthStart}' AND '${monthEnd}'
-      `
+        const query = `
+          SELECT
+            countIf(type = 'pageview') AS traffic,
+            countIf(type = 'custom_event') AS customEvents,
+            countIf(type = 'captcha') AS captcha,
+            countIf(type = 'error') AS errors
+          FROM events
+          WHERE pid IN ({pids:Array(FixedString(12))})
+            AND created BETWEEN '${monthStart}' AND '${monthEnd}'
+            AND type IN ('pageview', 'custom_event', 'captcha', 'error')
+        `
 
-        const countEVQuery = `SELECT count() FROM analytics ${selector}`
-        const countCustomEVQuery = `SELECT count() FROM customEV ${selector}`
-        const countCaptchaQuery = `SELECT count() FROM captcha ${selector}`
-        const countErrorsQuery = `SELECT count() FROM errors ${selector}`
+        const { data: counts } = await clickhouse
+          .query({
+            query,
+            query_params: params,
+          })
+          .then((resultSet) =>
+            resultSet.json<{
+              traffic: string | number
+              customEvents: string | number
+              captcha: string | number
+              errors: string | number
+            }>(),
+          )
 
-        const [
-          { data: rawTraffic },
-          { data: rawCustomEvents },
-          { data: rawCaptcha },
-          { data: rawErrors },
-        ] = await Promise.all([
-          clickhouse
-            .query({
-              query: countEVQuery,
-              query_params: params,
-            })
-            .then((resultSet) => resultSet.json()),
-          clickhouse
-            .query({
-              query: countCustomEVQuery,
-              query_params: params,
-            })
-            .then((resultSet) => resultSet.json()),
-          clickhouse
-            .query({
-              query: countCaptchaQuery,
-              query_params: params,
-            })
-            .then((resultSet) => resultSet.json()),
-          clickhouse
-            .query({
-              query: countErrorsQuery,
-              query_params: params,
-            })
-            .then((resultSet) => resultSet.json()),
-        ])
-
-        totalTraffic += rawTraffic[0]['count()']
-        totalCustomEvents += rawCustomEvents[0]['count()']
-        totalCaptcha += rawCaptcha[0]['count()']
-        totalErrors += rawErrors[0]['count()']
+        const row = counts[0]
+        totalTraffic += Number(row?.traffic) || 0
+        totalCustomEvents += Number(row?.customEvents) || 0
+        totalCaptcha += Number(row?.captcha) || 0
+        totalErrors += Number(row?.errors) || 0
       }
 
       const total =
@@ -1043,36 +1006,10 @@ export class ProjectService {
     )
 
     const query = `
-      SELECT
-        pid,
-        CASE
-          WHEN EXISTS (
-            SELECT 1
-            FROM analytics
-            WHERE pid IN (${pids})
-          )
-          OR EXISTS (
-            SELECT 1
-            FROM customEV
-            WHERE pid IN (${pids})
-          )
-          THEN 1
-          ELSE 0
-        END AS exists
-      FROM
-      (
-        SELECT DISTINCT pid
-        FROM
-        (
-          SELECT pid
-          FROM analytics
-          WHERE pid IN (${pids})
-          UNION ALL
-          SELECT pid
-          FROM customEV
-          WHERE pid IN (${pids})
-        ) AS t
-      );
+      SELECT DISTINCT pid
+      FROM events
+      WHERE pid IN (${pids})
+        AND type IN ('pageview', 'custom_event')
     `
 
     const { data } = await clickhouse
@@ -1105,23 +1042,10 @@ export class ProjectService {
     )
 
     const query = `
-      SELECT
-        pid,
-        CASE
-          WHEN EXISTS (
-            SELECT 1
-            FROM errors
-            WHERE pid IN (${pids})
-          )
-          THEN 1
-          ELSE 0
-        END AS exists
-      FROM
-      (
-        SELECT DISTINCT pid
-        FROM errors
-        WHERE pid IN (${pids})
-      );
+      SELECT DISTINCT pid
+      FROM events
+      WHERE pid IN (${pids})
+        AND type = 'error'
     `
 
     const { data } = await clickhouse
@@ -1154,23 +1078,10 @@ export class ProjectService {
     )
 
     const query = `
-      SELECT
-        pid,
-        CASE
-          WHEN EXISTS (
-            SELECT 1
-            FROM captcha
-            WHERE pid IN (${pids})
-          )
-          THEN 1
-          ELSE 0
-        END AS exists
-      FROM
-      (
-        SELECT DISTINCT pid
-        FROM captcha
-        WHERE pid IN (${pids})
-      );
+      SELECT DISTINCT pid
+      FROM events
+      WHERE pid IN (${pids})
+        AND type = 'captcha'
     `
 
     const { data } = await clickhouse

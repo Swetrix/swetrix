@@ -202,13 +202,13 @@ export class FathomMapper implements ImportMapper {
 
       if (fileType === 'pageviews') {
         for (let i = 0; i < count; i++) {
-          yield { table: 'analytics', data: baseData }
+          yield { type: 'pageview', data: baseData }
         }
       } else {
         const eventName = truncate(normalizeNull(row.event_name), 256) || ''
-        const evData = { ...baseData, ev: eventName }
+        const evData = { ...baseData, event_name: eventName }
         for (let i = 0; i < count; i++) {
-          yield { table: 'customEV', data: evData }
+          yield { type: 'custom_event', data: evData }
         }
       }
     }

@@ -181,10 +181,7 @@ export class UserController {
       if (!_isEmpty(projects)) {
         const pidArray = projects.map((el) => el.id)
         const queries = [
-          'ALTER TABLE analytics DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE customEV DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE performance DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE errors DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+          'ALTER TABLE events DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
           'ALTER TABLE error_statuses DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
         ]
         await deleteProjectsByUserIdClickhouse(id)

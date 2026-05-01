@@ -4,12 +4,13 @@ const { queriesRunner, dbName, databaselessQueriesRunner } = require('./setup')
 const CLICKHOUSE_DB_INIT_QUERIES = [`CREATE DATABASE IF NOT EXISTS ${dbName}`]
 
 const CLICKHOUSE_INIT_QUERIES = [
-  // The traffic data table
-  `CREATE TABLE IF NOT EXISTS ${dbName}.analytics
+
+  `CREATE TABLE IF NOT EXISTS ${dbName}.events
   (
+    type LowCardinality(String),
+    pid FixedString(12),
     psid Nullable(UInt64),
     profileId Nullable(String) CODEC(ZSTD(3)),
-    pid FixedString(12),
     host Nullable(String) CODEC(ZSTD(3)),
     pg Nullable(String) CODEC(ZSTD(3)),
     dv LowCardinality(Nullable(String)),
@@ -35,67 +36,14 @@ const CLICKHOUSE_INIT_QUERIES = [
     \`meta.key\` Array(String) CODEC(ZSTD(3)),
     \`meta.value\` Array(String) CODEC(ZSTD(3)),
     importID Nullable(UInt8),
-    created DateTime('UTC') CODEC(Delta(4), LZ4)
-  )
-  ENGINE = MergeTree()
-  PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`,
-
-  // Custom events table
-  `CREATE TABLE IF NOT EXISTS ${dbName}.customEV
-  (
-    psid Nullable(UInt64),
-    profileId Nullable(String) CODEC(ZSTD(3)),
-    pid FixedString(12),
-    host Nullable(String) CODEC(ZSTD(3)),
-    ev String CODEC(ZSTD(3)),
-    pg Nullable(String) CODEC(ZSTD(3)),
-    dv LowCardinality(Nullable(String)),
-    br LowCardinality(Nullable(String)),
-    brv Nullable(String) CODEC(ZSTD(3)),
-    os LowCardinality(Nullable(String)),
-    osv Nullable(String) CODEC(ZSTD(3)),
-    lc LowCardinality(Nullable(String)),
-    ref Nullable(String) CODEC(ZSTD(3)),
-    so Nullable(String) CODEC(ZSTD(3)),
-    me Nullable(String) CODEC(ZSTD(3)),
-    ca Nullable(String) CODEC(ZSTD(3)),
-    te Nullable(String) CODEC(ZSTD(3)),
-    co Nullable(String) CODEC(ZSTD(3)),
-    cc Nullable(FixedString(2)),
-    rg LowCardinality(Nullable(String)),
-    rgc LowCardinality(Nullable(String)),
-    ct Nullable(String) CODEC(ZSTD(3)),
-    isp LowCardinality(Nullable(String)),
-    og Nullable(String) CODEC(ZSTD(3)),
-    ut LowCardinality(Nullable(String)),
-    ctp LowCardinality(Nullable(String)),
-    \`meta.key\` Array(String) CODEC(ZSTD(3)),
-    \`meta.value\` Array(String) CODEC(ZSTD(3)),
-    importID Nullable(UInt8),
-    created DateTime('UTC') CODEC(Delta(4), LZ4)
-  )
-  ENGINE = MergeTree()
-  PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`,
-
-  // The performance data table
-  `CREATE TABLE IF NOT EXISTS ${dbName}.performance
-  (
-    pid FixedString(12),
-    host Nullable(String) CODEC(ZSTD(3)),
-    pg Nullable(String) CODEC(ZSTD(3)),
-    dv LowCardinality(Nullable(String)),
-    br LowCardinality(Nullable(String)),
-    brv Nullable(String) CODEC(ZSTD(3)),
-    cc Nullable(FixedString(2)),
-    rg LowCardinality(Nullable(String)),
-    rgc LowCardinality(Nullable(String)),
-    ct Nullable(String) CODEC(ZSTD(3)),
-    isp LowCardinality(Nullable(String)),
-    og Nullable(String) CODEC(ZSTD(3)),
-    ut LowCardinality(Nullable(String)),
-    ctp LowCardinality(Nullable(String)),
+    event_name Nullable(String) CODEC(ZSTD(3)),
+    eid Nullable(FixedString(32)),
+    error_name Nullable(String) CODEC(ZSTD(3)),
+    error_message Nullable(String) CODEC(ZSTD(3)),
+    stackTrace Nullable(String) CODEC(ZSTD(3)),
+    lineno Nullable(UInt32),
+    colno Nullable(UInt32),
+    error_filename Nullable(String) CODEC(ZSTD(3)),
     dns Nullable(UInt32),
     tls Nullable(UInt32),
     conn Nullable(UInt32),
@@ -108,44 +56,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`,
-
-  // Error events table
-  `CREATE TABLE IF NOT EXISTS ${dbName}.errors
-  (
-    psid Nullable(UInt64),
-    profileId Nullable(String) CODEC(ZSTD(3)),
-    eid FixedString(32),
-    pid FixedString(12),
-    host Nullable(String) CODEC(ZSTD(3)),
-    pg Nullable(String) CODEC(ZSTD(3)),
-    dv LowCardinality(Nullable(String)),
-    br LowCardinality(Nullable(String)),
-    brv Nullable(String) CODEC(ZSTD(3)),
-    os LowCardinality(Nullable(String)),
-    osv Nullable(String) CODEC(ZSTD(3)),
-    lc LowCardinality(Nullable(String)),
-    cc LowCardinality(Nullable(FixedString(2))),
-    rg LowCardinality(Nullable(String)),
-    rgc LowCardinality(Nullable(String)),
-    ct Nullable(String) CODEC(ZSTD(3)),
-    isp LowCardinality(Nullable(String)),
-    og Nullable(String) CODEC(ZSTD(3)),
-    ut LowCardinality(Nullable(String)),
-    ctp LowCardinality(Nullable(String)),
-    name String CODEC(ZSTD(3)),
-    message Nullable(String) CODEC(ZSTD(3)),
-    stackTrace Nullable(String) CODEC(ZSTD(3)),
-    \`meta.key\` Array(String) CODEC(ZSTD(3)),
-    \`meta.value\` Array(String) CODEC(ZSTD(3)),
-    lineno Nullable(UInt32),
-    colno Nullable(UInt32),
-    filename Nullable(String) CODEC(ZSTD(3)),
-    created DateTime('UTC') CODEC(Delta(4), LZ4)
-  )
-  ENGINE = MergeTree()
-  PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`,
+  ORDER BY (pid, type, created);`,
 
   // Error events status table
   `CREATE TABLE IF NOT EXISTS ${dbName}.error_statuses (
@@ -200,20 +111,6 @@ const CLICKHOUSE_INIT_QUERIES = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, experimentId, created)
   TTL created + INTERVAL 1 YEAR;`,
-
-  // The CAPTCHA data table
-  `CREATE TABLE IF NOT EXISTS ${dbName}.captcha
-  (
-    pid FixedString(12),
-    dv LowCardinality(Nullable(String)),
-    br LowCardinality(Nullable(String)),
-    os Nullable(String) CODEC(ZSTD(3)),
-    cc Nullable(FixedString(2)),
-    created DateTime('UTC') CODEC(Delta(4), LZ4)
-  )
-  ENGINE = MergeTree()
-  PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`,
 
   // Bot block events table for advanced bot protection reporting
   `CREATE TABLE IF NOT EXISTS ${dbName}.bot_blocks

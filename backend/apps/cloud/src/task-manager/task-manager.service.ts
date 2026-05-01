@@ -143,13 +143,15 @@ const mapLimit = async <T, R>(
   return results
 }
 
-// TODO: Count for other tables like captcha, errors, customEV too
 const generatePlanUsageQueryForUser = (): string => {
   // NOTE: keep all values parameterized to avoid injection and formatting issues.
+  // Counts every billable event kind (pageview, custom_event, error, captcha)
+  // in a single scan over the unified events table.
   return `
     SELECT {uid:String} AS id, count(*) AS "count"
-    FROM analytics
+    FROM events
     WHERE pid IN ({pids:Array(FixedString(12))})
+    AND type IN ('pageview', 'custom_event', 'error', 'captcha')
     AND created BETWEEN {from:String} AND {to:String}
   `
 }
@@ -391,7 +393,7 @@ export class TaskManagerService {
     }
 
     const params: Record<string, string> = {}
-    const column = goal.type === GoalType.CUSTOM_EVENT ? 'ev' : 'pg'
+    const column = goal.type === GoalType.CUSTOM_EVENT ? 'event_name' : 'pg'
 
     if (goal.matchType === GoalMatchType.EXACT) {
       params[paramKey] = goalValue
@@ -427,7 +429,7 @@ export class TaskManagerService {
     const total = Number(totalSessions) || 0
 
     const buildUnionQuery = (
-      table: 'analytics' | 'customEV',
+      eventType: 'pageview' | 'custom_event',
       goals: Goal[],
     ): { query: string; params: Record<string, any> } | null => {
       if (_isEmpty(goals)) {
@@ -459,9 +461,10 @@ export class TaskManagerService {
             {${goalIdKey}:String} as goalId,
             count(*) as conversions,
             uniqExact(psid) as uniqueSessions
-          FROM ${table}
+          FROM events
           WHERE
             pid = {pid:FixedString(12)}
+            AND type = '${eventType}'
             AND ${condition}
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         `)
@@ -488,8 +491,8 @@ export class TaskManagerService {
       (g) => g.type === GoalType.CUSTOM_EVENT,
     )
 
-    const analyticsQuery = buildUnionQuery('analytics', analyticsGoals)
-    const customEventQuery = buildUnionQuery('customEV', customEventGoals)
+    const analyticsQuery = buildUnionQuery('pageview', analyticsGoals)
+    const customEventQuery = buildUnionQuery('custom_event', customEventGoals)
 
     const [analyticsRes, customEventRes] = await Promise.all([
       analyticsQuery
@@ -573,24 +576,10 @@ export class TaskManagerService {
     for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
       const pidChunk = pids.slice(i, i + CHUNK_SIZE)
       const query = `
-        SELECT sum(cnt) AS totalEvents
-        FROM (
-          SELECT count() AS cnt
-          FROM analytics
-          WHERE pid IN ({pids:Array(FixedString(12))})
-          UNION ALL
-          SELECT count() AS cnt
-          FROM customEV
-          WHERE pid IN ({pids:Array(FixedString(12))})
-          UNION ALL
-          SELECT count() AS cnt
-          FROM captcha
-          WHERE pid IN ({pids:Array(FixedString(12))})
-          UNION ALL
-          SELECT count() AS cnt
-          FROM errors
-          WHERE pid IN ({pids:Array(FixedString(12))})
-        )
+        SELECT count() AS totalEvents
+        FROM events
+        WHERE pid IN ({pids:Array(FixedString(12))})
+          AND type IN ('pageview', 'custom_event', 'error', 'captcha')
       `
 
       const { data } = await clickhouse
@@ -1717,8 +1706,8 @@ export class TaskManagerService {
               count()
             FROM (
               SELECT eid, min(created) as first_seen
-              FROM errors
-              WHERE pid = {pid:FixedString(12)}
+              FROM events
+              WHERE pid = {pid:FixedString(12)} AND type = 'error'
               GROUP BY eid
             )
             WHERE first_seen >= now() - ${subtractSecondsTimeframe}
@@ -1727,9 +1716,10 @@ export class TaskManagerService {
             query = `
             SELECT
               count()
-            FROM errors
+            FROM events
             WHERE
               pid = {pid:FixedString(12)}
+              AND type = 'error'
               AND created >= now() - ${subtractSecondsTimeframe}
           `
           }
@@ -1737,10 +1727,11 @@ export class TaskManagerService {
           query = `
           SELECT
             count()
-          FROM customEV
+          FROM events
           WHERE
             pid = {pid:FixedString(12)}
-            AND ev = {ev:String}
+            AND type = 'custom_event'
+            AND event_name = {ev:String}
             AND created >= now() - ${subtractSecondsTimeframe}
         `
           queryParams.ev = alert.queryCustomEvent
@@ -1749,9 +1740,10 @@ export class TaskManagerService {
           query = `
           SELECT
             count(${isUnique ? 'DISTINCT psid' : '*'})
-          FROM analytics
+          FROM events
           WHERE
             pid = {pid:FixedString(12)}
+            AND type = 'pageview'
             AND created >= now() - ${subtractSecondsTimeframe}
         `
         }
@@ -1798,14 +1790,14 @@ export class TaskManagerService {
 
           if (alert.alertOnNewErrorsOnly) {
             detailQuery = `
-            SELECT eid, name, message, lineno, colno, filename
-            FROM errors
-            WHERE pid = {pid:FixedString(12)} AND eid IN (
+            SELECT eid, error_name AS name, error_message AS message, lineno, colno, error_filename AS filename
+            FROM events
+            WHERE pid = {pid:FixedString(12)} AND type = 'error' AND eid IN (
               SELECT eid
               FROM (
                 SELECT eid, min(created) AS first_seen_for_eid
-                FROM errors
-                WHERE pid = {pid:FixedString(12)}
+                FROM events
+                WHERE pid = {pid:FixedString(12)} AND type = 'error'
                 GROUP BY eid
               )
               WHERE first_seen_for_eid >= now() - ${subtractSecondsTimeframe}
@@ -1815,10 +1807,11 @@ export class TaskManagerService {
           `
           } else {
             detailQuery = `
-            SELECT eid, name, message, lineno, colno, filename
-            FROM errors
+            SELECT eid, error_name AS name, error_message AS message, lineno, colno, error_filename AS filename
+            FROM events
             WHERE
               pid = {pid:FixedString(12)}
+              AND type = 'error'
               AND created >= now() - ${subtractSecondsTimeframe}
             ORDER BY created DESC
             LIMIT 1
@@ -2003,9 +1996,9 @@ export class TaskManagerService {
         }
 
         // No need to check for performance activity because it's not tracked without tracking analytics
-        const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
-        const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
-        const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryAnalytics = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type = 'pageview' AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryCaptcha = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type = 'captcha' AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryCustomEvents = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type = 'custom_event' AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
 
         // Process project IDs in chunks to avoid ClickHouse field value limit
         let totalAnalytics = 0

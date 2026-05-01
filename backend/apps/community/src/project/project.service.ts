@@ -248,36 +248,10 @@ export class ProjectService {
     )
 
     const query = `
-      SELECT
-        pid,
-        CASE
-          WHEN EXISTS (
-            SELECT 1
-            FROM analytics
-            WHERE pid IN (${pids})
-          )
-          OR EXISTS (
-            SELECT 1
-            FROM customEV
-            WHERE pid IN (${pids})
-          )
-          THEN 1
-          ELSE 0
-        END AS exists
-      FROM
-      (
-        SELECT DISTINCT pid
-        FROM
-        (
-          SELECT pid
-          FROM analytics
-          WHERE pid IN (${pids})
-          UNION ALL
-          SELECT pid
-          FROM customEV
-          WHERE pid IN (${pids})
-        ) AS t
-      );
+      SELECT DISTINCT pid
+      FROM events
+      WHERE pid IN (${pids})
+        AND type IN ('pageview', 'custom_event')
     `
 
     const { data } = await clickhouse
@@ -310,23 +284,10 @@ export class ProjectService {
     )
 
     const query = `
-      SELECT
-        pid,
-        CASE
-          WHEN EXISTS (
-            SELECT 1
-            FROM errors
-            WHERE pid IN (${pids})
-          )
-          THEN 1
-          ELSE 0
-        END AS exists
-      FROM
-      (
-        SELECT DISTINCT pid
-        FROM errors
-        WHERE pid IN (${pids})
-      );
+      SELECT DISTINCT pid
+      FROM events
+      WHERE pid IN (${pids})
+        AND type = 'error'
     `
 
     const { data } = await clickhouse
@@ -359,23 +320,10 @@ export class ProjectService {
     )
 
     const query = `
-      SELECT
-        pid,
-        CASE
-          WHEN EXISTS (
-            SELECT 1
-            FROM captcha
-            WHERE pid IN (${pids})
-          )
-          THEN 1
-          ELSE 0
-        END AS exists
-      FROM
-      (
-        SELECT DISTINCT pid
-        FROM captcha
-        WHERE pid IN (${pids})
-      );
+      SELECT DISTINCT pid
+      FROM events
+      WHERE pid IN (${pids})
+        AND type = 'captcha'
     `
 
     const { data } = await clickhouse
@@ -394,10 +342,7 @@ export class ProjectService {
     to: string,
   ): Promise<void> {
     const queries = [
-      'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
-      'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
-      'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
-      'ALTER TABLE errors DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      "ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ('pageview', 'custom_event', 'performance', 'error') AND created BETWEEN {from:String} AND {to:String}",
       'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
     ]
 

@@ -368,12 +368,12 @@ export class UmamiMapper implements ImportMapper {
         }
 
         if (eventType === '1') {
-          yield { table: 'analytics', data: baseData }
+          yield { type: 'pageview', data: baseData }
         } else {
           const eventName = truncate(normalizeNull(row.event_name), 256) || ''
           yield {
-            table: 'customEV',
-            data: { ...baseData, ev: eventName },
+            type: 'custom_event',
+            data: { ...baseData, event_name: eventName },
           }
         }
       }

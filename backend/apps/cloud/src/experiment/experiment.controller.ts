@@ -940,8 +940,9 @@ export class ExperimentController {
     let conversionsData: { variantKey: string; conversions: number }[] = []
     if (experiment.goal) {
       const goalType = experiment.goal.type
-      const table = goalType === 'custom_event' ? 'customEV' : 'analytics'
-      const matchColumn = goalType === 'custom_event' ? 'ev' : 'pg'
+      const eventType =
+        goalType === 'custom_event' ? 'custom_event' : 'pageview'
+      const matchColumn = goalType === 'custom_event' ? 'event_name' : 'pg'
       const goalValue = experiment.goal.value || ''
 
       let matchCondition = ''
@@ -974,7 +975,7 @@ export class ExperimentController {
           e.variantKey,
           uniqExact(e.profileId) as conversions
         FROM experiment_exposures e
-        INNER JOIN ${table} c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId)
+        INNER JOIN events c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId) AND c.type = '${eventType}'
         WHERE 
           e.pid = {pid:FixedString(12)}
           AND e.experimentId = {experimentId:String}
@@ -1178,8 +1179,9 @@ export class ExperimentController {
     let conversionsData: any[] = []
     if (experiment.goal) {
       const goalType = experiment.goal.type
-      const table = goalType === 'custom_event' ? 'customEV' : 'analytics'
-      const matchColumn = goalType === 'custom_event' ? 'ev' : 'pg'
+      const eventType =
+        goalType === 'custom_event' ? 'custom_event' : 'pageview'
+      const matchColumn = goalType === 'custom_event' ? 'event_name' : 'pg'
       const goalValue = experiment.goal.value || ''
       const conversionsDateColumnsSelect = this.getTimeBucketDateColumnsSelect(
         timeBucket,
@@ -1221,7 +1223,7 @@ export class ExperimentController {
             e.profileId as profileId,
             min(c.created) as firstConversion
           FROM experiment_exposures e
-          INNER JOIN ${table} c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId)
+          INNER JOIN events c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId) AND c.type = '${eventType}'
           WHERE
             e.pid = {pid:FixedString(12)}
             AND e.experimentId = {experimentId:String}

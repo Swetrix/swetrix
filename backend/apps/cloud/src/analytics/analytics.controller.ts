@@ -81,12 +81,7 @@ import {
   GetErrorOverviewOptions,
 } from './dto/get-error-overview.dto'
 import { PatchStatusDto } from './dto/patch-status.dto'
-import {
-  customEventTransformer,
-  errorEventTransformer,
-  performanceTransformer,
-  trafficTransformer,
-} from './utils/transformers'
+import { eventTransformer } from './utils/transformers'
 import { enrichTrafficSource } from './utils/clickIdSources'
 import {
   MAX_METRICS_IN_VIEW,
@@ -294,12 +289,12 @@ export class AnalyticsController {
         diff,
       )
 
-    let subQuery = `FROM ${
-      isCaptcha ? 'captcha' : 'analytics'
-    } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    let subQuery = `FROM events WHERE pid = {pid:FixedString(12)} AND type = '${
+      isCaptcha ? 'captcha' : 'pageview'
+    }' ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
     if (customEVFilterApplied && !isCaptcha) {
-      subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+      subQuery = `FROM events WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
     const paramsData = {
@@ -804,7 +799,7 @@ export class AnalyticsController {
       diff,
     )
 
-    const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    const subQuery = `FROM events WHERE pid = {pid:FixedString(12)} AND type = 'performance' ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
     const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
@@ -1332,32 +1327,12 @@ export class AnalyticsController {
         any(os) AS os,
         any(cc) AS cc,
         toString(psid) AS psid
-      FROM
-      (
-        SELECT
-          psid,
-          dv,
-          br,
-          os,
-          cc
-        FROM analytics
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND created >= {since:DateTime}
-          AND psid IS NOT NULL
-        UNION ALL
-        SELECT
-          psid,
-          dv,
-          br,
-          os,
-          cc
-        FROM customEV
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND created >= {since:DateTime}
-          AND psid IS NOT NULL
-      )
+      FROM events
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND type IN ('pageview', 'custom_event')
+        AND created >= {since:DateTime}
+        AND psid IS NOT NULL
       GROUP BY psid
     `
 
@@ -1464,7 +1439,8 @@ export class AnalyticsController {
     const { name, message, lineno, colno, filename, stackTrace, meta } =
       errorDTO
 
-    const transformed = errorEventTransformer({
+    const transformed = eventTransformer({
+      type: 'error',
       psid,
       profileId,
       eid: this.analyticsService.getErrorID(errorDTO),
@@ -1496,7 +1472,7 @@ export class AnalyticsController {
 
     try {
       await clickhouse.insert({
-        table: 'errors',
+        table: 'events',
         format: 'JSONEachRow',
         values: [transformed],
         clickhouse_settings: { async_insert: 1 },
@@ -1618,7 +1594,8 @@ export class AnalyticsController {
 
     enrichTrafficSource(eventsDTO)
 
-    const transformed = customEventTransformer({
+    const transformed = eventTransformer({
+      type: 'custom_event',
       psid,
       profileId,
       pid: eventsDTO.pid,
@@ -1650,7 +1627,7 @@ export class AnalyticsController {
 
     try {
       await clickhouse.insert({
-        table: 'customEV',
+        table: 'events',
         format: 'JSONEachRow',
         values: [transformed],
         clickhouse_settings: { async_insert: 1 },
@@ -1789,7 +1766,8 @@ export class AnalyticsController {
 
     enrichTrafficSource(logDTO)
 
-    const transformed = trafficTransformer({
+    const transformed = eventTransformer({
+      type: 'pageview',
       psid,
       profileId,
       pid: logDTO.pid,
@@ -1832,7 +1810,8 @@ export class AnalyticsController {
         ttfb,
       } = logDTO.perf
 
-      perfTransformed = performanceTransformer({
+      perfTransformed = eventTransformer({
+        type: 'performance',
         pid: logDTO.pid,
         host: this.analyticsService.getHostFromOrigin(headers.origin),
         pg: logDTO.pg,
@@ -1860,7 +1839,7 @@ export class AnalyticsController {
 
     try {
       await clickhouse.insert({
-        table: 'analytics',
+        table: 'events',
         format: 'JSONEachRow',
         values: [transformed],
         clickhouse_settings: { async_insert: 1 },
@@ -1868,7 +1847,7 @@ export class AnalyticsController {
 
       if (!_isEmpty(perfTransformed)) {
         await clickhouse.insert({
-          table: 'performance',
+          table: 'events',
           format: 'JSONEachRow',
           values: [perfTransformed],
           clickhouse_settings: { async_insert: 1 },
@@ -1955,7 +1934,8 @@ export class AnalyticsController {
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
 
-    const transformed = trafficTransformer({
+    const transformed = eventTransformer({
+      type: 'pageview',
       psid,
       profileId,
       pid: logDTO.pid,
@@ -1986,7 +1966,7 @@ export class AnalyticsController {
 
     try {
       await clickhouse.insert({
-        table: 'analytics',
+        table: 'events',
         format: 'JSONEachRow',
         values: [transformed],
         clickhouse_settings: { async_insert: 1 },

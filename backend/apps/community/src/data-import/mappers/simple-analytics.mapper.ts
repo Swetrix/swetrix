@@ -172,11 +172,11 @@ export class SimpleAnalyticsMapper implements ImportMapper {
       const datapoint = normalizeNull(row.datapoint)
 
       if (!datapoint || datapoint === 'pageview') {
-        yield { table: 'analytics', data: baseData }
+        yield { type: 'pageview', data: baseData }
       } else {
         yield {
-          table: 'customEV',
-          data: { ...baseData, ev: truncate(datapoint, 256) || '' },
+          type: 'custom_event',
+          data: { ...baseData, event_name: truncate(datapoint, 256) || '' },
         }
       }
     }
