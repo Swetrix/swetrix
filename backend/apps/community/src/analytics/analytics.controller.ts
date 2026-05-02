@@ -245,7 +245,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        isCaptcha ? 'captcha' : 'analytics',
+        isCaptcha ? 'captcha' : 'pageview',
       )
 
       diff = res.diff
@@ -273,13 +273,11 @@ export class AnalyticsController {
         diff,
       )
 
-    let subQuery = `FROM events WHERE pid = {pid:FixedString(12)} AND type = '${
-      isCaptcha ? 'captcha' : 'pageview'
-    }' ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-
-    if (customEVFilterApplied && !isCaptcha) {
-      subQuery = `FROM events WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    }
+    const subQuery = this.analyticsService.buildAnalyticsEventsSubQuery(
+      filtersQuery,
+      customEVFilterApplied,
+      isCaptcha,
+    )
 
     const paramsData = {
       params: {
@@ -408,12 +406,15 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const [analyticsRes, customEVRes] = await Promise.all([
-        this.analyticsService.calculateTimeBucketForAllTime(pid, 'analytics'),
-        this.analyticsService.calculateTimeBucketForAllTime(pid, 'customEV'),
+      const [pageviewRes, customEventRes] = await Promise.all([
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'pageview'),
+        this.analyticsService.calculateTimeBucketForAllTime(
+          pid,
+          'custom_event',
+        ),
       ])
 
-      diff = Math.max(analyticsRes.diff, customEVRes.diff)
+      diff = Math.max(pageviewRes.diff, customEventRes.diff)
     }
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -521,12 +522,15 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const [analyticsRes, customEVRes] = await Promise.all([
-        this.analyticsService.calculateTimeBucketForAllTime(pid, 'analytics'),
-        this.analyticsService.calculateTimeBucketForAllTime(pid, 'customEV'),
+      const [pageviewRes, customEventRes] = await Promise.all([
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'pageview'),
+        this.analyticsService.calculateTimeBucketForAllTime(
+          pid,
+          'custom_event',
+        ),
       ])
 
-      diff = Math.max(analyticsRes.diff, customEVRes.diff)
+      diff = Math.max(pageviewRes.diff, customEventRes.diff)
     }
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -831,7 +835,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'analytics',
+        'pageview',
       )
 
       diff = res.diff
@@ -1550,7 +1554,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        customEVFilterApplied ? 'customEV' : 'analytics',
+        this.analyticsService.getAnalyticsEventType(customEVFilterApplied),
       )
 
       timeBucket = res.timeBucket[0]
@@ -1654,7 +1658,7 @@ export class AnalyticsController {
     if (period === VALID_PERIODS[VALID_PERIODS.length - 1]) {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'customEV',
+        'custom_event',
       )
 
       newTimeBucket = _includes(res.timeBucket, timeBucket)
@@ -1966,7 +1970,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'errors',
+        'error',
       )
 
       timeBucket = res.timeBucket[0]
@@ -2043,7 +2047,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'errors',
+        'error',
       )
 
       newTimeBucket = res.timeBucket[0]
@@ -2119,7 +2123,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'errors',
+        'error',
       )
 
       newTimeBucket = res.timeBucket[0]
@@ -2202,7 +2206,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'errors',
+        'error',
       )
 
       newTimeBucket = res.timeBucket[0]
@@ -2275,7 +2279,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        customEVFilterApplied ? 'customEV' : 'analytics',
+        this.analyticsService.getAnalyticsEventType(customEVFilterApplied),
       )
 
       timeBucket = res.timeBucket[0]
@@ -2352,7 +2356,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'analytics',
+        'pageview',
       )
       timeBucket = res.timeBucket[0]
       diff = res.diff
@@ -2438,7 +2442,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        customEVFilterApplied ? 'customEV' : 'analytics',
+        this.analyticsService.getAnalyticsEventType(customEVFilterApplied),
       )
 
       timeBucket = res.timeBucket[0]

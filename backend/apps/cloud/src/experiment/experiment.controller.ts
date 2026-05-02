@@ -885,7 +885,7 @@ export class ExperimentController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         experiment.project.id,
-        'analytics',
+        'pageview',
       )
 
       diff = res.diff

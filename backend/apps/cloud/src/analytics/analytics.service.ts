@@ -347,6 +347,13 @@ export enum DataType {
   ERRORS = 'errors',
 }
 
+type AnalyticsEventType = 'pageview' | 'custom_event'
+type EventsAllTimeType =
+  | AnalyticsEventType
+  | 'performance'
+  | 'error'
+  | 'captcha'
+
 const isValidOrigin = (origins: string[], origin: string) => {
   const escapeRegex = (str: string) =>
     str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -713,6 +720,22 @@ export class AnalyticsService {
     return CAPTCHA_COLUMNS
   }
 
+  getAnalyticsEventType(customEVFilterApplied: boolean): AnalyticsEventType {
+    return customEVFilterApplied ? 'custom_event' : 'pageview'
+  }
+
+  buildAnalyticsEventsSubQuery(
+    filtersQuery: string,
+    customEVFilterApplied: boolean,
+    isCaptcha = false,
+  ): string {
+    const eventType = isCaptcha
+      ? 'captcha'
+      : this.getAnalyticsEventType(customEVFilterApplied)
+
+    return `FROM events WHERE pid = {pid:FixedString(12)} AND type = '${eventType}' ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+  }
+
   getGroupFromTo(
     from: string,
     to: string,
@@ -980,22 +1003,15 @@ export class AnalyticsService {
 
   async calculateTimeBucketForAllTime(
     pid: string,
-    table: 'analytics' | 'customEV' | 'performance' | 'errors',
+    eventType: EventsAllTimeType,
   ): Promise<{
     timeBucket: TimeBucketType[]
     diff: number
   }> {
-    const tableToType: Record<typeof table, string> = {
-      analytics: 'pageview',
-      customEV: 'custom_event',
-      performance: 'performance',
-      errors: 'error',
-    }
-
     const { data: fromData } = await clickhouse
       .query({
         query: `SELECT min(created) AS firstCreated FROM events WHERE pid = {pid:FixedString(12)} AND type = {type:String}`,
-        query_params: { pid, type: tableToType[table] },
+        query_params: { pid, type: eventType },
       })
       .then((res) => res.json<{ firstCreated?: string }>())
 
@@ -2282,9 +2298,7 @@ export class AnalyticsService {
     const promises = pids.map(async (pid) => {
       try {
         if (period === 'all') {
-          const allTimeType = customEVFilterApplied
-            ? 'custom_event'
-            : 'pageview'
+          const allTimeType = this.getAnalyticsEventType(customEVFilterApplied)
 
           const queryAll = `
             WITH analytics_counts AS (
@@ -2358,7 +2372,7 @@ export class AnalyticsService {
             const { diff: allDiff, timeBucket: allowedBuckets } =
               await this.calculateTimeBucketForAllTime(
                 pid,
-                customEVFilterApplied ? 'customEV' : 'analytics',
+                this.getAnalyticsEventType(customEVFilterApplied),
               )
             const allTimeChartBucket = _includes(
               allowedBuckets,
@@ -2399,7 +2413,7 @@ export class AnalyticsService {
           )
           .format('YYYY-MM-DD HH:mm:ss')
 
-        const periodType = customEVFilterApplied ? 'custom_event' : 'pageview'
+        const periodType = this.getAnalyticsEventType(customEVFilterApplied)
 
         const queryCurrent = `
           WITH analytics_counts AS (
@@ -2575,6 +2589,57 @@ export class AnalyticsService {
     return result
   }
 
+  private generateAnalyticsAggregationQueryForScope(
+    timeBucket: TimeBucketType,
+    filtersQuery: string,
+    mode: ChartRenderMode,
+    customEVFilterApplied: boolean,
+  ): string {
+    return customEVFilterApplied
+      ? this.generateCustomEventsAggregationQuery(
+          timeBucket,
+          filtersQuery,
+          mode,
+        )
+      : this.generateAnalyticsAggregationQuery(timeBucket, filtersQuery, mode)
+  }
+
+  private extractAnalyticsChartDataForScope(
+    result: Array<TrafficCHResponse | TrafficCEFilterCHResponse>,
+    xShifted: string[],
+    customEVFilterApplied: boolean,
+    mode: ChartRenderMode,
+  ): IExtractChartData {
+    if (customEVFilterApplied) {
+      const uniques =
+        this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
+        []
+      const sdur = Array(_size(xShifted)).fill(0)
+
+      return {
+        visits: uniques,
+        uniques,
+        sdur,
+      }
+    }
+
+    const chartData = this.extractChartData(result, xShifted)
+
+    // Propagate the previous cumulative value forward for empty buckets
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      for (let i = 1; i < chartData.visits.length; ++i) {
+        if (chartData.visits[i] === 0) {
+          chartData.visits[i] = chartData.visits[i - 1]
+        }
+        if (chartData.uniques[i] === 0) {
+          chartData.uniques[i] = chartData.uniques[i - 1]
+        }
+      }
+    }
+
+    return chartData
+  }
+
   /**
    * Get simplified chart data for dashboard cards
    * Returns only x (dates) and visits (pageviews) for a lightweight chart
@@ -2605,30 +2670,11 @@ export class AnalyticsService {
       },
     }
 
-    if (customEVFilterApplied) {
-      const query = this.generateCustomEventsAggregationQuery(
-        timeBucket,
-        filtersQuery,
-        ChartRenderMode.PERIODICAL,
-      )
-
-      const { data } = await clickhouse
-        .query({
-          query,
-          query_params: { ...paramsData.params, timezone: safeTimezone },
-        })
-        .then((resultSet) => resultSet.json<TrafficCEFilterCHResponse>())
-
-      const visits =
-        this.extractCustomEventsChartData(data, xShifted)?._unknown_event || []
-
-      return { x: xShifted, visits }
-    }
-
-    const query = this.generateAnalyticsAggregationQuery(
+    const query = this.generateAnalyticsAggregationQueryForScope(
       timeBucket,
       filtersQuery,
       ChartRenderMode.PERIODICAL,
+      customEVFilterApplied,
     )
 
     const { data } = await clickhouse
@@ -2636,9 +2682,16 @@ export class AnalyticsService {
         query,
         query_params: { ...paramsData.params, timezone: safeTimezone },
       })
-      .then((resultSet) => resultSet.json<TrafficCHResponse>())
+      .then((resultSet) =>
+        resultSet.json<TrafficCHResponse | TrafficCEFilterCHResponse>(),
+      )
 
-    const { visits } = this.extractChartData(data, xShifted)
+    const { visits } = this.extractAnalyticsChartDataForScope(
+      data,
+      xShifted,
+      customEVFilterApplied,
+      ChartRenderMode.PERIODICAL,
+    )
 
     return { x: xShifted, visits }
   }
@@ -3754,39 +3807,11 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
-    if (customEVFilterApplied) {
-      const query = this.generateCustomEventsAggregationQuery(
-        timeBucket,
-        filtersQuery,
-        mode,
-      )
-
-      const { data } = await clickhouse
-        .query({
-          query,
-          query_params: { ...paramsData.params, timezone: safeTimezone },
-        })
-        .then((resultSet) => resultSet.json<TrafficCEFilterCHResponse>())
-
-      const uniques =
-        this.extractCustomEventsChartData(data, xShifted)?._unknown_event || []
-
-      const sdur = Array(_size(xShifted)).fill(0)
-
-      return Promise.resolve({
-        chart: {
-          x: xShifted,
-          visits: uniques,
-          uniques,
-          sdur,
-        },
-      })
-    }
-
-    const query = this.generateAnalyticsAggregationQuery(
+    const query = this.generateAnalyticsAggregationQueryForScope(
       timeBucket,
       filtersQuery,
       mode,
+      customEVFilterApplied,
     )
 
     const { data } = await clickhouse
@@ -3794,21 +3819,16 @@ export class AnalyticsService {
         query,
         query_params: { ...paramsData.params, timezone: safeTimezone },
       })
-      .then((resultSet) => resultSet.json<TrafficCHResponse>())
+      .then((resultSet) =>
+        resultSet.json<TrafficCHResponse | TrafficCEFilterCHResponse>(),
+      )
 
-    const { visits, uniques, sdur } = this.extractChartData(data, xShifted)
-
-    // Propagate the previous cumulative value forward for empty buckets
-    if (mode === ChartRenderMode.CUMULATIVE) {
-      for (let i = 1; i < visits.length; ++i) {
-        if (visits[i] === 0) {
-          visits[i] = visits[i - 1]
-        }
-        if (uniques[i] === 0) {
-          uniques[i] = uniques[i - 1]
-        }
-      }
-    }
+    const { visits, uniques, sdur } = this.extractAnalyticsChartDataForScope(
+      data,
+      xShifted,
+      customEVFilterApplied,
+      mode,
+    )
 
     return Promise.resolve({
       chart: {
@@ -4435,7 +4455,7 @@ export class AnalyticsService {
     )
 
     if (period === 'all') {
-      const res = await this.calculateTimeBucketForAllTime(pid, 'customEV')
+      const res = await this.calculateTimeBucketForAllTime(pid, 'custom_event')
 
       diff = res.diff
 
@@ -4527,7 +4547,7 @@ export class AnalyticsService {
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.getFiltersQuery(filters, DataType.ANALYTICS)
 
-    // We cannot make a query to customEV table using analytics table properties
+    // Page properties are only present on pageview-scoped analytics rows.
     if (customEVFilterApplied) {
       return {
         result: [],
@@ -4536,7 +4556,7 @@ export class AnalyticsService {
     }
 
     if (period === 'all') {
-      const res = await this.calculateTimeBucketForAllTime(pid, 'analytics')
+      const res = await this.calculateTimeBucketForAllTime(pid, 'pageview')
 
       diff = res.diff
 
@@ -5042,55 +5062,10 @@ export class AnalyticsService {
     skip = 0,
     customEVFilterApplied = false,
   ): Promise<object | void> {
-    let primaryEventsSubquery: string
-
-    if (customEVFilterApplied) {
-      // When filtering by custom events, identify sessions (psids) that have
-      // matching custom events, then calculate session boundaries from ALL
-      // pageview/custom_event rows for those sessions.
-      primaryEventsSubquery = `
-        SELECT
-          CAST(psid, 'String') AS psidCasted,
-          pid,
-          cc,
-          os,
-          br,
-          toTimeZone(created, {timezone:String}) AS created_for_grouping
-        FROM events
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND type IN ('pageview', 'custom_event', 'error')
-          AND psid IS NOT NULL
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-          AND CAST(psid, 'String') IN (
-            SELECT DISTINCT CAST(psid, 'String')
-            FROM events
-            WHERE
-              pid = {pid:FixedString(12)}
-              AND type = 'custom_event'
-              AND psid IS NOT NULL
-              AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-              ${filtersQuery}
-          )
-      `
-    } else {
-      primaryEventsSubquery = `
-        SELECT
-          CAST(psid, 'String') AS psidCasted,
-          pid,
-          cc,
-          os,
-          br,
-          toTimeZone(created, {timezone:String}) AS created_for_grouping
-        FROM events
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND type IN ('pageview', 'custom_event', 'error')
-          AND psid IS NOT NULL
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-          ${filtersQuery}
-      `
-    }
+    const primaryEventsSubquery = this.buildSessionsListPrimaryEventsSubquery(
+      filtersQuery,
+      customEVFilterApplied,
+    )
 
     const query = `
       WITH distinct_sessions_filtered AS (
@@ -5220,6 +5195,87 @@ export class AnalyticsService {
     return data
   }
 
+  private buildSessionsListPrimaryEventsSubquery(
+    filtersQuery: string,
+    customEVFilterApplied: boolean,
+  ): string {
+    const scopedSessionFilter = customEVFilterApplied
+      ? `
+          AND CAST(psid, 'String') IN (
+            SELECT DISTINCT CAST(psid, 'String')
+            FROM events
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND type = 'custom_event'
+              AND psid IS NOT NULL
+              AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+              ${filtersQuery}
+          )
+        `
+      : filtersQuery
+
+    return `
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          cc,
+          os,
+          br,
+          toTimeZone(created, {timezone:String}) AS created_for_grouping
+        FROM events
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND type IN ('pageview', 'custom_event', 'error')
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${scopedSessionFilter}
+      `
+  }
+
+  private buildProfilesListDataCTE(
+    filtersQuery: string,
+    profileTypeFilter: string,
+    customEVFilterApplied: boolean,
+  ): string {
+    const scopedProfileFilter = customEVFilterApplied
+      ? `
+            AND profileId IN (
+              SELECT DISTINCT profileId
+              FROM events
+              WHERE pid = {pid:FixedString(12)}
+                AND type = 'custom_event'
+                AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+                AND profileId IS NOT NULL
+                AND profileId != ''
+                ${profileTypeFilter}
+                ${filtersQuery}
+            )
+        `
+      : filtersQuery
+
+    return `
+        all_profile_data AS (
+          SELECT
+            profileId,
+            psid,
+            cc,
+            os,
+            br,
+            dv,
+            created,
+            if(type = 'pageview', 1, 0) AS isPageview,
+            if(type = 'custom_event', 1, 0) AS isEvent
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND profileId IS NOT NULL
+            AND profileId != ''
+            ${profileTypeFilter}
+            ${scopedProfileFilter}
+        )`
+  }
+
   async getProfilesList(
     pid: string,
     filtersQuery: string,
@@ -5237,63 +5293,11 @@ export class AnalyticsService {
       profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_USER}%'`
     }
 
-    let allProfileDataCTE: string
-
-    if (customEVFilterApplied) {
-      allProfileDataCTE = `
-        all_profile_data AS (
-          SELECT
-            profileId,
-            psid,
-            cc,
-            os,
-            br,
-            dv,
-            created,
-            if(type = 'pageview', 1, 0) AS isPageview,
-            if(type = 'custom_event', 1, 0) AS isEvent
-          FROM events
-          WHERE pid = {pid:FixedString(12)}
-            AND type IN ('pageview', 'custom_event')
-            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-            AND profileId IS NOT NULL
-            AND profileId != ''
-            ${profileTypeFilter}
-            AND profileId IN (
-              SELECT DISTINCT profileId
-              FROM events
-              WHERE pid = {pid:FixedString(12)}
-                AND type = 'custom_event'
-                AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-                AND profileId IS NOT NULL
-                AND profileId != ''
-                ${profileTypeFilter}
-                ${filtersQuery}
-            )
-        )`
-    } else {
-      allProfileDataCTE = `
-        all_profile_data AS (
-          SELECT
-            profileId,
-            psid,
-            cc,
-            os,
-            br,
-            dv,
-            created,
-            if(type = 'pageview', 1, 0) AS isPageview,
-            if(type = 'custom_event', 1, 0) AS isEvent
-          FROM events
-          WHERE pid = {pid:FixedString(12)}
-            AND type IN ('pageview', 'custom_event')
-            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-            AND profileId IS NOT NULL
-            AND profileId != ''
-            ${profileTypeFilter}
-            ${filtersQuery}
-        )`
-    }
+    const allProfileDataCTE = this.buildProfilesListDataCTE(
+      filtersQuery,
+      profileTypeFilter,
+      customEVFilterApplied,
+    )
 
     const query = `
       WITH ${allProfileDataCTE},
@@ -5670,35 +5674,12 @@ export class AnalyticsService {
     }
   }
 
-  async getProfileSessionsList(
-    pid: string,
-    profileId: string,
+  private buildProfileSessionsEventsCTE(
     filtersQuery: string,
-    paramsData: any,
-    safeTimezone: string,
-    take = 30,
-    skip = 0,
-    customEVFilterApplied = false,
-  ): Promise<object[]> {
-    let allProfileEventsCTE: string
-
-    if (customEVFilterApplied) {
-      allProfileEventsCTE = `
-      all_profile_events AS (
-        SELECT
-          CAST(psid, 'String') AS psidCasted,
-          pid,
-          profileId,
-          cc,
-          os,
-          br,
-          toTimeZone(created, {timezone:String}) AS created_tz
-        FROM events
-        WHERE pid = {pid:FixedString(12)}
-          AND type IN ('pageview', 'custom_event')
-          AND profileId = {profileId:String}
-          AND psid IS NOT NULL
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    customEVFilterApplied: boolean,
+  ): string {
+    const scopedSessionFilter = customEVFilterApplied
+      ? `
           AND CAST(psid, 'String') IN (
             SELECT DISTINCT CAST(psid, 'String')
             FROM events
@@ -5709,9 +5690,10 @@ export class AnalyticsService {
               AND created BETWEEN {groupFrom:String} AND {groupTo:String}
               ${filtersQuery}
           )
-      )`
-    } else {
-      allProfileEventsCTE = `
+        `
+      : filtersQuery
+
+    return `
       all_profile_events AS (
         SELECT
           CAST(psid, 'String') AS psidCasted,
@@ -5727,9 +5709,24 @@ export class AnalyticsService {
           AND profileId = {profileId:String}
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-          ${filtersQuery}
+          ${scopedSessionFilter}
       )`
-    }
+  }
+
+  async getProfileSessionsList(
+    pid: string,
+    profileId: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+    customEVFilterApplied = false,
+  ): Promise<object[]> {
+    const allProfileEventsCTE = this.buildProfileSessionsEventsCTE(
+      filtersQuery,
+      customEVFilterApplied,
+    )
 
     const query = `
       WITH ${allProfileEventsCTE},
