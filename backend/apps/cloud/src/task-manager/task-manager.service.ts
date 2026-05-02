@@ -387,11 +387,6 @@ export class TaskManagerService {
   ): { condition: string; params: Record<string, string> } {
     const goalValue = (goal.value ?? '').toString()
 
-    // If goal value is blank, never match anything (avoid LIKE '%%')
-    if (goalValue.trim() === '') {
-      return { condition: '1=0', params: {} }
-    }
-
     const params: Record<string, string> = {}
     const column = goal.type === GoalType.CUSTOM_EVENT ? 'event_name' : 'pg'
 
@@ -401,6 +396,11 @@ export class TaskManagerService {
     }
 
     if (goal.matchType === GoalMatchType.CONTAINS) {
+      // Avoid wildcard goals matching every row via LIKE '%%'.
+      if (goalValue.trim() === '') {
+        return { condition: '1=0', params: {} }
+      }
+
       params[paramKey] = `%${goalValue}%`
       return { condition: `${column} ILIKE {${paramKey}:String}`, params }
     }
@@ -1996,14 +1996,10 @@ export class TaskManagerService {
         }
 
         // No need to check for performance activity because it's not tracked without tracking analytics
-        const queryAnalytics = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('pageview', 'error') AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
-        const queryCaptcha = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('captcha', 'error') AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
-        const queryCustomEvents = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('custom_event', 'error') AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryEvents = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('pageview', 'captcha', 'custom_event', 'error') AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
 
         // Process project IDs in chunks to avoid ClickHouse field value limit
-        let totalAnalytics = 0
-        let totalCaptcha = 0
-        let totalCustomEvents = 0
+        let totalEvents = 0
 
         for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
           const pidChunk = pids.slice(i, i + CHUNK_SIZE)
@@ -2013,63 +2009,17 @@ export class TaskManagerService {
             now,
           }
 
-          const { data: analyticsResult } = await clickhouse
+          const { data: eventsResult } = await clickhouse
             .query({
-              query: queryAnalytics,
+              query: queryEvents,
               query_params: queryParams,
             })
             .then((resultSet) => resultSet.json<{ 'count()': number }>())
 
-          totalAnalytics += analyticsResult[0]['count()']
+          totalEvents += eventsResult[0]['count()']
 
           // Early return if we found activity
-          if (totalAnalytics > 0) {
-            return
-          }
-        }
-
-        for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
-          const pidChunk = pids.slice(i, i + CHUNK_SIZE)
-          const queryParams = {
-            pids: pidChunk,
-            nineWeeksAgo,
-            now,
-          }
-
-          const { data: captchaResult } = await clickhouse
-            .query({
-              query: queryCaptcha,
-              query_params: queryParams,
-            })
-            .then((resultSet) => resultSet.json<{ 'count()': number }>())
-
-          totalCaptcha += captchaResult[0]['count()']
-
-          // Early return if we found activity
-          if (totalCaptcha > 0) {
-            return
-          }
-        }
-
-        for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
-          const pidChunk = pids.slice(i, i + CHUNK_SIZE)
-          const queryParams = {
-            pids: pidChunk,
-            nineWeeksAgo,
-            now,
-          }
-
-          const { data: customEventsResult } = await clickhouse
-            .query({
-              query: queryCustomEvents,
-              query_params: queryParams,
-            })
-            .then((resultSet) => resultSet.json<{ 'count()': number }>())
-
-          totalCustomEvents += customEventsResult[0]['count()']
-
-          // Early return if we found activity
-          if (totalCustomEvents > 0) {
+          if (totalEvents > 0) {
             return
           }
         }

@@ -719,7 +719,9 @@ export class AnalyticsController {
 
     this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/chart')
 
-    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
+    const paramsData = {
+      params: { pid, groupFrom, groupTo, ...filtersParams },
+    }
 
     const result = await this.analyticsService.groupChartByTimeBucket(
       timeBucket,
@@ -801,7 +803,9 @@ export class AnalyticsController {
 
     const subQuery = `FROM events WHERE pid = {pid:FixedString(12)} AND type = 'performance' ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
-    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
+    const paramsData = {
+      params: { pid, groupFrom, groupTo, ...filtersParams },
+    }
 
     const result = await this.analyticsService.groupPerfByTimeBucket(
       newTimeBucket,
@@ -865,7 +869,9 @@ export class AnalyticsController {
       'GET /analytics/performance/chart',
     )
 
-    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
+    const paramsData = {
+      params: { pid, groupFrom, groupTo, ...filtersParams },
+    }
 
     const chart = await this.analyticsService.getPerfChartData(
       timeBucket,
@@ -2717,7 +2723,9 @@ export class AnalyticsController {
       diff,
     )
 
-    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
+    const paramsData = {
+      params: { pid, groupFrom, groupTo, ...filtersParams },
+    }
 
     // customEvents comes as a JSON.stringified array from the frontend
     let customEventsList: string[] = []

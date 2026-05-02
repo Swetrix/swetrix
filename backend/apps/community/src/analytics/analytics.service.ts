@@ -5166,9 +5166,9 @@ export class AnalyticsService {
       SELECT DISTINCT
         CAST(errors.psid, 'String') as psid,
         any(errors.profileId) as profileId,
-        any(analytics.cc) as cc,
-        any(analytics.br) as br,
-        any(analytics.os) as os,
+        COALESCE(any(analytics.cc), any(errors.cc)) as cc,
+        COALESCE(any(analytics.br), any(errors.br)) as br,
+        COALESCE(any(analytics.os), any(errors.os)) as os,
         min(errors.created) as firstErrorAt,
         max(errors.created) as lastErrorAt,
         count(*) as errorCount
