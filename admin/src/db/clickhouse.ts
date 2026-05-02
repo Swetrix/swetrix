@@ -34,6 +34,17 @@ export interface ClickHouseStats {
   tables: TableStats[];
 }
 
+const EVENT_TABLE = "events";
+const PROJECT_ACTIVITY_EVENT_TYPES = [
+  "pageview",
+  "custom_event",
+  "error",
+  "captcha",
+];
+const PROJECT_ACTIVITY_TYPE_LIST = PROJECT_ACTIVITY_EVENT_TYPES.map(
+  (type) => `'${type}'`
+).join(", ");
+
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
   const k = 1024;
@@ -47,20 +58,16 @@ export async function getClickHouseStats(): Promise<ClickHouseStats> {
   const database = process.env.CLICKHOUSE_DATABASE || "analytics";
 
   const tables = [
-    "analytics",
-    "customEV",
-    "performance",
-    "errors",
-    "captcha",
+    EVENT_TABLE,
     "sessions",
     "revenue",
     "feature_flag_evaluations",
     "experiment_exposures",
     "error_statuses",
+    "bot_blocks",
   ];
 
   const tableStats: TableStats[] = [];
-  let totalEvents = 0;
 
   for (const table of tables) {
     try {
@@ -93,8 +100,6 @@ export async function getClickHouseStats(): Promise<ClickHouseStats> {
         bytes,
         bytesFormatted: formatBytes(bytes),
       });
-
-      totalEvents += rows;
     } catch {
       // Table might not exist, skip it
       tableStats.push({
@@ -105,6 +110,9 @@ export async function getClickHouseStats(): Promise<ClickHouseStats> {
       });
     }
   }
+
+  const totalEvents =
+    tableStats.find((table) => table.table === EVENT_TABLE)?.rows || 0;
 
   return {
     totalEvents,
@@ -118,7 +126,12 @@ export async function getProjectEventCount(pid: string): Promise<number> {
 
   try {
     const result = await client.query({
-      query: `SELECT count() as count FROM ${database}.analytics WHERE pid = {pid:String}`,
+      query: `
+        SELECT count() as count
+        FROM ${database}.${EVENT_TABLE}
+        WHERE pid = {pid:FixedString(12)}
+          AND type IN (${PROJECT_ACTIVITY_TYPE_LIST})
+      `,
       query_params: { pid },
       format: "JSONEachRow",
     });
@@ -158,8 +171,9 @@ export async function getTopProjectsByEvents(
         SELECT 
           pid,
           count() as eventCount
-        FROM ${database}.analytics
+        FROM ${database}.${EVENT_TABLE}
         WHERE created >= now() - INTERVAL ${days} DAY
+          AND type IN (${PROJECT_ACTIVITY_TYPE_LIST})
         GROUP BY pid
         ORDER BY eventCount DESC
         LIMIT ${limit}
@@ -183,8 +197,9 @@ export async function getProjectsWithRecentEvents(
     const result = await client.query({
       query: `
         SELECT DISTINCT pid
-        FROM ${database}.analytics
+        FROM ${database}.${EVENT_TABLE}
         WHERE created >= now() - INTERVAL ${days} DAY
+          AND type IN (${PROJECT_ACTIVITY_TYPE_LIST})
       `,
       format: "JSONEachRow",
     });
