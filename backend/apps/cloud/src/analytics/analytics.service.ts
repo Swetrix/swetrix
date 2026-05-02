@@ -3590,10 +3590,11 @@ export class AnalyticsService {
     if (mode === ChartRenderMode.CUMULATIVE) {
       return `
         SELECT
-          *,
-          sum(pageviews) OVER (ORDER BY ${groupBy}) as pageviews,
-          sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
+          ${groupBy},
+          sum(count) OVER (ORDER BY ${groupBy}) as count,
+          sum(affectedUsers) OVER (ORDER BY ${groupBy}) as affectedUsers
         FROM (${baseQuery})
+        ORDER BY ${groupBy}
       `
     }
 
@@ -5058,7 +5059,7 @@ export class AnalyticsService {
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
-          AND type IN ('pageview', 'custom_event')
+          AND type IN ('pageview', 'custom_event', 'error')
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           AND CAST(psid, 'String') IN (
@@ -5084,7 +5085,7 @@ export class AnalyticsService {
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
-          AND type IN ('pageview', 'custom_event')
+          AND type IN ('pageview', 'custom_event', 'error')
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${filtersQuery}
@@ -5421,7 +5422,6 @@ export class AnalyticsService {
         any(lc) AS lc
       FROM events
       WHERE pid = {pid:FixedString(12)}
-        AND type = 'pageview'
         AND profileId = {profileId:String}
     `
 
@@ -5890,7 +5890,7 @@ export class AnalyticsService {
       ${
         parsedOptions?.showResolved
           ? ''
-          : "WHERE status.status = 'active' OR status.status = 'regressed'"
+          : "WHERE status.status = 'active' OR status.status = 'regressed' OR status.status IS NULL"
       }
       GROUP BY errors.eid, status.status
       ORDER BY last_seen DESC
@@ -6059,6 +6059,8 @@ export class AnalyticsService {
     groupTo: string,
     timeBucket: string,
     showResolved: boolean,
+    sessionFiltersQuery = '',
+    sessionFiltersParams: Record<string, unknown> = {},
   ): Promise<any> {
     const resolvedFilter = showResolved
       ? ''
@@ -6071,6 +6073,7 @@ export class AnalyticsService {
       WHERE pid = {pid:FixedString(12)}
         AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${sessionFiltersQuery}
     `
 
     // Get error stats: total errors, unique errors, affected sessions, affected users
@@ -6167,7 +6170,10 @@ export class AnalyticsService {
       clickhouse
         .query({
           query: queryTotalSessions,
-          query_params: paramsData.params,
+          query_params: {
+            ...paramsData.params,
+            ...sessionFiltersParams,
+          },
         })
         .then((resultSet) => resultSet.json<any>())
         .then(({ data }) => data[0]),

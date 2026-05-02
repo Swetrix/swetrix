@@ -2279,6 +2279,8 @@ export class AnalyticsController {
       DataType.ERRORS,
       true,
     )
+    const [sessionFiltersQuery, sessionFiltersParams] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS, true)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
@@ -2308,6 +2310,8 @@ export class AnalyticsController {
       groupToUTC,
       newTimeBucket,
       parsedOptions.showResolved || false,
+      sessionFiltersQuery,
+      sessionFiltersParams,
     )
   }
 

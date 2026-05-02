@@ -1981,9 +1981,12 @@ export class TaskManagerService {
       },
       select: ['id'],
     })
-    const now = dayjs.utc().format('YYYY-MM-DD')
+    const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
     // a bit more than 2 months ago
-    const nineWeeksAgo = dayjs.utc().subtract(9, 'w').format('YYYY-MM-DD')
+    const nineWeeksAgo = dayjs
+      .utc()
+      .subtract(9, 'w')
+      .format('YYYY-MM-DD HH:mm:ss')
 
     await mapLimit(users, REPORTS_USERS_CONCURRENCY, async (user) => {
       const { id } = user
