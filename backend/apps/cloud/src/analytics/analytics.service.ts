@@ -2320,6 +2320,14 @@ export class AnalyticsService {
                   dateDiff('second', min(firstSeen), max(lastSeen)) as duration
                 FROM sessions
                 WHERE pid = {pid:FixedString(12)}
+                  AND psid IN (
+                    SELECT DISTINCT psid
+                    FROM events
+                    WHERE pid = {pid:FixedString(12)}
+                      AND type = '${allTimeType}'
+                      AND psid IS NOT NULL
+                      ${filtersQuery}
+                  )
                 GROUP BY psid
               )
             )
@@ -2610,20 +2618,18 @@ export class AnalyticsService {
     customEVFilterApplied: boolean,
     mode: ChartRenderMode,
   ): IExtractChartData {
+    const chartData = this.extractChartData(result, xShifted)
+
     if (customEVFilterApplied) {
-      const uniques =
+      const visits =
         this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
         []
-      const sdur = Array(_size(xShifted)).fill(0)
 
-      return {
-        visits: uniques,
-        uniques,
-        sdur,
-      }
+      chartData.visits = Array.from(
+        { length: _size(xShifted) },
+        (_, index) => visits[index] || 0,
+      )
     }
-
-    const chartData = this.extractChartData(result, xShifted)
 
     // Propagate the previous cumulative value forward for empty buckets
     if (mode === ChartRenderMode.CUMULATIVE) {
@@ -3475,16 +3481,31 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
+        avgOrNull(sessions_data.duration) as sdur,
+        count(DISTINCT psid) as uniques,
         count() as count
       FROM (
-        SELECT *,
-        ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
+        SELECT
+          pid,
+          psid,
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM events
         WHERE pid = {pid:FixedString(12)}
           AND type = 'custom_event'
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
+      LEFT JOIN (
+        SELECT
+          pid,
+          psid,
+          dateDiff('second', min(firstSeen), max(lastSeen)) as duration
+        FROM sessions
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY pid, psid
+      ) as sessions_data
+      ON subquery.pid = sessions_data.pid
+      AND subquery.psid = sessions_data.psid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
       `
@@ -3493,7 +3514,8 @@ export class AnalyticsService {
       return `
           SELECT
             *,
-            sum(count) OVER (ORDER BY ${groupBy}) as count
+            sum(count) OVER (ORDER BY ${groupBy}) as count,
+            sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
           FROM (${baseQuery})
         `
     }
@@ -6303,6 +6325,7 @@ export class AnalyticsService {
         WHERE pid = {pid:FixedString(12)}
           AND type = 'pageview'
           AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY pid, psid
       ) AS analytics
         ON errors.psid = analytics.psid

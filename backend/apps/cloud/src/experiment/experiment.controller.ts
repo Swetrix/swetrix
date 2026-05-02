@@ -60,6 +60,7 @@ import {
 } from './dto/experiment.dto'
 import { ExperimentService } from './experiment.service'
 import { GoalService } from '../goal/goal.service'
+import { Goal, GoalMatchType, GoalType } from '../goal/entity/goal.entity'
 import { FeatureFlagService } from '../feature-flag/feature-flag.service'
 import {
   FeatureFlag,
@@ -72,6 +73,15 @@ import { Pagination } from '../common/pagination'
 
 const EXPERIMENTS_MAXIMUM = 20 // Maximum experiments per project
 const FEATURE_FLAG_KEY_REGEX = /^[a-zA-Z0-9_-]+$/
+
+type GoalEventConditions = {
+  eventType: 'pageview' | 'custom_event'
+  matchColumn: 'pg' | 'event_name'
+  matchCondition: string
+  metaCondition: string
+  metaParams: Record<string, string>
+  goalValue: string
+}
 
 @ApiTags('Experiment')
 @Controller(['experiment', 'v1/experiment'])
@@ -881,11 +891,14 @@ export class ExperimentController {
       timeBucketParam || getLowestPossibleTimeBucket(period, from, to)
     let allowedTimeBucketForPeriodAll: TimeBucketType[] | undefined
     let diff: number | undefined
+    const goalConditions = experiment.goal
+      ? this.buildGoalEventConditions(experiment.goal)
+      : null
 
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         experiment.project.id,
-        'pageview',
+        goalConditions?.eventType || 'pageview',
       )
 
       diff = res.diff
@@ -938,39 +951,14 @@ export class ExperimentController {
     }
 
     let conversionsData: { variantKey: string; conversions: number }[] = []
-    if (experiment.goal) {
-      const goalType = experiment.goal.type
-      const eventType =
-        goalType === 'custom_event' ? 'custom_event' : 'pageview'
-      const matchColumn = goalType === 'custom_event' ? 'event_name' : 'pg'
-      const goalValue = experiment.goal.value || ''
-
-      let matchCondition = ''
-      if (experiment.goal.matchType === 'exact') {
-        matchCondition = `c.${matchColumn} = {goalValue:String}`
-      } else if (goalValue.trim() === '') {
-        matchCondition = '1=0'
-      } else {
-        matchCondition = `c.${matchColumn} ILIKE concat('%', {goalValue:String}, '%')`
-      }
-
-      let metaCondition = ''
-      const metaParams: Record<string, string> = {}
-      const metadataFilters = experiment.goal.metadataFilters
-      if (metadataFilters && metadataFilters.length > 0) {
-        const conditions: string[] = []
-        metadataFilters.forEach((filter, index) => {
-          const keyParam = `metaKey${index}`
-          const valueParam = `metaValue${index}`
-          metaParams[keyParam] = filter.key
-          metaParams[valueParam] = filter.value
-          conditions.push(
-            `has(c.meta.key, {${keyParam}:String}) AND c.meta.value[indexOf(c.meta.key, {${keyParam}:String})] = {${valueParam}:String}`,
-          )
-        })
-
-        metaCondition = `AND (${conditions.join(' AND ')})`
-      }
+    if (goalConditions) {
+      const {
+        eventType,
+        matchCondition,
+        metaCondition,
+        metaParams,
+        goalValue,
+      } = goalConditions
 
       const conversionsQuery = `
         SELECT 
@@ -1108,6 +1096,50 @@ export class ExperimentController {
     }
   }
 
+  private buildGoalEventConditions(goal: Goal): GoalEventConditions {
+    const eventType =
+      goal.type === GoalType.CUSTOM_EVENT ? 'custom_event' : 'pageview'
+    const matchColumn =
+      goal.type === GoalType.CUSTOM_EVENT ? 'event_name' : 'pg'
+    const goalValue = goal.value || ''
+    const metaParams: Record<string, string> = {}
+
+    let matchCondition = ''
+    if (goal.matchType === GoalMatchType.EXACT) {
+      matchCondition = `c.${matchColumn} = {goalValue:String}`
+    } else if (goalValue.trim() === '') {
+      matchCondition = '1=0'
+    } else {
+      matchCondition = `c.${matchColumn} ILIKE concat('%', {goalValue:String}, '%')`
+    }
+
+    let metaCondition = ''
+    if (goal.metadataFilters && goal.metadataFilters.length > 0) {
+      const conditions: string[] = []
+
+      goal.metadataFilters.forEach((filter, index) => {
+        const keyParam = `metaKey${index}`
+        const valueParam = `metaValue${index}`
+        metaParams[keyParam] = filter.key
+        metaParams[valueParam] = filter.value
+        conditions.push(
+          `has(c.meta.key, {${keyParam}:String}) AND c.meta.value[indexOf(c.meta.key, {${keyParam}:String})] = {${valueParam}:String}`,
+        )
+      })
+
+      metaCondition = `AND (${conditions.join(' AND ')})`
+    }
+
+    return {
+      eventType,
+      matchColumn,
+      matchCondition,
+      metaCondition,
+      metaParams,
+      goalValue,
+    }
+  }
+
   /**
    * Generate time-series chart data for experiment win probabilities
    */
@@ -1180,41 +1212,17 @@ export class ExperimentController {
 
     let conversionsData: any[] = []
     if (experiment.goal) {
-      const goalType = experiment.goal.type
-      const eventType =
-        goalType === 'custom_event' ? 'custom_event' : 'pageview'
-      const matchColumn = goalType === 'custom_event' ? 'event_name' : 'pg'
-      const goalValue = experiment.goal.value || ''
+      const {
+        eventType,
+        matchCondition,
+        metaCondition,
+        metaParams,
+        goalValue,
+      } = this.buildGoalEventConditions(experiment.goal)
       const conversionsDateColumnsSelect = this.getTimeBucketDateColumnsSelect(
         timeBucket,
         'firstConversion',
       )
-
-      let matchCondition = ''
-      if (experiment.goal.matchType === 'exact') {
-        matchCondition = `c.${matchColumn} = {goalValue:String}`
-      } else if (goalValue.trim() === '') {
-        matchCondition = '1=0'
-      } else {
-        matchCondition = `c.${matchColumn} ILIKE concat('%', {goalValue:String}, '%')`
-      }
-
-      let metaCondition = ''
-      const metaParams: Record<string, string> = {}
-      const metadataFilters = experiment.goal.metadataFilters
-      if (metadataFilters && metadataFilters.length > 0) {
-        const conditions: string[] = []
-        metadataFilters.forEach((filter, index) => {
-          const keyParam = `metaKey${index}`
-          const valueParam = `metaValue${index}`
-          metaParams[keyParam] = filter.key
-          metaParams[valueParam] = filter.value
-          conditions.push(
-            `has(c.meta.key, {${keyParam}:String}) AND c.meta.value[indexOf(c.meta.key, {${keyParam}:String})] = {${valueParam}:String}`,
-          )
-        })
-        metaCondition = `AND (${conditions.join(' AND ')})`
-      }
 
       const conversionsQuery = `
         SELECT

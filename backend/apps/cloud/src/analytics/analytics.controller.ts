@@ -258,10 +258,19 @@ export class AnalyticsController {
 
     let diff
 
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.analyticsService.getFiltersQuery(
+        filters,
+        isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
+      )
+
     if (period === 'all') {
+      const eventType = isCaptcha
+        ? 'captcha'
+        : this.analyticsService.getAnalyticsEventType(customEVFilterApplied)
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'pageview',
+        eventType,
       )
 
       diff = res.diff
@@ -271,12 +280,6 @@ export class AnalyticsController {
         : res.timeBucket[0]
       allowedTumebucketForPeriodAll = res.timeBucket
     }
-
-    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
-      this.analyticsService.getFiltersQuery(
-        filters,
-        isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
-      )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
