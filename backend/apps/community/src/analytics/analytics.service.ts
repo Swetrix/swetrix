@@ -4400,7 +4400,7 @@ export class AnalyticsService {
       FROM events
       WHERE
         pid = {pid:FixedString(12)}
-        AND type = 'pageview'
+        AND type IN ('pageview', 'custom_event', 'error')
         AND psid IS NOT NULL
         AND toString(psid) = {psid:String}
       ORDER BY created ASC
@@ -4491,7 +4491,7 @@ export class AnalyticsService {
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
-          AND type = 'custom_event'
+          AND type IN ('custom_event', 'error')
           AND psid IS NOT NULL
           AND toString(psid) = {psid:String}
         ORDER BY created ASC
@@ -4930,8 +4930,8 @@ export class AnalyticsService {
       timeBucket,
       groupFrom,
       groupTo,
-      `FROM events WHERE type = 'error' AND eid = {eid:FixedString(32)} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`,
-      'AND eid = {eid:FixedString(32)}',
+      `FROM events WHERE type = 'error' AND pid = {pid:FixedString(12)} AND eid = {eid:FixedString(32)} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`,
+      'AND pid = {pid:FixedString(12)} AND eid = {eid:FixedString(32)}',
       paramsData,
       safeTimezone,
       ChartRenderMode.PERIODICAL,
@@ -4969,6 +4969,7 @@ export class AnalyticsService {
       WHERE pid = {pid:FixedString(12)}
         AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery}
     `
 
     // Get error stats: total errors, unique errors, affected sessions, affected users

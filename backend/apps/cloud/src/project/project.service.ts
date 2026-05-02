@@ -894,7 +894,11 @@ export class ProjectService {
       // Process PIDs in chunks
       for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
         const pidChunk = pids.slice(i, i + CHUNK_SIZE)
-        const params = { pids: pidChunk }
+        const params = {
+          pids: pidChunk,
+          monthStart,
+          monthEnd,
+        }
 
         const query = `
           SELECT
@@ -904,7 +908,7 @@ export class ProjectService {
             countIf(type = 'error') AS errors
           FROM events
           WHERE pid IN ({pids:Array(FixedString(12))})
-            AND created BETWEEN '${monthStart}' AND '${monthEnd}'
+            AND created BETWEEN {monthStart:String} AND {monthEnd:String}
             AND type IN ('pageview', 'custom_event', 'captcha', 'error')
         `
 

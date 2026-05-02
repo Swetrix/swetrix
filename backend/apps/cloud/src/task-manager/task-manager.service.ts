@@ -1996,9 +1996,9 @@ export class TaskManagerService {
         }
 
         // No need to check for performance activity because it's not tracked without tracking analytics
-        const queryAnalytics = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type = 'pageview' AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
-        const queryCaptcha = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type = 'captcha' AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
-        const queryCustomEvents = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type = 'custom_event' AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryAnalytics = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('pageview', 'error') AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryCaptcha = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('captcha', 'error') AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryCustomEvents = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('custom_event', 'error') AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
 
         // Process project IDs in chunks to avoid ClickHouse field value limit
         let totalAnalytics = 0

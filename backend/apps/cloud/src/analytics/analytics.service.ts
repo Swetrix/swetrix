@@ -278,6 +278,14 @@ const EXCLUDE_NULL_FOR = [
   'ctp',
 ]
 
+const ERROR_COLUMN_MAP: Record<string, string> = {
+  name: 'error_name',
+  message: 'error_message',
+  filename: 'error_filename',
+}
+
+const mapErrorColumn = (type: string): string => ERROR_COLUMN_MAP[type] || type
+
 const generateParamsQuery = (
   col: string,
   subQuery: string,
@@ -285,7 +293,8 @@ const generateParamsQuery = (
   type: 'traffic' | 'performance' | 'captcha' | 'errors',
   measure?: PerfMeasure,
 ): string => {
-  let columns = [`${col} as name`]
+  const sqlCol = type === 'errors' ? mapErrorColumn(col) : col
+  let columns = [`${sqlCol} as name`]
 
   // For regions and cities we'll return an array of objects, that will also include the country code and region code
   // We need the conutry code to display the flag next to the region/city name
@@ -309,15 +318,15 @@ const generateParamsQuery = (
 
     const fn = MEASURES_MAP[processedMeasure]
 
-    if (col === 'pg' || col === 'host') {
+    if (sqlCol === 'pg' || sqlCol === 'host') {
       return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
     }
 
-    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(sqlCol) ? `AND ${sqlCol} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'errors') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(sqlCol) ? `AND ${sqlCol} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'captcha') {
@@ -1265,6 +1274,8 @@ export class AnalyticsService {
         } else if (column === 'ev') {
           // Public filter contract `ev` maps to the renamed `event_name` column
           sqlColumn = 'event_name'
+        } else if (dataType === DataType.ERRORS) {
+          sqlColumn = mapErrorColumn(column)
         }
 
         const isNullFilter =
@@ -2880,13 +2891,7 @@ export class AnalyticsService {
       )
     }
 
-    // Public ERROR_COLUMNS use legacy short names; map to new column names.
-    const errorColMap: Record<string, string> = {
-      name: 'error_name',
-      message: 'error_message',
-      filename: 'error_filename',
-    }
-    const sqlCol = errorColMap[type] || type
+    const sqlCol = mapErrorColumn(type)
 
     const query = `SELECT ${sqlCol} AS ${type} FROM events WHERE pid={pid:FixedString(12)} AND type = 'error' AND ${sqlCol} IS NOT NULL GROUP BY ${sqlCol}`
 
@@ -6259,26 +6264,53 @@ export class AnalyticsService {
     `
 
     const querySessions = `
-      SELECT DISTINCT
+      SELECT
         CAST(errors.psid, 'String') as psid,
-        any(errors.profileId) as profileId,
+        errors.profileId as profileId,
         any(analytics.cc) as cc,
         any(analytics.br) as br,
         any(analytics.os) as os,
-        min(errors.created) as firstErrorAt,
-        max(errors.created) as lastErrorAt,
-        count(*) as errorCount
-      FROM events AS errors
-      LEFT JOIN events AS analytics
+        errors.firstErrorAt as firstErrorAt,
+        errors.lastErrorAt as lastErrorAt,
+        errors.errorCount as errorCount
+      FROM (
+        SELECT
+          pid,
+          psid,
+          any(profileId) AS profileId,
+          min(created) AS firstErrorAt,
+          max(created) AS lastErrorAt,
+          count(*) AS errorCount
+        FROM events
+        WHERE pid = {pid:FixedString(12)}
+          AND type = 'error'
+          AND eid = {eid:FixedString(32)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY pid, psid
+      ) AS errors
+      LEFT JOIN (
+        SELECT
+          pid,
+          psid,
+          any(cc) AS cc,
+          any(br) AS br,
+          any(os) AS os,
+          count(*) AS pageviews
+        FROM events
+        WHERE pid = {pid:FixedString(12)}
+          AND type = 'pageview'
+          AND psid IS NOT NULL
+        GROUP BY pid, psid
+      ) AS analytics
         ON errors.psid = analytics.psid
         AND errors.pid = analytics.pid
-        AND analytics.type = 'pageview'
-      WHERE errors.pid = {pid:FixedString(12)}
-        AND errors.type = 'error'
-        AND errors.eid = {eid:FixedString(32)}
-        AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
-      GROUP BY errors.psid
-      ORDER BY lastErrorAt DESC
+      GROUP BY
+        errors.psid,
+        errors.profileId,
+        errors.firstErrorAt,
+        errors.lastErrorAt,
+        errors.errorCount
+      ORDER BY errors.lastErrorAt DESC
       LIMIT {take:UInt32}
       OFFSET {skip:UInt32}
     `
