@@ -2060,11 +2060,11 @@ export class AnalyticsService {
     groupTo: string,
   ): Promise<{ cc: string; count: number } | null> {
     const query = `
-      SELECT 
+      SELECT
         cc,
         count() as count
       FROM events
-      WHERE 
+      WHERE
         pid = {pid:FixedString(12)}
         AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -2096,12 +2096,12 @@ export class AnalyticsService {
 
     const query = `
       WITH counts AS (
-        SELECT 
+        SELECT
           pid,
           cc,
           count() as cnt
         FROM events
-        WHERE 
+        WHERE
           pid IN {pids:Array(FixedString(12))}
           AND type = 'pageview'
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -2146,11 +2146,11 @@ export class AnalyticsService {
     groupTo: string,
   ): Promise<{ count: number; uniqueErrors: number }> {
     const query = `
-      SELECT 
+      SELECT
         count() as count,
         count(DISTINCT eid) as uniqueErrors
       FROM events
-      WHERE 
+      WHERE
         pid = {pid:FixedString(12)}
         AND type = 'error'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -2178,12 +2178,12 @@ export class AnalyticsService {
     }
 
     const query = `
-      SELECT 
+      SELECT
         pid,
         count() as count,
         count(DISTINCT eid) as uniqueErrors
       FROM events
-      WHERE 
+      WHERE
         pid IN {pids:Array(FixedString(12))}
         AND type = 'error'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -2227,11 +2227,11 @@ export class AnalyticsService {
     }
 
     const query = `
-      SELECT 
+      SELECT
         pid,
         uniqExact(psid) as totalSessions
       FROM events
-      WHERE 
+      WHERE
         pid IN {pids:Array(FixedString(12))}
         AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -2975,9 +2975,9 @@ export class AnalyticsService {
     const safeVersionCol = column === 'br' ? 'brv' : 'osv'
 
     const query = `
-      SELECT ${column}, ${safeVersionCol} 
+      SELECT ${column}, ${safeVersionCol}
       FROM events
-      WHERE pid={pid:FixedString(12)} AND type = '${safeType}' AND ${column} IS NOT NULL AND ${safeVersionCol} IS NOT NULL 
+      WHERE pid={pid:FixedString(12)} AND type = '${safeType}' AND ${column} IS NOT NULL AND ${safeVersionCol} IS NOT NULL
       GROUP BY ${column}, ${safeVersionCol}
     `
 
@@ -3037,7 +3037,7 @@ export class AnalyticsService {
 
     const query = `
       WITH ${withClauses.join(',\n')}
-      SELECT 
+      SELECT
         column_name,
         name,
         count,
@@ -3058,7 +3058,7 @@ export class AnalyticsService {
             }
 
             return `
-              SELECT 
+              SELECT
                 '${col}' as column_name,
                 name,
                 count,
@@ -3734,7 +3734,7 @@ export class AnalyticsService {
   ): Promise<{ name: string; count: number }[]> {
     const query = `
       WITH session_first_pages AS (
-        SELECT 
+        SELECT
           psid,
           argMin(pg, created) as entry_page
         ${subQuery}
@@ -5093,7 +5093,7 @@ export class AnalyticsService {
       WITH distinct_sessions_filtered AS (
         SELECT
           psidCasted,
-          pid, 
+          pid,
           any(cc) AS cc,
           any(os) AS os,
           any(br) AS br,
@@ -5103,32 +5103,32 @@ export class AnalyticsService {
         GROUP BY psidCasted, pid
       ),
       pageview_counts AS (
-        SELECT 
+        SELECT
           CAST(psid, 'String') AS psidCasted,
-          pid, 
-          count() as count 
+          pid,
+          count() as count
         FROM events
-        WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND psid IS NOT NULL 
+        WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
       event_counts AS (
-        SELECT 
+        SELECT
           CAST(psid, 'String') AS psidCasted,
-          pid, 
-          count() as count 
+          pid,
+          count() as count
         FROM events
-        WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' AND psid IS NOT NULL 
+        WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
       error_counts AS (
-        SELECT 
+        SELECT
           CAST(psid, 'String') AS psidCasted,
-          pid, 
-          count() as count 
+          pid,
+          count() as count
         FROM events
-        WHERE pid = {pid:FixedString(12)} AND type = 'error' AND psid IS NOT NULL 
+        WHERE pid = {pid:FixedString(12)} AND type = 'error' AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
@@ -5153,9 +5153,9 @@ export class AnalyticsService {
         GROUP BY psidCasted, pid
       ),
       session_duration_agg AS (
-        SELECT 
-          CAST(psid, 'String') AS psidCasted, 
-          pid, 
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
           argMax(profileId, lastSeen) as profileId
         FROM sessions
