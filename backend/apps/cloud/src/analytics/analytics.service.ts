@@ -4818,31 +4818,47 @@ export class AnalyticsService {
     const queryPages = `
       WITH events_with_meta AS (
         SELECT
-          multiIf(type = 'pageview', 'pageview', type = 'custom_event', 'event', 'error') AS type,
+          multiIf(event_type = 'pageview', 'pageview', event_type = 'custom_event', 'event', 'error') AS type,
           multiIf(
-            type = 'pageview', toString(pg),
-            type = 'custom_event', toString(event_name),
+            event_type = 'pageview', toString(pg),
+            event_type = 'custom_event', toString(event_name),
             toString(error_name)
           ) AS value,
           toTimeZone(created, {timezone:String}) AS created,
           pid,
           toString(psid) AS psid,
           if(
-            type = 'error',
+            event_type = 'error',
             [
               tuple('message', COALESCE(error_message, '')),
               tuple('lineno', toString(COALESCE(lineno, 0))),
               tuple('colno', toString(COALESCE(colno, 0))),
               tuple('filename', COALESCE(error_filename, ''))
             ],
-            arrayFilter(x -> x.1 != '' AND x.2 != '', arrayZip(meta.key, meta.value))
+            arrayFilter(x -> x.1 != '' AND x.2 != '', arrayZip(meta_key, meta_value))
           ) AS metadata
-        FROM events
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND type IN ('pageview', 'custom_event', 'error')
-          AND psid IS NOT NULL
-          AND toString(psid) = {psid:String}
+        FROM (
+          SELECT
+            type AS event_type,
+            pg,
+            event_name,
+            error_name,
+            error_message,
+            lineno,
+            colno,
+            error_filename,
+            created,
+            pid,
+            psid,
+            meta.key AS meta_key,
+            meta.value AS meta_value
+          FROM events
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event', 'error')
+            AND psid IS NOT NULL
+            AND toString(psid) = {psid:String}
+        )
 
         UNION ALL
 
@@ -4897,7 +4913,7 @@ export class AnalyticsService {
       FROM events
       WHERE
         pid = {pid:FixedString(12)}
-        AND type = 'pageview'
+        AND type IN ('pageview', 'custom_event', 'error')
         AND psid IS NOT NULL
         AND toString(psid) = {psid:String}
       ORDER BY created ASC
@@ -4994,7 +5010,7 @@ export class AnalyticsService {
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
-          AND type = 'custom_event'
+          AND type IN ('custom_event', 'error')
           AND psid IS NOT NULL
           AND toString(psid) = {psid:String}
         ORDER BY created ASC

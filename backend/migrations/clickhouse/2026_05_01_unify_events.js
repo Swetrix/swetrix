@@ -91,11 +91,11 @@ const queries = [
 
   `RENAME TABLE ${dbName}.events TO ${dbName}.events_backup, ${dbName}.events_tmp TO ${dbName}.events;`,
 
-  `DROP TABLE IF EXISTS ${dbName}.analytics;`,
-  `DROP TABLE IF EXISTS ${dbName}.customEV;`,
-  `DROP TABLE IF EXISTS ${dbName}.errors;`,
-  `DROP TABLE IF EXISTS ${dbName}.performance;`,
-  `DROP TABLE IF EXISTS ${dbName}.captcha;`,
+  // `DROP TABLE IF EXISTS ${dbName}.analytics;`,
+  // `DROP TABLE IF EXISTS ${dbName}.customEV;`,
+  // `DROP TABLE IF EXISTS ${dbName}.errors;`,
+  // `DROP TABLE IF EXISTS ${dbName}.performance;`,
+  // `DROP TABLE IF EXISTS ${dbName}.captcha;`,
   `DROP TABLE IF EXISTS ${dbName}.events_backup;`,
 ]
 
