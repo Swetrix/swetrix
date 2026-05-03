@@ -40,6 +40,7 @@ const PROJECT_ACTIVITY_EVENT_TYPES = [
   "custom_event",
   "error",
   "captcha",
+  "performance",
 ];
 const PROJECT_ACTIVITY_TYPE_LIST = PROJECT_ACTIVITY_EVENT_TYPES.map(
   (type) => `'${type}'`

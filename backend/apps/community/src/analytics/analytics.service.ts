@@ -4995,12 +4995,11 @@ export class AnalyticsService {
       ? ''
       : "AND (status.status = 'active' OR status.status = 'regressed' OR status.status IS NULL)"
 
-    // Get total sessions from pageview events for the time range
+    // Get total sessions from all matching events for the time range
     const queryTotalSessions = `
       SELECT count(DISTINCT psid) as totalSessions
       FROM events
       WHERE pid = {pid:FixedString(12)}
-        AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${sessionFiltersQuery}
     `
@@ -5578,7 +5577,7 @@ export class AnalyticsService {
             if(type = 'custom_event', 1, 0) AS isEvent
           FROM events
           WHERE pid = {pid:FixedString(12)}
-            AND type IN ('pageview', 'custom_event')
+            AND type IN ('pageview', 'custom_event', 'error')
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
             AND profileId IS NOT NULL
             AND profileId != ''
@@ -5727,18 +5726,19 @@ export class AnalyticsService {
     // Query for device/location details
     const queryDetails = `
       SELECT
-        any(cc) AS cc,
-        any(rg) AS rg,
-        any(ct) AS ct,
-        any(os) AS os,
-        any(osv) AS osv,
-        any(br) AS br,
-        any(brv) AS brv,
-        any(dv) AS dv,
-        any(lc) AS lc
+        argMax(cc, created) AS cc,
+        argMax(rg, created) AS rg,
+        argMax(ct, created) AS ct,
+        argMax(os, created) AS os,
+        argMax(osv, created) AS osv,
+        argMax(br, created) AS br,
+        argMax(brv, created) AS brv,
+        argMax(dv, created) AS dv,
+        argMax(lc, created) AS lc
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND profileId = {profileId:String}
+        AND type IN ('pageview', 'custom_event', 'error')
     `
 
     const params = { pid, profileId }
@@ -5992,7 +5992,7 @@ export class AnalyticsService {
           toTimeZone(created, {timezone:String}) AS created_tz
         FROM events
         WHERE pid = {pid:FixedString(12)}
-          AND type IN ('pageview', 'custom_event')
+          AND type IN ('pageview', 'custom_event', 'error')
           AND profileId = {profileId:String}
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}

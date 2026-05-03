@@ -389,10 +389,32 @@ export class TaskManagerService {
 
     const params: Record<string, string> = {}
     const column = goal.type === GoalType.CUSTOM_EVENT ? 'event_name' : 'pg'
+    const appendMetadataFilters = (condition: string) => {
+      if (!goal.metadataFilters || goal.metadataFilters.length === 0) {
+        return { condition, params }
+      }
+
+      const metaConditions: string[] = []
+
+      goal.metadataFilters.forEach((filter, index) => {
+        const keyParam = `${paramKey}_metaKey${index}`
+        const valueParam = `${paramKey}_metaValue${index}`
+        params[keyParam] = filter.key
+        params[valueParam] = filter.value
+        metaConditions.push(
+          `has(meta.key, {${keyParam}:String}) AND meta.value[indexOf(meta.key, {${keyParam}:String})] = {${valueParam}:String}`,
+        )
+      })
+
+      return {
+        condition: `(${condition}) AND (${metaConditions.join(' AND ')})`,
+        params,
+      }
+    }
 
     if (goal.matchType === GoalMatchType.EXACT) {
       params[paramKey] = goalValue
-      return { condition: `${column} = {${paramKey}:String}`, params }
+      return appendMetadataFilters(`${column} = {${paramKey}:String}`)
     }
 
     if (goal.matchType === GoalMatchType.CONTAINS) {
@@ -402,12 +424,12 @@ export class TaskManagerService {
       }
 
       params[paramKey] = `%${goalValue}%`
-      return { condition: `${column} ILIKE {${paramKey}:String}`, params }
+      return appendMetadataFilters(`${column} ILIKE {${paramKey}:String}`)
     }
 
     // Regex goal
     params[paramKey] = goalValue
-    return { condition: `match(${column}, {${paramKey}:String})`, params }
+    return appendMetadataFilters(`match(${column}, {${paramKey}:String})`)
   }
 
   /**
@@ -579,7 +601,7 @@ export class TaskManagerService {
         SELECT count() AS totalEvents
         FROM events
         WHERE pid IN ({pids:Array(FixedString(12))})
-          AND type IN ('pageview', 'custom_event', 'error', 'captcha')
+          AND type IN ('pageview', 'custom_event', 'error', 'captcha', 'performance')
       `
 
       const { data } = await clickhouse
@@ -1998,8 +2020,7 @@ export class TaskManagerService {
           return
         }
 
-        // No need to check for performance activity because it's not tracked without tracking analytics
-        const queryEvents = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('pageview', 'captcha', 'custom_event', 'error') AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryEvents = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('pageview', 'captcha', 'custom_event', 'error', 'performance') AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
 
         // Process project IDs in chunks to avoid ClickHouse field value limit
         let totalEvents = 0

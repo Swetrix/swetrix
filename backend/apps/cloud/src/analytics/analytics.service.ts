@@ -6101,12 +6101,11 @@ export class AnalyticsService {
       ? ''
       : "AND (status.status = 'active' OR status.status = 'regressed' OR status.status IS NULL)"
 
-    // Get total sessions from pageview events for the time range
+    // Get total sessions from all matching events for the time range
     const queryTotalSessions = `
       SELECT count(DISTINCT psid) as totalSessions
       FROM events
       WHERE pid = {pid:FixedString(12)}
-        AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${sessionFiltersQuery}
     `

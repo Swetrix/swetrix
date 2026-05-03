@@ -709,13 +709,14 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      timeBucket,
-      period,
-      safeTimezone,
-    )
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        timeBucket,
+        period,
+        safeTimezone,
+      )
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
@@ -727,7 +728,12 @@ export class AnalyticsController {
     this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/chart')
 
     const paramsData = {
-      params: { pid, groupFrom, groupTo, ...filtersParams },
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
     }
 
     const result = await this.analyticsService.groupChartByTimeBucket(
@@ -882,8 +888,8 @@ export class AnalyticsController {
 
     const chart = await this.analyticsService.getPerfChartData(
       timeBucket,
-      from,
-      to,
+      groupFrom,
+      groupTo,
       filtersQuery,
       paramsData,
       safeTimezone,
@@ -2725,17 +2731,23 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      newTimeBucket,
-      period,
-      safeTimezone,
-      diff,
-    )
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        newTimeBucket,
+        period,
+        safeTimezone,
+        diff,
+      )
 
     const paramsData = {
-      params: { pid, groupFrom, groupTo, ...filtersParams },
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
     }
 
     // customEvents comes as a JSON.stringified array from the frontend
