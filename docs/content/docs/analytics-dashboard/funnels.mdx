@@ -4,37 +4,45 @@ title: Funnels
 sidebar_label: Funnels
 ---
 
-Funnels allow you to visualise and measure how many users complete a specific series of steps on your website. This is essential for understanding conversion rates and identifying where users drop off in key processes like sign-ups, checkouts, or onboarding flows.
+Funnels allow you to visualise how many visitors complete a specific sequence of pages and events on your website. They are useful for measuring conversion flows such as sign-ups, checkouts, onboarding, upgrades, or any other journey where the order of actions matters.
 
 <img alt="Funnel view" src="/docs/img/analytics-dashboard/funnel-view.png" />
 
 ## Overview
 
-A funnel consists of a sequence of steps (pageviews or custom events) that you expect users to follow. Swetrix tracks the number of unique visitors who complete each step and calculates the conversion rate between them.
+A funnel consists of 2 to 10 ordered steps. Each step can be either:
 
-The Funnels dashboard provides a list of all your active funnels. Clicking on a funnel opens detailed analytics for that specific flow.
+- **Page**: a page path, such as `/pricing`, `/checkout`, or `/dashboard`.
+- **Event**: a custom event name, such as `Registration`, `trial_started`, or `Purchase`.
+
+Swetrix counts visitors who complete the steps in sequence, then calculates conversion and dropoff for each step. A visitor is only counted at a later step if they also completed all previous steps in the correct order.
+
+The Funnels dashboard shows all saved funnels for the project. Each funnel card displays the funnel name and its steps, with page and event steps shown separately. Clicking a card opens the detailed analytics view for that saved funnel.
 
 ## Creating a Funnel
 
 To create a new funnel:
 
 1.  Navigate to the **Funnels** tab in your project dashboard.
-2.  Click the **New Funnel** button (or the large card with a plus icon).
+2.  Click **New Funnel**. If you already have funnels, you can also use the dashed **New Funnel** card in the list.
 3.  **Name**: Give your funnel a descriptive name (e.g., "Checkout Flow").
 4.  **Steps**: Add the steps you want to track in order.
-    - A step can be a **Page Path** (e.g., `/pricing`) or a **Custom Event** name (e.g., `signup_button_clicked`).
-    - You can add multiple steps to define the exact journey.
-5.  Click **Create funnel** to save.
+    - Choose **Page** for page paths. Page steps should start with `/`, for example `/pricing`.
+    - Choose **Event** for custom events, for example `Registration`.
+    - Funnels must contain at least 2 steps and can contain up to 10 steps.
+5.  Click **Continue** to save.
 
 <img alt="Create a funnel" src="/docs/img/analytics-dashboard/create-funnel.png" />
 
 ## Analyzing a Funnel
 
-When you view a specific funnel, you'll see a visualization of the user journey along with key performance metrics.
+When you view a specific funnel, Swetrix opens a dedicated funnel detail view. The funnel is selected through the URL, so you can share or revisit a specific funnel view directly.
+
+The date selector is available in the funnel detail header. Funnels support the following time ranges: last hour, last day, last 7 days, last 4 weeks, last 3 months, last 12 months, all time, and custom ranges.
 
 ### Summary Metrics
 
-At the top of the funnel view, you will find a summary:
+At the top of the funnel chart, you will find a compact summary:
 
 - **Steps**: The total number of steps in the funnel.
 - **Conversion Rate**: The percentage of users who started the funnel and successfully reached the final step.
@@ -45,10 +53,19 @@ At the top of the funnel view, you will find a summary:
 
 The chart visualizes the flow of users through each step:
 
-- **Visitors**: The blue bar shows the number of users who successfully reached this step.
-- **Dropoff**: The striped bar indicates the number of users who left the funnel at this step (did not proceed to the next one).
+- **Visitors**: The blue section shows the number of visitors who successfully reached this step.
+- **Dropoff**: The striped section shows how many visitors dropped off before reaching the next step.
 
 This visualization helps you instantly spot the "leaky" parts of your flow where you are losing the most users.
+
+Hover over a step to see more detail, including:
+
+- Visitors who reached the step.
+- Visitors who never entered the funnel, for the first step.
+- Dropoff from the previous step.
+- Conversion from the previous step.
+- Conversion from the start of the funnel.
+- Top sources and countries for visitors who reached that step, when available.
 
 ### Exploring Sessions per Step
 
@@ -62,6 +79,8 @@ You can manage your funnels directly from the main list:
 
 - **Edit**: Click the **Settings** (gear) icon on a funnel card to change its name or modify the steps.
 - **Delete**: Click the **Delete** (trash bin) icon to remove the funnel permanently.
+
+If you edit a funnel while viewing it, the analytics refresh automatically after the changes are saved.
 
 <Callout type="info" title="Permissions">
 
