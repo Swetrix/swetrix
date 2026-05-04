@@ -362,7 +362,7 @@ export class GoalController {
       FROM events
       WHERE 
         pid = {pid:FixedString(12)}
-        AND type = '${goalType}'
+        AND type = {goalType:String}
         AND ${matchCondition}
         ${metaCondition}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -370,6 +370,7 @@ export class GoalController {
 
     const queryParams = {
       pid: goal.projectId,
+      goalType,
       groupFrom: groupFromUTC,
       groupTo: groupToUTC,
       ...matchParams,
@@ -595,7 +596,7 @@ export class GoalController {
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
-          AND type = '${goalType}'
+          AND type = {goalType:String}
           AND ${matchCondition}
           ${metaCondition}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -606,6 +607,7 @@ export class GoalController {
 
     const queryParams = {
       pid: goal.projectId,
+      goalType,
       groupFrom: groupFromUTC,
       groupTo: groupToUTC,
       timezone: safeTimezone,
