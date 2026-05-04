@@ -1003,15 +1003,17 @@ export class AnalyticsService {
 
   async calculateTimeBucketForAllTime(
     pid: string,
-    eventType: EventsAllTimeType,
+    eventTypes: EventsAllTimeType | readonly EventsAllTimeType[],
   ): Promise<{
     timeBucket: TimeBucketType[]
     diff: number
   }> {
+    const types = Array.isArray(eventTypes) ? [...eventTypes] : [eventTypes]
+
     const { data: fromData } = await clickhouse
       .query({
-        query: `SELECT min(created) AS firstCreated FROM events WHERE pid = {pid:FixedString(12)} AND type = {type:String}`,
-        query_params: { pid, type: eventType },
+        query: `SELECT min(created) AS firstCreated FROM events WHERE pid = {pid:FixedString(12)} AND type IN ({types:Array(String)})`,
+        query_params: { pid, types },
       })
       .then((res) => res.json<{ firstCreated?: string }>())
 
@@ -2718,7 +2720,7 @@ export class AnalyticsService {
     if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {
       const safeTimezone = this.getSafeTimezone(timezone)
 
-      const { groupFrom, groupTo } = this.getGroupFromTo(
+      const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
         from,
         to,
         ['today', 'yesterday'].includes(period) ? TimeBucketType.HOUR : null,
@@ -2726,8 +2728,8 @@ export class AnalyticsService {
         safeTimezone,
       )
 
-      _from = groupFrom
-      _to = groupTo
+      _from = groupFromUTC
+      _to = groupToUTC
     }
 
     const result = {}
@@ -2791,11 +2793,12 @@ export class AnalyticsService {
 
         if (_from && _to) {
           // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
-          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
+          const diff = dayjs.utc(_to).diff(dayjs.utc(_from), 'days') || 1
 
           now = _to
           periodFormatted = _from
-          periodSubtracted = dayjs(_from)
+          periodSubtracted = dayjs
+            .utc(_from)
             .subtract(diff, 'days')
             .format('YYYY-MM-DD HH:mm:ss')
         } else {
@@ -5417,22 +5420,41 @@ export class AnalyticsService {
         AND profileId = {profileId:String}
     `
 
-    // Query avg duration from pageview events (more accurate than sessions table)
+    // Prefer pageview timings, but fall back to sessions for event/error-only profiles.
     const queryAvgDuration = `
-      SELECT
-        avg(session_duration) AS avgDuration
-      FROM (
+      WITH pageview_avg AS (
         SELECT
-          psid,
-          dateDiff('second', min(created), max(created)) AS session_duration
-        FROM events
-        WHERE pid = {pid:FixedString(12)}
-          AND type = 'pageview'
-          AND profileId = {profileId:String}
-          AND psid IS NOT NULL
-        GROUP BY psid
-        HAVING session_duration > 0
+          avgOrNull(session_duration) AS avgDuration
+        FROM (
+          SELECT
+            psid,
+            dateDiff('second', min(created), max(created)) AS session_duration
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type = 'pageview'
+            AND profileId = {profileId:String}
+            AND psid IS NOT NULL
+          GROUP BY psid
+          HAVING session_duration > 0
+        )
+      ),
+      sessions_avg AS (
+        SELECT
+          avgOrNull(session_duration) AS avgDuration
+        FROM (
+          SELECT
+            psid,
+            dateDiff('second', min(firstSeen), max(lastSeen)) AS session_duration
+          FROM sessions FINAL
+          WHERE pid = {pid:FixedString(12)}
+            AND profileId = {profileId:String}
+          GROUP BY psid
+          HAVING session_duration > 0
+        )
       )
+      SELECT
+        coalesce(nullIf(pageview_avg.avgDuration, 0), sessions_avg.avgDuration, 0) AS avgDuration
+      FROM pageview_avg, sessions_avg
     `
 
     const queryPageviews = `

@@ -1021,15 +1021,17 @@ export class AnalyticsService {
 
   async calculateTimeBucketForAllTime(
     pid: string,
-    eventType: EventsAllTimeType,
+    eventTypes: EventsAllTimeType | readonly EventsAllTimeType[],
   ): Promise<{
     timeBucket: TimeBucketType[]
     diff: number
   }> {
+    const types = Array.isArray(eventTypes) ? [...eventTypes] : [eventTypes]
+
     const { data: fromData } = await clickhouse
       .query({
-        query: `SELECT min(created) AS firstCreated FROM events WHERE pid = {pid:FixedString(12)} AND type = {type:String}`,
-        query_params: { pid, type: eventType },
+        query: `SELECT min(created) AS firstCreated FROM events WHERE pid = {pid:FixedString(12)} AND type IN ({types:Array(String)})`,
+        query_params: { pid, types },
       })
       .then((res) => res.json<{ firstCreated?: string }>())
 
@@ -1993,6 +1995,14 @@ export class AnalyticsService {
                   dateDiff('second', min(firstSeen), max(lastSeen)) as duration
                 FROM sessions
                 WHERE pid = {pid:FixedString(12)}
+                  AND psid IN (
+                    SELECT DISTINCT psid
+                    FROM events
+                    WHERE pid = {pid:FixedString(12)}
+                      AND type = '${allTimeType}'
+                      AND psid IS NOT NULL
+                      ${filtersQuery}
+                  )
                 GROUP BY psid
               )
             )
@@ -4252,7 +4262,7 @@ export class AnalyticsService {
       SELECT uniqExact(psid) as count
       FROM events
       WHERE pid = {pid:FixedString(12)}
-        AND type IN ('pageview', 'custom_event')
+        AND type IN ('pageview', 'custom_event', 'error')
         AND created >= {since:DateTime}
         AND psid IS NOT NULL
     `
@@ -5201,17 +5211,13 @@ export class AnalyticsService {
       SELECT DISTINCT
         CAST(errors.psid, 'String') as psid,
         any(errors.profileId) as profileId,
-        COALESCE(any(analytics.cc), any(errors.cc)) as cc,
-        COALESCE(any(analytics.br), any(errors.br)) as br,
-        COALESCE(any(analytics.os), any(errors.os)) as os,
+        any(errors.cc) as cc,
+        any(errors.br) as br,
+        any(errors.os) as os,
         min(errors.created) as firstErrorAt,
         max(errors.created) as lastErrorAt,
         count(*) as errorCount
       FROM events AS errors
-      LEFT JOIN events AS analytics
-        ON errors.psid = analytics.psid
-        AND errors.pid = analytics.pid
-        AND analytics.type = 'pageview'
       WHERE errors.pid = {pid:FixedString(12)}
         AND errors.type = 'error'
         AND errors.eid = {eid:FixedString(32)}
@@ -5689,22 +5695,41 @@ export class AnalyticsService {
         AND profileId = {profileId:String}
     `
 
-    // Query avg duration from pageview events (more accurate than sessions table)
+    // Prefer pageview timings, but fall back to sessions for event/error-only profiles.
     const queryAvgDuration = `
-      SELECT
-        avg(session_duration) AS avgDuration
-      FROM (
+      WITH pageview_avg AS (
         SELECT
-          psid,
-          dateDiff('second', min(created), max(created)) AS session_duration
-        FROM events
-        WHERE pid = {pid:FixedString(12)}
-          AND type = 'pageview'
-          AND profileId = {profileId:String}
-          AND psid IS NOT NULL
-        GROUP BY psid
-        HAVING session_duration > 0
+          avgOrNull(session_duration) AS avgDuration
+        FROM (
+          SELECT
+            psid,
+            dateDiff('second', min(created), max(created)) AS session_duration
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type = 'pageview'
+            AND profileId = {profileId:String}
+            AND psid IS NOT NULL
+          GROUP BY psid
+          HAVING session_duration > 0
+        )
+      ),
+      sessions_avg AS (
+        SELECT
+          avgOrNull(session_duration) AS avgDuration
+        FROM (
+          SELECT
+            psid,
+            dateDiff('second', min(firstSeen), max(lastSeen)) AS session_duration
+          FROM sessions FINAL
+          WHERE pid = {pid:FixedString(12)}
+            AND profileId = {profileId:String}
+          GROUP BY psid
+          HAVING session_duration > 0
+        )
       )
+      SELECT
+        coalesce(nullIf(pageview_avg.avgDuration, 0), sessions_avg.avgDuration, 0) AS avgDuration
+      FROM pageview_avg, sessions_avg
     `
 
     const queryPageviews = `

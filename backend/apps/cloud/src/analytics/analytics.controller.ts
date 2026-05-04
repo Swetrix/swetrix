@@ -265,12 +265,12 @@ export class AnalyticsController {
       )
 
     if (period === 'all') {
-      const eventType = isCaptcha
+      const eventTypes = isCaptcha
         ? 'captcha'
-        : this.analyticsService.getAnalyticsEventType(customEVFilterApplied)
+        : (['pageview', 'custom_event', 'error'] as const)
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        eventType,
+        eventTypes,
       )
 
       diff = res.diff
@@ -805,19 +805,25 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE, true)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      newTimeBucket,
-      period,
-      safeTimezone,
-      diff,
-    )
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        newTimeBucket,
+        period,
+        safeTimezone,
+        diff,
+      )
 
     const subQuery = `FROM events WHERE pid = {pid:FixedString(12)} AND type = 'performance' ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
     const paramsData = {
-      params: { pid, groupFrom, groupTo, ...filtersParams },
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
     }
 
     const result = await this.analyticsService.groupPerfByTimeBucket(
@@ -862,13 +868,14 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE, true)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      timeBucket,
-      period,
-      safeTimezone,
-    )
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        timeBucket,
+        period,
+        safeTimezone,
+      )
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
@@ -883,7 +890,12 @@ export class AnalyticsController {
     )
 
     const paramsData = {
-      params: { pid, groupFrom, groupTo, ...filtersParams },
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
     }
 
     const chart = await this.analyticsService.getPerfChartData(
@@ -2038,7 +2050,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        this.analyticsService.getAnalyticsEventType(customEVFilterApplied),
+        ['pageview', 'custom_event', 'error'],
       )
 
       timeBucket = res.timeBucket[0]
@@ -2470,7 +2482,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        this.analyticsService.getAnalyticsEventType(customEVFilterApplied),
+        ['pageview', 'custom_event', 'error'],
       )
 
       timeBucket = res.timeBucket[0]
@@ -2549,7 +2561,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'pageview',
+        ['pageview', 'custom_event', 'error'],
       )
       timeBucket = res.timeBucket[0]
       diff = res.diff
@@ -2637,7 +2649,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        this.analyticsService.getAnalyticsEventType(customEVFilterApplied),
+        ['pageview', 'custom_event', 'error'],
       )
 
       timeBucket = res.timeBucket[0]

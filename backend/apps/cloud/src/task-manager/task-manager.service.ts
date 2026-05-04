@@ -2020,7 +2020,7 @@ export class TaskManagerService {
           return
         }
 
-        const queryEvents = `SELECT count() FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('pageview', 'captcha', 'custom_event', 'error', 'performance') AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryEvents = `SELECT 1 FROM events WHERE pid IN ({pids:Array(FixedString(12))}) AND type IN ('pageview', 'captcha', 'custom_event', 'error', 'performance') AND created BETWEEN {nineWeeksAgo:String} AND {now:String} LIMIT 1`
 
         // Process project IDs in chunks to avoid ClickHouse field value limit
         let totalEvents = 0
@@ -2038,9 +2038,9 @@ export class TaskManagerService {
               query: queryEvents,
               query_params: queryParams,
             })
-            .then((resultSet) => resultSet.json<{ 'count()': number }>())
+            .then((resultSet) => resultSet.json<Record<string, number>>())
 
-          totalEvents += eventsResult[0]['count()']
+          totalEvents += eventsResult.length
 
           // Early return if we found activity
           if (totalEvents > 0) {
