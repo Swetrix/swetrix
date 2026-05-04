@@ -2302,10 +2302,11 @@ export class AnalyticsService {
         customEventsData._uniques ||
         customEventsData._unknown_event ||
         Array(_size(xShifted)).fill(0)
+      const visits = customEventsData._count || Array(_size(xShifted)).fill(0)
       const sdur = customEventsData._sdur || Array(_size(xShifted)).fill(0)
 
       return {
-        visits: uniques,
+        visits,
         uniques,
         sdur,
       }
@@ -2892,7 +2893,9 @@ export class AnalyticsService {
     let hasSdur = false
 
     for (let row = 0; row < _size(queryResult); ++row) {
-      const { ev = '_unknown_event' } = queryResult[row]
+      const rowEventName = queryResult[row].ev
+      const ev =
+        typeof rowEventName === 'undefined' ? '_unknown_event' : rowEventName
 
       const dateString = this.generateDateString(queryResult[row])
 
@@ -2904,6 +2907,14 @@ export class AnalyticsService {
         }
 
         result[ev][index] = queryResult[row].count
+
+        if (typeof rowEventName === 'undefined') {
+          if (!result['_count']) {
+            result['_count'] = Array(x.length).fill(0)
+          }
+
+          result['_count'][index] = queryResult[row].count || 0
+        }
 
         if (typeof queryResult[row].uniques !== 'undefined') {
           uniques[index] = queryResult[row].uniques || 0

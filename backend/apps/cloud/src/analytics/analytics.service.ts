@@ -4832,12 +4832,12 @@ export class AnalyticsService {
           toString(psid) AS psid,
           if(
             event_type = 'error',
-            [
+            arrayFilter(x -> x.2 != '' AND x.2 != '0', [
               tuple('message', COALESCE(error_message, '')),
-              tuple('lineno', toString(COALESCE(lineno, 0))),
-              tuple('colno', toString(COALESCE(colno, 0))),
+              tuple('lineno', ifNull(toString(lineno), '')),
+              tuple('colno', ifNull(toString(colno), '')),
               tuple('filename', COALESCE(error_filename, ''))
-            ],
+            ]),
             arrayFilter(x -> x.1 != '' AND x.2 != '', arrayZip(meta_key, meta_value))
           ) AS metadata
         FROM (
@@ -4919,7 +4919,13 @@ export class AnalyticsService {
         AND type IN ('pageview', 'custom_event', 'error')
         AND psid IS NOT NULL
         AND toString(psid) = {psid:String}
-      ORDER BY created ASC
+      ORDER BY
+        CASE
+          WHEN type = 'pageview' THEN 0
+          WHEN type = 'custom_event' THEN 1
+          ELSE 2
+        END,
+        created ASC
       LIMIT 1;
     `
 
@@ -6016,7 +6022,8 @@ export class AnalyticsService {
       WHERE
         pid = {pid:FixedString(12)}
         AND type = 'error'
-        AND eid = {eid:FixedString(32)};
+        AND eid = {eid:FixedString(32)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String};
     `
 
     const queryMetadata = `
