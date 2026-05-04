@@ -5475,6 +5475,7 @@ export class AnalyticsService {
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND profileId = {profileId:String}
+        AND type IN ('pageview', 'custom_event', 'error')
     `
 
     // Query for total revenue from profile (only sales, not refunds)
