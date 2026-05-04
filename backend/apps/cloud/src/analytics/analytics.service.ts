@@ -6116,6 +6116,8 @@ export class AnalyticsService {
       SELECT count(DISTINCT psid) as totalSessions
       FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type IN ('pageview', 'custom_event', 'error')
+        AND psid IS NOT NULL
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${sessionFiltersQuery}
     `
