@@ -106,7 +106,7 @@ export const Text = ({
       trackingClasses[tracking],
       { truncate },
       code &&
-        'rounded-md bg-gray-100 px-1.5 py-0.5 font-mono text-[0.92em] ring-1 ring-gray-200/70 ring-inset dark:bg-slate-900 dark:ring-slate-700/60',
+        'rounded-md bg-gray-100 px-1.5 py-0.5 font-mono ring-1 ring-gray-200/70 ring-inset dark:bg-slate-900 dark:ring-slate-700/60',
       className,
     )}
     {...props}

@@ -25,6 +25,7 @@ import {
   useCallback,
   Suspense,
   use,
+  type MouseEvent,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useLoaderData, useRevalidator } from 'react-router'
@@ -415,30 +416,32 @@ const GoalRow = ({
             </div>
             {/* Action buttons */}
             <div className='flex items-center gap-1'>
-              <button
+              <Button
+                variant='icon'
                 type='button'
-                onClick={(e) => {
+                onClick={(e: MouseEvent<HTMLButtonElement>) => {
                   e.preventDefault()
                   e.stopPropagation()
                   onEdit(goal.id)
                 }}
                 aria-label={t('common.edit')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+                className='p-1.5 text-gray-800 dark:text-slate-400 dark:hover:text-slate-300'
               >
                 <PencilIcon className='size-4' />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant='icon'
                 type='button'
-                onClick={(e) => {
+                onClick={(e: MouseEvent<HTMLButtonElement>) => {
                   e.preventDefault()
                   e.stopPropagation()
                   setShowDeleteModal(true)
                 }}
                 aria-label={t('common.delete')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+                className='p-1.5 text-gray-800 dark:text-slate-400 dark:hover:text-slate-300'
               >
                 <TrashIcon className='size-4' />
-              </button>
+              </Button>
               <CaretDownIcon
                 className={cx(
                   'size-5 text-gray-500 transition-transform dark:text-gray-400',

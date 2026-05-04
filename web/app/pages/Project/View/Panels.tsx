@@ -230,11 +230,13 @@ const PanelContainer = ({
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
           <Button
-            className='max-w-max border border-transparent bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-200 hover:bg-gray-50 dark:text-gray-200 hover:dark:border-slate-700/80 hover:dark:bg-slate-950'
+            variant='icon'
+            className='gap-1.5 px-3 py-2'
             type='button'
             onClick={onDetailsClick}
+            aria-label={t('common.details')}
           >
-            <ScanIcon className='mr-1.5 size-4' />
+            <ScanIcon className='size-4' />
             <span>{t('common.details')}</span>
           </Button>
         </div>
@@ -1640,11 +1642,13 @@ const CombinedMetadataPanel = ({
       {canShowDetails ? (
         <div className='mt-2 flex items-center justify-center'>
           <Button
-            className='max-w-max border border-transparent bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-200 hover:bg-gray-50 dark:text-gray-200 hover:dark:border-slate-700/80 hover:dark:bg-slate-950'
+            variant='icon'
+            className='gap-1.5 px-3 py-2'
             type='button'
             onClick={() => setDetailsTrigger((n) => n + 1)}
+            aria-label={t('common.details')}
           >
-            <ScanIcon className='mr-1.5 size-4' />
+            <ScanIcon className='size-4' />
             <span>{t('common.details')}</span>
           </Button>
         </div>
@@ -1859,6 +1863,11 @@ const DetailsTable = ({
     })
   }, [data])
 
+  const numericColsCount =
+    1 + (detailsExtraColumns?.length || 0) + (!hidePercentageInDetails ? 1 : 0)
+  const numericColWidth = `${(60 / numericColsCount).toFixed(3)}%`
+  const gridTemplateColumns = `40% repeat(${numericColsCount}, minmax(0, ${numericColWidth}))`
+
   return (
     <div>
       <div className='mb-2'>
@@ -1874,101 +1883,79 @@ const DetailsTable = ({
         ref={parentRef}
         className='scrollbar-thin max-h-[500px] overflow-x-auto overflow-y-auto'
       >
-        <table className='w-full min-w-[640px] border-separate border-spacing-y-1'>
-          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-950'>
-            <tr className='text-sm text-gray-900 sm:text-base dark:text-gray-50'>
-              <th
-                className='flex cursor-pointer items-center pl-2 text-left hover:opacity-90'
-                style={{ width: '40%' }}
-                onClick={() => onSortBy('name')}
-              >
+        <div className='min-w-[640px]'>
+          <div
+            className='sticky top-0 z-10 grid bg-white text-sm font-semibold text-gray-900 sm:text-base dark:bg-slate-950 dark:text-gray-50'
+            style={{ gridTemplateColumns }}
+            role='row'
+          >
+            <button
+              type='button'
+              className='flex cursor-pointer items-center py-1 pl-2 text-left hover:opacity-90'
+              onClick={() => onSortBy('name')}
+              role='columnheader'
+            >
+              <span className='truncate'>
                 {tnMapping[activeTabId as keyof typeof tnMapping]}
+              </span>
+              <Sort
+                className='ml-1 shrink-0'
+                sortByAscend={sort.label === 'name' ? sort.sortByAscend : null}
+                sortByDescend={
+                  sort.label === 'name' ? sort.sortByDescend : null
+                }
+              />
+            </button>
+            <button
+              type='button'
+              className='flex cursor-pointer items-center justify-end py-1 pr-2 text-right hover:opacity-90'
+              onClick={() => onSortBy('quantity')}
+              role='columnheader'
+            >
+              <span className='truncate'>
+                {valuesHeaderName || t('project.visitors')}
+              </span>
+              <Sort
+                className='ml-1 shrink-0'
+                sortByAscend={
+                  sort.label === 'quantity' ? sort.sortByAscend : null
+                }
+                sortByDescend={
+                  sort.label === 'quantity' ? sort.sortByDescend : null
+                }
+              />
+            </button>
+            {detailsExtraColumns?.map((col, idx) => (
+              <button
+                key={`extra-col-${idx}`}
+                type='button'
+                className='flex cursor-pointer items-center justify-end py-1 pr-2 text-right hover:opacity-90'
+                onClick={() => onSortBy(col.sortLabel)}
+                role='columnheader'
+              >
+                <span className='truncate'>{col.header}</span>
                 <Sort
-                  className='ml-1'
+                  className='ml-1 shrink-0'
                   sortByAscend={
-                    sort.label === 'name' ? sort.sortByAscend : null
+                    sort.label === col.sortLabel ? sort.sortByAscend : null
                   }
                   sortByDescend={
-                    sort.label === 'name' ? sort.sortByDescend : null
+                    sort.label === col.sortLabel ? sort.sortByDescend : null
                   }
                 />
-              </th>
-              {(() => {
-                const numericColsCount =
-                  1 +
-                  (detailsExtraColumns?.length || 0) +
-                  (!hidePercentageInDetails ? 1 : 0)
-                const numericColWidth = `${(60 / numericColsCount).toFixed(3)}%`
-                return (
-                  <th style={{ width: numericColWidth }}>
-                    <p
-                      className='flex cursor-pointer items-center justify-end hover:opacity-90'
-                      onClick={() => onSortBy('quantity')}
-                    >
-                      {valuesHeaderName || t('project.visitors')}
-                      <Sort
-                        className='ml-1'
-                        sortByAscend={
-                          sort.label === 'quantity' ? sort.sortByAscend : null
-                        }
-                        sortByDescend={
-                          sort.label === 'quantity' ? sort.sortByDescend : null
-                        }
-                      />
-                      &nbsp;&nbsp;
-                    </p>
-                  </th>
-                )
-              })()}
-              {(() => {
-                const numericColsCount =
-                  1 +
-                  (detailsExtraColumns?.length || 0) +
-                  (!hidePercentageInDetails ? 1 : 0)
-                const numericColWidth = `${(60 / numericColsCount).toFixed(3)}%`
-                return (
-                  <>
-                    {detailsExtraColumns?.map((col, idx) => (
-                      <th
-                        key={`extra-col-${idx}`}
-                        style={{ width: numericColWidth }}
-                        className='pr-2'
-                      >
-                        <p
-                          className='flex cursor-pointer items-center justify-end hover:opacity-90'
-                          onClick={() => onSortBy(col.sortLabel)}
-                        >
-                          {col.header}
-                          <Sort
-                            className='ml-1'
-                            sortByAscend={
-                              sort.label === col.sortLabel
-                                ? sort.sortByAscend
-                                : null
-                            }
-                            sortByDescend={
-                              sort.label === col.sortLabel
-                                ? sort.sortByDescend
-                                : null
-                            }
-                          />
-                        </p>
-                      </th>
-                    ))}
-                    {!hidePercentageInDetails ? (
-                      <th style={{ width: numericColWidth }} className='pr-2'>
-                        <p className='flex items-center justify-end'>
-                          {t('project.percentage')}
-                        </p>
-                      </th>
-                    ) : null}
-                  </>
-                )
-              })()}
-            </tr>
-          </thead>
+              </button>
+            ))}
+            {!hidePercentageInDetails ? (
+              <div
+                className='flex items-center justify-end py-1 pr-2 text-right'
+                role='columnheader'
+              >
+                <span className='truncate'>{t('project.percentage')}</span>
+              </div>
+            ) : null}
+          </div>
 
-          <tbody
+          <div
             style={{
               position: 'relative',
               height: `${rowVirtualizer.getTotalSize()}px`,
@@ -1986,7 +1973,7 @@ const DetailsTable = ({
               const isOddRow = virtualRow.index % 2 === 1
 
               return (
-                <tr
+                <div
                   key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
                   style={{
                     position: 'absolute',
@@ -1994,16 +1981,16 @@ const DetailsTable = ({
                     transform: `translateY(${virtualRow.start}px)`,
                     width: '100%',
                     height: `${virtualRow.size}px`,
-                    display: 'flex',
-                    alignItems: 'center',
+                    gridTemplateColumns,
                   }}
                   className={cx(
-                    'group cursor-pointer text-sm text-gray-900 hover:bg-gray-100 sm:text-base dark:text-gray-50 hover:dark:bg-slate-800',
+                    'group grid cursor-pointer items-center text-sm text-gray-900 hover:bg-gray-100 sm:text-base dark:text-gray-50 hover:dark:bg-slate-800',
                     {
                       'bg-gray-50 dark:bg-slate-900': isOddRow,
                       'cursor-default': disableRowClick,
                     },
                   )}
+                  role='row'
                   onClick={() => {
                     if (disableRowClick) return
                     const link = getFilterLink(id, entryName)
@@ -2013,13 +2000,10 @@ const DetailsTable = ({
                     }
                   }}
                 >
-                  <td
-                    className='flex items-center py-1 pl-2 text-left'
-                    style={{ width: '40%' }}
-                  >
+                  <div className='flex min-w-0 items-center py-1 pl-2 text-left'>
                     <span
                       className={cx(
-                        'scrollbar-thin hover-always-overflow flex items-center whitespace-nowrap',
+                        'scrollbar-thin hover-always-overflow flex min-w-0 items-center whitespace-nowrap',
                         {
                           capitalize,
                         },
@@ -2045,58 +2029,28 @@ const DetailsTable = ({
                         <div className='ml-2 h-4 w-4 group-hover:hidden' />
                       </>
                     ) : null}
-                  </td>
-                  {(() => {
-                    const numericColsCount =
-                      1 +
-                      (detailsExtraColumns?.length || 0) +
-                      (!hidePercentageInDetails ? 1 : 0)
-                    const numericColWidth = `${(60 / numericColsCount).toFixed(3)}%`
-                    return (
-                      <td
-                        style={{ width: numericColWidth }}
-                        className='py-1 text-right'
-                      >
-                        {activeTab === PROJECT_TABS.traffic
-                          ? nFormatter(valueData, 1)
-                          : valueData}
-                        &nbsp;&nbsp;
-                      </td>
-                    )
-                  })()}
-                  {(() => {
-                    const numericColsCount =
-                      1 +
-                      (detailsExtraColumns?.length || 0) +
-                      (!hidePercentageInDetails ? 1 : 0)
-                    const numericColWidth = `${(60 / numericColsCount).toFixed(3)}%`
-                    return (
-                      <>
-                        {detailsExtraColumns?.map((col, idx) => (
-                          <td
-                            key={`extra-cell-${idx}`}
-                            style={{ width: numericColWidth }}
-                            className='py-1 pr-2 text-right'
-                          >
-                            {col.render(entry)}
-                          </td>
-                        ))}
-                        {!hidePercentageInDetails ? (
-                          <td
-                            style={{ width: numericColWidth }}
-                            className='py-1 pr-2 text-right'
-                          >
-                            {perc}%
-                          </td>
-                        ) : null}
-                      </>
-                    )
-                  })()}
-                </tr>
+                  </div>
+                  <div className='py-1 pr-2 text-right'>
+                    {activeTab === PROJECT_TABS.traffic
+                      ? nFormatter(valueData, 1)
+                      : valueData}
+                  </div>
+                  {detailsExtraColumns?.map((col, idx) => (
+                    <div
+                      key={`extra-cell-${idx}`}
+                      className='py-1 pr-2 text-right'
+                    >
+                      {col.render(entry)}
+                    </div>
+                  ))}
+                  {!hidePercentageInDetails ? (
+                    <div className='py-1 pr-2 text-right'>{perc}%</div>
+                  ) : null}
+                </div>
               )
             })}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
     </div>
   )

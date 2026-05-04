@@ -8,13 +8,14 @@ import {
   CursorClickIcon,
   ArrowRightIcon,
 } from '@phosphor-icons/react'
-import { useMemo, useRef } from 'react'
+import { type MouseEvent, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useSearchParams } from 'react-router'
 
 import { Funnel } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
+import Button from '~/ui/Button'
 import { Text } from '~/ui/Text'
 
 interface FunnelsListProps {
@@ -113,36 +114,38 @@ const FunnelCard = ({
             {funnel.name}
           </Text>
           <div className='flex shrink-0 items-center gap-1'>
-            <button
+            <Button
+              variant='icon'
               type='button'
-              onClick={(e) => {
+              onClick={(e: MouseEvent<HTMLButtonElement>) => {
                 e.preventDefault()
                 e.stopPropagation()
                 openFunnelSettings(funnel)
               }}
               aria-label={t('common.settings')}
-              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+              className='p-1.5 text-gray-800 dark:text-slate-400 dark:hover:text-slate-300'
             >
               <SlidersHorizontalIcon className='size-5' />
-            </button>
+            </Button>
             {allowedToManage ? (
-              <button
+              <Button
+                variant='icon'
                 type='button'
-                onClick={(e) => {
+                onClick={(e: MouseEvent<HTMLButtonElement>) => {
                   e.preventDefault()
                   e.stopPropagation()
                   deleteFunnel(funnel.id)
                 }}
                 aria-label={t('common.delete')}
                 className={cx(
-                  'rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300',
+                  'p-1.5 text-gray-800 dark:text-slate-400 dark:hover:text-slate-300',
                   {
                     'cursor-not-allowed': loading,
                   },
                 )}
               >
                 <TrashIcon className='size-5' />
-              </button>
+              </Button>
             ) : null}
           </div>
         </div>

@@ -323,13 +323,15 @@ const GoalSettingsModal = ({
                                 placeholder={t('goals.filterValue')}
                                 className='flex-1'
                               />
-                              <button
+                              <Button
+                                variant='icon'
                                 type='button'
                                 onClick={() => removeMetadataFilter(index)}
-                                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+                                aria-label={t('common.delete')}
+                                className='p-1.5 text-gray-800 dark:text-slate-400 dark:hover:text-slate-300'
                               >
                                 <TrashIcon className='h-4 w-4' />
-                              </button>
+                              </Button>
                             </div>
                           ))}
                         </div>

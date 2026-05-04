@@ -84,8 +84,8 @@ const LiveVisitorsDropdown = () => {
         <div
           id='live-visitors-dropdown'
           className={cn(
-            'scrollbar-thin absolute top-5 right-0 z-40 mt-2 origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-gray-900 shadow-md transition duration-150 ease-out outline-none dark:border-slate-700/50 dark:bg-slate-950',
-            liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-max',
+            'scrollbar-thin absolute top-full right-0 z-40 mt-2 w-max max-w-[calc(100vw-1rem)] origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-sm text-gray-900 shadow-md transition duration-150 ease-out outline-none max-sm:fixed max-sm:top-20 max-sm:right-2 max-sm:left-2 max-sm:w-auto max-sm:max-w-none dark:border-slate-700/50 dark:bg-slate-950 dark:text-gray-50',
+            liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-0',
             isDropdownVisible
               ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
               : 'pointer-events-none -translate-y-1 scale-95 opacity-0',
@@ -106,7 +106,7 @@ const LiveVisitorsDropdown = () => {
                 <XIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
               </button>
             </div>
-            <div className='scrollbar-thin max-h-[200px] overflow-y-auto px-2'>
+            <div className='scrollbar-thin max-h-[min(320px,calc(100dvh-7rem))] overflow-y-auto px-2'>
               {isLoading ? (
                 <Text as='p' size='sm' className='flex items-center py-2'>
                   <Spin className='ml-0' />
@@ -118,43 +118,35 @@ const LiveVisitorsDropdown = () => {
                   {t('project.noData')}
                 </Text>
               ) : (
-                <div className='table w-full border-separate border-spacing-y-2'>
-                  <div className='table-row-group'>
-                    {_map(liveInfo, ({ psid, dv, br, os, cc }) => {
-                      const params = new URLSearchParams(location.search)
-                      params.set('psid', psid)
-                      params.set('tab', PROJECT_TABS.sessions)
+                <div className='flex w-full min-w-0 flex-col gap-2 py-2'>
+                  {_map(liveInfo, ({ psid, dv, br, os, cc }) => {
+                    const params = new URLSearchParams(location.search)
+                    params.set('psid', psid)
+                    params.set('tab', PROJECT_TABS.sessions)
 
-                      return (
-                        <Link
-                          key={psid}
-                          className='group table-row cursor-pointer text-sm text-gray-900 dark:text-gray-50'
-                          to={{ search: params.toString() }}
-                        >
-                          <div className='table-cell rounded-l-lg bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-900 dark:group-hover:bg-slate-700'>
-                            <Flag
-                              className='m-2 rounded-xs'
-                              country={cc}
-                              size={21}
-                              alt=''
-                              aria-hidden='true'
-                            />
-                          </div>
-                          <div className='table-cell bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-900 dark:group-hover:bg-slate-700'>
-                            {os}
-                          </div>
-                          <div className='table-cell bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-900 dark:group-hover:bg-slate-700'>
-                            {br}
-                          </div>
-                          <div className='table-cell rounded-r-lg bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-900 dark:group-hover:bg-slate-700'>
-                            <Text as='p' className='capitalize'>
-                              {dv}
-                            </Text>
-                          </div>
-                        </Link>
-                      )
-                    })}
-                  </div>
+                    return (
+                      <Link
+                        key={psid}
+                        className='group grid min-w-0 cursor-pointer grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] items-center overflow-hidden rounded-lg bg-gray-100 text-sm text-gray-900 transition-colors hover:bg-gray-200 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
+                        to={{ search: params.toString() }}
+                      >
+                        <div className='pr-2'>
+                          <Flag
+                            className='m-2 rounded-xs'
+                            country={cc}
+                            size={21}
+                            alt=''
+                            aria-hidden='true'
+                          />
+                        </div>
+                        <div className='min-w-0 truncate pr-2'>{os}</div>
+                        <div className='min-w-0 truncate pr-2'>{br}</div>
+                        <div className='min-w-0 truncate pr-2 capitalize'>
+                          {dv}
+                        </div>
+                      </Link>
+                    )
+                  })}
                 </div>
               )}
             </div>
