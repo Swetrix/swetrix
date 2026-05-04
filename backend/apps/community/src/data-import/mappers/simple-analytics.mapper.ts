@@ -1,7 +1,11 @@
 import * as fs from 'fs'
 import { parse } from 'csv-parse'
 
-import { ImportMapper, AnalyticsImportRow } from './mapper.interface'
+import {
+  ImportMapper,
+  ImportError,
+  AnalyticsImportRow,
+} from './mapper.interface'
 import {
   normalizeNull,
   truncate,
@@ -20,7 +24,7 @@ function validateHeaders(headers: string[]): string[] {
   )
 
   if (missingColumns.length > 0) {
-    throw new Error(
+    throw new ImportError(
       `CSV does not appear to be a Simple Analytics export. Missing required columns: ${missingColumns.join(', ')}.`,
     )
   }
@@ -133,7 +137,7 @@ export class SimpleAnalyticsMapper implements ImportMapper {
         hostname,
       )
 
-      const cc = normalizeNull(row.country_code)
+      const cc = normalizeNull(row.country_code)?.toUpperCase() || null
       const validCC = cc && /^[A-Z]{2}$/.test(cc) ? cc : null
 
       const locale = buildLocale(
@@ -182,7 +186,7 @@ export class SimpleAnalyticsMapper implements ImportMapper {
     }
 
     if (!headerChecked) {
-      throw new Error(
+      throw new ImportError(
         'CSV appears empty or is missing a header row. Please upload the raw CSV export from Simple Analytics.',
       )
     }

@@ -342,7 +342,7 @@ export class ProjectService {
     to: string,
   ): Promise<void> {
     const queries = [
-      "ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ('pageview', 'custom_event', 'performance', 'error') AND created BETWEEN {from:String} AND {to:String}",
+      "ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ('pageview', 'custom_event', 'performance', 'error', 'captcha') AND created BETWEEN {from:String} AND {to:String}",
       'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
     ]
 

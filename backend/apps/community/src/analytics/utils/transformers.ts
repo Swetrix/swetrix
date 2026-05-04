@@ -176,8 +176,8 @@ export const eventTransformer = (opts: EventTransformerOptions) => {
       error_name: opts.name || null,
       error_message: opts.message || null,
       stackTrace: opts.stackTrace || null,
-      lineno: opts.lineno || null,
-      colno: opts.colno || null,
+      lineno: opts.lineno ?? null,
+      colno: opts.colno ?? null,
       error_filename: opts.filename || null,
       created,
     }

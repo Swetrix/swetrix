@@ -4,7 +4,11 @@ import * as os from 'os'
 import { Unzip, UnzipInflate } from 'fflate'
 import { parse } from 'csv-parse'
 
-import { ImportMapper, AnalyticsImportRow } from './mapper.interface'
+import {
+  ImportMapper,
+  ImportError,
+  AnalyticsImportRow,
+} from './mapper.interface'
 import {
   normalizeNull,
   truncate,
@@ -188,7 +192,7 @@ export class UmamiMapper implements ImportMapper {
           file.originalSize > MAX_UMAMI_CSV_BYTES
         ) {
           fail(
-            new Error(
+            new ImportError(
               `${WEBSITE_EVENT_CSV} exceeds the ${MAX_UMAMI_CSV_BYTES} byte limit.`,
             ),
           )
@@ -213,7 +217,7 @@ export class UmamiMapper implements ImportMapper {
           extractedBytes += chunk.length
           if (extractedBytes > MAX_UMAMI_CSV_BYTES) {
             fail(
-              new Error(
+              new ImportError(
                 `${WEBSITE_EVENT_CSV} exceeds the ${MAX_UMAMI_CSV_BYTES} byte limit.`,
               ),
             )
@@ -263,7 +267,7 @@ export class UmamiMapper implements ImportMapper {
 
         if (!foundEntry) {
           fail(
-            new Error(
+            new ImportError(
               `ZIP does not contain ${WEBSITE_EVENT_CSV}. Please upload the export ZIP from Umami.`,
             ),
           )
