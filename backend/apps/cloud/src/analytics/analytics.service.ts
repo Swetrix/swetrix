@@ -2236,6 +2236,8 @@ export class AnalyticsService {
       WHERE
         pid IN {pids:Array(FixedString(12))}
         AND type IN ('pageview', 'custom_event', 'error')
+        AND psid IS NOT NULL
+        AND psid != ''
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
       GROUP BY pid
     `
@@ -2932,7 +2934,7 @@ export class AnalyticsService {
     let query =
       type === 'ev'
         ? `SELECT event_name AS ev FROM events WHERE pid={pid:FixedString(12)} AND type = 'custom_event' AND event_name IS NOT NULL GROUP BY event_name`
-        : `SELECT ${type} FROM events WHERE pid={pid:FixedString(12)} AND type = 'pageview' AND ${type} IS NOT NULL GROUP BY ${type}`
+        : `SELECT ${type} FROM events WHERE pid={pid:FixedString(12)} AND type IN ('pageview', 'custom_event') AND ${type} IS NOT NULL GROUP BY ${type}`
 
     const { data } = await clickhouse
       .query({
@@ -2974,13 +2976,16 @@ export class AnalyticsService {
     type: 'traffic' | 'errors',
     column: 'br' | 'os',
   ): Promise<Array<{ name: string; version: string }>> {
-    const safeType = type === 'errors' ? 'error' : 'pageview'
+    const safeType =
+      type === 'errors'
+        ? "type = 'error'"
+        : "type IN ('pageview', 'custom_event')"
     const safeVersionCol = column === 'br' ? 'brv' : 'osv'
 
     const query = `
       SELECT ${column}, ${safeVersionCol}
       FROM events
-      WHERE pid={pid:FixedString(12)} AND type = '${safeType}' AND ${column} IS NOT NULL AND ${safeVersionCol} IS NOT NULL
+      WHERE pid={pid:FixedString(12)} AND ${safeType} AND ${column} IS NOT NULL AND ${safeVersionCol} IS NOT NULL
       GROUP BY ${column}, ${safeVersionCol}
     `
 
@@ -6126,6 +6131,7 @@ export class AnalyticsService {
       WHERE pid = {pid:FixedString(12)}
         AND type IN ('pageview', 'custom_event', 'error')
         AND psid IS NOT NULL
+        AND psid != ''
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${sessionFiltersQuery}
     `
