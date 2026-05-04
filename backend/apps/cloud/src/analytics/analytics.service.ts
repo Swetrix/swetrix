@@ -1247,8 +1247,8 @@ export class AnalyticsService {
               ? 'argMin(pg, created)'
               : 'argMax(pg, created)'
           const subQueryForPages = isContains
-            ? `SELECT psid FROM (SELECT psid, ${pageSelector} as page FROM events WHERE pid = {pid:FixedString(12)} AND type = 'pageview' GROUP BY psid) WHERE page ILIKE concat('%', {${param}:String}, '%')`
-            : `SELECT psid FROM (SELECT psid, ${pageSelector} as page FROM events WHERE pid = {pid:FixedString(12)} AND type = 'pageview' GROUP BY psid) WHERE page = {${param}:String}`
+            ? `SELECT psid FROM (SELECT psid, ${pageSelector} as page FROM events WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY psid) WHERE page ILIKE concat('%', {${param}:String}, '%')`
+            : `SELECT psid FROM (SELECT psid, ${pageSelector} as page FROM events WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY psid) WHERE page = {${param}:String}`
 
           // For exclusive filter (isNot) we exclude sessions with matching entry/exit page
           query += `psid ${isExclusive ? 'NOT IN' : 'IN'} (${subQueryForPages})`
@@ -2235,7 +2235,7 @@ export class AnalyticsService {
       FROM events
       WHERE
         pid IN {pids:Array(FixedString(12))}
-        AND type = 'pageview'
+        AND type IN ('pageview', 'custom_event', 'error')
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
       GROUP BY pid
     `
@@ -6405,6 +6405,10 @@ export class AnalyticsService {
   }
 
   async validateEIDs(eids: string[], pid: string) {
+    if (_isEmpty(eids)) {
+      throw new BadRequestException('At least one error ID is required')
+    }
+
     const params = _reduce(
       eids,
       (acc, curr, index) => ({

@@ -1878,7 +1878,7 @@ export class AnalyticsService {
         COALESCE(errc.count, 0) AS errors,
         dsf.sessionStart,
         dsf.lastActivity,
-        if(dateDiff('second', dsf.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        if(dateDiff('second', toTimeZone(dsf.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
         sda.avg_duration AS sdur,
         sda.profileId AS profileId,
         if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
@@ -4767,7 +4767,7 @@ export class AnalyticsService {
         COALESCE(errc.count, 0) AS errors,
         dsf.sessionStart,
         dsf.lastActivity,
-        if(dateDiff('second', dsf.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        if(dateDiff('second', toTimeZone(dsf.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
         sda.avg_duration AS sdur,
         sda.profileId AS profileId,
         if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
@@ -5094,6 +5094,7 @@ export class AnalyticsService {
       ) AS status ON errors.eid = status.eid
       WHERE pid = {pid:FixedString(12)}
         AND type = 'error'
+        AND psid IS NOT NULL
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filtersQuery}
         ${resolvedFilter}
@@ -5268,6 +5269,7 @@ export class AnalyticsService {
       WHERE pid = {pid:FixedString(12)}
         AND type = 'error'
         AND eid = {eid:FixedString(32)}
+        AND psid IS NOT NULL
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
     `
 
@@ -5285,6 +5287,7 @@ export class AnalyticsService {
       WHERE errors.pid = {pid:FixedString(12)}
         AND errors.type = 'error'
         AND errors.eid = {eid:FixedString(32)}
+        AND errors.psid IS NOT NULL
         AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
       GROUP BY errors.psid
       ORDER BY lastErrorAt DESC
@@ -5800,6 +5803,14 @@ export class AnalyticsService {
         AND profileId = {profileId:String}
     `
 
+    const queryErrors = `
+      SELECT count() AS errorsCount
+      FROM events
+      WHERE pid = {pid:FixedString(12)}
+        AND type = 'error'
+        AND profileId = {profileId:String}
+    `
+
     // Query for device/location details
     const queryDetails = `
       SELECT
@@ -5825,6 +5836,7 @@ export class AnalyticsService {
       avgDurationResult,
       pageviewsResult,
       eventsResult,
+      errorsResult,
       detailsResult,
     ] = await Promise.all([
       clickhouse
@@ -5840,6 +5852,9 @@ export class AnalyticsService {
         .query({ query: queryEvents, query_params: params })
         .then((resultSet) => resultSet.json()),
       clickhouse
+        .query({ query: queryErrors, query_params: params })
+        .then((resultSet) => resultSet.json()),
+      clickhouse
         .query({ query: queryDetails, query_params: params })
         .then((resultSet) => resultSet.json()),
     ])
@@ -5851,6 +5866,7 @@ export class AnalyticsService {
     const avgDuration = (avgDurationResult.data[0] || {}) as Record<string, any>
     const pageviews = (pageviewsResult.data[0] || {}) as Record<string, any>
     const events = (eventsResult.data[0] || {}) as Record<string, any>
+    const errors = (errorsResult.data[0] || {}) as Record<string, any>
     const details = (detailsResult.data[0] || {}) as Record<string, any>
 
     return {
@@ -5859,6 +5875,7 @@ export class AnalyticsService {
       sessionsCount: sessionCount.sessionsCount || 0,
       pageviewsCount: pageviews.pageviewsCount || 0,
       eventsCount: events.eventsCount || 0,
+      errorsCount: errors.errorsCount || 0,
       firstSeen: sessionCount.firstSeen,
       lastSeen: sessionCount.lastSeen,
       avgDuration: avgDuration.avgDuration || 0,
@@ -6166,7 +6183,7 @@ export class AnalyticsService {
         COALESCE(errc.count, 0) AS errors,
         ps.sessionStart,
         ps.lastActivity,
-        if(dateDiff('second', ps.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        if(dateDiff('second', toTimeZone(ps.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
         sda.avg_duration AS sdur
       FROM profile_sessions ps
       LEFT JOIN pageview_counts pc ON ps.psidCasted = pc.psidCasted AND ps.pid = pc.pid
