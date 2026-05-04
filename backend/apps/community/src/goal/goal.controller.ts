@@ -252,38 +252,38 @@ export class GoalController {
     await this.goalService.delete(id)
   }
 
-  private buildGoalMatchCondition(
-    goal: Goal,
-    _table: 'analytics' | 'customEV',
-  ): { condition: string; params: Record<string, string> } {
+  private buildGoalMatchCondition(goal: Goal): {
+    condition: string
+    params: Record<string, string>
+  } {
     const params: Record<string, string> = {}
 
     if (goal.type === GoalType.CUSTOM_EVENT) {
-      // For custom events, match the event name
       if (goal.matchType === GoalMatchType.EXACT) {
         params.goalValue = goal.value || ''
-        return { condition: `ev = {goalValue:String}`, params }
-      } else {
-        // Contains match
-        params.goalValue = goal.value || ''
-        return {
-          condition: `ev ILIKE concat('%', {goalValue:String}, '%')`,
-          params,
-        }
+        return { condition: `event_name = {goalValue:String}`, params }
       }
-    } else {
-      // For pageview goals, match the page path
-      if (goal.matchType === GoalMatchType.EXACT) {
-        params.goalValue = goal.value || ''
-        return { condition: `pg = {goalValue:String}`, params }
-      } else {
-        // Contains match
-        params.goalValue = goal.value || ''
-        return {
-          condition: `pg ILIKE concat('%', {goalValue:String}, '%')`,
-          params,
-        }
+      if ((goal.value || '').trim() === '') {
+        return { condition: '1=0', params: {} }
       }
+      params.goalValue = goal.value || ''
+      return {
+        condition: `event_name ILIKE concat('%', {goalValue:String}, '%')`,
+        params,
+      }
+    }
+
+    if (goal.matchType === GoalMatchType.EXACT) {
+      params.goalValue = goal.value || ''
+      return { condition: `pg = {goalValue:String}`, params }
+    }
+    if ((goal.value || '').trim() === '') {
+      return { condition: '1=0', params: {} }
+    }
+    params.goalValue = goal.value || ''
+    return {
+      condition: `pg ILIKE concat('%', {goalValue:String}, '%')`,
+      params,
     }
   }
 
@@ -347,9 +347,10 @@ export class GoalController {
       safeTimezone,
     )
 
-    const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
+    const goalType =
+      goal.type === GoalType.CUSTOM_EVENT ? 'custom_event' : 'pageview'
     const { condition: matchCondition, params: matchParams } =
-      this.buildGoalMatchCondition(goal, table)
+      this.buildGoalMatchCondition(goal)
     const { condition: metaCondition, params: metaParams } =
       this.buildMetadataCondition(goal)
 
@@ -358,9 +359,10 @@ export class GoalController {
       SELECT 
         count(*) as conversions,
         uniqExact(psid) as uniqueSessions
-      FROM ${table}
+      FROM events
       WHERE 
         pid = {pid:FixedString(12)}
+        AND type = {goalType:String}
         AND ${matchCondition}
         ${metaCondition}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -368,6 +370,7 @@ export class GoalController {
 
     const queryParams = {
       pid: goal.projectId,
+      goalType,
       groupFrom: groupFromUTC,
       groupTo: groupToUTC,
       ...matchParams,
@@ -386,9 +389,10 @@ export class GoalController {
     // Get total unique sessions for conversion rate
     const totalSessionsQuery = `
       SELECT uniqExact(psid) as totalSessions
-      FROM analytics
+      FROM events
       WHERE 
         pid = {pid:FixedString(12)}
+        AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
     `
 
@@ -566,7 +570,8 @@ export class GoalController {
       safeTimezone,
     )
 
-    const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
+    const goalType =
+      goal.type === GoalType.CUSTOM_EVENT ? 'custom_event' : 'pageview'
     const timeBucketFunc = Object.prototype.hasOwnProperty.call(
       timeBucketConversion,
       resolvedTimeBucket,
@@ -576,7 +581,7 @@ export class GoalController {
     const [selector, groupBy] = this.getGroupSubquery(resolvedTimeBucket)
 
     const { condition: matchCondition, params: matchParams } =
-      this.buildGoalMatchCondition(goal, table)
+      this.buildGoalMatchCondition(goal)
     const { condition: metaCondition, params: metaParams } =
       this.buildMetadataCondition(goal)
 
@@ -588,9 +593,10 @@ export class GoalController {
       FROM (
         SELECT *,
           ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
-        FROM ${table}
+        FROM events
         WHERE
           pid = {pid:FixedString(12)}
+          AND type = {goalType:String}
           AND ${matchCondition}
           ${metaCondition}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -601,6 +607,7 @@ export class GoalController {
 
     const queryParams = {
       pid: goal.projectId,
+      goalType,
       groupFrom: groupFromUTC,
       groupTo: groupToUTC,
       timezone: safeTimezone,

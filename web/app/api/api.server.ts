@@ -1036,10 +1036,12 @@ export async function getFunnelSessionsServer(
 }
 
 interface PageflowItem {
-  type: 'pageview' | 'event' | 'error'
+  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
   value: string
   created: string
   metadata?: { key: string; value: string }[]
+  amount?: number
+  currency?: string
 }
 
 export interface SessionDetailsResponse {
@@ -1067,6 +1069,7 @@ export interface SessionDetailsResponse {
     refunds?: number
     created: string
     sdur?: number
+    isLive?: boolean
     profileId: string | null
     isIdentified: 1 | 0
     isFirstSession: 1 | 0

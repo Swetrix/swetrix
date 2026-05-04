@@ -1,7 +1,11 @@
 import * as fs from 'fs'
 import { parse } from 'csv-parse'
 
-import { ImportMapper, AnalyticsImportRow } from './mapper.interface'
+import {
+  ImportMapper,
+  AnalyticsImportRow,
+  ImportError,
+} from './mapper.interface'
 import {
   normalizeNull,
   truncate,
@@ -41,7 +45,7 @@ function detectFileType(headers: string[]): {
 
   const missing = COMMON_REQUIRED.filter((c) => !normalized.includes(c))
   if (missing.length > 0) {
-    throw new Error(
+    throw new ImportError(
       `CSV does not appear to be a Fathom Analytics export. Missing required columns: ${missing.join(', ')}.`,
     )
   }
@@ -54,7 +58,7 @@ function detectFileType(headers: string[]): {
     return { type: 'events', normalized }
   }
 
-  throw new Error(
+  throw new ImportError(
     'CSV does not appear to be a Fathom Analytics export. Expected a pageviews export (with "pageviews" column) or an events export (with "event_name" column).',
   )
 }
@@ -202,19 +206,19 @@ export class FathomMapper implements ImportMapper {
 
       if (fileType === 'pageviews') {
         for (let i = 0; i < count; i++) {
-          yield { table: 'analytics', data: baseData }
+          yield { type: 'pageview', data: baseData }
         }
       } else {
         const eventName = truncate(normalizeNull(row.event_name), 256) || ''
-        const evData = { ...baseData, ev: eventName }
+        const evData = { ...baseData, event_name: eventName }
         for (let i = 0; i < count; i++) {
-          yield { table: 'customEV', data: evData }
+          yield { type: 'custom_event', data: evData }
         }
       }
     }
 
     if (!headerChecked) {
-      throw new Error(
+      throw new ImportError(
         'CSV appears empty or is missing a header row. Please upload a CSV export from Fathom Analytics.',
       )
     }

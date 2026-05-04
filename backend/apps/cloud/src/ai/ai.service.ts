@@ -1218,8 +1218,9 @@ Filter modifiers:
       SELECT
         count(*) as pageviews,
         count(DISTINCT psid) as sessions
-      FROM analytics
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
     `
@@ -1242,8 +1243,9 @@ Filter modifiers:
         ${this.getTimeBucketSelect(timeBucket, timezone)} as date,
         count(*) as pageviews,
         count(DISTINCT psid) as sessions
-      FROM analytics
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
       GROUP BY date
@@ -1266,8 +1268,9 @@ Filter modifiers:
     // Get top pages
     const pagesQuery = `
       SELECT pg as name, count(*) as count
-      FROM analytics
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
       GROUP BY pg
@@ -1285,8 +1288,9 @@ Filter modifiers:
     // Get top countries
     const countriesQuery = `
       SELECT cc as name, uniqExact(psid) as count
-      FROM analytics
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         AND cc IS NOT NULL AND cc != ''
         ${filterConditions.where}
@@ -1305,8 +1309,9 @@ Filter modifiers:
     // Get top referrers
     const referrersQuery = `
       SELECT ref as name, uniqExact(psid) as count
-      FROM analytics
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         AND ref IS NOT NULL AND ref != ''
         ${filterConditions.where}
@@ -1325,8 +1330,9 @@ Filter modifiers:
     // Get browsers
     const browsersQuery = `
       SELECT br as name, uniqExact(psid) as count
-      FROM analytics
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         AND br IS NOT NULL AND br != ''
         ${filterConditions.where}
@@ -1345,8 +1351,9 @@ Filter modifiers:
     // Get devices
     const devicesQuery = `
       SELECT dv as name, uniqExact(psid) as count
-      FROM analytics
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'pageview'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         AND dv IS NOT NULL AND dv != ''
         ${filterConditions.where}
@@ -1416,8 +1423,9 @@ Filter modifiers:
         round(${measureFn}(render) / 1000, 2) as render,
         round(${measureFn}(domLoad) / 1000, 2) as domLoad,
         round(${measureFn}(ttfb) / 1000, 2) as ttfb
-      FROM performance
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'performance'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
     `
@@ -1440,8 +1448,9 @@ Filter modifiers:
         ${this.getTimeBucketSelect(timeBucket, timezone)} as date,
         round(${measureFn}(pageLoad) / 1000, 2) as pageLoad,
         round(${measureFn}(ttfb) / 1000, 2) as ttfb
-      FROM performance
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'performance'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
       GROUP BY date
@@ -1497,8 +1506,9 @@ Filter modifiers:
       SELECT
         count(*) as totalErrors,
         uniqExact(eid) as uniqueErrors
-      FROM errors
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'error'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
     `
@@ -1512,15 +1522,16 @@ Filter modifiers:
 
     const topErrorsQuery = `
       SELECT
-        name,
-        message,
+        error_name AS name,
+        error_message AS message,
         count(*) as count,
         max(created) as lastSeen
-      FROM errors
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'error'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
-      GROUP BY name, message
+      GROUP BY error_name, error_message
       ORDER BY count DESC
       LIMIT 10
     `
@@ -1571,22 +1582,24 @@ Filter modifiers:
         }
 
         // Query specific goal stats
-        const table = goal.type === 'custom_event' ? 'customEV' : 'analytics'
+        const goalType =
+          goal.type === 'custom_event' ? 'custom_event' : 'pageview'
         const matchCondition =
           goal.matchType === 'exact'
             ? goal.type === 'custom_event'
-              ? `ev = {goalValue:String}`
+              ? `event_name = {goalValue:String}`
               : `pg = {goalValue:String}`
             : goal.type === 'custom_event'
-              ? `ev ILIKE concat('%', {goalValue:String}, '%')`
+              ? `event_name ILIKE concat('%', {goalValue:String}, '%')`
               : `pg ILIKE concat('%', {goalValue:String}, '%')`
 
         const query = `
           SELECT
             count(*) as conversions,
             uniqExact(psid) as uniqueSessions
-          FROM ${table}
+          FROM events
           WHERE pid = {pid:FixedString(12)}
+            AND type = {goalType:String}
             AND ${matchCondition}
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         `
@@ -1596,6 +1609,7 @@ Filter modifiers:
             query,
             query_params: {
               pid,
+              goalType,
               goalValue: goal.value || '',
               groupFrom: groupFromUTC,
               groupTo: groupToUTC,
@@ -1617,20 +1631,22 @@ Filter modifiers:
 
       const results = await Promise.all(
         goals.map(async (goal) => {
-          const table = goal.type === 'custom_event' ? 'customEV' : 'analytics'
+          const goalType =
+            goal.type === 'custom_event' ? 'custom_event' : 'pageview'
           const matchCondition =
             goal.matchType === 'exact'
               ? goal.type === 'custom_event'
-                ? `ev = {goalValue:String}`
+                ? `event_name = {goalValue:String}`
                 : `pg = {goalValue:String}`
               : goal.type === 'custom_event'
-                ? `ev ILIKE concat('%', {goalValue:String}, '%')`
+                ? `event_name ILIKE concat('%', {goalValue:String}, '%')`
                 : `pg ILIKE concat('%', {goalValue:String}, '%')`
 
           const query = `
             SELECT count(*) as conversions
-            FROM ${table}
+            FROM events
             WHERE pid = {pid:FixedString(12)}
+              AND type = {goalType:String}
               AND ${matchCondition}
               AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           `
@@ -1640,6 +1656,7 @@ Filter modifiers:
               query,
               query_params: {
                 pid,
+                goalType,
                 goalValue: goal.value || '',
                 groupFrom: groupFromUTC,
                 groupTo: groupToUTC,
@@ -1747,8 +1764,9 @@ Filter modifiers:
     const overallQuery = `
       SELECT
         count(*) as total
-      FROM captcha
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'captcha'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
     `
@@ -1757,8 +1775,9 @@ Filter modifiers:
       SELECT
         ${this.getTimeBucketSelect(timeBucket, timezone)} as date,
         count(*) as challenges
-      FROM captcha
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'captcha'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
       GROUP BY date
@@ -1767,8 +1786,9 @@ Filter modifiers:
 
     const breakdownQuery = (column: string) => `
       SELECT ${column} as name, count(*) as count
-      FROM captcha
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'captcha'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         AND ${column} IS NOT NULL AND ${column} != ''
         ${filterConditions.where}
@@ -1844,21 +1864,23 @@ Filter modifiers:
     const overallQuery = `
       SELECT
         count(*) as totalEvents,
-        uniqExact(ev) as uniqueEvents,
+        uniqExact(event_name) as uniqueEvents,
         uniqExact(psid) as sessions
-      FROM customEV
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'custom_event'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
     `
 
     const topEventsQuery = `
-      SELECT ev as name, count(*) as count, uniqExact(psid) as sessions
-      FROM customEV
+      SELECT event_name AS name, count(*) as count, uniqExact(psid) as sessions
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'custom_event'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
-      GROUP BY ev
+      GROUP BY event_name
       ORDER BY count DESC
       LIMIT 25
     `
@@ -1868,8 +1890,9 @@ Filter modifiers:
         ${this.getTimeBucketSelect(timeBucket, timezone)} as date,
         count(*) as events,
         uniqExact(psid) as sessions
-      FROM customEV
+      FROM events
       WHERE pid = {pid:FixedString(12)}
+        AND type = 'custom_event'
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filterConditions.where}
       GROUP BY date
@@ -2137,10 +2160,10 @@ Filter modifiers:
 
       let conversions: { variantKey: string; conversions: number }[] = []
       if (experiment.goal) {
-        const table =
-          experiment.goal.type === 'custom_event' ? 'customEV' : 'analytics'
+        const eventType =
+          experiment.goal.type === 'custom_event' ? 'custom_event' : 'pageview'
         const matchColumn =
-          experiment.goal.type === 'custom_event' ? 'ev' : 'pg'
+          experiment.goal.type === 'custom_event' ? 'event_name' : 'pg'
         const matchCondition =
           experiment.goal.matchType === 'exact'
             ? `c.${matchColumn} = {goalValue:String}`
@@ -2149,7 +2172,7 @@ Filter modifiers:
         const conversionsQuery = `
           SELECT e.variantKey, uniqExact(e.profileId) as conversions
           FROM experiment_exposures e
-          INNER JOIN ${table} c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId)
+          INNER JOIN events c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId) AND c.type = '${eventType}'
           WHERE e.pid = {pid:FixedString(12)}
             AND e.experimentId = {experimentId:String}
             AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -2291,8 +2314,9 @@ Filter modifiers:
           min(created) as startedAt,
           max(created) as endedAt,
           count(*) as pageviews
-        FROM analytics
+        FROM events
         WHERE pid = {pid:FixedString(12)}
+          AND type = 'pageview'
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           AND psid IS NOT NULL
           ${extraWhere.join(' ')}
@@ -2356,8 +2380,9 @@ Filter modifiers:
           uniqExactIf(profileId, profileId LIKE 'usr_%') as identifiedProfiles,
           uniqExact(psid) as sessions,
           count(*) as pageviews
-        FROM analytics
+        FROM events
         WHERE pid = {pid:FixedString(12)}
+          AND type = 'pageview'
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           AND profileId IS NOT NULL
       `
@@ -2368,8 +2393,9 @@ Filter modifiers:
           uniqExact(psid) as sessions,
           count(*) as pageviews,
           max(created) as lastSeen
-        FROM analytics
+        FROM events
         WHERE pid = {pid:FixedString(12)}
+          AND type = 'pageview'
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           AND profileId IS NOT NULL
         GROUP BY profileId
@@ -2379,8 +2405,9 @@ Filter modifiers:
 
       const topPagesQuery = `
         SELECT pg as name, uniqExact(profileId) as profiles
-        FROM analytics
+        FROM events
         WHERE pid = {pid:FixedString(12)}
+          AND type = 'pageview'
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           AND profileId IS NOT NULL
           AND pg IS NOT NULL AND pg != ''

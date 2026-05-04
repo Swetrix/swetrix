@@ -17,7 +17,7 @@ import {
 } from '../common/constants'
 import { getIPDetails } from '../common/utils'
 import { GeneratedChallenge } from './interfaces/generated-captcha'
-import { captchaTransformer } from './utils/transformers'
+import { eventTransformer } from '../analytics/utils/transformers'
 import { clickhouse } from '../common/integrations/clickhouse'
 
 dayjs.extend(utc)
@@ -152,18 +152,19 @@ export class CaptchaService {
     const osName = ua.os.name
 
     const { country } = getIPDetails(ip)
-    const transformed = captchaTransformer(
+    const transformed = eventTransformer({
+      type: 'captcha',
       pid,
-      deviceType,
-      browserName,
-      osName,
-      country,
+      dv: deviceType,
+      br: browserName,
+      os: osName,
+      cc: country,
       timestamp,
-    )
+    })
 
     try {
       await clickhouse.insert({
-        table: 'captcha',
+        table: 'events',
         format: 'JSONEachRow',
         values: [transformed],
         clickhouse_settings: {

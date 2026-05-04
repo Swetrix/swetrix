@@ -81,12 +81,7 @@ import {
   GetErrorOverviewOptions,
 } from './dto/get-error-overview.dto'
 import { PatchStatusDto } from './dto/patch-status.dto'
-import {
-  customEventTransformer,
-  errorEventTransformer,
-  performanceTransformer,
-  trafficTransformer,
-} from './utils/transformers'
+import { eventTransformer } from './utils/transformers'
 import { enrichTrafficSource } from './utils/clickIdSources'
 import {
   MAX_METRICS_IN_VIEW,
@@ -263,10 +258,19 @@ export class AnalyticsController {
 
     let diff
 
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.analyticsService.getFiltersQuery(
+        filters,
+        isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
+      )
+
     if (period === 'all') {
+      const eventTypes = isCaptcha
+        ? 'captcha'
+        : (['pageview', 'custom_event', 'error'] as const)
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'analytics',
+        eventTypes,
       )
 
       diff = res.diff
@@ -276,12 +280,6 @@ export class AnalyticsController {
         : res.timeBucket[0]
       allowedTumebucketForPeriodAll = res.timeBucket
     }
-
-    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
-      this.analyticsService.getFiltersQuery(
-        filters,
-        isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
-      )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
@@ -294,13 +292,11 @@ export class AnalyticsController {
         diff,
       )
 
-    let subQuery = `FROM ${
-      isCaptcha ? 'captcha' : 'analytics'
-    } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-
-    if (customEVFilterApplied && !isCaptcha) {
-      subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    }
+    const subQuery = this.analyticsService.buildAnalyticsEventsSubQuery(
+      filtersQuery,
+      customEVFilterApplied,
+      isCaptcha,
+    )
 
     const paramsData = {
       params: {
@@ -422,12 +418,15 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const [analyticsRes, customEVRes] = await Promise.all([
-        this.analyticsService.calculateTimeBucketForAllTime(pid, 'analytics'),
-        this.analyticsService.calculateTimeBucketForAllTime(pid, 'customEV'),
+      const [pageviewRes, customEventRes] = await Promise.all([
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'pageview'),
+        this.analyticsService.calculateTimeBucketForAllTime(
+          pid,
+          'custom_event',
+        ),
       ])
 
-      diff = Math.max(analyticsRes.diff, customEVRes.diff)
+      diff = Math.max(pageviewRes.diff, customEventRes.diff)
     }
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -537,12 +536,15 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const [analyticsRes, customEVRes] = await Promise.all([
-        this.analyticsService.calculateTimeBucketForAllTime(pid, 'analytics'),
-        this.analyticsService.calculateTimeBucketForAllTime(pid, 'customEV'),
+      const [pageviewRes, customEventRes] = await Promise.all([
+        this.analyticsService.calculateTimeBucketForAllTime(pid, 'pageview'),
+        this.analyticsService.calculateTimeBucketForAllTime(
+          pid,
+          'custom_event',
+        ),
       ])
 
-      diff = Math.max(analyticsRes.diff, customEVRes.diff)
+      diff = Math.max(pageviewRes.diff, customEventRes.diff)
     }
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -707,13 +709,14 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      timeBucket,
-      period,
-      safeTimezone,
-    )
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        timeBucket,
+        period,
+        safeTimezone,
+      )
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
@@ -724,7 +727,14 @@ export class AnalyticsController {
 
     this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/chart')
 
-    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
 
     const result = await this.analyticsService.groupChartByTimeBucket(
       timeBucket,
@@ -795,18 +805,26 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE, true)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      newTimeBucket,
-      period,
-      safeTimezone,
-      diff,
-    )
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        newTimeBucket,
+        period,
+        safeTimezone,
+        diff,
+      )
 
-    const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    const subQuery = `FROM events WHERE pid = {pid:FixedString(12)} AND type = 'performance' ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
-    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
 
     const result = await this.analyticsService.groupPerfByTimeBucket(
       newTimeBucket,
@@ -850,13 +868,14 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE, true)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      timeBucket,
-      period,
-      safeTimezone,
-    )
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        timeBucket,
+        period,
+        safeTimezone,
+      )
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
@@ -870,12 +889,19 @@ export class AnalyticsController {
       'GET /analytics/performance/chart',
     )
 
-    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
 
     const chart = await this.analyticsService.getPerfChartData(
       timeBucket,
-      from,
-      to,
+      groupFrom,
+      groupTo,
       filtersQuery,
       paramsData,
       safeTimezone,
@@ -921,7 +947,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'analytics',
+        'pageview',
       )
 
       diff = res.diff
@@ -1332,32 +1358,12 @@ export class AnalyticsController {
         any(os) AS os,
         any(cc) AS cc,
         toString(psid) AS psid
-      FROM
-      (
-        SELECT
-          psid,
-          dv,
-          br,
-          os,
-          cc
-        FROM analytics
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND created >= {since:DateTime}
-          AND psid IS NOT NULL
-        UNION ALL
-        SELECT
-          psid,
-          dv,
-          br,
-          os,
-          cc
-        FROM customEV
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND created >= {since:DateTime}
-          AND psid IS NOT NULL
-      )
+      FROM events
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND type IN ('pageview', 'custom_event')
+        AND created >= {since:DateTime}
+        AND psid IS NOT NULL
       GROUP BY psid
     `
 
@@ -1464,7 +1470,8 @@ export class AnalyticsController {
     const { name, message, lineno, colno, filename, stackTrace, meta } =
       errorDTO
 
-    const transformed = errorEventTransformer({
+    const transformed = eventTransformer({
+      type: 'error',
       psid,
       profileId,
       eid: this.analyticsService.getErrorID(errorDTO),
@@ -1496,7 +1503,7 @@ export class AnalyticsController {
 
     try {
       await clickhouse.insert({
-        table: 'errors',
+        table: 'events',
         format: 'JSONEachRow',
         values: [transformed],
         clickhouse_settings: { async_insert: 1 },
@@ -1618,7 +1625,8 @@ export class AnalyticsController {
 
     enrichTrafficSource(eventsDTO)
 
-    const transformed = customEventTransformer({
+    const transformed = eventTransformer({
+      type: 'custom_event',
       psid,
       profileId,
       pid: eventsDTO.pid,
@@ -1650,7 +1658,7 @@ export class AnalyticsController {
 
     try {
       await clickhouse.insert({
-        table: 'customEV',
+        table: 'events',
         format: 'JSONEachRow',
         values: [transformed],
         clickhouse_settings: { async_insert: 1 },
@@ -1789,7 +1797,8 @@ export class AnalyticsController {
 
     enrichTrafficSource(logDTO)
 
-    const transformed = trafficTransformer({
+    const transformed = eventTransformer({
+      type: 'pageview',
       psid,
       profileId,
       pid: logDTO.pid,
@@ -1832,7 +1841,8 @@ export class AnalyticsController {
         ttfb,
       } = logDTO.perf
 
-      perfTransformed = performanceTransformer({
+      perfTransformed = eventTransformer({
+        type: 'performance',
         pid: logDTO.pid,
         host: this.analyticsService.getHostFromOrigin(headers.origin),
         pg: logDTO.pg,
@@ -1860,7 +1870,7 @@ export class AnalyticsController {
 
     try {
       await clickhouse.insert({
-        table: 'analytics',
+        table: 'events',
         format: 'JSONEachRow',
         values: [transformed],
         clickhouse_settings: { async_insert: 1 },
@@ -1868,7 +1878,7 @@ export class AnalyticsController {
 
       if (!_isEmpty(perfTransformed)) {
         await clickhouse.insert({
-          table: 'performance',
+          table: 'events',
           format: 'JSONEachRow',
           values: [perfTransformed],
           clickhouse_settings: { async_insert: 1 },
@@ -1955,7 +1965,8 @@ export class AnalyticsController {
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
 
-    const transformed = trafficTransformer({
+    const transformed = eventTransformer({
+      type: 'pageview',
       psid,
       profileId,
       pid: logDTO.pid,
@@ -1986,7 +1997,7 @@ export class AnalyticsController {
 
     try {
       await clickhouse.insert({
-        table: 'analytics',
+        table: 'events',
         format: 'JSONEachRow',
         values: [transformed],
         clickhouse_settings: { async_insert: 1 },
@@ -2039,7 +2050,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        customEVFilterApplied ? 'customEV' : 'analytics',
+        ['pageview', 'custom_event', 'error'],
       )
 
       timeBucket = res.timeBucket[0]
@@ -2124,7 +2135,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'errors',
+        'error',
       )
 
       timeBucket = res.timeBucket[0]
@@ -2203,7 +2214,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'errors',
+        'error',
       )
 
       newTimeBucket = res.timeBucket[0]
@@ -2281,7 +2292,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'errors',
+        'error',
       )
 
       newTimeBucket = res.timeBucket[0]
@@ -2293,6 +2304,8 @@ export class AnalyticsController {
       DataType.ERRORS,
       true,
     )
+    const [sessionFiltersQuery, sessionFiltersParams] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS, true)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
@@ -2322,6 +2335,8 @@ export class AnalyticsController {
       groupToUTC,
       newTimeBucket,
       parsedOptions.showResolved || false,
+      sessionFiltersQuery,
+      sessionFiltersParams,
     )
   }
 
@@ -2362,7 +2377,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'errors',
+        'error',
       )
 
       newTimeBucket = res.timeBucket[0]
@@ -2467,7 +2482,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        customEVFilterApplied ? 'customEV' : 'analytics',
+        ['pageview', 'custom_event', 'error'],
       )
 
       timeBucket = res.timeBucket[0]
@@ -2546,7 +2561,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'analytics',
+        ['pageview', 'custom_event', 'error'],
       )
       timeBucket = res.timeBucket[0]
       diff = res.diff
@@ -2634,7 +2649,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        customEVFilterApplied ? 'customEV' : 'analytics',
+        ['pageview', 'custom_event', 'error'],
       )
 
       timeBucket = res.timeBucket[0]
@@ -2714,7 +2729,7 @@ export class AnalyticsController {
     if (period === VALID_PERIODS[VALID_PERIODS.length - 1]) {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'customEV',
+        'custom_event',
       )
 
       newTimeBucket = _includes(res.timeBucket, timeBucket)
@@ -2728,16 +2743,24 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      newTimeBucket,
-      period,
-      safeTimezone,
-      diff,
-    )
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        newTimeBucket,
+        period,
+        safeTimezone,
+        diff,
+      )
 
-    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
 
     // customEvents comes as a JSON.stringified array from the frontend
     let customEventsList: string[] = []

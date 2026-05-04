@@ -859,7 +859,7 @@ export class PlausibleMapper implements ImportMapper {
           created,
         })
 
-        yield { table: 'analytics', data }
+        yield { type: 'pageview', data }
       }
     }
 
@@ -889,8 +889,8 @@ export class PlausibleMapper implements ImportMapper {
             page: null,
             created,
           })
-          data.ev = truncate(ev.name, 256) || ''
-          yield { table: 'customEV', data }
+          data.event_name = truncate(ev.name, 256) || ''
+          yield { type: 'custom_event', data }
         }
       }
     }

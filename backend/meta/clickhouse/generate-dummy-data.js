@@ -115,10 +115,10 @@ const chalk = {
   cyan: text => `\x1b[36m${text}\x1b[0m`,
 }
 
-const insertData = async (pid, rowCount, processedRecords, table) => {
+const insertData = async (pid, rowCount, processedRecords) => {
   try {
     await clickhouse.insert({
-      table,
+      table: 'events',
       format: 'JSONEachRow',
       values: processedRecords,
       clickhouse_settings: {
@@ -154,6 +154,7 @@ const generateAnalyticsData = async (pid, rowCount, from, to) => {
 
   for (let i = 0; i < rowCount; ++i) {
     records.push({
+      type: 'pageview',
       psid:
         Math.random() < 0.05
           ? faker.helpers.arrayElement(PSIDS)
@@ -193,7 +194,7 @@ const generateAnalyticsData = async (pid, rowCount, from, to) => {
     ),
   )
 
-  insertData(pid, rowCount, records, 'analytics')
+  insertData(pid, rowCount, records)
 }
 
 const generateCaptchaData = async (pid, rowCount, from, to) => {
@@ -201,6 +202,7 @@ const generateCaptchaData = async (pid, rowCount, from, to) => {
 
   for (let i = 0; i < rowCount; ++i) {
     records.push({
+      type: 'captcha',
       pid,
       dv: faker.helpers.arrayElement(DEVICES),
       br: faker.helpers.arrayElement(BROWSERS),
@@ -223,7 +225,7 @@ const generateCaptchaData = async (pid, rowCount, from, to) => {
     ),
   )
 
-  insertData(pid, rowCount, records, 'captcha')
+  insertData(pid, rowCount, records)
 }
 
 const generateCustomEventsData = async (pid, rowCount, from, to) => {
@@ -231,8 +233,9 @@ const generateCustomEventsData = async (pid, rowCount, from, to) => {
 
   for (let i = 0; i < rowCount; ++i) {
     records.push({
+      type: 'custom_event',
       pid,
-      ev: faker.helpers.arrayElement(CUSTOM_EVENTS),
+      event_name: faker.helpers.arrayElement(CUSTOM_EVENTS),
       pg: faker.helpers.arrayElement(PAGES),
       dv: faker.helpers.arrayElement(DEVICES),
       br: faker.helpers.arrayElement(BROWSERS),
@@ -267,7 +270,7 @@ const generateCustomEventsData = async (pid, rowCount, from, to) => {
     ),
   )
 
-  insertData(pid, rowCount, records, 'customEV')
+  insertData(pid, rowCount, records)
 }
 
 const generatePerformanceData = async (pid, rowCount, from, to) => {
@@ -275,6 +278,7 @@ const generatePerformanceData = async (pid, rowCount, from, to) => {
 
   for (let i = 0; i < rowCount; ++i) {
     records.push({
+      type: 'performance',
       pid,
       pg: faker.helpers.arrayElement(PAGES),
       dv: faker.helpers.arrayElement(DEVICES),
@@ -308,7 +312,7 @@ const generatePerformanceData = async (pid, rowCount, from, to) => {
     ),
   )
 
-  insertData(pid, rowCount, records, 'performance')
+  insertData(pid, rowCount, records)
 }
 
 const main = () => {

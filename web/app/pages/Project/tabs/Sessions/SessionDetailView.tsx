@@ -42,10 +42,12 @@ import { Pageflow } from './Pageflow'
 import { SessionChart } from './SessionChart'
 
 interface PageflowItem {
-  type: 'pageview' | 'event' | 'error'
+  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
   value: string
   created: string
   metadata?: { key: string; value: string }[]
+  amount?: number
+  currency?: string
 }
 
 interface SessionDetailViewProps {

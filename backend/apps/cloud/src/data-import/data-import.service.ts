@@ -161,11 +161,7 @@ export class DataImportService {
     importId: number,
   ): Promise<void> {
     await clickhouse.command({
-      query: `ALTER TABLE ${CLICKHOUSE_DB}.analytics DELETE WHERE pid = {pid:FixedString(12)} AND importID = {importID:UInt8}`,
-      query_params: { pid: projectId, importID: importId },
-    })
-    await clickhouse.command({
-      query: `ALTER TABLE ${CLICKHOUSE_DB}.customEV DELETE WHERE pid = {pid:FixedString(12)} AND importID = {importID:UInt8}`,
+      query: `ALTER TABLE ${CLICKHOUSE_DB}.events DELETE WHERE pid = {pid:FixedString(12)} AND importID = {importID:UInt8} AND type IN ('pageview', 'custom_event')`,
       query_params: { pid: projectId, importID: importId },
     })
   }
@@ -207,7 +203,7 @@ export class DataImportService {
   ): Promise<boolean> {
     const result = await clickhouse
       .query({
-        query: `SELECT count() as cnt FROM ${CLICKHOUSE_DB}.analytics WHERE pid = {pid:FixedString(12)} AND importID IS NOT NULL AND created >= {from:DateTime} AND created <= {to:DateTime} LIMIT 1`,
+        query: `SELECT count() as cnt FROM ${CLICKHOUSE_DB}.events WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND importID IS NOT NULL AND created >= {from:DateTime} AND created <= {to:DateTime} LIMIT 1`,
         query_params: { pid: projectId, from, to },
       })
       .then((resultSet) => resultSet.json<{ cnt: string }>())

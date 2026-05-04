@@ -183,9 +183,10 @@ export interface IOverallPerformance {
 }
 
 export interface IPageflow {
-  type: 'pageview' | 'event'
+  type: 'pageview' | 'event' | 'error'
   value: string
   created: string
+  created_utc?: string
   metadata?: [string, string][]
 }
 
