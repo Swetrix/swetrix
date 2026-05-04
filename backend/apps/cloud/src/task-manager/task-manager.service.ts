@@ -428,6 +428,10 @@ export class TaskManagerService {
     }
 
     // Regex goal
+    if (!goalValue || goalValue === '') {
+      return appendMetadataFilters('false')
+    }
+
     params[paramKey] = goalValue
     return appendMetadataFilters(`match(${column}, {${paramKey}:String})`)
   }

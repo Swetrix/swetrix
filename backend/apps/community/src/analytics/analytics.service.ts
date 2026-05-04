@@ -2294,10 +2294,15 @@ export class AnalyticsService {
     mode: ChartRenderMode,
   ): IExtractChartData {
     if (customEVFilterApplied) {
+      const customEventsData = this.extractCustomEventsChartData(
+        result,
+        xShifted,
+      )
       const uniques =
-        this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
-        []
-      const sdur = Array(_size(xShifted)).fill(0)
+        customEventsData._uniques ||
+        customEventsData._unknown_event ||
+        Array(_size(xShifted)).fill(0)
+      const sdur = customEventsData._sdur || Array(_size(xShifted)).fill(0)
 
       return {
         visits: uniques,
@@ -2881,6 +2886,10 @@ export class AnalyticsService {
 
   extractCustomEventsChartData(queryResult, x: string[]): any {
     const result = {}
+    const uniques = Array(x.length).fill(0)
+    const sdur = Array(x.length).fill(0)
+    let hasUniques = false
+    let hasSdur = false
 
     for (let row = 0; row < _size(queryResult); ++row) {
       const { ev = '_unknown_event' } = queryResult[row]
@@ -2895,7 +2904,25 @@ export class AnalyticsService {
         }
 
         result[ev][index] = queryResult[row].count
+
+        if (typeof queryResult[row].uniques !== 'undefined') {
+          uniques[index] = queryResult[row].uniques || 0
+          hasUniques = true
+        }
+
+        if (typeof queryResult[row].sdur !== 'undefined') {
+          sdur[index] = queryResult[row].sdur || 0
+          hasSdur = true
+        }
       }
+    }
+
+    if (hasUniques) {
+      result['_uniques'] = uniques
+    }
+
+    if (hasSdur) {
+      result['_sdur'] = sdur
     }
 
     return result
@@ -3098,16 +3125,31 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        count() as count
+        count() as count,
+        countDistinct(subquery.psid) as uniques,
+        avgOrNull(sessions_data.duration) as sdur
       FROM (
-        SELECT *,
-        ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
+        SELECT
+          pid,
+          psid,
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM events
         WHERE pid = {pid:FixedString(12)}
           AND type = 'custom_event'
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
+      LEFT JOIN (
+        SELECT
+          pid,
+          psid,
+          dateDiff('second', min(firstSeen), max(lastSeen)) as duration
+        FROM sessions
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY pid, psid
+      ) as sessions_data
+      ON subquery.pid = sessions_data.pid
+      AND subquery.psid = sessions_data.psid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
       `
@@ -3115,8 +3157,10 @@ export class AnalyticsService {
     if (mode === ChartRenderMode.CUMULATIVE) {
       return `
           SELECT
-            *,
-            sum(count) OVER (ORDER BY ${groupBy}) as count
+            ${groupBy},
+            sum(count) OVER (ORDER BY ${groupBy}) as count,
+            sum(uniques) OVER (ORDER BY ${groupBy}) as uniques,
+            sdur
           FROM (${baseQuery})
         `
     }
@@ -4366,16 +4410,21 @@ export class AnalyticsService {
     }
 
     return _map(pages, (page: IPageflow) => {
-      if (!page.metadata) {
-        return page
+      const { created_utc: _createdUtc, ...displayPage } = page
+
+      if (!displayPage.metadata) {
+        return displayPage
       }
 
       return {
-        ...page,
-        metadata: _map(page.metadata, ([key, value]: [string, string]) => ({
-          key,
-          value,
-        })),
+        ...displayPage,
+        metadata: _map(
+          displayPage.metadata,
+          ([key, value]: [string, string]) => ({
+            key,
+            value,
+          }),
+        ),
       }
     })
   }
@@ -4394,7 +4443,8 @@ export class AnalyticsService {
             event_type = 'custom_event', toString(event_name),
             toString(error_name)
           ) AS value,
-          toTimeZone(created, {timezone:String}) AS created,
+          created AS created_utc,
+          toTimeZone(created, {timezone:String}) AS created_local,
           pid,
           toString(psid) AS psid,
           if(
@@ -4434,10 +4484,11 @@ export class AnalyticsService {
       SELECT
         type,
         value,
-        created,
+        created_local AS created,
+        created_utc,
         metadata
       FROM events_with_meta
-      ORDER BY created ASC
+      ORDER BY created_utc ASC
     `
 
     const querySessionDetails = `
@@ -4514,7 +4565,7 @@ export class AnalyticsService {
     }
 
     if (!duration && lastSeen && Array.isArray(pages) && pages.length >= 1) {
-      const first = dayjs(pages[0].created)
+      const first = dayjs(pages[0].created_utc)
       const diffSeconds = dayjs(lastSeen).diff(first, 'second')
       if (diffSeconds > 0) {
         duration = diffSeconds
@@ -4522,8 +4573,8 @@ export class AnalyticsService {
     }
 
     if (!duration && Array.isArray(pages) && pages.length >= 2) {
-      const first = dayjs(pages[0].created)
-      const last = dayjs(pages[pages.length - 1].created)
+      const first = dayjs(pages[0].created_utc)
+      const last = dayjs(pages[pages.length - 1].created_utc)
       const diffSeconds = last.diff(first, 'second')
       if (diffSeconds > 0) {
         duration = diffSeconds
@@ -4560,12 +4611,12 @@ export class AnalyticsService {
 
     if (!_isEmpty(pages)) {
       const from = dayjs
-        .utc(pages[0].created)
+        .utc(pages[0].created_utc)
         .tz(safeTimezone)
         .startOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
       const to = dayjs
-        .utc(pages[_size(pages) - 1].created)
+        .utc(pages[_size(pages) - 1].created_utc)
         .tz(safeTimezone)
         .endOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
@@ -4583,8 +4634,8 @@ export class AnalyticsService {
         {
           params: {
             ...paramsData.params,
-            groupFrom: pages[0].created,
-            groupTo: pages[_size(pages) - 1].created,
+            groupFrom: from,
+            groupTo: to,
           },
         },
         safeTimezone,
@@ -4597,7 +4648,7 @@ export class AnalyticsService {
     let isLive = false
 
     if (!_isEmpty(pages)) {
-      const lastActivityTime = dayjs(pages[pages.length - 1].created)
+      const lastActivityTime = dayjs(pages[pages.length - 1].created_utc)
 
       const liveThresholdTime = dayjs().subtract(
         LIVE_SESSION_THRESHOLD_SECONDS,
@@ -5580,7 +5631,8 @@ export class AnalyticsService {
             dv,
             created,
             if(type = 'pageview', 1, 0) AS isPageview,
-            if(type = 'custom_event', 1, 0) AS isEvent
+            if(type = 'custom_event', 1, 0) AS isEvent,
+            if(type = 'error', 1, 0) AS isError
           FROM events
           WHERE pid = {pid:FixedString(12)}
             AND type IN ('pageview', 'custom_event', 'error')
@@ -5623,6 +5675,7 @@ export class AnalyticsService {
           sum(isPageview) AS pageviewsCount,
           countDistinct(psid) AS sessionsCount,
           sum(isEvent) AS eventsCount,
+          sum(isError) AS errorsCount,
           min(created) AS firstSeen,
           max(created) AS lastSeen,
           any(cc) AS cc_agg,
@@ -5631,26 +5684,13 @@ export class AnalyticsService {
           any(dv) AS dv_agg
         FROM all_profile_data
         GROUP BY profileId
-      ),
-      profile_errors AS (
-        SELECT
-          profileId,
-          count() AS errorsCount
-        FROM events
-        WHERE pid = {pid:FixedString(12)}
-          AND type = 'error'
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-          AND profileId IS NOT NULL
-          AND profileId != ''
-          ${profileTypeFilter}
-        GROUP BY profileId
       )
       SELECT
         pa.profileId AS profileId,
         pa.sessionsCount AS sessionsCount,
         pa.pageviewsCount AS pageviewsCount,
         pa.eventsCount AS eventsCount,
-        COALESCE(perr.errorsCount, 0) AS errorsCount,
+        pa.errorsCount AS errorsCount,
         pa.firstSeen AS firstSeen,
         pa.lastSeen AS lastSeen,
         pa.cc_agg AS cc,
@@ -5658,7 +5698,6 @@ export class AnalyticsService {
         pa.br_agg AS br,
         pa.dv_agg AS dv
       FROM profile_aggregated AS pa
-      LEFT JOIN profile_errors AS perr ON pa.profileId = perr.profileId
       ORDER BY pa.lastSeen DESC
       LIMIT {take:UInt32}
       OFFSET {skip:UInt32}

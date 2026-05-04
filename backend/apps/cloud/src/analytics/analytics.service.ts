@@ -5305,10 +5305,11 @@ export class AnalyticsService {
             dv,
             created,
             if(type = 'pageview', 1, 0) AS isPageview,
-            if(type = 'custom_event', 1, 0) AS isEvent
+            if(type = 'custom_event', 1, 0) AS isEvent,
+            if(type = 'error', 1, 0) AS isError
           FROM events
           WHERE pid = {pid:FixedString(12)}
-            AND type IN ('pageview', 'custom_event')
+            AND type IN ('pageview', 'custom_event', 'error')
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
             AND profileId IS NOT NULL
             AND profileId != ''
@@ -5348,6 +5349,7 @@ export class AnalyticsService {
           sum(isPageview) AS pageviewsCount,
           countDistinct(psid) AS sessionsCount,
           sum(isEvent) AS eventsCount,
+          sum(isError) AS errorsCount,
           min(created) AS firstSeen,
           max(created) AS lastSeen,
           any(cc) AS cc_agg,
@@ -5356,26 +5358,13 @@ export class AnalyticsService {
           any(dv) AS dv_agg
         FROM all_profile_data
         GROUP BY profileId
-      ),
-      profile_errors AS (
-        SELECT
-          profileId,
-          count() AS errorsCount
-        FROM events
-        WHERE pid = {pid:FixedString(12)}
-          AND type = 'error'
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-          AND profileId IS NOT NULL
-          AND profileId != ''
-          ${profileTypeFilter}
-        GROUP BY profileId
       )
       SELECT
         pa.profileId AS profileId,
         pa.sessionsCount AS sessionsCount,
         pa.pageviewsCount AS pageviewsCount,
         pa.eventsCount AS eventsCount,
-        COALESCE(perr.errorsCount, 0) AS errorsCount,
+        pa.errorsCount AS errorsCount,
         pa.firstSeen AS firstSeen,
         pa.lastSeen AS lastSeen,
         pa.cc_agg AS cc,
@@ -5383,7 +5372,6 @@ export class AnalyticsService {
         pa.br_agg AS br,
         pa.dv_agg AS dv
       FROM profile_aggregated AS pa
-      LEFT JOIN profile_errors AS perr ON pa.profileId = perr.profileId
       ORDER BY pa.lastSeen DESC
       LIMIT {take:UInt32}
       OFFSET {skip:UInt32}
@@ -5765,7 +5753,7 @@ export class AnalyticsService {
           toTimeZone(created, {timezone:String}) AS created_tz
         FROM events
         WHERE pid = {pid:FixedString(12)}
-          AND type IN ('pageview', 'custom_event')
+          AND type IN ('pageview', 'custom_event', 'error')
           AND profileId = {profileId:String}
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
