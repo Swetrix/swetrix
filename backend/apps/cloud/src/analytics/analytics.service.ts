@@ -6347,10 +6347,10 @@ export class AnalyticsService {
           any(cc) AS cc,
           any(br) AS br,
           any(os) AS os,
-          count(*) AS pageviews
+          countIf(type = 'pageview') AS pageviews
         FROM events
         WHERE pid = {pid:FixedString(12)}
-          AND type = 'pageview'
+          AND type IN ('pageview', 'error', 'custom_event')
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY pid, psid
