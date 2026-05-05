@@ -91,18 +91,13 @@ function matchesTargetingRules(
   rules: TargetingRule[],
   attributes?: Record<string, string>,
 ): boolean {
-  if (!attributes) {
-    // If no attributes provided, we can't match any rules
-    // Return true to be permissive (flag will be shown)
-    return true
-  }
-
   for (const rule of rules) {
-    const attributeValue = attributes[rule.column]
+    const attributeValue = attributes?.[rule.column]
 
-    // Check if we have the attribute
     if (attributeValue === undefined) {
-      // If attribute not provided, skip this rule (be permissive)
+      if (!rule.isExclusive) {
+        return false
+      }
       continue
     }
 

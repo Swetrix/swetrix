@@ -20,6 +20,7 @@ export type BotEndpoint =
   | 'pageview'
   | 'custom'
   | 'error'
+  | 'feature_flag'
   | 'heartbeat'
   | 'noscript'
 

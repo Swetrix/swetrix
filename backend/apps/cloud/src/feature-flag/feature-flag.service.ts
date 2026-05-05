@@ -113,8 +113,11 @@ export class FeatureFlagService {
     return repository.update(id, flagData)
   }
 
-  async delete(id: string): Promise<DeleteResult> {
-    return this.featureFlagRepository.delete(id)
+  async delete(id: string, manager?: EntityManager): Promise<DeleteResult> {
+    const repository = manager
+      ? manager.getRepository(FeatureFlag)
+      : this.featureFlagRepository
+    return repository.delete(id)
   }
 
   /**

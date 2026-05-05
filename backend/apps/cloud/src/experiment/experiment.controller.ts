@@ -74,6 +74,17 @@ import { Pagination } from '../common/pagination'
 const EXPERIMENTS_MAXIMUM = 20 // Maximum experiments per project
 const FEATURE_FLAG_KEY_REGEX = /^[a-zA-Z0-9_-]+$/
 
+const validateUniqueVariantKeys = (variants: Array<{ key: string }>): void => {
+  const seen = new Set<string>()
+
+  for (const variant of variants) {
+    if (seen.has(variant.key)) {
+      throw new BadRequestException('Variant keys must be unique')
+    }
+    seen.add(variant.key)
+  }
+}
+
 type GoalEventConditions = {
   eventType: 'pageview' | 'custom_event'
   matchColumn: 'pg' | 'event_name'
@@ -252,6 +263,8 @@ export class ExperimentController {
         'An experiment must have at least 2 variants',
       )
     }
+
+    validateUniqueVariantKeys(experimentDto.variants)
 
     const controlVariants = experimentDto.variants.filter((v) => v.isControl)
     if (controlVariants.length !== 1) {
@@ -445,6 +458,8 @@ export class ExperimentController {
           )
         }
 
+        validateUniqueVariantKeys(experimentDto.variants)
+
         const controlVariants = experimentDto.variants.filter(
           (v) => v.isControl,
         )
@@ -484,31 +499,47 @@ export class ExperimentController {
       }
 
       let featureFlag = experiment.featureFlag
-      if (
-        experimentDto.featureFlagMode !== undefined &&
-        experimentDto.featureFlagMode !== experiment.featureFlagMode
-      ) {
-        if (experimentDto.featureFlagMode === FeatureFlagMode.LINK) {
-          if (!experimentDto.existingFeatureFlagId) {
-            throw new BadRequestException(
-              'Feature flag ID is required when linking an existing flag',
+      const targetFeatureFlagMode =
+        experimentDto.featureFlagMode ?? experiment.featureFlagMode
+
+      if (targetFeatureFlagMode === FeatureFlagMode.LINK) {
+        const targetFlagId =
+          experimentDto.existingFeatureFlagId ??
+          (experiment.featureFlagMode === FeatureFlagMode.LINK
+            ? experiment.featureFlag?.id
+            : undefined)
+
+        if (!targetFlagId) {
+          throw new BadRequestException(
+            'Feature flag ID is required when linking an existing flag',
+          )
+        }
+
+        const existingFlag = await this.featureFlagService.findOne({
+          where: {
+            id: targetFlagId,
+            project: { id: experiment.project.id },
+          },
+        })
+        if (!existingFlag) {
+          throw new NotFoundException('Feature flag not found')
+        }
+        if (existingFlag.experimentId && existingFlag.experimentId !== id) {
+          throw new BadRequestException(
+            'This feature flag is already linked to another experiment',
+          )
+        }
+
+        if (
+          experiment.featureFlag &&
+          experiment.featureFlag.id !== existingFlag.id
+        ) {
+          if (experiment.featureFlagMode === FeatureFlagMode.CREATE) {
+            await this.featureFlagService.delete(
+              experiment.featureFlag.id,
+              transactionalEntityManager,
             )
-          }
-          const existingFlag = await this.featureFlagService.findOne({
-            where: {
-              id: experimentDto.existingFeatureFlagId,
-              project: { id: experiment.project.id },
-            },
-          })
-          if (!existingFlag) {
-            throw new NotFoundException('Feature flag not found')
-          }
-          if (existingFlag.experimentId && existingFlag.experimentId !== id) {
-            throw new BadRequestException(
-              'This feature flag is already linked to another experiment',
-            )
-          }
-          if (experiment.featureFlag) {
+          } else {
             await this.featureFlagService.update(
               experiment.featureFlag.id,
               {
@@ -517,6 +548,9 @@ export class ExperimentController {
               transactionalEntityManager,
             )
           }
+        }
+
+        if (existingFlag.experimentId !== id) {
           await this.featureFlagService.update(
             existingFlag.id,
             {
@@ -524,8 +558,22 @@ export class ExperimentController {
             },
             transactionalEntityManager,
           )
-          featureFlag = existingFlag
         }
+
+        featureFlag = existingFlag
+      } else if (
+        targetFeatureFlagMode === FeatureFlagMode.CREATE &&
+        experiment.featureFlag &&
+        experiment.featureFlagMode === FeatureFlagMode.LINK
+      ) {
+        await this.featureFlagService.update(
+          experiment.featureFlag.id,
+          {
+            experimentId: null,
+          },
+          transactionalEntityManager,
+        )
+        featureFlag = null
       }
 
       const updatePayload: Partial<Experiment> = {
@@ -919,15 +967,16 @@ export class ExperimentController {
         diff,
       )
 
+    const exposureAttributionSubquery =
+      this.getExposureAttributionSubquery(experiment)
+
     const exposuresQuery = `
-      SELECT 
+      SELECT
         variantKey,
-        uniqExact(profileId) as exposures
-      FROM experiment_exposures
-      WHERE 
-        pid = {pid:FixedString(12)}
-        AND experimentId = {experimentId:String}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        count() as exposures
+      FROM (
+        ${exposureAttributionSubquery}
+      )
       GROUP BY variantKey
     `
 
@@ -964,14 +1013,14 @@ export class ExperimentController {
         SELECT 
           e.variantKey,
           uniqExact(e.profileId) as conversions
-        FROM experiment_exposures e
+        FROM (
+          ${exposureAttributionSubquery}
+        ) e
         INNER JOIN events c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId) AND c.type = '${eventType}'
         WHERE 
           e.pid = {pid:FixedString(12)}
-          AND e.experimentId = {experimentId:String}
-          AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
           AND c.created BETWEEN {groupFrom:String} AND {groupTo:String}
-          AND c.created >= e.created
+          AND c.created >= e.exposureCreated
           AND ${matchCondition}
           ${metaCondition}
         GROUP BY e.variantKey
@@ -1140,6 +1189,33 @@ export class ExperimentController {
     }
   }
 
+  private getExposureAttributionSubquery(experiment: Experiment): string {
+    const variantSelector =
+      experiment.multipleVariantHandling ===
+      MultipleVariantHandling.FIRST_EXPOSURE
+        ? 'argMin(variantKey, tuple(created, variantKey))'
+        : 'any(variantKey)'
+    const multiVariantFilter =
+      experiment.multipleVariantHandling === MultipleVariantHandling.EXCLUDE
+        ? 'HAVING uniqExact(variantKey) = 1'
+        : ''
+
+    return `
+      SELECT
+        pid,
+        profileId,
+        ${variantSelector} as variantKey,
+        min(created) as exposureCreated
+      FROM experiment_exposures
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND experimentId = {experimentId:String}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY pid, profileId
+      ${multiVariantFilter}
+    `
+  }
+
   /**
    * Generate time-series chart data for experiment win probabilities
    */
@@ -1159,16 +1235,18 @@ export class ExperimentController {
       safeTimezone,
     )
 
-    // Important: table results use overall uniqExact(profileId) counts per variant.
+    // Important: table results use one attributed variant per profile.
     // For the time-series we must avoid "summing per-bucket uniques", because a profile
     // can appear in multiple time buckets (re-exposed / repeated events). Instead we:
-    // - bucket exposures by the first exposure per (variantKey, profileId)
-    // - bucket conversions by the first conversion per (variantKey, profileId)
+    // - bucket exposures by each profile's attributed exposure timestamp
+    // - bucket conversions by the first conversion per attributed variant/profile
     // This guarantees that the last chart point uses the same data as the table.
     const dateColumnsGroupBy = this.getTimeBucketDateColumnsGroupBy(timeBucket)
+    const exposureAttributionSubquery =
+      this.getExposureAttributionSubquery(experiment)
     const exposuresDateColumnsSelect = this.getTimeBucketDateColumnsSelect(
       timeBucket,
-      'firstCreated',
+      'exposureCreated',
     )
 
     const exposuresQuery = `
@@ -1177,16 +1255,7 @@ export class ExperimentController {
         variantKey,
         count() as exposures
       FROM (
-        SELECT
-          variantKey,
-          profileId,
-          min(created) as firstCreated
-        FROM experiment_exposures
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND experimentId = {experimentId:String}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-        GROUP BY variantKey, profileId
+        ${exposureAttributionSubquery}
       )
       GROUP BY ${dateColumnsGroupBy}, variantKey
       ORDER BY ${dateColumnsGroupBy}
@@ -1234,14 +1303,14 @@ export class ExperimentController {
             e.variantKey as variantKey,
             e.profileId as profileId,
             min(c.created) as firstConversion
-          FROM experiment_exposures e
+          FROM (
+            ${exposureAttributionSubquery}
+          ) e
           INNER JOIN events c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId) AND c.type = '${eventType}'
           WHERE
             e.pid = {pid:FixedString(12)}
-            AND e.experimentId = {experimentId:String}
-            AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
             AND c.created BETWEEN {groupFrom:String} AND {groupTo:String}
-            AND c.created >= e.created
+            AND c.created >= e.exposureCreated
             AND ${matchCondition}
             ${metaCondition}
           GROUP BY e.variantKey, e.profileId

@@ -16,7 +16,7 @@ import { FeatureFlagController } from './feature-flag.controller'
     ProjectModule,
     AppLoggerModule,
     UserModule,
-    AnalyticsModule,
+    forwardRef(() => AnalyticsModule),
     forwardRef(() => ExperimentModule),
   ],
   providers: [FeatureFlagService],

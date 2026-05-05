@@ -87,14 +87,13 @@ function matchesTargetingRules(
   rules: TargetingRule[],
   attributes?: Record<string, string>,
 ): boolean {
-  if (!attributes) {
-    return true
-  }
-
   for (const rule of rules) {
-    const attributeValue = attributes[rule.column]
+    const attributeValue = attributes?.[rule.column]
 
     if (attributeValue === undefined) {
+      if (!rule.isExclusive) {
+        return false
+      }
       continue
     }
 
