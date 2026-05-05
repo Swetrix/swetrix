@@ -1743,11 +1743,19 @@ export class AnalyticsController {
         return
       }
 
-      await clickhouse.insert({
-        table: 'experiment_exposures',
-        values: exposures,
-        format: 'JSONEachRow',
-      })
+      clickhouse
+        .insert({
+          table: 'experiment_exposures',
+          values: exposures,
+          format: 'JSONEachRow',
+          clickhouse_settings: { async_insert: 1 },
+        })
+        .catch((reason) => {
+          this.logger.warn(
+            { reason },
+            'Failed to async insert custom event experiment exposures',
+          )
+        })
     } catch (reason) {
       this.logger.warn(
         { reason },

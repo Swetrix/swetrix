@@ -182,7 +182,7 @@ export function getExperimentVariant(
 
   const hashValue = parseInt(hash.substring(0, 8), 16)
 
-  const normalizedValue = (hashValue / 0xffffffff) * 100
+  const normalizedValue = (hashValue / 0x100000000) * 100
 
   let cumulativePercentage = 0
   for (const variant of variants) {

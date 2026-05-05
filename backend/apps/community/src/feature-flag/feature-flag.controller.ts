@@ -243,7 +243,11 @@ export class FeatureFlagController {
     let project
     try {
       project = await this.projectService.getRedisProject(evaluateDto.pid)
-    } catch {
+    } catch (reason) {
+      this.logger.warn(
+        `Failed to get Redis project for pid ${evaluateDto.pid} (feature_flag): ${reason}`,
+        'evaluate',
+      )
       return { flags: {} }
     }
 
