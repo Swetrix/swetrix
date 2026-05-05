@@ -203,7 +203,7 @@ export class FeatureFlagController {
   @ApiOperation({
     summary: 'Evaluate feature flags for a visitor (public endpoint)',
     description:
-      'Evaluates all feature flags for a project based on visitor attributes derived from the request. Does not require authentication.',
+      'Evaluates enabled feature flags for a project based on visitor attributes derived from the request. Does not require authentication.',
   })
   async evaluateFlags(
     @Body() evaluateDto: EvaluateFeatureFlagsDto,
@@ -219,13 +219,6 @@ export class FeatureFlagController {
     if (ip) {
       await checkRateLimit(ip, 'feature-flag-evaluate-ip', 600, 60)
     }
-    await checkRateLimit(
-      evaluateDto.pid,
-      'feature-flag-evaluate-project',
-      5000,
-      60,
-    )
-
     const botResult = await this.analyticsService.checkBot(
       evaluateDto.pid,
       userAgent,
@@ -239,6 +232,13 @@ export class FeatureFlagController {
     if (botResult.isBot) {
       return { flags: {} }
     }
+
+    await checkRateLimit(
+      evaluateDto.pid,
+      'feature-flag-evaluate-project',
+      5000,
+      60,
+    )
 
     let project
     try {
