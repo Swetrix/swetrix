@@ -22,6 +22,13 @@ export interface DataImportJobData {
   projectId: string
   provider: string
   fileName: string
+  ip?: string
+  userAgent?: string
+  // GA4-specific (API-based import)
+  ga4PropertyId?: string
+  encryptedRefreshToken?: string
+  ga4ClientId?: string
+  ga4ClientSecret?: string
 }
 
 @Processor(DATA_IMPORT_QUEUE, { concurrency: 1 })
@@ -33,8 +40,18 @@ export class DataImportProcessor extends WorkerHost {
   }
 
   async process(job: Job<DataImportJobData>): Promise<void> {
-    const { importId, projectId, provider, fileName } = job.data
-    const filePath = this.getImportFilePath(fileName)
+    const {
+      importId,
+      projectId,
+      provider,
+      fileName,
+      ga4PropertyId,
+      encryptedRefreshToken,
+      ga4ClientId,
+      ga4ClientSecret,
+    } = job.data
+    const isApiBased = provider === 'google-analytics'
+    const filePath = isApiBased ? null : this.getImportFilePath(fileName)
 
     try {
       this.logger.log(
@@ -62,7 +79,7 @@ export class DataImportProcessor extends WorkerHost {
 
       await this.dataImportService.markProcessing(importId, projectId)
 
-      if (!filePath) {
+      if (!isApiBased && !filePath) {
         await this.dataImportService.markFailed(
           importId,
           projectId,
@@ -88,11 +105,30 @@ export class DataImportProcessor extends WorkerHost {
 
       const eventsBatch: Record<string, unknown>[] = []
 
+      const context = isApiBased
+        ? {
+            ga4PropertyId,
+            encryptedRefreshToken,
+            ga4ClientId,
+            ga4ClientSecret,
+          }
+        : undefined
+
+      if (isApiBased && (!ga4ClientId || !ga4ClientSecret)) {
+        await this.dataImportService.markFailed(
+          importId,
+          projectId,
+          'GA4 import requires valid OAuth client credentials. Please reconnect your Google account.',
+        )
+        return
+      }
+
       try {
         for await (const row of mapper.createRowStream(
           filePath,
           projectId,
           importId,
+          context,
         )) {
           totalRows++
 
@@ -172,7 +208,9 @@ export class DataImportProcessor extends WorkerHost {
         )
       }
     } finally {
-      this.cleanupFile(fileName)
+      if (!isApiBased) {
+        this.cleanupFile(fileName)
+      }
     }
   }
 

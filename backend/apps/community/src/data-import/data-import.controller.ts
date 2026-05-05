@@ -16,6 +16,8 @@ import {
   ServiceUnavailableException,
   Query,
   Logger,
+  Headers,
+  Ip,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { diskStorage } from 'multer'
@@ -27,9 +29,11 @@ import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { Auth } from '../auth/decorators'
 import { ProjectService } from '../project/project.service'
 import { DataImportService } from './data-import.service'
-import { UploadImportDto } from './dto'
+import { Ga4ImportService, Ga4Property } from './ga4-import.service'
+import { UploadImportDto, StartGa4ImportDto } from './dto'
 import { getMapper, SUPPORTED_PROVIDERS } from './mappers'
 import { DataImportJobData, DATA_IMPORT_QUEUE } from './data-import.processor'
+import { getIPFromHeaders } from '../common/utils'
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100 MB
 const IMPORT_TMP_DIR = path.resolve(os.tmpdir(), 'swetrix-imports')
@@ -42,9 +46,103 @@ export class DataImportController {
   constructor(
     private readonly dataImportService: DataImportService,
     private readonly projectService: ProjectService,
+    private readonly ga4ImportService: Ga4ImportService,
     @InjectQueue(DATA_IMPORT_QUEUE)
     private readonly importQueue: Queue<DataImportJobData>,
   ) {}
+
+  @Get('ga4/configured')
+  @Auth()
+  async ga4Configured() {
+    return { configured: this.ga4ImportService.isConfigured() }
+  }
+
+  @Post(':projectId/ga4/connect')
+  @Auth()
+  async ga4Connect(
+    @Param('projectId') projectId: string,
+    @CurrentUserId() uid: string,
+  ) {
+    return this.ga4ImportService.generateConnectURL(uid, projectId)
+  }
+
+  @Post('ga4/callback')
+  @Auth()
+  async ga4Callback(
+    @CurrentUserId() uid: string,
+    @Body() body: { code: string; state: string },
+  ) {
+    if (!body.code || !body.state) {
+      throw new BadRequestException('Missing code or state parameter')
+    }
+    return this.ga4ImportService.handleOAuthCallback(uid, body.code, body.state)
+  }
+
+  @Get(':projectId/ga4/properties')
+  @Auth()
+  async ga4Properties(
+    @Param('projectId') projectId: string,
+    @CurrentUserId() uid: string,
+  ): Promise<Ga4Property[]> {
+    return this.ga4ImportService.listProperties(uid, projectId)
+  }
+
+  @Post(':projectId/ga4/start')
+  @Auth()
+  async ga4Start(
+    @Param('projectId') projectId: string,
+    @CurrentUserId() uid: string,
+    @Body() dto: StartGa4ImportDto,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
+    const project = await this.projectService.getFullProject(projectId)
+    this.projectService.allowedToManage(project, uid)
+
+    const dataImport = await this.dataImportService.create(
+      projectId,
+      'google-analytics',
+    )
+
+    const { encryptedRefreshToken, clientId, clientSecret } =
+      await this.ga4ImportService.consumeTokenForImport(uid, projectId)
+
+    try {
+      await this.importQueue.add(
+        'process-import',
+        {
+          importId: dataImport.id,
+          projectId,
+          provider: 'google-analytics',
+          fileName: '',
+          ip: getIPFromHeaders(headers) || requestIp || '',
+          userAgent: headers['user-agent'] || '',
+          ga4PropertyId: dto.propertyId,
+          encryptedRefreshToken,
+          ga4ClientId: clientId,
+          ga4ClientSecret: clientSecret,
+        },
+        {
+          attempts: 1,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      )
+    } catch (error) {
+      this.logger.error(`Failed to enqueue GA4 import job: ${error.message}`)
+      await this.dataImportService.deleteImportRecord(projectId, dataImport.id)
+      await this.ga4ImportService.restoreToken(
+        uid,
+        projectId,
+        encryptedRefreshToken,
+      )
+      throw new ServiceUnavailableException(
+        'Failed to start import. Please try again later.',
+      )
+    }
+
+    return dataImport
+  }
 
   @Post(':projectId/upload')
   @Auth()
@@ -91,6 +189,13 @@ export class DataImportController {
       this.cleanupFile(file.filename)
       throw new BadRequestException(
         `Unsupported provider: ${dto.provider}. Supported: ${SUPPORTED_PROVIDERS.join(', ')}`,
+      )
+    }
+
+    if (!mapper.expectedFileExtension) {
+      this.cleanupFile(file.filename)
+      throw new BadRequestException(
+        `${dto.provider} does not support file uploads. Use the dedicated import endpoint instead.`,
       )
     }
 

@@ -1,4 +1,3 @@
-import { isSelfhosted } from '../constants'
 import { Organisation, Role } from './Organisation'
 
 interface OverallPeriodStats {
@@ -184,7 +183,7 @@ export type Provider =
 
 export const IMPORT_PROVIDERS: Provider[] = [
   'fathom',
-  isSelfhosted ? null : 'google-analytics',
+  'google-analytics',
   'plausible',
   'simple-analytics',
   'umami',

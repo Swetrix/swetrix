@@ -1,0 +1,115 @@
+---
+title: Google Analytics import
+slug: /selfhosting/google-analytics
+---
+
+Swetrix Community Edition can import historical data from Google Analytics 4 (GA4). Unlike the cloud version, self-hosted instances need their own Google Cloud OAuth client because Google requires every OAuth app to be registered against a specific domain.
+
+This guide walks you through everything you need to do once.
+
+<Callout type="info">
+  Already have a Google Cloud project with an OAuth consent screen? Skip to [Issue an OAuth
+  client](#issue-an-oauth-client-and-secret).
+</Callout>
+
+## What you'll set up
+
+1. A Google Cloud project that owns the OAuth client.
+2. An OAuth consent screen for your Swetrix domain.
+3. A web-application OAuth client with the correct redirect URI.
+4. The Google Analytics Admin API enabled.
+5. The Google Analytics Data API enabled.
+6. Three environment variables on the Swetrix API container.
+
+## 1. Create a Google Cloud project
+
+Open the [Google Cloud console](https://console.cloud.google.com/) and either select an existing project or create a new one (we recommend a dedicated one for Swetrix).
+
+Make sure the project stays selected for every step below — Google sometimes silently switches you to a "default" project.
+
+## 2. Configure the OAuth consent screen
+
+In the left sidebar go to **APIs & Services** → **OAuth consent screen**.
+
+- **User type:** **External** (the **Internal** option requires a Google Workspace organization).
+- **App name:** anything recognisable, e.g. `Swetrix`.
+- **User support email** and **Developer contact information:** your email.
+- **Authorized domains:** add the bare domain Swetrix is hosted on (no scheme, no path), e.g. `analytics.example.com`.
+- **Scopes:** add `https://www.googleapis.com/auth/analytics.readonly`.
+- **Test users:** add the Google account(s) that will import GA4 data from Swetrix. Google will warn you that the app is unverified; this is fine for self-hosted use.
+
+Save and continue through the wizard until the consent screen is registered.
+
+## 3. Issue an OAuth client and secret
+
+Still in **APIs & Services**, open **Credentials** and click **+ Create credentials** → **OAuth client ID**.
+
+- **Application type:** **Web application**.
+- **Name:** `Swetrix CE GA4 Import` (or whatever you like).
+- **Authorized redirect URIs:** add **exactly one** entry:
+
+  ```txt
+  https://analytics.example.com/ga4-import-connected
+  ```
+
+  Replace `https://analytics.example.com` with the public URL you'll set as `BASE_URL` on the Swetrix API container. The path must be `/ga4-import-connected`.
+
+After you click **Create**, Google shows a **Client ID** and **Client secret**. Copy both — you'll need them in the next step.
+
+## 4. Enable the Google APIs
+
+Back in the Google Cloud console, go to **APIs & Services** → **Library** and enable both APIs in the same project:
+
+- **Google Analytics Admin API** — used to list the GA4 properties the connected Google account can access.
+- **Google Analytics Data API** — used to read the analytics data during import.
+
+Without these APIs, authorisation or import requests will fail with Google API access errors.
+
+## 5. Configure the Swetrix API container
+
+Add the following variables to the `.env` file used by the `swetrix-api` container (or to your `docker-compose.yml`):
+
+```env
+# Public URL of your Swetrix CE instance. Must match the redirect URI you
+# registered in step 3 (without the /ga4-import-connected suffix).
+BASE_URL=https://analytics.example.com
+
+# OAuth client created in step 3
+GOOGLE_GA4_CLIENT_ID=1234567890-xxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
+GOOGLE_GA4_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Restart the API container so it picks up the new environment:
+
+```bash
+docker compose up -d swetrix-api
+```
+
+You can confirm the variables are visible to the container with:
+
+```bash
+docker compose exec swetrix-api sh -c 'echo $GOOGLE_GA4_CLIENT_ID'
+```
+
+## 6. Start an import from Swetrix
+
+1. Open any project in Swetrix.
+2. Go to **Settings** → **Data import**.
+3. Select **Google Analytics 4**.
+4. Click **Connect Google**. You'll be sent to Google's consent screen.
+5. Pick the Google account you added as a test user, click **Continue** through the unverified-app warnings, and approve the read-only Analytics scope.
+6. After Google redirects you back to Swetrix, select the GA4 property and start the import.
+
+Swetrix creates a background import job. Keep the project settings page open if you want to watch the status update.
+
+## Troubleshooting
+
+- **"Google Analytics import is not configured on this instance"** — one of `GOOGLE_GA4_CLIENT_ID`, `GOOGLE_GA4_CLIENT_SECRET`, or `BASE_URL` is missing. Check the API container env and restart it.
+- **`redirect_uri_mismatch`** during the Google consent flow — the redirect URI you registered in step 3 doesn't exactly match `${BASE_URL}/ga4-import-connected`. They must match character-for-character (scheme, hostname, port, trailing slash).
+- **Access denied while loading properties** — enable the Google Analytics Admin API and make sure the Google account has access to at least one GA4 property.
+- **Import fails after selecting a property** — enable the Google Analytics Data API in the same Google Cloud project and reconnect Google Analytics from Swetrix.
+- **`Access blocked: This app's request is invalid`** — your test user is not on the OAuth consent screen test-users list. Add them in step 2.
+
+## Rotating credentials
+
+If you ever rotate `GOOGLE_GA4_CLIENT_SECRET` or `SECRET_KEY_BASE`, existing GA4 connections become invalid. Users will need to reconnect Google Analytics before starting a new import.
