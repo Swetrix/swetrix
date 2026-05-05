@@ -10,6 +10,7 @@ export { FeatureFlagType, TargetingRule }
 export interface FeatureFlag extends EvaluatableFeatureFlag {
   id: string
   description: string | null
+  experimentId: string | null
   projectId: string
   created: string
 }
@@ -22,6 +23,7 @@ export interface ClickhouseFeatureFlag {
   rolloutPercentage: number
   targetingRules: string | null // JSON string in ClickHouse
   enabled: number // Int8 in ClickHouse
+  experimentId: string | null
   projectId: string
   created: string
 }

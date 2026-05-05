@@ -209,6 +209,9 @@ export class FeatureFlagDto {
   enabled: boolean
 
   @ApiProperty()
+  experimentId: string | null
+
+  @ApiProperty()
   pid: string
 
   @ApiProperty()

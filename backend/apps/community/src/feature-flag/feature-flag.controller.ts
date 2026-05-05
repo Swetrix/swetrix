@@ -45,6 +45,9 @@ import {
 import { FeatureFlagService } from './feature-flag.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { checkRateLimit, getIPFromHeaders, getIPDetails } from '../common/utils'
+import { ExperimentService } from '../experiment/experiment.service'
+import { ExposureTrigger } from '../experiment/entity/experiment.entity'
+import { getExperimentVariant } from './evaluation'
 
 const FEATURE_FLAGS_MAXIMUM = 50 // Maximum feature flags per project
 const FEATURE_FLAGS_PAGINATION_MAX_TAKE = 100
@@ -57,6 +60,7 @@ export class FeatureFlagController {
     private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService,
     private readonly analyticsService: AnalyticsService,
+    private readonly experimentService: ExperimentService,
   ) {}
 
   @ApiBearerAuth()
@@ -309,17 +313,76 @@ export class FeatureFlagController {
       derivedAttributes,
     )
 
-    // Track evaluations in ClickHouse (async, don't wait)
+    const experimentVariants = new Map<string, string>()
+    const flagsWithExperiments = flags.filter(
+      (flag) => flag.experimentId && evaluatedFlags[flag.key],
+    )
+
+    if (flagsWithExperiments.length > 0) {
+      const experiments = await this.experimentService.findRunningByIds(
+        flagsWithExperiments.map((flag) => flag.experimentId),
+        ExposureTrigger.FEATURE_FLAG,
+      )
+
+      for (const experiment of experiments) {
+        if (!experiment.variants || experiment.variants.length === 0) {
+          continue
+        }
+
+        const sortedVariants = [...experiment.variants].sort((a, b) =>
+          a.key.localeCompare(b.key),
+        )
+        const variantKey = getExperimentVariant(
+          experiment.id,
+          sortedVariants.map((variant) => ({
+            key: variant.key,
+            rolloutPercentage: variant.rolloutPercentage,
+          })),
+          profileId,
+        )
+
+        if (variantKey) {
+          experimentVariants.set(experiment.id, variantKey)
+        }
+      }
+    }
+
     this.trackEvaluations(
       evaluateDto.pid,
       flags,
       evaluatedFlags,
       profileId,
+      experimentVariants,
     ).catch((err) => {
       this.logger.error({ err }, 'Failed to track flag evaluations')
     })
 
-    return { flags: evaluatedFlags }
+    const response: {
+      flags: Record<string, boolean>
+      experiments?: Record<string, string>
+    } = {
+      flags: evaluatedFlags,
+    }
+
+    if (experimentVariants.size > 0) {
+      const experimentsByIdOrFlagKey: Record<string, string> = {}
+
+      for (const [experimentId, variantKey] of experimentVariants.entries()) {
+        experimentsByIdOrFlagKey[experimentId] = variantKey
+
+        const linkedFlags = flagsWithExperiments.filter(
+          (flag) => flag.experimentId === experimentId,
+        )
+
+        for (const linkedFlag of linkedFlags) {
+          experimentsByIdOrFlagKey[linkedFlag.key] = variantKey
+        }
+      }
+
+      response.experiments = experimentsByIdOrFlagKey
+    }
+
+    return response
   }
 
   private async trackEvaluations(
@@ -327,6 +390,7 @@ export class FeatureFlagController {
     flags: FeatureFlag[],
     evaluatedFlags: Record<string, boolean>,
     profileId: string,
+    experimentVariants?: Map<string, string>,
   ) {
     if (flags.length === 0) return
 
@@ -350,6 +414,28 @@ export class FeatureFlagController {
     } catch (err) {
       // Log error but don't fail the request
       this.logger.error({ err }, 'Failed to insert flag evaluations')
+    }
+
+    if (experimentVariants && experimentVariants.size > 0) {
+      const experimentExposures = Array.from(experimentVariants.entries()).map(
+        ([experimentId, variantKey]) => ({
+          pid,
+          experimentId,
+          variantKey,
+          profileId,
+          created: now,
+        }),
+      )
+
+      try {
+        await clickhouse.insert({
+          table: 'experiment_exposures',
+          values: experimentExposures,
+          format: 'JSONEachRow',
+        })
+      } catch (err) {
+        this.logger.error({ err }, 'Failed to insert experiment exposures')
+      }
     }
   }
 

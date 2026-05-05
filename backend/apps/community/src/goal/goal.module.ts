@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Module, forwardRef } from '@nestjs/common'
 
 import { ProjectModule } from '../project/project.module'
 import { AppLoggerModule } from '../logger/logger.module'
@@ -7,7 +7,7 @@ import { GoalService } from './goal.service'
 import { GoalController } from './goal.controller'
 
 @Module({
-  imports: [ProjectModule, AppLoggerModule, AnalyticsModule],
+  imports: [ProjectModule, AppLoggerModule, forwardRef(() => AnalyticsModule)],
   providers: [GoalService],
   exports: [GoalService],
   controllers: [GoalController],

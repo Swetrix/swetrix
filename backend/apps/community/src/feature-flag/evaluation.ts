@@ -29,6 +29,11 @@ export interface EvaluatableFeatureFlag {
   targetingRules: TargetingRule[] | null
 }
 
+interface ExperimentVariant {
+  key: string
+  rolloutPercentage: number
+}
+
 /**
  * Evaluates all feature flags for a project given visitor attributes
  */
@@ -160,4 +165,32 @@ function isInRolloutPercentage(
   const normalizedValue = (hashValue / 0xffffffff) * 100
 
   return normalizedValue < percentage
+}
+
+export function getExperimentVariant(
+  experimentId: string,
+  variants: ExperimentVariant[],
+  profileId: string,
+): string | null {
+  if (variants.length === 0) {
+    return null
+  }
+
+  const hash = crypto
+    .createHash('sha256')
+    .update(`experiment:${experimentId}:${profileId}`)
+    .digest('hex')
+
+  const hashValue = parseInt(hash.substring(0, 8), 16)
+  const normalizedValue = (hashValue / 0x100000000) * 100
+
+  let cumulativePercentage = 0
+  for (const variant of variants) {
+    cumulativePercentage += variant.rolloutPercentage
+    if (normalizedValue < cumulativePercentage) {
+      return variant.key
+    }
+  }
+
+  return null
 }
