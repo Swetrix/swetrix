@@ -300,7 +300,7 @@ export class FeatureFlagController {
     try {
       project = await this.projectService.getRedisProject(evaluateDto.pid)
     } catch {
-      return { flags: {} }
+      project = await this.projectService.getFullProject(evaluateDto.pid)
     }
 
     // Return empty flags instead of revealing whether a project exists

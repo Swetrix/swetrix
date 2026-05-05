@@ -1192,7 +1192,8 @@ export class ExperimentController {
   private getExposureAttributionSubquery(experiment: Experiment): string {
     const variantSelector =
       experiment.multipleVariantHandling ===
-      MultipleVariantHandling.FIRST_EXPOSURE
+        MultipleVariantHandling.FIRST_EXPOSURE ||
+      experiment.multipleVariantHandling === MultipleVariantHandling.EXCLUDE
         ? 'argMin(variantKey, tuple(created, variantKey))'
         : 'any(variantKey)'
     const multiVariantFilter =

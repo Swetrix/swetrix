@@ -192,5 +192,5 @@ export function getExperimentVariant(
     }
   }
 
-  return variants[variants.length - 1].key
+  return null
 }

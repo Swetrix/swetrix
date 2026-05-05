@@ -260,7 +260,9 @@ export class FeatureFlagController {
     const { country, city, region } = getIPDetails(ip)
     this.analyticsService.checkCountryBlacklist(project, country)
 
-    const flags = await this.featureFlagService.findByProject(evaluateDto.pid)
+    const flags = await this.featureFlagService.findEnabledByProject(
+      evaluateDto.pid,
+    )
 
     const { deviceType, browserName, osName } =
       await this.analyticsService.getRequestInformation(headers)

@@ -1671,7 +1671,7 @@ export class AnalyticsController {
         clickhouse_settings: { async_insert: 1 },
       })
 
-      await this.trackCustomEventExperimentExposures(
+      void this.trackCustomEventExperimentExposures(
         eventsDTO.pid,
         eventsDTO.ev,
         profileId,
