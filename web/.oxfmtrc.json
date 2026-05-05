@@ -10,7 +10,7 @@
   "jsxSingleQuote": true,
   "bracketSameLine": false,
   "endOfLine": "lf",
-  "experimentalTailwindcss": {
+  "sortTailwindcss": {
     "stylesheet": "app/styles/tailwind.css",
     "functions": ["clsx", "cn", "cx"]
   }
