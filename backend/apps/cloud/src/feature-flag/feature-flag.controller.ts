@@ -50,9 +50,12 @@ import {
 } from './dto/feature-flag.dto'
 import { FeatureFlagService } from './feature-flag.service'
 import { ExperimentService } from '../experiment/experiment.service'
-import { ExperimentStatus } from '../experiment/entity/experiment.entity'
+import {
+  ExperimentStatus,
+  ExposureTrigger,
+} from '../experiment/entity/experiment.entity'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { getIPFromHeaders, getIPDetails } from '../common/utils'
+import { checkRateLimit, getIPFromHeaders, getIPDetails } from '../common/utils'
 import { getExperimentVariant } from './evaluation'
 import { trackCustom } from '../common/analytics'
 
@@ -256,7 +259,7 @@ export class FeatureFlagController {
   @ApiOperation({
     summary: 'Evaluate feature flags for a visitor (public endpoint)',
     description:
-      'Evaluates all enabled feature flags for a project based on visitor attributes derived from the request. Does not require authentication.',
+      'Evaluates all feature flags for a project based on visitor attributes derived from the request. Does not require authentication.',
   })
   async evaluateFlags(
     @Body() evaluateDto: EvaluateFeatureFlagsDto,
@@ -266,10 +269,39 @@ export class FeatureFlagController {
     this.logger.log({ pid: evaluateDto.pid }, 'POST /feature-flag/evaluate')
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
+    const userAgent = headers['user-agent'] || ''
+    const origin = headers.origin || ''
 
-    const project = await this.projectService.findOne({
-      where: { id: evaluateDto.pid },
-    })
+    if (ip) {
+      await checkRateLimit(ip, 'feature-flag-evaluate-ip', 600, 60)
+    }
+    await checkRateLimit(
+      evaluateDto.pid,
+      'feature-flag-evaluate-project',
+      5000,
+      60,
+    )
+
+    const botResult = await this.analyticsService.checkBot(
+      evaluateDto.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      null,
+      'feature_flag',
+    )
+
+    if (botResult.isBot) {
+      return { flags: {} }
+    }
+
+    let project
+    try {
+      project = await this.projectService.getRedisProject(evaluateDto.pid)
+    } catch {
+      project = await this.projectService.getFullProject(evaluateDto.pid)
+    }
 
     // Return empty flags instead of revealing whether a project exists
     // This prevents project ID enumeration attacks
@@ -277,13 +309,16 @@ export class FeatureFlagController {
       return { flags: {} }
     }
 
-    const flags = await this.featureFlagService.findEnabledByProject(
-      evaluateDto.pid,
-    )
+    this.analyticsService.checkIpBlacklist(project, ip)
+    this.analyticsService.checkOrigin(project, origin)
+    this.analyticsService.checkIfAccountSuspended(project)
 
     // Derive attributes from request headers (like analytics does)
-    const userAgent = headers['user-agent'] || ''
     const { country, city, region } = getIPDetails(ip)
+    this.analyticsService.checkCountryBlacklist(project, country)
+
+    const flags = await this.featureFlagService.findByProject(evaluateDto.pid)
+
     const { deviceType, browserName, osName } =
       await this.analyticsService.getRequestInformation(headers)
 
@@ -337,6 +372,7 @@ export class FeatureFlagController {
         where: flagsWithExperiments.map((f) => ({
           id: f.experimentId,
           status: ExperimentStatus.RUNNING,
+          exposureTrigger: ExposureTrigger.FEATURE_FLAG,
         })),
         relations: ['variants'],
       })

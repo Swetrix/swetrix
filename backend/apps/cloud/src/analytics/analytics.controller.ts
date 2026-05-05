@@ -95,6 +95,12 @@ import { GetKeywordsDto } from './dto/get-keywords.dto'
 import { GetBotStatsDto } from './dto/get-bot-stats.dto'
 import { GSCService } from '../project/gsc.service'
 import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
+import { ExperimentService } from '../experiment/experiment.service'
+import {
+  ExperimentStatus,
+  ExposureTrigger,
+} from '../experiment/entity/experiment.entity'
+import { getExperimentVariant } from '../feature-flag/evaluation'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -205,6 +211,7 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly gscService: GSCService,
+    private readonly experimentService: ExperimentService,
   ) {}
 
   @ApiBearerAuth()
@@ -1663,6 +1670,13 @@ export class AnalyticsController {
         values: [transformed],
         clickhouse_settings: { async_insert: 1 },
       })
+
+      void this.trackCustomEventExperimentExposures(
+        eventsDTO.pid,
+        eventsDTO.ev,
+        profileId,
+        transformed.created,
+      )
     } catch (reason) {
       this.logger.error(reason)
       throw new InternalServerErrorException(
@@ -1671,6 +1685,83 @@ export class AnalyticsController {
     }
 
     return {}
+  }
+
+  private async trackCustomEventExperimentExposures(
+    pid: string,
+    eventName: string,
+    profileId: string,
+    created: string,
+  ) {
+    try {
+      const experiments = await this.experimentService.find({
+        where: {
+          project: { id: pid },
+          status: ExperimentStatus.RUNNING,
+          exposureTrigger: ExposureTrigger.CUSTOM_EVENT,
+          customEventName: eventName,
+        },
+        relations: ['variants'],
+      })
+
+      if (_isEmpty(experiments)) {
+        return
+      }
+
+      const exposures = []
+      for (const experiment of experiments) {
+        if (!experiment.variants || experiment.variants.length === 0) {
+          continue
+        }
+
+        const sortedVariants = [...experiment.variants].sort((a, b) =>
+          a.key.localeCompare(b.key),
+        )
+        const variantKey = getExperimentVariant(
+          experiment.id,
+          sortedVariants.map((variant) => ({
+            key: variant.key,
+            rolloutPercentage: variant.rolloutPercentage,
+          })),
+          profileId,
+        )
+
+        if (!variantKey) {
+          continue
+        }
+
+        exposures.push({
+          pid,
+          experimentId: experiment.id,
+          variantKey,
+          profileId,
+          created,
+        })
+      }
+
+      if (_isEmpty(exposures)) {
+        return
+      }
+
+      clickhouse
+        .insert({
+          table: 'experiment_exposures',
+          values: exposures,
+          format: 'JSONEachRow',
+          clickhouse_settings: { async_insert: 1 },
+        })
+        .catch((reason) => {
+          this.logger.warn(
+            { reason },
+            'Failed to async insert custom event experiment exposures',
+          )
+        })
+    } catch (reason) {
+      this.logger.warn(
+        { reason },
+        'Failed to track custom event experiment exposures',
+      )
+    }
   }
 
   @Post('hb')

@@ -87,14 +87,13 @@ function matchesTargetingRules(
   rules: TargetingRule[],
   attributes?: Record<string, string>,
 ): boolean {
-  if (!attributes) {
-    return true
-  }
-
   for (const rule of rules) {
-    const attributeValue = attributes[rule.column]
+    const attributeValue = attributes?.[rule.column]
 
     if (attributeValue === undefined) {
+      if (!rule.isExclusive) {
+        return false
+      }
       continue
     }
 
@@ -183,7 +182,7 @@ export function getExperimentVariant(
 
   const hashValue = parseInt(hash.substring(0, 8), 16)
 
-  const normalizedValue = (hashValue / 0xffffffff) * 100
+  const normalizedValue = (hashValue / 0x100000000) * 100
 
   let cumulativePercentage = 0
   for (const variant of variants) {
@@ -193,5 +192,5 @@ export function getExperimentVariant(
     }
   }
 
-  return variants[variants.length - 1].key
+  return null
 }

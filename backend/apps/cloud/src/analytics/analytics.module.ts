@@ -11,6 +11,7 @@ import { UserModule } from '../user/user.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
 import { RevenueModule } from '../revenue/revenue.module'
+import { ExperimentModule } from '../experiment/experiment.module'
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { RevenueModule } from '../revenue/revenue.module'
     AppLoggerModule,
     ProjectModule,
     forwardRef(() => RevenueModule),
+    forwardRef(() => ExperimentModule),
   ],
   providers: [
     AnalyticsService,
