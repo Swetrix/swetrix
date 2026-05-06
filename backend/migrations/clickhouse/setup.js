@@ -14,7 +14,7 @@ const clickhouse = createClient({
   username: process.env.CLICKHOUSE_USER,
   password: process.env.CLICKHOUSE_PASSWORD,
   database: process.env.CLICKHOUSE_DATABASE,
-  request_timeout: 60000, // 1 minute
+  request_timeout: 24 * 60 * 60 * 1000,
   clickhouse_settings: {
     connect_timeout: 60000,
     date_time_output_format: 'iso',
@@ -31,7 +31,7 @@ const clickhouseNoDatabase = createClient({
   url: `${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}`,
   username: process.env.CLICKHOUSE_USER,
   password: process.env.CLICKHOUSE_PASSWORD,
-  request_timeout: 60000, // 1 minute
+  request_timeout: 24 * 60 * 60 * 1000,
   clickhouse_settings: {
     connect_timeout: 60000,
     date_time_output_format: 'iso',
