@@ -775,11 +775,13 @@ const ViewProjectContent = () => {
         ]
       : []
 
-    const experimentsTab = {
-      id: PROJECT_TABS.experiments,
-      label: t('dashboard.experiments'),
-      icon: FlaskIcon,
-    }
+    const experimentsTab = PROJECT_TABS.experiments
+      ? {
+          id: PROJECT_TABS.experiments,
+          label: t('dashboard.experiments'),
+          icon: FlaskIcon,
+        }
+      : null
 
     const newTabs = (
       isSelfhosted

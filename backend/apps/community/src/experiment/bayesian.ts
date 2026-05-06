@@ -38,37 +38,35 @@ function seedFromVariants(
 }
 
 function sampleGamma(shape: number, random: RandomFn): number {
-  if (shape >= 1) {
-    const d = shape - 1 / 3
-    const c = 1 / Math.sqrt(9 * d)
-
-    while (true) {
-      let x: number
-      let v: number
-
-      do {
-        const u1 = Math.max(random(), Number.EPSILON)
-        const u2 = random()
-        x = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
-        v = 1 + c * x
-      } while (v <= 0)
-
-      v = v * v * v
-      const u = random()
-
-      if (u < 1 - 0.0331 * x * x * x * x) {
-        return d * v
-      }
-
-      if (Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) {
-        return d * v
-      }
-    }
+  if (shape < 1) {
+    throw new RangeError('sampleGamma expects shape >= 1')
   }
 
-  const sample = sampleGamma(shape + 1, random)
-  const u = random()
-  return sample * Math.pow(u, 1 / shape)
+  const d = shape - 1 / 3
+  const c = 1 / Math.sqrt(9 * d)
+
+  while (true) {
+    let x: number
+    let v: number
+
+    do {
+      const u1 = Math.max(random(), Number.EPSILON)
+      const u2 = random()
+      x = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
+      v = 1 + c * x
+    } while (v <= 0)
+
+    v = v * v * v
+    const u = random()
+
+    if (u < 1 - 0.0331 * x * x * x * x) {
+      return d * v
+    }
+
+    if (Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) {
+      return d * v
+    }
+  }
 }
 
 function sampleBeta(alpha: number, beta: number, random: RandomFn): number {

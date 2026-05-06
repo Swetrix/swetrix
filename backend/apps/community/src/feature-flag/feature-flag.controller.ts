@@ -320,6 +320,7 @@ export class FeatureFlagController {
 
     if (flagsWithExperiments.length > 0) {
       const experiments = await this.experimentService.findRunningByIds(
+        evaluateDto.pid,
         flagsWithExperiments.map((flag) => flag.experimentId),
         ExposureTrigger.FEATURE_FLAG,
       )
@@ -329,12 +330,9 @@ export class FeatureFlagController {
           continue
         }
 
-        const sortedVariants = [...experiment.variants].sort((a, b) =>
-          a.key.localeCompare(b.key),
-        )
         const variantKey = getExperimentVariant(
           experiment.id,
-          sortedVariants.map((variant) => ({
+          experiment.variants.map((variant) => ({
             key: variant.key,
             rolloutPercentage: variant.rolloutPercentage,
           })),
@@ -360,26 +358,29 @@ export class FeatureFlagController {
     const response: {
       flags: Record<string, boolean>
       experiments?: Record<string, string>
+      experimentsByFlag?: Record<string, string>
     } = {
       flags: evaluatedFlags,
     }
 
     if (experimentVariants.size > 0) {
-      const experimentsByIdOrFlagKey: Record<string, string> = {}
+      const experiments: Record<string, string> = {}
+      const experimentsByFlag: Record<string, string> = {}
 
       for (const [experimentId, variantKey] of experimentVariants.entries()) {
-        experimentsByIdOrFlagKey[experimentId] = variantKey
+        experiments[experimentId] = variantKey
 
         const linkedFlags = flagsWithExperiments.filter(
           (flag) => flag.experimentId === experimentId,
         )
 
         for (const linkedFlag of linkedFlags) {
-          experimentsByIdOrFlagKey[linkedFlag.key] = variantKey
+          experimentsByFlag[linkedFlag.key] = variantKey
         }
       }
 
-      response.experiments = experimentsByIdOrFlagKey
+      response.experiments = experiments
+      response.experimentsByFlag = experimentsByFlag
     }
 
     return response
@@ -410,6 +411,7 @@ export class FeatureFlagController {
         table: 'feature_flag_evaluations',
         values,
         format: 'JSONEachRow',
+        clickhouse_settings: { async_insert: 1 },
       })
     } catch (err) {
       // Log error but don't fail the request
@@ -432,6 +434,7 @@ export class FeatureFlagController {
           table: 'experiment_exposures',
           values: experimentExposures,
           format: 'JSONEachRow',
+          clickhouse_settings: { async_insert: 1 },
         })
       } catch (err) {
         this.logger.error({ err }, 'Failed to insert experiment exposures')

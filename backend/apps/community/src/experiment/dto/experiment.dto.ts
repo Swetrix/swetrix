@@ -14,6 +14,7 @@ import {
   IsNotEmpty,
   Matches,
   ArrayMaxSize,
+  ArrayMinSize,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import {
@@ -132,6 +133,9 @@ export class CreateExperimentDto {
 
   @ApiProperty({ type: [ExperimentVariantDto] })
   @IsArray()
+  @ArrayMinSize(2, {
+    message: 'An experiment must have at least 2 variants',
+  })
   @ArrayMaxSize(20, {
     message: 'An experiment cannot have more than 20 variants',
   })
@@ -209,6 +213,9 @@ export class UpdateExperimentDto {
   @ApiPropertyOptional({ type: [ExperimentVariantDto] })
   @IsOptional()
   @IsArray()
+  @ArrayMinSize(2, {
+    message: 'An experiment must have at least 2 variants',
+  })
   @ArrayMaxSize(20, {
     message: 'An experiment cannot have more than 20 variants',
   })

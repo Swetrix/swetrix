@@ -62,6 +62,7 @@ import { Pagination } from '../common/pagination/pagination'
 
 const EXPERIMENTS_MAXIMUM = 20
 const FEATURE_FLAG_KEY_REGEX = /^[a-zA-Z0-9_-]+$/
+const ROLLOUT_PERCENTAGE_EPSILON = 1e-6
 
 const validateUniqueVariantKeys = (variants: Array<{ key: string }>): void => {
   const seen = new Set<string>()
@@ -483,7 +484,7 @@ export class ExperimentController {
 
     const updatedExperiment = await this.experimentService.update(id, {
       status: ExperimentStatus.RUNNING,
-      startedAt: dayString(),
+      startedAt: experiment.startedAt ?? dayString(),
       featureFlagId,
     })
 
@@ -682,7 +683,10 @@ export class ExperimentController {
         FROM (
           ${exposureAttributionSubquery}
         ) e
-        INNER JOIN events c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId) AND c.type = '${eventType}'
+        INNER JOIN events c ON e.pid = c.pid
+          AND c.profileId IS NOT NULL
+          AND e.profileId = c.profileId
+          AND c.type = '${eventType}'
         WHERE
           e.pid = {pid:FixedString(12)}
           AND c.created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -865,7 +869,7 @@ export class ExperimentController {
     const totalPercentage = _sum(
       variants.map((variant) => variant.rolloutPercentage),
     )
-    if (totalPercentage !== 100) {
+    if (Math.abs(totalPercentage - 100) > ROLLOUT_PERCENTAGE_EPSILON) {
       throw new BadRequestException(
         'Variant rollout percentages must sum to 100',
       )
@@ -1061,12 +1065,7 @@ export class ExperimentController {
   }
 
   private getExposureAttributionSubquery(experiment: Experiment): string {
-    const variantSelector =
-      experiment.multipleVariantHandling ===
-        MultipleVariantHandling.FIRST_EXPOSURE ||
-      experiment.multipleVariantHandling === MultipleVariantHandling.EXCLUDE
-        ? 'argMin(variantKey, tuple(created, variantKey))'
-        : 'any(variantKey)'
+    const variantSelector = 'argMin(variantKey, tuple(created, variantKey))'
     const multiVariantFilter =
       experiment.multipleVariantHandling === MultipleVariantHandling.EXCLUDE
         ? 'HAVING uniqExact(variantKey) = 1'
@@ -1169,7 +1168,10 @@ export class ExperimentController {
           FROM (
             ${exposureAttributionSubquery}
           ) e
-          INNER JOIN events c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId) AND c.type = '${eventType}'
+          INNER JOIN events c ON e.pid = c.pid
+            AND c.profileId IS NOT NULL
+            AND e.profileId = c.profileId
+            AND c.type = '${eventType}'
           WHERE
             e.pid = {pid:FixedString(12)}
             AND c.created BETWEEN {groupFrom:String} AND {groupTo:String}

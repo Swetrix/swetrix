@@ -241,6 +241,18 @@ export class EvaluatedFlagsResponseDto {
     example: { 'new-checkout': true, 'dark-mode': false },
   })
   flags: Record<string, boolean>
+
+  @ApiPropertyOptional({
+    description: 'Map of experiment IDs to assigned variant keys',
+    example: { '7df32d55-cabd-4e7d-b1ac-2cb0e85b5742': 'variant-a' },
+  })
+  experiments?: Record<string, string>
+
+  @ApiPropertyOptional({
+    description: 'Map of feature flag keys to assigned experiment variant keys',
+    example: { 'new-checkout': 'variant-a' },
+  })
+  experimentsByFlag?: Record<string, string>
 }
 
 class FeatureFlagProfileDto {

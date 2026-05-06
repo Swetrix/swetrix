@@ -299,6 +299,7 @@ export class ExperimentService {
   }
 
   async findRunningByIds(
+    projectId: string,
     experimentIds: Array<string | null>,
     exposureTrigger: ExposureTrigger,
   ): Promise<Experiment[]> {
@@ -314,10 +315,12 @@ export class ExperimentService {
           SELECT *
           FROM experiment
           WHERE id IN {ids:Array(String)}
+            AND projectId = {projectId:FixedString(12)}
             AND status = {status:String}
             AND exposureTrigger = {exposureTrigger:String}
         `,
         query_params: {
+          projectId,
           ids,
           status: ExperimentStatus.RUNNING,
           exposureTrigger,
