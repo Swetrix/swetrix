@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { isSelfhosted, ThemeType } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
+import { Text } from '../Text'
 
 interface SwetrixLogoProps {
   className?: string
@@ -65,14 +66,14 @@ const SwetrixLogo = ({ className, theme: themeOverride }: SwetrixLogoProps) => {
           Swetrix
         </span>
         {isSelfhosted ? (
-          <span
-            className={cx(
-              'text-xs font-semibold',
-              theme === 'dark' ? 'text-white' : 'text-slate-600',
-            )}
+          <Text
+            as='span'
+            size='xs'
+            weight='medium'
+            className={cx(theme === 'dark' ? 'text-white' : 'text-slate-900')}
           >
             {t('common.communityEdition')}
-          </span>
+          </Text>
         ) : null}
       </div>
     </div>
