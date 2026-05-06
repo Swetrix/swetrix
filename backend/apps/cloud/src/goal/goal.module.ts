@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { ProjectModule } from '../project/project.module'
@@ -15,7 +15,7 @@ import { GoalController } from './goal.controller'
     ProjectModule,
     AppLoggerModule,
     UserModule,
-    AnalyticsModule,
+    forwardRef(() => AnalyticsModule),
   ],
   providers: [GoalService],
   exports: [GoalService],
