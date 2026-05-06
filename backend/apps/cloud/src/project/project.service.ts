@@ -262,6 +262,7 @@ export class ProjectService {
           id: true,
           dashboardBlockReason: true,
           isAccountBillingSuspended: true,
+          planCode: true,
         },
         organisation: {
           id: true,
@@ -1272,9 +1273,15 @@ export class ProjectService {
   }
 
   async getOwnProject(projectId: string, userId: string) {
-    return this.projectsRepository.findOne({
-      where: { id: projectId, admin: { id: userId } },
-    })
+    const project = await this.getFullProject(projectId)
+
+    if (!project) {
+      return project
+    }
+
+    this.allowedToManage(project, userId)
+
+    return project
   }
 
   createUnsubscribeKey(subscriberId: string): string {

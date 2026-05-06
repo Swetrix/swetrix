@@ -162,9 +162,11 @@ export class ProjectService {
   async getOwnProject(projectId: string, userId: string) {
     const project = await this.getFullProject(projectId)
 
-    if (project?.adminId !== userId) {
-      throw new ForbiddenException('You are not allowed to manage this project')
+    if (!project) {
+      return project
     }
+
+    this.allowedToManage(project, userId)
 
     return project
   }

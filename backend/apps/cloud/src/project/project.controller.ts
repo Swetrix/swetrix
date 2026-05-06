@@ -1017,13 +1017,13 @@ export class ProjectController {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
     }
 
-    if (!this.userService.isPaidTier(user)) {
+    this.projectService.allowedToManage(project, userId)
+
+    if (!this.userService.isPaidTier(project.admin)) {
       throw new BadRequestException(
         'You must be a paid tier subscriber to use this feature.',
       )
     }
-
-    this.projectService.allowedToManage(project, userId)
 
     const invitee = await this.userService.findOne({
       where: { email: shareDTO.email },
