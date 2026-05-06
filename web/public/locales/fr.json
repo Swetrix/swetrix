@@ -1742,7 +1742,7 @@
     "noSessionsTitle": "Aucune session pour le moment",
     "noSessionsContent": "Aucune session n’a été enregistrée pour la période spécifiée, veuillez essayer une autre période.",
     "noSessionsFound": "Aucune session trouvée pour cette période.",
-    "exploreSessions": "Explorer les sessions",
+    "exploreSessions": "Cliquez pour voir les sessions",
     "noSessionsFiltersDesc": "Aucune session n’a été enregistrée pour la période spécifiée ou avec les filtres appliqués, veuillez essayer une autre période ou modifier les filtres appliqués.",
     "noCaptchaEv": "Aucun événement n'a été capturé pour la période spécifiée.\nSi vous n'avez pas encore configuré CAPTCHA, vous pouvez consulter notre <url>Documentation</url> pour l'intégrer facilement dans votre application.",
     "mapping": {
