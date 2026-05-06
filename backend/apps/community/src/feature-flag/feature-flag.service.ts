@@ -32,6 +32,7 @@ const ALLOWED_FLAG_KEYS = [
   'rolloutPercentage',
   'targetingRules',
   'enabled',
+  'experimentId',
 ]
 
 @Injectable()
@@ -58,6 +59,7 @@ export class FeatureFlagService {
       rolloutPercentage: flag.rolloutPercentage,
       targetingRules,
       enabled: Boolean(flag.enabled),
+      experimentId: flag.experimentId || null,
       projectId: flag.projectId,
       created: flag.created,
     }
@@ -259,6 +261,7 @@ export class FeatureFlagService {
     const rolloutPercentage = flagData.rolloutPercentage ?? 100
     const description = flagData.description || null
     const targetingRules = flagData.targetingRules || null
+    const experimentId = flagData.experimentId || null
 
     const formattedFlag = this.formatFlagToClickhouse({
       ...flagData,
@@ -277,6 +280,7 @@ export class FeatureFlagService {
           rolloutPercentage: formattedFlag.rolloutPercentage ?? 100,
           targetingRules: formattedFlag.targetingRules || null,
           enabled: formattedFlag.enabled ?? 1,
+          experimentId: formattedFlag.experimentId || null,
           projectId: flagData.projectId,
           created,
         },
@@ -294,6 +298,7 @@ export class FeatureFlagService {
       rolloutPercentage,
       targetingRules,
       enabled,
+      experimentId,
       projectId: flagData.projectId,
       created,
     }
@@ -352,7 +357,9 @@ export class FeatureFlagService {
       // Handle nullable string columns
       if (
         value === null &&
-        (col === 'description' || col === 'targetingRules')
+        (col === 'description' ||
+          col === 'targetingRules' ||
+          col === 'experimentId')
       ) {
         return `${col}=NULL`
       }

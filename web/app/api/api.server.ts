@@ -1274,6 +1274,7 @@ export interface ProjectFeatureFlag {
   rolloutPercentage: number
   targetingRules: TargetingRule[] | null
   enabled: boolean
+  experimentId: string | null
   pid: string
   created: string
 }

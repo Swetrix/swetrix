@@ -775,24 +775,28 @@ const ViewProjectContent = () => {
         ]
       : []
 
-    if (isSelfhosted) {
-      return [...baseTabs, ...adminTabs]
-    }
+    const experimentsTab = PROJECT_TABS.experiments
+      ? {
+          id: PROJECT_TABS.experiments,
+          label: t('dashboard.experiments'),
+          icon: FlaskIcon,
+        }
+      : null
 
-    const newTabs = [
-      ...baseTabs,
-      {
-        id: PROJECT_TABS.ai,
-        label: t('dashboard.askAi'),
-        icon: SparkleIcon,
-      },
-      {
-        id: PROJECT_TABS.experiments,
-        label: t('dashboard.experiments'),
-        icon: FlaskIcon,
-      },
-      ...adminTabs,
-    ].filter((x) => !!x)
+    const newTabs = (
+      isSelfhosted
+        ? [...baseTabs, experimentsTab, ...adminTabs]
+        : [
+            ...baseTabs,
+            {
+              id: PROJECT_TABS.ai,
+              label: t('dashboard.askAi'),
+              icon: SparkleIcon,
+            },
+            experimentsTab,
+            ...adminTabs,
+          ]
+    ).filter((x) => !!x)
 
     if (projectQueryTabs && projectQueryTabs.length) {
       return _filter(newTabs, (tab) => _includes(projectQueryTabs, tab.id))
