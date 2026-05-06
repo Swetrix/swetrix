@@ -216,20 +216,17 @@ const Organisations = () => {
                     <label htmlFor='organisation-search' className='sr-only'>
                       {t('project.search')}
                     </label>
-                    <div className='relative w-full'>
-                      <div className='pointer-events-none absolute inset-y-0 left-0 hidden items-center sm:flex'>
-                        <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
-                      </div>
-                      <input
-                        ref={searchInputRef}
-                        type='text'
-                        id='organisation-search'
-                        onChange={onSearch}
-                        value={search}
-                        className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-slate-900 sm:pl-10 dark:bg-slate-950 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-300'
-                        placeholder={t('project.search')}
-                      />
-                    </div>
+                    <Input
+                      ref={searchInputRef}
+                      id='organisation-search'
+                      type='search'
+                      onChange={onSearch}
+                      value={search}
+                      className='w-full'
+                      classes={{ input: 'h-7 py-1.5' }}
+                      leadingIcon={<MagnifyingGlassIcon className='size-4' />}
+                      placeholder={t('project.search')}
+                    />
                   </div>
                 ) : null}
               </div>
@@ -243,19 +240,15 @@ const Organisations = () => {
                 <label htmlFor='organisation-search-mobile' className='sr-only'>
                   {t('project.search')}
                 </label>
-                <div className='relative w-full'>
-                  <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center'>
-                    <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
-                  </div>
-                  <input
-                    id='organisation-search-mobile'
-                    type='text'
-                    onChange={onSearch}
-                    value={search}
-                    className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 py-5 pl-10 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-slate-900 dark:bg-slate-950 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-300'
-                    placeholder={t('project.search')}
-                  />
-                </div>
+                <Input
+                  id='organisation-search-mobile'
+                  type='search'
+                  onChange={onSearch}
+                  value={search}
+                  className='w-full'
+                  leadingIcon={<MagnifyingGlassIcon className='size-4' />}
+                  placeholder={t('project.search')}
+                />
               </div>
             ) : null}
             <div>

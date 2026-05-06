@@ -25,6 +25,7 @@ import {
   StackIcon,
   ArrowLineRightIcon,
   ArrowLineLeftIcon,
+  MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
 import React, {
   memo,
@@ -45,6 +46,7 @@ import { Entry } from '~/lib/models/Entry'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Button from '~/ui/Button'
 import Dropdown from '~/ui/Dropdown'
+import Input from '~/ui/Input'
 import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
@@ -1871,12 +1873,14 @@ const DetailsTable = ({
   return (
     <div>
       <div className='mb-2'>
-        <input
-          type='text'
+        <Input
+          type='search'
+          aria-label={t('project.search')}
           placeholder={t('project.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className='w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-50'
+          classes={{ input: 'py-1.5' }}
+          leadingIcon={<MagnifyingGlassIcon className='size-4' />}
         />
       </div>
       <div

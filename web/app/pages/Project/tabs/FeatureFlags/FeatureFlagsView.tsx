@@ -59,6 +59,7 @@ import type {
 } from '~/routes/projects.$id'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
+import Input from '~/ui/Input'
 import Spin from '~/ui/icons/Spin'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
@@ -991,16 +992,15 @@ const FeatureFlagsViewInner = ({
           <>
             {/* Header with filter and add button */}
             <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-              <div className='relative'>
-                <MagnifyingGlassIcon className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400' />
-                <input
-                  type='text'
-                  placeholder={t('featureFlags.filterFlags')}
-                  value={filterQuery}
-                  onChange={handleSearchChange}
-                  className='w-full rounded-lg border-0 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 focus:outline-none sm:w-64 dark:bg-slate-950 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
-                />
-              </div>
+              <Input
+                type='search'
+                aria-label={t('featureFlags.filterFlags')}
+                placeholder={t('featureFlags.filterFlags')}
+                value={filterQuery}
+                onChange={handleSearchChange}
+                className='sm:w-64'
+                leadingIcon={<MagnifyingGlassIcon className='size-4' />}
+              />
               <Button onClick={handleNewFlag}>
                 <PlusIcon className='mr-1.5 size-4' />
                 {t('featureFlags.addFlag')}

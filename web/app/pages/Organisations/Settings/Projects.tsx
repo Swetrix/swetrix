@@ -20,6 +20,7 @@ import { Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
 import type { OrganisationSettingsActionData } from '~/routes/organisations.$id'
 import Button from '~/ui/Button'
+import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
@@ -78,18 +79,15 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
   return (
     <div className='mt-4 flex flex-col'>
       <div className='mb-4'>
-        <div className='relative'>
-          <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3'>
-            <MagnifyingGlassIcon className='h-5 w-5 text-gray-400' />
-          </div>
-          <input
-            type='text'
-            className='block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-slate-900 focus:ring-inset sm:text-sm sm:leading-6 dark:bg-slate-900 dark:text-white dark:ring-slate-600 dark:focus:ring-slate-300'
-            placeholder={t('project.search')}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        <Input
+          type='search'
+          aria-label={t('project.search')}
+          placeholder={t('project.search')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          classes={{ input: 'py-1.5' }}
+          leadingIcon={<MagnifyingGlassIcon className='size-4' />}
+        />
       </div>
 
       {isLoading ? (
@@ -309,21 +307,18 @@ export const Projects = ({ organisation }: ProjectsProps) => {
         </Button>
       </div>
       {isSearchActive ? (
-        <div className='relative w-full'>
-          <div className='pointer-events-none absolute inset-y-0 left-0 hidden items-center sm:flex'>
-            <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
-          </div>
-          <input
-            type='text'
-            onChange={(e) => {
-              setSearch(e.target.value.toLowerCase())
-              setCurrentPage(1)
-            }}
-            value={search}
-            className='block h-8 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-slate-900 sm:pl-10 dark:bg-slate-950 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-300'
-            placeholder={t('project.search')}
-          />
-        </div>
+        <Input
+          type='search'
+          aria-label={t('project.search')}
+          onChange={(e) => {
+            setSearch(e.target.value.toLowerCase())
+            setCurrentPage(1)
+          }}
+          value={search}
+          classes={{ input: 'h-8 py-1.5' }}
+          leadingIcon={<MagnifyingGlassIcon className='size-4' />}
+          placeholder={t('project.search')}
+        />
       ) : null}
       <div>
         {_isEmpty(filteredProjects) ? (
