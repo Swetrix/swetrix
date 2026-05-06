@@ -759,6 +759,11 @@ const ViewProjectContent = () => {
         icon: ToggleRightIcon,
       },
       {
+        id: PROJECT_TABS.experiments,
+        label: t('dashboard.experiments'),
+        icon: FlaskIcon,
+      },
+      {
         id: PROJECT_TABS.captcha,
         label: t('common.captcha'),
         icon: ShieldCheckIcon,
@@ -775,17 +780,9 @@ const ViewProjectContent = () => {
         ]
       : []
 
-    const experimentsTab = PROJECT_TABS.experiments
-      ? {
-          id: PROJECT_TABS.experiments,
-          label: t('dashboard.experiments'),
-          icon: FlaskIcon,
-        }
-      : null
-
     const newTabs = (
       isSelfhosted
-        ? [...baseTabs, experimentsTab, ...adminTabs]
+        ? [...baseTabs, ...adminTabs]
         : [
             ...baseTabs,
             {
@@ -793,7 +790,6 @@ const ViewProjectContent = () => {
               label: t('dashboard.askAi'),
               icon: SparkleIcon,
             },
-            experimentsTab,
             ...adminTabs,
           ]
     ).filter((x) => !!x)

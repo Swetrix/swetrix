@@ -561,6 +561,7 @@ const SELFHOSTED_PROJECT_TABS = {
   sessions: 'sessions',
   errors: 'errors',
   goals: 'goals',
+  experiments: 'experiments',
   featureFlags: 'featureFlags',
   captcha: 'captcha',
 } as const
