@@ -64,7 +64,7 @@ export const source = loader({
     return undefined;
   },
   slugs(file) {
-    const p = file.path.replace(/\.(mdx|md)$/, "").replace(/\/index$/, "");
+    const p = (file as { path: string }).path.replace(/\.(mdx|md)$/, "").replace(/\/index$/, "");
 
     if (p in SLUG_MAP) return SLUG_MAP[p];
 
