@@ -1,4 +1,3 @@
-import { XIcon } from '@phosphor-icons/react'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _isEmpty from 'lodash/isEmpty'
@@ -97,18 +96,16 @@ const EditMetric = ({
   return (
     <div className='py-4'>
       <Input
-        label={
-          <Text as='p' className='flex w-full items-center justify-between'>
-            <span>{t('project.customEvent')}</span>
-            <button
-              type='button'
-              className='-m-1 rounded-md p-1 text-gray-800 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300'
-              onClick={onDelete}
-              aria-label='Delete custom event'
-            >
-              <XIcon className='size-5' />
-            </button>
-          </Text>
+        label={t('project.customEvent')}
+        labelCorner={
+          <button
+            type='button'
+            className='rounded-sm text-xs font-medium text-gray-500 underline decoration-dashed underline-offset-2 transition-colors hover:text-red-600 hover:decoration-solid focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:text-gray-400 dark:hover:text-red-400 dark:focus-visible:ring-slate-300'
+            onClick={onDelete}
+            aria-label={`${t('common.remove')}: ${t('project.customEvent')}`}
+          >
+            {t('common.remove')}
+          </button>
         }
         maxLength={100}
         value={metric.customEventName}
@@ -121,9 +118,8 @@ const EditMetric = ({
         }}
         error={errors[`${metric.id}_customEventName`]}
       />
-      <div className='mt-3 flex items-start justify-between'>
+      <div className='mt-3 grid gap-3 sm:grid-cols-2'>
         <Input
-          className='w-[48%]'
           maxLength={100}
           label={t('project.metrics.optinalEventKey.title')}
           hint={t('project.metrics.optinalEventKey.description')}
@@ -138,7 +134,6 @@ const EditMetric = ({
           error={errors[`${metric.id}_metaKey`]}
         />
         <Input
-          className='w-[48%]'
           maxLength={100}
           label={t('project.metrics.optinalEventValue.title')}
           hint={t('project.metrics.optinalEventValue.description')}
@@ -153,9 +148,8 @@ const EditMetric = ({
           error={errors[`${metric.id}_metaValue`]}
         />
       </div>
-      <div className='mt-3 flex items-start justify-between'>
+      <div className='mt-3 grid gap-3 sm:grid-cols-2'>
         <Input
-          className='w-[48%]'
           maxLength={100}
           label={t('project.metrics.metricKey.title')}
           hint={t('project.metrics.metricKey.description')}
@@ -169,7 +163,7 @@ const EditMetric = ({
           }}
           error={errors[`${metric.id}_metricKey`]}
         />
-        <div className='w-[48%]'>
+        <div>
           <Select
             items={customEventTypes}
             keyExtractor={(item) => item.key}
