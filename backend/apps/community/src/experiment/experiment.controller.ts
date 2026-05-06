@@ -1065,24 +1065,25 @@ export class ExperimentController {
   }
 
   private getExposureAttributionSubquery(experiment: Experiment): string {
-    const variantSelector = 'argMin(variantKey, tuple(created, variantKey))'
+    const variantSelector =
+      'argMin(ee.variantKey, tuple(ee.created, ee.variantKey))'
     const multiVariantFilter =
       experiment.multipleVariantHandling === MultipleVariantHandling.EXCLUDE
-        ? 'HAVING uniqExact(variantKey) = 1'
+        ? 'HAVING uniqExact(ee.variantKey) = 1'
         : ''
 
     return `
       SELECT
-        pid,
-        profileId,
+        ee.pid as pid,
+        ee.profileId as profileId,
         ${variantSelector} as variantKey,
-        min(created) as exposureCreated
-      FROM experiment_exposures
+        min(ee.created) as exposureCreated
+      FROM experiment_exposures ee
       WHERE
-        pid = {pid:FixedString(12)}
-        AND experimentId = {experimentId:String}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-      GROUP BY pid, profileId
+        ee.pid = {pid:FixedString(12)}
+        AND ee.experimentId = {experimentId:String}
+        AND ee.created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY ee.pid, ee.profileId
       ${multiVariantFilter}
     `
   }
