@@ -1599,7 +1599,7 @@ Filter modifiers:
             uniqExact(psid) as uniqueSessions
           FROM events
           WHERE pid = {pid:FixedString(12)}
-            AND type = {goalType:String}
+            AND type = '${goalType}'
             AND ${matchCondition}
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         `
@@ -1609,7 +1609,6 @@ Filter modifiers:
             query,
             query_params: {
               pid,
-              goalType,
               goalValue: goal.value || '',
               groupFrom: groupFromUTC,
               groupTo: groupToUTC,
@@ -1646,7 +1645,7 @@ Filter modifiers:
             SELECT count(*) as conversions
             FROM events
             WHERE pid = {pid:FixedString(12)}
-              AND type = {goalType:String}
+              AND type = '${goalType}'
               AND ${matchCondition}
               AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           `
@@ -1656,7 +1655,6 @@ Filter modifiers:
               query,
               query_params: {
                 pid,
-                goalType,
                 goalValue: goal.value || '',
                 groupFrom: groupFromUTC,
                 groupTo: groupToUTC,

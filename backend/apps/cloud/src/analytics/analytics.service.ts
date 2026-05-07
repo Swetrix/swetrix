@@ -2237,7 +2237,7 @@ export class AnalyticsService {
         pid IN {pids:Array(FixedString(12))}
         AND type IN ('pageview', 'custom_event', 'error')
         AND psid IS NOT NULL
-        AND psid != ''
+        AND psid != 0
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
       GROUP BY pid
     `
@@ -6131,7 +6131,7 @@ export class AnalyticsService {
       WHERE pid = {pid:FixedString(12)}
         AND type IN ('pageview', 'custom_event', 'error')
         AND psid IS NOT NULL
-        AND psid != ''
+        AND psid != 0
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${sessionFiltersQuery}
     `
