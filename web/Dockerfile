@@ -6,8 +6,8 @@ FROM base AS deps
 RUN mkdir /app
 WORKDIR /app
 
-ADD package.json ./
-RUN yarn install --production=false
+COPY package*.json .npmrc ./
+RUN npm ci
 
 FROM base AS production-deps
 
@@ -15,7 +15,8 @@ RUN mkdir /app
 WORKDIR /app
 
 COPY --from=deps /app/node_modules /app/node_modules
-ADD package.json ./
+COPY package*.json .npmrc ./
+RUN npm prune --omit=dev
 
 FROM base AS build
 
