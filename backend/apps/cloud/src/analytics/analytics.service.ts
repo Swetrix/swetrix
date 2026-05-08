@@ -5251,18 +5251,40 @@ export class AnalyticsService {
     filtersQuery: string,
     customEVFilterApplied: boolean,
   ): string {
+    const matchingCustomEventSessionsSubquery = `
+            SELECT DISTINCT psid
+            FROM (
+              SELECT psid
+              FROM events
+              WHERE
+                pid = {pid:FixedString(12)}
+                AND type = 'custom_event'
+                AND psid IS NOT NULL
+                AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+                ${filtersQuery}
+              UNION ALL
+              SELECT s.psid AS psid
+              FROM sessions FINAL AS s
+              INNER JOIN (
+                SELECT pid, profileId, created
+                FROM events
+                WHERE
+                  pid = {pid:FixedString(12)}
+                  AND type = 'custom_event'
+                  AND (psid IS NULL OR psid = 0)
+                  AND profileId IS NOT NULL
+                  AND profileId != ''
+                  AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+                  ${filtersQuery}
+              ) AS matching_custom_events
+                ON s.pid = matching_custom_events.pid
+                AND s.profileId = matching_custom_events.profileId
+                AND matching_custom_events.created BETWEEN s.firstSeen AND addSeconds(s.lastSeen, 1)
+            )
+          `
     const scopedSessionFilter = customEVFilterApplied
       ? `
-          AND CAST(psid, 'String') IN (
-            SELECT DISTINCT CAST(psid, 'String')
-            FROM events
-            WHERE
-              pid = {pid:FixedString(12)}
-              AND type = 'custom_event'
-              AND psid IS NOT NULL
-              AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-              ${filtersQuery}
-          )
+          AND psid IN (${matchingCustomEventSessionsSubquery})
         `
       : filtersQuery
 
