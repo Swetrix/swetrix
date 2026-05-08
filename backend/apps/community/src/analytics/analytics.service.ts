@@ -4803,42 +4803,49 @@ export class AnalyticsService {
     filtersQuery: string,
     customEVFilterApplied: boolean,
   ): string {
-    const matchingCustomEventSessionsSubquery = `
-            SELECT DISTINCT psid
-            FROM (
-              SELECT psid
-              FROM events
-              WHERE
-                pid = {pid:FixedString(12)}
-                AND type = 'custom_event'
-                AND psid IS NOT NULL
-                AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-                ${filtersQuery}
-              UNION ALL
-              SELECT s.psid AS psid
-              FROM sessions FINAL AS s
-              INNER JOIN (
-                SELECT pid, profileId, created
-                FROM events
-                WHERE
-                  pid = {pid:FixedString(12)}
-                  AND type = 'custom_event'
-                  AND (psid IS NULL OR psid = 0)
-                  AND profileId IS NOT NULL
-                  AND profileId != ''
-                  AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-                  ${filtersQuery}
-              ) AS matching_custom_events
-                ON s.pid = matching_custom_events.pid
-                AND s.profileId = matching_custom_events.profileId
-                AND matching_custom_events.created BETWEEN s.firstSeen AND addSeconds(s.lastSeen, 1)
-            )
-          `
-    const scopedSessionFilter = customEVFilterApplied
-      ? `
-          AND psid IN (${matchingCustomEventSessionsSubquery})
-        `
-      : filtersQuery
+    if (customEVFilterApplied) {
+      return `
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          cc,
+          os,
+          br,
+          toTimeZone(created, {timezone:String}) AS created_for_grouping
+        FROM events
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND type = 'custom_event'
+          AND psid IS NOT NULL
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+        UNION ALL
+        SELECT
+          CAST(s.psid, 'String') AS psidCasted,
+          matching_custom_events.pid,
+          matching_custom_events.cc,
+          matching_custom_events.os,
+          matching_custom_events.br,
+          toTimeZone(matching_custom_events.created, {timezone:String}) AS created_for_grouping
+        FROM sessions AS s FINAL
+        INNER JOIN (
+          SELECT pid, profileId, cc, os, br, created
+          FROM events
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND type = 'custom_event'
+            AND (psid IS NULL OR psid = 0)
+            AND profileId IS NOT NULL
+            AND profileId != ''
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            ${filtersQuery}
+        ) AS matching_custom_events
+          ON s.pid = matching_custom_events.pid
+          AND s.profileId = matching_custom_events.profileId
+        WHERE matching_custom_events.created BETWEEN s.firstSeen AND addSeconds(s.lastSeen, 1)
+      `
+    }
 
     return `
         SELECT
@@ -4854,7 +4861,7 @@ export class AnalyticsService {
           AND type IN ('pageview', 'custom_event', 'error')
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-          ${scopedSessionFilter}
+          ${filtersQuery}
       `
   }
 
