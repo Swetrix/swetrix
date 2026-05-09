@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import QRCode from 'react-qr-code'
+import { QRCode } from 'react-qr-code'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 import { LockIcon } from '@phosphor-icons/react'
