@@ -1,6 +1,6 @@
 import { DownloadIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
-import QRCode from 'react-qr-code'
+import { QRCode } from 'react-qr-code'
 import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
