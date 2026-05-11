@@ -84,7 +84,7 @@ const LiveVisitorsDropdown = () => {
         <div
           id='live-visitors-dropdown'
           className={cn(
-            'scrollbar-thin absolute top-full right-0 z-40 mt-2 w-max max-w-[calc(100vw-1rem)] origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-sm text-gray-900 shadow-md transition duration-150 ease-out outline-none max-sm:fixed max-sm:top-20 max-sm:right-2 max-sm:left-2 max-sm:w-auto max-sm:max-w-none dark:border-slate-700/50 dark:bg-slate-950 dark:text-gray-50',
+            'scrollbar-thin absolute top-full right-0 z-40 mt-1 max-w-[calc(100vw-1rem)] origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-xs text-gray-900 shadow-md transition duration-150 ease-out outline-none max-sm:fixed max-sm:top-20 max-sm:right-2 max-sm:left-2 max-sm:w-auto max-sm:max-w-none sm:w-[250px] dark:border-slate-700/50 dark:bg-slate-950 dark:text-gray-50',
             liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-0',
             isDropdownVisible
               ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
@@ -93,8 +93,8 @@ const LiveVisitorsDropdown = () => {
           aria-hidden={!isDropdownVisible}
         >
           <div className='flex w-full flex-col'>
-            <div className='flex items-center justify-between border-b border-black/10 bg-white p-2 dark:border-slate-700/50 dark:bg-slate-950'>
-              <Text as='p' size='sm' weight='semibold'>
+            <div className='flex items-center justify-between border-b border-black/10 bg-white px-2 py-1.5 dark:border-slate-700/50 dark:bg-slate-950'>
+              <Text as='p' size='xs' weight='semibold'>
                 {t('dashboard.liveVisitors')}
               </Text>
 
@@ -103,22 +103,22 @@ const LiveVisitorsDropdown = () => {
                 type='button'
                 onClick={() => setIsDropdownVisible(false)}
               >
-                <XIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+                <XIcon className='h-4 w-4 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
               </button>
             </div>
-            <div className='scrollbar-thin max-h-[min(320px,calc(100dvh-7rem))] overflow-y-auto px-2'>
+            <div className='scrollbar-thin max-h-72 overflow-y-auto px-1.5 max-sm:max-h-[calc(100dvh-7rem)] sm:max-h-80'>
               {isLoading ? (
-                <Text as='p' size='sm' className='flex items-center py-2'>
+                <Text as='p' size='xs' className='flex items-center py-2'>
                   <Spin className='ml-0' />
 
                   {t('common.loading')}
                 </Text>
               ) : liveInfo.length === 0 ? (
-                <Text as='p' size='sm' className='py-2'>
+                <Text as='p' size='xs' className='py-2'>
                   {t('project.noData')}
                 </Text>
               ) : (
-                <div className='flex w-full min-w-0 flex-col gap-2 py-2'>
+                <div className='flex w-full min-w-0 flex-col gap-1.5 py-1.5'>
                   {_map(liveInfo, ({ psid, dv, br, os, cc }) => {
                     const params = new URLSearchParams(location.search)
                     params.set('psid', psid)
@@ -127,23 +127,21 @@ const LiveVisitorsDropdown = () => {
                     return (
                       <Link
                         key={psid}
-                        className='group grid min-w-0 cursor-pointer grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] items-center overflow-hidden rounded-lg bg-gray-100 text-sm text-gray-900 transition-colors hover:bg-gray-200 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
+                        className='group grid min-w-0 cursor-pointer grid-cols-[auto_4.75rem_minmax(0,1fr)_4.25rem] items-center gap-x-2 overflow-hidden rounded-md bg-gray-100 px-2 py-1.5 text-xs leading-5 text-gray-900 transition-colors hover:bg-gray-200 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
                         to={{ search: params.toString() }}
                       >
-                        <div className='pr-2'>
+                        <div className='flex w-5 shrink-0 items-center'>
                           <Flag
-                            className='m-2 rounded-xs'
+                            className='rounded-xs'
                             country={cc}
-                            size={21}
+                            size={18}
                             alt=''
                             aria-hidden='true'
                           />
                         </div>
-                        <div className='min-w-0 truncate pr-2'>{os}</div>
-                        <div className='min-w-0 truncate pr-2'>{br}</div>
-                        <div className='min-w-0 truncate pr-2 capitalize'>
-                          {dv}
-                        </div>
+                        <div className='min-w-0 truncate'>{os}</div>
+                        <div className='min-w-0 truncate'>{br}</div>
+                        <div className='min-w-0 truncate capitalize'>{dv}</div>
                       </Link>
                     )
                   })}
