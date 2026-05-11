@@ -127,7 +127,7 @@ const LiveVisitorsDropdown = () => {
                     return (
                       <Link
                         key={psid}
-                        className='group grid min-w-0 cursor-pointer grid-cols-[auto_4.75rem_minmax(0,1fr)_4.25rem] items-center gap-x-2 overflow-hidden rounded-md bg-gray-100 px-2 py-1.5 text-xs leading-5 text-gray-900 transition-colors hover:bg-gray-200 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
+                        className='group grid min-w-0 cursor-pointer grid-cols-[auto_repeat(3,minmax(0,1fr))] items-center gap-x-1.5 overflow-hidden rounded-md bg-gray-100 px-2 py-1.5 text-xs leading-5 text-gray-900 transition-colors hover:bg-gray-200 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
                         to={{ search: params.toString() }}
                       >
                         <div className='flex w-5 shrink-0 items-center'>
