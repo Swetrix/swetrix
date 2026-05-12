@@ -1412,6 +1412,7 @@ const ViewProjectContent = () => {
                     dataLoading={dataLoading}
                     searchParams={searchParams}
                     allowedToManage={allowedToManage}
+                    isEmbedded={isEmbedded}
                     isMobileOpen={isMobileSidebarOpen}
                     onMobileClose={closeMobileSidebar}
                   />
@@ -1496,6 +1497,7 @@ const ViewProjectContent = () => {
                             dataLoading={dataLoading}
                             searchParams={searchParams}
                             allowedToManage={allowedToManage}
+                            isEmbedded={isEmbedded}
                             isMobileOpen={isMobileSidebarOpen}
                             onMobileClose={closeMobileSidebar}
                           />

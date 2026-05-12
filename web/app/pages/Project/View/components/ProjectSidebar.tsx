@@ -341,6 +341,10 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   )
   const { t } = useTranslation('common')
   const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (isEmbedded) {
+      return searchParams.get('collapsed') === 'true'
+    }
+
     if (typeof window !== 'undefined') {
       return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true'
     }
@@ -363,10 +367,12 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   const toggleCollapsed = useCallback(() => {
     setIsCollapsed((prev) => {
       const newValue = !prev
-      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newValue))
+      if (!isEmbedded) {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newValue))
+      }
       return newValue
     })
-  }, [])
+  }, [isEmbedded])
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
