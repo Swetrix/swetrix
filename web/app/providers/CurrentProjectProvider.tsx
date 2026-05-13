@@ -3,7 +3,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -13,6 +12,7 @@ import {
   useSearchParams,
   useFetcher,
   useLoaderData,
+  useRevalidator,
 } from 'react-router'
 import { toast } from 'sonner'
 
@@ -22,6 +22,7 @@ import {
   LS_PROJECTS_PROTECTED_KEY,
   Period,
   TimeBucket,
+  isBrowser,
 } from '~/lib/constants'
 import { type Project } from '~/lib/models/Project'
 import type {
@@ -31,7 +32,10 @@ import type {
 import { getItemJSON } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
-import { setProjectPassword } from '../pages/Project/View/utils/cache'
+import {
+  PROJECT_PASSWORD_UPDATED_EVENT,
+  setProjectPassword,
+} from '../pages/Project/View/utils/cache'
 import { CHART_METRICS_MAPPING } from '../pages/Project/View/ViewProject.helpers'
 
 interface CurrentProjectContextType {
@@ -44,6 +48,7 @@ interface CurrentProjectContextType {
   liveVisitors: number
   updateLiveVisitors: () => Promise<void>
   isPasswordRequired: boolean
+  isCheckingStoredPassword: boolean
   submitPassword: (
     password: string,
   ) => Promise<{ success: boolean; error?: string }>
@@ -60,21 +65,57 @@ interface CurrentProjectProviderProps {
 
 export const useProjectPassword = (id?: string) => {
   const [searchParams] = useSearchParams()
-
-  const projectPassword = useMemo(
-    () =>
-      searchParams.get('password') ||
-      getItemJSON(LS_PROJECTS_PROTECTED_KEY)?.[id || ''] ||
-      '',
-    [id, searchParams],
+  const [cachedPassword, setCachedPassword] = useState(
+    () => getItemJSON(LS_PROJECTS_PROTECTED_KEY)?.[id || ''] || '',
   )
 
-  return projectPassword
+  useEffect(() => {
+    setCachedPassword(getItemJSON(LS_PROJECTS_PROTECTED_KEY)?.[id || ''] || '')
+  }, [id])
+
+  useEffect(() => {
+    if (!isBrowser) {
+      return
+    }
+
+    const handlePasswordUpdated = (
+      event: CustomEvent<{ id: string; password: string }>,
+    ) => {
+      if (event.detail.id === id) {
+        setCachedPassword(event.detail.password || '')
+      }
+    }
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === LS_PROJECTS_PROTECTED_KEY) {
+        setCachedPassword(
+          getItemJSON(LS_PROJECTS_PROTECTED_KEY)?.[id || ''] || '',
+        )
+      }
+    }
+
+    window.addEventListener(
+      PROJECT_PASSWORD_UPDATED_EVENT,
+      handlePasswordUpdated as EventListener,
+    )
+    window.addEventListener('storage', handleStorage)
+
+    return () => {
+      window.removeEventListener(
+        PROJECT_PASSWORD_UPDATED_EVENT,
+        handlePasswordUpdated as EventListener,
+      )
+      window.removeEventListener('storage', handleStorage)
+    }
+  }, [id])
+
+  return searchParams.get('password') || cachedPassword
 }
 
 const useProject = (id: string) => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
+  const revalidator = useRevalidator()
   const loaderData = useLoaderData<ProjectLoaderData>()
   const storedPassword = useProjectPassword(id)
 
@@ -84,6 +125,9 @@ const useProject = (id: string) => {
   )
   const [isPasswordRequired, setIsPasswordRequired] = useState(
     () => loaderData?.isPasswordRequired || false,
+  )
+  const [isCheckingStoredPassword, setIsCheckingStoredPassword] = useState(
+    () => Boolean(loaderData?.isPasswordRequired && storedPassword),
   )
 
   const passwordFetcher = useFetcher<ProjectViewActionData>()
@@ -111,17 +155,25 @@ const useProject = (id: string) => {
   useEffect(() => {
     if (
       loaderData?.isPasswordRequired &&
+      isPasswordRequired &&
       storedPassword &&
       !hasTriedStoredPassword.current &&
       passwordFetcher.state === 'idle'
     ) {
       hasTriedStoredPassword.current = true
+      setIsCheckingStoredPassword(true)
       passwordFetcher.submit(
         { intent: 'get-project', password: storedPassword },
         { method: 'POST', action: `/projects/${id}` },
       )
     }
-  }, [loaderData?.isPasswordRequired, storedPassword, id, passwordFetcher])
+  }, [
+    loaderData?.isPasswordRequired,
+    isPasswordRequired,
+    storedPassword,
+    id,
+    passwordFetcher,
+  ])
 
   // Handle password fetcher response
   useEffect(() => {
@@ -135,11 +187,14 @@ const useProject = (id: string) => {
       const result = passwordFetcher.data.data as Project
       setProject(result)
       setIsPasswordRequired(false)
+      setIsCheckingStoredPassword(false)
 
       if (lastSubmittedPasswordRef.current) {
         setProjectPassword(id, lastSubmittedPasswordRef.current)
         lastSubmittedPasswordRef.current = null
       }
+
+      revalidator.revalidate()
 
       if (passwordResolverRef.current) {
         passwordResolverRef.current({ success: true })
@@ -148,6 +203,8 @@ const useProject = (id: string) => {
     } else if (passwordFetcher.data.error) {
       toast.error(t('apiNotifications.incorrectPassword'))
 
+      setIsPasswordRequired(true)
+      setIsCheckingStoredPassword(false)
       lastSubmittedPasswordRef.current = null
       if (passwordResolverRef.current) {
         passwordResolverRef.current({
@@ -157,7 +214,7 @@ const useProject = (id: string) => {
         passwordResolverRef.current = null
       }
     }
-  }, [passwordFetcher.state, passwordFetcher.data, t, id])
+  }, [passwordFetcher.state, passwordFetcher.data, t, id, revalidator])
 
   const submitPassword = useCallback(
     async (password: string): Promise<{ success: boolean; error?: string }> => {
@@ -183,7 +240,13 @@ const useProject = (id: string) => {
     })
   }, [])
 
-  return { project, mergeProject, isPasswordRequired, submitPassword }
+  return {
+    project,
+    mergeProject,
+    isPasswordRequired,
+    isCheckingStoredPassword,
+    submitPassword,
+  }
 }
 
 type ProjectPreferences = {
@@ -248,8 +311,13 @@ export const CurrentProjectProvider = ({
   children,
   id,
 }: CurrentProjectProviderProps) => {
-  const { project, mergeProject, isPasswordRequired, submitPassword } =
-    useProject(id)
+  const {
+    project,
+    mergeProject,
+    isPasswordRequired,
+    isCheckingStoredPassword,
+    submitPassword,
+  } = useProject(id)
   const { preferences, updatePreferences } = useProjectPreferences()
   const { liveVisitors, updateLiveVisitors } = useLiveVisitors(project)
 
@@ -265,6 +333,7 @@ export const CurrentProjectProvider = ({
         liveVisitors,
         updateLiveVisitors,
         isPasswordRequired,
+        isCheckingStoredPassword,
         submitPassword,
       }}
     >

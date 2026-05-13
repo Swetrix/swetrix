@@ -650,6 +650,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
     'submit-ai-chat-feedback',
   ])
 
+  const getPassword = () =>
+    formData.get('password')?.toString() ||
+    getProjectPasswordCookie(request, projectId || '') ||
+    ''
+
   if (!intent || (!publicIntents.has(intent) && !hasAuthTokens(request))) {
     redirectIfNotAuthenticated(request)
   }
@@ -946,7 +951,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     // Annotations
     case 'get-annotations': {
-      const password = formData.get('password')?.toString() || ''
+      const password = getPassword()
 
       const result = await serverFetch(
         request,
@@ -1041,7 +1046,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     // Project Views
     case 'get-project-views': {
-      const password = formData.get('password')?.toString() || ''
+      const password = getPassword()
 
       const result = await serverFetch(request, `project/${projectId}/views`, {
         method: 'GET',
@@ -2074,7 +2079,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     // Funnels (getters)
     case 'get-funnels': {
-      const password = formData.get('password')?.toString() || ''
+      const password = getPassword()
 
       const result = await serverFetch(
         request,
@@ -2104,7 +2109,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const toDate = formData.get('to')?.toString() || ''
       const tz = formData.get('timezone')?.toString() || ''
       const funnelId = formData.get('funnelId')?.toString() || ''
-      const password = formData.get('password')?.toString() || ''
+      const password = getPassword()
 
       const params = new URLSearchParams({ pid: projectId || '' })
       if (period) params.append('period', period)
@@ -2203,7 +2208,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     // Filters
     case 'get-filters': {
       const filterType = formData.get('type')?.toString() || ''
-      const password = formData.get('password')?.toString() || ''
+      const password = getPassword()
 
       const result = await serverFetch(
         request,
@@ -2229,7 +2234,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     case 'get-errors-filters': {
       const filterType = formData.get('type')?.toString() || ''
-      const password = formData.get('password')?.toString() || ''
+      const password = getPassword()
 
       const result = await serverFetch(
         request,
@@ -2256,7 +2261,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'get-version-filters': {
       const dataType = formData.get('dataType')?.toString() || 'traffic'
       const column = formData.get('column')?.toString() || 'br'
-      const password = formData.get('password')?.toString() || ''
+      const password = getPassword()
 
       const result = await serverFetch(
         request,
@@ -2308,7 +2313,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     // Project data
     case 'get-project': {
-      const password = formData.get('password')?.toString() || ''
+      const password = getPassword()
 
       const result = await serverFetch(request, `project/${projectId}`, {
         method: 'GET',
@@ -2322,14 +2327,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
         )
       }
 
+      const cookies = [...result.cookies]
+      if (password) {
+        cookies.push(createProjectPasswordCookie(projectId || '', password))
+      }
+
       return data<ProjectViewActionData>(
         { intent, success: true, data: result.data },
-        { headers: createHeadersWithCookies(result.cookies) },
+        { headers: createHeadersWithCookies(cookies) },
       )
     }
 
     case 'check-password': {
-      const password = formData.get('password')?.toString() || ''
+      const password = getPassword()
 
       const result = await serverFetch<boolean>(
         request,
@@ -2347,9 +2357,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
         )
       }
 
+      const cookies = [...result.cookies]
+      if (password && result.data) {
+        cookies.push(createProjectPasswordCookie(projectId || '', password))
+      }
+
       return data<ProjectViewActionData>(
         { intent, success: true, data: result.data },
-        { headers: createHeadersWithCookies(result.cookies) },
+        { headers: createHeadersWithCookies(cookies) },
       )
     }
 

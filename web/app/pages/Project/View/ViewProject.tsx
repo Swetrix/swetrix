@@ -275,6 +275,7 @@ const ViewProjectContent = () => {
     allowedToManage,
     liveVisitors,
     isPasswordRequired,
+    isCheckingStoredPassword,
     submitPassword,
   } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
@@ -1344,7 +1345,7 @@ const ViewProjectContent = () => {
         <ClientOnly>
           {() => (
             <PasswordRequiredModal
-              isOpen={isPasswordRequired}
+              isOpen={isPasswordRequired && !isCheckingStoredPassword}
               onSubmit={submitPassword}
             />
           )}
