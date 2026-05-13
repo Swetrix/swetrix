@@ -340,18 +340,26 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     [websiteUrl],
   )
   const { t } = useTranslation('common')
+  const shouldCollapseByDefault = searchParams.get('collapsed') === 'true'
   const [isCollapsed, setIsCollapsed] = useState(() => {
-    if (isEmbedded) {
-      return searchParams.get('collapsed') === 'true'
+    if (shouldCollapseByDefault) {
+      return true
     }
 
-    if (typeof window !== 'undefined') {
+    if (!isEmbedded && typeof window !== 'undefined') {
       return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true'
     }
+
     return false
   })
 
   const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    if (shouldCollapseByDefault) {
+      setIsCollapsed(true)
+    }
+  }, [shouldCollapseByDefault])
 
   useEffect(() => {
     if (isEmbedded) return undefined

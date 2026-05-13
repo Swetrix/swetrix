@@ -126,8 +126,8 @@ const useProject = (id: string) => {
   const [isPasswordRequired, setIsPasswordRequired] = useState(
     () => loaderData?.isPasswordRequired || false,
   )
-  const [isCheckingStoredPassword, setIsCheckingStoredPassword] = useState(
-    () => Boolean(loaderData?.isPasswordRequired && storedPassword),
+  const [isCheckingStoredPassword, setIsCheckingStoredPassword] = useState(() =>
+    Boolean(loaderData?.isPasswordRequired && storedPassword),
   )
 
   const passwordFetcher = useFetcher<ProjectViewActionData>()
