@@ -44,7 +44,6 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams, useFetcher } from 'react-router'
 import sanitizeHtml from 'sanitize-html'
 import { toast } from 'sonner'
-import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { askAI } from '~/api'
 import useSpeechRecognition from '~/hooks/useSpeechRecognition'
@@ -978,9 +977,11 @@ const UserMessage = ({
 
 const ScrollToBottomButton = ({
   isAtBottom,
+  isStreaming,
   scrollToBottom,
 }: {
   isAtBottom: boolean
+  isStreaming: boolean
   scrollToBottom: () => void
 }) => {
   const { t } = useTranslation('common')
@@ -991,12 +992,83 @@ const ScrollToBottomButton = ({
     <button
       type='button'
       onClick={scrollToBottom}
-      className='absolute bottom-4 left-1/2 z-10 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition-all hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200 hover:dark:bg-slate-700'
-      aria-label={t('project.askAi.scrollToBottom')}
+      className='absolute bottom-32 left-1/2 z-30 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-gray-800 ring-1 ring-gray-200/80 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-900 dark:text-gray-100 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300'
+      aria-label={
+        isStreaming
+          ? t('project.askAi.thinking')
+          : t('project.askAi.scrollToBottom')
+      }
     >
-      <ArrowDownIcon className='h-4 w-4' />
+      {isStreaming ? (
+        <span className='flex items-center gap-1'>
+          {[0, 1, 2].map((index) => (
+            <span
+              key={index}
+              className='h-1.5 w-1.5 animate-bounce rounded-full bg-current'
+              style={{ animationDelay: `${index * 120}ms` }}
+            />
+          ))}
+        </span>
+      ) : (
+        <ArrowDownIcon className='h-5 w-5' />
+      )}
     </button>
   )
+}
+
+const SCROLL_BOTTOM_THRESHOLD = 96
+
+const useChatScroll = () => {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const isAtBottomRef = useRef(true)
+  const [isAtBottom, setIsAtBottom] = useState(true)
+
+  const updateIsAtBottom = useCallback(() => {
+    const scrollEl = scrollRef.current
+    if (!scrollEl) return
+
+    const distanceFromBottom =
+      scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight
+    const nextIsAtBottom = distanceFromBottom <= SCROLL_BOTTOM_THRESHOLD
+
+    if (isAtBottomRef.current !== nextIsAtBottom) {
+      setIsAtBottom(nextIsAtBottom)
+    }
+    isAtBottomRef.current = nextIsAtBottom
+  }, [])
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    const scrollEl = scrollRef.current
+    if (!scrollEl) return
+
+    scrollEl.scrollTo({
+      top: scrollEl.scrollHeight,
+      behavior,
+    })
+    isAtBottomRef.current = true
+    setIsAtBottom(true)
+  }, [])
+
+  useEffect(() => {
+    const scrollEl = scrollRef.current
+    if (!scrollEl) return
+
+    updateIsAtBottom()
+    scrollEl.addEventListener('scroll', updateIsAtBottom, { passive: true })
+
+    return () => {
+      scrollEl.removeEventListener('scroll', updateIsAtBottom)
+    }
+  }, [updateIsAtBottom])
+
+  return {
+    scrollRef,
+    contentRef,
+    isAtBottom,
+    isAtBottomRef,
+    scrollToBottom,
+  }
 }
 
 interface VoiceInputButtonProps {
@@ -1769,11 +1841,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   const isLoadingChats = allChatsFetcher.state !== 'idle'
 
-  const { scrollRef, contentRef, isAtBottom, scrollToBottom } =
-    useStickToBottom({
-      resize: 'smooth',
-      initial: 'smooth',
-    })
+  const { scrollRef, contentRef, isAtBottom, isAtBottomRef, scrollToBottom } =
+    useChatScroll()
 
   const streamingContentRef = useRef('')
   const streamingReasoningRef = useRef('')
@@ -2787,6 +2856,23 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const isEmpty = _isEmpty(messages) && !streamingMessage
   const isChatActive = !isEmpty
 
+  useEffect(() => {
+    if (!isChatActive || !isAtBottomRef.current) return
+
+    const frame = window.requestAnimationFrame(() => {
+      scrollToBottom('auto')
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [
+    messages,
+    streamingMessage,
+    isWaitingForResponse,
+    isChatActive,
+    isAtBottomRef,
+    scrollToBottom,
+  ])
+
   const formatRelativeTime = useCallback(
     (dateStr: string) => {
       const date = new Date(dateStr)
@@ -3115,6 +3201,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         </div>
         <ScrollToBottomButton
           isAtBottom={isAtBottom}
+          isStreaming={isLoading}
           scrollToBottom={scrollToBottom}
         />
       </div>
