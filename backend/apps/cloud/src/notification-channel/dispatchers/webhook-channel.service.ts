@@ -1,14 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { createHmac } from 'crypto'
-// using node-fetch instead of undici because the native fetch does not support
-// 'agent' option (to prevent SSRF)
-import fetch from 'node-fetch'
-import { useAgent } from 'request-filtering-agent'
 import {
   NotificationChannel,
   NotificationChannelType,
 } from '../entity/notification-channel.entity'
 import { ChannelDispatcher, RenderedAlertMessage } from './types'
+import { postWithFilteredAgent } from './http-client'
 
 @Injectable()
 export class WebhookChannelService implements ChannelDispatcher {
@@ -64,13 +61,11 @@ export class WebhookChannelService implements ChannelDispatcher {
         headers['X-Swetrix-Signature'] = `sha256=${sig}`
       }
       const webhookUrl = cfg.url
-      const res = await fetch(webhookUrl, {
-        method: 'POST',
+      const res = await postWithFilteredAgent({
+        url: webhookUrl,
         headers,
         body: bodyStr,
-        agent: useAgent(webhookUrl),
-        signal: AbortSignal.timeout(10_000),
-        redirect: 'error',
+        timeoutMs: 10_000,
       })
       if (!res.ok) {
         this.logger.warn(
@@ -97,13 +92,11 @@ export class WebhookChannelService implements ChannelDispatcher {
         const sig = createHmac('sha256', secret).update(payload).digest('hex')
         headers['X-Swetrix-Signature'] = `sha256=${sig}`
       }
-      const res = await fetch(url, {
-        method: 'POST',
+      const res = await postWithFilteredAgent({
+        url,
         headers,
         body: payload,
-        agent: useAgent(url),
-        signal: AbortSignal.timeout(5_000),
-        redirect: 'error',
+        timeoutMs: 5_000,
       })
       return res.ok
     } catch (reason) {

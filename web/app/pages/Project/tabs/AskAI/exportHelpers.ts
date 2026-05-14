@@ -1,5 +1,7 @@
 import type { TFunction } from 'i18next'
 
+import { downloadText } from '~/utils/download'
+
 import { parseSegments } from './contentSegments'
 
 export interface ExportMessagePart {
@@ -169,13 +171,5 @@ export const getChatExportFilename = (
 }
 
 export const downloadMarkdown = (markdown: string, filename: string) => {
-  const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  setTimeout(() => URL.revokeObjectURL(url), 0)
+  downloadText(markdown, filename, 'text/markdown;charset=utf-8')
 }

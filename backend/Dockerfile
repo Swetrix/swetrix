@@ -1,18 +1,20 @@
 #Stage 1: Build
 FROM node:lts-alpine AS build
 WORKDIR /build
-COPY package*.json .
-RUN npm install --force
+COPY package*.json ./
+RUN npm ci --force
 COPY . .
 RUN npm run deploy:community
 RUN node ./meta/dbip-free-sync.js
+RUN npm prune --omit=dev --force
 
 #Stage 2: Runtime
 FROM node:lts-alpine AS run
 LABEL maintainer="swetrix.com <contact@swetrix.com>"
 
 ENV TZ=UTC \
-    NODE_ENV=production
+    NODE_ENV=production \
+    NPM_CONFIG_OMIT=dev
 
 ENV REDIS_HOST=localhost \
     REDIS_PORT=6379 \

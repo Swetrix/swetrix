@@ -25,7 +25,6 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import dayjsTimezone from 'dayjs/plugin/timezone'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import ipRangeCheck from 'ip-range-check'
 import {
   Injectable,
   BadRequestException,
@@ -71,6 +70,7 @@ import {
   sumArrays,
   formatDuration,
 } from '../common/utils'
+import { isIpInRange } from '../common/ip-range'
 import { PageviewsDto } from './dto/pageviews.dto'
 import { EventsDto } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
@@ -601,7 +601,7 @@ export class AnalyticsService {
     // TODO: Properly validate the ipBlacklist on project update
     const ipBlacklist = _filter(project.ipBlacklist, Boolean) as string[]
 
-    if (!_isEmpty(ipBlacklist) && ipRangeCheck(ip, ipBlacklist)) {
+    if (!_isEmpty(ipBlacklist) && isIpInRange(ip, ipBlacklist)) {
       throw new BadRequestException(
         'Incoming analytics is disabled for this IP address',
       )
