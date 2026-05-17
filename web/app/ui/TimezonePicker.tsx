@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _reduce from 'lodash/reduce'
@@ -110,7 +112,16 @@ interface TimezoneSelectProps {
 }
 
 const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
-  const options = buildOptions()
+  const now = new Date()
+  const optionsCacheKey = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime()
+  const options = useMemo(
+    () => buildOptions(new Date(optionsCacheKey + 12 * 60 * 60 * 1000)),
+    [optionsCacheKey],
+  )
   const labelExtractor = (option: TimezoneOption | null | undefined) =>
     option?.label
   const keyExtractor = (option: TimezoneOption) => option.value
