@@ -6,10 +6,21 @@ import timezones from '~/lib/constants/timezones'
 
 import Select from './Select'
 
-const date = new Date()
+interface TimezoneOption {
+  value: string
+  label: string
+  offset: number
+  abbrev?: string
+  altName?: string
+}
 
-const getTimezoneOffsetMinutes = (timeZone: string): number => {
+const getTimezoneOffsetMinutes = (
+  timeZone: string,
+  referenceDate: Date,
+): number => {
   try {
+    const date = new Date(referenceDate)
+    date.setMilliseconds(0)
     const parts = new Intl.DateTimeFormat('en-US', {
       timeZone,
       hour12: false,
@@ -44,6 +55,7 @@ const getTimezoneOffsetMinutes = (timeZone: string): number => {
 const getTimezoneName = (
   timeZone: string,
   timeZoneName: 'short' | 'long',
+  date: Date,
 ): string | undefined => {
   try {
     return new Intl.DateTimeFormat('en-US', {
@@ -66,39 +78,42 @@ const formatOffset = (offsetMinutes: number): string => {
   return `${sign}${hours}:${String(minutes).padStart(2, '0')}`
 }
 
-const options = _reduce(
-  Object.entries(timezones),
-  (selectOptions: any[], zone) => {
-    const offsetMinutes = getTimezoneOffsetMinutes(zone[0])
-    const hr = formatOffset(offsetMinutes)
-    const label = `(GMT${_includes(hr, '-') ? hr : `+${hr}`}) ${zone[1]}`
+const buildOptions = (date = new Date()) =>
+  _reduce(
+    Object.entries(timezones),
+    (selectOptions: TimezoneOption[], zone) => {
+      const offsetMinutes = getTimezoneOffsetMinutes(zone[0], date)
+      const hr = formatOffset(offsetMinutes)
+      const label = `(GMT${_includes(hr, '-') ? hr : `+${hr}`}) ${zone[1]}`
 
-    selectOptions.push({
-      value: zone[0],
-      label,
-      offset: offsetMinutes / 60,
-      abbrev: getTimezoneName(zone[0], 'short'),
-      altName: getTimezoneName(zone[0], 'long'),
-    })
+      selectOptions.push({
+        value: zone[0],
+        label,
+        offset: offsetMinutes / 60,
+        abbrev: getTimezoneName(zone[0], 'short', date),
+        altName: getTimezoneName(zone[0], 'long', date),
+      })
 
-    return selectOptions
-  },
-  [],
-).sort((a, b) => a.offset - b.offset)
+      return selectOptions
+    },
+    [],
+  ).sort((a, b) => a.offset - b.offset)
 
 interface TimezoneSelectProps {
   value:
     | string
     | {
         value: string
-        label: string
+        label?: string
       }
   onChange: (item: string) => void
 }
 
 const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
-  const labelExtractor = (option: { label: string }) => option?.label
-  const keyExtractor = (option: { value: string }) => option?.value
+  const options = buildOptions()
+  const labelExtractor = (option: TimezoneOption | null | undefined) =>
+    option?.label
+  const keyExtractor = (option: TimezoneOption) => option.value
 
   const handleChange = (item: any) => {
     const key = keyExtractor(item)
@@ -110,35 +125,42 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
       | string
       | {
           value: string
-          label: string
+          label?: string
         },
-  ) => {
+  ): TimezoneOption | null => {
     if (typeof zone === 'object' && zone.value && zone.label) {
-      return zone
+      return (
+        _find(options, (tz) => tz.value === zone.value) ?? {
+          value: zone.value,
+          label: zone.label,
+          offset: 0,
+        }
+      )
     }
 
     if (typeof zone === 'string') {
-      return _find(options, (tz) => tz.value === zone)
+      return _find(options, (tz) => tz.value === zone) ?? null
     }
 
     if (zone.value && !zone.label) {
-      return _find(options, (tz) => tz.value === zone.value)
+      return _find(options, (tz) => tz.value === zone.value) ?? null
     }
 
     return null
   }
 
+  const selectedTimezone = parseTimezone(value)
+
   return (
     <Select
-      title={labelExtractor(parseTimezone(value))}
+      title={labelExtractor(selectedTimezone)}
       className='w-full'
       items={options}
       labelExtractor={labelExtractor}
-      // @ts-expect-error
       keyExtractor={keyExtractor}
       onSelect={handleChange}
       capitalise
-      selectedItem={parseTimezone(value)}
+      selectedItem={selectedTimezone ?? undefined}
     />
   )
 }

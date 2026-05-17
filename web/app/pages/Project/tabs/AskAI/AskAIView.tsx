@@ -993,25 +993,23 @@ const ScrollToBottomButton = ({
       type='button'
       onClick={scrollToBottom}
       className='absolute bottom-32 left-1/2 z-30 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-gray-800 ring-1 ring-gray-200/80 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-900 dark:text-gray-100 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300'
-      aria-label={
-        isStreaming
-          ? t('project.askAi.thinking')
-          : t('project.askAi.scrollToBottom')
-      }
+      aria-label={t('project.askAi.scrollToBottom')}
     >
+      <ArrowDownIcon className='h-5 w-5' />
       {isStreaming ? (
-        <span className='flex items-center gap-1'>
+        <span
+          className='absolute top-1.5 right-1.5 flex items-center gap-0.5'
+          aria-hidden='true'
+        >
           {[0, 1, 2].map((index) => (
             <span
               key={index}
-              className='h-1.5 w-1.5 animate-bounce rounded-full bg-current'
+              className='h-1 w-1 animate-bounce rounded-full bg-current'
               style={{ animationDelay: `${index * 120}ms` }}
             />
           ))}
         </span>
-      ) : (
-        <ArrowDownIcon className='h-5 w-5' />
-      )}
+      ) : null}
     </button>
   )
 }
@@ -1019,13 +1017,23 @@ const ScrollToBottomButton = ({
 const SCROLL_BOTTOM_THRESHOLD = 96
 
 const useChatScroll = () => {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
+  const scrollElRef = useRef<HTMLDivElement | null>(null)
+  const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null)
+  const [contentEl, setContentEl] = useState<HTMLDivElement | null>(null)
   const isAtBottomRef = useRef(true)
   const [isAtBottom, setIsAtBottom] = useState(true)
 
+  const scrollRef = useCallback((node: HTMLDivElement | null) => {
+    scrollElRef.current = node
+    setScrollEl(node)
+  }, [])
+
+  const contentRef = useCallback((node: HTMLDivElement | null) => {
+    setContentEl(node)
+  }, [])
+
   const updateIsAtBottom = useCallback(() => {
-    const scrollEl = scrollRef.current
+    const scrollEl = scrollElRef.current
     if (!scrollEl) return
 
     const distanceFromBottom =
@@ -1039,7 +1047,7 @@ const useChatScroll = () => {
   }, [])
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    const scrollEl = scrollRef.current
+    const scrollEl = scrollElRef.current
     if (!scrollEl) return
 
     scrollEl.scrollTo({
@@ -1050,8 +1058,9 @@ const useChatScroll = () => {
     setIsAtBottom(true)
   }, [])
 
+  const isPinnedToBottom = useCallback(() => isAtBottomRef.current, [])
+
   useEffect(() => {
-    const scrollEl = scrollRef.current
     if (!scrollEl) return
 
     updateIsAtBottom()
@@ -1060,13 +1069,14 @@ const useChatScroll = () => {
     return () => {
       scrollEl.removeEventListener('scroll', updateIsAtBottom)
     }
-  }, [updateIsAtBottom])
+  }, [scrollEl, updateIsAtBottom])
 
   return {
     scrollRef,
     contentRef,
+    contentEl,
     isAtBottom,
-    isAtBottomRef,
+    isPinnedToBottom,
     scrollToBottom,
   }
 }
@@ -1841,8 +1851,14 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   const isLoadingChats = allChatsFetcher.state !== 'idle'
 
-  const { scrollRef, contentRef, isAtBottom, isAtBottomRef, scrollToBottom } =
-    useChatScroll()
+  const {
+    scrollRef,
+    contentRef,
+    contentEl,
+    isAtBottom,
+    isPinnedToBottom,
+    scrollToBottom,
+  } = useChatScroll()
 
   const streamingContentRef = useRef('')
   const streamingReasoningRef = useRef('')
@@ -2857,7 +2873,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const isChatActive = !isEmpty
 
   useEffect(() => {
-    if (!isChatActive || !isAtBottomRef.current) return
+    if (!isChatActive || !isPinnedToBottom()) return
 
     const frame = window.requestAnimationFrame(() => {
       scrollToBottom('auto')
@@ -2869,9 +2885,37 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     streamingMessage,
     isWaitingForResponse,
     isChatActive,
-    isAtBottomRef,
+    isPinnedToBottom,
     scrollToBottom,
   ])
+
+  useEffect(() => {
+    if (!isChatActive || !contentEl || typeof ResizeObserver === 'undefined') {
+      return
+    }
+
+    let frame: number | null = null
+    const scrollPinnedChat = () => {
+      if (!isPinnedToBottom()) return
+      if (frame !== null) {
+        window.cancelAnimationFrame(frame)
+      }
+      frame = window.requestAnimationFrame(() => {
+        frame = null
+        scrollToBottom('auto')
+      })
+    }
+
+    const observer = new ResizeObserver(scrollPinnedChat)
+    observer.observe(contentEl)
+
+    return () => {
+      if (frame !== null) {
+        window.cancelAnimationFrame(frame)
+      }
+      observer.disconnect()
+    }
+  }, [contentEl, isChatActive, isPinnedToBottom, scrollToBottom])
 
   const formatRelativeTime = useCallback(
     (dateStr: string) => {
