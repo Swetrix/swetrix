@@ -36,7 +36,7 @@
       "default": "./dist/captcha-loader.js"
     },
     "./captcha-loader": {
-      "types": "./dist/esnext/captcha-loader.d.ts",
+      "types": "./dist/esnext/index.d.ts",
       "import": "./dist/captcha-loader.esm.js",
       "require": "./dist/captcha-loader.cjs",
       "default": "./dist/captcha-loader.js"

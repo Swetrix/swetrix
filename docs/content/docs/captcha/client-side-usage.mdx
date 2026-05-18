@@ -36,8 +36,12 @@ import "@swetrix/captcha";
 The package automatically renders `.swecaptcha` elements when the DOM is ready. If you render the widget after the initial page load, you can call:
 
 ```javascript
-import { forceLoadCaptcha } from "@swetrix/captcha";
+import { forceLoadCaptcha, loadCaptcha } from "@swetrix/captcha";
 
+// Render any .swecaptcha elements that are not initialised yet.
+loadCaptcha();
+
+// Re-render all .swecaptcha elements, replacing existing widgets.
 forceLoadCaptcha();
 ```
 

@@ -52,6 +52,8 @@ const FRAME_HEIGHT = '66px'
 const getFrameID = (cid: string) => `${cid}-frame`
 
 const ids: string[] = []
+const captchaFrameOrigins = new Map<string, string>()
+const captchaFrameSources = new Map<string, MessageEventSource | null>()
 
 let messageListenerRegistered = false
 
@@ -203,6 +205,8 @@ const clearExistingCaptcha = (container: Element) => {
     const input = container.querySelector(`input[id="${cid}"]`)
 
     input?.remove()
+    captchaFrameOrigins.delete(cid)
+    captchaFrameSources.delete(cid)
 
     const cidIndex = ids.indexOf(cid)
     if (cidIndex > -1) {
@@ -225,6 +229,7 @@ const renderCaptcha = (container: Element, params: CaptchaParams) => {
   const input = generateHiddenInput(cParams)
 
   container.appendChild(frame)
+  captchaFrameSources.set(cParams.cid, frame.contentWindow)
   container.appendChild(input)
 }
 
@@ -254,6 +259,17 @@ const postMessageCallback = (pmEvent: MessageEvent) => {
   }
 
   if (!cid || !ids.includes(cid)) {
+    return
+  }
+
+  const expectedOrigin = captchaFrameOrigins.get(cid)
+  const expectedSource = captchaFrameSources.get(cid)
+
+  if (
+    (!expectedOrigin || pmEvent.origin !== expectedOrigin) &&
+    (!expectedSource || pmEvent.source !== expectedSource)
+  ) {
+    log(LOG_ACTIONS.error, `[PM -> ${event}] Unexpected origin: ${pmEvent.origin}`)
     return
   }
 
@@ -300,6 +316,7 @@ const generateCaptchaFrame = (params: CaptchaFrameParams) => {
     cid,
     theme: rawTheme,
   })
+  captchaFrameOrigins.set(cid, new URL(captchaFrame.src).origin)
   captchaFrame.style.height = FRAME_HEIGHT
   captchaFrame.title = 'Swetrix Captcha - Human verification'
   captchaFrame.style.border = 'none'
@@ -359,6 +376,9 @@ const parseParams = (container: Element): CaptchaParams => {
   return params
 }
 
+const isCaptchaRendered = (container: Element) =>
+  container.querySelector('iframe[id^="swetrix-captcha-"]') !== null
+
 const registerMessageListener = () => {
   const win = getWindow()
 
@@ -378,16 +398,16 @@ export const loadCaptcha = (forced = false) => {
     return
   }
 
-  if (!forced && 'swecaptcha' in win) {
-    log(LOG_ACTIONS.warn, 'Captcha is already loaded.')
-  }
-
   win.swecaptcha = true
   registerMessageListener()
 
   const containers = Array.from(doc.querySelectorAll(CAPTCHA_SELECTOR))
 
   for (const container of containers) {
+    if (!forced && isCaptchaRendered(container)) {
+      continue
+    }
+
     const params = parseParams(container)
 
     if (!validateParams(params)) {

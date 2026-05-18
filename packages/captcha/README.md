@@ -45,7 +45,10 @@ The package automatically renders `.swecaptcha` elements when the DOM is ready. 
 ```javascript
 import { forceLoadCaptcha, loadCaptcha } from '@swetrix/captcha'
 
+// Render any .swecaptcha elements that are not initialised yet.
 loadCaptcha()
+
+// Re-render all .swecaptcha elements, replacing existing widgets.
 forceLoadCaptcha()
 ```
 
