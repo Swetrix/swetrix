@@ -12,6 +12,8 @@ import {
   StripeIcon,
   PaddleIcon,
   RevenueApiIcon,
+  HttpRequestIcon,
+  NodeIcon,
 } from "@/components/provider-icons";
 import {
   EmailChannelIcon,
@@ -46,6 +48,8 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     StripeIcon,
     PaddleIcon,
     RevenueApiIcon,
+    HttpRequestIcon,
+    NodeIcon,
     EmailChannelIcon,
     TelegramChannelIcon,
     DiscordChannelIcon,

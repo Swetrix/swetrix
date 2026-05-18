@@ -9,8 +9,12 @@ You can use the CAPTCHA widget on any page of your website by using our CAPTCHA 
 
 ## Installation
 
-<Tabs items={["CDN", "npm"]}>
-<Tab value="CDN">
+<Tabs defaultValue="html">
+<TabsList>
+  <TabsTrigger value="html"><CodeIcon /> HTML script tag</TabsTrigger>
+  <TabsTrigger value="npm"><NpmIcon /> npm package</TabsTrigger>
+</TabsList>
+<TabsContent value="html">
 
 The easiest way to add the CAPTCHA script to your website is to edit the HTML code of your website. To do this, paste the following code snippet into the header section (`<head>` tag) of your website:
 
@@ -18,8 +22,8 @@ The easiest way to add the CAPTCHA script to your website is to edit the HTML co
 <script src="https://cdn.swetrixcaptcha.com/captcha-loader.js" defer></script>
 ```
 
-</Tab>
-<Tab value="npm">
+</TabsContent>
+<TabsContent value="npm">
 
 Install the package with your package manager:
 
@@ -45,7 +49,7 @@ loadCaptcha();
 forceLoadCaptcha();
 ```
 
-</Tab>
+</TabsContent>
 </Tabs>
 
 ## Usage

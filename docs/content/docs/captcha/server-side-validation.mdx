@@ -14,8 +14,12 @@ Token validation can only be performed once, if you try to validate the same tok
 
 </Callout>
 
-<Tabs items={["HTTP request", "Node.js library"]}>
-<Tab value="HTTP request">
+<Tabs defaultValue="http">
+<TabsList>
+  <TabsTrigger value="http"><HttpRequestIcon /> HTTP request</TabsTrigger>
+  <TabsTrigger value="node"><NodeIcon /> Node.js library</TabsTrigger>
+</TabsList>
+<TabsContent value="http">
 
 To validate the token, you have to send a POST request to the `https://api.swetrix.com/v1/captcha/validate` URL, with the following parameters:
 
@@ -62,8 +66,8 @@ curl -X POST\
   https://api.swetrix.com/v1/captcha/validate
 ```
 
-</Tab>
-<Tab value="Node.js library">
+</TabsContent>
+<TabsContent value="node">
 
 You can use the [@swetrix/captcha-validator](https://www.npmjs.com/package/@swetrix/captcha-validator) package to validate the token in your Node.js project.
 
@@ -92,5 +96,5 @@ validateToken("CAPTCHA_TOKEN", "YOUR_SECRET_KEY").then((result) => {
 });
 ```
 
-</Tab>
+</TabsContent>
 </Tabs>
