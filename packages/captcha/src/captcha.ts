@@ -3,13 +3,46 @@ import { logger } from './logger'
 
 export {}
 
-// @ts-ignore
-const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false
+declare global {
+  interface Window {
+    __SWETRIX_API_URL?: string
+    __SWETRIX_CAPTCHA_ASSET_URL?: string
+    __SWETRIX_CAPTCHA_DEV?: boolean
+    __SWETRIX_CAPTCHA_ID?: string
+    __SWETRIX_PROJECT_ID?: string
+  }
+}
 
+const DEFAULT_ASSET_BASE_URL = 'https://cdn.swetrixcaptcha.com/dist/'
+const getWindow = () => (typeof window === 'undefined' ? undefined : window)
+const isDevelopment = getWindow()?.__SWETRIX_CAPTCHA_DEV || false
 const DEFAULT_API_URL = isDevelopment ? 'http://localhost:5005/v1/captcha' : 'https://api.swetrixcaptcha.com/v1/captcha'
-// @ts-ignore
-const API_URL: string = window.__SWETRIX_API_URL || DEFAULT_API_URL
-const WORKER_URL = isDevelopment ? './pow-worker.js' : 'https://cdn.swetrixcaptcha.com/pow-worker.js'
+const API_URL: string = getWindow()?.__SWETRIX_API_URL || DEFAULT_API_URL
+const normalizeAssetBaseURL = (assetBaseUrl: string) => {
+  const fallbackBase = getWindow()?.location.href
+
+  try {
+    const url = fallbackBase ? new URL(assetBaseUrl, fallbackBase) : new URL(assetBaseUrl)
+    return url.href.endsWith('/') ? url.href : `${url.href}/`
+  } catch {
+    return DEFAULT_ASSET_BASE_URL
+  }
+}
+const getScriptAssetBaseURL = () => {
+  if (typeof document === 'undefined') {
+    return DEFAULT_ASSET_BASE_URL
+  }
+
+  const currentScript = document.currentScript as HTMLScriptElement | null
+
+  if (!currentScript?.src) {
+    return DEFAULT_ASSET_BASE_URL
+  }
+
+  return normalizeAssetBaseURL(new URL('.', currentScript.src).href)
+}
+const getAssetBaseURL = () => normalizeAssetBaseURL(getWindow()?.__SWETRIX_CAPTCHA_ASSET_URL || getScriptAssetBaseURL())
+const WORKER_URL = new URL('pow-worker.js', getAssetBaseURL()).toString()
 const MSG_IDENTIFIER = 'swetrix-captcha'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 
@@ -74,8 +107,7 @@ const sendMessageToLoader = (event: IFRAME_MESSAGE_TYPES, data = {}) => {
     {
       event,
       type: MSG_IDENTIFIER,
-      // @ts-ignore
-      cid: window.__SWETRIX_CAPTCHA_ID,
+      cid: getWindow()?.__SWETRIX_CAPTCHA_ID,
       ...data,
     },
     '*',
@@ -257,8 +289,7 @@ const generateChallenge = async (): Promise<PowChallenge | null> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        // @ts-ignore
-        pid: window.__SWETRIX_PROJECT_ID,
+        pid: getWindow()?.__SWETRIX_PROJECT_ID,
       }),
     })
 
@@ -286,8 +317,7 @@ const verifySolution = async (challenge: string, nonce: number, solution: string
         challenge,
         nonce,
         solution,
-        // @ts-ignore
-        pid: window.__SWETRIX_PROJECT_ID,
+        pid: getWindow()?.__SWETRIX_PROJECT_ID,
       }),
     })
 

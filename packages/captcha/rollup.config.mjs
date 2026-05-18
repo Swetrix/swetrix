@@ -1,4 +1,3 @@
-// import commonjs from '@rollup/plugin-commonjs'
 import copy from 'rollup-plugin-copy'
 import typescript from '@rollup/plugin-typescript'
 import terser from '@rollup/plugin-terser'
@@ -6,58 +5,48 @@ import pkg from './package.json' with { type: 'json' }
 import { createRequire } from 'node:module'
 
 const CAPTCHA_PATH = 'src/captcha.ts'
-const CAPTCHA_LOADER_PATH = 'src/captcha-loader.ts'
+const CAPTCHA_LOADER_PATH = 'src/index.ts'
 const POW_WORKER_PATH = 'src/pow-worker.ts'
 
 const require = createRequire(import.meta.url)
 
+const typescriptPlugin = () =>
+  typescript({
+    outDir: './dist',
+    sourceMap: true,
+    tslib: require.resolve('tslib'),
+  })
+
 export default [
+  {
+    input: CAPTCHA_LOADER_PATH,
+    output: [
+      { file: pkg.main, format: 'cjs', sourcemap: true, exports: 'named' },
+      { file: pkg.module, format: 'es', sourcemap: true },
+    ],
+    plugins: [typescriptPlugin()],
+  },
+  {
+    input: CAPTCHA_LOADER_PATH,
+    output: [{ file: pkg.browser, format: 'umd', name: 'swetrixCaptcha', sourcemap: true, exports: 'named' }],
+    plugins: [typescriptPlugin(), terser()],
+  },
   {
     input: CAPTCHA_PATH,
     output: [
       {
         file: pkg.captcha,
-        format: 'umd',
+        format: 'iife',
         name: 'captcha',
         sourcemap: true,
       },
     ],
     plugins: [
-      typescript({
-        outDir: './dist',
-        sourceMap: true,
-        tslib: require.resolve('tslib'),
-      }),
-
-      // copying assets
+      typescriptPlugin(),
       copy({
-        targets: [
-          { src: 'src/assets/*', dest: 'dist/assets' },
-          { src: 'src/pages/*', dest: 'dist/pages' },
-        ],
+        targets: [{ src: 'src/pages/*', dest: 'dist/pages' }],
       }),
       terser(),
-      // commonjs(),
-    ],
-  },
-  {
-    input: CAPTCHA_LOADER_PATH,
-    output: [
-      {
-        file: pkg.captchaloader,
-        format: 'umd',
-        name: 'captcha-loader',
-        sourcemap: true,
-      },
-    ],
-    plugins: [
-      typescript({
-        outDir: './dist',
-        sourceMap: true,
-        tslib: require.resolve('tslib'),
-      }),
-      terser(),
-      // commonjs(),
     ],
   },
   {
@@ -70,14 +59,6 @@ export default [
         sourcemap: true,
       },
     ],
-    plugins: [
-      typescript({
-        outDir: './dist',
-        sourceMap: true,
-        tslib: require.resolve('tslib'),
-      }),
-      terser(),
-      // commonjs(),
-    ],
+    plugins: [typescriptPlugin(), terser()],
   },
 ]
