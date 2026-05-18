@@ -1,18 +1,25 @@
-// @ts-ignore
-const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false
-
 const CAPTCHA_SELECTOR = '.swecaptcha'
 const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'pl', 'uk', 'hu'] as const
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
 const DEFAULT_LOCALE: SupportedLocale = 'en'
-const LIGHT_CAPTCHA_IFRAME_URL = isDevelopment ? './light.html' : 'https://cdn.swetrixcaptcha.com/pages/light'
-const DARK_CAPTCHA_IFRAME_URL = isDevelopment ? './dark.html' : 'https://cdn.swetrixcaptcha.com/pages/dark'
+const DEFAULT_ASSET_BASE_URL = 'https://cdn.swetrixcaptcha.com/dist/'
 const DEFAULT_RESPONSE_INPUT_NAME = 'swetrix-captcha-response'
 const MESSAGE_IDENTIFIER = 'swetrix-captcha'
 const ID_PREFIX = 'swetrix-captcha-'
-const THEMES = ['light', 'dark', 'auto']
+const THEMES = ['light', 'dark', 'auto'] as const
 const DEFAULT_THEME = 'auto'
 const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
+const SCRIPT_NAME_REGEX = /(?:^|\/)captcha-loader(?:\.[\w-]+)?\.js(?:[?#]|$)/
+const LEGACY_CDN_HOST = 'cdn.swetrixcaptcha.com'
+
+declare global {
+  interface Window {
+    __SWETRIX_CAPTCHA_ASSET_URL?: string
+    __SWETRIX_CAPTCHA_DEV?: boolean
+    swecaptcha?: boolean
+    swetrixCaptchaForceLoad?: () => void
+  }
+}
 
 enum LOG_ACTIONS {
   log = 'log',
@@ -20,6 +27,21 @@ enum LOG_ACTIONS {
   warn = 'warn',
   info = 'info',
 }
+
+interface CaptchaParams {
+  pid: string | null
+  respName: string
+  theme: string
+  lang: SupportedLocale
+  assetBaseUrl: string
+  apiUrl?: string
+}
+
+type CaptchaFrameParams = CaptchaParams & {
+  cid: string
+}
+
+type CaptchaQueryParams = Record<string, string | null | undefined>
 
 const DUMMY_PIDS = ['AP00000000000', 'FAIL000000000']
 
@@ -30,16 +52,67 @@ const FRAME_HEIGHT = '66px'
 const getFrameID = (cid: string) => `${cid}-frame`
 
 const ids: string[] = []
+const captchaFrameOrigins = new Map<string, string>()
+const captchaFrameSources = new Map<string, MessageEventSource | null>()
+
+let messageListenerRegistered = false
 
 const log = (status: LOG_ACTIONS, text: string) => {
   console[status](`[Swetrix Captcha] ${text}`)
 }
 
+const getWindow = () => (typeof window === 'undefined' ? undefined : window)
+
+const getDocument = () => (typeof document === 'undefined' ? undefined : document)
+
+const normalizeAssetBaseURL = (assetBaseUrl: string) => {
+  const fallbackBase = getWindow()?.location.href
+
+  try {
+    const url = fallbackBase ? new URL(assetBaseUrl, fallbackBase) : new URL(assetBaseUrl)
+    return url.href.endsWith('/') ? url.href : `${url.href}/`
+  } catch {
+    return DEFAULT_ASSET_BASE_URL
+  }
+}
+
+const getScriptAssetBaseURL = () => {
+  const doc = getDocument()
+  if (!doc) {
+    return DEFAULT_ASSET_BASE_URL
+  }
+
+  const currentScript = doc.currentScript as HTMLScriptElement | null
+  const scripts = [
+    ...(currentScript?.src ? [currentScript] : []),
+    ...Array.from(doc.scripts).reverse(),
+  ]
+  const loaderScript = scripts.find((script) => SCRIPT_NAME_REGEX.test(script.src))
+
+  if (!loaderScript?.src) {
+    return DEFAULT_ASSET_BASE_URL
+  }
+
+  if (new URL(loaderScript.src).hostname === LEGACY_CDN_HOST) {
+    return DEFAULT_ASSET_BASE_URL
+  }
+
+  return normalizeAssetBaseURL(new URL('.', loaderScript.src).href)
+}
+
+const resolveAssetBaseURL = (container: Element) => {
+  const configuredAssetBaseURL =
+    container.getAttribute('data-asset-url') ||
+    container.getAttribute('data-assets-url') ||
+    getWindow()?.__SWETRIX_CAPTCHA_ASSET_URL
+
+  return normalizeAssetBaseURL(configuredAssetBaseURL || getScriptAssetBaseURL())
+}
+
 const detectPreferredTheme = (): 'light' | 'dark' => {
-  if (typeof window !== 'undefined' && window.matchMedia) {
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark'
-    }
+  const win = getWindow()
+  if (win?.matchMedia?.('(prefers-color-scheme: dark)').matches) {
+    return 'dark'
   }
 
   return 'light'
@@ -77,8 +150,8 @@ const detectBrowserLocale = (): SupportedLocale => {
   return DEFAULT_LOCALE
 }
 
-const findHtmlLangAttribute = (element: Element): string | null => {
-  let current: Element | null = element
+const findHtmlLangAttribute = (element: Element | null): string | null => {
+  let current = element
 
   while (current) {
     const lang = current.getAttribute('lang')
@@ -92,55 +165,49 @@ const findHtmlLangAttribute = (element: Element): string | null => {
 }
 
 const detectLanguage = (container: Element): SupportedLocale => {
-  // First priority: data-lang attribute on the widget element
   const forcedLang = container.getAttribute('data-lang')
   if (forcedLang) {
     return normalizeLocale(forcedLang)
   }
 
-  // Second priority: lang attribute on ancestor elements (e.g., <html lang="de">)
-  const ancestorLang = findHtmlLangAttribute(container.parentElement as Element)
+  const ancestorLang = findHtmlLangAttribute(container.parentElement)
   if (ancestorLang) {
     return normalizeLocale(ancestorLang)
   }
 
-  // Fallback: browser language
   return detectBrowserLocale()
 }
 
-const resolveTheme = (theme: string | null): 'light' | 'dark' => {
-  if (!theme || theme === 'auto') {
-    return detectPreferredTheme()
+const resolveTheme = (theme: string): 'light' | 'dark' => {
+  if (theme === 'light' || theme === 'dark') {
+    return theme
   }
 
-  return theme as 'light' | 'dark'
+  return detectPreferredTheme()
 }
 
-const appendParamsToURL = (url: string, params: any) => {
-  const queryString = Object.keys(params)
-    .map((key) => {
-      return `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
-    })
-    .join('&')
+const appendParamsToURL = (url: string, params: CaptchaQueryParams) => {
+  const urlObject = new URL(url, getWindow()?.location.href)
 
-  return `${url}?${queryString}`
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== null && value !== undefined) {
+      urlObject.searchParams.set(key, value)
+    }
+  })
+
+  return urlObject.toString()
 }
 
 const clearExistingCaptcha = (container: Element) => {
-  // Remove existing iframe(s) that belong to this captcha
   const existingFrames = container.querySelectorAll('iframe[id^="swetrix-captcha-"]')
   existingFrames.forEach((frame) => {
-    const frameId = frame.id
-    // Extract cid from frame id (e.g., "swetrix-captcha-abc123-frame" -> "swetrix-captcha-abc123")
-    const cid = frameId.replace('-frame', '')
-
-    // Remove the corresponding hidden input
+    const cid = frame.id.replace('-frame', '')
     const input = container.querySelector(`input[id="${cid}"]`)
-    if (input) {
-      input.remove()
-    }
 
-    // Remove the cid from ids array
+    input?.remove()
+    captchaFrameOrigins.delete(cid)
+    captchaFrameSources.delete(cid)
+
     const cidIndex = ids.indexOf(cid)
     if (cidIndex > -1) {
       ids.splice(cidIndex, 1)
@@ -150,20 +217,19 @@ const clearExistingCaptcha = (container: Element) => {
   })
 }
 
-const renderCaptcha = (container: Element, params: any) => {
-  // Clear any existing captcha in this container before rendering
+const renderCaptcha = (container: Element, params: CaptchaParams) => {
   clearExistingCaptcha(container)
 
-  const cid = generateRandomID()
   const cParams = {
     ...params,
-    cid, // CAPTCHA ID
+    cid: generateRandomID(),
   }
 
   const frame = generateCaptchaFrame(cParams)
   const input = generateHiddenInput(cParams)
 
   container.appendChild(frame)
+  captchaFrameSources.set(cParams.cid, frame.contentWindow)
   container.appendChild(input)
 }
 
@@ -180,9 +246,7 @@ const generateRandomID = (): string => {
 }
 
 const postMessageCallback = (pmEvent: MessageEvent) => {
-  // TODO: Validate origin
-
-  const { data } = pmEvent
+  const data = pmEvent.data as { type?: string; cid?: string; event?: string; token?: string } | null
 
   if (!data) {
     return
@@ -198,7 +262,18 @@ const postMessageCallback = (pmEvent: MessageEvent) => {
     return
   }
 
-  const input = document.getElementById(cid)
+  const expectedOrigin = captchaFrameOrigins.get(cid)
+  const expectedSource = captchaFrameSources.get(cid)
+
+  if (
+    (!expectedOrigin || pmEvent.origin !== expectedOrigin) &&
+    (!expectedSource || pmEvent.source !== expectedSource)
+  ) {
+    log(LOG_ACTIONS.error, `[PM -> ${event}] Unexpected origin: ${pmEvent.origin}`)
+    return
+  }
+
+  const input = getDocument()?.getElementById(cid) as HTMLInputElement | null
   const inputExists = input !== null
 
   switch (event) {
@@ -210,31 +285,18 @@ const postMessageCallback = (pmEvent: MessageEvent) => {
         return
       }
 
-      // @ts-ignore
-      input.value = token
+      input.value = token || ''
 
       break
     }
 
-    case 'failure': {
-      if (!inputExists) {
-        log(LOG_ACTIONS.error, '[PM -> failure] Input element does not exist.')
-        return
-      }
-
-      // @ts-ignore
-      input.value = ''
-
-      break
-    }
-
+    case 'failure':
     case 'tokenExpired': {
       if (!inputExists) {
         log(LOG_ACTIONS.error, '[PM -> failure] Input element does not exist.')
         return
       }
 
-      // @ts-ignore
       input.value = ''
 
       break
@@ -242,16 +304,19 @@ const postMessageCallback = (pmEvent: MessageEvent) => {
   }
 }
 
-const generateCaptchaFrame = (params: any) => {
-  const { theme: rawTheme } = params
+const generateCaptchaFrame = (params: CaptchaFrameParams) => {
+  const { assetBaseUrl, cid, theme: rawTheme, ...queryParams } = params
   const theme = resolveTheme(rawTheme)
   const captchaFrame = document.createElement('iframe')
+  const captchaPage = theme === 'dark' ? 'pages/dark.html' : 'pages/light.html'
 
-  captchaFrame.id = getFrameID(params.cid)
-  captchaFrame.src =
-    theme === 'dark'
-      ? appendParamsToURL(DARK_CAPTCHA_IFRAME_URL, params)
-      : appendParamsToURL(LIGHT_CAPTCHA_IFRAME_URL, params)
+  captchaFrame.id = getFrameID(cid)
+  captchaFrame.src = appendParamsToURL(new URL(captchaPage, assetBaseUrl).toString(), {
+    ...queryParams,
+    cid,
+    theme: rawTheme,
+  })
+  captchaFrameOrigins.set(cid, new URL(captchaFrame.src).origin)
   captchaFrame.style.height = FRAME_HEIGHT
   captchaFrame.title = 'Swetrix Captcha - Human verification'
   captchaFrame.style.border = 'none'
@@ -264,7 +329,7 @@ const generateCaptchaFrame = (params: any) => {
   return captchaFrame
 }
 
-const generateHiddenInput = (params: any) => {
+const generateHiddenInput = (params: CaptchaFrameParams) => {
   const { cid } = params
   const input = document.createElement('input')
 
@@ -278,10 +343,10 @@ const generateHiddenInput = (params: any) => {
   return input
 }
 
-const validateParams = (params: any) => {
+const validateParams = (params: CaptchaParams) => {
   const { theme, pid } = params
 
-  if (theme && !THEMES.includes(theme)) {
+  if (theme && !THEMES.includes(theme as (typeof THEMES)[number])) {
     log(LOG_ACTIONS.error, `Invalid data-theme parameter: ${theme}. Valid options are: ${THEMES.join(', ')}`)
     return false
   }
@@ -294,15 +359,15 @@ const validateParams = (params: any) => {
   return true
 }
 
-const parseParams = (container: Element): object => {
-  const params: Record<string, string | null> = {
+const parseParams = (container: Element): CaptchaParams => {
+  const params: CaptchaParams = {
     pid: container.getAttribute('data-project-id'),
     respName: container.getAttribute('data-response-input-name') || DEFAULT_RESPONSE_INPUT_NAME,
     theme: container.getAttribute('data-theme') || DEFAULT_THEME,
     lang: detectLanguage(container),
+    assetBaseUrl: resolveAssetBaseURL(container),
   }
 
-  // Optional custom API URL
   const apiUrl = container.getAttribute('data-api-url')
   if (apiUrl) {
     params.apiUrl = apiUrl
@@ -311,19 +376,38 @@ const parseParams = (container: Element): object => {
   return params
 }
 
-const main = (forced = false) => {
-  if (!forced && 'swecaptcha' in window) {
-    log(LOG_ACTIONS.warn, 'Captcha is already loaded.')
+const isCaptchaRendered = (container: Element) =>
+  container.querySelector('iframe[id^="swetrix-captcha-"]') !== null
+
+const registerMessageListener = () => {
+  const win = getWindow()
+
+  if (!win || messageListenerRegistered) {
+    return
   }
 
-  // TODO: Add some callbacks here
-  // @ts-ignore
-  window.swecaptcha = true
-  window.addEventListener('message', postMessageCallback)
+  win.addEventListener('message', postMessageCallback)
+  messageListenerRegistered = true
+}
 
-  const containers = Array.from(document.querySelectorAll(CAPTCHA_SELECTOR))
+export const loadCaptcha = (forced = false) => {
+  const win = getWindow()
+  const doc = getDocument()
+
+  if (!win || !doc) {
+    return
+  }
+
+  win.swecaptcha = true
+  registerMessageListener()
+
+  const containers = Array.from(doc.querySelectorAll(CAPTCHA_SELECTOR))
 
   for (const container of containers) {
+    if (!forced && isCaptchaRendered(container)) {
+      continue
+    }
+
     const params = parseParams(container)
 
     if (!validateParams(params)) {
@@ -335,7 +419,24 @@ const main = (forced = false) => {
   }
 }
 
-// @ts-ignore
-window.swetrixCaptchaForceLoad = () => main(true)
+export const forceLoadCaptcha = () => loadCaptcha(true)
 
-document.addEventListener('DOMContentLoaded', () => main())
+const setupCaptcha = () => {
+  const win = getWindow()
+  const doc = getDocument()
+
+  if (!win || !doc) {
+    return
+  }
+
+  win.swetrixCaptchaForceLoad = forceLoadCaptcha
+
+  if (doc.readyState === 'loading') {
+    doc.addEventListener('DOMContentLoaded', () => loadCaptcha(), { once: true })
+    return
+  }
+
+  loadCaptcha()
+}
+
+setupCaptcha()

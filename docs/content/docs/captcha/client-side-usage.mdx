@@ -21,7 +21,29 @@ The easiest way to add the CAPTCHA script to your website is to edit the HTML co
 </Tab>
 <Tab value="npm">
 
-**Not yet supported**
+Install the package with your package manager:
+
+```bash
+npm install @swetrix/captcha
+```
+
+Then import it in your browser bundle:
+
+```javascript
+import "@swetrix/captcha";
+```
+
+The package automatically renders `.swecaptcha` elements when the DOM is ready. If you render the widget after the initial page load, you can call:
+
+```javascript
+import { forceLoadCaptcha, loadCaptcha } from "@swetrix/captcha";
+
+// Render any .swecaptcha elements that are not initialised yet.
+loadCaptcha();
+
+// Re-render all .swecaptcha elements, replacing existing widgets.
+forceLoadCaptcha();
+```
 
 </Tab>
 </Tabs>
@@ -49,6 +71,7 @@ You can customise the appearance of the CAPTCHA widget by adding the following a
 | `data-response-input-name` | string | Name of the token input element. Default: `swetrix-captcha-response`.                                                                                                                                                                                   |
 | `data-api-url`             | string | The URL of the CAPTCHA API. Default: `https://api.swetrixcaptcha.com/v1/captcha`. If you're self-hosting Swetrix CE, you should put the URL of your API instance here, like `[BASE_URL]/backend/v1/captcha`. Swetrix Cloud users should leave it as is. |
 | `data-lang`                | string | Force a specific language for the widget (see [Language support](#language-support)).                                                                                                                                                                   |
+| `data-asset-url`           | string | The URL where the CAPTCHA package assets are hosted. Default: `https://cdn.swetrixcaptcha.com/dist/`.                                                                                                                                                   |
 
 ### Language support
 

@@ -19,21 +19,48 @@
     "type": "git",
     "url": "git+https://github.com/Swetrix/swetrix.git"
   },
+  "funding": "https://github.com/sponsors/Swetrix",
   "type": "module",
+  "main": "dist/captcha-loader.cjs",
+  "module": "dist/captcha-loader.esm.js",
+  "browser": "dist/captcha-loader.js",
+  "unpkg": "dist/captcha-loader.js",
+  "jsdelivr": "dist/captcha-loader.js",
   "typings": "dist/esnext/index.d.ts",
-  "esnext": "dist/esnext/index.js",
+  "esnext": "dist/captcha-loader.esm.js",
   "exports": {
     ".": {
       "types": "./dist/esnext/index.d.ts",
-      "import": "./dist/esnext/index.js",
-      "require": "./dist/captcha.cjs.js",
-      "default": "./dist/captcha.js"
-    }
+      "import": "./dist/captcha-loader.esm.js",
+      "require": "./dist/captcha-loader.cjs",
+      "default": "./dist/captcha-loader.js"
+    },
+    "./captcha-loader": {
+      "types": "./dist/esnext/index.d.ts",
+      "import": "./dist/captcha-loader.esm.js",
+      "require": "./dist/captcha-loader.cjs",
+      "default": "./dist/captcha-loader.js"
+    },
+    "./dist/captcha-loader.js": "./dist/captcha-loader.js",
+    "./dist/captcha.js": "./dist/captcha.js",
+    "./dist/pow-worker.js": "./dist/pow-worker.js",
+    "./dist/pages/light.html": "./dist/pages/light.html",
+    "./dist/pages/dark.html": "./dist/pages/dark.html",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "prebuild": "rimraf dist",
+    "prepack": "npm run build",
     "prepublish": "npm run build",
-    "build": "rollup -c",
+    "build": "rollup -c && npm run tsc",
     "start": "rollup -c -w",
     "tsc": "tsc -p tsconfig.esnext.json"
   },

@@ -20,12 +20,36 @@ See the full documentation at https://docs.swetrix.com/captcha/introduction
 
 ## Usage
 
+### Script tag
+
 ```html
 <div class="swecaptcha" 
      data-project-id="YOUR_PROJECT_ID" 
      data-theme="auto">
 </div>
 <script src="https://cdn.swetrixcaptcha.com/captcha-loader.js" defer></script>
+```
+
+### npm
+
+```bash
+npm install @swetrix/captcha
+```
+
+```javascript
+import '@swetrix/captcha'
+```
+
+The package automatically renders `.swecaptcha` elements when the DOM is ready. You can also trigger a reload manually:
+
+```javascript
+import { forceLoadCaptcha, loadCaptcha } from '@swetrix/captcha'
+
+// Render any .swecaptcha elements that are not initialised yet.
+loadCaptcha()
+
+// Re-render all .swecaptcha elements, replacing existing widgets.
+forceLoadCaptcha()
 ```
 
 ### Options
@@ -36,6 +60,7 @@ See the full documentation at https://docs.swetrix.com/captcha/introduction
 | `data-theme` | Color theme | `auto`, `light`, `dark` | `auto` |
 | `data-response-input-name` | Hidden input name | Any string | `swetrix-captcha-response` |
 | `data-lang` | Force a specific language | `en`, `de`, `fr`, `pl`, `uk`, `hu` | Auto-detected |
+| `data-asset-url` | Custom URL for CAPTCHA package assets | Any absolute or relative URL | `https://cdn.swetrixcaptcha.com/dist/` |
 
 ### Language Support
 
