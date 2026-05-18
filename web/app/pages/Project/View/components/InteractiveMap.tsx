@@ -6,7 +6,7 @@ import {
 } from '@phosphor-icons/react'
 import cx from 'clsx'
 import { scalePow, scaleThreshold } from 'd3-scale'
-import { Feature, GeoJsonObject } from 'geojson'
+import type { Feature, GeoJsonObject } from 'geojson'
 import { Layer, Path } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import _round from 'lodash/round'

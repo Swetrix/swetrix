@@ -4,7 +4,6 @@ import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezonePlugin from 'dayjs/plugin/timezone'
-import filesaver from 'file-saver'
 import type i18next from 'i18next'
 import JSZip from 'jszip'
 import _fill from 'lodash/fill'
@@ -67,6 +66,7 @@ import {
   escapeHtml,
 } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
+import { downloadBlob } from '~/utils/download'
 
 import { TrafficLogResponse } from './interfaces/traffic'
 
@@ -75,8 +75,6 @@ dayjs.extend(timezonePlugin)
 
 // Max length of annotation text displayed on chart (truncated with "...")
 const ANNOTATION_CHART_TEXT_MAX_LENGTH = 25
-
-const { saveAs } = filesaver
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
@@ -238,7 +236,7 @@ const onCSVExportClick = (
   })
 
   zip.generateAsync({ type: 'blob' }).then((content) => {
-    saveAs(content, getExportFilename(`swetrix-${pid}`))
+    downloadBlob(content, getExportFilename(`swetrix-${pid}`))
   })
 }
 
