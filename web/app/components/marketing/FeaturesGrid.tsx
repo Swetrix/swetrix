@@ -8,9 +8,11 @@ import {
   GaugeIcon,
   MegaphoneIcon,
   CookieIcon,
+  RobotIcon,
   ShieldCheckIcon,
   TerminalWindowIcon,
   UserListIcon,
+  UsersThreeIcon,
 } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 
@@ -21,9 +23,11 @@ const FEATURES = [
   { icon: CookieIcon, key: 'privacy', className: 'text-indigo-500' },
   { icon: CursorClickIcon, key: 'events', className: 'text-purple-500' },
   { icon: MegaphoneIcon, key: 'campaigns', className: 'text-blue-500' },
+  { icon: RobotIcon, key: 'botBlocking', className: 'text-slate-500' },
   { icon: GaugeIcon, key: 'perf', className: 'text-amber-500' },
   { icon: BugIcon, key: 'errors', className: 'text-red-500' },
   { icon: UserListIcon, key: 'sessions', className: 'text-indigo-500' },
+  { icon: UsersThreeIcon, key: 'organisations', className: 'text-emerald-500' },
   { icon: FlaskIcon, key: 'experiments', className: 'text-violet-500' },
   { icon: ShieldCheckIcon, key: 'captcha', className: 'text-teal-500' },
   { icon: CodeIcon, key: 'opensource', className: 'text-green-500' },

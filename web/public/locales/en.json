@@ -683,6 +683,10 @@
         "title": "Campaigns & UTMs",
         "desc": "See which campaigns drive traffic and revenue. Track UTM parameters and measure ROI."
       },
+      "botBlocking": {
+        "title": "Bot blocking",
+        "desc": "Choose basic or strict filters to block bot traffic, datacenter IPs, spam referrers and probes."
+      },
       "perf": {
         "title": "Performance monitoring",
         "desc": "Monitor real page load times from actual users. Spot slowdowns before they hurt conversions."
@@ -694,6 +698,10 @@
       "sessions": {
         "title": "Session analysis",
         "desc": "Follow individual user journeys across pages. Understand how visitors navigate your site."
+      },
+      "organisations": {
+        "title": "Organisations",
+        "desc": "Invite teammates, assign roles and manage shared projects from one organisation workspace."
       },
       "experiments": {
         "title": "Experiments & Feature Flags",
