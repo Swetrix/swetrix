@@ -11,10 +11,12 @@ import { getAuthenticatedUser, loginUser, serverFetch } from '~/api/api.server'
 import { getOgImageUrl } from '~/lib/constants'
 import Signin from '~/pages/Auth/Signin'
 import { decidePostAuthRedirect } from '~/utils/auth'
+import { isLastAuthMethod } from '~/utils/authMethod'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   createHeadersWithCookies,
   createAuthCookies,
+  createLastAuthMethodCookie,
 } from '~/utils/session.server'
 
 export const meta: MetaFunction = () => {
@@ -66,6 +68,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const twoFactorAuthenticationCode =
       formData.get('twoFACode')?.toString() || ''
     const dontRemember = formData.get('dontRemember') === 'true'
+    const authMethod = formData.get('authMethod')?.toString()
 
     if (
       !twoFactorAuthenticationCode ||
@@ -111,6 +114,10 @@ export async function action({ request }: ActionFunctionArgs) {
       !dontRemember,
     )
 
+    if (isLastAuthMethod(authMethod)) {
+      cookies.push(createLastAuthMethodCookie(authMethod, !dontRemember))
+    }
+
     return redirect(user ? decidePostAuthRedirect(user) : '/dashboard', {
       headers: createHeadersWithCookies(cookies),
     })
@@ -153,7 +160,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
   return redirect(
     result.data?.user ? decidePostAuthRedirect(result.data.user) : '/dashboard',
-    { headers: createHeadersWithCookies(result.cookies) },
+    {
+      headers: createHeadersWithCookies([
+        ...result.cookies,
+        createLastAuthMethodCookie('email', !dontRemember),
+      ]),
+    },
   )
 }
 

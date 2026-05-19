@@ -12,7 +12,10 @@ import { getAuthenticatedUser, registerUser } from '~/api/api.server'
 import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import Signup from '~/pages/Auth/Signup'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
-import { createHeadersWithCookies } from '~/utils/session.server'
+import {
+  createHeadersWithCookies,
+  createLastAuthMethodCookie,
+} from '~/utils/session.server'
 import { MAX_PASSWORD_CHARS } from '~/utils/validator'
 
 export const meta: MetaFunction = () => {
@@ -104,7 +107,10 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   return redirect('/onboarding', {
-    headers: createHeadersWithCookies(result.cookies),
+    headers: createHeadersWithCookies([
+      ...result.cookies,
+      createLastAuthMethodCookie('email'),
+    ]),
   })
 }
 

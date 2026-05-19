@@ -21,7 +21,10 @@ import {
   type AuthMeResponse,
   type LinkSSOWithPasswordParams,
 } from '~/api/api.server'
-import { createAuthCookies } from '~/utils/session.server'
+import {
+  createAuthCookies,
+  createLastAuthMethodCookie,
+} from '~/utils/session.server'
 
 interface ProxyRequest {
   action:
@@ -97,10 +100,15 @@ export async function action({ request }: ActionFunctionArgs) {
           // Only set cookies if this is a success response (not linking required)
           if ('accessToken' in result.data) {
             const { accessToken, refreshToken } = result.data
+            const remember = body.remember ?? false
             const cookies = createAuthCookies(
               { accessToken, refreshToken },
-              body.remember ?? false,
+              remember,
             )
+
+            if (!result.data.user.isTwoFactorAuthenticationEnabled) {
+              cookies.push(createLastAuthMethodCookie(body.provider, remember))
+            }
 
             return data<ProxyResponse<SSOHashResponse>>(
               {
@@ -278,10 +286,11 @@ export async function action({ request }: ActionFunctionArgs) {
         if (result.data && 'accessToken' in result.data) {
           const { accessToken, refreshToken } =
             result.data as SSOHashSuccessResponse
-          const cookies = createAuthCookies(
-            { accessToken, refreshToken },
-            body.remember ?? false,
-          )
+          const remember = body.remember ?? false
+          const cookies = [
+            ...createAuthCookies({ accessToken, refreshToken }, remember),
+            createLastAuthMethodCookie(body.provider, remember),
+          ]
 
           return data<ProxyResponse<SSOHashResponse>>(
             {
