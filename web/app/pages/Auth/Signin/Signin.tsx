@@ -11,16 +11,19 @@ import {
 } from 'react-router'
 import { toast } from 'sonner'
 
+import AuthLastUsedBadge from '~/components/AuthLastUsedBadge'
 import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
 import { useAuthProxy } from '~/hooks/useAuthProxy'
+import { useLastAuthMethod } from '~/hooks/useLastAuthMethod'
 import { isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
-import { decidePostAuthRedirect } from '~/utils/auth'
 import { SSOProvider, SSOHashSuccessResponse } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { LoginActionData } from '~/routes/login'
+import { decidePostAuthRedirect } from '~/utils/auth'
+import { isLastAuthMethod, type LastAuthMethod } from '~/utils/authMethod'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
@@ -48,8 +51,11 @@ const Signin = () => {
   const [searchParams] = useSearchParams()
   const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
+  const lastAuthMethod = useLastAuthMethod()
 
   const [dontRemember, setDontRemember] = useState(false)
+  const [pendingAuthMethod, setPendingAuthMethod] =
+    useState<LastAuthMethod | null>(null)
 
   const [isSsoLoading, setIsSsoLoading] = useState(false)
 
@@ -80,6 +86,14 @@ const Signin = () => {
     searchParams.get('show_2fa_screen') === 'true' ||
     actionData?.requires2FA === true ||
     sso2FARequired
+  const authMethodParam = searchParams.get('auth_method')
+  const authMethodFromParams = isLastAuthMethod(authMethodParam)
+    ? authMethodParam
+    : null
+  const twoFAAuthMethod =
+    authMethodFromParams ||
+    pendingAuthMethod ||
+    (actionData?.requires2FA ? 'email' : null)
 
   // Check if we're in the linking flow
   const isLinkingRequired = linkingData !== null
@@ -117,6 +131,7 @@ const Signin = () => {
 
   const handleFormSubmit = () => {
     setClearedErrors(new Set())
+    setPendingAuthMethod('email')
   }
 
   const handle2FAInput = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -218,6 +233,7 @@ const Signin = () => {
 
           if (user.isTwoFactorAuthenticationEnabled) {
             setUser(user)
+            setPendingAuthMethod(provider)
             setSso2FARequired(true)
             setIsSsoLoading(false)
             return
@@ -262,6 +278,9 @@ const Signin = () => {
     formData.set('intent', 'submit-2fa')
     formData.set('twoFACode', twoFACode)
     formData.set('dontRemember', dontRemember.toString())
+    if (twoFAAuthMethod) {
+      formData.set('authMethod', twoFAAuthMethod)
+    }
 
     twoFAFetcher.submit(formData, { method: 'post' })
   }
@@ -483,16 +502,19 @@ const Signin = () => {
                     onClick={() => onSsoLogin('openid-connect')}
                     disabled={isLoading}
                     className='w-full'
+                    lastUsed={lastAuthMethod === 'openid-connect'}
                   />
                 ) : (
                   <>
                     <GoogleAuth
                       onClick={() => onSsoLogin('google')}
                       disabled={isLoading}
+                      lastUsed={lastAuthMethod === 'google'}
                     />
                     <GithubAuth
                       onClick={() => onSsoLogin('github')}
                       disabled={isLoading}
+                      lastUsed={lastAuthMethod === 'github'}
                     />
                   </>
                 )}
@@ -510,9 +532,10 @@ const Signin = () => {
                     as='span'
                     colour='muted'
                     size='sm'
-                    className='bg-gray-50 px-4 dark:bg-slate-950'
+                    className='inline-flex items-center gap-2 bg-gray-50 px-4 dark:bg-slate-950'
                   >
                     {t('auth.common.orContinueWith')} email
+                    {lastAuthMethod === 'email' ? <AuthLastUsedBadge /> : null}
                   </Text>
                 </div>
               </div>

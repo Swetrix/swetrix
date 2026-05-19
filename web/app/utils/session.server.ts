@@ -1,5 +1,11 @@
 import { redirect } from 'react-router'
 
+import {
+  LAST_AUTH_METHOD_COOKIE,
+  LAST_AUTH_METHOD_MAX_AGE,
+  type LastAuthMethod,
+} from '~/utils/authMethod'
+
 const ACCESS_TOKEN_COOKIE = 'access_token'
 const REFRESH_TOKEN_COOKIE = 'refresh_token'
 
@@ -146,6 +152,17 @@ export function createAuthCookies(
   }
 
   return cookies
+}
+
+export function createLastAuthMethodCookie(
+  method: LastAuthMethod,
+  remember = true,
+): string {
+  return buildCookieHeader(LAST_AUTH_METHOD_COOKIE, method, {
+    maxAge: remember ? LAST_AUTH_METHOD_MAX_AGE : undefined,
+    sameSite: 'Lax',
+    httpOnly: false,
+  })
 }
 
 /**

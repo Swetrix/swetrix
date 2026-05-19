@@ -683,6 +683,10 @@
         "title": "Campagnes et paramètres UTM",
         "desc": "Voyez quelles campagnes génèrent du trafic et des revenus. Suivez les paramètres UTM et mesurez le ROI."
       },
+      "botBlocking": {
+        "title": "Blocage des bots",
+        "desc": "Choisissez des filtres basiques ou stricts pour bloquer le trafic des bots, les IP de datacenters, les référents spam et les sondes."
+      },
       "perf": {
         "title": "Surveillance des performances",
         "desc": "Surveillez les temps de chargement réels des pages chez les utilisateurs. Repérez les ralentissements avant qu’ils n’impactent les conversions."
@@ -694,6 +698,10 @@
       "sessions": {
         "title": "Analyse des sessions",
         "desc": "Suivez les parcours individuels des utilisateurs d’une page à l’autre. Comprenez comment les visiteurs naviguent sur votre site."
+      },
+      "organisations": {
+        "title": "Organisations",
+        "desc": "Invitez des membres d'équipe, attribuez des rôles et gérez des projets partagés depuis un seul espace de travail d'organisation."
       },
       "experiments": {
         "title": "Expérimentations et Feature Flags",
@@ -820,6 +828,7 @@
       "google": "Google",
       "github": "GitHub",
       "oidc": "OpenID Connect",
+      "lastUsed": "Dernière utilisation",
       "orContinueWith": "Ou continuer avec"
     },
     "passwordStrength": {

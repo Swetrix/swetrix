@@ -11,10 +11,12 @@ import { Link } from '~/ui/Link'
 import { useNavigate, Form, useActionData, useNavigation } from 'react-router'
 import { toast } from 'sonner'
 
+import AuthLastUsedBadge from '~/components/AuthLastUsedBadge'
 import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
 import { useAuthProxy } from '~/hooks/useAuthProxy'
+import { useLastAuthMethod } from '~/hooks/useLastAuthMethod'
 import {
   HAVE_I_BEEN_PWNED_URL,
   isSelfhosted,
@@ -57,6 +59,7 @@ const Signup = () => {
   const navigate = useNavigate()
   const navigation = useNavigation()
   const actionData = useActionData<SignupActionData>()
+  const lastAuthMethod = useLastAuthMethod()
 
   const [tos, setTos] = useState(false)
   const [checkIfLeaked, setCheckIfLeaked] = useState(true)
@@ -191,7 +194,7 @@ const Signup = () => {
             setUser(user)
             navigate(
               localiseTo(
-                `${routes.signin}?show_2fa_screen=true`,
+                `${routes.signin}?show_2fa_screen=true&auth_method=${provider}`,
                 i18n.language,
               ),
             )
@@ -259,16 +262,19 @@ const Signup = () => {
                 onClick={() => onSsoLogin('openid-connect')}
                 disabled={isLoading}
                 className='w-full'
+                lastUsed={lastAuthMethod === 'openid-connect'}
               />
             ) : (
               <>
                 <GoogleAuth
                   onClick={() => onSsoLogin('google')}
                   disabled={isLoading}
+                  lastUsed={lastAuthMethod === 'google'}
                 />
                 <GithubAuth
                   onClick={() => onSsoLogin('github')}
                   disabled={isLoading}
+                  lastUsed={lastAuthMethod === 'github'}
                 />
               </>
             )}
@@ -286,9 +292,10 @@ const Signup = () => {
                 as='span'
                 colour='muted'
                 size='sm'
-                className='bg-gray-50 px-4 dark:bg-slate-950'
+                className='inline-flex items-center gap-2 bg-gray-50 px-4 dark:bg-slate-950'
               >
                 {t('auth.common.orContinueWith')} email
+                {lastAuthMethod === 'email' ? <AuthLastUsedBadge /> : null}
               </Text>
             </div>
           </div>

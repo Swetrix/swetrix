@@ -16,7 +16,10 @@ import {
 import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import InvitationSignup from '~/pages/Auth/Signup/InvitationSignup'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
-import { createHeadersWithCookies } from '~/utils/session.server'
+import {
+  createHeadersWithCookies,
+  createLastAuthMethodCookie,
+} from '~/utils/session.server'
 import { MAX_PASSWORD_CHARS } from '~/utils/validator'
 
 export const meta: MetaFunction = () => {
@@ -149,7 +152,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   return redirect('/dashboard', {
-    headers: createHeadersWithCookies(result.cookies),
+    headers: createHeadersWithCookies([
+      ...result.cookies,
+      createLastAuthMethodCookie('email'),
+    ]),
   })
 }
 

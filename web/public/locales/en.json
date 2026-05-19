@@ -828,6 +828,7 @@
       "google": "Google",
       "github": "Github",
       "oidc": "OpenID Connect",
+      "lastUsed": "Last used",
       "orContinueWith": "Or continue with"
     },
     "passwordStrength": {
