@@ -7,6 +7,7 @@ import Link from "next/link";
 
 const FEEDBACK_TTL_DAYS = 7;
 const FEEDBACK_TTL_MS = FEEDBACK_TTL_DAYS * 24 * 60 * 60 * 1000;
+const OTHER_FEEDBACK_MAX_LENGTH = 500;
 
 const NEGATIVE_REASONS = [
   "Content is out of date",
@@ -53,7 +54,14 @@ const persistFeedback = (pathname: string, answer: string, reason: string) => {
   }
 };
 
-const trackFeedback = async (answer: string, pathname: string, reason: string) => {
+const trackFeedback = async (
+  answer: string,
+  pathname: string,
+  reason: string,
+  otherFeedback = "",
+) => {
+  const trimmedOtherFeedback = otherFeedback.trim().slice(0, OTHER_FEEDBACK_MAX_LENGTH);
+
   try {
     await Swetrix.track({
       ev: "DOCS_FEEDBACK",
@@ -61,6 +69,7 @@ const trackFeedback = async (answer: string, pathname: string, reason: string) =
         answer,
         path: pathname,
         ...(reason ? { reason } : {}),
+        ...(trimmedOtherFeedback ? { feedback: trimmedOtherFeedback } : {}),
       },
     });
   } catch (errorReason) {
@@ -73,12 +82,15 @@ export function FeedbackWidget() {
   const [submitted, setSubmitted] = useState(false);
   const [showReasonForm, setShowReasonForm] = useState(false);
   const [reason, setReason] = useState("");
+  const [otherFeedback, setOtherFeedback] = useState("");
   const suppressed = useMemo(() => hasRecentFeedback(pathname), [pathname]);
+  const isOtherReason = reason === "Other";
 
   useEffect(() => {
     setSubmitted(false);
     setShowReasonForm(false);
     setReason("");
+    setOtherFeedback("");
   }, [pathname]);
 
   const onClickYes = async () => {
@@ -94,10 +106,14 @@ export function FeedbackWidget() {
   const onSubmitReason = async (event: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault?.();
     if (!reason) return;
-    await trackFeedback("No", pathname, reason);
+    await trackFeedback("No", pathname, reason, isOtherReason ? otherFeedback : "");
     persistFeedback(pathname, "No", reason);
     setSubmitted(true);
     setShowReasonForm(false);
+  };
+
+  const onChangeOtherFeedback = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setOtherFeedback(event.target.value.slice(0, OTHER_FEEDBACK_MAX_LENGTH));
   };
 
   return (
@@ -151,6 +167,34 @@ export function FeedbackWidget() {
                   </label>
                 ))}
               </div>
+              {isOtherReason ? (
+                <div className="mb-5 relative z-10">
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <label
+                      htmlFor="feedback-other-details"
+                      className="text-sm font-semibold text-slate-800 dark:text-slate-200"
+                    >
+                      Add details (optional)
+                    </label>
+                    <span
+                      id="feedback-other-details-count"
+                      className="text-xs text-slate-500 dark:text-slate-400"
+                    >
+                      {otherFeedback.length}/{OTHER_FEEDBACK_MAX_LENGTH}
+                    </span>
+                  </div>
+                  <textarea
+                    id="feedback-other-details"
+                    value={otherFeedback}
+                    onChange={onChangeOtherFeedback}
+                    maxLength={OTHER_FEEDBACK_MAX_LENGTH}
+                    rows={4}
+                    className="block w-full resize-y rounded-lg bg-white px-3 py-2 text-sm text-slate-900 ring-1 ring-inset ring-gray-300 transition-shadow placeholder:text-slate-400 hover:ring-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:bg-slate-950 dark:text-slate-100 dark:ring-slate-700/80 dark:placeholder:text-slate-500 dark:hover:ring-slate-600 dark:focus-visible:ring-slate-300"
+                    placeholder="What were you hoping to find?"
+                    aria-describedby="feedback-other-details-count"
+                  />
+                </div>
+              ) : null}
               <button
                 type="submit"
                 className="px-5 py-2.5 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-slate-800 dark:hover:bg-slate-200 relative z-10"
