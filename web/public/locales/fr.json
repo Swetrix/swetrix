@@ -1386,7 +1386,9 @@
     "noProfiles": "Aucun profil n’a encore évalué ce drapeau",
     "loadMore": "Charger plus",
     "xEvaluations": "{{count}} évaluation(s)",
-    "served": "Diffusé"
+    "served": "Diffusé",
+    "experimentLinked": "Expérience liée",
+    "experimentLinkedHint": "Ce flag contrôle l'éligibilité à l'expérience. La répartition des variantes et les décisions sur les résultats se trouvent dans Expériences."
   },
   "experiments": {
     "title": "Expériences",
@@ -1419,6 +1421,7 @@
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Que testez-vous ?",
     "hypothesisLabel": "Hypothèse",
+    "hypothesisPlaceholder": "Changer X devrait améliorer Y car...",
     "hypothesis": "Hypothèse",
     "goal": "Objectif",
     "noGoal": "Aucun objectif (ajouter plus tard)",
@@ -1482,6 +1485,138 @@
     "featureFlagKeyHint": "Chaque expérience est associée à un feature flag. Cette clé sera utilisée pour contrôler l’expérience dans votre code.",
     "selectFeatureFlag": "Sélectionner un feature flag",
     "loadingFeatureFlags": "Chargement des feature flags...",
+    "launchBlocked": "Lancement bloqué",
+    "reviewConfig": "Vérifier la configuration",
+    "createdOnLaunch": "créé au lancement",
+    "flag": "Flag",
+    "split": "Répartition",
+    "guardrails": {
+      "missingGoal": "Objectif manquant",
+      "needsTwoVariants": "Nécessite au moins deux variantes",
+      "needsOneControl": "Nécessite un contrôle",
+      "allocationTotal": "L'allocation doit totaliser 100 %",
+      "everyVariantTraffic": "Chaque variante a besoin de trafic",
+      "missingExposureEvent": "Événement d'exposition manquant",
+      "missingLinkedFeatureFlag": "Feature flag lié manquant",
+      "unevenAllocation": "Allocation inégale",
+      "lowTrafficVariant": "Variante à faible trafic",
+      "noHypothesis": "Aucune hypothèse"
+    },
+    "settings": {
+      "featureFlagAlreadyLinked": "Ce feature flag est déjà lié ailleurs.",
+      "willUse": "Utilisera :",
+      "variantsHint": "Définissez les variantes que les utilisateurs verront. Le contrôle est votre référence (généralement la version actuelle). Les autres variantes sont celles que vous souhaitez tester.",
+      "variantNamePlaceholder": "Nom",
+      "variantKeyPlaceholder": "clé",
+      "variantMapping": "Mapping des variantes",
+      "variantMappingHint": "Le feature flag détermine l'éligibilité. L'expérience associe les profils éligibles à ces variantes.",
+      "goalHint": "Sélectionnez un objectif pour mesurer quelle variante est la plus performante. Vous pouvez démarrer l'expérience sans objectif et en ajouter un plus tard.",
+      "increase": "Augmenter",
+      "decrease": "Diminuer",
+      "launchGuardrails": "Garde-fous de lancement",
+      "noLaunchBlockers": "Aucun blocage de lancement détecté.",
+      "advancedSettings": "Paramètres avancés",
+      "featureFlagSource": "Source du feature flag",
+      "featureFlagSourceHint": "Choisissez de créer un nouveau feature flag pour cette expérience ou d'en lier un existant.",
+      "createNewFeatureFlag": "Créer un nouveau",
+      "linkExistingFeatureFlag": "Lier un existant",
+      "linkedFlag": "Flag lié",
+      "linkedFlagDetails": "{{percentage}}% de déploiement, {{status}}. Démarrer l'expérience active le flag.",
+      "exposureTracking": "Suivi des expositions",
+      "exposureTrackingHint": "Comment détecter quand un utilisateur a été exposé à l'expérience. Par défaut, l'appel du feature flag est utilisé. Personnalisé vous permet de spécifier un événement différent.",
+      "multiExposureHandling": "Gestion des expositions multiples",
+      "multiExposureHintTitle": "Que se passe-t-il si un utilisateur voit plusieurs variantes ?",
+      "multiExposureExcludeLabel": "Exclure :",
+      "multiExposureExcludeDescription": "Les retirer de l'analyse (recommandé)",
+      "multiExposureFirstLabel": "Première exposition :",
+      "multiExposureFirstDescription": "Ne compter que leur première variante",
+      "exclude": "Exclure",
+      "firstOnly": "Première uniquement",
+      "sampleEstimate": {
+        "title": "Estimation de la taille de l'échantillon",
+        "hint": "Confiance bilatérale à 95 %, puissance à 80 %. Utilisez ceci comme estimation de planification, pas comme une garantie.",
+        "exposuresPerVariant": "expositions par variante",
+        "baselineConversion": "Conversion de base",
+        "mdeLift": "Lift MDE",
+        "dailyExposures": "Expositions quotidiennes",
+        "targetRate": "Taux cible",
+        "totalSample": "Échantillon total",
+        "runtimeEstimate": "Estimation de la durée",
+        "days": "{{count}} jours",
+        "addTraffic": "Ajouter du trafic"
+      },
+      "guardrails": {
+        "addGoal": "Ajoutez un objectif avant le lancement pour que les conversions puissent être attribuées.",
+        "addCustomExposureEvent": "Ajoutez le nom de l'événement d'exposition personnalisé avant le lancement.",
+        "selectFeatureFlag": "Sélectionnez le feature flag qui servira cette expérience.",
+        "featureFlagAlreadyLinked": "Le feature flag sélectionné est déjà lié ailleurs.",
+        "percentagesTotal": "Les pourcentages de déploiement des variantes doivent totaliser 100 %.",
+        "everyVariantTraffic": "Chaque variante a besoin de trafic avant le lancement.",
+        "unevenAllocation": "L'allocation est inégale, les résultats seront plus longs à interpréter.",
+        "lowTrafficVariant": "Une variante a un trafic très faible et peut masquer des problèmes.",
+        "longEstimate": "L'estimation actuelle de l'échantillon est supérieure à huit semaines.",
+        "smallEstimate": "L'estimation est très petite, vérifiez la ligne de base et le MDE.",
+        "noHypothesis": "Une hypothèse aide à interpréter des résultats mitigés ou plats par la suite.",
+        "firstExposureHandling": "La gestion de la première exposition peut masquer des problèmes de changement de variante."
+      },
+      "guardrailStatus": {
+        "blocked": "Bloqué",
+        "review": "À examiner",
+        "ready": "Prêt"
+      }
+    },
+    "resultDetails": {
+      "segmentedNotice": "Les filtres de segment sont appliqués aux profils exposés avant l'attribution des conversions.",
+      "window": {
+        "final": "Affichage des résultats finaux de {{from}} à {{to}}, {{suffix}}",
+        "finalSuffixActive": "basé sur la durée de l'expérience active.",
+        "finalSuffixNoOverlap": "car la période sélectionnée ne chevauche pas l'expérience active.",
+        "clipped": "Affichage de la période sélectionnée restreinte à la durée de l'expérience active, de {{from}} à {{to}}."
+      },
+      "featureFlagRelationship": {
+        "title": "Relation du feature flag",
+        "description": "Le flag contrôle l'éligibilité. Les expositions à l'expérience utilisent les évaluations réelles et les événements de variante."
+      },
+      "warnings": {
+        "noExposures": {
+          "title": "Aucune exposition",
+          "customEventMessage": "Aucun événement d'exposition personnalisé correspondant n'a été enregistré.",
+          "featureFlagMessage": "Aucune évaluation de feature flag n'a été enregistrée pour cette expérience."
+        },
+        "extremeImbalance": {
+          "title": "Déséquilibre extrême",
+          "message": "Le trafic observé est loin de la répartition configurée. Interprétez les résultats gagnants avec prudence."
+        },
+        "variantNoTraffic": {
+          "title": "Variante ne recevant pas de trafic",
+          "message": "{{variant}} n'a aucune exposition observée dans cette fenêtre."
+        },
+        "lowConversion": {
+          "title": "Faible volume de conversion",
+          "message": "Le nombre de conversions est encore faible, les estimations de probabilité peuvent varier rapidement."
+        },
+        "staleRunning": {
+          "title": "Expérience en cours obsolète",
+          "message": "Cette expérience est en cours depuis {{count}} jours."
+        },
+        "goalMissing": {
+          "title": "Objectif manquant après le démarrage",
+          "message": "L'objectif est manquant ou n'est plus disponible, les conversions ne sont pas fiables."
+        }
+      },
+      "stopRecommendation": {
+        "winner": {
+          "title": "Gagnant évident identifié",
+          "message": "{{variant}} est en tête avec les garanties conservatrices respectées."
+        },
+        "harm": {
+          "title": "Impact négatif évident détecté",
+          "message": "{{variant}} sous-performe de manière significative par rapport au contrôle."
+        },
+        "confirmBeforeCompleting": "Confirmer avant de terminer.",
+        "completeConfirmMessage": "{{message}} Cela mettra fin à la collecte et conservera les résultats finaux disponibles."
+      }
+    },
     "filterExperiments": "Filtrer les expériences",
     "noExperimentsMatchFilter": "Aucune expérience ne correspond à votre filtre"
   },

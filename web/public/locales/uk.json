@@ -1386,7 +1386,9 @@
     "noProfiles": "Жоден профіль ще не оцінив цей прапорець",
     "loadMore": "Завантажити ще",
     "xEvaluations": "{{count}} оцінювання(нь)",
-    "served": "Показано"
+    "served": "Показано",
+    "experimentLinked": "Експеримент прив'язано",
+    "experimentLinkedHint": "Цей прапорець обмежує участь в експерименті. Розподіл варіантів та рішення щодо результатів знаходяться у розділі Експерименти."
   },
   "experiments": {
     "title": "Експерименти",
@@ -1419,6 +1421,7 @@
     "descriptionLabel": "Опис",
     "descriptionPlaceholder": "Що ви тестуєте?",
     "hypothesisLabel": "Гіпотеза",
+    "hypothesisPlaceholder": "Зміна X має покращити Y, тому що...",
     "hypothesis": "Гіпотеза",
     "goal": "Ціль",
     "noGoal": "Без цілі (додати пізніше)",
@@ -1482,6 +1485,138 @@
     "featureFlagKeyHint": "Кожен експеримент підтримується функціональним прапорцем. Цей ключ використовуватиметься для керування експериментом у вашому коді.",
     "selectFeatureFlag": "Виберіть функціональний прапорець",
     "loadingFeatureFlags": "Завантаження функціональних прапорців...",
+    "launchBlocked": "Запуск заблоковано",
+    "reviewConfig": "Перевірити конфігурацію",
+    "createdOnLaunch": "створено під час запуску",
+    "flag": "Прапорець",
+    "split": "Розподіл",
+    "guardrails": {
+      "missingGoal": "Відсутня ціль",
+      "needsTwoVariants": "Потрібно щонайменше два варіанти",
+      "needsOneControl": "Потрібен один контрольний варіант",
+      "allocationTotal": "Загальний розподіл має становити 100%",
+      "everyVariantTraffic": "Кожен варіант потребує трафіку",
+      "missingExposureEvent": "Відсутня подія показу",
+      "missingLinkedFeatureFlag": "Відсутній прив'язаний прапорець функції",
+      "unevenAllocation": "Нерівномірний розподіл",
+      "lowTrafficVariant": "Варіант з низьким трафіком",
+      "noHypothesis": "Немає гіпотези"
+    },
+    "settings": {
+      "featureFlagAlreadyLinked": "Цей прапорець функції вже прив'язаний в іншому місці.",
+      "willUse": "Використовуватиметься:",
+      "variantsHint": "Визначте варіанти, які бачитимуть користувачі. Контрольний варіант — це ваша база (зазвичай поточна версія). Інші варіанти — це те, що ви хочете протестувати.",
+      "variantNamePlaceholder": "Назва",
+      "variantKeyPlaceholder": "ключ",
+      "variantMapping": "Зіставлення варіантів",
+      "variantMappingHint": "Прапорець функції визначає допуск. Експеримент розподіляє допущені профілі за цими варіантами.",
+      "goalHint": "Виберіть ціль, щоб виміряти, який варіант працює краще. Ви можете розпочати експеримент без цілі та додати її пізніше.",
+      "increase": "Збільшення",
+      "decrease": "Зменшення",
+      "launchGuardrails": "Обмеження запуску",
+      "noLaunchBlockers": "Блокувальників запуску не виявлено.",
+      "advancedSettings": "Розширені налаштування",
+      "featureFlagSource": "Джерело Feature flag",
+      "featureFlagSourceHint": "Створіть новий Feature flag для цього експерименту або прив'яжіть існуючий.",
+      "createNewFeatureFlag": "Створити новий",
+      "linkExistingFeatureFlag": "Прив'язати існуючий",
+      "linkedFlag": "Прив'язаний прапорець",
+      "linkedFlagDetails": "{{percentage}}% розгортання, {{status}}. Початок експерименту активує прапорець.",
+      "exposureTracking": "Відстеження показів",
+      "exposureTrackingHint": "Як визначити, що користувач був залучений до експерименту. За замовчуванням використовується виклик Feature flag. Власне дозволяє вказати іншу подію.",
+      "multiExposureHandling": "Обробка кількох показів",
+      "multiExposureHintTitle": "Що станеться, якщо користувач побачить кілька варіантів?",
+      "multiExposureExcludeLabel": "Виключити:",
+      "multiExposureExcludeDescription": "Видалити їх з аналізу (рекомендовано)",
+      "multiExposureFirstLabel": "Перший показ:",
+      "multiExposureFirstDescription": "Враховувати лише перший варіант",
+      "exclude": "Виключити",
+      "firstOnly": "Лише перший",
+      "sampleEstimate": {
+        "title": "Оцінка розміру вибірки",
+        "hint": "Двобічна довірча ймовірність 95%, потужність 80%. Використовуйте це як орієнтовну оцінку, а не гарантію.",
+        "exposuresPerVariant": "показів на варіант",
+        "baselineConversion": "Базова конверсія",
+        "mdeLift": "MDE підйом",
+        "dailyExposures": "Щоденні покази",
+        "targetRate": "Цільовий показник",
+        "totalSample": "Загальна вибірка",
+        "runtimeEstimate": "Оцінка часу виконання",
+        "days": "{{count}} днів",
+        "addTraffic": "Додати трафік"
+      },
+      "guardrails": {
+        "addGoal": "Додайте ціль перед запуском, щоб конверсії могли бути атрибутовані.",
+        "addCustomExposureEvent": "Додайте власну назву події показу перед запуском.",
+        "selectFeatureFlag": "Виберіть feature flag, який буде використовуватися для цього експерименту.",
+        "featureFlagAlreadyLinked": "Вибраний feature flag вже прив'язаний в іншому місці.",
+        "percentagesTotal": "Відсотки розподілу варіантів у сумі повинні складати 100%.",
+        "everyVariantTraffic": "Кожен варіант потребує трафіку перед запуском.",
+        "unevenAllocation": "Розподіл нерівномірний, на отримання результатів піде більше часу.",
+        "lowTrafficVariant": "Один з варіантів має дуже низький трафік, через що можна пропустити проблеми.",
+        "longEstimate": "Поточна оцінка вибірки триває більше восьми тижнів.",
+        "smallEstimate": "Оцінка дуже мала, перевірте базовий рівень та MDE.",
+        "noHypothesis": "Гіпотеза допомагає інтерпретувати змішані або рівні результати пізніше.",
+        "firstExposureHandling": "Обробка першого показу може приховати проблеми зі зміною варіантів."
+      },
+      "guardrailStatus": {
+        "blocked": "Заблоковано",
+        "review": "На розгляді",
+        "ready": "Готово"
+      }
+    },
+    "resultDetails": {
+      "segmentedNotice": "Фільтри сегментів застосовуються до профілів, які побачили експеримент, до того як будуть атрибутовані конверсії.",
+      "window": {
+        "final": "Показано кінцеві результати з {{from}} до {{to}}, {{suffix}}",
+        "finalSuffixActive": "на основі часу активного експерименту.",
+        "finalSuffixNoOverlap": "тому що вибраний період не перетинається з активним експериментом.",
+        "clipped": "Показано вибраний період, обмежений часом активного експерименту, з {{from}} до {{to}}."
+      },
+      "featureFlagRelationship": {
+        "title": "Зв'язок із feature flag",
+        "description": "Прапорець контролює допуск. Покази експерименту використовують фактичні оцінки та події варіантів."
+      },
+      "warnings": {
+        "noExposures": {
+          "title": "Немає показів",
+          "customEventMessage": "Не зафіксовано жодних відповідних користувацьких подій показу.",
+          "featureFlagMessage": "Для цього експерименту не зафіксовано жодних оцінок feature flag."
+        },
+        "extremeImbalance": {
+          "title": "Екстремальний дисбаланс",
+          "message": "Спостережуваний трафік сильно відрізняється від налаштованого розподілу. Обережно інтерпретуйте результати щодо переможця."
+        },
+        "variantNoTraffic": {
+          "title": "Варіант не отримує трафік",
+          "message": "{{variant}} не має зафіксованих показів у цьому вікні."
+        },
+        "lowConversion": {
+          "title": "Низький обсяг конверсій",
+          "message": "Кількість конверсій усе ще низька, оцінки ймовірності можуть швидко змінюватися."
+        },
+        "staleRunning": {
+          "title": "Застарілий активний експеримент",
+          "message": "Цей експеримент триває вже {{count}} днів."
+        },
+        "goalMissing": {
+          "title": "Ціль відсутня після запуску",
+          "message": "Ціль відсутня або більше недоступна, конверсіям не можна довіряти."
+        }
+      },
+      "stopRecommendation": {
+        "winner": {
+          "title": "Явний переможець готовий",
+          "message": "{{variant}} попереду з дотриманням консервативних запобіжних заходів."
+        },
+        "harm": {
+          "title": "Виявлено явну шкоду",
+          "message": "{{variant}} суттєво поступається контрольній групі."
+        },
+        "confirmBeforeCompleting": "Підтвердьте перед завершенням.",
+        "completeConfirmMessage": "{{message}} Це зупинить збір даних і залишить остаточні результати доступними."
+      }
+    },
     "filterExperiments": "Фільтрувати експерименти",
     "noExperimentsMatchFilter": "Немає експериментів, що відповідають вашому фільтру"
   },
@@ -1585,10 +1720,10 @@
     "filterSearchOrType": "Знайдіть або введіть значення...",
     "filterUseValue": "Використати \"{{value}}\"",
     "filterAddCustomValue": "Додати \"{{value}}\" як значення фільтра",
-    "toggleFilterToIs": "Zmień filtr na '{{column}} jest \"{{filter}}\"'",
-    "toggleFilterToIsNot": "Zmień filtr na '{{column}} nie jest \"{{filter}}\"'",
-    "toggleFilterToContains": "Zmień filtr na '{{column}} zawiera \"{{filter}}\"'",
-    "toggleFilterToNotContains": "Zmień filtr na '{{column}} nie zawiera \"{{filter}}\"'",
+    "toggleFilterToIs": "Змінити фільтр на '{{column}} дорівнює \"{{filter}}\"'",
+    "toggleFilterToIsNot": "Змінити фільтр на '{{column}} не дорівнює \"{{filter}}\"'",
+    "toggleFilterToContains": "Змінити фільтр на '{{column}} містить \"{{filter}}\"'",
+    "toggleFilterToNotContains": "Змінити фільтр на '{{column}} не містить \"{{filter}}\"'",
     "location": "Локація",
     "pages": "Сторінки",
     "devices": "Пристрої",

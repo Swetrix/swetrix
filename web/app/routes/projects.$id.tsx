@@ -1962,11 +1962,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const fromDate = formData.get('from')?.toString() || ''
       const toDate = formData.get('to')?.toString() || ''
       const tz = formData.get('timezone')?.toString() || ''
+      const filters = formData.get('filters')?.toString() || '[]'
 
       const params = new URLSearchParams({ period, timeBucket })
       if (fromDate) params.append('from', fromDate)
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
+      params.append('filters', filters)
 
       const result = await serverFetch(
         request,

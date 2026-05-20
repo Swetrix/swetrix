@@ -25,11 +25,15 @@ import _map from 'lodash/map'
 import _pick from 'lodash/pick'
 import _round from 'lodash/round'
 import _sum from 'lodash/sum'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import dayjsTimezone from 'dayjs/plugin/timezone'
 
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   AnalyticsService,
+  DataType,
   getLowestPossibleTimeBucket,
 } from '../analytics/analytics.service'
 import { TimeBucketType } from '../analytics/dto/getData.dto'
@@ -64,6 +68,9 @@ const EXPERIMENTS_MAXIMUM = 20
 const FEATURE_FLAG_KEY_REGEX = /^[a-zA-Z0-9_-]+$/
 const ROLLOUT_PERCENTAGE_EPSILON = 1e-6
 
+dayjs.extend(utc)
+dayjs.extend(dayjsTimezone)
+
 const validateUniqueVariantKeys = (variants: Array<{ key: string }>): void => {
   const seen = new Set<string>()
 
@@ -82,6 +89,16 @@ type GoalEventConditions = {
   metaCondition: string
   metaParams: Record<string, string>
   goalValue: string
+}
+
+type ExperimentResultWindow = {
+  mode: 'selected' | 'active_overlap' | 'final'
+  from: string
+  to: string
+  selectedFrom: string
+  selectedTo: string
+  activeFrom?: string
+  activeTo?: string
 }
 
 @ApiTags('Experiment')
@@ -437,6 +454,8 @@ export class ExperimentController {
       )
     }
 
+    this.validateStartConfiguration(experiment)
+
     let featureFlagId = experiment.featureFlagId
     if (!featureFlagId) {
       if (experiment.featureFlagMode !== FeatureFlagMode.CREATE) {
@@ -582,9 +601,10 @@ export class ExperimentController {
     @Query('from') from?: string,
     @Query('to') to?: string,
     @Query('timezone') timezone?: string,
+    @Query('filters') filters?: string,
   ) {
     this.logger.log(
-      { userId, id, period, timeBucket: timeBucketParam, from, to },
+      { userId, id, period, timeBucket: timeBucketParam, from, to, filters },
       'GET /experiment/:id/results',
     )
 
@@ -634,8 +654,34 @@ export class ExperimentController {
         diff,
       )
 
-    const exposureAttributionSubquery =
-      this.getExposureAttributionSubquery(experiment)
+    const resultWindow = this.getEffectiveResultWindow(experiment, {
+      groupFromUTC,
+      groupToUTC,
+      useFinalByDefault: !from && !to,
+    })
+
+    let resolvedTimeBucket = timeBucket
+    if (resultWindow.mode === 'final') {
+      try {
+        resolvedTimeBucket = getLowestPossibleTimeBucket(
+          'custom',
+          resultWindow.from,
+          resultWindow.to,
+        )
+      } catch {
+        resolvedTimeBucket = timeBucket
+      }
+    }
+
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters || '[]', DataType.ANALYTICS)
+    const isSegmented =
+      Array.isArray(appliedFilters) && appliedFilters.length > 0
+
+    const exposureAttributionSubquery = this.getExposureAttributionSubquery(
+      experiment,
+      filtersQuery,
+    )
 
     const exposuresQuery = `
       SELECT
@@ -650,8 +696,9 @@ export class ExperimentController {
     const exposuresParams = {
       pid: experiment.projectId,
       experimentId: experiment.id,
-      groupFrom: groupFromUTC,
-      groupTo: groupToUTC,
+      groupFrom: resultWindow.from,
+      groupTo: resultWindow.to,
+      ...filtersParams,
     }
 
     let exposuresData: { variantKey: string; exposures: number }[] = []
@@ -699,10 +746,11 @@ export class ExperimentController {
       const conversionsParams = {
         pid: experiment.projectId,
         experimentId: experiment.id,
-        groupFrom: groupFromUTC,
-        groupTo: groupToUTC,
+        groupFrom: resultWindow.from,
+        groupTo: resultWindow.to,
         goalValue,
         ...metaParams,
+        ...filtersParams,
       }
 
       try {
@@ -796,6 +844,15 @@ export class ExperimentController {
       hasWinner = highestProbVariant.probabilityOfBeingBest >= 95
     }
 
+    const chartFrom =
+      resultWindow.mode === 'selected'
+        ? groupFrom
+        : this.formatDateInTimezone(resultWindow.from, safeTimezone)
+    const chartTo =
+      resultWindow.mode === 'selected'
+        ? groupTo
+        : this.formatDateInTimezone(resultWindow.to, safeTimezone)
+
     let chart:
       | { x: string[]; winProbability: Record<string, number[]> }
       | undefined
@@ -803,12 +860,14 @@ export class ExperimentController {
     try {
       chart = await this.generateExperimentChart(
         experiment,
-        timeBucket,
-        groupFrom,
-        groupTo,
-        groupFromUTC,
-        groupToUTC,
+        resolvedTimeBucket,
+        chartFrom,
+        chartTo,
+        resultWindow.from,
+        resultWindow.to,
         safeTimezone,
+        filtersQuery,
+        filtersParams,
       )
     } catch (err) {
       this.logger.warn({ err }, 'Failed to generate experiment chart data')
@@ -826,6 +885,166 @@ export class ExperimentController {
       confidenceLevel: 95,
       chart,
       timeBucket: allowedTimeBucketForPeriodAll,
+      resolvedTimeBucket,
+      resultWindow,
+      isSegmented,
+    }
+  }
+
+  private getEffectiveResultWindow(
+    experiment: Experiment,
+    selected: {
+      groupFromUTC: string
+      groupToUTC: string
+      useFinalByDefault: boolean
+    },
+  ): ExperimentResultWindow {
+    const selectedWindow = {
+      mode: 'selected' as const,
+      from: selected.groupFromUTC,
+      to: selected.groupToUTC,
+      selectedFrom: selected.groupFromUTC,
+      selectedTo: selected.groupToUTC,
+    }
+
+    if (
+      experiment.status !== ExperimentStatus.COMPLETED ||
+      !experiment.startedAt ||
+      !experiment.endedAt
+    ) {
+      return selectedWindow
+    }
+
+    const activeFrom = this.formatClickHouseDate(experiment.startedAt)
+    const activeTo = this.formatClickHouseDate(experiment.endedAt)
+    const selectedFromMs = this.toDateTimeMs(selected.groupFromUTC)
+    const selectedToMs = this.toDateTimeMs(selected.groupToUTC)
+    const activeFromMs = this.toDateTimeMs(activeFrom)
+    const activeToMs = this.toDateTimeMs(activeTo)
+
+    if (
+      !Number.isFinite(activeFromMs) ||
+      !Number.isFinite(activeToMs) ||
+      activeFromMs >= activeToMs
+    ) {
+      return selectedWindow
+    }
+
+    const overlaps =
+      selectedToMs >= activeFromMs && selectedFromMs <= activeToMs
+
+    if (selected.useFinalByDefault || !overlaps) {
+      return {
+        ...selectedWindow,
+        mode: 'final',
+        from: activeFrom,
+        to: activeTo,
+        activeFrom,
+        activeTo,
+      }
+    }
+
+    const fromMs = Math.max(selectedFromMs, activeFromMs)
+    const toMs = Math.min(selectedToMs, activeToMs)
+    const from = this.formatClickHouseDate(new Date(fromMs))
+    const to = this.formatClickHouseDate(new Date(toMs))
+    const mode =
+      from === selected.groupFromUTC && to === selected.groupToUTC
+        ? 'selected'
+        : 'active_overlap'
+
+    return {
+      ...selectedWindow,
+      mode,
+      from,
+      to,
+      activeFrom,
+      activeTo,
+    }
+  }
+
+  private formatClickHouseDate(value: Date | string): string {
+    if (value instanceof Date) {
+      return value.toISOString().slice(0, 19).replace('T', ' ')
+    }
+
+    const time = this.toDateTimeMs(value)
+    if (!Number.isFinite(time)) {
+      return value
+    }
+
+    return new Date(time).toISOString().slice(0, 19).replace('T', ' ')
+  }
+
+  private toDateTimeMs(value: Date | string): number {
+    if (value instanceof Date) {
+      return value.getTime()
+    }
+
+    const normalised = value.includes('T')
+      ? value
+      : `${value.replace(' ', 'T')}Z`
+
+    return Date.parse(normalised)
+  }
+
+  private formatDateInTimezone(value: string, safeTimezone: string): string {
+    const date = dayjs.utc(value)
+
+    if (!date.isValid()) {
+      return value
+    }
+
+    return date.tz(safeTimezone).format('YYYY-MM-DD HH:mm:ss')
+  }
+
+  private validateStartConfiguration(experiment: Experiment): void {
+    if (!experiment.variants || experiment.variants.length < 2) {
+      throw new BadRequestException(
+        'An experiment must have at least 2 variants',
+      )
+    }
+
+    const controlVariants = experiment.variants.filter(
+      (variant) => variant.isControl,
+    )
+    if (controlVariants.length !== 1) {
+      throw new BadRequestException(
+        'An experiment must have exactly one control variant',
+      )
+    }
+
+    const totalPercentage = _sum(
+      experiment.variants.map((variant) => variant.rolloutPercentage),
+    )
+    if (Math.abs(totalPercentage - 100) > ROLLOUT_PERCENTAGE_EPSILON) {
+      throw new BadRequestException(
+        'Variant rollout percentages must sum to 100',
+      )
+    }
+
+    if (experiment.variants.some((variant) => variant.rolloutPercentage <= 0)) {
+      throw new BadRequestException(
+        'Each variant must receive traffic before starting',
+      )
+    }
+
+    if (
+      experiment.exposureTrigger === ExposureTrigger.CUSTOM_EVENT &&
+      !experiment.customEventName?.trim()
+    ) {
+      throw new BadRequestException(
+        'Custom event name is required when using custom event exposure trigger',
+      )
+    }
+
+    if (
+      experiment.featureFlagMode === FeatureFlagMode.LINK &&
+      !experiment.featureFlagId
+    ) {
+      throw new BadRequestException(
+        'No feature flag linked to this experiment. Please link a feature flag first.',
+      )
     }
   }
 
@@ -1064,7 +1283,10 @@ export class ExperimentController {
     }
   }
 
-  private getExposureAttributionSubquery(experiment: Experiment): string {
+  private getExposureAttributionSubquery(
+    experiment: Experiment,
+    filtersQuery = '',
+  ): string {
     const variantSelector =
       'argMin(ee.variantKey, tuple(ee.created, ee.variantKey))'
     const multiVariantFilter =
@@ -1083,8 +1305,26 @@ export class ExperimentController {
         ee.pid = {pid:FixedString(12)}
         AND ee.experimentId = {experimentId:String}
         AND ee.created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${this.getSegmentProfileFilter(filtersQuery)}
       GROUP BY ee.pid, ee.profileId
       ${multiVariantFilter}
+    `
+  }
+
+  private getSegmentProfileFilter(filtersQuery: string): string {
+    if (!filtersQuery) {
+      return ''
+    }
+
+    return `
+        AND ee.profileId IN (
+          SELECT assumeNotNull(profileId)
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND profileId IS NOT NULL
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            ${filtersQuery}
+        )
     `
   }
 
@@ -1096,6 +1336,8 @@ export class ExperimentController {
     groupFromUTC: string,
     groupToUTC: string,
     safeTimezone: string,
+    filtersQuery = '',
+    filtersParams: Record<string, unknown> = {},
   ): Promise<{ x: string[]; winProbability: Record<string, number[]> }> {
     const { xShifted } = this.analyticsService.generateXAxis(
       timeBucket,
@@ -1105,8 +1347,10 @@ export class ExperimentController {
     )
 
     const dateColumnsGroupBy = this.getTimeBucketDateColumnsGroupBy(timeBucket)
-    const exposureAttributionSubquery =
-      this.getExposureAttributionSubquery(experiment)
+    const exposureAttributionSubquery = this.getExposureAttributionSubquery(
+      experiment,
+      filtersQuery,
+    )
     const exposuresDateColumnsSelect = this.getTimeBucketDateColumnsSelect(
       timeBucket,
       'exposureCreated',
@@ -1130,6 +1374,7 @@ export class ExperimentController {
       groupFrom: groupFromUTC,
       groupTo: groupToUTC,
       timezone: safeTimezone,
+      ...filtersParams,
     }
 
     let exposuresData: any[] = []

@@ -3,6 +3,8 @@ import { area } from 'billboard.js'
 import cx from 'clsx'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
+import timezonePlugin from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
@@ -10,7 +12,6 @@ import {
   TrophyIcon,
   UsersIcon,
   TargetIcon,
-  InfoIcon,
   PencilIcon,
   TrendUpIcon,
   TrendDownIcon,
@@ -18,9 +19,13 @@ import {
   PercentIcon,
   CaretDownIcon,
   CaretUpIcon,
+  WarningCircleIcon,
+  CheckCircleIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
+import { toast } from 'sonner'
 
 import type {
   Experiment,
@@ -42,16 +47,24 @@ import {
   tbsFormatMapperTooltip24h,
 } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
+import Filters from '~/pages/Project/View/components/Filters'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { typeNameMapping } from '~/pages/Project/View/ViewProject.helpers'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
+import Alert from '~/ui/Alert'
 import BillboardChart from '~/ui/BillboardChart'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import { Badge } from '~/ui/Badge'
+import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
 
 import ExperimentSettingsModal from './ExperimentSettingsModal'
+
+dayjs.extend(utc)
+dayjs.extend(timezonePlugin)
 
 const VARIANT_COLORS = [
   '#6366f1', // indigo-500
@@ -380,96 +393,6 @@ const TableCell = ({
   </td>
 )
 
-const ExposuresTable = memo(
-  ({
-    variants,
-    totalExposures,
-  }: {
-    variants: ExperimentVariantResult[]
-    totalExposures: number
-  }) => {
-    const { t } = useTranslation()
-
-    return (
-      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-950'>
-        <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-800'>
-          <Text weight='semibold' size='sm'>
-            {t('experiments.totalExposures')}
-          </Text>
-        </div>
-        <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
-            <thead className='bg-gray-50 dark:bg-slate-900/60'>
-              <tr>
-                <TableHeader>{t('experiments.variants')}</TableHeader>
-                <TableHeader>{t('experiments.exposures')}</TableHeader>
-                <TableHeader className='text-right'>%</TableHeader>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200 dark:divide-slate-800'>
-              {_map(variants, (variant) => {
-                const percentage =
-                  totalExposures > 0
-                    ? ((variant.exposures / totalExposures) * 100).toFixed(1)
-                    : '0.0'
-                return (
-                  <tr
-                    key={variant.key}
-                    className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'
-                  >
-                    <TableCell>
-                      <div className='flex items-center gap-2'>
-                        <Text weight='medium' size='sm'>
-                          {variant.name}
-                        </Text>
-                        {variant.isControl ? (
-                          <Badge
-                            label={t('experiments.control')}
-                            colour='indigo'
-                          />
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Text size='sm' className='tabular-nums'>
-                        {nFormatter(variant.exposures, 1)}
-                      </Text>
-                    </TableCell>
-                    <TableCell className='text-right'>
-                      <Text size='sm' colour='muted' className='tabular-nums'>
-                        {percentage}%
-                      </Text>
-                    </TableCell>
-                  </tr>
-                )
-              })}
-              <tr className='bg-gray-50 dark:bg-slate-900/60'>
-                <TableCell>
-                  <Text weight='semibold' size='sm'>
-                    Total
-                  </Text>
-                </TableCell>
-                <TableCell>
-                  <Text weight='semibold' size='sm' className='tabular-nums'>
-                    {nFormatter(totalExposures, 1)}
-                  </Text>
-                </TableCell>
-                <TableCell className='text-right'>
-                  <Text weight='semibold' size='sm' className='tabular-nums'>
-                    100.0%
-                  </Text>
-                </TableCell>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    )
-  },
-)
-
-ExposuresTable.displayName = 'ExposuresTable'
-
 const MetricsTable = memo(
   ({
     variants,
@@ -500,16 +423,22 @@ const MetricsTable = memo(
             <thead className='bg-gray-50 dark:bg-slate-900/60'>
               <tr>
                 <TableHeader>{t('experiments.variants')}</TableHeader>
-                <TableHeader>Value</TableHeader>
+                <TableHeader>{t('experiments.value')}</TableHeader>
                 <TableHeader>{t('experiments.improvement')}</TableHeader>
                 <TableHeader>
                   {t('experiments.probabilityOfWinning')}
                 </TableHeader>
                 <TableHeader className='w-48'>
                   <div className='flex items-center justify-between text-[10px]'>
-                    <span>-30%</span>
-                    <span>0%</span>
-                    <span>+30%</span>
+                    <Text as='span' size='xxs' colour='muted'>
+                      -30%
+                    </Text>
+                    <Text as='span' size='xxs' colour='muted'>
+                      0%
+                    </Text>
+                    <Text as='span' size='xxs' colour='muted'>
+                      +30%
+                    </Text>
                   </div>
                 </TableHeader>
               </tr>
@@ -591,10 +520,15 @@ const MetricsTable = memo(
                           <Badge
                             colour='green'
                             label={
-                              <span className='flex items-center gap-1'>
+                              <Text
+                                as='span'
+                                size='xs'
+                                colour='inherit'
+                                className='flex items-center gap-1'
+                              >
                                 <TrophyIcon className='size-3' />
                                 {t('experiments.winner')}
-                              </span>
+                              </Text>
                             }
                           />
                         ) : null}
@@ -666,7 +600,14 @@ const MetricsTable = memo(
                           {variant.probabilityOfBeingBest}%
                         </Text>
                         {variant.probabilityOfBeingBest >= 95 ? (
-                          <Badge label='Significant' colour='green' />
+                          <Badge
+                            label={
+                              <Text as='span' size='xs' colour='inherit'>
+                                {t('experiments.significant')}
+                              </Text>
+                            }
+                            colour='green'
+                          />
                         ) : null}
                       </div>
                     </TableCell>
@@ -730,6 +671,41 @@ const CollapsibleSection = memo(
 
 CollapsibleSection.displayName = 'CollapsibleSection'
 
+type HealthWarning = {
+  code:
+    | 'EXTREME_IMBALANCE'
+    | 'VARIANT_NO_TRAFFIC'
+    | 'LOW_CONVERSION'
+    | 'STALE_RUNNING'
+    | 'GOAL_MISSING'
+  severity: 'warning' | 'danger'
+  titleKey: string
+  messageKey: string
+  messageValues?: Record<string, string | number>
+}
+
+const formatWindowDate = (value?: string | null, timezone?: string) => {
+  if (!value) return null
+  return (timezone ? dayjs.utc(value).tz(timezone) : dayjs(value)).format(
+    'MMM D, YYYY HH:mm',
+  )
+}
+
+const windowsOverlap = (
+  window: NonNullable<ExperimentResultsType['resultWindow']>,
+) => {
+  if (!window.activeFrom || !window.activeTo) return false
+
+  return (
+    dayjs(window.selectedTo).valueOf() >= dayjs(window.activeFrom).valueOf() &&
+    dayjs(window.selectedFrom).valueOf() <= dayjs(window.activeTo).valueOf()
+  )
+}
+
+const getConfiguredAllocation = (experiment: Experiment | null, key: string) =>
+  experiment?.variants.find((variant) => variant.key === key)
+    ?.rolloutPercentage ?? 0
+
 const ExperimentResults = ({
   experimentId,
   period,
@@ -745,6 +721,9 @@ const ExperimentResults = ({
   const experimentProxy = useExperimentProxy()
   const resultsProxy = useExperimentResultsProxy()
   const goalProxy = useGoalProxy()
+  const completeFetcher = useFetcher<ProjectViewActionData>()
+  const processedCompleteRef = useRef<string | null>(null)
+  const { filters } = useViewProjectContext()
 
   const [experiment, setExperiment] = useState<Experiment | null>(null)
   const [results, setResults] = useState<ExperimentResultsType | null>(null)
@@ -752,6 +731,7 @@ const ExperimentResults = ({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false)
   const [reloadToken, setReloadToken] = useState(0)
   const statusBadgeColour = useMemo<
     'slate' | 'green' | 'yellow' | 'sky'
@@ -787,6 +767,7 @@ const ExperimentResults = ({
             from,
             to,
             timezone,
+            filters,
           }),
         ])
 
@@ -824,9 +805,28 @@ const ExperimentResults = ({
     from,
     to,
     timezone,
+    filters,
     reloadToken,
     refreshTrigger,
   ])
+
+  useEffect(() => {
+    if (!completeFetcher.data || completeFetcher.state !== 'idle') return
+
+    const key = `${completeFetcher.data.intent}-${completeFetcher.data.success}-${completeFetcher.data.error || ''}`
+    if (processedCompleteRef.current === key) return
+    processedCompleteRef.current = key
+
+    if (completeFetcher.data.intent !== 'complete-experiment') return
+
+    if (completeFetcher.data.success) {
+      toast.success(t('experiments.completed'))
+      setIsCompleteModalOpen(false)
+      setReloadToken((value) => value + 1)
+    } else if (completeFetcher.data.error) {
+      toast.error(completeFetcher.data.error)
+    }
+  }, [completeFetcher.data, completeFetcher.state, t])
 
   const overallConversionRate = useMemo(() => {
     if (!results || results.totalExposures === 0) return 0
@@ -843,6 +843,186 @@ const ExperimentResults = ({
       return b.probabilityOfBeingBest - a.probabilityOfBeingBest
     })
   }, [results])
+
+  const healthWarnings = useMemo<HealthWarning[]>(() => {
+    if (!experiment || !results) return []
+
+    const warnings: HealthWarning[] = []
+    const runningForDays = experiment.startedAt
+      ? dayjs().diff(dayjs(experiment.startedAt), 'day')
+      : 0
+
+    if (results.totalExposures >= 100) {
+      const imbalancedVariant = results.variants.find((variant) => {
+        const configured = getConfiguredAllocation(experiment, variant.key)
+        const observed = (variant.exposures / results.totalExposures) * 100
+        return configured > 0 && Math.abs(observed - configured) >= 25
+      })
+
+      if (imbalancedVariant) {
+        warnings.push({
+          code: 'EXTREME_IMBALANCE',
+          severity: 'danger',
+          titleKey: 'experiments.resultDetails.warnings.extremeImbalance.title',
+          messageKey:
+            'experiments.resultDetails.warnings.extremeImbalance.message',
+        })
+      }
+    }
+
+    const missingTrafficVariant = results.variants.find(
+      (variant) => variant.exposures === 0 && results.totalExposures > 0,
+    )
+
+    if (missingTrafficVariant) {
+      warnings.push({
+        code: 'VARIANT_NO_TRAFFIC',
+        severity: 'danger',
+        titleKey: 'experiments.resultDetails.warnings.variantNoTraffic.title',
+        messageKey:
+          'experiments.resultDetails.warnings.variantNoTraffic.message',
+        messageValues: { variant: missingTrafficVariant.name },
+      })
+    }
+
+    if (results.totalExposures >= 100 && results.totalConversions < 30) {
+      warnings.push({
+        code: 'LOW_CONVERSION',
+        severity: 'warning',
+        titleKey: 'experiments.resultDetails.warnings.lowConversion.title',
+        messageKey: 'experiments.resultDetails.warnings.lowConversion.message',
+      })
+    }
+
+    if (results.status === 'running' && runningForDays >= 45) {
+      warnings.push({
+        code: 'STALE_RUNNING',
+        severity: 'warning',
+        titleKey: 'experiments.resultDetails.warnings.staleRunning.title',
+        messageKey: 'experiments.resultDetails.warnings.staleRunning.message',
+        messageValues: { count: runningForDays },
+      })
+    }
+
+    if (results.status !== 'draft' && (!experiment.goalId || !goal)) {
+      warnings.push({
+        code: 'GOAL_MISSING',
+        severity: 'danger',
+        titleKey: 'experiments.resultDetails.warnings.goalMissing.title',
+        messageKey: 'experiments.resultDetails.warnings.goalMissing.message',
+      })
+    }
+
+    return warnings
+  }, [experiment, goal, results])
+
+  const stopRecommendation = useMemo(() => {
+    if (!experiment || !results) return null
+    if (results.variants.length === 0) return null
+    if (results.status !== 'running' && results.status !== 'paused') return null
+    if (results.totalExposures < 500 || results.totalConversions < 50) {
+      return null
+    }
+    if (
+      experiment.startedAt &&
+      dayjs().diff(dayjs(experiment.startedAt), 'day') < 7
+    ) {
+      return null
+    }
+    if (
+      healthWarnings.some((warning) =>
+        ['EXTREME_IMBALANCE', 'VARIANT_NO_TRAFFIC', 'GOAL_MISSING'].includes(
+          warning.code,
+        ),
+      )
+    ) {
+      return null
+    }
+
+    const control = results.variants.find((variant) => variant.isControl)
+    const best = results.variants.reduce((current, variant) =>
+      variant.probabilityOfBeingBest > current.probabilityOfBeingBest
+        ? variant
+        : current,
+    )
+
+    if (
+      best &&
+      !best.isControl &&
+      best.probabilityOfBeingBest >= 98 &&
+      best.improvement > 0
+    ) {
+      return {
+        titleKey: 'experiments.resultDetails.stopRecommendation.winner.title',
+        messageKey:
+          'experiments.resultDetails.stopRecommendation.winner.message',
+        messageValues: { variant: best.name },
+      }
+    }
+
+    const harmedVariant = results.variants.find(
+      (variant) =>
+        !variant.isControl &&
+        variant.improvement <= -10 &&
+        variant.probabilityOfBeingBest <= 5,
+    )
+
+    if (control && harmedVariant && control.probabilityOfBeingBest >= 95) {
+      return {
+        titleKey: 'experiments.resultDetails.stopRecommendation.harm.title',
+        messageKey: 'experiments.resultDetails.stopRecommendation.harm.message',
+        messageValues: { variant: harmedVariant.name },
+      }
+    }
+
+    return null
+  }, [experiment, healthWarnings, results])
+
+  const resultWindowNotice = useMemo(() => {
+    const window = results?.resultWindow
+    if (!window || window.mode === 'selected') return null
+
+    const fromLabel = formatWindowDate(window.from, timezone)
+    const toLabel = formatWindowDate(window.to, timezone)
+
+    if (window.mode === 'final') {
+      const suffix = windowsOverlap(window)
+        ? t('experiments.resultDetails.window.finalSuffixActive')
+        : t('experiments.resultDetails.window.finalSuffixNoOverlap')
+      return t('experiments.resultDetails.window.final', {
+        from: fromLabel ?? '',
+        to: toLabel ?? '',
+        suffix,
+      })
+    }
+
+    return t('experiments.resultDetails.window.clipped', {
+      from: fromLabel ?? '',
+      to: toLabel ?? '',
+    })
+  }, [results, timezone, t])
+
+  const handleCompleteExperiment = () => {
+    if (!experiment) return
+    processedCompleteRef.current = null
+    completeFetcher.submit(
+      { intent: 'complete-experiment', experimentId: experiment.id },
+      { method: 'POST' },
+    )
+  }
+
+  const tnMapping = useMemo(() => typeNameMapping(t), [t])
+  const completeExperimentButton = (
+    <Button
+      type='button'
+      size='sm'
+      onClick={() => setIsCompleteModalOpen(true)}
+    >
+      {t('experiments.complete')}
+    </Button>
+  )
+  const canCompleteExperiment =
+    results?.status === 'running' || results?.status === 'paused'
 
   if (!experiment || !results) {
     if (isLoading) {
@@ -901,55 +1081,179 @@ const ExperimentResults = ({
         projectId={experiment.pid}
         experimentId={experiment.id}
       />
+      <Modal
+        onClose={() => setIsCompleteModalOpen(false)}
+        onSubmit={handleCompleteExperiment}
+        submitText={t('experiments.complete')}
+        closeText={t('common.cancel')}
+        title={t('experiments.completeConfirmTitle')}
+        message={
+          stopRecommendation
+            ? t(
+                'experiments.resultDetails.stopRecommendation.completeConfirmMessage',
+                {
+                  message: t(
+                    stopRecommendation.messageKey,
+                    stopRecommendation.messageValues,
+                  ),
+                },
+              )
+            : t('experiments.completeConfirmMessage')
+        }
+        submitType='regular'
+        type='info'
+        isOpened={isCompleteModalOpen}
+        isLoading={completeFetcher.state !== 'idle'}
+      />
       <div className='space-y-3'>
-        <div className='flex flex-wrap items-center gap-2'>
-          <div className='flex min-w-0 items-center gap-2'>
-            <Text as='h2' size='xl' weight='bold' truncate>
-              {experiment.name}
-            </Text>
+        {filters.length > 0 ? (
+          <Filters className='mb-1' tnMapping={tnMapping} />
+        ) : null}
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+          <div className='min-w-0'>
+            <div className='flex min-w-0 items-center gap-2'>
+              <Text as='h2' size='xl' weight='bold' truncate>
+                {experiment.name}
+              </Text>
+              <Badge
+                label={t(`experiments.status.${results.status}`)}
+                colour={statusBadgeColour}
+              />
+            </div>
+            {experiment.description ? (
+              <Text as='p' size='sm' colour='muted' className='mt-1' truncate>
+                {experiment.description}
+              </Text>
+            ) : null}
           </div>
-          <Badge
-            label={t(`experiments.status.${results.status}`)}
-            colour={statusBadgeColour}
-          />
-          {goal?.name ? (
-            <Badge
-              colour='indigo'
-              label={
-                <span className='flex max-w-[240px] items-center gap-1.5'>
-                  <TargetIcon className='size-3.5 shrink-0' />
-                  <Text
-                    as='span'
-                    size='xs'
-                    weight='medium'
-                    colour='inherit'
-                    truncate
-                  >
-                    {goal.name}
-                  </Text>
-                </span>
-              }
-            />
+          {!stopRecommendation && canCompleteExperiment ? (
+            <div className='shrink-0'>{completeExperimentButton}</div>
           ) : null}
         </div>
+        {resultWindowNotice || results.isSegmented ? (
+          <Alert variant='info'>
+            {resultWindowNotice ? (
+              <Text as='p' size='sm' colour='inherit'>
+                {resultWindowNotice}
+              </Text>
+            ) : null}
+            {results.isSegmented ? (
+              <Text
+                as='p'
+                size='sm'
+                colour='inherit'
+                className={cx({
+                  'mt-1': Boolean(resultWindowNotice),
+                })}
+              >
+                {t('experiments.resultDetails.segmentedNotice')}
+              </Text>
+            ) : null}
+          </Alert>
+        ) : null}
+        {healthWarnings.length > 0 ? (
+          <div className='grid gap-2 lg:grid-cols-2'>
+            {healthWarnings.map((warning) => (
+              <div
+                key={warning.code}
+                className={cx(
+                  'rounded-md px-3 py-2 ring-1',
+                  warning.severity === 'danger'
+                    ? 'bg-red-50 ring-red-200 dark:bg-red-900/20 dark:ring-red-800/70'
+                    : 'bg-yellow-50 ring-yellow-200 dark:bg-yellow-900/20 dark:ring-yellow-800/70',
+                )}
+              >
+                <div className='flex items-start gap-2'>
+                  <WarningCircleIcon
+                    className={cx(
+                      'mt-0.5 size-4 shrink-0',
+                      warning.severity === 'danger'
+                        ? 'text-red-600 dark:text-red-300'
+                        : 'text-yellow-700 dark:text-yellow-300',
+                    )}
+                  />
+                  <div>
+                    <Text
+                      as='p'
+                      size='xs'
+                      weight='semibold'
+                      className={
+                        warning.severity === 'danger'
+                          ? 'text-red-900 dark:text-red-100'
+                          : 'text-yellow-900 dark:text-yellow-100'
+                      }
+                    >
+                      {t(warning.titleKey)}
+                    </Text>
+                    <Text
+                      as='p'
+                      size='xs'
+                      className={
+                        warning.severity === 'danger'
+                          ? 'text-red-800 dark:text-red-200'
+                          : 'text-yellow-800 dark:text-yellow-100'
+                      }
+                    >
+                      {t(warning.messageKey, warning.messageValues)}
+                    </Text>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        {stopRecommendation ? (
+          <div className='flex flex-col gap-3 rounded-md bg-green-50 px-3 py-2 ring-1 ring-green-200 sm:flex-row sm:items-center sm:justify-between dark:bg-green-900/20 dark:ring-green-800/70'>
+            <div className='flex items-start gap-2'>
+              <CheckCircleIcon
+                className='mt-0.5 size-4 shrink-0 text-green-600 dark:text-green-300'
+                weight='duotone'
+              />
+              <div>
+                <Text
+                  as='p'
+                  size='xs'
+                  weight='semibold'
+                  className='text-green-900 dark:text-green-100'
+                >
+                  {t(stopRecommendation.titleKey)}
+                </Text>
+                <Text
+                  as='p'
+                  size='xs'
+                  className='text-green-800 dark:text-green-100'
+                >
+                  {t(
+                    stopRecommendation.messageKey,
+                    stopRecommendation.messageValues,
+                  )}{' '}
+                  {t(
+                    'experiments.resultDetails.stopRecommendation.confirmBeforeCompleting',
+                  )}
+                </Text>
+              </div>
+            </div>
+            {completeExperimentButton}
+          </div>
+        ) : null}
         {results.hasWinner && results.winnerKey ? (
-          <div className='flex items-center gap-4 rounded-lg border border-green-300 bg-green-50 px-4 py-2 dark:border-green-700 dark:bg-green-900/20'>
+          <div className='flex items-center gap-3 rounded-md border border-green-300 bg-green-50 px-3 py-2 dark:border-green-700 dark:bg-green-900/20'>
             <TrophyIcon
-              className='size-6 text-green-600 dark:text-green-400'
+              className='size-5 text-green-600 dark:text-green-400'
               weight='duotone'
             />
             <div>
               <Text
                 as='p'
-                weight='bold'
-                size='lg'
+                weight='semibold'
+                size='sm'
                 className='text-green-800 dark:text-green-200'
               >
                 {t('experiments.winnerFound')}
               </Text>
               <Text
                 as='p'
-                size='sm'
+                size='xs'
                 className='text-green-700 dark:text-green-200'
               >
                 {t('experiments.winnerDescription', {
@@ -962,44 +1266,12 @@ const ExperimentResults = ({
           </div>
         ) : null}
 
-        {results.totalExposures === 0 ? (
-          <div className='flex items-start gap-4 rounded-lg border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20'>
-            <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/40'>
-              <InfoIcon className='size-6 text-yellow-700 dark:text-yellow-300' />
-            </div>
-            <div className='min-w-0 flex-1'>
-              <Text
-                as='p'
-                weight='bold'
-                size='lg'
-                className='text-yellow-900 dark:text-yellow-100'
-              >
-                {t('experiments.noDataYet')}
-              </Text>
-              <Text as='p' colour='muted' size='sm' className='mt-1'>
-                {t('experiments.noDataDescription')}
-              </Text>
-              {goal?.name ? (
-                <div className='mt-2 flex items-center gap-2 text-yellow-900/80 dark:text-yellow-100/80'>
-                  <TargetIcon className='size-4' />
-                  <Text as='p' size='sm'>
-                    {t('experiments.goal')}:{' '}
-                    <Text as='span' size='sm' weight='medium'>
-                      {goal.name}
-                    </Text>
-                  </Text>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-
         <div className='flex flex-col gap-3 lg:flex-row'>
           <div className='w-full lg:w-[65%]'>
             <WinProbabilityChart
               chartData={results.chart}
               variants={sortedVariants}
-              timeBucket={timeBucket}
+              timeBucket={results.resolvedTimeBucket || timeBucket}
             />
           </div>
 
@@ -1032,11 +1304,6 @@ const ExperimentResults = ({
           variants={sortedVariants}
           winnerKey={results.winnerKey}
           hasWinner={results.hasWinner}
-        />
-
-        <ExposuresTable
-          variants={sortedVariants}
-          totalExposures={results.totalExposures}
         />
 
         {experiment.hypothesis ? (

@@ -12,12 +12,14 @@ With Swetrix Feature Flags, you can:
 - Create flags in your dashboard.
 - Assign rules to target specific user segments (e.g., by country, browser, or custom attributes).
 - Roll out features to a percentage of your users.
+- See when a flag is linked to an experiment.
 
 ## Client-Side Implementation
 
 To use feature flags in your application, you can use the Swetrix tracking script.
 
-### Fetching all flags
+<Tabs items={["All flags", "Single flag"]}>
+<Tab value="All flags">
 
 ```javascript
 import { getFeatureFlags } from "swetrix";
@@ -29,7 +31,8 @@ if (flags["new-checkout"]) {
 }
 ```
 
-### Getting a single flag
+</Tab>
+<Tab value="Single flag">
 
 ```javascript
 import { getFeatureFlag } from "swetrix";
@@ -45,6 +48,9 @@ if (isEnabled) {
 }
 ```
 
+</Tab>
+</Tabs>
+
 ### Caching
 
 Feature flags are cached for 5 minutes by default to minimize network requests. You can force a refresh or clear the cache if needed:
@@ -55,6 +61,19 @@ import { clearFeatureFlagsCache } from "swetrix";
 // Clear cache to force a fresh fetch on next call
 clearFeatureFlagsCache();
 ```
+
+## Experiment-linked flags
+
+<Callout type="info">
+  Linked feature flags gate experiment eligibility. Variant split and result decisions live in
+  **Experiments**.
+</Callout>
+
+Experiments can create a new feature flag or link to an existing one. When a flag is linked to an experiment, the **Feature Flags** list shows an **Experiment linked** badge and a short note explaining that variant split and result decisions live in **Experiments**.
+
+Click the linked badge to open the experiment results. The flag gates experiment eligibility, while the experiment controls the variant allocation, exposure tracking, and conversion analysis.
+
+Starting or resuming an experiment enables its linked flag. Pausing or completing the experiment disables it. If Swetrix created the flag for the experiment, deleting the experiment also deletes that flag. If you linked an existing flag, deleting the experiment keeps the flag and removes the link.
 
 ## Managing Flags
 
