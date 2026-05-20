@@ -3,7 +3,14 @@ import _map from 'lodash/map'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { SessionsResponse, FunnelSessionsResponse } from '~/api/api.server'
+import type {
+  SessionsResponse,
+  FunnelSessionsResponse,
+  GoalSessionsResponse,
+  ErrorSessionsResponse,
+  ErrorAffectedSession,
+  SessionEventType,
+} from '~/api/api.server'
 import type { Session as SessionType } from '~/lib/models/Project'
 import {
   Drawer,
@@ -20,13 +27,18 @@ import { Session } from '../Sessions/Sessions'
 
 const SESSIONS_TAKE = 30
 
-type SessionsPageResult = SessionsResponse | FunnelSessionsResponse
+type SessionsPageResult =
+  | SessionsResponse
+  | FunnelSessionsResponse
+  | GoalSessionsResponse
+  | ErrorSessionsResponse
 
 async function fetchSessionsPage(
   action: string,
   projectId: string,
   params: Record<string, unknown>,
   signal?: AbortSignal,
+  rootParams?: Record<string, unknown>,
 ): Promise<SessionsPageResult | null> {
   const response = await fetch('/api/analytics', {
     method: 'POST',
@@ -34,6 +46,7 @@ async function fetchSessionsPage(
     body: JSON.stringify({
       action,
       projectId,
+      ...rootParams,
       params,
     }),
     signal,
@@ -55,6 +68,32 @@ async function fetchSessionsPage(
   return result.data
 }
 
+const mapErrorSession = (session: ErrorAffectedSession): SessionType => ({
+  psid: session.psid,
+  cc: session.cc,
+  os: session.os,
+  br: session.br,
+  pageviews: 0,
+  customEvents: 0,
+  errors: session.errorCount,
+  created: session.firstErrorAt,
+  isLive: 0,
+  sdur: 0,
+  sessionStart: session.firstErrorAt,
+  lastActivity: session.lastErrorAt,
+  profileId: session.profileId,
+  isIdentified: 0,
+  isFirstSession: 0,
+})
+
+const getResultSessions = (result: SessionsPageResult): SessionType[] => {
+  if ('total' in result) {
+    return result.sessions.map(mapErrorSession)
+  }
+
+  return result.sessions
+}
+
 interface SessionsDrawerProps {
   isOpen: boolean
   onClose: () => void
@@ -68,6 +107,10 @@ interface SessionsDrawerProps {
   period?: string
   funnelId?: string
   funnelStep?: number
+  goalId?: string
+  errorId?: string
+  sessionEvent?: SessionEventType
+  title?: string
   totalCount?: number
 }
 
@@ -84,14 +127,21 @@ export const SessionsDrawer = ({
   period = 'custom',
   funnelId,
   funnelStep,
+  goalId,
+  errorId,
+  sessionEvent,
+  title,
   totalCount,
 }: SessionsDrawerProps) => {
   const { t } = useTranslation('common')
   const stableFilters = useMemo(() => filters ?? [], [filters])
   const isFunnelMode = !!(funnelId && funnelStep)
+  const isGoalMode = !!goalId
+  const isErrorMode = !!errorId
   const [sessions, setSessions] = useState<SessionType[]>([])
   const [skip, setSkip] = useState(0)
   const [hasMore, setHasMore] = useState(true)
+  const [resultTotalCount, setResultTotalCount] = useState<number | null>(null)
   const [initialLoading, setInitialLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -125,6 +175,36 @@ export const SessionsDrawer = ({
             },
             signal,
           )
+        } else if (isGoalMode) {
+          result = await fetchSessionsPage(
+            'getGoalSessions',
+            projectId,
+            {
+              period,
+              from,
+              to,
+              timezone,
+              goalId,
+              take: SESSIONS_TAKE,
+              skip: currentSkip,
+            },
+            signal,
+          )
+        } else if (isErrorMode) {
+          result = await fetchSessionsPage(
+            'getErrorSessions',
+            projectId,
+            {
+              period,
+              from,
+              to,
+              timezone,
+              take: SESSIONS_TAKE,
+              skip: currentSkip,
+            },
+            signal,
+            { errorId },
+          )
         } else {
           result = await fetchSessionsPage(
             'getSessions',
@@ -135,6 +215,7 @@ export const SessionsDrawer = ({
               to,
               timezone,
               filters: stableFilters,
+              sessionEvent,
               take: SESSIONS_TAKE,
               skip: currentSkip,
             },
@@ -156,13 +237,21 @@ export const SessionsDrawer = ({
       setError(null)
 
       if (result) {
-        const newSessions = result.sessions ?? []
+        const newSessions = getResultSessions(result)
+        const nextTotalCount = 'total' in result ? result.total : null
+
         if (append) {
           setSessions((prev) => [...prev, ...newSessions])
         } else {
           setSessions(newSessions)
         }
-        setHasMore(newSessions.length >= SESSIONS_TAKE)
+
+        setResultTotalCount(nextTotalCount)
+        setHasMore(
+          nextTotalCount != null
+            ? currentSkip + newSessions.length < nextTotalCount
+            : newSessions.length >= SESSIONS_TAKE,
+        )
       }
 
       return true
@@ -174,8 +263,13 @@ export const SessionsDrawer = ({
       to,
       timezone,
       isFunnelMode,
+      isGoalMode,
+      isErrorMode,
       funnelId,
       funnelStep,
+      goalId,
+      errorId,
+      sessionEvent,
       stableFilters,
       t,
     ],
@@ -192,9 +286,9 @@ export const SessionsDrawer = ({
     setSessions([])
     setSkip(0)
     setHasMore(true)
+    setResultTotalCount(null)
     setError(null)
 
-    // Delay fetching slightly to allow the drawer animation to run smoothly without layout shifts
     const timer = setTimeout(() => {
       loadSessions(0, false, controller.signal).finally(() => {
         if (!controller.signal.aborted) {
@@ -208,6 +302,8 @@ export const SessionsDrawer = ({
       controller.abort()
     }
   }, [isOpen, period, from, to, loadSessions])
+
+  const displayTotalCount = totalCount ?? resultTotalCount
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || !hasMore) return
@@ -264,16 +360,16 @@ export const SessionsDrawer = ({
         <DrawerHeader>
           <div className='flex items-start justify-between'>
             <div className='min-w-0'>
-              <DrawerTitle>{t('project.sessions')}</DrawerTitle>
+              <DrawerTitle>{title || t('project.sessions')}</DrawerTitle>
               <DrawerDescription>{label}</DrawerDescription>
             </div>
             <div className='ml-3 flex shrink-0 items-center gap-2'>
               {!initialLoading &&
-              (totalCount != null || sessions.length > 0) ? (
+              (displayTotalCount != null || sessions.length > 0) ? (
                 <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
                   <UsersIcon className='size-3.5' />
-                  {totalCount != null ? (
-                    totalCount
+                  {displayTotalCount != null ? (
+                    displayTotalCount
                   ) : (
                     <>
                       {sessions.length}

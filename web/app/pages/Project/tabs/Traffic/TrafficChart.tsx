@@ -107,6 +107,8 @@ export const TrafficChart = ({
       annotations,
       period,
       timezone,
+      onDataPointClick,
+      dataPointClickLabel,
     ],
     [
       chartData,
@@ -123,6 +125,8 @@ export const TrafficChart = ({
       annotations,
       period,
       timezone,
+      onDataPointClick,
+      dataPointClickLabel,
     ],
   )
 

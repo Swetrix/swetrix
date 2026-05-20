@@ -2109,6 +2109,13 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ) {
     const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
+    const sessionEvent = data.sessionEvent || 'traffic'
+    const sessionDataType =
+      sessionEvent === 'performance'
+        ? DataType.PERFORMANCE
+        : sessionEvent === 'error'
+          ? DataType.ERRORS
+          : DataType.ANALYTICS
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -2133,7 +2140,11 @@ export class AnalyticsController {
     )
 
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+      this.analyticsService.getFiltersQuery(
+        filters,
+        sessionDataType,
+        sessionEvent !== 'traffic',
+      )
 
     let timeBucket
     let diff
@@ -2141,7 +2152,9 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        ['pageview', 'custom_event', 'error'],
+        sessionEvent === 'traffic'
+          ? (['pageview', 'custom_event', 'error'] as const)
+          : sessionEvent,
       )
 
       timeBucket = res.timeBucket[0]
@@ -2176,6 +2189,7 @@ export class AnalyticsController {
       take,
       skip,
       customEVFilterApplied,
+      sessionEvent,
     )
 
     return { sessions, appliedFilters, take, skip }

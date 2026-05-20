@@ -45,12 +45,19 @@ import {
   tbsFormatMapperTooltip,
   tbsFormatMapperTooltip24h,
   chartTypes,
+  DEFAULT_TIMEZONE,
 } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import {
   useViewProjectContext,
   useRefreshTriggers,
 } from '~/pages/Project/View/ViewProject'
+import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
+import {
+  attachDataPointClickHandlers,
+  getChartPointWindow,
+  type ChartDataPointClick,
+} from '~/pages/Project/View/utils/chartPoint'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type {
   ProjectLoaderData,
@@ -132,6 +139,8 @@ const getGoalChartSettings = (
   timeFormat: string,
   chartType: string,
   dataNames: Record<string, string>,
+  onDataPointClick?: ChartDataPointClick,
+  dataPointClickLabel?: string,
 ): ChartOptions => {
   const xAxisSize = _size(chartData.x)
 
@@ -154,6 +163,13 @@ const getGoalChartSettings = (
     data: {
       x: 'x',
       columns,
+      onclick: onDataPointClick
+        ? (d: any) => {
+            if (d?.x) {
+              onDataPointClick({ x: d.x, index: d.index })
+            }
+          }
+        : undefined,
       types: {
         conversions: chartType === chartTypes.line ? area() : bar(),
         sessions: chartType === chartTypes.line ? area() : bar(),
@@ -227,7 +243,9 @@ const getGoalChartSettings = (
               <span class='font-mono whitespace-nowrap'>${el.value}</span>
             </li>
             `
-          }).join('')}</ul>`
+          }).join(
+            '',
+          )}${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>${dataPointClickLabel}</li>` : ''}</ul>`
       },
     },
     point:
@@ -236,9 +254,11 @@ const getGoalChartSettings = (
         : {
             focus: {
               only: xAxisSize > 1,
+              expand: onDataPointClick ? { enabled: true, r: 4 } : undefined,
             },
             pattern: ['circle'],
             r: 2,
+            sensitivity: onDataPointClick ? 50 : undefined,
           },
     legend: {
       item: {
@@ -255,6 +275,11 @@ const getGoalChartSettings = (
     bar: {
       linearGradient: true,
     },
+    onrendered: onDataPointClick
+      ? function (this: any) {
+          attachDataPointClickHandlers(this, columns, onDataPointClick)
+        }
+      : undefined,
   }
 }
 
@@ -270,6 +295,7 @@ interface GoalRowProps {
   onDelete: (id: string) => void
   onEdit: (id: string) => void
   onToggleExpand: (id: string) => void
+  onChartDataPointClick: (goalId: string, d: { x: Date; index: number }) => void
 }
 
 const GoalRow = ({
@@ -284,6 +310,7 @@ const GoalRow = ({
   onDelete,
   onEdit,
   onToggleExpand,
+  onChartDataPointClick,
 }: GoalRowProps) => {
   const { t } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -310,8 +337,10 @@ const GoalRow = ({
         conversions: t('goals.conversions'),
         sessions: t('project.sessions'),
       },
+      (d) => onChartDataPointClick(goal.id, d),
+      t('project.exploreSessions'),
     )
-  }, [chartData, timeBucket, timeFormat, t])
+  }, [chartData, timeBucket, timeFormat, goal.id, onChartDataPointClick, t])
 
   return (
     <>
@@ -536,7 +565,7 @@ const GoalsViewInner = ({
   period,
   from = '',
   to = '',
-  timezone,
+  timezone = DEFAULT_TIMEZONE,
   deferredData,
 }: GoalsViewInnerProps) => {
   const { id } = useCurrentProject()
@@ -568,6 +597,12 @@ const GoalsViewInner = ({
     Record<string, GoalChartData | null>
   >({})
   const [chartLoading, setChartLoading] = useState<Record<string, boolean>>({})
+  const [sessionsDrawer, setSessionsDrawer] = useState<{
+    from: string
+    to: string
+    label: string
+    goalId: string
+  } | null>(null)
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -721,6 +756,21 @@ const GoalsViewInner = ({
       }
     }
   }
+
+  const handleChartDataPointClick = useCallback(
+    (goalId: string, d: { x: Date; index: number }) => {
+      setSessionsDrawer({
+        ...getChartPointWindow({
+          x: d.x,
+          timeBucket,
+          timezone,
+          timeFormat,
+        }),
+        goalId,
+      })
+    },
+    [timeBucket, timeFormat, timezone],
+  )
 
   // Handle page/search changes - use fetcher for pagination
   useEffect(() => {
@@ -911,6 +961,7 @@ const GoalsViewInner = ({
                   onDelete={handleDeleteGoal}
                   onEdit={handleEditGoal}
                   onToggleExpand={handleToggleExpand}
+                  onChartDataPointClick={handleChartDataPointClick}
                 />
               ))}
             </ul>
@@ -944,6 +995,17 @@ const GoalsViewInner = ({
           onSuccess={handleModalSuccess}
           projectId={id}
           goalId={editingGoalId}
+        />
+        <SessionsDrawer
+          isOpen={!!sessionsDrawer}
+          onClose={() => setSessionsDrawer(null)}
+          from={sessionsDrawer?.from || ''}
+          to={sessionsDrawer?.to || ''}
+          label={sessionsDrawer?.label || ''}
+          projectId={id}
+          timezone={timezone}
+          timeFormat={timeFormat as '12-hour' | '24-hour'}
+          goalId={sessionsDrawer?.goalId}
         />
       </div>
     </>
