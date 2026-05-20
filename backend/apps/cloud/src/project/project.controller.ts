@@ -1778,8 +1778,12 @@ export class ProjectController {
     }
 
     if (projectDTO.origins !== undefined) {
-      project.origins = projectDTO.origins
-        ? (_map(projectDTO.origins, _trim) as string[])
+      const safeOrigins = Array.isArray(projectDTO.origins)
+        ? projectDTO.origins.slice(0, PROJECTS_MAXIMUM)
+        : []
+
+      project.origins = safeOrigins.length > 0
+        ? (_map(safeOrigins, _trim) as string[])
         : []
     }
 
