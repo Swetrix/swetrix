@@ -802,6 +802,36 @@ export class ProjectController {
     return { captchaSecretKey: secret }
   }
 
+  @ApiBearerAuth()
+  @Delete('/secret-gen/:pid')
+  @HttpCode(200)
+  @Auth()
+  @ApiResponse({ status: 200, description: 'CAPTCHA secret key deleted' })
+  async deleteSecretKey(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string,
+  ): Promise<void> {
+    this.logger.log({ uid, pid }, 'DELETE /project/secret-gen/:pid')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException()
+    }
+
+    this.projectService.allowedToManage(project, uid)
+
+    await this.projectService.update({ id: pid }, { captchaSecretKey: null })
+
+    await deleteProjectRedis(pid)
+  }
+
   @Delete('/partially/:pid')
   @ApiQuery({
     name: 'from',
@@ -1747,25 +1777,22 @@ export class ProjectController {
       project.isArchived = projectDTO.isArchived
     }
 
-    if (projectDTO.origins) {
-      project.origins = _map(projectDTO.origins, _trim) as string[]
-    } else {
-      project.origins = []
+    if (projectDTO.origins !== undefined) {
+      project.origins = projectDTO.origins
+        ? (_map(projectDTO.origins, _trim) as string[])
+        : []
     }
 
-    if (projectDTO.ipBlacklist) {
-      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim) as string[]
-    } else {
-      project.ipBlacklist = null
+    if (projectDTO.ipBlacklist !== undefined) {
+      project.ipBlacklist = projectDTO.ipBlacklist
+        ? (_map(projectDTO.ipBlacklist, _trim) as string[])
+        : null
     }
 
-    if (projectDTO.countryBlacklist) {
-      project.countryBlacklist = _map(
-        projectDTO.countryBlacklist,
-        _trim,
-      ) as string[]
-    } else {
-      project.countryBlacklist = null
+    if (projectDTO.countryBlacklist !== undefined) {
+      project.countryBlacklist = projectDTO.countryBlacklist
+        ? (_map(projectDTO.countryBlacklist, _trim) as string[])
+        : null
     }
 
     if (projectDTO.botsProtectionLevel) {
@@ -1774,6 +1801,11 @@ export class ProjectController {
 
     if (projectDTO.captchaDifficulty !== undefined) {
       project.captchaDifficulty = projectDTO.captchaDifficulty
+    }
+
+    if (projectDTO.captchaDifficultyMode !== undefined) {
+      project.captchaDifficultyMode =
+        projectDTO.captchaDifficultyMode as Project['captchaDifficultyMode']
     }
 
     if (projectDTO.name) {

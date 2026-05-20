@@ -4,6 +4,8 @@ export enum BotsProtectionLevel {
   STRICT = 'strict',
 }
 
+type CaptchaDifficultyMode = 'manual' | 'auto'
+
 export class Project {
   id: string
   name: string
@@ -23,6 +25,7 @@ export class Project {
   isCaptchaProject: boolean
   captchaSecretKey?: string
   captchaDifficulty?: number
+  captchaDifficultyMode?: CaptchaDifficultyMode
   // Google Search Console integration fields
   gscPropertyUri?: string | null
   gscAccessTokenEnc?: string | null

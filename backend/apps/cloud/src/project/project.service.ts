@@ -188,6 +188,7 @@ export class ProjectService {
           'project.botsProtectionLevel',
           'project.captchaSecretKey',
           'project.captchaDifficulty',
+          'project.captchaDifficultyMode',
           'project.passwordHash',
           'project.isPasswordProtected',
           'admin.id',

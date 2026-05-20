@@ -230,6 +230,7 @@ export interface Project {
   public: boolean
   captchaSecretKey: string | null
   captchaDifficulty: number
+  captchaDifficultyMode?: 'manual' | 'auto'
   created: string
   share?: ShareOwnerProject[]
   overall: OverallObject

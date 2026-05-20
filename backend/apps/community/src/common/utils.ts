@@ -132,6 +132,7 @@ const ALLOWED_KEYS = [
   'websiteUrl',
   'captchaSecretKey',
   'captchaDifficulty',
+  'captchaDifficultyMode',
   'brandKeywords',
 ]
 

@@ -27,7 +27,16 @@ const hash = (content: string): string => {
 // CAPTCHA related constants
 const CAPTCHA_TOKEN_LIFETIME = 300 * 1000 // milliseconds (5 minutes)
 const CAPTCHA_SECRET_KEY_LENGTH = 50
-const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
+const CAPTCHA_COLUMNS = [
+  'cc',
+  'br',
+  'os',
+  'dv',
+  'captcha_event',
+  'captcha_difficulty',
+  'captcha_reason',
+  'solve_time',
+]
 
 // redis keys for captcha
 const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`

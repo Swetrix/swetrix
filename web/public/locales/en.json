@@ -1688,6 +1688,38 @@
     },
     "passwordProtectedHint": "Please enter the password to view this dashboard.",
     "captchaCompletions": "CAPTCHA completions",
+    "captchaAnalytics": {
+      "generated": "Generated",
+      "passed": "Passed",
+      "failed": "Failed",
+      "validationFailed": "Validation failed",
+      "replayed": "Replayed",
+      "passRate": "Pass rate",
+      "failRate": "Fail rate",
+      "medianSolve": "Median solve",
+      "topAutoReason": "Top Auto reason",
+      "difficultyValue": "Difficulty {{value}}",
+      "events": {
+        "generate": "Generated",
+        "pass": "Passed",
+        "verify_fail": "Verification failed",
+        "validation_fail": "Validation failed",
+        "replay": "Replay"
+      },
+      "reasons": {
+        "hosting_ip": "Hosting IP",
+        "headless_browser": "Headless browser",
+        "suspicious_headers": "Suspicious headers",
+        "project_spike": "Project spike",
+        "country_spike": "Country spike",
+        "ip_pressure": "IP pressure",
+        "low_pass_ratio": "Low pass ratio",
+        "verify_failures": "Verification failures",
+        "validation_failures": "Validation failures",
+        "replay_attempts": "Replay attempts",
+        "ip_verify_failures": "IP verification failures"
+      }
+    },
     "addAnnotation": "Add annotation",
     "editAnnotation": "Edit annotation",
     "deleteAnnotation": "Delete annotation",
@@ -1925,7 +1957,11 @@
       "ut": "Usage type",
       "ctp": "Connection type",
       "searchEngine": "Search engine",
-      "aiReferral": "AI referral"
+      "aiReferral": "AI referral",
+      "captcha_event": "CAPTCHA events",
+      "captcha_difficulty": "Difficulty",
+      "captcha_reason": "Auto difficulty reasons",
+      "solve_time": "Solve time"
     },
     "usageTypeMapping": {
       "business": "Business",
@@ -2252,8 +2288,15 @@
         "regenerateKeyWarning": "Are you sure you want to regenerate the secret key? This will invalidate the current key and all applications using it will need to be updated.",
         "noKeyGenerated": "No secret key has been generated yet. Generate one to enable CAPTCHA for this project.",
         "learnMore": "Use this secret key in your backend to verify CAPTCHA tokens. Learn more in our documentation.",
+        "difficultyMode": "Difficulty mode",
+        "difficultyModeHint": "Manual always uses the selected difficulty. Auto starts from the selected fallback and raises difficulty when risk signals increase.",
+        "difficultyModes": {
+          "manual": "Manual",
+          "auto": "Auto"
+        },
         "difficulty": "CAPTCHA difficulty",
         "difficultyHint": "Higher difficulty levels provide better bot protection but may be more challenging for users to solve.",
+        "difficultyAutoHint": "Auto uses this as the fallback difficulty, then raises it for traffic spikes, replay attempts, hosting IPs, and other risk signals.",
         "difficultyLevels": {
           "veryEasy": "Very easy",
           "easy": "Easy",

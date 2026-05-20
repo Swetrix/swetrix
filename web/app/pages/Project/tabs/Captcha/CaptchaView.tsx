@@ -8,6 +8,10 @@ import {
   MonitorIcon,
   DevicesIcon,
   GlobeIcon,
+  GaugeIcon,
+  WarningIcon,
+  ClockIcon,
+  ShieldCheckIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useContext, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -43,7 +47,16 @@ import { CaptchaChart } from './CaptchaChart'
 import NoCaptchaEvents from './NoCaptchaEvents'
 import WaitingForCaptchaEvent from './WaitingForCaptchaEvent'
 
-const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
+const PANELS_ORDER = [
+  'captcha_event',
+  'captcha_difficulty',
+  'captcha_reason',
+  'solve_time',
+  'cc',
+  'br',
+  'os',
+  'dv',
+]
 
 const iconClassName = 'w-6 h-6'
 const panelIconMapping: Record<string, React.ReactNode> = {
@@ -51,6 +64,10 @@ const panelIconMapping: Record<string, React.ReactNode> = {
   dv: <DevicesIcon className={iconClassName} />,
   br: <CompassIcon className={iconClassName} />,
   os: <MonitorIcon className={iconClassName} />,
+  captcha_event: <ShieldCheckIcon className={iconClassName} />,
+  captcha_difficulty: <GaugeIcon className={iconClassName} />,
+  captcha_reason: <WarningIcon className={iconClassName} />,
+  solve_time: <ClockIcon className={iconClassName} />,
 }
 
 export const captchaTypeNameMapping = (t: any) => ({
@@ -58,6 +75,10 @@ export const captchaTypeNameMapping = (t: any) => ({
   dv: t('project.mapping.dv'),
   br: t('project.mapping.br'),
   os: t('project.mapping.os'),
+  captcha_event: t('project.mapping.captcha_event'),
+  captcha_difficulty: t('project.mapping.captcha_difficulty'),
+  captcha_reason: t('project.mapping.captcha_reason'),
+  solve_time: t('project.mapping.solve_time'),
 })
 
 interface CaptchaViewProps {
@@ -83,8 +104,14 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const [panelsData, setPanelsData] = useState<any>({})
   const [chartData, setChartData] = useState<{
     x: string[]
-    results: number[]
+    results?: number[]
+    generated?: number[]
+    passed?: number[]
+    failed?: number[]
+    validationFailed?: number[]
+    replayed?: number[]
   } | null>(null)
+  const [summaryData, setSummaryData] = useState<any | null>(null)
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [dataLoading, setDataLoading] = useState(false)
@@ -94,6 +121,11 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const dataNames = useMemo(
     () => ({
       results: t('project.captchaCompletions'),
+      generated: t('project.captchaAnalytics.generated'),
+      passed: t('project.captchaAnalytics.passed'),
+      failed: t('project.captchaAnalytics.failed'),
+      validationFailed: t('project.captchaAnalytics.validationFailed'),
+      replayed: t('project.captchaAnalytics.replayed'),
     }),
     [t],
   )
@@ -148,10 +180,11 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
         setDataLoading(false)
         setIsPanelsDataEmpty(true)
         setChartData(null)
+        setSummaryData(null)
         return
       }
 
-      const { params, chart } = data
+      const { params, chart, summary } = data
 
       if (chart && chart.x && chart.results) {
         setChartData(chart)
@@ -169,6 +202,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
         setIsPanelsDataEmpty(false)
       }
 
+      setSummaryData(summary || null)
       setAnalyticsLoading(false)
       setDataLoading(false)
     } catch (reason) {
@@ -177,6 +211,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
       setDataLoading(false)
       setIsPanelsDataEmpty(true)
       setChartData(null)
+      setSummaryData(null)
       console.error('[ERROR](loadCaptcha) Loading captcha data failed:', reason)
     }
   }
@@ -212,6 +247,45 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
 
   // Check if we have existing data
   const hasExistingData = chartData !== null || !_isEmpty(panelsData.types)
+  const formatPercent = (value?: number) => `${Number(value || 0).toFixed(1)}%`
+  const formatSeconds = (value?: number) =>
+    value ? `${Number(value).toFixed(2)}s` : 'N/A'
+  const formatReason = (value?: string | null) =>
+    value
+      ? t(`project.captchaAnalytics.reasons.${value}`, { defaultValue: value })
+      : 'N/A'
+  const summaryCards = summaryData
+    ? [
+        {
+          label: t('project.captchaAnalytics.generated'),
+          value: summaryData.generated || 0,
+        },
+        {
+          label: t('project.captchaAnalytics.passRate'),
+          value: formatPercent(summaryData.passRate),
+        },
+        {
+          label: t('project.captchaAnalytics.failRate'),
+          value: formatPercent(summaryData.failRate),
+        },
+        {
+          label: t('project.captchaAnalytics.validationFailed'),
+          value: summaryData.validationFailed || 0,
+        },
+        {
+          label: t('project.captchaAnalytics.replayed'),
+          value: summaryData.replayed || 0,
+        },
+        {
+          label: t('project.captchaAnalytics.medianSolve'),
+          value: formatSeconds(summaryData.solveP50),
+        },
+        {
+          label: t('project.captchaAnalytics.topAutoReason'),
+          value: formatReason(summaryData.reasons?.[0]?.name),
+        },
+      ]
+    : []
 
   // Show waiting state if project has no captcha data yet
   if (!_isEmpty(project) && !project?.isCaptchaDataExists) {
@@ -254,6 +328,23 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
         {dataLoading && hasExistingData ? <LoadingBar /> : null}
         <div>
           <Filters className='mb-3' tnMapping={tnMapping} />
+          {summaryCards.length ? (
+            <div className='mb-3 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7'>
+              {summaryCards.map((card) => (
+                <div
+                  key={card.label}
+                  className='rounded-lg border border-gray-200 bg-white p-3 dark:border-slate-800/60 dark:bg-slate-900/25'
+                >
+                  <div className='text-xs font-medium text-gray-500 dark:text-gray-400'>
+                    {card.label}
+                  </div>
+                  <div className='mt-1 truncate text-lg font-semibold text-gray-900 dark:text-gray-50'>
+                    {card.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
           {chartData ? (
             <CaptchaChart
               chart={chartData}
@@ -267,6 +358,10 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
           <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
             {!_isEmpty(panelsData.types)
               ? _map(PANELS_ORDER, (type: keyof typeof tnMapping) => {
+                  if (_isEmpty(panelsData.data[type])) {
+                    return null
+                  }
+
                   const panelName = tnMapping[type]
                   const panelIcon = panelIconMapping[type]
 
@@ -406,6 +501,59 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                         name={panelName}
                         data={panelsData.data[type]}
                         rowMapper={rowMapper}
+                        activeTabId={type}
+                      />
+                    )
+                  }
+
+                  if (type === 'captcha_event') {
+                    return (
+                      <Panel
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        getFilterLink={getFilterLink}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        rowMapper={(entry: any) =>
+                          t(`project.captchaAnalytics.events.${entry.name}`, {
+                            defaultValue: entry.name,
+                          })
+                        }
+                        activeTabId={type}
+                      />
+                    )
+                  }
+
+                  if (type === 'captcha_reason') {
+                    return (
+                      <Panel
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        getFilterLink={getFilterLink}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        rowMapper={(entry: any) => formatReason(entry.name)}
+                        activeTabId={type}
+                      />
+                    )
+                  }
+
+                  if (type === 'captcha_difficulty') {
+                    return (
+                      <Panel
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        getFilterLink={getFilterLink}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        rowMapper={(entry: any) =>
+                          t('project.captchaAnalytics.difficultyValue', {
+                            value: entry.name,
+                          })
+                        }
                         activeTabId={type}
                       />
                     )

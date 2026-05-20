@@ -37,12 +37,12 @@ const getWidgetSnippet = (pid: string) =>
   `<div class="swecaptcha" data-project-id="${pid}"></div>`
 
 const getValidationSnippet = () =>
-  `const response = await fetch('https://api.swetrixcaptcha.com/v1/captcha/verify', {
+  `const response = await fetch('https://api.swetrixcaptcha.com/v1/captcha/validate', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
+    token: captchaToken,
     secret: 'YOUR_SECRET_KEY',
-    response: captchaToken,
   }),
 })
 

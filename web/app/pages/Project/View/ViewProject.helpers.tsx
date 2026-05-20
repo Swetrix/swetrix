@@ -2563,26 +2563,49 @@ export const getConnectionTypeLabel = (
   }) as string
 
 const getSettingsCaptcha = (
-  chart: { x: string[]; results: number[] },
+  chart: {
+    x: string[]
+    results?: number[]
+    generated?: number[]
+    passed?: number[]
+    failed?: number[]
+    validationFailed?: number[]
+    replayed?: number[]
+  },
   timeBucket: string,
   timeFormat: string,
   rotateXAxis: boolean,
   chartType: string,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
+  const series = [
+    'generated',
+    'passed',
+    'failed',
+    'validationFailed',
+    'replayed',
+  ] as const
+  const activeSeries = series.filter((key) => chart[key]?.length)
+  const fallbackSeries: Array<
+    | 'generated'
+    | 'passed'
+    | 'failed'
+    | 'validationFailed'
+    | 'replayed'
+    | 'results'
+  > = activeSeries.length ? [...activeSeries] : ['results']
 
-  // Build columns directly since getColumns doesn't handle 'results'
   const columns: any[] = [
     ['x', ..._map(chart.x, (el) => dayjs(el).toDate())],
-    ['results', ...chart.results],
+    ...fallbackSeries.map((key) => [key, ...(chart[key] || [])]),
   ]
 
   const allYValues: number[] = []
-  if (chart.results) {
+  fallbackSeries.forEach((key) => {
     allYValues.push(
-      ...chart.results.filter((n: any) => n !== undefined && n !== null),
+      ...(chart[key] || []).filter((n: any) => n !== undefined && n !== null),
     )
-  }
+  })
 
   const optimalTicks =
     allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
@@ -2594,28 +2617,39 @@ const getSettingsCaptcha = (
   } else {
     regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
   }
+  const regions = Object.fromEntries(
+    fallbackSeries.map((key) => [
+      key,
+      [
+        {
+          start: regionStart,
+          style: {
+            dasharray: '6 2',
+          },
+        },
+      ],
+    ]),
+  ) as any
 
   return {
     data: {
       x: 'x',
       columns,
-      types: {
-        results: chartType === chartTypes.line ? area() : bar(),
-      },
+      types: Object.fromEntries(
+        fallbackSeries.map((key) => [
+          key,
+          chartType === chartTypes.line ? area() : bar(),
+        ]),
+      ),
       colors: {
+        generated: '#2563eb',
+        passed: '#16a34a',
+        failed: '#dc2626',
+        validationFailed: '#f97316',
+        replayed: '#7c3aed',
         results: '#16a34a',
       },
-      regions: {
-        results: [
-          {
-            // @ts-expect-error
-            start: regionStart,
-            style: {
-              dasharray: '6 2',
-            },
-          },
-        ],
-      },
+      regions,
     },
     grid: {
       y: {

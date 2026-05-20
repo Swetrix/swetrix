@@ -4,7 +4,7 @@ title: Captcha Analytics
 sidebar_label: Captcha Analytics
 ---
 
-The Captcha Analytics dashboard provides detailed insights into how users are interacting with the Swetrix CAPTCHA on your website. It helps you monitor completion rates and understand the demographics of users solving your CAPTCHAs.
+The Captcha Analytics dashboard provides detailed insights into how users are interacting with the Swetrix CAPTCHA on your website. It helps you monitor generation volume, pass rates, failures, replay attempts, solve time, selected difficulty, and the demographics of users solving your CAPTCHAs.
 
 <img alt="Captcha Dashboard" src="/docs/img/analytics-dashboard/captcha-view.png" />
 
@@ -19,15 +19,24 @@ For more details on how Swetrix CAPTCHA works and how to integrate it, please re
 
 ## Key Metrics
 
-### Captcha Completions
+### Captcha events
 
-The main chart displays the **Captcha Completions** metric. This represents the number of times users have successfully solved the CAPTCHA challenge on your site within the selected timeframe.
+The main chart displays CAPTCHA generations, successful passes, verification failures, validation failures, and replay attempts within the selected timeframe. Older CAPTCHA data that does not include event metadata is treated as successful passes.
 
 Visualising this data helps you:
 
 - Monitor traffic spikes that might indicate bot attacks.
 - Ensure the CAPTCHA is functioning correctly for legitimate users.
 - Correlate CAPTCHA completions with specific events or campaigns.
+- Identify validation or replay issues in your backend integration.
+
+### Auto difficulty
+
+If Auto difficulty is enabled, the dashboard shows the selected difficulty distribution and the reason categories that caused Swetrix to raise the difficulty. These reason categories are intentionally coarse, such as hosting IP, project spike, country spike, replay attempts, verification failures, or low pass ratio.
+
+### Solve time
+
+Solve-time panels and summary values show how long successful challenges took from generation to verification. This helps you spot when a configured fallback difficulty is too aggressive for legitimate users.
 
 ## Detailed Breakdown
 
@@ -42,6 +51,9 @@ Below the main chart, you can find detailed panels that categorise the CAPTCHA c
 - **Browser**: Identify which web browsers are being used to solve CAPTCHAs.
 - **Operating System (OS)**: View the operating systems of your users.
 - **Device Type**: Breakdown by device category (e.g., Desktop, Mobile, Tablet).
+- **Difficulty**: Chosen challenge difficulty distribution.
+- **Auto difficulty reasons**: Coarse categories explaining why Auto raised difficulty.
+- **Solve time**: Distribution of successful solve durations.
 
 ## Filtering and Analysis
 

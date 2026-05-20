@@ -548,7 +548,12 @@ const ProjectSettings = () => {
   const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(
     () => initialProject.captchaSecretKey || null,
   )
-  const [captchaDifficulty, setCaptchaDifficulty] = useState<number>(4)
+  const [captchaDifficulty, setCaptchaDifficulty] = useState<number>(
+    () => initialProject.captchaDifficulty || 4,
+  )
+  const [captchaDifficultyMode, setCaptchaDifficultyMode] = useState<
+    'manual' | 'auto'
+  >(() => initialProject.captchaDifficultyMode || 'manual')
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
 
   // for reset data via filters
@@ -722,6 +727,12 @@ const ProjectSettings = () => {
           setProject((prev) =>
             prev ? { ...prev, ...updatedProject } : updatedProject,
           )
+          if (updatedProject.captchaDifficulty) {
+            setCaptchaDifficulty(updatedProject.captchaDifficulty)
+          }
+          if (updatedProject.captchaDifficultyMode) {
+            setCaptchaDifficultyMode(updatedProject.captchaDifficultyMode)
+          }
         }
         setBeenSubmitted(false)
         toast.success(t('project.settings.updated'))
@@ -1422,8 +1433,55 @@ const ProjectSettings = () => {
 
                       <div className='mt-6'>
                         <Select
+                          label={t('project.settings.captcha.difficultyMode')}
+                          hint={t(
+                            'project.settings.captcha.difficultyModeHint',
+                          )}
+                          className='mb-4 lg:w-1/2'
+                          hintClassName='lg:w-2/3'
+                          items={[
+                            {
+                              value: 'manual' as const,
+                              label: t(
+                                'project.settings.captcha.difficultyModes.manual',
+                              ),
+                            },
+                            {
+                              value: 'auto' as const,
+                              label: t(
+                                'project.settings.captcha.difficultyModes.auto',
+                              ),
+                            },
+                          ]}
+                          keyExtractor={(item) => item.value}
+                          labelExtractor={(item) => item.label}
+                          selectedItem={{
+                            value: captchaDifficultyMode,
+                            label: '',
+                          }}
+                          onSelect={(item: {
+                            value: 'manual' | 'auto'
+                            label: string
+                          }) => {
+                            setCaptchaDifficultyMode(item.value)
+                          }}
+                          title={
+                            captchaDifficultyMode === 'auto'
+                              ? t(
+                                  'project.settings.captcha.difficultyModes.auto',
+                                )
+                              : t(
+                                  'project.settings.captcha.difficultyModes.manual',
+                                )
+                          }
+                        />
+                        <Select
                           label={t('project.settings.captcha.difficulty')}
-                          hint={t('project.settings.captcha.difficultyHint')}
+                          hint={
+                            captchaDifficultyMode === 'auto'
+                              ? t('project.settings.captcha.difficultyAutoHint')
+                              : t('project.settings.captcha.difficultyHint')
+                          }
                           className='lg:w-1/2'
                           hintClassName='lg:w-2/3'
                           items={[
@@ -1499,6 +1557,10 @@ const ProjectSettings = () => {
                             formData.set(
                               'captchaDifficulty',
                               captchaDifficulty.toString(),
+                            )
+                            formData.set(
+                              'captchaDifficultyMode',
+                              captchaDifficultyMode,
                             )
                             fetcher.submit(formData, { method: 'post' })
                           }}

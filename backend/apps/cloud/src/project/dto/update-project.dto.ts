@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsInt, Min, Max } from 'class-validator'
+import { IsBoolean, IsOptional, IsInt, Min, Max, IsIn } from 'class-validator'
 import { IntersectionType, PartialType } from '@nestjs/mapped-types'
 import { ApiProperty } from '@nestjs/swagger'
 import { ProjectDTO } from './project.dto'
@@ -45,4 +45,15 @@ export class UpdateProjectDto extends IntersectionType(
   @Max(6)
   @IsOptional()
   captchaDifficulty?: number
+
+  @ApiProperty({
+    required: false,
+    description:
+      'CAPTCHA difficulty mode. Manual uses captchaDifficulty directly; auto raises it dynamically when risk signals increase.',
+    enum: ['manual', 'auto'],
+    default: 'manual',
+  })
+  @IsIn(['manual', 'auto'])
+  @IsOptional()
+  captchaDifficultyMode?: 'manual' | 'auto'
 }

@@ -7,7 +7,12 @@ import { getSettingsCaptcha } from '../../View/ViewProject.helpers'
 interface CaptchaChartProps {
   chart?: {
     x: string[]
-    results: number[]
+    results?: number[]
+    generated?: number[]
+    passed?: number[]
+    failed?: number[]
+    validationFailed?: number[]
+    replayed?: number[]
   }
   timeBucket: string
   timeFormat: string

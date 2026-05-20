@@ -76,7 +76,7 @@ export class CaptchaController {
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
-    return this.captchaService.generateChallenge(pid)
+    return this.captchaService.generateChallenge(pid, headers, ip)
   }
 
   @Post('/verify')
@@ -121,15 +121,42 @@ export class CaptchaController {
       throw new ForbiddenException('PoW verification failed')
     }
 
-    // Verify the PoW solution
-    const isValid = await this.captchaService.verifyPoW(
-      challenge,
-      nonce,
-      solution,
-      pid,
-    )
+    let verification
 
-    if (!isValid) {
+    try {
+      verification = await this.captchaService.verifyPoW(
+        challenge,
+        nonce,
+        solution,
+        pid,
+      )
+    } catch (reason) {
+      try {
+        await this.captchaService.logCaptchaReplay(pid, headers, timestamp, ip)
+      } catch (logReason) {
+        this.logger.error(
+          `[CaptchaController -> verify] Failed to log captcha replay: ${logReason}`,
+        )
+      }
+
+      throw reason
+    }
+
+    if (!verification.valid) {
+      try {
+        await this.captchaService.logCaptchaFailure(
+          pid,
+          headers,
+          timestamp,
+          ip,
+          verification,
+        )
+      } catch (reason) {
+        this.logger.error(
+          `[CaptchaController -> verify] Failed to log captcha failure: ${reason}`,
+        )
+      }
+
       throw new ForbiddenException('PoW verification failed')
     }
 
@@ -140,7 +167,13 @@ export class CaptchaController {
     )
 
     try {
-      await this.captchaService.logCaptchaPass(pid, headers, timestamp, ip)
+      await this.captchaService.logCaptchaPass(
+        pid,
+        headers,
+        timestamp,
+        ip,
+        verification,
+      )
     } catch (reason) {
       this.logger.error(
         `[CaptchaController -> verify] Failed to log captcha pass: ${reason}`,
@@ -163,7 +196,13 @@ export class CaptchaController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    this.logger.log(validateDTO, 'POST /captcha/validate')
+    this.logger.log(
+      {
+        hasToken: Boolean(validateDTO?.token),
+        hasSecret: Boolean(validateDTO?.secret),
+      },
+      'POST /captcha/validate',
+    )
 
     const { token, secret } = validateDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
@@ -177,7 +216,7 @@ export class CaptchaController {
 
     return {
       success: true,
-      data: await this.captchaService.validateToken(token, secret),
+      data: await this.captchaService.validateToken(token, secret, headers, ip),
     }
   }
 }

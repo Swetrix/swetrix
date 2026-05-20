@@ -1060,25 +1060,22 @@ export class ProjectController {
       project.active = projectDTO.active
     }
 
-    if (projectDTO.origins) {
-      project.origins = _map(projectDTO.origins, _trim) as string[]
-    } else {
-      project.origins = []
+    if (projectDTO.origins !== undefined) {
+      project.origins = projectDTO.origins
+        ? (_map(projectDTO.origins, _trim) as string[])
+        : []
     }
 
-    if (projectDTO.ipBlacklist) {
-      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim) as string[]
-    } else {
-      project.ipBlacklist = []
+    if (projectDTO.ipBlacklist !== undefined) {
+      project.ipBlacklist = projectDTO.ipBlacklist
+        ? (_map(projectDTO.ipBlacklist, _trim) as string[])
+        : []
     }
 
-    if (projectDTO.countryBlacklist) {
-      project.countryBlacklist = _map(
-        projectDTO.countryBlacklist,
-        _trim,
-      ) as string[]
-    } else {
-      project.countryBlacklist = []
+    if (projectDTO.countryBlacklist !== undefined) {
+      project.countryBlacklist = projectDTO.countryBlacklist
+        ? (_map(projectDTO.countryBlacklist, _trim) as string[])
+        : []
     }
 
     if (projectDTO.botsProtectionLevel) {
@@ -1109,6 +1106,10 @@ export class ProjectController {
 
     if (projectDTO.captchaDifficulty !== undefined) {
       project.captchaDifficulty = projectDTO.captchaDifficulty
+    }
+
+    if (projectDTO.captchaDifficultyMode !== undefined) {
+      project.captchaDifficultyMode = projectDTO.captchaDifficultyMode
     }
 
     if (projectDTO.brandKeywords !== undefined) {

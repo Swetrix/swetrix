@@ -106,7 +106,16 @@ const TRAFFIC_COLUMNS = [
 const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev', 'entryPage', 'exitPage']
-const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
+const CAPTCHA_COLUMNS = [
+  'cc',
+  'br',
+  'os',
+  'dv',
+  'captcha_event',
+  'captcha_difficulty',
+  'captcha_reason',
+  'solve_time',
+]
 const PERFORMANCE_COLUMNS = [
   'cc',
   'rg',
