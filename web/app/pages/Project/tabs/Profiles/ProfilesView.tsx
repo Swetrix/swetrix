@@ -20,6 +20,7 @@ import NoProfiles from '~/pages/Project/tabs/Profiles/components/NoProfiles'
 import { ProfileDetails } from '~/pages/Project/tabs/Profiles/ProfileDetails'
 import { Profiles } from '~/pages/Project/tabs/Profiles/Profiles'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
+import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import {
   useViewProjectContext,
   useRefreshTriggers,
@@ -416,6 +417,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     <>
       <DashboardHeader
         showLiveVisitors
+        rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
         profileTypeFilter={profileTypeFilter}
         onProfileTypeFilterChange={(type) => {
           setProfileTypeFilter(type)
