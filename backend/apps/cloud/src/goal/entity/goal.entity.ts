@@ -24,6 +24,30 @@ export interface MetadataFilter {
   value: string
 }
 
+export type GoalConditionRelation = 'AND' | 'OR'
+export type GoalConditionEventType = 'any' | GoalType
+export type GoalConditionOperator =
+  | 'equals'
+  | 'not_equals'
+  | 'contains'
+  | 'not_contains'
+  | 'exists'
+  | 'not_exists'
+
+export interface GoalCondition {
+  id?: string
+  eventType: GoalConditionEventType
+  field: string
+  operator: GoalConditionOperator
+  value?: string
+  metadataKey?: string
+}
+
+export interface GoalConditions {
+  relation: GoalConditionRelation
+  conditions: GoalCondition[]
+}
+
 @Entity()
 export class Goal {
   @ApiProperty()
@@ -56,6 +80,10 @@ export class Goal {
   @ApiProperty()
   @Column('json', { nullable: true })
   metadataFilters: MetadataFilter[] | null
+
+  @ApiProperty()
+  @Column('json', { nullable: true })
+  conditions: GoalConditions | null
 
   @ApiProperty()
   @Column({

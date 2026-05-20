@@ -149,6 +149,24 @@ const filtersToRows = (filters: FilterType[] = []): FilterRow[] => {
   })
 }
 
+const getMetadataColumnBase = (column: string) => {
+  if (column === 'ev:key' || column.startsWith('ev:key:')) return 'ev:key'
+  if (column === 'tag:key' || column.startsWith('tag:key:')) return 'tag:key'
+  if (column === 'ev:value') return 'ev:value'
+  if (column === 'tag:value') return 'tag:value'
+  return column
+}
+
+const getOperatorsForColumn = (column: string) => {
+  if (column === 'ev:key' || column === 'tag:key') {
+    return OPERATORS.filter(
+      (operator) => operator.value === 'is' || operator.value === 'isNot',
+    )
+  }
+
+  return OPERATORS
+}
+
 const InlineButton = ({
   text,
   onClick,
@@ -287,6 +305,30 @@ const FilterRowsEditor = ({
     [filterRows, language],
   )
 
+  const getColumnLabel = useCallback(
+    (column: string) => {
+      if (column.startsWith('ev:key:')) {
+        return t('project.metamapping.ev.dynamicKey', {
+          key: column.replace(/^ev:key:/, ''),
+        })
+      }
+
+      if (column.startsWith('tag:key:')) {
+        return t('project.metamapping.tag.dynamicKey', {
+          key: column.replace(/^tag:key:/, ''),
+        })
+      }
+
+      return tnMapping[column] || t(`project.mapping.${column}`)
+    },
+    [t, tnMapping],
+  )
+
+  const getColumnIcon = useCallback((column: string) => {
+    const baseColumn = getMetadataColumnBase(column)
+    return filterCategoryIcons[column] || filterCategoryIcons[baseColumn]
+  }, [])
+
   useEffect(() => {
     if (!active) {
       return
@@ -297,6 +339,13 @@ const FilterRowsEditor = ({
 
   const fetchFilterValues = useCallback(
     async (column: string) => {
+      if (getMetadataColumnBase(column) !== column || column.includes(':')) {
+        setFilterValuesCache((prev) =>
+          prev[column] ? prev : { ...prev, [column]: [] },
+        )
+        return
+      }
+
       if (
         filterValuesCache[column] ||
         loadingColumns.has(column) ||
@@ -414,7 +463,14 @@ const FilterRowsEditor = ({
           ) {
             fetchFilterValues(fieldValue)
           }
-          return { ...row, column: fieldValue, value: '' }
+          const operatorOptions = getOperatorsForColumn(fieldValue)
+          const operator = operatorOptions.some(
+            (option) => option.value === row.operator,
+          )
+            ? row.operator
+            : 'is'
+
+          return { ...row, column: fieldValue, operator, value: '' }
         }
 
         return { ...row, [field]: fieldValue }
@@ -431,180 +487,182 @@ const FilterRowsEditor = ({
   return (
     <div className='space-y-4'>
       <div className='space-y-3'>
-        {filterRows.map((row) => (
-          <div
-            key={row.id}
-            className='grid gap-2 sm:grid-cols-[minmax(0,11rem)_minmax(0,8rem)_minmax(0,1fr)_auto]'
-          >
-            <Listbox
-              value={row.column}
-              onChange={(value) => updateFilterRow(row.id, 'column', value)}
-            >
-              {({ open }) => (
-                <div className='relative min-w-0'>
-                  <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:focus:ring-slate-300'>
-                    <span
-                      className={cx('flex items-center gap-2 truncate', {
-                        'text-gray-400': !row.column,
-                      })}
-                    >
-                      {row.column ? filterCategoryIcons[row.column] : null}
-                      {row.column
-                        ? tnMapping[row.column] ||
-                          t(`project.mapping.${row.column}`)
-                        : t('project.selectColumn')}
-                    </span>
-                    <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
-                      <CaretUpDownIcon className='h-4 w-4 text-gray-400' />
-                    </span>
-                  </ListboxButton>
-                  <Transition
-                    show={open}
-                    as={Fragment}
-                    enter='transition ease-in duration-100'
-                    enterFrom='opacity-0'
-                    enterTo='opacity-100'
-                    leave='transition ease-in duration-100'
-                    leaveFrom='opacity-100'
-                    leaveTo='opacity-0'
-                  >
-                    <ListboxOptions
-                      static
-                      className='absolute z-50 mt-1 max-h-60 w-full min-w-[180px] overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-900'
-                    >
-                      {panelOptions.map((option) => (
-                        <ListboxOption
-                          key={option}
-                          value={option}
-                          className={({ focus }) =>
-                            cx(
-                              'relative cursor-pointer py-2 pr-4 pl-3 select-none',
-                              {
-                                'bg-gray-100 dark:bg-slate-700': focus,
-                                'text-gray-700 dark:text-gray-50': !focus,
-                              },
-                            )
-                          }
-                        >
-                          {({ selected }) => (
-                            <span
-                              className={cx('flex items-center gap-2', {
-                                'font-medium': selected,
-                              })}
-                            >
-                              <span className='shrink-0 text-gray-500 dark:text-gray-400'>
-                                {filterCategoryIcons[option]}
-                              </span>
-                              <span className='truncate'>
-                                {tnMapping[option] ||
-                                  t(`project.mapping.${option}`)}
-                              </span>
-                              {selected ? (
-                                <CheckIcon className='ml-auto h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400' />
-                              ) : null}
-                            </span>
-                          )}
-                        </ListboxOption>
-                      ))}
-                    </ListboxOptions>
-                  </Transition>
-                </div>
-              )}
-            </Listbox>
+        {filterRows.map((row) => {
+          const operatorOptions = getOperatorsForColumn(row.column)
 
-            <Listbox
-              value={row.operator}
-              onChange={(value) => updateFilterRow(row.id, 'operator', value)}
+          return (
+            <div
+              key={row.id}
+              className='grid gap-2 sm:grid-cols-[minmax(0,11rem)_minmax(0,8rem)_minmax(0,1fr)_auto]'
             >
-              {({ open }) => (
-                <div className='relative min-w-0'>
-                  <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:focus:ring-slate-300'>
-                    <span className='block truncate'>
-                      {t(
-                        OPERATORS.find(
-                          (operator) => operator.value === row.operator,
-                        )?.labelKey || '',
-                      )}
-                    </span>
-                    <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
-                      <CaretUpDownIcon className='h-4 w-4 text-gray-400' />
-                    </span>
-                  </ListboxButton>
-                  <Transition
-                    show={open}
-                    as={Fragment}
-                    enter='transition ease-in duration-100'
-                    enterFrom='opacity-0'
-                    enterTo='opacity-100'
-                    leave='transition ease-in duration-100'
-                    leaveFrom='opacity-100'
-                    leaveTo='opacity-0'
-                  >
-                    <ListboxOptions
-                      static
-                      className='absolute z-50 mt-1 w-full overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-900'
+              <Listbox
+                value={row.column}
+                onChange={(value) => updateFilterRow(row.id, 'column', value)}
+              >
+                {({ open }) => (
+                  <div className='relative min-w-0'>
+                    <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:focus:ring-slate-300'>
+                      <span
+                        className={cx('flex items-center gap-2 truncate', {
+                          'text-gray-400': !row.column,
+                        })}
+                      >
+                        {row.column ? getColumnIcon(row.column) : null}
+                        {row.column
+                          ? getColumnLabel(row.column)
+                          : t('project.selectColumn')}
+                      </span>
+                      <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
+                        <CaretUpDownIcon className='h-4 w-4 text-gray-400' />
+                      </span>
+                    </ListboxButton>
+                    <Transition
+                      show={open}
+                      as={Fragment}
+                      enter='transition ease-in duration-100'
+                      enterFrom='opacity-0'
+                      enterTo='opacity-100'
+                      leave='transition ease-in duration-100'
+                      leaveFrom='opacity-100'
+                      leaveTo='opacity-0'
                     >
-                      {OPERATORS.map((operator) => (
-                        <ListboxOption
-                          key={operator.value}
-                          value={operator.value}
-                          className={({ focus }) =>
-                            cx(
-                              'relative cursor-pointer py-2 pr-4 pl-8 select-none',
-                              {
-                                'bg-gray-100 dark:bg-slate-700': focus,
-                                'text-gray-700 dark:text-gray-50': !focus,
-                              },
-                            )
-                          }
-                        >
-                          {({ selected }) => (
-                            <>
+                      <ListboxOptions
+                        static
+                        className='absolute z-50 mt-1 max-h-60 w-full min-w-[180px] overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-900'
+                      >
+                        {panelOptions.map((option) => (
+                          <ListboxOption
+                            key={option}
+                            value={option}
+                            className={({ focus }) =>
+                              cx(
+                                'relative cursor-pointer py-2 pr-4 pl-3 select-none',
+                                {
+                                  'bg-gray-100 dark:bg-slate-700': focus,
+                                  'text-gray-700 dark:text-gray-50': !focus,
+                                },
+                              )
+                            }
+                          >
+                            {({ selected }) => (
                               <span
-                                className={cx('block truncate', {
+                                className={cx('flex items-center gap-2', {
                                   'font-medium': selected,
                                 })}
                               >
-                                {t(operator.labelKey)}
-                              </span>
-                              {selected ? (
-                                <span className='absolute inset-y-0 left-0 flex items-center pl-2 text-indigo-600 dark:text-indigo-400'>
-                                  <CheckIcon className='h-4 w-4' />
+                                <span className='shrink-0 text-gray-500 dark:text-gray-400'>
+                                  {getColumnIcon(option)}
                                 </span>
-                              ) : null}
-                            </>
-                          )}
-                        </ListboxOption>
-                      ))}
-                    </ListboxOptions>
-                  </Transition>
-                </div>
-              )}
-            </Listbox>
+                                <span className='truncate'>
+                                  {getColumnLabel(option)}
+                                </span>
+                                {selected ? (
+                                  <CheckIcon className='ml-auto h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400' />
+                                ) : null}
+                              </span>
+                            )}
+                          </ListboxOption>
+                        ))}
+                      </ListboxOptions>
+                    </Transition>
+                  </div>
+                )}
+              </Listbox>
 
-            <FilterValueInput
-              items={filterValuesCache[row.column] || []}
-              value={row.value}
-              onChange={(value) => updateFilterRow(row.id, 'value', value)}
-              placeholder={t('project.filterSearchOrType')}
-              column={row.column}
-              language={language}
-              disabled={!row.column}
-              isLoading={loadingColumns.has(row.column)}
-              theme={theme}
-              className='min-w-0'
-            />
+              <Listbox
+                value={row.operator}
+                onChange={(value) => updateFilterRow(row.id, 'operator', value)}
+              >
+                {({ open }) => (
+                  <div className='relative min-w-0'>
+                    <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:focus:ring-slate-300'>
+                      <span className='block truncate'>
+                        {t(
+                          operatorOptions.find(
+                            (operator) => operator.value === row.operator,
+                          )?.labelKey || '',
+                        )}
+                      </span>
+                      <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
+                        <CaretUpDownIcon className='h-4 w-4 text-gray-400' />
+                      </span>
+                    </ListboxButton>
+                    <Transition
+                      show={open}
+                      as={Fragment}
+                      enter='transition ease-in duration-100'
+                      enterFrom='opacity-0'
+                      enterTo='opacity-100'
+                      leave='transition ease-in duration-100'
+                      leaveFrom='opacity-100'
+                      leaveTo='opacity-0'
+                    >
+                      <ListboxOptions
+                        static
+                        className='absolute z-50 mt-1 w-full overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-900'
+                      >
+                        {operatorOptions.map((operator) => (
+                          <ListboxOption
+                            key={operator.value}
+                            value={operator.value}
+                            className={({ focus }) =>
+                              cx(
+                                'relative cursor-pointer py-2 pr-4 pl-8 select-none',
+                                {
+                                  'bg-gray-100 dark:bg-slate-700': focus,
+                                  'text-gray-700 dark:text-gray-50': !focus,
+                                },
+                              )
+                            }
+                          >
+                            {({ selected }) => (
+                              <>
+                                <span
+                                  className={cx('block truncate', {
+                                    'font-medium': selected,
+                                  })}
+                                >
+                                  {t(operator.labelKey)}
+                                </span>
+                                {selected ? (
+                                  <span className='absolute inset-y-0 left-0 flex items-center pl-2 text-indigo-600 dark:text-indigo-400'>
+                                    <CheckIcon className='h-4 w-4' />
+                                  </span>
+                                ) : null}
+                              </>
+                            )}
+                          </ListboxOption>
+                        ))}
+                      </ListboxOptions>
+                    </Transition>
+                  </div>
+                )}
+              </Listbox>
 
-            <button
-              type='button'
-              onClick={() => removeFilterRow(row.id)}
-              className='rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-300'
-              title={t('project.removeFilter')}
-            >
-              <TrashIcon className='h-5 w-5' />
-            </button>
-          </div>
-        ))}
+              <FilterValueInput
+                items={filterValuesCache[row.column] || []}
+                value={row.value}
+                onChange={(value) => updateFilterRow(row.id, 'value', value)}
+                placeholder={t('project.filterSearchOrType')}
+                column={row.column}
+                language={language}
+                disabled={!row.column}
+                isLoading={loadingColumns.has(row.column)}
+                theme={theme}
+                className='min-w-0'
+              />
+
+              <button
+                type='button'
+                onClick={() => removeFilterRow(row.id)}
+                className='rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-300'
+                title={t('project.removeFilter')}
+              >
+                <TrashIcon className='h-5 w-5' />
+              </button>
+            </div>
+          )
+        })}
       </div>
 
       <div className='flex items-center justify-between'>
@@ -651,7 +709,7 @@ const FilterRowsEditor = ({
                     className='inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-gray-300'
                   >
                     <span className='text-gray-500 dark:text-gray-400'>
-                      {tnMapping[column] || t(`project.mapping.${column}`)}
+                      {getColumnLabel(column)}
                     </span>
                     <span
                       className={cx({

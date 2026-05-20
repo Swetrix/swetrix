@@ -30,6 +30,8 @@ import NewFunnel from '~/modals/NewFunnel'
 import { FunnelChart } from '~/pages/Project/tabs/Funnels/FunnelChart'
 import FunnelsList from '~/pages/Project/tabs/Funnels/FunnelsList'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
+import Filters from '~/pages/Project/View/components/Filters'
+import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import {
   useViewProjectContext,
   useRefreshTriggers,
@@ -66,27 +68,37 @@ function FunnelDataResolver({
   return <>{children({ funnelData })}</>
 }
 
-function FunnelsViewWrapper() {
+interface FunnelsViewProps {
+  tnMapping: Record<string, string>
+}
+
+function FunnelsViewWrapper({ tnMapping }: FunnelsViewProps) {
   return (
     <Suspense fallback={<LoaderView />}>
       <FunnelDataResolver>
-        {(deferredData) => <FunnelsViewInner deferredData={deferredData} />}
+        {(deferredData) => (
+          <FunnelsViewInner deferredData={deferredData} tnMapping={tnMapping} />
+        )}
       </FunnelDataResolver>
     </Suspense>
   )
 }
 
-interface FunnelsViewInnerProps {
+interface FunnelsViewInnerProps extends FunnelsViewProps {
   deferredData: DeferredFunnelData
 }
 
-const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
+const FunnelsViewInner = ({
+  deferredData,
+  tnMapping,
+}: FunnelsViewInnerProps) => {
   const { id, project, mergeProject, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const revalidator = useRevalidator()
   const { isAuthenticated } = useAuth()
   const { funnelsRefreshTrigger } = useRefreshTriggers()
-  const { periodPairs, period, timezone, timeFormat } = useViewProjectContext()
+  const { periodPairs, period, timezone, timeFormat, filters } =
+    useViewProjectContext()
 
   // Filter periods to only include those valid for funnels
   const timeBucketSelectorItems = useMemo(() => {
@@ -111,6 +123,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   const [sessionsDrawer, setSessionsDrawer] = useState<{
     stepIndex: number
     label: string
+    dropoff?: boolean
   } | null>(null)
 
   // Initialize funnelAnalytics from loader data
@@ -339,9 +352,9 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
           backLink={`?${pureSearchParams}`}
           backButtonLabel={t('project.backToFunnels')}
           showLiveVisitors={false}
-          showSearchButton={false}
           hideTimeBucket
           timeBucketSelectorItems={timeBucketSelectorItems}
+          rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
           leftContent={
             <Text
               as='h2'
@@ -353,6 +366,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
             </Text>
           }
         />
+        <Filters className='mb-3' tnMapping={tnMapping} />
         {dataLoading && funnelAnalytics ? <LoadingBar /> : null}
 
         {/* Funnel Chart */}
@@ -417,11 +431,26 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
           period={period}
           from={searchParams.get('from') || undefined}
           to={searchParams.get('to') || undefined}
+          filters={filters}
           funnelId={activeFunnel?.id}
           funnelStep={sessionsDrawer ? sessionsDrawer.stepIndex + 1 : undefined}
+          dropoff={Boolean(sessionsDrawer?.dropoff)}
+          showDropoffToggle={
+            !!sessionsDrawer &&
+            sessionsDrawer.stepIndex <
+              (funnelAnalytics?.funnel?.length || 0) - 1
+          }
+          onDropoffChange={(dropoff) =>
+            setSessionsDrawer((current) =>
+              current ? { ...current, dropoff } : current,
+            )
+          }
           totalCount={
             sessionsDrawer
-              ? funnelAnalytics?.funnel?.[sessionsDrawer.stepIndex]?.events
+              ? sessionsDrawer.dropoff
+                ? funnelAnalytics?.funnel?.[sessionsDrawer.stepIndex + 1]
+                    ?.dropoff
+                : funnelAnalytics?.funnel?.[sessionsDrawer.stepIndex]?.events
               : undefined
           }
         />

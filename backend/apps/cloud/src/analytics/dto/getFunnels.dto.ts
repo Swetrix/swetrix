@@ -40,4 +40,11 @@ export class GetFunnelsDto {
     description: 'Funnel ID',
   })
   funnelId?: string
+
+  @ApiProperty({
+    description: 'A stringified filters array',
+    required: false,
+  })
+  @IsOptional()
+  filters?: string
 }

@@ -158,6 +158,7 @@ interface ProxyRequest {
     query?: string
     funnelId?: string
     step?: number
+    dropoff?: boolean
   }
 }
 
@@ -218,6 +219,8 @@ export async function action({ request }: ActionFunctionArgs) {
           take: params.take,
           skip: params.skip,
           password: analyticsParams.password,
+          filters: params.filters || [],
+          dropoff: params.dropoff,
         })
         return data<ProxyResponse<FunnelSessionsResponse>>({
           data: result.data,
@@ -309,6 +312,7 @@ export async function action({ request }: ActionFunctionArgs) {
           formatDateForBackend(params.from) || '',
           formatDateForBackend(params.to) || '',
           params.timezone,
+          params.filters || [],
         )
         return data<ProxyResponse<GoalStats>>({
           data: result.data,
@@ -335,6 +339,7 @@ export async function action({ request }: ActionFunctionArgs) {
           formatDateForBackend(params.to) || '',
           params.timeBucket || 'day',
           params.timezone,
+          params.filters || [],
         )
         return data<ProxyResponse<{ chart: GoalChartData }>>({
           data: result.data,

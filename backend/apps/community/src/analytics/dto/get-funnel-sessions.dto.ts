@@ -53,6 +53,20 @@ export class GetFunnelSessionsDto {
   funnelId?: string
 
   @ApiProperty({
+    description: 'A stringified filters array',
+    required: false,
+  })
+  @IsOptional()
+  filters?: string
+
+  @ApiProperty({
+    description: 'Return sessions that dropped off after this step',
+    required: false,
+  })
+  @IsOptional()
+  dropoff?: boolean | string
+
+  @ApiProperty({
     description: 'Funnel step to get sessions for (1-indexed)',
   })
   @Type(() => Number)

@@ -587,6 +587,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           funnelTo,
           timezone,
           password || undefined,
+          filters,
         ).then((res) => res.data)
       }
     }
@@ -696,10 +697,24 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const type = formData.get('type')?.toString() || 'pageview'
       const matchType = formData.get('matchType')?.toString() || 'exact'
       const value = formData.get('value')?.toString() || ''
+      const metadataFilters = JSON.parse(
+        formData.get('metadataFilters')?.toString() || '[]',
+      )
+      const conditions = JSON.parse(
+        formData.get('conditions')?.toString() || 'null',
+      )
 
       const result = await serverFetch(request, 'goal', {
         method: 'POST',
-        body: { pid: projectId, name, type, matchType, value },
+        body: {
+          pid: projectId,
+          name,
+          type,
+          matchType,
+          value,
+          metadataFilters,
+          conditions,
+        },
       })
 
       if (result.error) {
@@ -721,10 +736,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const type = formData.get('type')?.toString()
       const matchType = formData.get('matchType')?.toString()
       const value = formData.get('value')?.toString()
+      const metadataFilters = JSON.parse(
+        formData.get('metadataFilters')?.toString() || '[]',
+      )
+      const conditions = JSON.parse(
+        formData.get('conditions')?.toString() || 'null',
+      )
 
       const result = await serverFetch(request, `goal/${goalId}`, {
         method: 'PUT',
-        body: { name, type, matchType, value },
+        body: { name, type, matchType, value, metadataFilters, conditions },
       })
 
       if (result.error) {
@@ -1620,11 +1641,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const fromDate = formData.get('from')?.toString() || ''
       const toDate = formData.get('to')?.toString() || ''
       const tz = formData.get('timezone')?.toString() || ''
+      const filters = formData.get('filters')?.toString() || '[]'
 
       const params = new URLSearchParams({ period })
       if (fromDate) params.append('from', fromDate)
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
+      params.append('filters', filters)
 
       const result = await serverFetch(
         request,
@@ -2050,11 +2073,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const fromDate = formData.get('from')?.toString() || ''
       const toDate = formData.get('to')?.toString() || ''
       const tz = formData.get('timezone')?.toString() || ''
+      const filters = formData.get('filters')?.toString() || '[]'
 
       const params = new URLSearchParams({ period })
       if (fromDate) params.append('from', fromDate)
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
+      params.append('filters', filters)
 
       const result = await serverFetch(
         request,
@@ -2084,11 +2109,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const toDate = formData.get('to')?.toString() || ''
       const timeBucket = formData.get('timeBucket')?.toString() || 'day'
       const tz = formData.get('timezone')?.toString() || ''
+      const filters = formData.get('filters')?.toString() || '[]'
 
       const params = new URLSearchParams({ period, timeBucket })
       if (fromDate) params.append('from', fromDate)
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
+      params.append('filters', filters)
 
       const result = await serverFetch(
         request,
@@ -2143,6 +2170,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const toDate = formData.get('to')?.toString() || ''
       const tz = formData.get('timezone')?.toString() || ''
       const funnelId = formData.get('funnelId')?.toString() || ''
+      const filters = formData.get('filters')?.toString() || '[]'
       const password = getPassword()
 
       const params = new URLSearchParams({ pid: projectId || '' })
@@ -2151,6 +2179,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
       if (funnelId) params.append('funnelId', funnelId)
+      params.append('filters', filters)
 
       const result = await serverFetch(
         request,

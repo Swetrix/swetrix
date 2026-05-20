@@ -15,6 +15,7 @@ import {
   ClickhouseGoal,
   GoalMatchType,
   MetadataFilter,
+  GoalConditions,
 } from './entity/goal.entity'
 import { Pagination } from '../common/pagination/pagination'
 import { PaginationOptionsInterface } from '../common/pagination/pagination.results.interface'
@@ -27,6 +28,7 @@ const ALLOWED_GOAL_KEYS = [
   'matchType',
   'value',
   'metadataFilters',
+  'conditions',
   'active',
 ]
 
@@ -38,11 +40,19 @@ export class GoalService {
     }
 
     let metadataFilters: MetadataFilter[] | null = null
+    let conditions: GoalConditions | null = null
     if (goal.metadataFilters) {
       try {
         metadataFilters = JSON.parse(goal.metadataFilters)
       } catch {
         metadataFilters = null
+      }
+    }
+    if (goal.conditions) {
+      try {
+        conditions = JSON.parse(goal.conditions)
+      } catch {
+        conditions = null
       }
     }
 
@@ -53,6 +63,7 @@ export class GoalService {
       matchType: (goal.matchType as GoalMatchType) || GoalMatchType.EXACT,
       value: goal.value,
       metadataFilters,
+      conditions,
       active: Boolean(goal.active),
       projectId: goal.projectId,
       created: goal.created,
@@ -65,6 +76,12 @@ export class GoalService {
     if (goal.metadataFilters !== undefined) {
       result.metadataFilters = goal.metadataFilters
         ? JSON.stringify(goal.metadataFilters)
+        : null
+    }
+
+    if (goal.conditions !== undefined) {
+      result.conditions = goal.conditions
+        ? JSON.stringify(goal.conditions)
         : null
     }
 
@@ -214,6 +231,7 @@ export class GoalService {
           matchType: formattedGoal.matchType || GoalMatchType.EXACT,
           value: formattedGoal.value || null,
           metadataFilters: formattedGoal.metadataFilters || null,
+          conditions: formattedGoal.conditions || null,
           active: formattedGoal.active ?? 1,
           projectId: goalData.projectId,
           created,
@@ -257,8 +275,10 @@ export class GoalService {
         return `${col}={${col}:Int8}`
       }
 
-      // Handle nullable string columns
-      if (value === null && (col === 'value' || col === 'metadataFilters')) {
+      if (
+        value === null &&
+        (col === 'value' || col === 'metadataFilters' || col === 'conditions')
+      ) {
         return `${col}=NULL`
       }
 

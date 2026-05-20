@@ -80,6 +80,11 @@ export const filterCategoryIcons: Record<string, ReactNode> = {
   og: <BuildingIcon className='size-4' />,
   ut: <CpuIcon className='size-4' />,
   ctp: <LinkIcon className='size-4' />,
+  ev: <RadioIcon className='size-4' />,
+  'ev:key': <TagIcon className='size-4' />,
+  'ev:value': <TagIcon className='size-4' />,
+  'tag:key': <TagIcon className='size-4' />,
+  'tag:value': <TagIcon className='size-4' />,
 }
 
 const deviceIconMapping: Record<string, ReactNode> = {
@@ -274,10 +279,18 @@ const FilterValueInput = ({
         }
       }
 
-      if (filterCategoryIcons[column]) {
+      const baseColumn = column.startsWith('ev:key:')
+        ? 'ev:key'
+        : column.startsWith('tag:key:')
+          ? 'tag:key'
+          : column
+      const categoryIcon =
+        filterCategoryIcons[column] || filterCategoryIcons[baseColumn]
+
+      if (categoryIcon) {
         return (
           <span className='shrink-0 text-gray-500 dark:text-gray-400'>
-            {filterCategoryIcons[column]}
+            {categoryIcon}
           </span>
         )
       }
