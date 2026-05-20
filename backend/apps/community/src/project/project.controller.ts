@@ -1073,9 +1073,22 @@ export class ProjectController {
     }
 
     if (projectDTO.countryBlacklist !== undefined) {
-      project.countryBlacklist = projectDTO.countryBlacklist
-        ? (_map(projectDTO.countryBlacklist, _trim) as string[])
-        : []
+      if (projectDTO.countryBlacklist) {
+        if (!Array.isArray(projectDTO.countryBlacklist)) {
+          throw new BadRequestException('countryBlacklist must be an array')
+        }
+
+        if (projectDTO.countryBlacklist.length > 1000) {
+          throw new BadRequestException('countryBlacklist is too large')
+        }
+
+        project.countryBlacklist = _map(
+          projectDTO.countryBlacklist,
+          _trim,
+        ) as string[]
+      } else {
+        project.countryBlacklist = []
+      }
     }
 
     if (projectDTO.botsProtectionLevel) {
