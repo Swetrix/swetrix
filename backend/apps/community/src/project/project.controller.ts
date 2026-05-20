@@ -1067,9 +1067,20 @@ export class ProjectController {
     }
 
     if (projectDTO.ipBlacklist !== undefined) {
-      project.ipBlacklist = projectDTO.ipBlacklist
-        ? (_map(projectDTO.ipBlacklist, _trim) as string[])
-        : []
+      if (!projectDTO.ipBlacklist) {
+        project.ipBlacklist = []
+      } else {
+        if (!Array.isArray(projectDTO.ipBlacklist)) {
+          throw new BadRequestException('ipBlacklist must be an array')
+        }
+
+        const MAX_IP_BLACKLIST_ITEMS = 1000
+        if (projectDTO.ipBlacklist.length > MAX_IP_BLACKLIST_ITEMS) {
+          throw new BadRequestException('ipBlacklist is too large')
+        }
+
+        project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim) as string[]
+      }
     }
 
     if (projectDTO.countryBlacklist !== undefined) {
