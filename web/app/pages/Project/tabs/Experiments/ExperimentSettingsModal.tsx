@@ -138,6 +138,9 @@ const ExperimentSettingsModal = ({
   const loadExperiment = async () => {
     if (!experimentId) return
     setShowPlanning(false)
+    setBaselineConversionRate(5)
+    setMinimumDetectableEffect(10)
+    setDailyExposures(500)
     setIsLoading(true)
     try {
       const experiment = await experimentProxy.fetchExperiment(experimentId)
