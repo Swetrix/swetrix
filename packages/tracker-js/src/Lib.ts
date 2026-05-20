@@ -431,10 +431,10 @@ export class Lib {
   }
 
   /**
-   * Fetches all feature flags and experiments for the project.
-   * Results are cached for 5 minutes by default.
+   * Fetches all feature flags for the project.
+   * Results are cached for 5 minutes by default and share a cache with experiments.
    *
-   * @param options - Options for evaluating feature flags.
+   * @param options - Options for evaluating feature flags (`profileId` only).
    * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
    * @returns A promise that resolves to a record of flag keys to boolean values.
    */
@@ -512,8 +512,8 @@ export class Lib {
    * Gets the value of a single feature flag.
    *
    * @param key - The feature flag key.
-   * @param options - Options for evaluating the feature flag.
-   * @param defaultValue - Default value to return if the flag is not found. Defaults to false.
+   * @param options - Options for evaluating the feature flag (`profileId` only).
+   * @param defaultValue - Optional default value to return if the flag is not found. Defaults to false.
    * @returns A promise that resolves to the boolean value of the flag.
    */
   async getFeatureFlag(key: string, options?: FeatureFlagsOptions, defaultValue: boolean = false): Promise<boolean> {
@@ -529,16 +529,16 @@ export class Lib {
   }
 
   /**
-   * Fetches all A/B test experiments for the project.
+   * Fetches variant assignments for running A/B test experiments returned by feature flag evaluation.
    * Results are cached for 5 minutes by default (shared cache with feature flags).
    *
-   * @param options - Options for evaluating experiments.
+   * @param options - Options for evaluating experiments (`profileId` only).
    * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
    * @returns A promise that resolves to a record of experiment IDs to variant keys.
    *
    * @example
    * ```typescript
-   * const experiments = await getExperiments()
+   * const experiments = await getExperiments({ profileId: 'user-123' })
    * // experiments = { 'exp-123': 'variant-a', 'exp-456': 'control' }
    * ```
    */
@@ -571,13 +571,16 @@ export class Lib {
    * Gets the variant key for a specific A/B test experiment.
    *
    * @param experimentId - The experiment ID.
-   * @param options - Options for evaluating the experiment.
-   * @param defaultVariant - Default variant key to return if the experiment is not found. Defaults to null.
+   * @param options - Options for evaluating the experiment (`profileId` only).
+   * @param defaultVariant - Optional default variant key to return if the experiment is not found. Defaults to null.
    * @returns A promise that resolves to the variant key assigned to this user, or defaultVariant if not found.
    *
    * @example
    * ```typescript
-   * const variant = await getExperiment('checkout-redesign')
+   * const variant = await getExperiment('checkout-redesign', { profileId: 'user-123' })
+   *
+   * // Optional fallback variant:
+   * const variantWithFallback = await getExperiment('checkout-redesign', undefined, 'control')
    *
    * if (variant === 'new-checkout') {
    *   // Show new checkout flow

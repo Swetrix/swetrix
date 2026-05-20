@@ -124,17 +124,16 @@ export function pageview(options: IPageviewOptions): void {
 
 /**
  * Fetches all feature flags for the project.
- * Results are cached for 5 minutes by default.
+ * Results are cached for 5 minutes by default and share a cache with experiments.
  *
- * @param options - Options for evaluating feature flags (visitorId, attributes).
+ * @param options - Options for evaluating feature flags (`profileId` only).
  * @param forceRefresh - If true, bypasses the cache and fetches fresh flags.
  * @returns A promise that resolves to a record of flag keys to boolean values.
  *
  * @example
  * ```typescript
  * const flags = await getFeatureFlags({
- *   visitorId: 'user-123',
- *   attributes: { cc: 'US', dv: 'desktop' }
+ *   profileId: 'user-123'
  * })
  *
  * if (flags['new-checkout']) {
@@ -155,13 +154,13 @@ export async function getFeatureFlags(
  * Gets the value of a single feature flag.
  *
  * @param key - The feature flag key.
- * @param options - Options for evaluating the feature flag (visitorId, attributes).
- * @param defaultValue - Default value to return if the flag is not found. Defaults to false.
+ * @param options - Options for evaluating the feature flag (`profileId` only).
+ * @param defaultValue - Optional default value to return if the flag is not found. Defaults to false.
  * @returns A promise that resolves to the boolean value of the flag.
  *
  * @example
  * ```typescript
- * const isEnabled = await getFeatureFlag('dark-mode', { visitorId: 'user-123' })
+ * const isEnabled = await getFeatureFlag('dark-mode', { profileId: 'user-123' })
  *
  * if (isEnabled) {
  *   // Enable dark mode
@@ -179,8 +178,8 @@ export async function getFeatureFlag(
 }
 
 /**
- * Clears the cached feature flags, forcing a fresh fetch on the next call.
- * Useful when you know the user's context has changed significantly.
+ * Clears the cached feature flags and experiments, forcing a fresh fetch on the next call.
+ * Useful when you know the user's profile has changed.
  */
 export function clearFeatureFlagsCache(): void {
   if (!LIB_INSTANCE) return
@@ -189,10 +188,10 @@ export function clearFeatureFlagsCache(): void {
 }
 
 /**
- * Fetches all A/B test experiments for the project.
+ * Fetches variant assignments for running A/B test experiments returned by feature flag evaluation.
  * Results are cached for 5 minutes by default (shared cache with feature flags).
  *
- * @param options - Options for evaluating experiments.
+ * @param options - Options for evaluating experiments (`profileId` only).
  * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
  * @returns A promise that resolves to a record of experiment IDs to variant keys.
  *
@@ -223,13 +222,16 @@ export async function getExperiments(
  * Gets the variant key for a specific A/B test experiment.
  *
  * @param experimentId - The experiment ID.
- * @param options - Options for evaluating the experiment.
- * @param defaultVariant - Default variant key to return if the experiment is not found. Defaults to null.
+ * @param options - Options for evaluating the experiment (`profileId` only).
+ * @param defaultVariant - Optional default variant key to return if the experiment is not found. Defaults to null.
  * @returns A promise that resolves to the variant key assigned to this user, or defaultVariant if not found.
  *
  * @example
  * ```typescript
- * const variant = await getExperiment('checkout-redesign-experiment-id')
+ * const variant = await getExperiment('checkout-redesign-experiment-id', { profileId: 'user-123' })
+ *
+ * // Optional fallback variant:
+ * const variantWithFallback = await getExperiment('checkout-redesign-experiment-id', undefined, 'control')
  *
  * if (variant === 'new-checkout') {
  *   // Show new checkout flow
