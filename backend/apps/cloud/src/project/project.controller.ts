@@ -117,6 +117,7 @@ import { PendingInvitationType } from '../pending-invitation/pending-invitation.
 import { PlanCode } from '../user/entities/user.entity'
 
 const PROJECTS_MAXIMUM = 50
+const BLACKLIST_ITEMS_MAXIMUM = 1000
 
 const isValidShareDTO = (share: ShareDTO): boolean => {
   return !_isEmpty(_trim(share.email)) && _includes(roles, share.role)
@@ -1788,9 +1789,13 @@ export class ProjectController {
     }
 
     if (projectDTO.ipBlacklist !== undefined) {
-      project.ipBlacklist = projectDTO.ipBlacklist
-        ? (_map(projectDTO.ipBlacklist, _trim) as string[])
-        : null
+      project.ipBlacklist =
+        Array.isArray(projectDTO.ipBlacklist) && projectDTO.ipBlacklist.length > 0
+          ? (_map(
+              projectDTO.ipBlacklist.slice(0, BLACKLIST_ITEMS_MAXIMUM),
+              _trim,
+            ) as string[])
+          : null
     }
 
     if (projectDTO.countryBlacklist !== undefined) {
