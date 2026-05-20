@@ -1573,6 +1573,10 @@
         "finalSuffixNoOverlap": "ponieważ wybrany okres nie nakłada się z aktywnym eksperymentem.",
         "clipped": "Wyświetlanie wybranego okresu ograniczonego do czasu trwania aktywnego eksperymentu, od {{from}} do {{to}}."
       },
+      "featureFlagRelationship": {
+        "title": "Powiązanie flagi funkcji",
+        "description": "Flaga kontroluje kwalifikowalność. Ekspozycje eksperymentu wykorzystują rzeczywiste ewaluacje i zdarzenia wariantów."
+      },
       "warnings": {
         "noExposures": {
           "title": "Brak ekspozycji",

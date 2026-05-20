@@ -1104,6 +1104,8 @@ const ExperimentResults = ({
       {t('experiments.complete')}
     </Button>
   )
+  const canCompleteExperiment =
+    results?.status === 'running' || results?.status === 'paused'
 
   if (!experiment || !results) {
     if (isLoading) {
@@ -1342,26 +1344,27 @@ const ExperimentResults = ({
             </div>
             {completeExperimentButton}
           </div>
-        ) : (
+        ) : canCompleteExperiment ? (
           <div className='flex justify-end rounded-lg bg-gray-50 px-4 py-3 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
             {completeExperimentButton}
           </div>
-        )}
+        ) : null}
         <div className='rounded-lg bg-gray-50 px-4 py-3 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
           <div className='flex flex-wrap items-center justify-between gap-3'>
             <div>
               <Text as='p' size='sm' weight='semibold'>
-                Feature flag relationship
+                {t('experiments.resultDetails.featureFlagRelationship.title')}
               </Text>
               <Text as='p' size='xs' colour='muted'>
-                The flag controls eligibility. Experiment exposures use actual
-                evaluations and variant events.
+                {t(
+                  'experiments.resultDetails.featureFlagRelationship.description',
+                )}
               </Text>
             </div>
             <Text as='span' size='xs' colour='secondary' code>
               {experiment.featureFlagKey ||
                 experiment.featureFlagId ||
-                'created on launch'}
+                t('experiments.createdOnLaunch')}
             </Text>
           </div>
           <div className='mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4'>

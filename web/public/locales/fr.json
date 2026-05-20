@@ -1573,6 +1573,10 @@
         "finalSuffixNoOverlap": "car la période sélectionnée ne chevauche pas l'expérience active.",
         "clipped": "Affichage de la période sélectionnée restreinte à la durée de l'expérience active, de {{from}} à {{to}}."
       },
+      "featureFlagRelationship": {
+        "title": "Relation du feature flag",
+        "description": "Le flag contrôle l'éligibilité. Les expositions à l'expérience utilisent les évaluations réelles et les événements de variante."
+      },
       "warnings": {
         "noExposures": {
           "title": "Aucune exposition",

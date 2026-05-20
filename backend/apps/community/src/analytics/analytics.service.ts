@@ -119,6 +119,8 @@ const isValidLocale = (lc: string): boolean => {
 
 // 2 minutes
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
+const MAX_FILTERS = 100
+const MAX_FILTER_VALUES = 100
 
 const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
 
@@ -1067,12 +1069,28 @@ export class AnalyticsService {
   }
 
   postProcessParsedFilters(parsedFilters: any[]): any[] {
+    if (!_isArray(parsedFilters)) {
+      throw new UnprocessableEntityException(
+        'The provided filters are not in a valid format',
+      )
+    }
+
+    if (parsedFilters.length > MAX_FILTERS) {
+      throw new UnprocessableEntityException('Too many filters provided')
+    }
+
     return _reduce(
       parsedFilters,
       (prev, curr) => {
         const { column, filter, isExclusive, isContains = false } = curr
 
         if (_isArray(filter)) {
+          if (filter.length > MAX_FILTER_VALUES) {
+            throw new UnprocessableEntityException(
+              'Too many filter values provided',
+            )
+          }
+
           const filterArray = _map(filter, (f) => ({
             column,
             filter: f,
@@ -1140,6 +1158,10 @@ export class AnalyticsService {
       )
     }
 
+    if (parsed.length > MAX_FILTERS) {
+      throw new UnprocessableEntityException('Too many filters provided')
+    }
+
     const SUPPORTED_COLUMNS = this.getDataTypeColumns(dataType)
 
     // Converting something like [{"column":"cc","filter":"BG", "isExclusive":false},{"column":"cc","filter":"PL", "isExclusive":false},{"column":"pg","filter":"/hello", "isExclusive":false}]
@@ -1180,6 +1202,12 @@ export class AnalyticsService {
         // commented encodeURIComponent lines of code to support filtering for pages like /product/[id]
         // until I find a more suitable solution for that later
         if (_isArray(filter)) {
+          if (filter.length > MAX_FILTER_VALUES) {
+            throw new UnprocessableEntityException(
+              'Too many filter values provided',
+            )
+          }
+
           for (const f of filter) {
             // let encoded = f
 

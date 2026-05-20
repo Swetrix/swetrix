@@ -1573,6 +1573,10 @@
         "finalSuffixNoOverlap": "da sich der ausgewählte Zeitraum nicht mit dem aktiven Experiment überschneidet.",
         "clipped": "Zeigt den ausgewählten Zeitraum, zugeschnitten auf die aktive Experimentzeit, {{from}} bis {{to}}."
       },
+      "featureFlagRelationship": {
+        "title": "Feature-Flag-Beziehung",
+        "description": "Das Flag steuert die Teilnahmeberechtigung. Experiment-Exposures verwenden tatsächliche Auswertungen und Varianten-Ereignisse."
+      },
       "warnings": {
         "noExposures": {
           "title": "Keine Ausspielungen",

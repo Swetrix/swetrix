@@ -1573,6 +1573,10 @@
         "finalSuffixNoOverlap": "because the selected period does not overlap the active experiment.",
         "clipped": "Showing the selected period clipped to active experiment time, {{from}} to {{to}}."
       },
+      "featureFlagRelationship": {
+        "title": "Feature flag relationship",
+        "description": "The flag controls eligibility. Experiment exposures use actual evaluations and variant events."
+      },
       "warnings": {
         "noExposures": {
           "title": "No exposures",
