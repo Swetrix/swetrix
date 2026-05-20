@@ -1568,7 +1568,7 @@
     "addASegment": "Додати сегмент",
     "segmentUnsupportedFilters": "{{count}} пропущено тут",
     "segmentNoCompatibleFilters": "Немає сумісних фільтрів",
-    "segmentTrafficMetricsOnly": "Метрики: лише Трафік",
+    "segmentTrafficMetricsOnly": "Метрики: Лише трафік",
     "loadMore": "Завантажити ще",
     "unknownCountry": "Невідома країна",
     "unknownUser": "Невідомий користувач",

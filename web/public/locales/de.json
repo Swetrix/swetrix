@@ -1568,7 +1568,7 @@
     "addASegment": "Segment hinzufügen",
     "segmentUnsupportedFilters": "{{count}} hier übersprungen",
     "segmentNoCompatibleFilters": "Keine kompatiblen Filter",
-    "segmentTrafficMetricsOnly": "Metriken: nur Traffic",
+    "segmentTrafficMetricsOnly": "Metriken: Nur Traffic",
     "loadMore": "Mehr laden",
     "unknownCountry": "Unbekanntes Land",
     "unknownUser": "Unbekannter Benutzer",
