@@ -29,6 +29,7 @@ import LoadingBar from '~/ui/LoadingBar'
 import CCRow from '../../View/components/CCRow'
 import DashboardHeader from '../../View/components/DashboardHeader'
 import Filters from '../../View/components/Filters'
+import ProjectViewHeaderActions from '../../View/components/ProjectViewHeaderActions'
 import { Filter } from '../../View/interfaces/traffic'
 import { Panel } from '../../View/Panels'
 import { parseFilters } from '../../View/utils/filters'
@@ -234,7 +235,10 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   if (isPanelsDataEmpty && !dataLoading) {
     return (
       <>
-        <DashboardHeader showLiveVisitors={false} />
+        <DashboardHeader
+          showLiveVisitors={false}
+          rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
+        />
         <NoCaptchaEvents filters={filters} />
       </>
     )
@@ -242,7 +246,10 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
 
   return (
     <>
-      <DashboardHeader showLiveVisitors={false} />
+      <DashboardHeader
+        showLiveVisitors={false}
+        rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
+      />
       <div ref={ref}>
         {dataLoading && hasExistingData ? <LoadingBar /> : null}
         <div>

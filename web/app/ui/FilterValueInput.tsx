@@ -259,9 +259,32 @@ const FilterValueInput = ({
         return <QuestionMarkIcon className='size-4 shrink-0' />
       }
 
+      if (column === 'lc') {
+        const countryCode = item.split('-').pop()
+        if (countryCode && countries.getName(countryCode, language)) {
+          return (
+            <Flag
+              className='shrink-0 rounded-xs'
+              country={countryCode}
+              size={16}
+              alt=''
+              aria-hidden='true'
+            />
+          )
+        }
+      }
+
+      if (filterCategoryIcons[column]) {
+        return (
+          <span className='shrink-0 text-gray-500 dark:text-gray-400'>
+            {filterCategoryIcons[column]}
+          </span>
+        )
+      }
+
       return null
     },
-    [column, theme],
+    [column, language, theme],
   )
 
   // Get icon for the currently selected value (for display in input)

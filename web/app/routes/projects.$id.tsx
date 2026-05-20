@@ -1098,11 +1098,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     case 'create-project-view': {
       const name = formData.get('name')?.toString() || ''
-      const type = formData.get('type')?.toString() || 'traffic'
+      const requestedType = formData.get('type')?.toString()
+      const type = requestedType === 'performance' ? 'performance' : 'traffic'
       const filters = JSON.parse(formData.get('filters')?.toString() || '[]')
-      const customEvents = JSON.parse(
-        formData.get('customEvents')?.toString() || '[]',
-      )
+      const customEvents =
+        type === 'traffic'
+          ? JSON.parse(formData.get('customEvents')?.toString() || '[]')
+          : []
 
       const result = await serverFetch(request, `project/${projectId}/views`, {
         method: 'POST',

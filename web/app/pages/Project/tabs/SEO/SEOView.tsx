@@ -30,6 +30,7 @@ import BillboardChart from '~/ui/BillboardChart'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { MainChart } from '~/pages/Project/View/components/MainChart'
 import Filters from '~/pages/Project/View/components/Filters'
+import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import {
   Panel,
   PanelContainer,
@@ -511,7 +512,12 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         <DashboardHeader
           showSearchButton={false}
           showRefreshButton={false}
-          rightContent={manualRefreshButton}
+          rightContent={
+            <ProjectViewHeaderActions
+              tnMapping={tnMapping}
+              extraActions={manualRefreshButton}
+            />
+          }
           timeBucketSelectorItems={seoPeriodPairs}
         />
         <div className='flex min-h-[400px] items-center justify-center'>
@@ -527,7 +533,12 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         <DashboardHeader
           showSearchButton={false}
           showRefreshButton={false}
-          rightContent={manualRefreshButton}
+          rightContent={
+            <ProjectViewHeaderActions
+              tnMapping={tnMapping}
+              extraActions={manualRefreshButton}
+            />
+          }
           timeBucketSelectorItems={seoPeriodPairs}
         />
         <div className='mx-auto w-full max-w-2xl py-16 text-center'>
@@ -574,7 +585,12 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
       <DashboardHeader
         showSearchButton={false}
         showRefreshButton={false}
-        rightContent={manualRefreshButton}
+        rightContent={
+          <ProjectViewHeaderActions
+            tnMapping={tnMapping}
+            extraActions={manualRefreshButton}
+          />
+        }
         timeBucketSelectorItems={seoPeriodPairs}
       />
       {filters.length > 0 ? (

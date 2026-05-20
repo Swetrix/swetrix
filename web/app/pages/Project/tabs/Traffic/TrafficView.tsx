@@ -56,19 +56,18 @@ import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
 import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import { TrafficChart } from '~/pages/Project/tabs/Traffic/TrafficChart'
-import TrafficHeaderActions from '~/pages/Project/tabs/Traffic/TrafficHeaderActions'
 import UserFlow from '~/pages/Project/tabs/Traffic/UserFlow'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
+import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import WaitingForAnEvent from '~/pages/Project/View/components/WaitingForAnEvent'
 import {
   Customs,
   TrafficMeta,
   Params,
-  ProjectView,
   ProjectViewCustomEvent,
   Properties,
 } from '~/pages/Project/View/interfaces/traffic'
@@ -126,12 +125,6 @@ interface TrafficViewProps {
   onRemoveCustomMetric: (metricId: string) => void
   resetCustomMetrics: () => void
   mode: 'periodical' | 'cumulative'
-  // Segment/View props
-  projectViews: ProjectView[]
-  projectViewsLoading: boolean | null
-  loadProjectViews: (forced?: boolean) => void
-  setProjectViewToUpdate: (view: ProjectView | undefined) => void
-  setIsAddAViewOpened: (value: boolean) => void
 }
 
 interface DeferredTrafficData {
@@ -278,11 +271,6 @@ const TrafficViewInner = ({
   onRemoveCustomMetric,
   resetCustomMetrics,
   mode: _mode,
-  projectViews,
-  projectViewsLoading,
-  loadProjectViews,
-  setProjectViewToUpdate,
-  setIsAddAViewOpened,
   deferredData,
 }: TrafficViewInnerProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
@@ -922,18 +910,7 @@ const TrafficViewInner = ({
   }
 
   const headerRightContent = (
-    <TrafficHeaderActions
-      projectViews={projectViews}
-      projectViewsLoading={projectViewsLoading}
-      loadProjectViews={loadProjectViews}
-      setProjectViewToUpdate={setProjectViewToUpdate}
-      setIsAddAViewOpened={setIsAddAViewOpened}
-      filters={filters}
-      allowedToManage={allowedToManage}
-      dataLoading={dataLoading}
-      exportTypes={exportTypes}
-      panelsData={panelsData}
-    />
+    <ProjectViewHeaderActions tnMapping={tnMapping} exportTypes={exportTypes} />
   )
 
   // Show no events if data is empty
