@@ -17,7 +17,7 @@ import Dropdown from '~/ui/Dropdown'
 import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 
-import { ProjectView } from '../interfaces/traffic'
+import { Filter, ProjectView } from '../interfaces/traffic'
 import {
   splitProjectViewFiltersByTab,
   supportsProjectViewSegments,
@@ -56,6 +56,14 @@ const isAddViewItem = (item: ProjectViewMenuItem): item is AddViewItem =>
 
 const isEmptyViewItem = (item: ProjectViewMenuItem): item is EmptyViewItem =>
   'notClickable' in item
+
+const getFilterSearchParamKey = (filter: Filter) => {
+  if (filter.isContains) {
+    return filter.isExclusive ? `^${filter.column}` : `~${filter.column}`
+  }
+
+  return filter.isExclusive ? `!${filter.column}` : filter.column
+}
 
 const iconButtonClassName =
   'rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-900 dark:hover:text-slate-200'
@@ -279,12 +287,34 @@ const ProjectViewHeaderActions = ({
               return
             }
 
-            const newParams = hasSupportedFilters
-              ? getFiltersUrlParams(filters, supported, true, searchParams)
-              : new URLSearchParams(searchParams)
+            let newParams = new URLSearchParams(searchParams)
+            const supportedFilterKeys = new Set(
+              supported.map(getFilterSearchParamKey),
+            )
+
+            filters.forEach((filter) => {
+              const key = getFilterSearchParamKey(filter)
+
+              if (!supportedFilterKeys.has(key)) {
+                newParams.delete(key)
+              }
+            })
+
+            newParams.delete('metrics')
+
+            if (hasSupportedFilters) {
+              newParams = getFiltersUrlParams(
+                filters,
+                supported,
+                true,
+                newParams,
+              )
+            }
 
             if (hasTrafficMetrics) {
               newParams.set('metrics', JSON.stringify(item.customEvents))
+            } else {
+              newParams.delete('metrics')
             }
 
             setSearchParams(newParams)

@@ -8,7 +8,14 @@ import {
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import { CheckIcon, CaretUpDownIcon, TrashIcon } from '@phosphor-icons/react'
-import { useState, useEffect, useCallback, Fragment, useMemo } from 'react'
+import {
+  useState,
+  useEffect,
+  useCallback,
+  Fragment,
+  useMemo,
+  useRef,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
@@ -265,6 +272,7 @@ const FilterRowsEditor = ({
     Record<string, string[]>
   >({})
   const [loadingColumns, setLoadingColumns] = useState<Set<string>>(new Set())
+  const inFlightRef = useRef<Set<string>>(new Set())
   const { fetchFilters, fetchErrorsFilters, fetchVersionFilters } =
     useFiltersProxy()
 
@@ -289,8 +297,15 @@ const FilterRowsEditor = ({
 
   const fetchFilterValues = useCallback(
     async (column: string) => {
-      if (filterValuesCache[column] || loadingColumns.has(column)) return
+      if (
+        filterValuesCache[column] ||
+        loadingColumns.has(column) ||
+        inFlightRef.current.has(column)
+      ) {
+        return
+      }
 
+      inFlightRef.current.add(column)
       setLoadingColumns((prev) => new Set(prev).add(column))
       try {
         let result: string[] = []
@@ -317,6 +332,7 @@ const FilterRowsEditor = ({
         console.error('Failed to fetch filter values:', error)
         setFilterValuesCache((prev) => ({ ...prev, [column]: [] }))
       } finally {
+        inFlightRef.current.delete(column)
         setLoadingColumns((prev) => {
           const next = new Set(prev)
           next.delete(column)
@@ -336,6 +352,14 @@ const FilterRowsEditor = ({
   )
 
   useEffect(() => {
+    const inFlight = inFlightRef.current
+
+    return () => {
+      inFlight.clear()
+    }
+  }, [])
+
+  useEffect(() => {
     if (!active) {
       return
     }
@@ -350,7 +374,7 @@ const FilterRowsEditor = ({
     }
 
     panelOptions.forEach((column) => {
-      if (!filterValuesCache[column] && !loadingColumns.has(column)) {
+      if (!filterValuesCache[column] && !inFlightRef.current.has(column)) {
         fetchFilterValues(column)
       }
     })
@@ -360,7 +384,6 @@ const FilterRowsEditor = ({
     panelOptions,
     fetchFilterValues,
     filterValuesCache,
-    loadingColumns,
   ])
 
   const addFilterRow = () => {
