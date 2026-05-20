@@ -26,7 +26,7 @@ import { useViewProjectContext } from '../ViewProject'
 
 import { getFiltersUrlParams } from './SearchFilters'
 
-export interface ExportType {
+interface ExportType {
   label: string
   onClick: () => void
 }

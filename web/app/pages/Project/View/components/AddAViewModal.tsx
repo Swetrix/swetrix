@@ -8,15 +8,11 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { ProjectViewActionData } from '~/routes/projects.$id'
-import Combobox from '~/ui/Combobox'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
-import countries from '~/utils/isoCountries'
 
 import {
   Filter as FilterType,
@@ -25,7 +21,7 @@ import {
   ProjectViewCustomEventMetaValueType,
 } from '../interfaces/traffic'
 
-import { Filter } from './Filters'
+import FilterRowsEditor from './FilterRowsEditor'
 
 interface AddAViewModalProps {
   onSubmit: () => void
@@ -213,15 +209,9 @@ const AddAViewModal = ({
   supportsCustomMetrics,
   viewType,
 }: AddAViewModalProps) => {
-  const { id } = useCurrentProject()
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const fetcher = useFetcher<ProjectViewActionData>()
   const [name, setName] = useState(defaultView?.name || '')
-  const [filterType, setFilterType] = useState('')
-  const [searchList, setSearchList] = useState<any[]>([])
   const [activeFilters, setActiveFilters] = useState<FilterType[]>(
     defaultView?.filters || [],
   )
@@ -229,19 +219,6 @@ const AddAViewModal = ({
     Partial<ProjectViewCustomEvent>[]
   >(defaultView?.customEvents || [])
   const [errors, setErrors] = useState<AddAViewModalErrors>({})
-  const { fetchFilters, fetchErrorsFilters } = useFiltersProxy()
-
-  const getFiltersList = useCallback(
-    async (category: string) => {
-      const result =
-        filterDataType === 'errors'
-          ? await fetchErrorsFilters(id, category)
-          : await fetchFilters(id, category)
-
-      setSearchList(result || [])
-    },
-    [id, filterDataType, fetchErrorsFilters, fetchFilters],
-  )
 
   useEffect(() => {
     if (!defaultView) {
@@ -260,52 +237,15 @@ const AddAViewModal = ({
     setName(defaultView.name)
   }, [defaultView])
 
-  useEffect(() => {
-    if (!showModal || _isEmpty(filterType)) {
-      return
-    }
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Fetching filter list when modal opens
-    getFiltersList(filterType)
-  }, [filterType, showModal, getFiltersList])
-
   const closeModal = useCallback(() => {
     setShowModal(false)
     setTimeout(() => {
       setName('')
-      setFilterType('')
       setActiveFilters([])
       setCustomEvents([])
       setErrors({})
     }, 300)
   }, [setShowModal])
-
-  const onItemSelect = (item: string) => {
-    let processedItem = item
-
-    if (filterType === 'cc') {
-      processedItem = countries.getAlpha2Code(item, language) as string
-    }
-
-    const itemExists = _find(
-      activeFilters,
-      ({ column, filter }) => filter === processedItem && column === filterType,
-    )
-
-    if (itemExists) {
-      return
-    }
-
-    setActiveFilters((prevFilters: any) => [
-      ...prevFilters,
-      {
-        column: filterType,
-        filter: processedItem,
-        isExclusive: false,
-        isContains: false,
-      },
-    ])
-  }
 
   const validateCustomMetricsAndName = () => {
     let valid = true
@@ -352,14 +292,12 @@ const AddAViewModal = ({
   const isViewSubmitting = fetcher.state !== 'idle'
   const hasHandledResponse = useRef(false)
 
-  // Reset the handled flag when fetcher starts submitting
   useEffect(() => {
     if (fetcher.state === 'submitting') {
       hasHandledResponse.current = false
     }
   }, [fetcher.state])
 
-  // Handle fetcher response
   useEffect(() => {
     if (
       fetcher.state === 'idle' &&
@@ -406,6 +344,7 @@ const AddAViewModal = ({
 
   return (
     <Modal
+      size='medium'
       onClose={() => {
         if (isViewSubmitting) {
           return
@@ -433,104 +372,24 @@ const AddAViewModal = ({
             maxLength={20}
           />
           <hr className='my-4' />
-          <Select
-            label={t('project.selectCategoryOptional')}
-            items={filterOptions}
-            labelExtractor={(item) => t(`project.mapping.${item}`)}
-            onSelect={(item) => setFilterType(item)}
-            title={
-              _isEmpty(filterType)
-                ? t('project.settings.reseted.selectFilters')
-                : t(`project.mapping.${filterType}`)
-            }
-            selectedItem={_isEmpty(filterType) ? undefined : filterType}
-          />
-          {filterType && !_isEmpty(searchList) ? (
-            <>
-              <Text
-                as='p'
-                size='sm'
-                weight='medium'
-                colour='secondary'
-                className='mt-5'
-              >
-                {t('project.filters')}
-              </Text>
-              <Combobox
-                items={searchList}
-                labelExtractor={(item) => {
-                  if (filterType === 'cc') {
-                    return countries.getName(item, language)
-                  }
-
-                  return item
-                }}
-                onSelect={onItemSelect}
-                placeholder={t('project.settings.reseted.filtersPlaceholder')}
-              />
-            </>
-          ) : null}
+          <Text
+            as='p'
+            size='sm'
+            weight='medium'
+            className='mb-3 text-gray-700 dark:text-gray-100'
+          >
+            {t('project.filters')}
+          </Text>
           <div className='mt-2'>
-            {_map(
-              activeFilters,
-              ({ filter, column, isExclusive, isContains }) => (
-                <Filter
-                  key={`${column}-${filter}-${isExclusive}-${isContains}`}
-                  onRemoveFilter={(e) => {
-                    e.preventDefault()
-
-                    setActiveFilters((prevFilters: any) => {
-                      return _filter(
-                        prevFilters,
-                        ({ column: prevColumn, filter: prevFilter }) =>
-                          prevFilter !== filter || prevColumn !== column,
-                      )
-                    })
-                  }}
-                  onChangeExclusive={(e) => {
-                    e.preventDefault()
-
-                    setActiveFilters((prevFilters: any) => {
-                      return _map(prevFilters, (item) => {
-                        if (item.column === column && item.filter === filter) {
-                          let nextContains = isContains
-                          let nextExclusive = isExclusive
-                          if (!isContains && !isExclusive) {
-                            nextContains = false
-                            nextExclusive = true
-                          } else if (!isContains && isExclusive) {
-                            nextContains = true
-                            nextExclusive = false
-                          } else if (isContains && !isExclusive) {
-                            nextContains = true
-                            nextExclusive = true
-                          } else {
-                            nextContains = false
-                            nextExclusive = false
-                          }
-
-                          return {
-                            column,
-                            filter,
-                            isExclusive: nextExclusive,
-                            isContains: nextContains,
-                          }
-                        }
-
-                        return item
-                      })
-                    })
-                  }}
-                  isExclusive={isExclusive}
-                  column={column}
-                  filter={filter}
-                  tnMapping={tnMapping}
-                  isContains={isContains}
-                  canChangeExclusive
-                  removable
-                />
-              ),
-            )}
+            <FilterRowsEditor
+              active={showModal}
+              tnMapping={tnMapping}
+              initialFilters={defaultView?.filters}
+              type={filterDataType}
+              filterOptions={filterOptions}
+              onChange={setActiveFilters}
+              resetKey={defaultView?.id || 'new'}
+            />
           </div>
           {supportsCustomMetrics ? (
             <>
@@ -593,6 +452,7 @@ const AddAViewModal = ({
       }
       submitType='regular'
       isOpened={showModal}
+      overflowVisible
     />
   )
 }

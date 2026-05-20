@@ -910,10 +910,7 @@ const TrafficViewInner = ({
   }
 
   const headerRightContent = (
-    <ProjectViewHeaderActions
-      tnMapping={tnMapping}
-      exportTypes={exportTypes}
-    />
+    <ProjectViewHeaderActions tnMapping={tnMapping} exportTypes={exportTypes} />
   )
 
   // Show no events if data is empty

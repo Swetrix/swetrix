@@ -6,7 +6,7 @@ import {
 
 import { Filter } from '../interfaces/traffic'
 
-export type ProjectTab = keyof typeof PROJECT_TABS
+type ProjectTab = keyof typeof PROJECT_TABS
 
 const TRAFFIC_FILTER_COLUMNS = [
   ...FILTERS_PANELS_ORDER,
@@ -97,7 +97,7 @@ const getSupportedColumns = (tab: ProjectTab) => {
   return []
 }
 
-export const isProjectTabFilterSupported = (
+const isProjectTabFilterSupported = (
   filter: Pick<Filter, 'column'>,
   tab: ProjectTab,
 ) => {

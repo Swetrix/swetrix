@@ -28,7 +28,7 @@ interface FilterProps {
   isContains?: boolean
 }
 
-export const Filter = ({
+const Filter = ({
   column,
   filter,
   isExclusive,
