@@ -1016,7 +1016,9 @@ const ExperimentResults = ({
     }
     if (
       healthWarnings.some((warning) =>
-        ['EXTREME_IMBALANCE', 'VARIANT_NO_TRAFFIC'].includes(warning.code),
+        ['EXTREME_IMBALANCE', 'VARIANT_NO_TRAFFIC', 'GOAL_MISSING'].includes(
+          warning.code,
+        ),
       )
     ) {
       return null
