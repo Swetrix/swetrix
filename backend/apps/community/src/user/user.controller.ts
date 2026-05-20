@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger'
 import _isEmpty from 'lodash/isEmpty'
+import _isString from 'lodash/isString'
 import _omit from 'lodash/omit'
 import _isNull from 'lodash/isNull'
 import _map from 'lodash/map'
@@ -341,7 +342,7 @@ export class UserController {
     @CurrentUserId() id: string,
     @Req() request: Request,
   ) {
-    this.logger.log({ userDTO, id }, 'PUT /user')
+    this.logger.log({ id }, 'PUT /user')
 
     const originalUser = await this.userService.findOne({ id })
 
@@ -349,11 +350,32 @@ export class UserController {
       throw new BadRequestException('User not found')
     }
 
-    try {
-      if (userDTO.password && typeof userDTO.password === 'string') {
-        this.userService.validatePassword(userDTO.password)
+    const newPassword = userDTO.password
+    const shouldUpdatePassword =
+      typeof newPassword === 'string' && newPassword.length > 0
 
-        const hashed = await this.authService.hashPassword(userDTO.password)
+    if (shouldUpdatePassword) {
+      const currentPassword = userDTO.currentPassword
+
+      if (_isEmpty(currentPassword) || !_isString(currentPassword)) {
+        throw new BadRequestException('incorrectPassword')
+      }
+
+      const isPasswordValid = await this.authService.comparePassword(
+        currentPassword,
+        originalUser.password,
+      )
+
+      if (!isPasswordValid) {
+        throw new BadRequestException('incorrectPassword')
+      }
+    }
+
+    try {
+      if (shouldUpdatePassword) {
+        this.userService.validatePassword(newPassword)
+
+        const hashed = await this.authService.hashPassword(newPassword)
         await this.userService.update(id, { password: hashed })
 
         await Promise.all([

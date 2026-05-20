@@ -553,17 +553,30 @@ export class UserController {
     @CurrentUserId() id: string,
     @Req() request: Request,
   ): Promise<Partial<User>> {
-    this.logger.log({ userDTO, id }, 'PUT /user')
+    this.logger.log({ id }, 'PUT /user')
     const user = await this.userService.findOne({ where: { id } })
 
     const shouldUpdatePassword =
       !_isEmpty(userDTO.password) && _isString(userDTO.password)
 
     if (shouldUpdatePassword) {
-      // Validate new password
+      const currentPassword = userDTO.currentPassword
+
+      if (_isEmpty(currentPassword) || !_isString(currentPassword)) {
+        throw new BadRequestException('incorrectPassword')
+      }
+
+      const isPasswordValid = await this.authService.comparePassword(
+        currentPassword,
+        user.password,
+      )
+
+      if (!isPasswordValid) {
+        throw new BadRequestException('incorrectPassword')
+      }
+
       this.userService.validatePassword(userDTO.password)
 
-      // Hash new password
       userDTO.password = await this.authService.hashPassword(userDTO.password)
     }
 

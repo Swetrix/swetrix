@@ -236,6 +236,7 @@ const SettingsSection = ({
 )
 
 interface Form extends Partial<User> {
+  currentPassword: string
   repeat: string
   password: string
   email: string
@@ -385,6 +386,7 @@ const UserSettings = () => {
   }
   const [form, setForm] = useState<Form>(() => ({
     email: '',
+    currentPassword: '',
     password: '',
     repeat: '',
     timeFormat: user?.timeFormat || TimeFormat['12-hour'],
@@ -416,6 +418,7 @@ const UserSettings = () => {
 
   const lastHandledData = useRef<UserSettingsActionData | null>(null)
   const passwordChangedRef = useRef(false)
+  const pendingPasswordChangeRef = useRef(false)
   const pendingToggles = useRef<Map<string, boolean>>(new Map())
 
   const isSubmitting = fetcher.state === 'submitting'
@@ -435,6 +438,11 @@ const UserSettings = () => {
       const { intent, user: updatedUser, apiKey } = fetcher.data
 
       if (intent === 'update-profile' && updatedUser) {
+        if (pendingPasswordChangeRef.current) {
+          pendingPasswordChangeRef.current = false
+          passwordChangedRef.current = true
+        }
+
         mergeUser(updatedUser)
         toast.success(t('profileSettings.updated'))
 
@@ -470,7 +478,7 @@ const UserSettings = () => {
         toast.success(t('billing.subscriptionCancelledSuccess'))
         loadUser()
       }
-    } else if (fetcher.data?.error) {
+    } else if (fetcher.data?.error || fetcher.data?.fieldErrors) {
       setIsCancellingSubscription(false)
       if (pendingToggles.current.has('live-visitors')) {
         mergeUser({
@@ -486,6 +494,13 @@ const UserSettings = () => {
         })
         pendingToggles.current.delete('login-notifications')
       }
+      if (pendingPasswordChangeRef.current) {
+        pendingPasswordChangeRef.current = false
+        passwordChangedRef.current = false
+        setIsPasswordChangeModalOpened(false)
+      }
+      if (!fetcher.data.error) return
+
       const translated = t(`apiNotifications.${fetcher.data.error}`)
       toast.error(
         translated !== `apiNotifications.${fetcher.data.error}`
@@ -508,14 +523,19 @@ const UserSettings = () => {
       })
     }
 
+    if ((form.password || form.repeat) && !form.currentPassword) {
+      allErrors.currentPassword = t('profileSettings.currentPasswordRequired')
+    }
+
     if (form.password !== form.repeat) {
       allErrors.repeat = t('auth.common.noMatchError')
     }
 
     return allErrors
-  }, [form.email, form.password, form.repeat, t])
+  }, [form.currentPassword, form.email, form.password, form.repeat, t])
 
   const validated = _isEmpty(_keys(errors))
+  const hasPasswordUpdateInput = Boolean(form.password || form.repeat)
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
@@ -525,7 +545,11 @@ const UserSettings = () => {
       setEmailBeenSubmitted(false)
     }
 
-    if (target.name === 'password' || target.name === 'repeat') {
+    if (
+      target.name === 'currentPassword' ||
+      target.name === 'password' ||
+      target.name === 'repeat'
+    ) {
       setPasswordBeenSubmitted(false)
     }
 
@@ -538,14 +562,18 @@ const UserSettings = () => {
   const submitProfileUpdate = (
     additionalData?: Record<string, unknown>,
     skipValidation = false,
+    includePassword = false,
   ) => {
     if (!skipValidation && !validated) return
 
     const formData = new FormData()
     formData.set('intent', 'update-profile')
     formData.set('email', form.email || user?.email || '')
-    if (form.password) formData.set('password', form.password)
-    if (form.repeat) formData.set('repeat', form.repeat)
+    if (includePassword && hasPasswordUpdateInput && form.currentPassword)
+      formData.set('currentPassword', form.currentPassword)
+    if (includePassword && form.password)
+      formData.set('password', form.password)
+    if (includePassword && form.repeat) formData.set('repeat', form.repeat)
     if (additionalData?.timezone)
       formData.set('timezone', additionalData.timezone as string)
     if (additionalData?.timeFormat || form.timeFormat) {
@@ -570,16 +598,16 @@ const UserSettings = () => {
     }
 
     if (form.email) setEmailBeenSubmitted(true)
-    if (form.password || form.repeat) setPasswordBeenSubmitted(true)
+    if (hasPasswordUpdateInput) setPasswordBeenSubmitted(true)
 
     if (validated) {
       // User is about to change their password, let's warn him if
-      if (form.password && !force) {
+      if (hasPasswordUpdateInput && !force) {
         setIsPasswordChangeModalOpened(true)
         return
       }
 
-      submitProfileUpdate()
+      submitProfileUpdate(undefined, false, hasPasswordUpdateInput)
     }
   }
 
@@ -592,9 +620,15 @@ const UserSettings = () => {
   }
 
   const handlePasswordSubmit = () => {
-    setPasswordBeenSubmitted(true)
+    if (hasPasswordUpdateInput) setPasswordBeenSubmitted(true)
 
-    if (errors.password || errors.repeat) return
+    if (
+      !hasPasswordUpdateInput ||
+      errors.currentPassword ||
+      errors.password ||
+      errors.repeat
+    )
+      return
 
     setIsPasswordChangeModalOpened(true)
   }
@@ -1063,6 +1097,17 @@ const UserSettings = () => {
                 >
                   <div className='max-w-md space-y-4'>
                     <Input
+                      name='currentPassword'
+                      type='password'
+                      label={t('profileSettings.currentPassword')}
+                      value={form.currentPassword}
+                      placeholder={t('auth.common.password')}
+                      onChange={handleInput}
+                      error={
+                        passwordBeenSubmitted ? errors.currentPassword : null
+                      }
+                    />
+                    <Input
                       name='password'
                       type='password'
                       label={t('profileSettings.newPassword')}
@@ -1084,7 +1129,9 @@ const UserSettings = () => {
                     <Button
                       size='lg'
                       onClick={handlePasswordSubmit}
-                      disabled={!form.password || !form.repeat}
+                      disabled={
+                        !form.currentPassword || !form.password || !form.repeat
+                      }
                     >
                       {t('profileSettings.updatePassword')}
                     </Button>
@@ -1745,8 +1792,9 @@ const UserSettings = () => {
         }}
         onSubmit={() => {
           setIsPasswordChangeModalOpened(false)
-          passwordChangedRef.current = true
-          submitProfileUpdate(undefined, true)
+          pendingPasswordChangeRef.current = hasPasswordUpdateInput
+          passwordChangedRef.current = false
+          submitProfileUpdate(undefined, true, hasPasswordUpdateInput)
         }}
         closeText={t('common.cancel')}
         submitText={t('common.continue')}

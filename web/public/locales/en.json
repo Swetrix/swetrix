@@ -846,6 +846,8 @@
     "accountDesc": "Manage your profile and general settings.",
     "passwordAuth": "Password & Authentication",
     "passwordAuthDesc": "Manage access to your account.",
+    "currentPassword": "Current password",
+    "currentPasswordRequired": "Current password is required",
     "newPassword": "New password",
     "repeatPassword": "New password (repeated)",
     "updatePassword": "Update password",

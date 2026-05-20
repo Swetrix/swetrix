@@ -13,4 +13,7 @@ export class UpdateUserProfileDTO {
 
   @ApiProperty({ example: 'newStrongPassword123', required: false })
   password?: string
+
+  @ApiProperty({ example: 'currentStrongPassword123', required: false })
+  currentPassword?: string
 }
