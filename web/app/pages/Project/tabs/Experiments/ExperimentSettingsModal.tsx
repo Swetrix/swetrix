@@ -137,6 +137,7 @@ const ExperimentSettingsModal = ({
 
   const loadExperiment = async () => {
     if (!experimentId) return
+    setShowPlanning(false)
     setIsLoading(true)
     try {
       const experiment = await experimentProxy.fetchExperiment(experimentId)

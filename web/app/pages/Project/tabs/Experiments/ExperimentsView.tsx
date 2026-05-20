@@ -293,15 +293,15 @@ const ExperimentRow = ({
   )
   const timingLabel = useMemo(() => {
     if (experiment.status === 'completed' && experiment.endedAt) {
-      return `${t('experiments.endedAt')} ${dayjs(experiment.endedAt).format(
-        'MMM D, YYYY',
-      )}`
+      return t('experiments.endedAtDate', {
+        date: dayjs(experiment.endedAt).format('MMM D, YYYY'),
+      })
     }
 
     if (experiment.startedAt) {
-      return `${t('experiments.startedAt')} ${dayjs(
-        experiment.startedAt,
-      ).format('MMM D, YYYY')}`
+      return t('experiments.startedAtDate', {
+        date: dayjs(experiment.startedAt).format('MMM D, YYYY'),
+      })
     }
 
     return dayjs(experiment.created).fromNow()
@@ -401,7 +401,9 @@ const ExperimentRow = ({
               </div>
               <div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-1'>
                 <Text as='span' size='xs' colour='muted'>
-                  {variantsCount} {t('experiments.variants').toLowerCase()}
+                  {t('experiments.variantsCountLabel', {
+                    count: variantsCount,
+                  })}
                 </Text>
                 <span className='size-1 rounded-full bg-gray-300 dark:bg-slate-700' />
                 <Text as='span' size='xs' colour='muted'>
