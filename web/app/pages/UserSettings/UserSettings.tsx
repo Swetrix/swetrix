@@ -418,6 +418,7 @@ const UserSettings = () => {
 
   const lastHandledData = useRef<UserSettingsActionData | null>(null)
   const passwordChangedRef = useRef(false)
+  const pendingPasswordChangeRef = useRef(false)
   const pendingToggles = useRef<Map<string, boolean>>(new Map())
 
   const isSubmitting = fetcher.state === 'submitting'
@@ -437,6 +438,11 @@ const UserSettings = () => {
       const { intent, user: updatedUser, apiKey } = fetcher.data
 
       if (intent === 'update-profile' && updatedUser) {
+        if (pendingPasswordChangeRef.current) {
+          pendingPasswordChangeRef.current = false
+          passwordChangedRef.current = true
+        }
+
         mergeUser(updatedUser)
         toast.success(t('profileSettings.updated'))
 
@@ -472,7 +478,7 @@ const UserSettings = () => {
         toast.success(t('billing.subscriptionCancelledSuccess'))
         loadUser()
       }
-    } else if (fetcher.data?.error) {
+    } else if (fetcher.data?.error || fetcher.data?.fieldErrors) {
       setIsCancellingSubscription(false)
       if (pendingToggles.current.has('live-visitors')) {
         mergeUser({
@@ -488,6 +494,13 @@ const UserSettings = () => {
         })
         pendingToggles.current.delete('login-notifications')
       }
+      if (pendingPasswordChangeRef.current) {
+        pendingPasswordChangeRef.current = false
+        passwordChangedRef.current = false
+        setIsPasswordChangeModalOpened(false)
+      }
+      if (!fetcher.data.error) return
+
       const translated = t(`apiNotifications.${fetcher.data.error}`)
       toast.error(
         translated !== `apiNotifications.${fetcher.data.error}`
@@ -584,16 +597,19 @@ const UserSettings = () => {
     }
 
     if (form.email) setEmailBeenSubmitted(true)
-    if (form.password || form.repeat) setPasswordBeenSubmitted(true)
+    const hasPasswordUpdateInput = Boolean(
+      form.password || form.currentPassword,
+    )
+    if (hasPasswordUpdateInput || form.repeat) setPasswordBeenSubmitted(true)
 
     if (validated) {
       // User is about to change their password, let's warn him if
-      if (form.password && !force) {
+      if (hasPasswordUpdateInput && !force) {
         setIsPasswordChangeModalOpened(true)
         return
       }
 
-      submitProfileUpdate(undefined, false, Boolean(form.password))
+      submitProfileUpdate(undefined, false, hasPasswordUpdateInput)
     }
   }
 
@@ -1772,7 +1788,8 @@ const UserSettings = () => {
         }}
         onSubmit={() => {
           setIsPasswordChangeModalOpened(false)
-          passwordChangedRef.current = true
+          pendingPasswordChangeRef.current = Boolean(form.password)
+          passwordChangedRef.current = false
           submitProfileUpdate(undefined, true, true)
         }}
         closeText={t('common.cancel')}

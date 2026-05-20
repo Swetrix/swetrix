@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger'
 import _isEmpty from 'lodash/isEmpty'
+import _isString from 'lodash/isString'
 import _omit from 'lodash/omit'
 import _isNull from 'lodash/isNull'
 import _map from 'lodash/map'
@@ -354,12 +355,14 @@ export class UserController {
       typeof newPassword === 'string' && newPassword.length > 0
 
     if (shouldUpdatePassword) {
-      if (!userDTO.currentPassword) {
+      const currentPassword = userDTO.currentPassword
+
+      if (_isEmpty(currentPassword) || !_isString(currentPassword)) {
         throw new BadRequestException('incorrectPassword')
       }
 
       const isPasswordValid = await this.authService.comparePassword(
-        userDTO.currentPassword,
+        currentPassword,
         originalUser.password,
       )
 
