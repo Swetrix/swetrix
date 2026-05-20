@@ -228,22 +228,17 @@ export const MetricCards = memo(
 interface PerformanceMetricCardsProps {
   overall: Partial<OverallPerformanceObject>
   overallCompare?: Partial<OverallPerformanceObject>
-  activePeriodCompare?: string
 }
 
 export const PerformanceMetricCards = memo(
-  ({
-    overall,
-    overallCompare,
-    activePeriodCompare,
-  }: PerformanceMetricCardsProps) => {
+  ({ overall, overallCompare }: PerformanceMetricCardsProps) => {
     const { t } = useTranslation('common')
 
     let frontendChange = overall.frontendChange
     let backendChange = overall.backendChange
     let networkChange = overall.networkChange
 
-    if (!_isEmpty(overallCompare) && activePeriodCompare !== 'previous') {
+    if (!_isEmpty(overallCompare)) {
       frontendChange =
         (overall.current?.frontend ?? 0) -
         (overallCompare?.current?.frontend ?? 0)
