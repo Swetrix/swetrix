@@ -126,6 +126,7 @@ interface SearchFiltersProps {
   tnMapping: Record<string, string>
   filters: FilterType[]
   type: 'traffic' | 'errors'
+  filterOptions?: string[]
 }
 
 const SearchFilters = ({
@@ -134,6 +135,7 @@ const SearchFilters = ({
   tnMapping,
   filters,
   type,
+  filterOptions,
 }: SearchFiltersProps) => {
   const { id } = useCurrentProject()
   const { theme } = useTheme()
@@ -151,8 +153,11 @@ const SearchFilters = ({
   const { fetchFilters, fetchErrorsFilters, fetchVersionFilters } =
     useFiltersProxy()
 
-  const panelOptions =
-    type === 'traffic' ? FILTERS_PANELS_ORDER : ERRORS_FILTERS_PANELS_ORDER
+  const panelOptions = filterOptions?.length
+    ? filterOptions
+    : type === 'traffic'
+      ? FILTERS_PANELS_ORDER
+      : ERRORS_FILTERS_PANELS_ORDER
 
   const fetchFilterValues = useCallback(
     async (column: string) => {

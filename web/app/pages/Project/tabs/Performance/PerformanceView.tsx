@@ -40,6 +40,7 @@ import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import { MapLoader } from '~/pages/Project/View/components/MapLoader'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
+import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import { Panel } from '~/pages/Project/View/Panels'
 import {
   useViewProjectContext,
@@ -389,7 +390,9 @@ const PerformanceViewInner = ({
   if (isPanelsDataEmpty) {
     return (
       <>
-        <DashboardHeader />
+        <DashboardHeader
+          rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
+        />
         <NoEvents filters={filters} />
       </>
     )
@@ -435,7 +438,9 @@ const PerformanceViewInner = ({
 
   return (
     <>
-      <DashboardHeader />
+      <DashboardHeader
+        rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
+      />
       {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
       <div className={cx({ hidden: isPanelsDataEmpty })}>
         {!isPanelsDataEmpty ? (

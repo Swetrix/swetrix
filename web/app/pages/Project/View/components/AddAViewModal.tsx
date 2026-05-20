@@ -9,7 +9,6 @@ import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
-import { FILTERS_PANELS_ORDER } from '~/lib/constants'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { ProjectViewActionData } from '~/routes/projects.$id'
 import Combobox from '~/ui/Combobox'
@@ -34,6 +33,10 @@ interface AddAViewModalProps {
   setShowModal: (show: boolean) => void
   tnMapping: Record<string, string>
   defaultView?: ProjectView
+  filterOptions: string[]
+  filterDataType: 'traffic' | 'errors'
+  supportsCustomMetrics: boolean
+  viewType: 'traffic' | 'performance'
 }
 
 const InlineButton = ({
@@ -205,6 +208,10 @@ const AddAViewModal = ({
   setShowModal,
   tnMapping,
   defaultView,
+  filterOptions,
+  filterDataType,
+  supportsCustomMetrics,
+  viewType,
 }: AddAViewModalProps) => {
   const { id } = useCurrentProject()
   const {
@@ -222,15 +229,18 @@ const AddAViewModal = ({
     Partial<ProjectViewCustomEvent>[]
   >(defaultView?.customEvents || [])
   const [errors, setErrors] = useState<AddAViewModalErrors>({})
-  const { fetchFilters } = useFiltersProxy()
+  const { fetchFilters, fetchErrorsFilters } = useFiltersProxy()
 
   const getFiltersList = useCallback(
     async (category: string) => {
-      const result = await fetchFilters(id, category)
+      const result =
+        filterDataType === 'errors'
+          ? await fetchErrorsFilters(id, category)
+          : await fetchFilters(id, category)
 
       setSearchList(result || [])
     },
-    [id, fetchFilters],
+    [id, filterDataType, fetchErrorsFilters, fetchFilters],
   )
 
   useEffect(() => {
@@ -309,21 +319,23 @@ const AddAViewModal = ({
       valid = false
     }
 
-    for (let i = 0; i < _size(customEvents); ++i) {
-      const { id, customEventName, metricKey } = customEvents[i]
+    if (supportsCustomMetrics) {
+      for (let i = 0; i < _size(customEvents); ++i) {
+        const { id, customEventName, metricKey } = customEvents[i]
 
-      if (!customEventName) {
-        metricErrors[`${id}_customEventName`] = t(
-          'apiNotifications.inputCannotBeEmpty',
-        )
-        valid = false
-      }
+        if (!customEventName) {
+          metricErrors[`${id}_customEventName`] = t(
+            'apiNotifications.inputCannotBeEmpty',
+          )
+          valid = false
+        }
 
-      if (!metricKey) {
-        metricErrors[`${id}_metricKey`] = t(
-          'apiNotifications.inputCannotBeEmpty',
-        )
-        valid = false
+        if (!metricKey) {
+          metricErrors[`${id}_metricKey`] = t(
+            'apiNotifications.inputCannotBeEmpty',
+          )
+          valid = false
+        }
       }
     }
 
@@ -374,8 +386,11 @@ const AddAViewModal = ({
     }
 
     const formData = new FormData()
+    const metricsToSubmit = supportsCustomMetrics
+      ? customEvents
+      : defaultView?.customEvents || []
     formData.append('filters', JSON.stringify(activeFilters))
-    formData.append('customEvents', JSON.stringify(customEvents))
+    formData.append('customEvents', JSON.stringify(metricsToSubmit))
     formData.append('name', name)
 
     if (defaultView?.id) {
@@ -383,7 +398,7 @@ const AddAViewModal = ({
       formData.append('viewId', defaultView.id)
     } else {
       formData.append('intent', 'create-project-view')
-      formData.append('type', 'traffic')
+      formData.append('type', viewType)
     }
 
     fetcher.submit(formData, { method: 'POST' })
@@ -420,7 +435,7 @@ const AddAViewModal = ({
           <hr className='my-4' />
           <Select
             label={t('project.selectCategoryOptional')}
-            items={FILTERS_PANELS_ORDER}
+            items={filterOptions}
             labelExtractor={(item) => t(`project.mapping.${item}`)}
             onSelect={(item) => setFilterType(item)}
             title={
@@ -517,54 +532,62 @@ const AddAViewModal = ({
               ),
             )}
           </div>
-          <hr className='my-4' />
-          <Text
-            as='p'
-            size='sm'
-            weight='medium'
-            className='text-gray-700 dark:text-gray-100'
-          >
-            {t('project.customEventsAndMetrics')}
-          </Text>
-          <div className='divide-y divide-gray-300/80 dark:divide-slate-900/60'>
-            {_map(customEvents, (ev) => (
-              <EditMetric
-                key={ev.id}
-                metric={ev}
-                setErrors={setErrors}
-                errors={errors}
-                onChange={(key, value) => {
-                  setCustomEvents((prev) =>
-                    _map(prev, (item) => {
-                      if (item.id !== ev.id) {
-                        return item
-                      }
+          {supportsCustomMetrics ? (
+            <>
+              <hr className='my-4' />
+              <Text
+                as='p'
+                size='sm'
+                weight='medium'
+                className='text-gray-700 dark:text-gray-100'
+              >
+                {t('project.customEventsAndMetrics')}
+              </Text>
+              <div className='divide-y divide-gray-300/80 dark:divide-slate-900/60'>
+                {_map(customEvents, (ev) => (
+                  <EditMetric
+                    key={ev.id}
+                    metric={ev}
+                    setErrors={setErrors}
+                    errors={errors}
+                    onChange={(key, value) => {
+                      setCustomEvents((prev) =>
+                        _map(prev, (item) => {
+                          if (item.id !== ev.id) {
+                            return item
+                          }
 
-                      return {
-                        ...item,
-                        [key]: value,
-                      }
-                    }),
-                  )
-                }}
-                onDelete={() => {
-                  setCustomEvents((prev) =>
-                    _filter(prev, ({ id }) => id !== ev.id),
-                  )
-                }}
-              />
-            ))}
-          </div>
-          {customEvents.length < MAX_METRICS_IN_VIEW ? (
-            <InlineButton
-              text={t('project.addAMetric')}
-              onClick={() => {
-                setCustomEvents((prev) => [
-                  ...prev,
-                  { ...EMPTY_CUSTOM_EVENT, id: Math.random().toString() },
-                ])
-              }}
-            />
+                          return {
+                            ...item,
+                            [key]: value,
+                          }
+                        }),
+                      )
+                    }}
+                    onDelete={() => {
+                      setCustomEvents((prev) =>
+                        _filter(prev, ({ id }) => id !== ev.id),
+                      )
+                    }}
+                  />
+                ))}
+              </div>
+              {customEvents.length < MAX_METRICS_IN_VIEW ? (
+                <InlineButton
+                  text={t('project.addAMetric')}
+                  onClick={() => {
+                    setCustomEvents((prev) => [
+                      ...prev,
+                      { ...EMPTY_CUSTOM_EVENT, id: Math.random().toString() },
+                    ])
+                  }}
+                />
+              ) : null}
+            </>
+          ) : customEvents.length > 0 ? (
+            <Text as='p' size='xs' colour='secondary' className='mt-4'>
+              {t('project.segmentTrafficMetricsOnly')}
+            </Text>
           ) : null}
         </div>
       }

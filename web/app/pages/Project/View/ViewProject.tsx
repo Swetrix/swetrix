@@ -112,6 +112,10 @@ import {
 } from './interfaces/traffic'
 import { parseFilters } from './utils/filters'
 import {
+  getProjectViewCreateType,
+  getProjectViewFilterOptions,
+} from './utils/projectViewSegments'
+import {
   getFormatDate,
   typeNameMapping,
   CHART_METRICS_MAPPING,
@@ -134,6 +138,11 @@ interface ViewProjectContextType {
   dataLoading: boolean
   activeTab: keyof typeof PROJECT_TABS
   filters: Filter[]
+  projectViews: ProjectView[]
+  projectViewsLoading: boolean | null
+  loadProjectViews: (forced?: boolean) => void
+  setProjectViewToUpdate: (view: ProjectView | undefined) => void
+  setIsAddAViewOpened: (value: boolean) => void
 
   isActiveCompare: boolean
   dateRangeCompare: Date[] | null
@@ -201,6 +210,11 @@ const defaultViewProjectContext: ViewProjectContextType = {
   dataLoading: false,
   activeTab: PROJECT_TABS.traffic,
   filters: [],
+  projectViews: [],
+  projectViewsLoading: null,
+  loadProjectViews: () => {},
+  setProjectViewToUpdate: () => {},
+  setIsAddAViewOpened: () => {},
 
   isActiveCompare: false,
   dateRangeCompare: null,
@@ -373,6 +387,14 @@ const ViewProjectContent = () => {
 
     return PROJECT_TABS.traffic
   }, [searchParams])
+  const projectViewFilterOptions = useMemo(
+    () => getProjectViewFilterOptions(activeTab),
+    [activeTab],
+  )
+  const projectViewCreateType = useMemo(
+    () => getProjectViewCreateType(activeTab),
+    [activeTab],
+  )
 
   const period = useMemo<Period>(() => {
     const urlPeriod = searchParams.get('period') as Period
@@ -1175,6 +1197,11 @@ const ViewProjectContent = () => {
       dataLoading,
       activeTab,
       filters,
+      projectViews,
+      projectViewsLoading,
+      loadProjectViews,
+      setProjectViewToUpdate,
+      setIsAddAViewOpened,
 
       isActiveCompare,
       dateRangeCompare,
@@ -1222,6 +1249,9 @@ const ViewProjectContent = () => {
       dataLoading,
       activeTab,
       filters,
+      projectViews,
+      projectViewsLoading,
+      loadProjectViews,
       isActiveCompare,
       dateRangeCompare,
       activePeriodCompare,
@@ -1542,11 +1572,6 @@ const ViewProjectContent = () => {
                                 onRemoveCustomMetric={onRemoveCustomMetric}
                                 resetCustomMetrics={resetCustomMetrics}
                                 mode={mode}
-                                projectViews={projectViews}
-                                projectViewsLoading={projectViewsLoading}
-                                loadProjectViews={loadProjectViews}
-                                setProjectViewToUpdate={setProjectViewToUpdate}
-                                setIsAddAViewOpened={setIsAddAViewOpened}
                               />
                             ) : null}
                             {activeTab === PROJECT_TABS.performance ? (
@@ -1743,6 +1768,7 @@ const ViewProjectContent = () => {
                 setShowModal={setShowFiltersSearch}
                 tnMapping={tnMapping}
                 filters={filters}
+                filterOptions={projectViewFilterOptions}
               />
               <AddAViewModal
                 showModal={isAddAViewOpened}
@@ -1757,6 +1783,12 @@ const ViewProjectContent = () => {
                 }}
                 defaultView={projectViewToUpdate}
                 tnMapping={tnMapping}
+                filterOptions={projectViewFilterOptions}
+                filterDataType={
+                  activeTab === PROJECT_TABS.errors ? 'errors' : 'traffic'
+                }
+                supportsCustomMetrics={activeTab === PROJECT_TABS.traffic}
+                viewType={projectViewCreateType}
               />
             </>
           </RefreshTriggersContext.Provider>

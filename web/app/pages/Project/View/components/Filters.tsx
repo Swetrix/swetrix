@@ -13,6 +13,7 @@ import { getLocaleDisplayName, cn } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
 import { isFilterValid } from '../utils/filters'
+import { splitProjectViewFiltersByTab } from '../utils/projectViewSegments'
 import { useViewProjectContext } from '../ViewProject'
 
 interface FilterProps {
@@ -268,9 +269,13 @@ interface FiltersProps {
 }
 
 const Filters = ({ tnMapping, className }: FiltersProps) => {
-  const { dataLoading, filters } = useViewProjectContext()
+  const { activeTab, dataLoading, filters } = useViewProjectContext()
   const { t } = useTranslation('common')
   const [searchParams] = useSearchParams()
+  const { supported, unsupported } = useMemo(
+    () => splitProjectViewFiltersByTab(filters, activeTab),
+    [activeTab, filters],
+  )
 
   const filterlessSearch = useMemo(() => {
     const newSearchParams = new URLSearchParams(searchParams.toString())
@@ -307,9 +312,9 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
       <div className='flex min-w-0 flex-1 items-center gap-1'>
         <FunnelIcon className='size-5 shrink-0 text-gray-500 dark:text-gray-400' />
         <div className='flex flex-wrap'>
-          {_map(filters, (props) => {
-            const { column, filter } = props
-            const key = `${column}${filter}`
+          {_map(supported, (props) => {
+            const { column, filter, isExclusive, isContains } = props
+            const key = `${column}-${filter}-${isExclusive}-${isContains}`
 
             return (
               <Filter
@@ -321,7 +326,24 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
               />
             )
           })}
+          {_map(unsupported, (props) => {
+            const { column, filter, isExclusive, isContains } = props
+            const key = `unsupported-${column}-${filter}-${isExclusive}-${isContains}`
+
+            return (
+              <span key={key} className='opacity-60'>
+                <Filter tnMapping={tnMapping} removable {...props} />
+              </span>
+            )
+          })}
         </div>
+        {unsupported.length > 0 ? (
+          <span className='ml-1 shrink-0 rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 ring-1 ring-amber-200 ring-inset dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20'>
+            {t('project.segmentUnsupportedFilters', {
+              count: unsupported.length,
+            })}
+          </span>
+        ) : null}
       </div>
       <Link
         title={t('project.resetFilters')}

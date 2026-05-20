@@ -66,6 +66,7 @@ import CCRow from '~/pages/Project/View/components/CCRow'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
+import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import { Panel, MetadataPanel } from '~/pages/Project/View/Panels'
 import { ERROR_FILTERS_MAPPING } from '~/pages/Project/View/utils/filters'
 import {
@@ -1324,7 +1325,12 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
         showLiveVisitors
         showSearchButton={false}
         hideTimeBucket
-        rightContent={filtersDropdown}
+        rightContent={
+          <ProjectViewHeaderActions
+            tnMapping={tnMapping}
+            extraActions={filtersDropdown}
+          />
+        }
       />
 
       {(overviewLoading || errorsLoading) && (overview || !_isEmpty(errors)) ? (

@@ -25,6 +25,7 @@ import { SessionDetailView } from '~/pages/Project/tabs/Sessions/SessionDetailVi
 import { Sessions } from '~/pages/Project/tabs/Sessions/Sessions'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
+import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import {
   useViewProjectContext,
   useRefreshTriggers,
@@ -385,7 +386,10 @@ const SessionsViewInner = ({
   // Sessions List View
   return (
     <>
-      <DashboardHeader showLiveVisitors />
+      <DashboardHeader
+        showLiveVisitors
+        rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
+      />
       {sessionsLoading && !_isEmpty(sessions) ? <LoadingBar /> : null}
       <div>
         {!_isEmpty(sessions) ? (
