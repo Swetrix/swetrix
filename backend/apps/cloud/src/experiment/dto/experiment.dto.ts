@@ -315,6 +315,29 @@ class ExperimentChartDataDto {
   winProbability: Record<string, number[]>
 }
 
+class ExperimentResultWindowDto {
+  @ApiProperty()
+  mode: 'selected' | 'active_overlap' | 'final'
+
+  @ApiProperty()
+  from: string
+
+  @ApiProperty()
+  to: string
+
+  @ApiProperty()
+  selectedFrom: string
+
+  @ApiProperty()
+  selectedTo: string
+
+  @ApiPropertyOptional()
+  activeFrom?: string
+
+  @ApiPropertyOptional()
+  activeTo?: string
+}
+
 export class ExperimentResultsDto {
   @ApiProperty()
   experimentId: string
@@ -348,4 +371,13 @@ export class ExperimentResultsDto {
     description: 'Allowed time buckets when period is "all"',
   })
   timeBucket?: string[]
+
+  @ApiPropertyOptional()
+  resolvedTimeBucket?: string
+
+  @ApiPropertyOptional({ type: ExperimentResultWindowDto })
+  resultWindow?: ExperimentResultWindowDto
+
+  @ApiPropertyOptional()
+  isSegmented?: boolean
 }

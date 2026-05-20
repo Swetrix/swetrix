@@ -110,6 +110,7 @@ track({
   ev: 'signup',
   unique: true,
   meta: { plan: 'pro', source: 'landing' },
+  profileId: 'user-123',
 })
 ```
 
@@ -118,6 +119,7 @@ track({
 | `ev` | Event name (max 256 chars). | **required** |
 | `unique` | Only count once per session. | `false` |
 | `meta` | Key-value metadata (max 20 keys, 1000 chars total). | `{}` |
+| `profileId` | Optional profile ID. Overrides the global `profileId` for this event. | `undefined` |
 
 ### `trackErrors(options?)`
 
@@ -161,26 +163,34 @@ pageview({
 ### Feature Flags
 
 ```javascript
-// Get all flags
+// Get all flags. Results are cached for 5 minutes.
 const flags = await getFeatureFlags({ profileId: 'user-123' })
 
-// Get a single flag
-const enabled = await getFeatureFlag('dark-mode', { profileId: 'user-123' })
+// Force a fresh fetch
+const freshFlags = await getFeatureFlags({ profileId: 'user-123' }, true)
 
-// Clear cache
+// Get a single flag. The third argument is an optional fallback value.
+const enabled = await getFeatureFlag('dark-mode', { profileId: 'user-123' })
+const enabledWithFallback = await getFeatureFlag('dark-mode', { profileId: 'user-123' }, false)
+
+// Clear the shared feature flag / experiment cache
 clearFeatureFlagsCache()
 ```
 
 ### A/B Experiments
 
 ```javascript
-// Get all experiments
+// Get all running experiment assignments. Results are cached for 5 minutes.
 const experiments = await getExperiments({ profileId: 'user-123' })
 
-// Get a specific experiment variant
-const variant = await getExperiment('checkout-redesign', { profileId: 'user-123' })
+// Force a fresh fetch
+const freshExperiments = await getExperiments({ profileId: 'user-123' }, true)
 
-// Clear cache
+// Get a specific experiment variant. The third argument is an optional fallback variant.
+const variant = await getExperiment('checkout-redesign-experiment-id', { profileId: 'user-123' })
+const variantWithFallback = await getExperiment('checkout-redesign-experiment-id', { profileId: 'user-123' }, 'control')
+
+// Clear the shared feature flag / experiment cache
 clearExperimentsCache()
 ```
 

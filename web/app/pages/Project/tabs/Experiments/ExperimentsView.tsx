@@ -4,6 +4,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import _debounce from 'lodash/debounce'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import type { TFunction } from 'i18next'
 import {
   FlaskIcon,
   TrashIcon,
@@ -56,6 +57,15 @@ type MultipleVariantHandling = 'exclude' | 'first_exposure'
 
 type FeatureFlagMode = 'create' | 'link'
 
+const SPLIT_RAIL_COLORS = [
+  'bg-indigo-500',
+  'bg-emerald-500',
+  'bg-amber-500',
+  'bg-red-500',
+  'bg-sky-500',
+  'bg-violet-500',
+]
+
 interface ExperimentVariant {
   id?: string
   name: string
@@ -97,6 +107,163 @@ interface ExperimentRowProps {
   onComplete: (id: string) => void
 }
 
+const ExperimentSplitRail = ({
+  variants,
+}: {
+  variants: ExperimentVariant[]
+}) => {
+  const { t } = useTranslation()
+  const totalAllocation = variants.reduce(
+    (sum, variant) => sum + variant.rolloutPercentage,
+    0,
+  )
+
+  if (totalAllocation <= 0) {
+    return <div className='h-1.5 rounded-full bg-gray-200 dark:bg-slate-800' />
+  }
+
+  return (
+    <Tooltip
+      asChild
+      ariaLabel={t('experiments.split')}
+      contentClassName='bg-gray-50 px-2 py-1 text-gray-900 shadow-md ring-black/10 dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-800'
+      arrowClassName='fill-gray-50 dark:fill-slate-900'
+      text={
+        <ul className='m-0 max-h-[250px] min-w-56 list-none overflow-y-auto p-0 md:max-h-[350px]'>
+          <li className='sticky top-0 mb-1 border-b border-gray-200 bg-gray-50 pb-1 dark:border-slate-800 dark:bg-slate-900'>
+            <Text
+              as='div'
+              size='xs'
+              weight='semibold'
+              colour='primary'
+              truncate
+              className='max-w-[220px] md:text-sm'
+            >
+              {t('experiments.split')}
+            </Text>
+          </li>
+          {variants.map((variant, index) => {
+            const colour = SPLIT_RAIL_COLORS[index % SPLIT_RAIL_COLORS.length]
+
+            return (
+              <li
+                key={variant.id || `${variant.key}-${index}`}
+                className='flex items-center justify-between gap-3 py-px leading-snug'
+              >
+                <div className='mr-4 flex min-w-0 items-center gap-2'>
+                  <span className={cx('size-2 rounded-full', colour)} />
+                  <Text
+                    as='span'
+                    size='xs'
+                    colour='secondary'
+                    truncate
+                    className='md:text-sm'
+                  >
+                    {variant.name}
+                  </Text>
+                  {variant.isControl ? (
+                    <Text
+                      as='span'
+                      size='xxs'
+                      colour='secondary'
+                      className='rounded bg-gray-100 px-1.5 py-0.5 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'
+                    >
+                      {t('experiments.control')}
+                    </Text>
+                  ) : null}
+                </div>
+                <Text
+                  as='span'
+                  size='xs'
+                  colour='primary'
+                  className='font-mono whitespace-nowrap tabular-nums md:text-sm'
+                >
+                  {variant.rolloutPercentage}%
+                </Text>
+              </li>
+            )
+          })}
+        </ul>
+      }
+      tooltipNode={
+        <span className='block cursor-help rounded-full py-1'>
+          <span className='flex h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
+            {variants.map((variant, index) => (
+              <span
+                key={variant.id || `${variant.key}-${index}`}
+                className={SPLIT_RAIL_COLORS[index % SPLIT_RAIL_COLORS.length]}
+                style={{
+                  width: `${
+                    (variant.rolloutPercentage / totalAllocation) * 100
+                  }%`,
+                }}
+              />
+            ))}
+          </span>
+        </span>
+      }
+    />
+  )
+}
+
+const getLaunchGuardrails = (experiment: Experiment, t: TFunction) => {
+  const blockers: string[] = []
+  const warnings: string[] = []
+  const variants = experiment.variants || []
+  const totalAllocation = variants.reduce(
+    (sum, variant) => sum + variant.rolloutPercentage,
+    0,
+  )
+  const allocations = variants.map((variant) => variant.rolloutPercentage)
+  const minAllocation = allocations.length ? Math.min(...allocations) : 0
+  const maxAllocation = allocations.length ? Math.max(...allocations) : 0
+
+  if (!experiment.goalId) {
+    blockers.push(t('experiments.guardrails.missingGoal'))
+  }
+
+  if (variants.length < 2) {
+    blockers.push(t('experiments.guardrails.needsTwoVariants'))
+  }
+
+  if (variants.filter((variant) => variant.isControl).length !== 1) {
+    blockers.push(t('experiments.guardrails.needsOneControl'))
+  }
+
+  if (totalAllocation !== 100) {
+    blockers.push(t('experiments.guardrails.allocationTotal'))
+  }
+
+  if (variants.some((variant) => variant.rolloutPercentage <= 0)) {
+    blockers.push(t('experiments.guardrails.everyVariantTraffic'))
+  }
+
+  if (
+    experiment.exposureTrigger === 'custom_event' &&
+    !experiment.customEventName?.trim()
+  ) {
+    blockers.push(t('experiments.guardrails.missingExposureEvent'))
+  }
+
+  if (experiment.featureFlagMode === 'link' && !experiment.featureFlagId) {
+    blockers.push(t('experiments.guardrails.missingLinkedFeatureFlag'))
+  }
+
+  if (maxAllocation - minAllocation > 10) {
+    warnings.push(t('experiments.guardrails.unevenAllocation'))
+  }
+
+  if (minAllocation > 0 && minAllocation < 10) {
+    warnings.push(t('experiments.guardrails.lowTrafficVariant'))
+  }
+
+  if (!experiment.hypothesis?.trim()) {
+    warnings.push(t('experiments.guardrails.noHypothesis'))
+  }
+
+  return { blockers, warnings }
+}
+
 const ExperimentRow = ({
   experiment,
   onDelete,
@@ -112,6 +279,39 @@ const ExperimentRow = ({
   const [actionLoading, setActionLoading] = useState(false)
 
   const variantsCount = experiment.variants?.length || 0
+  const launchGuardrails = useMemo(
+    () => getLaunchGuardrails(experiment, t),
+    [experiment, t],
+  )
+  const launchBlockerText = launchGuardrails.blockers.join(', ')
+  const allocationLabel = useMemo(
+    () =>
+      experiment.variants
+        .map((variant) => `${variant.rolloutPercentage}%`)
+        .join(' / '),
+    [experiment.variants],
+  )
+  const timingLabel = useMemo(() => {
+    if (experiment.status === 'completed' && experiment.endedAt) {
+      return t('experiments.endedAtDate', {
+        date: dayjs(experiment.endedAt).format('MMM D, YYYY'),
+      })
+    }
+
+    if (experiment.startedAt) {
+      return t('experiments.startedAtDate', {
+        date: dayjs(experiment.startedAt).format('MMM D, YYYY'),
+      })
+    }
+
+    return dayjs(experiment.created).fromNow()
+  }, [
+    experiment.created,
+    experiment.endedAt,
+    experiment.startedAt,
+    experiment.status,
+    t,
+  ])
   const isEditDisabled =
     experiment.status === 'running' || experiment.status === 'completed'
   const statusBadgeColour: 'slate' | 'green' | 'yellow' | 'sky' =
@@ -166,13 +366,13 @@ const ExperimentRow = ({
   return (
     <>
       <li className='relative mb-2 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
-        <div className='flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-x-4 sm:px-5'>
+        <div className='flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-x-4 sm:px-5'>
           <Link
             to={{ search: resultsSearch }}
-            className='flex min-w-0 flex-auto gap-x-4 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900'
+            className='grid min-w-0 flex-auto gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900'
           >
-            <div className='min-w-0 flex-auto'>
-              <div className='flex flex-wrap items-center gap-2'>
+            <div className='min-w-0'>
+              <div className='flex min-w-0 flex-wrap items-center gap-2'>
                 <Text as='p' weight='semibold' truncate>
                   {experiment.name}
                 </Text>
@@ -181,46 +381,58 @@ const ExperimentRow = ({
                   colour={statusBadgeColour}
                   className='text-[0.625rem] leading-3'
                 />
-                <Badge
-                  colour='indigo'
-                  label={`${variantsCount} ${t('experiments.variants')}`}
-                  className='text-[0.625rem] leading-3'
-                />
+                {launchGuardrails.blockers.length > 0 &&
+                experiment.status === 'draft' ? (
+                  <Badge
+                    colour='red'
+                    label={t('experiments.launchBlocked')}
+                    className='text-[0.625rem] leading-3'
+                  />
+                ) : null}
+                {launchGuardrails.blockers.length === 0 &&
+                launchGuardrails.warnings.length > 0 &&
+                experiment.status === 'draft' ? (
+                  <Badge
+                    colour='yellow'
+                    label={t('experiments.reviewConfig')}
+                    className='text-[0.625rem] leading-3'
+                  />
+                ) : null}
               </div>
-              {experiment.description ? (
-                <Text className='mt-1' as='p' size='sm' colour='secondary'>
-                  {experiment.description}
+              <div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-1'>
+                <Text as='span' size='xs' colour='muted'>
+                  {t('experiments.variantsCountLabel', {
+                    count: variantsCount,
+                  })}
                 </Text>
-              ) : null}
-              {experiment.hypothesis ? (
-                <Text className='mt-1 italic' as='p' size='xs' colour='muted'>
-                  {t('experiments.hypothesis')}: {experiment.hypothesis}
+                <span className='size-1 rounded-full bg-gray-300 dark:bg-slate-700' />
+                <Text as='span' size='xs' colour='muted'>
+                  {timingLabel}
                 </Text>
-              ) : null}
-              {/* Timestamps */}
-              <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
-                {experiment.startedAt ? (
-                  <Text as='span' size='xs' colour='muted'>
-                    {t('experiments.startedAt')}:{' '}
-                    {dayjs(experiment.startedAt).format('MMM D, YYYY')}
-                  </Text>
-                ) : null}
-                {experiment.endedAt ? (
-                  <Text as='span' size='xs' colour='muted'>
-                    {t('experiments.endedAt')}:{' '}
-                    {dayjs(experiment.endedAt).format('MMM D, YYYY')}
-                  </Text>
-                ) : null}
+                <span className='size-1 rounded-full bg-gray-300 sm:hidden dark:bg-slate-700' />
+                <Text as='span' size='xs' colour='muted' className='sm:hidden'>
+                  {allocationLabel}
+                </Text>
               </div>
             </div>
+            <div className='hidden sm:block'>
+              <ExperimentSplitRail variants={experiment.variants} />
+              <Text
+                as='p'
+                size='xs'
+                colour='muted'
+                className='mt-1 text-right tabular-nums'
+              >
+                {allocationLabel}
+              </Text>
+            </div>
           </Link>
-          <div className='flex w-full flex-wrap items-center gap-1 pt-2 sm:w-auto sm:shrink-0 sm:justify-end sm:pt-0'>
-            {/* Action buttons based on status */}
+          <div className='flex w-full flex-wrap items-center gap-1 sm:w-auto sm:shrink-0 sm:justify-end'>
             {experiment.status === 'draft' ? (
               <>
-                {!experiment.goalId ? (
+                {launchGuardrails.blockers.length > 0 ? (
                   <Tooltip
-                    text={t('experiments.needGoal')}
+                    text={launchBlockerText || t('experiments.needGoal')}
                     tooltipNode={
                       <span className='inline-flex'>
                         <button
@@ -350,7 +562,6 @@ const ExperimentRow = ({
               />
             ) : null}
 
-            {/* Edit/Delete buttons */}
             <div className='ml-auto flex items-center gap-1 sm:ml-0'>
               {isEditDisabled ? (
                 <Tooltip
@@ -412,7 +623,6 @@ const ExperimentRow = ({
         </div>
       </li>
 
-      {/* Delete confirmation modal */}
       <Modal
         onClose={() => setShowDeleteModal(false)}
         onSubmit={() => {
@@ -428,7 +638,6 @@ const ExperimentRow = ({
         isOpened={showDeleteModal}
       />
 
-      {/* Complete confirmation modal */}
       <Modal
         onClose={() => setShowCompleteModal(false)}
         onSubmit={handleComplete}

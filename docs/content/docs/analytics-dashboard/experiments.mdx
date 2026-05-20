@@ -3,35 +3,236 @@ title: Experiments (A/B Testing)
 slug: /analytics-dashboard/experiments
 ---
 
-Experiments (A/B Testing) allow you to test different variations of your application to see which one performs better. You can use experiments to optimize conversion rates, user engagement, and other key metrics.
+Experiments let you run A/B or A/B/n tests and compare how different variants affect a goal. Use them to test product changes, pricing pages, onboarding flows, copy, layouts, or any other change where you want to measure the effect before rolling it out.
+
+<Callout type="info" title="Experiments are backed by feature flags">
+  Every experiment is connected to a feature flag. Use the flag to gate eligibility in your
+  application, then let the experiment handle variant allocation, exposure tracking, and result
+  analysis.
+</Callout>
 
 ## Overview
 
 With Swetrix Experiments, you can:
 
-- Create experiments with multiple variants (e.g., Control vs. Variant A vs. Variant B).
-- Define goals to measure success.
-- Analyze the results to determine the winning variant.
+- Create experiments with 2 to 20 variants, one of which must be the control.
+- Store a hypothesis so the decision is tied to what you expected to happen.
+- Use rollout percentages to control how traffic is split across variants.
+- Link the experiment to a goal so conversions can be attributed to exposed visitors.
+- Back the experiment with a new feature flag or link it to an existing flag.
+- Choose whether exposure is recorded from feature flag evaluation or from a custom event.
+- Review launch guardrails before starting an experiment.
+- Estimate required sample size from baseline conversion, minimum detectable effect (MDE), and daily exposures.
+- Analyze segmented, time-bucketed results with Bayesian probability of winning.
 
-## Client-Side Implementation
+## Experiment lifecycle
 
-To use experiments in your application, you can use the Swetrix tracking script.
+<Accordions>
+<Accordion title="Draft">
 
-### Fetching all experiments
+The experiment is editable. You can configure variants, goal, exposure tracking, and feature flag linkage.
+
+</Accordion>
+<Accordion title="Running">
+
+The experiment is collecting exposures and conversions. Running experiments cannot be edited.
+
+</Accordion>
+<Accordion title="Paused">
+
+Collection is paused and the linked feature flag is disabled. You can edit, resume, complete, or delete the experiment.
+
+</Accordion>
+<Accordion title="Completed">
+
+Collection has ended, the linked feature flag is disabled, and the final result window is preserved. Completed experiments cannot be edited, but results remain available.
+
+</Accordion>
+</Accordions>
+
+<Callout type="info">
+  Starting or resuming an experiment enables its linked feature flag. Pausing or completing an
+  experiment disables that flag.
+</Callout>
+
+## Creating an experiment
+
+Open the **Experiments** tab in your project dashboard and click **Create Experiment**.
+
+<img alt="Experiments list" src="/docs/img/analytics-dashboard/experiments-list.png" />
+
+<Steps>
+<Step>
+<h3>Name the experiment</h3>
+
+Add an experiment name, optional description, and optional hypothesis. The hypothesis helps you interpret mixed or flat results later.
+
+</Step>
+<Step>
+<h3>Configure variants</h3>
+
+Each variant needs a name, a stable key, and a rollout percentage. Mark exactly one variant as the control.
+
+Variant keys are what your code compares against, so keep them stable once an experiment is running.
+
+</Step>
+<Step>
+<h3>Set the traffic split</h3>
+
+Make sure rollout percentages add up to 100%. Every variant must receive some traffic before the experiment can launch.
+
+</Step>
+<Step>
+<h3>Select a goal</h3>
+
+Choose the goal that should count as a conversion. You can save a draft without a goal, but you must add one before launch.
+
+</Step>
+<Step>
+<h3>Review launch guardrails</h3>
+
+Resolve blockers before launch, then review any warnings about traffic split, sample size, or exposure handling.
+
+</Step>
+</Steps>
+
+## Launch guardrails
+
+Launch guardrails call out configuration problems before the experiment starts.
+
+<Tabs items={["Blockers", "Warnings"]}>
+<Tab value="Blockers">
+
+Blockers prevent launch until resolved:
+
+- No goal selected.
+- Fewer than two variants.
+- Missing or multiple control variants.
+- Rollout percentages do not add up to 100%.
+- One or more variants have 0% allocation.
+- Custom exposure tracking is selected without a custom event name.
+- Existing feature flag mode is selected without a linked flag.
+- The selected feature flag is already linked to another experiment.
+
+</Tab>
+<Tab value="Warnings">
+
+Warnings do not block launch, but they are worth reviewing:
+
+- Uneven allocation that can make results take longer to read.
+- Very low traffic allocation for a variant.
+- A long estimated runtime.
+- A suspiciously small sample estimate.
+- Missing hypothesis.
+- First-exposure multi-variant handling.
+
+</Tab>
+</Tabs>
+
+## Sample size planning
+
+The sample size estimate helps you plan whether the experiment has enough traffic to answer the question.
+
+| Input                   | Meaning                                                       |
+| ----------------------- | ------------------------------------------------------------- |
+| **Baseline conversion** | Your current conversion rate for the selected goal.           |
+| **MDE lift**            | The smallest relative lift you care enough to detect.         |
+| **Daily exposures**     | The estimated number of visitors who will be exposed per day. |
+
+<Callout type="info">
+  Swetrix shows the target conversion rate, total sample estimate, and estimated runtime. This is a
+  planning estimate based on two-sided 95% confidence and 80% power, not a guarantee that the
+  experiment will produce a clear result.
+</Callout>
+
+## Feature flag source
+
+<Tabs items={["Create new", "Link existing"]}>
+<Tab value="Create new">
+
+Swetrix creates a rollout feature flag when the experiment starts. You can enter a key or use the suggested key.
+
+If the experiment is deleted later, the created flag is removed too.
+
+</Tab>
+<Tab value="Link existing">
+
+Swetrix links the experiment to an existing feature flag. Linked flags show an **Experiment linked** badge in the **Feature Flags** tab.
+
+If the experiment is deleted later, the flag is kept and unlinked.
+
+</Tab>
+</Tabs>
+
+## Exposure tracking
+
+Exposure means that a visitor has entered the experiment and is eligible to be counted in the results.
+
+<Tabs items={["Default", "Custom event"]}>
+<Tab value="Default">
+
+Exposure is recorded when the Swetrix feature flag or experiment evaluation runs. Use this when the same code path both assigns the variant and shows the experimental experience.
+
+</Tab>
+<Tab value="Custom event">
+
+Exposure is recorded when Swetrix receives the configured custom event. Use this when you only want to count visitors after they reach a specific screen, interaction, or funnel step.
+
+Send the exact custom event name when the visitor actually sees the experimental surface:
+
+```javascript
+import { track } from "swetrix";
+
+await track({
+  ev: "checkout_experiment_viewed",
+  profileId: "user-123",
+});
+```
+
+</Tab>
+</Tabs>
+
+## Multi-variant exposure
+
+If the same visitor is exposed to more than one variant, Swetrix can handle that in two ways:
+
+<Accordions>
+<Accordion title="Exclude">
+
+Remove that visitor from the analysis. This is the default and recommended option because seeing multiple variants can bias the result.
+
+</Accordion>
+<Accordion title="First only">
+
+Attribute the visitor to the first variant they saw. This can be useful in some setups, but it can hide variant-switching issues.
+
+</Accordion>
+</Accordions>
+
+## Client-side implementation
+
+To use experiments in your application, use the Swetrix tracking script.
+
+<Tabs items={["All experiments", "Single experiment"]}>
+<Tab value="All experiments">
 
 ```javascript
 import { getExperiments } from "swetrix";
 
-const experiments = await getExperiments();
+const experiments = await getExperiments({
+  profileId: "user-123",
+});
+
 // Returns: { 'experiment-id-1': 'variant-a', 'experiment-id-2': 'control' }
 ```
 
-### Getting a specific experiment variant
+</Tab>
+<Tab value="Single experiment">
 
 ```javascript
 import { getExperiment } from "swetrix";
 
-const variant = await getExperiment("checkout-redesign");
+const variant = await getExperiment("checkout-redesign-experiment-id", { profileId: "user-123" });
 
 if (variant === "new-checkout") {
   // Show new checkout flow
@@ -40,16 +241,109 @@ if (variant === "new-checkout") {
 }
 ```
 
-### Attribution
+</Tab>
+</Tabs>
 
-When a user participates in an experiment (i.e., they are assigned a variant), Swetrix automatically tracks this assignment. Subsequent events and pageviews are attributed to the assigned variant, allowing you to measure the impact of the experiment on your metrics.
+<Callout type="warn">
+  Use the experiment ID with `getExperiment()`, not the feature flag key. Passing a `profileId` is
+  optional, but recommended when you already identify users, because the same profile is used for
+  exposure and conversion attribution.
+</Callout>
 
-## Managing Experiments
+You can pass an optional third argument when you want a fallback variant if the experiment is not running or cannot be found:
 
-You can create and manage your experiments in the **Experiments** tab of your project dashboard.
+```javascript
+const variant = await getExperiment(
+  "checkout-redesign-experiment-id",
+  { profileId: "user-123" },
+  "control",
+);
+```
 
-<img alt="Experiments list" src="/docs/img/analytics-dashboard/experiments-list.png" />
+Experiment and feature flag evaluations share a 5-minute cache. You can clear it before the next evaluation if you need a fresh assignment:
 
-You can also see how your experiments are performing by clicking on the Results button.
+```javascript
+import { clearExperimentsCache } from "swetrix";
+
+clearExperimentsCache();
+```
+
+## Attribution
+
+Swetrix attributes conversions when the same profile:
+
+- Is exposed to an experiment variant.
+- Triggers the selected goal after that exposure.
+- Falls inside the effective result window.
+
+For pageview goals, normal pageview tracking is enough. For custom event goals, track the goal event after exposure using the same profile.
+
+## Results
+
+Click an experiment row or the results button to open the results view.
 
 <img alt="Experiment results" src="/docs/img/analytics-dashboard/experiment.png" />
+
+<Accordions>
+<Accordion title="Result summary">
+
+The results view shows total exposures, total conversions, overall conversion rate, conversion rate per variant, improvement against control, probability of each variant being best, and a probability-of-winning chart over time.
+
+</Accordion>
+<Accordion title="Winner and health callouts">
+
+Swetrix shows winner callouts when a variant reaches at least 95% probability of being best. It also warns about issues such as traffic imbalance, a variant receiving no traffic, low conversion volume, stale running experiments, or missing goals.
+
+</Accordion>
+<Accordion title="Result windows">
+
+For running and paused experiments, results use the selected dashboard period.
+
+For completed experiments, Swetrix preserves the active experiment window. If no custom date range is selected, the results view shows the final active window by default. If the selected period overlaps the active experiment window, results are clipped to the overlap. If the selected period does not overlap, the final active window is shown instead.
+
+Swetrix also resolves the chart time bucket for the effective window so completed experiments remain readable even when the dashboard period changes.
+
+</Accordion>
+<Accordion title="Segments and filters">
+
+Dashboard filters and saved segments can be applied to experiment results. Segment filters are applied to exposed profiles before conversions are attributed, and the results view shows a notice when a segment is active.
+
+This is useful when you want to compare performance for mobile visitors, a specific country, paid-search traffic, or another filtered audience.
+
+</Accordion>
+</Accordions>
+
+## Completing an experiment
+
+<Steps>
+<Step>
+<h3>Review the result</h3>
+
+Check the winner callout, probability chart, conversion table, health warnings, and any active segment filters.
+
+</Step>
+<Step>
+<h3>Confirm completion</h3>
+
+Click **Complete** and confirm the modal. The dashboard shows success or error feedback after the request finishes.
+
+</Step>
+<Step>
+<h3>Use the final result</h3>
+
+Completion disables the linked feature flag, sets the final result window, locks experiment settings, and keeps results available for review.
+
+</Step>
+</Steps>
+
+<Cards>
+  <Card title="Feature Flags" href="/analytics-dashboard/feature-flags">
+    Learn how linked feature flags appear in the dashboard.
+  </Card>
+  <Card title="Goals" href="/analytics-dashboard/goals">
+    Create the conversion goal your experiment will measure.
+  </Card>
+  <Card title="Tracking script reference" href="/swetrix-js-reference">
+    See the full API for experiment and feature flag evaluation.
+  </Card>
+</Cards>

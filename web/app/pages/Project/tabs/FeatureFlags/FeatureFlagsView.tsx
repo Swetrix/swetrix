@@ -204,9 +204,17 @@ const FeatureFlagRow = ({
   timeFormat,
 }: FeatureFlagRowProps) => {
   const { t } = useTranslation()
+  const location = useLocation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const targetingRulesCount = flag.targetingRules?.length || 0
+  const experimentSearch = useMemo(() => {
+    if (!flag.experimentId) return ''
+    const params = new URLSearchParams(location.search)
+    params.set('tab', 'experiments')
+    params.set('experimentId', flag.experimentId)
+    return params.toString()
+  }, [flag.experimentId, location.search])
 
   return (
     <>
@@ -263,10 +271,28 @@ const FeatureFlagRow = ({
                   colour='sky'
                   className='text-[0.625rem] leading-3'
                 />
+                {flag.experimentId ? (
+                  <Link
+                    to={{ search: experimentSearch }}
+                    onClick={(event) => event.stopPropagation()}
+                    className='inline-flex'
+                  >
+                    <Badge
+                      label={t('featureFlags.experimentLinked')}
+                      colour='indigo'
+                      className='text-[0.625rem] leading-3'
+                    />
+                  </Link>
+                ) : null}
               </div>
               {flag.description ? (
                 <Text className='mt-1' as='p' size='sm' colour='secondary'>
                   {flag.description}
+                </Text>
+              ) : null}
+              {flag.experimentId ? (
+                <Text className='mt-1' as='p' size='xs' colour='muted'>
+                  {t('featureFlags.experimentLinkedHint')}
                 </Text>
               ) : null}
               {targetingRulesCount > 0 ? (

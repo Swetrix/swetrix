@@ -102,13 +102,13 @@ swetrix.trackViews({
 });
 ```
 
-| Name                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Default value |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| unique                | If true, only unique events will be saved. This param is useful when tracking single-page landing websites.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | `false`       |
-| callback              | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />qs: string \| undefined<br />meta: object \| undefined ("object" should contain string values only)<br />pg: string \| null \| undefined<br />profileId: string \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined`   |
-| heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to `true` means that users who opened your website in inactive browser tab or window will not be counted into users realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube.                                                                                                                                                                                                                                                                                                                                                                         | `false`       |
-| hash                  | Set to `true` to enable hash-based routing. For example if you have pages like `/#/path` or want to track pages like `/path#hash`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `false`       |
-| search                | Set to `true` to enable search-based routing. For example if you have pages like `/path?search`. Although it's not recommended in most cases, you can set both `hash` and `search` to `true` at the same time, in which case the pageview event will be fired when either the hash or the search part of the URL changes (again, both the hash and the search are sent to the server).                                                                                                                                                                                                                                                                                                          | `false`       |
+| Name                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Default value |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| unique                | If true, only unique events will be saved. This param is useful when tracking single-page landing websites.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `false`       |
+| callback              | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />te: string \| undefined<br />co: string \| undefined<br />qs: string \| undefined<br />meta: object \| undefined ("object" values must be string, number, boolean, null, or undefined)<br />pg: string \| null \| undefined<br />profileId: string \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined`   |
+| heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to `true` means users who keep your website open in an inactive browser tab or window can still be counted in realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `false`       |
+| hash                  | Set to `true` to enable hash-based routing. For example if you have pages like `/#/path` or want to track pages like `/path#hash`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `false`       |
+| search                | Set to `true` to enable search-based routing. For example if you have pages like `/path?search`. Although it's not recommended in most cases, you can set both `hash` and `search` to `true` at the same time, in which case the pageview event will be fired when either the hash or the search part of the URL changes (again, both the hash and the search are sent to the server).                                                                                                                                                                                                                                                                                                                                                                                             | `false`       |
 
 The `trackViews` function returns a `Promise` with an object with some methods allowing you to alter the behaviour of page tracking:
 
@@ -179,12 +179,12 @@ swetrix.trackErrors({
 });
 ```
 
-| Name       | Description                                                                                                                                                                                                                                                                                                                                                                                                               | Default value |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| sampleRate | A number that indicates how many errors should be sent to the server. Accepts values between 0 and 1. For example, if set to 0.5 - only ~50% of errors will be sent to Swetrix. For testing, we recommend setting this value to 1. For production, you should configure it depending on your needs as each error event counts towards your plan.                                                                          | `1`           |
-| callback   | A callback used to edit / prevent sending errors. It accepts an object which contains some information about the error (`name`, `message`, `lineno`, `colno`, `filename`, `stackTrace`), as well as some regular analytics info (`lc`, `tz`, `pg`, `meta`).<br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined`   |
+| Name       | Description                                                                                                                                                                                                                                                                                                                                                                                                                  | Default value |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| sampleRate | A number that indicates how many errors should be sent to the server. Accepts values between 0 and 1. For example, if set to 0.5 - only ~50% of errors will be sent to Swetrix. For testing, we recommend setting this value to 1. For production, you should configure it depending on your needs as each error event counts towards your plan.                                                                             | `1`           |
+| callback   | A callback used to edit / prevent sending errors. It accepts an object which contains some information about the error (`name`, `message`, `lineno`, `colno`, `filename`, `stackTrace`), as well as some regular analytics info (`lc`, `tz`, `pg`, `meta`).<br />The callback is supposed to return the edited payload or `false` to prevent sending the error event. If `true` is returned, the payload will be sent as-is. | `undefined`   |
 
-The `trackErrors` function returns an object with some methods allowing you to alter the behaviour of page tracking:
+The `trackErrors` function returns an object with some methods allowing you to alter the behaviour of error tracking:
 
 ```javascript
 {
@@ -197,7 +197,7 @@ The `trackErrors` function returns an object with some methods allowing you to a
 
 This function is used to manually track an error event.
 
-This function takes the following arguments:
+This function takes a payload object with the following fields:
 
 1. `name` - the error name (e.g. ParseError)
 2. (optional) `message` - error message (e.g. Malformed input)
@@ -228,7 +228,7 @@ swetrix.trackError({
 
 ## getFeatureFlags()
 
-Fetches all feature flags for the project. Results are cached for 5 minutes by default.
+Fetches all feature flags for the project. Results are cached for 5 minutes by default. This cache is shared with experiment assignments.
 
 ```javascript
 const flags = await swetrix.getFeatureFlags({
@@ -268,7 +268,12 @@ swetrix.clearFeatureFlagsCache();
 
 ## getExperiments()
 
-Fetches all A/B test experiments for the project.
+Fetches variant assignments for running A/B test experiments that use default feature-flag exposure. Results are cached for 5 minutes by default and share the cache with feature flags.
+
+<Callout type="info">
+  Experiment assignments and feature flags are evaluated by the same request, so they share the same
+  5-minute cache.
+</Callout>
 
 ```javascript
 const experiments = await swetrix.getExperiments({
@@ -282,12 +287,18 @@ Arguments:
 1. `options` (optional): `{ profileId?: string }`
 2. `forceRefresh` (optional): `boolean` - If true, bypasses the cache.
 
+<Callout type="warn">
+  Calling this function records exposure for returned feature-flag-based experiments. If an
+  experiment uses custom event exposure, send the configured custom event with [`track()`](#track)
+  when the visitor actually sees the experimental surface.
+</Callout>
+
 ## getExperiment()
 
-Gets the variant key for a specific A/B test experiment.
+Gets the variant key for a specific running A/B test experiment that uses default feature-flag exposure.
 
 ```javascript
-const variant = await swetrix.getExperiment("checkout-redesign", {
+const variant = await swetrix.getExperiment("checkout-redesign-experiment-id", {
   profileId: "user-123",
 });
 ```
@@ -297,6 +308,26 @@ Arguments:
 1. `experimentId`: `string` - The experiment ID.
 2. `options` (optional): `{ profileId?: string }`
 3. `defaultVariant` (optional): `string | null` - Default variant if not found (default: `null`).
+
+Like `getExperiments()`, this records exposure when a feature-flag-based assignment is returned.
+
+Pass the optional third argument only when you want a fallback variant:
+
+```javascript
+const variant = await swetrix.getExperiment(
+  "checkout-redesign-experiment-id",
+  { profileId: "user-123" },
+  "control",
+);
+```
+
+## clearExperimentsCache()
+
+Clears the cached experiment assignments. This is an alias for `clearFeatureFlagsCache()` because feature flags and experiments share the same evaluation cache.
+
+```javascript
+swetrix.clearExperimentsCache();
+```
 
 ## getProfileId()
 
