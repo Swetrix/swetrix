@@ -1799,9 +1799,10 @@ export class ProjectController {
     }
 
     if (projectDTO.countryBlacklist !== undefined) {
-      project.countryBlacklist = projectDTO.countryBlacklist
-        ? (_map(projectDTO.countryBlacklist, _trim) as string[])
-        : null
+      project.countryBlacklist =
+        projectDTO.countryBlacklist && Array.isArray(projectDTO.countryBlacklist)
+          ? (_map(projectDTO.countryBlacklist, _trim) as string[])
+          : null
     }
 
     if (projectDTO.botsProtectionLevel) {
