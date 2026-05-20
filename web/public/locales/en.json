@@ -1828,8 +1828,8 @@
     "gscConnectionRequired": "Google Search Console connection is required to view keywords for this project. Ask the project administrator to connect it first.",
     "goToProjectSettings": "Go to Project Settings",
     "noKeywordsFound": "No keywords found for the selected period.",
-    "entryPages": "Entry pages",
-    "exitPages": "Exit pages",
+    "entryPages": "Entry page",
+    "exitPages": "Exit page",
     "clicks": "Clicks",
     "metamapping": {
       "ev": {
