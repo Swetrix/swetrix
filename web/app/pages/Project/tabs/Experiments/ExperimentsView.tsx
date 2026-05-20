@@ -4,6 +4,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import _debounce from 'lodash/debounce'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import type { TFunction } from 'i18next'
 import {
   FlaskIcon,
   TrashIcon,
@@ -97,7 +98,7 @@ interface ExperimentRowProps {
   onComplete: (id: string) => void
 }
 
-const getLaunchGuardrails = (experiment: Experiment) => {
+const getLaunchGuardrails = (experiment: Experiment, t: TFunction) => {
   const blockers: string[] = []
   const warnings: string[] = []
   const variants = experiment.variants || []
@@ -110,46 +111,46 @@ const getLaunchGuardrails = (experiment: Experiment) => {
   const maxAllocation = allocations.length ? Math.max(...allocations) : 0
 
   if (!experiment.goalId) {
-    blockers.push('Missing goal')
+    blockers.push(t('experiments.guardrails.missingGoal'))
   }
 
   if (variants.length < 2) {
-    blockers.push('Needs at least two variants')
+    blockers.push(t('experiments.guardrails.needsTwoVariants'))
   }
 
   if (variants.filter((variant) => variant.isControl).length !== 1) {
-    blockers.push('Needs one control')
+    blockers.push(t('experiments.guardrails.needsOneControl'))
   }
 
   if (totalAllocation !== 100) {
-    blockers.push('Allocation must total 100%')
+    blockers.push(t('experiments.guardrails.allocationTotal'))
   }
 
   if (variants.some((variant) => variant.rolloutPercentage <= 0)) {
-    blockers.push('Every variant needs traffic')
+    blockers.push(t('experiments.guardrails.everyVariantTraffic'))
   }
 
   if (
     experiment.exposureTrigger === 'custom_event' &&
     !experiment.customEventName?.trim()
   ) {
-    blockers.push('Missing exposure event')
+    blockers.push(t('experiments.guardrails.missingExposureEvent'))
   }
 
   if (experiment.featureFlagMode === 'link' && !experiment.featureFlagId) {
-    blockers.push('Missing linked feature flag')
+    blockers.push(t('experiments.guardrails.missingLinkedFeatureFlag'))
   }
 
   if (maxAllocation - minAllocation > 10) {
-    warnings.push('Uneven allocation')
+    warnings.push(t('experiments.guardrails.unevenAllocation'))
   }
 
   if (minAllocation > 0 && minAllocation < 10) {
-    warnings.push('Low traffic variant')
+    warnings.push(t('experiments.guardrails.lowTrafficVariant'))
   }
 
   if (!experiment.hypothesis?.trim()) {
-    warnings.push('No hypothesis')
+    warnings.push(t('experiments.guardrails.noHypothesis'))
   }
 
   return { blockers, warnings }
@@ -171,8 +172,8 @@ const ExperimentRow = ({
 
   const variantsCount = experiment.variants?.length || 0
   const launchGuardrails = useMemo(
-    () => getLaunchGuardrails(experiment),
-    [experiment],
+    () => getLaunchGuardrails(experiment, t),
+    [experiment, t],
   )
   const launchBlockerText = launchGuardrails.blockers.join(', ')
   const isEditDisabled =
@@ -253,7 +254,7 @@ const ExperimentRow = ({
                 experiment.status === 'draft' ? (
                   <Badge
                     colour='red'
-                    label='Launch blocked'
+                    label={t('experiments.launchBlocked')}
                     className='text-[0.625rem] leading-3'
                   />
                 ) : null}
@@ -262,7 +263,7 @@ const ExperimentRow = ({
                 experiment.status === 'draft' ? (
                   <Badge
                     colour='yellow'
-                    label='Review config'
+                    label={t('experiments.reviewConfig')}
                     className='text-[0.625rem] leading-3'
                   />
                 ) : null}
@@ -279,15 +280,15 @@ const ExperimentRow = ({
               ) : null}
               <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
                 <Text as='span' size='xs' colour='muted'>
-                  Flag:{' '}
+                  {t('experiments.flag')}:{' '}
                   <Text as='span' size='xs' colour='secondary' code>
                     {experiment.featureFlagKey ||
                       experiment.featureFlagId ||
-                      'created on launch'}
+                      t('experiments.createdOnLaunch')}
                   </Text>
                 </Text>
                 <Text as='span' size='xs' colour='muted'>
-                  Split:{' '}
+                  {t('experiments.split')}:{' '}
                   {experiment.variants
                     .map(
                       (variant) =>

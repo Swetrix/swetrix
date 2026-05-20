@@ -1386,7 +1386,9 @@
     "noProfiles": "No profiles have evaluated this flag yet",
     "loadMore": "Load more",
     "xEvaluations": "{{count}} evaluation(s)",
-    "served": "Served"
+    "served": "Served",
+    "experimentLinked": "Experiment linked",
+    "experimentLinkedHint": "This flag gates experiment eligibility. Variant split and result decisions live in Experiments."
   },
   "experiments": {
     "title": "Experiments",
@@ -1419,6 +1421,7 @@
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "What are you testing?",
     "hypothesisLabel": "Hypothesis",
+    "hypothesisPlaceholder": "Changing X should improve Y because...",
     "hypothesis": "Hypothesis",
     "goal": "Goal",
     "noGoal": "No goal (add later)",
@@ -1482,6 +1485,134 @@
     "featureFlagKeyHint": "Each experiment is backed by a feature flag. This key will be used to control the experiment in your code.",
     "selectFeatureFlag": "Select a feature flag",
     "loadingFeatureFlags": "Loading feature flags...",
+    "launchBlocked": "Launch blocked",
+    "reviewConfig": "Review config",
+    "createdOnLaunch": "created on launch",
+    "flag": "Flag",
+    "split": "Split",
+    "guardrails": {
+      "missingGoal": "Missing goal",
+      "needsTwoVariants": "Needs at least two variants",
+      "needsOneControl": "Needs one control",
+      "allocationTotal": "Allocation must total 100%",
+      "everyVariantTraffic": "Every variant needs traffic",
+      "missingExposureEvent": "Missing exposure event",
+      "missingLinkedFeatureFlag": "Missing linked feature flag",
+      "unevenAllocation": "Uneven allocation",
+      "lowTrafficVariant": "Low traffic variant",
+      "noHypothesis": "No hypothesis"
+    },
+    "settings": {
+      "featureFlagAlreadyLinked": "This feature flag is already linked elsewhere.",
+      "willUse": "Will use:",
+      "variantsHint": "Define the variants users will see. The control is your baseline (usually the current version). Other variants are what you want to test.",
+      "variantNamePlaceholder": "Name",
+      "variantKeyPlaceholder": "key",
+      "variantMapping": "Variant mapping",
+      "variantMappingHint": "The feature flag decides eligibility. The experiment maps eligible profiles into these variants.",
+      "goalHint": "Select a goal to measure which variant performs better. You can start the experiment without a goal and add one later.",
+      "increase": "Increase",
+      "decrease": "Decrease",
+      "launchGuardrails": "Launch guardrails",
+      "noLaunchBlockers": "No launch blockers detected.",
+      "advancedSettings": "Advanced settings",
+      "featureFlagSource": "Feature flag source",
+      "featureFlagSourceHint": "Choose to create a new feature flag for this experiment or link an existing one.",
+      "createNewFeatureFlag": "Create new",
+      "linkExistingFeatureFlag": "Link existing",
+      "linkedFlag": "Linked flag",
+      "linkedFlagDetails": "{{percentage}}% rollout, {{status}}. Starting the experiment enables the flag.",
+      "exposureTracking": "Exposure tracking",
+      "exposureTrackingHint": "How to detect when a user has been exposed to the experiment. Default uses the feature flag call. Custom lets you specify a different event.",
+      "multiExposureHandling": "Multi-exposure handling",
+      "multiExposureHintTitle": "What happens if a user sees multiple variants?",
+      "multiExposureExcludeLabel": "Exclude:",
+      "multiExposureExcludeDescription": "Remove them from analysis (recommended)",
+      "multiExposureFirstLabel": "First exposure:",
+      "multiExposureFirstDescription": "Only count their first variant",
+      "exclude": "Exclude",
+      "firstOnly": "First only",
+      "sampleEstimate": {
+        "title": "Sample size estimate",
+        "hint": "Two-sided 95% confidence, 80% power. Use this as a planning estimate, not a guarantee.",
+        "exposuresPerVariant": "exposures per variant",
+        "baselineConversion": "Baseline conversion",
+        "mdeLift": "MDE lift",
+        "dailyExposures": "Daily exposures",
+        "targetRate": "Target rate",
+        "totalSample": "Total sample",
+        "runtimeEstimate": "Runtime estimate",
+        "days": "{{count}} days",
+        "addTraffic": "Add traffic"
+      },
+      "guardrails": {
+        "addGoal": "Add a goal before launch so conversions can be attributed.",
+        "addCustomExposureEvent": "Add the custom exposure event name before launch.",
+        "selectFeatureFlag": "Select the feature flag that will serve this experiment.",
+        "featureFlagAlreadyLinked": "The selected feature flag is already linked elsewhere.",
+        "percentagesTotal": "Variant rollout percentages must add up to 100%.",
+        "everyVariantTraffic": "Every variant needs traffic before launch.",
+        "unevenAllocation": "Allocation is uneven, results will take longer to read.",
+        "lowTrafficVariant": "One variant has very low traffic and may miss issues.",
+        "longEstimate": "The current sample estimate is longer than eight weeks.",
+        "smallEstimate": "The estimate is very small, check the baseline and MDE.",
+        "noHypothesis": "A hypothesis helps interpret mixed or flat results later.",
+        "firstExposureHandling": "First exposure handling can hide variant switching issues."
+      },
+      "guardrailStatus": {
+        "blocked": "Blocked",
+        "review": "Review",
+        "ready": "Ready"
+      }
+    },
+    "resultDetails": {
+      "segmentedNotice": "Segment filters are applied to exposed profiles before conversions are attributed.",
+      "window": {
+        "final": "Showing final results from {{from}} to {{to}}, {{suffix}}",
+        "finalSuffixActive": "based on active experiment time.",
+        "finalSuffixNoOverlap": "because the selected period does not overlap the active experiment.",
+        "clipped": "Showing the selected period clipped to active experiment time, {{from}} to {{to}}."
+      },
+      "warnings": {
+        "noExposures": {
+          "title": "No exposures",
+          "customEventMessage": "No matching custom exposure events were recorded.",
+          "featureFlagMessage": "No feature flag evaluations were recorded for this experiment."
+        },
+        "extremeImbalance": {
+          "title": "Extreme imbalance",
+          "message": "Observed traffic is far from the configured split. Treat winner reads carefully."
+        },
+        "variantNoTraffic": {
+          "title": "Variant not receiving traffic",
+          "message": "{{variant}} has no observed exposures in this window."
+        },
+        "lowConversion": {
+          "title": "Low conversion volume",
+          "message": "Conversion counts are still low, probability estimates can swing quickly."
+        },
+        "staleRunning": {
+          "title": "Stale running experiment",
+          "message": "This experiment has been running for {{count}} days."
+        },
+        "goalMissing": {
+          "title": "Goal missing after start",
+          "message": "The goal is missing or no longer available, conversions cannot be trusted."
+        }
+      },
+      "stopRecommendation": {
+        "winner": {
+          "title": "Clear winner ready",
+          "message": "{{variant}} is ahead with conservative safeguards met."
+        },
+        "harm": {
+          "title": "Clear harm detected",
+          "message": "{{variant}} is materially underperforming control."
+        },
+        "confirmBeforeCompleting": "Confirm before completing.",
+        "completeConfirmMessage": "{{message}} This will end collection and keep final results available."
+      }
+    },
     "filterExperiments": "Filter experiments",
     "noExperimentsMatchFilter": "No experiments match your filter"
   },

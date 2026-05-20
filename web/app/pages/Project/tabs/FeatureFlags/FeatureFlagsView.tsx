@@ -278,7 +278,7 @@ const FeatureFlagRow = ({
                     className='inline-flex'
                   >
                     <Badge
-                      label='Experiment linked'
+                      label={t('featureFlags.experimentLinked')}
                       colour='indigo'
                       className='text-[0.625rem] leading-3'
                     />
@@ -292,8 +292,7 @@ const FeatureFlagRow = ({
               ) : null}
               {flag.experimentId ? (
                 <Text className='mt-1' as='p' size='xs' colour='muted'>
-                  This flag gates experiment eligibility. Variant split and
-                  result decisions live in Experiments.
+                  {t('featureFlags.experimentLinkedHint')}
                 </Text>
               ) : null}
               {targetingRulesCount > 0 ? (

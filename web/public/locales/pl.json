@@ -1386,7 +1386,9 @@
     "noProfiles": "Żaden profil nie ocenił jeszcze tej flagi",
     "loadMore": "Wczytaj więcej",
     "xEvaluations": "{{count}} ocena(y)",
-    "served": "Wyświetlone"
+    "served": "Wyświetlone",
+    "experimentLinked": "Eksperyment powiązany",
+    "experimentLinkedHint": "Ta flaga warunkuje kwalifikowalność do eksperymentu. Podział na warianty i decyzje o wynikach znajdują się w Eksperymentach."
   },
   "experiments": {
     "title": "Eksperymenty",
@@ -1419,6 +1421,7 @@
     "descriptionLabel": "Opis",
     "descriptionPlaceholder": "Co testujesz?",
     "hypothesisLabel": "Hipoteza",
+    "hypothesisPlaceholder": "Zmiana X powinna poprawić Y, ponieważ...",
     "hypothesis": "Hipoteza",
     "goal": "Cel",
     "noGoal": "Brak celu (dodaj później)",
@@ -1482,6 +1485,134 @@
     "featureFlagKeyHint": "Każdy eksperyment jest oparty na fladze funkcji. Ten klucz będzie używany do sterowania eksperymentem w Twoim kodzie.",
     "selectFeatureFlag": "Wybierz flagę funkcji",
     "loadingFeatureFlags": "Wczytywanie flag funkcji...",
+    "launchBlocked": "Uruchomienie zablokowane",
+    "reviewConfig": "Przejrzyj konfigurację",
+    "createdOnLaunch": "utworzono przy uruchomieniu",
+    "flag": "Flaga",
+    "split": "Podział",
+    "guardrails": {
+      "missingGoal": "Brak celu",
+      "needsTwoVariants": "Wymaga co najmniej dwóch wariantów",
+      "needsOneControl": "Wymaga jednej grupy kontrolnej",
+      "allocationTotal": "Przydział musi sumować się do 100%",
+      "everyVariantTraffic": "Każdy wariant wymaga ruchu",
+      "missingExposureEvent": "Brak zdarzenia ekspozycji",
+      "missingLinkedFeatureFlag": "Brak powiązanej flagi funkcji",
+      "unevenAllocation": "Nierównomierny przydział",
+      "lowTrafficVariant": "Wariant o niskim ruchu",
+      "noHypothesis": "Brak hipotezy"
+    },
+    "settings": {
+      "featureFlagAlreadyLinked": "Ta flaga funkcji jest już powiązana gdzie indziej.",
+      "willUse": "Użyje:",
+      "variantsHint": "Określ warianty, które zobaczą użytkownicy. Grupa kontrolna to twój punkt odniesienia (zazwyczaj obecna wersja). Inne warianty to to, co chcesz przetestować.",
+      "variantNamePlaceholder": "Nazwa",
+      "variantKeyPlaceholder": "klucz",
+      "variantMapping": "Mapowanie wariantów",
+      "variantMappingHint": "Flaga funkcji decyduje o kwalifikowalności. Eksperyment mapuje kwalifikujące się profile na te warianty.",
+      "goalHint": "Wybierz cel, aby zmierzyć, który wariant sprawdza się lepiej. Możesz rozpocząć eksperyment bez celu i dodać go później.",
+      "increase": "Zwiększ",
+      "decrease": "Zmniejsz",
+      "launchGuardrails": "Zabezpieczenia uruchomienia",
+      "noLaunchBlockers": "Nie wykryto blokerów uruchomienia.",
+      "advancedSettings": "Ustawienia zaawansowane",
+      "featureFlagSource": "Źródło flagi funkcji",
+      "featureFlagSourceHint": "Wybierz, czy utworzyć nową flagę funkcji dla tego eksperymentu, czy połączyć z istniejącą.",
+      "createNewFeatureFlag": "Utwórz nową",
+      "linkExistingFeatureFlag": "Połącz istniejącą",
+      "linkedFlag": "Połączona flaga",
+      "linkedFlagDetails": "{{percentage}}% wdrożenia, {{status}}. Rozpoczęcie eksperymentu włącza flagę.",
+      "exposureTracking": "Śledzenie ekspozycji",
+      "exposureTrackingHint": "Jak wykrywać, kiedy użytkownik został poddany eksperymentowi. Domyślnie używa wywołania flagi funkcji. Niestandardowe pozwala na określenie innego zdarzenia.",
+      "multiExposureHandling": "Obsługa wielu ekspozycji",
+      "multiExposureHintTitle": "Co się stanie, jeśli użytkownik zobaczy wiele wariantów?",
+      "multiExposureExcludeLabel": "Wyklucz:",
+      "multiExposureExcludeDescription": "Usuń z analizy (zalecane)",
+      "multiExposureFirstLabel": "Pierwsza ekspozycja:",
+      "multiExposureFirstDescription": "Policz tylko ich pierwszy wariant",
+      "exclude": "Wyklucz",
+      "firstOnly": "Tylko pierwszy",
+      "sampleEstimate": {
+        "title": "Szacowana wielkość próby",
+        "hint": "Dwustronny 95% przedział ufności, 80% mocy. Użyj jako szacunku do planowania, a nie gwarancji.",
+        "exposuresPerVariant": "ekspozycji na wariant",
+        "baselineConversion": "Konwersja bazowa",
+        "mdeLift": "Przyrost MDE",
+        "dailyExposures": "Dzienne ekspozycje",
+        "targetRate": "Współczynnik docelowy",
+        "totalSample": "Całkowita próba",
+        "runtimeEstimate": "Szacowany czas trwania",
+        "days": "{{count}} dni",
+        "addTraffic": "Dodaj ruch"
+      },
+      "guardrails": {
+        "addGoal": "Dodaj cel przed uruchomieniem, aby móc przypisać konwersje.",
+        "addCustomExposureEvent": "Dodaj nazwę niestandardowego zdarzenia ekspozycji przed uruchomieniem.",
+        "selectFeatureFlag": "Wybierz flagę funkcji, która będzie obsługiwać ten eksperyment.",
+        "featureFlagAlreadyLinked": "Wybrana flaga funkcji jest już powiązana w innym miejscu.",
+        "percentagesTotal": "Procentowe wartości wdrożenia wariantów muszą sumować się do 100%.",
+        "everyVariantTraffic": "Każdy wariant wymaga ruchu przed uruchomieniem.",
+        "unevenAllocation": "Przydział jest nierówny, odczytanie wyników potrwa dłużej.",
+        "lowTrafficVariant": "Jeden z wariantów ma bardzo niski ruch, co może spowodować przeoczenie problemów.",
+        "longEstimate": "Obecny szacowany czas dla próby wynosi ponad osiem tygodni.",
+        "smallEstimate": "Szacowana próba jest bardzo mała, sprawdź konwersję bazową i MDE.",
+        "noHypothesis": "Hipoteza pomaga później zinterpretować mieszane lub niejednoznaczne wyniki.",
+        "firstExposureHandling": "Obsługa pierwszej ekspozycji może ukryć problemy z przełączaniem wariantów."
+      },
+      "guardrailStatus": {
+        "blocked": "Zablokowane",
+        "review": "Do przeglądu",
+        "ready": "Gotowe"
+      }
+    },
+    "resultDetails": {
+      "segmentedNotice": "Filtry segmentów są stosowane do wyeksponowanych profili przed przypisaniem konwersji.",
+      "window": {
+        "final": "Wyświetlanie ostatecznych wyników od {{from}} do {{to}}, {{suffix}}",
+        "finalSuffixActive": "na podstawie czasu aktywnego eksperymentu.",
+        "finalSuffixNoOverlap": "ponieważ wybrany okres nie nakłada się z aktywnym eksperymentem.",
+        "clipped": "Wyświetlanie wybranego okresu ograniczonego do czasu trwania aktywnego eksperymentu, od {{from}} do {{to}}."
+      },
+      "warnings": {
+        "noExposures": {
+          "title": "Brak ekspozycji",
+          "customEventMessage": "Nie zarejestrowano pasujących niestandardowych zdarzeń ekspozycji.",
+          "featureFlagMessage": "Nie zarejestrowano żadnych ocen flagi funkcji dla tego eksperymentu."
+        },
+        "extremeImbalance": {
+          "title": "Skrajna nierównowaga",
+          "message": "Zaobserwowany ruch znacznie odbiega od skonfigurowanego podziału. Ostrożnie interpretuj zwycięskie warianty."
+        },
+        "variantNoTraffic": {
+          "title": "Wariant nie otrzymuje ruchu",
+          "message": "{{variant}} nie ma zaobserwowanych ekspozycji w tym oknie."
+        },
+        "lowConversion": {
+          "title": "Niski wolumen konwersji",
+          "message": "Liczba konwersji jest nadal niska, szacunki prawdopodobieństwa mogą ulegać gwałtownym zmianom."
+        },
+        "staleRunning": {
+          "title": "Przestarzały eksperyment w toku",
+          "message": "Ten eksperyment trwa już {{count}} dni."
+        },
+        "goalMissing": {
+          "title": "Brakujący cel po starcie",
+          "message": "Cel nie istnieje lub nie jest już dostępny, nie można ufać konwersjom."
+        }
+      },
+      "stopRecommendation": {
+        "winner": {
+          "title": "Wyraźny zwycięzca",
+          "message": "{{variant}} prowadzi, a konserwatywne zabezpieczenia zostały spełnione."
+        },
+        "harm": {
+          "title": "Wykryto wyraźne pogorszenie",
+          "message": "{{variant}} radzi sobie znacznie gorzej niż wariant kontrolny."
+        },
+        "confirmBeforeCompleting": "Potwierdź przed zakończeniem.",
+        "completeConfirmMessage": "{{message}} Zakończy to zbieranie danych i zachowa ostateczne wyniki."
+      }
+    },
     "filterExperiments": "Filtruj eksperymenty",
     "noExperimentsMatchFilter": "Brak eksperymentów pasujących do filtra"
   },
@@ -1582,10 +1713,10 @@
     "filterSearchOrType": "Wyszukaj lub wpisz wartość...",
     "filterUseValue": "Użyj \"{{value}}\"",
     "filterAddCustomValue": "Dodaj \"{{value}}\" jako wartość filtra",
-    "toggleFilterToIs": "Змінити фільтр на '{{column}} дорівнює \"{{filter}}\"'",
-    "toggleFilterToIsNot": "Змінити фільтр на '{{column}} не дорівнює \"{{filter}}\"'",
-    "toggleFilterToContains": "Змінити фільтр на '{{column}} містить \"{{filter}}\"'",
-    "toggleFilterToNotContains": "Змінити фільтр на '{{column}} не містить \"{{filter}}\"'",
+    "toggleFilterToIs": "Zmień filtr na '{{column}} jest \"{{filter}}\"'",
+    "toggleFilterToIsNot": "Zmień filtr na '{{column}} nie jest \"{{filter}}\"'",
+    "toggleFilterToContains": "Zmień filtr na '{{column}} zawiera \"{{filter}}\"'",
+    "toggleFilterToNotContains": "Zmień filtr na '{{column}} nie zawiera \"{{filter}}\"'",
     "location": "Lokalizacja",
     "pages": "Strony",
     "devices": "Urządzenia",

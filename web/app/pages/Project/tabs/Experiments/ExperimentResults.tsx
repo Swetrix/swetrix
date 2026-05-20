@@ -3,6 +3,8 @@ import { area } from 'billboard.js'
 import cx from 'clsx'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
+import timezonePlugin from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
@@ -60,6 +62,9 @@ import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
 
 import ExperimentSettingsModal from './ExperimentSettingsModal'
+
+dayjs.extend(utc)
+dayjs.extend(timezonePlugin)
 
 const VARIANT_COLORS = [
   '#6366f1', // indigo-500
@@ -739,14 +744,24 @@ const CollapsibleSection = memo(
 CollapsibleSection.displayName = 'CollapsibleSection'
 
 type HealthWarning = {
+  code:
+    | 'NO_EXPOSURES'
+    | 'EXTREME_IMBALANCE'
+    | 'VARIANT_NO_TRAFFIC'
+    | 'LOW_CONVERSION'
+    | 'STALE_RUNNING'
+    | 'GOAL_MISSING'
   severity: 'warning' | 'danger'
-  title: string
-  message: string
+  titleKey: string
+  messageKey: string
+  messageValues?: Record<string, string | number>
 }
 
-const formatWindowDate = (value?: string | null) => {
+const formatWindowDate = (value?: string | null, timezone?: string) => {
   if (!value) return null
-  return dayjs(value).format('MMM D, YYYY HH:mm')
+  return (timezone ? dayjs.utc(value).tz(timezone) : dayjs(value)).format(
+    'MMM D, YYYY HH:mm',
+  )
 }
 
 const windowsOverlap = (
@@ -912,12 +927,13 @@ const ExperimentResults = ({
 
     if (results.totalExposures === 0) {
       warnings.push({
+        code: 'NO_EXPOSURES',
         severity: 'warning',
-        title: 'No exposures',
-        message:
+        titleKey: 'experiments.resultDetails.warnings.noExposures.title',
+        messageKey:
           experiment.exposureTrigger === 'custom_event'
-            ? 'No matching custom exposure events were recorded.'
-            : 'No feature flag evaluations were recorded for this experiment.',
+            ? 'experiments.resultDetails.warnings.noExposures.customEventMessage'
+            : 'experiments.resultDetails.warnings.noExposures.featureFlagMessage',
       })
     }
 
@@ -930,10 +946,11 @@ const ExperimentResults = ({
 
       if (imbalancedVariant) {
         warnings.push({
+          code: 'EXTREME_IMBALANCE',
           severity: 'danger',
-          title: 'Extreme imbalance',
-          message:
-            'Observed traffic is far from the configured split. Treat winner reads carefully.',
+          titleKey: 'experiments.resultDetails.warnings.extremeImbalance.title',
+          messageKey:
+            'experiments.resultDetails.warnings.extremeImbalance.message',
         })
       }
     }
@@ -944,35 +961,40 @@ const ExperimentResults = ({
 
     if (missingTrafficVariant) {
       warnings.push({
+        code: 'VARIANT_NO_TRAFFIC',
         severity: 'danger',
-        title: 'Variant not receiving traffic',
-        message: `${missingTrafficVariant.name} has no observed exposures in this window.`,
+        titleKey: 'experiments.resultDetails.warnings.variantNoTraffic.title',
+        messageKey:
+          'experiments.resultDetails.warnings.variantNoTraffic.message',
+        messageValues: { variant: missingTrafficVariant.name },
       })
     }
 
     if (results.totalExposures >= 100 && results.totalConversions < 30) {
       warnings.push({
+        code: 'LOW_CONVERSION',
         severity: 'warning',
-        title: 'Low conversion volume',
-        message:
-          'Conversion counts are still low, probability estimates can swing quickly.',
+        titleKey: 'experiments.resultDetails.warnings.lowConversion.title',
+        messageKey: 'experiments.resultDetails.warnings.lowConversion.message',
       })
     }
 
     if (results.status === 'running' && runningForDays >= 45) {
       warnings.push({
+        code: 'STALE_RUNNING',
         severity: 'warning',
-        title: 'Stale running experiment',
-        message: `This experiment has been running for ${runningForDays} days.`,
+        titleKey: 'experiments.resultDetails.warnings.staleRunning.title',
+        messageKey: 'experiments.resultDetails.warnings.staleRunning.message',
+        messageValues: { count: runningForDays },
       })
     }
 
     if (results.status !== 'draft' && (!experiment.goalId || !goal)) {
       warnings.push({
+        code: 'GOAL_MISSING',
         severity: 'danger',
-        title: 'Goal missing after start',
-        message:
-          'The goal is missing or no longer available, conversions cannot be trusted.',
+        titleKey: 'experiments.resultDetails.warnings.goalMissing.title',
+        messageKey: 'experiments.resultDetails.warnings.goalMissing.message',
       })
     }
 
@@ -994,9 +1016,7 @@ const ExperimentResults = ({
     }
     if (
       healthWarnings.some((warning) =>
-        ['Extreme imbalance', 'Variant not receiving traffic'].includes(
-          warning.title,
-        ),
+        ['EXTREME_IMBALANCE', 'VARIANT_NO_TRAFFIC'].includes(warning.code),
       )
     ) {
       return null
@@ -1016,8 +1036,10 @@ const ExperimentResults = ({
       best.improvement > 0
     ) {
       return {
-        title: 'Clear winner ready',
-        message: `${best.name} is ahead with conservative safeguards met.`,
+        titleKey: 'experiments.resultDetails.stopRecommendation.winner.title',
+        messageKey:
+          'experiments.resultDetails.stopRecommendation.winner.message',
+        messageValues: { variant: best.name },
       }
     }
 
@@ -1030,8 +1052,9 @@ const ExperimentResults = ({
 
     if (control && harmedVariant && control.probabilityOfBeingBest >= 95) {
       return {
-        title: 'Clear harm detected',
-        message: `${harmedVariant.name} is materially underperforming control.`,
+        titleKey: 'experiments.resultDetails.stopRecommendation.harm.title',
+        messageKey: 'experiments.resultDetails.stopRecommendation.harm.message',
+        messageValues: { variant: harmedVariant.name },
       }
     }
 
@@ -1042,18 +1065,25 @@ const ExperimentResults = ({
     const window = results?.resultWindow
     if (!window || window.mode === 'selected') return null
 
-    const fromLabel = formatWindowDate(window.from)
-    const toLabel = formatWindowDate(window.to)
+    const fromLabel = formatWindowDate(window.from, timezone)
+    const toLabel = formatWindowDate(window.to, timezone)
 
     if (window.mode === 'final') {
       const suffix = windowsOverlap(window)
-        ? 'based on active experiment time.'
-        : 'because the selected period does not overlap the active experiment.'
-      return `Showing final results from ${fromLabel} to ${toLabel}, ${suffix}`
+        ? t('experiments.resultDetails.window.finalSuffixActive')
+        : t('experiments.resultDetails.window.finalSuffixNoOverlap')
+      return t('experiments.resultDetails.window.final', {
+        from: fromLabel ?? '',
+        to: toLabel ?? '',
+        suffix,
+      })
     }
 
-    return `Showing the selected period clipped to active experiment time, ${fromLabel} to ${toLabel}.`
-  }, [results])
+    return t('experiments.resultDetails.window.clipped', {
+      from: fromLabel ?? '',
+      to: toLabel ?? '',
+    })
+  }, [results, timezone, t])
 
   const handleCompleteExperiment = () => {
     if (!experiment) return
@@ -1065,6 +1095,15 @@ const ExperimentResults = ({
   }
 
   const tnMapping = useMemo(() => typeNameMapping(t), [t])
+  const completeExperimentButton = (
+    <Button
+      type='button'
+      size='sm'
+      onClick={() => setIsCompleteModalOpen(true)}
+    >
+      {t('experiments.complete')}
+    </Button>
+  )
 
   if (!experiment || !results) {
     if (isLoading) {
@@ -1131,7 +1170,15 @@ const ExperimentResults = ({
         title={t('experiments.completeConfirmTitle')}
         message={
           stopRecommendation
-            ? `${stopRecommendation.message} This will end collection and keep final results available.`
+            ? t(
+                'experiments.resultDetails.stopRecommendation.completeConfirmMessage',
+                {
+                  message: t(
+                    stopRecommendation.messageKey,
+                    stopRecommendation.messageValues,
+                  ),
+                },
+              )
             : t('experiments.completeConfirmMessage')
         }
         submitType='regular'
@@ -1206,8 +1253,7 @@ const ExperimentResults = ({
                   'mt-1': Boolean(resultWindowNotice),
                 })}
               >
-                Segment filters are applied to exposed profiles before
-                conversions are attributed.
+                {t('experiments.resultDetails.segmentedNotice')}
               </Text>
             ) : null}
           </div>
@@ -1216,7 +1262,7 @@ const ExperimentResults = ({
           <div className='grid gap-2 lg:grid-cols-2'>
             {healthWarnings.map((warning) => (
               <div
-                key={`${warning.title}-${warning.message}`}
+                key={warning.code}
                 className={cx(
                   'rounded-lg px-4 py-3 ring-1',
                   warning.severity === 'danger'
@@ -1244,7 +1290,7 @@ const ExperimentResults = ({
                           : 'text-yellow-900 dark:text-yellow-100'
                       }
                     >
-                      {warning.title}
+                      {t(warning.titleKey)}
                     </Text>
                     <Text
                       as='p'
@@ -1255,7 +1301,7 @@ const ExperimentResults = ({
                           : 'text-yellow-800 dark:text-yellow-100'
                       }
                     >
-                      {warning.message}
+                      {t(warning.messageKey, warning.messageValues)}
                     </Text>
                   </div>
                 </div>
@@ -1277,26 +1323,30 @@ const ExperimentResults = ({
                   weight='semibold'
                   className='text-green-900 dark:text-green-100'
                 >
-                  {stopRecommendation.title}
+                  {t(stopRecommendation.titleKey)}
                 </Text>
                 <Text
                   as='p'
                   size='xs'
                   className='text-green-800 dark:text-green-100'
                 >
-                  {stopRecommendation.message} Confirm before completing.
+                  {t(
+                    stopRecommendation.messageKey,
+                    stopRecommendation.messageValues,
+                  )}{' '}
+                  {t(
+                    'experiments.resultDetails.stopRecommendation.confirmBeforeCompleting',
+                  )}
                 </Text>
               </div>
             </div>
-            <Button
-              type='button'
-              size='sm'
-              onClick={() => setIsCompleteModalOpen(true)}
-            >
-              {t('experiments.complete')}
-            </Button>
+            {completeExperimentButton}
           </div>
-        ) : null}
+        ) : (
+          <div className='flex justify-end rounded-lg bg-gray-50 px-4 py-3 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
+            {completeExperimentButton}
+          </div>
+        )}
         <div className='rounded-lg bg-gray-50 px-4 py-3 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
           <div className='flex flex-wrap items-center justify-between gap-3'>
             <div>

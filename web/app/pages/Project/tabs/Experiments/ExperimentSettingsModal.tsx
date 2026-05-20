@@ -274,7 +274,7 @@ const ExperimentSettingsModal = ({
       selectedFeatureFlag?.experimentId &&
       selectedFeatureFlag.experimentId !== experimentId
     ) {
-      newErrors.featureFlag = 'This feature flag is already linked elsewhere.'
+      newErrors.featureFlag = t('experiments.settings.featureFlagAlreadyLinked')
     }
 
     if (exposureTrigger === 'custom_event' && !customEventName.trim()) {
@@ -495,7 +495,7 @@ const ExperimentSettingsModal = ({
     if (!goalId) {
       items.push({
         severity: 'blocker',
-        message: 'Add a goal before launch so conversions can be attributed.',
+        message: t('experiments.settings.guardrails.addGoal'),
       })
     }
 
@@ -505,14 +505,14 @@ const ExperimentSettingsModal = ({
     ) {
       items.push({
         severity: 'blocker',
-        message: 'Add the custom exposure event name before launch.',
+        message: t('experiments.settings.guardrails.addCustomExposureEvent'),
       })
     }
 
     if (featureFlagMode === 'link' && !existingFeatureFlagId) {
       items.push({
         severity: 'blocker',
-        message: 'Select the feature flag that will serve this experiment.',
+        message: t('experiments.settings.guardrails.selectFeatureFlag'),
       })
     }
 
@@ -522,63 +522,63 @@ const ExperimentSettingsModal = ({
     ) {
       items.push({
         severity: 'blocker',
-        message: 'The selected feature flag is already linked elsewhere.',
+        message: t('experiments.settings.guardrails.featureFlagAlreadyLinked'),
       })
     }
 
     if (!isPercentageValid) {
       items.push({
         severity: 'blocker',
-        message: 'Variant rollout percentages must add up to 100%.',
+        message: t('experiments.settings.guardrails.percentagesTotal'),
       })
     }
 
     if (variants.some((variant) => variant.rolloutPercentage <= 0)) {
       items.push({
         severity: 'blocker',
-        message: 'Every variant needs traffic before launch.',
+        message: t('experiments.settings.guardrails.everyVariantTraffic'),
       })
     }
 
     if (maxAllocation - minAllocation > 10) {
       items.push({
         severity: 'warning',
-        message: 'Allocation is uneven, results will take longer to read.',
+        message: t('experiments.settings.guardrails.unevenAllocation'),
       })
     }
 
     if (minAllocation > 0 && minAllocation < 10) {
       items.push({
         severity: 'warning',
-        message: 'One variant has very low traffic and may miss issues.',
+        message: t('experiments.settings.guardrails.lowTrafficVariant'),
       })
     }
 
     if (sampleEstimate.estimatedDays && sampleEstimate.estimatedDays > 56) {
       items.push({
         severity: 'warning',
-        message: 'The current sample estimate is longer than eight weeks.',
+        message: t('experiments.settings.guardrails.longEstimate'),
       })
     }
 
     if (sampleEstimate.perVariant < 100) {
       items.push({
         severity: 'warning',
-        message: 'The estimate is very small, check the baseline and MDE.',
+        message: t('experiments.settings.guardrails.smallEstimate'),
       })
     }
 
     if (!hypothesis.trim()) {
       items.push({
         severity: 'warning',
-        message: 'A hypothesis helps interpret mixed or flat results later.',
+        message: t('experiments.settings.guardrails.noHypothesis'),
       })
     }
 
     if (multipleVariantHandling === 'first_exposure') {
       items.push({
         severity: 'warning',
-        message: 'First exposure handling can hide variant switching issues.',
+        message: t('experiments.settings.guardrails.firstExposureHandling'),
       })
     }
 
@@ -598,6 +598,7 @@ const ExperimentSettingsModal = ({
     sampleEstimate.estimatedDays,
     sampleEstimate.perVariant,
     selectedFeatureFlag?.experimentId,
+    t,
     variants,
   ])
 
@@ -671,7 +672,7 @@ const ExperimentSettingsModal = ({
                       <Input
                         label={
                           <span className='flex items-center gap-1.5'>
-                            Hypothesis
+                            {t('experiments.hypothesisLabel')}
                             <Text size='xs' colour='muted'>
                               ({t('common.optional')})
                             </Text>
@@ -679,7 +680,7 @@ const ExperimentSettingsModal = ({
                         }
                         value={hypothesis}
                         onChange={(e) => setHypothesis(e.target.value)}
-                        placeholder='Changing X should improve Y because...'
+                        placeholder={t('experiments.hypothesisPlaceholder')}
                       />
                     </div>
 
@@ -711,7 +712,7 @@ const ExperimentSettingsModal = ({
                         />
                         {!featureFlagKey && suggestedFlagKey ? (
                           <Text size='xs' colour='muted' className='mt-1'>
-                            Will use:{' '}
+                            {t('experiments.settings.willUse')}{' '}
                             <Text size='xs' colour='secondary' code>
                               {suggestedFlagKey}
                             </Text>
@@ -732,7 +733,7 @@ const ExperimentSettingsModal = ({
                             {t('experiments.variants')}
                           </Text>
                           <Tooltip
-                            text='Define the variants users will see. The control is your baseline (usually the current version). Other variants are what you want to test.'
+                            text={t('experiments.settings.variantsHint')}
                             className='flex items-center'
                           />
                         </div>
@@ -785,7 +786,9 @@ const ExperimentSettingsModal = ({
                                     e.target.value,
                                   )
                                 }
-                                placeholder='Name'
+                                placeholder={t(
+                                  'experiments.settings.variantNamePlaceholder',
+                                )}
                                 classes={{ input: 'px-2.5 py-1.5' }}
                               />
                               <Input
@@ -800,7 +803,9 @@ const ExperimentSettingsModal = ({
                                       .replace(/[^a-z0-9_]/g, '_'),
                                   )
                                 }
-                                placeholder='key'
+                                placeholder={t(
+                                  'experiments.settings.variantKeyPlaceholder',
+                                )}
                                 classes={{ input: 'px-2.5 py-1.5 font-mono' }}
                               />
                             </div>
@@ -883,12 +888,12 @@ const ExperimentSettingsModal = ({
                       </div>
                       <div className='mt-3 rounded-md bg-gray-50 px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
                         <Text size='xs' weight='medium' colour='secondary'>
-                          Variant mapping
+                          {t('experiments.settings.variantMapping')}
                         </Text>
                         <div className='mt-2 grid gap-2 sm:grid-cols-2'>
-                          {variants.map((variant) => (
+                          {variants.map((variant, index) => (
                             <div
-                              key={variant.key}
+                              key={variant.id || `${variant.key}-${index}`}
                               className='flex items-center justify-between gap-3 text-xs'
                             >
                               <div className='min-w-0'>
@@ -911,8 +916,7 @@ const ExperimentSettingsModal = ({
                           ))}
                         </div>
                         <Text size='xs' colour='muted' className='mt-2'>
-                          The feature flag decides eligibility. The experiment
-                          maps eligible profiles into these variants.
+                          {t('experiments.settings.variantMappingHint')}
                         </Text>
                       </div>
                     </div>
@@ -928,7 +932,7 @@ const ExperimentSettingsModal = ({
                           {t('experiments.goal')}
                         </Text>
                         <Tooltip
-                          text='Select a goal to measure which variant performs better. You can start the experiment without a goal and add one later.'
+                          text={t('experiments.settings.goalHint')}
                           className='flex items-center'
                         />
                         <Text size='xs' colour='muted'>
@@ -967,7 +971,9 @@ const ExperimentSettingsModal = ({
                               )}
                             >
                               <TrendUpIcon className='size-4' />
-                              <span className='hidden sm:inline'>Increase</span>
+                              <span className='hidden sm:inline'>
+                                {t('experiments.settings.increase')}
+                              </span>
                             </button>
                             <button
                               type='button'
@@ -980,7 +986,9 @@ const ExperimentSettingsModal = ({
                               )}
                             >
                               <TrendDownIcon className='size-4' />
-                              <span className='hidden sm:inline'>Decrease</span>
+                              <span className='hidden sm:inline'>
+                                {t('experiments.settings.decrease')}
+                              </span>
                             </button>
                           </div>
                         ) : null}
@@ -1004,12 +1012,11 @@ const ExperimentSettingsModal = ({
                           <div className='flex items-center gap-2'>
                             <CalculatorIcon className='size-4 text-gray-600 dark:text-gray-300' />
                             <Text size='sm' weight='semibold'>
-                              Sample size estimate
+                              {t('experiments.settings.sampleEstimate.title')}
                             </Text>
                           </div>
                           <Text size='xs' colour='muted' className='mt-1'>
-                            Two-sided 95% confidence, 80% power. Use this as a
-                            planning estimate, not a guarantee.
+                            {t('experiments.settings.sampleEstimate.hint')}
                           </Text>
                         </div>
                         <div className='text-right'>
@@ -1022,14 +1029,18 @@ const ExperimentSettingsModal = ({
                             {sampleEstimate.perVariant.toLocaleString()}
                           </Text>
                           <Text as='p' size='xs' colour='muted'>
-                            exposures per variant
+                            {t(
+                              'experiments.settings.sampleEstimate.exposuresPerVariant',
+                            )}
                           </Text>
                         </div>
                       </div>
 
                       <div className='mt-4 grid gap-3 sm:grid-cols-3'>
                         <Input
-                          label='Baseline conversion'
+                          label={t(
+                            'experiments.settings.sampleEstimate.baselineConversion',
+                          )}
                           inputMode='decimal'
                           value={baselineConversionRate}
                           onChange={(e) =>
@@ -1043,7 +1054,9 @@ const ExperimentSettingsModal = ({
                           classes={{ input: 'px-2.5 py-1.5' }}
                         />
                         <Input
-                          label='MDE lift'
+                          label={t(
+                            'experiments.settings.sampleEstimate.mdeLift',
+                          )}
                           inputMode='decimal'
                           value={minimumDetectableEffect}
                           onChange={(e) =>
@@ -1057,7 +1070,9 @@ const ExperimentSettingsModal = ({
                           classes={{ input: 'px-2.5 py-1.5' }}
                         />
                         <Input
-                          label='Daily exposures'
+                          label={t(
+                            'experiments.settings.sampleEstimate.dailyExposures',
+                          )}
                           inputMode='numeric'
                           value={dailyExposures}
                           onChange={(e) =>
@@ -1072,7 +1087,9 @@ const ExperimentSettingsModal = ({
                       <div className='mt-3 grid gap-2 text-xs sm:grid-cols-3'>
                         <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                           <Text as='p' size='xs' colour='muted'>
-                            Target rate
+                            {t(
+                              'experiments.settings.sampleEstimate.targetRate',
+                            )}
                           </Text>
                           <Text
                             as='p'
@@ -1085,7 +1102,9 @@ const ExperimentSettingsModal = ({
                         </div>
                         <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                           <Text as='p' size='xs' colour='muted'>
-                            Total sample
+                            {t(
+                              'experiments.settings.sampleEstimate.totalSample',
+                            )}
                           </Text>
                           <Text
                             as='p'
@@ -1098,7 +1117,9 @@ const ExperimentSettingsModal = ({
                         </div>
                         <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
                           <Text as='p' size='xs' colour='muted'>
-                            Runtime estimate
+                            {t(
+                              'experiments.settings.sampleEstimate.runtimeEstimate',
+                            )}
                           </Text>
                           <Text
                             as='p'
@@ -1107,8 +1128,12 @@ const ExperimentSettingsModal = ({
                             className='tabular-nums'
                           >
                             {sampleEstimate.estimatedDays
-                              ? `${sampleEstimate.estimatedDays} days`
-                              : 'Add traffic'}
+                              ? t('experiments.settings.sampleEstimate.days', {
+                                  count: sampleEstimate.estimatedDays,
+                                })
+                              : t(
+                                  'experiments.settings.sampleEstimate.addTraffic',
+                                )}
                           </Text>
                         </div>
                       </div>
@@ -1117,7 +1142,7 @@ const ExperimentSettingsModal = ({
                     <div className='rounded-lg bg-gray-50 p-4 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
                       <div className='flex items-center justify-between gap-3'>
                         <Text size='sm' weight='semibold'>
-                          Launch guardrails
+                          {t('experiments.settings.launchGuardrails')}
                         </Text>
                         <Text
                           size='xs'
@@ -1135,10 +1160,10 @@ const ExperimentSettingsModal = ({
                           {launchGuardrails.some(
                             (item) => item.severity === 'blocker',
                           )
-                            ? 'Blocked'
+                            ? t('experiments.settings.guardrailStatus.blocked')
                             : launchGuardrails.length > 0
-                              ? 'Review'
-                              : 'Ready'}
+                              ? t('experiments.settings.guardrailStatus.review')
+                              : t('experiments.settings.guardrailStatus.ready')}
                         </Text>
                       </div>
                       {launchGuardrails.length > 0 ? (
@@ -1159,7 +1184,7 @@ const ExperimentSettingsModal = ({
                         </ul>
                       ) : (
                         <Text size='xs' colour='muted' className='mt-2'>
-                          No launch blockers detected.
+                          {t('experiments.settings.noLaunchBlockers')}
                         </Text>
                       )}
                     </div>
@@ -1171,7 +1196,7 @@ const ExperimentSettingsModal = ({
                         className='flex w-full items-center justify-between text-left'
                       >
                         <Text size='sm' weight='medium' colour='secondary'>
-                          Advanced settings
+                          {t('experiments.settings.advancedSettings')}
                         </Text>
                         <CaretDownIcon
                           className={cx(
@@ -1191,10 +1216,12 @@ const ExperimentSettingsModal = ({
                                 weight='medium'
                                 className='text-gray-700 dark:text-gray-200'
                               >
-                                Feature flag source
+                                {t('experiments.settings.featureFlagSource')}
                               </Text>
                               <Tooltip
-                                text='Choose to create a new feature flag for this experiment or link an existing one.'
+                                text={t(
+                                  'experiments.settings.featureFlagSourceHint',
+                                )}
                                 className='flex items-center'
                               />
                             </div>
@@ -1209,7 +1236,7 @@ const ExperimentSettingsModal = ({
                                     : 'secondary'
                                 }
                               >
-                                Create new
+                                {t('experiments.settings.createNewFeatureFlag')}
                               </Button>
                               <Button
                                 type='button'
@@ -1221,7 +1248,9 @@ const ExperimentSettingsModal = ({
                                     : 'secondary'
                                 }
                               >
-                                Link existing
+                                {t(
+                                  'experiments.settings.linkExistingFeatureFlag',
+                                )}
                               </Button>
                             </div>
                           </div>
@@ -1259,7 +1288,7 @@ const ExperimentSettingsModal = ({
                                 <div className='mt-2 rounded-md bg-gray-50 px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
                                   <div className='flex flex-wrap items-center justify-between gap-2'>
                                     <Text size='xs' colour='secondary'>
-                                      Linked flag
+                                      {t('experiments.settings.linkedFlag')}
                                     </Text>
                                     <Text size='xs' colour='secondary' code>
                                       {selectedFeatureFlag.key}
@@ -1270,12 +1299,20 @@ const ExperimentSettingsModal = ({
                                     colour='muted'
                                     className='mt-1'
                                   >
-                                    {selectedFeatureFlag.rolloutPercentage}%
-                                    rollout,{' '}
-                                    {selectedFeatureFlag.enabled
-                                      ? 'enabled'
-                                      : 'disabled'}
-                                    . Starting the experiment enables the flag.
+                                    {t(
+                                      'experiments.settings.linkedFlagDetails',
+                                      {
+                                        percentage:
+                                          selectedFeatureFlag.rolloutPercentage,
+                                        status: String(
+                                          t(
+                                            selectedFeatureFlag.enabled
+                                              ? 'featureFlags.enabled'
+                                              : 'featureFlags.disabled',
+                                          ),
+                                        ).toLocaleLowerCase(),
+                                      },
+                                    )}
                                   </Text>
                                 </div>
                               ) : null}
@@ -1290,10 +1327,12 @@ const ExperimentSettingsModal = ({
                                 weight='medium'
                                 className='text-gray-700 dark:text-gray-200'
                               >
-                                Exposure tracking
+                                {t('experiments.settings.exposureTracking')}
                               </Text>
                               <Tooltip
-                                text='How to detect when a user has been exposed to the experiment. Default uses the feature flag call. Custom lets you specify a different event.'
+                                text={t(
+                                  'experiments.settings.exposureTrackingHint',
+                                )}
                                 className='flex items-center'
                               />
                             </div>
@@ -1310,7 +1349,7 @@ const ExperimentSettingsModal = ({
                                     : 'secondary'
                                 }
                               >
-                                Default
+                                {t('experiments.exposureTrigger.default')}
                               </Button>
                               <Button
                                 type='button'
@@ -1324,7 +1363,7 @@ const ExperimentSettingsModal = ({
                                     : 'secondary'
                                 }
                               >
-                                Custom event
+                                {t('experiments.exposureTrigger.custom')}
                               </Button>
                             </div>
 
@@ -1351,22 +1390,37 @@ const ExperimentSettingsModal = ({
                                 weight='medium'
                                 className='text-gray-700 dark:text-gray-200'
                               >
-                                Multi-exposure handling
+                                {t(
+                                  'experiments.settings.multiExposureHandling',
+                                )}
                               </Text>
                               <Tooltip
                                 text={
                                   <div>
                                     <Text as='p' weight='medium'>
-                                      What happens if a user sees multiple
-                                      variants?
+                                      {t(
+                                        'experiments.settings.multiExposureHintTitle',
+                                      )}
                                     </Text>
                                     <Text as='p' className='mt-1'>
-                                      <strong>Exclude:</strong> Remove them from
-                                      analysis (recommended)
+                                      <strong>
+                                        {t(
+                                          'experiments.settings.multiExposureExcludeLabel',
+                                        )}
+                                      </strong>{' '}
+                                      {t(
+                                        'experiments.settings.multiExposureExcludeDescription',
+                                      )}
                                     </Text>
                                     <Text as='p' className='mt-0.5'>
-                                      <strong>First exposure:</strong> Only
-                                      count their first variant
+                                      <strong>
+                                        {t(
+                                          'experiments.settings.multiExposureFirstLabel',
+                                        )}
+                                      </strong>{' '}
+                                      {t(
+                                        'experiments.settings.multiExposureFirstDescription',
+                                      )}
                                     </Text>
                                   </div>
                                 }
@@ -1386,7 +1440,7 @@ const ExperimentSettingsModal = ({
                                     : 'secondary'
                                 }
                               >
-                                Exclude
+                                {t('experiments.settings.exclude')}
                               </Button>
                               <Button
                                 type='button'
@@ -1400,7 +1454,7 @@ const ExperimentSettingsModal = ({
                                     : 'secondary'
                                 }
                               >
-                                First only
+                                {t('experiments.settings.firstOnly')}
                               </Button>
                             </div>
                           </div>
