@@ -67,12 +67,47 @@ const OPERATORS: { value: FilterOperator; labelKey: string }[] = [
   { value: 'notContains', labelKey: 'project.contains.not' },
 ]
 
-const createEmptyFilterRow = (): FilterRow => ({
+const getMetadataColumnBase = (column: string) => {
+  if (column === 'ev:key' || column.startsWith('ev:key:')) return 'ev:key'
+  if (column === 'tag:key' || column.startsWith('tag:key:')) return 'tag:key'
+  if (column === 'ev:value') return 'ev:value'
+  if (column === 'tag:value') return 'tag:value'
+  return column
+}
+
+const getOperatorsForColumn = (column: string) => {
+  if (column === 'ev:key' || column === 'tag:key') {
+    return OPERATORS.filter(
+      (operator) => operator.value === 'is' || operator.value === 'isNot',
+    )
+  }
+
+  return OPERATORS
+}
+
+const normalizeFilterOperator = (
+  column: string,
+  operator: FilterOperator,
+): FilterOperator => {
+  const operatorOptions = getOperatorsForColumn(column)
+
+  return operatorOptions.some((option) => option.value === operator)
+    ? operator
+    : operatorOptions[0]?.value || 'is'
+}
+
+const createFilterRow = ({
+  column = '',
+  operator = 'is',
+  value = '',
+}: Partial<Omit<FilterRow, 'id'>> = {}): FilterRow => ({
   id: crypto.randomUUID(),
-  column: '',
-  operator: 'is',
-  value: '',
+  column,
+  operator: normalizeFilterOperator(column, operator),
+  value,
 })
+
+const createEmptyFilterRow = (): FilterRow => createFilterRow()
 
 const operatorToFilter = (
   operator: FilterOperator,
@@ -123,15 +158,14 @@ const filtersToRows = (filters: FilterType[] = []): FilterRow[] => {
         usedIndexes.add(versionIndex)
 
         return [
-          {
-            id: crypto.randomUUID(),
+          createFilterRow({
             column: versionColumn,
             operator,
             value: createVersionValue(
               filter.filter,
               filters[versionIndex].filter,
             ),
-          },
+          }),
         ]
       }
     }
@@ -139,32 +173,13 @@ const filtersToRows = (filters: FilterType[] = []): FilterRow[] => {
     usedIndexes.add(index)
 
     return [
-      {
-        id: crypto.randomUUID(),
+      createFilterRow({
         column: filter.column,
         operator: filterToOperator(filter),
         value: filter.filter,
-      },
+      }),
     ]
   })
-}
-
-const getMetadataColumnBase = (column: string) => {
-  if (column === 'ev:key' || column.startsWith('ev:key:')) return 'ev:key'
-  if (column === 'tag:key' || column.startsWith('tag:key:')) return 'tag:key'
-  if (column === 'ev:value') return 'ev:value'
-  if (column === 'tag:value') return 'tag:value'
-  return column
-}
-
-const getOperatorsForColumn = (column: string) => {
-  if (column === 'ev:key' || column === 'tag:key') {
-    return OPERATORS.filter(
-      (operator) => operator.value === 'is' || operator.value === 'isNot',
-    )
-  }
-
-  return OPERATORS
 }
 
 const InlineButton = ({
@@ -413,7 +428,10 @@ const FilterRowsEditor = ({
       return
     }
 
-    const nextRows = filtersToRows(initialFilters)
+    const nextRows = filtersToRows(initialFilters).map((row) => ({
+      ...row,
+      operator: normalizeFilterOperator(row.column, row.operator),
+    }))
     setFilterRows(nextRows.length ? nextRows : [createEmptyFilterRow()])
   }, [active, initialFilters, resetKey])
 
@@ -463,12 +481,7 @@ const FilterRowsEditor = ({
           ) {
             fetchFilterValues(fieldValue)
           }
-          const operatorOptions = getOperatorsForColumn(fieldValue)
-          const operator = operatorOptions.some(
-            (option) => option.value === row.operator,
-          )
-            ? row.operator
-            : 'is'
+          const operator = normalizeFilterOperator(fieldValue, row.operator)
 
           return { ...row, column: fieldValue, operator, value: '' }
         }

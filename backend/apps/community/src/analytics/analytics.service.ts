@@ -1772,6 +1772,7 @@ export class AnalyticsService {
         WHERE pid = {pid:FixedString(12)}
         AND type IN ('pageview', 'custom_event')
         AND psid != 0
+        AND psid IN (SELECT psid FROM funnel_sessions)
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psid
       )
@@ -2056,9 +2057,7 @@ export class AnalyticsService {
       median: null,
       p75: null,
     }
-    const pageParams: Record<string, string | number> = {
-      steps: pages.length,
-    }
+    const pageParams: Record<string, string> = {}
     const sessionFiltersQuery = filtersQuery
       ? `AND psid IN (
           SELECT DISTINCT psid
@@ -2071,21 +2070,57 @@ export class AnalyticsService {
         )`
       : ''
 
-    const pagesStr = _join(
-      _map(pages, (value, index) => {
-        pageParams[`v${index}`] = value
-        return `value={v${index}:String}`
+    pages.forEach((value, index) => {
+      pageParams[`v${index}`] = value
+    })
+
+    const funnelStepCtes = _join(
+      _map(pages, (_value, index) => {
+        const step = index + 1
+
+        if (step === 1) {
+          return `
+            funnel_step_1 AS (
+              SELECT
+                psid,
+                created AS firstStepAt,
+                created AS step1At,
+                eventIndex AS step1Index
+              FROM funnel_events
+              WHERE value = {v0:String}
+            )
+          `
+        }
+
+        const previousStep = step - 1
+
+        return `
+          funnel_step_${step} AS (
+            SELECT
+              prev.psid,
+              prev.firstStepAt,
+              min(e.created) AS step${step}At,
+              min(e.eventIndex) AS step${step}Index
+            FROM funnel_step_${previousStep} prev
+            INNER JOIN funnel_events e ON e.psid = prev.psid
+              AND e.value = {v${index}:String}
+              AND e.eventIndex > prev.step${previousStep}Index
+              AND e.created <= addSeconds(prev.firstStepAt, 86400)
+            GROUP BY prev.psid, prev.firstStepAt
+          )
+        `
       }),
       ',',
     )
+    const finalStep = pages.length
 
     const query = `
-      WITH funnel_sessions AS (
+      WITH funnel_events AS (
         SELECT
           psid,
-          minIf(created, value = {v0:String}) AS firstStepAt,
-          maxIf(created, value = {v${pages.length - 1}:String}) AS conversionAt,
-          CAST(windowFunnel(86400)(created, ${pagesStr}) AS UInt64) AS level
+          value,
+          created,
+          row_number() OVER (PARTITION BY psid ORDER BY created, value) AS eventIndex
         FROM (
           SELECT
             psid,
@@ -2098,23 +2133,45 @@ export class AnalyticsService {
             ${sessionFiltersQuery}
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         )
+      ),
+      ${funnelStepCtes},
+      funnel_sessions AS (
+        SELECT
+          psid,
+          argMin(firstStepAt, conversionAt) AS firstStepAt,
+          min(conversionAt) AS conversionAt
+        FROM (
+          SELECT
+            psid,
+            firstStepAt,
+            step${finalStep}At AS conversionAt
+          FROM funnel_step_${finalStep}
+        )
         GROUP BY psid
-        HAVING level = {steps:UInt32}
       ),
       session_starts AS (
-        SELECT psid, min(firstSeen) AS sessionStart
-        FROM sessions FINAL
-        WHERE pid = {pid:FixedString(12)}
-        GROUP BY psid
+        SELECT fs.psid, min(s.firstSeen) AS sessionStart
+        FROM funnel_sessions fs
+        INNER JOIN (
+          SELECT psid, firstSeen, lastSeen
+          FROM sessions FINAL
+          WHERE pid = {pid:FixedString(12)}
+        ) s ON s.psid = fs.psid
+        WHERE s.firstSeen <= fs.firstStepAt
+          AND s.lastSeen >= fs.conversionAt
+        GROUP BY fs.psid
       ),
       first_pages AS (
-        SELECT psid, min(created) AS firstPageAt
-        FROM events
-        WHERE pid = {pid:FixedString(12)}
-          AND type = 'pageview'
-          AND psid != 0
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-        GROUP BY psid
+        SELECT fs.psid, min(e.created) AS firstPageAt
+        FROM funnel_sessions fs
+        INNER JOIN session_starts ss ON fs.psid = ss.psid
+        INNER JOIN events e ON e.psid = fs.psid
+        WHERE e.pid = {pid:FixedString(12)}
+          AND e.type = 'pageview'
+          AND e.psid != 0
+          AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND e.created BETWEEN ss.sessionStart AND fs.conversionAt
+        GROUP BY fs.psid
       )
       SELECT
         round(avgOrNull(if(sessionStart > toDateTime(0) AND sessionStart <= conversionAt, dateDiff('second', sessionStart, conversionAt), NULL)), 2) AS averageSession,

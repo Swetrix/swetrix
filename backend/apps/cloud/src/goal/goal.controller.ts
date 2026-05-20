@@ -714,7 +714,7 @@ export class GoalController {
 
         UNION ALL
 
-        SELECT 'profileTypes' AS kind, if(startsWith(profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 'identified', 'anonymous') AS val, count() AS cnt
+        SELECT 'profileTypes' AS kind, if(startsWith(profileId, {profilePrefixUser:String}), 'identified', 'anonymous') AS val, count() AS cnt
         FROM session_info
         WHERE profileId IS NOT NULL AND profileId != ''
         GROUP BY val
@@ -726,7 +726,13 @@ export class GoalController {
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { ...queryParams, pid: projectId, groupFrom, groupTo },
+        query_params: {
+          ...queryParams,
+          pid: projectId,
+          groupFrom,
+          groupTo,
+          profilePrefixUser: AnalyticsService.PROFILE_PREFIX_USER,
+        },
       })
       .then((resultSet) =>
         resultSet.json<{

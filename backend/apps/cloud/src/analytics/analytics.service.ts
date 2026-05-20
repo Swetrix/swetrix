@@ -1891,14 +1891,19 @@ export class AnalyticsService {
         }>(),
       )
 
+    const createDetailsBucket = () =>
+      Object.create(null) as Record<number, Record<string, number>>
+    const createValueBucket = () =>
+      Object.create(null) as Record<string, number>
+
     const details: FunnelStepDetails = {
-      countries: {},
-      devices: {},
-      browsers: {},
-      sources: {},
-      campaigns: {},
-      pages: {},
-      profileTypes: {},
+      countries: createDetailsBucket(),
+      devices: createDetailsBucket(),
+      browsers: createDetailsBucket(),
+      sources: createDetailsBucket(),
+      campaigns: createDetailsBucket(),
+      pages: createDetailsBucket(),
+      profileTypes: createDetailsBucket(),
     }
 
     for (const row of data) {
@@ -1906,7 +1911,7 @@ export class AnalyticsService {
       const type = row.type as keyof FunnelStepDetails
 
       if (details[type]) {
-        if (!details[type][step]) details[type][step] = {}
+        if (!details[type][step]) details[type][step] = createValueBucket()
         details[type][step][row.val] = row.cnt
       }
     }
