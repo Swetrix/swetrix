@@ -846,6 +846,8 @@
     "accountDesc": "Керуйте своїм профілем і загальними налаштуваннями.",
     "passwordAuth": "Пароль і автентифікація",
     "passwordAuthDesc": "Керуйте доступом до свого облікового запису.",
+    "currentPassword": "Поточний пароль",
+    "currentPasswordRequired": "Поточний пароль обов'язковий",
     "newPassword": "Новий пароль",
     "repeatPassword": "Новий пароль (повторно)",
     "updatePassword": "Оновити пароль",
@@ -1444,16 +1446,22 @@
     "results": "Результати",
     "viewResults": "Переглянути результати",
     "startedAt": "Розпочато",
+    "startedAtDate": "Розпочато {{date}}",
     "endedAt": "Завершено",
+    "endedAtDate": "Завершено {{date}}",
     "exposures": "Покази",
     "conversionRate": "Коефіцієнт конверсії",
+    "value": "Значення",
     "probabilityOfWinning": "Ймовірність перемоги",
     "improvement": "Покращення",
     "totalExposures": "Усього показів",
     "totalConversions": "Усього конверсій",
     "variantsCount": "Варіанти",
+    "variantsCountLabel_one": "1 варіант",
+    "variantsCountLabel_other": "{{count}} варіантів",
     "confidenceLevel": "Рівень довіри",
     "winner": "Переможець",
+    "significant": "Значущий",
     "winnerFound": "У нас є переможець!",
     "winnerDescription": "{{variant}} має ймовірність понад 95% бути найкращим варіантом.",
     "noDataYet": "Поки що немає даних",
@@ -1508,13 +1516,15 @@
       "variantsHint": "Визначте варіанти, які бачитимуть користувачі. Контрольний варіант — це ваша база (зазвичай поточна версія). Інші варіанти — це те, що ви хочете протестувати.",
       "variantNamePlaceholder": "Назва",
       "variantKeyPlaceholder": "ключ",
-      "variantMapping": "Зіставлення варіантів",
-      "variantMappingHint": "Прапорець функції визначає допуск. Експеримент розподіляє допущені профілі за цими варіантами.",
       "goalHint": "Виберіть ціль, щоб виміряти, який варіант працює краще. Ви можете розпочати експеримент без цілі та додати її пізніше.",
       "increase": "Збільшення",
       "decrease": "Зменшення",
       "launchGuardrails": "Обмеження запуску",
-      "noLaunchBlockers": "Блокувальників запуску не виявлено.",
+      "guardrailSummary": {
+        "blocked": "Усуньте блокувальники перед запуском.",
+        "review": "Перевірте виділені елементи перед запуском.",
+        "ready": "Готово до запуску."
+      },
       "advancedSettings": "Розширені налаштування",
       "featureFlagSource": "Джерело Feature flag",
       "featureFlagSourceHint": "Створіть новий Feature flag для цього експерименту або прив'яжіть існуючий.",
@@ -1535,9 +1545,12 @@
       "sampleEstimate": {
         "title": "Оцінка розміру вибірки",
         "hint": "Двобічна довірча ймовірність 95%, потужність 80%. Використовуйте це як орієнтовну оцінку, а не гарантію.",
+        "collapsedSummary": "{{exposures}} показів на варіант, близько {{runtime}}.",
         "exposuresPerVariant": "показів на варіант",
         "baselineConversion": "Базова конверсія",
+        "baselineConversionHint": "Ваш поточний коефіцієнт конверсії для цілі до початку експерименту.",
         "mdeLift": "MDE підйом",
+        "mdeLiftHint": "Мінімальний виявлений ефект: найменший відносний приріст, який ви бажаєте виявити.",
         "dailyExposures": "Щоденні покази",
         "targetRate": "Цільовий показник",
         "totalSample": "Загальна вибірка",
@@ -1573,16 +1586,7 @@
         "finalSuffixNoOverlap": "тому що вибраний період не перетинається з активним експериментом.",
         "clipped": "Показано вибраний період, обмежений часом активного експерименту, з {{from}} до {{to}}."
       },
-      "featureFlagRelationship": {
-        "title": "Зв'язок із feature flag",
-        "description": "Прапорець контролює допуск. Покази експерименту використовують фактичні оцінки та події варіантів."
-      },
       "warnings": {
-        "noExposures": {
-          "title": "Немає показів",
-          "customEventMessage": "Не зафіксовано жодних відповідних користувацьких подій показу.",
-          "featureFlagMessage": "Для цього експерименту не зафіксовано жодних оцінок feature flag."
-        },
         "extremeImbalance": {
           "title": "Екстремальний дисбаланс",
           "message": "Спостережуваний трафік сильно відрізняється від налаштованого розподілу. Обережно інтерпретуйте результати щодо переможця."
@@ -1703,7 +1707,7 @@
     "addASegment": "Додати сегмент",
     "segmentUnsupportedFilters": "{{count}} пропущено тут",
     "segmentNoCompatibleFilters": "Немає сумісних фільтрів",
-    "segmentTrafficMetricsOnly": "Метрики: Лише трафік",
+    "segmentTrafficMetricsOnly": "Метрики: Тільки трафік",
     "loadMore": "Завантажити ще",
     "unknownCountry": "Невідома країна",
     "unknownUser": "Невідомий користувач",
@@ -1963,8 +1967,8 @@
     "gscConnectionRequired": "Щоб переглядати ключові слова для цього проєкту, потрібне підключення до Google Search Console. Попросіть адміністратора проєкту спочатку встановити підключення.",
     "goToProjectSettings": "Перейти до налаштувань проєкту",
     "noKeywordsFound": "Не знайдено ключових слів за вибраний період.",
-    "entryPages": "Початкові сторінки",
-    "exitPages": "Кінцеві сторінки",
+    "entryPages": "Сторінка входу",
+    "exitPages": "Сторінка виходу",
     "clicks": "Кліки",
     "metamapping": {
       "ev": {

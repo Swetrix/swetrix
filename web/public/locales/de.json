@@ -846,6 +846,8 @@
     "accountDesc": "Verwalten Sie Ihr Profil und Ihre allgemeinen Einstellungen.",
     "passwordAuth": "Passwort & Authentifizierung",
     "passwordAuthDesc": "Verwalten Sie den Zugriff auf Ihr Konto.",
+    "currentPassword": "Aktuelles Passwort",
+    "currentPasswordRequired": "Aktuelles Passwort ist erforderlich",
     "newPassword": "Neues Passwort",
     "repeatPassword": "Neues Passwort (wiederholt)",
     "updatePassword": "Passwort aktualisieren",
@@ -1444,16 +1446,22 @@
     "results": "Ergebnisse",
     "viewResults": "Ergebnisse anzeigen",
     "startedAt": "Gestartet",
+    "startedAtDate": "Gestartet am {{date}}",
     "endedAt": "Beendet",
+    "endedAtDate": "Beendet am {{date}}",
     "exposures": "Exponierungen",
     "conversionRate": "Konversionsrate",
+    "value": "Wert",
     "probabilityOfWinning": "Gewinnwahrscheinlichkeit",
     "improvement": "Verbesserung",
     "totalExposures": "Exponierungen gesamt",
     "totalConversions": "Konversionen gesamt",
     "variantsCount": "Varianten",
+    "variantsCountLabel_one": "1 Variante",
+    "variantsCountLabel_other": "{{count}} Varianten",
     "confidenceLevel": "Varianten",
     "winner": "Gewinner",
+    "significant": "Signifikant",
     "winnerFound": "Wir haben einen Gewinner!",
     "winnerDescription": "{{variant}} hat eine Wahrscheinlichkeit von über 95 %, die beste Variante zu sein.",
     "noDataYet": "Noch keine Daten",
@@ -1508,13 +1516,15 @@
       "variantsHint": "Definiere die Varianten, die Benutzer sehen werden. Die Kontrolle ist deine Basis (normalerweise die aktuelle Version). Andere Varianten sind das, was du testen möchtest.",
       "variantNamePlaceholder": "Name",
       "variantKeyPlaceholder": "key",
-      "variantMapping": "Varianten-Mapping",
-      "variantMappingHint": "Das Feature-Flag entscheidet über die Teilnahmeberechtigung. Das Experiment ordnet berechtigte Profile diesen Varianten zu.",
       "goalHint": "Wähle ein Ziel, um zu messen, welche Variante besser abschneidet. Du kannst das Experiment ohne Ziel starten und später eines hinzufügen.",
       "increase": "Erhöhen",
       "decrease": "Verringern",
       "launchGuardrails": "Launch-Schutzmaßnahmen",
-      "noLaunchBlockers": "Keine Launch-Blocker erkannt.",
+      "guardrailSummary": {
+        "blocked": "Beheben Sie die Blocker vor dem Start.",
+        "review": "Überprüfen Sie die hervorgehobenen Elemente vor dem Start.",
+        "ready": "Bereit zum Start, wenn Sie es sind."
+      },
       "advancedSettings": "Erweiterte Einstellungen",
       "featureFlagSource": "Feature-Flag-Quelle",
       "featureFlagSourceHint": "Wähle, ob ein neues Feature-Flag für dieses Experiment erstellt oder ein bestehendes verknüpft werden soll.",
@@ -1535,9 +1545,12 @@
       "sampleEstimate": {
         "title": "Schätzung der Stichprobengröße",
         "hint": "Zweiseitige 95%-Konfidenz, 80% Power. Nutze dies als Planungsschätzung, nicht als Garantie.",
+        "collapsedSummary": "{{exposures}} Einblendungen pro Variante, etwa {{runtime}}.",
         "exposuresPerVariant": "Exposures pro Variante",
         "baselineConversion": "Basis-Konversion",
+        "baselineConversionHint": "Ihre aktuelle Conversion-Rate für das Ziel vor dem Start des Experiments.",
         "mdeLift": "MDE-Steigerung",
+        "mdeLiftHint": "Minimal erkennbarer Effekt: der kleinste relative Anstieg, den Sie erfassen möchten.",
         "dailyExposures": "Tägliche Exposures",
         "targetRate": "Zielrate",
         "totalSample": "Gesamtstichprobe",
@@ -1573,16 +1586,7 @@
         "finalSuffixNoOverlap": "da sich der ausgewählte Zeitraum nicht mit dem aktiven Experiment überschneidet.",
         "clipped": "Zeigt den ausgewählten Zeitraum, zugeschnitten auf die aktive Experimentzeit, {{from}} bis {{to}}."
       },
-      "featureFlagRelationship": {
-        "title": "Feature-Flag-Beziehung",
-        "description": "Das Flag steuert die Teilnahmeberechtigung. Experiment-Exposures verwenden tatsächliche Auswertungen und Varianten-Ereignisse."
-      },
       "warnings": {
-        "noExposures": {
-          "title": "Keine Ausspielungen",
-          "customEventMessage": "Es wurden keine passenden benutzerdefinierten Ausspielungsereignisse aufgezeichnet.",
-          "featureFlagMessage": "Für dieses Experiment wurden keine Feature-Flag-Auswertungen aufgezeichnet."
-        },
         "extremeImbalance": {
           "title": "Extremes Ungleichgewicht",
           "message": "Der beobachtete Traffic weicht stark von der konfigurierten Aufteilung ab. Behandle Gewinner-Ergebnisse mit Vorsicht."
@@ -1963,8 +1967,8 @@
     "gscConnectionRequired": "Zum Anzeigen der Keywords für dieses Projekt ist eine Verbindung zur Google Search Console erforderlich. Bitten Sie den Projektadministrator, die Verbindung zuerst herzustellen.",
     "goToProjectSettings": "Zu den Projekteinstellungen",
     "noKeywordsFound": "Für den ausgewählten Zeitraum wurden keine Keywords gefunden.",
-    "entryPages": "Einstiegsseiten",
-    "exitPages": "Ausstiegsseiten",
+    "entryPages": "Einstiegsseite",
+    "exitPages": "Ausstiegsseite",
     "clicks": "Klicks",
     "metamapping": {
       "ev": {

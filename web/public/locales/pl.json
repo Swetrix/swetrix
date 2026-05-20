@@ -846,6 +846,8 @@
     "accountDesc": "Zarządzaj swoim profilem i ustawieniami ogólnymi.",
     "passwordAuth": "Hasło i uwierzytelnianie",
     "passwordAuthDesc": "Zarządzaj dostępem do swojego konta.",
+    "currentPassword": "Obecne hasło",
+    "currentPasswordRequired": "Obecne hasło jest wymagane",
     "newPassword": "Nowe hasło",
     "repeatPassword": "Nowe hasło (powtórzone)",
     "updatePassword": "Zaktualizuj hasło",
@@ -1444,16 +1446,22 @@
     "results": "Wyniki",
     "viewResults": "Wyświetl wyniki",
     "startedAt": "Rozpoczęto",
+    "startedAtDate": "Rozpoczęto {{date}}",
     "endedAt": "Zakończono",
+    "endedAtDate": "Zakończono {{date}}",
     "exposures": "Ekspozycje",
     "conversionRate": "Współczynnik konwersji",
+    "value": "Wartość",
     "probabilityOfWinning": "Prawdopodobieństwo wygranej",
     "improvement": "Prawdopodobieństwo wygranej",
     "totalExposures": "Łącznie ekspozycji",
     "totalConversions": "Łącznie konwersji",
     "variantsCount": "Warianty",
+    "variantsCountLabel_one": "1 wariant",
+    "variantsCountLabel_other": "{{count}} wariantów",
     "confidenceLevel": "Poziom ufności",
     "winner": "Zwycięzca",
+    "significant": "Istotne",
     "winnerFound": "Mamy zwycięzcę!",
     "winnerDescription": "{{variant}} ma ponad 95% prawdopodobieństwa, że jest najlepszym wariantem.",
     "noDataYet": "Brak danych",
@@ -1508,13 +1516,15 @@
       "variantsHint": "Określ warianty, które zobaczą użytkownicy. Grupa kontrolna to twój punkt odniesienia (zazwyczaj obecna wersja). Inne warianty to to, co chcesz przetestować.",
       "variantNamePlaceholder": "Nazwa",
       "variantKeyPlaceholder": "klucz",
-      "variantMapping": "Mapowanie wariantów",
-      "variantMappingHint": "Flaga funkcji decyduje o kwalifikowalności. Eksperyment mapuje kwalifikujące się profile na te warianty.",
       "goalHint": "Wybierz cel, aby zmierzyć, który wariant sprawdza się lepiej. Możesz rozpocząć eksperyment bez celu i dodać go później.",
       "increase": "Zwiększ",
       "decrease": "Zmniejsz",
       "launchGuardrails": "Zabezpieczenia uruchomienia",
-      "noLaunchBlockers": "Nie wykryto blokerów uruchomienia.",
+      "guardrailSummary": {
+        "blocked": "Rozwiąż problemy blokujące przed uruchomieniem.",
+        "review": "Przejrzyj wyróżnione elementy przed uruchomieniem.",
+        "ready": "Gotowe do uruchomienia, kiedy tylko zechcesz."
+      },
       "advancedSettings": "Ustawienia zaawansowane",
       "featureFlagSource": "Źródło flagi funkcji",
       "featureFlagSourceHint": "Wybierz, czy utworzyć nową flagę funkcji dla tego eksperymentu, czy połączyć z istniejącą.",
@@ -1535,9 +1545,12 @@
       "sampleEstimate": {
         "title": "Szacowana wielkość próby",
         "hint": "Dwustronny 95% przedział ufności, 80% mocy. Użyj jako szacunku do planowania, a nie gwarancji.",
+        "collapsedSummary": "{{exposures}} ekspozycji na wariant, około {{runtime}}.",
         "exposuresPerVariant": "ekspozycji na wariant",
         "baselineConversion": "Konwersja bazowa",
+        "baselineConversionHint": "Twój obecny współczynnik konwersji dla celu przed rozpoczęciem eksperymentu.",
         "mdeLift": "Przyrost MDE",
+        "mdeLiftHint": "Minimalny wykrywalny efekt: najmniejszy względny wzrost, który chcesz wykryć.",
         "dailyExposures": "Dzienne ekspozycje",
         "targetRate": "Współczynnik docelowy",
         "totalSample": "Całkowita próba",
@@ -1573,16 +1586,7 @@
         "finalSuffixNoOverlap": "ponieważ wybrany okres nie nakłada się z aktywnym eksperymentem.",
         "clipped": "Wyświetlanie wybranego okresu ograniczonego do czasu trwania aktywnego eksperymentu, od {{from}} do {{to}}."
       },
-      "featureFlagRelationship": {
-        "title": "Powiązanie flagi funkcji",
-        "description": "Flaga kontroluje kwalifikowalność. Ekspozycje eksperymentu wykorzystują rzeczywiste ewaluacje i zdarzenia wariantów."
-      },
       "warnings": {
-        "noExposures": {
-          "title": "Brak ekspozycji",
-          "customEventMessage": "Nie zarejestrowano pasujących niestandardowych zdarzeń ekspozycji.",
-          "featureFlagMessage": "Nie zarejestrowano żadnych ocen flagi funkcji dla tego eksperymentu."
-        },
         "extremeImbalance": {
           "title": "Skrajna nierównowaga",
           "message": "Zaobserwowany ruch znacznie odbiega od skonfigurowanego podziału. Ostrożnie interpretuj zwycięskie warianty."
@@ -1701,7 +1705,7 @@
     "segments": "Segmenty",
     "segmentName": "Nazwa segmentu",
     "addASegment": "Dodaj segment",
-    "segmentUnsupportedFilters": "{{count}} pominięto tutaj",
+    "segmentUnsupportedFilters": "Pominięto tutaj {{count}}",
     "segmentNoCompatibleFilters": "Brak kompatybilnych filtrów",
     "segmentTrafficMetricsOnly": "Metryki: Tylko ruch",
     "loadMore": "Załaduj więcej",
@@ -1963,8 +1967,8 @@
     "gscConnectionRequired": "Aby wyświetlać słowa kluczowe dla tego projektu, wymagane jest połączenie z Google Search Console. Poproś administratora projektu, aby najpierw nawiązał to połączenie.",
     "goToProjectSettings": "Przejdź do ustawień projektu",
     "noKeywordsFound": "Nie znaleziono słów kluczowych dla wybranego okresu.",
-    "entryPages": "Strony wejścia",
-    "exitPages": "Strony wyjścia",
+    "entryPages": "Strona wejściowa",
+    "exitPages": "Strona wyjściowa",
     "clicks": "Kliknięcia",
     "metamapping": {
       "ev": {

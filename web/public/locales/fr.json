@@ -846,6 +846,8 @@
     "accountDesc": "Gérez votre profil et vos paramètres généraux.",
     "passwordAuth": "Mot de passe et authentification",
     "passwordAuthDesc": "Gérez l’accès à votre compte.",
+    "currentPassword": "Mot de passe actuel",
+    "currentPasswordRequired": "Le mot de passe actuel est requis",
     "newPassword": "Nouveau mot de passe",
     "repeatPassword": "Nouveau mot de passe (répété)",
     "updatePassword": "Mettre à jour le mot de passe",
@@ -1444,16 +1446,22 @@
     "results": "Résultats",
     "viewResults": "Voir les résultats",
     "startedAt": "Démarré",
+    "startedAtDate": "Démarré le {{date}}",
     "endedAt": "Terminé",
+    "endedAtDate": "Terminé le {{date}}",
     "exposures": "Expositions",
     "conversionRate": "Taux de conversion",
+    "value": "Valeur",
     "probabilityOfWinning": "Probabilité de gagner",
     "improvement": "Amélioration",
     "totalExposures": "Total des expositions",
     "totalConversions": "Total des conversions",
     "variantsCount": "Variantes",
+    "variantsCountLabel_one": "1 variante",
+    "variantsCountLabel_other": "{{count}} variantes",
     "confidenceLevel": "Niveau de confiance",
     "winner": "Gagnant",
+    "significant": "Significatif",
     "winnerFound": "Nous avons un gagnant !",
     "winnerDescription": "{{variant}} a une probabilité supérieure à 95 % d’être la meilleure variante.",
     "noDataYet": "Aucune donnée pour le moment",
@@ -1508,13 +1516,15 @@
       "variantsHint": "Définissez les variantes que les utilisateurs verront. Le contrôle est votre référence (généralement la version actuelle). Les autres variantes sont celles que vous souhaitez tester.",
       "variantNamePlaceholder": "Nom",
       "variantKeyPlaceholder": "clé",
-      "variantMapping": "Mapping des variantes",
-      "variantMappingHint": "Le feature flag détermine l'éligibilité. L'expérience associe les profils éligibles à ces variantes.",
       "goalHint": "Sélectionnez un objectif pour mesurer quelle variante est la plus performante. Vous pouvez démarrer l'expérience sans objectif et en ajouter un plus tard.",
       "increase": "Augmenter",
       "decrease": "Diminuer",
       "launchGuardrails": "Garde-fous de lancement",
-      "noLaunchBlockers": "Aucun blocage de lancement détecté.",
+      "guardrailSummary": {
+        "blocked": "Résolvez les blocages avant le lancement.",
+        "review": "Vérifiez les éléments en surbrillance avant le lancement.",
+        "ready": "Prêt à être lancé quand vous l'êtes."
+      },
       "advancedSettings": "Paramètres avancés",
       "featureFlagSource": "Source du feature flag",
       "featureFlagSourceHint": "Choisissez de créer un nouveau feature flag pour cette expérience ou d'en lier un existant.",
@@ -1535,9 +1545,12 @@
       "sampleEstimate": {
         "title": "Estimation de la taille de l'échantillon",
         "hint": "Confiance bilatérale à 95 %, puissance à 80 %. Utilisez ceci comme estimation de planification, pas comme une garantie.",
+        "collapsedSummary": "{{exposures}} expositions par variante, environ {{runtime}}.",
         "exposuresPerVariant": "expositions par variante",
         "baselineConversion": "Conversion de base",
+        "baselineConversionHint": "Votre taux de conversion actuel pour l'objectif avant le début de l'expérience.",
         "mdeLift": "Lift MDE",
+        "mdeLiftHint": "Effet minimum détectable : la plus petite amélioration relative que vous souhaitez détecter.",
         "dailyExposures": "Expositions quotidiennes",
         "targetRate": "Taux cible",
         "totalSample": "Échantillon total",
@@ -1573,16 +1586,7 @@
         "finalSuffixNoOverlap": "car la période sélectionnée ne chevauche pas l'expérience active.",
         "clipped": "Affichage de la période sélectionnée restreinte à la durée de l'expérience active, de {{from}} à {{to}}."
       },
-      "featureFlagRelationship": {
-        "title": "Relation du feature flag",
-        "description": "Le flag contrôle l'éligibilité. Les expositions à l'expérience utilisent les évaluations réelles et les événements de variante."
-      },
       "warnings": {
-        "noExposures": {
-          "title": "Aucune exposition",
-          "customEventMessage": "Aucun événement d'exposition personnalisé correspondant n'a été enregistré.",
-          "featureFlagMessage": "Aucune évaluation de feature flag n'a été enregistrée pour cette expérience."
-        },
         "extremeImbalance": {
           "title": "Déséquilibre extrême",
           "message": "Le trafic observé est loin de la répartition configurée. Interprétez les résultats gagnants avec prudence."
@@ -1701,7 +1705,7 @@
     "segments": "Segments",
     "segmentName": "Nom du segment",
     "addASegment": "Ajouter un segment",
-    "segmentUnsupportedFilters": "{{count}} ignorés ici",
+    "segmentUnsupportedFilters": "{{count}} ignoré(s) ici",
     "segmentNoCompatibleFilters": "Aucun filtre compatible",
     "segmentTrafficMetricsOnly": "Métriques : Trafic uniquement",
     "loadMore": "Afficher plus",
@@ -1963,8 +1967,8 @@
     "gscConnectionRequired": "Une connexion à Google Search Console est requise pour afficher les mots-clés de ce projet. Demandez à l’administrateur du projet d’établir d’abord la connexion.",
     "goToProjectSettings": "Accéder aux paramètres du projet",
     "noKeywordsFound": "Aucun mot-clé trouvé pour la période sélectionnée.",
-    "entryPages": "Pages d’entrée",
-    "exitPages": "Pages de sortie",
+    "entryPages": "Page d'entrée",
+    "exitPages": "Page de sortie",
     "clicks": "Clics",
     "metamapping": {
       "ev": {
