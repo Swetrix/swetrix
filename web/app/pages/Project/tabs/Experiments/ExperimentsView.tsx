@@ -57,6 +57,15 @@ type MultipleVariantHandling = 'exclude' | 'first_exposure'
 
 type FeatureFlagMode = 'create' | 'link'
 
+const SPLIT_RAIL_COLORS = [
+  'bg-indigo-500',
+  'bg-emerald-500',
+  'bg-amber-500',
+  'bg-red-500',
+  'bg-sky-500',
+  'bg-violet-500',
+]
+
 interface ExperimentVariant {
   id?: string
   name: string
@@ -96,6 +105,35 @@ interface ExperimentRowProps {
   onStart: (id: string) => void
   onPause: (id: string) => void
   onComplete: (id: string) => void
+}
+
+const ExperimentSplitRail = ({
+  variants,
+}: {
+  variants: ExperimentVariant[]
+}) => {
+  const totalAllocation = variants.reduce(
+    (sum, variant) => sum + variant.rolloutPercentage,
+    0,
+  )
+
+  if (totalAllocation <= 0) {
+    return <div className='h-1.5 rounded-full bg-gray-200 dark:bg-slate-800' />
+  }
+
+  return (
+    <div className='flex h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
+      {variants.map((variant, index) => (
+        <span
+          key={variant.id || `${variant.key}-${index}`}
+          className={SPLIT_RAIL_COLORS[index % SPLIT_RAIL_COLORS.length]}
+          style={{
+            width: `${(variant.rolloutPercentage / totalAllocation) * 100}%`,
+          }}
+        />
+      ))}
+    </div>
+  )
 }
 
 const getLaunchGuardrails = (experiment: Experiment, t: TFunction) => {
@@ -176,6 +214,34 @@ const ExperimentRow = ({
     [experiment, t],
   )
   const launchBlockerText = launchGuardrails.blockers.join(', ')
+  const allocationLabel = useMemo(
+    () =>
+      experiment.variants
+        .map((variant) => `${variant.rolloutPercentage}%`)
+        .join(' / '),
+    [experiment.variants],
+  )
+  const timingLabel = useMemo(() => {
+    if (experiment.status === 'completed' && experiment.endedAt) {
+      return `${t('experiments.endedAt')} ${dayjs(experiment.endedAt).format(
+        'MMM D, YYYY',
+      )}`
+    }
+
+    if (experiment.startedAt) {
+      return `${t('experiments.startedAt')} ${dayjs(
+        experiment.startedAt,
+      ).format('MMM D, YYYY')}`
+    }
+
+    return dayjs(experiment.created).fromNow()
+  }, [
+    experiment.created,
+    experiment.endedAt,
+    experiment.startedAt,
+    experiment.status,
+    t,
+  ])
   const isEditDisabled =
     experiment.status === 'running' || experiment.status === 'completed'
   const statusBadgeColour: 'slate' | 'green' | 'yellow' | 'sky' =
@@ -230,24 +296,19 @@ const ExperimentRow = ({
   return (
     <>
       <li className='relative mb-2 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
-        <div className='flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-x-4 sm:px-5'>
+        <div className='flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-x-4 sm:px-5'>
           <Link
             to={{ search: resultsSearch }}
-            className='flex min-w-0 flex-auto gap-x-4 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900'
+            className='grid min-w-0 flex-auto gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900'
           >
-            <div className='min-w-0 flex-auto'>
-              <div className='flex flex-wrap items-center gap-2'>
+            <div className='min-w-0'>
+              <div className='flex min-w-0 flex-wrap items-center gap-2'>
                 <Text as='p' weight='semibold' truncate>
                   {experiment.name}
                 </Text>
                 <Badge
                   label={t(`experiments.status.${experiment.status}`)}
                   colour={statusBadgeColour}
-                  className='text-[0.625rem] leading-3'
-                />
-                <Badge
-                  colour='indigo'
-                  label={`${variantsCount} ${t('experiments.variants')}`}
                   className='text-[0.625rem] leading-3'
                 />
                 {launchGuardrails.blockers.length > 0 &&
@@ -268,53 +329,33 @@ const ExperimentRow = ({
                   />
                 ) : null}
               </div>
-              {experiment.description ? (
-                <Text className='mt-1' as='p' size='sm' colour='secondary'>
-                  {experiment.description}
-                </Text>
-              ) : null}
-              {experiment.hypothesis ? (
-                <Text className='mt-1 italic' as='p' size='xs' colour='muted'>
-                  {t('experiments.hypothesis')}: {experiment.hypothesis}
-                </Text>
-              ) : null}
-              <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
+              <div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-1'>
                 <Text as='span' size='xs' colour='muted'>
-                  {t('experiments.flag')}:{' '}
-                  <Text as='span' size='xs' colour='secondary' code>
-                    {experiment.featureFlagKey ||
-                      experiment.featureFlagId ||
-                      t('experiments.createdOnLaunch')}
-                  </Text>
+                  {variantsCount} {t('experiments.variants').toLowerCase()}
                 </Text>
+                <span className='size-1 rounded-full bg-gray-300 dark:bg-slate-700' />
                 <Text as='span' size='xs' colour='muted'>
-                  {t('experiments.split')}:{' '}
-                  {experiment.variants
-                    .map(
-                      (variant) =>
-                        `${variant.key} ${variant.rolloutPercentage}%`,
-                    )
-                    .join(' / ')}
+                  {timingLabel}
                 </Text>
-              </div>
-              <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
-                {experiment.startedAt ? (
-                  <Text as='span' size='xs' colour='muted'>
-                    {t('experiments.startedAt')}:{' '}
-                    {dayjs(experiment.startedAt).format('MMM D, YYYY')}
-                  </Text>
-                ) : null}
-                {experiment.endedAt ? (
-                  <Text as='span' size='xs' colour='muted'>
-                    {t('experiments.endedAt')}:{' '}
-                    {dayjs(experiment.endedAt).format('MMM D, YYYY')}
-                  </Text>
-                ) : null}
+                <span className='size-1 rounded-full bg-gray-300 sm:hidden dark:bg-slate-700' />
+                <Text as='span' size='xs' colour='muted' className='sm:hidden'>
+                  {allocationLabel}
+                </Text>
               </div>
             </div>
+            <div className='hidden sm:block'>
+              <ExperimentSplitRail variants={experiment.variants} />
+              <Text
+                as='p'
+                size='xs'
+                colour='muted'
+                className='mt-1 text-right tabular-nums'
+              >
+                {allocationLabel}
+              </Text>
+            </div>
           </Link>
-          <div className='flex w-full flex-wrap items-center gap-1 pt-2 sm:w-auto sm:shrink-0 sm:justify-end sm:pt-0'>
-            {/* Action buttons based on status */}
+          <div className='flex w-full flex-wrap items-center gap-1 sm:w-auto sm:shrink-0 sm:justify-end'>
             {experiment.status === 'draft' ? (
               <>
                 {launchGuardrails.blockers.length > 0 ? (
@@ -449,7 +490,6 @@ const ExperimentRow = ({
               />
             ) : null}
 
-            {/* Edit/Delete buttons */}
             <div className='ml-auto flex items-center gap-1 sm:ml-0'>
               {isEditDisabled ? (
                 <Tooltip
@@ -511,7 +551,6 @@ const ExperimentRow = ({
         </div>
       </li>
 
-      {/* Delete confirmation modal */}
       <Modal
         onClose={() => setShowDeleteModal(false)}
         onSubmit={() => {
@@ -527,7 +566,6 @@ const ExperimentRow = ({
         isOpened={showDeleteModal}
       />
 
-      {/* Complete confirmation modal */}
       <Modal
         onClose={() => setShowCompleteModal(false)}
         onSubmit={handleComplete}

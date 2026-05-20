@@ -92,6 +92,7 @@ const ExperimentSettingsModal = ({
   const [minimumDetectableEffect, setMinimumDetectableEffect] = useState(10)
   const [dailyExposures, setDailyExposures] = useState(500)
 
+  const [showPlanning, setShowPlanning] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [exposureTrigger, setExposureTrigger] =
     useState<ExposureTrigger>('feature_flag')
@@ -124,6 +125,7 @@ const ExperimentSettingsModal = ({
     setBaselineConversionRate(5)
     setMinimumDetectableEffect(10)
     setDailyExposures(500)
+    setShowPlanning(false)
     setShowAdvanced(false)
     setExposureTrigger('feature_flag')
     setCustomEventName('')
@@ -602,6 +604,19 @@ const ExperimentSettingsModal = ({
     variants,
   ])
 
+  const launchBlockers = launchGuardrails.filter(
+    (item) => item.severity === 'blocker',
+  )
+  const launchWarnings = launchGuardrails.filter(
+    (item) => item.severity === 'warning',
+  )
+  const launchReadiness =
+    launchBlockers.length > 0
+      ? 'blocked'
+      : launchWarnings.length > 0
+        ? 'review'
+        : 'ready'
+
   return (
     <Dialog className='relative z-40' open={isOpen} onClose={onClose}>
       <DialogBackdrop
@@ -886,39 +901,6 @@ const ExperimentSettingsModal = ({
                           {totalPercentage}%
                         </Text>
                       </div>
-                      <div className='mt-3 rounded-md bg-gray-50 px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
-                        <Text size='xs' weight='medium' colour='secondary'>
-                          {t('experiments.settings.variantMapping')}
-                        </Text>
-                        <div className='mt-2 grid gap-2 sm:grid-cols-2'>
-                          {variants.map((variant, index) => (
-                            <div
-                              key={variant.id || `${variant.key}-${index}`}
-                              className='flex items-center justify-between gap-3 text-xs'
-                            >
-                              <div className='min-w-0'>
-                                <Text as='p' size='xs' weight='medium' truncate>
-                                  {variant.name}
-                                </Text>
-                                <Text as='p' size='xs' colour='muted' code>
-                                  {variant.key}
-                                </Text>
-                              </div>
-                              <Text
-                                as='span'
-                                size='xs'
-                                weight='semibold'
-                                className='tabular-nums'
-                              >
-                                {variant.rolloutPercentage}%
-                              </Text>
-                            </div>
-                          ))}
-                        </div>
-                        <Text size='xs' colour='muted' className='mt-2'>
-                          {t('experiments.settings.variantMappingHint')}
-                        </Text>
-                      </div>
                     </div>
 
                     <div>
@@ -1006,187 +988,260 @@ const ExperimentSettingsModal = ({
                       ) : null}
                     </div>
 
-                    <div className='rounded-lg bg-gray-50 p-4 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
-                      <div className='flex flex-wrap items-start justify-between gap-3'>
+                    <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800/70 dark:bg-slate-950'>
+                      <div className='flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between'>
                         <div>
-                          <div className='flex items-center gap-2'>
-                            <CalculatorIcon className='size-4 text-gray-600 dark:text-gray-300' />
-                            <Text size='sm' weight='semibold'>
-                              {t('experiments.settings.sampleEstimate.title')}
-                            </Text>
-                          </div>
-                          <Text size='xs' colour='muted' className='mt-1'>
-                            {t('experiments.settings.sampleEstimate.hint')}
+                          <Text size='sm' weight='semibold'>
+                            {t('experiments.settings.launchGuardrails')}
                           </Text>
-                        </div>
-                        <div className='text-right'>
                           <Text
                             as='p'
-                            size='lg'
-                            weight='semibold'
-                            className='tabular-nums'
+                            size='xs'
+                            colour='muted'
+                            className='mt-0.5'
                           >
-                            {sampleEstimate.perVariant.toLocaleString()}
-                          </Text>
-                          <Text as='p' size='xs' colour='muted'>
-                            {t(
-                              'experiments.settings.sampleEstimate.exposuresPerVariant',
-                            )}
+                            {launchReadiness === 'blocked'
+                              ? t(
+                                  'experiments.settings.guardrailSummary.blocked',
+                                )
+                              : launchReadiness === 'review'
+                                ? t(
+                                    'experiments.settings.guardrailSummary.review',
+                                  )
+                                : t(
+                                    'experiments.settings.guardrailSummary.ready',
+                                  )}
                           </Text>
                         </div>
-                      </div>
-
-                      <div className='mt-4 grid gap-3 sm:grid-cols-3'>
-                        <Input
-                          label={t(
-                            'experiments.settings.sampleEstimate.baselineConversion',
+                        <span
+                          className={cx(
+                            'inline-flex w-fit items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset',
+                            launchReadiness === 'blocked' &&
+                              'bg-red-50 text-red-700 ring-red-600/15 dark:bg-red-400/10 dark:text-red-300 dark:ring-red-400/20',
+                            launchReadiness === 'review' &&
+                              'bg-amber-50 text-amber-800 ring-amber-600/20 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20',
+                            launchReadiness === 'ready' &&
+                              'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
                           )}
-                          inputMode='decimal'
-                          value={baselineConversionRate}
-                          onChange={(e) =>
-                            setBaselineConversionRate(
-                              Math.min(
-                                99,
-                                Math.max(0.1, Number(e.target.value) || 0.1),
-                              ),
-                            )
-                          }
-                          classes={{ input: 'px-2.5 py-1.5' }}
-                        />
-                        <Input
-                          label={t(
-                            'experiments.settings.sampleEstimate.mdeLift',
-                          )}
-                          inputMode='decimal'
-                          value={minimumDetectableEffect}
-                          onChange={(e) =>
-                            setMinimumDetectableEffect(
-                              Math.min(
-                                500,
-                                Math.max(1, Number(e.target.value) || 1),
-                              ),
-                            )
-                          }
-                          classes={{ input: 'px-2.5 py-1.5' }}
-                        />
-                        <Input
-                          label={t(
-                            'experiments.settings.sampleEstimate.dailyExposures',
-                          )}
-                          inputMode='numeric'
-                          value={dailyExposures}
-                          onChange={(e) =>
-                            setDailyExposures(
-                              Math.max(0, Number(e.target.value) || 0),
-                            )
-                          }
-                          classes={{ input: 'px-2.5 py-1.5' }}
-                        />
-                      </div>
-
-                      <div className='mt-3 grid gap-2 text-xs sm:grid-cols-3'>
-                        <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                          <Text as='p' size='xs' colour='muted'>
-                            {t(
-                              'experiments.settings.sampleEstimate.targetRate',
-                            )}
-                          </Text>
-                          <Text
-                            as='p'
-                            size='sm'
-                            weight='semibold'
-                            className='tabular-nums'
-                          >
-                            {sampleEstimate.targetRate.toFixed(2)}%
-                          </Text>
-                        </div>
-                        <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                          <Text as='p' size='xs' colour='muted'>
-                            {t(
-                              'experiments.settings.sampleEstimate.totalSample',
-                            )}
-                          </Text>
-                          <Text
-                            as='p'
-                            size='sm'
-                            weight='semibold'
-                            className='tabular-nums'
-                          >
-                            {sampleEstimate.total.toLocaleString()}
-                          </Text>
-                        </div>
-                        <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-                          <Text as='p' size='xs' colour='muted'>
-                            {t(
-                              'experiments.settings.sampleEstimate.runtimeEstimate',
-                            )}
-                          </Text>
-                          <Text
-                            as='p'
-                            size='sm'
-                            weight='semibold'
-                            className='tabular-nums'
-                          >
-                            {sampleEstimate.estimatedDays
-                              ? t('experiments.settings.sampleEstimate.days', {
-                                  count: sampleEstimate.estimatedDays,
-                                })
-                              : t(
-                                  'experiments.settings.sampleEstimate.addTraffic',
-                                )}
-                          </Text>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className='rounded-lg bg-gray-50 p-4 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
-                      <div className='flex items-center justify-between gap-3'>
-                        <Text size='sm' weight='semibold'>
-                          {t('experiments.settings.launchGuardrails')}
-                        </Text>
-                        <Text
-                          size='xs'
-                          weight='medium'
-                          className={
-                            launchGuardrails.some(
-                              (item) => item.severity === 'blocker',
-                            )
-                              ? 'text-red-600 dark:text-red-400'
-                              : launchGuardrails.length > 0
-                                ? 'text-yellow-700 dark:text-yellow-300'
-                                : 'text-green-600 dark:text-green-400'
-                          }
                         >
-                          {launchGuardrails.some(
-                            (item) => item.severity === 'blocker',
-                          )
-                            ? t('experiments.settings.guardrailStatus.blocked')
-                            : launchGuardrails.length > 0
-                              ? t('experiments.settings.guardrailStatus.review')
-                              : t('experiments.settings.guardrailStatus.ready')}
-                        </Text>
+                          {t(
+                            `experiments.settings.guardrailStatus.${launchReadiness}`,
+                          )}
+                        </span>
                       </div>
                       {launchGuardrails.length > 0 ? (
-                        <ul className='mt-3 space-y-2'>
+                        <ul className='divide-y divide-gray-200 border-t border-gray-200 dark:divide-slate-800 dark:border-slate-800'>
                           {launchGuardrails.map((item, index) => (
                             <li
                               key={`${item.severity}-${index}`}
-                              className={cx(
-                                'rounded-md px-3 py-2 text-xs ring-1',
-                                item.severity === 'blocker'
-                                  ? 'bg-red-50 text-red-800 ring-red-200 dark:bg-red-900/20 dark:text-red-200 dark:ring-red-800/70'
-                                  : 'bg-yellow-50 text-yellow-900 ring-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-100 dark:ring-yellow-800/70',
-                              )}
+                              className='flex items-start gap-2 px-4 py-2.5'
                             >
-                              {item.message}
+                              <span
+                                className={cx(
+                                  'mt-1 size-1.5 shrink-0 rounded-full',
+                                  item.severity === 'blocker'
+                                    ? 'bg-red-500'
+                                    : 'bg-amber-500',
+                                )}
+                              />
+                              <Text
+                                as='p'
+                                size='xs'
+                                colour={
+                                  item.severity === 'blocker'
+                                    ? 'error'
+                                    : 'warning'
+                                }
+                              >
+                                {item.message}
+                              </Text>
                             </li>
                           ))}
                         </ul>
-                      ) : (
-                        <Text size='xs' colour='muted' className='mt-2'>
-                          {t('experiments.settings.noLaunchBlockers')}
-                        </Text>
-                      )}
+                      ) : null}
+                    </div>
+
+                    <div className='border-t border-gray-200 pt-4 dark:border-slate-700'>
+                      <button
+                        type='button'
+                        onClick={() => setShowPlanning(!showPlanning)}
+                        className='flex w-full items-center justify-between gap-3 text-left'
+                      >
+                        <span className='flex min-w-0 items-center gap-2'>
+                          <CalculatorIcon className='size-4 shrink-0 text-gray-500 dark:text-gray-400' />
+                          <span className='min-w-0'>
+                            <Text as='p' size='sm' weight='medium'>
+                              {t('experiments.settings.sampleEstimate.title')}
+                            </Text>
+                            <Text
+                              as='p'
+                              size='xs'
+                              colour='muted'
+                              className='mt-0.5'
+                            >
+                              {t(
+                                'experiments.settings.sampleEstimate.collapsedSummary',
+                                {
+                                  exposures:
+                                    sampleEstimate.perVariant.toLocaleString(),
+                                  runtime: sampleEstimate.estimatedDays
+                                    ? t(
+                                        'experiments.settings.sampleEstimate.days',
+                                        {
+                                          count: sampleEstimate.estimatedDays,
+                                        },
+                                      )
+                                    : t(
+                                        'experiments.settings.sampleEstimate.addTraffic',
+                                      ),
+                                },
+                              )}
+                            </Text>
+                          </span>
+                        </span>
+                        <CaretDownIcon
+                          className={cx(
+                            'size-4 shrink-0 text-gray-400 transition-transform',
+                            showPlanning && 'rotate-180',
+                          )}
+                        />
+                      </button>
+
+                      {showPlanning ? (
+                        <div className='mt-4 rounded-lg bg-gray-50 p-4 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
+                          <Text size='xs' colour='muted'>
+                            {t('experiments.settings.sampleEstimate.hint')}
+                          </Text>
+
+                          <div className='mt-4 grid gap-3 sm:grid-cols-3'>
+                            <Input
+                              label={
+                                <span className='flex items-center gap-1.5'>
+                                  {t(
+                                    'experiments.settings.sampleEstimate.baselineConversion',
+                                  )}
+                                  <Tooltip
+                                    text={t(
+                                      'experiments.settings.sampleEstimate.baselineConversionHint',
+                                    )}
+                                    className='flex items-center'
+                                  />
+                                </span>
+                              }
+                              inputMode='decimal'
+                              value={baselineConversionRate}
+                              onChange={(e) =>
+                                setBaselineConversionRate(
+                                  Math.min(
+                                    99,
+                                    Math.max(
+                                      0.1,
+                                      Number(e.target.value) || 0.1,
+                                    ),
+                                  ),
+                                )
+                              }
+                              classes={{ input: 'px-2.5 py-1.5' }}
+                            />
+                            <Input
+                              label={
+                                <span className='flex items-center gap-1.5'>
+                                  {t(
+                                    'experiments.settings.sampleEstimate.mdeLift',
+                                  )}
+                                  <Tooltip
+                                    text={t(
+                                      'experiments.settings.sampleEstimate.mdeLiftHint',
+                                    )}
+                                    className='flex items-center'
+                                  />
+                                </span>
+                              }
+                              inputMode='decimal'
+                              value={minimumDetectableEffect}
+                              onChange={(e) =>
+                                setMinimumDetectableEffect(
+                                  Math.min(
+                                    500,
+                                    Math.max(1, Number(e.target.value) || 1),
+                                  ),
+                                )
+                              }
+                              classes={{ input: 'px-2.5 py-1.5' }}
+                            />
+                            <Input
+                              label={t(
+                                'experiments.settings.sampleEstimate.dailyExposures',
+                              )}
+                              inputMode='numeric'
+                              value={dailyExposures}
+                              onChange={(e) =>
+                                setDailyExposures(
+                                  Math.max(0, Number(e.target.value) || 0),
+                                )
+                              }
+                              classes={{ input: 'px-2.5 py-1.5' }}
+                            />
+                          </div>
+
+                          <div className='mt-3 grid gap-2 text-xs sm:grid-cols-3'>
+                            <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
+                              <Text as='p' size='xs' colour='muted'>
+                                {t(
+                                  'experiments.settings.sampleEstimate.targetRate',
+                                )}
+                              </Text>
+                              <Text
+                                as='p'
+                                size='sm'
+                                weight='semibold'
+                                className='tabular-nums'
+                              >
+                                {sampleEstimate.targetRate.toFixed(2)}%
+                              </Text>
+                            </div>
+                            <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
+                              <Text as='p' size='xs' colour='muted'>
+                                {t(
+                                  'experiments.settings.sampleEstimate.totalSample',
+                                )}
+                              </Text>
+                              <Text
+                                as='p'
+                                size='sm'
+                                weight='semibold'
+                                className='tabular-nums'
+                              >
+                                {sampleEstimate.total.toLocaleString()}
+                              </Text>
+                            </div>
+                            <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
+                              <Text as='p' size='xs' colour='muted'>
+                                {t(
+                                  'experiments.settings.sampleEstimate.runtimeEstimate',
+                                )}
+                              </Text>
+                              <Text
+                                as='p'
+                                size='sm'
+                                weight='semibold'
+                                className='tabular-nums'
+                              >
+                                {sampleEstimate.estimatedDays
+                                  ? t(
+                                      'experiments.settings.sampleEstimate.days',
+                                      {
+                                        count: sampleEstimate.estimatedDays,
+                                      },
+                                    )
+                                  : t(
+                                      'experiments.settings.sampleEstimate.addTraffic',
+                                    )}
+                              </Text>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className='border-t border-gray-200 pt-4 dark:border-slate-700'>

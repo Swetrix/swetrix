@@ -12,7 +12,6 @@ import {
   TrophyIcon,
   UsersIcon,
   TargetIcon,
-  InfoIcon,
   PencilIcon,
   TrendUpIcon,
   TrendDownIcon,
@@ -52,6 +51,7 @@ import Filters from '~/pages/Project/View/components/Filters'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { typeNameMapping } from '~/pages/Project/View/ViewProject.helpers'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
+import Alert from '~/ui/Alert'
 import BillboardChart from '~/ui/BillboardChart'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
@@ -393,96 +393,6 @@ const TableCell = ({
   </td>
 )
 
-const ExposuresTable = memo(
-  ({
-    variants,
-    totalExposures,
-  }: {
-    variants: ExperimentVariantResult[]
-    totalExposures: number
-  }) => {
-    const { t } = useTranslation()
-
-    return (
-      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-950'>
-        <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-800'>
-          <Text weight='semibold' size='sm'>
-            {t('experiments.totalExposures')}
-          </Text>
-        </div>
-        <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
-            <thead className='bg-gray-50 dark:bg-slate-900/60'>
-              <tr>
-                <TableHeader>{t('experiments.variants')}</TableHeader>
-                <TableHeader>{t('experiments.exposures')}</TableHeader>
-                <TableHeader className='text-right'>%</TableHeader>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200 dark:divide-slate-800'>
-              {_map(variants, (variant) => {
-                const percentage =
-                  totalExposures > 0
-                    ? ((variant.exposures / totalExposures) * 100).toFixed(1)
-                    : '0.0'
-                return (
-                  <tr
-                    key={variant.key}
-                    className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'
-                  >
-                    <TableCell>
-                      <div className='flex items-center gap-2'>
-                        <Text weight='medium' size='sm'>
-                          {variant.name}
-                        </Text>
-                        {variant.isControl ? (
-                          <Badge
-                            label={t('experiments.control')}
-                            colour='indigo'
-                          />
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Text size='sm' className='tabular-nums'>
-                        {nFormatter(variant.exposures, 1)}
-                      </Text>
-                    </TableCell>
-                    <TableCell className='text-right'>
-                      <Text size='sm' colour='muted' className='tabular-nums'>
-                        {percentage}%
-                      </Text>
-                    </TableCell>
-                  </tr>
-                )
-              })}
-              <tr className='bg-gray-50 dark:bg-slate-900/60'>
-                <TableCell>
-                  <Text weight='semibold' size='sm'>
-                    Total
-                  </Text>
-                </TableCell>
-                <TableCell>
-                  <Text weight='semibold' size='sm' className='tabular-nums'>
-                    {nFormatter(totalExposures, 1)}
-                  </Text>
-                </TableCell>
-                <TableCell className='text-right'>
-                  <Text weight='semibold' size='sm' className='tabular-nums'>
-                    {totalExposures > 0 ? '100.0%' : '0.0%'}
-                  </Text>
-                </TableCell>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    )
-  },
-)
-
-ExposuresTable.displayName = 'ExposuresTable'
-
 const MetricsTable = memo(
   ({
     variants,
@@ -745,7 +655,6 @@ CollapsibleSection.displayName = 'CollapsibleSection'
 
 type HealthWarning = {
   code:
-    | 'NO_EXPOSURES'
     | 'EXTREME_IMBALANCE'
     | 'VARIANT_NO_TRAFFIC'
     | 'LOW_CONVERSION'
@@ -924,18 +833,6 @@ const ExperimentResults = ({
     const runningForDays = experiment.startedAt
       ? dayjs().diff(dayjs(experiment.startedAt), 'day')
       : 0
-
-    if (results.totalExposures === 0) {
-      warnings.push({
-        code: 'NO_EXPOSURES',
-        severity: 'warning',
-        titleKey: 'experiments.resultDetails.warnings.noExposures.title',
-        messageKey:
-          experiment.exposureTrigger === 'custom_event'
-            ? 'experiments.resultDetails.warnings.noExposures.customEventMessage'
-            : 'experiments.resultDetails.warnings.noExposures.featureFlagMessage',
-      })
-    }
 
     if (results.totalExposures >= 100) {
       const imbalancedVariant = results.variants.find((variant) => {
@@ -1194,73 +1091,40 @@ const ExperimentResults = ({
         {filters.length > 0 ? (
           <Filters className='mb-1' tnMapping={tnMapping} />
         ) : null}
-        <div className='flex flex-wrap items-center gap-2'>
-          <div className='flex min-w-0 items-center gap-2'>
-            <Text as='h2' size='xl' weight='bold' truncate>
-              {experiment.name}
-            </Text>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+          <div className='min-w-0'>
+            <div className='flex min-w-0 items-center gap-2'>
+              <Text as='h2' size='xl' weight='bold' truncate>
+                {experiment.name}
+              </Text>
+              <Badge
+                label={t(`experiments.status.${results.status}`)}
+                colour={statusBadgeColour}
+              />
+            </div>
+            {experiment.description ? (
+              <Text as='p' size='sm' colour='muted' className='mt-1' truncate>
+                {experiment.description}
+              </Text>
+            ) : null}
           </div>
-          <Badge
-            label={t(`experiments.status.${results.status}`)}
-            colour={statusBadgeColour}
-          />
-          {goal?.name ? (
-            <Badge
-              colour='indigo'
-              label={
-                <span className='flex max-w-[240px] items-center gap-1.5'>
-                  <TargetIcon className='size-3.5 shrink-0' />
-                  <Text
-                    as='span'
-                    size='xs'
-                    weight='medium'
-                    colour='inherit'
-                    truncate
-                  >
-                    {goal.name}
-                  </Text>
-                </span>
-              }
-            />
-          ) : null}
-          {experiment.featureFlagKey || experiment.featureFlagId ? (
-            <Badge
-              colour='sky'
-              label={
-                <span className='flex max-w-[260px] items-center gap-1.5'>
-                  <FlaskIcon className='size-3.5 shrink-0' />
-                  <Text
-                    as='span'
-                    size='xs'
-                    weight='medium'
-                    colour='inherit'
-                    truncate
-                  >
-                    {experiment.featureFlagKey || experiment.featureFlagId}
-                  </Text>
-                </span>
-              }
-            />
+          {!stopRecommendation && canCompleteExperiment ? (
+            <div className='shrink-0'>{completeExperimentButton}</div>
           ) : null}
         </div>
         {resultWindowNotice || results.isSegmented ? (
-          <div className='rounded-lg bg-sky-50 px-4 py-3 ring-1 ring-sky-200 dark:bg-sky-900/20 dark:ring-sky-800/70'>
-            {resultWindowNotice ? (
-              <Text size='sm' className='text-sky-900 dark:text-sky-100'>
-                {resultWindowNotice}
-              </Text>
-            ) : null}
+          <Alert variant='info'>
+            {resultWindowNotice ? <p>{resultWindowNotice}</p> : null}
             {results.isSegmented ? (
-              <Text
-                size='sm'
-                className={cx('text-sky-900 dark:text-sky-100', {
+              <p
+                className={cx({
                   'mt-1': Boolean(resultWindowNotice),
                 })}
               >
                 {t('experiments.resultDetails.segmentedNotice')}
-              </Text>
+              </p>
             ) : null}
-          </div>
+          </Alert>
         ) : null}
         {healthWarnings.length > 0 ? (
           <div className='grid gap-2 lg:grid-cols-2'>
@@ -1268,7 +1132,7 @@ const ExperimentResults = ({
               <div
                 key={warning.code}
                 className={cx(
-                  'rounded-lg px-4 py-3 ring-1',
+                  'rounded-md px-3 py-2 ring-1',
                   warning.severity === 'danger'
                     ? 'bg-red-50 ring-red-200 dark:bg-red-900/20 dark:ring-red-800/70'
                     : 'bg-yellow-50 ring-yellow-200 dark:bg-yellow-900/20 dark:ring-yellow-800/70',
@@ -1286,7 +1150,7 @@ const ExperimentResults = ({
                   <div>
                     <Text
                       as='p'
-                      size='sm'
+                      size='xs'
                       weight='semibold'
                       className={
                         warning.severity === 'danger'
@@ -1314,16 +1178,16 @@ const ExperimentResults = ({
           </div>
         ) : null}
         {stopRecommendation ? (
-          <div className='flex flex-col gap-3 rounded-lg bg-green-50 px-4 py-3 ring-1 ring-green-200 sm:flex-row sm:items-center sm:justify-between dark:bg-green-900/20 dark:ring-green-800/70'>
-            <div className='flex items-start gap-3'>
+          <div className='flex flex-col gap-3 rounded-md bg-green-50 px-3 py-2 ring-1 ring-green-200 sm:flex-row sm:items-center sm:justify-between dark:bg-green-900/20 dark:ring-green-800/70'>
+            <div className='flex items-start gap-2'>
               <CheckCircleIcon
-                className='mt-0.5 size-5 shrink-0 text-green-600 dark:text-green-300'
+                className='mt-0.5 size-4 shrink-0 text-green-600 dark:text-green-300'
                 weight='duotone'
               />
               <div>
                 <Text
                   as='p'
-                  size='sm'
+                  size='xs'
                   weight='semibold'
                   className='text-green-900 dark:text-green-100'
                 >
@@ -1346,73 +1210,25 @@ const ExperimentResults = ({
             </div>
             {completeExperimentButton}
           </div>
-        ) : canCompleteExperiment ? (
-          <div className='flex justify-end rounded-lg bg-gray-50 px-4 py-3 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
-            {completeExperimentButton}
-          </div>
         ) : null}
-        <div className='rounded-lg bg-gray-50 px-4 py-3 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
-          <div className='flex flex-wrap items-center justify-between gap-3'>
-            <div>
-              <Text as='p' size='sm' weight='semibold'>
-                {t('experiments.resultDetails.featureFlagRelationship.title')}
-              </Text>
-              <Text as='p' size='xs' colour='muted'>
-                {t(
-                  'experiments.resultDetails.featureFlagRelationship.description',
-                )}
-              </Text>
-            </div>
-            <Text as='span' size='xs' colour='secondary' code>
-              {experiment.featureFlagKey ||
-                experiment.featureFlagId ||
-                t('experiments.createdOnLaunch')}
-            </Text>
-          </div>
-          <div className='mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4'>
-            {experiment.variants.map((variant) => (
-              <div
-                key={variant.key}
-                className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'
-              >
-                <Text as='p' size='xs' weight='medium' truncate>
-                  {variant.name}
-                </Text>
-                <div className='mt-1 flex items-center justify-between gap-2'>
-                  <Text as='span' size='xs' colour='muted' code>
-                    {variant.key}
-                  </Text>
-                  <Text
-                    as='span'
-                    size='xs'
-                    weight='semibold'
-                    className='tabular-nums'
-                  >
-                    {variant.rolloutPercentage}%
-                  </Text>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
         {results.hasWinner && results.winnerKey ? (
-          <div className='flex items-center gap-4 rounded-lg border border-green-300 bg-green-50 px-4 py-2 dark:border-green-700 dark:bg-green-900/20'>
+          <div className='flex items-center gap-3 rounded-md border border-green-300 bg-green-50 px-3 py-2 dark:border-green-700 dark:bg-green-900/20'>
             <TrophyIcon
-              className='size-6 text-green-600 dark:text-green-400'
+              className='size-5 text-green-600 dark:text-green-400'
               weight='duotone'
             />
             <div>
               <Text
                 as='p'
-                weight='bold'
-                size='lg'
+                weight='semibold'
+                size='sm'
                 className='text-green-800 dark:text-green-200'
               >
                 {t('experiments.winnerFound')}
               </Text>
               <Text
                 as='p'
-                size='sm'
+                size='xs'
                 className='text-green-700 dark:text-green-200'
               >
                 {t('experiments.winnerDescription', {
@@ -1421,38 +1237,6 @@ const ExperimentResults = ({
                       ?.name || results.winnerKey,
                 })}
               </Text>
-            </div>
-          </div>
-        ) : null}
-
-        {results.totalExposures === 0 ? (
-          <div className='flex items-start gap-4 rounded-lg border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20'>
-            <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/40'>
-              <InfoIcon className='size-6 text-yellow-700 dark:text-yellow-300' />
-            </div>
-            <div className='min-w-0 flex-1'>
-              <Text
-                as='p'
-                weight='bold'
-                size='lg'
-                className='text-yellow-900 dark:text-yellow-100'
-              >
-                {t('experiments.noDataYet')}
-              </Text>
-              <Text as='p' colour='muted' size='sm' className='mt-1'>
-                {t('experiments.noDataDescription')}
-              </Text>
-              {goal?.name ? (
-                <div className='mt-2 flex items-center gap-2 text-yellow-900/80 dark:text-yellow-100/80'>
-                  <TargetIcon className='size-4' />
-                  <Text as='p' size='sm'>
-                    {t('experiments.goal')}:{' '}
-                    <Text as='span' size='sm' weight='medium'>
-                      {goal.name}
-                    </Text>
-                  </Text>
-                </div>
-              ) : null}
             </div>
           </div>
         ) : null}
@@ -1495,11 +1279,6 @@ const ExperimentResults = ({
           variants={sortedVariants}
           winnerKey={results.winnerKey}
           hasWinner={results.hasWinner}
-        />
-
-        <ExposuresTable
-          variants={sortedVariants}
-          totalExposures={results.totalExposures}
         />
 
         {experiment.hypothesis ? (
