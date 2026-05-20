@@ -535,6 +535,7 @@ const UserSettings = () => {
   }, [form.currentPassword, form.email, form.password, form.repeat, t])
 
   const validated = _isEmpty(_keys(errors))
+  const hasPasswordUpdateInput = Boolean(form.password || form.repeat)
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
@@ -568,7 +569,7 @@ const UserSettings = () => {
     const formData = new FormData()
     formData.set('intent', 'update-profile')
     formData.set('email', form.email || user?.email || '')
-    if (includePassword && form.currentPassword)
+    if (includePassword && hasPasswordUpdateInput && form.currentPassword)
       formData.set('currentPassword', form.currentPassword)
     if (includePassword && form.password)
       formData.set('password', form.password)
@@ -597,10 +598,7 @@ const UserSettings = () => {
     }
 
     if (form.email) setEmailBeenSubmitted(true)
-    const hasPasswordUpdateInput = Boolean(
-      form.password || form.currentPassword,
-    )
-    if (hasPasswordUpdateInput || form.repeat) setPasswordBeenSubmitted(true)
+    if (hasPasswordUpdateInput) setPasswordBeenSubmitted(true)
 
     if (validated) {
       // User is about to change their password, let's warn him if
@@ -622,9 +620,15 @@ const UserSettings = () => {
   }
 
   const handlePasswordSubmit = () => {
-    setPasswordBeenSubmitted(true)
+    if (hasPasswordUpdateInput) setPasswordBeenSubmitted(true)
 
-    if (errors.currentPassword || errors.password || errors.repeat) return
+    if (
+      !hasPasswordUpdateInput ||
+      errors.currentPassword ||
+      errors.password ||
+      errors.repeat
+    )
+      return
 
     setIsPasswordChangeModalOpened(true)
   }
@@ -1788,9 +1792,9 @@ const UserSettings = () => {
         }}
         onSubmit={() => {
           setIsPasswordChangeModalOpened(false)
-          pendingPasswordChangeRef.current = Boolean(form.password)
+          pendingPasswordChangeRef.current = hasPasswordUpdateInput
           passwordChangedRef.current = false
-          submitProfileUpdate(undefined, true, true)
+          submitProfileUpdate(undefined, true, hasPasswordUpdateInput)
         }}
         closeText={t('common.cancel')}
         submitText={t('common.continue')}
