@@ -303,6 +303,11 @@ export interface ProjectLoaderData {
   // Performance data
   perfData?: Promise<PerformanceDataResponse | null>
   perfOverallStats?: Promise<Record<string, PerformanceOverallObject> | null>
+  perfCompareData?: Promise<PerformanceDataResponse | null>
+  perfOverallCompareStats?: Promise<Record<
+    string,
+    PerformanceOverallObject
+  > | null>
   // Sessions data
   sessionsData?: Promise<SessionsResponse | null>
   sessionDetails?: Promise<SessionDetailsResponse | null>
@@ -384,7 +389,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const measure = url.searchParams.get('measure') || 'median'
   const perfMetric = url.searchParams.get('perfMetric') || 'timing' // 'timing' or 'quantiles'
 
-  // Traffic compare params
+  // Compare params
   const compareEnabled = url.searchParams.get('compare') === 'true'
   const compareFrom = formatDateForBackend(
     url.searchParams.get('compareFrom') || '',
@@ -425,6 +430,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     | undefined
   let perfData: Promise<PerformanceDataResponse | null> | undefined
   let perfOverallStats:
+    | Promise<Record<string, PerformanceOverallObject> | null>
+    | undefined
+  let perfCompareData: Promise<PerformanceDataResponse | null> | undefined
+  let perfOverallCompareStats:
     | Promise<Record<string, PerformanceOverallObject> | null>
     | undefined
   let sessionsData: Promise<SessionsResponse | null> | undefined
@@ -499,6 +508,25 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         [projectId],
         perfParams,
       ).then((res) => res.data)
+
+      if (compareEnabled && compareFrom && compareTo) {
+        const compareParams = {
+          ...perfParams,
+          period: 'custom' as const,
+          from: compareFrom,
+          to: compareTo,
+        }
+        perfCompareData = getPerfDataServer(
+          request,
+          projectId,
+          compareParams,
+        ).then((res) => res.data)
+        perfOverallCompareStats = getPerformanceOverallStatsServer(
+          request,
+          [projectId],
+          compareParams,
+        ).then((res) => res.data)
+      }
     } else if (tab === PROJECT_TABS.sessions) {
       sessionsData = getSessionsServer(
         request,
@@ -588,6 +616,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       customEventsData,
       perfData,
       perfOverallStats,
+      perfCompareData,
+      perfOverallCompareStats,
       sessionsData,
       sessionDetails,
       errorsData,

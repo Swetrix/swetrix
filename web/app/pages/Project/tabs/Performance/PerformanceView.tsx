@@ -74,6 +74,8 @@ interface PerformanceViewProps {
 interface DeferredPerfData {
   perfData: PerformanceDataResponse | null
   perfOverallStats: Record<string, PerformanceOverallObject> | null
+  perfCompareData: PerformanceDataResponse | null
+  perfOverallCompareStats: Record<string, PerformanceOverallObject> | null
 }
 
 function PerfDataResolver({
@@ -84,14 +86,31 @@ function PerfDataResolver({
   const {
     perfData: perfDataPromise,
     perfOverallStats: perfOverallStatsPromise,
+    perfCompareData: perfCompareDataPromise,
+    perfOverallCompareStats: perfOverallCompareStatsPromise,
   } = useLoaderData<ProjectLoaderData>()
 
   const perfData = perfDataPromise ? use(perfDataPromise) : null
   const perfOverallStats = perfOverallStatsPromise
     ? use(perfOverallStatsPromise)
     : null
+  const perfCompareData = perfCompareDataPromise
+    ? use(perfCompareDataPromise)
+    : null
+  const perfOverallCompareStats = perfOverallCompareStatsPromise
+    ? use(perfOverallCompareStatsPromise)
+    : null
 
-  return <>{children({ perfData, perfOverallStats })}</>
+  return (
+    <>
+      {children({
+        perfData,
+        perfOverallStats,
+        perfCompareData,
+        perfOverallCompareStats,
+      })}
+    </>
+  )
 }
 
 function PerformanceViewWrapper(props: PerformanceViewProps) {
@@ -121,8 +140,6 @@ const PerformanceViewInner = ({
     filters,
     timeFormat,
     timeBucket,
-    // Comparison state from context (not implemented via SSR yet)
-    activePeriodCompare,
     // Chart state from context
     chartType,
     setChartTypeOnClick,
@@ -235,9 +252,17 @@ const PerformanceViewInner = ({
     setSearchParams(newParams)
   }
 
-  // Compare mode not implemented via SSR yet - use empty defaults
-  const overallCompare: Partial<OverallPerformanceObject> = {}
-  const chartDataCompare: any = {}
+  const overallCompare: Partial<OverallPerformanceObject> = useMemo(() => {
+    if (deferredData.perfOverallCompareStats && id) {
+      return deferredData.perfOverallCompareStats[id] || {}
+    }
+    return {}
+  }, [deferredData.perfOverallCompareStats, id])
+
+  const chartDataCompare: any = useMemo(
+    () => deferredData.perfCompareData?.chart || {},
+    [deferredData.perfCompareData],
+  )
 
   // Filter annotations to only those within the chart's visible x-axis range
   const filteredAnnotations = useMemo(() => {
@@ -496,7 +521,6 @@ const PerformanceViewInner = ({
             <PerformanceMetricCards
               overall={overall}
               overallCompare={overallCompare}
-              activePeriodCompare={activePeriodCompare}
             />
           ) : null}
           {activeChartMetrics && !_isEmpty(chartData) ? (
