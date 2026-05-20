@@ -7,6 +7,14 @@ dayjs.extend(timezonePlugin)
 
 export type ChartDataPointClick = (d: { x: Date; index: number }) => void
 
+type EventRectsGroup = SVGElement & {
+  __clickHandlers?: {
+    mousemove: (e: MouseEvent) => void
+    mouseleave: () => void
+    click: (e: MouseEvent) => void
+  }
+}
+
 const getClosestCircle = (
   circles: NodeListOf<SVGElement>,
   mouseX: number,
@@ -35,20 +43,35 @@ export const attachDataPointClickHandlers = (
   columns: any[],
   onDataPointClick?: ChartDataPointClick,
 ) => {
-  if (!onDataPointClick || !chartInstance?.$) return
+  if (!chartInstance?.$) return
 
   const svg = chartInstance.$.svg?.node() as SVGSVGElement | null | undefined
   if (!svg) return
 
-  const eventRectsGroup = svg.querySelector('.bb-event-rects') as
-    | (SVGElement & {
-        __clickAttached?: boolean
-      })
-    | null
-  if (!eventRectsGroup || eventRectsGroup.__clickAttached) return
-  eventRectsGroup.__clickAttached = true
+  const eventRectsGroup = svg.querySelector(
+    '.bb-event-rects',
+  ) as EventRectsGroup | null
+  if (!eventRectsGroup) return
 
-  eventRectsGroup.addEventListener('mousemove', (e: MouseEvent) => {
+  if (eventRectsGroup.__clickHandlers) {
+    eventRectsGroup.removeEventListener(
+      'mousemove',
+      eventRectsGroup.__clickHandlers.mousemove,
+    )
+    eventRectsGroup.removeEventListener(
+      'mouseleave',
+      eventRectsGroup.__clickHandlers.mouseleave,
+    )
+    eventRectsGroup.removeEventListener(
+      'click',
+      eventRectsGroup.__clickHandlers.click,
+    )
+    delete eventRectsGroup.__clickHandlers
+  }
+
+  if (!onDataPointClick) return
+
+  const handleMouseMove = (e: MouseEvent) => {
     const groupRect = eventRectsGroup.getBoundingClientRect()
     const mouseX = e.clientX - groupRect.left
     const mouseY = e.clientY - groupRect.top
@@ -63,16 +86,16 @@ export const attachDataPointClickHandlers = (
         c.classList.remove('is-direct-hover')
       }
     })
-  })
+  }
 
-  eventRectsGroup.addEventListener('mouseleave', () => {
+  const handleMouseLeave = () => {
     const circles = svg.querySelectorAll<SVGElement>('.bb-circle')
     circles.forEach((c) => {
       c.classList.remove('is-direct-hover')
     })
-  })
+  }
 
-  eventRectsGroup.addEventListener('click', (e: MouseEvent) => {
+  const handleClick = (e: MouseEvent) => {
     const target = e.target as SVGRectElement
     if (!target?.classList?.contains('bb-event-rect')) return
 
@@ -94,7 +117,16 @@ export const attachDataPointClickHandlers = (
     if (!xValues || index >= xValues.length) return
 
     onDataPointClick({ x: xValues[index], index })
-  })
+  }
+
+  eventRectsGroup.addEventListener('mousemove', handleMouseMove)
+  eventRectsGroup.addEventListener('mouseleave', handleMouseLeave)
+  eventRectsGroup.addEventListener('click', handleClick)
+  eventRectsGroup.__clickHandlers = {
+    mousemove: handleMouseMove,
+    mouseleave: handleMouseLeave,
+    click: handleClick,
+  }
 }
 
 export const getChartPointWindow = ({

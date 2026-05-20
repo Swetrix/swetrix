@@ -6411,6 +6411,8 @@ export class AnalyticsService {
     groupTo: string,
     take: number = 10,
     skip: number = 0,
+    filtersQuery = '',
+    filtersParams: Record<string, unknown> = {},
   ): Promise<{ sessions: any[]; total: number }> {
     const queryCount = `
       SELECT count(DISTINCT psid) as total
@@ -6419,6 +6421,7 @@ export class AnalyticsService {
         AND type = 'error'
         AND eid = {eid:FixedString(32)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery}
     `
 
     const querySessions = `
@@ -6444,6 +6447,7 @@ export class AnalyticsService {
           AND type = 'error'
           AND eid = {eid:FixedString(32)}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
         GROUP BY pid, psid
       ) AS errors
       LEFT JOIN (
@@ -6474,7 +6478,15 @@ export class AnalyticsService {
       OFFSET {skip:UInt32}
     `
 
-    const params = { pid, eid, groupFrom, groupTo, take, skip }
+    const params = {
+      pid,
+      eid,
+      groupFrom,
+      groupTo,
+      take,
+      skip,
+      ...filtersParams,
+    }
 
     const [countResult, sessionsResult] = await Promise.all([
       clickhouse

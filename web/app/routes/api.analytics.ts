@@ -744,6 +744,8 @@ export async function action({ request }: ActionFunctionArgs) {
             period: params.period,
             from: formatDateForBackend(params.from),
             to: formatDateForBackend(params.to),
+            filters: params.filters,
+            timezone: params.timezone,
             take: params.take,
             skip: params.skip,
             password: password || undefined,

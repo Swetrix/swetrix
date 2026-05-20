@@ -2073,6 +2073,8 @@ export async function getErrorSessionsServer(
     period?: string
     from?: string
     to?: string
+    filters?: AnalyticsFilter[]
+    timezone?: string
     take?: number
     skip?: number
     password?: string
@@ -2085,8 +2087,10 @@ export async function getErrorSessionsServer(
   queryParams.append('period', params.period || '7d')
   queryParams.append('take', String(params.take || 10))
   queryParams.append('skip', String(params.skip || 0))
+  queryParams.append('filters', serializeFiltersForUrl(params.filters || []))
   if (params.from) queryParams.append('from', params.from)
   if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
