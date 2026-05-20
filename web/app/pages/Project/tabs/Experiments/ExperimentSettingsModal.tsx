@@ -673,8 +673,10 @@ const ExperimentSettingsModal = ({
                       <Input
                         label={
                           <span className='flex items-center gap-1.5'>
-                            {t('experiments.descriptionLabel')}
-                            <Text size='xs' colour='muted'>
+                            <Text as='span' size='sm' colour='inherit'>
+                              {t('experiments.descriptionLabel')}
+                            </Text>
+                            <Text as='span' size='xs' colour='muted'>
                               ({t('common.optional')})
                             </Text>
                           </span>
@@ -687,8 +689,10 @@ const ExperimentSettingsModal = ({
                       <Input
                         label={
                           <span className='flex items-center gap-1.5'>
-                            {t('experiments.hypothesisLabel')}
-                            <Text size='xs' colour='muted'>
+                            <Text as='span' size='sm' colour='inherit'>
+                              {t('experiments.hypothesisLabel')}
+                            </Text>
+                            <Text as='span' size='xs' colour='muted'>
                               ({t('common.optional')})
                             </Text>
                           </span>
@@ -704,7 +708,9 @@ const ExperimentSettingsModal = ({
                         <Input
                           label={
                             <span className='flex items-center gap-1.5'>
-                              <span>{t('experiments.featureFlagKey')}</span>
+                              <Text as='span' size='sm' colour='inherit'>
+                                {t('experiments.featureFlagKey')}
+                              </Text>
                               <Tooltip
                                 text={t('experiments.featureFlagKeyHint')}
                                 className='flex items-center'
@@ -953,9 +959,14 @@ const ExperimentSettingsModal = ({
                               )}
                             >
                               <TrendUpIcon className='size-4' />
-                              <span className='hidden sm:inline'>
+                              <Text
+                                as='span'
+                                size='sm'
+                                colour='inherit'
+                                className='hidden sm:inline'
+                              >
                                 {t('experiments.settings.increase')}
-                              </span>
+                              </Text>
                             </button>
                             <button
                               type='button'
@@ -968,9 +979,14 @@ const ExperimentSettingsModal = ({
                               )}
                             >
                               <TrendDownIcon className='size-4' />
-                              <span className='hidden sm:inline'>
+                              <Text
+                                as='span'
+                                size='sm'
+                                colour='inherit'
+                                className='hidden sm:inline'
+                              >
                                 {t('experiments.settings.decrease')}
-                              </span>
+                              </Text>
                             </button>
                           </div>
                         ) : null}
@@ -1024,9 +1040,11 @@ const ExperimentSettingsModal = ({
                               'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
                           )}
                         >
-                          {t(
-                            `experiments.settings.guardrailStatus.${launchReadiness}`,
-                          )}
+                          <Text as='span' size='xs' colour='inherit'>
+                            {t(
+                              `experiments.settings.guardrailStatus.${launchReadiness}`,
+                            )}
+                          </Text>
                         </span>
                       </div>
                       {launchGuardrails.length > 0 ? (
@@ -1117,9 +1135,11 @@ const ExperimentSettingsModal = ({
                             <Input
                               label={
                                 <span className='flex items-center gap-1.5'>
-                                  {t(
-                                    'experiments.settings.sampleEstimate.baselineConversion',
-                                  )}
+                                  <Text as='span' size='sm' colour='inherit'>
+                                    {t(
+                                      'experiments.settings.sampleEstimate.baselineConversion',
+                                    )}
+                                  </Text>
                                   <Tooltip
                                     text={t(
                                       'experiments.settings.sampleEstimate.baselineConversionHint',
@@ -1146,9 +1166,11 @@ const ExperimentSettingsModal = ({
                             <Input
                               label={
                                 <span className='flex items-center gap-1.5'>
-                                  {t(
-                                    'experiments.settings.sampleEstimate.mdeLift',
-                                  )}
+                                  <Text as='span' size='sm' colour='inherit'>
+                                    {t(
+                                      'experiments.settings.sampleEstimate.mdeLift',
+                                    )}
+                                  </Text>
                                   <Tooltip
                                     text={t(
                                       'experiments.settings.sampleEstimate.mdeLiftHint',

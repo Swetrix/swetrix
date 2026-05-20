@@ -423,16 +423,22 @@ const MetricsTable = memo(
             <thead className='bg-gray-50 dark:bg-slate-900/60'>
               <tr>
                 <TableHeader>{t('experiments.variants')}</TableHeader>
-                <TableHeader>Value</TableHeader>
+                <TableHeader>{t('experiments.value')}</TableHeader>
                 <TableHeader>{t('experiments.improvement')}</TableHeader>
                 <TableHeader>
                   {t('experiments.probabilityOfWinning')}
                 </TableHeader>
                 <TableHeader className='w-48'>
                   <div className='flex items-center justify-between text-[10px]'>
-                    <span>-30%</span>
-                    <span>0%</span>
-                    <span>+30%</span>
+                    <Text as='span' size='xxs' colour='muted'>
+                      -30%
+                    </Text>
+                    <Text as='span' size='xxs' colour='muted'>
+                      0%
+                    </Text>
+                    <Text as='span' size='xxs' colour='muted'>
+                      +30%
+                    </Text>
                   </div>
                 </TableHeader>
               </tr>
@@ -514,10 +520,15 @@ const MetricsTable = memo(
                           <Badge
                             colour='green'
                             label={
-                              <span className='flex items-center gap-1'>
+                              <Text
+                                as='span'
+                                size='xs'
+                                colour='inherit'
+                                className='flex items-center gap-1'
+                              >
                                 <TrophyIcon className='size-3' />
                                 {t('experiments.winner')}
-                              </span>
+                              </Text>
                             }
                           />
                         ) : null}
@@ -589,7 +600,14 @@ const MetricsTable = memo(
                           {variant.probabilityOfBeingBest}%
                         </Text>
                         {variant.probabilityOfBeingBest >= 95 ? (
-                          <Badge label='Significant' colour='green' />
+                          <Badge
+                            label={
+                              <Text as='span' size='xs' colour='inherit'>
+                                {t('experiments.significant')}
+                              </Text>
+                            }
+                            colour='green'
+                          />
                         ) : null}
                       </div>
                     </TableCell>
@@ -1114,15 +1132,22 @@ const ExperimentResults = ({
         </div>
         {resultWindowNotice || results.isSegmented ? (
           <Alert variant='info'>
-            {resultWindowNotice ? <p>{resultWindowNotice}</p> : null}
+            {resultWindowNotice ? (
+              <Text as='p' size='sm' colour='inherit'>
+                {resultWindowNotice}
+              </Text>
+            ) : null}
             {results.isSegmented ? (
-              <p
+              <Text
+                as='p'
+                size='sm'
+                colour='inherit'
                 className={cx({
                   'mt-1': Boolean(resultWindowNotice),
                 })}
               >
                 {t('experiments.resultDetails.segmentedNotice')}
-              </p>
+              </Text>
             ) : null}
           </Alert>
         ) : null}

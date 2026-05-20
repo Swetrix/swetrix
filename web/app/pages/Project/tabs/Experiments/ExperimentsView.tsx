@@ -112,6 +112,7 @@ const ExperimentSplitRail = ({
 }: {
   variants: ExperimentVariant[]
 }) => {
+  const { t } = useTranslation()
   const totalAllocation = variants.reduce(
     (sum, variant) => sum + variant.rolloutPercentage,
     0,
@@ -122,17 +123,86 @@ const ExperimentSplitRail = ({
   }
 
   return (
-    <div className='flex h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
-      {variants.map((variant, index) => (
-        <span
-          key={variant.id || `${variant.key}-${index}`}
-          className={SPLIT_RAIL_COLORS[index % SPLIT_RAIL_COLORS.length]}
-          style={{
-            width: `${(variant.rolloutPercentage / totalAllocation) * 100}%`,
-          }}
-        />
-      ))}
-    </div>
+    <Tooltip
+      asChild
+      ariaLabel={t('experiments.split')}
+      contentClassName='bg-gray-50 px-2 py-1 text-gray-900 shadow-md ring-black/10 dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-800'
+      arrowClassName='fill-gray-50 dark:fill-slate-900'
+      text={
+        <ul className='m-0 max-h-[250px] min-w-56 list-none overflow-y-auto p-0 md:max-h-[350px]'>
+          <li className='sticky top-0 mb-1 border-b border-gray-200 bg-gray-50 pb-1 dark:border-slate-800 dark:bg-slate-900'>
+            <Text
+              as='div'
+              size='xs'
+              weight='semibold'
+              colour='primary'
+              truncate
+              className='max-w-[220px] md:text-sm'
+            >
+              {t('experiments.split')}
+            </Text>
+          </li>
+          {variants.map((variant, index) => {
+            const colour = SPLIT_RAIL_COLORS[index % SPLIT_RAIL_COLORS.length]
+
+            return (
+              <li
+                key={variant.id || `${variant.key}-${index}`}
+                className='flex items-center justify-between gap-3 py-px leading-snug'
+              >
+                <div className='mr-4 flex min-w-0 items-center gap-2'>
+                  <span className={cx('size-2 rounded-full', colour)} />
+                  <Text
+                    as='span'
+                    size='xs'
+                    colour='secondary'
+                    truncate
+                    className='md:text-sm'
+                  >
+                    {variant.name}
+                  </Text>
+                  {variant.isControl ? (
+                    <Text
+                      as='span'
+                      size='xxs'
+                      colour='secondary'
+                      className='rounded bg-gray-100 px-1.5 py-0.5 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'
+                    >
+                      {t('experiments.control')}
+                    </Text>
+                  ) : null}
+                </div>
+                <Text
+                  as='span'
+                  size='xs'
+                  colour='primary'
+                  className='font-mono whitespace-nowrap tabular-nums md:text-sm'
+                >
+                  {variant.rolloutPercentage}%
+                </Text>
+              </li>
+            )
+          })}
+        </ul>
+      }
+      tooltipNode={
+        <span className='block cursor-help rounded-full py-1'>
+          <span className='flex h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
+            {variants.map((variant, index) => (
+              <span
+                key={variant.id || `${variant.key}-${index}`}
+                className={SPLIT_RAIL_COLORS[index % SPLIT_RAIL_COLORS.length]}
+                style={{
+                  width: `${
+                    (variant.rolloutPercentage / totalAllocation) * 100
+                  }%`,
+                }}
+              />
+            ))}
+          </span>
+        </span>
+      }
+    />
   )
 }
 

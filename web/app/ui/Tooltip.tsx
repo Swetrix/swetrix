@@ -13,6 +13,7 @@ const TooltipTrigger = TooltipPrimitive.Trigger
 
 interface TooltipContentExtraProps {
   withArrow?: boolean
+  arrowClassName?: string
 }
 
 const TooltipContent = forwardRef<
@@ -21,7 +22,14 @@ const TooltipContent = forwardRef<
     TooltipContentExtraProps
 >(
   (
-    { className, sideOffset = 6, withArrow = true, children, ...props },
+    {
+      className,
+      sideOffset = 6,
+      withArrow = true,
+      arrowClassName,
+      children,
+      ...props
+    },
     ref,
   ) => (
     <TooltipPrimitive.Portal>
@@ -38,7 +46,7 @@ const TooltipContent = forwardRef<
         {children}
         {withArrow ? (
           <TooltipPrimitive.Arrow
-            className='fill-slate-900 dark:fill-slate-800'
+            className={cn('fill-slate-900 dark:fill-slate-800', arrowClassName)}
             width={10}
             height={5}
           />
@@ -52,6 +60,8 @@ TooltipContent.displayName = TooltipPrimitive.Content.displayName
 interface TooltipProps {
   text: string | number | React.ReactNode
   className?: string
+  contentClassName?: string
+  arrowClassName?: string
   tooltipNode?: React.ReactNode
   ariaLabel?: string
   asChild?: boolean
@@ -69,6 +79,8 @@ const Tooltip = ({
   tooltipNode,
   ariaLabel,
   asChild,
+  contentClassName,
+  arrowClassName,
   delay = 50,
   disableHoverableContent,
 }: TooltipProps) => {
@@ -91,9 +103,11 @@ const Tooltip = ({
           )}
         </TooltipTrigger>
         <TooltipContent
-          className={
-            disableHoverableContent ? 'pointer-events-none' : undefined
-          }
+          className={cn(
+            contentClassName,
+            disableHoverableContent && 'pointer-events-none',
+          )}
+          arrowClassName={arrowClassName}
         >
           {text}
         </TooltipContent>
