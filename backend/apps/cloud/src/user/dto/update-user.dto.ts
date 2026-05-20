@@ -10,6 +10,11 @@ export class UpdateUserProfileDTO {
   @ApiProperty({ example: 'your_password123' })
   password: string
 
+  @ApiProperty({ example: 'your_current_password123', required: false })
+  @IsString()
+  @IsOptional()
+  currentPassword?: string
+
   @ApiProperty({ example: 'week' })
   reportFrequency: string
 

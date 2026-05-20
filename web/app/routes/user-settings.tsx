@@ -79,6 +79,7 @@ export interface UserSettingsActionData {
   intent?: string
   error?: string
   fieldErrors?: {
+    currentPassword?: string
     email?: string
     password?: string
     repeat?: string
@@ -102,6 +103,7 @@ export async function action({ request }: ActionFunctionArgs) {
   switch (intent) {
     case 'update-profile': {
       const email = formData.get('email')?.toString() || ''
+      const currentPassword = formData.get('currentPassword')?.toString() || ''
       const password = formData.get('password')?.toString() || ''
       const repeat = formData.get('repeat')?.toString() || ''
       const timezone = formData.get('timezone')?.toString()
@@ -115,6 +117,9 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       if (password) {
+        if (!currentPassword) {
+          fieldErrors.currentPassword = 'Current password is required'
+        }
         if (!isValidPassword(password)) {
           fieldErrors.password = `Password must be at least ${MIN_PASSWORD_CHARS} characters`
         }
@@ -126,7 +131,12 @@ export async function action({ request }: ActionFunctionArgs) {
         }
       }
 
-      if (fieldErrors.email || fieldErrors.password || fieldErrors.repeat) {
+      if (
+        fieldErrors.currentPassword ||
+        fieldErrors.email ||
+        fieldErrors.password ||
+        fieldErrors.repeat
+      ) {
         return data<UserSettingsActionData>(
           { intent, fieldErrors },
           { status: 400 },
@@ -135,7 +145,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
       const updateData: Record<string, unknown> = {}
       if (email) updateData.email = email
-      if (password) updateData.password = password
+      if (password) {
+        updateData.currentPassword = currentPassword
+        updateData.password = password
+      }
       if (timezone) updateData.timezone = timezone
       if (timeFormat) updateData.timeFormat = timeFormat
       if (reportFrequency) updateData.reportFrequency = reportFrequency

@@ -341,7 +341,7 @@ export class UserController {
     @CurrentUserId() id: string,
     @Req() request: Request,
   ) {
-    this.logger.log({ userDTO, id }, 'PUT /user')
+    this.logger.log({ id }, 'PUT /user')
 
     const originalUser = await this.userService.findOne({ id })
 
@@ -349,11 +349,30 @@ export class UserController {
       throw new BadRequestException('User not found')
     }
 
-    try {
-      if (userDTO.password && typeof userDTO.password === 'string') {
-        this.userService.validatePassword(userDTO.password)
+    const newPassword = userDTO.password
+    const shouldUpdatePassword =
+      typeof newPassword === 'string' && newPassword.length > 0
 
-        const hashed = await this.authService.hashPassword(userDTO.password)
+    if (shouldUpdatePassword) {
+      if (!userDTO.currentPassword) {
+        throw new BadRequestException('incorrectPassword')
+      }
+
+      const isPasswordValid = await this.authService.comparePassword(
+        userDTO.currentPassword,
+        originalUser.password,
+      )
+
+      if (!isPasswordValid) {
+        throw new BadRequestException('incorrectPassword')
+      }
+    }
+
+    try {
+      if (shouldUpdatePassword) {
+        this.userService.validatePassword(newPassword)
+
+        const hashed = await this.authService.hashPassword(newPassword)
         await this.userService.update(id, { password: hashed })
 
         await Promise.all([
