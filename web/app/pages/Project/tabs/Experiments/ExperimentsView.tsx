@@ -97,6 +97,64 @@ interface ExperimentRowProps {
   onComplete: (id: string) => void
 }
 
+const getLaunchGuardrails = (experiment: Experiment) => {
+  const blockers: string[] = []
+  const warnings: string[] = []
+  const variants = experiment.variants || []
+  const totalAllocation = variants.reduce(
+    (sum, variant) => sum + variant.rolloutPercentage,
+    0,
+  )
+  const allocations = variants.map((variant) => variant.rolloutPercentage)
+  const minAllocation = allocations.length ? Math.min(...allocations) : 0
+  const maxAllocation = allocations.length ? Math.max(...allocations) : 0
+
+  if (!experiment.goalId) {
+    blockers.push('Missing goal')
+  }
+
+  if (variants.length < 2) {
+    blockers.push('Needs at least two variants')
+  }
+
+  if (variants.filter((variant) => variant.isControl).length !== 1) {
+    blockers.push('Needs one control')
+  }
+
+  if (totalAllocation !== 100) {
+    blockers.push('Allocation must total 100%')
+  }
+
+  if (variants.some((variant) => variant.rolloutPercentage <= 0)) {
+    blockers.push('Every variant needs traffic')
+  }
+
+  if (
+    experiment.exposureTrigger === 'custom_event' &&
+    !experiment.customEventName?.trim()
+  ) {
+    blockers.push('Missing exposure event')
+  }
+
+  if (experiment.featureFlagMode === 'link' && !experiment.featureFlagId) {
+    blockers.push('Missing linked feature flag')
+  }
+
+  if (maxAllocation - minAllocation > 10) {
+    warnings.push('Uneven allocation')
+  }
+
+  if (minAllocation > 0 && minAllocation < 10) {
+    warnings.push('Low traffic variant')
+  }
+
+  if (!experiment.hypothesis?.trim()) {
+    warnings.push('No hypothesis')
+  }
+
+  return { blockers, warnings }
+}
+
 const ExperimentRow = ({
   experiment,
   onDelete,
@@ -112,6 +170,11 @@ const ExperimentRow = ({
   const [actionLoading, setActionLoading] = useState(false)
 
   const variantsCount = experiment.variants?.length || 0
+  const launchGuardrails = useMemo(
+    () => getLaunchGuardrails(experiment),
+    [experiment],
+  )
+  const launchBlockerText = launchGuardrails.blockers.join(', ')
   const isEditDisabled =
     experiment.status === 'running' || experiment.status === 'completed'
   const statusBadgeColour: 'slate' | 'green' | 'yellow' | 'sky' =
@@ -186,6 +249,23 @@ const ExperimentRow = ({
                   label={`${variantsCount} ${t('experiments.variants')}`}
                   className='text-[0.625rem] leading-3'
                 />
+                {launchGuardrails.blockers.length > 0 &&
+                experiment.status === 'draft' ? (
+                  <Badge
+                    colour='red'
+                    label='Launch blocked'
+                    className='text-[0.625rem] leading-3'
+                  />
+                ) : null}
+                {launchGuardrails.blockers.length === 0 &&
+                launchGuardrails.warnings.length > 0 &&
+                experiment.status === 'draft' ? (
+                  <Badge
+                    colour='yellow'
+                    label='Review config'
+                    className='text-[0.625rem] leading-3'
+                  />
+                ) : null}
               </div>
               {experiment.description ? (
                 <Text className='mt-1' as='p' size='sm' colour='secondary'>
@@ -197,7 +277,25 @@ const ExperimentRow = ({
                   {t('experiments.hypothesis')}: {experiment.hypothesis}
                 </Text>
               ) : null}
-              {/* Timestamps */}
+              <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
+                <Text as='span' size='xs' colour='muted'>
+                  Flag:{' '}
+                  <Text as='span' size='xs' colour='secondary' code>
+                    {experiment.featureFlagKey ||
+                      experiment.featureFlagId ||
+                      'created on launch'}
+                  </Text>
+                </Text>
+                <Text as='span' size='xs' colour='muted'>
+                  Split:{' '}
+                  {experiment.variants
+                    .map(
+                      (variant) =>
+                        `${variant.key} ${variant.rolloutPercentage}%`,
+                    )
+                    .join(' / ')}
+                </Text>
+              </div>
               <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
                 {experiment.startedAt ? (
                   <Text as='span' size='xs' colour='muted'>
@@ -218,9 +316,9 @@ const ExperimentRow = ({
             {/* Action buttons based on status */}
             {experiment.status === 'draft' ? (
               <>
-                {!experiment.goalId ? (
+                {launchGuardrails.blockers.length > 0 ? (
                   <Tooltip
-                    text={t('experiments.needGoal')}
+                    text={launchBlockerText || t('experiments.needGoal')}
                     tooltipNode={
                       <span className='inline-flex'>
                         <button

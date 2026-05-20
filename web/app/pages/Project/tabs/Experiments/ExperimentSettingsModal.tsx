@@ -14,6 +14,7 @@ import {
   TrendUpIcon,
   TrendDownIcon,
   XIcon,
+  CalculatorIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -82,10 +83,14 @@ const ExperimentSettingsModal = ({
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [hypothesis, setHypothesis] = useState('')
   const [featureFlagKey, setFeatureFlagKey] = useState('')
   const [goalId, setGoalId] = useState<string>('')
   const [goalDirection, setGoalDirection] = useState<GoalDirection>('increase')
   const [variants, setVariants] = useState<ExperimentVariant[]>(defaultVariants)
+  const [baselineConversionRate, setBaselineConversionRate] = useState(5)
+  const [minimumDetectableEffect, setMinimumDetectableEffect] = useState(10)
+  const [dailyExposures, setDailyExposures] = useState(500)
 
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [exposureTrigger, setExposureTrigger] =
@@ -111,10 +116,14 @@ const ExperimentSettingsModal = ({
   const resetForm = () => {
     setName('')
     setDescription('')
+    setHypothesis('')
     setFeatureFlagKey('')
     setGoalId('')
     setGoalDirection('increase')
     setVariants(defaultVariants)
+    setBaselineConversionRate(5)
+    setMinimumDetectableEffect(10)
+    setDailyExposures(500)
     setShowAdvanced(false)
     setExposureTrigger('feature_flag')
     setCustomEventName('')
@@ -134,6 +143,7 @@ const ExperimentSettingsModal = ({
       }
       setName(experiment.name)
       setDescription(experiment.description || '')
+      setHypothesis(experiment.hypothesis || '')
       setFeatureFlagKey(experiment.featureFlagKey || '')
       setGoalId(experiment.goalId || '')
       setVariants(
@@ -260,6 +270,13 @@ const ExperimentSettingsModal = ({
       newErrors.featureFlag = t('experiments.selectFeatureFlag')
     }
 
+    if (
+      selectedFeatureFlag?.experimentId &&
+      selectedFeatureFlag.experimentId !== experimentId
+    ) {
+      newErrors.featureFlag = 'This feature flag is already linked elsewhere.'
+    }
+
     if (exposureTrigger === 'custom_event' && !customEventName.trim()) {
       newErrors.customEvent = t('experiments.exposureTrigger.eventName')
     }
@@ -311,12 +328,14 @@ const ExperimentSettingsModal = ({
     )
     formData.set('name', name.trim())
     formData.set('description', description.trim())
+    formData.set('hypothesis', hypothesis.trim())
     formData.set('exposureTrigger', exposureTrigger)
     formData.set(
       'customEventName',
       exposureTrigger === 'custom_event' ? customEventName.trim() : '',
     )
     formData.set('multipleVariantHandling', multipleVariantHandling)
+    formData.set('filterInternalUsers', 'true')
     formData.set('featureFlagMode', featureFlagMode)
     formData.set(
       'featureFlagKey',
@@ -422,8 +441,165 @@ const ExperimentSettingsModal = ({
     ...featureFlags.map((flag) => ({ value: flag.id, label: flag.key })),
   ]
 
+  const selectedFeatureFlag = useMemo(
+    () => featureFlags.find((flag) => flag.id === existingFeatureFlagId),
+    [featureFlags, existingFeatureFlagId],
+  )
+
   const totalPercentage = _sum(variants.map((v) => v.rolloutPercentage))
   const isPercentageValid = totalPercentage === 100
+  const minAllocation = Math.min(...variants.map((v) => v.rolloutPercentage))
+  const maxAllocation = Math.max(...variants.map((v) => v.rolloutPercentage))
+
+  const sampleEstimate = useMemo(() => {
+    const baseline = Math.max(0.001, baselineConversionRate / 100)
+    const relativeLift = Math.max(0.001, minimumDetectableEffect / 100)
+    const target = Math.min(0.999, baseline * (1 + relativeLift))
+    const pooled = (baseline + target) / 2
+    const delta = Math.abs(target - baseline)
+    const zAlpha = 1.96
+    const zBeta = 0.84
+    const numerator = Math.pow(
+      zAlpha * Math.sqrt(2 * pooled * (1 - pooled)) +
+        zBeta * Math.sqrt(baseline * (1 - baseline) + target * (1 - target)),
+      2,
+    )
+    const perVariant = Math.ceil(numerator / Math.pow(delta, 2))
+    const slowestDailyTraffic = Math.max(
+      0,
+      dailyExposures * (minAllocation / 100),
+    )
+    const estimatedDays =
+      slowestDailyTraffic > 0
+        ? Math.ceil(perVariant / slowestDailyTraffic)
+        : null
+
+    return {
+      perVariant,
+      total: perVariant * variants.length,
+      estimatedDays,
+      targetRate: target * 100,
+    }
+  }, [
+    baselineConversionRate,
+    minimumDetectableEffect,
+    dailyExposures,
+    minAllocation,
+    variants.length,
+  ])
+
+  const launchGuardrails = useMemo(() => {
+    const items: Array<{ severity: 'blocker' | 'warning'; message: string }> =
+      []
+
+    if (!goalId) {
+      items.push({
+        severity: 'blocker',
+        message: 'Add a goal before launch so conversions can be attributed.',
+      })
+    }
+
+    if (
+      exposureTrigger === 'custom_event' &&
+      customEventName.trim().length === 0
+    ) {
+      items.push({
+        severity: 'blocker',
+        message: 'Add the custom exposure event name before launch.',
+      })
+    }
+
+    if (featureFlagMode === 'link' && !existingFeatureFlagId) {
+      items.push({
+        severity: 'blocker',
+        message: 'Select the feature flag that will serve this experiment.',
+      })
+    }
+
+    if (
+      selectedFeatureFlag?.experimentId &&
+      selectedFeatureFlag.experimentId !== experimentId
+    ) {
+      items.push({
+        severity: 'blocker',
+        message: 'The selected feature flag is already linked elsewhere.',
+      })
+    }
+
+    if (!isPercentageValid) {
+      items.push({
+        severity: 'blocker',
+        message: 'Variant rollout percentages must add up to 100%.',
+      })
+    }
+
+    if (variants.some((variant) => variant.rolloutPercentage <= 0)) {
+      items.push({
+        severity: 'blocker',
+        message: 'Every variant needs traffic before launch.',
+      })
+    }
+
+    if (maxAllocation - minAllocation > 10) {
+      items.push({
+        severity: 'warning',
+        message: 'Allocation is uneven, results will take longer to read.',
+      })
+    }
+
+    if (minAllocation > 0 && minAllocation < 10) {
+      items.push({
+        severity: 'warning',
+        message: 'One variant has very low traffic and may miss issues.',
+      })
+    }
+
+    if (sampleEstimate.estimatedDays && sampleEstimate.estimatedDays > 56) {
+      items.push({
+        severity: 'warning',
+        message: 'The current sample estimate is longer than eight weeks.',
+      })
+    }
+
+    if (sampleEstimate.perVariant < 100) {
+      items.push({
+        severity: 'warning',
+        message: 'The estimate is very small, check the baseline and MDE.',
+      })
+    }
+
+    if (!hypothesis.trim()) {
+      items.push({
+        severity: 'warning',
+        message: 'A hypothesis helps interpret mixed or flat results later.',
+      })
+    }
+
+    if (multipleVariantHandling === 'first_exposure') {
+      items.push({
+        severity: 'warning',
+        message: 'First exposure handling can hide variant switching issues.',
+      })
+    }
+
+    return items
+  }, [
+    customEventName,
+    experimentId,
+    exposureTrigger,
+    existingFeatureFlagId,
+    featureFlagMode,
+    goalId,
+    hypothesis,
+    isPercentageValid,
+    maxAllocation,
+    minAllocation,
+    multipleVariantHandling,
+    sampleEstimate.estimatedDays,
+    sampleEstimate.perVariant,
+    selectedFeatureFlag?.experimentId,
+    variants,
+  ])
 
   return (
     <Dialog className='relative z-40' open={isOpen} onClose={onClose}>
@@ -436,7 +612,7 @@ const ExperimentSettingsModal = ({
         <div className='flex min-h-full items-center justify-center p-4'>
           <DialogPanel
             transition
-            className='w-full max-w-2xl transform rounded-xl bg-white transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in dark:bg-slate-950'
+            className='w-full max-w-3xl transform rounded-xl bg-white transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in dark:bg-slate-950'
           >
             {isLoading ? (
               <div className='flex min-h-[300px] items-center justify-center'>
@@ -490,6 +666,20 @@ const ExperimentSettingsModal = ({
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder={t('experiments.descriptionPlaceholder')}
+                      />
+
+                      <Input
+                        label={
+                          <span className='flex items-center gap-1.5'>
+                            Hypothesis
+                            <Text size='xs' colour='muted'>
+                              ({t('common.optional')})
+                            </Text>
+                          </span>
+                        }
+                        value={hypothesis}
+                        onChange={(e) => setHypothesis(e.target.value)}
+                        placeholder='Changing X should improve Y because...'
                       />
                     </div>
 
@@ -691,6 +881,40 @@ const ExperimentSettingsModal = ({
                           {totalPercentage}%
                         </Text>
                       </div>
+                      <div className='mt-3 rounded-md bg-gray-50 px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
+                        <Text size='xs' weight='medium' colour='secondary'>
+                          Variant mapping
+                        </Text>
+                        <div className='mt-2 grid gap-2 sm:grid-cols-2'>
+                          {variants.map((variant) => (
+                            <div
+                              key={variant.key}
+                              className='flex items-center justify-between gap-3 text-xs'
+                            >
+                              <div className='min-w-0'>
+                                <Text as='p' size='xs' weight='medium' truncate>
+                                  {variant.name}
+                                </Text>
+                                <Text as='p' size='xs' colour='muted' code>
+                                  {variant.key}
+                                </Text>
+                              </div>
+                              <Text
+                                as='span'
+                                size='xs'
+                                weight='semibold'
+                                className='tabular-nums'
+                              >
+                                {variant.rolloutPercentage}%
+                              </Text>
+                            </div>
+                          ))}
+                        </div>
+                        <Text size='xs' colour='muted' className='mt-2'>
+                          The feature flag decides eligibility. The experiment
+                          maps eligible profiles into these variants.
+                        </Text>
+                      </div>
                     </div>
 
                     <div>
@@ -772,6 +996,172 @@ const ExperimentSettingsModal = ({
                           {t('experiments.noGoalsHint')}
                         </Text>
                       ) : null}
+                    </div>
+
+                    <div className='rounded-lg bg-gray-50 p-4 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
+                      <div className='flex flex-wrap items-start justify-between gap-3'>
+                        <div>
+                          <div className='flex items-center gap-2'>
+                            <CalculatorIcon className='size-4 text-gray-600 dark:text-gray-300' />
+                            <Text size='sm' weight='semibold'>
+                              Sample size estimate
+                            </Text>
+                          </div>
+                          <Text size='xs' colour='muted' className='mt-1'>
+                            Two-sided 95% confidence, 80% power. Use this as a
+                            planning estimate, not a guarantee.
+                          </Text>
+                        </div>
+                        <div className='text-right'>
+                          <Text
+                            as='p'
+                            size='lg'
+                            weight='semibold'
+                            className='tabular-nums'
+                          >
+                            {sampleEstimate.perVariant.toLocaleString()}
+                          </Text>
+                          <Text as='p' size='xs' colour='muted'>
+                            exposures per variant
+                          </Text>
+                        </div>
+                      </div>
+
+                      <div className='mt-4 grid gap-3 sm:grid-cols-3'>
+                        <Input
+                          label='Baseline conversion'
+                          inputMode='decimal'
+                          value={baselineConversionRate}
+                          onChange={(e) =>
+                            setBaselineConversionRate(
+                              Math.min(
+                                99,
+                                Math.max(0.1, Number(e.target.value) || 0.1),
+                              ),
+                            )
+                          }
+                          classes={{ input: 'px-2.5 py-1.5' }}
+                        />
+                        <Input
+                          label='MDE lift'
+                          inputMode='decimal'
+                          value={minimumDetectableEffect}
+                          onChange={(e) =>
+                            setMinimumDetectableEffect(
+                              Math.min(
+                                500,
+                                Math.max(1, Number(e.target.value) || 1),
+                              ),
+                            )
+                          }
+                          classes={{ input: 'px-2.5 py-1.5' }}
+                        />
+                        <Input
+                          label='Daily exposures'
+                          inputMode='numeric'
+                          value={dailyExposures}
+                          onChange={(e) =>
+                            setDailyExposures(
+                              Math.max(0, Number(e.target.value) || 0),
+                            )
+                          }
+                          classes={{ input: 'px-2.5 py-1.5' }}
+                        />
+                      </div>
+
+                      <div className='mt-3 grid gap-2 text-xs sm:grid-cols-3'>
+                        <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
+                          <Text as='p' size='xs' colour='muted'>
+                            Target rate
+                          </Text>
+                          <Text
+                            as='p'
+                            size='sm'
+                            weight='semibold'
+                            className='tabular-nums'
+                          >
+                            {sampleEstimate.targetRate.toFixed(2)}%
+                          </Text>
+                        </div>
+                        <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
+                          <Text as='p' size='xs' colour='muted'>
+                            Total sample
+                          </Text>
+                          <Text
+                            as='p'
+                            size='sm'
+                            weight='semibold'
+                            className='tabular-nums'
+                          >
+                            {sampleEstimate.total.toLocaleString()}
+                          </Text>
+                        </div>
+                        <div className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
+                          <Text as='p' size='xs' colour='muted'>
+                            Runtime estimate
+                          </Text>
+                          <Text
+                            as='p'
+                            size='sm'
+                            weight='semibold'
+                            className='tabular-nums'
+                          >
+                            {sampleEstimate.estimatedDays
+                              ? `${sampleEstimate.estimatedDays} days`
+                              : 'Add traffic'}
+                          </Text>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className='rounded-lg bg-gray-50 p-4 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
+                      <div className='flex items-center justify-between gap-3'>
+                        <Text size='sm' weight='semibold'>
+                          Launch guardrails
+                        </Text>
+                        <Text
+                          size='xs'
+                          weight='medium'
+                          className={
+                            launchGuardrails.some(
+                              (item) => item.severity === 'blocker',
+                            )
+                              ? 'text-red-600 dark:text-red-400'
+                              : launchGuardrails.length > 0
+                                ? 'text-yellow-700 dark:text-yellow-300'
+                                : 'text-green-600 dark:text-green-400'
+                          }
+                        >
+                          {launchGuardrails.some(
+                            (item) => item.severity === 'blocker',
+                          )
+                            ? 'Blocked'
+                            : launchGuardrails.length > 0
+                              ? 'Review'
+                              : 'Ready'}
+                        </Text>
+                      </div>
+                      {launchGuardrails.length > 0 ? (
+                        <ul className='mt-3 space-y-2'>
+                          {launchGuardrails.map((item, index) => (
+                            <li
+                              key={`${item.severity}-${index}`}
+                              className={cx(
+                                'rounded-md px-3 py-2 text-xs ring-1',
+                                item.severity === 'blocker'
+                                  ? 'bg-red-50 text-red-800 ring-red-200 dark:bg-red-900/20 dark:text-red-200 dark:ring-red-800/70'
+                                  : 'bg-yellow-50 text-yellow-900 ring-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-100 dark:ring-yellow-800/70',
+                              )}
+                            >
+                              {item.message}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <Text size='xs' colour='muted' className='mt-2'>
+                          No launch blockers detected.
+                        </Text>
+                      )}
                     </div>
 
                     <div className='border-t border-gray-200 pt-4 dark:border-slate-700'>
@@ -864,6 +1254,30 @@ const ExperimentSettingsModal = ({
                                 <Text size='xs' className='mt-1 text-red-500'>
                                   {errors.featureFlag}
                                 </Text>
+                              ) : null}
+                              {selectedFeatureFlag ? (
+                                <div className='mt-2 rounded-md bg-gray-50 px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
+                                  <div className='flex flex-wrap items-center justify-between gap-2'>
+                                    <Text size='xs' colour='secondary'>
+                                      Linked flag
+                                    </Text>
+                                    <Text size='xs' colour='secondary' code>
+                                      {selectedFeatureFlag.key}
+                                    </Text>
+                                  </div>
+                                  <Text
+                                    size='xs'
+                                    colour='muted'
+                                    className='mt-1'
+                                  >
+                                    {selectedFeatureFlag.rolloutPercentage}%
+                                    rollout,{' '}
+                                    {selectedFeatureFlag.enabled
+                                      ? 'enabled'
+                                      : 'disabled'}
+                                    . Starting the experiment enables the flag.
+                                  </Text>
+                                </div>
                               ) : null}
                             </div>
                           ) : null}

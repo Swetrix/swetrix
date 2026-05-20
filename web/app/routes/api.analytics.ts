@@ -382,6 +382,7 @@ export async function action({ request }: ActionFunctionArgs) {
           formatDateForBackend(params.from) || '',
           formatDateForBackend(params.to) || '',
           params.timezone,
+          params.filters || [],
         )
         return data<ProxyResponse<ExperimentResults>>({
           data: result.data,

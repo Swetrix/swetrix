@@ -1637,6 +1637,16 @@ export interface ExperimentChartData {
   winProbability: Record<string, number[]>
 }
 
+export interface ExperimentResultWindow {
+  mode: 'selected' | 'active_overlap' | 'final'
+  from: string
+  to: string
+  selectedFrom: string
+  selectedTo: string
+  activeFrom?: string
+  activeTo?: string
+}
+
 export interface ExperimentResults {
   experimentId: string
   status: ExperimentStatus
@@ -1647,6 +1657,9 @@ export interface ExperimentResults {
   confidenceLevel: number
   variants: ExperimentVariantResult[]
   chart?: ExperimentChartData
+  resolvedTimeBucket?: string
+  resultWindow?: ExperimentResultWindow
+  isSegmented?: boolean
 }
 
 export async function getExperimentResultsServer(
@@ -1657,11 +1670,13 @@ export async function getExperimentResultsServer(
   from = '',
   to = '',
   timezone?: string,
+  filters: AnalyticsFilter[] = [],
 ): Promise<ServerFetchResult<ExperimentResults>> {
   const params = new URLSearchParams({ period, timeBucket })
   if (from) params.append('from', from)
   if (to) params.append('to', to)
   if (timezone) params.append('timezone', timezone)
+  params.append('filters', JSON.stringify(filters))
 
   return serverFetch<ExperimentResults>(
     request,

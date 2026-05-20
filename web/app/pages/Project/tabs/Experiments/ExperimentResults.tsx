@@ -18,9 +18,13 @@ import {
   PercentIcon,
   CaretDownIcon,
   CaretUpIcon,
+  WarningCircleIcon,
+  CheckCircleIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
+import { toast } from 'sonner'
 
 import type {
   Experiment,
@@ -42,11 +46,15 @@ import {
   tbsFormatMapperTooltip24h,
 } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
+import Filters from '~/pages/Project/View/components/Filters'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { typeNameMapping } from '~/pages/Project/View/ViewProject.helpers'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import BillboardChart from '~/ui/BillboardChart'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import { Badge } from '~/ui/Badge'
+import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
@@ -456,7 +464,7 @@ const ExposuresTable = memo(
                 </TableCell>
                 <TableCell className='text-right'>
                   <Text weight='semibold' size='sm' className='tabular-nums'>
-                    100.0%
+                    {totalExposures > 0 ? '100.0%' : '0.0%'}
                   </Text>
                 </TableCell>
               </tr>
@@ -730,6 +738,32 @@ const CollapsibleSection = memo(
 
 CollapsibleSection.displayName = 'CollapsibleSection'
 
+type HealthWarning = {
+  severity: 'warning' | 'danger'
+  title: string
+  message: string
+}
+
+const formatWindowDate = (value?: string | null) => {
+  if (!value) return null
+  return dayjs(value).format('MMM D, YYYY HH:mm')
+}
+
+const windowsOverlap = (
+  window: NonNullable<ExperimentResultsType['resultWindow']>,
+) => {
+  if (!window.activeFrom || !window.activeTo) return false
+
+  return (
+    dayjs(window.selectedTo).valueOf() >= dayjs(window.activeFrom).valueOf() &&
+    dayjs(window.selectedFrom).valueOf() <= dayjs(window.activeTo).valueOf()
+  )
+}
+
+const getConfiguredAllocation = (experiment: Experiment | null, key: string) =>
+  experiment?.variants.find((variant) => variant.key === key)
+    ?.rolloutPercentage ?? 0
+
 const ExperimentResults = ({
   experimentId,
   period,
@@ -745,6 +779,9 @@ const ExperimentResults = ({
   const experimentProxy = useExperimentProxy()
   const resultsProxy = useExperimentResultsProxy()
   const goalProxy = useGoalProxy()
+  const completeFetcher = useFetcher<ProjectViewActionData>()
+  const processedCompleteRef = useRef<string | null>(null)
+  const { filters } = useViewProjectContext()
 
   const [experiment, setExperiment] = useState<Experiment | null>(null)
   const [results, setResults] = useState<ExperimentResultsType | null>(null)
@@ -752,6 +789,7 @@ const ExperimentResults = ({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false)
   const [reloadToken, setReloadToken] = useState(0)
   const statusBadgeColour = useMemo<
     'slate' | 'green' | 'yellow' | 'sky'
@@ -787,6 +825,7 @@ const ExperimentResults = ({
             from,
             to,
             timezone,
+            filters,
           }),
         ])
 
@@ -824,9 +863,28 @@ const ExperimentResults = ({
     from,
     to,
     timezone,
+    filters,
     reloadToken,
     refreshTrigger,
   ])
+
+  useEffect(() => {
+    if (!completeFetcher.data || completeFetcher.state !== 'idle') return
+
+    const key = `${completeFetcher.data.intent}-${completeFetcher.data.success}-${completeFetcher.data.error || ''}`
+    if (processedCompleteRef.current === key) return
+    processedCompleteRef.current = key
+
+    if (completeFetcher.data.intent !== 'complete-experiment') return
+
+    if (completeFetcher.data.success) {
+      toast.success(t('experiments.completed'))
+      setIsCompleteModalOpen(false)
+      setReloadToken((value) => value + 1)
+    } else if (completeFetcher.data.error) {
+      toast.error(completeFetcher.data.error)
+    }
+  }, [completeFetcher.data, completeFetcher.state, t])
 
   const overallConversionRate = useMemo(() => {
     if (!results || results.totalExposures === 0) return 0
@@ -843,6 +901,170 @@ const ExperimentResults = ({
       return b.probabilityOfBeingBest - a.probabilityOfBeingBest
     })
   }, [results])
+
+  const healthWarnings = useMemo<HealthWarning[]>(() => {
+    if (!experiment || !results) return []
+
+    const warnings: HealthWarning[] = []
+    const runningForDays = experiment.startedAt
+      ? dayjs().diff(dayjs(experiment.startedAt), 'day')
+      : 0
+
+    if (results.totalExposures === 0) {
+      warnings.push({
+        severity: 'warning',
+        title: 'No exposures',
+        message:
+          experiment.exposureTrigger === 'custom_event'
+            ? 'No matching custom exposure events were recorded.'
+            : 'No feature flag evaluations were recorded for this experiment.',
+      })
+    }
+
+    if (results.totalExposures >= 100) {
+      const imbalancedVariant = results.variants.find((variant) => {
+        const configured = getConfiguredAllocation(experiment, variant.key)
+        const observed = (variant.exposures / results.totalExposures) * 100
+        return configured > 0 && Math.abs(observed - configured) >= 25
+      })
+
+      if (imbalancedVariant) {
+        warnings.push({
+          severity: 'danger',
+          title: 'Extreme imbalance',
+          message:
+            'Observed traffic is far from the configured split. Treat winner reads carefully.',
+        })
+      }
+    }
+
+    const missingTrafficVariant = results.variants.find(
+      (variant) => variant.exposures === 0 && results.totalExposures > 0,
+    )
+
+    if (missingTrafficVariant) {
+      warnings.push({
+        severity: 'danger',
+        title: 'Variant not receiving traffic',
+        message: `${missingTrafficVariant.name} has no observed exposures in this window.`,
+      })
+    }
+
+    if (results.totalExposures >= 100 && results.totalConversions < 30) {
+      warnings.push({
+        severity: 'warning',
+        title: 'Low conversion volume',
+        message:
+          'Conversion counts are still low, probability estimates can swing quickly.',
+      })
+    }
+
+    if (results.status === 'running' && runningForDays >= 45) {
+      warnings.push({
+        severity: 'warning',
+        title: 'Stale running experiment',
+        message: `This experiment has been running for ${runningForDays} days.`,
+      })
+    }
+
+    if (results.status !== 'draft' && (!experiment.goalId || !goal)) {
+      warnings.push({
+        severity: 'danger',
+        title: 'Goal missing after start',
+        message:
+          'The goal is missing or no longer available, conversions cannot be trusted.',
+      })
+    }
+
+    return warnings
+  }, [experiment, goal, results])
+
+  const stopRecommendation = useMemo(() => {
+    if (!experiment || !results) return null
+    if (results.variants.length === 0) return null
+    if (results.status !== 'running' && results.status !== 'paused') return null
+    if (results.totalExposures < 500 || results.totalConversions < 50) {
+      return null
+    }
+    if (
+      experiment.startedAt &&
+      dayjs().diff(dayjs(experiment.startedAt), 'day') < 7
+    ) {
+      return null
+    }
+    if (
+      healthWarnings.some((warning) =>
+        ['Extreme imbalance', 'Variant not receiving traffic'].includes(
+          warning.title,
+        ),
+      )
+    ) {
+      return null
+    }
+
+    const control = results.variants.find((variant) => variant.isControl)
+    const best = results.variants.reduce((current, variant) =>
+      variant.probabilityOfBeingBest > current.probabilityOfBeingBest
+        ? variant
+        : current,
+    )
+
+    if (
+      best &&
+      !best.isControl &&
+      best.probabilityOfBeingBest >= 98 &&
+      best.improvement > 0
+    ) {
+      return {
+        title: 'Clear winner ready',
+        message: `${best.name} is ahead with conservative safeguards met.`,
+      }
+    }
+
+    const harmedVariant = results.variants.find(
+      (variant) =>
+        !variant.isControl &&
+        variant.improvement <= -10 &&
+        variant.probabilityOfBeingBest <= 5,
+    )
+
+    if (control && harmedVariant && control.probabilityOfBeingBest >= 95) {
+      return {
+        title: 'Clear harm detected',
+        message: `${harmedVariant.name} is materially underperforming control.`,
+      }
+    }
+
+    return null
+  }, [experiment, healthWarnings, results])
+
+  const resultWindowNotice = useMemo(() => {
+    const window = results?.resultWindow
+    if (!window || window.mode === 'selected') return null
+
+    const fromLabel = formatWindowDate(window.from)
+    const toLabel = formatWindowDate(window.to)
+
+    if (window.mode === 'final') {
+      const suffix = windowsOverlap(window)
+        ? 'based on active experiment time.'
+        : 'because the selected period does not overlap the active experiment.'
+      return `Showing final results from ${fromLabel} to ${toLabel}, ${suffix}`
+    }
+
+    return `Showing the selected period clipped to active experiment time, ${fromLabel} to ${toLabel}.`
+  }, [results])
+
+  const handleCompleteExperiment = () => {
+    if (!experiment) return
+    processedCompleteRef.current = null
+    completeFetcher.submit(
+      { intent: 'complete-experiment', experimentId: experiment.id },
+      { method: 'POST' },
+    )
+  }
+
+  const tnMapping = useMemo(() => typeNameMapping(t), [t])
 
   if (!experiment || !results) {
     if (isLoading) {
@@ -901,7 +1123,26 @@ const ExperimentResults = ({
         projectId={experiment.pid}
         experimentId={experiment.id}
       />
+      <Modal
+        onClose={() => setIsCompleteModalOpen(false)}
+        onSubmit={handleCompleteExperiment}
+        submitText={t('experiments.complete')}
+        closeText={t('common.cancel')}
+        title={t('experiments.completeConfirmTitle')}
+        message={
+          stopRecommendation
+            ? `${stopRecommendation.message} This will end collection and keep final results available.`
+            : t('experiments.completeConfirmMessage')
+        }
+        submitType='regular'
+        type='info'
+        isOpened={isCompleteModalOpen}
+        isLoading={completeFetcher.state !== 'idle'}
+      />
       <div className='space-y-3'>
+        {filters.length > 0 ? (
+          <Filters className='mb-1' tnMapping={tnMapping} />
+        ) : null}
         <div className='flex flex-wrap items-center gap-2'>
           <div className='flex min-w-0 items-center gap-2'>
             <Text as='h2' size='xl' weight='bold' truncate>
@@ -931,6 +1172,173 @@ const ExperimentResults = ({
               }
             />
           ) : null}
+          {experiment.featureFlagKey || experiment.featureFlagId ? (
+            <Badge
+              colour='sky'
+              label={
+                <span className='flex max-w-[260px] items-center gap-1.5'>
+                  <FlaskIcon className='size-3.5 shrink-0' />
+                  <Text
+                    as='span'
+                    size='xs'
+                    weight='medium'
+                    colour='inherit'
+                    truncate
+                  >
+                    {experiment.featureFlagKey || experiment.featureFlagId}
+                  </Text>
+                </span>
+              }
+            />
+          ) : null}
+        </div>
+        {resultWindowNotice || results.isSegmented ? (
+          <div className='rounded-lg bg-sky-50 px-4 py-3 ring-1 ring-sky-200 dark:bg-sky-900/20 dark:ring-sky-800/70'>
+            {resultWindowNotice ? (
+              <Text size='sm' className='text-sky-900 dark:text-sky-100'>
+                {resultWindowNotice}
+              </Text>
+            ) : null}
+            {results.isSegmented ? (
+              <Text
+                size='sm'
+                className={cx('text-sky-900 dark:text-sky-100', {
+                  'mt-1': Boolean(resultWindowNotice),
+                })}
+              >
+                Segment filters are applied to exposed profiles before
+                conversions are attributed.
+              </Text>
+            ) : null}
+          </div>
+        ) : null}
+        {healthWarnings.length > 0 ? (
+          <div className='grid gap-2 lg:grid-cols-2'>
+            {healthWarnings.map((warning) => (
+              <div
+                key={`${warning.title}-${warning.message}`}
+                className={cx(
+                  'rounded-lg px-4 py-3 ring-1',
+                  warning.severity === 'danger'
+                    ? 'bg-red-50 ring-red-200 dark:bg-red-900/20 dark:ring-red-800/70'
+                    : 'bg-yellow-50 ring-yellow-200 dark:bg-yellow-900/20 dark:ring-yellow-800/70',
+                )}
+              >
+                <div className='flex items-start gap-2'>
+                  <WarningCircleIcon
+                    className={cx(
+                      'mt-0.5 size-4 shrink-0',
+                      warning.severity === 'danger'
+                        ? 'text-red-600 dark:text-red-300'
+                        : 'text-yellow-700 dark:text-yellow-300',
+                    )}
+                  />
+                  <div>
+                    <Text
+                      as='p'
+                      size='sm'
+                      weight='semibold'
+                      className={
+                        warning.severity === 'danger'
+                          ? 'text-red-900 dark:text-red-100'
+                          : 'text-yellow-900 dark:text-yellow-100'
+                      }
+                    >
+                      {warning.title}
+                    </Text>
+                    <Text
+                      as='p'
+                      size='xs'
+                      className={
+                        warning.severity === 'danger'
+                          ? 'text-red-800 dark:text-red-200'
+                          : 'text-yellow-800 dark:text-yellow-100'
+                      }
+                    >
+                      {warning.message}
+                    </Text>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        {stopRecommendation ? (
+          <div className='flex flex-col gap-3 rounded-lg bg-green-50 px-4 py-3 ring-1 ring-green-200 sm:flex-row sm:items-center sm:justify-between dark:bg-green-900/20 dark:ring-green-800/70'>
+            <div className='flex items-start gap-3'>
+              <CheckCircleIcon
+                className='mt-0.5 size-5 shrink-0 text-green-600 dark:text-green-300'
+                weight='duotone'
+              />
+              <div>
+                <Text
+                  as='p'
+                  size='sm'
+                  weight='semibold'
+                  className='text-green-900 dark:text-green-100'
+                >
+                  {stopRecommendation.title}
+                </Text>
+                <Text
+                  as='p'
+                  size='xs'
+                  className='text-green-800 dark:text-green-100'
+                >
+                  {stopRecommendation.message} Confirm before completing.
+                </Text>
+              </div>
+            </div>
+            <Button
+              type='button'
+              size='sm'
+              onClick={() => setIsCompleteModalOpen(true)}
+            >
+              {t('experiments.complete')}
+            </Button>
+          </div>
+        ) : null}
+        <div className='rounded-lg bg-gray-50 px-4 py-3 ring-1 ring-gray-200 dark:bg-slate-900/40 dark:ring-slate-800'>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <div>
+              <Text as='p' size='sm' weight='semibold'>
+                Feature flag relationship
+              </Text>
+              <Text as='p' size='xs' colour='muted'>
+                The flag controls eligibility. Experiment exposures use actual
+                evaluations and variant events.
+              </Text>
+            </div>
+            <Text as='span' size='xs' colour='secondary' code>
+              {experiment.featureFlagKey ||
+                experiment.featureFlagId ||
+                'created on launch'}
+            </Text>
+          </div>
+          <div className='mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4'>
+            {experiment.variants.map((variant) => (
+              <div
+                key={variant.key}
+                className='rounded-md bg-white px-3 py-2 ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'
+              >
+                <Text as='p' size='xs' weight='medium' truncate>
+                  {variant.name}
+                </Text>
+                <div className='mt-1 flex items-center justify-between gap-2'>
+                  <Text as='span' size='xs' colour='muted' code>
+                    {variant.key}
+                  </Text>
+                  <Text
+                    as='span'
+                    size='xs'
+                    weight='semibold'
+                    className='tabular-nums'
+                  >
+                    {variant.rolloutPercentage}%
+                  </Text>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
         {results.hasWinner && results.winnerKey ? (
           <div className='flex items-center gap-4 rounded-lg border border-green-300 bg-green-50 px-4 py-2 dark:border-green-700 dark:bg-green-900/20'>
@@ -999,7 +1407,7 @@ const ExperimentResults = ({
             <WinProbabilityChart
               chartData={results.chart}
               variants={sortedVariants}
-              timeBucket={timeBucket}
+              timeBucket={results.resolvedTimeBucket || timeBucket}
             />
           </div>
 
