@@ -3,6 +3,7 @@ import { area, bar } from 'billboard.js'
 import cx from 'clsx'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
+import type { TFunction } from 'i18next'
 import _debounce from 'lodash/debounce'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -16,6 +17,7 @@ import {
   FileTextIcon,
   CursorClickIcon,
   CaretDownIcon,
+  QuestionIcon,
 } from '@phosphor-icons/react'
 import {
   useState,
@@ -36,6 +38,7 @@ import type {
   Goal,
   GoalStats,
   GoalChartData,
+  ConversionBreakdowns,
 } from '~/api/api.server'
 import { useGoalStatsProxy, useGoalChartProxy } from '~/hooks/useAnalyticsProxy'
 import {
@@ -45,12 +48,21 @@ import {
   tbsFormatMapperTooltip,
   tbsFormatMapperTooltip24h,
   chartTypes,
+  DEFAULT_TIMEZONE,
 } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
+import Filters from '~/pages/Project/View/components/Filters'
+import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import {
   useViewProjectContext,
   useRefreshTriggers,
 } from '~/pages/Project/View/ViewProject'
+import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
+import {
+  attachDataPointClickHandlers,
+  getChartPointWindow,
+  type ChartDataPointClick,
+} from '~/pages/Project/View/utils/chartPoint'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type {
   ProjectLoaderData,
@@ -66,13 +78,142 @@ import Pagination from '~/ui/Pagination'
 import ProgressRing from '~/ui/ProgressRing'
 import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
-import { nFormatter } from '~/utils/generic'
+import Tooltip from '~/ui/Tooltip'
+import { escapeHtml, nFormatter } from '~/utils/generic'
+import countries from '~/utils/isoCountries'
 import routes from '~/utils/routes'
 
 import GoalSettingsModal from './GoalSettingsModal'
 import { LoaderView } from '../../View/components/LoaderView'
 
 const DEFAULT_GOALS_TAKE = 20
+const GOAL_TOOLTIP_BREAKDOWN_LIMIT = 3
+
+const isDurationValue = (seconds?: number | null): seconds is number =>
+  seconds != null && Number.isFinite(seconds)
+
+const formatDuration = (seconds?: number | null) => {
+  if (!isDurationValue(seconds)) {
+    return 'N/A'
+  }
+
+  if (seconds < 60) {
+    return `${Math.round(seconds)}s`
+  }
+
+  if (seconds < 3600) {
+    return `${Math.round(seconds / 60)}m`
+  }
+
+  return `${Math.round(seconds / 3600)}h`
+}
+
+const TIME_TO_CONVERT_METRICS = [
+  {
+    labelKey: 'goals.fromSessionStart',
+    tooltipKey: 'goals.fromSessionStartTooltip',
+    getValue: (stats: GoalStats) => stats.timeToConvert?.fromSessionStart,
+  },
+  {
+    labelKey: 'goals.fromFirstPage',
+    tooltipKey: 'goals.fromFirstPageTooltip',
+    getValue: (stats: GoalStats) => stats.timeToConvert?.fromFirstPage,
+  },
+]
+
+const getTopBreakdownEntries = (items?: Record<string, number>) => {
+  return Object.entries(items || {})
+    .filter(([, count]) => Number.isFinite(count) && count > 0)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, GOAL_TOOLTIP_BREAKDOWN_LIMIT)
+}
+
+const renderGoalTooltipBreakdowns = (
+  breakdowns: ConversionBreakdowns | undefined,
+  conversions: number,
+  t: TFunction,
+  language: string,
+) => {
+  const topSourcesEntries = getTopBreakdownEntries(breakdowns?.sources)
+  const topCountriesEntries = getTopBreakdownEntries(breakdowns?.countries)
+
+  if (topSourcesEntries.length === 0 && topCountriesEntries.length === 0) {
+    return ''
+  }
+
+  const primary = 'text-gray-900 dark:text-gray-50'
+  const secondary = 'text-gray-700 dark:text-gray-200'
+  const denominator = Math.max(conversions, 1)
+
+  const sourcesHtml =
+    topSourcesEntries.length > 0
+      ? `
+        <div class='flex-1 min-w-0'>
+          <p class='text-[10px] font-semibold uppercase tracking-wider ${secondary} mb-1.5'>
+            ${t('project.topSources')}
+          </p>
+          ${topSourcesEntries
+            .map(([domain, count]) => {
+              const perc = Math.round((count / denominator) * 100)
+              const isDirect = domain === 'Direct / None'
+              const safeDomain = escapeHtml(domain)
+              const iconHtml = isDirect
+                ? `
+                  <img src='/assets/icons/chain.svg' class='size-3.5 shrink-0 dark:hidden' alt='' />
+                  <img src='/assets/icons/chain-light.svg' class='size-3.5 shrink-0 hidden dark:inline' alt='' />
+                `
+                : `<img src='/api/favicon?domain=${encodeURIComponent(domain)}' class='size-3.5 rounded-sm shrink-0' loading='lazy' alt='' />`
+
+              return `
+                <div class='flex items-center justify-between gap-2 mt-1'>
+                  <div class='flex items-center gap-1.5 min-w-0'>
+                    ${iconHtml}
+                    <span class='truncate ${primary}'>${safeDomain}</span>
+                  </div>
+                  <span class='font-mono tabular-nums shrink-0 ${primary}'>${perc}%</span>
+                </div>
+              `
+            })
+            .join('')}
+        </div>
+      `
+      : ''
+
+  const countriesHtml =
+    topCountriesEntries.length > 0
+      ? `
+        <div class='flex-1 min-w-0'>
+          <p class='text-[10px] font-semibold uppercase tracking-wider ${secondary} mb-1.5'>
+            ${t('project.topCountries')}
+          </p>
+          ${topCountriesEntries
+            .map(([cc, count]) => {
+              const perc = Math.round((count / denominator) * 100)
+              const safeName = escapeHtml(countries.getName(cc, language) || cc)
+              const safeCC = encodeURIComponent(cc.toLowerCase())
+
+              return `
+                <div class='flex items-center justify-between gap-2 mt-1'>
+                  <div class='flex items-center gap-1.5 min-w-0'>
+                    <img src='/assets/flags/${safeCC}.svg' width='16' height='12' class='shrink-0 rounded-[2px]' loading='lazy' alt='' />
+                    <span class='truncate ${primary}'>${safeName}</span>
+                  </div>
+                  <span class='font-mono tabular-nums shrink-0 ${primary}'>${perc}%</span>
+                </div>
+              `
+            })
+            .join('')}
+        </div>
+      `
+      : ''
+
+  return `
+    <div class='border-t border-gray-200 dark:border-slate-700/80 mt-2 pt-2 flex gap-5'>
+      ${sourcesHtml}
+      ${countriesHtml}
+    </div>
+  `
+}
 
 // Calculate optimal Y axis ticks
 const calculateOptimalTicks = (
@@ -132,6 +273,11 @@ const getGoalChartSettings = (
   timeFormat: string,
   chartType: string,
   dataNames: Record<string, string>,
+  t: TFunction,
+  language: string,
+  stats: GoalStats | null,
+  onDataPointClick?: ChartDataPointClick,
+  dataPointClickLabel?: string,
 ): ChartOptions => {
   const xAxisSize = _size(chartData.x)
 
@@ -154,6 +300,13 @@ const getGoalChartSettings = (
     data: {
       x: 'x',
       columns,
+      onclick: onDataPointClick
+        ? (d: any) => {
+            if (d?.x) {
+              onDataPointClick({ x: d.x, index: d.index })
+            }
+          }
+        : undefined,
       types: {
         conversions: chartType === chartTypes.line ? area() : bar(),
         sessions: chartType === chartTypes.line ? area() : bar(),
@@ -211,23 +364,37 @@ const getGoalChartSettings = (
         if (!item || _isEmpty(item) || !item[0]) {
           return ''
         }
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-md z-50'>
-          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${
+        const breakdownsHtml = renderGoalTooltipBreakdowns(
+          stats?.breakdowns,
+          stats?.conversions || 0,
+          t,
+          language,
+        )
+
+        return `<div class='bg-gray-50 dark:bg-slate-900 rounded-lg ring-1 ring-black/10 dark:ring-white/10 px-3 py-2.5 text-xs md:text-sm max-w-sm md:max-w-md shadow-lg z-50'>
+          <div class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 text-gray-900 dark:text-gray-50'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
-          }</li>
+          }</div>
           ${_map(item, (el: { id: string; name: string; value: string }) => {
             return `
-            <li class='flex justify-between items-center py-px leading-snug'>
+            <div class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0' style=background-color:${color(el.id)}></div>
-                <span class="truncate">${el.name}</span>
+                <span class='truncate text-gray-900 dark:text-gray-50'>${escapeHtml(el.name)}</span>
               </div>
-              <span class='font-mono whitespace-nowrap'>${el.value}</span>
-            </li>
+              <span class='font-mono whitespace-nowrap text-gray-900 dark:text-gray-50'>${el.value}</span>
+            </div>
             `
-          }).join('')}</ul>`
+          }).join('')}
+          ${breakdownsHtml}
+          ${
+            onDataPointClick
+              ? `<div class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>${escapeHtml(dataPointClickLabel || '')}</div>`
+              : ''
+          }
+        </div>`
       },
     },
     point:
@@ -236,9 +403,11 @@ const getGoalChartSettings = (
         : {
             focus: {
               only: xAxisSize > 1,
+              expand: onDataPointClick ? { enabled: true, r: 4 } : undefined,
             },
             pattern: ['circle'],
             r: 2,
+            sensitivity: onDataPointClick ? 50 : undefined,
           },
     legend: {
       item: {
@@ -255,6 +424,11 @@ const getGoalChartSettings = (
     bar: {
       linearGradient: true,
     },
+    onrendered: onDataPointClick
+      ? function (this: any) {
+          attachDataPointClickHandlers(this, columns, onDataPointClick)
+        }
+      : undefined,
   }
 }
 
@@ -270,6 +444,7 @@ interface GoalRowProps {
   onDelete: (id: string) => void
   onEdit: (id: string) => void
   onToggleExpand: (id: string) => void
+  onChartDataPointClick: (goalId: string, d: { x: Date; index: number }) => void
 }
 
 const GoalRow = ({
@@ -284,11 +459,19 @@ const GoalRow = ({
   onDelete,
   onEdit,
   onToggleExpand,
+  onChartDataPointClick,
 }: GoalRowProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const patternDisplay = useMemo(() => {
+    if (goal.conditions?.conditions?.length) {
+      return t('goals.conditionsSummary', {
+        count: goal.conditions.conditions.length,
+        relation: goal.conditions.relation,
+      })
+    }
+
     if (!goal.value) return null
     const matchPrefix =
       goal.matchType === 'exact'
@@ -297,7 +480,7 @@ const GoalRow = ({
           ? '~ '
           : ''
     return `${matchPrefix}${goal.value}`
-  }, [goal.value, goal.matchType])
+  }, [goal.conditions, goal.value, goal.matchType, t])
 
   const chartOptions = useMemo(() => {
     if (!chartData || !chartData.x || chartData.x.length === 0) return null
@@ -310,8 +493,22 @@ const GoalRow = ({
         conversions: t('goals.conversions'),
         sessions: t('project.sessions'),
       },
+      t,
+      i18n.language,
+      stats,
+      (d) => onChartDataPointClick(goal.id, d),
+      t('project.exploreSessions'),
     )
-  }, [chartData, timeBucket, timeFormat, t])
+  }, [
+    chartData,
+    timeBucket,
+    timeFormat,
+    t,
+    i18n.language,
+    stats,
+    goal.id,
+    onChartDataPointClick,
+  ])
 
   return (
     <>
@@ -457,7 +654,60 @@ const GoalRow = ({
 
         {/* Expanded chart section */}
         {isExpanded ? (
-          <div className='border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-slate-700'>
+          <div className='space-y-4 border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-slate-700'>
+            {stats?.timeToConvert ? (
+              <div className='flex flex-wrap gap-x-10 gap-y-4 border-b border-gray-200 pb-4 dark:border-slate-800'>
+                {TIME_TO_CONVERT_METRICS.map(
+                  ({ labelKey, tooltipKey, getValue }) => {
+                    const metric = getValue(stats)
+                    const hasTiming = isDurationValue(metric?.median)
+
+                    return (
+                      <div key={labelKey} className='min-w-44'>
+                        <Text
+                          as='p'
+                          size='4xl'
+                          weight='bold'
+                          className='leading-none whitespace-nowrap'
+                        >
+                          {formatDuration(metric?.median)}
+                        </Text>
+                        <div className='mt-1 flex items-center gap-1.5'>
+                          <Text as='p' size='sm' weight='semibold'>
+                            {t(labelKey)}
+                          </Text>
+                          <Tooltip
+                            ariaLabel={t(labelKey)}
+                            text={t(tooltipKey)}
+                            tooltipNode={
+                              <span className='inline-flex size-4 items-center justify-center rounded-full text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'>
+                                <QuestionIcon className='size-3.5' />
+                              </span>
+                            }
+                            contentClassName='max-w-72'
+                          />
+                        </div>
+                        <Text
+                          as='p'
+                          size='xs'
+                          colour='secondary'
+                          className='mt-0.5'
+                        >
+                          {hasTiming
+                            ? t('goals.avgP75', {
+                                avg: formatDuration(metric?.average),
+                                p75: formatDuration(metric?.p75),
+                              })
+                            : stats.conversions > 0
+                              ? t('goals.timeToConvertInsufficient')
+                              : t('goals.timeToConvertNoConversions')}
+                        </Text>
+                      </div>
+                    )
+                  },
+                )}
+              </div>
+            ) : null}
             {chartLoading ? (
               <div className='flex h-[200px] items-center justify-center'>
                 <Spin className='size-8' />
@@ -496,6 +746,7 @@ const GoalRow = ({
 }
 
 interface GoalsViewProps {
+  tnMapping: Record<string, string>
   period: string
   from?: string
   to?: string
@@ -533,16 +784,17 @@ interface GoalsViewInnerProps extends GoalsViewProps {
 }
 
 const GoalsViewInner = ({
+  tnMapping,
   period,
   from = '',
   to = '',
-  timezone,
+  timezone = DEFAULT_TIMEZONE,
   deferredData,
 }: GoalsViewInnerProps) => {
   const { id } = useCurrentProject()
   const revalidator = useRevalidator()
   const { goalsRefreshTrigger } = useRefreshTriggers()
-  const { timeBucket, timeFormat } = useViewProjectContext()
+  const { timeBucket, timeFormat, filters } = useViewProjectContext()
   const { t } = useTranslation()
   const fetcher = useFetcher<ProjectViewActionData>()
 
@@ -561,6 +813,7 @@ const GoalsViewInner = ({
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const filtersKey = useMemo(() => JSON.stringify(filters), [filters])
 
   // Expanded goal state
   const [expandedGoalId, setExpandedGoalId] = useState<string | null>(null)
@@ -568,6 +821,12 @@ const GoalsViewInner = ({
     Record<string, GoalChartData | null>
   >({})
   const [chartLoading, setChartLoading] = useState<Record<string, boolean>>({})
+  const [sessionsDrawer, setSessionsDrawer] = useState<{
+    from: string
+    to: string
+    label: string
+    goalId: string
+  } | null>(null)
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -642,7 +901,10 @@ const GoalsViewInner = ({
     ) {
       if (isMountedRef.current) {
         if (fetcher.data.success && fetcher.data.data) {
-          const result = fetcher.data.data as { results: Goal[]; total: number }
+          const result = fetcher.data.data as {
+            results: Goal[]
+            total: number
+          }
           setGoals(result.results)
           setTotal(result.total)
           setError(null)
@@ -665,6 +927,7 @@ const GoalsViewInner = ({
         from,
         to,
         timezone,
+        filters,
       })
       if (isMountedRef.current) {
         setGoalStats((prev) => ({ ...prev, [goalId]: stats }))
@@ -693,6 +956,7 @@ const GoalsViewInner = ({
         to,
         timeBucket,
         timezone,
+        filters,
       })
       if (isMountedRef.current && result) {
         setGoalChartData((prev) => ({ ...prev, [goalId]: result.chart }))
@@ -722,6 +986,21 @@ const GoalsViewInner = ({
     }
   }
 
+  const handleChartDataPointClick = useCallback(
+    (goalId: string, d: { x: Date; index: number }) => {
+      setSessionsDrawer({
+        ...getChartPointWindow({
+          x: d.x,
+          timeBucket,
+          timezone,
+          timeFormat,
+        }),
+        goalId,
+      })
+    },
+    [timeBucket, timeFormat, timezone],
+  )
+
   // Handle page/search changes - use fetcher for pagination
   useEffect(() => {
     if (page > 1 || debouncedSearch || isSearchMode) {
@@ -740,7 +1019,7 @@ const GoalsViewInner = ({
       loadGoalStats(goal.id)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goals, period, from, to, timezone])
+  }, [goals, period, from, to, timezone, filtersKey])
 
   // Reload chart data when period changes for expanded goal
   useEffect(() => {
@@ -750,7 +1029,7 @@ const GoalsViewInner = ({
       loadGoalChartData(expandedGoalId, !hasExistingData)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, from, to, timezone, timeBucket])
+  }, [period, from, to, timezone, timeBucket, filtersKey])
 
   // Refresh goals data when refresh button is clicked
   useEffect(() => {
@@ -767,7 +1046,9 @@ const GoalsViewInner = ({
       }
       // Clear cached chart data for non-expanded goals, silently refresh expanded goal
       if (expandedGoalId) {
-        setGoalChartData((prev) => ({ [expandedGoalId]: prev[expandedGoalId] }))
+        setGoalChartData((prev) => ({
+          [expandedGoalId]: prev[expandedGoalId],
+        }))
         loadGoalChartData(expandedGoalId, false)
       } else {
         setGoalChartData({})
@@ -850,8 +1131,12 @@ const GoalsViewInner = ({
 
   return (
     <>
-      <DashboardHeader showLiveVisitors />
+      <DashboardHeader
+        showLiveVisitors
+        rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
+      />
       <div>
+        <Filters className='mb-3' tnMapping={tnMapping} />
         {isLoading && !_isEmpty(goals) ? <LoadingBar /> : null}
         {_isEmpty(goals) && !filterQuery ? (
           <div className='mx-auto w-full max-w-2xl py-16 text-center'>
@@ -911,6 +1196,7 @@ const GoalsViewInner = ({
                   onDelete={handleDeleteGoal}
                   onEdit={handleEditGoal}
                   onToggleExpand={handleToggleExpand}
+                  onChartDataPointClick={handleChartDataPointClick}
                 />
               ))}
             </ul>
@@ -944,6 +1230,18 @@ const GoalsViewInner = ({
           onSuccess={handleModalSuccess}
           projectId={id}
           goalId={editingGoalId}
+          tnMapping={tnMapping}
+        />
+        <SessionsDrawer
+          isOpen={!!sessionsDrawer}
+          onClose={() => setSessionsDrawer(null)}
+          from={sessionsDrawer?.from || ''}
+          to={sessionsDrawer?.to || ''}
+          label={sessionsDrawer?.label || ''}
+          projectId={id}
+          timezone={timezone}
+          timeFormat={timeFormat as '12-hour' | '24-hour'}
+          goalId={sessionsDrawer?.goalId}
         />
       </div>
     </>

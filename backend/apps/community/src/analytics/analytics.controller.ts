@@ -390,6 +390,7 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       pages,
       funnelId,
+      filters,
     } = data
 
     const pagesArr = await this.analyticsService.getPagesArray(
@@ -430,24 +431,40 @@ export class AnalyticsController {
       diff,
     )
 
-    const params = { pid, groupFrom, groupTo }
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters || '[]',
+      DataType.ANALYTICS,
+    )
+    const params = { pid, groupFrom, groupTo, ...filtersParams }
 
     let funnel: IFunnel[] = []
     let totalPageviews: number = 0
-    let stepDetails: {
-      countries: Record<number, Record<string, number>>
-      sources: Record<number, Record<string, number>>
-    } = { countries: {}, sources: {} }
+    let timeToConvert: IGetFunnel['timeToConvert']
+    let stepDetails = {
+      countries: {},
+      devices: {},
+      browsers: {},
+      sources: {},
+      campaigns: {},
+      pages: {},
+      profileTypes: {},
+    } as Record<string, Record<number, Record<string, number>>>
 
     const promises = [
       (async () => {
-        funnel = await this.analyticsService.getFunnel(pagesArr, params)
+        funnel = await this.analyticsService.getFunnel(
+          pagesArr,
+          params,
+          filtersQuery,
+        )
       })(),
       (async () => {
         totalPageviews = await this.analyticsService.getTotalPageviews(
           pid,
           groupFrom,
           groupTo,
+          filtersQuery,
+          filtersParams,
         )
       })(),
       (async () => {
@@ -455,10 +472,18 @@ export class AnalyticsController {
           stepDetails = await this.analyticsService.getFunnelStepDetails(
             pagesArr,
             params,
+            filtersQuery,
           )
         } catch (e) {
           this.logger.error(e, 'GET /analytics/funnel - getFunnelStepDetails')
         }
+      })(),
+      (async () => {
+        timeToConvert = await this.analyticsService.getFunnelTimeToConvert(
+          pagesArr,
+          params,
+          filtersQuery,
+        )
       })(),
     ]
 
@@ -467,9 +492,18 @@ export class AnalyticsController {
     for (let i = 0; i < funnel.length; i++) {
       funnel[i].topCountries = stepDetails.countries[i + 1] || {}
       funnel[i].topSources = stepDetails.sources[i + 1] || {}
+      funnel[i].breakdowns = {
+        countries: stepDetails.countries[i + 1] || {},
+        devices: stepDetails.devices[i + 1] || {},
+        browsers: stepDetails.browsers[i + 1] || {},
+        sources: stepDetails.sources[i + 1] || {},
+        campaigns: stepDetails.campaigns[i + 1] || {},
+        pages: stepDetails.pages[i + 1] || {},
+        profileTypes: stepDetails.profileTypes[i + 1] || {},
+      }
     }
 
-    return { funnel, totalPageviews }
+    return { funnel, totalPageviews, timeToConvert }
   }
 
   @Get('funnel-sessions')
@@ -488,6 +522,8 @@ export class AnalyticsController {
       pages,
       funnelId,
       step,
+      filters,
+      dropoff,
     } = data
 
     await this.analyticsService.checkProjectAccess(
@@ -546,7 +582,12 @@ export class AnalyticsController {
       diff,
     )
 
-    const params = { pid, groupFrom, groupTo }
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters || '[]',
+      DataType.ANALYTICS,
+    )
+    const params = { pid, groupFrom, groupTo, ...filtersParams }
+    const isDropoff = dropoff === true || dropoff === 'true'
 
     const sessions = await this.analyticsService.getFunnelSessionsList(
       pagesArr,
@@ -555,6 +596,8 @@ export class AnalyticsController {
       step,
       take,
       skip,
+      filtersQuery,
+      isDropoff,
     )
 
     return { sessions, take, skip }
@@ -1607,6 +1650,13 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ) {
     const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
+    const sessionEvent = data.sessionEvent || 'traffic'
+    const sessionDataType =
+      sessionEvent === 'performance'
+        ? DataType.PERFORMANCE
+        : sessionEvent === 'error'
+          ? DataType.ERRORS
+          : DataType.ANALYTICS
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1629,7 +1679,11 @@ export class AnalyticsController {
     )
 
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+      this.analyticsService.getFiltersQuery(
+        filters,
+        sessionDataType,
+        sessionEvent !== 'traffic',
+      )
 
     let timeBucket
     let diff
@@ -1637,7 +1691,9 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        this.analyticsService.getAnalyticsEventType(customEVFilterApplied),
+        sessionEvent === 'traffic'
+          ? this.analyticsService.getAnalyticsEventType(customEVFilterApplied)
+          : sessionEvent,
       )
 
       timeBucket = res.timeBucket[0]
@@ -1672,6 +1728,7 @@ export class AnalyticsController {
       take,
       skip,
       customEVFilterApplied,
+      sessionEvent,
     )
 
     return { sessions, appliedFilters, take, skip }
@@ -2261,7 +2318,16 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const { pid, eid, period, from, to, timeBucket } = data
+    const {
+      pid,
+      eid,
+      period,
+      from,
+      to,
+      timeBucket,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -2283,6 +2349,12 @@ export class AnalyticsController {
       'GET /analytics/error-sessions',
     )
 
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.ERRORS,
+      true,
+    )
+
     let newTimeBucket = timeBucket
     let diff
 
@@ -2296,7 +2368,7 @@ export class AnalyticsController {
       diff = res.diff
     }
 
-    const safeTimezone = this.analyticsService.getSafeTimezone(DEFAULT_TIMEZONE)
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
       from,
       to,
@@ -2313,6 +2385,8 @@ export class AnalyticsController {
       groupToUTC,
       take,
       skip,
+      filtersQuery,
+      filtersParams,
     )
   }
 

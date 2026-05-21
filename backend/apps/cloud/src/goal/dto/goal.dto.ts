@@ -12,7 +12,16 @@ import {
   ArrayMaxSize,
 } from 'class-validator'
 import { Type } from 'class-transformer'
-import { GoalType, GoalMatchType, MetadataFilter } from '../entity/goal.entity'
+import {
+  GoalType,
+  GoalMatchType,
+  MetadataFilter,
+  GoalCondition,
+  GoalConditions,
+  GoalConditionEventType,
+  GoalConditionOperator,
+  GoalConditionRelation,
+} from '../entity/goal.entity'
 
 // Allowed match types for API (regex is disabled for now)
 const ALLOWED_MATCH_TYPES = [GoalMatchType.EXACT, GoalMatchType.CONTAINS]
@@ -29,6 +38,67 @@ class MetadataFilterDto implements MetadataFilter {
   @IsNotEmpty()
   @MaxLength(500)
   value: string
+}
+
+const ALLOWED_CONDITION_RELATIONS: GoalConditionRelation[] = ['AND', 'OR']
+const ALLOWED_CONDITION_EVENT_TYPES: GoalConditionEventType[] = [
+  'any',
+  GoalType.PAGEVIEW,
+  GoalType.CUSTOM_EVENT,
+]
+const ALLOWED_CONDITION_OPERATORS: GoalConditionOperator[] = [
+  'equals',
+  'not_equals',
+  'contains',
+  'not_contains',
+  'exists',
+  'not_exists',
+]
+
+class GoalConditionDto implements GoalCondition {
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  id?: string
+
+  @ApiProperty({ enum: ALLOWED_CONDITION_EVENT_TYPES })
+  @IsIn(ALLOWED_CONDITION_EVENT_TYPES)
+  eventType: GoalConditionEventType
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  field: string
+
+  @ApiProperty({ enum: ALLOWED_CONDITION_OPERATORS })
+  @IsIn(ALLOWED_CONDITION_OPERATORS)
+  operator: GoalConditionOperator
+
+  @ApiPropertyOptional()
+  @IsString()
+  @MaxLength(500)
+  @IsOptional()
+  value?: string
+
+  @ApiPropertyOptional()
+  @IsString()
+  @MaxLength(100)
+  @IsOptional()
+  metadataKey?: string
+}
+
+class GoalConditionsDto implements GoalConditions {
+  @ApiProperty({ enum: ALLOWED_CONDITION_RELATIONS })
+  @IsIn(ALLOWED_CONDITION_RELATIONS)
+  relation: GoalConditionRelation
+
+  @ApiProperty({ type: [GoalConditionDto] })
+  @IsArray()
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => GoalConditionDto)
+  conditions: GoalConditionDto[]
 }
 
 export class CreateGoalDto {
@@ -72,6 +142,12 @@ export class CreateGoalDto {
   @Type(() => MetadataFilterDto)
   @IsOptional()
   metadataFilters?: MetadataFilterDto[]
+
+  @ApiPropertyOptional({ type: GoalConditionsDto })
+  @ValidateNested()
+  @Type(() => GoalConditionsDto)
+  @IsOptional()
+  conditions?: GoalConditionsDto | null
 }
 
 export class UpdateGoalDto {
@@ -113,6 +189,12 @@ export class UpdateGoalDto {
   @IsOptional()
   metadataFilters?: MetadataFilterDto[]
 
+  @ApiPropertyOptional({ type: GoalConditionsDto })
+  @ValidateNested()
+  @Type(() => GoalConditionsDto)
+  @IsOptional()
+  conditions?: GoalConditionsDto | null
+
   @ApiPropertyOptional({ description: 'Whether the goal is active' })
   @IsBoolean()
   @IsOptional()
@@ -137,6 +219,9 @@ export class GoalDto {
 
   @ApiPropertyOptional({ type: [MetadataFilterDto] })
   metadataFilters: MetadataFilterDto[] | null
+
+  @ApiPropertyOptional({ type: GoalConditionsDto })
+  conditions: GoalConditionsDto | null
 
   @ApiProperty()
   active: boolean
@@ -163,4 +248,10 @@ export class GoalStatsDto {
 
   @ApiProperty({ description: 'Trend percentage change' })
   trend: number
+
+  @ApiPropertyOptional({ description: 'Conversion segment breakdowns' })
+  breakdowns?: Record<string, Record<string, number>>
+
+  @ApiPropertyOptional({ description: 'Conversion timing metrics' })
+  timeToConvert?: Record<string, Record<string, number | null>>
 }

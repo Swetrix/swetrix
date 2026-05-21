@@ -1,6 +1,6 @@
 import { PickType } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsInt, Min, Max } from 'class-validator'
+import { IsIn, IsInt, IsOptional, Min, Max } from 'class-validator'
 import { GetDataDto } from './getData.dto'
 
 export class GetSessionsDto extends PickType(GetDataDto, [
@@ -21,4 +21,8 @@ export class GetSessionsDto extends PickType(GetDataDto, [
   @IsInt()
   @Min(0)
   skip: number
+
+  @IsOptional()
+  @IsIn(['traffic', 'performance', 'error'])
+  sessionEvent?: 'traffic' | 'performance' | 'error'
 }

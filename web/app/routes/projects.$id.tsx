@@ -62,6 +62,73 @@ import {
   hasAuthTokens,
 } from '~/utils/session.server'
 
+const GOAL_CONDITION_RELATIONS = new Set(['AND', 'OR'])
+const GOAL_CONDITION_COMMON_FIELDS = [
+  'host',
+  'ref',
+  'so',
+  'me',
+  'ca',
+  'te',
+  'co',
+  'cc',
+  'dv',
+  'br',
+  'os',
+]
+const GOAL_CONDITION_EVENT_TYPES: Record<string, Set<string>> = {
+  any: new Set([
+    ...GOAL_CONDITION_COMMON_FIELDS,
+    'page',
+    'pg',
+    'event',
+    'event_name',
+  ]),
+  pageview: new Set([
+    ...GOAL_CONDITION_COMMON_FIELDS,
+    'page',
+    'pg',
+    'metadata',
+  ]),
+  custom_event: new Set([
+    ...GOAL_CONDITION_COMMON_FIELDS,
+    'event',
+    'event_name',
+    'metadata',
+  ]),
+}
+const GOAL_CONDITION_OPERATORS = new Set([
+  'equals',
+  'not_equals',
+  'contains',
+  'not_contains',
+  'exists',
+  'not_exists',
+])
+const GOAL_CONDITION_VALUE_OPERATORS = new Set([
+  'equals',
+  'not_equals',
+  'contains',
+  'not_contains',
+])
+
+type GoalMetadataFilter = {
+  key: string
+  value: string
+}
+
+type JsonFormFieldResult =
+  | { ok: true; value: unknown }
+  | { ok: false; error: string }
+
+type GoalJsonFieldsResult =
+  | {
+      ok: true
+      metadataFilters: GoalMetadataFilter[]
+      conditions: unknown
+    }
+  | { ok: false; error: string }
+
 function computeDateRangeForPeriod(
   period: string,
   from?: string,
@@ -105,6 +172,117 @@ function computeDateRangeForPeriod(
 
   const compute = periodMap[period]
   return compute ? compute() : null
+}
+
+const parseJsonFormField = (
+  formData: FormData,
+  field: string,
+  fallback: string,
+): JsonFormFieldResult => {
+  try {
+    return {
+      ok: true,
+      value: JSON.parse(formData.get(field)?.toString() || fallback),
+    }
+  } catch {
+    return { ok: false, error: `Invalid JSON in ${field}` }
+  }
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isGoalMetadataFilters = (value: unknown): value is GoalMetadataFilter[] =>
+  Array.isArray(value) &&
+  value.every(
+    (filter) =>
+      isRecord(filter) &&
+      typeof filter.key === 'string' &&
+      typeof filter.value === 'string',
+  )
+
+const isGoalConditions = (value: unknown) => {
+  if (value === null) {
+    return true
+  }
+
+  if (
+    !isRecord(value) ||
+    !GOAL_CONDITION_RELATIONS.has(String(value.relation))
+  ) {
+    return false
+  }
+
+  return (
+    Array.isArray(value.conditions) &&
+    value.conditions.every((condition) => {
+      if (
+        !isRecord(condition) ||
+        typeof condition.eventType !== 'string' ||
+        typeof condition.field !== 'string' ||
+        typeof condition.operator !== 'string'
+      ) {
+        return false
+      }
+
+      const allowedFields = GOAL_CONDITION_EVENT_TYPES[condition.eventType]
+      if (
+        !allowedFields ||
+        !allowedFields.has(condition.field) ||
+        !GOAL_CONDITION_OPERATORS.has(condition.operator)
+      ) {
+        return false
+      }
+
+      if (condition.field === 'metadata') {
+        if (
+          typeof condition.metadataKey !== 'string' ||
+          condition.metadataKey.trim() === ''
+        ) {
+          return false
+        }
+      } else if (
+        condition.metadataKey !== undefined &&
+        typeof condition.metadataKey !== 'string'
+      ) {
+        return false
+      }
+
+      if (GOAL_CONDITION_VALUE_OPERATORS.has(condition.operator)) {
+        return typeof condition.value === 'string' && condition.value !== ''
+      }
+
+      return (
+        condition.value === undefined || typeof condition.value === 'string'
+      )
+    })
+  )
+}
+
+const parseGoalJsonFields = (formData: FormData): GoalJsonFieldsResult => {
+  const metadataFilters = parseJsonFormField(formData, 'metadataFilters', '[]')
+  if (!metadataFilters.ok) {
+    return metadataFilters
+  }
+
+  if (!isGoalMetadataFilters(metadataFilters.value)) {
+    return { ok: false, error: 'Invalid metadataFilters' }
+  }
+
+  const conditions = parseJsonFormField(formData, 'conditions', 'null')
+  if (!conditions.ok) {
+    return conditions
+  }
+
+  if (!isGoalConditions(conditions.value)) {
+    return { ok: false, error: 'Invalid conditions' }
+  }
+
+  return {
+    ok: true,
+    metadataFilters: metadataFilters.value,
+    conditions: conditions.value,
+  }
 }
 
 function formatDateForBackend(dateStr: string): string {
@@ -587,6 +765,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           funnelTo,
           timezone,
           password || undefined,
+          filters,
         ).then((res) => res.data)
       }
     }
@@ -696,10 +875,26 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const type = formData.get('type')?.toString() || 'pageview'
       const matchType = formData.get('matchType')?.toString() || 'exact'
       const value = formData.get('value')?.toString() || ''
+      const goalJson = parseGoalJsonFields(formData)
+
+      if (!goalJson.ok) {
+        return data<ProjectViewActionData>(
+          { intent, error: goalJson.error },
+          { status: 400 },
+        )
+      }
 
       const result = await serverFetch(request, 'goal', {
         method: 'POST',
-        body: { pid: projectId, name, type, matchType, value },
+        body: {
+          pid: projectId,
+          name,
+          type,
+          matchType,
+          value,
+          metadataFilters: goalJson.metadataFilters,
+          conditions: goalJson.conditions,
+        },
       })
 
       if (result.error) {
@@ -721,10 +916,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const type = formData.get('type')?.toString()
       const matchType = formData.get('matchType')?.toString()
       const value = formData.get('value')?.toString()
+      const goalJson = parseGoalJsonFields(formData)
+
+      if (!goalJson.ok) {
+        return data<ProjectViewActionData>(
+          { intent, error: goalJson.error },
+          { status: 400 },
+        )
+      }
 
       const result = await serverFetch(request, `goal/${goalId}`, {
         method: 'PUT',
-        body: { name, type, matchType, value },
+        body: {
+          name,
+          type,
+          matchType,
+          value,
+          metadataFilters: goalJson.metadataFilters,
+          conditions: goalJson.conditions,
+        },
       })
 
       if (result.error) {
@@ -1620,11 +1830,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const fromDate = formData.get('from')?.toString() || ''
       const toDate = formData.get('to')?.toString() || ''
       const tz = formData.get('timezone')?.toString() || ''
+      const filters = formData.get('filters')?.toString() || '[]'
 
       const params = new URLSearchParams({ period })
       if (fromDate) params.append('from', fromDate)
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
+      params.append('filters', filters)
 
       const result = await serverFetch(
         request,
@@ -2050,11 +2262,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const fromDate = formData.get('from')?.toString() || ''
       const toDate = formData.get('to')?.toString() || ''
       const tz = formData.get('timezone')?.toString() || ''
+      const filters = formData.get('filters')?.toString() || '[]'
 
       const params = new URLSearchParams({ period })
       if (fromDate) params.append('from', fromDate)
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
+      params.append('filters', filters)
 
       const result = await serverFetch(
         request,
@@ -2084,11 +2298,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const toDate = formData.get('to')?.toString() || ''
       const timeBucket = formData.get('timeBucket')?.toString() || 'day'
       const tz = formData.get('timezone')?.toString() || ''
+      const filters = formData.get('filters')?.toString() || '[]'
 
       const params = new URLSearchParams({ period, timeBucket })
       if (fromDate) params.append('from', fromDate)
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
+      params.append('filters', filters)
 
       const result = await serverFetch(
         request,
@@ -2143,6 +2359,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const toDate = formData.get('to')?.toString() || ''
       const tz = formData.get('timezone')?.toString() || ''
       const funnelId = formData.get('funnelId')?.toString() || ''
+      const filters = formData.get('filters')?.toString() || '[]'
       const password = getPassword()
 
       const params = new URLSearchParams({ pid: projectId || '' })
@@ -2151,6 +2368,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
       if (funnelId) params.append('funnelId', funnelId)
+      params.append('filters', filters)
 
       const result = await serverFetch(
         request,

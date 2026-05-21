@@ -9,6 +9,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useCallback,
   lazy,
   Suspense,
   use,
@@ -33,6 +34,7 @@ import { OverallPerformanceObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
 import { PerformanceChart } from '~/pages/Project/tabs/Performance/PerformanceChart'
 import { PerformanceMetricCards } from '~/pages/Project/tabs/Traffic/MetricCards'
+import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
@@ -54,6 +56,7 @@ import {
   getUsageTypeLabel,
   getConnectionTypeLabel,
 } from '~/pages/Project/View/ViewProject.helpers'
+import { getChartPointWindow } from '~/pages/Project/View/utils/chartPoint'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
@@ -138,6 +141,7 @@ const PerformanceViewInner = ({
   const revalidator = useRevalidator()
   const { performanceRefreshTrigger } = useRefreshTriggers()
   const {
+    timezone,
     filters,
     timeFormat,
     timeBucket,
@@ -202,6 +206,11 @@ const PerformanceViewInner = ({
       return {}
     },
   )
+  const [sessionsDrawer, setSessionsDrawer] = useState<{
+    from: string
+    to: string
+    label: string
+  } | null>(null)
 
   // Track if we've ever shown actual content to prevent NoEvents flash during exit animation
   const hasShownContentRef = useRef(false)
@@ -259,6 +268,20 @@ const PerformanceViewInner = ({
     }
     return {}
   }, [deferredData.perfOverallCompareStats, id])
+
+  const handleDataPointClick = useCallback(
+    (d: { x: Date; index: number }) => {
+      setSessionsDrawer(
+        getChartPointWindow({
+          x: d.x,
+          timeBucket,
+          timezone,
+          timeFormat,
+        }),
+      )
+    },
+    [timeBucket, timeFormat, timezone],
+  )
 
   const chartDataCompare: any = useMemo(
     () => deferredData.perfCompareData?.chart || {},
@@ -546,6 +569,7 @@ const PerformanceViewInner = ({
                 dataNames={dataNames}
                 className='mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'
                 annotations={filteredAnnotations}
+                onDataPointClick={handleDataPointClick}
               />
             </div>
           ) : null}
@@ -836,6 +860,18 @@ const PerformanceViewInner = ({
           }
           existingAnnotation={contextMenu.annotation}
           allowedToManage={allowedToManage}
+        />
+        <SessionsDrawer
+          isOpen={!!sessionsDrawer}
+          onClose={() => setSessionsDrawer(null)}
+          from={sessionsDrawer?.from || ''}
+          to={sessionsDrawer?.to || ''}
+          label={sessionsDrawer?.label || ''}
+          projectId={id}
+          timezone={timezone}
+          timeFormat={timeFormat as '12-hour' | '24-hour'}
+          filters={filters}
+          sessionEvent='performance'
         />
       </div>
     </>

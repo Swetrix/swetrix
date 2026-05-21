@@ -96,6 +96,8 @@ import {
   IAggregatedMetadata,
   IFunnelCHResponse,
   IFunnel,
+  IFunnelBreakdowns,
+  IConversionTimeMetric,
   IOverall,
   IOverallPerformance,
   IPageflow,
@@ -131,6 +133,11 @@ const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
 
 const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
+
+type FunnelStepDetails = Record<
+  keyof Required<IFunnelBreakdowns>,
+  Record<number, Record<string, number>>
+>
 
 const GMT_0_TIMEZONES = [
   'Atlantic/Azores',
@@ -387,6 +394,12 @@ type EventsAllTimeType =
   | 'performance'
   | 'error'
   | 'captcha'
+type SessionsListEventType =
+  | 'traffic'
+  | 'pageview'
+  | 'custom_event'
+  | 'error'
+  | 'performance'
 
 const isValidOrigin = (origins: string[], origin: string) => {
   const escapeRegex = (str: string) =>
@@ -1707,11 +1720,27 @@ export class AnalyticsService {
       dropoffPercStep: 0,
       topCountries: {},
       topSources: {},
+      breakdowns: {},
     }))
   }
 
-  async getFunnel(pages: string[], params: any): Promise<IFunnel[]> {
+  async getFunnel(
+    pages: string[],
+    params: any,
+    filtersQuery = '',
+  ): Promise<IFunnel[]> {
     const pageParams: Record<string, string> = {}
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
 
     const pagesStr = _join(
       _map(pages, (value, index) => {
@@ -1739,6 +1768,7 @@ export class AnalyticsService {
           WHERE pid = {pid:FixedString(12)}
           AND type IN ('pageview', 'custom_event')
           AND psid != 0
+          ${sessionFiltersQuery}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         )
         GROUP BY psid
@@ -1765,11 +1795,20 @@ export class AnalyticsService {
   async getFunnelStepDetails(
     pages: string[],
     params: any,
-  ): Promise<{
-    countries: Record<number, Record<string, number>>
-    sources: Record<number, Record<string, number>>
-  }> {
+    filtersQuery = '',
+  ): Promise<FunnelStepDetails> {
     const pageParams: Record<string, string> = {}
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
 
     const pagesStr = _join(
       _map(pages, (value, index) => {
@@ -1793,6 +1832,7 @@ export class AnalyticsService {
           WHERE pid = {pid:FixedString(12)}
           AND type IN ('pageview', 'custom_event')
           AND psid != 0
+          ${sessionFiltersQuery}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         )
         GROUP BY psid
@@ -1806,7 +1846,12 @@ export class AnalyticsService {
         SELECT
           psid,
           argMin(cc, created) AS cc,
-          argMin(if(domain(ref) != '', domain(ref), 'Direct / None'), created) AS source
+          argMin(dv, created) AS dv,
+          argMin(br, created) AS br,
+          argMin(if(so IS NOT NULL AND so != '', so, if(domain(ref) != '', domain(ref), 'Direct / None')), created) AS source,
+          argMin(ca, created) AS campaign,
+          argMin(pg, created) AS page,
+          argMax(profileId, created) AS profileId
         FROM events
         WHERE pid = {pid:FixedString(12)}
         AND type IN ('pageview', 'custom_event')
@@ -1815,7 +1860,7 @@ export class AnalyticsService {
         GROUP BY psid
       )
       SELECT step, type, val, cnt FROM (
-        SELECT e.step AS step, 'cc' AS type, si.cc AS val, count() AS cnt
+        SELECT e.step AS step, 'countries' AS type, si.cc AS val, count() AS cnt
         FROM expanded e
         INNER JOIN session_info si ON e.psid = si.psid
         WHERE si.cc != ''
@@ -1823,13 +1868,53 @@ export class AnalyticsService {
 
         UNION ALL
 
-        SELECT e.step AS step, 'so' AS type, si.source AS val, count() AS cnt
+        SELECT e.step AS step, 'devices' AS type, si.dv AS val, count() AS cnt
+        FROM expanded e
+        INNER JOIN session_info si ON e.psid = si.psid
+        WHERE si.dv != ''
+        GROUP BY e.step, si.dv
+
+        UNION ALL
+
+        SELECT e.step AS step, 'browsers' AS type, si.br AS val, count() AS cnt
+        FROM expanded e
+        INNER JOIN session_info si ON e.psid = si.psid
+        WHERE si.br != ''
+        GROUP BY e.step, si.br
+
+        UNION ALL
+
+        SELECT e.step AS step, 'sources' AS type, si.source AS val, count() AS cnt
         FROM expanded e
         INNER JOIN session_info si ON e.psid = si.psid
         GROUP BY e.step, si.source
+
+        UNION ALL
+
+        SELECT e.step AS step, 'campaigns' AS type, si.campaign AS val, count() AS cnt
+        FROM expanded e
+        INNER JOIN session_info si ON e.psid = si.psid
+        WHERE si.campaign != ''
+        GROUP BY e.step, si.campaign
+
+        UNION ALL
+
+        SELECT e.step AS step, 'pages' AS type, si.page AS val, count() AS cnt
+        FROM expanded e
+        INNER JOIN session_info si ON e.psid = si.psid
+        WHERE si.page != ''
+        GROUP BY e.step, si.page
+
+        UNION ALL
+
+        SELECT e.step AS step, 'profileTypes' AS type, if(startsWith(si.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 'identified', 'anonymous') AS val, count() AS cnt
+        FROM expanded e
+        INNER JOIN session_info si ON e.psid = si.psid
+        WHERE si.profileId != ''
+        GROUP BY e.step, val
       )
       ORDER BY step, type, cnt DESC, val ASC
-      LIMIT 3 BY step, type
+      LIMIT 5 BY step, type
     `
 
     const { data } = await clickhouse
@@ -1846,21 +1931,32 @@ export class AnalyticsService {
         }>(),
       )
 
-    const countries: Record<number, Record<string, number>> = {}
-    const sources: Record<number, Record<string, number>> = {}
+    const createDetailsBucket = () =>
+      Object.create(null) as Record<number, Record<string, number>>
+    const createValueBucket = () =>
+      Object.create(null) as Record<string, number>
+
+    const details: FunnelStepDetails = {
+      countries: createDetailsBucket(),
+      devices: createDetailsBucket(),
+      browsers: createDetailsBucket(),
+      sources: createDetailsBucket(),
+      campaigns: createDetailsBucket(),
+      pages: createDetailsBucket(),
+      profileTypes: createDetailsBucket(),
+    }
 
     for (const row of data) {
       const { step } = row
-      if (row.type === 'cc') {
-        if (!countries[step]) countries[step] = {}
-        countries[step][row.val] = row.cnt
-      } else if (row.type === 'so') {
-        if (!sources[step]) sources[step] = {}
-        sources[step][row.val] = row.cnt
+      const type = row.type as keyof FunnelStepDetails
+
+      if (details[type]) {
+        if (!details[type][step]) details[type][step] = createValueBucket()
+        details[type][step][row.val] = row.cnt
       }
     }
 
-    return { countries, sources }
+    return details
   }
 
   async getFunnelSessionsList(
@@ -1870,8 +1966,24 @@ export class AnalyticsService {
     step: number,
     take = 30,
     skip = 0,
+    filtersQuery = '',
+    dropoff = false,
   ): Promise<object | void> {
     const pageParams: Record<string, string> = {}
+    const levelCondition = dropoff
+      ? 'level = {step:UInt32}'
+      : 'level >= {step:UInt32}'
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
 
     const pagesStr = _join(
       _map(pages, (value, index) => {
@@ -1897,11 +2009,12 @@ export class AnalyticsService {
             WHERE pid = {pid:FixedString(12)}
             AND type IN ('pageview', 'custom_event')
             AND psid != 0
+            ${sessionFiltersQuery}
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           )
           GROUP BY psid
         )
-        WHERE level >= {step:UInt32}
+        WHERE ${levelCondition}
       ),
       distinct_sessions AS (
         SELECT
@@ -2018,24 +2131,175 @@ export class AnalyticsService {
     return data
   }
 
+  async getFunnelTimeToConvert(
+    pages: string[],
+    params: any,
+    filtersQuery = '',
+  ): Promise<{
+    fromSessionStart: IConversionTimeMetric
+    fromFirstPage: IConversionTimeMetric
+    fromFirstFunnelStep: IConversionTimeMetric
+  }> {
+    const emptyMetric: IConversionTimeMetric = {
+      average: null,
+      median: null,
+      p75: null,
+    }
+    const pageParams: Record<string, string | number> = {
+      steps: pages.length,
+    }
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
+
+    const pagesStr = _join(
+      _map(pages, (value, index) => {
+        pageParams[`v${index}`] = value
+        return `value={v${index}:String}`
+      }),
+      ',',
+    )
+
+    const query = `
+      WITH funnel_sessions AS (
+        SELECT
+          psid,
+          minIf(created, value = {v0:String}) AS firstStepAt,
+          maxIf(created, value = {v${pages.length - 1}:String}) AS conversionAt,
+          CAST(windowFunnel(86400)(created, ${pagesStr}) AS UInt64) AS level
+        FROM (
+          SELECT
+            psid,
+            if(type = 'pageview', pg, event_name) AS value,
+            created
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${sessionFiltersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )
+        GROUP BY psid
+        HAVING level = {steps:UInt32}
+      ),
+      session_starts AS (
+        SELECT psid, min(firstSeen) AS sessionStart
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY psid
+      ),
+      first_pages AS (
+        SELECT psid, min(created) AS firstPageAt
+        FROM events
+        WHERE pid = {pid:FixedString(12)}
+          AND type = 'pageview'
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psid
+      )
+      SELECT
+        round(avgOrNull(if(sessionStart > toDateTime(0) AND sessionStart <= conversionAt, dateDiff('second', sessionStart, conversionAt), NULL)), 2) AS averageSession,
+        quantileExactOrNull(0.5)(if(sessionStart > toDateTime(0) AND sessionStart <= conversionAt, dateDiff('second', sessionStart, conversionAt), NULL)) AS medianSession,
+        quantileExactOrNull(0.75)(if(sessionStart > toDateTime(0) AND sessionStart <= conversionAt, dateDiff('second', sessionStart, conversionAt), NULL)) AS p75Session,
+        round(avgOrNull(if(firstPageAt > toDateTime(0) AND firstPageAt <= conversionAt, dateDiff('second', firstPageAt, conversionAt), NULL)), 2) AS averageFirstPage,
+        quantileExactOrNull(0.5)(if(firstPageAt > toDateTime(0) AND firstPageAt <= conversionAt, dateDiff('second', firstPageAt, conversionAt), NULL)) AS medianFirstPage,
+        quantileExactOrNull(0.75)(if(firstPageAt > toDateTime(0) AND firstPageAt <= conversionAt, dateDiff('second', firstPageAt, conversionAt), NULL)) AS p75FirstPage,
+        round(avgOrNull(if(firstStepAt > toDateTime(0) AND firstStepAt <= conversionAt, dateDiff('second', firstStepAt, conversionAt), NULL)), 2) AS averageFirstStep,
+        quantileExactOrNull(0.5)(if(firstStepAt > toDateTime(0) AND firstStepAt <= conversionAt, dateDiff('second', firstStepAt, conversionAt), NULL)) AS medianFirstStep,
+        quantileExactOrNull(0.75)(if(firstStepAt > toDateTime(0) AND firstStepAt <= conversionAt, dateDiff('second', firstStepAt, conversionAt), NULL)) AS p75FirstStep
+      FROM funnel_sessions fs
+      LEFT JOIN session_starts ss ON fs.psid = ss.psid
+      LEFT JOIN first_pages fp ON fs.psid = fp.psid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { ...params, ...pageParams },
+      })
+      .then((resultSet) =>
+        resultSet.json<{
+          averageSession: number | null
+          medianSession: number | null
+          p75Session: number | null
+          averageFirstPage: number | null
+          medianFirstPage: number | null
+          p75FirstPage: number | null
+          averageFirstStep: number | null
+          medianFirstStep: number | null
+          p75FirstStep: number | null
+        }>(),
+      )
+
+    const row = data[0]
+
+    if (!row) {
+      return {
+        fromSessionStart: emptyMetric,
+        fromFirstPage: emptyMetric,
+        fromFirstFunnelStep: emptyMetric,
+      }
+    }
+
+    return {
+      fromSessionStart: {
+        average: row.averageSession,
+        median: row.medianSession,
+        p75: row.p75Session,
+      },
+      fromFirstPage: {
+        average: row.averageFirstPage,
+        median: row.medianFirstPage,
+        p75: row.p75FirstPage,
+      },
+      fromFirstFunnelStep: {
+        average: row.averageFirstStep,
+        median: row.medianFirstStep,
+        p75: row.p75FirstStep,
+      },
+    }
+  }
+
   async getTotalPageviews(
     pid: string,
     groupFrom: string,
     groupTo: string,
+    filtersQuery = '',
+    filtersParams: Record<string, unknown> = {},
   ): Promise<number> {
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
     const query = `
       SELECT
         count() as c
       FROM events
       WHERE pid = {pid:FixedString(12)}
       AND type = 'pageview'
+      ${sessionFiltersQuery}
       AND created BETWEEN {groupFrom:String} AND {groupTo:String}
     `
 
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { pid, groupFrom, groupTo },
+        query_params: { pid, groupFrom, groupTo, ...filtersParams },
       })
       .then((resultSet) => resultSet.json<{ c: number }>())
 
@@ -5306,10 +5570,14 @@ export class AnalyticsService {
     take = 30,
     skip = 0,
     customEVFilterApplied = false,
+    sessionEvent: SessionsListEventType = 'traffic',
+    primaryEventFilterQuery = '',
   ): Promise<object | void> {
     const primaryEventsSubquery = this.buildSessionsListPrimaryEventsSubquery(
       filtersQuery,
       customEVFilterApplied,
+      sessionEvent,
+      primaryEventFilterQuery,
     )
 
     const query = `
@@ -5443,8 +5711,10 @@ export class AnalyticsService {
   private buildSessionsListPrimaryEventsSubquery(
     filtersQuery: string,
     customEVFilterApplied: boolean,
+    sessionEvent: SessionsListEventType = 'traffic',
+    primaryEventFilterQuery = '',
   ): string {
-    if (customEVFilterApplied) {
+    if (customEVFilterApplied || sessionEvent === 'custom_event') {
       return `
         SELECT
           CAST(psid, 'String') AS psidCasted,
@@ -5461,6 +5731,7 @@ export class AnalyticsService {
           AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${filtersQuery}
+          ${primaryEventFilterQuery}
         UNION ALL
         SELECT
           CAST(s.psid, 'String') AS psidCasted,
@@ -5481,10 +5752,32 @@ export class AnalyticsService {
             AND profileId != ''
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
             ${filtersQuery}
+            ${primaryEventFilterQuery}
         ) AS matching_custom_events
           ON s.pid = matching_custom_events.pid
           AND s.profileId = matching_custom_events.profileId
         WHERE matching_custom_events.created BETWEEN s.firstSeen AND addSeconds(s.lastSeen, 1)
+      `
+    }
+
+    if (sessionEvent !== 'traffic') {
+      return `
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          cc,
+          os,
+          br,
+          toTimeZone(created, {timezone:String}) AS created_for_grouping
+        FROM events
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND type = '${sessionEvent}'
+          AND psid IS NOT NULL
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+          ${primaryEventFilterQuery}
       `
     }
 
@@ -6541,6 +6834,8 @@ export class AnalyticsService {
     groupTo: string,
     take: number = 10,
     skip: number = 0,
+    filtersQuery = '',
+    filtersParams: Record<string, unknown> = {},
   ): Promise<{ sessions: any[]; total: number }> {
     const queryCount = `
       SELECT count(DISTINCT psid) as total
@@ -6549,6 +6844,7 @@ export class AnalyticsService {
         AND type = 'error'
         AND eid = {eid:FixedString(32)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery}
     `
 
     const querySessions = `
@@ -6574,6 +6870,7 @@ export class AnalyticsService {
           AND type = 'error'
           AND eid = {eid:FixedString(32)}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
         GROUP BY pid, psid
       ) AS errors
       LEFT JOIN (
@@ -6604,7 +6901,15 @@ export class AnalyticsService {
       OFFSET {skip:UInt32}
     `
 
-    const params = { pid, eid, groupFrom, groupTo, take, skip }
+    const params = {
+      ...filtersParams,
+      pid,
+      eid,
+      groupFrom,
+      groupTo,
+      take,
+      skip,
+    }
 
     const [countResult, sessionsResult] = await Promise.all([
       clickhouse

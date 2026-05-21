@@ -8,6 +8,7 @@ export class GetErrorDto extends PickType(GetDataDto, [
   'timeBucket',
   'from',
   'to',
+  'filters',
   'timezone',
 ] as const) {
   @ApiProperty()

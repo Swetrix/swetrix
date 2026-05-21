@@ -1581,7 +1581,7 @@ const ViewProjectContent = () => {
                               <SEOView projectId={id} tnMapping={tnMapping} />
                             ) : null}
                             {activeTab === PROJECT_TABS.funnels ? (
-                              <FunnelsView />
+                              <FunnelsView tnMapping={tnMapping} />
                             ) : null}
                             {activeTab === PROJECT_TABS.profiles ? (
                               <ProfilesView tnMapping={tnMapping} />
@@ -1597,6 +1597,7 @@ const ViewProjectContent = () => {
                             ) : null}
                             {activeTab === PROJECT_TABS.goals ? (
                               <GoalsView
+                                tnMapping={tnMapping}
                                 period={period}
                                 from={
                                   dateRange ? getFormatDate(dateRange[0]) : ''

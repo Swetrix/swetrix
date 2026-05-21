@@ -30,11 +30,17 @@ import { AppLoggerService } from '../logger/logger.service'
 import { PlanCode } from '../user/entities/user.entity'
 import {
   AnalyticsService,
+  DataType,
   getLowestPossibleTimeBucket,
 } from '../analytics/analytics.service'
 import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
-import { Goal, GoalType, GoalMatchType } from './entity/goal.entity'
+import {
+  Goal,
+  GoalType,
+  GoalMatchType,
+  GoalCondition,
+} from './entity/goal.entity'
 import {
   CreateGoalDto,
   UpdateGoalDto,
@@ -74,6 +80,41 @@ const clampPagination = (take?: number, skip?: number) => {
       : 0
 
   return { take: safeTake, skip: safeSkip }
+}
+
+const GOAL_CONDITION_COLUMNS: Record<string, string> = {
+  page: 'pg',
+  pg: 'pg',
+  event: 'event_name',
+  event_name: 'event_name',
+  host: 'host',
+  ref: 'ref',
+  so: 'so',
+  me: 'me',
+  ca: 'ca',
+  te: 'te',
+  co: 'co',
+  cc: 'cc',
+  dv: 'dv',
+  br: 'br',
+  os: 'os',
+}
+
+type GoalBreakdownKey =
+  | 'countries'
+  | 'devices'
+  | 'browsers'
+  | 'sources'
+  | 'campaigns'
+  | 'pages'
+  | 'profileTypes'
+
+type GoalBreakdowns = Record<GoalBreakdownKey, Record<string, number>>
+
+type TimeToConvertMetric = {
+  average: number | null
+  median: number | null
+  p75: number | null
 }
 
 @ApiTags('Goal')
@@ -229,6 +270,7 @@ export class GoalController {
       goal.matchType = goalDto.matchType
       goal.value = goalDto.value || null
       goal.metadataFilters = goalDto.metadataFilters || null
+      goal.conditions = goalDto.conditions || null
       goal.project = project
 
       const newGoal = await this.goalService.create(goal)
@@ -282,6 +324,7 @@ export class GoalController {
         'matchType',
         'value',
         'metadataFilters',
+        'conditions',
         'active',
       ]),
     }
@@ -395,6 +438,407 @@ export class GoalController {
     }
   }
 
+  private buildConditionExpression(
+    condition: GoalCondition,
+    index: number,
+  ): { condition: string; params: Record<string, string> } {
+    const params: Record<string, string> = {}
+    const eventType = condition.eventType || 'any'
+    const parts: string[] = []
+
+    if (
+      eventType === GoalType.PAGEVIEW ||
+      eventType === GoalType.CUSTOM_EVENT
+    ) {
+      params[`conditionType${index}`] = eventType
+      parts.push(`type = {conditionType${index}:String}`)
+    } else if (condition.field === 'pg' || condition.field === 'page') {
+      parts.push(`type = 'pageview'`)
+    } else if (
+      condition.field === 'event' ||
+      condition.field === 'event_name'
+    ) {
+      parts.push(`type = 'custom_event'`)
+    } else {
+      parts.push(`type IN ('pageview', 'custom_event')`)
+    }
+
+    if (condition.field === 'metadata') {
+      const keyParam = `conditionMetaKey${index}`
+      params[keyParam] = condition.metadataKey || ''
+
+      if (!params[keyParam]) {
+        return { condition: '1=0', params: {} }
+      }
+
+      if (condition.operator === 'exists') {
+        parts.push(`indexOf(meta.key, {${keyParam}:String}) > 0`)
+      } else if (condition.operator === 'not_exists') {
+        parts.push(`indexOf(meta.key, {${keyParam}:String}) = 0`)
+      } else {
+        const valueParam = `conditionValue${index}`
+        params[valueParam] = condition.value || ''
+        const valueExpression = `meta.value[indexOf(meta.key, {${keyParam}:String})]`
+        parts.push(`indexOf(meta.key, {${keyParam}:String}) > 0`)
+
+        if (condition.operator === 'contains') {
+          parts.push(
+            `${valueExpression} ILIKE concat('%', {${valueParam}:String}, '%')`,
+          )
+        } else if (condition.operator === 'not_contains') {
+          parts.push(
+            `NOT (${valueExpression} ILIKE concat('%', {${valueParam}:String}, '%'))`,
+          )
+        } else {
+          parts.push(
+            `${valueExpression} ${condition.operator === 'not_equals' ? '!=' : '='} {${valueParam}:String}`,
+          )
+        }
+      }
+
+      return { condition: `(${parts.join(' AND ')})`, params }
+    }
+
+    const column = GOAL_CONDITION_COLUMNS[condition.field]
+    if (!column) {
+      return { condition: '1=0', params: {} }
+    }
+
+    if (condition.operator === 'exists') {
+      parts.push(`${column} IS NOT NULL AND ${column} != ''`)
+    } else if (condition.operator === 'not_exists') {
+      parts.push(`(${column} IS NULL OR ${column} = '')`)
+    } else {
+      const valueParam = `conditionValue${index}`
+      params[valueParam] = condition.value || ''
+
+      if (!params[valueParam]) {
+        return { condition: '1=0', params: {} }
+      }
+
+      if (condition.operator === 'contains') {
+        parts.push(`${column} ILIKE concat('%', {${valueParam}:String}, '%')`)
+      } else if (condition.operator === 'not_contains') {
+        parts.push(
+          `NOT (${column} ILIKE concat('%', {${valueParam}:String}, '%'))`,
+        )
+      } else {
+        parts.push(
+          `${column} ${condition.operator === 'not_equals' ? '!=' : '='} {${valueParam}:String}`,
+        )
+      }
+    }
+
+    return { condition: `(${parts.join(' AND ')})`, params }
+  }
+
+  private buildGoalEventCondition(goal: Goal): {
+    condition: string
+    params: Record<string, string>
+  } {
+    if (goal.conditions?.conditions?.length) {
+      const relation = goal.conditions.relation === 'OR' ? ' OR ' : ' AND '
+      const builtConditions = goal.conditions.conditions.map(
+        (condition, index) => this.buildConditionExpression(condition, index),
+      )
+
+      return {
+        condition: `(${builtConditions
+          .map((condition) => condition.condition)
+          .join(relation)})`,
+        params: Object.assign(
+          {},
+          ...builtConditions.map((condition) => condition.params),
+        ),
+      }
+    }
+
+    const goalType =
+      goal.type === GoalType.CUSTOM_EVENT ? 'custom_event' : 'pageview'
+    const { condition: matchCondition, params: matchParams } =
+      this.buildGoalMatchCondition(goal)
+    const { condition: metaCondition, params: metaParams } =
+      this.buildMetadataCondition(goal)
+
+    return {
+      condition: `(type = '${goalType}' AND ${matchCondition} ${metaCondition})`,
+      params: { ...matchParams, ...metaParams },
+    }
+  }
+
+  private buildGoalConversionsSubquery(
+    goal: Goal,
+    filtersQuery: string,
+  ): {
+    query: string
+    params: Record<string, string | number>
+  } {
+    const conditions = goal.conditions?.conditions || []
+
+    if (conditions.length > 1 && goal.conditions?.relation === 'AND') {
+      const builtConditions = conditions.map((condition, index) =>
+        this.buildConditionExpression(condition, index),
+      )
+
+      return {
+        query: `
+          SELECT psid, max(matchedAt) AS conversionAt, 1 AS conversions
+          FROM (
+            SELECT psid, conditionIndex, min(created) AS matchedAt
+            FROM (
+              ${builtConditions
+                .map(
+                  (condition, index) => `
+                    SELECT psid, created, ${index} AS conditionIndex
+                    FROM events
+                    WHERE pid = {pid:FixedString(12)}
+                      AND (${condition.condition})
+                      ${filtersQuery}
+                      AND psid != 0
+                      AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+                  `,
+                )
+                .join(' UNION ALL ')}
+            )
+            GROUP BY psid, conditionIndex
+          )
+          GROUP BY psid
+          HAVING countDistinct(conditionIndex) = {conditionsCount:UInt32}
+        `,
+        params: {
+          ...Object.assign(
+            {},
+            ...builtConditions.map((condition) => condition.params),
+          ),
+          conditionsCount: conditions.length,
+        },
+      }
+    }
+
+    const { condition: goalCondition, params: goalParams } =
+      this.buildGoalEventCondition(goal)
+
+    return {
+      query: `
+        SELECT psid, min(created) AS conversionAt, count() AS conversions
+        FROM events
+        WHERE pid = {pid:FixedString(12)}
+          AND (${goalCondition})
+          ${filtersQuery}
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psid
+      `,
+      params: goalParams,
+    }
+  }
+
+  private async getGoalBreakdowns(
+    projectId: string,
+    groupFrom: string,
+    groupTo: string,
+    conversionsSubquery: string,
+    queryParams: Record<string, unknown>,
+  ): Promise<GoalBreakdowns> {
+    const emptyBreakdowns: GoalBreakdowns = {
+      countries: {},
+      devices: {},
+      browsers: {},
+      sources: {},
+      campaigns: {},
+      pages: {},
+      profileTypes: {},
+    }
+
+    const query = `
+      WITH conversions AS (
+        ${conversionsSubquery}
+      ),
+      session_info AS (
+        SELECT
+          c.psid AS psid,
+          argMin(e.cc, e.created) AS cc,
+          argMin(e.dv, e.created) AS dv,
+          argMin(e.br, e.created) AS br,
+          argMin(if(e.so IS NOT NULL AND e.so != '', e.so, if(domain(e.ref) != '', domain(e.ref), 'Direct / None')), e.created) AS source,
+          argMin(e.ca, e.created) AS campaign,
+          argMin(e.pg, e.created) AS page,
+          argMax(e.profileId, e.created) AS profileId
+        FROM conversions c
+        INNER JOIN events e ON c.psid = e.psid
+        WHERE e.pid = {pid:FixedString(12)}
+          AND e.type IN ('pageview', 'custom_event')
+          AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND e.created <= c.conversionAt
+        GROUP BY c.psid
+      )
+      SELECT kind, val, cnt FROM (
+        SELECT 'countries' AS kind, cc AS val, count() AS cnt
+        FROM session_info
+        WHERE cc IS NOT NULL AND cc != ''
+        GROUP BY cc
+
+        UNION ALL
+
+        SELECT 'devices' AS kind, dv AS val, count() AS cnt
+        FROM session_info
+        WHERE dv IS NOT NULL AND dv != ''
+        GROUP BY dv
+
+        UNION ALL
+
+        SELECT 'browsers' AS kind, br AS val, count() AS cnt
+        FROM session_info
+        WHERE br IS NOT NULL AND br != ''
+        GROUP BY br
+
+        UNION ALL
+
+        SELECT 'sources' AS kind, source AS val, count() AS cnt
+        FROM session_info
+        GROUP BY val
+
+        UNION ALL
+
+        SELECT 'campaigns' AS kind, campaign AS val, count() AS cnt
+        FROM session_info
+        WHERE campaign IS NOT NULL AND campaign != ''
+        GROUP BY campaign
+
+        UNION ALL
+
+        SELECT 'pages' AS kind, page AS val, count() AS cnt
+        FROM session_info
+        WHERE page IS NOT NULL AND page != ''
+        GROUP BY page
+
+        UNION ALL
+
+        SELECT 'profileTypes' AS kind, if(startsWith(profileId, {profilePrefixUser:String}), 'identified', 'anonymous') AS val, count() AS cnt
+        FROM session_info
+        WHERE profileId IS NOT NULL AND profileId != ''
+        GROUP BY val
+      )
+      ORDER BY kind, cnt DESC, val ASC
+      LIMIT 5 BY kind
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          ...queryParams,
+          pid: projectId,
+          groupFrom,
+          groupTo,
+          profilePrefixUser: AnalyticsService.PROFILE_PREFIX_USER,
+        },
+      })
+      .then((resultSet) =>
+        resultSet.json<{
+          kind: GoalBreakdownKey
+          val: string
+          cnt: number
+        }>(),
+      )
+
+    for (const row of data) {
+      if (!emptyBreakdowns[row.kind] || !row.val) {
+        continue
+      }
+
+      emptyBreakdowns[row.kind][row.val] = row.cnt
+    }
+
+    return emptyBreakdowns
+  }
+
+  private async getGoalTimeToConvert(
+    projectId: string,
+    groupFrom: string,
+    groupTo: string,
+    conversionsSubquery: string,
+    queryParams: Record<string, unknown>,
+  ): Promise<{
+    fromSessionStart: TimeToConvertMetric
+    fromFirstPage: TimeToConvertMetric
+  }> {
+    const emptyMetric: TimeToConvertMetric = {
+      average: null,
+      median: null,
+      p75: null,
+    }
+
+    const query = `
+      WITH conversions AS (
+        ${conversionsSubquery}
+      ),
+      session_starts AS (
+        SELECT psid, min(firstSeen) AS sessionStart
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY psid
+      ),
+      first_pages AS (
+        SELECT psid, min(created) AS firstPageAt
+        FROM events
+        WHERE pid = {pid:FixedString(12)}
+          AND type = 'pageview'
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psid
+      )
+      SELECT
+        round(avgOrNull(if(sessionStart > toDateTime(0) AND sessionStart <= conversionAt, dateDiff('second', sessionStart, conversionAt), NULL)), 2) AS averageSession,
+        quantileExactOrNull(0.5)(if(sessionStart > toDateTime(0) AND sessionStart <= conversionAt, dateDiff('second', sessionStart, conversionAt), NULL)) AS medianSession,
+        quantileExactOrNull(0.75)(if(sessionStart > toDateTime(0) AND sessionStart <= conversionAt, dateDiff('second', sessionStart, conversionAt), NULL)) AS p75Session,
+        round(avgOrNull(if(firstPageAt > toDateTime(0) AND firstPageAt <= conversionAt, dateDiff('second', firstPageAt, conversionAt), NULL)), 2) AS averageFirstPage,
+        quantileExactOrNull(0.5)(if(firstPageAt > toDateTime(0) AND firstPageAt <= conversionAt, dateDiff('second', firstPageAt, conversionAt), NULL)) AS medianFirstPage,
+        quantileExactOrNull(0.75)(if(firstPageAt > toDateTime(0) AND firstPageAt <= conversionAt, dateDiff('second', firstPageAt, conversionAt), NULL)) AS p75FirstPage
+      FROM conversions c
+      LEFT JOIN session_starts ss ON c.psid = ss.psid
+      LEFT JOIN first_pages fp ON c.psid = fp.psid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { ...queryParams, pid: projectId, groupFrom, groupTo },
+      })
+      .then((resultSet) =>
+        resultSet.json<{
+          averageSession: number | null
+          medianSession: number | null
+          p75Session: number | null
+          averageFirstPage: number | null
+          medianFirstPage: number | null
+          p75FirstPage: number | null
+        }>(),
+      )
+
+    const row = data[0]
+
+    if (!row) {
+      return {
+        fromSessionStart: emptyMetric,
+        fromFirstPage: emptyMetric,
+      }
+    }
+
+    return {
+      fromSessionStart: {
+        average: row.averageSession,
+        median: row.medianSession,
+        p75: row.p75Session,
+      },
+      fromFirstPage: {
+        average: row.averageFirstPage,
+        median: row.medianFirstPage,
+        p75: row.p75FirstPage,
+      },
+    }
+  }
+
   @ApiBearerAuth()
   @Get('/:id/stats')
   @Auth(true, true)
@@ -406,8 +850,163 @@ export class GoalController {
     @Query('from') from?: string,
     @Query('to') to?: string,
     @Query('timezone') timezone?: string,
+    @Query('filters') filters?: string,
   ) {
     this.logger.log({ userId, id, period, from, to }, 'GET /goal/:id/stats')
+
+    const goal = await this.goalService.findOneWithRelations(id)
+
+    if (_isEmpty(goal)) {
+      throw new NotFoundException('Goal not found')
+    }
+
+    const project = await this.projectService.getFullProject(goal.project.id)
+    this.projectService.allowedToView(project, userId)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const timeBucket = getLowestPossibleTimeBucket(period, from, to)
+
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+    )
+
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters || '[]',
+      DataType.ANALYTICS,
+    )
+    const { query: conversionsSubquery, params: goalParams } =
+      this.buildGoalConversionsSubquery(goal, filtersQuery)
+
+    const conversionsQuery = `
+      WITH conversions AS (
+        ${conversionsSubquery}
+      )
+      SELECT 
+        sum(conversions) as conversions,
+        count() as uniqueSessions
+      FROM conversions
+    `
+
+    const queryParams = {
+      pid: goal.project.id,
+      groupFrom: groupFromUTC,
+      groupTo: groupToUTC,
+      ...goalParams,
+      ...filtersParams,
+    }
+
+    const { data: conversionsData } = await clickhouse
+      .query({ query: conversionsQuery, query_params: queryParams })
+      .then((resultSet) =>
+        resultSet.json<{ conversions: number; uniqueSessions: number }>(),
+      )
+
+    const conversions = conversionsData[0]?.conversions || 0
+    const uniqueSessions = conversionsData[0]?.uniqueSessions || 0
+
+    const totalSessionsQuery = `
+      SELECT uniqExact(psid) as totalSessions
+      FROM events
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND type IN ('pageview', 'custom_event')
+        AND psid != 0
+        ${filtersQuery}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const { data: totalData } = await clickhouse
+      .query({
+        query: totalSessionsQuery,
+        query_params: {
+          pid: goal.project.id,
+          groupFrom: groupFromUTC,
+          groupTo: groupToUTC,
+          ...filtersParams,
+        },
+      })
+      .then((resultSet) => resultSet.json<{ totalSessions: number }>())
+
+    const totalSessions = totalData[0]?.totalSessions || 1
+    const conversionRate = _round((uniqueSessions / totalSessions) * 100, 2)
+
+    const periodDays = dayjs(groupToUTC).diff(dayjs(groupFromUTC), 'day') || 1
+    const previousFrom = dayjs(groupFromUTC)
+      .subtract(periodDays, 'day')
+      .format('YYYY-MM-DD HH:mm:ss')
+    const previousTo = groupFromUTC
+
+    const previousQueryParams = {
+      pid: goal.project.id,
+      groupFrom: previousFrom,
+      groupTo: previousTo,
+      ...goalParams,
+      ...filtersParams,
+    }
+
+    const { data: previousData } = await clickhouse
+      .query({ query: conversionsQuery, query_params: previousQueryParams })
+      .then((resultSet) =>
+        resultSet.json<{ conversions: number; uniqueSessions: number }>(),
+      )
+
+    const previousConversions = previousData[0]?.conversions || 0
+    const trend =
+      previousConversions > 0
+        ? _round(
+            ((conversions - previousConversions) / previousConversions) * 100,
+            2,
+          )
+        : conversions > 0
+          ? 100
+          : 0
+
+    const [breakdowns, timeToConvert] = await Promise.all([
+      this.getGoalBreakdowns(
+        goal.project.id,
+        groupFromUTC,
+        groupToUTC,
+        conversionsSubquery,
+        { ...goalParams, ...filtersParams },
+      ),
+      this.getGoalTimeToConvert(
+        goal.project.id,
+        groupFromUTC,
+        groupToUTC,
+        conversionsSubquery,
+        { ...goalParams, ...filtersParams },
+      ),
+    ])
+
+    return {
+      conversions,
+      uniqueSessions,
+      conversionRate,
+      previousConversions,
+      trend,
+      breakdowns,
+      timeToConvert,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get('/:id/sessions')
+  @Auth(true, true)
+  async getGoalSessions(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+    @Query('period') period = '7d',
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('timezone') timezone?: string,
+    @Query('take') take?: string,
+    @Query('skip') skip?: string,
+  ) {
+    this.logger.log({ userId, id, period, from, to }, 'GET /goal/:id/sessions')
 
     const goal = await this.goalService.findOneWithRelations(id)
 
@@ -435,101 +1034,31 @@ export class GoalController {
       this.buildGoalMatchCondition(goal)
     const { condition: metaCondition, params: metaParams } =
       this.buildMetadataCondition(goal)
-
-    // Get conversions for current period
-    const conversionsQuery = `
-      SELECT 
-        count(*) as conversions,
-        uniqExact(psid) as uniqueSessions
-      FROM events
-      WHERE 
-        pid = {pid:FixedString(12)}
-        AND type = '${goalType}'
-        AND ${matchCondition}
-        ${metaCondition}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-    `
-
-    const queryParams = {
-      pid: goal.project.id,
-      groupFrom: groupFromUTC,
-      groupTo: groupToUTC,
-      ...matchParams,
-      ...metaParams,
-    }
-
-    const { data: conversionsData } = await clickhouse
-      .query({ query: conversionsQuery, query_params: queryParams })
-      .then((resultSet) =>
-        resultSet.json<{ conversions: number; uniqueSessions: number }>(),
-      )
-
-    const conversions = conversionsData[0]?.conversions || 0
-    const uniqueSessions = conversionsData[0]?.uniqueSessions || 0
-
-    // Get total unique sessions for conversion rate
-    const totalSessionsQuery = `
-      SELECT uniqExact(psid) as totalSessions
-      FROM events
-      WHERE 
-        pid = {pid:FixedString(12)}
-        AND type = 'pageview'
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-    `
-
-    const { data: totalData } = await clickhouse
-      .query({
-        query: totalSessionsQuery,
-        query_params: {
-          pid: goal.project.id,
+    const { take: safeTake, skip: safeSkip } = clampPagination(
+      Number(take) || 30,
+      Number(skip) || 0,
+    )
+    const projectId = goal.project.id
+    const sessions = await this.analyticsService.getSessionsList(
+      '',
+      {
+        params: {
+          pid: projectId,
           groupFrom: groupFromUTC,
           groupTo: groupToUTC,
+          ...matchParams,
+          ...metaParams,
         },
-      })
-      .then((resultSet) => resultSet.json<{ totalSessions: number }>())
+      },
+      safeTimezone,
+      Math.min(safeTake, 150),
+      safeSkip,
+      false,
+      goalType,
+      `AND ${matchCondition} ${metaCondition}`,
+    )
 
-    const totalSessions = totalData[0]?.totalSessions || 1
-    const conversionRate = _round((uniqueSessions / totalSessions) * 100, 2)
-
-    // Get previous period conversions for trend
-    const periodDays = dayjs(groupToUTC).diff(dayjs(groupFromUTC), 'day') || 1
-    const previousFrom = dayjs(groupFromUTC)
-      .subtract(periodDays, 'day')
-      .format('YYYY-MM-DD HH:mm:ss')
-    const previousTo = groupFromUTC
-
-    const previousQueryParams = {
-      pid: goal.project.id,
-      groupFrom: previousFrom,
-      groupTo: previousTo,
-      ...matchParams,
-      ...metaParams,
-    }
-
-    const { data: previousData } = await clickhouse
-      .query({ query: conversionsQuery, query_params: previousQueryParams })
-      .then((resultSet) =>
-        resultSet.json<{ conversions: number; uniqueSessions: number }>(),
-      )
-
-    const previousConversions = previousData[0]?.conversions || 0
-    const trend =
-      previousConversions > 0
-        ? _round(
-            ((conversions - previousConversions) / previousConversions) * 100,
-            2,
-          )
-        : conversions > 0
-          ? 100
-          : 0
-
-    return {
-      conversions,
-      uniqueSessions,
-      conversionRate,
-      previousConversions,
-      trend,
-    }
+    return { sessions, take: Math.min(safeTake, 150), skip: safeSkip }
   }
 
   private getGroupSubquery(
@@ -617,6 +1146,7 @@ export class GoalController {
     @Query('to') to?: string,
     @Query('timeBucket') timeBucket?: string,
     @Query('timezone') timezone?: string,
+    @Query('filters') filters?: string,
   ) {
     this.logger.log(
       { userId, id, period, from, to, timeBucket },
@@ -644,7 +1174,6 @@ export class GoalController {
       safeTimezone,
     )
 
-    // Generate complete X axis with all time buckets
     const { xShifted } = this.analyticsService.generateXAxis(
       resolvedTimeBucket as any,
       groupFromUTC,
@@ -652,8 +1181,6 @@ export class GoalController {
       safeTimezone,
     )
 
-    const goalType =
-      goal.type === GoalType.CUSTOM_EVENT ? 'custom_event' : 'pageview'
     const timeBucketFunc = Object.prototype.hasOwnProperty.call(
       timeBucketConversion,
       resolvedTimeBucket,
@@ -662,26 +1189,26 @@ export class GoalController {
       : 'toStartOfDay'
     const [selector, groupBy] = this.getGroupSubquery(resolvedTimeBucket)
 
-    const { condition: matchCondition, params: matchParams } =
-      this.buildGoalMatchCondition(goal)
-    const { condition: metaCondition, params: metaParams } =
-      this.buildMetadataCondition(goal)
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters || '[]',
+      DataType.ANALYTICS,
+    )
+    const { query: conversionsSubquery, params: goalParams } =
+      this.buildGoalConversionsSubquery(goal, filtersQuery)
 
     const chartQuery = `
       SELECT
         ${selector},
-        count(*) as conversions,
-        uniqExact(psid) as uniqueSessions
+        sum(conversions) as conversions,
+        count() as uniqueSessions
       FROM (
-        SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
-        FROM events
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND type = '${goalType}'
-          AND ${matchCondition}
-          ${metaCondition}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        SELECT
+          psid,
+          conversions,
+          ${timeBucketFunc}(toTimeZone(conversionAt, {timezone:String})) as tz_created
+        FROM (
+          ${conversionsSubquery}
+        )
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
@@ -692,8 +1219,8 @@ export class GoalController {
       groupFrom: groupFromUTC,
       groupTo: groupToUTC,
       timezone: safeTimezone,
-      ...matchParams,
-      ...metaParams,
+      ...goalParams,
+      ...filtersParams,
     }
 
     const { data } = await clickhouse
