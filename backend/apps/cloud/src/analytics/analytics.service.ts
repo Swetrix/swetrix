@@ -6479,13 +6479,13 @@ export class AnalyticsService {
     `
 
     const params = {
+      ...filtersParams,
       pid,
       eid,
       groupFrom,
       groupTo,
       take,
       skip,
-      ...filtersParams,
     }
 
     const [countResult, sessionsResult] = await Promise.all([
