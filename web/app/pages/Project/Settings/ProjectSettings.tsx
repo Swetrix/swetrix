@@ -1506,10 +1506,12 @@ const ProjectSettings = () => {
                           onClick={() => {
                             const formData = new FormData()
                             formData.set('intent', 'update-project')
-                            formData.set(
-                              'captchaDifficulty',
-                              captchaDifficulty.toString(),
-                            )
+                            if (captchaDifficultyMode === 'manual') {
+                              formData.set(
+                                'captchaDifficulty',
+                                captchaDifficulty.toString(),
+                              )
+                            }
                             formData.set(
                               'captchaDifficultyMode',
                               captchaDifficultyMode,

@@ -49,7 +49,7 @@ export class UpdateProjectDto extends IntersectionType(
   @ApiProperty({
     required: false,
     description:
-      'CAPTCHA difficulty mode. Manual uses captchaDifficulty directly; auto raises it dynamically when risk signals increase.',
+      'CAPTCHA difficulty mode. Manual uses captchaDifficulty directly; auto selects difficulty dynamically from risk signals.',
     enum: ['manual', 'auto'],
     default: 'manual',
   })

@@ -32,7 +32,7 @@ This approach provides a seamless user experience (no more "select all traffic l
 CAPTCHA projects can use either **Manual** or **Auto** difficulty.
 
 - **Manual** always uses the configured Proof of Work difficulty.
-- **Auto** starts from the configured fallback difficulty and raises the challenge difficulty when privacy-safe risk signals increase, such as short-lived project traffic spikes, country-level spikes, replay attempts, validation failures, hosting IPs, suspicious headers, or low pass ratios.
+- **Auto** selects the challenge difficulty dynamically from privacy-safe risk signals, such as short-lived project traffic spikes, country-level spikes, replay attempts, validation failures, hosting IPs, suspicious headers, or low pass ratios.
 
 Auto difficulty uses bounded Redis counters with short TTLs and stores only coarse analytics metadata such as the selected difficulty and the reason category that caused a raise. It does not store raw IP addresses in analytics.
 

@@ -576,11 +576,10 @@ export class CaptchaService {
       : await this.projectService.getRedisProject(pid)
     const mode = (project?.captchaDifficultyMode ||
       'manual') as CaptchaDifficultyMode
-    const baseDifficulty = clampDifficulty(project?.captchaDifficulty)
 
     if (mode !== 'auto' || isDummyPID(pid)) {
       return {
-        difficulty: baseDifficulty,
+        difficulty: clampDifficulty(project?.captchaDifficulty),
         mode: 'manual',
         reasons: ['manual'],
         score: 0,
@@ -639,23 +638,24 @@ export class CaptchaService {
     }
 
     addRisk(isHosting, 'hosting_ip')
-    addRisk(hasHeadlessUserAgent(headers), 'headless_browser')
+    addRisk(hasHeadlessUserAgent(headers), 'headless_browser', 2)
     addRisk(hasSuspiciousHeaders(headers), 'suspicious_headers')
-    addRisk(projectGenerate1m >= 50, 'project_spike')
+    addRisk(projectGenerate1m >= 50, 'project_spike', 2)
     addRisk(countryGenerate5m >= 50, 'country_spike')
-    addRisk(ipGenerate1m >= 8, 'ip_pressure')
-    addRisk(projectGenerate5m >= 30 && passRatio < 0.25, 'low_pass_ratio')
-    addRisk(verifyAttempts >= 20 && failRatio > 0.35, 'verify_failures')
-    addRisk(projectValidationFail5m >= 5, 'validation_failures')
-    addRisk(projectReplay5m >= 2 || ipReplay5m >= 1, 'replay_attempts')
-    addRisk(ipFail5m >= 3, 'ip_verify_failures')
+    addRisk(ipGenerate1m >= 8, 'ip_pressure', 2)
+    addRisk(projectGenerate5m >= 30 && passRatio < 0.25, 'low_pass_ratio', 2)
+    addRisk(verifyAttempts >= 20 && failRatio > 0.35, 'verify_failures', 2)
+    addRisk(projectValidationFail5m >= 5, 'validation_failures', 2)
+    addRisk(projectReplay5m >= 2 || ipReplay5m >= 1, 'replay_attempts', 2)
+    addRisk(ipFail5m >= 3, 'ip_verify_failures', 2)
 
-    const adjustment = score >= 5 ? 2 : score >= 2 ? 1 : 0
+    const difficulty =
+      score >= 8 ? 6 : score >= 5 ? 5 : score >= 2 ? 4 : score >= 1 ? 3 : 2
 
     return {
-      difficulty: clampDifficulty(baseDifficulty + adjustment),
+      difficulty,
       mode: 'auto',
-      reasons: adjustment > 0 ? reasons.slice(0, 4) : ['baseline'],
+      reasons: difficulty > 2 ? reasons.slice(0, 4) : ['baseline'],
       score,
     }
   }
