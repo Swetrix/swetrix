@@ -269,8 +269,18 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const hasExistingData = chartData !== null || !_isEmpty(panelsData.types)
   const formatNumber = (value: number, type: 'main' | 'badge') =>
     `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
-  const formatPercent = (value: number, type: 'main' | 'badge') =>
-    `${type === 'badge' && value > 0 ? '+' : ''}${Number(value || 0).toFixed(1)}%`
+  const isFiniteNumber = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value)
+  const formatPercent = (
+    value: number | null | undefined,
+    type: 'main' | 'badge',
+  ) => {
+    if (!isFiniteNumber(value)) {
+      return 'N/A'
+    }
+
+    return `${type === 'badge' && value > 0 ? '+' : ''}${value.toFixed(1)}%`
+  }
   const formatSeconds = (value?: number) =>
     value ? `${Number(value).toFixed(2)}s` : 'N/A'
   const formatSecondsChange = (value: number) =>
@@ -308,9 +318,12 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
         },
         {
           label: t('project.captchaAnalytics.passRate'),
-          value: summaryData.passRate || 0,
+          value: summaryData.passRate,
           change: summaryCompareData
-            ? (summaryData.passRate || 0) - (summaryCompareData.passRate || 0)
+            ? isFiniteNumber(summaryData.passRate) &&
+              isFiniteNumber(summaryCompareData.passRate)
+              ? summaryData.passRate - summaryCompareData.passRate
+              : undefined
             : undefined,
           goodChangeDirection: 'down' as const,
           valueMapper: formatPercent,

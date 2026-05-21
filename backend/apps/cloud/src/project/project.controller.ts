@@ -117,6 +117,7 @@ import { PendingInvitationType } from '../pending-invitation/pending-invitation.
 import { PlanCode } from '../user/entities/user.entity'
 
 const PROJECTS_MAXIMUM = 50
+const ORIGINS_ITEMS_MAXIMUM = 1000
 const BLACKLIST_ITEMS_MAXIMUM = 1000
 
 const isValidShareDTO = (share: ShareDTO): boolean => {
@@ -1779,12 +1780,17 @@ export class ProjectController {
     }
 
     if (projectDTO.origins !== undefined) {
-      const safeOrigins = Array.isArray(projectDTO.origins)
-        ? projectDTO.origins.slice(0, PROJECTS_MAXIMUM)
-        : []
+      if (
+        Array.isArray(projectDTO.origins) &&
+        projectDTO.origins.length > ORIGINS_ITEMS_MAXIMUM
+      ) {
+        throw new BadRequestException('origins is too large')
+      }
 
       project.origins =
-        safeOrigins.length > 0 ? (_map(safeOrigins, _trim) as string[]) : []
+        Array.isArray(projectDTO.origins) && projectDTO.origins.length > 0
+          ? (_map(projectDTO.origins, _trim) as string[])
+          : []
     }
 
     if (projectDTO.ipBlacklist !== undefined) {

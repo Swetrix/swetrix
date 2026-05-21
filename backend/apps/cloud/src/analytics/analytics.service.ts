@@ -4435,7 +4435,7 @@ export class AnalyticsService {
       SELECT
         countIf(captcha_event = 'generate') as generated,
         countIf(captcha_event = 'pass') as passed,
-        round(if(generated = 0, 0, passed / generated * 100), 2) as passRate,
+        if(generated = 0, NULL, round(passed / generated * 100, 2)) as passRate,
         round(quantileExactIf(0.5)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP50,
         round(quantileExactIf(0.75)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP75,
         round(quantileExactIf(0.95)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP95
@@ -4484,7 +4484,10 @@ export class AnalyticsService {
 
     return {
       generated: Number(row.generated || 0),
-      passRate: Number(row.passRate || 0),
+      passRate:
+        row.passRate === null || row.passRate === undefined
+          ? null
+          : Number(row.passRate),
       solveP50: Number(row.solveP50 || 0),
       solveP75: Number(row.solveP75 || 0),
       solveP95: Number(row.solveP95 || 0),

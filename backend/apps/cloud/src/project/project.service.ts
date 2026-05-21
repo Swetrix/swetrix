@@ -95,6 +95,9 @@ const DEFAULT_USAGE_INFO = {
   errors: 0,
 }
 
+const CAPTCHA_PASS_CONDITION =
+  "type = 'captcha' AND if(indexOf(`meta.key`, 'captcha_event') = 0, 'pass', arrayElement(`meta.value`, indexOf(`meta.key`, 'captcha_event'))) = 'pass'"
+
 export const deleteProjectRedis = async (id: string) => {
   const key = getRedisProjectKey(id)
 
@@ -819,7 +822,7 @@ export class ProjectService {
           SELECT
             countIf(type = 'pageview') AS pageviews,
             countIf(type = 'custom_event') AS customEvents,
-            countIf(type = 'captcha') AS captcha,
+            countIf(${CAPTCHA_PASS_CONDITION}) AS captcha,
             countIf(type = 'error') AS errors
           FROM events
           WHERE created BETWEEN {monthStart:String} AND {monthEnd:String}
@@ -906,7 +909,7 @@ export class ProjectService {
           SELECT
             countIf(type = 'pageview') AS traffic,
             countIf(type = 'custom_event') AS customEvents,
-            countIf(type = 'captcha') AS captcha,
+            countIf(${CAPTCHA_PASS_CONDITION}) AS captcha,
             countIf(type = 'error') AS errors
           FROM events
           WHERE pid IN ({pids:Array(FixedString(12))})

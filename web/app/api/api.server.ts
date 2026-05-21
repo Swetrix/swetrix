@@ -1651,7 +1651,7 @@ interface CaptchaChartData {
 
 interface CaptchaSummaryData {
   generated: number
-  passRate: number
+  passRate: number | null
   solveP50: number
   solveP75: number
   solveP95: number
