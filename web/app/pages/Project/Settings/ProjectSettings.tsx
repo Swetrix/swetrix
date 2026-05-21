@@ -555,6 +555,45 @@ const ProjectSettings = () => {
     'manual' | 'auto'
   >(() => initialProject.captchaDifficultyMode || 'manual')
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
+  const captchaDifficultyItems = useMemo(
+    () => [
+      {
+        value: 'auto' as const,
+        label: t('project.settings.captcha.difficultyLevels.auto'),
+      },
+      {
+        value: 2,
+        label: t('project.settings.captcha.difficultyLevels.veryEasy'),
+      },
+      {
+        value: 3,
+        label: t('project.settings.captcha.difficultyLevels.easy'),
+      },
+      {
+        value: 4,
+        label: t('project.settings.captcha.difficultyLevels.medium'),
+      },
+      {
+        value: 5,
+        label: t('project.settings.captcha.difficultyLevels.hard'),
+      },
+      {
+        value: 6,
+        label: t('project.settings.captcha.difficultyLevels.veryHard'),
+      },
+    ],
+    [t],
+  )
+  const selectedCaptchaDifficultyItem = useMemo(() => {
+    if (captchaDifficultyMode === 'auto') {
+      return captchaDifficultyItems[0]
+    }
+
+    return (
+      captchaDifficultyItems.find((item) => item.value === captchaDifficulty) ||
+      captchaDifficultyItems[3]
+    )
+  }, [captchaDifficulty, captchaDifficultyItems, captchaDifficultyMode])
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -1417,9 +1456,10 @@ const ProjectSettings = () => {
                         label={t('project.settings.captcha.secretKey')}
                         hint={t('project.settings.captcha.learnMore')}
                         name='captchaSecretKey'
+                        type='password'
                         className='mt-4 lg:w-1/2'
                         value={captchaSecretKey}
-                        disabled
+                        readOnly
                       />
                       <div className='mt-4 flex gap-2'>
                         <Button
@@ -1433,49 +1473,6 @@ const ProjectSettings = () => {
 
                       <div className='mt-6'>
                         <Select
-                          label={t('project.settings.captcha.difficultyMode')}
-                          hint={t(
-                            'project.settings.captcha.difficultyModeHint',
-                          )}
-                          className='mb-4 lg:w-1/2'
-                          hintClassName='lg:w-2/3'
-                          items={[
-                            {
-                              value: 'manual' as const,
-                              label: t(
-                                'project.settings.captcha.difficultyModes.manual',
-                              ),
-                            },
-                            {
-                              value: 'auto' as const,
-                              label: t(
-                                'project.settings.captcha.difficultyModes.auto',
-                              ),
-                            },
-                          ]}
-                          keyExtractor={(item) => item.value}
-                          labelExtractor={(item) => item.label}
-                          selectedItem={{
-                            value: captchaDifficultyMode,
-                            label: '',
-                          }}
-                          onSelect={(item: {
-                            value: 'manual' | 'auto'
-                            label: string
-                          }) => {
-                            setCaptchaDifficultyMode(item.value)
-                          }}
-                          title={
-                            captchaDifficultyMode === 'auto'
-                              ? t(
-                                  'project.settings.captcha.difficultyModes.auto',
-                                )
-                              : t(
-                                  'project.settings.captcha.difficultyModes.manual',
-                                )
-                          }
-                        />
-                        <Select
                           label={t('project.settings.captcha.difficulty')}
                           hint={
                             captchaDifficultyMode === 'auto'
@@ -1484,68 +1481,23 @@ const ProjectSettings = () => {
                           }
                           className='lg:w-1/2'
                           hintClassName='lg:w-2/3'
-                          items={[
-                            {
-                              value: 2,
-                              label: t(
-                                'project.settings.captcha.difficultyLevels.veryEasy',
-                              ),
-                            },
-                            {
-                              value: 3,
-                              label: t(
-                                'project.settings.captcha.difficultyLevels.easy',
-                              ),
-                            },
-                            {
-                              value: 4,
-                              label: t(
-                                'project.settings.captcha.difficultyLevels.medium',
-                              ),
-                            },
-                            {
-                              value: 5,
-                              label: t(
-                                'project.settings.captcha.difficultyLevels.hard',
-                              ),
-                            },
-                            {
-                              value: 6,
-                              label: t(
-                                'project.settings.captcha.difficultyLevels.veryHard',
-                              ),
-                            },
-                          ]}
+                          items={captchaDifficultyItems}
                           keyExtractor={(item) => String(item.value)}
                           labelExtractor={(item) => item.label}
-                          selectedItem={{ value: captchaDifficulty, label: '' }}
+                          selectedItem={selectedCaptchaDifficultyItem}
                           onSelect={(item: {
-                            value: number
+                            value: number | 'auto'
                             label: string
                           }) => {
+                            if (item.value === 'auto') {
+                              setCaptchaDifficultyMode('auto')
+                              return
+                            }
+
+                            setCaptchaDifficultyMode('manual')
                             setCaptchaDifficulty(item.value)
                           }}
-                          title={
-                            captchaDifficulty === 2
-                              ? t(
-                                  'project.settings.captcha.difficultyLevels.veryEasy',
-                                )
-                              : captchaDifficulty === 3
-                                ? t(
-                                    'project.settings.captcha.difficultyLevels.easy',
-                                  )
-                                : captchaDifficulty === 4
-                                  ? t(
-                                      'project.settings.captcha.difficultyLevels.medium',
-                                    )
-                                  : captchaDifficulty === 5
-                                    ? t(
-                                        'project.settings.captcha.difficultyLevels.hard',
-                                      )
-                                    : t(
-                                        'project.settings.captcha.difficultyLevels.veryHard',
-                                      )
-                          }
+                          title={selectedCaptchaDifficultyItem.label}
                         />
                         <Button
                           type='button'

@@ -858,8 +858,9 @@ const UserSettings = () => {
                         <Input
                           label={t('profileSettings.apiKey')}
                           name='apiKey'
+                          type='password'
                           value={user.apiKey}
-                          disabled
+                          readOnly
                         />
                       </div>
                       <Button
