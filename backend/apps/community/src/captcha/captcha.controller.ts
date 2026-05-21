@@ -142,7 +142,13 @@ export class CaptchaController {
       }
 
       try {
-        await this.captchaService.logCaptchaReplay(pid, headers, timestamp, ip)
+        await this.captchaService.logCaptchaReplayForChallenge(
+          challenge,
+          pid,
+          headers,
+          timestamp,
+          ip,
+        )
       } catch (logReason) {
         this.logger.error(
           `[CaptchaController -> verify] Failed to log captcha replay: ${logReason}`,

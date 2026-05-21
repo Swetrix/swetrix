@@ -100,6 +100,26 @@ const getChallengeCacheKey = (challenge: string): string => {
   return `pow_challenge:${challenge}`
 }
 
+const getSpentChallengeCacheKey = (challenge: string): string => {
+  return `pow_challenge_spent:${challenge}`
+}
+
+const parseChallengePayload = (storedData: string): ChallengePayload => {
+  let parsed
+
+  try {
+    parsed = JSON.parse(storedData)
+  } catch {
+    return { difficulty: parseInt(storedData, 10) }
+  }
+
+  if (typeof parsed === 'object' && parsed !== null && 'difficulty' in parsed) {
+    return parsed
+  }
+
+  return { difficulty: parseInt(storedData, 10) }
+}
+
 const clampDifficulty = (difficulty?: number | null): number => {
   if (!Number.isFinite(difficulty)) {
     return DEFAULT_POW_DIFFICULTY
@@ -171,20 +191,24 @@ const getCounter = async (key: string): Promise<number> => {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-const consumeChallenge = async (cacheKey: string): Promise<string | null> => {
-  const getdel = (redis as any).getdel
-
-  if (typeof getdel === 'function') {
-    return getdel.call(redis, cacheKey)
-  }
-
+const consumeChallenge = async (challenge: string): Promise<string | null> => {
   const result = await redis.eval(
-    "local value = redis.call('GET', KEYS[1]); if value then redis.call('DEL', KEYS[1]); end; return value",
-    1,
-    cacheKey,
+    "local value = redis.call('GET', KEYS[1]); if value then redis.call('DEL', KEYS[1]); redis.call('SET', KEYS[2], value, 'EX', ARGV[1]); end; return value",
+    2,
+    getChallengeCacheKey(challenge),
+    getSpentChallengeCacheKey(challenge),
+    CHALLENGE_TTL,
   )
 
   return typeof result === 'string' ? result : null
+}
+
+const getSpentChallengePayload = async (
+  challenge: string,
+): Promise<ChallengePayload | null> => {
+  const storedData = await redis.get(getSpentChallengeCacheKey(challenge))
+
+  return storedData ? parseChallengePayload(storedData) : null
 }
 
 const signCaptchaCiphertext = (ciphertext: string, key: string): string => {
@@ -376,11 +400,40 @@ export class CaptchaService {
     timestamp: number,
     ip: string,
     failureReason = 'expired_or_replayed',
+    verification?: Partial<PowVerificationResult>,
   ) {
     await this.recordCaptchaOutcome(pid, 'replay', ip)
     await this.logCaptchaEvent(pid, 'replay', headers, timestamp, ip, {
+      difficulty: verification?.difficulty,
+      difficultyMode: verification?.difficultyMode,
+      autoReasons: verification?.autoReasons,
       failureReason,
     })
+  }
+
+  async logCaptchaReplayForChallenge(
+    challenge: string,
+    requestPid: string,
+    headers: CaptchaHeaders,
+    timestamp: number,
+    ip: string,
+  ) {
+    const payload = await getSpentChallengePayload(challenge)
+
+    if (!payload?.pid || payload.pid !== requestPid) {
+      return false
+    }
+
+    await this.logCaptchaReplay(
+      payload.pid,
+      headers,
+      timestamp,
+      ip,
+      'replayed_challenge',
+      payload,
+    )
+
+    return true
   }
 
   private async recordCaptchaOutcome(
@@ -448,6 +501,19 @@ export class CaptchaService {
     return `${ciphertext}.${signature}`
   }
 
+  private async isProjectCaptchaSecret(pid: string, secretKey: string) {
+    try {
+      const project = await this.projectService.getRedisProject(pid)
+      const captchaSecretKey = project?.captchaSecretKey
+
+      return Boolean(
+        captchaSecretKey && timingSafeEqualString(secretKey, captchaSecretKey),
+      )
+    } catch {
+      return false
+    }
+  }
+
   async validateToken(
     token: string,
     secretKey: string,
@@ -496,25 +562,31 @@ export class CaptchaService {
     if (
       !parsed ||
       typeof parsed !== 'object' ||
-      typeof parsed.pid !== 'string' ||
+      typeof parsed.pid !== 'string'
+    ) {
+      throw new BadRequestException('Invalid token payload')
+    }
+
+    if (isDummyPID(parsed.pid) || !isValidPID(parsed.pid)) {
+      throw new BadRequestException('Invalid token payload')
+    }
+
+    if (!(await this.isProjectCaptchaSecret(parsed.pid, secretKey))) {
+      throw new BadRequestException('Could not decrypt token')
+    }
+
+    if (
       typeof parsed.challenge !== 'string' ||
       typeof parsed.timestamp !== 'number' ||
       !Number.isFinite(parsed.timestamp)
     ) {
-      if (typeof parsed?.pid === 'string') {
-        await this.logValidationFailure(
-          parsed.pid,
-          headers,
-          ip,
-          'invalid_payload',
-        )
-      }
+      await this.logValidationFailure(
+        parsed.pid,
+        headers,
+        ip,
+        'invalid_payload',
+      )
 
-      throw new BadRequestException('Invalid token payload')
-    }
-
-    if (!isDummyPID(parsed.pid) && !isValidPID(parsed.pid)) {
-      await this.logValidationFailure(parsed.pid, headers, ip, 'invalid_pid')
       throw new BadRequestException('Invalid token payload')
     }
 
@@ -698,30 +770,13 @@ export class CaptchaService {
     solution: string,
     pid: string,
   ): Promise<PowVerificationResult> {
-    const cacheKey = getChallengeCacheKey(challenge)
-    const storedData = await consumeChallenge(cacheKey)
+    const storedData = await consumeChallenge(challenge)
 
     if (!storedData) {
       throw new BadRequestException('Invalid or expired challenge')
     }
 
-    let payload: ChallengePayload
-
-    try {
-      const parsed = JSON.parse(storedData)
-      if (
-        typeof parsed === 'object' &&
-        parsed !== null &&
-        'difficulty' in parsed
-      ) {
-        payload = parsed
-      } else {
-        payload = { difficulty: parseInt(storedData, 10) }
-      }
-    } catch {
-      payload = { difficulty: parseInt(storedData, 10) }
-    }
-
+    const payload = parseChallengePayload(storedData)
     const difficulty = Number(payload.difficulty)
 
     if (
