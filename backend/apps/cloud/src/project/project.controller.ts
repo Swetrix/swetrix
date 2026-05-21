@@ -1783,14 +1783,14 @@ export class ProjectController {
         ? projectDTO.origins.slice(0, PROJECTS_MAXIMUM)
         : []
 
-      project.origins = safeOrigins.length > 0
-        ? (_map(safeOrigins, _trim) as string[])
-        : []
+      project.origins =
+        safeOrigins.length > 0 ? (_map(safeOrigins, _trim) as string[]) : []
     }
 
     if (projectDTO.ipBlacklist !== undefined) {
       project.ipBlacklist =
-        Array.isArray(projectDTO.ipBlacklist) && projectDTO.ipBlacklist.length > 0
+        Array.isArray(projectDTO.ipBlacklist) &&
+        projectDTO.ipBlacklist.length > 0
           ? (_map(
               projectDTO.ipBlacklist.slice(0, BLACKLIST_ITEMS_MAXIMUM),
               _trim,
@@ -1800,7 +1800,8 @@ export class ProjectController {
 
     if (projectDTO.countryBlacklist !== undefined) {
       project.countryBlacklist =
-        projectDTO.countryBlacklist && Array.isArray(projectDTO.countryBlacklist)
+        projectDTO.countryBlacklist &&
+        Array.isArray(projectDTO.countryBlacklist)
           ? (_map(projectDTO.countryBlacklist, _trim) as string[])
           : null
     }

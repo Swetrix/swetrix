@@ -186,7 +186,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
 
       const { params, chart, summary } = data
 
-      if (chart && chart.x && chart.results) {
+      if (chart && chart.x) {
         setChartData(chart)
       } else {
         setChartData(null)

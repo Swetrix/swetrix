@@ -127,9 +127,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const websiteUrl = formData.get('websiteUrl')?.toString()
       const brandKeywords = formData.get('brandKeywords')?.toString()
       const captchaDifficulty = formData.get('captchaDifficulty')?.toString()
-      const captchaDifficultyMode = formData
+      const rawCaptchaDifficultyMode = formData
         .get('captchaDifficultyMode')
         ?.toString()
+      const captchaDifficultyMode =
+        rawCaptchaDifficultyMode === 'manual' ||
+        rawCaptchaDifficultyMode === 'auto'
+          ? rawCaptchaDifficultyMode
+          : undefined
 
       const fieldErrors: ProjectSettingsActionData['fieldErrors'] = {}
 

@@ -3,6 +3,7 @@ import {
   Post,
   Body,
   UseGuards,
+  BadRequestException,
   ForbiddenException,
   Headers,
   Ip,
@@ -36,6 +37,11 @@ const CAPTCHA_VERIFY_RL_TIMEOUT = 60 // 1 minute
 // Rate limit: token validations per IP per minute
 const CAPTCHA_VALIDATE_RL_REQUESTS_IP = 120
 const CAPTCHA_VALIDATE_RL_TIMEOUT = 60 // 1 minute
+const CAPTCHA_REPLAY_ERROR_MESSAGE = 'Invalid or expired challenge'
+
+const isCaptchaReplayError = (reason: unknown): boolean =>
+  reason instanceof BadRequestException &&
+  reason.message === CAPTCHA_REPLAY_ERROR_MESSAGE
 
 @Controller({
   version: '1',
@@ -131,6 +137,10 @@ export class CaptchaController {
         pid,
       )
     } catch (reason) {
+      if (!isCaptchaReplayError(reason)) {
+        throw reason
+      }
+
       try {
         await this.captchaService.logCaptchaReplay(pid, headers, timestamp, ip)
       } catch (logReason) {

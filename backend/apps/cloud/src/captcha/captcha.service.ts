@@ -154,13 +154,14 @@ const getCounterKey = (
   `${CAPTCHA_COUNTER_PREFIX}:${window}:${event}:${scope}:${pid}:${bucket}`
 
 const incrCounter = async (key: string, ttl: number): Promise<number> => {
-  const value = await redis.incr(key)
+  const value = await redis.eval(
+    "local value = redis.call('INCR', KEYS[1]); if value == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]); end; return value",
+    1,
+    key,
+    ttl,
+  )
 
-  if (value === 1) {
-    await redis.expire(key, ttl)
-  }
-
-  return value
+  return Number(value)
 }
 
 const getCounter = async (key: string): Promise<number> => {
@@ -332,7 +333,7 @@ export class CaptchaService {
         },
       })
     } catch (e) {
-      this.logger.error(`[CaptchaService -> logCaptchaPass] ${e}`)
+      this.logger.error(`[CaptchaService -> logCaptchaEvent] ${e}`)
     }
   }
 

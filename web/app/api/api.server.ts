@@ -1641,7 +1641,7 @@ interface CaptchaPanelData {
 
 interface CaptchaChartData {
   x: string[]
-  results: number[]
+  results?: number[]
   generated?: number[]
   passed?: number[]
   failed?: number[]
