@@ -303,7 +303,7 @@ export const tbsFormatMapper = {
 export const tbsFormatMapperTooltip = {
   minute: '%I:%M %p',
   hour: '%d %b %I %p',
-  day: '%d %b',
+  day: '%a, %d %b',
   month: '%b %Y',
   year: '%Y',
 } as Record<string, string>
@@ -311,7 +311,7 @@ export const tbsFormatMapperTooltip = {
 export const tbsFormatMapperTooltip24h = {
   minute: '%H:%M',
   hour: '%d %b %H:%M',
-  day: '%d %b',
+  day: '%a, %d %b',
   month: '%b %Y',
   year: '%Y',
 } as Record<string, string>

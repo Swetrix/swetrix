@@ -140,7 +140,7 @@ export function buildMainChartOptions(
       contents: (items, _defaultTitleFormat, _defaultValueFormat, color) => {
         const tooltipFormatMap: Record<string, string> = {
           hour: '%b %d, %Y %H:%M',
-          day: '%b %d, %Y',
+          day: '%a, %d %b',
           week: 'Week of %b %d, %Y',
           month: '%B %Y',
           quarter: '%B %Y',
