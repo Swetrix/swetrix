@@ -118,6 +118,22 @@ export interface IFunnelCHResponse {
   c: number
 }
 
+export interface IConversionTimeMetric {
+  average: number | null
+  median: number | null
+  p75: number | null
+}
+
+export interface IFunnelBreakdowns {
+  countries?: Record<string, number>
+  devices?: Record<string, number>
+  browsers?: Record<string, number>
+  sources?: Record<string, number>
+  campaigns?: Record<string, number>
+  pages?: Record<string, number>
+  profileTypes?: Record<string, number>
+}
+
 export interface IFunnel {
   value: string
   events: number
@@ -127,11 +143,17 @@ export interface IFunnel {
   dropoffPercStep: number
   topCountries: Record<string, number>
   topSources: Record<string, number>
+  breakdowns?: IFunnelBreakdowns
 }
 
 export interface IGetFunnel {
   funnel: IFunnel[]
   totalPageviews: number
+  timeToConvert?: {
+    fromSessionStart: IConversionTimeMetric
+    fromFirstPage: IConversionTimeMetric
+    fromFirstFunnelStep: IConversionTimeMetric
+  }
 }
 
 interface IOverallPeriodStats {

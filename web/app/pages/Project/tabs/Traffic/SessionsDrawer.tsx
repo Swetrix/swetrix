@@ -28,6 +28,7 @@ import {
 } from '~/ui/Drawer'
 import Loader from '~/ui/Loader'
 import Spin from '~/ui/icons/Spin'
+import { Switch } from '~/ui/Switch'
 import { Link } from '~/ui/Link'
 import { Text } from '~/ui/Text'
 import Flag from '~/ui/Flag'
@@ -195,6 +196,9 @@ interface SessionsDrawerProps {
   period?: string
   funnelId?: string
   funnelStep?: number
+  dropoff?: boolean
+  showDropoffToggle?: boolean
+  onDropoffChange?: (checked: boolean) => void
   goalId?: string
   errorId?: string
   sessionEvent?: SessionEventType
@@ -215,6 +219,9 @@ export const SessionsDrawer = ({
   period = 'custom',
   funnelId,
   funnelStep,
+  dropoff,
+  showDropoffToggle,
+  onDropoffChange,
   goalId,
   errorId,
   sessionEvent,
@@ -258,6 +265,8 @@ export const SessionsDrawer = ({
               timezone,
               funnelId,
               step: funnelStep,
+              filters: stableFilters,
+              dropoff,
               take: SESSIONS_TAKE,
               skip: currentSkip,
             },
@@ -356,6 +365,7 @@ export const SessionsDrawer = ({
       isErrorMode,
       funnelId,
       funnelStep,
+      dropoff,
       goalId,
       errorId,
       sessionEvent,
@@ -451,6 +461,14 @@ export const SessionsDrawer = ({
             <div className='min-w-0'>
               <DrawerTitle>{title || t('project.sessions')}</DrawerTitle>
               <DrawerDescription>{label}</DrawerDescription>
+              {isFunnelMode && showDropoffToggle ? (
+                <Switch
+                  checked={Boolean(dropoff)}
+                  onChange={onDropoffChange}
+                  label={t('project.dropoffSessionsOnly')}
+                  className='mt-3'
+                />
+              ) : null}
             </div>
             <div className='ml-3 flex shrink-0 items-center gap-2'>
               {!initialLoading &&

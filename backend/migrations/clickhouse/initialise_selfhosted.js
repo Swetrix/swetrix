@@ -70,6 +70,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     matchType Enum8('exact' = 1, 'contains' = 2, 'regex' = 3) DEFAULT 'exact',
     value Nullable(String),
     metadataFilters Nullable(String),
+    conditions Nullable(String),
     active Int8 DEFAULT 1,
     projectId FixedString(12),
     created DateTime

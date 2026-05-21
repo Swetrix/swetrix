@@ -1024,6 +1024,8 @@ export async function getFunnelSessionsServer(
     take?: number
     skip?: number
     password?: string
+    filters?: AnalyticsFilter[]
+    dropoff?: boolean
   },
 ): Promise<ServerFetchResult<FunnelSessionsResponse>> {
   const step = Math.max(1, Math.floor(Number(params.step) || 1))
@@ -1036,10 +1038,12 @@ export async function getFunnelSessionsServer(
   queryParams.append('step', String(step))
   queryParams.append('take', String(take))
   queryParams.append('skip', String(skip))
+  queryParams.append('filters', JSON.stringify(params.filters || []))
   if (params.funnelId) queryParams.append('funnelId', params.funnelId)
   if (params.from) queryParams.append('from', params.from)
   if (params.to) queryParams.append('to', params.to)
   if (params.timezone) queryParams.append('timezone', params.timezone)
+  if (params.dropoff) queryParams.append('dropoff', 'true')
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -1425,6 +1429,32 @@ export async function getFeatureFlagProfilesServer(
 // MARK: Goals API (Deferred Loading)
 // ============================================================================
 
+export type GoalConditionRelation = 'AND' | 'OR'
+
+export type GoalConditionOperator =
+  | 'equals'
+  | 'not_equals'
+  | 'contains'
+  | 'not_contains'
+  | 'exists'
+  | 'not_exists'
+
+export type GoalConditionEventType = 'any' | 'pageview' | 'custom_event'
+
+export interface GoalCondition {
+  id?: string
+  eventType: GoalConditionEventType
+  field: string
+  operator: GoalConditionOperator
+  value?: string
+  metadataKey?: string
+}
+
+export interface GoalConditions {
+  relation: GoalConditionRelation
+  conditions: GoalCondition[]
+}
+
 export interface Goal {
   id: string
   name: string
@@ -1432,6 +1462,7 @@ export interface Goal {
   matchType: 'exact' | 'contains'
   value: string | null
   metadataFilters: { key: string; value: string }[] | null
+  conditions?: GoalConditions | null
   active: boolean
   pid: string
   created: string
@@ -1440,6 +1471,28 @@ export interface Goal {
 export interface GoalsResponse {
   results: Goal[]
   total: number
+}
+
+export interface ConversionTimeBucket {
+  average: number | null
+  median: number | null
+  p75: number | null
+}
+
+export interface ConversionTimeToConvert {
+  fromSessionStart?: ConversionTimeBucket
+  fromFirstPage?: ConversionTimeBucket
+  fromFirstFunnelStep?: ConversionTimeBucket
+}
+
+export interface ConversionBreakdowns {
+  countries?: Record<string, number>
+  devices?: Record<string, number>
+  browsers?: Record<string, number>
+  sources?: Record<string, number>
+  campaigns?: Record<string, number>
+  pages?: Record<string, number>
+  profileTypes?: Record<string, number>
 }
 
 export async function getProjectGoalsServer(
@@ -1470,6 +1523,8 @@ export interface GoalStats {
   conversionRate: number
   previousConversions: number
   trend: number
+  breakdowns?: ConversionBreakdowns
+  timeToConvert?: ConversionTimeToConvert
 }
 
 export async function getGoalStatsServer(
@@ -1479,11 +1534,13 @@ export async function getGoalStatsServer(
   from = '',
   to = '',
   timezone?: string,
+  filters: AnalyticsFilter[] = [],
 ): Promise<ServerFetchResult<GoalStats>> {
   const params = new URLSearchParams({ period })
   if (from) params.append('from', from)
   if (to) params.append('to', to)
   if (timezone) params.append('timezone', timezone)
+  params.append('filters', JSON.stringify(filters))
 
   return serverFetch<GoalStats>(
     request,
@@ -1505,11 +1562,13 @@ export async function getGoalChartServer(
   to = '',
   timeBucket = 'day',
   timezone?: string,
+  filters: AnalyticsFilter[] = [],
 ): Promise<ServerFetchResult<{ chart: GoalChartData }>> {
   const params = new URLSearchParams({ period, timeBucket })
   if (from) params.append('from', from)
   if (to) params.append('to', to)
   if (timezone) params.append('timezone', timezone)
+  params.append('filters', JSON.stringify(filters))
 
   return serverFetch<{ chart: GoalChartData }>(
     request,
@@ -1532,8 +1591,10 @@ export interface FunnelDataResponse {
     dropoffPercStep: number
     topCountries: Record<string, number>
     topSources: Record<string, number>
+    breakdowns?: ConversionBreakdowns
   }[]
   totalPageviews: number
+  timeToConvert?: ConversionTimeToConvert
 }
 
 export async function getFunnelDataServer(
@@ -1545,11 +1606,13 @@ export async function getFunnelDataServer(
   to: string,
   timezone: string,
   password?: string,
+  filters: AnalyticsFilter[] = [],
 ): Promise<ServerFetchResult<FunnelDataResponse>> {
   const queryParams = new URLSearchParams()
   queryParams.append('pid', pid)
   queryParams.append('period', period)
   queryParams.append('funnelId', funnelId)
+  queryParams.append('filters', JSON.stringify(filters))
   if (from) queryParams.append('from', from)
   if (to) queryParams.append('to', to)
   if (timezone) queryParams.append('timezone', timezone)

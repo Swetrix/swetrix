@@ -172,6 +172,15 @@ export interface AnalyticsFunnel {
   dropoffPercStep: number
   topCountries: Record<string, number>
   topSources: Record<string, number>
+  breakdowns?: {
+    countries?: Record<string, number>
+    devices?: Record<string, number>
+    browsers?: Record<string, number>
+    sources?: Record<string, number>
+    campaigns?: Record<string, number>
+    pages?: Record<string, number>
+    profileTypes?: Record<string, number>
+  }
 }
 
 export type Provider =

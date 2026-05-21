@@ -999,10 +999,10 @@ The timezone to use for the time range. The default is `Etc/GMT`. You can use an
 
 ### GET /v1/log/funnel
 
-Returns a funnel analysis for a specific set of pages.
+Returns a funnel analysis for a specific set of pages or a saved funnel.
 
 ```bash
-curl 'https://api.swetrix.com/v1/log/funnel?pid=YOUR_PROJECT_ID&pages=["/","/pricing","/signup"]&period=30d'\
+curl 'https://api.swetrix.com/v1/log/funnel?pid=YOUR_PROJECT_ID&pages=["/","/pricing","/signup"]&period=7d'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
@@ -1010,25 +1010,156 @@ curl 'https://api.swetrix.com/v1/log/funnel?pid=YOUR_PROJECT_ID&pages=["/","/pri
 {
   "funnel": [
     {
-      "page": "/",
-      "count": 100,
+      "value": "/",
+      "events": 100,
+      "eventsPerc": 100,
+      "eventsPercStep": 100,
       "dropoff": 0,
-      "dropoffPercentage": 0
+      "dropoffPercStep": 0,
+      "topCountries": {
+        "US": 42,
+        "GB": 18
+      },
+      "topSources": {
+        "google": 31,
+        "Direct / None": 20
+      },
+      "breakdowns": {
+        "countries": {
+          "US": 42,
+          "GB": 18
+        },
+        "devices": {
+          "desktop": 67,
+          "mobile": 33
+        },
+        "browsers": {
+          "Chrome": 61,
+          "Safari": 22
+        },
+        "sources": {
+          "google": 31,
+          "Direct / None": 20
+        },
+        "campaigns": {
+          "spring_launch": 12
+        },
+        "pages": {
+          "/": 100
+        },
+        "profileTypes": {
+          "anonymous": 76,
+          "identified": 24
+        }
+      }
     },
     {
-      "page": "/pricing",
-      "count": 50,
+      "value": "/pricing",
+      "events": 50,
+      "eventsPerc": 50,
+      "eventsPercStep": 50,
       "dropoff": 50,
-      "dropoffPercentage": 50
+      "dropoffPercStep": 50,
+      "topCountries": {
+        "US": 22,
+        "GB": 8
+      },
+      "topSources": {
+        "google": 16,
+        "Direct / None": 10
+      },
+      "breakdowns": {
+        "countries": {
+          "US": 22,
+          "GB": 8
+        },
+        "devices": {
+          "desktop": 32,
+          "mobile": 18
+        },
+        "browsers": {
+          "Chrome": 30,
+          "Safari": 11
+        },
+        "sources": {
+          "google": 16,
+          "Direct / None": 10
+        },
+        "campaigns": {
+          "spring_launch": 8
+        },
+        "pages": {
+          "/pricing": 50
+        },
+        "profileTypes": {
+          "anonymous": 33,
+          "identified": 17
+        }
+      }
     },
     {
-      "page": "/signup",
-      "count": 10,
+      "value": "/signup",
+      "events": 10,
+      "eventsPerc": 10,
+      "eventsPercStep": 20,
       "dropoff": 40,
-      "dropoffPercentage": 80
+      "dropoffPercStep": 80,
+      "topCountries": {
+        "US": 5,
+        "GB": 2
+      },
+      "topSources": {
+        "google": 4,
+        "Direct / None": 2
+      },
+      "breakdowns": {
+        "countries": {
+          "US": 5,
+          "GB": 2
+        },
+        "devices": {
+          "desktop": 7,
+          "mobile": 3
+        },
+        "browsers": {
+          "Chrome": 6,
+          "Safari": 3
+        },
+        "sources": {
+          "google": 4,
+          "Direct / None": 2
+        },
+        "campaigns": {
+          "spring_launch": 3
+        },
+        "pages": {
+          "/signup": 10
+        },
+        "profileTypes": {
+          "anonymous": 6,
+          "identified": 4
+        }
+      }
     }
   ],
-  "totalPageviews": 160
+  "totalPageviews": 160,
+  "timeToConvert": {
+    "fromSessionStart": {
+      "average": 120.4,
+      "median": 90,
+      "p75": 180
+    },
+    "fromFirstPage": {
+      "average": 102.1,
+      "median": 80,
+      "p75": 160
+    },
+    "fromFirstFunnelStep": {
+      "average": 76.8,
+      "median": 60,
+      "p75": 120
+    }
+  }
 }
 ```
 
@@ -1044,14 +1175,18 @@ A stringified JSON array of page paths to define the funnel steps.
 
 The ID of a saved funnel to retrieve.
 
+**filters** (optional)
+
+A stringified JSON array of [filter objects](#filters). Filters select the session cohort for the funnel analysis.
+
 <hr />
 
 ### GET /v1/log/funnel-sessions
 
-Returns paginated sessions that reached a specific step in a funnel. Sessions are filtered using the same `windowFunnel` logic as the funnel analysis — only sessions that completed every prior step in order are included.
+Returns paginated sessions that reached a specific step in a funnel. Sessions are filtered using the same `windowFunnel` logic as the funnel analysis - only sessions that completed every prior step in order are included.
 
 ```bash
-curl 'https://api.swetrix.com/v1/log/funnel-sessions?pid=YOUR_PROJECT_ID&funnelId=FUNNEL_ID&step=2&period=30d&take=30&skip=0'\
+curl 'https://api.swetrix.com/v1/log/funnel-sessions?pid=YOUR_PROJECT_ID&funnelId=FUNNEL_ID&step=2&period=7d&take=30&skip=0'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
@@ -1087,6 +1222,10 @@ The parameters are similar to the [`/log/funnel` endpoint](#get-v1logfunnel), wi
 **step** (required)
 
 The funnel step number to get sessions for (1-indexed). For example, `step=2` returns sessions that completed at least the first two funnel steps in order.
+
+**dropoff** (optional)
+
+Set to `true` to return sessions that reached the requested step but did not continue to the next step.
 
 **take** (optional, default: `30`, max: `150`)
 
@@ -1396,11 +1535,62 @@ Column: `br` or `os`.
 
 ### GET /goal/:id/stats
 
-Returns statistics for a specific goal (conversions, conversion rate, trend).
+Returns statistics for a specific goal, including conversions, conversion rate, trend, segment breakdowns, and time-to-convert metrics. Simple goals and multi-condition goals are both supported; for multi-condition goals using `AND`, the conversion timestamp is the point where the required conditions have all been satisfied in the session.
 
 ```bash
 curl 'https://api.swetrix.com/goal/GOAL_ID/stats?period=7d'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "conversions": 42,
+  "uniqueSessions": 38,
+  "conversionRate": 12.34,
+  "previousConversions": 31,
+  "trend": 35.48,
+  "breakdowns": {
+    "countries": {
+      "US": 18,
+      "GB": 7
+    },
+    "devices": {
+      "desktop": 25,
+      "mobile": 13
+    },
+    "browsers": {
+      "Chrome": 22,
+      "Safari": 9
+    },
+    "sources": {
+      "google": 14,
+      "Direct / None": 8
+    },
+    "campaigns": {
+      "spring_launch": 6
+    },
+    "pages": {
+      "/signup": 20,
+      "/pricing": 12
+    },
+    "profileTypes": {
+      "anonymous": 27,
+      "identified": 11
+    }
+  },
+  "timeToConvert": {
+    "fromSessionStart": {
+      "average": 156.7,
+      "median": 120,
+      "p75": 240
+    },
+    "fromFirstPage": {
+      "average": 132.4,
+      "median": 95,
+      "p75": 210
+    }
+  }
+}
 ```
 
 #### Parameters
@@ -1408,6 +1598,10 @@ curl 'https://api.swetrix.com/goal/GOAL_ID/stats?period=7d'\
 **period**, **from**, **to**, **timezone**
 
 Time range parameters.
+
+**filters** (optional)
+
+A stringified JSON array of [filter objects](#filters).
 
 ### GET /goal/:id/chart
 
@@ -1423,6 +1617,10 @@ curl 'https://api.swetrix.com/goal/GOAL_ID/chart?period=7d'\
 **period**, **from**, **to**, **timezone**, **timeBucket**
 
 Time range parameters.
+
+**filters** (optional)
+
+A stringified JSON array of [filter objects](#filters).
 
 ### GET /goal/:id/sessions
 
