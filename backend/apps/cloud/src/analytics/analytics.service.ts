@@ -355,6 +355,12 @@ type EventsAllTimeType =
   | 'performance'
   | 'error'
   | 'captcha'
+type SessionsListEventType =
+  | 'traffic'
+  | 'pageview'
+  | 'custom_event'
+  | 'error'
+  | 'performance'
 
 const isValidOrigin = (origins: string[], origin: string) => {
   const escapeRegex = (str: string) =>
@@ -5141,10 +5147,14 @@ export class AnalyticsService {
     take = 30,
     skip = 0,
     customEVFilterApplied = false,
+    sessionEvent: SessionsListEventType = 'traffic',
+    primaryEventFilterQuery = '',
   ): Promise<object | void> {
     const primaryEventsSubquery = this.buildSessionsListPrimaryEventsSubquery(
       filtersQuery,
       customEVFilterApplied,
+      sessionEvent,
+      primaryEventFilterQuery,
     )
 
     const query = `
@@ -5278,8 +5288,10 @@ export class AnalyticsService {
   private buildSessionsListPrimaryEventsSubquery(
     filtersQuery: string,
     customEVFilterApplied: boolean,
+    sessionEvent: SessionsListEventType = 'traffic',
+    primaryEventFilterQuery = '',
   ): string {
-    if (customEVFilterApplied) {
+    if (customEVFilterApplied || sessionEvent === 'custom_event') {
       return `
         SELECT
           CAST(psid, 'String') AS psidCasted,
@@ -5296,6 +5308,7 @@ export class AnalyticsService {
           AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${filtersQuery}
+          ${primaryEventFilterQuery}
         UNION ALL
         SELECT
           CAST(s.psid, 'String') AS psidCasted,
@@ -5316,10 +5329,32 @@ export class AnalyticsService {
             AND profileId != ''
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
             ${filtersQuery}
+            ${primaryEventFilterQuery}
         ) AS matching_custom_events
           ON s.pid = matching_custom_events.pid
           AND s.profileId = matching_custom_events.profileId
         WHERE matching_custom_events.created BETWEEN s.firstSeen AND addSeconds(s.lastSeen, 1)
+      `
+    }
+
+    if (sessionEvent !== 'traffic') {
+      return `
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          cc,
+          os,
+          br,
+          toTimeZone(created, {timezone:String}) AS created_for_grouping
+        FROM events
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND type = '${sessionEvent}'
+          AND psid IS NOT NULL
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+          ${primaryEventFilterQuery}
       `
     }
 
@@ -6376,6 +6411,8 @@ export class AnalyticsService {
     groupTo: string,
     take: number = 10,
     skip: number = 0,
+    filtersQuery = '',
+    filtersParams: Record<string, unknown> = {},
   ): Promise<{ sessions: any[]; total: number }> {
     const queryCount = `
       SELECT count(DISTINCT psid) as total
@@ -6384,6 +6421,7 @@ export class AnalyticsService {
         AND type = 'error'
         AND eid = {eid:FixedString(32)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery}
     `
 
     const querySessions = `
@@ -6409,6 +6447,7 @@ export class AnalyticsService {
           AND type = 'error'
           AND eid = {eid:FixedString(32)}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
         GROUP BY pid, psid
       ) AS errors
       LEFT JOIN (
@@ -6439,7 +6478,15 @@ export class AnalyticsService {
       OFFSET {skip:UInt32}
     `
 
-    const params = { pid, eid, groupFrom, groupTo, take, skip }
+    const params = {
+      ...filtersParams,
+      pid,
+      eid,
+      groupFrom,
+      groupTo,
+      take,
+      skip,
+    }
 
     const [countResult, sessionsResult] = await Promise.all([
       clickhouse

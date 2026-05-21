@@ -4,6 +4,7 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Annotation } from '~/lib/models/Project'
+import type { ChartDataPointClick } from '~/pages/Project/View/utils/chartPoint'
 import { MetricCard } from '~/pages/Project/tabs/Traffic/MetricCards'
 
 import { MainChart } from '../../View/components/MainChart'
@@ -30,6 +31,7 @@ interface ErrorChartProps {
   className?: string
   annotations?: Annotation[]
   stats?: ErrorChartStat[]
+  onDataPointClick?: ChartDataPointClick
 }
 
 export const ErrorChart = ({
@@ -42,8 +44,14 @@ export const ErrorChart = ({
   className,
   annotations,
   stats,
+  onDataPointClick,
 }: ErrorChartProps) => {
   const { t } = useTranslation('common')
+
+  const dataPointClickLabel = useMemo(
+    () => (onDataPointClick ? t('project.exploreSessions') : undefined),
+    [onDataPointClick, t],
+  )
 
   const dataNames = useMemo(() => {
     return (
@@ -64,6 +72,8 @@ export const ErrorChart = ({
       chartType,
       annotations,
       dataNames,
+      onDataPointClick,
+      dataPointClickLabel,
     )
   }, [
     chart,
@@ -73,6 +83,8 @@ export const ErrorChart = ({
     chartType,
     annotations,
     dataNames,
+    onDataPointClick,
+    dataPointClickLabel,
   ])
 
   const deps = useMemo(
@@ -84,6 +96,8 @@ export const ErrorChart = ({
       chartType,
       dataNames,
       annotations,
+      onDataPointClick,
+      dataPointClickLabel,
     ],
     [
       chart,
@@ -93,6 +107,8 @@ export const ErrorChart = ({
       chartType,
       dataNames,
       annotations,
+      onDataPointClick,
+      dataPointClickLabel,
     ],
   )
 

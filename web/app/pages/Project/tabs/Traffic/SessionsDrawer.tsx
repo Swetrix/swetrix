@@ -1,9 +1,22 @@
-import { XIcon, UsersIcon, WarningCircleIcon } from '@phosphor-icons/react'
+import {
+  XIcon,
+  UsersIcon,
+  WarningCircleIcon,
+  CaretRightIcon,
+} from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router'
 
-import type { SessionsResponse, FunnelSessionsResponse } from '~/api/api.server'
+import type {
+  SessionsResponse,
+  FunnelSessionsResponse,
+  GoalSessionsResponse,
+  ErrorSessionsResponse,
+  ErrorAffectedSession,
+  SessionEventType,
+} from '~/api/api.server'
 import type { Session as SessionType } from '~/lib/models/Project'
 import {
   Drawer,
@@ -15,18 +28,31 @@ import {
 } from '~/ui/Drawer'
 import Loader from '~/ui/Loader'
 import Spin from '~/ui/icons/Spin'
+import { Link } from '~/ui/Link'
+import { Text } from '~/ui/Text'
+import Flag from '~/ui/Flag'
+import { useTheme } from '~/providers/ThemeProvider'
+import { getRelativeDateIfPossible } from '~/utils/date'
 
 import { Session } from '../Sessions/Sessions'
+import { BrowserIcon, OSIcon } from '../SharedIcons'
 
 const SESSIONS_TAKE = 30
 
-type SessionsPageResult = SessionsResponse | FunnelSessionsResponse
+type SessionsPageResult =
+  | SessionsResponse
+  | FunnelSessionsResponse
+  | GoalSessionsResponse
+  | ErrorSessionsResponse
+
+type DrawerSession = SessionType | ErrorAffectedSession
 
 async function fetchSessionsPage(
   action: string,
   projectId: string,
   params: Record<string, unknown>,
   signal?: AbortSignal,
+  rootParams?: Record<string, unknown>,
 ): Promise<SessionsPageResult | null> {
   const response = await fetch('/api/analytics', {
     method: 'POST',
@@ -34,6 +60,7 @@ async function fetchSessionsPage(
     body: JSON.stringify({
       action,
       projectId,
+      ...rootParams,
       params,
     }),
     signal,
@@ -55,6 +82,106 @@ async function fetchSessionsPage(
   return result.data
 }
 
+const mapErrorSession = (session: ErrorAffectedSession): ErrorAffectedSession =>
+  session
+
+const getResultSessions = (result: SessionsPageResult): DrawerSession[] => {
+  if ('total' in result) {
+    return result.sessions.map(mapErrorSession)
+  }
+
+  return result.sessions
+}
+
+const isErrorAffectedSession = (
+  session: DrawerSession,
+): session is ErrorAffectedSession => 'errorCount' in session
+
+const ErrorSession = ({ session }: { session: ErrorAffectedSession }) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+  const { theme } = useTheme()
+  const location = useLocation()
+
+  const lastErrorAt = useMemo(() => {
+    return getRelativeDateIfPossible(session.lastErrorAt, language)
+  }, [session.lastErrorAt, language])
+
+  const params = new URLSearchParams(location.search)
+  params.delete('eid')
+  params.set('psid', session.psid)
+  params.set('tab', 'sessions')
+
+  return (
+    <li className='mb-2'>
+      <Link
+        to={{ search: params.toString() }}
+        className='block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
+      >
+        <div className='relative flex cursor-pointer items-center justify-between gap-x-4 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 transition-colors hover:bg-gray-200/70 sm:px-5 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
+          <div className='flex min-w-0 flex-1 items-center gap-x-3.5'>
+            <div className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 ring-1 ring-gray-200/50 dark:bg-slate-800 dark:ring-slate-700/50'>
+              <Text size='xs' weight='medium' colour='secondary'>
+                ?
+              </Text>
+            </div>
+            <div className='flex min-w-0 flex-1 flex-col justify-center gap-2'>
+              <div className='flex min-w-0 items-center gap-2'>
+                <Text size='sm' weight='semibold' truncate>
+                  {session.profileId || t('project.unknownUser')}
+                </Text>
+              </div>
+              <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
+                <div className='flex items-center gap-1.5'>
+                  <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
+                    {session.cc ? (
+                      <Flag
+                        country={session.cc}
+                        size={14}
+                        className='rounded-[2px]'
+                        aria-hidden='true'
+                      />
+                    ) : (
+                      <span className='inline-block h-3.5 w-3.5 rounded-[2px] bg-gray-200 dark:bg-slate-700' />
+                    )}
+                  </div>
+                  <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
+                    <OSIcon
+                      os={session.os}
+                      theme={theme}
+                      className='size-3.5'
+                    />
+                  </div>
+                  <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
+                    <BrowserIcon browser={session.br} className='size-3.5' />
+                  </div>
+                </div>
+                <div className='h-3 w-px bg-gray-200 dark:bg-slate-700' />
+                <Text
+                  as='span'
+                  size='xs'
+                  colour='secondary'
+                  weight='medium'
+                  className='tabular-nums'
+                >
+                  {lastErrorAt || t('project.unknown')} · {session.errorCount}{' '}
+                  {t('project.occurrences').toLowerCase()}
+                </Text>
+              </div>
+            </div>
+          </div>
+          <CaretRightIcon
+            className='size-4 shrink-0 text-gray-400'
+            aria-hidden='true'
+          />
+        </div>
+      </Link>
+    </li>
+  )
+}
+
 interface SessionsDrawerProps {
   isOpen: boolean
   onClose: () => void
@@ -68,6 +195,10 @@ interface SessionsDrawerProps {
   period?: string
   funnelId?: string
   funnelStep?: number
+  goalId?: string
+  errorId?: string
+  sessionEvent?: SessionEventType
+  title?: string
   totalCount?: number
 }
 
@@ -84,14 +215,21 @@ export const SessionsDrawer = ({
   period = 'custom',
   funnelId,
   funnelStep,
+  goalId,
+  errorId,
+  sessionEvent,
+  title,
   totalCount,
 }: SessionsDrawerProps) => {
   const { t } = useTranslation('common')
   const stableFilters = useMemo(() => filters ?? [], [filters])
   const isFunnelMode = !!(funnelId && funnelStep)
-  const [sessions, setSessions] = useState<SessionType[]>([])
+  const isGoalMode = !!goalId
+  const isErrorMode = !!errorId
+  const [sessions, setSessions] = useState<DrawerSession[]>([])
   const [skip, setSkip] = useState(0)
   const [hasMore, setHasMore] = useState(true)
+  const [resultTotalCount, setResultTotalCount] = useState<number | null>(null)
   const [initialLoading, setInitialLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -125,6 +263,37 @@ export const SessionsDrawer = ({
             },
             signal,
           )
+        } else if (isGoalMode) {
+          result = await fetchSessionsPage(
+            'getGoalSessions',
+            projectId,
+            {
+              period,
+              from,
+              to,
+              timezone,
+              goalId,
+              take: SESSIONS_TAKE,
+              skip: currentSkip,
+            },
+            signal,
+          )
+        } else if (isErrorMode) {
+          result = await fetchSessionsPage(
+            'getErrorSessions',
+            projectId,
+            {
+              period,
+              from,
+              to,
+              timezone,
+              filters: stableFilters,
+              take: SESSIONS_TAKE,
+              skip: currentSkip,
+            },
+            signal,
+            { errorId },
+          )
         } else {
           result = await fetchSessionsPage(
             'getSessions',
@@ -135,6 +304,7 @@ export const SessionsDrawer = ({
               to,
               timezone,
               filters: stableFilters,
+              sessionEvent,
               take: SESSIONS_TAKE,
               skip: currentSkip,
             },
@@ -156,13 +326,21 @@ export const SessionsDrawer = ({
       setError(null)
 
       if (result) {
-        const newSessions = result.sessions ?? []
+        const newSessions = getResultSessions(result)
+        const nextTotalCount = 'total' in result ? result.total : null
+
         if (append) {
           setSessions((prev) => [...prev, ...newSessions])
         } else {
           setSessions(newSessions)
         }
-        setHasMore(newSessions.length >= SESSIONS_TAKE)
+
+        setResultTotalCount(nextTotalCount)
+        setHasMore(
+          nextTotalCount != null
+            ? currentSkip + newSessions.length < nextTotalCount
+            : newSessions.length >= SESSIONS_TAKE,
+        )
       }
 
       return true
@@ -174,8 +352,13 @@ export const SessionsDrawer = ({
       to,
       timezone,
       isFunnelMode,
+      isGoalMode,
+      isErrorMode,
       funnelId,
       funnelStep,
+      goalId,
+      errorId,
+      sessionEvent,
       stableFilters,
       t,
     ],
@@ -192,9 +375,9 @@ export const SessionsDrawer = ({
     setSessions([])
     setSkip(0)
     setHasMore(true)
+    setResultTotalCount(null)
     setError(null)
 
-    // Delay fetching slightly to allow the drawer animation to run smoothly without layout shifts
     const timer = setTimeout(() => {
       loadSessions(0, false, controller.signal).finally(() => {
         if (!controller.signal.aborted) {
@@ -208,6 +391,8 @@ export const SessionsDrawer = ({
       controller.abort()
     }
   }, [isOpen, period, from, to, loadSessions])
+
+  const displayTotalCount = totalCount ?? resultTotalCount
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || !hasMore) return
@@ -264,16 +449,16 @@ export const SessionsDrawer = ({
         <DrawerHeader>
           <div className='flex items-start justify-between'>
             <div className='min-w-0'>
-              <DrawerTitle>{t('project.sessions')}</DrawerTitle>
+              <DrawerTitle>{title || t('project.sessions')}</DrawerTitle>
               <DrawerDescription>{label}</DrawerDescription>
             </div>
             <div className='ml-3 flex shrink-0 items-center gap-2'>
               {!initialLoading &&
-              (totalCount != null || sessions.length > 0) ? (
+              (displayTotalCount != null || sessions.length > 0) ? (
                 <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
                   <UsersIcon className='size-3.5' />
-                  {totalCount != null ? (
-                    totalCount
+                  {displayTotalCount != null ? (
+                    displayTotalCount
                   ) : (
                     <>
                       {sessions.length}
@@ -326,13 +511,17 @@ export const SessionsDrawer = ({
           ) : (
             <>
               <ul>
-                {_map(sessions, (session) => (
-                  <Session
-                    key={session.psid}
-                    session={session}
-                    timeFormat={timeFormat}
-                  />
-                ))}
+                {_map(sessions, (session) =>
+                  isErrorAffectedSession(session) ? (
+                    <ErrorSession key={session.psid} session={session} />
+                  ) : (
+                    <Session
+                      key={session.psid}
+                      session={session}
+                      timeFormat={timeFormat}
+                    />
+                  ),
+                )}
               </ul>
               {hasMore ? (
                 <div

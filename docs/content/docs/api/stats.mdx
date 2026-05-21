@@ -867,6 +867,12 @@ An array of [filter objects](#filters).
 
 <hr />
 
+**sessionEvent**
+
+Optional event scope for the returned sessions. Supported values are `traffic` (default), `performance`, and `error`. Use `performance` to return sessions that recorded performance events in the selected time range, or `error` to return sessions affected by errors in the selected time range.
+
+<hr />
+
 **take**
 
 The number of sessions to return. The default is `30`, max is `150`.
@@ -1417,6 +1423,54 @@ curl 'https://api.swetrix.com/goal/GOAL_ID/chart?period=7d'\
 **period**, **from**, **to**, **timezone**, **timeBucket**
 
 Time range parameters.
+
+### GET /goal/:id/sessions
+
+Returns paginated sessions that matched a specific goal during the selected time range.
+
+```bash
+curl 'https://api.swetrix.com/goal/GOAL_ID/sessions?period=7d&take=30&skip=0'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "sessions": [
+    {
+      "psid": "123456789",
+      "cc": "US",
+      "os": "Mac OS",
+      "br": "Chrome",
+      "pageviews": 3,
+      "customEvents": 1,
+      "errors": 0,
+      "sessionStart": "2025-01-15 10:30:00",
+      "lastActivity": "2025-01-15 10:35:00",
+      "isLive": 0,
+      "sdur": 300,
+      "profileId": null,
+      "isIdentified": 0,
+      "isFirstSession": 1
+    }
+  ],
+  "take": 30,
+  "skip": 0
+}
+```
+
+#### Parameters
+
+**period**, **from**, **to**, **timezone**
+
+Time range parameters.
+
+**take** (optional, default: `30`, max: `150`)
+
+The number of sessions to return per page.
+
+**skip** (optional, default: `0`)
+
+The number of sessions to skip (for pagination).
 
 ### GET /v1/feature-flag/:id/stats
 

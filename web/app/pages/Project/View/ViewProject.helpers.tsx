@@ -69,6 +69,10 @@ import countries from '~/utils/isoCountries'
 import { downloadBlob } from '~/utils/download'
 
 import { TrafficLogResponse } from './interfaces/traffic'
+import {
+  attachDataPointClickHandlers,
+  type ChartDataPointClick,
+} from './utils/chartPoint'
 
 dayjs.extend(utc)
 dayjs.extend(timezonePlugin)
@@ -598,7 +602,7 @@ const getSettings = (
   annotations?: Annotation[],
   period?: string,
   timezone?: string,
-  onDataPointClick?: (d: { x: Date; index: number }) => void,
+  onDataPointClick?: ChartDataPointClick,
   dataPointClickLabel?: string,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
@@ -1085,90 +1089,11 @@ const getSettings = (
                 })
               }
 
-              if (onDataPointClick) {
-                const svg = chartInstance.$.svg?.node()
-                if (!svg) return
-
-                const eventRectsGroup = svg.querySelector('.bb-event-rects')
-                if (!eventRectsGroup || eventRectsGroup.__clickAttached) return
-                eventRectsGroup.__clickAttached = true
-
-                eventRectsGroup.addEventListener(
-                  'mousemove',
-                  (e: MouseEvent) => {
-                    const groupRect = eventRectsGroup.getBoundingClientRect()
-                    const mouseX = e.clientX - groupRect.left
-                    const mouseY = e.clientY - groupRect.top
-
-                    const circles = svg.querySelectorAll('.bb-circle')
-                    let closestCircle: Element | null = null
-                    let minDistance = 25 // 25px sensitivity for direct hover
-
-                    circles.forEach((c: Element) => {
-                      const cx = parseFloat(c.getAttribute('cx') || '0')
-                      const cy = parseFloat(c.getAttribute('cy') || '0')
-                      const distance = Math.hypot(cx - mouseX, cy - mouseY)
-
-                      if (distance < minDistance) {
-                        minDistance = distance
-                        closestCircle = c
-                      }
-                    })
-
-                    circles.forEach((c: Element) => {
-                      if (c === closestCircle) {
-                        c.classList.add('is-direct-hover')
-                      } else {
-                        c.classList.remove('is-direct-hover')
-                      }
-                    })
-                  },
-                )
-
-                eventRectsGroup.addEventListener('mouseleave', () => {
-                  const circles = svg.querySelectorAll('.bb-circle')
-                  circles.forEach((c: Element) => {
-                    c.classList.remove('is-direct-hover')
-                  })
-                })
-
-                eventRectsGroup.addEventListener('click', (e: MouseEvent) => {
-                  const target = e.target as SVGRectElement
-                  if (!target?.classList?.contains('bb-event-rect')) return
-
-                  const groupRect = eventRectsGroup.getBoundingClientRect()
-                  const mouseX = e.clientX - groupRect.left
-                  const mouseY = e.clientY - groupRect.top
-
-                  const circles = svg.querySelectorAll('.bb-circle')
-                  let closestCircle: Element | null = null
-                  let minDistance = Infinity
-
-                  circles.forEach((c: Element) => {
-                    const cx = parseFloat(c.getAttribute('cx') || '0')
-                    const cy = parseFloat(c.getAttribute('cy') || '0')
-                    const distance = Math.hypot(cx - mouseX, cy - mouseY)
-
-                    if (distance < minDistance) {
-                      minDistance = distance
-                      closestCircle = c
-                    }
-                  })
-
-                  if (!closestCircle) return
-                  const circle = closestCircle as Element
-
-                  const classAttr = circle.getAttribute('class') || ''
-                  const indexMatch = classAttr.match(/bb-circle-(\d+)/)
-                  if (!indexMatch) return
-                  const index = parseInt(indexMatch[1], 10)
-
-                  const xValues = columns[0].slice(1) as Date[]
-                  if (index >= xValues.length) return
-
-                  onDataPointClick({ x: xValues[index], index })
-                })
-              }
+              attachDataPointClickHandlers(
+                chartInstance,
+                columns,
+                onDataPointClick,
+              )
             } catch {
               // ignore
             }
@@ -1552,6 +1477,8 @@ const getSettingsError = (
   chartType: string,
   annotations?: Annotation[],
   dataNames?: Record<string, string>,
+  onDataPointClick?: ChartDataPointClick,
+  dataPointClickLabel?: string,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -1621,6 +1548,13 @@ const getSettingsError = (
     data: {
       x: 'x',
       columns,
+      onclick: onDataPointClick
+        ? (d: any) => {
+            if (d?.x) {
+              onDataPointClick({ x: d.x, index: d.index })
+            }
+          }
+        : undefined,
       types,
       colors,
       names: dataNames,
@@ -1706,7 +1640,9 @@ const getSettingsError = (
               <span class='font-mono whitespace-nowrap'>${el.value}</span>
             </li>
             `,
-          ).join('')}`
+          ).join(
+            '',
+          )}${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>${dataPointClickLabel}</li>` : ''}</ul>`
       },
     },
     point:
@@ -1715,9 +1651,11 @@ const getSettingsError = (
         : {
             focus: {
               only: xAxisSize > 1,
+              expand: onDataPointClick ? { enabled: true, r: 4 } : undefined,
             },
             pattern: ['circle'],
             r: 2,
+            sensitivity: onDataPointClick ? 50 : undefined,
           },
     legend: {
       item: {
@@ -1737,6 +1675,11 @@ const getSettingsError = (
         ratio: 0.15,
       },
     },
+    onrendered: onDataPointClick
+      ? function (this: any) {
+          attachDataPointClickHandlers(this, columns, onDataPointClick)
+        }
+      : undefined,
   }
 }
 
@@ -2025,8 +1968,11 @@ const getSettingsPerf = (
   onZoom?: (domain: [Date, Date] | null) => void,
   enableZoom?: boolean,
   annotations?: Annotation[],
+  onDataPointClick?: ChartDataPointClick,
+  dataPointClickLabel?: string,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
+  const columns = getColumnsPerf(chart, activeChartMetrics, compareChart)
 
   // Convert annotations to grid lines
   // Each annotation gets a unique class identifier for DOM-based lookup
@@ -2047,7 +1993,14 @@ const getSettingsPerf = (
     data: {
       x: 'x',
       xFormat: tbsFormatMapper[timeBucket],
-      columns: getColumnsPerf(chart, activeChartMetrics, compareChart),
+      columns,
+      onclick: onDataPointClick
+        ? (d: any) => {
+            if (d?.x) {
+              onDataPointClick({ x: d.x, index: d.index })
+            }
+          }
+        : undefined,
       types: {
         dns: chartType === chartTypes.line ? areaSpline() : bar(),
         tls: chartType === chartTypes.line ? areaSpline() : bar(),
@@ -2205,7 +2158,9 @@ const getSettingsPerf = (
           </li>
           `
           },
-        ).join('')}</ul>`
+        ).join(
+          '',
+        )}${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>${dataPointClickLabel}</li>` : ''}</ul>`
         }
 
         // Get dates from first item
@@ -2285,6 +2240,7 @@ const getSettingsPerf = (
       <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-md z-50'>
         ${currentSection}
         ${compareSection}
+        ${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>${dataPointClickLabel}</li>` : ''}
       </ul>`
       },
     },
@@ -2294,9 +2250,11 @@ const getSettingsPerf = (
         : {
             focus: {
               only: xAxisSize > 1,
+              expand: onDataPointClick ? { enabled: true, r: 4 } : undefined,
             },
             pattern: ['circle'],
             r: 2,
+            sensitivity: onDataPointClick ? 50 : undefined,
           },
     legend: {
       item: {
@@ -2317,6 +2275,11 @@ const getSettingsPerf = (
         ratio: 0.15,
       },
     },
+    onrendered: onDataPointClick
+      ? function (this: any) {
+          attachDataPointClickHandlers(this, columns, onDataPointClick)
+        }
+      : undefined,
     zoom:
       onZoom && enableZoom !== false
         ? {
