@@ -993,6 +993,74 @@ export class GoalController {
     }
   }
 
+  @ApiBearerAuth()
+  @Get('/:id/sessions')
+  @Auth(true, true)
+  async getGoalSessions(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+    @Query('period') period = '7d',
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('timezone') timezone?: string,
+    @Query('take') take?: string,
+    @Query('skip') skip?: string,
+  ) {
+    this.logger.log({ userId, id, period, from, to }, 'GET /goal/:id/sessions')
+
+    const goal = await this.goalService.findOneWithRelations(id)
+
+    if (_isEmpty(goal)) {
+      throw new NotFoundException('Goal not found')
+    }
+
+    const project = await this.projectService.getFullProject(goal.project.id)
+    this.projectService.allowedToView(project, userId)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const timeBucket = getLowestPossibleTimeBucket(period, from, to)
+
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+    )
+
+    const goalType =
+      goal.type === GoalType.CUSTOM_EVENT ? 'custom_event' : 'pageview'
+    const { condition: matchCondition, params: matchParams } =
+      this.buildGoalMatchCondition(goal)
+    const { condition: metaCondition, params: metaParams } =
+      this.buildMetadataCondition(goal)
+    const { take: safeTake, skip: safeSkip } = clampPagination(
+      Number(take) || 30,
+      Number(skip) || 0,
+    )
+    const projectId = goal.project.id
+    const sessions = await this.analyticsService.getSessionsList(
+      '',
+      {
+        params: {
+          pid: projectId,
+          groupFrom: groupFromUTC,
+          groupTo: groupToUTC,
+          ...matchParams,
+          ...metaParams,
+        },
+      },
+      safeTimezone,
+      Math.min(safeTake, 150),
+      safeSkip,
+      false,
+      goalType,
+      `AND ${matchCondition} ${metaCondition}`,
+    )
+
+    return { sessions, take: Math.min(safeTake, 150), skip: safeSkip }
+  }
+
   private getGroupSubquery(
     timeBucket: string,
   ): [selector: string, groupBy: string] {

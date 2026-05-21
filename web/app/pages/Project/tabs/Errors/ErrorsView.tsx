@@ -62,6 +62,7 @@ import { ErrorChart } from '~/pages/Project/tabs/Errors/ErrorChart'
 import { ErrorDetails } from '~/pages/Project/tabs/Errors/ErrorDetails'
 import NoErrorDetails from '~/pages/Project/tabs/Errors/NoErrorDetails'
 import WaitingForAnError from '~/pages/Project/tabs/Errors/WaitingForAnError'
+import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
@@ -81,6 +82,11 @@ import {
   getUsageTypeLabel,
   getConnectionTypeLabel,
 } from '~/pages/Project/View/ViewProject.helpers'
+import {
+  attachDataPointClickHandlers,
+  getChartPointWindow,
+  type ChartDataPointClick,
+} from '~/pages/Project/View/utils/chartPoint'
 import {
   useCurrentProject,
   useProjectPassword,
@@ -162,6 +168,8 @@ const getErrorTrendsChartSettings = (
   timeFormat: string,
   chartType: string,
   dataNames: Record<string, string>,
+  onDataPointClick?: ChartDataPointClick,
+  dataPointClickLabel?: string,
 ): ChartOptions => {
   const xAxisSize = _size(chartData.x)
 
@@ -183,6 +191,13 @@ const getErrorTrendsChartSettings = (
     data: {
       x: 'x',
       columns,
+      onclick: onDataPointClick
+        ? (d: any) => {
+            if (d?.x) {
+              onDataPointClick({ x: d.x, index: d.index })
+            }
+          }
+        : undefined,
       types: {
         occurrences: chartType === chartTypes.line ? area() : bar(),
         affectedUsers: chartType === chartTypes.line ? area() : bar(),
@@ -256,7 +271,9 @@ const getErrorTrendsChartSettings = (
               <span class='font-mono whitespace-nowrap'>${el.value}</span>
             </li>
             `
-          }).join('')}</ul>`
+          }).join(
+            '',
+          )}${onDataPointClick ? `<li class='pt-1 mt-1 border-t border-gray-200 dark:border-slate-700/80 text-[10px] text-gray-400 dark:text-slate-500'>${dataPointClickLabel}</li>` : ''}</ul>`
       },
     },
     point:
@@ -265,9 +282,11 @@ const getErrorTrendsChartSettings = (
         : {
             focus: {
               only: xAxisSize > 1,
+              expand: onDataPointClick ? { enabled: true, r: 4 } : undefined,
             },
             pattern: ['circle'],
             r: 2,
+            sensitivity: onDataPointClick ? 50 : undefined,
           },
     legend: {
       item: {
@@ -284,6 +303,11 @@ const getErrorTrendsChartSettings = (
     bar: {
       linearGradient: true,
     },
+    onrendered: onDataPointClick
+      ? function (this: any) {
+          attachDataPointClickHandlers(this, columns, onDataPointClick)
+        }
+      : undefined,
   }
 }
 
@@ -577,6 +601,12 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(
     () => (deferredData.errorsData?.errors?.length || 0) >= ERRORS_TAKE,
   )
+  const [sessionsDrawer, setSessionsDrawer] = useState<{
+    from: string
+    to: string
+    label: string
+    errorId?: string
+  } | null>(null)
 
   const activeEID = useMemo(() => searchParams.get('eid'), [searchParams])
 
@@ -787,6 +817,43 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     ]
   }, [t, errorOptions])
 
+  const handleOverviewDataPointClick = useCallback(
+    (d: { x: Date; index: number }) => {
+      setSessionsDrawer(
+        getChartPointWindow({
+          x: d.x,
+          timeBucket,
+          timezone,
+          timeFormat,
+        }),
+      )
+    },
+    [timeBucket, timeFormat, timezone],
+  )
+
+  const handleActiveErrorDataPointClick = useCallback(
+    (d: { x: Date; index: number }) => {
+      if (!activeError?.details.eid) return
+
+      setSessionsDrawer({
+        ...getChartPointWindow({
+          x: d.x,
+          timeBucket: activeError.timeBucket || timeBucket,
+          timezone,
+          timeFormat,
+        }),
+        errorId: activeError.details.eid,
+      })
+    },
+    [
+      activeError?.details.eid,
+      activeError?.timeBucket,
+      timeBucket,
+      timeFormat,
+      timezone,
+    ],
+  )
+
   // Handle refresh trigger - use revalidator for URL-based data
   useEffect(() => {
     if (errorsRefreshTrigger > 0) {
@@ -807,8 +874,10 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
         occurrences: t('project.totalErrors'),
         affectedUsers: t('project.affectedUsers'),
       },
+      handleOverviewDataPointClick,
+      t('project.exploreSessions'),
     )
-  }, [overview?.chart, timeBucket, timeFormat, t])
+  }, [overview?.chart, timeBucket, timeFormat, handleOverviewDataPointClick, t])
 
   const hasErrorsRaw = !_isEmpty(errors) || overview?.stats?.totalErrors
 
@@ -978,6 +1047,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                 rotateXAxis={rotateXAxis}
                 chartType={chartTypes.line}
                 dataNames={dataNames}
+                onDataPointClick={handleActiveErrorDataPointClick}
                 stats={[
                   {
                     key: 'occurrences',
@@ -1268,6 +1338,20 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
         {_isEmpty(activeError) && errorLoading ? <Loader /> : null}
 
         {!errorLoading && _isEmpty(activeError) ? <NoErrorDetails /> : null}
+        <SessionsDrawer
+          isOpen={!!sessionsDrawer}
+          onClose={() => setSessionsDrawer(null)}
+          from={sessionsDrawer?.from || ''}
+          to={sessionsDrawer?.to || ''}
+          label={sessionsDrawer?.label || ''}
+          projectId={id}
+          timezone={timezone}
+          timeFormat={timeFormat as '12-hour' | '24-hour'}
+          filters={filters}
+          sessionEvent={sessionsDrawer?.errorId ? undefined : 'error'}
+          errorId={sessionsDrawer?.errorId}
+          title={t('project.affectedSessions')}
+        />
       </div>
     )
   }
@@ -1414,6 +1498,20 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
           </div>
         </>
       ) : null}
+      <SessionsDrawer
+        isOpen={!!sessionsDrawer}
+        onClose={() => setSessionsDrawer(null)}
+        from={sessionsDrawer?.from || ''}
+        to={sessionsDrawer?.to || ''}
+        label={sessionsDrawer?.label || ''}
+        projectId={id}
+        timezone={timezone}
+        timeFormat={timeFormat as '12-hour' | '24-hour'}
+        filters={filters}
+        sessionEvent={sessionsDrawer?.errorId ? undefined : 'error'}
+        errorId={sessionsDrawer?.errorId}
+        title={t('project.affectedSessions')}
+      />
     </div>
   )
 }

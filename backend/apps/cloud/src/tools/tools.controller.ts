@@ -12,7 +12,6 @@ import net from 'net'
 import { ToolsService } from './tools.service'
 import { IpLookupQueryDto, IpLookupResponseDto } from './dto/ip-lookup.dto'
 import { getIPFromHeaders, checkRateLimit } from '../common/utils'
-import { trackCustom } from '../common/analytics'
 import { Public } from '../auth/decorators'
 
 const IP_LOOKUP_RL_REQUESTS = 30
@@ -45,10 +44,6 @@ export class ToolsController {
     @Ip() reqIP: string,
   ): Promise<IpLookupResponseDto> {
     const clientIp = getIPFromHeaders(headers) || reqIP || ''
-    const userAgent =
-      typeof headers === 'object' && headers !== null
-        ? (headers as Record<string, string>)['user-agent'] || ''
-        : ''
 
     await checkRateLimit(
       clientIp,
@@ -70,13 +65,6 @@ export class ToolsController {
     }
 
     const result = this.toolsService.lookupIP(ip)
-
-    trackCustom(clientIp, userAgent, {
-      ev: 'IP_LOOKUP',
-      meta: {
-        ipVersion: String(result.ipVersion),
-      },
-    })
 
     return result
   }

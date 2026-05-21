@@ -963,10 +963,16 @@ export interface SessionsResponse {
   appliedFilters: AnalyticsFilter[]
 }
 
+export type SessionEventType = 'traffic' | 'performance' | 'error'
+
 export async function getSessionsServer(
   request: Request,
   pid: string,
-  params: AnalyticsParams & { take?: number; skip?: number },
+  params: AnalyticsParams & {
+    take?: number
+    skip?: number
+    sessionEvent?: SessionEventType
+  },
 ): Promise<ServerFetchResult<SessionsResponse>> {
   const queryParams = new URLSearchParams()
   queryParams.append('pid', pid)
@@ -974,6 +980,9 @@ export async function getSessionsServer(
   queryParams.append('filters', serializeFiltersForUrl(params.filters))
   queryParams.append('take', String(params.take || 30))
   queryParams.append('skip', String(params.skip || 0))
+  if (params.sessionEvent) {
+    queryParams.append('sessionEvent', params.sessionEvent)
+  }
   if (params.from) queryParams.append('from', params.from)
   if (params.to) queryParams.append('to', params.to)
   if (params.timezone) queryParams.append('timezone', params.timezone)
@@ -991,6 +1000,12 @@ export async function getSessionsServer(
 }
 
 export interface FunnelSessionsResponse {
+  sessions: Session[]
+  take: number
+  skip: number
+}
+
+export interface GoalSessionsResponse {
   sessions: Session[]
   take: number
   skip: number
@@ -1039,6 +1054,35 @@ export async function getFunnelSessionsServer(
     request,
     `log/funnel-sessions?${queryParams.toString()}`,
     { headers },
+  )
+}
+
+export async function getGoalSessionsServer(
+  request: Request,
+  goalId: string,
+  params: {
+    period: string
+    from?: string
+    to?: string
+    timezone?: string
+    take?: number
+    skip?: number
+  },
+): Promise<ServerFetchResult<GoalSessionsResponse>> {
+  const take = Math.min(150, Math.max(1, Math.floor(Number(params.take) || 30)))
+  const skip = Math.max(0, Math.floor(Number(params.skip) || 0))
+
+  const queryParams = new URLSearchParams()
+  queryParams.append('period', params.period)
+  queryParams.append('take', String(take))
+  queryParams.append('skip', String(skip))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+
+  return serverFetch<GoalSessionsResponse>(
+    request,
+    `goal/${goalId}/sessions?${queryParams.toString()}`,
   )
 }
 
@@ -2092,6 +2136,8 @@ export async function getErrorSessionsServer(
     period?: string
     from?: string
     to?: string
+    filters?: AnalyticsFilter[]
+    timezone?: string
     take?: number
     skip?: number
     password?: string
@@ -2104,8 +2150,10 @@ export async function getErrorSessionsServer(
   queryParams.append('period', params.period || '7d')
   queryParams.append('take', String(params.take || 10))
   queryParams.append('skip', String(params.skip || 0))
+  queryParams.append('filters', serializeFiltersForUrl(params.filters || []))
   if (params.from) queryParams.append('from', params.from)
   if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {

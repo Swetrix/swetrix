@@ -7,6 +7,7 @@ import {
 import {
   getSessionsServer,
   getFunnelSessionsServer,
+  getGoalSessionsServer,
   getErrorsServer,
   getFeatureFlagStatsServer,
   getFeatureFlagProfilesServer,
@@ -43,6 +44,7 @@ import {
   type AnalyticsFilter,
   type SessionsResponse,
   type FunnelSessionsResponse,
+  type GoalSessionsResponse,
   type ErrorsResponse,
   type FeatureFlagStats,
   type FeatureFlagProfilesResponse,
@@ -128,6 +130,7 @@ interface ProxyRequest {
     | 'getRevenueData'
     | 'getOverallStats'
     | 'getFunnelSessions'
+    | 'getGoalSessions'
   projectId: string
   pids?: string[]
   flagId?: string
@@ -159,6 +162,8 @@ interface ProxyRequest {
     funnelId?: string
     step?: number
     dropoff?: boolean
+    goalId?: string
+    sessionEvent?: 'traffic' | 'performance' | 'error'
   }
 }
 
@@ -178,6 +183,7 @@ export async function action({ request }: ActionFunctionArgs) {
     take?: number
     skip?: number
     options?: Record<string, unknown>
+    sessionEvent?: 'traffic' | 'performance' | 'error'
   } = {
     timeBucket: params.timeBucket || 'day',
     period: params.period || '7d',
@@ -188,6 +194,7 @@ export async function action({ request }: ActionFunctionArgs) {
     password: password || undefined,
     take: params.take,
     skip: params.skip,
+    sessionEvent: params.sessionEvent,
   }
 
   try {
@@ -223,6 +230,33 @@ export async function action({ request }: ActionFunctionArgs) {
           dropoff: params.dropoff,
         })
         return data<ProxyResponse<FunnelSessionsResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getGoalSessions': {
+        const goalId = body.goalId || params.goalId
+        if (!goalId) {
+          return data<ProxyResponse<GoalSessionsResponse>>(
+            { data: null, error: 'goalId is required' },
+            { status: 400 },
+          )
+        }
+
+        const result = await getGoalSessionsServer(request, goalId, {
+          period: analyticsParams.period,
+          from: analyticsParams.from,
+          to: analyticsParams.to,
+          timezone: analyticsParams.timezone,
+          take: params.take,
+          skip: params.skip,
+        })
+        return data<ProxyResponse<GoalSessionsResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)
@@ -715,6 +749,8 @@ export async function action({ request }: ActionFunctionArgs) {
             period: params.period,
             from: formatDateForBackend(params.from),
             to: formatDateForBackend(params.to),
+            filters: params.filters,
+            timezone: params.timezone,
             take: params.take,
             skip: params.skip,
             password: password || undefined,

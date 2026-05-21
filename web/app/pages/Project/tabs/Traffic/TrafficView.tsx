@@ -57,6 +57,7 @@ import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
 import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import { TrafficChart } from '~/pages/Project/tabs/Traffic/TrafficChart'
 import UserFlow from '~/pages/Project/tabs/Traffic/UserFlow'
+import { getChartPointWindow } from '~/pages/Project/View/utils/chartPoint'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
@@ -341,45 +342,14 @@ const TrafficViewInner = ({
 
   const handleDataPointClick = useCallback(
     (d: { x: Date; index: number }) => {
-      const date = dayjs(d.x).tz(timezone)
-      let from: string
-      let to: string
-      let label: string
-
-      switch (timeBucket) {
-        case 'minute':
-          from = date.startOf('minute').toISOString()
-          to = date.endOf('minute').toISOString()
-          label = date.format('MMM D, YYYY HH:mm')
-          break
-        case 'hour':
-          from = date.startOf('hour').toISOString()
-          to = date.endOf('hour').toISOString()
-          label = date.format(
-            timeFormat === '24-hour'
-              ? 'MMM D, YYYY HH:00 - HH:59'
-              : 'MMM D, YYYY h:00 - h:59 A',
-          )
-          break
-        case 'month':
-          from = date.startOf('month').toISOString()
-          to = date.endOf('month').toISOString()
-          label = date.format('MMMM YYYY')
-          break
-        case 'year':
-          from = date.startOf('year').toISOString()
-          to = date.endOf('year').toISOString()
-          label = date.format('YYYY')
-          break
-        case 'day':
-        default:
-          from = date.startOf('day').toISOString()
-          to = date.endOf('day').toISOString()
-          label = date.format('dddd, MMM D, YYYY')
-          break
-      }
-
-      setSessionsDrawer({ from, to, label })
+      setSessionsDrawer(
+        getChartPointWindow({
+          x: d.x,
+          timeBucket,
+          timezone,
+          timeFormat,
+        }),
+      )
     },
     [timeBucket, timeFormat, timezone],
   )

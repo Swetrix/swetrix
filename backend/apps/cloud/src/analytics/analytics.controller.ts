@@ -2152,6 +2152,13 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ) {
     const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
+    const sessionEvent = data.sessionEvent || 'traffic'
+    const sessionDataType =
+      sessionEvent === 'performance'
+        ? DataType.PERFORMANCE
+        : sessionEvent === 'error'
+          ? DataType.ERRORS
+          : DataType.ANALYTICS
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -2176,7 +2183,11 @@ export class AnalyticsController {
     )
 
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+      this.analyticsService.getFiltersQuery(
+        filters,
+        sessionDataType,
+        sessionEvent !== 'traffic',
+      )
 
     let timeBucket
     let diff
@@ -2184,7 +2195,9 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        ['pageview', 'custom_event', 'error'],
+        sessionEvent === 'traffic'
+          ? (['pageview', 'custom_event', 'error'] as const)
+          : sessionEvent,
       )
 
       timeBucket = res.timeBucket[0]
@@ -2219,6 +2232,7 @@ export class AnalyticsController {
       take,
       skip,
       customEVFilterApplied,
+      sessionEvent,
     )
 
     return { sessions, appliedFilters, take, skip }
@@ -2481,7 +2495,16 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const { pid, eid, period, from, to, timeBucket } = data
+    const {
+      pid,
+      eid,
+      period,
+      from,
+      to,
+      timeBucket,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -2505,6 +2528,12 @@ export class AnalyticsController {
       'GET /analytics/error-sessions',
     )
 
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.ERRORS,
+      true,
+    )
+
     let newTimeBucket = timeBucket
     let diff
 
@@ -2518,7 +2547,7 @@ export class AnalyticsController {
       diff = res.diff
     }
 
-    const safeTimezone = this.analyticsService.getSafeTimezone(DEFAULT_TIMEZONE)
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
       from,
       to,
@@ -2535,6 +2564,8 @@ export class AnalyticsController {
       groupToUTC,
       take,
       skip,
+      filtersQuery,
+      filtersParams,
     )
   }
 
