@@ -1061,9 +1061,20 @@ export class ProjectController {
     }
 
     if (projectDTO.origins !== undefined) {
-      project.origins = projectDTO.origins
-        ? (_map(projectDTO.origins, _trim) as string[])
-        : []
+      if (!projectDTO.origins) {
+        project.origins = []
+      } else {
+        if (!Array.isArray(projectDTO.origins)) {
+          throw new BadRequestException('origins must be an array')
+        }
+
+        const MAX_ORIGINS_ITEMS = 1000
+        if (projectDTO.origins.length > MAX_ORIGINS_ITEMS) {
+          throw new BadRequestException('origins is too large')
+        }
+
+        project.origins = _map(projectDTO.origins, _trim) as string[]
+      }
     }
 
     if (projectDTO.ipBlacklist !== undefined) {
