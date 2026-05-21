@@ -63,7 +63,40 @@ import {
 } from '~/utils/session.server'
 
 const GOAL_CONDITION_RELATIONS = new Set(['AND', 'OR'])
-const GOAL_CONDITION_EVENT_TYPES = new Set(['any', 'pageview', 'custom_event'])
+const GOAL_CONDITION_COMMON_FIELDS = [
+  'host',
+  'ref',
+  'so',
+  'me',
+  'ca',
+  'te',
+  'co',
+  'cc',
+  'dv',
+  'br',
+  'os',
+]
+const GOAL_CONDITION_EVENT_TYPES: Record<string, Set<string>> = {
+  any: new Set([
+    ...GOAL_CONDITION_COMMON_FIELDS,
+    'page',
+    'pg',
+    'event',
+    'event_name',
+  ]),
+  pageview: new Set([
+    ...GOAL_CONDITION_COMMON_FIELDS,
+    'page',
+    'pg',
+    'metadata',
+  ]),
+  custom_event: new Set([
+    ...GOAL_CONDITION_COMMON_FIELDS,
+    'event',
+    'event_name',
+    'metadata',
+  ]),
+}
 const GOAL_CONDITION_OPERATORS = new Set([
   'equals',
   'not_equals',
@@ -71,6 +104,12 @@ const GOAL_CONDITION_OPERATORS = new Set([
   'not_contains',
   'exists',
   'not_exists',
+])
+const GOAL_CONDITION_VALUE_OPERATORS = new Set([
+  'equals',
+  'not_equals',
+  'contains',
+  'not_contains',
 ])
 
 type GoalMetadataFilter = {
@@ -176,17 +215,47 @@ const isGoalConditions = (value: unknown) => {
 
   return (
     Array.isArray(value.conditions) &&
-    value.conditions.every(
-      (condition) =>
-        isRecord(condition) &&
-        GOAL_CONDITION_EVENT_TYPES.has(String(condition.eventType)) &&
-        typeof condition.field === 'string' &&
-        GOAL_CONDITION_OPERATORS.has(String(condition.operator)) &&
-        (condition.value === undefined ||
-          typeof condition.value === 'string') &&
-        (condition.metadataKey === undefined ||
-          typeof condition.metadataKey === 'string'),
-    )
+    value.conditions.every((condition) => {
+      if (
+        !isRecord(condition) ||
+        typeof condition.eventType !== 'string' ||
+        typeof condition.field !== 'string' ||
+        typeof condition.operator !== 'string'
+      ) {
+        return false
+      }
+
+      const allowedFields = GOAL_CONDITION_EVENT_TYPES[condition.eventType]
+      if (
+        !allowedFields ||
+        !allowedFields.has(condition.field) ||
+        !GOAL_CONDITION_OPERATORS.has(condition.operator)
+      ) {
+        return false
+      }
+
+      if (condition.field === 'metadata') {
+        if (
+          typeof condition.metadataKey !== 'string' ||
+          condition.metadataKey.trim() === ''
+        ) {
+          return false
+        }
+      } else if (
+        condition.metadataKey !== undefined &&
+        typeof condition.metadataKey !== 'string'
+      ) {
+        return false
+      }
+
+      if (GOAL_CONDITION_VALUE_OPERATORS.has(condition.operator)) {
+        return typeof condition.value === 'string' && condition.value !== ''
+      }
+
+      return (
+        condition.value === undefined || typeof condition.value === 'string'
+      )
+    })
   )
 }
 

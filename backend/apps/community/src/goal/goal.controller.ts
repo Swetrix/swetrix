@@ -832,6 +832,7 @@ export class GoalController {
       WHERE 
         pid = {pid:FixedString(12)}
         AND type IN ('pageview', 'custom_event')
+        AND psid != 0
         ${filtersQuery}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
     `

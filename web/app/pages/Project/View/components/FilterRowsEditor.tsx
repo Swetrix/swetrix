@@ -76,7 +76,7 @@ const getMetadataColumnBase = (column: string) => {
 }
 
 const getOperatorsForColumn = (column: string) => {
-  if (column === 'ev:key' || column === 'tag:key') {
+  if (column.startsWith('ev:key') || column.startsWith('tag:key')) {
     return OPERATORS.filter(
       (operator) => operator.value === 'is' || operator.value === 'isNot',
     )
@@ -354,7 +354,11 @@ const FilterRowsEditor = ({
 
   const fetchFilterValues = useCallback(
     async (column: string) => {
-      if (getMetadataColumnBase(column) !== column || column.includes(':')) {
+      if (
+        (getMetadataColumnBase(column) !== column || column.includes(':')) &&
+        !column.startsWith('ev:') &&
+        !column.startsWith('tag:')
+      ) {
         setFilterValuesCache((prev) =>
           prev[column] ? prev : { ...prev, [column]: [] },
         )

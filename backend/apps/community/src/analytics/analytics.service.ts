@@ -2150,7 +2150,7 @@ export class AnalyticsService {
         GROUP BY psid
       ),
       session_starts AS (
-        SELECT fs.psid, min(s.firstSeen) AS sessionStart
+        SELECT fs.psid, s.firstSeen AS sessionStart
         FROM funnel_sessions fs
         INNER JOIN (
           SELECT psid, firstSeen, lastSeen
@@ -2159,7 +2159,6 @@ export class AnalyticsService {
         ) s ON s.psid = fs.psid
         WHERE s.firstSeen <= fs.firstStepAt
           AND s.lastSeen >= fs.conversionAt
-        GROUP BY fs.psid
       ),
       first_pages AS (
         SELECT fs.psid, min(e.created) AS firstPageAt
