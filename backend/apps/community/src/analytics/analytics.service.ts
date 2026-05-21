@@ -4254,11 +4254,7 @@ export class AnalyticsService {
       SELECT
         countIf(captcha_event = 'generate') as generated,
         countIf(captcha_event = 'pass') as passed,
-        countIf(captcha_event = 'verify_fail') as failed,
-        countIf(captcha_event = 'validation_fail') as validationFailed,
-        countIf(captcha_event = 'replay') as replayed,
         round(if(generated = 0, 0, passed / generated * 100), 2) as passRate,
-        round(if(passed + failed = 0, 0, failed / (passed + failed) * 100), 2) as failRate,
         round(quantileExactIf(0.5)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP50,
         round(quantileExactIf(0.75)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP75,
         round(quantileExactIf(0.95)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP95
@@ -4277,19 +4273,6 @@ export class AnalyticsService {
       ORDER BY difficulty ASC
     `
 
-    const reasonQuery = `
-      WITH
-        ${CAPTCHA_EVENT_SQL} as captcha_event,
-        ${CAPTCHA_REASON_SQL} as reason
-      SELECT reason as name, count() as count
-      ${baseWhere}
-        AND captcha_event = 'generate'
-        AND reason NOT IN ('', 'baseline', 'manual')
-      GROUP BY reason
-      ORDER BY count DESC
-      LIMIT 10
-    `
-
     const solveTimeQuery = `
       WITH
         ${CAPTCHA_EVENT_SQL} as captcha_event,
@@ -4304,15 +4287,12 @@ export class AnalyticsService {
     `
 
     const queryParams = paramsData.params
-    const [summary, difficulty, reasons, solveTime] = await Promise.all([
+    const [summary, difficulty, solveTime] = await Promise.all([
       clickhouse
         .query({ query: summaryQuery, query_params: queryParams })
         .then((resultSet) => resultSet.json<any>()),
       clickhouse
         .query({ query: difficultyQuery, query_params: queryParams })
-        .then((resultSet) => resultSet.json<any>()),
-      clickhouse
-        .query({ query: reasonQuery, query_params: queryParams })
         .then((resultSet) => resultSet.json<any>()),
       clickhouse
         .query({ query: solveTimeQuery, query_params: queryParams })
@@ -4323,17 +4303,11 @@ export class AnalyticsService {
 
     return {
       generated: Number(row.generated || 0),
-      passed: Number(row.passed || 0),
-      failed: Number(row.failed || 0),
-      validationFailed: Number(row.validationFailed || 0),
-      replayed: Number(row.replayed || 0),
       passRate: Number(row.passRate || 0),
-      failRate: Number(row.failRate || 0),
       solveP50: Number(row.solveP50 || 0),
       solveP75: Number(row.solveP75 || 0),
       solveP95: Number(row.solveP95 || 0),
       difficulty: difficulty.data || [],
-      reasons: reasons.data || [],
       solveTime: solveTime.data || [],
     }
   }

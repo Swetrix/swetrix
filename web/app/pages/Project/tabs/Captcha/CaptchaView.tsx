@@ -25,10 +25,12 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
 } from '~/lib/constants'
+import { MetricCard } from '~/pages/Project/tabs/Traffic/MetricCards'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
+import { nFormatter } from '~/utils/generic'
 
 import CCRow from '../../View/components/CCRow'
 import DashboardHeader from '../../View/components/DashboardHeader'
@@ -124,8 +126,8 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
       generated: t('project.captchaAnalytics.generated'),
       passed: t('project.captchaAnalytics.passed'),
       failed: t('project.captchaAnalytics.failed'),
-      validationFailed: t('project.captchaAnalytics.validationFailed'),
-      replayed: t('project.captchaAnalytics.replayed'),
+      validationFailed: t('project.captchaAnalytics.events.validation_fail'),
+      replayed: t('project.captchaAnalytics.events.replay'),
     }),
     [t],
   )
@@ -259,30 +261,17 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
         {
           label: t('project.captchaAnalytics.generated'),
           value: summaryData.generated || 0,
+          valueMapper: (value: number) => nFormatter(value, 1),
         },
         {
           label: t('project.captchaAnalytics.passRate'),
           value: formatPercent(summaryData.passRate),
-        },
-        {
-          label: t('project.captchaAnalytics.failRate'),
-          value: formatPercent(summaryData.failRate),
-        },
-        {
-          label: t('project.captchaAnalytics.validationFailed'),
-          value: summaryData.validationFailed || 0,
-        },
-        {
-          label: t('project.captchaAnalytics.replayed'),
-          value: summaryData.replayed || 0,
+          valueMapper: (value: string) => value,
         },
         {
           label: t('project.captchaAnalytics.medianSolve'),
           value: formatSeconds(summaryData.solveP50),
-        },
-        {
-          label: t('project.captchaAnalytics.topAutoReason'),
-          value: formatReason(summaryData.reasons?.[0]?.name),
+          valueMapper: (value: string) => value,
         },
       ]
     : []
@@ -328,23 +317,6 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
         {dataLoading && hasExistingData ? <LoadingBar /> : null}
         <div>
           <Filters className='mb-3' tnMapping={tnMapping} />
-          {summaryCards.length ? (
-            <div className='mb-3 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7'>
-              {summaryCards.map((card) => (
-                <div
-                  key={card.label}
-                  className='rounded-lg border border-gray-200 bg-white p-3 dark:border-slate-800/60 dark:bg-slate-900/25'
-                >
-                  <div className='text-xs font-medium text-gray-500 dark:text-gray-400'>
-                    {card.label}
-                  </div>
-                  <div className='mt-1 truncate text-lg font-semibold text-gray-900 dark:text-gray-50'>
-                    {card.value}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : null}
           {chartData ? (
             <CaptchaChart
               chart={chartData}
@@ -353,7 +325,20 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
               rotateXAxis={rotateXAxis}
               chartType={chartTypes.line}
               dataNames={dataNames}
-            />
+            >
+              {summaryCards.length ? (
+                <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+                  {summaryCards.map((card) => (
+                    <MetricCard
+                      key={card.label}
+                      label={card.label}
+                      value={card.value}
+                      valueMapper={card.valueMapper}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </CaptchaChart>
           ) : null}
           <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
             {!_isEmpty(panelsData.types)

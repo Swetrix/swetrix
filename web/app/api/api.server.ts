@@ -1651,17 +1651,11 @@ interface CaptchaChartData {
 
 interface CaptchaSummaryData {
   generated: number
-  passed: number
-  failed: number
-  validationFailed: number
-  replayed: number
   passRate: number
-  failRate: number
   solveP50: number
   solveP75: number
   solveP95: number
   difficulty: CaptchaPanelData[]
-  reasons: CaptchaPanelData[]
   solveTime: CaptchaPanelData[]
 }
 

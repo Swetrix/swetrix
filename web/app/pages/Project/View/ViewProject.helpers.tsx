@@ -2327,6 +2327,10 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   'ev:value': t('project.metamapping.ev.value'),
   searchEngine: t('project.mapping.searchEngine'),
   aiReferral: t('project.mapping.aiReferral'),
+  captcha_event: t('project.event'),
+  captcha_difficulty: t('project.mapping.captcha_difficulty'),
+  captcha_reason: t('project.mapping.captcha_reason'),
+  solve_time: t('project.mapping.solve_time'),
   // Combined panel types
   location: t('project.location'),
   browser: t('project.browser'),

@@ -20,6 +20,7 @@ interface CaptchaChartProps {
   chartType: string
   dataNames: Record<string, string>
   className?: string
+  children?: React.ReactNode
 }
 
 export const CaptchaChart = ({
@@ -30,6 +31,7 @@ export const CaptchaChart = ({
   chartType,
   dataNames,
   className,
+  children,
 }: CaptchaChartProps) => {
   const options: ChartOptions = useMemo(() => {
     if (!chart) {
@@ -55,6 +57,7 @@ export const CaptchaChart = ({
 
   return (
     <div className='overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+      {children}
       <MainChart
         chartId='captcha-chart'
         options={options}

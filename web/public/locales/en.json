@@ -1704,12 +1704,8 @@
       "generated": "Generated",
       "passed": "Passed",
       "failed": "Failed",
-      "validationFailed": "Validation failed",
-      "replayed": "Replayed",
       "passRate": "Pass rate",
-      "failRate": "Fail rate",
       "medianSolve": "Median solve",
-      "topAutoReason": "Top Auto reason",
       "difficultyValue": "Difficulty {{value}}",
       "events": {
         "generate": "Generated",
