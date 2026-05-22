@@ -862,7 +862,13 @@ export function useGSCDashboardProxy() {
     [],
   )
 
-  return { fetchDashboard, data, error, isLoading }
+  const resetData = useCallback(() => {
+    setData(null)
+    setError(null)
+    setIsLoading(false)
+  }, [])
+
+  return { fetchDashboard, data, error, isLoading, resetData }
 }
 
 export function useRevenueProxy() {
