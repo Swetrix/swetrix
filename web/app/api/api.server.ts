@@ -1641,12 +1641,28 @@ interface CaptchaPanelData {
 
 interface CaptchaChartData {
   x: string[]
-  results: number[]
+  results?: number[]
+  generated?: number[]
+  passed?: number[]
+  failed?: number[]
+  validationFailed?: number[]
+  replayed?: number[]
+}
+
+interface CaptchaSummaryData {
+  generated: number
+  passRate: number | null
+  solveP50: number
+  solveP75: number
+  solveP95: number
+  difficulty: CaptchaPanelData[]
+  solveTime: CaptchaPanelData[]
 }
 
 export interface CaptchaDataResponse {
   params: Record<string, CaptchaPanelData[]>
   chart?: CaptchaChartData
+  summary?: CaptchaSummaryData
 }
 
 export async function getCaptchaDataServer(

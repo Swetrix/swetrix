@@ -105,6 +105,7 @@ interface CaptchaOptions {
   br?: string | null
   os?: string | null
   cc?: string | null
+  meta?: Record<string, string> | null
   timestamp?: number
 }
 
@@ -220,6 +221,7 @@ export const eventTransformer = (opts: EventTransformerOptions) => {
     br: opts.br || null,
     os: opts.os || null,
     cc: opts.cc || null,
+    ...processMetaKV(opts.meta),
     created:
       typeof opts.timestamp === 'number'
         ? dayjs.utc(opts.timestamp).format('YYYY-MM-DD HH:mm:ss')

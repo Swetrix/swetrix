@@ -4,7 +4,7 @@ import { IsNotEmpty, IsString } from 'class-validator'
 export class ValidateDto {
   @ApiProperty({
     required: true,
-    description: 'Catpcha pass token',
+    description: 'Captcha pass token',
   })
   @IsNotEmpty()
   @IsString()

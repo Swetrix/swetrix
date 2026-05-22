@@ -38,6 +38,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     isCaptchaProject Int8 DEFAULT 0,
     captchaSecretKey Nullable(String) CODEC(ZSTD(3)),
     captchaDifficulty UInt8 DEFAULT 4,
+    captchaDifficultyMode String DEFAULT 'manual' CODEC(ZSTD(3)),
     gscPropertyUri Nullable(String) DEFAULT NULL CODEC(ZSTD(3)),
     gscAccessTokenEnc Nullable(String) DEFAULT NULL CODEC(ZSTD(3)),
     gscRefreshTokenEnc Nullable(String) DEFAULT NULL CODEC(ZSTD(3)),

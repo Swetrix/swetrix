@@ -5,6 +5,7 @@ const queries = [
   `ALTER TABLE ${dbName}.project ADD COLUMN IF NOT EXISTS isCaptchaProject Int8 DEFAULT 0;`,
   `ALTER TABLE ${dbName}.project ADD COLUMN IF NOT EXISTS captchaSecretKey Nullable(String) CODEC(ZSTD(3));`,
   `ALTER TABLE ${dbName}.project ADD COLUMN IF NOT EXISTS captchaDifficulty UInt8 DEFAULT 4;`,
+  `ALTER TABLE ${dbName}.project ADD COLUMN IF NOT EXISTS captchaDifficultyMode String DEFAULT 'manual' CODEC(ZSTD(3));`,
 
   // Create CAPTCHA analytics table (same structure as in initialise_database.js)
   `CREATE TABLE IF NOT EXISTS ${dbName}.captcha

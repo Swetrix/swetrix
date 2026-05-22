@@ -18,7 +18,7 @@ The package exports a single function `validateToken` which takes arguments list
 | --- | --- | --- | --- |
 | token | string | The token returned by the CAPTCHA widget. | YES |
 | secretKey | string | Your CAPTCHA project secret key. | YES |
-| apiURL | string | The API URL to use (default: https://api.swetrix.com/captcha), this one may be used in case you're selfhosting the API. | NO |
+| apiURL | string | The API URL to use (default: https://api.swetrixcaptcha.com/v1/captcha), this one may be used in case you're selfhosting the API. | NO |
 
 Here's an example of how to use the package in your project:
 ```js

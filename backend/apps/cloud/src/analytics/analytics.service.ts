@@ -295,6 +295,25 @@ const ERROR_COLUMN_MAP: Record<string, string> = {
 
 const mapErrorColumn = (type: string): string => ERROR_COLUMN_MAP[type] || type
 
+const captchaMetaValue = (key: string, fallback: string) =>
+  `if(indexOf(\`meta.key\`, '${key}') = 0, '${fallback}', arrayElement(\`meta.value\`, indexOf(\`meta.key\`, '${key}')))`
+
+const CAPTCHA_EVENT_SQL = captchaMetaValue('captcha_event', 'pass')
+const CAPTCHA_DIFFICULTY_SQL = captchaMetaValue('captcha_difficulty', '0')
+const CAPTCHA_REASON_SQL = captchaMetaValue('captcha_reason', '')
+const CAPTCHA_SOLVE_MS_SQL = `toUInt32OrZero(${captchaMetaValue('solve_ms', '0')})`
+const CAPTCHA_SOLVE_TIME_SQL = `multiIf(${CAPTCHA_SOLVE_MS_SQL} = 0, 'unknown', ${CAPTCHA_SOLVE_MS_SQL} < 1000, '<1s', ${CAPTCHA_SOLVE_MS_SQL} < 3000, '1-3s', ${CAPTCHA_SOLVE_MS_SQL} < 10000, '3-10s', ${CAPTCHA_SOLVE_MS_SQL} < 30000, '10-30s', '30s+')`
+
+const CAPTCHA_META_COLUMN_MAP: Record<string, string> = {
+  captcha_event: CAPTCHA_EVENT_SQL,
+  captcha_difficulty: CAPTCHA_DIFFICULTY_SQL,
+  captcha_reason: CAPTCHA_REASON_SQL,
+  solve_time: CAPTCHA_SOLVE_TIME_SQL,
+}
+
+const getCaptchaColumnExpression = (col: string): string =>
+  CAPTCHA_META_COLUMN_MAP[col] || col
+
 const generateParamsQuery = (
   col: string,
   subQuery: string,
@@ -339,7 +358,20 @@ const generateParamsQuery = (
   }
 
   if (type === 'captcha') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${col}`
+    const captchaColumn = getCaptchaColumnExpression(col)
+    let captchaFilter = ''
+
+    if (['cc', 'br', 'os', 'dv'].includes(col)) {
+      captchaFilter = `AND ${CAPTCHA_EVENT_SQL} = 'pass'`
+    } else if (col === 'captcha_difficulty') {
+      captchaFilter = `AND ${CAPTCHA_EVENT_SQL} = 'generate' AND toUInt8OrZero(${CAPTCHA_DIFFICULTY_SQL}) > 0`
+    } else if (col === 'captcha_reason') {
+      captchaFilter = `AND ${CAPTCHA_EVENT_SQL} = 'generate' AND ${CAPTCHA_REASON_SQL} NOT IN ('', 'baseline', 'manual')`
+    } else if (col === 'solve_time') {
+      captchaFilter = `AND ${CAPTCHA_EVENT_SQL} = 'pass' AND ${CAPTCHA_SOLVE_MS_SQL} > 0`
+    }
+
+    return `SELECT ${captchaColumn} as name, count(*) as count ${subQuery} ${captchaFilter} GROUP BY name`
   }
 
   if (customEVFilterApplied) {
@@ -1335,6 +1367,8 @@ export class AnalyticsService {
           sqlColumn = 'event_name'
         } else if (dataType === DataType.ERRORS) {
           sqlColumn = mapErrorColumn(column)
+        } else if (dataType === DataType.CAPTCHA) {
+          sqlColumn = getCaptchaColumnExpression(column)
         }
 
         const isNullFilter =
@@ -3917,9 +3951,14 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        count() as count
+        countIf(captcha_event = 'generate') as generated,
+        countIf(captcha_event = 'pass') as passed,
+        countIf(captcha_event = 'verify_fail') as failed,
+        countIf(captcha_event = 'validation_fail') as validationFailed,
+        countIf(captcha_event = 'replay') as replayed
       FROM (
-        SELECT *,
+        SELECT
+          ${CAPTCHA_EVENT_SQL} as captcha_event,
           ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM events
         WHERE
@@ -3935,9 +3974,12 @@ export class AnalyticsService {
     if (mode === ChartRenderMode.CUMULATIVE) {
       return `
         SELECT
-          *,
-          sum(pageviews) OVER (ORDER BY ${groupBy}) as pageviews,
-          sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
+          ${groupBy},
+          sum(generated) OVER (ORDER BY ${groupBy}) as generated,
+          sum(passed) OVER (ORDER BY ${groupBy}) as passed,
+          sum(failed) OVER (ORDER BY ${groupBy}) as failed,
+          sum(validationFailed) OVER (ORDER BY ${groupBy}) as validationFailed,
+          sum(replayed) OVER (ORDER BY ${groupBy}) as replayed
         FROM (${baseQuery})
       `
     }
@@ -4353,7 +4395,11 @@ export class AnalyticsService {
   }
 
   extractCaptchaChartData(result, x: string[]): any {
-    const count = Array(x.length).fill(0)
+    const generated = Array(x.length).fill(0)
+    const passed = Array(x.length).fill(0)
+    const failed = Array(x.length).fill(0)
+    const validationFailed = Array(x.length).fill(0)
+    const replayed = Array(x.length).fill(0)
 
     for (let row = 0; row < _size(result); ++row) {
       const dateString = this.generateDateString(result[row])
@@ -4361,12 +4407,102 @@ export class AnalyticsService {
       const index = x.indexOf(dateString)
 
       if (index !== -1) {
-        count[index] = result[row].count
+        generated[index] = Number(result[row].generated || 0)
+        passed[index] = Number(result[row].passed || 0)
+        failed[index] = Number(result[row].failed || 0)
+        validationFailed[index] = Number(result[row].validationFailed || 0)
+        replayed[index] = Number(result[row].replayed || 0)
       }
     }
 
     return {
-      count,
+      generated,
+      passed,
+      failed,
+      validationFailed,
+      replayed,
+      results: passed,
+    }
+  }
+
+  async getCaptchaSummary(
+    filtersQuery: string,
+    paramsData: any,
+  ): Promise<object> {
+    const baseWhere = `
+      FROM events
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND type = 'captcha'
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery}
+    `
+
+    const summaryQuery = `
+      WITH
+        ${CAPTCHA_EVENT_SQL} as captcha_event,
+        ${CAPTCHA_SOLVE_MS_SQL} as solve_ms
+      SELECT
+        countIf(captcha_event = 'generate') as generated,
+        countIf(captcha_event = 'pass') as passed,
+        if(generated = 0, NULL, round(passed / generated * 100, 2)) as passRate,
+        round(quantileExactIf(0.5)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP50,
+        round(quantileExactIf(0.75)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP75,
+        round(quantileExactIf(0.95)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP95
+      ${baseWhere}
+    `
+
+    const difficultyQuery = `
+      WITH
+        ${CAPTCHA_EVENT_SQL} as captcha_event,
+        toUInt8OrZero(${CAPTCHA_DIFFICULTY_SQL}) as difficulty
+      SELECT toString(difficulty) as name, count() as count
+      ${baseWhere}
+        AND captcha_event = 'generate'
+        AND difficulty > 0
+      GROUP BY difficulty
+      ORDER BY difficulty ASC
+    `
+
+    const solveTimeQuery = `
+      WITH
+        ${CAPTCHA_EVENT_SQL} as captcha_event,
+        ${CAPTCHA_SOLVE_MS_SQL} as solve_ms,
+        ${CAPTCHA_SOLVE_TIME_SQL} as bucket
+      SELECT bucket as name, count() as count
+      ${baseWhere}
+        AND captcha_event = 'pass'
+        AND solve_ms > 0
+      GROUP BY bucket
+      ORDER BY min(solve_ms) ASC
+    `
+
+    const queryParams = paramsData.params
+    const [summary, difficulty, solveTime] = await Promise.all([
+      clickhouse
+        .query({ query: summaryQuery, query_params: queryParams })
+        .then((resultSet) => resultSet.json<any>()),
+      clickhouse
+        .query({ query: difficultyQuery, query_params: queryParams })
+        .then((resultSet) => resultSet.json<any>()),
+      clickhouse
+        .query({ query: solveTimeQuery, query_params: queryParams })
+        .then((resultSet) => resultSet.json<any>()),
+    ])
+
+    const row = summary.data?.[0] || {}
+
+    return {
+      generated: Number(row.generated || 0),
+      passRate:
+        row.passRate === null || row.passRate === undefined
+          ? null
+          : Number(row.passRate),
+      solveP50: Number(row.solveP50 || 0),
+      solveP75: Number(row.solveP75 || 0),
+      solveP95: Number(row.solveP95 || 0),
+      difficulty: difficulty.data || [],
+      solveTime: solveTime.data || [],
     }
   }
 
@@ -4382,6 +4518,7 @@ export class AnalyticsService {
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
+    let summary: unknown = {}
 
     const promises = [
       // Getting params
@@ -4422,12 +4559,16 @@ export class AnalyticsService {
             query_params: { ...paramsData.params, timezone: safeTimezone },
           })
           .then((resultSet) => resultSet.json<TrafficCEFilterCHResponse>())
-        const { count } = this.extractCaptchaChartData(data, xShifted)
+        const captchaChart = this.extractCaptchaChartData(data, xShifted)
 
         chart = {
           x: xShifted,
-          results: count,
+          ...captchaChart,
         }
+      })(),
+
+      (async () => {
+        summary = await this.getCaptchaSummary(filtersQuery, paramsData)
       })(),
     ]
 
@@ -4436,6 +4577,7 @@ export class AnalyticsService {
     return Promise.resolve({
       params,
       chart,
+      summary,
     })
   }
 

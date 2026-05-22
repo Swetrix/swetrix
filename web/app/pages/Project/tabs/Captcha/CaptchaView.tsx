@@ -1,6 +1,5 @@
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import {
   CompassIcon,
@@ -8,6 +7,10 @@ import {
   MonitorIcon,
   DevicesIcon,
   GlobeIcon,
+  GaugeIcon,
+  WarningIcon,
+  ClockIcon,
+  ShieldCheckIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useContext, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -21,10 +24,12 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
 } from '~/lib/constants'
+import { MetricCard } from '~/pages/Project/tabs/Traffic/MetricCards'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
+import { nFormatter } from '~/utils/generic'
 
 import CCRow from '../../View/components/CCRow'
 import DashboardHeader from '../../View/components/DashboardHeader'
@@ -43,7 +48,16 @@ import { CaptchaChart } from './CaptchaChart'
 import NoCaptchaEvents from './NoCaptchaEvents'
 import WaitingForCaptchaEvent from './WaitingForCaptchaEvent'
 
-const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
+const PANELS_ORDER = [
+  'cc',
+  'br',
+  'os',
+  'dv',
+  'captcha_event',
+  'captcha_difficulty',
+  'solve_time',
+  'captcha_reason',
+]
 
 const iconClassName = 'w-6 h-6'
 const panelIconMapping: Record<string, React.ReactNode> = {
@@ -51,6 +65,10 @@ const panelIconMapping: Record<string, React.ReactNode> = {
   dv: <DevicesIcon className={iconClassName} />,
   br: <CompassIcon className={iconClassName} />,
   os: <MonitorIcon className={iconClassName} />,
+  captcha_event: <ShieldCheckIcon className={iconClassName} />,
+  captcha_difficulty: <GaugeIcon className={iconClassName} />,
+  captcha_reason: <WarningIcon className={iconClassName} />,
+  solve_time: <ClockIcon className={iconClassName} />,
 }
 
 export const captchaTypeNameMapping = (t: any) => ({
@@ -58,6 +76,10 @@ export const captchaTypeNameMapping = (t: any) => ({
   dv: t('project.mapping.dv'),
   br: t('project.mapping.br'),
   os: t('project.mapping.os'),
+  captcha_event: t('project.mapping.captcha_event'),
+  captcha_difficulty: t('project.mapping.captcha_difficulty'),
+  captcha_reason: t('project.mapping.captcha_reason'),
+  solve_time: t('project.mapping.solve_time'),
 })
 
 interface CaptchaViewProps {
@@ -83,8 +105,15 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const [panelsData, setPanelsData] = useState<any>({})
   const [chartData, setChartData] = useState<{
     x: string[]
-    results: number[]
+    results?: number[]
+    generated?: number[]
+    passed?: number[]
+    failed?: number[]
+    validationFailed?: number[]
+    replayed?: number[]
   } | null>(null)
+  const [summaryData, setSummaryData] = useState<any | null>(null)
+  const [summaryCompareData, setSummaryCompareData] = useState<any | null>(null)
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [dataLoading, setDataLoading] = useState(false)
@@ -94,6 +123,11 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const dataNames = useMemo(
     () => ({
       results: t('project.captchaCompletions'),
+      generated: t('project.captchaAnalytics.generated'),
+      passed: t('project.captchaAnalytics.passed'),
+      failed: t('project.captchaAnalytics.failed'),
+      validationFailed: t('project.captchaAnalytics.events.validation_fail'),
+      replayed: t('project.captchaAnalytics.events.replay'),
     }),
     [t],
   )
@@ -133,13 +167,29 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
         to = getFormatDate(dateRange[1])
       }
 
-      const data = await captchaProxy.fetchCaptcha(projectId, {
+      const requestParams = {
         timeBucket,
         period: period === 'custom' && dateRange ? '' : period,
         filters,
         from: period === 'custom' && dateRange ? from : '',
         to: period === 'custom' && dateRange ? to : '',
-      })
+      }
+      const compareFrom = searchParams.get('compareFrom') || ''
+      const compareTo = searchParams.get('compareTo') || ''
+      const compareEnabled =
+        searchParams.get('compare') === 'true' && compareFrom && compareTo
+
+      const [data, compareData] = await Promise.all([
+        captchaProxy.fetchCaptcha(projectId, requestParams),
+        compareEnabled
+          ? captchaProxy.fetchCaptcha(projectId, {
+              ...requestParams,
+              period: '',
+              from: compareFrom,
+              to: compareTo,
+            })
+          : Promise.resolve(null),
+      ])
 
       if (!isMountedRef.current) return
 
@@ -148,27 +198,30 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
         setDataLoading(false)
         setIsPanelsDataEmpty(true)
         setChartData(null)
+        setSummaryData(null)
+        setSummaryCompareData(null)
         return
       }
 
-      const { params, chart } = data
+      const { params, chart, summary } = data
 
-      if (chart && chart.x && chart.results) {
+      if (chart && chart.x) {
         setChartData(chart)
       } else {
         setChartData(null)
       }
 
-      if (_isEmpty(params)) {
-        setIsPanelsDataEmpty(true)
-      } else {
-        setPanelsData({
-          types: _keys(params),
-          data: params,
-        })
-        setIsPanelsDataEmpty(false)
-      }
+      const hasData =
+        !_isEmpty(params) || !_isEmpty(chart?.x) || !_isEmpty(summary)
 
+      setPanelsData({
+        types: PANELS_ORDER,
+        data: params || {},
+      })
+      setIsPanelsDataEmpty(!hasData)
+
+      setSummaryData(summary || null)
+      setSummaryCompareData(compareData?.summary || null)
       setAnalyticsLoading(false)
       setDataLoading(false)
     } catch (reason) {
@@ -177,6 +230,8 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
       setDataLoading(false)
       setIsPanelsDataEmpty(true)
       setChartData(null)
+      setSummaryData(null)
+      setSummaryCompareData(null)
       console.error('[ERROR](loadCaptcha) Loading captcha data failed:', reason)
     }
   }
@@ -212,6 +267,84 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
 
   // Check if we have existing data
   const hasExistingData = chartData !== null || !_isEmpty(panelsData.types)
+  const formatNumber = (value: number, type: 'main' | 'badge') =>
+    `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+  const isFiniteNumber = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value)
+  const formatPercent = (
+    value: number | null | undefined,
+    type: 'main' | 'badge',
+  ) => {
+    if (!isFiniteNumber(value)) {
+      return 'N/A'
+    }
+
+    return `${type === 'badge' && value > 0 ? '+' : ''}${value.toFixed(1)}%`
+  }
+  const formatSeconds = (value?: number) =>
+    value ? `${Number(value).toFixed(2)}s` : 'N/A'
+  const formatSecondsChange = (value: number) =>
+    `${value > 0 ? '+' : value < 0 ? '-' : ''}${Math.abs(Number(value || 0)).toFixed(2)}s`
+  const formatReason = (value?: string | null) =>
+    value
+      ? t(`project.captchaAnalytics.reasons.${value}`, { defaultValue: value })
+      : 'N/A'
+  const formatDifficulty = (value?: string | null) => {
+    switch (Number(value)) {
+      case 2:
+        return t('project.settings.captcha.difficultyLevels.veryEasy')
+      case 3:
+        return t('project.settings.captcha.difficultyLevels.easy')
+      case 4:
+        return t('project.settings.captcha.difficultyLevels.medium')
+      case 5:
+        return t('project.settings.captcha.difficultyLevels.hard')
+      case 6:
+        return t('project.settings.captcha.difficultyLevels.veryHard')
+      default:
+        return t('project.captchaAnalytics.difficultyValue', { value })
+    }
+  }
+  const summaryCards = summaryData
+    ? [
+        {
+          label: t('project.captchaAnalytics.generated'),
+          value: summaryData.generated || 0,
+          change: summaryCompareData
+            ? (summaryData.generated || 0) - (summaryCompareData.generated || 0)
+            : undefined,
+          goodChangeDirection: 'down' as const,
+          valueMapper: formatNumber,
+        },
+        {
+          label: t('project.captchaAnalytics.passRate'),
+          value: summaryData.passRate,
+          change: summaryCompareData
+            ? isFiniteNumber(summaryData.passRate) &&
+              isFiniteNumber(summaryCompareData.passRate)
+              ? summaryData.passRate - summaryCompareData.passRate
+              : undefined
+            : undefined,
+          goodChangeDirection: 'down' as const,
+          valueMapper: formatPercent,
+        },
+        {
+          label: t('project.captchaAnalytics.medianSolve'),
+          value: summaryData.solveP50 || 0,
+          change:
+            summaryCompareData &&
+            summaryData.solveP50 > 0 &&
+            summaryCompareData.solveP50 > 0
+              ? summaryData.solveP50 - summaryCompareData.solveP50
+              : undefined,
+          goodChangeDirection: 'up' as const,
+          valueMapper: (value: number, type: 'main' | 'badge') =>
+            type === 'badge'
+              ? formatSecondsChange(value)
+              : formatSeconds(value),
+        },
+      ]
+    : []
 
   // Show waiting state if project has no captcha data yet
   if (!_isEmpty(project) && !project?.isCaptchaDataExists) {
@@ -262,13 +395,29 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
               rotateXAxis={rotateXAxis}
               chartType={chartTypes.line}
               dataNames={dataNames}
-            />
+            >
+              {summaryCards.length ? (
+                <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+                  {summaryCards.map((card) => (
+                    <MetricCard
+                      key={card.label}
+                      label={card.label}
+                      value={card.value}
+                      change={card.change}
+                      goodChangeDirection={card.goodChangeDirection}
+                      valueMapper={card.valueMapper}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </CaptchaChart>
           ) : null}
           <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
-            {!_isEmpty(panelsData.types)
+            {panelsData.types
               ? _map(PANELS_ORDER, (type: keyof typeof tnMapping) => {
                   const panelName = tnMapping[type]
                   const panelIcon = panelIconMapping[type]
+                  const panelData = panelsData.data?.[type] || []
 
                   if (type === 'cc') {
                     const rowMapper = (entry: any) => {
@@ -288,7 +437,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                         id={type}
                         getFilterLink={getFilterLink}
                         name={panelName}
-                        data={panelsData.data[type]}
+                        data={panelData}
                         rowMapper={rowMapper}
                         activeTabId={type}
                       />
@@ -303,7 +452,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                         id={type}
                         getFilterLink={getFilterLink}
                         name={panelName}
-                        data={panelsData.data[type]}
+                        data={panelData}
                         rowMapper={(entry: {
                           name: keyof typeof deviceIconMapping
                         }) => {
@@ -356,7 +505,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                         id={type}
                         getFilterLink={getFilterLink}
                         name={panelName}
-                        data={panelsData.data[type]}
+                        data={panelData}
                         rowMapper={rowMapper}
                         activeTabId={type}
                       />
@@ -404,8 +553,57 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                         id={type}
                         getFilterLink={getFilterLink}
                         name={panelName}
-                        data={panelsData.data[type]}
+                        data={panelData}
                         rowMapper={rowMapper}
+                        activeTabId={type}
+                      />
+                    )
+                  }
+
+                  if (type === 'captcha_event') {
+                    return (
+                      <Panel
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        getFilterLink={getFilterLink}
+                        name={panelName}
+                        data={panelData}
+                        rowMapper={(entry: any) =>
+                          t(`project.captchaAnalytics.events.${entry.name}`, {
+                            defaultValue: entry.name,
+                          })
+                        }
+                        activeTabId={type}
+                      />
+                    )
+                  }
+
+                  if (type === 'captcha_reason') {
+                    return (
+                      <Panel
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        getFilterLink={getFilterLink}
+                        name={panelName}
+                        data={panelData}
+                        rowMapper={(entry: any) => formatReason(entry.name)}
+                        activeTabId={type}
+                      />
+                    )
+                  }
+
+                  if (type === 'captcha_difficulty') {
+                    return (
+                      <Panel
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        getFilterLink={getFilterLink}
+                        name={panelName}
+                        data={panelData}
+                        rowMapper={(entry: any) => formatDifficulty(entry.name)}
                         activeTabId={type}
                       />
                     )
@@ -418,7 +616,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                       id={type}
                       getFilterLink={getFilterLink}
                       name={panelName}
-                      data={panelsData.data[type]}
+                      data={panelData}
                       activeTabId={type}
                     />
                   )

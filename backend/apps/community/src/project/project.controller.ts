@@ -1060,25 +1060,57 @@ export class ProjectController {
       project.active = projectDTO.active
     }
 
-    if (projectDTO.origins) {
-      project.origins = _map(projectDTO.origins, _trim) as string[]
-    } else {
-      project.origins = []
+    if (projectDTO.origins !== undefined) {
+      if (!projectDTO.origins) {
+        project.origins = []
+      } else {
+        if (!Array.isArray(projectDTO.origins)) {
+          throw new BadRequestException('origins must be an array')
+        }
+
+        const MAX_ORIGINS_ITEMS = 1000
+        if (projectDTO.origins.length > MAX_ORIGINS_ITEMS) {
+          throw new BadRequestException('origins is too large')
+        }
+
+        project.origins = _map(projectDTO.origins, _trim) as string[]
+      }
     }
 
-    if (projectDTO.ipBlacklist) {
-      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim) as string[]
-    } else {
-      project.ipBlacklist = []
+    if (projectDTO.ipBlacklist !== undefined) {
+      if (!projectDTO.ipBlacklist) {
+        project.ipBlacklist = []
+      } else {
+        if (!Array.isArray(projectDTO.ipBlacklist)) {
+          throw new BadRequestException('ipBlacklist must be an array')
+        }
+
+        const MAX_IP_BLACKLIST_ITEMS = 1000
+        if (projectDTO.ipBlacklist.length > MAX_IP_BLACKLIST_ITEMS) {
+          throw new BadRequestException('ipBlacklist is too large')
+        }
+
+        project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim) as string[]
+      }
     }
 
-    if (projectDTO.countryBlacklist) {
-      project.countryBlacklist = _map(
-        projectDTO.countryBlacklist,
-        _trim,
-      ) as string[]
-    } else {
-      project.countryBlacklist = []
+    if (projectDTO.countryBlacklist !== undefined) {
+      if (projectDTO.countryBlacklist) {
+        if (!Array.isArray(projectDTO.countryBlacklist)) {
+          throw new BadRequestException('countryBlacklist must be an array')
+        }
+
+        if (projectDTO.countryBlacklist.length > 1000) {
+          throw new BadRequestException('countryBlacklist is too large')
+        }
+
+        project.countryBlacklist = _map(
+          projectDTO.countryBlacklist,
+          _trim,
+        ) as string[]
+      } else {
+        project.countryBlacklist = []
+      }
     }
 
     if (projectDTO.botsProtectionLevel) {
@@ -1109,6 +1141,10 @@ export class ProjectController {
 
     if (projectDTO.captchaDifficulty !== undefined) {
       project.captchaDifficulty = projectDTO.captchaDifficulty
+    }
+
+    if (projectDTO.captchaDifficultyMode !== undefined) {
+      project.captchaDifficultyMode = projectDTO.captchaDifficultyMode
     }
 
     if (projectDTO.brandKeywords !== undefined) {

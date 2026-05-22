@@ -118,6 +118,8 @@ const CHUNK_SIZE = 5000
 const REPORTS_USERS_CONCURRENCY = 3
 const REPORTS_PROJECTS_CONCURRENCY = 5
 const NO_EVENTS_REMINDER_DELAY_DAYS = 2
+const CAPTCHA_PASS_CONDITION =
+  "type = 'captcha' AND if(indexOf(`meta.key`, 'captcha_event') = 0, 'pass', arrayElement(`meta.value`, indexOf(`meta.key`, 'captcha_event'))) = 'pass'"
 const TELEGRAM_MARKDOWN_URL_KEYS = new Set(['dashboard_url', 'errors_url'])
 
 const mapLimit = async <T, R>(
@@ -148,7 +150,9 @@ const generatePlanUsageQueryForUser = (): string => {
   // Counts every billable event kind (pageview, custom_event, error, captcha)
   // in a single scan over the unified events table.
   return `
-    SELECT {uid:String} AS id, count(*) AS "count"
+    SELECT
+      {uid:String} AS id,
+      countIf(type IN ('pageview', 'custom_event', 'error') OR (${CAPTCHA_PASS_CONDITION})) AS "count"
     FROM events
     WHERE pid IN ({pids:Array(FixedString(12))})
     AND type IN ('pageview', 'custom_event', 'error', 'captcha')
@@ -602,7 +606,7 @@ export class TaskManagerService {
     for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
       const pidChunk = pids.slice(i, i + CHUNK_SIZE)
       const query = `
-        SELECT count() AS totalEvents
+        SELECT countIf(type IN ('pageview', 'custom_event', 'error', 'performance') OR (${CAPTCHA_PASS_CONDITION})) AS totalEvents
         FROM events
         WHERE pid IN ({pids:Array(FixedString(12))})
           AND type IN ('pageview', 'custom_event', 'error', 'captcha', 'performance')

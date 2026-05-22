@@ -1700,6 +1700,34 @@
     },
     "passwordProtectedHint": "Please enter the password to view this dashboard.",
     "captchaCompletions": "CAPTCHA completions",
+    "captchaAnalytics": {
+      "generated": "Generated",
+      "passed": "Passed",
+      "failed": "Failed",
+      "passRate": "Pass rate",
+      "medianSolve": "Median solve",
+      "difficultyValue": "Difficulty {{value}}",
+      "events": {
+        "generate": "Generated",
+        "pass": "Passed",
+        "verify_fail": "Verification failed",
+        "validation_fail": "Validation failed",
+        "replay": "Replay"
+      },
+      "reasons": {
+        "hosting_ip": "Hosting IP",
+        "headless_browser": "Headless browser",
+        "suspicious_headers": "Suspicious headers",
+        "project_spike": "Project spike",
+        "country_spike": "Country spike",
+        "ip_pressure": "IP pressure",
+        "low_pass_ratio": "Low pass ratio",
+        "verify_failures": "Verification failures",
+        "validation_failures": "Validation failures",
+        "replay_attempts": "Replay attempts",
+        "ip_verify_failures": "IP verification failures"
+      }
+    },
     "addAnnotation": "Add annotation",
     "editAnnotation": "Edit annotation",
     "deleteAnnotation": "Delete annotation",
@@ -1938,7 +1966,11 @@
       "ut": "Usage type",
       "ctp": "Connection type",
       "searchEngine": "Search engine",
-      "aiReferral": "AI referral"
+      "aiReferral": "AI referral",
+      "captcha_event": "Challenge status",
+      "captcha_difficulty": "Difficulty",
+      "captcha_reason": "Auto difficulty reasons",
+      "solve_time": "Solve time"
     },
     "usageTypeMapping": {
       "business": "Business",
@@ -2267,7 +2299,9 @@
         "learnMore": "Use this secret key in your backend to verify CAPTCHA tokens. Learn more in our documentation.",
         "difficulty": "CAPTCHA difficulty",
         "difficultyHint": "Higher difficulty levels provide better bot protection but may be more challenging for users to solve.",
+        "difficultyAutoHint": "Auto picks the challenge difficulty dynamically based on traffic spikes, replay attempts, hosting IPs, and other risk signals.",
         "difficultyLevels": {
+          "auto": "Auto",
           "veryEasy": "Very easy",
           "easy": "Easy",
           "medium": "Medium",

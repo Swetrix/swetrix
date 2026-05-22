@@ -111,8 +111,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
   switch (intent) {
     case 'update-project': {
       const name = formData.get('name')?.toString()
-      const isPublic = formData.get('public') === 'true'
-      const isPasswordProtected = formData.get('isPasswordProtected') === 'true'
+      const isPublic = formData.has('public')
+        ? formData.get('public') === 'true'
+        : undefined
+      const isPasswordProtected = formData.has('isPasswordProtected')
+        ? formData.get('isPasswordProtected') === 'true'
+        : undefined
       const password = formData.get('password')?.toString()
       const origins = formData.get('origins')?.toString()
       const ipBlacklist = formData.get('ipBlacklist')?.toString()
@@ -123,6 +127,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const websiteUrl = formData.get('websiteUrl')?.toString()
       const brandKeywords = formData.get('brandKeywords')?.toString()
       const captchaDifficulty = formData.get('captchaDifficulty')?.toString()
+      const rawCaptchaDifficultyMode = formData
+        .get('captchaDifficultyMode')
+        ?.toString()
+      const captchaDifficultyMode =
+        rawCaptchaDifficultyMode === 'manual' ||
+        rawCaptchaDifficultyMode === 'auto'
+          ? rawCaptchaDifficultyMode
+          : undefined
 
       const fieldErrors: ProjectSettingsActionData['fieldErrors'] = {}
 
@@ -139,8 +151,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
       const updateData: Record<string, unknown> = {}
       if (name !== undefined) updateData.name = name
-      updateData.public = isPublic
-      updateData.isPasswordProtected = isPasswordProtected
+      if (isPublic !== undefined) updateData.public = isPublic
+      if (isPasswordProtected !== undefined)
+        updateData.isPasswordProtected = isPasswordProtected
       if (password !== undefined) updateData.password = password
       if (origins !== undefined)
         updateData.origins = origins
@@ -166,6 +179,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
           : null
       if (captchaDifficulty !== undefined)
         updateData.captchaDifficulty = Number(captchaDifficulty)
+      if (captchaDifficultyMode !== undefined)
+        updateData.captchaDifficultyMode = captchaDifficultyMode
 
       const result = await serverFetch<Project>(request, `project/${id}`, {
         method: 'PUT',

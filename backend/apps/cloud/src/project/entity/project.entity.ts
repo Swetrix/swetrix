@@ -20,6 +20,11 @@ export enum BotsProtectionLevel {
   STRICT = 'strict',
 }
 
+enum CaptchaDifficultyMode {
+  MANUAL = 'manual',
+  AUTO = 'auto',
+}
+
 // In case of modifying some properties here add them to the GDPR data export email template
 @Entity()
 export class Project {
@@ -71,6 +76,14 @@ export class Project {
   @ApiProperty()
   @Column('tinyint', { default: 4, unsigned: true })
   captchaDifficulty: number
+
+  @ApiProperty()
+  @Column({
+    type: 'enum',
+    enum: CaptchaDifficultyMode,
+    default: CaptchaDifficultyMode.MANUAL,
+  })
+  captchaDifficultyMode: CaptchaDifficultyMode
 
   @ApiProperty()
   @Column({

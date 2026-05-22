@@ -3,6 +3,7 @@ import {
   Post,
   Body,
   UseGuards,
+  BadRequestException,
   ForbiddenException,
   Headers,
   Ip,
@@ -36,6 +37,11 @@ const CAPTCHA_VERIFY_RL_TIMEOUT = 60 // 1 minute
 // Rate limit: token validations per IP per minute
 const CAPTCHA_VALIDATE_RL_REQUESTS_IP = 120
 const CAPTCHA_VALIDATE_RL_TIMEOUT = 60 // 1 minute
+const CAPTCHA_REPLAY_ERROR_MESSAGE = 'Invalid or expired challenge'
+
+const isCaptchaReplayError = (reason: unknown): boolean =>
+  reason instanceof BadRequestException &&
+  reason.message === CAPTCHA_REPLAY_ERROR_MESSAGE
 
 @Controller({
   version: '1',
@@ -76,7 +82,7 @@ export class CaptchaController {
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
-    return this.captchaService.generateChallenge(pid)
+    return this.captchaService.generateChallenge(pid, headers, ip)
   }
 
   @Post('/verify')
@@ -121,15 +127,52 @@ export class CaptchaController {
       throw new ForbiddenException('PoW verification failed')
     }
 
-    // Verify the PoW solution
-    const isValid = await this.captchaService.verifyPoW(
-      challenge,
-      nonce,
-      solution,
-      pid,
-    )
+    let verification
 
-    if (!isValid) {
+    try {
+      verification = await this.captchaService.verifyPoW(
+        challenge,
+        nonce,
+        solution,
+        pid,
+      )
+    } catch (reason) {
+      if (!isCaptchaReplayError(reason)) {
+        throw reason
+      }
+
+      try {
+        await this.captchaService.logCaptchaReplayForChallenge(
+          challenge,
+          pid,
+          headers,
+          timestamp,
+          ip,
+        )
+      } catch (logReason) {
+        this.logger.error(
+          `[CaptchaController -> verify] Failed to log captcha replay: ${logReason}`,
+        )
+      }
+
+      throw reason
+    }
+
+    if (!verification.valid) {
+      try {
+        await this.captchaService.logCaptchaFailure(
+          pid,
+          headers,
+          timestamp,
+          ip,
+          verification,
+        )
+      } catch (reason) {
+        this.logger.error(
+          `[CaptchaController -> verify] Failed to log captcha failure: ${reason}`,
+        )
+      }
+
       throw new ForbiddenException('PoW verification failed')
     }
 
@@ -140,7 +183,13 @@ export class CaptchaController {
     )
 
     try {
-      await this.captchaService.logCaptchaPass(pid, headers, timestamp, ip)
+      await this.captchaService.logCaptchaPass(
+        pid,
+        headers,
+        timestamp,
+        ip,
+        verification,
+      )
     } catch (reason) {
       this.logger.error(
         `[CaptchaController -> verify] Failed to log captcha pass: ${reason}`,
@@ -163,7 +212,13 @@ export class CaptchaController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    this.logger.log(validateDTO, 'POST /captcha/validate')
+    this.logger.log(
+      {
+        hasToken: Boolean(validateDTO?.token),
+        hasSecret: Boolean(validateDTO?.secret),
+      },
+      'POST /captcha/validate',
+    )
 
     const { token, secret } = validateDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
@@ -177,7 +232,7 @@ export class CaptchaController {
 
     return {
       success: true,
-      data: await this.captchaService.validateToken(token, secret),
+      data: await this.captchaService.validateToken(token, secret, headers, ip),
     }
   }
 }

@@ -5,7 +5,7 @@ import { makeAPIRequest, ENDPOINTS } from './utils'
  *
  * @param {string | object} token The CAPTCHA token.
  * @param {string} secret The secret API key.
- * @param {string | null} apiURL The API URL to use (default: https://api.swetrix.com/captcha).
+ * @param {string | null} apiURL The API URL to use (default: https://api.swetrixcaptcha.com/v1/captcha).
  * @returns {Promise<[boolean, object | null]>} The result of the validation.
  */
 export async function validateToken(token: string | any, secret: string, apiURL?: string): Promise<[boolean, object | string]> {

@@ -117,6 +117,8 @@ import { PendingInvitationType } from '../pending-invitation/pending-invitation.
 import { PlanCode } from '../user/entities/user.entity'
 
 const PROJECTS_MAXIMUM = 50
+const ORIGINS_ITEMS_MAXIMUM = 1000
+const BLACKLIST_ITEMS_MAXIMUM = 1000
 
 const isValidShareDTO = (share: ShareDTO): boolean => {
   return !_isEmpty(_trim(share.email)) && _includes(roles, share.role)
@@ -800,6 +802,36 @@ export class ProjectController {
     await deleteProjectRedis(pid)
 
     return { captchaSecretKey: secret }
+  }
+
+  @ApiBearerAuth()
+  @Delete('/secret-gen/:pid')
+  @HttpCode(200)
+  @Auth()
+  @ApiResponse({ status: 200, description: 'CAPTCHA secret key deleted' })
+  async deleteSecretKey(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string,
+  ): Promise<void> {
+    this.logger.log({ uid, pid }, 'DELETE /project/secret-gen/:pid')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException()
+    }
+
+    this.projectService.allowedToManage(project, uid)
+
+    await this.projectService.update({ id: pid }, { captchaSecretKey: null })
+
+    await deleteProjectRedis(pid)
   }
 
   @Delete('/partially/:pid')
@@ -1747,25 +1779,37 @@ export class ProjectController {
       project.isArchived = projectDTO.isArchived
     }
 
-    if (projectDTO.origins) {
-      project.origins = _map(projectDTO.origins, _trim) as string[]
-    } else {
-      project.origins = []
+    if (projectDTO.origins !== undefined) {
+      if (
+        Array.isArray(projectDTO.origins) &&
+        projectDTO.origins.length > ORIGINS_ITEMS_MAXIMUM
+      ) {
+        throw new BadRequestException('origins is too large')
+      }
+
+      project.origins =
+        Array.isArray(projectDTO.origins) && projectDTO.origins.length > 0
+          ? (_map(projectDTO.origins, _trim) as string[])
+          : []
     }
 
-    if (projectDTO.ipBlacklist) {
-      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim) as string[]
-    } else {
-      project.ipBlacklist = null
+    if (projectDTO.ipBlacklist !== undefined) {
+      project.ipBlacklist =
+        Array.isArray(projectDTO.ipBlacklist) &&
+        projectDTO.ipBlacklist.length > 0
+          ? (_map(
+              projectDTO.ipBlacklist.slice(0, BLACKLIST_ITEMS_MAXIMUM),
+              _trim,
+            ) as string[])
+          : null
     }
 
-    if (projectDTO.countryBlacklist) {
-      project.countryBlacklist = _map(
-        projectDTO.countryBlacklist,
-        _trim,
-      ) as string[]
-    } else {
-      project.countryBlacklist = null
+    if (projectDTO.countryBlacklist !== undefined) {
+      project.countryBlacklist =
+        projectDTO.countryBlacklist &&
+        Array.isArray(projectDTO.countryBlacklist)
+          ? (_map(projectDTO.countryBlacklist, _trim) as string[])
+          : null
     }
 
     if (projectDTO.botsProtectionLevel) {
@@ -1774,6 +1818,11 @@ export class ProjectController {
 
     if (projectDTO.captchaDifficulty !== undefined) {
       project.captchaDifficulty = projectDTO.captchaDifficulty
+    }
+
+    if (projectDTO.captchaDifficultyMode !== undefined) {
+      project.captchaDifficultyMode =
+        projectDTO.captchaDifficultyMode as Project['captchaDifficultyMode']
     }
 
     if (projectDTO.name) {
