@@ -2757,11 +2757,11 @@ export class AnalyticsService {
 
         const periodType = this.getAnalyticsEventType(customEVFilterApplied)
         const currentFiltersQuery = filtersQuery
-          .replaceAll('{groupFrom:String}', '{groupFromUTC:String}')
-          .replaceAll('{groupTo:String}', '{groupToUTC:String}')
+          .replace(/{groupFrom:String}/g, '{groupFromUTC:String}')
+          .replace(/{groupTo:String}/g, '{groupToUTC:String}')
         const previousFiltersQuery = filtersQuery
-          .replaceAll('{groupFrom:String}', '{periodSubtracted:String}')
-          .replaceAll('{groupTo:String}', '{groupFromUTC:String}')
+          .replace(/{groupFrom:String}/g, '{periodSubtracted:String}')
+          .replace(/{groupTo:String}/g, '{groupFromUTC:String}')
 
         const queryCurrent = `
           WITH analytics_counts AS (
