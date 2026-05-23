@@ -7,7 +7,6 @@ import {
   ClockIcon,
   LinkIcon,
   UserIcon,
-  EyeIcon,
   SignInIcon,
 } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
@@ -19,6 +18,7 @@ import { PROJECT_TABS } from '~/lib/constants'
 import { SessionDetails as SessionDetailsType } from '~/lib/models/Project'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
@@ -74,7 +74,8 @@ interface PlatformPart {
   icon?: React.ReactNode
 }
 
-const RECENTLY_ACTIVE_THRESHOLD_SECONDS = 30 * 60
+const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
+const RECENTLY_ACTIVE_THRESHOLD_SECONDS = RECENTLY_ACTIVE_THRESHOLD_MINUTES * 60
 
 const InfoRow = ({
   label,
@@ -410,17 +411,15 @@ export const SessionDetailView = ({
           as='button'
           type='button'
           colour='muted'
-          className='relative inline-flex h-6 w-6 shrink-0 cursor-default items-center justify-center rounded-md bg-transparent p-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
+          className='inline-flex h-6 w-6 shrink-0 cursor-default items-center justify-center rounded-md bg-transparent p-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
         >
-          <EyeIcon className='h-4 w-4' />
-          <span
-            className={cn(
-              'absolute right-0 bottom-0 h-1.5 w-1.5 rounded-full ring-2 ring-white dark:ring-slate-900',
-              details.isLive && 'bg-emerald-500',
-              isRecentlyActive && 'bg-amber-500',
-              !details.isLive && !isRecentlyActive && 'bg-gray-400',
-            )}
-          />
+          {details.isLive ? (
+            <PulsatingCircle className='relative' type='small' />
+          ) : isRecentlyActive ? (
+            <span className='block h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-slate-900' />
+          ) : (
+            <span className='block h-2 w-2 rounded-full border-2 border-gray-300 dark:border-slate-600' />
+          )}
         </Text>
       }
       disableHoverableContent
@@ -449,8 +448,8 @@ export const SessionDetailView = ({
         />
       </section>
 
-      <aside className='order-1 lg:sticky lg:top-14 lg:order-2 lg:h-[calc(100dvh-3.5rem)] lg:self-start'>
-        <div className='h-full space-y-3 rounded-lg border border-gray-200 bg-white px-4 py-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+      <aside className='order-1 lg:sticky lg:top-14 lg:order-2 lg:self-start'>
+        <div className='space-y-3 rounded-lg border border-gray-200 bg-white px-4 py-4 lg:min-h-[calc(100dvh-3.5rem)] dark:border-slate-800/60 dark:bg-slate-900/25'>
           <div className='pb-1'>
             <div className='min-w-0'>
               <div className='mb-1 flex min-w-0 items-center gap-2'>
@@ -688,7 +687,7 @@ export const SessionDetailView = ({
                 rotateXAxis={rotateXAxis}
                 dataNames={dataNames}
                 onZoom={isTouchDevice ? undefined : setZoomedTimeRange}
-                className='h-[190px] [&_svg]:overflow-visible!'
+                className='session-detail-chart h-[190px] [&_svg]:overflow-visible!'
               />
             </PanelSection>
           ) : null}

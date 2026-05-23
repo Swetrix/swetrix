@@ -67,6 +67,14 @@ body.dark .bb-ygrid {
   letter-spacing: 0.02em;
 }
 
+.session-detail-chart .bb-axis-x .tick:first-of-type text {
+  text-anchor: start !important;
+}
+
+.session-detail-chart .bb-axis-x .tick:last-of-type text {
+  text-anchor: end !important;
+}
+
 .bb-legend {
   font-family: var(--font-sans);
 }
