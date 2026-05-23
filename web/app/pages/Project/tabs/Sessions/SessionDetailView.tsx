@@ -411,8 +411,8 @@ export const SessionDetailView = ({
         />
       </section>
 
-      <aside className='order-1 lg:sticky lg:top-14 lg:order-2 lg:self-start'>
-        <div className='h-fit space-y-3 rounded-lg border border-gray-200 bg-white px-4 py-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+      <aside className='order-1 lg:sticky lg:top-14 lg:order-2 lg:h-[calc(100dvh-3.5rem)] lg:self-start'>
+        <div className='h-full space-y-3 rounded-lg border border-gray-200 bg-white px-4 py-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <div>
             <div className='min-w-0 space-y-1.5'>
               {statusNode}
