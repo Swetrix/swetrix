@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
@@ -16,6 +17,7 @@ import { Link } from '~/ui/Link'
 import { BrowserIcon, OSIcon } from '../SharedIcons'
 import { PROJECT_TABS } from '~/lib/constants'
 import { SessionDetails as SessionDetailsType } from '~/lib/models/Project'
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
@@ -35,6 +37,8 @@ import countries from '~/utils/isoCountries'
 import NoSessionDetails from './NoSessionDetails'
 import { Pageflow } from './Pageflow'
 import { SessionChart } from './SessionChart'
+
+dayjs.extend(utc)
 
 interface PageflowItem {
   type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
@@ -148,15 +152,23 @@ const formatCompactElapsed = (seconds: number) => {
   return `${Math.floor(safeSeconds / year)}y`
 }
 
+const parseDateTime = (value: string | null | undefined) => {
+  if (!value) return null
+
+  const date = dayjs.utc(value)
+  if (!date.isValid()) return null
+
+  return date
+}
+
 const formatDateTime = (
   value: string | null | undefined,
   language: string,
   timeFormat: '12-hour' | '24-hour',
+  timezone: string,
 ) => {
-  if (!value) return null
-
-  const date = dayjs(value)
-  if (!date.isValid()) return null
+  const date = parseDateTime(value)
+  if (!date) return null
 
   return date.toDate().toLocaleDateString(language, {
     day: 'numeric',
@@ -166,6 +178,7 @@ const formatDateTime = (
     minute: 'numeric',
     second: 'numeric',
     hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+    timeZone: timezone,
   })
 }
 
@@ -194,6 +207,7 @@ export const SessionDetailView = ({
     i18n: { language },
   } = useTranslation('common')
   const { id: projectId } = useCurrentProject()
+  const { timezone } = useViewProjectContext()
   const { theme } = useTheme()
   const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(
     null,
@@ -224,10 +238,12 @@ export const SessionDetailView = ({
       if (pageviews.length >= 1) {
         const firstPageview = pageviews[0]
         const lastPageview = pageviews[pageviews.length - 1]
-        const diffSeconds = dayjs(lastPageview.created).diff(
-          dayjs(firstPageview.created),
-          'seconds',
-        )
+        const firstPageviewDate = parseDateTime(firstPageview.created)
+        const lastPageviewDate = parseDateTime(lastPageview.created)
+        const diffSeconds =
+          firstPageviewDate && lastPageviewDate
+            ? lastPageviewDate.diff(firstPageviewDate, 'seconds')
+            : 0
         if (diffSeconds > 0) {
           return diffSeconds
         }
@@ -309,23 +325,35 @@ export const SessionDetailView = ({
   const sessionStartAt = activeSession.sessionStart || firstEventAt
   const lastActivityAt =
     activeSession.lastActivity || lastEventAt || sessionStartAt || null
-  const secondsSinceLastActivity = lastActivityAt
-    ? Math.max(0, dayjs().diff(dayjs(lastActivityAt), 'second'))
+  const lastActivityDate = parseDateTime(lastActivityAt)
+  const sessionStartDateTime = parseDateTime(sessionStartAt)
+  const secondsSinceLastActivity = lastActivityDate
+    ? Math.max(0, dayjs().diff(lastActivityDate, 'second'))
     : null
   const lastSeenTime =
     secondsSinceLastActivity !== null
       ? formatCompactElapsed(secondsSinceLastActivity)
       : null
-  const sessionOnlineFor = sessionStartAt
-    ? formatCompactElapsed(dayjs().diff(dayjs(sessionStartAt), 'second'))
+  const sessionOnlineFor = sessionStartDateTime
+    ? formatCompactElapsed(dayjs().diff(sessionStartDateTime, 'second'))
     : sessionDuration > 0
       ? formatCompactElapsed(sessionDuration)
       : null
-  const lastSeenDate = formatDateTime(lastActivityAt, language, timeFormat)
-  const sessionStartDate = formatDateTime(sessionStartAt, language, timeFormat)
+  const lastSeenDate = formatDateTime(
+    lastActivityAt,
+    language,
+    timeFormat,
+    timezone,
+  )
+  const sessionStartDate = formatDateTime(
+    sessionStartAt,
+    language,
+    timeFormat,
+    timezone,
+  )
   const sessionEndDate = details.isLive
     ? null
-    : formatDateTime(lastActivityAt, language, timeFormat)
+    : formatDateTime(lastActivityAt, language, timeFormat, timezone)
   const lastSeenLabel = lastSeenTime
     ? lastSeenTime === 'now'
       ? 'seen now'

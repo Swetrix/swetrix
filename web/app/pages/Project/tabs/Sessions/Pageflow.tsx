@@ -1,3 +1,5 @@
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { TFunction } from 'i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -18,8 +20,11 @@ import {
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { Text } from '~/ui/Text'
 import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+
+dayjs.extend(utc)
 
 interface Metadata {
   key: string
@@ -78,6 +83,38 @@ const formatDuration = (seconds: number): string => {
   if (seconds <= 0) return ''
   if (seconds < 1) return '<1s'
   return getStringFromTime(getTimeFromSeconds(seconds))
+}
+
+const parseDateTime = (value: string | null | undefined) => {
+  if (!value) return null
+
+  const date = dayjs.utc(value)
+  if (!date.isValid()) return null
+
+  return date
+}
+
+const getTimestamp = (value: string | null | undefined) =>
+  parseDateTime(value)?.valueOf() ?? Number.NaN
+
+const formatDateTime = (
+  value: string,
+  language: string,
+  timeFormat: '12-hour' | '24-hour',
+  timezone: string,
+) => {
+  const date = parseDateTime(value)
+  if (!date) return ''
+
+  return date.toDate().toLocaleDateString(language, {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+    timeZone: timezone,
+  })
 }
 
 const StepNumber = ({ number }: { number: number }) => (
@@ -404,13 +441,14 @@ export const Pageflow = ({
     t,
     i18n: { language },
   } = useTranslation('common')
+  const { timezone } = useViewProjectContext()
 
   const filteredPages = useMemo(() => {
     if (!pages) return []
     if (!zoomedTimeRange) return pages
 
     return pages.filter((page) => {
-      const pageTime = new Date(page.created).getTime()
+      const pageTime = getTimestamp(page.created)
       return (
         pageTime >= zoomedTimeRange[0].getTime() &&
         pageTime <= zoomedTimeRange[1].getTime()
@@ -422,8 +460,12 @@ export const Pageflow = ({
     if (filteredPages.length < 2) return []
     const times: number[] = []
     for (let i = 0; i < filteredPages.length - 1; i++) {
-      const currentTime = new Date(filteredPages[i].created).getTime()
-      const nextTime = new Date(filteredPages[i + 1].created).getTime()
+      const currentTime = getTimestamp(filteredPages[i].created)
+      const nextTime = getTimestamp(filteredPages[i + 1].created)
+      if (!Number.isFinite(currentTime) || !Number.isFinite(nextTime)) {
+        times.push(0)
+        continue
+      }
       times.push(Math.round((nextTime - currentTime) / 1000))
     }
     return times
@@ -431,10 +473,13 @@ export const Pageflow = ({
 
   const timeAfterLastEvent = useMemo(() => {
     if (sdur <= 0 || filteredPages.length === 0) return 0
-    const firstEventTime = new Date(filteredPages[0].created).getTime()
-    const lastEventTime = new Date(
+    const firstEventTime = getTimestamp(filteredPages[0].created)
+    const lastEventTime = getTimestamp(
       filteredPages[filteredPages.length - 1].created,
-    ).getTime()
+    )
+    if (!Number.isFinite(firstEventTime) || !Number.isFinite(lastEventTime)) {
+      return 0
+    }
     const remaining = sdur - Math.round((lastEventTime - firstEventTime) / 1000)
     return remaining > 0 ? remaining : 0
   }, [filteredPages, sdur])
@@ -462,16 +507,11 @@ export const Pageflow = ({
       {_map(
         filteredPages,
         ({ value, created, type, metadata, amount, currency }, index) => {
-          const displayCreated = new Date(created).toLocaleDateString(
+          const displayCreated = formatDateTime(
+            created,
             language,
-            {
-              day: 'numeric',
-              month: 'short',
-              hour: 'numeric',
-              minute: 'numeric',
-              second: 'numeric',
-              hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
-            },
+            timeFormat,
+            timezone,
           )
 
           const isLastEvent = index === filteredPages.length - 1
