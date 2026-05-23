@@ -23,6 +23,10 @@ import {
   CaretDownIcon,
   CaretRightIcon,
   StackIcon,
+  CursorClickIcon,
+  MegaphoneIcon,
+  TagIcon,
+  ArrowUpRightIcon,
   ArrowLineRightIcon,
   ArrowLineLeftIcon,
   MagnifyingGlassIcon,
@@ -72,6 +76,16 @@ import {
 const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 const CUSTOM_EVENTS_TOP_LIMITS = [1, 3, 5, 10] as const
+const UTM_TRACKING_PANEL_IDS = new Set(['so', 'me', 'ca', 'te', 'co'])
+const PANEL_EMPTY_STATE_DOCS = {
+  customEvents: 'https://swetrix.com/docs/swetrix-js-reference#track',
+  customEventMetadata: 'https://swetrix.com/docs/swetrix-js-reference#track',
+  pageviewMetadata: 'https://swetrix.com/docs/swetrix-js-reference#pageview',
+  utmTracking:
+    'https://swetrix.com/docs/traffic-sources#1-tag-every-campaign-with-utm-parameters',
+} as const
+
+type PanelDocsEmptyStateVariant = keyof typeof PANEL_EMPTY_STATE_DOCS
 
 const getPercentage = (value: number, total: number, precision = 2) => {
   if (!total) return 0
@@ -80,16 +94,79 @@ const getPercentage = (value: number, total: number, precision = 2) => {
   return Number.isFinite(percentage) ? _round(percentage, precision) : 0
 }
 
-const PanelEmptyState = ({ message }: { message: string }) => (
-  <div className='flex flex-col items-center justify-center py-8 text-center'>
+const getDocsEmptyStateVariant = (
+  id: string,
+  activeTab: keyof typeof PROJECT_TABS,
+): PanelDocsEmptyStateVariant | null => {
+  if (activeTab === PROJECT_TABS.traffic && UTM_TRACKING_PANEL_IDS.has(id)) {
+    return 'utmTracking'
+  }
+
+  return null
+}
+
+interface PanelEmptyStateProps {
+  message?: React.ReactNode
+  children?: React.ReactNode
+  icon?: React.ReactNode
+}
+
+const PanelEmptyState = ({
+  message,
+  children,
+  icon = <StackIcon className='size-5 text-gray-400 dark:text-slate-500' />,
+}: PanelEmptyStateProps) => (
+  <div className='flex h-full flex-1 flex-col items-center justify-center px-4 py-8 text-center'>
     <div className='mb-3 flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-900'>
-      <StackIcon className='size-5 text-gray-400 dark:text-slate-500' />
+      {icon}
     </div>
-    <Text as='p' size='sm' colour='secondary'>
-      {message}
-    </Text>
+    {children ?? (
+      <Text as='p' size='sm' colour='secondary'>
+        {message}
+      </Text>
+    )}
   </div>
 )
+
+const PanelDocsEmptyState = ({
+  variant,
+}: {
+  variant: PanelDocsEmptyStateVariant
+}) => {
+  const { t } = useTranslation('common')
+  const linkLabel = t(`project.emptyStates.${variant}.link`)
+  const icon =
+    variant === 'customEvents' ? (
+      <CursorClickIcon className='size-5 text-gray-400 dark:text-slate-500' />
+    ) : variant === 'utmTracking' ? (
+      <MegaphoneIcon className='size-5 text-gray-400 dark:text-slate-500' />
+    ) : (
+      <TagIcon className='size-5 text-gray-400 dark:text-slate-500' />
+    )
+
+  return (
+    <PanelEmptyState icon={icon}>
+      <div className='max-w-md'>
+        <Text as='p' size='sm' colour='secondary' className='leading-6'>
+          {t(`project.emptyStates.${variant}.title`)}
+        </Text>
+        <Text as='p' size='sm' colour='secondary' className='leading-6'>
+          {t(`project.emptyStates.${variant}.description`)}{' '}
+          <a
+            href={PANEL_EMPTY_STATE_DOCS[variant]}
+            target='_blank'
+            rel='noopener noreferrer'
+            aria-label={`${linkLabel} (opens in a new tab)`}
+            className='inline-flex items-center gap-1 font-medium underline decoration-dashed hover:decoration-solid'
+          >
+            {linkLabel}
+            <ArrowUpRightIcon className='size-3.5' aria-hidden />
+          </a>
+        </Text>
+      </div>
+    </PanelEmptyState>
+  )
+}
 
 interface PanelContainerProps {
   name: React.ReactNode
@@ -529,6 +606,7 @@ const CustomEvents = ({
     () => _sum(_map(Object.values(eventsData || {}), (v) => Number(v) || 0)),
     [eventsData],
   )
+  const hasCustomEvents = !_isEmpty(eventsData)
   const topEventsForChart = useMemo(() => {
     if (_isEmpty(customs)) {
       return []
@@ -845,7 +923,7 @@ const CustomEvents = ({
 
   const renderContent = () => {
     if (_isEmpty(eventsData)) {
-      return <PanelEmptyState message={t('project.noParamData')} />
+      return <PanelDocsEmptyState variant='customEvents' />
     }
 
     return (
@@ -968,6 +1046,14 @@ const CustomEvents = ({
         className='custom-events-stacked-chart h-full w-full'
         deps={[stackedChart, timeBucket, rotateXAxis, timeFormat]}
       />
+    )
+  }
+
+  if (!hasCustomEvents) {
+    return (
+      <PanelContainer name={t('dashboard.events')} type='customEvents'>
+        <PanelDocsEmptyState variant='customEvents' />
+      </PanelContainer>
     )
   }
 
@@ -1284,7 +1370,13 @@ const MetadataKeyBody = ({
 
   const renderContent = () => {
     if (!hasMetadataKeys) {
-      return <PanelEmptyState message={t('project.noParamData')} />
+      return (
+        <PanelDocsEmptyState
+          variant={
+            mode === 'customEvent' ? 'customEventMetadata' : 'pageviewMetadata'
+          }
+        />
+      )
     }
 
     if (!activeKey) {
@@ -1304,6 +1396,10 @@ const MetadataKeyBody = ({
       _isEmpty(valuesData) &&
       (mode === 'property' || _isEmpty(rawMetadata))
     ) {
+      if (mode === 'customEvent') {
+        return <PanelDocsEmptyState variant='customEventMetadata' />
+      }
+
       return <PanelEmptyState message={t('project.noData')} />
     }
 
@@ -2109,6 +2205,7 @@ const Panel = ({
   } | null>(null)
 
   const tnMapping = typeNameMapping(t)
+  const docsEmptyStateVariant = getDocsEmptyStateVariant(id, activeTab)
 
   const entriesToDisplay = useMemo(() => {
     const orderedData = _orderBy(data, 'count', 'desc')
@@ -2151,7 +2248,11 @@ const Panel = ({
       {customRenderer ? (
         customRenderer()
       ) : _isEmpty(data) ? (
-        <PanelEmptyState message={t('project.noParamData')} />
+        docsEmptyStateVariant ? (
+          <PanelDocsEmptyState variant={docsEmptyStateVariant} />
+        ) : (
+          <PanelEmptyState message={t('project.noParamData')} />
+        )
       ) : (
         <>
           <div className='mb-1 flex items-center justify-between p-1'>

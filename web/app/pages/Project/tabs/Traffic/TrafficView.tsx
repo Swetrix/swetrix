@@ -419,10 +419,13 @@ const TrafficViewInner = ({
     return baseChartData
   }, [baseChartData, revenueOverlay])
 
-  const isPanelsDataEmptyRaw = useMemo(
-    () => _isEmpty(panelsData.data) && _isEmpty(panelsData.customs),
-    [panelsData.data, panelsData.customs],
-  )
+  const isPanelsDataEmptyRaw = useMemo(() => {
+    const data = panelsData.data || {}
+    const isPanelDataEmpty =
+      _isEmpty(data) || Object.values(data).every((value) => _isEmpty(value))
+
+    return isPanelDataEmpty && _isEmpty(panelsData.customs)
+  }, [panelsData.data, panelsData.customs])
 
   // Track when we've shown content to prevent NoEvents flash during exit animation
   if (!isPanelsDataEmptyRaw) {
@@ -1417,36 +1420,31 @@ const TrafficViewInner = ({
               })
             : null}
           {/* Combined Metadata Panel - holds both pageview properties and custom event metadata */}
-          {!_isEmpty(panelsData.customs) || !_isEmpty(panelsData.properties) ? (
-            <CombinedMetadataPanel
-              title={t('project.metadata')}
-              property={{
-                metadataKeys: _keys(panelsData.properties),
-                getMetadataValues: _getPropertyMetadata,
-                activeKey: panelsActiveTabs.pageviewMetadata,
-                onKeyChange: (key) => setPanelTab('pageviewMetadata', key),
-              }}
-              customEvent={{
-                metadataKeys: _keys(panelsData.customs),
-                getMetadataValues: getCustomEventMetadata,
-                activeKey: panelsActiveTabs.customEvMetadata,
-                onKeyChange: (key) => setPanelTab('customEvMetadata', key),
-              }}
-              getFilterLink={getFilterLink}
-              chartData={chartData}
-              filters={filters}
-            />
-          ) : null}
-          {/* Custom Events Panel - Full Width */}
-          {!_isEmpty(panelsData.customs) ? (
-            <CustomEvents
-              customs={panelsData.customs}
-              filters={filters}
-              getFilterLink={getFilterLink}
-              chartData={chartData}
-              getCustomEventMetadata={getCustomEventMetadata}
-            />
-          ) : null}
+          <CombinedMetadataPanel
+            title={t('project.metadata')}
+            property={{
+              metadataKeys: _keys(panelsData.properties),
+              getMetadataValues: _getPropertyMetadata,
+              activeKey: panelsActiveTabs.pageviewMetadata,
+              onKeyChange: (key) => setPanelTab('pageviewMetadata', key),
+            }}
+            customEvent={{
+              metadataKeys: _keys(panelsData.customs),
+              getMetadataValues: getCustomEventMetadata,
+              activeKey: panelsActiveTabs.customEvMetadata,
+              onKeyChange: (key) => setPanelTab('customEvMetadata', key),
+            }}
+            getFilterLink={getFilterLink}
+            chartData={chartData}
+            filters={filters}
+          />
+          <CustomEvents
+            customs={panelsData.customs}
+            filters={filters}
+            getFilterLink={getFilterLink}
+            chartData={chartData}
+            getCustomEventMetadata={getCustomEventMetadata}
+          />
         </div>
         <AnnotationModal
           isOpened={isAnnotationModalOpen}

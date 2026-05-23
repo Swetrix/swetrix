@@ -1,4 +1,5 @@
 import { ResponsiveSankey } from '@nivo/sankey'
+import { ArrowClockwiseIcon, TreeStructureIcon } from '@phosphor-icons/react'
 import _isEmpty from 'lodash/isEmpty'
 import { useEffect, useState, memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -6,6 +7,8 @@ import { toast } from 'sonner'
 
 import { useUserFlowProxy } from '~/hooks/useAnalyticsProxy'
 import type { UserFlowResponse } from '~/api/api.server'
+import { PanelEmptyState } from '~/pages/Project/View/Panels'
+import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 
@@ -84,20 +87,27 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
         _isEmpty(userFlow?.descending?.nodes)
   ) {
     return (
-      <>
-        <Text as='p' className='text-md mt-4 flex items-center justify-center'>
+      <PanelEmptyState
+        icon={
+          <TreeStructureIcon className='size-5 text-gray-400 dark:text-slate-500' />
+        }
+      >
+        <Text as='p' size='sm' colour='secondary'>
           {t('project.userFlow.noData')}
         </Text>
-        <button
+        <Button
+          variant='icon'
           type='button'
           onClick={() => {
             setReversed()
           }}
-          className='mt-2 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
+          className='mt-3 gap-1.5 px-3 py-2'
+          aria-label={t('project.reverse')}
         >
+          <ArrowClockwiseIcon className='size-4' />
           {t('project.reverse')}
-        </button>
-      </>
+        </Button>
+      </PanelEmptyState>
     )
   }
 
