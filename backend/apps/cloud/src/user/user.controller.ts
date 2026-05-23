@@ -10,13 +10,22 @@ import {
   HttpCode,
   BadRequestException,
   UseGuards,
+  UseInterceptors,
   ConflictException,
   Headers,
   Ip,
   NotFoundException,
+  UploadedFiles,
 } from '@nestjs/common'
+import { FilesInterceptor } from '@nestjs/platform-express'
 import { Request } from 'express'
-import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import {
+  ApiTags,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+} from '@nestjs/swagger'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _map from 'lodash/map'
@@ -53,6 +62,7 @@ import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { DeleteSelfDTO } from './dto/delete-self.dto'
 import { CancelSubscriptionDTO } from './dto/cancel-subscription.dto'
+import { CreateFeedbackDTO } from './dto/create-feedback.dto'
 import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
@@ -63,6 +73,8 @@ dayjs.extend(utc)
 
 const UNPAID_PLANS = [PlanCode.free, PlanCode.trial, PlanCode.none]
 const ORGANISATION_INVITE_EXPIRE_HOURS = 7 * 24 // 7 days
+const FEEDBACK_ATTACHMENTS_LIMIT = 7
+const FEEDBACK_ATTACHMENT_MAX_SIZE = 5 * 1024 * 1024
 
 @ApiTags('User')
 @Controller('user')
@@ -187,6 +199,72 @@ export class UserController {
     })
 
     await this.userService.update(userId, { apiKey: null })
+  }
+
+  @ApiBearerAuth()
+  @Post('/feedback')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        attachments: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+        },
+      },
+      required: ['message'],
+    },
+  })
+  @UseInterceptors(
+    FilesInterceptor('attachments', FEEDBACK_ATTACHMENTS_LIMIT, {
+      limits: { fileSize: FEEDBACK_ATTACHMENT_MAX_SIZE },
+      fileFilter: (_req, file, callback) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return callback(
+            new BadRequestException('Only image attachments are allowed'),
+            false,
+          )
+        }
+
+        callback(null, true)
+      },
+    }),
+  )
+  async createFeedback(
+    @CurrentUserId() userId: string,
+    @Body() body: CreateFeedbackDTO,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
+    this.logger.log({ userId }, 'POST /user/feedback')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+    const userAgent = headers['user-agent'] || ''
+    const message = body.message.trim()
+
+    if (!message) {
+      throw new BadRequestException('Feedback cannot be empty')
+    }
+
+    const feedback = await this.userService.saveUserFeedback(
+      userId,
+      message,
+      files,
+    )
+
+    await trackCustom(ip, userAgent, {
+      ev: 'FEEDBACK_LEFT',
+      meta: {
+        attachment_count: feedback.attachmentUrls.length,
+      },
+    })
+
+    return {
+      id: feedback.id,
+    }
   }
 
   @ApiBearerAuth()

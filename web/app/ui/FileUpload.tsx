@@ -9,7 +9,10 @@ interface FileUploadProps {
   accept?: string
   disabled?: boolean
   loading?: boolean
+  variant?: 'regular' | 'mini'
+  multiple?: boolean
   onFile: (file: File) => void
+  onFiles?: (files: File[]) => void
   label?: React.ReactNode
   hint?: React.ReactNode
   className?: string
@@ -19,7 +22,10 @@ export default function FileUpload({
   accept,
   disabled,
   loading,
+  variant = 'regular',
+  multiple,
   onFile,
+  onFiles,
   label,
   hint,
   className,
@@ -29,13 +35,28 @@ export default function FileUpload({
   const [dragOver, setDragOver] = useState(false)
 
   const isDisabled = disabled || loading
+  const isMini = variant === 'mini'
 
-  const handleFile = useCallback(
-    (file: File | undefined) => {
-      if (!file || isDisabled) return
-      onFile(file)
+  const handleFiles = useCallback(
+    (files: FileList | File[] | null | undefined) => {
+      if (!files || isDisabled) return
+
+      const selectedFiles = Array.from(files)
+      if (!selectedFiles.length) return
+
+      if (multiple) {
+        if (onFiles) {
+          onFiles(selectedFiles)
+          return
+        }
+
+        selectedFiles.forEach(onFile)
+        return
+      }
+
+      onFile(selectedFiles[0])
     },
-    [isDisabled, onFile],
+    [isDisabled, multiple, onFile, onFiles],
   )
 
   const handleDragOver = useCallback(
@@ -59,25 +80,26 @@ export default function FileUpload({
       e.stopPropagation()
       setDragOver(false)
       if (isDisabled) return
-      handleFile(e.dataTransfer.files?.[0])
+      handleFiles(e.dataTransfer.files)
     },
-    [isDisabled, handleFile],
+    [isDisabled, handleFiles],
   )
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      handleFile(e.target.files?.[0])
+      handleFiles(e.target.files)
       e.target.value = ''
     },
-    [handleFile],
+    [handleFiles],
   )
 
   return (
     <label
       htmlFor={inputId}
       className={cn(
-        'group relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-[background-color,border-color,box-shadow] duration-200 ease-out',
+        'group relative flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed transition-[background-color,border-color,box-shadow] duration-200 ease-out',
         'focus-within:ring-2 focus-within:ring-slate-900 focus-within:ring-offset-2 dark:focus-within:ring-slate-300 dark:focus-within:ring-offset-slate-950',
+        isMini ? 'flex-row gap-3 p-3 text-left' : 'flex-col p-6 text-center',
         isDisabled
           ? 'cursor-not-allowed border-gray-200 bg-gray-50/50 dark:border-slate-800 dark:bg-slate-900/40'
           : dragOver
@@ -96,29 +118,48 @@ export default function FileUpload({
         type='file'
         className='sr-only'
         accept={accept}
+        multiple={multiple}
         disabled={isDisabled}
         onChange={handleChange}
       />
 
       {loading ? (
-        <div className='space-y-2'>
-          <SpinnerIcon className='mx-auto size-8 animate-spin text-gray-400 dark:text-gray-500' />
+        <div
+          className={cn(
+            isMini
+              ? 'flex min-w-0 items-center gap-3'
+              : 'space-y-2 text-center',
+          )}
+        >
+          <SpinnerIcon
+            className={cn(
+              'animate-spin text-gray-400 dark:text-gray-500',
+              isMini ? 'size-5 shrink-0' : 'mx-auto size-8',
+            )}
+          />
           {label && (
             <Text
               as='p'
               size='sm'
               colour='inherit'
-              className='text-gray-500 dark:text-gray-400'
+              className='min-w-0 text-gray-500 dark:text-gray-400'
             >
               {label}
             </Text>
           )}
         </div>
       ) : (
-        <div className='space-y-2'>
+        <div
+          className={cn(
+            isMini
+              ? 'flex min-w-0 items-center gap-3'
+              : 'space-y-2 text-center',
+          )}
+        >
           <div
             className={cn(
-              'mx-auto flex size-10 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition-colors duration-200 ease-out dark:bg-slate-800/80 dark:text-gray-400',
+              'flex shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition-colors duration-200 ease-out dark:bg-slate-800/80 dark:text-gray-400',
+              isMini ? 'size-8' : 'mx-auto size-10',
               !isDisabled &&
                 'group-hover:bg-gray-200 group-hover:text-gray-700 dark:group-hover:bg-slate-800 dark:group-hover:text-gray-200',
               dragOver &&
@@ -131,16 +172,18 @@ export default function FileUpload({
               aria-hidden='true'
             />
           </div>
-          {label && (
-            <Text as='p' size='sm' weight='medium' colour='primary'>
-              {label}
-            </Text>
-          )}
-          {hint && (
-            <Text as='p' size='xs' colour='muted'>
-              {hint}
-            </Text>
-          )}
+          <div className='min-w-0'>
+            {label && (
+              <Text as='p' size='sm' weight='medium' colour='primary'>
+                {label}
+              </Text>
+            )}
+            {hint && (
+              <Text as='p' size='xs' colour='muted'>
+                {hint}
+              </Text>
+            )}
+          </div>
         </div>
       )}
     </label>

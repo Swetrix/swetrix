@@ -2802,6 +2802,28 @@
     "demo": {
       "title": "Book a demo call",
       "desc": "Book a demo with our team to see how Swetrix can solve your problems"
+    },
+    "feedback": {
+      "desc": "Have product feedback, bugs, or ideas? <feedback>Give feedback</feedback> and include screenshots if useful."
+    }
+  },
+  "feedback": {
+    "giveFeedback": "Give feedback",
+    "title": "Share feedback",
+    "description": "Tell us what felt confusing, what broke, or what would make Swetrix better for you.",
+    "inputLabel": "Your feedback",
+    "placeholder": "Add a few details so we can understand the context...",
+    "addImage": "Add screenshot (optional)",
+    "addImageHint": "Drop or paste an image here",
+    "removeImage": "Remove image",
+    "send": "Send feedback",
+    "sent": "Thanks for the feedback!",
+    "errors": {
+      "messageRequired": "Please enter your feedback",
+      "messageTooLong": "Feedback must be {{count}} characters or fewer",
+      "imageOnly": "Please attach images only",
+      "imageTooLarge": "Image must be {{size}} or smaller",
+      "tooManyImages": "You can attach up to {{count}} images"
     }
   },
   "open": {
