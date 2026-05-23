@@ -173,7 +173,12 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
           <Text as='h3' size='lg' weight='bold'>
             {t('project.settings.annotations.title')}
           </Text>
-          <Text as='p' size='sm' colour='muted' className='mt-1 max-w-prose'>
+          <Text
+            as='p'
+            size='sm'
+            colour='secondary'
+            className='mt-1 max-w-prose'
+          >
             {t('project.settings.annotations.description')}
           </Text>
         </div>
@@ -187,7 +192,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
 
       {_isEmpty(annotations) ? (
         <div className='rounded-lg border border-dashed border-gray-300 p-8 text-center dark:border-slate-700'>
-          <Text as='p' colour='muted'>
+          <Text as='p' colour='secondary'>
             {t('project.settings.annotations.empty')}
           </Text>
           {allowedToManage ? (

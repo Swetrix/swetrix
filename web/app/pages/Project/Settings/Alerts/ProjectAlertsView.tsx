@@ -17,7 +17,7 @@ import {
   BellSlashIcon,
 } from '@phosphor-icons/react'
 import { useMemo, useState, useEffect, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
@@ -36,33 +36,7 @@ import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 import ProjectAlertsSettings from './ProjectAlertsSettings'
-
-const NoNotificationChannelSet = ({
-  channelsLink,
-}: {
-  channelsLink: string
-}) => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='mb-4 flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center dark:border-amber-500/20 dark:bg-amber-500/10'>
-      <WarningOctagonIcon className='size-5 shrink-0 text-amber-600 dark:text-amber-400' />
-      <Text
-        as='p'
-        size='sm'
-        className='flex-1 text-amber-800 dark:text-amber-200'
-      >
-        {t('alert.noNotificationChannel')}
-      </Text>
-      <Link
-        to={channelsLink}
-        className='shrink-0 self-start rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-700 sm:self-auto dark:bg-amber-600 dark:hover:bg-amber-500'
-      >
-        {t('common.fixIt')}
-      </Link>
-    </div>
-  )
-}
+import Alert from '~/ui/Alert'
 
 const COLOUR_QUERY_METRIC_MAPPING: Record<
   (typeof QUERY_METRIC)[keyof typeof QUERY_METRIC],
@@ -191,7 +165,12 @@ const AlertRow = ({
                   className='text-[10px]'
                 />
                 {/* Mobile: Show last triggered */}
-                <Text as='span' size='xs' colour='muted' className='sm:hidden'>
+                <Text
+                  as='span'
+                  size='xs'
+                  colour='secondary'
+                  className='sm:hidden'
+                >
                   {lastTriggeredText
                     ? `• ${lastTriggeredText}`
                     : `• ${t('alert.never')}`}
@@ -204,13 +183,13 @@ const AlertRow = ({
           <div className='flex shrink-0 items-center gap-3'>
             {/* Desktop: Last triggered */}
             <div className='hidden text-right sm:block'>
-              <Text as='p' size='xs' colour='muted'>
+              <Text as='p' size='xs' colour='secondary'>
                 {t('alert.lastTriggered')}
               </Text>
               <Text
                 as='p'
                 size='sm'
-                colour={lastTriggeredText ? 'primary' : 'muted'}
+                colour={lastTriggeredText ? 'primary' : 'secondary'}
               >
                 {lastTriggeredText || t('alert.never')}
               </Text>
@@ -522,14 +501,25 @@ const ProjectAlertsInner = ({
         ) : (
           <>
             {!hasAnyAlertWithChannels ? (
-              <NoNotificationChannelSet
-                channelsLink={`/projects/${projectId}/settings?tab=channels`}
-              />
+              <Alert variant='warning' className='mb-4'>
+                <Trans
+                  t={t}
+                  i18nKey='alert.noChannels'
+                  components={{
+                    url: (
+                      <Link
+                        to={`/projects/settings/${projectId}?tab=channels`}
+                        className='font-medium underline hover:text-amber-900 dark:hover:text-amber-100'
+                      />
+                    ),
+                  }}
+                />
+              </Alert>
             ) : null}
 
             {/* Header with add button */}
             <div className='mb-4 flex items-center justify-between'>
-              <Text as='p' size='sm' colour='muted'>
+              <Text as='p' size='sm' colour='secondary'>
                 {t('alert.totalCount', { count: total })}
               </Text>
               <Button onClick={handleNewAlert}>

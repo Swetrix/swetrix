@@ -239,15 +239,35 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
   )
 }
 
-const NoSubscribers = () => {
+const NoSubscribers = ({ onAdd }: { onAdd: () => void }) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-      <div className='mx-auto w-full max-w-7xl'>
-        <Text as='h2' size='xl' className='mb-8 px-4 text-center leading-snug'>
-          {t('project.settings.noPeople')}
-        </Text>
+    <div className='mt-6 rounded-lg border border-dashed border-gray-300 bg-gray-50/40 p-8 text-center dark:border-slate-700 dark:bg-slate-900/30'>
+      <div className='mx-auto flex size-12 items-center justify-center rounded-lg bg-white ring-1 ring-gray-200 ring-inset dark:bg-slate-950 dark:ring-slate-700'>
+        <EnvelopeSimpleIcon
+          className='size-6 text-slate-500 dark:text-slate-400'
+          weight='duotone'
+        />
+      </div>
+      <Text as='p' size='base' weight='semibold' className='mt-4'>
+        {t('project.emails.emptyTitle')}
+      </Text>
+      <Text
+        as='p'
+        size='sm'
+        colour='secondary'
+        className='mx-auto mt-1 max-w-md'
+      >
+        {t('project.emails.emptyDescription')}
+      </Text>
+      <div className='mt-5 flex justify-center'>
+        <Button onClick={onAdd}>
+          <span className='inline-flex items-center gap-1'>
+            <EnvelopeSimpleIcon className='size-4' aria-hidden />
+            {t('project.emails.add')}
+          </span>
+        </Button>
       </div>
     </div>
   )
@@ -455,7 +475,12 @@ const Emails = ({ projectId }: { projectId: string }) => {
           <Text as='h3' size='lg' weight='bold'>
             {t('project.emails.title')}
           </Text>
-          <Text as='p' size='sm' colour='muted' className='mt-1 max-w-prose'>
+          <Text
+            as='p'
+            size='sm'
+            colour='secondary'
+            className='mt-1 max-w-prose'
+          >
             {t('project.emails.description')}
           </Text>
         </div>
@@ -470,7 +495,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
             <Loader />
           </div>
         ) : _isEmpty(emails) ? (
-          <NoSubscribers />
+          <NoSubscribers onAdd={() => setShowModal(true)} />
         ) : (
           <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
             <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>

@@ -1,8 +1,29 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import { Text } from '~/ui/Text'
+
+interface DangerActionProps {
+  title: string
+  description: string
+  action: ReactNode
+}
+
+const DangerAction = ({ title, description, action }: DangerActionProps) => (
+  <div className='flex flex-col items-start gap-4 py-5 sm:flex-row sm:items-center sm:justify-between'>
+    <div>
+      <Text as='h4' size='sm' weight='medium'>
+        {title}
+      </Text>
+      <Text as='p' size='sm' colour='secondary' className='mt-1'>
+        {description}
+      </Text>
+    </div>
+    <div className='shrink-0'>{action}</div>
+  </div>
+)
 
 interface DangerZoneProps {
   isActive: boolean
@@ -29,91 +50,75 @@ const DangerZone = ({
 
   return (
     <div>
-      <Text as='h3' size='lg' weight='bold'>
-        {t('project.settings.tabs.danger')}
-      </Text>
-
-      <div className='mt-6 mb-8'>
-        <Checkbox
-          checked={isActive}
-          onChange={onToggleActive}
-          name='active'
-          label={t('project.settings.enabled')}
-          hint={t('project.settings.enabledHint')}
-        />
-        <div className='mt-4 flex'>
+      <section>
+        <Text as='h3' size='lg' weight='bold'>
+          {t('project.settings.projectStatus')}
+        </Text>
+        <div className='mt-2'>
+          <Checkbox
+            checked={isActive}
+            onChange={onToggleActive}
+            name='active'
+            label={t('project.settings.enabled')}
+            hint={t('project.settings.enabledHint')}
+            classes={{ hint: 'max-w-prose' }}
+          />
+        </div>
+        <div className='mt-4'>
           <Button type='submit' loading={isSaving}>
             {t('common.save')}
           </Button>
         </div>
-      </div>
+      </section>
 
-      <hr className='my-6 border-gray-200 dark:border-gray-800' />
-
-      <div className='flex flex-col gap-6'>
-        <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div>
-            <Text as='div' size='sm' weight='medium'>
-              {t('project.settings.transfer')}
-            </Text>
-            <Text as='p' size='sm' colour='muted' className='mt-1'>
-              {t('project.settings.transferShort')}
-            </Text>
-          </div>
-          <Button
-            variant='danger-outline'
-            type='button'
-            onClick={() => setShowTransfer(true)}
-            className='shrink-0'
-          >
-            {t('project.settings.transfer')}
-          </Button>
+      <section className='mt-8'>
+        <Text as='h3' size='lg' weight='bold'>
+          {t('project.settings.destructiveActions')}
+        </Text>
+        <div className='mt-2 divide-y divide-gray-200 dark:divide-gray-800'>
+          <DangerAction
+            title={t('project.settings.transfer')}
+            description={t('project.settings.transferShort')}
+            action={
+              <Button
+                variant='danger-outline'
+                type='button'
+                onClick={() => setShowTransfer(true)}
+              >
+                {t('project.settings.transfer')}
+              </Button>
+            }
+          />
+          <DangerAction
+            title={t('project.settings.reset')}
+            description={t('project.settings.resetShort')}
+            action={
+              <Button
+                variant='danger-outline'
+                type='button'
+                onClick={() => !setResetting && setShowReset(true)}
+                loading={setResetting}
+              >
+                {t('project.settings.reset')}
+              </Button>
+            }
+          />
+          <DangerAction
+            title={t('project.settings.delete')}
+            description={t('project.settings.deleteShort')}
+            action={
+              <Button
+                variant='danger'
+                type='button'
+                onClick={() => !isDeleting && setShowDelete(true)}
+                loading={isDeleting}
+              >
+                {t('project.settings.delete')}
+              </Button>
+            }
+          />
         </div>
-
-        <hr className='border-gray-200 dark:border-gray-800' />
-
-        <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div>
-            <Text as='div' size='sm' weight='medium'>
-              {t('project.settings.reset')}
-            </Text>
-            <Text as='p' size='sm' colour='muted' className='mt-1'>
-              {t('project.settings.resetShort')}
-            </Text>
-          </div>
-          <Button
-            variant='danger-outline'
-            type='button'
-            onClick={() => !setResetting && setShowReset(true)}
-            loading={setResetting}
-            className='shrink-0'
-          >
-            {t('project.settings.reset')}
-          </Button>
-        </div>
-
-        <hr className='border-gray-200 dark:border-gray-800' />
-
-        <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div>
-            <Text as='div' size='sm' weight='medium'>
-              {t('project.settings.delete')}
-            </Text>
-            <Text as='p' size='sm' colour='muted' className='mt-1'>
-              {t('project.settings.deleteShort')}
-            </Text>
-          </div>
-          <Button
-            variant='danger'
-            type='button'
-            onClick={() => !isDeleting && setShowDelete(true)}
-            loading={isDeleting}
-            className='shrink-0'
-          >
-            {t('project.settings.delete')}
-          </Button>
-        </div>
-      </div>
+      </section>
     </div>
   )
 }

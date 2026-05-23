@@ -319,7 +319,12 @@ const NotificationChannels = ({
           <Text as='h3' size='lg' weight='bold'>
             {headingTitle}
           </Text>
-          <Text as='p' size='sm' colour='muted' className='mt-1 max-w-prose'>
+          <Text
+            as='p'
+            size='sm'
+            colour='secondary'
+            className='mt-1 max-w-prose'
+          >
             {headingDescription}
           </Text>
         </div>

@@ -11,56 +11,55 @@ To access these settings, go to your **Project Settings** page. You can learn ho
 
 The **General** tab allows you to configure the basic identity of your project.
 
-- **Project Name**: A friendly name for your project (e.g., "My Personal Blog").
+- **Project name**: A friendly name for your project (e.g., "My Personal Blog").
 - **Website URL**: The main URL of the website you are tracking.
 - **Project ID**: A unique identifier for your project (read-only).
-- **Sharable Link**: A direct link to your public or password-protected dashboard (read-only).
 
 ## Security (Shields)
 
 The **Shields** tab provides powerful tools to protect your analytics from spam, bots, and unwanted traffic.
 
-### Origins
+### Allowed origins
 
-By default, Swetrix accepts events from any domain. If you want to restrict tracking to specific domains only, you can add them here.
+By default, Swetrix accepts events from any domain. If you want to restrict tracking to specific domains, add the domains that are allowed to send analytics using this Project ID.
 
-- Enter one domain per line.
+- Separate multiple domains with commas.
 - Requests from domains not listed here will be rejected.
-- Leave empty to allow all domains (default).
+- Leave the field empty to allow all domains.
+- Wildcards are supported, for example `cornell.edu`, `app.example.com`, or `*.gov.uk`.
 
-### IP Blacklist
+### Blocked IP addresses
 
-You can block traffic from specific IP addresses to exclude them from your analytics (e.g., your own office IP).
+You can ignore traffic from specific IP addresses or CIDR ranges, which is useful for excluding your own visits from analytics.
 
-- Enter one IP address per line.
-- Supports both IPv4 and IPv6.
+- Separate multiple values with commas.
+- Supports IPv4, IPv6, and CIDR ranges, for example `172.126.10.16`, `192.168.0.1/32`, or `::1`.
 
-### Country Blacklist
+### Blocked countries
 
-If you want to completely ignore traffic from specific countries, you can add them to the blacklist.
+Choose the countries you don't want to track. Traffic from these countries will be ignored in your analytics.
 
-- Select countries from the dropdown menu.
-- Traffic from these countries will not be recorded.
+- Select countries from the country dropdown.
 
-### Bot Protection Level
+### Bot traffic filtering
 
-Swetrix has built-in bot detection. You can adjust the strictness of this protection:
+Swetrix has built-in bot detection. You can choose how aggressively bot and automated traffic should be filtered from your analytics:
 
-- **Off**: No bot detection. All traffic is recorded.
-- **Basic** _(default)_: Filters traffic by user-agent string and headless-browser fingerprints.
-- **Strict**: Adds suspicious-header, probe-path, referrer-spam, and (on cloud) datacenter-IP checks.
+- **Off**: Tracks all incoming traffic, including bots and automated requests.
+- **Basic** _(default)_: Ignores common bots detected by their user agent and known headless-browser fingerprints.
+- **Strict**: Ignores more automated traffic, including suspicious headers, vulnerability-scan paths, referrer spam, and (on cloud) datacenter IPs.
 
-Below the dropdown you'll find a per-project report showing how many requests were blocked, broken down by classification and country. See the dedicated [Bot Protection](/bot-protection) page for the full list of detection methods, privacy notes, and FAQ.
+Below the dropdown you'll find a per-project **Blocked traffic** report showing how many requests were filtered out, broken down by classification and country. See the dedicated [Bot Protection](/bot-protection) page for the full list of detection methods, privacy notes, and FAQ.
 
 ## Access Control
 
-The **Access** tab manages who can see your data and which team owns the project.
+The **Access** tab manages who can see your dashboard and which organisation the project belongs to.
 
 ### Visibility Settings
 
-- **Enabled**: Toggles data collection on or off. If disabled, no new events will be recorded.
-- **Public Dashboard**: If enabled, anyone with the link can view your analytics dashboard. No login required.
-- **Password Protected**: If enabled, visitors must enter a password to view the dashboard. Useful for sharing stats with clients without requiring them to create an account.
+- **Sharable Link**: A direct link to your public or password-protected dashboard (read-only).
+- **Public dashboard**: If enabled, anyone with the link can view your analytics dashboard. No login required.
+- **Password protected**: If enabled, visitors must enter a password to view the dashboard. Useful for sharing stats with clients without requiring them to create an account.
 
 ### Organisation Assignment
 
@@ -68,8 +67,9 @@ If you are a member of an Organisation (Team), you can transfer the project to t
 
 ## Danger Zone
 
-The **Danger Zone** contains destructive actions. Proceed with caution.
+The **Danger Zone** contains project status controls and destructive actions. Proceed with caution.
 
-- **Transfer Project**: Move ownership of the project to another user. See [Transfer Ownership](/how-to-transfer-ownership-of-your-website) for details.
-- **Reset Data**: Clear all or some of your analytics data. See [Reset Site Data](/reset-sites-data) for details.
-- **Delete Project**: Permanently delete the project and all associated data. **This action cannot be undone.**
+- **Collect analytics data**: Turn this off to stop collecting new analytics data. Existing data and project settings stay available.
+- **Transfer ownership**: Move ownership of the project to another user. See [Transfer Ownership](/how-to-transfer-ownership-of-your-website) for details.
+- **Reset project**: Delete analytics data while keeping project settings and Project ID. See [Reset project data](/reset-sites-data) for details.
+- **Delete project**: Permanently delete the project and all associated data. **This action cannot be undone.**

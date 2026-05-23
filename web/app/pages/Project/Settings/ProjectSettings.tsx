@@ -1088,7 +1088,6 @@ const ProjectSettings = () => {
                     errors={errors}
                     beenSubmitted={beenSubmitted}
                     handleInput={handleInput}
-                    sharableLink={sharableLink}
                   />
                 ) : null}
 
@@ -1123,6 +1122,8 @@ const ProjectSettings = () => {
                     organisations={organisations}
                     onAssignOrganisation={assignOrganisation}
                     openPasswordModal={() => setShowProtected(true)}
+                    handleInput={handleInput}
+                    sharableLink={sharableLink}
                   />
                 ) : null}
 
@@ -1139,7 +1140,7 @@ const ProjectSettings = () => {
                 <Text as='h3' size='lg' weight='bold'>
                   {t('project.settings.blockedTraffic')}
                 </Text>
-                <Text as='p' size='sm' colour='muted' className='mt-1'>
+                <Text as='p' size='sm' colour='secondary' className='mt-1'>
                   {t('project.settings.blockedTrafficHint')}
                 </Text>
                 <div className='mt-2'>
@@ -1217,31 +1218,168 @@ const ProjectSettings = () => {
                   description={activeTabConfig.description}
                   iconColorClass={activeTabConfig.iconColor}
                 />
-                <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
-                  <Text
-                    as='h3'
-                    size='lg'
-                    weight='medium'
-                    className='mb-2 flex items-center gap-2'
-                  >
-                    <GoogleSearchConsoleSVG className='size-6' />
-                    Google Search Console
-                  </Text>
-                  {gscConnected === null ? (
-                    <Loader />
-                  ) : !gscAvailable ? (
-                    <div className='rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100'>
+                <Text
+                  as='h3'
+                  size='lg'
+                  weight='medium'
+                  className='mb-2 flex items-center gap-2'
+                >
+                  <GoogleSearchConsoleSVG className='size-6' />
+                  Google Search Console
+                </Text>
+                {gscConnected === null ? (
+                  <Loader />
+                ) : !gscAvailable ? (
+                  <div className='rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100'>
+                    <Trans
+                      t={t}
+                      i18nKey='project.settings.gsc.notConfigured'
+                      defaults='Google Search Console is not configured on this server. To enable it, set <code>GOOGLE_GSC_CLIENT_ID</code>, <code>GOOGLE_GSC_CLIENT_SECRET</code> and <code>BASE_URL</code> in your API container environment, then restart it. <url>See the self-hosting guide</url>.'
+                      components={{
+                        code: (
+                          <code className='rounded bg-amber-100 px-1 py-0.5 font-mono text-xs dark:bg-amber-900/60' />
+                        ),
+                        url: (
+                          <a
+                            href='https://docs.swetrix.com/selfhosting/google-search-console'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='font-medium underline decoration-dashed hover:decoration-solid'
+                          />
+                        ),
+                      }}
+                    />
+                  </div>
+                ) : !gscConnected ? (
+                  <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
+                    <Text
+                      as='p'
+                      size='sm'
+                      className='text-gray-800 dark:text-gray-200'
+                    >
+                      {t('project.settings.gsc.connect')}
+                    </Text>
+                    <Button
+                      className='flex items-center gap-2'
+                      type='button'
+                      onClick={() => {
+                        gscFetcher.submit(
+                          { intent: 'gsc-connect' },
+                          { method: 'post' },
+                        )
+                      }}
+                      loading={
+                        gscFetcher.state !== 'idle'
+                          ? gscFetcher.formData?.get('intent') === 'gsc-connect'
+                          : undefined
+                      }
+                    >
+                      <GoogleGSVG className='size-4' />
+                      {t('common.connect')}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className='flex flex-col gap-3'>
+                    <Input
+                      className='lg:w-1/2'
+                      label={t('project.settings.gsc.linkedGoogleAccount')}
+                      value={gscEmail || ''}
+                      disabled
+                    />
+
+                    <Button
+                      variant='danger-outline'
+                      type='button'
+                      className='max-w-max'
+                      onClick={() => {
+                        gscFetcher.submit(
+                          { intent: 'gsc-disconnect' },
+                          { method: 'post' },
+                        )
+                      }}
+                      loading={
+                        gscFetcher.state !== 'idle'
+                          ? gscFetcher.formData?.get('intent') ===
+                            'gsc-disconnect'
+                          : undefined
+                      }
+                    >
+                      {t('common.disconnect')}
+                    </Button>
+
+                    <Select
+                      fieldLabelClassName='mt-4 max-w-max'
+                      className='lg:w-1/2'
+                      hintClassName='lg:w-2/3'
+                      label={t('project.settings.gsc.websiteProperty')}
+                      hint={t('project.settings.gsc.websitePropertyHint')}
+                      items={_map(gscProperties, (p) => ({
+                        key: p.siteUrl,
+                        label: p.siteUrl,
+                      }))}
+                      keyExtractor={(item) => item.key}
+                      labelExtractor={(item) => item.label}
+                      onSelect={(item: { key: string; label: string }) => {
+                        setForm((prevForm) => ({
+                          ...prevForm,
+                          gscPropertyUri: item.key,
+                        }))
+                      }}
+                      title={
+                        form.gscPropertyUri ||
+                        t('project.settings.gsc.selectProperty')
+                      }
+                      selectedItem={
+                        form.gscPropertyUri
+                          ? {
+                              key: form.gscPropertyUri,
+                              label: form.gscPropertyUri,
+                            }
+                          : undefined
+                      }
+                    />
+
+                    <Button
+                      type='button'
+                      className='max-w-max'
+                      onClick={() => {
+                        if (!form.gscPropertyUri) return
+                        gscFetcher.submit(
+                          {
+                            intent: 'gsc-set-property',
+                            propertyUri: form.gscPropertyUri,
+                          },
+                          { method: 'post' },
+                        )
+                      }}
+                      loading={
+                        gscFetcher.state !== 'idle'
+                          ? gscFetcher.formData?.get('intent') ===
+                            'gsc-set-property'
+                          : undefined
+                      }
+                    >
+                      {t('common.save')}
+                    </Button>
+                  </div>
+                )}
+
+                {gscConnected || !gscAvailable ? null : (
+                  <>
+                    <hr className='-mx-4 mt-4 mb-4 border-gray-200 dark:border-slate-800' />
+
+                    <Text
+                      as='p'
+                      size='sm'
+                      className='text-gray-800 dark:text-gray-200'
+                    >
                       <Trans
                         t={t}
-                        i18nKey='project.settings.gsc.notConfigured'
-                        defaults='Google Search Console is not configured on this server. To enable it, set <code>GOOGLE_GSC_CLIENT_ID</code>, <code>GOOGLE_GSC_CLIENT_SECRET</code> and <code>BASE_URL</code> in your API container environment, then restart it. <url>See the self-hosting guide</url>.'
+                        i18nKey='project.settings.gsc.connectDisclaimer'
                         components={{
-                          code: (
-                            <code className='rounded bg-amber-100 px-1 py-0.5 font-mono text-xs dark:bg-amber-900/60' />
-                          ),
                           url: (
                             <a
-                              href='https://docs.swetrix.com/selfhosting/google-search-console'
+                              href='https://search.google.com/search-console/about'
                               target='_blank'
                               rel='noopener noreferrer'
                               className='font-medium underline decoration-dashed hover:decoration-solid'
@@ -1249,149 +1387,9 @@ const ProjectSettings = () => {
                           ),
                         }}
                       />
-                    </div>
-                  ) : !gscConnected ? (
-                    <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
-                      <Text
-                        as='p'
-                        size='sm'
-                        className='text-gray-800 dark:text-gray-200'
-                      >
-                        {t('project.settings.gsc.connect')}
-                      </Text>
-                      <Button
-                        className='flex items-center gap-2'
-                        type='button'
-                        onClick={() => {
-                          gscFetcher.submit(
-                            { intent: 'gsc-connect' },
-                            { method: 'post' },
-                          )
-                        }}
-                        loading={
-                          gscFetcher.state !== 'idle'
-                            ? gscFetcher.formData?.get('intent') ===
-                              'gsc-connect'
-                            : undefined
-                        }
-                      >
-                        <GoogleGSVG className='size-4' />
-                        {t('common.connect')}
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className='flex flex-col gap-3'>
-                      <Input
-                        className='lg:w-1/2'
-                        label={t('project.settings.gsc.linkedGoogleAccount')}
-                        value={gscEmail || ''}
-                        disabled
-                      />
-
-                      <Button
-                        variant='danger-outline'
-                        type='button'
-                        className='max-w-max'
-                        onClick={() => {
-                          gscFetcher.submit(
-                            { intent: 'gsc-disconnect' },
-                            { method: 'post' },
-                          )
-                        }}
-                        loading={
-                          gscFetcher.state !== 'idle'
-                            ? gscFetcher.formData?.get('intent') ===
-                              'gsc-disconnect'
-                            : undefined
-                        }
-                      >
-                        {t('common.disconnect')}
-                      </Button>
-
-                      <Select
-                        fieldLabelClassName='mt-4 max-w-max'
-                        className='lg:w-1/2'
-                        hintClassName='lg:w-2/3'
-                        label={t('project.settings.gsc.websiteProperty')}
-                        hint={t('project.settings.gsc.websitePropertyHint')}
-                        items={_map(gscProperties, (p) => ({
-                          key: p.siteUrl,
-                          label: p.siteUrl,
-                        }))}
-                        keyExtractor={(item) => item.key}
-                        labelExtractor={(item) => item.label}
-                        onSelect={(item: { key: string; label: string }) => {
-                          setForm((prevForm) => ({
-                            ...prevForm,
-                            gscPropertyUri: item.key,
-                          }))
-                        }}
-                        title={
-                          form.gscPropertyUri ||
-                          t('project.settings.gsc.selectProperty')
-                        }
-                        selectedItem={
-                          form.gscPropertyUri
-                            ? {
-                                key: form.gscPropertyUri,
-                                label: form.gscPropertyUri,
-                              }
-                            : undefined
-                        }
-                      />
-
-                      <Button
-                        type='button'
-                        className='max-w-max'
-                        onClick={() => {
-                          if (!form.gscPropertyUri) return
-                          gscFetcher.submit(
-                            {
-                              intent: 'gsc-set-property',
-                              propertyUri: form.gscPropertyUri,
-                            },
-                            { method: 'post' },
-                          )
-                        }}
-                        loading={
-                          gscFetcher.state !== 'idle'
-                            ? gscFetcher.formData?.get('intent') ===
-                              'gsc-set-property'
-                            : undefined
-                        }
-                      >
-                        {t('common.save')}
-                      </Button>
-                    </div>
-                  )}
-
-                  {gscConnected || !gscAvailable ? null : (
-                    <>
-                      <hr className='-mx-4 mt-4 mb-4 border-gray-200 dark:border-slate-800' />
-
-                      <Text
-                        as='p'
-                        size='sm'
-                        className='text-gray-800 dark:text-gray-200'
-                      >
-                        <Trans
-                          t={t}
-                          i18nKey='project.settings.gsc.connectDisclamer'
-                          components={{
-                            url: (
-                              <a
-                                href='https://search.google.com/search-console/about'
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                className='font-medium underline decoration-dashed hover:decoration-solid'
-                              />
-                            ),
-                          }}
-                        />
-                      </Text>
-                    </>
-                  )}
-                </div>
+                    </Text>
+                  </>
+                )}
               </div>
             ) : null}
 
@@ -1442,98 +1440,104 @@ const ProjectSettings = () => {
                   description={activeTabConfig.description}
                   iconColorClass={activeTabConfig.iconColor}
                 />
-                <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
-                  <Text as='h3' size='lg' weight='medium' className='mb-2'>
-                    {t('project.settings.captcha.title')}
-                  </Text>
-                  <Text as='p' size='sm' colour='muted' className='mb-4'>
-                    {t('project.settings.captcha.description')}
-                  </Text>
-
-                  {captchaSecretKey ? (
-                    <>
-                      <Input
-                        label={t('project.settings.captcha.secretKey')}
-                        hint={t('project.settings.captcha.learnMore')}
-                        name='captchaSecretKey'
-                        type='password'
-                        className='mt-4 lg:w-1/2'
-                        value={captchaSecretKey}
-                        readOnly
-                      />
-                      <div className='mt-4 flex gap-2'>
-                        <Button
-                          variant='danger'
-                          type='button'
-                          onClick={() => setShowRegenerateSecret(true)}
-                        >
-                          {t('project.settings.captcha.regenerateKey')}
-                        </Button>
-                      </div>
-
-                      <div className='mt-6'>
-                        <Select
-                          label={t('project.settings.captcha.difficulty')}
-                          hint={
-                            captchaDifficultyMode === 'auto'
-                              ? t('project.settings.captcha.difficultyAutoHint')
-                              : t('project.settings.captcha.difficultyHint')
-                          }
-                          className='lg:w-1/2'
-                          hintClassName='lg:w-2/3'
-                          items={captchaDifficultyItems}
-                          keyExtractor={(item) => String(item.value)}
-                          labelExtractor={(item) => item.label}
-                          selectedItem={selectedCaptchaDifficultyItem}
-                          onSelect={(item: {
-                            value: number | 'auto'
-                            label: string
-                          }) => {
-                            if (item.value === 'auto') {
-                              setCaptchaDifficultyMode('auto')
-                              return
-                            }
-
-                            setCaptchaDifficultyMode('manual')
-                            setCaptchaDifficulty(item.value)
+                {captchaSecretKey ? (
+                  <>
+                    <Input
+                      label={t('project.settings.captcha.secretKey')}
+                      hint={
+                        <Trans
+                          t={t}
+                          i18nKey='project.settings.captcha.keyHint'
+                          components={{
+                            url: (
+                              <a
+                                href='https://swetrix.com/docs/captcha/server-side-validation'
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='font-medium underline decoration-dashed hover:decoration-solid'
+                              />
+                            ),
                           }}
-                          title={selectedCaptchaDifficultyItem.label}
                         />
-                        <Button
-                          type='button'
-                          className='mt-4'
-                          loading={fetcher.state === 'submitting'}
-                          onClick={() => {
-                            const formData = new FormData()
-                            formData.set('intent', 'update-project')
-                            if (captchaDifficultyMode === 'manual') {
-                              formData.set(
-                                'captchaDifficulty',
-                                captchaDifficulty.toString(),
-                              )
-                            }
-                            formData.set(
-                              'captchaDifficultyMode',
-                              captchaDifficultyMode,
-                            )
-                            fetcher.submit(formData, { method: 'post' })
-                          }}
-                        >
-                          {t('common.save')}
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <Text as='p' size='sm' colour='muted' className='mb-4'>
-                        {t('project.settings.captcha.noKeyGenerated')}
-                      </Text>
-                      <Button type='button' onClick={onRegenerateCaptchaKey}>
-                        {t('project.settings.captcha.generateKey')}
+                      }
+                      name='captchaSecretKey'
+                      type='password'
+                      className='mt-4 lg:w-1/2'
+                      value={captchaSecretKey}
+                      readOnly
+                    />
+                    <div className='mt-4 flex gap-2'>
+                      <Button
+                        variant='danger'
+                        type='button'
+                        onClick={() => setShowRegenerateSecret(true)}
+                      >
+                        {t('project.settings.captcha.regenerateKey')}
                       </Button>
-                    </>
-                  )}
-                </div>
+                    </div>
+
+                    <div className='mt-6'>
+                      <Select
+                        label={t('project.settings.captcha.difficulty')}
+                        hint={
+                          captchaDifficultyMode === 'auto'
+                            ? t('project.settings.captcha.difficultyAutoHint')
+                            : t('project.settings.captcha.difficultyHint')
+                        }
+                        className='lg:w-1/2'
+                        hintClassName='lg:w-1/2'
+                        items={captchaDifficultyItems}
+                        keyExtractor={(item) => String(item.value)}
+                        labelExtractor={(item) => item.label}
+                        selectedItem={selectedCaptchaDifficultyItem}
+                        onSelect={(item: {
+                          value: number | 'auto'
+                          label: string
+                        }) => {
+                          if (item.value === 'auto') {
+                            setCaptchaDifficultyMode('auto')
+                            return
+                          }
+
+                          setCaptchaDifficultyMode('manual')
+                          setCaptchaDifficulty(item.value)
+                        }}
+                        title={selectedCaptchaDifficultyItem.label}
+                      />
+                      <Button
+                        type='button'
+                        className='mt-4'
+                        loading={fetcher.state === 'submitting'}
+                        onClick={() => {
+                          const formData = new FormData()
+                          formData.set('intent', 'update-project')
+                          if (captchaDifficultyMode === 'manual') {
+                            formData.set(
+                              'captchaDifficulty',
+                              captchaDifficulty.toString(),
+                            )
+                          }
+                          formData.set(
+                            'captchaDifficultyMode',
+                            captchaDifficultyMode,
+                          )
+                          fetcher.submit(formData, { method: 'post' })
+                        }}
+                      >
+                        {t('common.save')}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Text as='p' size='sm' colour='secondary' className='mb-4'>
+                      {t('project.settings.captcha.noKeyGenerated')}
+                    </Text>
+                    <Button type='button' onClick={onRegenerateCaptchaKey}>
+                      {t('project.settings.captcha.generateKey')}
+                    </Button>
+                  </>
+                )}
               </div>
             ) : null}
 

@@ -118,7 +118,7 @@ All of the values are numbers in milliseconds.
 | `pid`           | `string`                               | `true`   | A project ID to record the revenue event for                                                                                               |
 | `type`          | `'sale' \| 'refund' \| 'subscription'` | `true`   | Transaction type. Use `refund` for refunds — the amount sign is handled automatically.                                                     |
 | `amount`        | `number`                               | `true`   | Amount in major units (e.g. `49.99` for €49.99). Always send a positive number; the sign is flipped server-side for refunds.               |
-| `currency`      | `string`                               | `true`   | ISO 4217 currency code (e.g. `USD`, `EUR`). Converted to your project's display currency automatically.                                    |
+| `currency`      | `string`                               | `true`   | ISO 4217 currency code (e.g. `USD`, `EUR`). Converted to your project's reporting currency automatically.                                  |
 | `transactionId` | `string`                               | `false`  | Stable unique identifier. Re-sending the same `transactionId` replaces the previous version (idempotent). If omitted, a UUID is generated. |
 | `productId`     | `string`                               | `false`  | Optional SKU / product identifier.                                                                                                         |
 | `productName`   | `string`                               | `false`  | Optional human-readable product name shown in the transactions table.                                                                      |
@@ -243,7 +243,7 @@ This endpoint records revenue transactions (sales, subscription charges, and ref
   public `pid`-only auth model of the other `/log/*` endpoints). Never call it from the browser.
 </Callout>
 
-The first call against a project automatically enables API revenue tracking and locks in the `currency` you sent as the project's display currency. You can change it later from **Project Settings &gt; Revenue**.
+The first call against a project automatically enables API revenue tracking and locks in the `currency` you sent as the project's reporting currency. You can change it later from **Project Settings &gt; Revenue**.
 
 ```bash title="Request"
 curl -i -X POST https://api.swetrix.com/log/revenue \

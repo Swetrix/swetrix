@@ -17,7 +17,6 @@ interface GeneralProps {
   }
   beenSubmitted: boolean
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
-  sharableLink: string
 }
 
 const General = ({
@@ -25,7 +24,6 @@ const General = ({
   errors,
   beenSubmitted,
   handleInput,
-  sharableLink,
 }: GeneralProps) => {
   const { t } = useTranslation('common')
 
@@ -37,6 +35,7 @@ const General = ({
       <Input
         name='name'
         label={t('project.settings.name')}
+        hint={t('project.settings.nameHint')}
         value={form.name}
         placeholder='My awesome project'
         className='mt-2'
@@ -71,16 +70,6 @@ const General = ({
         className='mt-4'
         onChange={handleInput}
         error={null}
-      />
-      <Input
-        name='sharableLink'
-        label={t('project.settings.sharableLink')}
-        hint={t('project.settings.sharableDesc')}
-        value={sharableLink}
-        className='mt-4'
-        onChange={handleInput}
-        error={null}
-        disabled
       />
     </>
   )

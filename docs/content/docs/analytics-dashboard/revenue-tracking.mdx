@@ -15,8 +15,9 @@ Once connected, revenue appears as a metric in your [Traffic Analytics](/analyti
 
 <Steps>
   <Step>
-    ### Connect a source Open **Project Settings &gt; Revenue** and pick Stripe, Paddle, or the API.
-    Choose the display currency Swetrix should report in (USD, EUR, or GBP).
+    ### Connect a source Open **Project Settings &gt; Revenue** and connect Stripe or Paddle from
+    its provider section, or use the API by sending your first transaction. Choose the reporting
+    currency Swetrix should use in your analytics (USD, EUR, or GBP).
   </Step>
   <Step>
     ### Send or sync transactions Stripe and Paddle are pulled automatically every 30 minutes via
@@ -173,7 +174,7 @@ Use this option to track revenue from any platform — JTL Shop, Shopify, WooCom
 | `pid`           | string                               | yes      | Your Swetrix project ID.                                                                                                                   |
 | `type`          | `sale` \| `refund` \| `subscription` | yes      | Transaction type. Use `refund` for refunds — the amount sign is handled automatically.                                                     |
 | `amount`        | number                               | yes      | Amount in major units (e.g. `49.99` for €49.99). Always send a positive number.                                                            |
-| `currency`      | string                               | yes      | ISO 4217 currency code (e.g. `USD`, `EUR`). Converted to your project's display currency automatically.                                    |
+| `currency`      | string                               | yes      | ISO 4217 currency code (e.g. `USD`, `EUR`). Converted to your project's reporting currency automatically.                                  |
 | `transactionId` | string                               | no       | Stable unique identifier. Re-sending the same `transactionId` replaces the previous version (idempotent). If omitted, a UUID is generated. |
 | `productId`     | string                               | no       | Optional SKU / product identifier.                                                                                                         |
 | `productName`   | string                               | no       | Optional human-readable product name shown in the transactions table.                                                                      |
@@ -194,12 +195,12 @@ Use this option to track revenue from any platform — JTL Shop, Shopify, WooCom
 <Steps>
   <Step>
     ### Open the Revenue settings
-    Go to your project dashboard and open **Project Settings &gt; Revenue**, then select **Stripe** as the provider.
+    Go to your project dashboard and open **Project Settings &gt; Revenue**. The Stripe section shows whether Stripe is connected and includes the API key field.
   </Step>
   <Step>
     ### Create a restricted API key
 
-    The settings page includes a direct link to create a Stripe restricted key with the correct permissions pre-selected — just click "Create key on Stripe" and confirm.
+    The settings page includes a direct link to create a Stripe restricted key with the correct permissions pre-selected. Click **Create a key in Stripe** and confirm it in Stripe.
 
     Swetrix needs the following read-only permissions:
 
@@ -210,7 +211,7 @@ Use this option to track revenue from any platform — JTL Shop, Shopify, WooCom
   <Step>
     ### Connect
 
-    Paste the restricted key (starts with `rk_live_`) into the API key field, choose your display currency, and click **Connect**. Swetrix converts all transactions to this currency automatically.
+    Paste the restricted key (starts with `rk_live_`) into the Stripe API key field and click **Connect**. Use **Reporting settings** on the same page to choose the currency Swetrix should use in analytics.
 
   </Step>
 </Steps>
@@ -221,7 +222,7 @@ Use this option to track revenue from any platform — JTL Shop, Shopify, WooCom
 <Steps>
   <Step>
     ### Open the Revenue settings
-    Go to your project dashboard and open **Project Settings &gt; Revenue**, then select **Paddle** as the provider.
+    Go to your project dashboard and open **Project Settings &gt; Revenue**. The Paddle section shows whether Paddle is connected and includes the API key field.
   </Step>
   <Step>
     ### Generate a Paddle API key
@@ -234,7 +235,7 @@ Use this option to track revenue from any platform — JTL Shop, Shopify, WooCom
   <Step>
     ### Connect
 
-    Paste the API key (starts with `pdl_live_`) into the API key field, choose your display currency, and click **Connect**.
+    Paste the API key (starts with `pdl_live_`) into the Paddle API key field and click **Connect**. Use **Reporting settings** on the same page to choose the currency Swetrix should use in analytics.
 
   </Step>
 </Steps>
@@ -339,9 +340,9 @@ If a profile ID is found, the transaction is linked to that visitor's profile in
 
 ## Managing your connection
 
-You can disconnect or change your revenue source at any time from **Project Settings &gt; Revenue**. Disconnecting removes the API key (or disables API ingestion) but keeps previously recorded revenue data in your dashboard.
+You can disconnect or change your connected provider at any time from **Project Settings &gt; Revenue**. Disconnecting removes the API key (or disables API ingestion) but keeps previously recorded revenue data in your dashboard.
 
-To change the display currency after connecting, use the currency selector on the same settings page. Currency conversion is applied to all transactions (past and future) based on exchange rates at sync time.
+To change the reporting currency after connecting, use **Reporting settings** on the same settings page. Currency conversion is applied to all transactions (past and future) based on exchange rates at sync time.
 
 <Callout type="info">
   A project can only have one active revenue source at a time. If a Stripe or Paddle key is

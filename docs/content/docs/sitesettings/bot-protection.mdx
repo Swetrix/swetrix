@@ -13,8 +13,8 @@ The bot protection settings live in **Project Settings → Shields**. You can le
 
 The page contains:
 
-- A **Bot protection level** selector (`Off`, `Basic`, `Strict`)
-- A **Bot protection report** showing how many requests were blocked over the last 7 / 30 / 90 days, broken down by classification and by country
+- A **Bot traffic filtering** selector (`Off`, `Basic`, `Strict`)
+- A **Blocked traffic** report showing how many requests were filtered out over the last 7 / 30 / 90 days, broken down by classification and by country
 
 ## Protection levels
 
@@ -165,7 +165,7 @@ No. Bot detection runs **before** the event is recorded, so you only pay for rea
 
 ### Can I add my own UA rules or IP ranges?
 
-Not yet. The current detection logic is fixed. The existing **IP Blacklist** and **Country Blacklist** in the Shields tab let you block specific IPs and countries, which works for most allowlist/denylist use cases.
+Not yet. The current detection logic is fixed. The existing **Blocked IP addresses** and **Blocked countries** settings in the Shields tab let you block specific IPs and countries, which works for most allowlist/denylist use cases.
 
 ### My GoogleBot / SEO crawler stats disappeared after I enabled Basic. Is that a bug?
 
