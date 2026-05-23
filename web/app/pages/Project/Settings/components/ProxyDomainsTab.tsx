@@ -170,7 +170,7 @@ function DnsRecordTable({ domain }: { domain: ProxyDomain }) {
         as='span'
         size='xs'
         weight='semibold'
-        colour='muted'
+        colour='secondary'
         tracking='wide'
         className='uppercase'
       >
@@ -481,7 +481,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
       <Text as='h4' size='sm' weight='semibold' colour='primary'>
         {t('project.settings.proxy.installSnippetTitle')}
       </Text>
-      <Text as='p' size='sm' colour='muted'>
+      <Text as='p' size='sm' colour='secondary'>
         {t('project.settings.proxy.installSnippetDescription')}
       </Text>
       <div>
@@ -521,7 +521,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
         <Text as='h4' size='sm' weight='semibold' colour='primary'>
           {t('project.settings.proxy.almostThere')}
         </Text>
-        <Text as='p' size='sm' colour='muted' className='mt-1'>
+        <Text as='p' size='sm' colour='secondary' className='mt-1'>
           <Trans
             i18nKey='project.settings.proxy.cnameInstructions'
             t={t}
@@ -553,7 +553,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
           {t('project.settings.proxy.issuingTitle')}
         </Text>
       </div>
-      <Text as='p' size='sm' colour='muted'>
+      <Text as='p' size='sm' colour='secondary'>
         {t('project.settings.proxy.issuingDescription')}
       </Text>
     </div>
@@ -562,7 +562,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
   return (
     <div className='space-y-6'>
       <div>
-        <Text as='p' size='sm' colour='muted'>
+        <Text as='p' size='sm' colour='secondary'>
           <Trans
             i18nKey='project.settings.proxy.descriptionWithDocs'
             t={t}
@@ -572,7 +572,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
                   href={DOCS_URL}
                   target='_blank'
                   rel='noreferrer'
-                  className='font-medium text-indigo-600 underline decoration-dashed underline-offset-2 hover:decoration-solid dark:text-indigo-400'
+                  className='font-medium underline decoration-dashed hover:decoration-solid'
                 >
                   {''}
                 </a>
@@ -607,7 +607,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
           </div>
         ) : domains.length === 0 ? (
           <div className='mt-4 rounded-lg border border-dashed border-gray-300 py-8 text-center dark:border-slate-700'>
-            <Text as='p' size='sm' colour='muted'>
+            <Text as='p' size='sm' colour='secondary'>
               {t('project.settings.proxy.noDomains')}
             </Text>
           </div>
@@ -646,7 +646,7 @@ export default function ProxyDomainsTab({ projectId }: ProxyDomainsTabProps) {
                         <Text
                           as='p'
                           size='xs'
-                          colour='muted'
+                          colour='secondary'
                           className='mt-0.5 truncate'
                         >
                           {domain.liveSince

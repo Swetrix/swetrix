@@ -235,13 +235,13 @@ const AlertTemplateEditor = ({
   )
 
   return (
-    <div className='mt-6 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
+    <section className='mt-6'>
       <div className='flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between'>
         <div>
-          <Text as='h3' size='base' weight='bold'>
+          <Text as='h3' size='lg' weight='medium'>
             {t('alert.template.heading')}
           </Text>
-          <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
+          <Text as='p' size='sm' colour='secondary' className='mt-1'>
             {t('alert.template.description')}
           </Text>
         </div>
@@ -344,7 +344,7 @@ const AlertTemplateEditor = ({
           </div>
         </div>
       )}
-    </div>
+    </section>
   )
 }
 

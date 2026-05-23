@@ -43,10 +43,6 @@ import {
 import AlertTemplateEditor from './AlertTemplateEditor'
 import { BackButton } from '../../View/components/BackButton'
 
-const CHANNELS_TAB = `?tab=channels`
-const PROJECT_CHANNELS_LINK = (projectId: string) =>
-  `/projects/${projectId}/settings${CHANNELS_TAB}`
-
 interface ProjectAlertsSettingsProps {
   alertId?: string | null
   projectId: string
@@ -470,7 +466,7 @@ const ProjectAlertsSettings = ({
               components={{
                 url: (
                   <Link
-                    to={PROJECT_CHANNELS_LINK(projectId)}
+                    to={`/projects/settings/${projectId}?tab=channels`}
                     className='font-medium underline hover:text-amber-900 dark:hover:text-amber-100'
                   />
                 ),
@@ -496,11 +492,11 @@ const ProjectAlertsSettings = ({
           value={form.emailSubjectTemplate || ''}
         />
 
-        <div className='mt-6 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
-          <Text as='h3' size='base' weight='bold'>
+        <section className='mt-6'>
+          <Text as='h3' size='lg' weight='medium'>
             {t('alert.sections.basics')}
           </Text>
-          <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
+          <Text as='p' size='sm' colour='secondary' className='mt-1'>
             {t('alert.sections.basicsDescription')}
           </Text>
           <div className='mt-4 max-w-md'>
@@ -526,13 +522,13 @@ const ProjectAlertsSettings = ({
             }
             label={t('alert.enabled')}
           />
-        </div>
+        </section>
 
-        <div className='mt-6 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
-          <Text as='h3' size='base' weight='bold'>
+        <section className='mt-6'>
+          <Text as='h3' size='lg' weight='medium'>
             {t('alert.sections.trigger')}
           </Text>
-          <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
+          <Text as='p' size='sm' colour='secondary' className='mt-1'>
             {t('alert.sections.triggerDescription')}
           </Text>
 
@@ -679,13 +675,13 @@ const ProjectAlertsSettings = ({
               />
             </div>
           ) : null}
-        </div>
+        </section>
 
-        <div className='mt-6 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
-          <Text as='h3' size='base' weight='bold'>
+        <section className='mt-6'>
+          <Text as='h3' size='lg' weight='medium'>
             {t('alert.channels.heading')}
           </Text>
-          <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
+          <Text as='p' size='sm' colour='secondary' className='mt-1'>
             {t('alert.channels.description')}
           </Text>
           <div className='mt-3'>
@@ -700,11 +696,11 @@ const ProjectAlertsSettings = ({
                   return { ...prev, channelIds: Array.from(ids) }
                 })
               }}
-              projectChannelsLink={PROJECT_CHANNELS_LINK(projectId)}
+              projectChannelsLink={`/projects/settings/${projectId}?tab=channels`}
               t={t}
             />
           </div>
-        </div>
+        </section>
 
         <AlertTemplateEditor
           projectId={projectId}

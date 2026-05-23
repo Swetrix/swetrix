@@ -530,6 +530,7 @@ const Dashboard = () => {
             <Input
               name='project-name-input'
               label={t('project.settings.name')}
+              hint={t('project.settings.nameHint')}
               value={newProjectName}
               placeholder='My awesome website'
               onChange={(e) => setNewProjectName(e.target.value)}
@@ -553,6 +554,7 @@ const Dashboard = () => {
                     setNewProjectOrganisationId(item.id)
                   }}
                   label={t('project.settings.organisation')}
+                  hint={t('project.settings.organisationHint')}
                   title={
                     organisations.find(
                       (org) => org.id === newProjectOrganisationId,

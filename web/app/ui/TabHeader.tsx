@@ -28,7 +28,7 @@ export const TabHeader = ({
           <Text as='h2' size='lg' weight='semibold'>
             {label}
           </Text>
-          <Text as='p' size='sm' colour='muted'>
+          <Text as='p' size='sm' colour='secondary'>
             {description}
           </Text>
         </div>

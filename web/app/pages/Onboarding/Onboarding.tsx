@@ -853,6 +853,7 @@ const Onboarding = () => {
                         <div className='w-full sm:max-w-1/2'>
                           <Input
                             label={t('project.settings.name')}
+                            hint={t('project.settings.nameHint')}
                             placeholder={t(
                               'onboarding.createProject.placeholder',
                             )}

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { isSelfhosted } from '~/lib/constants'
 import Checkbox from '~/ui/Checkbox'
+import Input from '~/ui/Input'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 
@@ -16,6 +17,8 @@ interface AccessSettingsProps {
   organisations: { id?: string; name: string }[]
   onAssignOrganisation: (id?: string) => Promise<void>
   openPasswordModal: () => void
+  handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
+  sharableLink: string
 }
 
 const AccessSettings = ({
@@ -24,6 +27,8 @@ const AccessSettings = ({
   organisations,
   onAssignOrganisation,
   openPasswordModal,
+  handleInput,
+  sharableLink,
 }: AccessSettingsProps) => {
   const { t } = useTranslation('common')
 
@@ -32,6 +37,16 @@ const AccessSettings = ({
       <Text as='h3' size='lg' weight='bold'>
         {t('project.settings.access')}
       </Text>
+      <Input
+        name='sharableLink'
+        label={t('project.settings.sharableLink')}
+        hint={t('project.settings.sharableDesc')}
+        value={sharableLink}
+        className='mt-4'
+        onChange={handleInput}
+        error={null}
+        disabled
+      />
       <Checkbox
         checked={Boolean(form.public)}
         onChange={(checked) => {
@@ -91,6 +106,7 @@ const AccessSettings = ({
               }))
             }}
             label={t('project.settings.organisation')}
+            hint={t('project.settings.organisationHint')}
             title={
               organisations.find((org) => org.id === form.organisationId)?.name
             }

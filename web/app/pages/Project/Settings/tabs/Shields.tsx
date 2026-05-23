@@ -115,6 +115,7 @@ const Shields = ({
         name='origins'
         label={t('project.settings.origins')}
         hint={t('project.settings.originsHint')}
+        placeholder={t('project.settings.originsPlaceholder')}
         value={form.origins || ''}
         className='mt-2'
         onChange={handleInput}
@@ -124,6 +125,7 @@ const Shields = ({
         name='ipBlacklist'
         label={t('project.settings.ipBlacklist')}
         hint={t('project.settings.ipBlacklistHint')}
+        placeholder={t('project.settings.ipBlacklistPlaceholder')}
         value={form.ipBlacklist || ''}
         className='mt-4'
         onChange={handleInput}
@@ -147,7 +149,7 @@ const Shields = ({
           keyExtractor={(cc) => cc}
           label={countryBlacklist}
           onSearch={handleCountrySearch}
-          placeholder={t('project.settings.selectCountry')}
+          placeholder={t('project.settings.countryBlacklistPlaceholder')}
           onSelect={handleCountrySelect}
           onRemove={handleCountryRemove}
           hint={t('project.settings.countryBlacklistHint')}
@@ -157,6 +159,7 @@ const Shields = ({
         <Select<BotsProtectionLevelOption>
           id='botsProtectionLevel'
           label={t('project.settings.botsProtectionLevel.title')}
+          hint={t('project.settings.botsProtectionLevel.hint')}
           items={botsProtectionLevels}
           title={
             botsProtectionLevels.find(

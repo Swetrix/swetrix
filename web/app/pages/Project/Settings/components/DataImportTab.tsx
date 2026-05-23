@@ -406,7 +406,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
         <Text as='h3' size='base' weight='semibold' colour='primary'>
           {t('project.settings.dataImport.importFrom')}
         </Text>
-        <Text as='p' size='sm' colour='muted' className='mt-1'>
+        <Text as='p' size='sm' colour='secondary' className='mt-1'>
           {t('project.settings.dataImport.importFromDesc')}
         </Text>
 
@@ -443,12 +443,12 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                     <Text as='p' size='sm' weight='semibold' colour='primary'>
                       {name}
                     </Text>
-                    <Text as='p' size='xs' colour='muted'>
+                    <Text as='p' size='xs' colour='secondary'>
                       {subtitle}
                     </Text>
                   </div>
                 </div>
-                <Text as='p' size='xs' colour='muted' className='mt-2'>
+                <Text as='p' size='xs' colour='secondary' className='mt-2'>
                   {t(`project.settings.dataImport.${provider}.description`)}
                 </Text>
               </button>
@@ -469,7 +469,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
         ) : imports.length === 0 ? (
           <div className='mt-4 rounded-lg border border-dashed border-gray-300 py-8 text-center dark:border-slate-700'>
             <UploadIcon className='mx-auto size-8 text-gray-400 dark:text-gray-500' />
-            <Text as='p' size='sm' colour='muted' className='mt-2'>
+            <Text as='p' size='sm' colour='secondary' className='mt-2'>
               {t('project.settings.dataImport.noImports')}
             </Text>
           </div>
@@ -592,7 +592,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
         size='medium'
         message={
           <div className='space-y-4'>
-            <Text as='p' size='sm' colour='muted'>
+            <Text as='p' size='sm' colour='secondary'>
               <Trans
                 i18nKey='project.settings.dataImport.uploadInstructions'
                 t={t}
@@ -617,7 +617,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                 uploading ? (
                   t('project.settings.dataImport.uploadingProcessing')
                 ) : (
-                  <Text as='span' size='sm' colour='muted'>
+                  <Text as='span' size='sm' colour='secondary'>
                     <Text as='span' weight='medium' colour='primary'>
                       {t('project.settings.dataImport.clickToUpload')}
                     </Text>{' '}
@@ -663,7 +663,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
           <div className='space-y-4'>
             {!ga4Connected ? (
               <>
-                <Text as='p' size='sm' colour='muted'>
+                <Text as='p' size='sm' colour='secondary'>
                   {t(
                     'project.settings.dataImport.google-analytics.connectDesc',
                   )}
@@ -700,7 +700,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
               <Text
                 as='p'
                 size='sm'
-                colour='muted'
+                colour='secondary'
                 className='py-4 text-center'
               >
                 {t('project.settings.dataImport.google-analytics.noProperties')}
@@ -724,7 +724,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                   }
                   onSelect={(prop) => setGa4SelectedProperty(prop.propertyId)}
                 />
-                <Text as='p' size='xs' colour='muted'>
+                <Text as='p' size='xs' colour='secondary'>
                   {t('project.settings.dataImport.google-analytics.importNote')}
                 </Text>
               </>

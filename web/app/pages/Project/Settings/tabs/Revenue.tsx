@@ -1,8 +1,4 @@
-import {
-  ArrowUpRightIcon,
-  ArrowSquareOutIcon,
-  CheckCircleIcon,
-} from '@phosphor-icons/react'
+import { ArrowUpRightIcon, ArrowSquareOutIcon } from '@phosphor-icons/react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -13,6 +9,7 @@ import type {
   ProjectSettingsActionData,
   RevenueStatus,
 } from '~/routes/projects.settings.$id'
+import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import PaddleSVG from '~/ui/icons/Paddle'
 import StripeSVG from '~/ui/icons/Stripe'
@@ -22,8 +19,15 @@ import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 
 type RevenueProvider = 'stripe' | 'paddle'
+type RevenueCurrency = 'USD' | 'EUR' | 'GBP'
 
-const SUPPORTED_CURRENCIES = [
+interface CurrencyOption {
+  code: RevenueCurrency
+  symbol: string
+  name: string
+}
+
+const SUPPORTED_CURRENCIES: CurrencyOption[] = [
   { code: 'USD', symbol: '$', name: 'US Dollar' },
   { code: 'EUR', symbol: '€', name: 'Euro' },
   { code: 'GBP', symbol: '£', name: 'British Pound' },
@@ -53,32 +57,20 @@ interface ProviderConfig {
 const PROVIDER_CONFIG: Record<RevenueProvider, ProviderConfig> = {
   stripe: {
     label: 'Stripe',
-    icon: <StripeSVG className='h-5 w-5' />,
+    icon: <StripeSVG className='size-6' />,
     apiKeyPrefix: 'rk_live_',
     apiKeyCreateUrl: STRIPE_API_KEY_CREATE_URL,
     docsUrl: `${DOCS_URL}/revenue/stripe`,
   },
   paddle: {
     label: 'Paddle',
-    icon: <PaddleSVG className='h-5 w-5' />,
+    icon: <PaddleSVG className='size-6' />,
     apiKeyPrefix: 'pdl_live_',
     docsUrl: `${DOCS_URL}/revenue/paddle`,
   },
 }
 
 const REVENUE_PROVIDERS: RevenueProvider[] = ['stripe', 'paddle']
-
-interface ProviderItem {
-  id: RevenueProvider
-  label: string
-  icon: React.ReactNode
-}
-
-const PROVIDER_ITEMS: ProviderItem[] = REVENUE_PROVIDERS.map((p) => ({
-  id: p,
-  label: PROVIDER_CONFIG[p].label,
-  icon: PROVIDER_CONFIG[p].icon,
-}))
 
 interface Props {
   projectId: string
@@ -90,16 +82,17 @@ const Revenue = ({ projectId }: Props) => {
 
   const [status, setStatus] = useState<RevenueStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [apiKey, setApiKey] = useState('')
-  const [selectedProvider, setSelectedProvider] =
-    useState<RevenueProvider>('stripe')
-  const [selectedCurrency, setSelectedCurrency] = useState<
-    'USD' | 'EUR' | 'GBP'
-  >('USD')
+  const [apiKeys, setApiKeys] = useState<Record<RevenueProvider, string>>({
+    stripe: '',
+    paddle: '',
+  })
+  const [selectedCurrency, setSelectedCurrency] =
+    useState<RevenueCurrency>('USD')
 
   const isConnecting =
     fetcher.state !== 'idle' &&
     fetcher.formData?.get('intent') === 'connect-revenue'
+  const connectingProvider = fetcher.formData?.get('provider')?.toString()
   const isDisconnecting =
     fetcher.state !== 'idle' &&
     fetcher.formData?.get('intent') === 'disconnect-revenue'
@@ -124,12 +117,6 @@ const Revenue = ({ projectId }: Props) => {
         if (success && revenueStatus) {
           setStatus(revenueStatus)
           if (
-            revenueStatus.provider === 'stripe' ||
-            revenueStatus.provider === 'paddle'
-          ) {
-            setSelectedProvider(revenueStatus.provider)
-          }
-          if (
             revenueStatus.currency === 'USD' ||
             revenueStatus.currency === 'EUR' ||
             revenueStatus.currency === 'GBP'
@@ -142,7 +129,7 @@ const Revenue = ({ projectId }: Props) => {
       } else if (intent === 'connect-revenue') {
         if (success) {
           toast.success(t('project.settings.revenue.connected'))
-          setApiKey('')
+          setApiKeys({ stripe: '', paddle: '' })
           fetcher.submit(
             { intent: 'get-revenue-status' },
             { method: 'POST', action: `/projects/settings/${projectId}` },
@@ -170,8 +157,14 @@ const Revenue = ({ projectId }: Props) => {
     }
   }, [fetcher.state, fetcher.data, t, projectId, selectedCurrency, fetcher])
 
-  const handleConnect = () => {
-    if (!apiKey.trim()) {
+  const handleApiKeyChange = (provider: RevenueProvider, value: string) => {
+    setApiKeys((prev) => ({ ...prev, [provider]: value }))
+  }
+
+  const handleConnect = (provider: RevenueProvider) => {
+    const apiKey = apiKeys[provider].trim()
+
+    if (!apiKey) {
       toast.error(t('project.settings.revenue.apiKeyRequired'))
       return
     }
@@ -179,7 +172,7 @@ const Revenue = ({ projectId }: Props) => {
     fetcher.submit(
       {
         intent: 'connect-revenue',
-        provider: selectedProvider,
+        provider,
         apiKey,
         currency: selectedCurrency,
       },
@@ -203,6 +196,9 @@ const Revenue = ({ projectId }: Props) => {
     )
   }
 
+  const isConnectingProvider = (provider: RevenueProvider) =>
+    isConnecting && connectingProvider === provider
+
   if (isLoading) {
     return (
       <div className='flex min-h-[200px] items-center justify-center'>
@@ -211,182 +207,170 @@ const Revenue = ({ projectId }: Props) => {
     )
   }
 
-  const providerConfig = PROVIDER_CONFIG[selectedProvider]
-  const isConnected = Boolean(status?.connected)
-  const connectedProvider = status?.provider as RevenueProvider | undefined
-  const connectedProviderConfig = connectedProvider
-    ? PROVIDER_CONFIG[connectedProvider]
-    : null
-  const selectedProviderItem = PROVIDER_ITEMS.find(
-    (p) => p.id === selectedProvider,
-  )
+  const connectedProvider =
+    status?.provider === 'stripe' || status?.provider === 'paddle'
+      ? status.provider
+      : undefined
+  const isConnected = Boolean(status?.connected && connectedProvider)
+  const selectedCurrencyItem =
+    SUPPORTED_CURRENCIES.find((c) => c.code === selectedCurrency) ||
+    SUPPORTED_CURRENCIES[0]
+  const currencyTitle = `${selectedCurrencyItem.code} – ${selectedCurrencyItem.name} (${selectedCurrencyItem.symbol})`
 
-  return (
-    <div>
-      <Text as='h3' size='lg' weight='bold' colour='primary'>
-        {t('project.settings.revenue.title')}
-      </Text>
-      <Text as='p' size='sm' colour='secondary' className='mt-1'>
-        {t('project.settings.revenue.description')}
-      </Text>
+  const renderProviderSection = (provider: RevenueProvider) => {
+    const config = PROVIDER_CONFIG[provider]
+    const providerConnected = isConnected && connectedProvider === provider
+    const providerHelpUrl = config.apiKeyCreateUrl || config.docsUrl
+    const providerHelpLabel = config.apiKeyCreateUrl
+      ? t('project.settings.revenue.createApiKeyLink', {
+          provider: config.label,
+        })
+      : t('project.settings.revenue.setupGuideLink', {
+          provider: config.label,
+        })
 
-      {/* Provider Connection Card */}
-      <div className='mt-4 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
-        <div className='flex items-center gap-2'>
-          <div>{connectedProviderConfig?.icon || providerConfig.icon}</div>
-          <Text as='h4' size='base' weight='medium' colour='primary'>
-            {t('project.settings.revenue.paymentProvider')}
+    return (
+      <section key={provider} className={provider === 'paddle' ? 'mt-6' : ''}>
+        <Text
+          as='h3'
+          size='lg'
+          weight='medium'
+          className='mb-2 flex items-center gap-2'
+        >
+          {config.icon}
+          {config.label}
+          <Badge
+            colour={providerConnected ? 'green' : 'slate'}
+            size='sm'
+            label={
+              providerConnected
+                ? t('common.connected')
+                : t('common.notConnected')
+            }
+          />
+        </Text>
+
+        <Input
+          name={`${provider}ApiKey`}
+          type='password'
+          label={t('project.settings.revenue.providerApiKey', {
+            provider: config.label,
+          })}
+          hint={
+            <>
+              {t(`project.settings.revenue.apiKeyHints.${provider}`)}{' '}
+              {providerHelpUrl ? (
+                <a
+                  href={providerHelpUrl}
+                  target='_blank'
+                  rel='noreferrer noopener'
+                  className='inline-flex items-center font-medium underline decoration-dashed hover:decoration-solid'
+                >
+                  {providerHelpLabel}
+                  <ArrowUpRightIcon className='ml-0.5 h-3 w-3' />
+                </a>
+              ) : null}
+            </>
+          }
+          value={apiKeys[provider]}
+          className='lg:w-1/2'
+          placeholder={
+            providerConnected
+              ? t('project.settings.revenue.storedKeyPlaceholder')
+              : `${config.apiKeyPrefix}********************`
+          }
+          onChange={(e) => handleApiKeyChange(provider, e.target.value)}
+          disabled={isConnecting || isDisconnecting}
+        />
+
+        {providerConnected && status?.lastSyncAt ? (
+          <Text as='p' size='sm' colour='secondary' className='mt-2'>
+            {t('project.settings.revenue.lastSync', {
+              date: new Date(status.lastSyncAt).toLocaleString(),
+            })}
           </Text>
-          {isConnected ? (
-            <Text
-              size='sm'
-              colour='success'
-              className='ml-auto flex items-center gap-1'
-            >
-              <CheckCircleIcon className='h-4 w-4' />
-              {t('common.connected')}
-            </Text>
-          ) : null}
-        </div>
+        ) : null}
 
-        {isConnected && connectedProviderConfig ? (
-          <div className='mt-4 flex flex-col gap-4'>
-            <Input
-              label={t('project.settings.revenue.connectedTo')}
-              value={connectedProviderConfig.label}
-              className='lg:w-1/2'
-              disabled
-            />
-
-            {status?.lastSyncAt ? (
-              <Text as='p' size='sm' colour='muted'>
-                {t('project.settings.revenue.lastSync', {
-                  date: new Date(status.lastSyncAt).toLocaleString(),
-                })}{' '}
-              </Text>
-            ) : null}
-
+        <div className='mt-4 flex flex-wrap gap-2'>
+          <Button
+            type='button'
+            className='max-w-max'
+            onClick={() => handleConnect(provider)}
+            loading={isConnectingProvider(provider)}
+            disabled={
+              (isConnecting && !isConnectingProvider(provider)) ||
+              isDisconnecting
+            }
+          >
+            {providerConnected
+              ? t('project.settings.revenue.updateKey')
+              : t('common.connect')}
+          </Button>
+          {providerConnected ? (
             <Button
               variant='danger-outline'
               type='button'
               className='max-w-max'
               onClick={handleDisconnect}
               loading={isDisconnecting}
+              disabled={isConnecting}
             >
               {t('common.disconnect')}
             </Button>
-          </div>
-        ) : (
-          <div className='mt-4 flex flex-col gap-4'>
-            <Select
-              label={t('project.settings.revenue.provider')}
-              className='lg:w-1/2'
-              title={providerConfig.label}
-              items={PROVIDER_ITEMS}
-              labelExtractor={(item) => (
-                <div className='flex items-center gap-2'>
-                  {item.icon}
-                  <Text>{item.label}</Text>
-                </div>
-              )}
-              keyExtractor={(item) => item.id}
-              selectedItem={selectedProviderItem}
-              onSelect={(item: ProviderItem) => {
-                setSelectedProvider(item.id)
-              }}
-            />
-
-            <div>
-              <Input
-                name='apiKey'
-                type='password'
-                label={t('project.settings.revenue.apiKey')}
-                hint={
-                  providerConfig.apiKeyCreateUrl ? (
-                    <Text as='span' size='sm' colour='muted'>
-                      {t('project.settings.revenue.createApiKeyHint')}{' '}
-                      <a
-                        href={providerConfig.apiKeyCreateUrl}
-                        target='_blank'
-                        rel='noreferrer noopener'
-                        className='inline-flex items-center font-medium underline decoration-dashed hover:decoration-solid'
-                      >
-                        {providerConfig.label}{' '}
-                        {t('project.settings.revenue.dashboard')}
-                        <ArrowUpRightIcon className='ml-0.5 h-3 w-3' />
-                      </a>
-                    </Text>
-                  ) : undefined
-                }
-                value={apiKey}
-                className='lg:w-1/2'
-                placeholder={`${providerConfig.apiKeyPrefix}********************`}
-                onChange={(e) => setApiKey(e.target.value)}
-                disabled={isConnecting}
-              />
-            </div>
-
-            <Button
-              type='button'
-              className='max-w-max'
-              onClick={handleConnect}
-              loading={isConnecting}
-            >
-              {t('common.connect')}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Currency Settings */}
-      <div className='mt-6 rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
-        <Text as='h4' size='base' weight='medium' colour='primary'>
-          {t('project.settings.revenue.currency')}
-        </Text>
-        <Text as='p' size='sm' colour='secondary' className='mt-1'>
-          {t('project.settings.revenue.currencyDescription')}
-        </Text>
-
-        <div className='mt-4 flex flex-col gap-4'>
-          <Select
-            className='lg:w-1/2'
-            title={`${selectedCurrency} – ${SUPPORTED_CURRENCIES.find((c) => c.code === selectedCurrency)?.name} (${SUPPORTED_CURRENCIES.find((c) => c.code === selectedCurrency)?.symbol})`}
-            items={SUPPORTED_CURRENCIES}
-            keyExtractor={(item) => item.code}
-            labelExtractor={(item) =>
-              `${item.code} – ${item.name} (${item.symbol})`
-            }
-            selectedItem={SUPPORTED_CURRENCIES.find(
-              (c) => c.code === selectedCurrency,
-            )}
-            onSelect={(item: { code: string; name: string; symbol: string }) =>
-              setSelectedCurrency(item.code as 'USD' | 'EUR' | 'GBP')
-            }
-          />
-          <Button
-            type='button'
-            className='max-w-max'
-            onClick={handleCurrencyChange}
-            loading={isSavingCurrency}
-            disabled={!isConnected}
-          >
-            {t('common.save')}
-          </Button>
+          ) : null}
         </div>
+      </section>
+    )
+  }
+
+  return (
+    <div>
+      {REVENUE_PROVIDERS.map(renderProviderSection)}
+
+      <Text
+        as='h3'
+        size='lg'
+        weight='medium'
+        colour='primary'
+        className='mt-6 mb-2'
+      >
+        {t('project.settings.revenue.settingsTitle')}
+      </Text>
+
+      <div className='flex flex-col gap-4'>
+        <Select<CurrencyOption>
+          label={t('project.settings.revenue.currency')}
+          hint={t('project.settings.revenue.currencyDescription')}
+          className='lg:w-1/2'
+          title={currencyTitle}
+          items={SUPPORTED_CURRENCIES}
+          keyExtractor={(item) => item.code}
+          labelExtractor={(item) =>
+            `${item.code} – ${item.name} (${item.symbol})`
+          }
+          selectedItem={selectedCurrencyItem}
+          onSelect={(item) => setSelectedCurrency(item.code)}
+        />
+        <Button
+          type='button'
+          className='max-w-max'
+          onClick={handleCurrencyChange}
+          loading={isSavingCurrency}
+          disabled={!isConnected}
+        >
+          {t('common.save')}
+        </Button>
       </div>
 
-      {/* Documentation Link */}
-      <div className='mt-6'>
-        <a
-          href={DOCS_URL}
-          target='_blank'
-          rel='noreferrer noopener'
-          className='inline-flex items-center text-sm font-medium underline decoration-dashed hover:decoration-solid'
-        >
-          <ArrowSquareOutIcon className='mr-1.5 h-4 w-4' />
-          {t('project.settings.revenue.learnMore')}
-        </a>
-      </div>
+      <a
+        href={`${DOCS_URL}/revenue`}
+        target='_blank'
+        rel='noreferrer noopener'
+        className='mt-6 inline-flex items-center text-sm font-medium underline decoration-dashed hover:decoration-solid'
+      >
+        <ArrowSquareOutIcon className='mr-1.5 h-4 w-4' />
+        {t('project.settings.revenue.learnMore')}
+      </a>
     </div>
   )
 }

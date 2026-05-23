@@ -13,6 +13,7 @@ import _map from 'lodash/map'
 import {
   TrashIcon,
   UserCirclePlusIcon,
+  UsersThreeIcon,
   CaretDownIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
@@ -35,15 +36,35 @@ import { isValidEmail } from '~/utils/validator'
 
 type InviteRole = Exclude<Role, 'owner'>
 
-const NoPeople = () => {
+const NoPeople = ({ onInvite }: { onInvite: () => void }) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-      <div className='mx-auto w-full max-w-7xl'>
-        <Text as='h2' size='xl' className='mb-8 px-4 text-center leading-snug'>
-          {t('project.settings.noPeople')}
-        </Text>
+    <div className='mt-6 rounded-lg border border-dashed border-gray-300 bg-gray-50/40 p-8 text-center dark:border-slate-700 dark:bg-slate-900/30'>
+      <div className='mx-auto flex size-12 items-center justify-center rounded-lg bg-white ring-1 ring-gray-200 ring-inset dark:bg-slate-950 dark:ring-slate-700'>
+        <UsersThreeIcon
+          className='size-6 text-slate-500 dark:text-slate-400'
+          weight='duotone'
+        />
+      </div>
+      <Text as='p' size='base' weight='semibold' className='mt-4'>
+        {t('organisations.peopleEmptyTitle')}
+      </Text>
+      <Text
+        as='p'
+        size='sm'
+        colour='secondary'
+        className='mx-auto mt-1 max-w-md'
+      >
+        {t('organisations.peopleEmptyDescription')}
+      </Text>
+      <div className='mt-5 flex justify-center'>
+        <Button onClick={onInvite}>
+          <span className='inline-flex items-center gap-1'>
+            <UserCirclePlusIcon className='size-4' aria-hidden='true' />
+            {t('project.settings.invite')}
+          </span>
+        </Button>
       </div>
     </div>
   )
@@ -343,7 +364,7 @@ const People = ({ organisation }: PeopleProps) => {
       </div>
       <div>
         {_isEmpty(members) ? (
-          <NoPeople />
+          <NoPeople onInvite={() => setShowModal(true)} />
         ) : (
           <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
             <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>

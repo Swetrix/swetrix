@@ -99,7 +99,7 @@ const BotProtectionReport = ({ pid }: BotProtectionReportProps) => {
               formattedTotal
             )}
           </Text>
-          <Text as='p' size='sm' colour='muted' className='mt-1'>
+          <Text as='p' size='sm' colour='secondary' className='mt-1'>
             {t('project.settings.botProtectionReport.subtitle', {
               count: total,
             })}
@@ -153,7 +153,7 @@ const BotProtectionReport = ({ pid }: BotProtectionReportProps) => {
                 isLoading && 'opacity-60',
               )}
             >
-              <Text as='p' size='sm' colour='muted'>
+              <Text as='p' size='sm' colour='secondary'>
                 {t('project.settings.botProtectionReport.empty')}
               </Text>
             </div>
@@ -246,13 +246,13 @@ const ReportColumn = ({
       as='p'
       size='xs'
       weight='semibold'
-      colour='muted'
+      colour='secondary'
       className='tracking-[0.08em] uppercase'
     >
       {label}
     </Text>
     {isEmpty ? (
-      <Text as='p' size='sm' colour='muted' className='mt-3'>
+      <Text as='p' size='sm' colour='secondary' className='mt-3'>
         {emptyText}
       </Text>
     ) : (

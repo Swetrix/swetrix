@@ -11,6 +11,7 @@ import {
   useState,
 } from 'react'
 
+import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
 export interface TemplateVariableInfo {
@@ -22,7 +23,7 @@ interface RichTemplateInputProps {
   value: string
   onChange: (value: string) => void
   variables: TemplateVariableInfo[]
-  label?: string
+  label?: React.ReactNode
   hint?: React.ReactNode
   rows?: number
   placeholder?: string
@@ -459,11 +460,31 @@ const RichTemplateInput = forwardRef<
     }
 
     return (
-      <Field as='div' className={className}>
+      <Field as='div' className={cn('flex flex-col gap-1', className)}>
         {label ? (
-          <Label className='mb-1 flex text-sm font-medium text-gray-900 dark:text-gray-200'>
-            {label}
+          <Label>
+            <Text
+              as='span'
+              className='flex leading-tight whitespace-pre-line'
+              size='sm'
+              weight='medium'
+              colour='primary'
+            >
+              {label}
+            </Text>
           </Label>
+        ) : null}
+        {hint ? (
+          <Description as='div'>
+            <Text
+              as='span'
+              className='block leading-tight whitespace-pre-line'
+              size='sm'
+              colour='secondary'
+            >
+              {hint}
+            </Text>
+          </Description>
         ) : null}
         <div ref={wrapperRef} className='relative'>
           <div
@@ -520,11 +541,6 @@ const RichTemplateInput = forwardRef<
             />
           ) : null}
         </div>
-        {hint ? (
-          <Description className='mt-2 text-xs whitespace-pre-line text-gray-500 dark:text-gray-300'>
-            {hint}
-          </Description>
-        ) : null}
       </Field>
     )
   },
@@ -584,13 +600,18 @@ const SuggestionMenu = ({
               : 'text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-slate-800',
           )}
         >
-          <span className='font-mono text-xs'>
+          <Text as='span' size='xs' colour='inherit' className='font-mono'>
             {`{{`}
-            <span className='font-semibold'>{v.name}</span>
+            <Text as='span' size='xs' weight='semibold' colour='inherit'>
+              {v.name}
+            </Text>
             {`}}`}
-          </span>
+          </Text>
           {v.description ? (
-            <span
+            <Text
+              as='span'
+              size='xxs'
+              colour='inherit'
               className={cx(
                 'text-[11px] leading-snug',
                 i === activeIndex
@@ -599,7 +620,7 @@ const SuggestionMenu = ({
               )}
             >
               {v.description}
-            </span>
+            </Text>
           ) : null}
         </button>
       ))}
@@ -631,10 +652,22 @@ const HoverTooltip = ({
       className='pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-full rounded-md bg-slate-900 px-3 py-1.5 text-xs text-white ring-1 ring-slate-900/80 dark:bg-slate-800'
       style={{ top, left }}
     >
-      <div className='font-mono text-[11px] text-slate-300'>{`{{${name}}}`}</div>
-      <div className='mt-0.5 max-w-64 leading-snug'>
+      <Text
+        as='div'
+        size='xxs'
+        colour='inherit'
+        className='font-mono text-[11px] text-slate-300'
+      >
+        {`{{${name}}}`}
+      </Text>
+      <Text
+        as='div'
+        size='xs'
+        colour='inherit'
+        className='mt-0.5 max-w-64 leading-snug'
+      >
         {description || 'Unknown variable'}
-      </div>
+      </Text>
     </div>
   )
 }
