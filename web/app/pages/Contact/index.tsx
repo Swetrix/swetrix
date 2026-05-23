@@ -1,6 +1,8 @@
 import { ArrowSquareOutIcon } from '@phosphor-icons/react'
+import { useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
+import FeedbackModal from '~/components/FeedbackModal'
 import {
   CONTACT_EMAIL,
   TWITTER_URL,
@@ -8,7 +10,9 @@ import {
   DISCORD_URL,
   DOCS_URL,
   BOOK_A_CALL_URL,
+  isSelfhosted,
 } from '~/lib/constants'
+import { useAuth } from '~/providers/AuthProvider'
 import { Text } from '~/ui/Text'
 
 interface PanelProps {
@@ -39,6 +43,9 @@ const Panel = ({ href, title, description }: PanelProps) => (
 
 const Contact = () => {
   const { t } = useTranslation('common')
+  const { isAuthenticated } = useAuth()
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const showFeedback = isAuthenticated && !isSelfhosted
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-950'>
@@ -73,6 +80,23 @@ const Contact = () => {
             }}
           />
         </Text>
+        {showFeedback ? (
+          <Text as='p' size='lg' className='mt-4'>
+            <Trans
+              t={t}
+              i18nKey='contact.feedback.desc'
+              components={{
+                feedback: (
+                  <button
+                    type='button'
+                    onClick={() => setFeedbackOpen(true)}
+                    className='font-medium underline decoration-dashed hover:decoration-solid'
+                  />
+                ),
+              }}
+            />
+          </Text>
+        ) : null}
         <div className='mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:col-span-2 lg:gap-8'>
           <Panel
             href={DOCS_URL}
@@ -86,6 +110,12 @@ const Contact = () => {
           />
         </div>
       </div>
+      {showFeedback ? (
+        <FeedbackModal
+          isOpened={feedbackOpen}
+          onClose={() => setFeedbackOpen(false)}
+        />
+      ) : null}
     </div>
   )
 }

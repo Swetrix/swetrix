@@ -40,6 +40,7 @@ import {
   SquaresFourIcon,
   TagIcon,
   BookOpenIcon,
+  ChatTextIcon,
 } from '@phosphor-icons/react'
 import { memo, Fragment, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -59,6 +60,7 @@ import {
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
+import FeedbackModal from '~/components/FeedbackModal'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
@@ -265,7 +267,13 @@ const SolutionsMenu = () => {
   )
 }
 
-const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
+const ProfileMenu = ({
+  logoutHandler,
+  openFeedback,
+}: {
+  logoutHandler: () => void
+  openFeedback: () => void
+}) => {
   const { user } = useAuth()
   const {
     t,
@@ -375,6 +383,17 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               )}
             </Disclosure>
 
+            {!isSelfhosted ? (
+              <MenuItem>
+                <Link
+                  to={routes.billing}
+                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900/60'
+                >
+                  <CreditCardIcon className='h-4 w-4' />
+                  {t('common.billing')}
+                </Link>
+              </MenuItem>
+            ) : null}
             {isSelfhosted ? (
               <MenuItem>
                 <a
@@ -400,13 +419,14 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             )}
             {!isSelfhosted ? (
               <MenuItem>
-                <Link
-                  to={routes.billing}
-                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900/60'
+                <button
+                  type='button'
+                  className='flex w-full items-center gap-2 rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900/60'
+                  onClick={openFeedback}
                 >
-                  <CreditCardIcon className='h-4 w-4' />
-                  {t('common.billing')}
-                </Link>
+                  <ChatTextIcon className='h-4 w-4' />
+                  {t('feedback.giveFeedback')}
+                </button>
               </MenuItem>
             ) : null}
 
@@ -492,10 +512,12 @@ const AuthedHeader = ({
   logoutHandler,
   colourBackground,
   openMenu,
+  openFeedback,
 }: {
   logoutHandler: () => void
   colourBackground: boolean
   openMenu: () => void
+  openFeedback: () => void
 }) => {
   const { t } = useTranslation('common')
 
@@ -536,7 +558,10 @@ const AuthedHeader = ({
           </div>
           <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-2'>
             <CommunityLinks />
-            <ProfileMenu logoutHandler={logoutHandler} />
+            <ProfileMenu
+              logoutHandler={logoutHandler}
+              openFeedback={openFeedback}
+            />
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
             <button
@@ -655,6 +680,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
   const { t } = useTranslation('common')
   const { isAuthenticated, user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
   const { theme, setTheme } = useTheme()
 
   const solutions = getSolutions(t)
@@ -668,6 +694,11 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
     setMobileMenuOpen(true)
   }
 
+  const openFeedback = () => {
+    setMobileMenuOpen(false)
+    setFeedbackOpen(true)
+  }
+
   return (
     <Popover>
       <BannerManager />
@@ -678,6 +709,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
           logoutHandler={logoutHandler}
           colourBackground={!transparent}
           openMenu={openMenu}
+          openFeedback={openFeedback}
         />
       ) : (
         <NotAuthedHeader
@@ -833,9 +865,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     )}
                   </Disclosure>
                 ) : null}
-                {!isSelfhosted &&
-                isAuthenticated &&
-                user?.planCode !== 'trial' ? (
+                {!isSelfhosted && isAuthenticated ? (
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
@@ -878,6 +908,16 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     <SquaresFourIcon className='h-5 w-5' />
                     {t('common.dashboard')}
                   </Link>
+                ) : null}
+                {isAuthenticated && !isSelfhosted ? (
+                  <button
+                    type='button'
+                    onClick={openFeedback}
+                    className='-mx-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                  >
+                    <ChatTextIcon className='h-5 w-5' />
+                    {t('feedback.giveFeedback')}
+                  </button>
                 ) : null}
               </div>
               <div className='space-y-2 py-3'>
@@ -938,6 +978,12 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
           </div>
         </DialogPanel>
       </Dialog>
+      {isAuthenticated && !isSelfhosted ? (
+        <FeedbackModal
+          isOpened={feedbackOpen}
+          onClose={() => setFeedbackOpen(false)}
+        />
+      ) : null}
     </Popover>
   )
 }

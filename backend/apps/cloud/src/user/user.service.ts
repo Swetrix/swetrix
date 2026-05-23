@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   InternalServerErrorException,
+  ServiceUnavailableException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import {
@@ -36,6 +37,7 @@ import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { DeleteFeedback } from './entities/delete-feedback.entity'
 import { CancellationFeedback } from './entities/cancellation-feedback.entity'
+import { UserFeedback } from './entities/user-feedback.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
@@ -99,6 +101,50 @@ const CURRENCY_BY_COUNTRY = {
 }
 
 const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
+const DEFAULT_CDN_URL = 'https://cdn.swetrix.com'
+const FEEDBACK_ATTACHMENT_UPLOAD_TIMEOUT_MS = 10_000
+
+type CdnFileResponse =
+  | string
+  | {
+      url?: string
+      filename?: string
+      id?: string
+    }
+
+const normaliseCdnUrl = (baseUrl: string, value: CdnFileResponse) => {
+  if (typeof value === 'string') {
+    return value.startsWith('http') ? value : `${baseUrl}/file/${value}`
+  }
+
+  if (value.url) {
+    return value.url
+  }
+
+  const filename = value.filename || value.id
+  return filename ? `${baseUrl}/file/${filename}` : null
+}
+
+const getCdnFiles = (payload: unknown): CdnFileResponse[] => {
+  if (Array.isArray(payload)) {
+    return payload
+  }
+
+  if (!payload || typeof payload !== 'object') {
+    return []
+  }
+
+  const data = payload as Record<string, unknown>
+
+  for (const key of ['files', 'urls', 'filenames', 'data']) {
+    const value = data[key]
+    if (Array.isArray(value)) {
+      return value as CdnFileResponse[]
+    }
+  }
+
+  return []
+}
 
 @Injectable()
 export class UserService {
@@ -111,6 +157,8 @@ export class UserService {
     private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
     @InjectRepository(CancellationFeedback)
     private readonly cancellationFeedbackRepository: Repository<CancellationFeedback>,
+    @InjectRepository(UserFeedback)
+    private readonly userFeedbackRepository: Repository<UserFeedback>,
     private readonly organisationService: OrganisationService,
   ) {}
 
@@ -237,6 +285,84 @@ export class UserService {
   public async saveDeleteFeedback(feedback: string) {
     return this.deleteFeedbackRepository.save({
       feedback,
+    })
+  }
+
+  private async uploadFeedbackAttachments(files: Express.Multer.File[]) {
+    if (_isEmpty(files)) {
+      return []
+    }
+
+    const token = process.env.SWETRIX_CDN_TOKEN
+    if (!token) {
+      throw new ServiceUnavailableException('CDN uploads are not configured')
+    }
+
+    const baseUrl = (process.env.SWETRIX_CDN_URL || DEFAULT_CDN_URL).replace(
+      /\/$/,
+      '',
+    )
+    const formData = new FormData()
+    formData.append('token', token)
+
+    for (const file of files) {
+      formData.append(
+        'files',
+        new Blob([file.buffer as unknown as BlobPart], {
+          type: file.mimetype,
+        }),
+        file.originalname,
+      )
+    }
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      controller.abort()
+    }, FEEDBACK_ATTACHMENT_UPLOAD_TIMEOUT_MS)
+
+    let response: Response
+    try {
+      response = await fetch(`${baseUrl}/file/multiple`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      })
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new ServiceUnavailableException('Attachment upload timed out')
+      }
+      throw error
+    } finally {
+      clearTimeout(timeout)
+    }
+
+    if (!response.ok) {
+      throw new ServiceUnavailableException('Failed to upload attachments')
+    }
+
+    let payload: unknown
+    try {
+      payload = await response.json()
+    } catch {
+      throw new ServiceUnavailableException('Invalid response from CDN')
+    }
+
+    return getCdnFiles(payload)
+      .map((file) => normaliseCdnUrl(baseUrl, file))
+      .filter((url): url is string => Boolean(url))
+  }
+
+  public async saveUserFeedback(
+    userId: string,
+    message: string,
+    files: Express.Multer.File[] = [],
+  ) {
+    const attachmentUrls = await this.uploadFeedbackAttachments(files)
+
+    return this.userFeedbackRepository.save({
+      userId,
+      message,
+      attachmentUrls,
     })
   }
 
