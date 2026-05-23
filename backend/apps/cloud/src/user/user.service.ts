@@ -102,6 +102,7 @@ const CURRENCY_BY_COUNTRY = {
 
 const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
 const DEFAULT_CDN_URL = 'https://cdn.swetrix.com'
+const FEEDBACK_ATTACHMENT_UPLOAD_TIMEOUT_MS = 10_000
 
 type CdnFileResponse =
   | string
@@ -314,10 +315,26 @@ export class UserService {
       )
     }
 
-    const response = await fetch(`${baseUrl}/file/multiple`, {
-      method: 'POST',
-      body: formData,
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      controller.abort()
+    }, FEEDBACK_ATTACHMENT_UPLOAD_TIMEOUT_MS)
+
+    let response: Response
+    try {
+      response = await fetch(`${baseUrl}/file/multiple`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      })
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new ServiceUnavailableException('Attachment upload timed out')
+      }
+      throw error
+    } finally {
+      clearTimeout(timeout)
+    }
 
     if (!response.ok) {
       throw new ServiceUnavailableException('Failed to upload attachments')

@@ -9,12 +9,14 @@ import {
   Delete,
   HttpCode,
   BadRequestException,
+  FileTypeValidator,
   UseGuards,
   UseInterceptors,
   ConflictException,
   Headers,
   Ip,
   NotFoundException,
+  ParseFilePipe,
   UploadedFiles,
 } from '@nestjs/common'
 import { FilesInterceptor } from '@nestjs/platform-express'
@@ -220,22 +222,23 @@ export class UserController {
   @UseInterceptors(
     FilesInterceptor('attachments', FEEDBACK_ATTACHMENTS_LIMIT, {
       limits: { fileSize: FEEDBACK_ATTACHMENT_MAX_SIZE },
-      fileFilter: (_req, file, callback) => {
-        if (!file.mimetype.startsWith('image/')) {
-          return callback(
-            new BadRequestException('Only image attachments are allowed'),
-            false,
-          )
-        }
-
-        callback(null, true)
-      },
     }),
   )
   async createFeedback(
     @CurrentUserId() userId: string,
     @Body() body: CreateFeedbackDTO,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [
+          new FileTypeValidator({
+            fileType: /^image\//,
+            errorMessage: 'Only image attachments are allowed',
+          }),
+        ],
+      }),
+    )
+    files: Express.Multer.File[],
     @Headers() headers: Record<string, string>,
     @Ip() requestIp: string,
   ) {
