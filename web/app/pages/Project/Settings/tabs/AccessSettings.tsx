@@ -18,6 +18,8 @@ interface AccessSettingsProps {
   onAssignOrganisation: (id?: string) => Promise<void>
   openPasswordModal: () => void
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onPublicChange: (checked: boolean) => void
+  onPasswordProtectionChange: (checked: boolean) => void
   sharableLink: string
 }
 
@@ -28,6 +30,8 @@ const AccessSettings = ({
   onAssignOrganisation,
   openPasswordModal,
   handleInput,
+  onPublicChange,
+  onPasswordProtectionChange,
   sharableLink,
 }: AccessSettingsProps) => {
   const { t } = useTranslation('common')
@@ -51,10 +55,7 @@ const AccessSettings = ({
         checked={Boolean(form.public)}
         onChange={(checked) => {
           if (!form.isPasswordProtected || !checked) {
-            setForm((prev: any) => ({
-              ...prev,
-              public: checked,
-            }))
+            onPublicChange(checked)
           }
         }}
         name='public'
@@ -68,10 +69,7 @@ const AccessSettings = ({
         checked={Boolean(form.isPasswordProtected)}
         onChange={(checked) => {
           if (!checked) {
-            setForm((prev: any) => ({
-              ...prev,
-              isPasswordProtected: false,
-            }))
+            onPasswordProtectionChange(false)
             return
           }
 

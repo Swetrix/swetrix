@@ -1,5 +1,5 @@
 import { ArrowUpRightIcon, ArrowSquareOutIcon } from '@phosphor-icons/react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
@@ -88,6 +88,7 @@ const Revenue = ({ projectId }: Props) => {
   })
   const [selectedCurrency, setSelectedCurrency] =
     useState<RevenueCurrency>('USD')
+  const pendingCurrency = useRef<RevenueCurrency | null>(null)
 
   const isConnecting =
     fetcher.state !== 'idle' &&
@@ -96,10 +97,6 @@ const Revenue = ({ projectId }: Props) => {
   const isDisconnecting =
     fetcher.state !== 'idle' &&
     fetcher.formData?.get('intent') === 'disconnect-revenue'
-  const isSavingCurrency =
-    fetcher.state !== 'idle' &&
-    fetcher.formData?.get('intent') === 'update-revenue-currency'
-
   useEffect(() => {
     fetcher.submit(
       { intent: 'get-revenue-status' },
@@ -147,10 +144,11 @@ const Revenue = ({ projectId }: Props) => {
       } else if (intent === 'update-revenue-currency') {
         if (success) {
           toast.success(t('project.settings.revenue.currencyUpdated'))
-          setStatus((prev) =>
-            prev ? { ...prev, currency: selectedCurrency } : prev,
-          )
+          const currency = pendingCurrency.current || selectedCurrency
+          setStatus((prev) => (prev ? { ...prev, currency } : prev))
+          pendingCurrency.current = null
         } else if (error) {
+          pendingCurrency.current = null
           toast.error(error)
         }
       }
@@ -187,11 +185,12 @@ const Revenue = ({ projectId }: Props) => {
     )
   }
 
-  const handleCurrencyChange = () => {
+  const handleCurrencyChange = (currency: RevenueCurrency) => {
     if (!status?.connected) return
 
+    pendingCurrency.current = currency
     fetcher.submit(
-      { intent: 'update-revenue-currency', currency: selectedCurrency },
+      { intent: 'update-revenue-currency', currency },
       { method: 'POST', action: `/projects/settings/${projectId}` },
     )
   }
@@ -349,17 +348,11 @@ const Revenue = ({ projectId }: Props) => {
             `${item.code} – ${item.name} (${item.symbol})`
           }
           selectedItem={selectedCurrencyItem}
-          onSelect={(item) => setSelectedCurrency(item.code)}
+          onSelect={(item) => {
+            setSelectedCurrency(item.code)
+            handleCurrencyChange(item.code)
+          }}
         />
-        <Button
-          type='button'
-          className='max-w-max'
-          onClick={handleCurrencyChange}
-          loading={isSavingCurrency}
-          disabled={!isConnected}
-        >
-          {t('common.save')}
-        </Button>
       </div>
 
       <a

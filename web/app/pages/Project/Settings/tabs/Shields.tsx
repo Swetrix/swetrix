@@ -30,6 +30,7 @@ interface ShieldsProps {
   }
   beenSubmitted: boolean
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
+  handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void
   botsProtectionLevels: readonly BotsProtectionLevelOption[]
   setBotsLevel: (name: string) => void
   countryBlacklist: string[]
@@ -41,6 +42,7 @@ const Shields = ({
   errors,
   beenSubmitted,
   handleInput,
+  handleBlur,
   botsProtectionLevels,
   setBotsLevel,
   countryBlacklist,
@@ -119,6 +121,7 @@ const Shields = ({
         value={form.origins || ''}
         className='mt-2'
         onChange={handleInput}
+        onBlur={handleBlur}
         error={beenSubmitted ? errors.origins : null}
       />
       <Input
@@ -129,6 +132,7 @@ const Shields = ({
         value={form.ipBlacklist || ''}
         className='mt-4'
         onChange={handleInput}
+        onBlur={handleBlur}
         error={beenSubmitted ? errors.ipBlacklist : null}
       />
       <div className='mt-4'>

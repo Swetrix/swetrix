@@ -20,7 +20,14 @@ import {
   CreditCardIcon,
 } from '@phosphor-icons/react'
 import _round from 'lodash/round'
-import React, { useState, useEffect, memo, useMemo, useRef } from 'react'
+import React, {
+  useState,
+  useEffect,
+  memo,
+  useMemo,
+  useRef,
+  useCallback,
+} from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import {
   useNavigate,
@@ -259,6 +266,7 @@ const UserSettings = () => {
     i18n: { language },
   } = useTranslation('common')
   const fetcher = useFetcher<UserSettingsActionData>()
+  const profileAutosaveFetcher = useFetcher<UserSettingsActionData>()
   const metainfoFetcher = useFetcher<UserSettingsActionData>()
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -417,6 +425,18 @@ const UserSettings = () => {
   const [deletionPassword, setDeletionPassword] = useState('')
 
   const lastHandledData = useRef<UserSettingsActionData | null>(null)
+  const lastHandledProfileAutosaveData = useRef<UserSettingsActionData | null>(
+    null,
+  )
+  const profileUpdateToast = useRef('profileSettings.updated')
+  const activeProfileAutosave = useRef<{
+    additionalData: Record<string, unknown>
+    toastKey: string
+  } | null>(null)
+  const pendingProfileAutosave = useRef<{
+    additionalData: Record<string, unknown>
+    toastKey: string
+  } | null>(null)
   const passwordChangedRef = useRef(false)
   const pendingPasswordChangeRef = useRef(false)
   const pendingToggles = useRef<Map<string, boolean>>(new Map())
@@ -444,26 +464,26 @@ const UserSettings = () => {
         }
 
         mergeUser(updatedUser)
-        toast.success(t('profileSettings.updated'))
+        toast.success(t(profileUpdateToast.current))
+        profileUpdateToast.current = 'profileSettings.updated'
 
-        // If password was changed, log out the user
         if (passwordChangedRef.current) {
           passwordChangedRef.current = false
           logout()
         }
       } else if (intent === 'generate-api-key' && apiKey) {
         mergeUser({ apiKey })
-        toast.success(t('profileSettings.updated'))
+        toast.success(t('profileSettings.autosave.apiKeyGenerated'))
       } else if (intent === 'delete-api-key') {
         mergeUser({ apiKey: null })
-        toast.success(t('profileSettings.updated'))
+        toast.success(t('profileSettings.autosave.apiKeyDeleted'))
       } else if (intent === 'toggle-live-visitors' && updatedUser) {
         pendingToggles.current.delete('live-visitors')
         mergeUser(updatedUser)
-        toast.success(t('profileSettings.updated'))
+        toast.success(t('profileSettings.autosave.liveVisitors'))
       } else if (intent === 'toggle-login-notifications') {
         pendingToggles.current.delete('login-notifications')
-        toast.success(t('profileSettings.updated'))
+        toast.success(t('profileSettings.autosave.loginNotifications'))
       } else if (intent === 'confirm-email') {
         setCookie(CONFIRMATION_TIMEOUT, true, 600)
         toast.success(t('profileSettings.confSent'))
@@ -509,6 +529,99 @@ const UserSettings = () => {
       )
     }
   }, [fetcher.data, fetcher.state, mergeUser, t, logout, navigate, loadUser])
+
+  const flushProfileAutosave = useCallback(() => {
+    const autosave = pendingProfileAutosave.current
+    if (profileAutosaveFetcher.state !== 'idle' || !autosave) return
+
+    activeProfileAutosave.current = autosave
+    pendingProfileAutosave.current = null
+
+    const formData = new FormData()
+    formData.set('intent', 'update-profile')
+    formData.set('email', user?.email || '')
+
+    if (autosave.additionalData.timezone) {
+      formData.set('timezone', autosave.additionalData.timezone as string)
+    }
+
+    if (autosave.additionalData.timeFormat) {
+      formData.set('timeFormat', autosave.additionalData.timeFormat as string)
+    }
+
+    if (autosave.additionalData.reportFrequency) {
+      formData.set(
+        'reportFrequency',
+        autosave.additionalData.reportFrequency as string,
+      )
+    }
+
+    profileAutosaveFetcher.submit(formData, { method: 'post' })
+  }, [profileAutosaveFetcher, user?.email])
+
+  useEffect(() => {
+    if (
+      profileAutosaveFetcher.state === 'idle' &&
+      pendingProfileAutosave.current &&
+      lastHandledProfileAutosaveData.current === profileAutosaveFetcher.data
+    ) {
+      flushProfileAutosave()
+    }
+  }, [
+    flushProfileAutosave,
+    profileAutosaveFetcher.data,
+    profileAutosaveFetcher.state,
+  ])
+
+  useEffect(() => {
+    if (profileAutosaveFetcher.state !== 'idle' || !profileAutosaveFetcher.data)
+      return
+    if (lastHandledProfileAutosaveData.current === profileAutosaveFetcher.data)
+      return
+    lastHandledProfileAutosaveData.current = profileAutosaveFetcher.data
+
+    if (profileAutosaveFetcher.data.success) {
+      const { intent, user: updatedUser } = profileAutosaveFetcher.data
+
+      if (intent === 'update-profile' && updatedUser) {
+        mergeUser(updatedUser)
+        toast.success(
+          t(
+            activeProfileAutosave.current?.toastKey ||
+              'profileSettings.updated',
+          ),
+        )
+        activeProfileAutosave.current = null
+      }
+
+      if (pendingProfileAutosave.current) {
+        flushProfileAutosave()
+      }
+      return
+    }
+
+    activeProfileAutosave.current = null
+
+    if (profileAutosaveFetcher.data.error) {
+      const translated = t(
+        `apiNotifications.${profileAutosaveFetcher.data.error}`,
+      )
+      toast.error(
+        translated !== `apiNotifications.${profileAutosaveFetcher.data.error}`
+          ? translated
+          : profileAutosaveFetcher.data.error,
+      )
+    }
+    if (pendingProfileAutosave.current) {
+      flushProfileAutosave()
+    }
+  }, [
+    flushProfileAutosave,
+    profileAutosaveFetcher.data,
+    profileAutosaveFetcher.state,
+    mergeUser,
+    t,
+  ])
 
   const errors = useMemo(() => {
     const allErrors: Record<string, string> = {}
@@ -563,9 +676,11 @@ const UserSettings = () => {
     additionalData?: Record<string, unknown>,
     skipValidation = false,
     includePassword = false,
+    toastKey = 'profileSettings.updated',
   ) => {
     if (!skipValidation && !validated) return
 
+    profileUpdateToast.current = toastKey
     const formData = new FormData()
     formData.set('intent', 'update-profile')
     formData.set('email', form.email || user?.email || '')
@@ -588,6 +703,21 @@ const UserSettings = () => {
     fetcher.submit(formData, { method: 'post' })
   }
 
+  const submitProfileAutosave = (
+    additionalData: Record<string, unknown>,
+    toastKey: string,
+  ) => {
+    pendingProfileAutosave.current = {
+      additionalData: {
+        ...pendingProfileAutosave.current?.additionalData,
+        ...additionalData,
+      },
+      toastKey,
+    }
+
+    flushProfileAutosave()
+  }
+
   const handleSubmit = (
     e: React.FormEvent<HTMLFormElement> | null,
     force?: boolean,
@@ -607,7 +737,14 @@ const UserSettings = () => {
         return
       }
 
-      submitProfileUpdate(undefined, false, hasPasswordUpdateInput)
+      submitProfileUpdate(
+        undefined,
+        false,
+        hasPasswordUpdateInput,
+        hasPasswordUpdateInput
+          ? 'profileSettings.autosave.password'
+          : 'profileSettings.updated',
+      )
     }
   }
 
@@ -616,7 +753,12 @@ const UserSettings = () => {
 
     if (!form.email || errors.email) return
 
-    submitProfileUpdate(undefined, true)
+    submitProfileUpdate(
+      undefined,
+      true,
+      false,
+      'profileSettings.autosave.email',
+    )
   }
 
   const handlePasswordSubmit = () => {
@@ -633,8 +775,12 @@ const UserSettings = () => {
     setIsPasswordChangeModalOpened(true)
   }
 
-  const handleTimezoneSave = () => {
-    submitProfileUpdate({ timezone })
+  const handleTimezoneChange = (value: string) => {
+    setTimezone(value)
+    submitProfileAutosave(
+      { timezone: value },
+      'profileSettings.autosave.timezone',
+    )
   }
 
   const handleShowLiveVisitorsSave = (checked: boolean) => {
@@ -667,8 +813,12 @@ const UserSettings = () => {
     mergeUser({ receiveLoginNotifications: checked })
   }
 
-  const handleReportSave = () => {
-    submitProfileUpdate({ reportFrequency })
+  const handleReportFrequencyChange = (frequency: string) => {
+    setReportFrequency(frequency)
+    submitProfileAutosave(
+      { reportFrequency: frequency },
+      'profileSettings.autosave.reportFrequency',
+    )
   }
 
   const onAccountDelete = () => {
@@ -709,8 +859,14 @@ const UserSettings = () => {
     fetcher.submit(formData, { method: 'post' })
   }
 
-  const setAsyncTimeFormat = () => {
-    submitProfileUpdate({ timeFormat: form.timeFormat })
+  const handleTimeFormatChange = (
+    timeFormat: NonNullable<Form['timeFormat']>,
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      timeFormat,
+    }))
+    submitProfileAutosave({ timeFormat }, 'profileSettings.autosave.timeFormat')
   }
 
   const toggleShowEmailFields = () => {
@@ -1184,14 +1340,10 @@ const UserSettings = () => {
                   description={t('profileSettings.timezoneDesc')}
                 >
                   <div className='max-w-md'>
-                    <TimezonePicker value={timezone} onChange={setTimezone} />
-                    <Button
-                      size='lg'
-                      className='mt-4'
-                      onClick={handleTimezoneSave}
-                    >
-                      {t('common.save')}
-                    </Button>
+                    <TimezonePicker
+                      value={timezone}
+                      onChange={handleTimezoneChange}
+                    />
                   </div>
                 </SettingsSection>
 
@@ -1205,18 +1357,15 @@ const UserSettings = () => {
                       title={t(`profileSettings.${form.timeFormat}`)}
                       className='w-full'
                       items={translatedTimeFormat}
-                      onSelect={(f) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          timeFormat:
-                            timeFormatArray[
-                              _findIndex(
-                                translatedTimeFormat,
-                                (freq) => freq === f,
-                              )
-                            ],
-                        }))
-                      }
+                      onSelect={(f) => {
+                        const nextTimeFormat = timeFormatArray[
+                          _findIndex(translatedTimeFormat, (freq) => freq === f)
+                        ] as NonNullable<Form['timeFormat']> | undefined
+
+                        if (!nextTimeFormat) return
+
+                        handleTimeFormatChange(nextTimeFormat)
+                      }}
                       capitalise
                       selectedItem={
                         translatedTimeFormat[
@@ -1227,13 +1376,6 @@ const UserSettings = () => {
                         ]
                       }
                     />
-                    <Button
-                      size='lg'
-                      className='mt-4'
-                      onClick={setAsyncTimeFormat}
-                    >
-                      {t('common.save')}
-                    </Button>
                   </div>
                 </SettingsSection>
 
@@ -1606,16 +1748,17 @@ const UserSettings = () => {
                       label={t('profileSettings.email')}
                       className='w-full'
                       items={translatedFrequencies}
-                      onSelect={(f) =>
-                        setReportFrequency(
+                      onSelect={(f) => {
+                        const nextFrequency =
                           reportFrequencies[
                             _findIndex(
                               translatedFrequencies,
                               (freq) => freq === f,
                             )
-                          ],
-                        )
-                      }
+                          ]
+
+                        handleReportFrequencyChange(nextFrequency)
+                      }}
                       capitalise
                       selectedItem={
                         translatedFrequencies[
@@ -1626,13 +1769,6 @@ const UserSettings = () => {
                         ]
                       }
                     />
-                    <Button
-                      size='lg'
-                      className='mt-4'
-                      onClick={handleReportSave}
-                    >
-                      {t('common.save')}
-                    </Button>
                   </div>
                 </SettingsSection>
 
@@ -1795,7 +1931,12 @@ const UserSettings = () => {
           setIsPasswordChangeModalOpened(false)
           pendingPasswordChangeRef.current = hasPasswordUpdateInput
           passwordChangedRef.current = false
-          submitProfileUpdate(undefined, true, hasPasswordUpdateInput)
+          submitProfileUpdate(
+            undefined,
+            true,
+            hasPasswordUpdateInput,
+            'profileSettings.autosave.password',
+          )
         }}
         closeText={t('common.cancel')}
         submitText={t('common.continue')}
