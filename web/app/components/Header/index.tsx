@@ -865,9 +865,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     )}
                   </Disclosure>
                 ) : null}
-                {!isSelfhosted &&
-                isAuthenticated &&
-                user?.planCode !== 'trial' ? (
+                {!isSelfhosted && isAuthenticated ? (
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
