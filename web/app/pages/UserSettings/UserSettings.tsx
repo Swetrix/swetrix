@@ -50,6 +50,7 @@ import {
   paddleLanguageMapping,
 } from '~/lib/constants'
 import BillingPricing from '~/components/pricing/BillingPricing'
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { usePaddle } from '~/hooks/usePaddle'
 import { changeLanguage } from '~/i18n'
 import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
@@ -424,10 +425,11 @@ const UserSettings = () => {
   const [deletionFeedback, setDeletionFeedback] = useState('')
   const [deletionPassword, setDeletionPassword] = useState('')
 
-  const lastHandledData = useRef<UserSettingsActionData | null>(null)
   const lastHandledProfileAutosaveData = useRef<UserSettingsActionData | null>(
     null,
   )
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<UserSettingsActionData>()
   const profileUpdateToast = useRef('profileSettings.updated')
   const activeProfileAutosave = useRef<{
     additionalData: Record<string, unknown>
@@ -451,8 +453,7 @@ const UserSettings = () => {
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     if (fetcher.data.success) {
       const { intent, user: updatedUser, apiKey } = fetcher.data
@@ -528,7 +529,16 @@ const UserSettings = () => {
           : fetcher.data.error,
       )
     }
-  }, [fetcher.data, fetcher.state, mergeUser, t, logout, navigate, loadUser])
+  }, [
+    fetcher.data,
+    fetcher.state,
+    mergeUser,
+    t,
+    logout,
+    navigate,
+    loadUser,
+    shouldHandleFetcherData,
+  ])
 
   const flushProfileAutosave = useCallback(() => {
     const autosave = pendingProfileAutosave.current

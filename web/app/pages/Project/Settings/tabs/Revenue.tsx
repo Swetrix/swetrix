@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { DOCS_URL } from '~/lib/constants'
 import type {
   ProjectSettingsActionData,
@@ -32,6 +33,9 @@ const SUPPORTED_CURRENCIES: CurrencyOption[] = [
   { code: 'EUR', symbol: '€', name: 'Euro' },
   { code: 'GBP', symbol: '£', name: 'British Pound' },
 ]
+
+const isRevenueCurrency = (currency?: string): currency is RevenueCurrency =>
+  currency === 'USD' || currency === 'EUR' || currency === 'GBP'
 
 const STRIPE_REQUIRED_PERMISSIONS = [
   'rak_charge_read',
@@ -88,8 +92,12 @@ const Revenue = ({ projectId }: Props) => {
   })
   const [selectedCurrency, setSelectedCurrency] =
     useState<RevenueCurrency>('USD')
-  const pendingCurrency = useRef<RevenueCurrency | null>(null)
-  const lastHandledData = useRef<ProjectSettingsActionData | null>(null)
+  const pendingCurrency = useRef<{
+    previous: RevenueCurrency
+    next: RevenueCurrency
+  } | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
 
   const isConnecting =
     fetcher.state !== 'idle' &&
@@ -108,8 +116,7 @@ const Revenue = ({ projectId }: Props) => {
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     const { intent, success, error, revenueStatus } = fetcher.data
 
@@ -117,11 +124,7 @@ const Revenue = ({ projectId }: Props) => {
       setIsLoading(false)
       if (success && revenueStatus) {
         setStatus(revenueStatus)
-        if (
-          revenueStatus.currency === 'USD' ||
-          revenueStatus.currency === 'EUR' ||
-          revenueStatus.currency === 'GBP'
-        ) {
+        if (isRevenueCurrency(revenueStatus.currency)) {
           setSelectedCurrency(revenueStatus.currency)
         }
       } else if (error) {
@@ -148,15 +151,27 @@ const Revenue = ({ projectId }: Props) => {
     } else if (intent === 'update-revenue-currency') {
       if (success) {
         toast.success(t('project.settings.revenue.currencyUpdated'))
-        const currency = pendingCurrency.current || selectedCurrency
-        setStatus((prev) => (prev ? { ...prev, currency } : prev))
+        const currency = pendingCurrency.current?.next || selectedCurrency
+        setStatus((prev) => ({ ...(prev || { connected: false }), currency }))
         pendingCurrency.current = null
       } else if (error) {
+        const previousCurrency = pendingCurrency.current?.previous
+        if (previousCurrency) {
+          setSelectedCurrency(previousCurrency)
+        }
         pendingCurrency.current = null
         toast.error(error)
       }
     }
-  }, [fetcher.state, fetcher.data, t, projectId, selectedCurrency, fetcher])
+  }, [
+    fetcher.state,
+    fetcher.data,
+    t,
+    projectId,
+    selectedCurrency,
+    fetcher,
+    shouldHandleFetcherData,
+  ])
 
   const handleApiKeyChange = (provider: RevenueProvider, value: string) => {
     setApiKeys((prev) => ({ ...prev, [provider]: value }))
@@ -188,10 +203,11 @@ const Revenue = ({ projectId }: Props) => {
     )
   }
 
-  const handleCurrencyChange = (currency: RevenueCurrency) => {
-    if (!status?.connected) return
-
-    pendingCurrency.current = currency
+  const handleCurrencyChange = (
+    currency: RevenueCurrency,
+    previousCurrency: RevenueCurrency,
+  ) => {
+    pendingCurrency.current = { previous: previousCurrency, next: currency }
     fetcher.submit(
       { intent: 'update-revenue-currency', currency },
       { method: 'POST', action: `/projects/settings/${projectId}` },
@@ -352,8 +368,13 @@ const Revenue = ({ projectId }: Props) => {
           }
           selectedItem={selectedCurrencyItem}
           onSelect={(item) => {
+            if (item.code === selectedCurrency) return
+
+            const previousCurrency = isRevenueCurrency(status?.currency)
+              ? status.currency
+              : selectedCurrency
             setSelectedCurrency(item.code)
-            handleCurrencyChange(item.code)
+            handleCurrencyChange(item.code, previousCurrency)
           }}
         />
       </div>

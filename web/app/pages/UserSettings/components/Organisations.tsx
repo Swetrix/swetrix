@@ -1,11 +1,12 @@
 import dayjs from 'dayjs'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
-import { memo, useState, useEffect, useRef } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { OrganisationMembership } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
 import type { UserSettingsActionData } from '~/routes/user-settings'
@@ -27,13 +28,13 @@ const Organisations = ({ membership }: OrganisationsProps) => {
   const { organisation, confirmed, role, created } = membership
 
   const fetcher = useFetcher<UserSettingsActionData>()
-  const lastHandledData = useRef<UserSettingsActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<UserSettingsActionData>()
   const isLoading = fetcher.state !== 'idle'
 
   useEffect(() => {
     if (!fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     if (fetcher.data?.intent === 'reject-organisation-invitation') {
       if (fetcher.data.success) {
@@ -67,7 +68,14 @@ const Organisations = ({ membership }: OrganisationsProps) => {
         toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.data, mergeUser, membership.id, t, user?.organisationMemberships])
+  }, [
+    fetcher.data,
+    mergeUser,
+    membership.id,
+    t,
+    user?.organisationMemberships,
+    shouldHandleFetcherData,
+  ])
 
   const onQuit = () => {
     fetcher.submit(

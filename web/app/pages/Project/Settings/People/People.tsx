@@ -16,10 +16,11 @@ import {
   CaretDownIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
-import React, { Fragment, useState, useEffect, useRef } from 'react'
+import React, { Fragment, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { roles, INVITATION_EXPIRES_IN, isSelfhosted } from '~/lib/constants'
 import { Role } from '~/lib/models/Organisation'
 import { Project, ShareOwnerProject } from '~/lib/models/Project'
@@ -88,13 +89,13 @@ const TableUserRow = ({
 }: TableUserRowProps) => {
   const { t } = useTranslation('common')
   const fetcher = useFetcher<ProjectSettingsActionData>()
-  const lastHandledData = useRef<ProjectSettingsActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
   const { id, created, confirmed, role, user } = data || {}
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     if (fetcher.data.intent === 'change-share-role') {
       if (fetcher.data.success) {
@@ -106,7 +107,13 @@ const TableUserRow = ({
         toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.state, fetcher.data, onRoleUpdated, t])
+  }, [
+    fetcher.state,
+    fetcher.data,
+    onRoleUpdated,
+    t,
+    shouldHandleFetcherData,
+  ])
 
   const changeRole = (newRole: string) => {
     if (newRole === role || fetcher.state !== 'idle') return
@@ -252,7 +259,8 @@ const People = ({ project }: PeopleProps) => {
     role?: string
   }>({})
   const [validated, setValidated] = useState(false)
-  const lastHandledData = useRef<ProjectSettingsActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
   const [members, setMembers] = useState<ShareOwnerProject[]>(() => share || [])
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -267,8 +275,7 @@ const People = ({ project }: PeopleProps) => {
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     if (fetcher.data.intent === 'share-project') {
       if (fetcher.data.success) {
@@ -303,7 +310,13 @@ const People = ({ project }: PeopleProps) => {
         toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.state, fetcher.data, memberToRemove?.id, t])
+  }, [
+    fetcher.state,
+    fetcher.data,
+    memberToRemove?.id,
+    t,
+    shouldHandleFetcherData,
+  ])
 
   const validate = () => {
     const allErrors: {

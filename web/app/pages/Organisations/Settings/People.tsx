@@ -18,11 +18,12 @@ import {
   CaretDownIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
-import React, { Fragment, useState, useEffect, useRef } from 'react'
+import React, { Fragment, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
 import { DetailedOrganisation, Role } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
@@ -238,7 +239,8 @@ const People = ({ organisation }: PeopleProps) => {
     role?: string
   }>({})
   const [validated, setValidated] = useState(false)
-  const lastHandledData = useRef<OrganisationSettingsActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<OrganisationSettingsActionData>()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [memberToRemove, setMemberToRemove] = useState<
@@ -273,8 +275,7 @@ const People = ({ organisation }: PeopleProps) => {
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     if (fetcher.data?.success) {
       const { intent } = fetcher.data
@@ -305,7 +306,7 @@ const People = ({ organisation }: PeopleProps) => {
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, memberToRemove?.id, t])
+  }, [fetcher.data, memberToRemove?.id, t, shouldHandleFetcherData])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const validate = () => {

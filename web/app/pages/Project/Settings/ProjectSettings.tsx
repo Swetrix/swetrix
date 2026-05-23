@@ -37,6 +37,7 @@ import {
 import { toast } from 'sonner'
 
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { isSelfhosted, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
@@ -441,8 +442,11 @@ const ProjectSettings = () => {
   const [tab, setTab] = useState(DELETE_DATA_MODAL_TABS[0].name)
   const [showProtected, setShowProtected] = useState(false)
   const lastSavedForm = useRef<Form>(getFormFromProject(initialProject))
-  const lastHandledFetcherData = useRef<ProjectSettingsActionData | null>(null)
   const lastHandledAutosaveData = useRef<ProjectSettingsActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
+  const shouldHandleGscData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
   const activeAutosave = useRef<{
     updates: Partial<Form>
     toastKey: string
@@ -730,16 +734,13 @@ const ProjectSettings = () => {
   }, [requestOrigin, id])
 
   const [gscPropertiesPending, setGscPropertiesPending] = useState(false)
-  const lastHandledGscData = useRef<ProjectSettingsActionData | null>(null)
+  const pendingGscPropertyUri = useRef<string | null>(null)
   const gscInitialized = useRef(false)
 
   // Handle GSC fetcher responses
   useEffect(() => {
     if (gscFetcher.state !== 'idle' || !gscFetcher.data) return
-
-    // Prevent handling the same response twice
-    if (lastHandledGscData.current === gscFetcher.data) return
-    lastHandledGscData.current = gscFetcher.data
+    if (!shouldHandleGscData(gscFetcher.data)) return
 
     const {
       intent,
@@ -786,12 +787,21 @@ const ProjectSettings = () => {
         setGscConnected(false)
         setGscProperties([])
         setGscEmail(null)
+        pendingGscPropertyUri.current = null
         setForm((prevForm) => ({
           ...prevForm,
           gscPropertyUri: null,
         }))
         toast.success(t('project.settings.gsc.disconnected'))
       } else if (intent === 'gsc-set-property') {
+        const propertyUri = pendingGscPropertyUri.current
+        if (propertyUri) {
+          setForm((prevForm) => ({
+            ...prevForm,
+            gscPropertyUri: propertyUri,
+          }))
+          pendingGscPropertyUri.current = null
+        }
         toast.success(t('project.settings.gsc.propertyConnected'))
       }
     } else if (gscError) {
@@ -806,9 +816,11 @@ const ProjectSettings = () => {
         setGscConnected(false)
         setGscEmail(null)
         setGscProperties([])
+      } else if (intent === 'gsc-set-property') {
+        pendingGscPropertyUri.current = null
       }
     }
-  }, [gscFetcher.state, gscFetcher.data, t])
+  }, [gscFetcher.state, gscFetcher.data, t, shouldHandleGscData])
 
   // Fetch GSC properties after status confirms connected
   useEffect(() => {
@@ -829,8 +841,7 @@ const ProjectSettings = () => {
 
   useEffect(() => {
     if (!fetcher.data) return
-    if (lastHandledFetcherData.current === fetcher.data) return
-    lastHandledFetcherData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     if (fetcher.data?.success) {
       const { intent, project: updatedProject } = fetcher.data
@@ -892,7 +903,7 @@ const ProjectSettings = () => {
       setIsDeleting(false)
       setIsResetting(false)
     }
-  }, [fetcher.data, t, navigate])
+  }, [fetcher.data, t, navigate, shouldHandleFetcherData])
 
   const onDelete = () => {
     setShowDelete(false)
@@ -1556,10 +1567,7 @@ const ProjectSettings = () => {
                       keyExtractor={(item) => item.key}
                       labelExtractor={(item) => item.label}
                       onSelect={(item: { key: string; label: string }) => {
-                        setForm((prevForm) => ({
-                          ...prevForm,
-                          gscPropertyUri: item.key,
-                        }))
+                        pendingGscPropertyUri.current = item.key
                         gscFetcher.submit(
                           {
                             intent: 'gsc-set-property',

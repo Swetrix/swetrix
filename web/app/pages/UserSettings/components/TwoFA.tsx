@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { QRCode } from 'react-qr-code'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 import { LockIcon } from '@phosphor-icons/react'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { useAuth } from '~/providers/AuthProvider'
 import type { UserSettingsActionData } from '~/routes/user-settings'
 import Alert from '~/ui/Alert'
@@ -15,7 +16,8 @@ import { Text } from '~/ui/Text'
 const TwoFA = () => {
   const { user, mergeUser } = useAuth()
   const fetcher = useFetcher<UserSettingsActionData>()
-  const lastHandledData = useRef<UserSettingsActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<UserSettingsActionData>()
 
   const { t } = useTranslation('common')
   const [twoFAConfigurating, setTwoFAConfigurating] = useState(false)
@@ -34,8 +36,7 @@ const TwoFA = () => {
 
   useEffect(() => {
     if (!fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     if (fetcher.data?.success) {
       const { intent, twoFAData } = fetcher.data
@@ -79,7 +80,7 @@ const TwoFA = () => {
         }
       }
     }
-  }, [fetcher.data, mergeUser, t])
+  }, [fetcher.data, mergeUser, t, shouldHandleFetcherData])
 
   const handle2FAInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const {

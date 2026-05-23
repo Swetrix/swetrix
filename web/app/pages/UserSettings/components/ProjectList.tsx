@@ -1,11 +1,12 @@
 import dayjs from 'dayjs'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
-import { memo, useState, useEffect, useRef } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { SharedProject } from '~/lib/models/SharedProject'
 import { useAuth } from '~/providers/AuthProvider'
 import { UserSettingsActionData } from '~/routes/user-settings'
@@ -23,7 +24,8 @@ const ProjectList = ({ item }: ProjectListProps) => {
   } = useTranslation('common')
   const { user, mergeUser } = useAuth()
   const fetcher = useFetcher<UserSettingsActionData>()
-  const lastHandledData = useRef<UserSettingsActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<UserSettingsActionData>()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const { created, confirmed, id, role, project } = item
@@ -32,8 +34,7 @@ const ProjectList = ({ item }: ProjectListProps) => {
 
   useEffect(() => {
     if (!fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     if (fetcher.data?.intent === 'reject-project-share') {
       if (fetcher.data.success) {
@@ -64,7 +65,15 @@ const ProjectList = ({ item }: ProjectListProps) => {
         toast.error(t('apiNotifications.acceptInvitationError'))
       }
     }
-  }, [fetcher.data, id, item.id, mergeUser, t, user?.sharedProjects])
+  }, [
+    fetcher.data,
+    id,
+    item.id,
+    mergeUser,
+    t,
+    user?.sharedProjects,
+    shouldHandleFetcherData,
+  ])
 
   const onQuit = () => {
     fetcher.submit(
