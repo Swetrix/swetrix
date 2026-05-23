@@ -17,7 +17,7 @@ import {
   CaretDownIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { Fragment, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
@@ -83,7 +83,9 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
   } = useTranslation('common')
   const { user } = useAuth()
 
-  const changeRole = (memberId: string, newRole: Role) => {
+  const changeRole = (memberId: string, currentRole: Role, newRole: Role) => {
+    if (newRole === currentRole || fetcher.state !== 'idle') return
+
     const formData = new FormData()
     formData.set('intent', 'update-member-role')
     formData.set('memberId', memberId)
@@ -144,7 +146,9 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
                       <MenuItem key={itRole}>
                         <button
                           type='button'
-                          onClick={() => changeRole(member.id, itRole)}
+                          onClick={() =>
+                            changeRole(member.id, member.role, itRole)
+                          }
                           className='flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800'
                         >
                           <div>
@@ -233,6 +237,7 @@ const People = ({ organisation }: PeopleProps) => {
     role?: string
   }>({})
   const [validated, setValidated] = useState(false)
+  const lastHandledData = useRef<OrganisationSettingsActionData | null>(null)
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [memberToRemove, setMemberToRemove] = useState<
@@ -259,6 +264,10 @@ const People = ({ organisation }: PeopleProps) => {
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
+    if (!fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
     if (fetcher.data?.success) {
       const { intent } = fetcher.data
       if (intent === 'invite-member') {

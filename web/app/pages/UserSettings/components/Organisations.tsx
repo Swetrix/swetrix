@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
-import { memo, useState, useEffect } from 'react'
+import { memo, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
@@ -27,9 +27,14 @@ const Organisations = ({ membership }: OrganisationsProps) => {
   const { organisation, confirmed, role, created } = membership
 
   const fetcher = useFetcher<UserSettingsActionData>()
+  const lastHandledData = useRef<UserSettingsActionData | null>(null)
   const isLoading = fetcher.state !== 'idle'
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
     if (fetcher.data?.intent === 'reject-organisation-invitation') {
       if (fetcher.data.success) {
         mergeUser({

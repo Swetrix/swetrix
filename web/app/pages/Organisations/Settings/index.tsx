@@ -11,7 +11,7 @@ import {
   UserCircleIcon,
   WarningOctagonIcon,
 } from '@phosphor-icons/react'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import {
@@ -65,6 +65,7 @@ const OrganisationSettings = () => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [isFormDirty, setIsFormDirty] = useState(false)
+  const lastHandledData = useRef<OrganisationSettingsActionData | null>(null)
 
   const organisation = loaderData?.organisation || null
   const error = loaderData?.error
@@ -88,6 +89,10 @@ const OrganisationSettings = () => {
     fetcher.formData?.get('intent') === 'delete-organisation'
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
     if (fetcher.data?.success) {
       const { intent } = fetcher.data
 

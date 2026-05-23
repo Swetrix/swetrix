@@ -1,6 +1,6 @@
 import { CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
@@ -66,10 +66,15 @@ const Socialisations = () => {
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)
   const fetcher = useFetcher<UserSettingsActionData>()
+  const lastHandledData = useRef<UserSettingsActionData | null>(null)
   const isUnlinking = fetcher.state !== 'idle'
   const { generateSSOAuthURL, linkBySSOHash } = useAuthProxy()
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
     if (fetcher.data?.intent === 'unlink-sso') {
       if (fetcher.data.success) {
         loadUser()

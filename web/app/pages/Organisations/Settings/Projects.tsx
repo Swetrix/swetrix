@@ -8,7 +8,7 @@ import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useFetcher } from 'react-router'
@@ -207,6 +207,7 @@ export const Projects = ({ organisation }: ProjectsProps) => {
     DetailedOrganisation['projects'][number] | null
   >(null)
   const [selectedProject, setSelectedProject] = useState<any>(null)
+  const lastHandledData = useRef<OrganisationSettingsActionData | null>(null)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -221,6 +222,10 @@ export const Projects = ({ organisation }: ProjectsProps) => {
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
+    if (!fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
     if (fetcher.data?.success) {
       const { intent } = fetcher.data
       if (intent === 'add-project') {

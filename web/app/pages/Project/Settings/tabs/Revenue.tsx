@@ -66,7 +66,7 @@ const PROVIDER_CONFIG: Record<RevenueProvider, ProviderConfig> = {
     label: 'Paddle',
     icon: <PaddleSVG className='size-6' />,
     apiKeyPrefix: 'pdl_live_',
-    docsUrl: `${DOCS_URL}/revenue/paddle`,
+    docsUrl: `${DOCS_URL}/analytics-dashboard/revenue-tracking#supported-sources`,
   },
 }
 
@@ -89,6 +89,7 @@ const Revenue = ({ projectId }: Props) => {
   const [selectedCurrency, setSelectedCurrency] =
     useState<RevenueCurrency>('USD')
   const pendingCurrency = useRef<RevenueCurrency | null>(null)
+  const lastHandledData = useRef<ProjectSettingsActionData | null>(null)
 
   const isConnecting =
     fetcher.state !== 'idle' &&
@@ -106,51 +107,53 @@ const Revenue = ({ projectId }: Props) => {
   }, [projectId])
 
   useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      const { intent, success, error, revenueStatus } = fetcher.data
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
 
-      if (intent === 'get-revenue-status') {
-        setIsLoading(false)
-        if (success && revenueStatus) {
-          setStatus(revenueStatus)
-          if (
-            revenueStatus.currency === 'USD' ||
-            revenueStatus.currency === 'EUR' ||
-            revenueStatus.currency === 'GBP'
-          ) {
-            setSelectedCurrency(revenueStatus.currency)
-          }
-        } else if (error) {
-          console.error('Failed to load revenue status:', error)
+    const { intent, success, error, revenueStatus } = fetcher.data
+
+    if (intent === 'get-revenue-status') {
+      setIsLoading(false)
+      if (success && revenueStatus) {
+        setStatus(revenueStatus)
+        if (
+          revenueStatus.currency === 'USD' ||
+          revenueStatus.currency === 'EUR' ||
+          revenueStatus.currency === 'GBP'
+        ) {
+          setSelectedCurrency(revenueStatus.currency)
         }
-      } else if (intent === 'connect-revenue') {
-        if (success) {
-          toast.success(t('project.settings.revenue.connected'))
-          setApiKeys({ stripe: '', paddle: '' })
-          fetcher.submit(
-            { intent: 'get-revenue-status' },
-            { method: 'POST', action: `/projects/settings/${projectId}` },
-          )
-        } else if (error) {
-          toast.error(error)
-        }
-      } else if (intent === 'disconnect-revenue') {
-        if (success) {
-          toast.success(t('project.settings.revenue.disconnected'))
-          setStatus({ connected: false })
-        } else if (error) {
-          toast.error(error)
-        }
-      } else if (intent === 'update-revenue-currency') {
-        if (success) {
-          toast.success(t('project.settings.revenue.currencyUpdated'))
-          const currency = pendingCurrency.current || selectedCurrency
-          setStatus((prev) => (prev ? { ...prev, currency } : prev))
-          pendingCurrency.current = null
-        } else if (error) {
-          pendingCurrency.current = null
-          toast.error(error)
-        }
+      } else if (error) {
+        console.error('Failed to load revenue status:', error)
+      }
+    } else if (intent === 'connect-revenue') {
+      if (success) {
+        toast.success(t('project.settings.revenue.connected'))
+        setApiKeys({ stripe: '', paddle: '' })
+        fetcher.submit(
+          { intent: 'get-revenue-status' },
+          { method: 'POST', action: `/projects/settings/${projectId}` },
+        )
+      } else if (error) {
+        toast.error(error)
+      }
+    } else if (intent === 'disconnect-revenue') {
+      if (success) {
+        toast.success(t('project.settings.revenue.disconnected'))
+        setStatus({ connected: false })
+      } else if (error) {
+        toast.error(error)
+      }
+    } else if (intent === 'update-revenue-currency') {
+      if (success) {
+        toast.success(t('project.settings.revenue.currencyUpdated'))
+        const currency = pendingCurrency.current || selectedCurrency
+        setStatus((prev) => (prev ? { ...prev, currency } : prev))
+        pendingCurrency.current = null
+      } else if (error) {
+        pendingCurrency.current = null
+        toast.error(error)
       }
     }
   }, [fetcher.state, fetcher.data, t, projectId, selectedCurrency, fetcher])

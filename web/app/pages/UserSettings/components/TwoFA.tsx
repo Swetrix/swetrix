@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { QRCode } from 'react-qr-code'
 import { useFetcher } from 'react-router'
@@ -15,6 +15,7 @@ import { Text } from '~/ui/Text'
 const TwoFA = () => {
   const { user, mergeUser } = useAuth()
   const fetcher = useFetcher<UserSettingsActionData>()
+  const lastHandledData = useRef<UserSettingsActionData | null>(null)
 
   const { t } = useTranslation('common')
   const [twoFAConfigurating, setTwoFAConfigurating] = useState(false)
@@ -32,6 +33,10 @@ const TwoFA = () => {
     fetcher.state === 'submitting' || fetcher.state === 'loading'
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
     if (fetcher.data?.success) {
       const { intent, twoFAData } = fetcher.data
 

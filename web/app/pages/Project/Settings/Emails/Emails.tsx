@@ -112,12 +112,17 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
   } = useTranslation('common')
   const { id: projectId } = useParams()
   const fetcher = useFetcher<ProjectSettingsActionData>()
+  const lastHandledData = useRef<ProjectSettingsActionData | null>(null)
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
   const { id, addedAt, isConfirmed, email, reportFrequency } = data || {}
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
     if (fetcher.data?.intent === 'update-subscriber') {
       if (fetcher.data.success && fetcher.data.subscriber) {
         const updated = fetcher.data.subscriber
@@ -136,6 +141,8 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
   }, [fetcher.data, setEmails, t])
 
   const changeRole = (reportType: { value: string; label: string }) => {
+    if (reportType.value === reportFrequency || fetcher.state !== 'idle') return
+
     fetcher.submit(
       {
         intent: 'update-subscriber',
@@ -303,6 +310,9 @@ const Emails = ({ projectId }: { projectId: string }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [emailToRemove, setEmailToRemove] = useState<Subscriber | null>(null)
   const removingEmailId = useRef<string | null>(null)
+  const lastHandledLoadData = useRef<ProjectSettingsActionData | null>(null)
+  const lastHandledData = useRef<ProjectSettingsActionData | null>(null)
+  const lastHandledRemoveData = useRef<ProjectSettingsActionData | null>(null)
 
   const isDeleting = removeFetcher.state !== 'idle'
 
@@ -318,6 +328,10 @@ const Emails = ({ projectId }: { projectId: string }) => {
   }, []) // eslint-disable-line
 
   useEffect(() => {
+    if (!loadFetcher.data) return
+    if (lastHandledLoadData.current === loadFetcher.data) return
+    lastHandledLoadData.current = loadFetcher.data
+
     if (loadFetcher.data?.intent === 'get-subscribers') {
       if (loadFetcher.data.success) {
         setTimeout(() => {
@@ -333,6 +347,10 @@ const Emails = ({ projectId }: { projectId: string }) => {
   }, [loadFetcher.data])
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
     if (fetcher.data?.intent === 'add-subscriber') {
       if (fetcher.data.success && fetcher.data.subscriber) {
         setTimeout(
@@ -351,10 +369,11 @@ const Emails = ({ projectId }: { projectId: string }) => {
   }, [fetcher.data, t])
 
   useEffect(() => {
-    if (
-      removeFetcher.state === 'idle' &&
-      removeFetcher.data?.intent === 'remove-subscriber'
-    ) {
+    if (removeFetcher.state !== 'idle' || !removeFetcher.data) return
+    if (lastHandledRemoveData.current === removeFetcher.data) return
+    lastHandledRemoveData.current = removeFetcher.data
+
+    if (removeFetcher.data?.intent === 'remove-subscriber') {
       if (removeFetcher.data.success) {
         const capturedId = removingEmailId.current
         setTimeout(() => {

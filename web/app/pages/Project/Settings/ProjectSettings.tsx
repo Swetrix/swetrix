@@ -441,6 +441,7 @@ const ProjectSettings = () => {
   const [tab, setTab] = useState(DELETE_DATA_MODAL_TABS[0].name)
   const [showProtected, setShowProtected] = useState(false)
   const lastSavedForm = useRef<Form>(getFormFromProject(initialProject))
+  const lastHandledFetcherData = useRef<ProjectSettingsActionData | null>(null)
   const lastHandledAutosaveData = useRef<ProjectSettingsActionData | null>(null)
   const activeAutosave = useRef<{
     updates: Partial<Form>
@@ -827,6 +828,10 @@ const ProjectSettings = () => {
   }, [])
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (lastHandledFetcherData.current === fetcher.data) return
+    lastHandledFetcherData.current = fetcher.data
+
     if (fetcher.data?.success) {
       const { intent, project: updatedProject } = fetcher.data
 

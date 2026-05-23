@@ -15,9 +15,9 @@ import {
   CaretDownIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { Fragment, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher, useRevalidator } from 'react-router'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 import { roles, INVITATION_EXPIRES_IN, isSelfhosted } from '~/lib/constants'
 import { Role } from '~/lib/models/Organisation'
@@ -85,23 +85,26 @@ const TableUserRow = ({
 }: TableUserRowProps) => {
   const { t } = useTranslation('common')
   const fetcher = useFetcher<ProjectSettingsActionData>()
-  const revalidator = useRevalidator()
+  const lastHandledData = useRef<ProjectSettingsActionData | null>(null)
   const { id, created, confirmed, role, user } = data || {}
 
   useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.intent === 'change-share-role') {
-        if (fetcher.data.success) {
-          toast.success(t('apiNotifications.roleUpdated'))
-          revalidator.revalidate()
-        } else if (fetcher.data.error) {
-          toast.error(fetcher.data.error)
-        }
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
+    if (fetcher.data.intent === 'change-share-role') {
+      if (fetcher.data.success) {
+        toast.success(t('apiNotifications.roleUpdated'))
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.state, fetcher.data, t, revalidator])
+  }, [fetcher.state, fetcher.data, t])
 
   const changeRole = (newRole: string) => {
+    if (newRole === role || fetcher.state !== 'idle') return
+
     fetcher.submit(
       { intent: 'change-share-role', shareId: id, role: newRole },
       { method: 'POST', action: `/projects/settings/${projectId}` },
@@ -242,6 +245,7 @@ const People = ({ project }: PeopleProps) => {
     role?: string
   }>({})
   const [validated, setValidated] = useState(false)
+  const lastHandledData = useRef<ProjectSettingsActionData | null>(null)
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [memberToRemove, setMemberToRemove] =
@@ -252,30 +256,32 @@ const People = ({ project }: PeopleProps) => {
   const isSubmitting = fetcher.state !== 'idle'
 
   useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.intent === 'share-project') {
-        if (fetcher.data.success) {
-          toast.success(t('apiNotifications.userInvited'))
-          setTimeout(() => {
-            setShowModal(false)
-            setBeenSubmitted(false)
-            setErrors({})
-            setValidated(false)
-          }, 0)
-          setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
-        } else if (fetcher.data.error) {
-          toast.error(fetcher.data.error)
-        }
-      } else if (fetcher.data.intent === 'delete-share-user') {
-        if (fetcher.data.success) {
-          toast.success(t('apiNotifications.userRemoved'))
-          setTimeout(() => {
-            setShowDeleteModal(false)
-            setMemberToRemove(null)
-          }, 0)
-        } else if (fetcher.data.error) {
-          toast.error(fetcher.data.error)
-        }
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
+    if (fetcher.data.intent === 'share-project') {
+      if (fetcher.data.success) {
+        toast.success(t('apiNotifications.userInvited'))
+        setTimeout(() => {
+          setShowModal(false)
+          setBeenSubmitted(false)
+          setErrors({})
+          setValidated(false)
+        }, 0)
+        setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    } else if (fetcher.data.intent === 'delete-share-user') {
+      if (fetcher.data.success) {
+        toast.success(t('apiNotifications.userRemoved'))
+        setTimeout(() => {
+          setShowDeleteModal(false)
+          setMemberToRemove(null)
+        }, 0)
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
       }
     }
   }, [fetcher.state, fetcher.data, t])
