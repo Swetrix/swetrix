@@ -185,22 +185,7 @@ const getTabs = (t: typeof i18next.t): TabConfig[] => {
   ]
 }
 
-const getTabIconColor = (tabId: string): string => {
-  switch (tabId) {
-    case TAB_MAPPING.ACCOUNT:
-      return 'text-blue-500'
-    case TAB_MAPPING.PASSWORD_AUTH:
-      return 'text-indigo-500'
-    case TAB_MAPPING.BILLING:
-      return 'text-emerald-500'
-    case TAB_MAPPING.COMMUNICATIONS:
-      return 'text-teal-500'
-    case TAB_MAPPING.INTERFACE:
-      return 'text-purple-500'
-    default:
-      return 'text-amber-500'
-  }
-}
+const USER_SETTINGS_ICON_COLOUR = 'text-gray-500 dark:text-gray-400'
 
 const DEFAULT_USAGE_INFO: UsageInfo = {
   total: 0,
@@ -218,29 +203,24 @@ interface SettingsSectionProps {
   title: string
   description?: string
   children: React.ReactNode
-  isLast?: boolean
 }
 
 const SettingsSection = ({
   title,
   description,
   children,
-  isLast,
 }: SettingsSectionProps) => (
-  <div className={cx({ 'pb-6': !isLast })}>
-    <Text as='h3' size='base' weight='semibold'>
+  <section className='[&+&]:mt-8'>
+    <Text as='h3' size='lg' weight='bold'>
       {title}
     </Text>
     {description && (
-      <Text as='p' size='sm' colour='muted' className='mt-1'>
+      <Text as='p' size='sm' colour='secondary' className='mt-1'>
         {description}
       </Text>
     )}
-    <div className='mt-4'>{children}</div>
-    {!isLast && (
-      <hr className='mt-6 border-gray-200 dark:border-slate-700/80' />
-    )}
-  </div>
+    <div className='mt-2'>{children}</div>
+  </section>
 )
 
 interface Form extends Partial<User> {
@@ -925,7 +905,7 @@ const UserSettings = () => {
           </div>
 
           <aside className='hidden w-56 shrink-0 md:block'>
-            <nav className='flex flex-col space-y-0.5' aria-label='Sidebar'>
+            <nav className='flex flex-col gap-0.5' aria-label='Sidebar'>
               {_map(tabs, (tab) => {
                 const isCurrent = tab.id === activeTab
                 const Icon = tab.icon
@@ -936,23 +916,32 @@ const UserSettings = () => {
                     type='button'
                     onClick={() => setActiveTab(tab.id)}
                     className={cx(
-                      'group flex items-center rounded-md px-3 py-2 text-left text-sm text-gray-900 transition-colors',
+                      'group flex items-center gap-1.5 rounded-md px-2.5 py-2 text-left transition-colors',
                       {
-                        'bg-gray-200 font-semibold dark:bg-slate-900 dark:text-gray-50':
-                          isCurrent,
-                        'hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-slate-900 dark:hover:text-gray-50':
+                        'bg-gray-100 dark:bg-slate-900': isCurrent,
+                        'hover:bg-gray-100 dark:hover:bg-slate-900/60':
                           !isCurrent,
                       },
                     )}
                     aria-current={isCurrent ? 'page' : undefined}
                   >
                     <Icon
-                      className={cx('mr-2 size-4 shrink-0 transition-colors', {
-                        'text-gray-900 dark:text-gray-50': isCurrent,
-                        'text-gray-600 dark:text-gray-300': !isCurrent,
-                      })}
+                      className={cx(
+                        'size-4 shrink-0',
+                        USER_SETTINGS_ICON_COLOUR,
+                      )}
+                      weight='duotone'
+                      aria-hidden='true'
                     />
-                    <span className='truncate'>{tab.label}</span>
+                    <Text
+                      as='span'
+                      size='sm'
+                      weight='medium'
+                      truncate
+                      className='max-w-full'
+                    >
+                      {tab.label}
+                    </Text>
                   </button>
                 )
               })}
@@ -966,10 +955,9 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
                 />
 
-                {/* Change email address */}
                 <SettingsSection
                   title={t('profileSettings.changeEmail')}
                   description={t('profileSettings.changeEmailDesc')}
@@ -1018,16 +1006,18 @@ const UserSettings = () => {
                   </div>
                 </SettingsSection>
 
-                {/* API Key */}
                 <SettingsSection
                   title={t('profileSettings.apiKey')}
                   description={t('profileSettings.apiKeyDesc')}
                 >
                   {user?.apiKey ? (
                     <>
-                      <Text as='p' size='sm' colour='warning' className='mb-3'>
+                      <Alert
+                        variant='warning'
+                        className='mb-3'
+                      >
                         {t('profileSettings.apiKeyWarning')}
-                      </Text>
+                      </Alert>
                       <div className='max-w-md'>
                         <Input
                           label={t('profileSettings.apiKey')}
@@ -1065,7 +1055,6 @@ const UserSettings = () => {
 
                 {isSelfhosted ? (
                   <>
-                    {/* Shared projects setting */}
                     <SettingsSection
                       title={t('profileSettings.shared')}
                       description={t('profileSettings.sharedDesc')}
@@ -1110,7 +1099,6 @@ const UserSettings = () => {
                   </>
                 ) : (
                   <>
-                    {/* Socialisations setup */}
                     <SettingsSection
                       title={t('profileSettings.socialisations')}
                       description={t('profileSettings.socialisationsDesc')}
@@ -1120,7 +1108,6 @@ const UserSettings = () => {
                       </div>
                     </SettingsSection>
 
-                    {/* Shared projects setting */}
                     <SettingsSection
                       title={t('profileSettings.shared')}
                       description={t('profileSettings.sharedDesc')}
@@ -1163,7 +1150,6 @@ const UserSettings = () => {
                       )}
                     </SettingsSection>
 
-                    {/* Organisations setting */}
                     <SettingsSection
                       title={t('profileSettings.organisations')}
                       description={t('profileSettings.organisationsDesc')}
@@ -1236,11 +1222,9 @@ const UserSettings = () => {
                   </>
                 )}
 
-                {/* Danger zone */}
                 <SettingsSection
                   title={t('profileSettings.dangerZone')}
                   description={t('profileSettings.dangerZoneDesc')}
-                  isLast
                 >
                   <Button
                     variant='danger-outline'
@@ -1262,10 +1246,9 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
                 />
 
-                {/* Change password */}
                 <SettingsSection
                   title={t('profileSettings.changePassword')}
                   description={t('profileSettings.changePasswordDesc')}
@@ -1313,7 +1296,6 @@ const UserSettings = () => {
                   </div>
                 </SettingsSection>
 
-                {/* 2FA setting */}
                 <SettingsSection
                   title={t('profileSettings.2fa')}
                   description={t('profileSettings.2faSectionDesc')}
@@ -1321,11 +1303,9 @@ const UserSettings = () => {
                   <TwoFA />
                 </SettingsSection>
 
-                {/* Logout from all devices */}
                 <SettingsSection
                   title={t('profileSettings.logoutAllTitle')}
                   description={t('profileSettings.logoutAllDesc')}
-                  isLast
                 >
                   <Alert variant='warning' className='mb-4'>
                     {t('profileSettings.logoutAllWarning')}
@@ -1349,10 +1329,9 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
                 />
 
-                {/* Timezone preference */}
                 <SettingsSection
                   title={t('profileSettings.timezone')}
                   description={t('profileSettings.timezoneDesc')}
@@ -1365,7 +1344,6 @@ const UserSettings = () => {
                   </div>
                 </SettingsSection>
 
-                {/* Time format selector */}
                 <SettingsSection
                   title={t('profileSettings.timeFormat')}
                   description={t('profileSettings.selectTimeFormat')}
@@ -1397,11 +1375,9 @@ const UserSettings = () => {
                   </div>
                 </SettingsSection>
 
-                {/* UI Settings */}
                 <SettingsSection
                   title={t('profileSettings.uiSettings')}
                   description={t('profileSettings.uiSettingsDesc')}
-                  isLast
                 >
                   <Checkbox
                     checked={user?.showLiveVisitorsInTitle}
@@ -1424,7 +1400,7 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
                 />
 
                 {isBillingLoading || authLoading ? (
@@ -1433,7 +1409,6 @@ const UserSettings = () => {
                   </div>
                 ) : (
                   <>
-                    {/* Trial info alert */}
                     {isTrial &&
                     trialEndsOnMessage &&
                     !cancellationEffectiveDate ? (
@@ -1446,7 +1421,6 @@ const UserSettings = () => {
                       </Alert>
                     ) : null}
 
-                    {/* Subscription cancelled alert */}
                     {cancellationEffectiveDate ? (
                       <Alert
                         variant='warning'
@@ -1466,7 +1440,6 @@ const UserSettings = () => {
                       </Alert>
                     ) : null}
 
-                    {/* No active subscription alert */}
                     {isNoSub ? (
                       <Alert
                         variant='error'
@@ -1477,7 +1450,6 @@ const UserSettings = () => {
                       </Alert>
                     ) : null}
 
-                    {/* Next bill date info */}
                     {!isTrial && isSubscriber && nextBillDate ? (
                       <Alert
                         variant='info'
@@ -1497,7 +1469,6 @@ const UserSettings = () => {
                       </Alert>
                     ) : null}
 
-                    {/* Plan Usage Section */}
                     <SettingsSection
                       title={t('billing.planUsage')}
                       description={t('billing.planUsageDesc')}
@@ -1698,7 +1669,6 @@ const UserSettings = () => {
                       </div>
                     </SettingsSection>
 
-                    {/* Subscription Plans Section */}
                     <SettingsSection
                       title={t('billing.subscription')}
                       description={
@@ -1707,7 +1677,12 @@ const UserSettings = () => {
                           : t('billing.selectPlan')
                       }
                     >
-                      <Text as='p' size='sm' colour='muted' className='mb-4'>
+                      <Text
+                        as='p'
+                        size='sm'
+                        colour='secondary'
+                        className='mb-4'
+                      >
                         {t('billing.membersNotification')}
                       </Text>
 
@@ -1752,10 +1727,9 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
                 />
 
-                {/* Email reports frequency */}
                 <SettingsSection
                   title={t('profileSettings.email')}
                   description={t('profileSettings.frequency')}
@@ -1790,11 +1764,9 @@ const UserSettings = () => {
                   </div>
                 </SettingsSection>
 
-                {/* Notification channels */}
                 <SettingsSection
                   title={t('notificationChannels.heading')}
                   description={t('notificationChannels.userScopeDescription')}
-                  isLast={!user?.isTelegramChatIdConfirmed}
                 >
                   <div id='notification-channels'>
                     <div id='integrations'>
@@ -1807,7 +1779,6 @@ const UserSettings = () => {
                   <SettingsSection
                     title={t('profileSettings.notifications')}
                     description={t('profileSettings.notificationsDesc')}
-                    isLast
                   >
                     <Checkbox
                       checked={user?.receiveLoginNotifications}
@@ -1830,13 +1801,10 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
                 />
 
-                <SettingsSection
-                  title={t('profileSettings.changeLanguage')}
-                  isLast
-                >
+                <SettingsSection title={t('profileSettings.changeLanguage')}>
                   <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'>
                     {_map(whitelist, (lng) => {
                       const isSelected = language === lng
