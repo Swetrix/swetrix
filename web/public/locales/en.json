@@ -916,6 +916,7 @@
     "confSent": "Confirmation link sent to your email.",
     "noConfLeft": "You've used all email confirmation requests.\nCheck that you can receive emails, then look in your spam folder.\nYou can try a different email address or contact support.",
     "timezoneDesc": "Swetrix will display data in this time zone. This only changes how data is shown. It does not modify your data.",
+    "timezoneSearchPlaceholder": "Search by city or country...",
     "quitProject": "Leave this project?",
     "quitOrganisation": "Leave this organisation?",
     "quitEntity": "Leave {{entity}}?",
@@ -1717,7 +1718,7 @@
       "quadrant": "SEO Quadrant",
       "quadrantTooltip": "Each bubble is a search query. X-axis is ranking position (left = higher rank), Y-axis is click-through rate, and bubble size reflects impressions.\n\n<highlight>Top-left</highlight>: high rank + high CTR (your best performers).\n<highlight>Bottom-left</highlight>: high rank but low CTR (improve your title & description).\n<highlight>Top-right</highlight>: low rank but high CTR (boost these to page 1 for big gains).\n<highlight>Bottom-right</highlight>: low rank + low CTR (lowest priority)."
     },
-    "passwordProtectedHint": "Please enter the password to view this dashboard.",
+    "passwordProtectedHint": "Enter the project password to view this dashboard.",
     "captchaCompletions": "CAPTCHA completions",
     "captchaAnalytics": {
       "generated": "Generated",
@@ -1903,59 +1904,59 @@
     "topCountries": "Top countries",
     "aggregation": "Aggregation",
     "locked": {
-      "title": "Dashboard locked",
-      "descExceedingTier": "This dashboard is locked because your traffic has exceeded your subscription plan.\nIn order to continue using Swetrix and have access to your stats, you need to upgrade your subscription plan to reflect your usage.",
-      "descTialEnded": "This dashboard is locked because your trial ended.\nIn order to continue using Swetrix and have access to your stats, you need to subscribe to one of our tiers.",
-      "descPaymentFailed": "This dashboard is locked because there was a problem with your last Swetrix subscription payment.\nIn order to continue using Swetrix and have access to your stats, you need to update / confirm your payment details.",
-      "descSharedProject": "This dashboard is locked due to a billing issue of the project owner.\nIn order to continue using Swetrix and have access to the stats, the billing issue must be resolved first.",
-      "descGenericIssue": "This dashboard has been locked and is currently unavailable, please come back later or contact the project owner to resolve the issue.",
-      "descSubCancelled": "This dashboard has been locked because you've cancelled your subscription.\nIn order to continue using Swetrix and have access to your stats, you need to have an active subscription.",
-      "resolve": "We're still counting your stats and we haven't deleted any of your data. Once you have updated your payment information, your dashboard access will be restored immediately.",
+      "title": "Dashboard is locked",
+      "descExceedingTier": "This dashboard is locked because your traffic is above your current plan.\nUpgrade to a plan that matches your usage to restore access to your stats.",
+      "descTialEnded": "This dashboard is locked because your trial has ended.\nChoose a paid plan to restore access to your stats.",
+      "descPaymentFailed": "This dashboard is locked because your last Swetrix payment did not go through.\nUpdate or confirm your payment details to restore access to your stats.",
+      "descSharedProject": "This dashboard is locked because the project owner has a billing issue.\nThe owner needs to fix it before you can view the stats again.",
+      "descGenericIssue": "This dashboard is locked right now. Try again later or contact the project owner.",
+      "descSubCancelled": "This dashboard is locked because your subscription was cancelled.\nStart a new subscription to restore access to your stats.",
+      "resolve": "We are still counting your stats and have not deleted any data. Once the billing issue is fixed, dashboard access will be restored right away.",
       "manageSubscription": "Manage subscription"
     },
     "waiting": {
       "title": "No events yet",
-      "desc": "You haven't tracked any events yet. To start collecting data, follow the installation instructions below. Still not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "desc": "No events have been tracked yet. Follow the installation steps below to start collecting data. Still not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for setup help."
     },
     "waitingCaptcha": {
       "title": "No CAPTCHA events yet",
-      "desc": "You haven't tracked any CAPTCHA events yet.\nSee our <guideurl>integration guide</guideurl> to learn more about how to use it in your application.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup.",
+      "desc": "No CAPTCHA events have been tracked yet.\nSee the <guideurl>integration guide</guideurl> to add CAPTCHA to your app.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for setup help.",
       "setup": {
         "tabs": {
           "script": "Script",
           "validation": "Server validation"
         },
         "script": {
-          "title": "Widget installation",
+          "title": "Install widget",
           "desc": "Add the CAPTCHA widget to your website forms.",
           "step1": "1. Add the loader script to your page's <headTag></headTag>",
           "step2": "2. Add the widget to your form",
-          "docsHint": "See the <url>full documentation</url> for customisation options like theming, language, and more."
+          "docsHint": "See the <url>full documentation</url> for options like theme and language."
         },
         "validation": {
-          "title": "Server-side validation",
-          "desc": "Verify CAPTCHA tokens on your backend.",
-          "step1": "Generate a secret key in your project settings, then verify tokens via our API.",
-          "docsHint": "See the <url>server-side validation docs</url> for implementation details."
+          "title": "Validate on server",
+          "desc": "Verify CAPTCHA tokens in your backend before accepting the form.",
+          "step1": "Generate a secret key in project settings, then verify tokens with the Swetrix API.",
+          "docsHint": "See the <url>server validation docs</url> for implementation details."
         }
       }
     },
     "waitingError": {
       "title": "No errors yet",
-      "desc": "You haven't tracked any errors yet.\n<howto>Click here</howto> to learn how to set up error tracking for your website.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "desc": "No errors have been tracked yet.\n<howto>Set up error tracking</howto> for your website.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for setup help."
     },
     "trendlineTotal": "Pageviews trendline",
-    "noEvContent": "No events have been recorded for the specified period, please try a different period.",
-    "noEventsFiltersDesc": "No events have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
+    "noEvContent": "No events were recorded for this period. Try a different date range.",
+    "noEventsFiltersDesc": "No events match this period and filter set. Try changing the date range or filters.",
     "noProfilesTitle": "No profiles yet",
-    "noProfilesContent": "No profiles have been recorded for the specified period, please try a different period.",
-    "noProfilesFiltersDesc": "No profiles have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
+    "noProfilesContent": "No profiles were recorded for this period. Try a different date range.",
+    "noProfilesFiltersDesc": "No profiles match this period and filter set. Try changing the date range or filters.",
     "noSessionsTitle": "No sessions yet",
-    "noSessionsContent": "No sessions have been recorded for the specified period, please try a different period.",
+    "noSessionsContent": "No sessions were recorded for this period. Try a different date range.",
     "noSessionsFound": "No sessions found for this period.",
-    "exploreSessions": "Click to view sessions",
-    "noSessionsFiltersDesc": "No sessions have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
-    "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
+    "exploreSessions": "View sessions",
+    "noSessionsFiltersDesc": "No sessions match this period and filter set. Try changing the date range or filters.",
+    "noCaptchaEv": "No CAPTCHA events were recorded for this period.\nIf you have not set up CAPTCHA yet, see the <url>docs</url> to add it to your app.",
     "mapping": {
       "cc": "Country",
       "rg": "Region",
@@ -2028,9 +2029,7 @@
       "wireless": "Wireless"
     },
     "connectGsc": "Connect Google Search Console to see keywords for this project.",
-    "gscConnectionRequired": "Google Search Console connection is required to view keywords for this project. Ask the project administrator to connect it first.",
     "goToProjectSettings": "Go to Project Settings",
-    "noKeywordsFound": "No keywords found for the selected period.",
     "entryPages": "Entry page",
     "exitPages": "Exit page",
     "clicks": "Clicks",
@@ -3009,7 +3008,7 @@
     "main": "Swetrix - Cookieless Google Analytics Alternative",
     "socialisation": "Socialisation",
     "open": "Open startup",
-    "passwordProtected": "This project is password protected",
+    "passwordProtected": "Password required",
     "performance": "End user performance monitoring to deliver fast websites",
     "errors": "End user error tracking tool to deliver bug-free experiences",
     "forMarketers": "For marketers",
