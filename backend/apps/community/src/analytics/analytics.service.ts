@@ -2784,6 +2784,9 @@ export class AnalyticsService {
         if (chartData.uniques[i] === 0) {
           chartData.uniques[i] = chartData.uniques[i - 1]
         }
+        if (chartData.bounces && chartData.bounces[i] === 0) {
+          chartData.bounces[i] = chartData.bounces[i - 1]
+        }
       }
     }
 
@@ -3982,12 +3985,13 @@ export class AnalyticsService {
         resultSet.json<TrafficCHResponse | TrafficCEFilterCHResponse>(),
       )
 
-    const { visits, uniques, sdur } = this.extractAnalyticsChartDataForScope(
-      data,
-      xShifted,
-      customEVFilterApplied,
-      mode,
-    )
+    const { visits, uniques, sdur, bounces } =
+      this.extractAnalyticsChartDataForScope(
+        data,
+        xShifted,
+        customEVFilterApplied,
+        mode,
+      )
 
     return Promise.resolve({
       chart: {
@@ -3995,6 +3999,7 @@ export class AnalyticsService {
         visits,
         uniques,
         sdur,
+        bounces,
       },
     })
   }
