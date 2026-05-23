@@ -199,6 +199,7 @@ interface ProjectsProps {
 
 export const Projects = ({ organisation }: ProjectsProps) => {
   const { t } = useTranslation('common')
+  const { user } = useAuth()
   const fetcher = useFetcher<OrganisationSettingsActionData>()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -212,13 +213,20 @@ export const Projects = ({ organisation }: ProjectsProps) => {
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
   const [isSearchActive, setIsSearchActive] = useState(false)
-  const { projects } = organisation
+  const { projects: organisationProjects } = organisation
+  const [projects, setProjects] = useState<DetailedOrganisation['projects']>(
+    () => organisationProjects,
+  )
 
   const isSubmitting = fetcher.state === 'submitting'
   const isAddingProject =
     isSubmitting && fetcher.formData?.get('intent') === 'add-project'
   const isRemovingProject =
     isSubmitting && fetcher.formData?.get('intent') === 'remove-project'
+
+  useEffect(() => {
+    setProjects(organisationProjects)
+  }, [organisationProjects])
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -229,10 +237,32 @@ export const Projects = ({ organisation }: ProjectsProps) => {
     if (fetcher.data?.success) {
       const { intent } = fetcher.data
       if (intent === 'add-project') {
+        if (selectedProject) {
+          setProjects((current) =>
+            current.some((project) => project.id === selectedProject.id)
+              ? current
+              : [
+                  ...current,
+                  {
+                    id: selectedProject.id,
+                    name: selectedProject.name,
+                    admin: {
+                      email: selectedProject.admin?.email || user?.email || '',
+                    },
+                  },
+                ],
+          )
+        }
         toast.success(t('apiNotifications.projectAddedToOrganisation'))
         setShowAddProjectModal(false)
         setSelectedProject(null)
       } else if (intent === 'remove-project') {
+        const removedProjectId = fetcher.data.projectId || projectToRemove?.id
+        if (removedProjectId) {
+          setProjects((current) =>
+            _filter(current, (project) => project.id !== removedProjectId),
+          )
+        }
         toast.success(t('apiNotifications.projectRemovedFromOrganisation'))
         setShowDeleteModal(false)
         setProjectToRemove(null)
@@ -240,7 +270,7 @@ export const Projects = ({ organisation }: ProjectsProps) => {
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, t])
+  }, [fetcher.data, projectToRemove?.id, selectedProject, t, user?.email])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const filteredProjects = useMemo(() => {

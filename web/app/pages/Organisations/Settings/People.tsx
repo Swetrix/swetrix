@@ -7,6 +7,7 @@ import {
   Transition,
 } from '@headlessui/react'
 import dayjs from 'dayjs'
+import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
@@ -244,11 +245,18 @@ const People = ({ organisation }: PeopleProps) => {
     DetailedOrganisation['members'][number] | null
   >(null)
 
-  const { name, members } = organisation
+  const { name, members: organisationMembers } = organisation
+  const [members, setMembers] = useState<DetailedOrganisation['members']>(
+    () => organisationMembers,
+  )
 
   const isSubmitting = fetcher.state === 'submitting'
   const isDeleting =
     isSubmitting && fetcher.formData?.get('intent') === 'remove-member'
+
+  useEffect(() => {
+    setMembers(organisationMembers)
+  }, [organisationMembers])
 
   const closeModal = () => {
     setShowModal(false)
@@ -274,15 +282,30 @@ const People = ({ organisation }: PeopleProps) => {
         toast.success(t('apiNotifications.userInvited'))
         closeModal()
       } else if (intent === 'remove-member') {
+        const removedMemberId = fetcher.data.memberId || memberToRemove?.id
+        if (removedMemberId) {
+          setMembers((current) =>
+            _filter(current, (member) => member.id !== removedMemberId),
+          )
+        }
         toast.success(t('apiNotifications.orgUserRemoved'))
         closeRemoveUserModal()
       } else if (intent === 'update-member-role') {
+        if (fetcher.data.memberId && fetcher.data.role) {
+          setMembers((current) =>
+            _map(current, (member) =>
+              member.id === fetcher.data!.memberId
+                ? { ...member, role: fetcher.data!.role as Role }
+                : member,
+            ),
+          )
+        }
         toast.success(t('apiNotifications.roleUpdated'))
       }
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, t])
+  }, [fetcher.data, memberToRemove?.id, t])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const validate = () => {

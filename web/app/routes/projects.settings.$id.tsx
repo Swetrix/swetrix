@@ -99,6 +99,8 @@ export interface ProjectSettingsActionData {
   proxyDomains?: ProxyDomain[]
   proxyDomain?: ProxyDomain
   proxyDomainKeywordWarning?: boolean
+  shareId?: string
+  role?: string
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -544,7 +546,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       }
 
       return data<ProjectSettingsActionData>(
-        { intent, success: true },
+        { intent, success: true, shareId },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
@@ -573,7 +575,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       }
 
       return data<ProjectSettingsActionData>(
-        { intent, success: true },
+        { intent, success: true, shareId, role },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

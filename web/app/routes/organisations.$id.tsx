@@ -90,6 +90,9 @@ export interface OrganisationSettingsActionData {
   }
   organisation?: DetailedOrganisation
   availableProjects?: AvailableProjectsResponse
+  memberId?: string
+  projectId?: string
+  role?: string
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -221,7 +224,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       }
 
       return data<OrganisationSettingsActionData>(
-        { intent, success: true },
+        { intent, success: true, memberId },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
@@ -247,7 +250,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       }
 
       return data<OrganisationSettingsActionData>(
-        { intent, success: true },
+        { intent, success: true, memberId, role },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
@@ -275,7 +278,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       }
 
       return data<OrganisationSettingsActionData>(
-        { intent, success: true },
+        { intent, success: true, projectId },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
@@ -306,7 +309,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       }
 
       return data<OrganisationSettingsActionData>(
-        { intent, success: true },
+        { intent, success: true, projectId },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

@@ -6,6 +6,7 @@ import {
   Transition,
 } from '@headlessui/react'
 import dayjs from 'dayjs'
+import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
@@ -71,6 +72,7 @@ const NoPeople = ({ onInvite }: { onInvite: () => void }) => {
 interface TableUserRowProps {
   data: ShareOwnerProject
   onRemove: () => void
+  onRoleUpdated: (shareId: string, role: string) => void
   language: string
   authedUserEmail: string | undefined
   projectId: string
@@ -79,6 +81,7 @@ interface TableUserRowProps {
 const TableUserRow = ({
   data,
   onRemove,
+  onRoleUpdated,
   language,
   authedUserEmail,
   projectId,
@@ -95,12 +98,15 @@ const TableUserRow = ({
 
     if (fetcher.data.intent === 'change-share-role') {
       if (fetcher.data.success) {
+        if (fetcher.data.shareId && fetcher.data.role) {
+          onRoleUpdated(fetcher.data.shareId, fetcher.data.role)
+        }
         toast.success(t('apiNotifications.roleUpdated'))
       } else if (fetcher.data.error) {
         toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.state, fetcher.data, t])
+  }, [fetcher.state, fetcher.data, onRoleUpdated, t])
 
   const changeRole = (newRole: string) => {
     if (newRole === role || fetcher.state !== 'idle') return
@@ -225,6 +231,7 @@ interface PeopleProps {
 const People = ({ project }: PeopleProps) => {
   const { user: currentUser } = useAuth()
   const fetcher = useFetcher<ProjectSettingsActionData>()
+  const { id, name, share } = project
 
   const [showModal, setShowModal] = useState(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -246,14 +253,17 @@ const People = ({ project }: PeopleProps) => {
   }>({})
   const [validated, setValidated] = useState(false)
   const lastHandledData = useRef<ProjectSettingsActionData | null>(null)
+  const [members, setMembers] = useState<ShareOwnerProject[]>(() => share || [])
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [memberToRemove, setMemberToRemove] =
     useState<ShareOwnerProject | null>(null)
 
-  const { id, name, share } = project
-
   const isSubmitting = fetcher.state !== 'idle'
+
+  useEffect(() => {
+    setMembers(share || [])
+  }, [share])
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
@@ -262,6 +272,9 @@ const People = ({ project }: PeopleProps) => {
 
     if (fetcher.data.intent === 'share-project') {
       if (fetcher.data.success) {
+        if (fetcher.data.project?.share) {
+          setMembers(fetcher.data.project.share)
+        }
         toast.success(t('apiNotifications.userInvited'))
         setTimeout(() => {
           setShowModal(false)
@@ -275,6 +288,12 @@ const People = ({ project }: PeopleProps) => {
       }
     } else if (fetcher.data.intent === 'delete-share-user') {
       if (fetcher.data.success) {
+        const removedShareId = fetcher.data.shareId || memberToRemove?.id
+        if (removedShareId) {
+          setMembers((current) =>
+            _filter(current, (member) => member.id !== removedShareId),
+          )
+        }
         toast.success(t('apiNotifications.userRemoved'))
         setTimeout(() => {
           setShowDeleteModal(false)
@@ -284,7 +303,7 @@ const People = ({ project }: PeopleProps) => {
         toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.state, fetcher.data, t])
+  }, [fetcher.state, fetcher.data, memberToRemove?.id, t])
 
   const validate = () => {
     const allErrors: {
@@ -372,7 +391,7 @@ const People = ({ project }: PeopleProps) => {
         </Button>
       </div>
       <div>
-        {_isEmpty(share) ? (
+        {_isEmpty(members) ? (
           <NoPeople onInvite={() => setShowModal(true)} />
         ) : (
           <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
@@ -395,7 +414,7 @@ const People = ({ project }: PeopleProps) => {
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
-                {_map(share, (data) => (
+                {_map(members, (data) => (
                   <TableUserRow
                     data={data}
                     key={data.id}
@@ -406,6 +425,13 @@ const People = ({ project }: PeopleProps) => {
                     language={language}
                     authedUserEmail={currentUser?.email}
                     projectId={id}
+                    onRoleUpdated={(shareId, role) => {
+                      setMembers((current) =>
+                        _map(current, (member) =>
+                          member.id === shareId ? { ...member, role } : member,
+                        ),
+                      )
+                    }}
                   />
                 ))}
               </tbody>
