@@ -448,7 +448,7 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
               : undefined
           }
           placeholder={t('profileSettings.timezoneSearchPlaceholder')}
-          className='block w-full rounded-md border-0 bg-white py-2 pr-8 pl-9 text-sm text-gray-900 ring-1 ring-gray-300 transition-shadow duration-150 ease-out ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:placeholder:text-gray-500 dark:focus:ring-slate-300'
+          className='block w-full rounded-md border-0 bg-white py-2 pr-8 pl-9 text-sm text-gray-900 ring-1 ring-gray-300 transition-shadow duration-150 ease-out ring-inset placeholder:text-gray-400 hover:ring-gray-400 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:placeholder:text-gray-500 dark:hover:ring-slate-600 dark:focus:ring-slate-300'
         />
         <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
           <CaretUpDownIcon
