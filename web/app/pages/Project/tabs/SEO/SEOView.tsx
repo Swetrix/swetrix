@@ -41,6 +41,7 @@ import {
   useRefreshTriggers,
 } from '~/pages/Project/View/ViewProject'
 import {
+  noRegionPeriods,
   panelIconMapping,
   getDeviceRowMapper,
 } from '~/pages/Project/View/ViewProject.helpers'
@@ -368,8 +369,15 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   }, [quadrantData, data?.summary, theme, t])
 
   const chartOptions = useMemo(
-    () => buildMainChartOptions(aggregatedSeries, activeMetrics, timeBucket, t),
-    [aggregatedSeries, activeMetrics, timeBucket, t],
+    () =>
+      buildMainChartOptions(
+        aggregatedSeries,
+        activeMetrics,
+        timeBucket,
+        t,
+        !noRegionPeriods.includes(period),
+      ),
+    [aggregatedSeries, activeMetrics, timeBucket, t, period],
   )
 
   const detailsExtraColumns = useMemo(
@@ -698,7 +706,13 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             chartId='seo-main-chart'
             options={chartOptions}
             className='h-80 [&_svg]:overflow-visible!'
-            deps={[aggregatedSeries, activeMetrics, timeBucket, timeFormat]}
+            deps={[
+              aggregatedSeries,
+              activeMetrics,
+              timeBucket,
+              timeFormat,
+              period,
+            ]}
           />
         ) : null}
       </div>

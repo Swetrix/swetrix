@@ -1,6 +1,7 @@
 import type { ChartOptions } from 'billboard.js'
 import { area, donut, scatter } from 'billboard.js'
 import * as d3 from 'd3'
+import dayjs from 'dayjs'
 import _round from 'lodash/round'
 import type { TFunction } from 'i18next'
 
@@ -12,6 +13,7 @@ export function buildMainChartOptions(
   activeMetrics: Record<SEOMetricKey, boolean>,
   timeBucket: string,
   t: TFunction,
+  applyRegions: boolean,
 ): ChartOptions {
   if (!series.length) return {}
 
@@ -19,18 +21,21 @@ export function buildMainChartOptions(
   const columns: any[] = [['x', ...dates]]
   const colors: Record<string, string> = {}
   const axes: Record<string, string> = {}
+  const activeSeries: string[] = []
   let needsY2 = false
 
   if (activeMetrics.clicks) {
     const label = t('project.seo.clicks')
     columns.push([label, ...series.map((d) => d.clicks)])
     colors[label] = '#3b82f6'
+    activeSeries.push(label)
   }
 
   if (activeMetrics.impressions) {
     const label = t('project.seo.impressions')
     columns.push([label, ...series.map((d) => d.impressions)])
     colors[label] = '#5b21b6'
+    activeSeries.push(label)
     if (activeMetrics.clicks) {
       axes[label] = 'y2'
       needsY2 = true
@@ -41,6 +46,7 @@ export function buildMainChartOptions(
     const label = t('project.seo.avgPosition')
     columns.push([label, ...series.map((d) => d.position)])
     colors[label] = '#d97706'
+    activeSeries.push(label)
     if (activeMetrics.clicks || activeMetrics.impressions) {
       axes[label] = 'y2'
       needsY2 = true
@@ -51,6 +57,7 @@ export function buildMainChartOptions(
     const label = t('project.seo.avgCTR')
     columns.push([label, ...series.map((d) => d.ctr)])
     colors[label] = '#0d9488'
+    activeSeries.push(label)
     if (activeMetrics.clicks || activeMetrics.impressions) {
       axes[label] = 'y2'
       needsY2 = true
@@ -66,6 +73,25 @@ export function buildMainChartOptions(
     year: '%Y',
   }
   const tickFormat = tickFormatMap[timeBucket] || '%b %d'
+  const regionStart =
+    dates.length > 1
+      ? dayjs(dates[dates.length - 2]).toDate()
+      : dayjs(dates[dates.length - 1]).toDate()
+  const regions: any = applyRegions
+    ? Object.fromEntries(
+        activeSeries.map((label) => [
+          label,
+          [
+            {
+              start: regionStart,
+              style: {
+                dasharray: '6 2',
+              },
+            },
+          ],
+        ]),
+      )
+    : undefined
 
   return {
     data: {
@@ -75,6 +101,7 @@ export function buildMainChartOptions(
       type: area(),
       axes,
       colors,
+      regions,
     },
     area: {
       linearGradient: true,
