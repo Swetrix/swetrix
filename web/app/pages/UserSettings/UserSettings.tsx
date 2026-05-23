@@ -92,6 +92,10 @@ import Organisations from './components/Organisations'
 import ProjectList from './components/ProjectList'
 import Socialisations from './components/Socialisations'
 import TwoFA from './components/TwoFA'
+import SettingsSidebar, {
+  type SettingsTabConfig,
+  type SettingsTabGroup,
+} from '../Project/Settings/SettingsSidebar'
 
 dayjs.extend(utc)
 
@@ -104,88 +108,72 @@ const TAB_MAPPING = {
   INTERFACE: 'interface',
   COMMUNICATIONS: 'communications',
   LANGUAGE: 'language',
-}
+  DANGER: 'danger',
+} as const
 
 type SettingsTab = (typeof TAB_MAPPING)[keyof typeof TAB_MAPPING]
 
-interface TabConfig {
-  id: string
-  label: string
-  icon: React.ElementType
-  description: string
-}
-
-const getTabs = (t: typeof i18next.t): TabConfig[] => {
-  if (isSelfhosted) {
-    return [
+const getTabs = (t: typeof i18next.t): SettingsTabConfig<SettingsTab>[] =>
+  (
+    [
       {
         id: TAB_MAPPING.ACCOUNT,
         label: t('profileSettings.account'),
         icon: UserIcon,
+        iconColor: 'text-indigo-500',
         description: t('profileSettings.accountDesc'),
+        visible: true,
       },
       {
         id: TAB_MAPPING.PASSWORD_AUTH,
         label: t('profileSettings.passwordAuth'),
         icon: LockIcon,
+        iconColor: 'text-amber-500',
         description: t('profileSettings.passwordAuthDesc'),
+        visible: true,
+      },
+      {
+        id: TAB_MAPPING.BILLING,
+        label: t('profileSettings.billingTab'),
+        icon: CreditCardIcon,
+        iconColor: 'text-green-500',
+        description: t('profileSettings.billingTabDesc'),
+        visible: !isSelfhosted,
+      },
+      {
+        id: TAB_MAPPING.COMMUNICATIONS,
+        label: t('profileSettings.communications'),
+        icon: ChatTextIcon,
+        iconColor: 'text-sky-500',
+        description: t('profileSettings.communicationsDesc'),
+        visible: !isSelfhosted,
       },
       {
         id: TAB_MAPPING.INTERFACE,
         label: t('profileSettings.interfaceSettings'),
         icon: MonitorIcon,
+        iconColor: 'text-blue-500',
         description: t('profileSettings.interfaceDesc'),
+        visible: true,
       },
       {
         id: TAB_MAPPING.LANGUAGE,
         label: t('profileSettings.language'),
         icon: TranslateIcon,
+        iconColor: 'text-purple-500',
         description: t('profileSettings.languageDesc'),
+        visible: true,
       },
-    ]
-  }
-
-  return [
-    {
-      id: TAB_MAPPING.ACCOUNT,
-      label: t('profileSettings.account'),
-      icon: UserIcon,
-      description: t('profileSettings.accountDesc'),
-    },
-    {
-      id: TAB_MAPPING.PASSWORD_AUTH,
-      label: t('profileSettings.passwordAuth'),
-      icon: LockIcon,
-      description: t('profileSettings.passwordAuthDesc'),
-    },
-    {
-      id: TAB_MAPPING.BILLING,
-      label: t('profileSettings.billingTab'),
-      icon: CreditCardIcon,
-      description: t('profileSettings.billingTabDesc'),
-    },
-    {
-      id: TAB_MAPPING.COMMUNICATIONS,
-      label: t('profileSettings.communications'),
-      icon: ChatTextIcon,
-      description: t('profileSettings.communicationsDesc'),
-    },
-    {
-      id: TAB_MAPPING.INTERFACE,
-      label: t('profileSettings.interfaceSettings'),
-      icon: MonitorIcon,
-      description: t('profileSettings.interfaceDesc'),
-    },
-    {
-      id: TAB_MAPPING.LANGUAGE,
-      label: t('profileSettings.language'),
-      icon: TranslateIcon,
-      description: t('profileSettings.languageDesc'),
-    },
-  ]
-}
-
-const USER_SETTINGS_ICON_COLOUR = 'text-gray-500 dark:text-gray-400'
+      {
+        id: TAB_MAPPING.DANGER,
+        label: t('profileSettings.dangerZone'),
+        icon: WarningOctagonIcon,
+        iconColor: 'text-red-500',
+        description: t('profileSettings.dangerZoneDesc'),
+        visible: true,
+      },
+    ] as const satisfies readonly SettingsTabConfig<SettingsTab>[]
+  ).filter((tab) => tab.visible) as SettingsTabConfig<SettingsTab>[]
 
 const DEFAULT_USAGE_INFO: UsageInfo = {
   total: 0,
@@ -200,7 +188,7 @@ const DEFAULT_USAGE_INFO: UsageInfo = {
 }
 
 interface SettingsSectionProps {
-  title: string
+  title?: string
   description?: string
   children: React.ReactNode
 }
@@ -211,9 +199,11 @@ const SettingsSection = ({
   children,
 }: SettingsSectionProps) => (
   <section className='[&+&]:mt-8'>
-    <Text as='h3' size='lg' weight='bold'>
-      {title}
-    </Text>
+    {title && (
+      <Text as='h3' size='lg' weight='bold'>
+        {title}
+      </Text>
+    )}
     {description && (
       <Text as='p' size='sm' colour='secondary' className='mt-1'>
         {description}
@@ -361,6 +351,30 @@ const UserSettings = () => {
   }
 
   const tabs = getTabs(t)
+  const sidebarGroups = useMemo<SettingsTabGroup<SettingsTab>[]>(
+    () => [
+      {
+        id: 'account',
+        label: t('profileSettings.account'),
+        tabIds: [
+          TAB_MAPPING.ACCOUNT,
+          TAB_MAPPING.BILLING,
+          TAB_MAPPING.PASSWORD_AUTH,
+        ],
+      },
+      {
+        id: 'interface',
+        label: t('profileSettings.interfaceSettings'),
+        tabIds: [TAB_MAPPING.INTERFACE, TAB_MAPPING.LANGUAGE],
+      },
+      {
+        id: 'notifications',
+        label: t('profileSettings.notifications'),
+        tabIds: [TAB_MAPPING.COMMUNICATIONS],
+      },
+    ],
+    [t],
+  )
 
   const activeTab = useMemo<SettingsTab>(() => {
     const tab = searchParams.get('tab') as SettingsTab
@@ -893,7 +907,12 @@ const UserSettings = () => {
               labelExtractor={(item) => item.label}
               iconExtractor={(item) => {
                 const Icon = item.icon
-                return <Icon className='h-4 w-4' />
+                return (
+                  <Icon
+                    className={cx('h-4 w-4', item.iconColor)}
+                    weight='duotone'
+                  />
+                )
               }}
               onSelect={(item) => {
                 setActiveTab(item.id)
@@ -905,47 +924,13 @@ const UserSettings = () => {
           </div>
 
           <aside className='hidden w-56 shrink-0 md:block'>
-            <nav className='flex flex-col gap-0.5' aria-label='Sidebar'>
-              {_map(tabs, (tab) => {
-                const isCurrent = tab.id === activeTab
-                const Icon = tab.icon
-
-                return (
-                  <button
-                    key={tab.id}
-                    type='button'
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cx(
-                      'group flex items-center gap-1.5 rounded-md px-2.5 py-2 text-left transition-colors',
-                      {
-                        'bg-gray-100 dark:bg-slate-900': isCurrent,
-                        'hover:bg-gray-100 dark:hover:bg-slate-900/60':
-                          !isCurrent,
-                      },
-                    )}
-                    aria-current={isCurrent ? 'page' : undefined}
-                  >
-                    <Icon
-                      className={cx(
-                        'size-4 shrink-0',
-                        USER_SETTINGS_ICON_COLOUR,
-                      )}
-                      weight='duotone'
-                      aria-hidden='true'
-                    />
-                    <Text
-                      as='span'
-                      size='sm'
-                      weight='medium'
-                      truncate
-                      className='max-w-full'
-                    >
-                      {tab.label}
-                    </Text>
-                  </button>
-                )
-              })}
-            </nav>
+            <SettingsSidebar
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={(tabId) => setActiveTab(tabId)}
+              groups={sidebarGroups}
+              storageKey='user-settings-sidebar-groups'
+            />
           </aside>
 
           <section className='flex-1'>
@@ -955,7 +940,7 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
+                  iconColorClass={activeTabConfig.iconColor}
                 />
 
                 <SettingsSection
@@ -1218,14 +1203,26 @@ const UserSettings = () => {
                     ) : null}
                   </>
                 )}
+              </>
+            ) : null}
+
+            {activeTab === TAB_MAPPING.DANGER && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
 
                 <SettingsSection
-                  title={t('profileSettings.dangerZone')}
+                  title={t('project.settings.destructiveActions')}
                   description={t('profileSettings.dangerZoneDesc')}
                 >
                   <Button
-                    variant='danger-outline'
+                    variant='danger'
                     size='sm'
+                    type='button'
                     onClick={() => setShowModal(true)}
                   >
                     <>
@@ -1243,7 +1240,7 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
+                  iconColorClass={activeTabConfig.iconColor}
                 />
 
                 <SettingsSection
@@ -1326,7 +1323,7 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
+                  iconColorClass={activeTabConfig.iconColor}
                 />
 
                 <SettingsSection
@@ -1397,7 +1394,7 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
+                  iconColorClass={activeTabConfig.iconColor}
                 />
 
                 {isBillingLoading || authLoading ? (
@@ -1724,7 +1721,7 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
+                  iconColorClass={activeTabConfig.iconColor}
                 />
 
                 <SettingsSection
@@ -1761,10 +1758,7 @@ const UserSettings = () => {
                   </div>
                 </SettingsSection>
 
-                <SettingsSection
-                  title={t('notificationChannels.heading')}
-                  description={t('notificationChannels.userScopeDescription')}
-                >
+                <SettingsSection>
                   <div id='notification-channels'>
                     <div id='integrations'>
                       <NotificationChannels scope='user' />
@@ -1798,7 +1792,7 @@ const UserSettings = () => {
                   icon={activeTabConfig.icon}
                   label={activeTabConfig.label}
                   description={activeTabConfig.description}
-                  iconColorClass={USER_SETTINGS_ICON_COLOUR}
+                  iconColorClass={activeTabConfig.iconColor}
                 />
 
                 <SettingsSection title={t('profileSettings.changeLanguage')}>

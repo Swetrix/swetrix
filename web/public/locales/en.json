@@ -1264,7 +1264,6 @@
   "notificationChannels": {
     "heading": "Notification channels",
     "description": "Wire up email, Telegram, Discord, Slack, custom webhooks or browser push, then attach them to alerts.",
-    "userScopeDescription": "Channels you connect here are available across all of your projects.",
     "details": "Where it sends",
     "add": "Add channel",
     "empty": "No channels yet. Connect one to start receiving alerts.",
