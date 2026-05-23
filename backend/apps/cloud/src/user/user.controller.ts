@@ -246,6 +246,9 @@ export class UserController {
 
     const ip = getIPFromHeaders(headers) || requestIp || ''
     const userAgent = headers['user-agent'] || ''
+
+    await checkRateLimit(userId, 'user-feedback', 5, 3600)
+
     const message = body.message.trim()
 
     if (!message) {
