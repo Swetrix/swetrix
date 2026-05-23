@@ -42,6 +42,79 @@ const MAX_BRANDED_PAGES = 10
 const MAX_FILTER_EXPRESSION_LENGTH = 500
 const MAX_FILTERS = 20
 
+const IMPRESSION_POSITION_BUCKETS = [
+  { key: 'pos1To3', label: '1-3' },
+  { key: 'pos4To10', label: '4-10' },
+  { key: 'pos11To20', label: '11-20' },
+  { key: 'pos21Plus', label: '21+' },
+] as const
+
+const ORGANIC_POSITION_BUCKET_KEYS = [
+  'pos1To3',
+  'pos4To10',
+  'pos11To20',
+  'pos21To50',
+  'pos51Plus',
+] as const
+
+type ImpressionPositionBucketKey =
+  (typeof IMPRESSION_POSITION_BUCKETS)[number]['key']
+type OrganicPositionBucketKey = (typeof ORGANIC_POSITION_BUCKET_KEYS)[number]
+type OrganicPositionSeriesEntry = { date: string } & Record<
+  OrganicPositionBucketKey,
+  number
+>
+
+const initialImpressionPositionBuckets = (): Record<
+  ImpressionPositionBucketKey,
+  number
+> => ({
+  pos1To3: 0,
+  pos4To10: 0,
+  pos11To20: 0,
+  pos21Plus: 0,
+})
+
+const initialOrganicPositionEntry = (
+  date: string,
+): OrganicPositionSeriesEntry => ({
+  date,
+  pos1To3: 0,
+  pos4To10: 0,
+  pos11To20: 0,
+  pos21To50: 0,
+  pos51Plus: 0,
+})
+
+const emptyPositionAnalytics = () => ({
+  impressionsByPosition: IMPRESSION_POSITION_BUCKETS.map(({ key, label }) => ({
+    key,
+    label,
+    impressions: 0,
+    percentage: 0,
+  })),
+  organicPositions: [] as OrganicPositionSeriesEntry[],
+})
+
+const getImpressionPositionBucketKey = (
+  position: number,
+): ImpressionPositionBucketKey => {
+  if (position <= 3) return 'pos1To3'
+  if (position <= 10) return 'pos4To10'
+  if (position <= 20) return 'pos11To20'
+  return 'pos21Plus'
+}
+
+const getOrganicPositionBucketKey = (
+  position: number,
+): OrganicPositionBucketKey => {
+  if (position <= 3) return 'pos1To3'
+  if (position <= 10) return 'pos4To10'
+  if (position <= 20) return 'pos11To20'
+  if (position <= 50) return 'pos21To50'
+  return 'pos51Plus'
+}
+
 type GSCRow = {
   keys: string[]
   clicks?: number
@@ -885,6 +958,112 @@ export class GSCService {
     }
   }
 
+  async getPositionAnalytics(
+    pid: string,
+    from: string,
+    to: string,
+    filtersStr?: string,
+    ctx?: GSCContext,
+  ): Promise<{
+    impressionsByPosition: {
+      key: ImpressionPositionBucketKey
+      label: string
+      impressions: number
+      percentage: number
+    }[]
+    organicPositions: OrganicPositionSeriesEntry[]
+  }> {
+    const gsc = ctx || (await this.getGSCContext(pid))
+    const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
+
+    try {
+      const rows: GSCRow[] = []
+      let startRow = 0
+
+      while (true) {
+        const page = await this.queryGSC(gsc, from, to, {
+          dimensions: ['date', 'query'],
+          rowLimit: MAX_ROW_LIMIT,
+          startRow,
+          dimensionFilterGroups,
+        })
+
+        rows.push(...page)
+
+        if (page.length < MAX_ROW_LIMIT) break
+
+        startRow += MAX_ROW_LIMIT
+      }
+
+      const impressionBuckets = initialImpressionPositionBuckets()
+      const organicPositionsByDate = new Map<
+        string,
+        OrganicPositionSeriesEntry
+      >()
+      let totalImpressions = 0
+
+      for (const row of rows) {
+        const position = Number(row.position || 0)
+        const impressions = Math.round(row.impressions || 0)
+        const date = row.keys?.[0]
+
+        if (
+          !date ||
+          !Number.isFinite(position) ||
+          position <= 0 ||
+          impressions <= 0
+        ) {
+          continue
+        }
+
+        const impressionBucket = getImpressionPositionBucketKey(position)
+        impressionBuckets[impressionBucket] += impressions
+        totalImpressions += impressions
+
+        const organicBucket = getOrganicPositionBucketKey(position)
+        const organicEntry =
+          organicPositionsByDate.get(date) || initialOrganicPositionEntry(date)
+        organicEntry[organicBucket] += 1
+        organicPositionsByDate.set(date, organicEntry)
+      }
+
+      const organicPositions: OrganicPositionSeriesEntry[] = []
+      let cursor = dayjs(from).startOf('day')
+      const end = dayjs(to).startOf('day')
+
+      while (cursor.isBefore(end) || cursor.isSame(end, 'day')) {
+        const date = cursor.format('YYYY-MM-DD')
+        organicPositions.push(
+          organicPositionsByDate.get(date) || initialOrganicPositionEntry(date),
+        )
+        cursor = cursor.add(1, 'day')
+      }
+
+      return {
+        impressionsByPosition: IMPRESSION_POSITION_BUCKETS.map(
+          ({ key, label }) => ({
+            key,
+            label,
+            impressions: impressionBuckets[key],
+            percentage:
+              totalImpressions > 0
+                ? Number(
+                    ((impressionBuckets[key] / totalImpressions) * 100).toFixed(
+                      1,
+                    ),
+                  )
+                : 0,
+          }),
+        ),
+        organicPositions,
+      }
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to fetch position analytics from Search Console',
+      )
+    }
+  }
+
   async getDashboard(
     pid: string,
     from: string,
@@ -928,6 +1107,7 @@ export class GSCService {
       topCountries,
       topDevices,
       brandedTraffic,
+      positionAnalytics,
     ] = await Promise.all([
       this.getSummary(pid, from, to, filtersStr, ctx),
       this.getSummary(pid, prevFrom, prevTo, filtersStr, ctx).catch(() => null),
@@ -937,6 +1117,9 @@ export class GSCService {
       this.getTopCountries(pid, from, to, 50, 0, filtersStr, ctx),
       this.getTopDevices(pid, from, to, 50, 0, filtersStr, ctx),
       this.getBrandedTraffic(pid, from, to, filtersStr, ctx),
+      this.getPositionAnalytics(pid, from, to, filtersStr, ctx).catch(() =>
+        emptyPositionAnalytics(),
+      ),
     ])
 
     return {
@@ -949,6 +1132,8 @@ export class GSCService {
       topCountries,
       topDevices,
       brandedTraffic,
+      impressionsByPosition: positionAnalytics.impressionsByPosition,
+      organicPositions: positionAnalytics.organicPositions,
     }
   }
 }

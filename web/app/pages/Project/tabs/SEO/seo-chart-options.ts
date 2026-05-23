@@ -1,12 +1,50 @@
 import type { ChartOptions } from 'billboard.js'
-import { area, donut, scatter } from 'billboard.js'
+import { area, bar, donut, line, scatter } from 'billboard.js'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import _round from 'lodash/round'
 import type { TFunction } from 'i18next'
 
 import { escapeHtml, nFormatter } from '~/utils/generic'
-import type { DateSeriesEntry, SEOMetricKey } from './seo-utils'
+import {
+  SEO_IMPRESSION_POSITION_BUCKETS,
+  SEO_METRICS,
+  SEO_ORGANIC_POSITION_BUCKETS,
+  type DateSeriesEntry,
+  type ImpressionsByPositionEntry,
+  type OrganicPositionEntry,
+  type SEOMetricKey,
+} from './seo-utils'
+
+const SEO_MAIN_METRIC_COLORS: Record<SEOMetricKey, string> = {
+  clicks: '#2563eb',
+  impressions: '#7c3aed',
+  position: '#d97706',
+  ctr: '#0d9488',
+}
+
+const SEO_MAIN_METRIC_COMPARE_COLORS: Record<SEOMetricKey, string> = {
+  clicks: 'rgba(37, 99, 235, 0.4)',
+  impressions: 'rgba(124, 58, 237, 0.4)',
+  position: 'rgba(217, 119, 6, 0.4)',
+  ctr: 'rgba(13, 148, 136, 0.4)',
+}
+
+const formatSEOMetricValue = (metric: SEOMetricKey, value: number) => {
+  if (metric === SEO_METRICS.ctr) {
+    return `${Number(value).toFixed(1)}%`
+  }
+
+  if (metric === SEO_METRICS.position) {
+    return Number(value).toFixed(1)
+  }
+
+  return nFormatter(value, 1)
+}
+
+const getSEOMetricValue = (entry: DateSeriesEntry, metric: SEOMetricKey) => {
+  return entry[metric] ?? 0
+}
 
 export function buildMainChartOptions(
   series: DateSeriesEntry[],
@@ -14,6 +52,7 @@ export function buildMainChartOptions(
   timeBucket: string,
   t: TFunction,
   applyRegions: boolean,
+  compareSeries?: DateSeriesEntry[],
 ): ChartOptions {
   if (!series.length) return {}
 
@@ -22,47 +61,67 @@ export function buildMainChartOptions(
   const colors: Record<string, string> = {}
   const axes: Record<string, string> = {}
   const activeSeries: string[] = []
+  const names: Record<string, string> = {}
+  const types: Record<string, any> = {}
+  const compareIds: string[] = []
   let needsY2 = false
-
-  if (activeMetrics.clicks) {
-    const label = t('project.seo.clicks')
-    columns.push([label, ...series.map((d) => d.clicks)])
-    colors[label] = '#3b82f6'
-    activeSeries.push(label)
+  const hasCompareSeries = !!compareSeries?.length
+  const metricLabels: Record<SEOMetricKey, string> = {
+    clicks: t('project.seo.clicks'),
+    impressions: t('project.seo.impressions'),
+    position: t('project.seo.avgPosition'),
+    ctr: t('project.seo.avgCTR'),
   }
 
-  if (activeMetrics.impressions) {
-    const label = t('project.seo.impressions')
-    columns.push([label, ...series.map((d) => d.impressions)])
-    colors[label] = '#5b21b6'
-    activeSeries.push(label)
-    if (activeMetrics.clicks) {
-      axes[label] = 'y2'
+  const metricUsesSecondaryAxis = (metric: SEOMetricKey) => {
+    if (metric === SEO_METRICS.impressions) {
+      return activeMetrics.clicks
+    }
+
+    if (metric === SEO_METRICS.position || metric === SEO_METRICS.ctr) {
+      return activeMetrics.clicks || activeMetrics.impressions
+    }
+
+    return false
+  }
+
+  const metricKeys = Object.keys(SEO_METRICS) as SEOMetricKey[]
+
+  metricKeys.forEach((metric: SEOMetricKey) => {
+    if (!activeMetrics[metric]) return
+
+    const compareId = `${metric}Compare`
+    const usesY2 = metricUsesSecondaryAxis(metric)
+
+    columns.push([metric, ...series.map((d) => getSEOMetricValue(d, metric))])
+    colors[metric] = SEO_MAIN_METRIC_COLORS[metric]
+    names[metric] = metricLabels[metric]
+    types[metric] = area()
+    activeSeries.push(metric)
+
+    if (usesY2) {
+      axes[metric] = 'y2'
       needsY2 = true
     }
-  }
 
-  if (activeMetrics.position) {
-    const label = t('project.seo.avgPosition')
-    columns.push([label, ...series.map((d) => d.position)])
-    colors[label] = '#d97706'
-    activeSeries.push(label)
-    if (activeMetrics.clicks || activeMetrics.impressions) {
-      axes[label] = 'y2'
-      needsY2 = true
-    }
-  }
+    if (hasCompareSeries) {
+      columns.push([
+        compareId,
+        ...dates.map((_, index) => {
+          const entry = compareSeries?.[index]
+          return entry ? getSEOMetricValue(entry, metric) : null
+        }),
+      ])
+      colors[compareId] = SEO_MAIN_METRIC_COMPARE_COLORS[metric]
+      names[compareId] = metricLabels[metric]
+      types[compareId] = line()
+      compareIds.push(compareId)
 
-  if (activeMetrics.ctr) {
-    const label = t('project.seo.avgCTR')
-    columns.push([label, ...series.map((d) => d.ctr)])
-    colors[label] = '#0d9488'
-    activeSeries.push(label)
-    if (activeMetrics.clicks || activeMetrics.impressions) {
-      axes[label] = 'y2'
-      needsY2 = true
+      if (usesY2) {
+        axes[compareId] = 'y2'
+      }
     }
-  }
+  })
 
   const tickFormatMap: Record<string, string> = {
     hour: '%b %d %H:%M',
@@ -73,6 +132,7 @@ export function buildMainChartOptions(
     year: '%Y',
   }
   const tickFormat = tickFormatMap[timeBucket] || '%b %d'
+  const xFormat = timeBucket === 'hour' ? '%Y-%m-%d %H:%M:%S' : '%Y-%m-%d'
   const regionStart =
     dates.length > 1
       ? dayjs(dates[dates.length - 2]).toDate()
@@ -96,11 +156,12 @@ export function buildMainChartOptions(
   return {
     data: {
       x: 'x',
-      xFormat: timeBucket === 'hour' ? '%Y-%m-%d %H:%M:%S' : '%Y-%m-%d',
+      xFormat,
       columns,
-      type: area(),
+      types,
       axes,
       colors,
+      names,
       regions,
     },
     area: {
@@ -162,9 +223,12 @@ export function buildMainChartOptions(
           r: 3,
         },
       },
+      hide: compareIds,
     },
     tooltip: {
       contents: (items, _defaultTitleFormat, _defaultValueFormat, color) => {
+        if (!items.length) return ''
+
         const tooltipFormatMap: Record<string, string> = {
           hour: '%b %d, %Y %H:%M',
           day: '%a, %d %b',
@@ -174,16 +238,25 @@ export function buildMainChartOptions(
           year: '%Y',
         }
         const tooltipFmt = tooltipFormatMap[timeBucket] || '%b %d, %Y'
+        const firstIndex = items[0].index ?? 0
         const headerLabel = d3.timeFormat(tooltipFmt)(items[0].x)
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-md z-50'>
-            <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${headerLabel}</li>
-            ${items
+        const compareDate = hasCompareSeries
+          ? compareSeries?.[firstIndex]?.date
+          : null
+        const parsedCompareDate = compareDate
+          ? d3.timeParse(xFormat)(compareDate)
+          : null
+        const compareHeaderLabel = parsedCompareDate
+          ? d3.timeFormat(tooltipFmt)(parsedCompareDate)
+          : ''
+        const currentItems = items.filter(
+          (el: any) => !String(el.id).endsWith('Compare'),
+        )
+        const currentSection = `<li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${headerLabel}</li>
+            ${currentItems
               .map((el: any) => {
-                const isCtr = el.name === t('project.seo.avgCTR')
-                const isPos = el.name === t('project.seo.avgPosition')
-                let formatted = nFormatter(el.value, 1)
-                if (isCtr) formatted = `${Number(el.value).toFixed(1)}%`
-                else if (isPos) formatted = Number(el.value).toFixed(1)
+                const metric = el.id as SEOMetricKey
+                const formatted = formatSEOMetricValue(metric, el.value)
 
                 return `
             <li class='flex justify-between items-center py-px leading-snug'>
@@ -194,11 +267,263 @@ export function buildMainChartOptions(
               <span class='font-mono whitespace-nowrap'>${formatted}</span>
             </li>`
               })
-              .join('')}
+              .join('')}`
+        const compareSection = compareHeaderLabel
+          ? `<li class='font-semibold pb-1 mb-1 mt-3 pt-2 border-t border-b border-gray-200 dark:border-slate-800'>${compareHeaderLabel}</li>
+            ${currentItems
+              .map((el: any) => {
+                const metric = el.id as SEOMetricKey
+                const compareValue = compareSeries?.[el.index]?.[metric]
+                if (compareValue == null) return ''
+
+                return `
+            <li class='flex justify-between items-center py-px leading-snug'>
+              <div class='flex items-center min-w-0 mr-4'>
+                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0 opacity-60' style=background-color:${color(el.id)}></div>
+                <span class="truncate opacity-75">${el.name}</span>
+              </div>
+              <span class='font-mono whitespace-nowrap opacity-75'>${formatSEOMetricValue(metric, compareValue)}</span>
+            </li>`
+              })
+              .join('')}`
+          : ''
+
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-md z-50'>
+            ${currentSection}
+            ${compareSection}
           </ul>`
       },
     },
     padding: { right: needsY2 ? 20 : undefined },
+  }
+}
+
+export function buildImpressionsByPositionChartOptions(
+  buckets: ImpressionsByPositionEntry[],
+  theme: string,
+  t: TFunction,
+): ChartOptions {
+  const bucketMap = new Map(buckets.map((bucket) => [bucket.key, bucket]))
+  const labels = SEO_IMPRESSION_POSITION_BUCKETS.map(({ label }) => label)
+  const values = SEO_IMPRESSION_POSITION_BUCKETS.map(
+    ({ key }) => bucketMap.get(key)?.impressions ?? 0,
+  )
+  const seriesLabel = t('project.seo.impressions')
+  const axisLabels = SEO_IMPRESSION_POSITION_BUCKETS.map(({ key, label }) => {
+    const bucket = bucketMap.get(key)
+    return `${label}\n${nFormatter(bucket?.impressions ?? 0, 1)} (${(bucket?.percentage ?? 0).toFixed(1)}%)`
+  })
+  const colors = SEO_IMPRESSION_POSITION_BUCKETS.reduce<Record<string, string>>(
+    (acc, { key, label, color }) => {
+      const darkColors: Record<string, string> = {
+        pos1To3: '#3db7ad',
+        pos4To10: '#2a9189',
+        pos11To20: '#1f6f69',
+        pos21Plus: '#164f4c',
+      }
+      acc[label] = theme === 'dark' ? darkColors[key] : color
+      return acc
+    },
+    {},
+  )
+
+  return {
+    data: {
+      columns: [[seriesLabel, ...values]],
+      type: bar(),
+      colors: {
+        [seriesLabel]: (d: any) => {
+          const label = SEO_IMPRESSION_POSITION_BUCKETS[d.index]?.label
+          return label ? colors[label] : colors[labels[0]]
+        },
+      },
+    },
+    axis: {
+      x: {
+        type: 'category',
+        categories: labels,
+        tick: {
+          format: (index: number) => axisLabels[index] || labels[index] || '',
+          multiline: true,
+        },
+      },
+      y: {
+        min: 0,
+        padding: { bottom: 0 },
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+        },
+        show: true,
+        inner: true,
+      },
+    },
+    bar: {
+      width: {
+        ratio: 0.55,
+      },
+      radius: {
+        ratio: 0.12,
+      },
+    },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
+    legend: {
+      show: false,
+    },
+    resize: {
+      auto: true,
+      timer: true,
+    },
+    transition: {
+      duration: 200,
+    },
+    tooltip: {
+      contents: (items) => {
+        const item = items[0]
+        if (!item) return ''
+
+        const bucketDef = SEO_IMPRESSION_POSITION_BUCKETS[item.index]
+        const bucket = bucketDef ? bucketMap.get(bucketDef.key) : null
+        const formattedValue = `${nFormatter(bucket?.impressions ?? 0, 1)} (${(bucket?.percentage ?? 0).toFixed(1)}%)`
+        const swatchColor = bucketDef ? colors[bucketDef.label] : '#14b8a6'
+
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm shadow-md z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800'>${bucketDef?.label ?? ''}</li>
+          <li class='flex justify-between items-center py-px leading-snug'>
+            <div class='flex items-center min-w-0 mr-4'>
+              <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0' style=background-color:${swatchColor}></div>
+              <span class="truncate">${seriesLabel}</span>
+            </div>
+            <span class='font-mono whitespace-nowrap'>${formattedValue}</span>
+          </li>
+        </ul>`
+      },
+    },
+    padding: { right: 12 },
+  }
+}
+
+export function buildOrganicPositionsChartOptions(
+  series: OrganicPositionEntry[],
+  theme: string,
+  t: TFunction,
+): ChartOptions {
+  const labels = SEO_ORGANIC_POSITION_BUCKETS.map(({ label }) => label)
+  const columns: any[] = [
+    ['x', ...series.map(({ date }) => date)],
+    ...SEO_ORGANIC_POSITION_BUCKETS.map(({ key, label }) => [
+      label,
+      ...series.map((entry) => entry[key] ?? 0),
+    ]),
+  ]
+  const colors = SEO_ORGANIC_POSITION_BUCKETS.reduce<Record<string, string>>(
+    (acc, { key, label, color }) => {
+      const darkColors: Record<string, string> = {
+        pos1To3: '#b45309',
+        pos4To10: '#ea580c',
+        pos11To20: '#fb923c',
+        pos21To50: '#64748b',
+        pos51Plus: '#475569',
+      }
+      acc[label] = theme === 'dark' ? darkColors[key] : color
+      return acc
+    },
+    {},
+  )
+
+  return {
+    data: {
+      x: 'x',
+      xFormat: '%Y-%m-%d',
+      columns,
+      type: area(),
+      groups: [labels],
+      colors,
+      order: null,
+    },
+    area: {
+      linearGradient: true,
+      zerobased: true,
+    },
+    axis: {
+      x: {
+        clipPath: false,
+        type: 'timeseries',
+        tick: {
+          fit: true,
+          format: '%b %d',
+        },
+      },
+      y: {
+        min: 0,
+        padding: { bottom: 0 },
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+        },
+        show: true,
+        inner: true,
+      },
+    },
+    point: {
+      show: false,
+    },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
+    legend: {
+      item: {
+        tile: {
+          type: 'circle',
+          width: 10,
+          r: 3,
+        },
+      },
+    },
+    resize: {
+      auto: true,
+      timer: true,
+    },
+    transition: {
+      duration: 200,
+    },
+    tooltip: {
+      contents: (items, _defaultTitleFormat, _defaultValueFormat, color) => {
+        if (!items.length) return ''
+
+        const headerLabel = d3.timeFormat('%a, %d %b')(items[0].x)
+        const orderedItems = items.slice().reverse()
+        const allPositions = orderedItems.reduce(
+          (sum: number, el: any) => sum + Number(el.value || 0),
+          0,
+        )
+
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-md z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${headerLabel}</li>
+          <li class='flex justify-between items-center py-px leading-snug'>
+            <span class='mr-4 font-semibold'>${t('project.seo.allPositions')}</span>
+            <span class='font-mono whitespace-nowrap font-semibold'>${nFormatter(allPositions, 1)}</span>
+          </li>
+          ${orderedItems
+            .map(
+              (el: any) => `
+          <li class='flex justify-between items-center py-px leading-snug'>
+            <div class='flex items-center min-w-0 mr-4'>
+              <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0' style=background-color:${color(el.id)}></div>
+              <span class="truncate">${escapeHtml(el.name)}</span>
+            </div>
+            <span class='font-mono whitespace-nowrap'>${nFormatter(el.value, 1)}</span>
+          </li>`,
+            )
+            .join('')}
+        </ul>`
+      },
+    },
+    padding: { right: 12 },
   }
 }
 
@@ -357,11 +682,26 @@ export function buildDonutChartOptions(
       },
     },
     tooltip: {
-      format: {
-        value: (value: number, ratio: number) => {
-          const pct = (ratio * 100).toFixed(1)
-          return `${nFormatter(value, 1)} (${pct}%)`
-        },
+      contents: (items, _defaultTitleFormat, _defaultValueFormat, color) => {
+        if (!items.length) return ''
+
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm shadow-md z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800'>${t('project.seo.brandedTraffic')}</li>
+          ${items
+            .map((el: any) => {
+              const pct = total > 0 ? (Number(el.value || 0) / total) * 100 : 0
+
+              return `
+          <li class='flex justify-between items-center py-px leading-snug'>
+            <div class='flex items-center min-w-0 mr-4'>
+              <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0' style=background-color:${color(el.id)}></div>
+              <span class="truncate">${escapeHtml(el.name)}</span>
+            </div>
+            <span class='font-mono whitespace-nowrap'>${nFormatter(el.value, 1)} (${pct.toFixed(1)}%)</span>
+          </li>`
+            })
+            .join('')}
+        </ul>`
       },
     },
     size: {

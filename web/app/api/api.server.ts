@@ -2664,6 +2664,31 @@ interface GSCTopDeviceEntry {
   position: number
 }
 
+type GSCImpressionPositionBucketKey =
+  | 'pos1To3'
+  | 'pos4To10'
+  | 'pos11To20'
+  | 'pos21Plus'
+
+type GSCOrganicPositionBucketKey =
+  | 'pos1To3'
+  | 'pos4To10'
+  | 'pos11To20'
+  | 'pos21To50'
+  | 'pos51Plus'
+
+interface GSCImpressionsByPositionEntry {
+  key: GSCImpressionPositionBucketKey
+  label: string
+  impressions: number
+  percentage: number
+}
+
+type GSCOrganicPositionEntry = { date: string } & Record<
+  GSCOrganicPositionBucketKey,
+  number
+>
+
 export interface GSCDashboardResponse {
   notConnected?: boolean
   noProperty?: boolean
@@ -2688,6 +2713,8 @@ export interface GSCDashboardResponse {
     branded: number
     nonBranded: number
   }
+  impressionsByPosition?: GSCImpressionsByPositionEntry[]
+  organicPositions?: GSCOrganicPositionEntry[]
 }
 
 export async function getGSCDashboardServer(

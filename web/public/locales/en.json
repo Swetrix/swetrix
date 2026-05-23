@@ -1695,6 +1695,10 @@
       "brandedTraffic": "Branded traffic",
       "others": "Others",
       "noBrandData": "No query data",
+      "impressionsByPosition": "Impressions by position",
+      "organicPositions": "Organic positions",
+      "allPositions": "All positions",
+      "noPositionData": "No position data",
       "quadrant": "SEO Quadrant",
       "quadrantTooltip": "Each bubble is a search query. X-axis is ranking position (left = higher rank), Y-axis is click-through rate, and bubble size reflects impressions.\n\n<highlight>Top-left</highlight>: high rank + high CTR (your best performers).\n<highlight>Bottom-left</highlight>: high rank but low CTR (improve your title & description).\n<highlight>Top-right</highlight>: low rank but high CTR (boost these to page 1 for big gains).\n<highlight>Bottom-right</highlight>: low rank + low CTR (lowest priority)."
     },

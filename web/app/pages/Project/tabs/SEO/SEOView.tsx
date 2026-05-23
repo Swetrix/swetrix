@@ -8,6 +8,8 @@ import {
   MagnifyingGlassIcon,
   MapPinIcon,
   TargetIcon,
+  ChartBarIcon,
+  TrendUpIcon,
 } from '@phosphor-icons/react'
 import _isEmpty from 'lodash/isEmpty'
 import _round from 'lodash/round'
@@ -67,12 +69,15 @@ import {
   type SEOMetricKey,
   aggregateDateSeries,
   getGSCCompatibleFilters,
+  hasOrganicPositionData,
 } from './seo-utils'
 import type { QuadrantData } from './seo-chart-options'
 import {
   buildMainChartOptions,
   buildQuadrantChartOptions,
   buildDonutChartOptions,
+  buildImpressionsByPositionChartOptions,
+  buildOrganicPositionsChartOptions,
 } from './seo-chart-options'
 
 interface SEOViewProps {
@@ -95,10 +100,16 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     periodPairs,
     filters,
     getFilterLink,
+    isActiveCompare,
   } = useViewProjectContext()
   const { seoRefreshTrigger } = useRefreshTriggers()
   const { fetchDashboard, data, isLoading } = useGSCDashboardProxy()
-  const [searchParams] = useSearchParams()
+  const {
+    fetchDashboard: fetchCompareDashboard,
+    data: compareData,
+    resetData: resetCompareData,
+  } = useGSCDashboardProxy()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [activeMetrics, setActiveMetrics] = useState<
     Record<SEOMetricKey, boolean>
@@ -124,6 +135,45 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         }),
     [periodPairs],
   )
+
+  const activeSeoPeriod = useMemo(
+    () => seoPeriodPairs.find((p) => p.period === period),
+    [seoPeriodPairs, period],
+  )
+
+  const urlTimeBucket = searchParams.get('timeBucket') as TimeBucket | null
+
+  const seoTimeBucket = useMemo<TimeBucket>(() => {
+    if (!urlTimeBucket && activeSeoPeriod?.tbs.includes('day')) {
+      return 'day'
+    }
+
+    if (activeSeoPeriod?.tbs.includes(timeBucket as TimeBucket)) {
+      return timeBucket as TimeBucket
+    }
+
+    return activeSeoPeriod?.tbs[0] || (timeBucket as TimeBucket)
+  }, [activeSeoPeriod, timeBucket, urlTimeBucket])
+
+  useEffect(() => {
+    if (
+      urlTimeBucket ||
+      !activeSeoPeriod?.tbs.includes('day') ||
+      timeBucket === 'day'
+    ) {
+      return
+    }
+
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.set('timeBucket', 'day')
+    setSearchParams(newSearchParams, { replace: true })
+  }, [
+    activeSeoPeriod,
+    searchParams,
+    setSearchParams,
+    timeBucket,
+    urlTimeBucket,
+  ])
 
   const metricItems = useMemo(
     () => [
@@ -194,25 +244,53 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
 
   const from = searchParams.get('from') || undefined
   const to = searchParams.get('to') || undefined
+  const compareEnabled = searchParams.get('compare') === 'true'
+  const compareFrom = searchParams.get('compareFrom') || undefined
+  const compareTo = searchParams.get('compareTo') || undefined
 
   const loadData = useCallback(async () => {
-    await fetchDashboard(projectId, {
+    const params = {
       period,
       from,
       to,
       timezone,
-      timeBucket,
+      timeBucket: seoTimeBucket,
       filters: gscFilters,
-    })
+    }
+
+    const currentPromise = fetchDashboard(projectId, params)
+
+    if (isActiveCompare && compareEnabled && compareFrom && compareTo) {
+      resetCompareData()
+      await Promise.all([
+        currentPromise,
+        fetchCompareDashboard(projectId, {
+          ...params,
+          period: 'custom',
+          from: compareFrom,
+          to: compareTo,
+        }),
+      ])
+      return
+    }
+
+    resetCompareData()
+    await currentPromise
   }, [
     fetchDashboard,
+    fetchCompareDashboard,
+    resetCompareData,
     projectId,
     period,
     from,
     to,
+    compareEnabled,
+    compareFrom,
+    compareTo,
     timezone,
-    timeBucket,
+    seoTimeBucket,
     gscFilters,
+    isActiveCompare,
   ])
 
   useEffect(() => {
@@ -250,8 +328,13 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   )
 
   const aggregatedSeries = useMemo(
-    () => aggregateDateSeries(data?.dateSeries || [], timeBucket),
-    [data?.dateSeries, timeBucket],
+    () => aggregateDateSeries(data?.dateSeries || [], seoTimeBucket),
+    [data?.dateSeries, seoTimeBucket],
+  )
+
+  const aggregatedCompareSeries = useMemo(
+    () => aggregateDateSeries(compareData?.dateSeries || [], seoTimeBucket),
+    [compareData?.dateSeries, seoTimeBucket],
   )
 
   const topPagesAsEntries: Entry[] = useMemo(
@@ -336,6 +419,37 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [brandedTraffic, t, theme],
   )
 
+  const impressionsByPosition = useMemo(
+    () => data?.impressionsByPosition || [],
+    [data?.impressionsByPosition],
+  )
+
+  const organicPositions = useMemo(
+    () => data?.organicPositions || [],
+    [data?.organicPositions],
+  )
+
+  const hasImpressionsByPositionData = useMemo(
+    () => impressionsByPosition.some((bucket) => bucket.impressions > 0),
+    [impressionsByPosition],
+  )
+
+  const hasOrganicPositions = useMemo(
+    () => hasOrganicPositionData(organicPositions),
+    [organicPositions],
+  )
+
+  const impressionsByPositionOptions = useMemo(
+    () =>
+      buildImpressionsByPositionChartOptions(impressionsByPosition, theme, t),
+    [impressionsByPosition, theme, t],
+  )
+
+  const organicPositionsOptions = useMemo(
+    () => buildOrganicPositionsChartOptions(organicPositions, theme, t),
+    [organicPositions, theme, t],
+  )
+
   const countryRowMapper = useCallback(
     (entry: any) => <CCRow cc={entry.name} language={language} />,
     [language],
@@ -368,16 +482,33 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     return buildQuadrantChartOptions(quadrantData, avgCtr, avgPos, theme, t)
   }, [quadrantData, data?.summary, theme, t])
 
+  const comparisonSummary =
+    isActiveCompare && compareEnabled
+      ? compareData?.summary
+      : data?.previousSummary
+
   const chartOptions = useMemo(
     () =>
       buildMainChartOptions(
         aggregatedSeries,
         activeMetrics,
-        timeBucket,
+        seoTimeBucket,
         t,
         !noRegionPeriods.includes(period),
+        isActiveCompare && compareEnabled && aggregatedCompareSeries.length
+          ? aggregatedCompareSeries
+          : undefined,
       ),
-    [aggregatedSeries, activeMetrics, timeBucket, t, period],
+    [
+      aggregatedSeries,
+      activeMetrics,
+      seoTimeBucket,
+      t,
+      isActiveCompare,
+      compareEnabled,
+      aggregatedCompareSeries,
+      period,
+    ],
   )
 
   const detailsExtraColumns = useMemo(
@@ -646,8 +777,8 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             label={t('project.seo.clicks')}
             value={data?.summary?.clicks ?? 0}
             change={
-              data?.previousSummary
-                ? (data.summary?.clicks ?? 0) - data.previousSummary.clicks
+              comparisonSummary
+                ? (data?.summary?.clicks ?? 0) - comparisonSummary.clicks
                 : undefined
             }
             goodChangeDirection='down'
@@ -659,9 +790,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             label={t('project.seo.impressions')}
             value={data?.summary?.impressions ?? 0}
             change={
-              data?.previousSummary
-                ? (data.summary?.impressions ?? 0) -
-                  data.previousSummary.impressions
+              comparisonSummary
+                ? (data?.summary?.impressions ?? 0) -
+                  comparisonSummary.impressions
                 : undefined
             }
             goodChangeDirection='down'
@@ -673,8 +804,8 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             label={t('project.seo.avgCTR')}
             value={_round(data?.summary?.ctr ?? 0, 2)}
             change={
-              data?.previousSummary
-                ? _round((data.summary?.ctr ?? 0) - data.previousSummary.ctr, 2)
+              comparisonSummary
+                ? _round((data?.summary?.ctr ?? 0) - comparisonSummary.ctr, 2)
                 : undefined
             }
             type='percent'
@@ -687,10 +818,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             label={t('project.seo.avgPosition')}
             value={_round(data?.summary?.position ?? 0, 1)}
             change={
-              data?.previousSummary
+              comparisonSummary
                 ? _round(
-                    (data.summary?.position ?? 0) -
-                      data.previousSummary.position,
+                    (data?.summary?.position ?? 0) - comparisonSummary.position,
                     1,
                   )
                 : undefined
@@ -708,8 +838,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             className='h-80 [&_svg]:overflow-visible!'
             deps={[
               aggregatedSeries,
+              aggregatedCompareSeries,
               activeMetrics,
-              timeBucket,
+              seoTimeBucket,
               timeFormat,
               period,
             ]}
@@ -747,6 +878,42 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             <PanelEmptyState message={t('project.seo.noBrandData')} />
           )}
         </div>
+      </div>
+
+      <div className='mt-3 grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]'>
+        <PanelContainer
+          name={t('project.seo.impressionsByPosition')}
+          icon={<ChartBarIcon className='size-5' />}
+          type='impressionsByPosition'
+          contentClassName='relative flex min-h-[21rem] flex-col overflow-hidden'
+        >
+          {hasImpressionsByPositionData ? (
+            <BillboardChart
+              options={impressionsByPositionOptions}
+              className='seo-impressions-position-chart min-h-72 flex-1 [&_svg]:overflow-visible!'
+              deps={[impressionsByPosition, theme, t]}
+            />
+          ) : (
+            <PanelEmptyState message={t('project.seo.noPositionData')} />
+          )}
+        </PanelContainer>
+
+        <PanelContainer
+          name={t('project.seo.organicPositions')}
+          icon={<TrendUpIcon className='size-5' />}
+          type='organicPositions'
+          contentClassName='relative flex min-h-[21rem] flex-col overflow-hidden'
+        >
+          {hasOrganicPositions ? (
+            <BillboardChart
+              options={organicPositionsOptions}
+              className='min-h-80 flex-1 [&_svg]:overflow-visible!'
+              deps={[organicPositions, theme, t]}
+            />
+          ) : (
+            <PanelEmptyState message={t('project.seo.noPositionData')} />
+          )}
+        </PanelContainer>
       </div>
 
       <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
