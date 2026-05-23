@@ -1,6 +1,7 @@
 import type { ChartOptions } from 'billboard.js'
 import { area, bar, donut, line, scatter } from 'billboard.js'
 import * as d3 from 'd3'
+import dayjs from 'dayjs'
 import _round from 'lodash/round'
 import type { TFunction } from 'i18next'
 
@@ -50,6 +51,7 @@ export function buildMainChartOptions(
   activeMetrics: Record<SEOMetricKey, boolean>,
   timeBucket: string,
   t: TFunction,
+  applyRegions: boolean,
   compareSeries?: DateSeriesEntry[],
 ): ChartOptions {
   if (!series.length) return {}
@@ -58,6 +60,7 @@ export function buildMainChartOptions(
   const columns: any[] = [['x', ...dates]]
   const colors: Record<string, string> = {}
   const axes: Record<string, string> = {}
+  const activeSeries: string[] = []
   const names: Record<string, string> = {}
   const types: Record<string, any> = {}
   const compareIds: string[] = []
@@ -94,6 +97,7 @@ export function buildMainChartOptions(
     colors[metric] = SEO_MAIN_METRIC_COLORS[metric]
     names[metric] = metricLabels[metric]
     types[metric] = area()
+    activeSeries.push(metric)
 
     if (usesY2) {
       axes[metric] = 'y2'
@@ -129,6 +133,25 @@ export function buildMainChartOptions(
   }
   const tickFormat = tickFormatMap[timeBucket] || '%b %d'
   const xFormat = timeBucket === 'hour' ? '%Y-%m-%d %H:%M:%S' : '%Y-%m-%d'
+  const regionStart =
+    dates.length > 1
+      ? dayjs(dates[dates.length - 2]).toDate()
+      : dayjs(dates[dates.length - 1]).toDate()
+  const regions: any = applyRegions
+    ? Object.fromEntries(
+        activeSeries.map((label) => [
+          label,
+          [
+            {
+              start: regionStart,
+              style: {
+                dasharray: '6 2',
+              },
+            },
+          ],
+        ]),
+      )
+    : undefined
 
   return {
     data: {
@@ -139,6 +162,7 @@ export function buildMainChartOptions(
       axes,
       colors,
       names,
+      regions,
     },
     area: {
       linearGradient: true,

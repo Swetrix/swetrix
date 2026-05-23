@@ -43,6 +43,7 @@ import {
   useRefreshTriggers,
 } from '~/pages/Project/View/ViewProject'
 import {
+  noRegionPeriods,
   panelIconMapping,
   getDeviceRowMapper,
 } from '~/pages/Project/View/ViewProject.helpers'
@@ -493,6 +494,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         activeMetrics,
         seoTimeBucket,
         t,
+        !noRegionPeriods.includes(period),
         isActiveCompare && compareEnabled && aggregatedCompareSeries.length
           ? aggregatedCompareSeries
           : undefined,
@@ -505,6 +507,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
       isActiveCompare,
       compareEnabled,
       aggregatedCompareSeries,
+      period,
     ],
   )
 
@@ -839,6 +842,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
               activeMetrics,
               seoTimeBucket,
               timeFormat,
+              period,
             ]}
           />
         ) : null}
