@@ -1,6 +1,5 @@
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import {
@@ -45,9 +44,9 @@ import Input from '~/ui/Input'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
-import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 import { setCookie } from '~/utils/cookie'
+import { isValidHttpUrl } from '~/utils/url'
 
 import { AddProject } from './AddProject'
 import { NoProjects } from './NoProjects'
@@ -55,6 +54,7 @@ import { PeriodSelector } from './PeriodSelector'
 import { ProjectCard } from './ProjectCard'
 import { SortSelector, SORT_OPTIONS } from './SortSelector'
 import Button from '~/ui/Button'
+import Select from '~/ui/Select'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
@@ -64,7 +64,34 @@ const DASHBOARD_VIEW = {
 } as const
 
 const MAX_PROJECT_NAME_LENGTH = 50
-const DEFAULT_PROJECT_NAME = 'Untitled Project'
+
+interface NewProjectForm {
+  name: string
+  websiteUrl: string
+  organisationId?: string
+}
+
+interface NewProjectErrors {
+  name?: string
+  websiteUrl?: string
+}
+
+interface NewProjectState {
+  form: NewProjectForm
+  errors: NewProjectErrors
+  beenSubmitted: boolean
+}
+
+const DEFAULT_NEW_PROJECT_FORM: NewProjectForm = {
+  name: '',
+  websiteUrl: '',
+}
+
+const DEFAULT_NEW_PROJECT_STATE: NewProjectState = {
+  form: DEFAULT_NEW_PROJECT_FORM,
+  errors: {},
+  beenSubmitted: false,
+}
 
 const Dashboard = () => {
   const loaderData = useLoaderData<DashboardLoaderData>()
@@ -130,14 +157,13 @@ const Dashboard = () => {
       : SORT_OPTIONS.ALPHA_ASC
   }, [searchParams])
 
-  // New project modal state
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false)
-  const [newProjectName, setNewProjectName] = useState('')
-  const [newProjectOrganisationId, setNewProjectOrganisationId] = useState<
-    string | undefined
-  >(undefined)
-  const [newProjectError, setNewProjectError] = useState<string | null>(null)
-  const [newProjectBeenSubmitted, setNewProjectBeenSubmitted] = useState(false)
+  const [newProject, setNewProject] = useState(DEFAULT_NEW_PROJECT_STATE)
+  const {
+    form: newProjectForm,
+    errors: newProjectErrors,
+    beenSubmitted: newProjectBeenSubmitted,
+  } = newProject
 
   const organisations = useMemo(
     () => [
@@ -152,6 +178,11 @@ const Dashboard = () => {
         .map((om) => om.organisation),
     ],
     [user?.organisationMemberships, t],
+  )
+
+  const selectedNewProjectOrganisation = useMemo(
+    () => organisations.find((org) => org.id === newProjectForm.organisationId),
+    [organisations, newProjectForm.organisationId],
   )
 
   const pageAmount = Math.ceil(paginationTotal / pageSize)
@@ -204,57 +235,103 @@ const Dashboard = () => {
     setNewProjectModalOpen(true)
   }
 
-  const validateProjectName = () => {
-    const errors: { name?: string } = {}
+  const updateNewProjectForm = <Field extends keyof NewProjectForm>(
+    field: Field,
+    value: NewProjectForm[Field],
+  ) => {
+    setNewProject((current) => {
+      const form = {
+        ...current.form,
+        [field]: value,
+      }
 
-    if (_isEmpty(newProjectName)) {
+      if (field === 'organisationId') {
+        return {
+          ...current,
+          form,
+        }
+      }
+
+      const errors = { ...current.errors }
+      delete errors[field as keyof NewProjectErrors]
+
+      return {
+        ...current,
+        form,
+        errors,
+      }
+    })
+  }
+
+  const getNewProjectErrors = (form: NewProjectForm) => {
+    const errors: NewProjectErrors = {}
+    const name = form.name.trim()
+    const websiteUrl = form.websiteUrl.trim()
+
+    if (_isEmpty(name)) {
       errors.name = t('project.settings.noNameError')
     }
 
-    if (_size(newProjectName) > MAX_PROJECT_NAME_LENGTH) {
+    if (_size(name) > MAX_PROJECT_NAME_LENGTH) {
       errors.name = t('project.settings.pxCharsError', {
         amount: MAX_PROJECT_NAME_LENGTH,
       })
     }
 
-    return { errors, valid: _isEmpty(_keys(errors)) }
+    if (websiteUrl && !isValidHttpUrl(websiteUrl)) {
+      errors.websiteUrl = t('project.settings.invalidUrl')
+    }
+
+    return errors
   }
 
   // Handle fetcher responses for create project
   useEffect(() => {
-    if (fetcher.data?.success && fetcher.data?.intent === 'create-project') {
+    const data = fetcher.data
+
+    if (data?.success && data.intent === 'create-project') {
       refetchProjects()
       toast.success(t('project.settings.created'))
       closeNewProjectModal()
-    } else if (
-      fetcher.data?.error &&
-      fetcher.data?.intent === 'create-project'
-    ) {
-      setNewProjectError(fetcher.data.error)
-      toast.error(fetcher.data.error)
-    } else if (
-      fetcher.data?.fieldErrors?.name &&
-      fetcher.data?.intent === 'create-project'
-    ) {
-      setNewProjectError(fetcher.data.fieldErrors.name)
+    } else if (data?.error && data.intent === 'create-project') {
+      setNewProject((current) => ({
+        ...current,
+        errors: {
+          ...current.errors,
+          name: data.error,
+        },
+      }))
+      toast.error(data.error)
+    } else if (data?.fieldErrors && data.intent === 'create-project') {
+      setNewProject((current) => ({
+        ...current,
+        errors: {
+          ...current.errors,
+          ...data.fieldErrors,
+        },
+      }))
     }
   }, [fetcher.data, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isNewProjectLoading = fetcher.state === 'submitting'
 
   const onCreateProject = () => {
-    setNewProjectBeenSubmitted(true)
-    const { errors, valid } = validateProjectName()
+    const errors = getNewProjectErrors(newProjectForm)
 
-    if (!valid) {
-      setNewProjectError(errors.name || null)
+    setNewProject((current) => ({
+      ...current,
+      beenSubmitted: true,
+      errors,
+    }))
+
+    if (!_isEmpty(errors)) {
       return
     }
 
     if (
       !isSelfhosted &&
       user?.planCode === 'none' &&
-      !newProjectOrganisationId
+      !newProjectForm.organisationId
     ) {
       toast.error(t('project.settings.subscriptionRequired'))
       return
@@ -262,9 +339,12 @@ const Dashboard = () => {
 
     const formData = new FormData()
     formData.set('intent', 'create-project')
-    formData.set('name', newProjectName || DEFAULT_PROJECT_NAME)
-    if (newProjectOrganisationId) {
-      formData.set('organisationId', newProjectOrganisationId)
+    formData.set('name', newProjectForm.name.trim())
+    if (newProjectForm.websiteUrl.trim()) {
+      formData.set('websiteUrl', newProjectForm.websiteUrl.trim())
+    }
+    if (newProjectForm.organisationId) {
+      formData.set('organisationId', newProjectForm.organisationId)
     }
     fetcher.submit(formData, { method: 'post' })
   }
@@ -275,10 +355,7 @@ const Dashboard = () => {
     }
 
     setNewProjectModalOpen(false)
-    setNewProjectError(null)
-    setNewProjectName('')
-    setNewProjectOrganisationId(undefined)
-    setNewProjectBeenSubmitted(false)
+    setNewProject(DEFAULT_NEW_PROJECT_STATE)
   }
 
   const refetchProjects = useCallback(() => {
@@ -530,11 +607,24 @@ const Dashboard = () => {
             <Input
               name='project-name-input'
               label={t('project.settings.name')}
-              hint={t('project.settings.nameHint')}
-              value={newProjectName}
+              value={newProjectForm.name}
               placeholder='My awesome website'
-              onChange={(e) => setNewProjectName(e.target.value)}
-              error={newProjectBeenSubmitted ? newProjectError : null}
+              onChange={(e) => updateNewProjectForm('name', e.target.value)}
+              error={newProjectBeenSubmitted ? newProjectErrors.name : null}
+            />
+            <Input
+              name='websiteUrl'
+              label={t('project.settings.websiteUrl')}
+              hint={t('project.settings.websiteUrlHint')}
+              value={newProjectForm.websiteUrl}
+              placeholder={t('project.settings.websiteUrlPlaceholder')}
+              className='mt-4'
+              onChange={(e) =>
+                updateNewProjectForm('websiteUrl', e.target.value)
+              }
+              error={
+                newProjectBeenSubmitted ? newProjectErrors.websiteUrl : null
+              }
             />
             {organisations.length > 1 ? (
               <div className='mt-4'>
@@ -551,29 +641,20 @@ const Dashboard = () => {
                     return item.name
                   }}
                   onSelect={(item) => {
-                    setNewProjectOrganisationId(item.id)
+                    updateNewProjectForm('organisationId', item.id)
                   }}
                   label={t('project.settings.organisation')}
                   hint={t('project.settings.organisationHint')}
-                  title={
-                    organisations.find(
-                      (org) => org.id === newProjectOrganisationId,
-                    )?.name
-                  }
-                  selectedItem={organisations.find(
-                    (org) => org.id === newProjectOrganisationId,
-                  )}
+                  title={selectedNewProjectOrganisation?.name}
+                  selectedItem={selectedNewProjectOrganisation}
                 />
               </div>
             ) : null}
-            <Text as='p' size='sm' colour='muted' className='mt-2 italic'>
-              {t('project.settings.createHint')}
-            </Text>
           </div>
         }
         title={t('project.settings.create')}
         isOpened={newProjectModalOpen}
-        submitDisabled={!newProjectName}
+        submitDisabled={!newProjectForm.name.trim()}
       />
     </>
   )

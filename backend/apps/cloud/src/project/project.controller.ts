@@ -375,6 +375,7 @@ export class ProjectController {
       const project = {
         id: pid,
         name: _trim(projectDTO.name),
+        websiteUrl: projectDTO.websiteUrl ? _trim(projectDTO.websiteUrl) : null,
         origins: [],
         active: true,
 

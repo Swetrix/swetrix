@@ -58,6 +58,7 @@ import { Text } from '~/ui/Text'
 // Select is used inside tab components
 import countries from '~/utils/isoCountries'
 import routes from '~/utils/routes'
+import { isValidHttpUrl } from '~/utils/url'
 
 import CCRow from '../View/components/CCRow'
 
@@ -1020,15 +1021,8 @@ const ProjectSettings = () => {
         })
       }
 
-      if (data.websiteUrl && data.websiteUrl.trim()) {
-        try {
-          const url = new URL(data.websiteUrl.trim())
-          if (!['http:', 'https:'].includes(url.protocol)) {
-            allErrors.websiteUrl = t('project.settings.invalidUrl')
-          }
-        } catch {
-          allErrors.websiteUrl = t('project.settings.invalidUrl')
-        }
+      if (data.websiteUrl?.trim() && !isValidHttpUrl(data.websiteUrl)) {
+        allErrors.websiteUrl = t('project.settings.invalidUrl')
       }
 
       return allErrors

@@ -16,6 +16,10 @@ import {
   redirectIfNotAuthenticated,
   createHeadersWithCookies,
 } from '~/utils/session.server'
+import { isValidHttpUrl } from '~/utils/url'
+
+const INVALID_WEBSITE_URL_ERROR =
+  'Please enter a valid URL (e.g., https://example.com)'
 
 export const meta: MetaFunction = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -49,6 +53,7 @@ export interface DashboardActionData {
   error?: string
   fieldErrors?: {
     name?: string
+    websiteUrl?: string
   }
   project?: Project
   isPinned?: boolean
@@ -63,28 +68,38 @@ export async function action({ request }: ActionFunctionArgs) {
   switch (intent) {
     case 'create-project': {
       const name = formData.get('name')?.toString() || ''
+      const trimmedName = name.trim()
+      const websiteUrl = formData.get('websiteUrl')?.toString().trim()
       const organisationId = formData.get('organisationId')?.toString()
+      const fieldErrors: DashboardActionData['fieldErrors'] = {}
 
-      if (!name.trim()) {
+      if (!trimmedName) {
+        fieldErrors.name = 'Project name is required'
+      }
+
+      if (trimmedName.length > 50) {
+        fieldErrors.name = 'Project name must be 50 characters or less'
+      }
+
+      if (websiteUrl && !isValidHttpUrl(websiteUrl)) {
+        fieldErrors.websiteUrl = INVALID_WEBSITE_URL_ERROR
+      }
+
+      if (fieldErrors.name || fieldErrors.websiteUrl) {
         return data<DashboardActionData>(
-          { intent, fieldErrors: { name: 'Project name is required' } },
+          { intent, fieldErrors },
           { status: 400 },
         )
       }
 
-      if (name.length > 50) {
-        return data<DashboardActionData>(
-          {
-            intent,
-            fieldErrors: { name: 'Project name must be 50 characters or less' },
-          },
-          { status: 400 },
-        )
+      const body: {
+        name: string
+        websiteUrl?: string
+        organisationId?: string
+      } = {
+        name: trimmedName,
       }
-
-      const body: { name: string; organisationId?: string } = {
-        name: name.trim(),
-      }
+      if (websiteUrl) body.websiteUrl = websiteUrl
       if (organisationId) body.organisationId = organisationId
 
       const result = await serverFetch<Project>(request, 'project', {

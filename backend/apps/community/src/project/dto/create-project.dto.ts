@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, Length } from 'class-validator'
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsUrl,
+  Length,
+  MaxLength,
+} from 'class-validator'
 
 export class CreateProjectDTO {
   @ApiProperty({
@@ -10,4 +16,15 @@ export class CreateProjectDTO {
   @IsNotEmpty()
   @Length(1, 50)
   name: string
+
+  @ApiProperty({
+    example: 'https://example.com',
+    required: false,
+    description:
+      'Optional website URL. Used to display favicon and construct clickable page links.',
+  })
+  @IsOptional()
+  @IsUrl({}, { message: 'websiteUrl must be a valid URL' })
+  @MaxLength(512)
+  websiteUrl?: string | null
 }

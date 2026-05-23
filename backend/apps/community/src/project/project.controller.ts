@@ -544,6 +544,9 @@ export class ProjectController {
     const project = new Project()
     project.id = pid
     project.name = _trim(projectDTO.name)
+    project.websiteUrl = projectDTO.websiteUrl
+      ? _trim(projectDTO.websiteUrl)
+      : null
 
     await createProjectClickhouse({ ...project, adminId: userId })
 
