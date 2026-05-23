@@ -2,21 +2,23 @@ import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
-import { GlobeIcon, ClockIcon, LinkIcon, UserIcon } from '@phosphor-icons/react'
+import {
+  GlobeIcon,
+  ClockIcon,
+  LinkIcon,
+  UserIcon,
+  EyeIcon,
+  SignInIcon,
+} from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 
-import {
-  BROWSER_LOGO_MAP,
-  OS_LOGO_MAP,
-  OS_LOGO_MAP_DARK,
-  PROJECT_TABS,
-} from '~/lib/constants'
+import { BrowserIcon, OSIcon } from '../SharedIcons'
+import { PROJECT_TABS } from '~/lib/constants'
 import { SessionDetails as SessionDetailsType } from '~/lib/models/Project'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
@@ -57,11 +59,19 @@ interface SessionDetailViewProps {
     sessionStart?: string
     lastActivity?: string
   } | null
+  sessionId?: string | null
   sessionLoading: boolean
   timeFormat: '12-hour' | '24-hour'
   rotateXAxis: boolean
   dataNames: Record<string, string>
   websiteUrl?: string | null
+}
+
+interface PlatformPart {
+  key: string
+  label: string
+  tooltip: string
+  icon?: React.ReactNode
 }
 
 const RECENTLY_ACTIVE_THRESHOLD_SECONDS = 30 * 60
@@ -121,44 +131,6 @@ const PanelSection = ({
   </section>
 )
 
-const BrowserIcon = ({
-  browser,
-  className,
-}: {
-  browser: string | null
-  className?: string
-}) => {
-  if (!browser) return <GlobeIcon className={cn('h-4 w-4', className)} />
-
-  const logoUrl = BROWSER_LOGO_MAP[browser as keyof typeof BROWSER_LOGO_MAP]
-
-  if (!logoUrl) return <GlobeIcon className={cn('h-4 w-4', className)} />
-
-  return <img src={logoUrl} className={cn('h-4 w-4', className)} alt='' />
-}
-
-const OSIcon = ({
-  os,
-  theme,
-  className,
-}: {
-  os: string | null
-  theme: string
-  className?: string
-}) => {
-  if (!os) return <GlobeIcon className={cn('h-4 w-4', className)} />
-
-  const logoUrlLight = OS_LOGO_MAP[os as keyof typeof OS_LOGO_MAP]
-  const logoUrlDark = OS_LOGO_MAP_DARK[os as keyof typeof OS_LOGO_MAP_DARK]
-
-  let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
-  logoUrl ||= logoUrlLight
-
-  if (!logoUrl) return <GlobeIcon className={cn('h-4 w-4', className)} />
-
-  return <img src={logoUrl} className={cn('h-4 w-4', className)} alt='' />
-}
-
 const formatCompactElapsed = (seconds: number) => {
   const safeSeconds = Math.max(0, seconds)
   const minute = 60
@@ -175,8 +147,41 @@ const formatCompactElapsed = (seconds: number) => {
   return `${Math.floor(safeSeconds / year)}y`
 }
 
+const formatDateTime = (
+  value: string | null | undefined,
+  language: string,
+  timeFormat: '12-hour' | '24-hour',
+) => {
+  if (!value) return null
+
+  const date = dayjs(value)
+  if (!date.isValid()) return null
+
+  return date.toDate().toLocaleDateString(language, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+  })
+}
+
+const formatVersionLabel = (name: string | null, version: string | null) => {
+  if (!name) return null
+  return `${name}${version ? ` ${version}` : ''}`
+}
+
+const formatSessionId = (id: string | null | undefined) => {
+  if (!id) return null
+  if (id.length <= 13) return id
+  return `${id.slice(0, 6)}...${id.slice(-5)}`
+}
+
 export const SessionDetailView = ({
   activeSession,
+  sessionId,
   sessionLoading,
   timeFormat,
   rotateXAxis,
@@ -260,14 +265,41 @@ export const SessionDetailView = ({
   const locationSummary =
     [countryName, details.rg, details.ct].filter(Boolean).join(', ') ||
     t('project.unknown')
-  const osLabel = details.os
-    ? `${details.os}${details.osv ? ` ${details.osv}` : ''}`
-    : null
-  const browserLabel = details.br
-    ? `${details.br}${details.brv ? ` ${details.brv}` : ''}`
-    : null
-  const platformSummary =
-    [osLabel, browserLabel].filter(Boolean).join(', ') || t('project.unknown')
+  const osTooltipLabel = formatVersionLabel(details.os, details.osv)
+  const browserTooltipLabel = formatVersionLabel(details.br, details.brv)
+  const platformParts: PlatformPart[] = [
+    ...(details.os
+      ? [
+          {
+            key: 'os',
+            label: details.os,
+            tooltip: osTooltipLabel || details.os,
+            icon: <OSIcon os={details.os} theme={theme} className='size-4' />,
+          },
+        ]
+      : []),
+    ...(details.br
+      ? [
+          {
+            key: 'browser',
+            label: details.br,
+            tooltip: browserTooltipLabel || details.br,
+            icon: <BrowserIcon browser={details.br} className='size-4' />,
+          },
+        ]
+      : []),
+  ]
+  const visiblePlatformParts =
+    platformParts.length > 0
+      ? platformParts
+      : [
+          {
+            key: 'unknown',
+            label: t('project.unknown'),
+            tooltip: t('project.unknown'),
+          },
+        ]
+  const compactSessionId = formatSessionId(sessionId)
   const firstEventAt = activeSession.pages?.[0]?.created
   const lastEventAt =
     activeSession.pages && activeSession.pages.length > 0
@@ -288,17 +320,11 @@ export const SessionDetailView = ({
     : sessionDuration > 0
       ? formatCompactElapsed(sessionDuration)
       : null
-  const lastSeenDate = lastActivityAt
-    ? new Date(lastActivityAt).toLocaleDateString(language, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
-      })
-    : null
+  const lastSeenDate = formatDateTime(lastActivityAt, language, timeFormat)
+  const sessionStartDate = formatDateTime(sessionStartAt, language, timeFormat)
+  const sessionEndDate = details.isLive
+    ? null
+    : formatDateTime(lastActivityAt, language, timeFormat)
   const lastSeenLabel = lastSeenTime
     ? lastSeenTime === 'now'
       ? 'seen now'
@@ -308,6 +334,11 @@ export const SessionDetailView = ({
     !details.isLive &&
     secondsSinceLastActivity !== null &&
     secondsSinceLastActivity < RECENTLY_ACTIVE_THRESHOLD_SECONDS
+  const statusTooltip = lastSeenDate
+    ? t('project.lastSeenAt', { time: lastSeenDate })
+    : details.isLive
+      ? t('project.online')
+      : t('project.endOfSession')
   const campaignRows = [
     { label: t('project.mapping.so'), value: details.so },
     { label: t('project.mapping.me'), value: details.me },
@@ -315,77 +346,84 @@ export const SessionDetailView = ({
     { label: t('project.mapping.te'), value: details.te },
     { label: t('project.mapping.co'), value: details.co },
   ].filter(({ value }) => value)
-  const durationValue = details.isLive ? (
-    <>
-      <ClockIcon className='h-4 w-4' />
-      {sessionOnlineFor || t('dashboard.live')}
-    </>
-  ) : sessionDuration > 0 ? (
-    <>
-      <ClockIcon className='h-4 w-4' />
-      {getStringFromTime(getTimeFromSeconds(sessionDuration))}
-    </>
-  ) : (
-    'N/A'
+  const durationText = details.isLive
+    ? sessionOnlineFor || t('dashboard.live')
+    : sessionDuration > 0
+      ? getStringFromTime(getTimeFromSeconds(sessionDuration))
+      : 'N/A'
+  const durationTooltip = (
+    <div className='grid min-w-48 gap-1.5'>
+      <div className='grid grid-cols-[auto_minmax(0,1fr)] gap-4'>
+        <Text className='flex items-center gap-1' size='xs' colour='inherit'>
+          <SignInIcon className='size-3' />
+          <span>{t('project.sessionStartedAt')}</span>
+        </Text>
+        <Text size='xs' colour='inherit' className='text-right'>
+          {sessionStartDate || 'N/A'}
+        </Text>
+      </div>
+      <div className='grid grid-cols-[auto_minmax(0,1fr)] gap-4'>
+        <Text className='flex items-center gap-1' size='xs' colour='inherit'>
+          <SignInIcon className='size-3 rotate-180' />
+          <span>{t('project.sessionEndedAt')}</span>
+        </Text>
+        <Text size='xs' colour='inherit' className='text-right'>
+          {details.isLive
+            ? t('project.sessionInProgress')
+            : sessionEndDate || 'N/A'}
+        </Text>
+      </div>
+    </div>
   )
-  const statusNode = details.isLive ? (
+  const durationValue = (
     <Tooltip
       asChild
-      text={
-        lastSeenDate
-          ? t('project.lastSeenAt', { time: lastSeenDate })
-          : t('project.online')
-      }
+      text={durationTooltip}
+      ariaLabel={t('dashboard.sessionDuration')}
       tooltipNode={
-        <span className='grid grid-cols-[34px_minmax(0,1fr)] items-center gap-2'>
-          <span className='flex h-6 items-center justify-center'>
-            <PulsatingCircle type='small' />
-          </span>
-          <Text as='span' size='sm' colour='secondary' className='truncate'>
-            {sessionOnlineFor
-              ? `${t('project.online')} ${sessionOnlineFor}`
-              : t('project.online')}
-          </Text>
-        </span>
+        <Text
+          as='button'
+          type='button'
+          size='sm'
+          weight='medium'
+          colour='primary'
+          className='inline-flex cursor-default items-center justify-end gap-1 rounded-sm bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
+        >
+          <ClockIcon className='h-4 w-4' />
+          {durationText}
+        </Text>
       }
+      disableHoverableContent
     />
-  ) : isRecentlyActive ? (
+  )
+  const statusNode = (
     <Tooltip
       asChild
       text={
-        lastSeenDate
-          ? t('project.lastSeenAt', { time: lastSeenDate })
-          : t('project.endOfSession')
+        <Text size='xs' colour='inherit'>
+          {statusTooltip}
+        </Text>
       }
+      ariaLabel={lastSeenLabel}
       tooltipNode={
-        <span className='grid grid-cols-[34px_minmax(0,1fr)] items-center gap-2'>
-          <span className='flex h-6 items-center justify-center'>
-            <span className='h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-slate-900' />
-          </span>
-          <Text as='span' size='sm' colour='secondary' className='truncate'>
-            {lastSeenLabel}
-          </Text>
-        </span>
+        <Text
+          as='button'
+          type='button'
+          colour='muted'
+          className='relative inline-flex h-6 w-6 shrink-0 cursor-default items-center justify-center rounded-md bg-transparent p-0 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
+        >
+          <EyeIcon className='h-4 w-4' />
+          <span
+            className={cn(
+              'absolute right-0 bottom-0 h-1.5 w-1.5 rounded-full ring-2 ring-white dark:ring-slate-900',
+              details.isLive && 'bg-emerald-500',
+              isRecentlyActive && 'bg-amber-500',
+              !details.isLive && !isRecentlyActive && 'bg-gray-400',
+            )}
+          />
+        </Text>
       }
-    />
-  ) : (
-    <Tooltip
-      asChild
-      text={
-        lastSeenDate
-          ? t('project.lastSeenAt', { time: lastSeenDate })
-          : t('project.endOfSession')
-      }
-      tooltipNode={
-        <span className='grid grid-cols-[34px_minmax(0,1fr)] items-center gap-2'>
-          <span className='flex h-6 items-center justify-center'>
-            <span className='h-2.5 w-2.5 rounded-full bg-gray-400 ring-2 ring-white dark:bg-slate-500 dark:ring-slate-900' />
-          </span>
-          <Text as='span' size='sm' colour='secondary' className='truncate'>
-            {lastSeenLabel}
-          </Text>
-        </span>
-      }
+      disableHoverableContent
     />
   )
 
@@ -413,76 +451,154 @@ export const SessionDetailView = ({
 
       <aside className='order-1 lg:sticky lg:top-14 lg:order-2 lg:h-[calc(100dvh-3.5rem)] lg:self-start'>
         <div className='h-full space-y-3 rounded-lg border border-gray-200 bg-white px-4 py-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
-          <div>
-            <div className='min-w-0 space-y-1.5'>
-              {statusNode}
-              <div className='grid grid-cols-[34px_minmax(0,1fr)] items-center gap-2'>
-                <span className='flex h-6 items-center justify-center'>
-                  {details.cc ? (
-                    <Flag
-                      className='rounded-xs'
-                      country={details.cc}
-                      size={20}
-                      alt=''
-                      aria-hidden='true'
+          <div className='pb-1'>
+            <div className='min-w-0'>
+              <div className='mb-1 flex min-w-0 items-center gap-2'>
+                {compactSessionId ? (
+                  <h2 className='min-w-0'>
+                    <Tooltip
+                      asChild
+                      text={
+                        <Text size='xs' colour='inherit'>
+                          {sessionId}
+                        </Text>
+                      }
+                      ariaLabel={sessionId || undefined}
+                      tooltipNode={
+                        <Text
+                          as='button'
+                          type='button'
+                          size='lg'
+                          weight='bold'
+                          colour='primary'
+                          truncate
+                          className='block min-w-0 cursor-default rounded-sm bg-transparent p-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
+                        >
+                          {compactSessionId}
+                        </Text>
+                      }
                     />
-                  ) : (
-                    <GlobeIcon className='h-5 w-5 text-gray-500 dark:text-gray-400' />
-                  )}
-                </span>
-                <Text
-                  as='span'
-                  size='base'
-                  weight='medium'
-                  colour='primary'
-                  className='truncate leading-6'
-                  title={locationSummary}
-                >
-                  {locationSummary}
-                </Text>
+                  </h2>
+                ) : (
+                  <Text
+                    as='h2'
+                    size='xl'
+                    weight='bold'
+                    colour='primary'
+                    className='min-w-0'
+                    truncate
+                  >
+                    {t('project.viewSession')}
+                  </Text>
+                )}
+                {statusNode}
               </div>
-              <div className='grid grid-cols-[34px_minmax(0,1fr)] items-center gap-2'>
-                <span className='relative flex h-6 w-[34px] items-center justify-center'>
-                  {details.os || details.br ? (
-                    <>
-                      <OSIcon
-                        os={details.os}
-                        theme={theme}
-                        className='absolute left-1 h-4 w-4'
+
+              <div className='space-y-1'>
+                <div className='flex items-center gap-1'>
+                  <Text
+                    as='span'
+                    colour='primary'
+                    className='flex h-6 items-center justify-center'
+                  >
+                    {details.cc ? (
+                      <Flag
+                        className='rounded-xs'
+                        country={details.cc}
+                        size={16}
+                        alt=''
+                        aria-hidden='true'
                       />
-                      <BrowserIcon
-                        browser={details.br}
-                        className='absolute right-1 h-4 w-4'
-                      />
-                    </>
-                  ) : (
-                    <OSIcon
-                      os={details.os}
-                      theme={theme}
-                      className='h-5 w-5 text-gray-500 dark:text-gray-400'
-                    />
+                    ) : (
+                      <GlobeIcon className='h-5 w-5' />
+                    )}
+                  </Text>
+                  <Text
+                    as='span'
+                    size='sm'
+                    weight='medium'
+                    colour='primary'
+                    truncate
+                    title={locationSummary}
+                  >
+                    {locationSummary}
+                  </Text>
+                </div>
+
+                <div className='flex min-h-6 min-w-0 items-center'>
+                  {visiblePlatformParts.map(
+                    ({ key, label, tooltip, icon }, index) => (
+                      <span
+                        key={key}
+                        className='flex min-w-0 items-center gap-1'
+                      >
+                        {index > 0 ? (
+                          <Text
+                            as='span'
+                            size='sm'
+                            weight='medium'
+                            colour='primary'
+                            className='shrink-0'
+                          >
+                            ,
+                          </Text>
+                        ) : null}
+                        {icon ? (
+                          <Tooltip
+                            asChild
+                            text={
+                              <Text size='xs' colour='inherit'>
+                                {tooltip}
+                              </Text>
+                            }
+                            ariaLabel={tooltip}
+                            tooltipNode={
+                              <Text
+                                as='button'
+                                type='button'
+                                size='sm'
+                                weight='medium'
+                                colour='primary'
+                                truncate
+                                className='inline-flex min-w-0 max-w-full cursor-default items-center gap-1 rounded-sm bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
+                              >
+                                <span className='flex size-4 shrink-0 items-center justify-center'>
+                                  {icon}
+                                </span>
+                                <span className='min-w-0 truncate'>
+                                  {label}
+                                </span>
+                              </Text>
+                            }
+                            disableHoverableContent
+                          />
+                        ) : (
+                          <Text
+                            as='span'
+                            size='sm'
+                            weight='medium'
+                            colour='primary'
+                            truncate
+                          >
+                            {label}
+                          </Text>
+                        )}
+                      </span>
+                    ),
                   )}
-                </span>
-                <Text
-                  as='span'
-                  size='base'
-                  weight='medium'
-                  colour='primary'
-                  className='truncate leading-6'
-                  title={platformSummary}
-                >
-                  {platformSummary}
-                </Text>
+                </div>
               </div>
             </div>
 
             {details.profileId ? (
               <Link
                 to={`/projects/${projectId}?tab=${PROJECT_TABS.profiles}&profileId=${encodeURIComponent(details.profileId)}`}
-                className='mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
+                className='mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-1.5 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800'
               >
                 <UserIcon className='h-4 w-4' />
-                {t('project.goToProfile')}
+                <Text size='sm' weight='medium' colour='secondary'>
+                  {t('project.goToProfile')}
+                </Text>
               </Link>
             ) : null}
           </div>
@@ -498,7 +614,11 @@ export const SessionDetailView = ({
                 value={
                   details.ref ? (
                     <Tooltip
-                      text={details.ref}
+                      text={
+                        <Text size='xs' colour='inherit'>
+                          {details.ref}
+                        </Text>
+                      }
                       tooltipNode={
                         <div className='flex min-w-0 items-center justify-end gap-1'>
                           <LinkIcon className='h-4 w-4 shrink-0' />
@@ -508,7 +628,15 @@ export const SessionDetailView = ({
                               _size(details.ref) > 34 ? details.ref : undefined
                             }
                           >
-                            {_truncate(details.ref, { length: 34 })}
+                            <Text
+                              as='span'
+                              size='sm'
+                              weight='medium'
+                              colour='inherit'
+                              truncate
+                            >
+                              {_truncate(details.ref, { length: 34 })}
+                            </Text>
                           </span>
                         </div>
                       }
@@ -544,9 +672,11 @@ export const SessionDetailView = ({
                 zoomedTimeRange && !isTouchDevice ? (
                   <button
                     onClick={resetZoom}
-                    className='rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-800 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 hover:dark:bg-slate-800'
+                    className='rounded border border-gray-200 bg-white px-2 py-1 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-900 hover:dark:bg-slate-800'
                   >
-                    {t('project.resetZoom')}
+                    <Text size='xs' colour='primary'>
+                      {t('project.resetZoom')}
+                    </Text>
                   </button>
                 ) : null
               }

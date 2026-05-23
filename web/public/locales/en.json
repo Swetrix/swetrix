@@ -1880,6 +1880,8 @@
     "topX": "Top {{x}}",
     "locationAndDevice": "Location & Device",
     "sessionInfo": "Session info",
+    "sessionStartedAt": "Started",
+    "sessionEndedAt": "Ended",
     "goToProfile": "Go to profile",
     "sessionActivity": "Session activity",
     "pageflow": "Page flow",

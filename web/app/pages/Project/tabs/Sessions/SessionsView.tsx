@@ -383,6 +383,7 @@ const SessionsViewInner = ({
         />
         <SessionDetailView
           activeSession={activeSession}
+          sessionId={activePSID}
           sessionLoading={sessionLoading}
           timeFormat={timeFormat}
           rotateXAxis={rotateXAxis}
