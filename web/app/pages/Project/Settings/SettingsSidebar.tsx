@@ -6,31 +6,38 @@ import { useTranslation } from 'react-i18next'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
-const SIDEBAR_GROUPS_KEY = 'project-settings-sidebar-groups'
+const DEFAULT_SIDEBAR_GROUPS_KEY = 'project-settings-sidebar-groups'
 
-const getGroupExpandedState = (groupId: string): boolean => {
+const getGroupExpandedState = (
+  storageKey: string,
+  groupId: string,
+): boolean => {
   if (typeof window === 'undefined') return true
   try {
-    const stored = localStorage.getItem(SIDEBAR_GROUPS_KEY)
+    const stored = localStorage.getItem(storageKey)
     if (stored) {
       const states = JSON.parse(stored)
       return states[groupId] !== false
     }
   } catch {
-    // Ignore parse errors
+    return true
   }
   return true
 }
 
-const setGroupExpandedState = (groupId: string, isExpanded: boolean) => {
+const setGroupExpandedState = (
+  storageKey: string,
+  groupId: string,
+  isExpanded: boolean,
+) => {
   if (typeof window === 'undefined') return
   try {
-    const stored = localStorage.getItem(SIDEBAR_GROUPS_KEY)
+    const stored = localStorage.getItem(storageKey)
     const states = stored ? JSON.parse(stored) : {}
     states[groupId] = isExpanded
-    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(states))
+    localStorage.setItem(storageKey, JSON.stringify(states))
   } catch {
-    // Ignore errors
+    return
   }
 }
 
@@ -43,7 +50,7 @@ export interface SettingsTabConfig<TabId extends string = string> {
   visible: boolean
 }
 
-interface SettingsTabGroup<TabId extends string = string> {
+export interface SettingsTabGroup<TabId extends string = string> {
   id: string
   label: string
   tabIds: TabId[]
@@ -53,6 +60,8 @@ interface SettingsSidebarProps<TabId extends string> {
   tabs: SettingsTabConfig<TabId>[]
   activeTab: TabId
   onTabChange: (tabId: TabId) => void
+  groups?: SettingsTabGroup<TabId>[]
+  storageKey?: string
 }
 
 const TabButton = <TabId extends string>({
@@ -96,11 +105,13 @@ const CollapsibleGroup = <TabId extends string>({
   tabs,
   activeTab,
   onTabChange,
+  storageKey,
 }: {
   group: SettingsTabGroup<TabId>
   tabs: SettingsTabConfig<TabId>[]
   activeTab: TabId
   onTabChange: (tabId: TabId) => void
+  storageKey: string
 }) => {
   const [isExpanded, setIsExpanded] = useState(true)
 
@@ -112,16 +123,16 @@ const CollapsibleGroup = <TabId extends string>({
   const prevHasActiveTab = useRef(hasActiveTab)
 
   useEffect(() => {
-    setIsExpanded(getGroupExpandedState(group.id))
-  }, [group.id])
+    setIsExpanded(getGroupExpandedState(storageKey, group.id))
+  }, [group.id, storageKey])
 
   useEffect(() => {
     if (hasActiveTab && !prevHasActiveTab.current && !isExpanded) {
       setIsExpanded(true)
-      setGroupExpandedState(group.id, true)
+      setGroupExpandedState(storageKey, group.id, true)
     }
     prevHasActiveTab.current = hasActiveTab
-  }, [hasActiveTab, group.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hasActiveTab, group.id, storageKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className='mb-1'>
@@ -130,7 +141,7 @@ const CollapsibleGroup = <TabId extends string>({
         onClick={() => {
           const newValue = !isExpanded
           setIsExpanded(newValue)
-          setGroupExpandedState(group.id, newValue)
+          setGroupExpandedState(storageKey, group.id, newValue)
         }}
         className='group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-900/60'
       >
@@ -182,10 +193,12 @@ const SettingsSidebar = <TabId extends string>({
   tabs,
   activeTab,
   onTabChange,
+  groups,
+  storageKey = DEFAULT_SIDEBAR_GROUPS_KEY,
 }: SettingsSidebarProps<TabId>) => {
   const { t } = useTranslation('common')
 
-  const groupsConfig = useMemo<SettingsTabGroup<TabId>[]>(
+  const defaultGroupsConfig = useMemo<SettingsTabGroup<TabId>[]>(
     () => [
       {
         id: 'general',
@@ -216,13 +229,15 @@ const SettingsSidebar = <TabId extends string>({
     [t],
   )
 
+  const groupsConfig = groups || defaultGroupsConfig
+
   const visibleTabsById = useMemo(() => {
     const map = new Map<TabId, SettingsTabConfig<TabId>>()
     tabs.forEach((tab) => map.set(tab.id, tab))
     return map
   }, [tabs])
 
-  const groups = useMemo(
+  const sidebarGroups = useMemo(
     () =>
       groupsConfig
         .map((group) => ({
@@ -250,13 +265,14 @@ const SettingsSidebar = <TabId extends string>({
 
   return (
     <nav className='flex flex-col' aria-label='Sidebar'>
-      {_map(groups, (group) => (
+      {_map(sidebarGroups, (group) => (
         <CollapsibleGroup
           key={group.id}
           group={group}
           tabs={group.tabs}
           activeTab={activeTab}
           onTabChange={onTabChange}
+          storageKey={storageKey}
         />
       ))}
 

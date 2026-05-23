@@ -1012,10 +1012,7 @@ const UserSettings = () => {
                 >
                   {user?.apiKey ? (
                     <>
-                      <Alert
-                        variant='warning'
-                        className='mb-3'
-                      >
+                      <Alert variant='warning' className='mb-3'>
                         {t('profileSettings.apiKeyWarning')}
                       </Alert>
                       <div className='max-w-md'>

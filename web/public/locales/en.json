@@ -1002,69 +1002,71 @@
     }
   },
   "alertsSettings": {
-    "alertCreated": "The alert has been created",
-    "alertUpdated": "The alert has been updated",
-    "alertDeleted": "The alert has been deleted"
+    "alertCreated": "Alert created",
+    "alertUpdated": "Alert updated",
+    "alertDeleted": "Alert deleted"
   },
   "organisations": {
     "create": "Create organisation",
     "organisations": "Organisations",
     "backToList": "Back to organisations",
     "noOrganisations": "No organisations yet",
-    "createOrganisation": "You haven't created or joined any organisations yet. Get started by creating your first organisation.",
+    "createOrganisation": "Create your first organisation to share projects and manage team access.",
     "new": "New organisation",
+    "name": "Organisation name",
+    "nameHint": "Shown to members. You can change it later.",
     "settings": {
       "tabs": {
         "general": "General",
-        "generalDesc": "Update organisation name and basic details.",
+        "generalDesc": "Update the organisation name and basic settings.",
         "people": "People",
-        "peopleDesc": "Manage members and their roles.",
+        "peopleDesc": "Invite members and manage their roles.",
         "projects": "Projects",
-        "projectsDesc": "Add or remove projects for this organisation.",
+        "projectsDesc": "Choose which projects belong to this organisation.",
         "channels": "Notification channels",
-        "channelsDesc": "Channels visible to every member of this organisation.",
+        "channelsDesc": "Manage channels available to all organisation members.",
         "danger": "Danger zone",
-        "dangerDesc": "Irreversible actions for this organisation."
+        "dangerDesc": "Delete this organisation or make other permanent changes."
       }
     },
     "invite": {
-      "title": "Invite a user to {{organisation}}",
-      "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."
+      "title": "Invite user to {{organisation}}",
+      "desc": "Enter the email address of a Swetrix user and choose their role. The invite expires in {{expiresIn}} hours."
     },
-    "peopleEmptyTitle": "No organisation members yet",
-    "peopleEmptyDescription": "Invite teammates to give them access to this organisation and the projects linked to it.",
+    "peopleEmptyTitle": "No members yet",
+    "peopleEmptyDescription": "Invite teammates to give them access to this organisation and its linked projects.",
     "role": {
       "owner": {
         "name": "Owner",
-        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+        "desc": "Can manage the organisation, members, roles, and all linked projects."
       },
       "admin": {
         "name": "Admin",
-        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+        "desc": "Can manage the organisation, members, roles, and all linked projects."
       },
       "viewer": {
         "name": "Viewer",
-        "desc": "Can only access the organisation and its projects without the ability to change any settings."
+        "desc": "Can view the organisation and its linked projects, but cannot change settings."
       }
     },
     "projects": "Projects",
     "addProject": "Add project",
-    "noProjectsFound": "No projects found within this organisation",
+    "noProjectsFound": "No projects in this organisation",
     "modals": {
       "remove": {
         "title": "Remove {{project}}?",
-        "message": "Are you sure you want to remove this project from the organisation? Once removed, organisation members will no longer have access to this project unless they are added in the project settings."
+        "message": "This removes the project from the organisation. The project and its data will not be deleted. Organisation members will lose access unless they are added in the project settings."
       },
       "addProject": {
         "title": "Add project to {{organisation}}",
-        "message": "Select the project you want to add to the organisation. It will be available to all members of the organisation, and the organisation admins will be able to manage the project settings."
+        "message": "Choose a project to add. All organisation members will get access, and organisation admins can manage its project settings."
       },
       "delete": {
         "title": "Delete {{organisation}}?",
-        "message": "Are you sure you want to delete this organisation?\nAll the data related to the organisation will be deleted from our servers. This action is irreversible."
+        "message": "This deletes the organisation and all organisation-related data from our servers. Linked project access through this organisation will be removed. This cannot be undone."
       }
     },
-    "projectOwnedBy": "This project is owned by {{email}}",
+    "projectOwnedBy": "Owned by {{email}}",
     "delete": "Delete organisation"
   },
   "dashboard": {
@@ -2440,7 +2442,6 @@
       "public": "Public dashboard",
       "enabledHint": "Turn this off to stop collecting new analytics data. Existing data and project settings will stay available.",
       "publicHint": "If enabled, anyone on the Internet would be able to see this project's dashboard.\nOnly the project administrator can edit the settings.",
-      "createHint": "*you will be able to set up your project more thoroughly after you have created it",
       "delete": "Delete project",
       "reset": "Reset project",
       "qDelete": "Delete the project?",

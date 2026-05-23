@@ -367,6 +367,7 @@ export const Projects = ({ organisation }: ProjectsProps) => {
             setCurrentPage(1)
           }}
           value={search}
+          className='mb-2'
           classes={{ input: 'h-8 py-1.5' }}
           leadingIcon={<MagnifyingGlassIcon className='size-4' />}
           placeholder={t('project.search')}

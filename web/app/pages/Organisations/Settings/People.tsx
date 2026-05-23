@@ -165,7 +165,7 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
                             <Text
                               as='p'
                               size='sm'
-                              colour='muted'
+                              colour='secondary'
                               className='mt-0.5'
                             >
                               {t(`organisations.role.${itRole}.desc`)}
@@ -389,7 +389,7 @@ const People = ({ organisation }: PeopleProps) => {
           <Text as='h3' size='lg' weight='bold' className='mt-2'>
             {t('project.settings.people')}
           </Text>
-          <Text as='p' size='sm' colour='muted'>
+          <Text as='p' size='sm' colour='secondary'>
             {t('project.settings.inviteCoworkers')}
           </Text>
         </div>

@@ -181,7 +181,7 @@ const TableUserRow = ({
                             <Text
                               as='p'
                               size='sm'
-                              colour='muted'
+                              colour='secondary'
                               className='mt-0.5'
                             >
                               {t(`project.settings.roles.${itRole}.shortDesc`)}
@@ -388,7 +388,12 @@ const People = ({ project }: PeopleProps) => {
           <Text as='h3' size='lg' weight='bold'>
             {t('project.settings.people')}
           </Text>
-          <Text as='p' size='sm' colour='muted' className='mt-1 max-w-prose'>
+          <Text
+            as='p'
+            size='sm'
+            colour='secondary'
+            className='mt-1 max-w-prose'
+          >
             {t('project.settings.inviteCoworkers')}
           </Text>
         </div>
