@@ -14,6 +14,7 @@ export interface TrafficCHResponse {
   sdur: number
   uniques: number
   pageviews: number
+  bounces: number
 }
 
 export interface BirdseyeCHResponse {
@@ -21,6 +22,7 @@ export interface BirdseyeCHResponse {
   unique: number
   users: number
   sdur: number
+  bounces: number
 }
 
 export interface PerformanceCHResponse {
@@ -105,6 +107,7 @@ export interface IExtractChartData {
   visits: number[]
   uniques: number[]
   sdur: number[]
+  bounces?: number[]
 }
 
 export interface IAggregatedMetadata {
@@ -183,6 +186,7 @@ interface IPerformanceObject {
 interface IOverallChart {
   x: string[]
   visits: number[]
+  bounces?: number[]
 }
 
 interface IOverallObject {

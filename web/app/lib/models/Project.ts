@@ -11,6 +11,7 @@ interface OverallPeriodStats {
 export interface OverallChart {
   x: string[]
   visits: number[]
+  bounces?: number[]
 }
 
 export interface OverallObject {

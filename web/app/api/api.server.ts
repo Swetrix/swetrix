@@ -711,6 +711,7 @@ export interface TrafficLogResponse {
     visits: number[]
     uniques: number[]
     sdur: number[]
+    bounces?: number[]
   }
   customs: Record<string, number>
   properties: Record<string, number>
@@ -740,7 +741,7 @@ export interface OverallObject {
   bounceRateChange?: number
   sdurChange?: number
   customEVFilterApplied?: boolean
-  chart?: { x: string[]; visits: number[] }
+  chart?: { x: string[]; visits: number[]; bounces?: number[] }
 }
 
 export interface AnalyticsParams {

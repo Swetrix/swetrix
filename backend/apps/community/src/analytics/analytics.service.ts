@@ -2314,6 +2314,14 @@ export class AnalyticsService {
     return data[0]?.c || 0
   }
 
+  private calculateBounceRate(bounces: number, sessions: number): number {
+    if (!sessions) {
+      return 0
+    }
+
+    return _round((bounces * 100) / sessions, 1)
+  }
+
   async getAnalyticsSummary(
     pids: string[],
     timeBucket?: string,
@@ -2384,11 +2392,34 @@ export class AnalyticsService {
                   )
                 GROUP BY psid
               )
+            ),
+            bounce_counts AS (
+              SELECT count() AS bounces
+              FROM (
+                SELECT psid
+                FROM events
+                WHERE pid = {pid:FixedString(12)}
+                  AND type = 'pageview'
+                  AND psid IS NOT NULL
+                  AND psid != 0
+                  AND psid IN (
+                    SELECT DISTINCT psid
+                    FROM events
+                    WHERE pid = {pid:FixedString(12)}
+                      AND type = 'pageview'
+                      AND psid IS NOT NULL
+                      AND psid != 0
+                      ${filtersQuery}
+                  )
+                GROUP BY psid
+                HAVING count() = 1
+              )
             )
             SELECT
               analytics_counts.*,
-              duration_avg.sdur
-            FROM analytics_counts, duration_avg
+              duration_avg.sdur,
+              bounce_counts.bounces
+            FROM analytics_counts, duration_avg, bounce_counts
           `
 
           const { data } = await clickhouse
@@ -2403,8 +2434,11 @@ export class AnalyticsService {
 
           let bounceRate = 0
 
-          if (data[0].all > 0 && !customEVFilterApplied) {
-            bounceRate = _round((data[0].unique * 100) / data[0].all, 1)
+          if (!customEVFilterApplied) {
+            bounceRate = this.calculateBounceRate(
+              data[0].bounces,
+              data[0].unique,
+            )
           }
 
           result[pid] = {
@@ -2510,11 +2544,36 @@ export class AnalyticsService {
                 )
               GROUP BY psid
             )
+          ),
+          bounce_counts AS (
+            SELECT count() AS bounces
+            FROM (
+              SELECT psid
+              FROM events
+              WHERE pid = {pid:FixedString(12)}
+                AND type = 'pageview'
+                AND psid IS NOT NULL
+                AND psid != 0
+                AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
+                AND psid IN (
+                  SELECT DISTINCT psid
+                  FROM events
+                  WHERE pid = {pid:FixedString(12)}
+                    AND type = 'pageview'
+                    AND psid IS NOT NULL
+                    AND psid != 0
+                    AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
+                    ${filtersQuery}
+                )
+              GROUP BY psid
+              HAVING count() = 1
+            )
           )
           SELECT
             analytics_counts.*,
-            duration_avg.sdur
-          FROM analytics_counts, duration_avg
+            duration_avg.sdur,
+            bounce_counts.bounces
+          FROM analytics_counts, duration_avg, bounce_counts
         `
 
         const queryPrevious = `
@@ -2550,11 +2609,36 @@ export class AnalyticsService {
                 )
               GROUP BY psid
             )
+          ),
+          bounce_counts AS (
+            SELECT count() AS bounces
+            FROM (
+              SELECT psid
+              FROM events
+              WHERE pid = {pid:FixedString(12)}
+                AND type = 'pageview'
+                AND psid IS NOT NULL
+                AND psid != 0
+                AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
+                AND psid IN (
+                  SELECT DISTINCT psid
+                  FROM events
+                  WHERE pid = {pid:FixedString(12)}
+                    AND type = 'pageview'
+                    AND psid IS NOT NULL
+                    AND psid != 0
+                    AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
+                    ${filtersQuery}
+                )
+              GROUP BY psid
+              HAVING count() = 1
+            )
           )
           SELECT
             analytics_counts.*,
-            duration_avg.sdur
-          FROM analytics_counts, duration_avg
+            duration_avg.sdur,
+            bounce_counts.bounces
+          FROM analytics_counts, duration_avg, bounce_counts
         `
 
         const query = `${queryCurrent} UNION ALL ${queryPrevious}`
@@ -2580,17 +2664,15 @@ export class AnalyticsService {
         let bounceRate = 0
         let prevBounceRate = 0
 
-        if (currentPeriod.all > 0 && !customEVFilterApplied) {
-          bounceRate = _round(
-            (currentPeriod.unique * 100) / currentPeriod.all,
-            1,
+        if (!customEVFilterApplied) {
+          bounceRate = this.calculateBounceRate(
+            currentPeriod.bounces,
+            currentPeriod.unique,
           )
-        }
 
-        if (previousPeriod.all > 0 && !customEVFilterApplied) {
-          prevBounceRate = _round(
-            (previousPeriod.unique * 100) / previousPeriod.all,
-            1,
+          prevBounceRate = this.calculateBounceRate(
+            previousPeriod.bounces,
+            previousPeriod.unique,
           )
         }
 
@@ -3227,6 +3309,7 @@ export class AnalyticsService {
     const visits = Array(x.length).fill(0)
     const uniques = Array(x.length).fill(0)
     const sdur = Array(x.length).fill(0)
+    const bounces = Array(x.length).fill(0)
 
     for (let row = 0; row < _size(result); ++row) {
       const dateString = this.generateDateString(result[row])
@@ -3236,6 +3319,7 @@ export class AnalyticsService {
         visits[index] = result[row].pageviews
         uniques[index] = result[row].uniques
         sdur[index] = _round(result[row].sdur)
+        bounces[index] = result[row].bounces || 0
       }
     }
 
@@ -3243,6 +3327,7 @@ export class AnalyticsService {
       visits,
       uniques,
       sdur,
+      bounces,
     }
   }
 
@@ -3383,7 +3468,8 @@ export class AnalyticsService {
         ${selector},
         avgOrNull(sessions_data.duration) as sdur,
         count() as pageviews,
-        count(DISTINCT psid) as uniques
+        count(DISTINCT subquery.psid) as uniques,
+        countIf(session_counts.pageviews = 1) as bounces
       FROM (
         SELECT
           pid,
@@ -3405,6 +3491,29 @@ export class AnalyticsService {
       ) as sessions_data
       ON subquery.pid = sessions_data.pid
       AND subquery.psid = sessions_data.psid
+      LEFT JOIN (
+        SELECT
+          pid,
+          psid,
+          count() as pageviews
+        FROM events
+        PREWHERE pid = {pid:FixedString(12)} AND type = 'pageview'
+        WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
+          AND psid IS NOT NULL
+          AND psid != 0
+          AND psid IN (
+            SELECT DISTINCT psid
+            FROM events
+            PREWHERE pid = {pid:FixedString(12)} AND type = 'pageview'
+            WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
+              AND psid IS NOT NULL
+              AND psid != 0
+              ${filtersQuery}
+          )
+        GROUP BY pid, psid
+      ) as session_counts
+      ON subquery.pid = session_counts.pid
+      AND subquery.psid = session_counts.psid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
@@ -3414,7 +3523,8 @@ export class AnalyticsService {
         SELECT
           *,
           sum(pageviews) OVER (ORDER BY ${groupBy} ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as pageviews,
-          sum(uniques) OVER (ORDER BY ${groupBy} ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as uniques
+          sum(uniques) OVER (ORDER BY ${groupBy} ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as uniques,
+          sum(bounces) OVER (ORDER BY ${groupBy} ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as bounces
         FROM (${baseQuery})
       `
     }
