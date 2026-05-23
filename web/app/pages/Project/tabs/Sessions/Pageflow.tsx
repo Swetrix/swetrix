@@ -253,10 +253,10 @@ const PageflowItem = ({
 
       <div className='min-w-0 pb-6'>
         <div className='flex min-h-7 items-center justify-between gap-3'>
-          <div className='flex min-w-0 items-center gap-2'>
+          <div className='flex min-w-0 flex-1 items-center gap-2'>
             <TypeIcon type={type} />
             {isMonetary ? (
-              <div className='flex flex-wrap items-baseline gap-x-2 leading-4'>
+              <div className='flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 leading-4'>
                 <Text
                   size='sm'
                   weight='semibold'
@@ -267,7 +267,11 @@ const PageflowItem = ({
                   {formatAmount(amount || 0, currency)}
                 </Text>
                 {value ? (
-                  <Text size='xs' colour='muted'>
+                  <Text
+                    size='xs'
+                    colour='muted'
+                    className='min-w-0 flex-1 wrap-anywhere'
+                  >
                     · {value}
                   </Text>
                 ) : null}
@@ -277,13 +281,13 @@ const PageflowItem = ({
                 href={fullPageUrl}
                 target='_blank'
                 rel='noopener noreferrer nofollow'
-                className='leading-4 underline decoration-gray-300 decoration-dashed underline-offset-2 transition-colors hover:decoration-gray-500 dark:decoration-slate-600 dark:hover:decoration-slate-400'
+                className='min-w-0 flex-1 leading-4 underline decoration-gray-300 decoration-dashed underline-offset-2 transition-colors hover:decoration-gray-500 dark:decoration-slate-600 dark:hover:decoration-slate-400'
               >
                 <Text
                   size='sm'
                   weight='medium'
                   colour='primary'
-                  className='leading-4 wrap-break-word'
+                  className='leading-4 wrap-anywhere'
                 >
                   {value}
                 </Text>
@@ -293,7 +297,7 @@ const PageflowItem = ({
                 size='sm'
                 weight='medium'
                 colour='primary'
-                className='leading-4 wrap-break-word'
+                className='min-w-0 flex-1 leading-4 wrap-anywhere'
               >
                 {value || _toUpper(t('common.notSet'))}
               </Text>
