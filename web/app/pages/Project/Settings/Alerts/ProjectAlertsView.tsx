@@ -16,12 +16,13 @@ import {
   FileTextIcon,
   BellSlashIcon,
 } from '@phosphor-icons/react'
-import { useMemo, useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import PaidFeature from '~/modals/PaidFeature'
@@ -255,7 +256,8 @@ const ProjectAlertsInner = ({
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const fetcher = useFetcher<ProjectViewActionData>()
-  const lastHandledData = useRef<ProjectViewActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectViewActionData>()
 
   // Track if we're in pagination mode
   const [isSearchMode, setIsSearchMode] = useState(false)
@@ -300,8 +302,7 @@ const ProjectAlertsInner = ({
   // Handle fetcher responses
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     const { intent, success, data, error: fetcherError } = fetcher.data
 
@@ -325,7 +326,7 @@ const ProjectAlertsInner = ({
       setError(fetcherError)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetcher.state, fetcher.data, t, page])
+  }, [fetcher.state, fetcher.data, t, page, shouldHandleFetcherData])
 
   // Handle page changes - use fetcher for pagination
   useEffect(() => {

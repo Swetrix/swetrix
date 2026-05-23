@@ -99,6 +99,9 @@ export interface ProjectSettingsActionData {
   proxyDomains?: ProxyDomain[]
   proxyDomain?: ProxyDomain
   proxyDomainKeywordWarning?: boolean
+  shareId?: string
+  role?: string
+  revenueCurrencyRequestId?: string
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -544,7 +547,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       }
 
       return data<ProjectSettingsActionData>(
-        { intent, success: true },
+        { intent, success: true, shareId },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
@@ -573,7 +576,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       }
 
       return data<ProjectSettingsActionData>(
-        { intent, success: true },
+        { intent, success: true, shareId, role },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
@@ -655,10 +658,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     case 'update-revenue-currency': {
       const currency = formData.get('currency')?.toString()
+      const revenueCurrencyRequestId = formData.get('requestId')?.toString()
 
       if (!currency) {
         return data<ProjectSettingsActionData>(
-          { intent, error: 'Currency is required' },
+          { intent, error: 'Currency is required', revenueCurrencyRequestId },
           { status: 400 },
         )
       }
@@ -674,13 +678,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
       if (result.error) {
         return data<ProjectSettingsActionData>(
-          { intent, error: result.error as string },
+          {
+            intent,
+            error: result.error as string,
+            revenueCurrencyRequestId,
+          },
           { status: 400 },
         )
       }
 
       return data<ProjectSettingsActionData>(
-        { intent, success: true },
+        { intent, success: true, revenueCurrencyRequestId },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

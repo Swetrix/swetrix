@@ -6,6 +6,7 @@ import {
   Transition,
 } from '@headlessui/react'
 import dayjs from 'dayjs'
+import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
@@ -17,8 +18,9 @@ import {
 } from '@phosphor-icons/react'
 import React, { Fragment, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher, useRevalidator } from 'react-router'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { roles, INVITATION_EXPIRES_IN, isSelfhosted } from '~/lib/constants'
 import { Role } from '~/lib/models/Organisation'
 import { Project, ShareOwnerProject } from '~/lib/models/Project'
@@ -71,6 +73,7 @@ const NoPeople = ({ onInvite }: { onInvite: () => void }) => {
 interface TableUserRowProps {
   data: ShareOwnerProject
   onRemove: () => void
+  onRoleUpdated: (shareId: string, role: string) => void
   language: string
   authedUserEmail: string | undefined
   projectId: string
@@ -79,29 +82,36 @@ interface TableUserRowProps {
 const TableUserRow = ({
   data,
   onRemove,
+  onRoleUpdated,
   language,
   authedUserEmail,
   projectId,
 }: TableUserRowProps) => {
   const { t } = useTranslation('common')
   const fetcher = useFetcher<ProjectSettingsActionData>()
-  const revalidator = useRevalidator()
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
   const { id, created, confirmed, role, user } = data || {}
 
   useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.intent === 'change-share-role') {
-        if (fetcher.data.success) {
-          toast.success(t('apiNotifications.roleUpdated'))
-          revalidator.revalidate()
-        } else if (fetcher.data.error) {
-          toast.error(fetcher.data.error)
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
+    if (fetcher.data.intent === 'change-share-role') {
+      if (fetcher.data.success) {
+        if (fetcher.data.shareId && fetcher.data.role) {
+          onRoleUpdated(fetcher.data.shareId, fetcher.data.role)
         }
+        toast.success(t('apiNotifications.roleUpdated'))
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.state, fetcher.data, t, revalidator])
+  }, [fetcher.state, fetcher.data, onRoleUpdated, t, shouldHandleFetcherData])
 
   const changeRole = (newRole: string) => {
+    if (newRole === role || fetcher.state !== 'idle') return
+
     fetcher.submit(
       { intent: 'change-share-role', shareId: id, role: newRole },
       { method: 'POST', action: `/projects/settings/${projectId}` },
@@ -222,6 +232,7 @@ interface PeopleProps {
 const People = ({ project }: PeopleProps) => {
   const { user: currentUser } = useAuth()
   const fetcher = useFetcher<ProjectSettingsActionData>()
+  const { id, name, share } = project
 
   const [showModal, setShowModal] = useState(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -242,43 +253,64 @@ const People = ({ project }: PeopleProps) => {
     role?: string
   }>({})
   const [validated, setValidated] = useState(false)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
+  const [members, setMembers] = useState<ShareOwnerProject[]>(() => share || [])
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [memberToRemove, setMemberToRemove] =
     useState<ShareOwnerProject | null>(null)
 
-  const { id, name, share } = project
-
   const isSubmitting = fetcher.state !== 'idle'
 
   useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.intent === 'share-project') {
-        if (fetcher.data.success) {
-          toast.success(t('apiNotifications.userInvited'))
-          setTimeout(() => {
-            setShowModal(false)
-            setBeenSubmitted(false)
-            setErrors({})
-            setValidated(false)
-          }, 0)
-          setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
-        } else if (fetcher.data.error) {
-          toast.error(fetcher.data.error)
+    setMembers(share || [])
+  }, [share])
+
+  useEffect(() => {
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
+    if (fetcher.data.intent === 'share-project') {
+      if (fetcher.data.success) {
+        if (fetcher.data.project?.share) {
+          setMembers(fetcher.data.project.share)
         }
-      } else if (fetcher.data.intent === 'delete-share-user') {
-        if (fetcher.data.success) {
-          toast.success(t('apiNotifications.userRemoved'))
-          setTimeout(() => {
-            setShowDeleteModal(false)
-            setMemberToRemove(null)
-          }, 0)
-        } else if (fetcher.data.error) {
-          toast.error(fetcher.data.error)
+        toast.success(t('apiNotifications.userInvited'))
+        setTimeout(() => {
+          setShowModal(false)
+          setBeenSubmitted(false)
+          setErrors({})
+          setValidated(false)
+        }, 0)
+        setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    } else if (fetcher.data.intent === 'delete-share-user') {
+      if (fetcher.data.success) {
+        const removedShareId = fetcher.data.shareId || memberToRemove?.id
+        if (removedShareId) {
+          setMembers((current) =>
+            _filter(current, (member) => member.id !== removedShareId),
+          )
         }
+        toast.success(t('apiNotifications.userRemoved'))
+        setTimeout(() => {
+          setShowDeleteModal(false)
+          setMemberToRemove(null)
+        }, 0)
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.state, fetcher.data, t])
+  }, [
+    fetcher.state,
+    fetcher.data,
+    memberToRemove?.id,
+    t,
+    shouldHandleFetcherData,
+  ])
 
   const validate = () => {
     const allErrors: {
@@ -366,7 +398,7 @@ const People = ({ project }: PeopleProps) => {
         </Button>
       </div>
       <div>
-        {_isEmpty(share) ? (
+        {_isEmpty(members) ? (
           <NoPeople onInvite={() => setShowModal(true)} />
         ) : (
           <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
@@ -389,7 +421,7 @@ const People = ({ project }: PeopleProps) => {
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
-                {_map(share, (data) => (
+                {_map(members, (data) => (
                   <TableUserRow
                     data={data}
                     key={data.id}
@@ -400,6 +432,13 @@ const People = ({ project }: PeopleProps) => {
                     language={language}
                     authedUserEmail={currentUser?.email}
                     projectId={id}
+                    onRoleUpdated={(shareId, role) => {
+                      setMembers((current) =>
+                        _map(current, (member) =>
+                          member.id === shareId ? { ...member, role } : member,
+                        ),
+                      )
+                    }}
                   />
                 ))}
               </tbody>

@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher, useParams } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { reportFrequencyForEmailsOptions } from '~/lib/constants'
 import { Subscriber } from '~/lib/models/Subscriber'
@@ -112,12 +113,17 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
   } = useTranslation('common')
   const { id: projectId } = useParams()
   const fetcher = useFetcher<ProjectSettingsActionData>()
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
   const { id, addedAt, isConfirmed, email, reportFrequency } = data || {}
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
     if (fetcher.data?.intent === 'update-subscriber') {
       if (fetcher.data.success && fetcher.data.subscriber) {
         const updated = fetcher.data.subscriber
@@ -133,9 +139,11 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
         )
       }
     }
-  }, [fetcher.data, setEmails, t])
+  }, [fetcher.data, setEmails, t, shouldHandleFetcherData])
 
   const changeRole = (reportType: { value: string; label: string }) => {
+    if (reportType.value === reportFrequency || fetcher.state !== 'idle') return
+
     fetcher.submit(
       {
         intent: 'update-subscriber',
@@ -303,6 +311,12 @@ const Emails = ({ projectId }: { projectId: string }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [emailToRemove, setEmailToRemove] = useState<Subscriber | null>(null)
   const removingEmailId = useRef<string | null>(null)
+  const shouldHandleLoadData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
+  const shouldHandleRemoveData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
 
   const isDeleting = removeFetcher.state !== 'idle'
 
@@ -318,6 +332,9 @@ const Emails = ({ projectId }: { projectId: string }) => {
   }, []) // eslint-disable-line
 
   useEffect(() => {
+    if (!loadFetcher.data) return
+    if (!shouldHandleLoadData(loadFetcher.data)) return
+
     if (loadFetcher.data?.intent === 'get-subscribers') {
       if (loadFetcher.data.success) {
         setTimeout(() => {
@@ -330,9 +347,12 @@ const Emails = ({ projectId }: { projectId: string }) => {
       }
       setTimeout(() => setLoading(false), 0)
     }
-  }, [loadFetcher.data])
+  }, [loadFetcher.data, shouldHandleLoadData])
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
     if (fetcher.data?.intent === 'add-subscriber') {
       if (fetcher.data.success && fetcher.data.subscriber) {
         setTimeout(
@@ -348,13 +368,13 @@ const Emails = ({ projectId }: { projectId: string }) => {
         )
       }
     }
-  }, [fetcher.data, t])
+  }, [fetcher.data, t, shouldHandleFetcherData])
 
   useEffect(() => {
-    if (
-      removeFetcher.state === 'idle' &&
-      removeFetcher.data?.intent === 'remove-subscriber'
-    ) {
+    if (removeFetcher.state !== 'idle' || !removeFetcher.data) return
+    if (!shouldHandleRemoveData(removeFetcher.data)) return
+
+    if (removeFetcher.data?.intent === 'remove-subscriber') {
       if (removeFetcher.data.success) {
         const capturedId = removingEmailId.current
         setTimeout(() => {
@@ -371,7 +391,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
         )
       }
     }
-  }, [removeFetcher.data, removeFetcher.state, t])
+  }, [removeFetcher.data, removeFetcher.state, t, shouldHandleRemoveData])
 
   const validate = () => {
     const allErrors: {

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { SharedProject } from '~/lib/models/SharedProject'
 import { useAuth } from '~/providers/AuthProvider'
 import { UserSettingsActionData } from '~/routes/user-settings'
@@ -23,6 +24,8 @@ const ProjectList = ({ item }: ProjectListProps) => {
   } = useTranslation('common')
   const { user, mergeUser } = useAuth()
   const fetcher = useFetcher<UserSettingsActionData>()
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<UserSettingsActionData>()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const { created, confirmed, id, role, project } = item
@@ -30,6 +33,9 @@ const ProjectList = ({ item }: ProjectListProps) => {
   const isPending = fetcher.state !== 'idle'
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
     if (fetcher.data?.intent === 'reject-project-share') {
       if (fetcher.data.success) {
         mergeUser({
@@ -59,7 +65,15 @@ const ProjectList = ({ item }: ProjectListProps) => {
         toast.error(t('apiNotifications.acceptInvitationError'))
       }
     }
-  }, [fetcher.data, id, item.id, mergeUser, t, user?.sharedProjects])
+  }, [
+    fetcher.data,
+    id,
+    item.id,
+    mergeUser,
+    t,
+    user?.sharedProjects,
+    shouldHandleFetcherData,
+  ])
 
   const onQuit = () => {
     fetcher.submit(

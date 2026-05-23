@@ -1,9 +1,10 @@
 import { BellRingingIcon } from '@phosphor-icons/react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import type { NotificationChannelActionData } from '~/routes/notification-channel'
 import Button from '~/ui/Button'
 
@@ -44,7 +45,8 @@ const EnableWebPushButton = ({
 }: EnableWebPushButtonProps) => {
   const { t } = useTranslation('common')
   const subscribeFetcher = useFetcher<NotificationChannelActionData>()
-  const lastSubscribeData = useRef<NotificationChannelActionData | null>(null)
+  const shouldHandleSubscribeData =
+    useDeduplicateFetcherResponse<NotificationChannelActionData>()
   const [busy, setBusy] = useState(false)
   const [supported, setSupported] = useState(true)
 
@@ -59,8 +61,7 @@ const EnableWebPushButton = ({
 
   useEffect(() => {
     if (subscribeFetcher.state !== 'idle' || !subscribeFetcher.data) return
-    if (lastSubscribeData.current === subscribeFetcher.data) return
-    lastSubscribeData.current = subscribeFetcher.data
+    if (!shouldHandleSubscribeData(subscribeFetcher.data)) return
     setBusy(false)
     if (subscribeFetcher.data.error) {
       toast.error(subscribeFetcher.data.error)
@@ -70,7 +71,13 @@ const EnableWebPushButton = ({
       toast.success(t('notificationChannels.webpush.enabled'))
       onSubscribed?.()
     }
-  }, [subscribeFetcher.state, subscribeFetcher.data, t, onSubscribed])
+  }, [
+    subscribeFetcher.state,
+    subscribeFetcher.data,
+    t,
+    onSubscribed,
+    shouldHandleSubscribeData,
+  ])
 
   const onClick = async () => {
     if (!supported) {

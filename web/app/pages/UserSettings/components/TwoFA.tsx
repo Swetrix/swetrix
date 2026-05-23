@@ -5,6 +5,7 @@ import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 import { LockIcon } from '@phosphor-icons/react'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { useAuth } from '~/providers/AuthProvider'
 import type { UserSettingsActionData } from '~/routes/user-settings'
 import Alert from '~/ui/Alert'
@@ -15,6 +16,8 @@ import { Text } from '~/ui/Text'
 const TwoFA = () => {
   const { user, mergeUser } = useAuth()
   const fetcher = useFetcher<UserSettingsActionData>()
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<UserSettingsActionData>()
 
   const { t } = useTranslation('common')
   const [twoFAConfigurating, setTwoFAConfigurating] = useState(false)
@@ -32,6 +35,9 @@ const TwoFA = () => {
     fetcher.state === 'submitting' || fetcher.state === 'loading'
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
     if (fetcher.data?.success) {
       const { intent, twoFAData } = fetcher.data
 
@@ -74,7 +80,7 @@ const TwoFA = () => {
         }
       }
     }
-  }, [fetcher.data, mergeUser, t])
+  }, [fetcher.data, mergeUser, t, shouldHandleFetcherData])
 
   const handle2FAInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const {

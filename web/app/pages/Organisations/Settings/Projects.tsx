@@ -8,12 +8,13 @@ import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import useDebounce from '~/hooks/useDebounce'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { Project } from '~/lib/models/Project'
@@ -34,6 +35,11 @@ interface SelectAProjectProps {
 
 const PROJECT_SELECT_PAGE_SIZE = 5
 const PROJECT_LIST_PAGE_SIZE = 20
+type SubmittedProject = Pick<Project, 'id' | 'name'> & {
+  admin?: {
+    email?: string
+  }
+}
 
 const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
   const { t } = useTranslation('common')
@@ -199,6 +205,7 @@ interface ProjectsProps {
 
 export const Projects = ({ organisation }: ProjectsProps) => {
   const { t } = useTranslation('common')
+  const { user } = useAuth()
   const fetcher = useFetcher<OrganisationSettingsActionData>()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -207,11 +214,17 @@ export const Projects = ({ organisation }: ProjectsProps) => {
     DetailedOrganisation['projects'][number] | null
   >(null)
   const [selectedProject, setSelectedProject] = useState<any>(null)
+  const submittedProjectRef = useRef<SubmittedProject | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<OrganisationSettingsActionData>()
 
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
   const [isSearchActive, setIsSearchActive] = useState(false)
-  const { projects } = organisation
+  const { projects: organisationProjects } = organisation
+  const [projects, setProjects] = useState<DetailedOrganisation['projects']>(
+    () => organisationProjects,
+  )
 
   const isSubmitting = fetcher.state === 'submitting'
   const isAddingProject =
@@ -219,15 +232,46 @@ export const Projects = ({ organisation }: ProjectsProps) => {
   const isRemovingProject =
     isSubmitting && fetcher.formData?.get('intent') === 'remove-project'
 
+  useEffect(() => {
+    setProjects(organisationProjects)
+  }, [organisationProjects])
+
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
+    if (!fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
     if (fetcher.data?.success) {
       const { intent } = fetcher.data
       if (intent === 'add-project') {
+        const submittedProject = submittedProjectRef.current
+        if (submittedProject) {
+          setProjects((current) =>
+            current.some((project) => project.id === submittedProject.id)
+              ? current
+              : [
+                  ...current,
+                  {
+                    id: submittedProject.id,
+                    name: submittedProject.name,
+                    admin: {
+                      email: submittedProject.admin?.email || user?.email || '',
+                    },
+                  },
+                ],
+          )
+        }
+        submittedProjectRef.current = null
         toast.success(t('apiNotifications.projectAddedToOrganisation'))
         setShowAddProjectModal(false)
         setSelectedProject(null)
       } else if (intent === 'remove-project') {
+        const removedProjectId = fetcher.data.projectId || projectToRemove?.id
+        if (removedProjectId) {
+          setProjects((current) =>
+            _filter(current, (project) => project.id !== removedProjectId),
+          )
+        }
         toast.success(t('apiNotifications.projectRemovedFromOrganisation'))
         setShowDeleteModal(false)
         setProjectToRemove(null)
@@ -235,7 +279,13 @@ export const Projects = ({ organisation }: ProjectsProps) => {
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, t])
+  }, [
+    fetcher.data,
+    projectToRemove?.id,
+    t,
+    user?.email,
+    shouldHandleFetcherData,
+  ])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const filteredProjects = useMemo(() => {
@@ -260,9 +310,11 @@ export const Projects = ({ organisation }: ProjectsProps) => {
   const onAddProject = () => {
     if (!selectedProject) return
 
+    const submittedProject = selectedProject as SubmittedProject
+    submittedProjectRef.current = submittedProject
     const formData = new FormData()
     formData.set('intent', 'add-project')
-    formData.set('projectId', selectedProject.id)
+    formData.set('projectId', submittedProject.id)
     fetcher.submit(formData, { method: 'post' })
   }
 

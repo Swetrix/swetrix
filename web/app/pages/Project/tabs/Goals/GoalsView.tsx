@@ -679,6 +679,7 @@ const GoalRow = ({
                           <Tooltip
                             ariaLabel={t(labelKey)}
                             text={t(tooltipKey)}
+                            className='flex'
                             tooltipNode={
                               <span className='inline-flex size-4 items-center justify-center rounded-full text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'>
                                 <QuestionIcon className='size-3.5' />

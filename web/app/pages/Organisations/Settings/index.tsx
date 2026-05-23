@@ -23,6 +23,7 @@ import {
 } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
 import type {
@@ -65,6 +66,8 @@ const OrganisationSettings = () => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [isFormDirty, setIsFormDirty] = useState(false)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<OrganisationSettingsActionData>()
 
   const organisation = loaderData?.organisation || null
   const error = loaderData?.error
@@ -88,6 +91,9 @@ const OrganisationSettings = () => {
     fetcher.formData?.get('intent') === 'delete-organisation'
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
     if (fetcher.data?.success) {
       const { intent } = fetcher.data
 
@@ -113,7 +119,7 @@ const OrganisationSettings = () => {
       toast.error(fetcher.data.error)
       setShowDelete(false)
     }
-  }, [fetcher.data, t, navigate, revalidator])
+  }, [fetcher.data, t, navigate, revalidator, shouldHandleFetcherData])
 
   const isOrganisationOwner = useMemo(() => {
     if (!organisation) {
