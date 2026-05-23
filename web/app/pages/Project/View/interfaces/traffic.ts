@@ -59,6 +59,7 @@ export interface TrafficLogResponse {
     visits: number[]
     uniques: number[]
     sdur: number[]
+    bounces?: number[]
   }
   customs: Customs
   properties: Properties

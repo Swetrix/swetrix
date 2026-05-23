@@ -330,8 +330,17 @@ const getColumns = (
   }
 
   if (bounce) {
-    const bounceArray = _map(chart.uniques, (el, i) => {
-      return _round((_toNumber(el) * 100) / _toNumber(chart.visits[i]), 1) || 0
+    const bounceArray = _map(chart.uniques, (sessions, i) => {
+      if (!sessions) {
+        return 0
+      }
+
+      return (
+        _round(
+          (_toNumber(chart.bounces?.[i]) * 100) / _toNumber(sessions),
+          1,
+        ) || 0
+      )
     })
     columns.push(['bounce', ...bounceArray])
   }
