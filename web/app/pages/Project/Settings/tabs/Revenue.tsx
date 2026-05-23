@@ -93,9 +93,11 @@ const Revenue = ({ projectId }: Props) => {
   const [selectedCurrency, setSelectedCurrency] =
     useState<RevenueCurrency>('USD')
   const pendingCurrency = useRef<{
+    requestId: string
     previous: RevenueCurrency
     next: RevenueCurrency
   } | null>(null)
+  const currencyRequestId = useRef(0)
   const shouldHandleFetcherData =
     useDeduplicateFetcherResponse<ProjectSettingsActionData>()
 
@@ -149,16 +151,23 @@ const Revenue = ({ projectId }: Props) => {
         toast.error(error)
       }
     } else if (intent === 'update-revenue-currency') {
+      const pending = pendingCurrency.current
+      if (
+        !pending ||
+        fetcher.data.revenueCurrencyRequestId !== pending.requestId
+      ) {
+        return
+      }
+
       if (success) {
         toast.success(t('project.settings.revenue.currencyUpdated'))
-        const currency = pendingCurrency.current?.next || selectedCurrency
-        setStatus((prev) => ({ ...(prev || { connected: false }), currency }))
+        setStatus((prev) => ({
+          ...(prev || { connected: false }),
+          currency: pending.next,
+        }))
         pendingCurrency.current = null
       } else if (error) {
-        const previousCurrency = pendingCurrency.current?.previous
-        if (previousCurrency) {
-          setSelectedCurrency(previousCurrency)
-        }
+        setSelectedCurrency(pending.previous)
         pendingCurrency.current = null
         toast.error(error)
       }
@@ -168,7 +177,6 @@ const Revenue = ({ projectId }: Props) => {
     fetcher.data,
     t,
     projectId,
-    selectedCurrency,
     fetcher,
     shouldHandleFetcherData,
   ])
@@ -207,9 +215,14 @@ const Revenue = ({ projectId }: Props) => {
     currency: RevenueCurrency,
     previousCurrency: RevenueCurrency,
   ) => {
-    pendingCurrency.current = { previous: previousCurrency, next: currency }
+    const requestId = String(++currencyRequestId.current)
+    pendingCurrency.current = {
+      requestId,
+      previous: previousCurrency,
+      next: currency,
+    }
     fetcher.submit(
-      { intent: 'update-revenue-currency', currency },
+      { intent: 'update-revenue-currency', currency, requestId },
       { method: 'POST', action: `/projects/settings/${projectId}` },
     )
   }
@@ -370,9 +383,7 @@ const Revenue = ({ projectId }: Props) => {
           onSelect={(item) => {
             if (item.code === selectedCurrency) return
 
-            const previousCurrency = isRevenueCurrency(status?.currency)
-              ? status.currency
-              : selectedCurrency
+            const previousCurrency = selectedCurrency
             setSelectedCurrency(item.code)
             handleCurrencyChange(item.code, previousCurrency)
           }}

@@ -8,7 +8,7 @@ import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useFetcher } from 'react-router'
@@ -35,6 +35,11 @@ interface SelectAProjectProps {
 
 const PROJECT_SELECT_PAGE_SIZE = 5
 const PROJECT_LIST_PAGE_SIZE = 20
+type SubmittedProject = Pick<Project, 'id' | 'name'> & {
+  admin?: {
+    email?: string
+  }
+}
 
 const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
   const { t } = useTranslation('common')
@@ -209,6 +214,7 @@ export const Projects = ({ organisation }: ProjectsProps) => {
     DetailedOrganisation['projects'][number] | null
   >(null)
   const [selectedProject, setSelectedProject] = useState<any>(null)
+  const submittedProjectRef = useRef<SubmittedProject | null>(null)
   const shouldHandleFetcherData =
     useDeduplicateFetcherResponse<OrganisationSettingsActionData>()
 
@@ -238,22 +244,24 @@ export const Projects = ({ organisation }: ProjectsProps) => {
     if (fetcher.data?.success) {
       const { intent } = fetcher.data
       if (intent === 'add-project') {
-        if (selectedProject) {
+        const submittedProject = submittedProjectRef.current
+        if (submittedProject) {
           setProjects((current) =>
-            current.some((project) => project.id === selectedProject.id)
+            current.some((project) => project.id === submittedProject.id)
               ? current
               : [
                   ...current,
                   {
-                    id: selectedProject.id,
-                    name: selectedProject.name,
+                    id: submittedProject.id,
+                    name: submittedProject.name,
                     admin: {
-                      email: selectedProject.admin?.email || user?.email || '',
+                      email: submittedProject.admin?.email || user?.email || '',
                     },
                   },
                 ],
           )
         }
+        submittedProjectRef.current = null
         toast.success(t('apiNotifications.projectAddedToOrganisation'))
         setShowAddProjectModal(false)
         setSelectedProject(null)
@@ -274,7 +282,6 @@ export const Projects = ({ organisation }: ProjectsProps) => {
   }, [
     fetcher.data,
     projectToRemove?.id,
-    selectedProject,
     t,
     user?.email,
     shouldHandleFetcherData,
@@ -303,9 +310,11 @@ export const Projects = ({ organisation }: ProjectsProps) => {
   const onAddProject = () => {
     if (!selectedProject) return
 
+    const submittedProject = selectedProject as SubmittedProject
+    submittedProjectRef.current = submittedProject
     const formData = new FormData()
     formData.set('intent', 'add-project')
-    formData.set('projectId', selectedProject.id)
+    formData.set('projectId', submittedProject.id)
     fetcher.submit(formData, { method: 'post' })
   }
 

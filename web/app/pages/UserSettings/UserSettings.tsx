@@ -520,7 +520,15 @@ const UserSettings = () => {
         passwordChangedRef.current = false
         setIsPasswordChangeModalOpened(false)
       }
-      if (!fetcher.data.error) return
+      if (!fetcher.data.error) {
+        const fieldError = Object.values(fetcher.data.fieldErrors || {}).find(
+          Boolean,
+        )
+        if (fieldError) {
+          toast.error(fieldError)
+        }
+        return
+      }
 
       const translated = t(`apiNotifications.${fetcher.data.error}`)
       toast.error(

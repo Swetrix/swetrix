@@ -18,7 +18,7 @@ import {
   CaretDownIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { Fragment, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
@@ -246,6 +246,7 @@ const People = ({ organisation }: PeopleProps) => {
   const [memberToRemove, setMemberToRemove] = useState<
     DetailedOrganisation['members'][number] | null
   >(null)
+  const memberIdToRemove = useRef<string | null>(null)
 
   const { name, members: organisationMembers } = organisation
   const [members, setMembers] = useState<DetailedOrganisation['members']>(
@@ -283,12 +284,16 @@ const People = ({ organisation }: PeopleProps) => {
         toast.success(t('apiNotifications.userInvited'))
         closeModal()
       } else if (intent === 'remove-member') {
-        const removedMemberId = fetcher.data.memberId || memberToRemove?.id
+        const removedMemberId =
+          fetcher.data.memberId ||
+          fetcher.formData?.get('memberId')?.toString() ||
+          memberIdToRemove.current
         if (removedMemberId) {
           setMembers((current) =>
             _filter(current, (member) => member.id !== removedMemberId),
           )
         }
+        memberIdToRemove.current = null
         toast.success(t('apiNotifications.orgUserRemoved'))
         closeRemoveUserModal()
       } else if (intent === 'update-member-role') {
@@ -304,9 +309,12 @@ const People = ({ organisation }: PeopleProps) => {
         toast.success(t('apiNotifications.roleUpdated'))
       }
     } else if (fetcher.data?.error) {
+      if (fetcher.data.intent === 'remove-member') {
+        memberIdToRemove.current = null
+      }
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, memberToRemove?.id, t, shouldHandleFetcherData])
+  }, [fetcher.data, fetcher.formData, t, shouldHandleFetcherData])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const validate = () => {
@@ -366,10 +374,11 @@ const People = ({ organisation }: PeopleProps) => {
     }
   }
 
-  const onRemove = (member: DetailedOrganisation['members'][number]) => {
+  const onRemove = (memberId: string) => {
+    memberIdToRemove.current = memberId
     const formData = new FormData()
     formData.set('intent', 'remove-member')
-    formData.set('memberId', member.id)
+    formData.set('memberId', memberId)
     fetcher.submit(formData, { method: 'post' })
   }
 
@@ -423,6 +432,7 @@ const People = ({ organisation }: PeopleProps) => {
                   members={members}
                   onRemove={(member) => {
                     setMemberToRemove(member)
+                    memberIdToRemove.current = member.id
                     setShowDeleteModal(true)
                   }}
                   fetcher={fetcher}
@@ -434,8 +444,9 @@ const People = ({ organisation }: PeopleProps) => {
       </div>
       <Modal
         onClose={closeRemoveUserModal}
-        onSubmit={async () => {
-          await onRemove(memberToRemove!)
+        onSubmit={() => {
+          if (!memberToRemove) return
+          onRemove(memberToRemove.id)
           closeRemoveUserModal()
         }}
         submitText={t('common.yes')}
