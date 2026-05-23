@@ -7,6 +7,7 @@ import {
   Transition,
 } from '@headlessui/react'
 import dayjs from 'dayjs'
+import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
@@ -17,11 +18,12 @@ import {
   CaretDownIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { Fragment, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
 import { DetailedOrganisation, Role } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
@@ -83,7 +85,9 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
   } = useTranslation('common')
   const { user } = useAuth()
 
-  const changeRole = (memberId: string, newRole: Role) => {
+  const changeRole = (memberId: string, currentRole: Role, newRole: Role) => {
+    if (newRole === currentRole || fetcher.state !== 'idle') return
+
     const formData = new FormData()
     formData.set('intent', 'update-member-role')
     formData.set('memberId', memberId)
@@ -144,7 +148,9 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
                       <MenuItem key={itRole}>
                         <button
                           type='button'
-                          onClick={() => changeRole(member.id, itRole)}
+                          onClick={() =>
+                            changeRole(member.id, member.role, itRole)
+                          }
                           className='flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800'
                         >
                           <div>
@@ -233,17 +239,27 @@ const People = ({ organisation }: PeopleProps) => {
     role?: string
   }>({})
   const [validated, setValidated] = useState(false)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<OrganisationSettingsActionData>()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [memberToRemove, setMemberToRemove] = useState<
     DetailedOrganisation['members'][number] | null
   >(null)
+  const memberIdToRemove = useRef<string | null>(null)
 
-  const { name, members } = organisation
+  const { name, members: organisationMembers } = organisation
+  const [members, setMembers] = useState<DetailedOrganisation['members']>(
+    () => organisationMembers,
+  )
 
   const isSubmitting = fetcher.state === 'submitting'
   const isDeleting =
     isSubmitting && fetcher.formData?.get('intent') === 'remove-member'
+
+  useEffect(() => {
+    setMembers(organisationMembers)
+  }, [organisationMembers])
 
   const closeModal = () => {
     setShowModal(false)
@@ -259,21 +275,46 @@ const People = ({ organisation }: PeopleProps) => {
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
+    if (!fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
     if (fetcher.data?.success) {
       const { intent } = fetcher.data
       if (intent === 'invite-member') {
         toast.success(t('apiNotifications.userInvited'))
         closeModal()
       } else if (intent === 'remove-member') {
+        const removedMemberId =
+          fetcher.data.memberId ||
+          fetcher.formData?.get('memberId')?.toString() ||
+          memberIdToRemove.current
+        if (removedMemberId) {
+          setMembers((current) =>
+            _filter(current, (member) => member.id !== removedMemberId),
+          )
+        }
+        memberIdToRemove.current = null
         toast.success(t('apiNotifications.orgUserRemoved'))
         closeRemoveUserModal()
       } else if (intent === 'update-member-role') {
+        if (fetcher.data.memberId && fetcher.data.role) {
+          setMembers((current) =>
+            _map(current, (member) =>
+              member.id === fetcher.data!.memberId
+                ? { ...member, role: fetcher.data!.role as Role }
+                : member,
+            ),
+          )
+        }
         toast.success(t('apiNotifications.roleUpdated'))
       }
     } else if (fetcher.data?.error) {
+      if (fetcher.data.intent === 'remove-member') {
+        memberIdToRemove.current = null
+      }
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, t])
+  }, [fetcher.data, fetcher.formData, t, shouldHandleFetcherData])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const validate = () => {
@@ -333,10 +374,11 @@ const People = ({ organisation }: PeopleProps) => {
     }
   }
 
-  const onRemove = (member: DetailedOrganisation['members'][number]) => {
+  const onRemove = (memberId: string) => {
+    memberIdToRemove.current = memberId
     const formData = new FormData()
     formData.set('intent', 'remove-member')
-    formData.set('memberId', member.id)
+    formData.set('memberId', memberId)
     fetcher.submit(formData, { method: 'post' })
   }
 
@@ -390,6 +432,7 @@ const People = ({ organisation }: PeopleProps) => {
                   members={members}
                   onRemove={(member) => {
                     setMemberToRemove(member)
+                    memberIdToRemove.current = member.id
                     setShowDeleteModal(true)
                   }}
                   fetcher={fetcher}
@@ -401,8 +444,9 @@ const People = ({ organisation }: PeopleProps) => {
       </div>
       <Modal
         onClose={closeRemoveUserModal}
-        onSubmit={async () => {
-          await onRemove(memberToRemove!)
+        onSubmit={() => {
+          if (!memberToRemove) return
+          onRemove(memberToRemove.id)
           closeRemoveUserModal()
         }}
         submitText={t('common.yes')}

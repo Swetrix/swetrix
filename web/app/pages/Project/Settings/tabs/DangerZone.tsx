@@ -28,7 +28,6 @@ const DangerAction = ({ title, description, action }: DangerActionProps) => (
 interface DangerZoneProps {
   isActive: boolean
   onToggleActive: (active: boolean) => void
-  isSaving: boolean
   setShowTransfer: (show: boolean) => void
   setShowReset: (show: boolean) => void
   setShowDelete: (show: boolean) => void
@@ -39,7 +38,6 @@ interface DangerZoneProps {
 const DangerZone = ({
   isActive,
   onToggleActive,
-  isSaving,
   setShowTransfer,
   setShowReset,
   setShowDelete,
@@ -63,11 +61,6 @@ const DangerZone = ({
             hint={t('project.settings.enabledHint')}
             classes={{ hint: 'max-w-prose' }}
           />
-        </div>
-        <div className='mt-4'>
-          <Button type='submit' loading={isSaving}>
-            {t('common.save')}
-          </Button>
         </div>
       </section>
 

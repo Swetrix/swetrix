@@ -26,7 +26,7 @@ import {
   BellRingingIcon,
   GlobeIcon,
 } from '@phosphor-icons/react'
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
   useLoaderData,
@@ -37,6 +37,7 @@ import {
 import { toast } from 'sonner'
 
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { isSelfhosted, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
@@ -78,6 +79,7 @@ import SettingsSidebar, { SettingsTabConfig } from './SettingsSidebar'
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 const MAX_IPBLACKLIST_LENGTH = 300
+const AUTOSAVE_DEBOUNCE_MS = 700
 
 const DELETE_DATA_MODAL_TABS = [
   {
@@ -323,6 +325,83 @@ interface Form extends Partial<Omit<Project, 'brandKeywords'>> {
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
+const PROJECT_TEXT_AUTOSAVE_TOASTS = {
+  name: 'project.settings.autosave.name',
+  origins: 'project.settings.autosave.origins',
+  ipBlacklist: 'project.settings.autosave.ipBlacklist',
+  websiteUrl: 'project.settings.autosave.websiteUrl',
+  brandKeywords: 'project.settings.autosave.brandKeywords',
+} as const
+
+type ProjectTextAutosaveField = keyof typeof PROJECT_TEXT_AUTOSAVE_TOASTS
+
+const isProjectTextAutosaveField = (
+  field: string,
+): field is ProjectTextAutosaveField =>
+  Object.prototype.hasOwnProperty.call(PROJECT_TEXT_AUTOSAVE_TOASTS, field)
+
+const getFormFromProject = (project: Project): Form => ({
+  name: project.name || '',
+  id: project.id,
+  public: project.public || false,
+  isPasswordProtected: project.isPasswordProtected || false,
+  origins: _isString(project.origins)
+    ? project.origins
+    : _join(project.origins, ', '),
+  ipBlacklist: _isString(project.ipBlacklist)
+    ? project.ipBlacklist
+    : _join(project.ipBlacklist, ', '),
+  countryBlacklist: project.countryBlacklist || [],
+  active: project.active !== false,
+  botsProtectionLevel:
+    (project.botsProtectionLevel as 'off' | 'basic' | 'strict') || 'basic',
+  gscPropertyUri: project.gscPropertyUri || null,
+  websiteUrl: project.websiteUrl || null,
+  brandKeywords: project.brandKeywords?.join(', ') || '',
+  captchaDifficulty: project.captchaDifficulty || 4,
+  captchaDifficultyMode: project.captchaDifficultyMode || 'manual',
+})
+
+const normaliseProjectAutosaveValue = (value: unknown) =>
+  JSON.stringify(value ?? null)
+
+const buildProjectAutosaveFormData = (updates: Partial<Form>) => {
+  const formData = new FormData()
+  formData.set('intent', 'update-project')
+
+  Object.entries(updates).forEach(([field, value]) => {
+    if (value === undefined) return
+
+    if (field === 'countryBlacklist') {
+      formData.set(field, JSON.stringify(value || []))
+      return
+    }
+
+    if (
+      field === 'active' ||
+      field === 'public' ||
+      field === 'isPasswordProtected'
+    ) {
+      formData.set(field, value ? 'true' : 'false')
+      return
+    }
+
+    if (field === 'captchaDifficulty') {
+      formData.set(field, String(value))
+      return
+    }
+
+    if (field === 'password') {
+      if (value) formData.set(field, String(value))
+      return
+    }
+
+    formData.set(field, value === null ? '' : String(value))
+  })
+
+  return formData
+}
+
 const ProjectSettings = () => {
   const { user } = useAuth()
 
@@ -334,30 +413,14 @@ const ProjectSettings = () => {
     requestOrigin: string | null
   }>()
   const fetcher = useFetcher<ProjectSettingsActionData>()
+  const autosaveFetcher = useFetcher<ProjectSettingsActionData>()
   const gscFetcher = useFetcher<ProjectSettingsActionData>()
   const { fetchFilters } = useFiltersProxy()
 
   const [project, setProject] = useState<Project>(initialProject)
-  const [form, setForm] = useState<Form>(() => ({
-    name: initialProject.name || '',
-    id: initialProject.id,
-    public: initialProject.public || false,
-    isPasswordProtected: initialProject.isPasswordProtected || false,
-    origins: _isString(initialProject.origins)
-      ? initialProject.origins
-      : _join(initialProject.origins, ', '),
-    ipBlacklist: _isString(initialProject.ipBlacklist)
-      ? initialProject.ipBlacklist
-      : _join(initialProject.ipBlacklist, ', '),
-    countryBlacklist: initialProject.countryBlacklist || [],
-    active: initialProject.active !== false,
-    botsProtectionLevel:
-      (initialProject.botsProtectionLevel as 'off' | 'basic' | 'strict') ||
-      'basic',
-    gscPropertyUri: initialProject.gscPropertyUri || null,
-    websiteUrl: initialProject.websiteUrl || null,
-    brandKeywords: initialProject.brandKeywords?.join(', ') || '',
-  }))
+  const [form, setForm] = useState<Form>(() =>
+    getFormFromProject(initialProject),
+  )
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     name?: string
@@ -373,12 +436,27 @@ const ProjectSettings = () => {
   const [showReset, setShowReset] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [showTransfer, setShowTransfer] = useState(false)
   const [transferEmail, setTransferEmail] = useState('')
   const [dateRange, setDateRange] = useState<Date[]>([])
   const [tab, setTab] = useState(DELETE_DATA_MODAL_TABS[0].name)
   const [showProtected, setShowProtected] = useState(false)
+  const lastSavedForm = useRef<Form>(getFormFromProject(initialProject))
+  const lastHandledAutosaveData = useRef<ProjectSettingsActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
+  const shouldHandleGscData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
+  const activeAutosave = useRef<{
+    updates: Partial<Form>
+    toastKey: string
+  } | null>(null)
+  const pendingAutosave = useRef<{
+    updates: Partial<Form>
+    toastKey: string
+  } | null>(null)
+  const autosaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hadCaptchaSecretBeforeRegeneration = useRef(false)
 
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -656,16 +734,13 @@ const ProjectSettings = () => {
   }, [requestOrigin, id])
 
   const [gscPropertiesPending, setGscPropertiesPending] = useState(false)
-  const lastHandledGscData = useRef<ProjectSettingsActionData | null>(null)
+  const pendingGscPropertyUri = useRef<string | null>(null)
   const gscInitialized = useRef(false)
 
   // Handle GSC fetcher responses
   useEffect(() => {
     if (gscFetcher.state !== 'idle' || !gscFetcher.data) return
-
-    // Prevent handling the same response twice
-    if (lastHandledGscData.current === gscFetcher.data) return
-    lastHandledGscData.current = gscFetcher.data
+    if (!shouldHandleGscData(gscFetcher.data)) return
 
     const {
       intent,
@@ -712,12 +787,21 @@ const ProjectSettings = () => {
         setGscConnected(false)
         setGscProperties([])
         setGscEmail(null)
+        pendingGscPropertyUri.current = null
         setForm((prevForm) => ({
           ...prevForm,
           gscPropertyUri: null,
         }))
         toast.success(t('project.settings.gsc.disconnected'))
       } else if (intent === 'gsc-set-property') {
+        const propertyUri = pendingGscPropertyUri.current
+        if (propertyUri) {
+          setForm((prevForm) => ({
+            ...prevForm,
+            gscPropertyUri: propertyUri,
+          }))
+          pendingGscPropertyUri.current = null
+        }
         toast.success(t('project.settings.gsc.propertyConnected'))
       }
     } else if (gscError) {
@@ -732,9 +816,11 @@ const ProjectSettings = () => {
         setGscConnected(false)
         setGscEmail(null)
         setGscProperties([])
+      } else if (intent === 'gsc-set-property') {
+        pendingGscPropertyUri.current = null
       }
     }
-  }, [gscFetcher.state, gscFetcher.data, t])
+  }, [gscFetcher.state, gscFetcher.data, t, shouldHandleGscData])
 
   // Fetch GSC properties after status confirms connected
   useEffect(() => {
@@ -753,8 +839,10 @@ const ProjectSettings = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Handle fetcher responses
   useEffect(() => {
+    if (!fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
     if (fetcher.data?.success) {
       const { intent, project: updatedProject } = fetcher.data
 
@@ -762,7 +850,6 @@ const ProjectSettings = () => {
 
       if (intent === 'update-project') {
         if (updatedProject) {
-          // Merge with existing project to preserve fields like 'role' that aren't returned from update
           setProject((prev) =>
             prev ? { ...prev, ...updatedProject } : updatedProject,
           )
@@ -774,7 +861,7 @@ const ProjectSettings = () => {
           }
         }
         setBeenSubmitted(false)
-        toast.success(t('project.settings.updated'))
+        toast.success(t('project.settings.autosave.updated'))
       } else if (intent === 'delete-project') {
         toast.success(t('project.settings.deleted'))
         navigate(routes.dashboard)
@@ -794,54 +881,29 @@ const ProjectSettings = () => {
         updatedProject?.captchaSecretKey
       ) {
         setCaptchaSecretKey(updatedProject.captchaSecretKey)
-        toast.success(t('project.settings.updated'))
+        toast.success(
+          t(
+            hadCaptchaSecretBeforeRegeneration.current
+              ? 'project.settings.captcha.keyRegenerated'
+              : 'project.settings.captcha.keyGenerated',
+          ),
+        )
       } else if (intent === 'assign-organisation') {
-        toast.success(t('apiNotifications.projectAssigned'))
+        toast.success(t('project.settings.autosave.organisation'))
       }
 
-      setIsSaving(false)
       setIsDeleting(false)
       setIsResetting(false)
     } else if (fetcher.data?.fieldErrors) {
       setErrors(fetcher.data.fieldErrors)
-      setIsSaving(false)
       setIsDeleting(false)
       setIsResetting(false)
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
-      setIsSaving(false)
       setIsDeleting(false)
       setIsResetting(false)
     }
-  }, [fetcher.data, t, navigate])
-
-  const onSubmit = (data: Form) => {
-    if (fetcher.state === 'submitting') return
-
-    setIsSaving(true)
-    const formData = new FormData()
-    formData.set('intent', 'update-project')
-    if (data.name) formData.set('name', data.name)
-    formData.set('active', data.active ? 'true' : 'false')
-    formData.set('public', data.public ? 'true' : 'false')
-    formData.set(
-      'isPasswordProtected',
-      data.isPasswordProtected ? 'true' : 'false',
-    )
-    if (data.password) formData.set('password', data.password)
-    if (data.origins !== null) formData.set('origins', data.origins)
-    if (data.ipBlacklist !== null) formData.set('ipBlacklist', data.ipBlacklist)
-    if (data.botsProtectionLevel)
-      formData.set('botsProtectionLevel', data.botsProtectionLevel)
-    if (data.countryBlacklist)
-      formData.set('countryBlacklist', JSON.stringify(data.countryBlacklist))
-    if (data.websiteUrl !== undefined)
-      formData.set('websiteUrl', data.websiteUrl || '')
-    if (data.brandKeywords !== undefined)
-      formData.set('brandKeywords', data.brandKeywords || '')
-
-    fetcher.submit(formData, { method: 'post' })
-  }
+  }, [fetcher.data, t, navigate, shouldHandleFetcherData])
 
   const onDelete = () => {
     setShowDelete(false)
@@ -897,12 +959,12 @@ const ProjectSettings = () => {
   const onRegenerateCaptchaKey = () => {
     if (fetcher.state === 'submitting') return
 
+    hadCaptchaSecretBeforeRegeneration.current = Boolean(captchaSecretKey)
     const formData = new FormData()
     formData.set('intent', 'regenerate-captcha-key')
     fetcher.submit(formData, { method: 'post' })
   }
 
-  // Wrapper for reset that handles tab logic
   const handleReset = () => {
     if (fetcher.state === 'submitting') return
 
@@ -926,49 +988,132 @@ const ProjectSettings = () => {
     }
   }
 
-  const validate = () => {
-    const allErrors: {
-      name?: string
-      origins?: string
-      ipBlacklist?: string
-      password?: string
-      websiteUrl?: string
-    } = {}
+  const getValidationErrors = useCallback(
+    (data: Form) => {
+      const allErrors: {
+        name?: string
+        origins?: string
+        ipBlacklist?: string
+        password?: string
+        websiteUrl?: string
+      } = {}
 
-    if (_isEmpty(form.name)) {
-      allErrors.name = t('project.settings.noNameError')
-    }
+      if (_isEmpty(data.name)) {
+        allErrors.name = t('project.settings.noNameError')
+      }
 
-    if (_size(form.name) > MAX_NAME_LENGTH) {
-      allErrors.name = t('project.settings.pxCharsError', {
-        amount: MAX_NAME_LENGTH,
-      })
-    }
+      if (_size(data.name) > MAX_NAME_LENGTH) {
+        allErrors.name = t('project.settings.pxCharsError', {
+          amount: MAX_NAME_LENGTH,
+        })
+      }
 
-    if (_size(form.origins) > MAX_ORIGINS_LENGTH) {
-      allErrors.origins = t('project.settings.oxCharsError', {
-        amount: MAX_ORIGINS_LENGTH,
-      })
-    }
+      if (_size(data.origins) > MAX_ORIGINS_LENGTH) {
+        allErrors.origins = t('project.settings.oxCharsError', {
+          amount: MAX_ORIGINS_LENGTH,
+        })
+      }
 
-    if (_size(form.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
-      allErrors.ipBlacklist = t('project.settings.oxCharsError', {
-        amount: MAX_IPBLACKLIST_LENGTH,
-      })
-    }
+      if (_size(data.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
+        allErrors.ipBlacklist = t('project.settings.oxCharsError', {
+          amount: MAX_IPBLACKLIST_LENGTH,
+        })
+      }
 
-    // Validate websiteUrl if provided
-    if (form.websiteUrl && form.websiteUrl.trim()) {
-      try {
-        const url = new URL(form.websiteUrl.trim())
-        if (!['http:', 'https:'].includes(url.protocol)) {
+      if (data.websiteUrl && data.websiteUrl.trim()) {
+        try {
+          const url = new URL(data.websiteUrl.trim())
+          if (!['http:', 'https:'].includes(url.protocol)) {
+            allErrors.websiteUrl = t('project.settings.invalidUrl')
+          }
+        } catch {
           allErrors.websiteUrl = t('project.settings.invalidUrl')
         }
-      } catch {
-        allErrors.websiteUrl = t('project.settings.invalidUrl')
       }
+
+      return allErrors
+    },
+    [t],
+  )
+
+  const hasProjectAutosaveChange = useCallback((updates: Partial<Form>) => {
+    return Object.entries(updates).some(([field, value]) => {
+      if (field === 'password') return Boolean(value)
+
+      return (
+        normaliseProjectAutosaveValue(
+          lastSavedForm.current[field as keyof Form],
+        ) !== normaliseProjectAutosaveValue(value)
+      )
+    })
+  }, [])
+
+  const flushProjectAutosave = useCallback(() => {
+    if (autosaveTimeout.current) {
+      clearTimeout(autosaveTimeout.current)
+      autosaveTimeout.current = null
     }
 
+    const autosave = pendingAutosave.current
+    if (autosaveFetcher.state !== 'idle' || !autosave) return
+
+    activeAutosave.current = autosave
+    pendingAutosave.current = null
+
+    autosaveFetcher.submit(buildProjectAutosaveFormData(autosave.updates), {
+      method: 'post',
+    })
+  }, [autosaveFetcher])
+
+  const queueProjectAutosave = useCallback(
+    (
+      updates: Partial<Form>,
+      toastKey = 'project.settings.autosave.updated',
+      immediate = false,
+    ) => {
+      const nextForm = { ...form, ...updates }
+      const allErrors = getValidationErrors(nextForm)
+      const hasUpdatedFieldError = Object.keys(updates).some(
+        (field) => allErrors[field as keyof typeof allErrors],
+      )
+
+      setErrors(allErrors)
+
+      if (hasUpdatedFieldError) {
+        setBeenSubmitted(true)
+        return
+      }
+
+      if (!hasProjectAutosaveChange(updates)) return
+
+      pendingAutosave.current = {
+        updates: {
+          ...pendingAutosave.current?.updates,
+          ...updates,
+        },
+        toastKey,
+      }
+
+      if (autosaveTimeout.current) {
+        clearTimeout(autosaveTimeout.current)
+        autosaveTimeout.current = null
+      }
+
+      if (immediate) {
+        flushProjectAutosave()
+        return
+      }
+
+      autosaveTimeout.current = setTimeout(
+        flushProjectAutosave,
+        AUTOSAVE_DEBOUNCE_MS,
+      )
+    },
+    [flushProjectAutosave, form, getValidationErrors, hasProjectAutosaveChange],
+  )
+
+  const validate = () => {
+    const allErrors = getValidationErrors(form)
     const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
@@ -977,7 +1122,70 @@ const ProjectSettings = () => {
 
   useEffect(() => {
     validate()
-  }, [form]) // eslint-disable-line
+  }, [form, getValidationErrors]) // eslint-disable-line
+
+  useEffect(() => {
+    return () => {
+      if (autosaveTimeout.current) {
+        clearTimeout(autosaveTimeout.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (
+      autosaveFetcher.state === 'idle' &&
+      pendingAutosave.current &&
+      lastHandledAutosaveData.current === autosaveFetcher.data
+    ) {
+      flushProjectAutosave()
+    }
+  }, [autosaveFetcher.data, autosaveFetcher.state, flushProjectAutosave])
+
+  useEffect(() => {
+    if (autosaveFetcher.state !== 'idle' || !autosaveFetcher.data) return
+    if (lastHandledAutosaveData.current === autosaveFetcher.data) return
+    lastHandledAutosaveData.current = autosaveFetcher.data
+
+    if (autosaveFetcher.data.success) {
+      const { project: updatedProject } = autosaveFetcher.data
+      const autosave = activeAutosave.current
+
+      if (updatedProject) {
+        setProject((prev) =>
+          prev ? { ...prev, ...updatedProject } : updatedProject,
+        )
+      }
+
+      if (autosave) {
+        const savedUpdates = { ...autosave.updates }
+        delete savedUpdates.password
+        lastSavedForm.current = {
+          ...lastSavedForm.current,
+          ...savedUpdates,
+        }
+        toast.success(t(autosave.toastKey))
+      }
+
+      activeAutosave.current = null
+      if (pendingAutosave.current) {
+        flushProjectAutosave()
+      }
+      return
+    }
+
+    activeAutosave.current = null
+
+    if (autosaveFetcher.data.fieldErrors) {
+      setErrors(autosaveFetcher.data.fieldErrors)
+      setBeenSubmitted(true)
+    } else if (autosaveFetcher.data.error) {
+      toast.error(autosaveFetcher.data.error)
+    }
+    if (pendingAutosave.current) {
+      flushProjectAutosave()
+    }
+  }, [autosaveFetcher.data, autosaveFetcher.state, flushProjectAutosave, t])
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
@@ -987,6 +1195,37 @@ const ProjectSettings = () => {
       ...oldForm,
       [target.name]: value,
     }))
+
+    if (isProjectTextAutosaveField(target.name)) {
+      queueProjectAutosave(
+        { [target.name]: value } as Partial<Form>,
+        PROJECT_TEXT_AUTOSAVE_TOASTS[target.name],
+      )
+    }
+  }
+
+  const handleInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = event.currentTarget
+
+    if (!isProjectTextAutosaveField(name)) return
+
+    queueProjectAutosave(
+      { [name]: value } as Partial<Form>,
+      PROJECT_TEXT_AUTOSAVE_TOASTS[name],
+      true,
+    )
+  }
+
+  const handleFieldAutosave = (
+    updates: Partial<Form>,
+    toastKey: string,
+    immediate = true,
+  ) => {
+    setForm((oldForm) => ({
+      ...oldForm,
+      ...updates,
+    }))
+    queueProjectAutosave(updates, toastKey, immediate)
   }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -995,23 +1234,24 @@ const ProjectSettings = () => {
     setBeenSubmitted(true)
 
     if (validated) {
-      onSubmit(form)
+      flushProjectAutosave()
     }
   }
 
-  const onProtected = async () => {
+  const onProtected = () => {
     setBeenSubmitted(true)
 
     if (validated) {
-      await onSubmit({
-        ...form,
+      setForm((oldForm) => ({
+        ...oldForm,
         isPasswordProtected: true,
-      })
-
-      setForm((prev) => ({
-        ...prev,
-        isPasswordProtected: true,
+        password: undefined,
       }))
+      queueProjectAutosave(
+        { isPasswordProtected: true, password: form.password },
+        'project.settings.autosave.passwordProtection',
+        true,
+      )
 
       setShowProtected(false)
     }
@@ -1088,6 +1328,7 @@ const ProjectSettings = () => {
                     errors={errors}
                     beenSubmitted={beenSubmitted}
                     handleInput={handleInput}
+                    handleBlur={handleInputBlur}
                   />
                 ) : null}
 
@@ -1097,20 +1338,20 @@ const ProjectSettings = () => {
                     errors={errors}
                     beenSubmitted={beenSubmitted}
                     handleInput={handleInput}
+                    handleBlur={handleInputBlur}
                     botsProtectionLevels={botsProtectionLevels}
                     setBotsLevel={(name) =>
-                      setForm((prevForm) => ({
-                        ...prevForm,
-                        // cast to maintain allowed literal types
-                        botsProtectionLevel: name as any,
-                      }))
+                      handleFieldAutosave(
+                        { botsProtectionLevel: name as any },
+                        'project.settings.autosave.botsProtectionLevel',
+                      )
                     }
                     countryBlacklist={form.countryBlacklist || []}
                     setCountryBlacklist={(countries) =>
-                      setForm((prevForm) => ({
-                        ...prevForm,
-                        countryBlacklist: countries,
-                      }))
+                      handleFieldAutosave(
+                        { countryBlacklist: countries },
+                        'project.settings.autosave.countryBlacklist',
+                      )
                     }
                   />
                 ) : null}
@@ -1123,15 +1364,21 @@ const ProjectSettings = () => {
                     onAssignOrganisation={assignOrganisation}
                     openPasswordModal={() => setShowProtected(true)}
                     handleInput={handleInput}
+                    onPublicChange={(checked) =>
+                      handleFieldAutosave(
+                        { public: checked },
+                        'project.settings.autosave.public',
+                      )
+                    }
+                    onPasswordProtectionChange={(checked) =>
+                      handleFieldAutosave(
+                        { isPasswordProtected: checked },
+                        'project.settings.autosave.passwordProtection',
+                      )
+                    }
                     sharableLink={sharableLink}
                   />
                 ) : null}
-
-                <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
-                  <Button type='submit' loading={isSaving}>
-                    {t('common.save')}
-                  </Button>
-                </div>
               </form>
             ) : null}
 
@@ -1320,10 +1567,14 @@ const ProjectSettings = () => {
                       keyExtractor={(item) => item.key}
                       labelExtractor={(item) => item.label}
                       onSelect={(item: { key: string; label: string }) => {
-                        setForm((prevForm) => ({
-                          ...prevForm,
-                          gscPropertyUri: item.key,
-                        }))
+                        pendingGscPropertyUri.current = item.key
+                        gscFetcher.submit(
+                          {
+                            intent: 'gsc-set-property',
+                            propertyUri: item.key,
+                          },
+                          { method: 'post' },
+                        )
                       }}
                       title={
                         form.gscPropertyUri ||
@@ -1338,29 +1589,6 @@ const ProjectSettings = () => {
                           : undefined
                       }
                     />
-
-                    <Button
-                      type='button'
-                      className='max-w-max'
-                      onClick={() => {
-                        if (!form.gscPropertyUri) return
-                        gscFetcher.submit(
-                          {
-                            intent: 'gsc-set-property',
-                            propertyUri: form.gscPropertyUri,
-                          },
-                          { method: 'post' },
-                        )
-                      }}
-                      loading={
-                        gscFetcher.state !== 'idle'
-                          ? gscFetcher.formData?.get('intent') ===
-                            'gsc-set-property'
-                          : undefined
-                      }
-                    >
-                      {t('common.save')}
-                    </Button>
                   </div>
                 )}
 
@@ -1496,36 +1724,25 @@ const ProjectSettings = () => {
                         }) => {
                           if (item.value === 'auto') {
                             setCaptchaDifficultyMode('auto')
+                            handleFieldAutosave(
+                              { captchaDifficultyMode: 'auto' },
+                              'project.settings.autosave.captchaDifficulty',
+                            )
                             return
                           }
 
                           setCaptchaDifficultyMode('manual')
                           setCaptchaDifficulty(item.value)
+                          handleFieldAutosave(
+                            {
+                              captchaDifficulty: item.value,
+                              captchaDifficultyMode: 'manual',
+                            },
+                            'project.settings.autosave.captchaDifficulty',
+                          )
                         }}
                         title={selectedCaptchaDifficultyItem.label}
                       />
-                      <Button
-                        type='button'
-                        className='mt-4'
-                        loading={fetcher.state === 'submitting'}
-                        onClick={() => {
-                          const formData = new FormData()
-                          formData.set('intent', 'update-project')
-                          if (captchaDifficultyMode === 'manual') {
-                            formData.set(
-                              'captchaDifficulty',
-                              captchaDifficulty.toString(),
-                            )
-                          }
-                          formData.set(
-                            'captchaDifficultyMode',
-                            captchaDifficultyMode,
-                          )
-                          fetcher.submit(formData, { method: 'post' })
-                        }}
-                      >
-                        {t('common.save')}
-                      </Button>
                     </div>
                   </>
                 ) : (
@@ -1564,9 +1781,11 @@ const ProjectSettings = () => {
                 <DangerZone
                   isActive={Boolean(form.active)}
                   onToggleActive={(active) =>
-                    setForm((prev) => ({ ...prev, active }))
+                    handleFieldAutosave(
+                      { active },
+                      'project.settings.autosave.status',
+                    )
                   }
-                  isSaving={isSaving}
                   setShowTransfer={setShowTransfer}
                   setShowReset={setShowReset}
                   setShowDelete={setShowDelete}

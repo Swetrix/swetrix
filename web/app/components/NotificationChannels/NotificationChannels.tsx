@@ -7,11 +7,12 @@ import {
   TrashIcon,
 } from '@phosphor-icons/react'
 import _map from 'lodash/map'
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import type {
   NotificationChannel,
   NotificationChannelType,
@@ -133,7 +134,8 @@ const NotificationChannels = ({
 
   const listFetcher = useFetcher<NotificationChannelActionData>()
   const mutateFetcher = useFetcher<NotificationChannelActionData>()
-  const lastMutateData = useRef<NotificationChannelActionData | null>(null)
+  const shouldHandleMutateData =
+    useDeduplicateFetcherResponse<NotificationChannelActionData>()
 
   const [channels, setChannels] = useState<NotificationChannel[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
@@ -183,8 +185,7 @@ const NotificationChannels = ({
 
   useEffect(() => {
     if (mutateFetcher.state !== 'idle' || !mutateFetcher.data) return
-    if (lastMutateData.current === mutateFetcher.data) return
-    lastMutateData.current = mutateFetcher.data
+    if (!shouldHandleMutateData(mutateFetcher.data)) return
     const { intent, success, error } = mutateFetcher.data
 
     if (error) {
@@ -212,7 +213,14 @@ const NotificationChannels = ({
       toast.success(t('notificationChannels.verifyKickedOff'))
       triggerList()
     }
-  }, [mutateFetcher.state, mutateFetcher.data, t, allowedTypes, triggerList])
+  }, [
+    mutateFetcher.state,
+    mutateFetcher.data,
+    t,
+    allowedTypes,
+    triggerList,
+    shouldHandleMutateData,
+  ])
 
   const submitMutate = (formData: FormData) =>
     mutateFetcher.submit(formData, {

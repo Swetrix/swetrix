@@ -678,7 +678,7 @@ interface HeaderProps {
 
 const Header = ({ refPage, transparent }: HeaderProps) => {
   const { t } = useTranslation('common')
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const { theme, setTheme } = useTheme()

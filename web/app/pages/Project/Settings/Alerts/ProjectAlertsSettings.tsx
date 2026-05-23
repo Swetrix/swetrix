@@ -12,12 +12,13 @@ import _size from 'lodash/size'
 import _split from 'lodash/split'
 import _toNumber from 'lodash/toNumber'
 import _values from 'lodash/values'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import type { NotificationChannel } from '~/lib/models/NotificationChannel'
@@ -67,7 +68,8 @@ const ProjectAlertsSettings = ({
   const { t } = useTranslation('common')
   const fetcher = useFetcher<ProjectViewActionData>()
   const channelsFetcher = useFetcher<NotificationChannelActionData>()
-  const lastHandledData = useRef<ProjectViewActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectViewActionData>()
 
   const [form, setForm] = useState<Partial<Alerts>>({
     pid: projectId,
@@ -118,8 +120,7 @@ const ProjectAlertsSettings = ({
   // Handle fetcher responses
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     const { intent, success, data, error: fetcherError } = fetcher.data
 
@@ -154,7 +155,7 @@ const ProjectAlertsSettings = ({
         toast.error(fetcherError)
       }
     }
-  }, [fetcher.state, fetcher.data, t, onSave])
+  }, [fetcher.state, fetcher.data, t, onSave, shouldHandleFetcherData])
 
   useEffect(() => {
     if (authLoading) {

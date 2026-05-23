@@ -17,6 +17,7 @@ interface GeneralProps {
   }
   beenSubmitted: boolean
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
+  handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void
 }
 
 const General = ({
@@ -24,6 +25,7 @@ const General = ({
   errors,
   beenSubmitted,
   handleInput,
+  handleBlur,
 }: GeneralProps) => {
   const { t } = useTranslation('common')
 
@@ -40,6 +42,7 @@ const General = ({
         placeholder='My awesome project'
         className='mt-2'
         onChange={handleInput}
+        onBlur={handleBlur}
         error={beenSubmitted ? errors.name : null}
       />
       <Input
@@ -59,6 +62,7 @@ const General = ({
         placeholder={t('project.settings.websiteUrlPlaceholder')}
         className='mt-4'
         onChange={handleInput}
+        onBlur={handleBlur}
         error={beenSubmitted ? errors.websiteUrl : null}
       />
       <Input
@@ -69,6 +73,7 @@ const General = ({
         placeholder={t('project.settings.brandKeywordsPlaceholder')}
         className='mt-4'
         onChange={handleInput}
+        onBlur={handleBlur}
         error={null}
       />
     </>

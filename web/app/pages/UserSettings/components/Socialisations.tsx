@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { SSO_PROVIDERS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
@@ -66,10 +67,15 @@ const Socialisations = () => {
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)
   const fetcher = useFetcher<UserSettingsActionData>()
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<UserSettingsActionData>()
   const isUnlinking = fetcher.state !== 'idle'
   const { generateSSOAuthURL, linkBySSOHash } = useAuthProxy()
 
   useEffect(() => {
+    if (!fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
+
     if (fetcher.data?.intent === 'unlink-sso') {
       if (fetcher.data.success) {
         loadUser()
@@ -78,7 +84,7 @@ const Socialisations = () => {
         toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.data, loadUser, t])
+  }, [fetcher.data, loadUser, t, shouldHandleFetcherData])
 
   const linkSSO = async (provider: SSOProvider) => {
     setIsLoading(true)

@@ -1,9 +1,10 @@
 import { ArrowUpRightIcon, ArrowSquareOutIcon } from '@phosphor-icons/react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { DOCS_URL } from '~/lib/constants'
 import type {
   ProjectSettingsActionData,
@@ -32,6 +33,9 @@ const SUPPORTED_CURRENCIES: CurrencyOption[] = [
   { code: 'EUR', symbol: '€', name: 'Euro' },
   { code: 'GBP', symbol: '£', name: 'British Pound' },
 ]
+
+const isRevenueCurrency = (currency?: string): currency is RevenueCurrency =>
+  currency === 'USD' || currency === 'EUR' || currency === 'GBP'
 
 const STRIPE_REQUIRED_PERMISSIONS = [
   'rak_charge_read',
@@ -66,7 +70,7 @@ const PROVIDER_CONFIG: Record<RevenueProvider, ProviderConfig> = {
     label: 'Paddle',
     icon: <PaddleSVG className='size-6' />,
     apiKeyPrefix: 'pdl_live_',
-    docsUrl: `${DOCS_URL}/revenue/paddle`,
+    docsUrl: `${DOCS_URL}/analytics-dashboard/revenue-tracking#supported-sources`,
   },
 }
 
@@ -88,6 +92,14 @@ const Revenue = ({ projectId }: Props) => {
   })
   const [selectedCurrency, setSelectedCurrency] =
     useState<RevenueCurrency>('USD')
+  const pendingCurrency = useRef<{
+    requestId: string
+    previous: RevenueCurrency
+    next: RevenueCurrency
+  } | null>(null)
+  const currencyRequestId = useRef(0)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
 
   const isConnecting =
     fetcher.state !== 'idle' &&
@@ -96,10 +108,6 @@ const Revenue = ({ projectId }: Props) => {
   const isDisconnecting =
     fetcher.state !== 'idle' &&
     fetcher.formData?.get('intent') === 'disconnect-revenue'
-  const isSavingCurrency =
-    fetcher.state !== 'idle' &&
-    fetcher.formData?.get('intent') === 'update-revenue-currency'
-
   useEffect(() => {
     fetcher.submit(
       { intent: 'get-revenue-status' },
@@ -109,53 +117,69 @@ const Revenue = ({ projectId }: Props) => {
   }, [projectId])
 
   useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      const { intent, success, error, revenueStatus } = fetcher.data
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
-      if (intent === 'get-revenue-status') {
-        setIsLoading(false)
-        if (success && revenueStatus) {
-          setStatus(revenueStatus)
-          if (
-            revenueStatus.currency === 'USD' ||
-            revenueStatus.currency === 'EUR' ||
-            revenueStatus.currency === 'GBP'
-          ) {
-            setSelectedCurrency(revenueStatus.currency)
-          }
-        } else if (error) {
-          console.error('Failed to load revenue status:', error)
+    const { intent, success, error, revenueStatus } = fetcher.data
+
+    if (intent === 'get-revenue-status') {
+      setIsLoading(false)
+      if (success && revenueStatus) {
+        setStatus(revenueStatus)
+        if (isRevenueCurrency(revenueStatus.currency)) {
+          setSelectedCurrency(revenueStatus.currency)
         }
-      } else if (intent === 'connect-revenue') {
-        if (success) {
-          toast.success(t('project.settings.revenue.connected'))
-          setApiKeys({ stripe: '', paddle: '' })
-          fetcher.submit(
-            { intent: 'get-revenue-status' },
-            { method: 'POST', action: `/projects/settings/${projectId}` },
-          )
-        } else if (error) {
-          toast.error(error)
-        }
-      } else if (intent === 'disconnect-revenue') {
-        if (success) {
-          toast.success(t('project.settings.revenue.disconnected'))
-          setStatus({ connected: false })
-        } else if (error) {
-          toast.error(error)
-        }
-      } else if (intent === 'update-revenue-currency') {
-        if (success) {
-          toast.success(t('project.settings.revenue.currencyUpdated'))
-          setStatus((prev) =>
-            prev ? { ...prev, currency: selectedCurrency } : prev,
-          )
-        } else if (error) {
-          toast.error(error)
-        }
+      } else if (error) {
+        console.error('Failed to load revenue status:', error)
+      }
+    } else if (intent === 'connect-revenue') {
+      if (success) {
+        toast.success(t('project.settings.revenue.connected'))
+        setApiKeys({ stripe: '', paddle: '' })
+        fetcher.submit(
+          { intent: 'get-revenue-status' },
+          { method: 'POST', action: `/projects/settings/${projectId}` },
+        )
+      } else if (error) {
+        toast.error(error)
+      }
+    } else if (intent === 'disconnect-revenue') {
+      if (success) {
+        toast.success(t('project.settings.revenue.disconnected'))
+        setStatus({ connected: false })
+      } else if (error) {
+        toast.error(error)
+      }
+    } else if (intent === 'update-revenue-currency') {
+      const pending = pendingCurrency.current
+      if (
+        !pending ||
+        fetcher.data.revenueCurrencyRequestId !== pending.requestId
+      ) {
+        return
+      }
+
+      if (success) {
+        toast.success(t('project.settings.revenue.currencyUpdated'))
+        setStatus((prev) => ({
+          ...(prev || { connected: false }),
+          currency: pending.next,
+        }))
+        pendingCurrency.current = null
+      } else if (error) {
+        setSelectedCurrency(pending.previous)
+        pendingCurrency.current = null
+        toast.error(error)
       }
     }
-  }, [fetcher.state, fetcher.data, t, projectId, selectedCurrency, fetcher])
+  }, [
+    fetcher.state,
+    fetcher.data,
+    t,
+    projectId,
+    fetcher,
+    shouldHandleFetcherData,
+  ])
 
   const handleApiKeyChange = (provider: RevenueProvider, value: string) => {
     setApiKeys((prev) => ({ ...prev, [provider]: value }))
@@ -187,11 +211,18 @@ const Revenue = ({ projectId }: Props) => {
     )
   }
 
-  const handleCurrencyChange = () => {
-    if (!status?.connected) return
-
+  const handleCurrencyChange = (
+    currency: RevenueCurrency,
+    previousCurrency: RevenueCurrency,
+  ) => {
+    const requestId = String(++currencyRequestId.current)
+    pendingCurrency.current = {
+      requestId,
+      previous: previousCurrency,
+      next: currency,
+    }
     fetcher.submit(
-      { intent: 'update-revenue-currency', currency: selectedCurrency },
+      { intent: 'update-revenue-currency', currency, requestId },
       { method: 'POST', action: `/projects/settings/${projectId}` },
     )
   }
@@ -349,17 +380,14 @@ const Revenue = ({ projectId }: Props) => {
             `${item.code} – ${item.name} (${item.symbol})`
           }
           selectedItem={selectedCurrencyItem}
-          onSelect={(item) => setSelectedCurrency(item.code)}
+          onSelect={(item) => {
+            if (item.code === selectedCurrency) return
+
+            const previousCurrency = selectedCurrency
+            setSelectedCurrency(item.code)
+            handleCurrencyChange(item.code, previousCurrency)
+          }}
         />
-        <Button
-          type='button'
-          className='max-w-max'
-          onClick={handleCurrencyChange}
-          loading={isSavingCurrency}
-          disabled={!isConnected}
-        >
-          {t('common.save')}
-        </Button>
       </div>
 
       <a

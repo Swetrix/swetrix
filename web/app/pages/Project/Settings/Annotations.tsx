@@ -2,11 +2,12 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import { PencilIcon, TrashIcon, PlusIcon } from '@phosphor-icons/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { Annotation } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
@@ -26,7 +27,8 @@ interface AnnotationsProps {
 const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
   const { t } = useTranslation('common')
   const fetcher = useFetcher<ProjectViewActionData>()
-  const lastHandledData = useRef<ProjectViewActionData | null>(null)
+  const shouldHandleFetcherData =
+    useDeduplicateFetcherResponse<ProjectViewActionData>()
 
   const [annotations, setAnnotations] = useState<Annotation[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -53,8 +55,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
   // Handle fetcher responses
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
-    if (lastHandledData.current === fetcher.data) return
-    lastHandledData.current = fetcher.data
+    if (!shouldHandleFetcherData(fetcher.data)) return
 
     const { intent, success, data, error } = fetcher.data
 
@@ -92,7 +93,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
       toast.error(error)
       setIsLoading(false)
     }
-  }, [fetcher.state, fetcher.data, t, loadAnnotations])
+  }, [fetcher.state, fetcher.data, t, loadAnnotations, shouldHandleFetcherData])
 
   useEffect(() => {
     loadAnnotations()
