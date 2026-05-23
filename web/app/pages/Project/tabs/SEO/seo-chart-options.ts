@@ -128,11 +128,12 @@ export function buildMainChartOptions(
     year: '%Y',
   }
   const tickFormat = tickFormatMap[timeBucket] || '%b %d'
+  const xFormat = timeBucket === 'hour' ? '%Y-%m-%d %H:%M:%S' : '%Y-%m-%d'
 
   return {
     data: {
       x: 'x',
-      xFormat: timeBucket === 'hour' ? '%Y-%m-%d %H:%M:%S' : '%Y-%m-%d',
+      xFormat,
       columns,
       types,
       axes,
@@ -219,7 +220,7 @@ export function buildMainChartOptions(
           ? compareSeries?.[firstIndex]?.date
           : null
         const parsedCompareDate = compareDate
-          ? d3.timeParse('%Y-%m-%d')(compareDate)
+          ? d3.timeParse(xFormat)(compareDate)
           : null
         const compareHeaderLabel = parsedCompareDate
           ? d3.timeFormat(tooltipFmt)(parsedCompareDate)

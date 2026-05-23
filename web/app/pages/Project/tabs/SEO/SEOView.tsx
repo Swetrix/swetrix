@@ -260,6 +260,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     const currentPromise = fetchDashboard(projectId, params)
 
     if (isActiveCompare && compareEnabled && compareFrom && compareTo) {
+      resetCompareData()
       await Promise.all([
         currentPromise,
         fetchCompareDashboard(projectId, {

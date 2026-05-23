@@ -1038,11 +1038,23 @@ export class GSCService {
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
 
     try {
-      const rows = await this.queryGSC(gsc, from, to, {
-        dimensions: ['date', 'query'],
-        rowLimit: MAX_ROW_LIMIT,
-        dimensionFilterGroups,
-      })
+      const rows: GSCRow[] = []
+      let startRow = 0
+
+      while (true) {
+        const page = await this.queryGSC(gsc, from, to, {
+          dimensions: ['date', 'query'],
+          rowLimit: MAX_ROW_LIMIT,
+          startRow,
+          dimensionFilterGroups,
+        })
+
+        rows.push(...page)
+
+        if (page.length < MAX_ROW_LIMIT) break
+
+        startRow += MAX_ROW_LIMIT
+      }
 
       const impressionBuckets = initialImpressionPositionBuckets()
       const organicPositionsByDate = new Map<
