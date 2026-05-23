@@ -340,7 +340,13 @@ export class UserService {
       throw new ServiceUnavailableException('Failed to upload attachments')
     }
 
-    const payload = await response.json()
+    let payload: unknown
+    try {
+      payload = await response.json()
+    } catch {
+      throw new ServiceUnavailableException('Invalid response from CDN')
+    }
+
     return getCdnFiles(payload)
       .map((file) => normaliseCdnUrl(baseUrl, file))
       .filter((url): url is string => Boolean(url))
