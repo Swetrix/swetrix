@@ -107,13 +107,7 @@ const TableUserRow = ({
         toast.error(fetcher.data.error)
       }
     }
-  }, [
-    fetcher.state,
-    fetcher.data,
-    onRoleUpdated,
-    t,
-    shouldHandleFetcherData,
-  ])
+  }, [fetcher.state, fetcher.data, onRoleUpdated, t, shouldHandleFetcherData])
 
   const changeRole = (newRole: string) => {
     if (newRole === role || fetcher.state !== 'idle') return
