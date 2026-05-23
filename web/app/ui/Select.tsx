@@ -10,12 +10,13 @@ import { CheckIcon, CaretUpDownIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import React, { Fragment, Key, memo } from 'react'
+import { Text } from './Text'
 
 interface SelectProps<T> {
   title?: React.ReactNode
   description?: React.ReactNode
-  label?: string
-  hint?: string | React.ReactNode
+  label?: React.ReactNode
+  hint?: React.ReactNode
   className?: string
   fieldLabelClassName?: string
   labelClassName?: string
@@ -30,7 +31,6 @@ interface SelectProps<T> {
   descriptionExtractor?: (item: T, index: number) => React.ReactNode | null
   onSelect: (item: T) => void
   selectedItem?: T
-  // Allow the button label to wrap to multiple lines instead of truncating.
   wrap?: boolean
 }
 
@@ -66,49 +66,79 @@ function Select<T>({
   }
 
   const hasDescriptions = !!descriptionExtractor
+  const generatedHintId = React.useId()
+  const hintId = hint ? `${id || generatedHintId}-hint` : undefined
 
   return (
-    <Listbox as='div' id={id || ''} value={selectedItem} onChange={onSelect}>
+    <Listbox
+      as='div'
+      className='flex flex-col gap-1'
+      id={id || ''}
+      value={selectedItem}
+      onChange={onSelect}
+    >
       {({ open }) => (
         <>
           {label ? (
-            <Label
-              className={cx(
-                'mb-1 block text-sm font-medium whitespace-pre-line text-gray-900 dark:text-gray-200',
-                fieldLabelClassName,
-              )}
-            >
-              {label}
+            <Label className={cx('block', fieldLabelClassName)}>
+              <Text
+                as='span'
+                className='flex leading-tight whitespace-pre-line'
+                size='sm'
+                weight='medium'
+                colour='primary'
+              >
+                {label}
+              </Text>
             </Label>
+          ) : null}
+          {hint ? (
+            <Text
+              as='span'
+              id={hintId}
+              className={cx(
+                'block leading-tight whitespace-pre-line',
+                hintClassName,
+              )}
+              size='sm'
+              colour='secondary'
+            >
+              {hint}
+            </Text>
           ) : null}
           <div className={cx('relative', className)}>
             <ListboxButton
+              aria-describedby={hintId}
               className={cx(
                 'relative w-full rounded-md border-0 bg-white py-2 pr-9 pl-3 text-left text-sm font-medium text-gray-900 ring-1 ring-gray-300 transition-[background-color,box-shadow] duration-150 ease-out ring-inset hover:ring-gray-400 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:ring-slate-600 dark:focus-visible:ring-slate-300',
                 buttonClassName,
               )}
             >
-              <span
+              <Text
+                as='span'
+                size='sm'
+                weight='medium'
+                colour='inherit'
+                truncate={!wrap}
                 className={cx('block', {
-                  truncate: !wrap,
                   'wrap-break-word': wrap,
                   'first-letter:capitalize': capitalise,
                 })}
               >
                 {title}
-              </span>
+              </Text>
               {description ? (
-                <span
-                  className={cx(
-                    'mt-0.5 block text-xs font-normal text-gray-500 dark:text-gray-400',
-                    {
-                      truncate: !wrap,
-                      'wrap-break-word': wrap,
-                    },
-                  )}
+                <Text
+                  as='span'
+                  size='xs'
+                  colour='secondary'
+                  truncate={!wrap}
+                  className={cx('mt-0.5 block', {
+                    'wrap-break-word': wrap,
+                  })}
                 >
                   {description}
-                </span>
+                </Text>
               ) : null}
               <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
                 <CaretUpDownIcon
@@ -169,13 +199,15 @@ function Select<T>({
                           </span>
                         ) : null}
 
-                        <span
+                        <Text
+                          as='span'
+                          size='sm'
+                          weight={selected ? 'semibold' : 'normal'}
+                          colour='inherit'
                           className={cx(
                             'block wrap-break-word',
                             iconExtractor && 'pl-6',
                             {
-                              'font-semibold': selected,
-                              'font-normal': !selected,
                               'first-letter:capitalize': capitalise,
                             },
                             labelClassName,
@@ -184,17 +216,20 @@ function Select<T>({
                           {labelExtractor
                             ? labelExtractor(item, index)
                             : (item as React.ReactNode)}
-                        </span>
+                        </Text>
 
                         {itemDescription ? (
-                          <span
+                          <Text
+                            as='span'
+                            size='xs'
+                            colour='secondary'
                             className={cx(
-                              'mt-0.5 block text-xs leading-snug font-normal wrap-break-word text-gray-500 dark:text-gray-400',
+                              'mt-0.5 block leading-snug wrap-break-word',
                               iconExtractor && 'pl-6',
                             )}
                           >
                             {itemDescription}
-                          </span>
+                          </Text>
                         ) : null}
 
                         {selected ? (
@@ -218,16 +253,6 @@ function Select<T>({
               </ListboxOptions>
             </Transition>
           </div>
-          {hint ? (
-            <p
-              className={cx(
-                'mt-1.5 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400',
-                hintClassName,
-              )}
-            >
-              {hint}
-            </p>
-          ) : null}
         </>
       )}
     </Listbox>

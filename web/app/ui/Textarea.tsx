@@ -9,10 +9,12 @@ import React, { forwardRef, memo } from 'react'
 
 import { cn } from '~/utils/generic'
 
+import { Text } from './Text'
+
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   value: string | number
-  label?: string
-  hint?: string
+  label?: React.ReactNode
+  hint?: React.ReactNode
   classes?: {
     container?: string
     textarea?: string
@@ -42,11 +44,34 @@ const Textarea = memo(
       const isError = !_isEmpty(error)
 
       return (
-        <Field as='div' className={classes?.container}>
+        <Field
+          as='div'
+          className={cn('flex flex-col gap-1', classes?.container)}
+        >
           {label ? (
-            <Label className='mb-1 flex text-sm font-medium text-gray-900 dark:text-gray-200'>
-              {label}
+            <Label>
+              <Text
+                as='span'
+                className='flex leading-tight whitespace-pre-line'
+                size='sm'
+                weight='medium'
+                colour='primary'
+              >
+                {label}
+              </Text>
             </Label>
+          ) : null}
+          {hint ? (
+            <Description as='div'>
+              <Text
+                as='span'
+                className='block leading-tight whitespace-pre-line'
+                size='sm'
+                colour='secondary'
+              >
+                {hint}
+              </Text>
+            </Description>
           ) : null}
           <HeadlessTextarea
             ref={ref}
@@ -76,17 +101,15 @@ const Textarea = memo(
             {...rest}
           />
           {isError ? (
-            <p
-              className='mt-1.5 text-sm text-red-600 dark:text-red-400'
+            <Text
+              as='span'
+              className='block'
+              size='sm'
+              colour='error'
               role='alert'
             >
               {error}
-            </p>
-          ) : null}
-          {hint ? (
-            <Description className='mt-1.5 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400'>
-              {hint}
-            </Description>
+            </Text>
           ) : null}
         </Field>
       )

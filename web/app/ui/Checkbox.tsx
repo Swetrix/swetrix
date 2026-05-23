@@ -5,8 +5,9 @@ import {
   Label,
 } from '@headlessui/react'
 import { CheckIcon, MinusIcon } from '@phosphor-icons/react'
-import cx from 'clsx'
 import React, { memo } from 'react'
+import { Text } from './Text'
+import { cn } from '~/utils/generic'
 
 interface CheckboxProps {
   label: React.ReactNode
@@ -33,13 +34,13 @@ const Checkbox = ({
   classes,
 }: CheckboxProps) => (
   <Field disabled={disabled}>
-    <div className={cx('group flex items-center gap-x-2', classes?.label)}>
+    <div className={cn('group flex items-center gap-x-2', classes?.label)}>
       <HeadlessCheckbox
         name={name}
         checked={checked}
         indeterminate={indeterminate}
         onChange={onChange}
-        className={cx(
+        className={cn(
           'group/checkbox relative size-4 shrink-0 cursor-pointer rounded-[5px] bg-white ring-1 ring-gray-300 transition-[background-color,box-shadow] duration-150 ease-out ring-inset',
           'group-hover:ring-gray-400 dark:bg-slate-950 dark:ring-slate-700/80 dark:group-hover:ring-slate-600',
           'data-checked:bg-slate-900 data-checked:ring-slate-900 dark:data-checked:bg-slate-100 dark:data-checked:ring-slate-100',
@@ -65,13 +66,15 @@ const Checkbox = ({
       </Label>
     </div>
     {hint ? (
-      <Description
-        className={cx(
-          'mt-1 text-sm text-gray-500 dark:text-gray-400',
-          classes?.hint,
-        )}
-      >
-        {hint}
+      <Description>
+        <Text
+          as='span'
+          className={cn('mt-1 block leading-tight', classes?.hint)}
+          colour='secondary'
+          size='sm'
+        >
+          {hint}
+        </Text>
       </Description>
     ) : null}
   </Field>

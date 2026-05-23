@@ -4,20 +4,28 @@ import cx from 'clsx'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import { useState, useEffect, useRef, useId, useMemo } from 'react'
+import {
+  useState,
+  useEffect,
+  useRef,
+  useId,
+  useMemo,
+  type ReactNode,
+} from 'react'
+import { Text } from './Text'
 
 interface MultiSelectProps {
   className?: string
   onRemove: (item: any) => void
   onSelect: (item: any) => void
   items: any[]
-  labelExtractor?: (item: any) => string
+  labelExtractor?: (item: any) => ReactNode
   keyExtractor?: (item: any) => string
   label: any[]
-  hint?: string
+  hint?: ReactNode
   placeholder?: string
   onSearch?: (search: string) => void
-  itemExtractor?: (item: any) => string
+  itemExtractor?: (item: any) => ReactNode
 }
 
 const MultiSelect = ({
@@ -39,6 +47,7 @@ const MultiSelect = ({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listboxId = useId()
+  const hintId = useId()
   const optionIdPrefix = useId()
 
   useEffect(() => {
@@ -68,7 +77,7 @@ const MultiSelect = ({
 
   const itemKey = useMemo(
     () => (item: any) =>
-      keyExtractor ? keyExtractor(item) : (itemExtractor?.(item) ?? item),
+      keyExtractor ? keyExtractor(item) : String(itemExtractor?.(item) ?? item),
     [keyExtractor, itemExtractor],
   )
 
@@ -146,6 +155,17 @@ const MultiSelect = ({
       ref={dropdownRef}
       className={cx('relative flex w-full flex-col', className)}
     >
+      {hint ? (
+        <Text
+          as='span'
+          id={hintId}
+          className='mb-1 block leading-tight whitespace-pre-line'
+          size='sm'
+          colour='secondary'
+        >
+          {hint}
+        </Text>
+      ) : null}
       <div className='relative'>
         <input
           ref={inputRef}
@@ -155,6 +175,7 @@ const MultiSelect = ({
           aria-controls={listboxId}
           aria-autocomplete='list'
           aria-activedescendant={activeOptionId}
+          aria-describedby={hint ? hintId : undefined}
           className='block w-full rounded-md border-0 bg-white py-2 pr-9 pl-3 text-sm font-medium text-gray-900 ring-1 ring-gray-300 transition-[background-color,box-shadow] duration-150 ease-out ring-inset placeholder:text-gray-400 hover:ring-gray-400 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:placeholder:text-gray-500 dark:hover:ring-slate-600 dark:focus:ring-slate-300'
           placeholder={placeholder}
           value={searchValue}
@@ -182,9 +203,14 @@ const MultiSelect = ({
             className='absolute top-full z-30 mt-1.5 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/60'
           >
             {_isEmpty(items) ? (
-              <div className='mx-1 px-3 py-2 text-gray-500 dark:text-gray-400'>
+              <Text
+                as='div'
+                size='sm'
+                colour='muted'
+                className='mx-1 px-3 py-2'
+              >
                 No options available
-              </div>
+              </Text>
             ) : (
               _map(items, (item, index) => {
                 const isSelected = _includes(label, item)
@@ -211,14 +237,16 @@ const MultiSelect = ({
                       },
                     )}
                   >
-                    <span
-                      className={cx('block truncate', {
-                        'font-semibold': isSelected,
-                        'font-normal': !isSelected,
-                      })}
+                    <Text
+                      as='span'
+                      size='sm'
+                      weight={isSelected ? 'semibold' : 'normal'}
+                      colour='inherit'
+                      truncate
+                      className='block'
                     >
                       {itemExtractor ? itemExtractor(item) : item}
-                    </span>
+                    </Text>
                     {isSelected ? (
                       <span className='absolute inset-y-0 right-2 flex items-center text-slate-900 dark:text-slate-100'>
                         <CheckIcon
@@ -243,9 +271,15 @@ const MultiSelect = ({
               key={itemKey(item)}
               className='inline-flex items-center gap-1.5 rounded-md bg-gray-100 py-1 pr-1.5 pl-2.5 text-xs font-medium text-gray-800 ring-1 ring-gray-200/70 ring-inset dark:bg-slate-800/60 dark:text-gray-100 dark:ring-slate-700/60'
             >
-              <span className='flex items-center gap-1.5'>
+              <Text
+                as='span'
+                size='xs'
+                weight='medium'
+                colour='inherit'
+                className='flex items-center gap-1.5'
+              >
                 {labelExtractor ? labelExtractor(item) : item}
-              </span>
+              </Text>
               <button
                 type='button'
                 onClick={(e) => {
@@ -253,7 +287,7 @@ const MultiSelect = ({
                   e.stopPropagation()
                   onRemove(item)
                 }}
-                aria-label={`Remove ${labelExtractor ? labelExtractor(item) : item}`}
+                aria-label={`Remove ${itemKey(item)}`}
                 className='inline-flex size-4 shrink-0 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-800 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:text-gray-400 dark:hover:bg-slate-700 dark:hover:text-gray-100 dark:focus-visible:ring-slate-300'
               >
                 <XIcon className='size-3' weight='bold' aria-hidden='true' />
@@ -261,12 +295,6 @@ const MultiSelect = ({
             </span>
           ))}
         </div>
-      ) : null}
-
-      {hint ? (
-        <p className='mt-1.5 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400'>
-          {hint}
-        </p>
       ) : null}
     </div>
   )

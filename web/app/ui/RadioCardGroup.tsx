@@ -1,8 +1,10 @@
-import { Field, Label, Radio, RadioGroup } from '@headlessui/react'
+import { Description, Field, Label, Radio, RadioGroup } from '@headlessui/react'
 import _map from 'lodash/map'
 import { Fragment, type ReactNode } from 'react'
 
 import { cn } from '~/utils/generic'
+
+import { Text } from './Text'
 
 interface RadioCardOption<T extends string> {
   value: T
@@ -60,11 +62,35 @@ export function RadioCardGroup<T extends string>({
   const total = options.length
 
   return (
-    <Field as='div' className={className} disabled={disabled}>
+    <Field
+      as='div'
+      className={cn('flex flex-col gap-1', className)}
+      disabled={disabled}
+    >
       {label ? (
-        <Label className='mb-1 block text-sm font-medium text-gray-900 dark:text-gray-200'>
-          {label}
+        <Label>
+          <Text
+            as='span'
+            className='block leading-tight whitespace-pre-line'
+            size='sm'
+            weight='medium'
+            colour='primary'
+          >
+            {label}
+          </Text>
         </Label>
+      ) : null}
+      {hint ? (
+        <Description as='div'>
+          <Text
+            as='span'
+            className='block leading-tight whitespace-pre-line'
+            size='sm'
+            colour='secondary'
+          >
+            {hint}
+          </Text>
+        </Description>
       ) : null}
       <RadioGroup
         name={name}
@@ -105,27 +131,34 @@ export function RadioCardGroup<T extends string>({
                     <RadioDot checked={checked} />
                   </span>
                   <span className='flex min-w-0 flex-col'>
-                    <span
+                    <Text
+                      as='span'
+                      size='sm'
+                      weight='medium'
+                      colour='inherit'
                       className={cn(
-                        'block text-sm font-medium',
+                        'block',
                         checked
                           ? 'text-slate-900 dark:text-white'
                           : 'text-gray-700 dark:text-gray-200',
                       )}
                     >
                       {option.label}
-                    </span>
+                    </Text>
                     {option.description ? (
-                      <span
+                      <Text
+                        as='span'
+                        size='sm'
+                        colour='inherit'
                         className={cn(
-                          'mt-0.5 block text-sm',
+                          'mt-0.5 block',
                           checked
                             ? 'text-slate-700 dark:text-slate-300'
                             : 'text-gray-500 dark:text-gray-400',
                         )}
                       >
                         {option.description}
-                      </span>
+                      </Text>
                     ) : null}
                   </span>
                 </label>
@@ -135,17 +168,9 @@ export function RadioCardGroup<T extends string>({
         })}
       </RadioGroup>
       {isError && typeof error === 'string' ? (
-        <p
-          className='mt-1.5 text-sm text-red-600 dark:text-red-400'
-          role='alert'
-        >
+        <Text as='span' className='block' size='sm' colour='error' role='alert'>
           {error}
-        </p>
-      ) : null}
-      {hint ? (
-        <p className='mt-1.5 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400'>
-          {hint}
-        </p>
+        </Text>
       ) : null}
     </Field>
   )
