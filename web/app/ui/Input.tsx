@@ -8,6 +8,7 @@ import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react'
 import React, { memo, useState } from 'react'
+import { Text } from './Text'
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: React.ReactNode
@@ -18,7 +19,6 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string | null | boolean
   disabled?: boolean
   readOnly?: boolean
-  hintPosition?: 'top' | 'bottom'
   classes?: {
     input?: string
     leadingIcon?: string
@@ -39,7 +39,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       disabled,
       readOnly,
       classes,
-      hintPosition = 'bottom',
       ...rest
     },
     ref,
@@ -122,12 +121,20 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       )
 
     return (
-      <Field as='div' className={className}>
+      <Field as='div' className={cx('flex flex-col gap-1', className)}>
         {label || labelCorner ? (
-          <div className='mb-1 flex items-center justify-between gap-x-2'>
+          <div className='flex items-center justify-between gap-x-2'>
             {label ? (
-              <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>
-                {label}
+              <Label>
+                <Text
+                  as='span'
+                  className='flex leading-tight whitespace-pre-line'
+                  size='sm'
+                  weight='medium'
+                  colour='primary'
+                >
+                  {label}
+                </Text>
               </Label>
             ) : (
               <span />
@@ -137,24 +144,29 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ) : null}
           </div>
         ) : null}
-        {hint && hintPosition === 'top' ? (
-          <Description className='mt-1 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400'>
-            {hint}
+        {hint ? (
+          <Description as='div'>
+            <Text
+              as='span'
+              className='block leading-tight whitespace-pre-line'
+              size='sm'
+              colour='secondary'
+            >
+              {hint}
+            </Text>
           </Description>
         ) : null}
         {inputWithAdornments}
         {isError ? (
-          <p
-            className='mt-1.5 text-sm text-red-600 dark:text-red-400'
+          <Text
+            as='span'
+            className='block'
+            size='sm'
+            colour='error'
             role='alert'
           >
             {error}
-          </p>
-        ) : null}
-        {hint && hintPosition === 'bottom' ? (
-          <Description className='mt-1.5 text-sm whitespace-pre-line text-gray-500 dark:text-gray-400'>
-            {hint}
-          </Description>
+          </Text>
         ) : null}
       </Field>
     )
