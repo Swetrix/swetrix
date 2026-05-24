@@ -237,7 +237,11 @@ const SessionsViewInner = ({
 
   // Track when loader data was last applied to detect stale proxy responses
   const loaderUpdateCounterRef = useRef(0)
-  const proxyRequestCounterRef = useRef(0)
+  const proxyRequestRef = useRef<{
+    mode: 'append' | 'replace'
+    loaderUpdateCounter: number
+    limit?: number
+  } | null>(null)
 
   // Track if we've shown content in the current data set to prevent NoSessions flash during exit animation
   const hasShownContentRef = useRef(false)
@@ -275,6 +279,7 @@ const SessionsViewInner = ({
       setCanLoadMoreSessions(sessionsList.length >= SESSIONS_TAKE)
       // Increment counter to invalidate any in-flight proxy responses
       loaderUpdateCounterRef.current += 1
+      proxyRequestRef.current = null
       // Reset content tracking when loader provides empty results (e.g., after filter change)
       if (_isEmpty(sessionsList)) {
         hasShownContentRef.current = false
@@ -289,25 +294,47 @@ const SessionsViewInner = ({
     if (revalidator.state === 'loading') return
 
     if (sessionsProxy.data && !sessionsProxy.isLoading) {
+      const proxyRequest = proxyRequestRef.current
+      if (!proxyRequest) {
+        return
+      }
+
       // Ignore stale proxy responses that were initiated before the last loader update
-      if (proxyRequestCounterRef.current < loaderUpdateCounterRef.current) {
+      if (
+        proxyRequest.loaderUpdateCounter < loaderUpdateCounterRef.current
+      ) {
         return
       }
 
       const newSessions = sessionsProxy.data.sessions || []
-      setSessions((prev) => {
-        // Deduplicate: only add sessions whose psid is not already present
-        const existingIds = new Set(prev.map((s) => s.psid))
-        const uniqueNewSessions = newSessions.filter(
-          (s) => !existingIds.has(s.psid),
+      setError(null)
+
+      if (proxyRequest.mode === 'replace') {
+        const visibleSessions = newSessions.slice(0, proxyRequest.limit)
+        setSessions(visibleSessions)
+        setSessionsSkip(visibleSessions.length)
+        setCanLoadMoreSessions(
+          newSessions.length > (proxyRequest.limit || 0),
         )
-        return [...prev, ...uniqueNewSessions]
-      })
-      setSessionsSkip((prev) => prev + SESSIONS_TAKE)
-      setCanLoadMoreSessions(newSessions.length >= SESSIONS_TAKE)
+        hasShownContentRef.current = !_isEmpty(visibleSessions)
+      } else {
+        setSessions((prev) => {
+          // Deduplicate: only add sessions whose psid is not already present
+          const existingIds = new Set(prev.map((s) => s.psid))
+          const uniqueNewSessions = newSessions.filter(
+            (s) => !existingIds.has(s.psid),
+          )
+          return [...prev, ...uniqueNewSessions]
+        })
+        setSessionsSkip((prev) => prev + newSessions.length)
+        setCanLoadMoreSessions(newSessions.length >= SESSIONS_TAKE)
+      }
+
+      proxyRequestRef.current = null
     }
     if (sessionsProxy.error) {
       setError(sessionsProxy.error)
+      proxyRequestRef.current = null
     }
   }, [
     sessionsProxy.data,
@@ -316,10 +343,7 @@ const SessionsViewInner = ({
     revalidator.state,
   ])
 
-  // Load more sessions via proxy
-  const loadMoreSessions = () => {
-    if (sessionsLoading) return
-
+  const getSessionsParams = (take: number, skip: number) => {
     let from: string | undefined
     let to: string | undefined
 
@@ -328,24 +352,47 @@ const SessionsViewInner = ({
       to = getFormatDate(dateRange[1])
     }
 
-    // Track when this proxy request was initiated relative to loader updates
-    proxyRequestCounterRef.current = loaderUpdateCounterRef.current
-
-    sessionsProxy.fetchSessions(id, {
+    return {
       timeBucket: 'day',
       period: period === 'custom' ? '' : period,
       from,
       to,
       timezone,
       filters,
-      take: SESSIONS_TAKE,
-      skip: sessionsSkip,
-    })
+      take,
+      skip,
+    }
   }
 
-  // Handle refresh trigger - use revalidator for URL-based data
+  // Load more sessions via proxy
+  const loadMoreSessions = () => {
+    if (sessionsLoading) return
+
+    // Track when this proxy request was initiated relative to loader updates
+    proxyRequestRef.current = {
+      mode: 'append',
+      loaderUpdateCounter: loaderUpdateCounterRef.current,
+    }
+
+    sessionsProxy.fetchSessions(
+      id,
+      getSessionsParams(SESSIONS_TAKE, sessionsSkip),
+    )
+  }
+
   useEffect(() => {
     if (sessionsRefreshTrigger > 0) {
+      if (!activePSID && !sessionsLoading) {
+        const limit = Math.max(sessions.length, SESSIONS_TAKE)
+        proxyRequestRef.current = {
+          mode: 'replace',
+          loaderUpdateCounter: loaderUpdateCounterRef.current,
+          limit,
+        }
+        sessionsProxy.fetchSessions(id, getSessionsParams(limit + 1, 0))
+        return
+      }
+
       revalidator.revalidate()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

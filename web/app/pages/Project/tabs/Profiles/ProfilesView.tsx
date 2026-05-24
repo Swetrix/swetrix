@@ -105,7 +105,11 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     }
   }, [])
 
-  const loadProfiles = async (forcedSkip?: number, override?: boolean) => {
+  const loadProfiles = async (
+    forcedSkip?: number,
+    override?: boolean,
+    options: { take?: number; limit?: number } = {},
+  ) => {
     if (profilesLoading) {
       return
     }
@@ -128,7 +132,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
         filters,
         from: period === 'custom' && dateRange ? from : '',
         to: period === 'custom' && dateRange ? to : '',
-        take: SESSIONS_TAKE,
+        take: options.take || SESSIONS_TAKE,
         skip,
         timezone,
         profileType: profileTypeFilter,
@@ -138,25 +142,24 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
         const profilesList = (dataProfiles?.profiles || []).map(
           mapApiProfileToUI,
         )
-        if (override) {
-          setProfiles(profilesList)
-        } else {
-          setProfiles((prev) => [...prev, ...profilesList])
-        }
-        setProfilesSkip((prev) => {
-          if (typeof forcedSkip === 'number') {
-            return SESSIONS_TAKE + forcedSkip
-          }
-          return SESSIONS_TAKE + prev
-        })
+        const visibleProfiles =
+          typeof options.limit === 'number'
+            ? profilesList.slice(0, options.limit)
+            : profilesList
 
-        if (
-          !dataProfiles?.profiles ||
-          dataProfiles.profiles.length < SESSIONS_TAKE
-        ) {
-          setCanLoadMoreProfiles(false)
+        if (override) {
+          setProfiles(visibleProfiles)
         } else {
-          setCanLoadMoreProfiles(true)
+          setProfiles((prev) => [...prev, ...visibleProfiles])
+        }
+        setProfilesSkip(skip + visibleProfiles.length)
+
+        if (typeof options.limit === 'number') {
+          setCanLoadMoreProfiles(profilesList.length > options.limit)
+        } else {
+          setCanLoadMoreProfiles(
+            profilesList.length >= (options.take || SESSIONS_TAKE),
+          )
         }
       }
     } catch (reason) {
@@ -171,7 +174,10 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     }
   }
 
-  const loadProfile = async (profileId: string) => {
+  const loadProfile = async (
+    profileId: string,
+    options: { sessionsTake?: number; sessionsLimit?: number } = {},
+  ) => {
     const requestId = ++profileRequestIdRef.current
     const hasExistingProfileData =
       !!activeProfile && activeProfile.profileId === profileId
@@ -194,7 +200,10 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
         data
       ) {
         setActiveProfile(data as unknown as ProfileDetailsType)
-        loadProfileSessionsData(profileId, 0, true)
+        loadProfileSessionsData(profileId, 0, true, {
+          take: options.sessionsTake,
+          limit: options.sessionsLimit,
+        })
       }
     } catch (reason) {
       console.error('[ERROR](loadProfile) Loading profile data failed:', reason)
@@ -212,6 +221,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     profileId: string,
     forcedSkip?: number,
     override?: boolean,
+    options: { take?: number; limit?: number } = {},
   ) => {
     if (profileSessionsLoading) {
       return
@@ -230,7 +240,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
         {
           period: 'all',
           filters: [],
-          take: SESSIONS_TAKE,
+          take: options.take || SESSIONS_TAKE,
           skip,
           timezone,
         },
@@ -242,25 +252,24 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       ) {
         const sessionsList = (dataSessions?.sessions ||
           []) as unknown as Session[]
-        if (override) {
-          setProfileSessions(sessionsList)
-        } else {
-          setProfileSessions((prev) => [...prev, ...sessionsList])
-        }
-        setProfileSessionsSkip((prev) => {
-          if (typeof forcedSkip === 'number') {
-            return SESSIONS_TAKE + forcedSkip
-          }
-          return SESSIONS_TAKE + prev
-        })
+        const visibleSessions =
+          typeof options.limit === 'number'
+            ? sessionsList.slice(0, options.limit)
+            : sessionsList
 
-        if (
-          !dataSessions?.sessions ||
-          dataSessions.sessions.length < SESSIONS_TAKE
-        ) {
-          setCanLoadMoreProfileSessions(false)
+        if (override) {
+          setProfileSessions(visibleSessions)
         } else {
-          setCanLoadMoreProfileSessions(true)
+          setProfileSessions((prev) => [...prev, ...visibleSessions])
+        }
+        setProfileSessionsSkip(skip + visibleSessions.length)
+
+        if (typeof options.limit === 'number') {
+          setCanLoadMoreProfileSessions(sessionsList.length > options.limit)
+        } else {
+          setCanLoadMoreProfileSessions(
+            sessionsList.length >= (options.take || SESSIONS_TAKE),
+          )
         }
       }
     } catch (reason) {
@@ -327,10 +336,14 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
   useEffect(() => {
     if (profilesRefreshTrigger > 0) {
       if (activeProfileId) {
-        loadProfile(activeProfileId)
+        const limit = Math.max(profileSessions.length, SESSIONS_TAKE)
+        loadProfile(activeProfileId, {
+          sessionsTake: limit + 1,
+          sessionsLimit: limit,
+        })
       } else {
-        setProfilesSkip(0)
-        loadProfiles(0, true)
+        const limit = Math.max(profiles.length, SESSIONS_TAKE)
+        loadProfiles(0, true, { take: limit + 1, limit })
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
