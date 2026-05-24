@@ -320,7 +320,7 @@ export function ToolsNav({ className }: ToolsNavProps) {
             key={tool.id}
             to={tool.href}
             className={cn(
-              'flex items-start gap-3 px-4 py-3 transition-colors',
+              'flex items-start gap-3 px-3 py-2 transition-colors',
               index !== 0 && 'border-t border-gray-100 dark:border-slate-800',
               isActive
                 ? 'bg-gray-50 dark:bg-slate-800/50'
@@ -377,7 +377,7 @@ export function ToolsNavMobile({ className }: ToolsNavProps) {
       <button
         type='button'
         onClick={() => setIsOpen(!isOpen)}
-        className='flex w-full items-center justify-between gap-3 px-4 py-3'
+        className='flex w-full items-center justify-between gap-3 px-3 py-2'
       >
         <div className='flex items-center gap-3'>
           {CurrentIcon && (
