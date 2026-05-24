@@ -67,7 +67,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
   const profileProxy = useProfileProxy()
   const profileSessionsProxy = useProfileSessionsProxy()
 
-  // Profiles state
   const [profilesSkip, setProfilesSkip] = useState(0)
   const [canLoadMoreProfiles, setCanLoadMoreProfiles] = useState(false)
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -98,7 +97,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
   const skipNextProfilesAutoLoadRef = useRef(false)
   const isMountedRef = useRef(true)
 
-  // Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true
     return () => {
@@ -184,8 +182,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       !!activeProfile && activeProfile.profileId === profileId
 
     setProfileLoading(true)
-    // Avoid flicker on refresh: keep currently displayed details/sessions while we refetch.
-    // Only reset sessions when opening a different profile (or first load).
     if (!hasExistingProfileData) {
       setProfileSessions([])
       setProfileSessionsSkip(0)
@@ -193,18 +189,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     }
 
     try {
-      let from = ''
-      let to = ''
-
-      if (period === 'custom' && dateRange) {
-        from = getFormatDate(dateRange[0])
-        to = getFormatDate(dateRange[1])
-      }
-
       const data = await profileProxy.fetchProfile(id, profileId, {
-        period: period === 'custom' && dateRange ? '' : period,
-        from,
-        to,
         timezone,
       })
 
@@ -247,22 +232,13 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     try {
       const skip =
         typeof forcedSkip === 'number' ? forcedSkip : profileSessionsSkip
-      let from = ''
-      let to = ''
-
-      if (period === 'custom' && dateRange) {
-        from = getFormatDate(dateRange[0])
-        to = getFormatDate(dateRange[1])
-      }
 
       const dataSessions = await profileSessionsProxy.fetchProfileSessions(
         id,
         profileId,
         {
-          period: period === 'custom' && dateRange ? '' : period,
-          filters,
-          from,
-          to,
+          period: 'all',
+          filters: [],
           take: options.take || SESSIONS_TAKE,
           skip,
           timezone,
@@ -310,7 +286,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     }
   }
 
-  // Load profiles list when component mounts or dependencies change
   useEffect(() => {
     if (!project || activeProfileId) {
       return
@@ -321,7 +296,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       return
     }
 
-    // Reset pagination and load the first page whenever the query context changes
     setProfilesSkip(0)
     loadProfiles(0, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -337,7 +311,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     profileTypeFilter,
   ])
 
-  // Reload active profile when query context changes (period, date range, filters, etc.)
   useEffect(() => {
     if (!activeProfileId || !project) {
       return
@@ -345,24 +318,13 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
 
     loadProfile(activeProfileId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeProfileId,
-    project,
-    period,
-    dateRange,
-    timezone,
-    filters,
-    projectPassword,
-    id,
-  ])
+  }, [activeProfileId, project, timezone, projectPassword, id])
 
-  // Reset profiles when navigating away from profile detail
   useEffect(() => {
     const prevProfileId = prevActiveProfileIdRef.current
     prevActiveProfileIdRef.current = activeProfileId
 
     if (prevProfileId && !activeProfileId) {
-      // We just closed a profile detail, reset to first page
       setProfilesSkip(0)
       skipNextProfilesAutoLoadRef.current = true
       loadProfiles(0, true)
@@ -370,7 +332,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProfileId])
 
-  // Handle refresh trigger from parent
   useEffect(() => {
     if (profilesRefreshTrigger > 0) {
       if (activeProfileId) {
@@ -387,7 +348,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profilesRefreshTrigger])
 
-  // Profile detail view
   if (activeProfileId) {
     const backSearchParams = (() => {
       const params = new URLSearchParams(searchParams)
@@ -396,12 +356,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     })()
 
     return (
-      <>
-        <DashboardHeader
-          backLink={`?${backSearchParams}`}
-          backButtonLabel={t('project.backToUsers')}
-          showLiveVisitors={false}
-        />
+      <div>
         {profileLoading && !activeProfile ? (
           <LoaderView />
         ) : (
@@ -417,13 +372,15 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
             }}
             canLoadMoreSessions={canLoadMoreProfileSessions}
             currency={project?.revenueCurrency}
+            websiteUrl={project?.websiteUrl}
+            backLink={`?${backSearchParams}`}
+            backButtonLabel={t('project.backToUsers')}
           />
         )}
-      </>
+      </div>
     )
   }
 
-  // Profiles list view
   return (
     <>
       <DashboardHeader

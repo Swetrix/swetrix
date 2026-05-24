@@ -2696,14 +2696,7 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const {
-      pid,
-      profileId,
-      timezone = DEFAULT_TIMEZONE,
-      period,
-      from,
-      to,
-    } = data
+    const { pid, profileId, timezone = DEFAULT_TIMEZONE } = data
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -2714,55 +2707,22 @@ export class AnalyticsController {
     await this.analyticsService.checkBillingAccess(pid)
 
     this.logger.log(
-      `pid: ${pid}, profileId: ${profileId}, period: ${period}`,
+      `pid: ${pid}, profileId: ${profileId}`,
       'GET /analytics/profile',
     )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
 
-    let timeBucket
-    let diff
-
-    if (period === 'all') {
-      const res = await this.analyticsService.calculateTimeBucketForAllTime(
-        pid,
-        ['pageview', 'custom_event', 'error'],
-      )
-      timeBucket = res.timeBucket[0]
-      diff = res.diff
-    } else {
-      timeBucket = getLowestPossibleTimeBucket(period, from, to)
-    }
-
-    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      timeBucket,
-      period,
-      safeTimezone,
-      diff,
-    )
-
-    const [details, topPages, activityCalendar, chart] = await Promise.all([
+    const [details, topPages, activityCalendar] = await Promise.all([
       this.analyticsService.getProfileDetails(pid, profileId, safeTimezone),
       this.analyticsService.getProfileTopPages(pid, profileId),
       this.analyticsService.getProfileActivityCalendar(pid, profileId),
-      this.analyticsService.getProfileChartData(
-        pid,
-        profileId,
-        timeBucket,
-        groupFromUTC,
-        groupToUTC,
-        safeTimezone,
-      ),
     ])
 
     return {
       ...details,
       topPages,
       activityCalendar,
-      chart,
-      timeBucket,
     }
   }
 

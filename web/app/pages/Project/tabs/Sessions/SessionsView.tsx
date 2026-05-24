@@ -102,6 +102,8 @@ interface ActiveSession {
   }
   pages?: PageflowItem[]
   timeBucket?: string
+  sessionStart?: string
+  lastActivity?: string
 }
 
 interface SessionsViewProps {
@@ -184,6 +186,9 @@ const SessionsViewInner = ({
     if (deferredData.sessionDetails) {
       const apiDetails = deferredData.sessionDetails.details
       const matchingSession = sessions.find((s) => s.psid === activePSID)
+      const pages = deferredData.sessionDetails.pages
+      const lastPage =
+        pages && pages.length > 0 ? pages[pages.length - 1] : null
       const details: SessionDetailsType = {
         cc: apiDetails.cc,
         os: apiDetails.os,
@@ -209,8 +214,13 @@ const SessionsViewInner = ({
       return {
         details,
         chart: deferredData.sessionDetails.chart,
-        pages: deferredData.sessionDetails.pages,
+        pages,
         timeBucket: deferredData.sessionDetails.timeBucket,
+        sessionStart: matchingSession?.sessionStart || apiDetails.created,
+        lastActivity:
+          matchingSession?.lastActivity ||
+          lastPage?.created ||
+          apiDetails.created,
       }
     }
     return null
@@ -406,21 +416,17 @@ const SessionsViewInner = ({
   // Session Detail View
   if (activePSID) {
     return (
-      <>
-        <DashboardHeader
-          backLink={`?${pureSearchParams}`}
-          backButtonLabel={t('project.backToSessions')}
-          showLiveVisitors={false}
-        />
-        <SessionDetailView
-          activeSession={activeSession}
-          sessionLoading={sessionLoading}
-          timeFormat={timeFormat}
-          rotateXAxis={rotateXAxis}
-          dataNames={dataNames}
-          websiteUrl={project?.websiteUrl}
-        />
-      </>
+      <SessionDetailView
+        activeSession={activeSession}
+        sessionId={activePSID}
+        sessionLoading={sessionLoading}
+        timeFormat={timeFormat}
+        rotateXAxis={rotateXAxis}
+        dataNames={dataNames}
+        websiteUrl={project?.websiteUrl}
+        backLink={`?${pureSearchParams}`}
+        backButtonLabel={t('project.backToSessions')}
+      />
     )
   }
 

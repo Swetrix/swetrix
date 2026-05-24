@@ -169,7 +169,7 @@ export const Session = ({
   )
 
   const lastActivityAgo = useMemo(
-    () => dayjs(session.lastActivity).fromNow(),
+    () => dayjs(session.lastActivity).fromNow(true),
     [session.lastActivity],
   )
 

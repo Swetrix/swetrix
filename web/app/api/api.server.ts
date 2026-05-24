@@ -652,7 +652,9 @@ export async function getBlogPostWithCategory(
   const result = await serverFetch<BlogPostContent>(
     request,
     `v1/blog/${category}/${slug}`,
-    { skipAuth: true },
+    {
+      skipAuth: true,
+    },
   )
 
   if (result.error || !result.data) {
@@ -996,7 +998,9 @@ export async function getSessionsServer(
   return serverFetch<SessionsResponse>(
     request,
     `log/sessions?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -1157,7 +1161,9 @@ export async function getSessionServer(
   return serverFetch<SessionDetailsResponse>(
     request,
     `log/session?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -1261,7 +1267,9 @@ export async function getErrorServer(
   return serverFetch<ErrorDetailsResponse>(
     request,
     `log/get-error?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -1626,7 +1634,9 @@ export async function getFunnelDataServer(
   return serverFetch<FunnelDataResponse>(
     request,
     `log/funnel?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -1692,7 +1702,9 @@ export async function getCaptchaDataServer(
   return serverFetch<CaptchaDataResponse>(
     request,
     `log/captcha?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -1876,49 +1888,41 @@ export async function getProfilesServer(
 
 interface ProfileDetails {
   profileId: string
-  isAnonymous: boolean
-  created: string
-  pageviews: number
-  sessions: number
-  customEvents: number
-  errors: number
-  revenue?: number
-  refunds?: number
-  revenueCurrency?: string
+  isIdentified: boolean
+  sessionsCount: number
+  pageviewsCount: number
+  eventsCount: number
+  errorsCount: number
+  firstSeen: string
   lastSeen: string
-  country?: string
-  city?: string
-  region?: string
-  locale?: string
-  os?: string
-  browser?: string
-  device?: string
-  properties?: Record<string, unknown>
-  eventsInPeriod?: number
-  sessionsInPeriod?: number
+  avgDuration: number
+  cc: string | null
+  rg: string | null
+  ct: string | null
+  os: string | null
+  osv: string | null
+  br: string | null
+  brv: string | null
+  dv: string | null
+  lc: string | null
+  totalRevenue?: number
+  revenueCurrency?: string
+  topPages?: { page: string; count: number }[]
+  activityCalendar?: { date: string; pageviews: number; events: number }[]
 }
 
-export interface ProfileDetailsResponse extends ProfileDetails {
-  chart: unknown
-  timeBucket: string
-}
+export type ProfileDetailsResponse = ProfileDetails
 
 export async function getProfileServer(
   request: Request,
   pid: string,
   profileId: string,
-  period = '7d',
-  from = '',
-  to = '',
   timezone = '',
   password?: string,
 ): Promise<ServerFetchResult<ProfileDetailsResponse>> {
   const params = new URLSearchParams()
   params.append('pid', pid)
   params.append('profileId', profileId)
-  params.append('period', period)
-  if (from) params.append('from', from)
-  if (to) params.append('to', to)
   if (timezone) params.append('timezone', timezone)
 
   const headers: Record<string, string> = {}
@@ -1929,7 +1933,9 @@ export async function getProfileServer(
   return serverFetch<ProfileDetailsResponse>(
     request,
     `log/profile?${params.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -1945,9 +1951,13 @@ interface ProfileSession {
   revenue?: number
   refunds?: number
   created: string
+  sessionStart?: string
+  lastActivity?: string
+  sdur?: number
   duration?: number
   active?: boolean
-  isLive?: boolean
+  isLive?: 1 | 0 | boolean
+  pages?: PageflowItem[]
 }
 
 export interface ProfileSessionsResponse {
@@ -1958,7 +1968,7 @@ export async function getProfileSessionsServer(
   request: Request,
   pid: string,
   profileId: string,
-  period = '3d',
+  period = 'all',
   filters: AnalyticsFilter[] = [],
   from = '',
   to = '',
@@ -2076,7 +2086,9 @@ export async function getCustomEventsMetadataServer(
   return serverFetch<CustomEventsMetadataResponse>(
     request,
     `log/meta?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -2120,7 +2132,9 @@ export async function getPropertyMetadataServer(
   return serverFetch<PropertyMetadataResponse>(
     request,
     `log/property?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -2261,7 +2275,9 @@ export async function getBotProtectionStatsServer(
   return serverFetch<BotProtectionStats>(
     request,
     `log/bot-stats?pid=${pid}&period=${period}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -2484,7 +2500,9 @@ export async function getUserFlowServer(
   return serverFetch<UserFlowResponse>(
     request,
     `log/user-flow?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -2621,7 +2639,9 @@ export async function getGSCKeywordsServer(
   return serverFetch<GSCKeywordsResponse>(
     request,
     `log/keywords?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -2749,7 +2769,9 @@ export async function getGSCDashboardServer(
   return serverFetch<GSCDashboardResponse>(
     request,
     `log/gsc-dashboard?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -2796,7 +2818,9 @@ export async function getGSCDetailsServer(
   return serverFetch<GSCDetailsResponse>(
     request,
     `log/gsc-details?${queryParams.toString()}`,
-    { headers },
+    {
+      headers,
+    },
   )
 }
 
@@ -2902,6 +2926,8 @@ export async function getIpLookupServer(
   return serverFetch<IpLookupResponse>(
     request,
     `tools/ip-lookup?${queryParams.toString()}`,
-    { skipAuth: true },
+    {
+      skipAuth: true,
+    },
   )
 }

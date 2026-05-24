@@ -1,9 +1,11 @@
 import { Button as HeadlessButton } from '@headlessui/react'
-import React, { memo } from 'react'
+import React, { forwardRef, memo } from 'react'
+import type { LinkProps } from 'react-router'
 
 import { cn } from '~/utils/generic'
 
 import Spin from './icons/Spin'
+import { Link } from './Link'
 
 /**
  * Visual style of the button.
@@ -28,7 +30,7 @@ type ButtonVariant =
   | 'icon'
 
 /**
- * Padding + text scale.
+ * Padding.
  *
  * - `xs` — `px-2.5 py-1.5 text-xs` (smallest)
  * - `sm` — `px-2.5 py-1.5 text-sm`
@@ -47,6 +49,8 @@ interface ButtonProps extends Omit<
   variant?: ButtonVariant
   size?: ButtonSize
   loading?: boolean
+  to?: LinkProps['to']
+  linkProps?: Omit<LinkProps, 'to' | 'children' | 'className'>
   /**
    * Whether to render a focus ring on keyboard focus. Defaults to `true`.
    * Set to `false` for compact toolbar buttons embedded in a list where the ring would be visual noise.
@@ -106,36 +110,74 @@ export const buttonClasses = ({
   return cn(
     'relative inline-flex items-center rounded-md border leading-4 font-medium select-none',
     'transition-[background-color,color,box-shadow,transform] duration-150 ease-out',
-    'active:scale-[0.985] active:duration-75',
     focus &&
       'focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus-visible:outline-hidden dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-950',
-    'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100',
+    'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
     BUTTON_VARIANT_CLASSES[variant],
     !isIcon && BUTTON_SIZE_CLASSES[size],
     className,
   )
 }
 
-const Button = ({
-  variant = 'primary',
-  size = 'md',
-  type = 'button',
-  className,
-  loading,
-  disabled,
-  focus = true,
-  children,
-  ...props
-}: ButtonProps) => (
-  <HeadlessButton
-    {...props}
-    disabled={disabled || loading}
-    type={type}
-    className={buttonClasses({ variant, size, focus, className })}
-  >
-    {loading ? <Spin inherit /> : null}
-    {children}
-  </HeadlessButton>
+const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
+  (
+    {
+      variant = 'primary',
+      size = 'md',
+      type = 'button',
+      className,
+      loading,
+      disabled,
+      focus = true,
+      children,
+      to,
+      linkProps,
+      ...props
+    },
+    ref,
+  ) => {
+    const isDisabled = disabled || loading
+    const classes = buttonClasses({ variant, size, focus, className })
+
+    if (to) {
+      const anchorProps = props as React.AnchorHTMLAttributes<HTMLAnchorElement>
+
+      return (
+        <Link
+          {...linkProps}
+          {...anchorProps}
+          ref={ref as React.Ref<HTMLAnchorElement>}
+          to={to}
+          aria-disabled={isDisabled || undefined}
+          tabIndex={
+            isDisabled ? -1 : (linkProps?.tabIndex ?? anchorProps.tabIndex)
+          }
+          className={cn(
+            classes,
+            isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
+          )}
+        >
+          {loading ? <Spin inherit /> : null}
+          {children}
+        </Link>
+      )
+    }
+
+    return (
+      <HeadlessButton
+        {...props}
+        ref={ref as React.Ref<HTMLButtonElement>}
+        disabled={isDisabled}
+        type={type}
+        className={classes}
+      >
+        {loading ? <Spin inherit /> : null}
+        {children}
+      </HeadlessButton>
+    )
+  },
 )
+
+Button.displayName = 'Button'
 
 export default memo(Button)

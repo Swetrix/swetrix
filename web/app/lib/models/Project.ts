@@ -152,13 +152,6 @@ export interface ProfileDetails extends Profile {
   brv: string | null
   topPages: { page: string; count: number }[]
   activityCalendar: { date: string; pageviews: number; events: number }[]
-  chart?: {
-    x: string[]
-    pageviews: number[]
-    customEvents: number[]
-    errors: number[]
-  }
-  timeBucket?: string
   totalRevenue?: number
   revenueCurrency?: string
 }

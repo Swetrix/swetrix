@@ -12,7 +12,6 @@ import {
 } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { PID_REGEX } from '../../common/constants'
-import { ValidatePeriod } from '../decorators/validate-period.decorator'
 import { GetDataDto } from './getData.dto'
 
 export class GetProfileDto {
@@ -41,19 +40,6 @@ export class GetProfileDto {
   })
   @IsOptional()
   timezone?: string
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @ValidatePeriod()
-  period?: string
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  from?: string
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  to?: string
 }
 
 export class GetProfileSessionsDto extends PickType(GetDataDto, [

@@ -1,3 +1,5 @@
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { TFunction } from 'i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -18,8 +20,11 @@ import {
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { Text } from '~/ui/Text'
 import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+
+dayjs.extend(utc)
 
 interface Metadata {
   key: string
@@ -80,6 +85,38 @@ const formatDuration = (seconds: number): string => {
   return getStringFromTime(getTimeFromSeconds(seconds))
 }
 
+const parseDateTime = (value: string | null | undefined) => {
+  if (!value) return null
+
+  const date = dayjs.utc(value)
+  if (!date.isValid()) return null
+
+  return date
+}
+
+const getTimestamp = (value: string | null | undefined) =>
+  parseDateTime(value)?.valueOf() ?? Number.NaN
+
+const formatDateTime = (
+  value: string,
+  language: string,
+  timeFormat: '12-hour' | '24-hour',
+  timezone: string,
+) => {
+  const date = parseDateTime(value)
+  if (!date) return ''
+
+  return date.toDate().toLocaleDateString(language, {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+    timeZone: timezone,
+  })
+}
+
 const StepNumber = ({ number }: { number: number }) => (
   <Text
     size='xs'
@@ -121,7 +158,7 @@ const Duration = ({ seconds }: { seconds: number }) => (
   <Text
     size='xs'
     weight='medium'
-    colour='muted'
+    colour='secondary'
     className='inline-flex items-center gap-1 tabular-nums'
   >
     <ClockIcon className='h-3 w-3' aria-hidden />
@@ -162,7 +199,7 @@ const MetadataPanel = ({
                 as='dt'
                 size='xs'
                 weight='medium'
-                colour='muted'
+                colour='secondary'
                 tracking='tight'
                 className='font-mono leading-5'
               >
@@ -171,7 +208,7 @@ const MetadataPanel = ({
               <Text
                 as='dd'
                 size='xs'
-                colour='secondary'
+                colour='primary'
                 className={cn(
                   'leading-5 wrap-break-word',
                   needsTruncation && 'cursor-help',
@@ -189,7 +226,7 @@ const MetadataPanel = ({
           as='button'
           size='xs'
           weight='medium'
-          colour='muted'
+          colour='secondary'
           type='button'
           onClick={() => setShowAll(!showAll)}
           className='block w-full border-t border-gray-200/70 px-3 py-1.5 text-left transition-colors hover:bg-gray-100/70 hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-none focus-visible:ring-inset dark:border-slate-800/80 dark:hover:bg-slate-900/60 dark:hover:text-gray-200 dark:focus-visible:ring-slate-300'
@@ -253,10 +290,10 @@ const PageflowItem = ({
 
       <div className='min-w-0 pb-6'>
         <div className='flex min-h-7 items-center justify-between gap-3'>
-          <div className='flex min-w-0 items-center gap-2'>
+          <div className='flex min-w-0 flex-1 items-center gap-2'>
             <TypeIcon type={type} />
             {isMonetary ? (
-              <div className='flex flex-wrap items-baseline gap-x-2 leading-4'>
+              <div className='flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 leading-4'>
                 <Text
                   size='sm'
                   weight='semibold'
@@ -267,7 +304,11 @@ const PageflowItem = ({
                   {formatAmount(amount || 0, currency)}
                 </Text>
                 {value ? (
-                  <Text size='xs' colour='muted'>
+                  <Text
+                    size='xs'
+                    colour='secondary'
+                    className='min-w-0 flex-1 wrap-anywhere'
+                  >
                     · {value}
                   </Text>
                 ) : null}
@@ -277,13 +318,13 @@ const PageflowItem = ({
                 href={fullPageUrl}
                 target='_blank'
                 rel='noopener noreferrer nofollow'
-                className='leading-4 underline decoration-gray-300 decoration-dashed underline-offset-2 transition-colors hover:decoration-gray-500 dark:decoration-slate-600 dark:hover:decoration-slate-400'
+                className='min-w-0 flex-1 leading-4 underline decoration-gray-300 decoration-dashed underline-offset-2 transition-colors hover:decoration-gray-500 dark:decoration-slate-600 dark:hover:decoration-slate-400'
               >
                 <Text
                   size='sm'
                   weight='medium'
                   colour='primary'
-                  className='leading-4 wrap-break-word'
+                  className='leading-4 wrap-anywhere'
                 >
                   {value}
                 </Text>
@@ -293,14 +334,14 @@ const PageflowItem = ({
                 size='sm'
                 weight='medium'
                 colour='primary'
-                className='leading-4 wrap-break-word'
+                className='min-w-0 flex-1 leading-4 wrap-anywhere'
               >
                 {value || _toUpper(t('common.notSet'))}
               </Text>
             )}
           </div>
           <time dateTime={created} className='hidden shrink-0 sm:inline-block'>
-            <Text size='xs' colour='muted' className='tabular-nums'>
+            <Text size='xs' colour='secondary' className='tabular-nums'>
               {displayCreated}
             </Text>
           </time>
@@ -314,7 +355,7 @@ const PageflowItem = ({
                 as='button'
                 size='xs'
                 weight='medium'
-                colour='muted'
+                colour='secondary'
                 type='button'
                 aria-expanded={isExpanded}
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -380,7 +421,7 @@ const Terminator = ({ isLive, t }: { isLive?: boolean; t: TFunction }) => (
         size='xs'
         weight='medium'
         tracking='tight'
-        colour={isLive ? 'error' : 'muted'}
+        colour={isLive ? 'error' : 'secondary'}
       >
         {isLive ? t('project.sessionInProgress') : t('project.endOfSession')}
       </Text>
@@ -400,13 +441,14 @@ export const Pageflow = ({
     t,
     i18n: { language },
   } = useTranslation('common')
+  const { timezone } = useViewProjectContext()
 
   const filteredPages = useMemo(() => {
     if (!pages) return []
     if (!zoomedTimeRange) return pages
 
     return pages.filter((page) => {
-      const pageTime = new Date(page.created).getTime()
+      const pageTime = getTimestamp(page.created)
       return (
         pageTime >= zoomedTimeRange[0].getTime() &&
         pageTime <= zoomedTimeRange[1].getTime()
@@ -418,8 +460,12 @@ export const Pageflow = ({
     if (filteredPages.length < 2) return []
     const times: number[] = []
     for (let i = 0; i < filteredPages.length - 1; i++) {
-      const currentTime = new Date(filteredPages[i].created).getTime()
-      const nextTime = new Date(filteredPages[i + 1].created).getTime()
+      const currentTime = getTimestamp(filteredPages[i].created)
+      const nextTime = getTimestamp(filteredPages[i + 1].created)
+      if (!Number.isFinite(currentTime) || !Number.isFinite(nextTime)) {
+        times.push(0)
+        continue
+      }
       times.push(Math.round((nextTime - currentTime) / 1000))
     }
     return times
@@ -427,10 +473,13 @@ export const Pageflow = ({
 
   const timeAfterLastEvent = useMemo(() => {
     if (sdur <= 0 || filteredPages.length === 0) return 0
-    const firstEventTime = new Date(filteredPages[0].created).getTime()
-    const lastEventTime = new Date(
+    const firstEventTime = getTimestamp(filteredPages[0].created)
+    const lastEventTime = getTimestamp(
       filteredPages[filteredPages.length - 1].created,
-    ).getTime()
+    )
+    if (!Number.isFinite(firstEventTime) || !Number.isFinite(lastEventTime)) {
+      return 0
+    }
     const remaining = sdur - Math.round((lastEventTime - firstEventTime) / 1000)
     return remaining > 0 ? remaining : 0
   }, [filteredPages, sdur])
@@ -458,16 +507,11 @@ export const Pageflow = ({
       {_map(
         filteredPages,
         ({ value, created, type, metadata, amount, currency }, index) => {
-          const displayCreated = new Date(created).toLocaleDateString(
+          const displayCreated = formatDateTime(
+            created,
             language,
-            {
-              day: 'numeric',
-              month: 'short',
-              hour: 'numeric',
-              minute: 'numeric',
-              second: 'numeric',
-              hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
-            },
+            timeFormat,
+            timezone,
           )
 
           const isLastEvent = index === filteredPages.length - 1

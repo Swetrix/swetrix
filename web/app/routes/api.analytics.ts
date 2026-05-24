@@ -540,9 +540,6 @@ export async function action({ request }: ActionFunctionArgs) {
           request,
           projectId,
           body.profileId,
-          params.period || '7d',
-          formatDateForBackend(params.from) || '',
-          formatDateForBackend(params.to) || '',
           params.timezone || '',
           password || undefined,
         )
@@ -567,7 +564,7 @@ export async function action({ request }: ActionFunctionArgs) {
           request,
           projectId,
           body.profileId,
-          params.period || '3d',
+          params.period || 'all',
           params.filters || [],
           formatDateForBackend(params.from) || '',
           formatDateForBackend(params.to) || '',

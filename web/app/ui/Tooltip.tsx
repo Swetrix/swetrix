@@ -11,9 +11,37 @@ const TooltipRoot = TooltipPrimitive.Root
 
 const TooltipTrigger = TooltipPrimitive.Trigger
 
+type TooltipContentVariant = 'default' | 'chart'
+
+const TOOLTIP_CONTENT_VARIANT_CLASSES: Record<TooltipContentVariant, string> = {
+  default:
+    'max-w-80 bg-slate-900 px-2.5 py-1.5 text-xs leading-relaxed font-medium text-slate-50 shadow-lg ring-1 ring-white/10 dark:bg-slate-800 dark:ring-white/5',
+  chart:
+    'max-w-xs bg-gray-50 px-2 py-1 text-xs leading-relaxed text-gray-900 shadow-md ring-1 ring-black/10 md:text-sm dark:bg-slate-900 dark:text-gray-50',
+}
+
+const TOOLTIP_ARROW_VARIANT_CLASSES: Record<TooltipContentVariant, string> = {
+  default: 'fill-slate-900 dark:fill-slate-800',
+  chart: 'fill-gray-50 dark:fill-slate-900',
+}
+
+export const tooltipContentClasses = ({
+  contentVariant = 'default',
+  className,
+}: {
+  contentVariant?: TooltipContentVariant
+  className?: string
+} = {}) =>
+  cn(
+    'tooltip-content z-50 origin-(--radix-tooltip-content-transform-origin) overflow-hidden rounded-md',
+    TOOLTIP_CONTENT_VARIANT_CLASSES[contentVariant],
+    className,
+  )
+
 interface TooltipContentExtraProps {
   withArrow?: boolean
   arrowClassName?: string
+  contentVariant?: TooltipContentVariant
 }
 
 const TooltipContent = forwardRef<
@@ -27,6 +55,7 @@ const TooltipContent = forwardRef<
       sideOffset = 6,
       withArrow = true,
       arrowClassName,
+      contentVariant = 'default',
       children,
       ...props
     },
@@ -37,16 +66,16 @@ const TooltipContent = forwardRef<
         ref={ref}
         forceMount
         sideOffset={sideOffset}
-        className={cn(
-          'tooltip-content z-50 max-w-80 origin-(--radix-tooltip-content-transform-origin) overflow-hidden rounded-md bg-slate-900 px-2.5 py-1.5 text-xs leading-relaxed font-medium text-slate-50 shadow-lg ring-1 ring-white/10 dark:bg-slate-800 dark:ring-white/5',
-          className,
-        )}
+        className={tooltipContentClasses({ contentVariant, className })}
         {...props}
       >
         {children}
         {withArrow ? (
           <TooltipPrimitive.Arrow
-            className={cn('fill-slate-900 dark:fill-slate-800', arrowClassName)}
+            className={cn(
+              TOOLTIP_ARROW_VARIANT_CLASSES[contentVariant],
+              arrowClassName,
+            )}
             width={10}
             height={5}
           />
@@ -62,6 +91,7 @@ interface TooltipProps {
   className?: string
   contentClassName?: string
   arrowClassName?: string
+  contentVariant?: TooltipContentVariant
   tooltipNode?: React.ReactNode
   ariaLabel?: string
   asChild?: boolean
@@ -81,6 +111,7 @@ const Tooltip = ({
   asChild,
   contentClassName,
   arrowClassName,
+  contentVariant = 'default',
   delay = 50,
   disableHoverableContent,
 }: TooltipProps) => {
@@ -103,6 +134,7 @@ const Tooltip = ({
           )}
         </TooltipTrigger>
         <TooltipContent
+          contentVariant={contentVariant}
           className={cn(
             contentClassName,
             disableHoverableContent && 'pointer-events-none',
