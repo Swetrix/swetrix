@@ -307,7 +307,7 @@ export const SessionDetailView = ({
   const lastSeenLabel = lastSeenTime
     ? lastSeenTime === 'now'
       ? t('project.online')
-      : t('project.lastSeenAgo', { time: `${lastSeenTime} ago` })
+      : t('project.lastSeenAgo', { time: lastSeenTime })
     : t('project.endOfSession')
   const isRecentlyActive =
     !details.isLive &&

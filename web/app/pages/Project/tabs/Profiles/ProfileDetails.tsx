@@ -111,8 +111,8 @@ interface PlatformPart {
 const getOnlineStatus = (lastSeen: string | undefined): OnlineStatus => {
   if (!lastSeen) return 'offline'
 
-  const now = dayjs()
-  const lastSeenTime = dayjs(lastSeen)
+  const now = dayjs.utc()
+  const lastSeenTime = dayjs.utc(lastSeen)
   const minutesAgo = now.diff(lastSeenTime, 'minute')
 
   if (minutesAgo < ONLINE_THRESHOLD_MINUTES) {
@@ -154,17 +154,19 @@ const formatVersionLabel = (name: string | null, version: string | null) => {
 }
 
 const getSessionDuration = (session: ProfileSession) => {
-  if (session.sdur && session.sdur > 0) {
+  if (session.sdur != null) {
     return session.sdur
   }
 
-  const pages = session.pages || []
-  if (pages.length < 2) {
+  const interactionPages = (session.pages || []).filter(
+    ({ type }) => type !== 'sale' && type !== 'refund',
+  )
+  if (interactionPages.length < 2) {
     return 0
   }
 
-  const first = dayjs.utc(pages[0].created)
-  const last = dayjs.utc(pages[pages.length - 1].created)
+  const first = dayjs.utc(interactionPages[0].created)
+  const last = dayjs.utc(interactionPages[interactionPages.length - 1].created)
   if (!first.isValid() || !last.isValid()) {
     return 0
   }
@@ -599,7 +601,7 @@ export const ProfileDetails = ({
   )
 
   const lastSeenAgo = useMemo(
-    () => (details?.lastSeen ? dayjs(details.lastSeen).fromNow() : ''),
+    () => (details?.lastSeen ? dayjs.utc(details.lastSeen).fromNow(true) : ''),
     [details?.lastSeen],
   )
 

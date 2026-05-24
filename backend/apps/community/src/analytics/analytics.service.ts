@@ -6713,7 +6713,7 @@ export class AnalyticsService {
             AND profileId = {profileId:String}
             AND psid IS NOT NULL
             AND toString(psid) IN {psids:Array(String)}
-            AND created BETWEEN {groupFrom:DateTime} AND {groupTo:DateTime}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         )
       )
 

@@ -1854,7 +1854,7 @@
     "sessionNew": "New",
     "sessionReturn": "Return",
     "online": "Online",
-    "lastSeenAgo": "Last seen {{time}}",
+    "lastSeenAgo": "Last seen {{time}} ago",
     "searchUsers": "Search users...",
     "sessions": "Sessions",
     "xSessions": "{{x}} sessions",

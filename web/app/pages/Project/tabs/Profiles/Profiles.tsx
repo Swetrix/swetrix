@@ -89,7 +89,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
   )
 
   const lastSeenAgo = useMemo(
-    () => dayjs(profile.lastSeen).fromNow(),
+    () => dayjs(profile.lastSeen).fromNow(true),
     [profile.lastSeen],
   )
 
