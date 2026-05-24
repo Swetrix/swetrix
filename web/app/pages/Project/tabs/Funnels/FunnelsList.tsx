@@ -1,4 +1,5 @@
 import cx from 'clsx'
+import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import {
   SlidersHorizontalIcon,
@@ -7,19 +8,37 @@ import {
   FileTextIcon,
   CursorClickIcon,
   ArrowRightIcon,
+  CaretDownIcon,
 } from '@phosphor-icons/react'
-import { type MouseEvent, useMemo, useRef } from 'react'
+import {
+  Suspense,
+  use,
+  useEffect,
+  useMemo,
+  useRef,
+  type ReactNode,
+} from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from '~/ui/Link'
-import { useSearchParams } from 'react-router'
 
-import { Funnel } from '~/lib/models/Project'
+import type { FunnelDataResponse } from '~/api/api.server'
+import type { Funnel } from '~/lib/models/Project'
+import { FunnelChart } from '~/pages/Project/tabs/Funnels/FunnelChart'
 import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
+import Spin from '~/ui/icons/Spin'
 import { Text } from '~/ui/Text'
+import { nLocaleFormatter } from '~/utils/generic'
 
 interface FunnelsListProps {
-  funnels?: any[]
+  funnels?: Funnel[]
+  activeFunnelId: string | null
+  funnelDataPromise?: Promise<FunnelDataResponse | null>
+  onToggleFunnel: (id: string) => void
+  onFunnelDataResolved: (
+    funnelId: string,
+    funnelData: FunnelDataResponse | null,
+  ) => void
+  onBarClick: (stepIndex: number) => void
   openFunnelSettings: (funnel?: Funnel) => void
   deleteFunnel: (id: string) => void
   loading: boolean
@@ -28,6 +47,14 @@ interface FunnelsListProps {
 
 interface FunnelCardProps {
   funnel: Funnel
+  isExpanded: boolean
+  funnelDataPromise?: Promise<FunnelDataResponse | null>
+  onToggleFunnel: (id: string) => void
+  onFunnelDataResolved: (
+    funnelId: string,
+    funnelData: FunnelDataResponse | null,
+  ) => void
+  onBarClick: (stepIndex: number) => void
   openFunnelSettings: (funnel: Funnel) => void
   deleteFunnel: (id: string) => void
   loading: boolean
@@ -39,6 +66,55 @@ interface AddFunnelProps {
 }
 
 const STEPS_MAX_HEIGHT = 42
+
+const getFunnelSummary = (funnelData?: FunnelDataResponse | null) => {
+  if (!funnelData || _isEmpty(funnelData.funnel)) {
+    return null
+  }
+
+  const stepsCount = funnelData.funnel.length
+  const startVisitors = funnelData.funnel[0]?.events || 0
+  const endVisitors = funnelData.funnel[stepsCount - 1]?.events || 0
+  const conversionRate = Number(
+    ((endVisitors / Math.max(startVisitors, 1)) * 100).toFixed(2),
+  )
+
+  return {
+    stepsCount,
+    startVisitors,
+    endVisitors,
+    conversionRate,
+  }
+}
+
+const FunnelDataResolver = ({
+  funnelId,
+  funnelDataPromise,
+  onFunnelDataResolved,
+  children,
+}: {
+  funnelId: string
+  funnelDataPromise?: Promise<FunnelDataResponse | null>
+  onFunnelDataResolved: (
+    funnelId: string,
+    funnelData: FunnelDataResponse | null,
+  ) => void
+  children: (funnelData: FunnelDataResponse | null) => ReactNode
+}) => {
+  const funnelData = funnelDataPromise ? use(funnelDataPromise) : null
+
+  useEffect(() => {
+    onFunnelDataResolved(funnelId, funnelData)
+  }, [funnelData, funnelId, onFunnelDataResolved])
+
+  return <>{children(funnelData)}</>
+}
+
+const FunnelChartLoading = () => (
+  <div className='flex h-[260px] items-center justify-center'>
+    <Spin className='size-8' />
+  </div>
+)
 
 const FunnelSteps = ({ steps }: { steps: string[] }) => {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -85,73 +161,169 @@ const FunnelSteps = ({ steps }: { steps: string[] }) => {
   )
 }
 
+const FunnelExpandedChart = ({
+  funnelData,
+  onBarClick,
+}: {
+  funnelData: FunnelDataResponse | null
+  onBarClick: (stepIndex: number) => void
+}) => {
+  const { t } = useTranslation('common')
+  const funnelSummary = useMemo(
+    () => getFunnelSummary(funnelData),
+    [funnelData],
+  )
+
+  if (!funnelData?.funnel || _isEmpty(funnelData.funnel)) {
+    return (
+      <div className='flex h-[260px] items-center justify-center'>
+        <Text as='p' colour='muted'>
+          {t('project.noData')}
+        </Text>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {funnelSummary ? (
+        <div>
+          <Text as='p' weight='medium' className='lg:text-left'>
+            {t('project.funnelSummary.xStepFunnel', {
+              x: funnelSummary.stepsCount,
+            })}
+            <span className='mx-2 text-gray-400'>•</span>
+            {t('project.funnelSummary.conversionRateShort', {
+              x: funnelSummary.conversionRate,
+            })}
+          </Text>
+          <Text as='p' className='text-center lg:text-left'>
+            {t('project.funnelSummary.startShort')}:{' '}
+            {nLocaleFormatter(funnelSummary.startVisitors)}
+            <span className='mx-1'>→</span>
+            {t('project.funnelSummary.endShort')}:{' '}
+            {nLocaleFormatter(funnelSummary.endVisitors)}
+          </Text>
+        </div>
+      ) : null}
+      <FunnelChart
+        funnel={funnelData.funnel}
+        totalPageviews={funnelData.totalPageviews}
+        t={t}
+        className='mt-5 h-80 [&_svg]:!overflow-visible'
+        onBarClick={onBarClick}
+      />
+    </>
+  )
+}
+
 const FunnelCard = ({
   funnel,
+  isExpanded,
+  funnelDataPromise,
+  onToggleFunnel,
+  onFunnelDataResolved,
+  onBarClick,
   openFunnelSettings,
   deleteFunnel,
   loading,
   allowedToManage,
 }: FunnelCardProps) => {
   const { t } = useTranslation()
-  const [searchParams] = useSearchParams()
-
-  const search = useMemo(() => {
-    const params = new URLSearchParams(searchParams)
-    params.set('funnelId', funnel.id)
-    return params.toString()
-  }, [funnel.id, searchParams])
 
   return (
-    <Link
-      to={{
-        search,
-      }}
-      className='min-h-[120px] cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'
-    >
-      <div className='px-4 py-4'>
-        <div className='flex items-center justify-between'>
-          <Text as='p' size='base' weight='semibold' truncate>
-            {funnel.name}
-          </Text>
-          <div className='flex shrink-0 items-center gap-1'>
+    <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-900/25'>
+      <div className='flex transition-colors hover:bg-gray-200/70 dark:hover:bg-slate-900/60'>
+        <button
+          type='button'
+          aria-expanded={isExpanded}
+          aria-controls={`funnel-${funnel.id}-details`}
+          onClick={() => onToggleFunnel(funnel.id)}
+          className='flex min-w-0 flex-1 cursor-pointer justify-between gap-x-6 px-4 py-4 text-left focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden focus-visible:ring-inset sm:px-6 sm:pr-2 dark:focus-visible:ring-slate-300'
+        >
+          <div className='min-w-0 flex-auto'>
+            <Text
+              as='p'
+              weight='semibold'
+              truncate
+              className='flex items-center gap-x-1.5'
+            >
+              <FunnelIcon className='size-4 text-teal-500' />
+              <span>{funnel.name}</span>
+            </Text>
+            {funnel.steps?.length > 0 && <FunnelSteps steps={funnel.steps} />}
+          </div>
+          <div className='flex shrink-0 items-center gap-x-4'>
+            <CaretDownIcon
+              className={cx(
+                'size-5 text-gray-500 transition-transform dark:text-gray-400',
+                {
+                  'rotate-180': isExpanded,
+                },
+              )}
+            />
+          </div>
+        </button>
+        <div className='flex shrink-0 items-center gap-1 py-4 pr-4 sm:pr-6'>
+          <Button
+            variant='icon'
+            type='button'
+            onClick={() => openFunnelSettings(funnel)}
+            aria-label={t('common.settings')}
+            className='p-1.5 text-gray-800 dark:text-slate-400 dark:hover:text-slate-300'
+          >
+            <SlidersHorizontalIcon className='size-4' />
+          </Button>
+          {allowedToManage ? (
             <Button
               variant='icon'
               type='button'
-              onClick={(e: MouseEvent<HTMLButtonElement>) => {
-                e.preventDefault()
-                e.stopPropagation()
-                openFunnelSettings(funnel)
-              }}
-              aria-label={t('common.settings')}
-              className='p-1.5 text-gray-800 dark:text-slate-400 dark:hover:text-slate-300'
-            >
-              <SlidersHorizontalIcon className='size-5' />
-            </Button>
-            {allowedToManage ? (
-              <Button
-                variant='icon'
-                type='button'
-                onClick={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.preventDefault()
-                  e.stopPropagation()
+              disabled={loading}
+              aria-disabled={loading}
+              onClick={() => {
+                if (!loading) {
                   deleteFunnel(funnel.id)
-                }}
-                aria-label={t('common.delete')}
-                className={cx(
-                  'p-1.5 text-gray-800 dark:text-slate-400 dark:hover:text-slate-300',
-                  {
-                    'cursor-not-allowed': loading,
-                  },
-                )}
-              >
-                <TrashIcon className='size-5' />
-              </Button>
-            ) : null}
-          </div>
+                }
+              }}
+              aria-label={t('common.delete')}
+              className={cx(
+                'p-1.5 text-gray-800 dark:text-slate-400 dark:hover:text-slate-300',
+                {
+                  'cursor-not-allowed': loading,
+                },
+              )}
+            >
+              <TrashIcon className='size-4' />
+            </Button>
+          ) : null}
         </div>
-        {funnel.steps?.length > 0 && <FunnelSteps steps={funnel.steps} />}
       </div>
-    </Link>
+      {isExpanded ? (
+        <div
+          id={`funnel-${funnel.id}-details`}
+          className='border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-slate-700'
+        >
+          {funnelDataPromise ? (
+            <Suspense fallback={<FunnelChartLoading />}>
+              <FunnelDataResolver
+                funnelId={funnel.id}
+                funnelDataPromise={funnelDataPromise}
+                onFunnelDataResolved={onFunnelDataResolved}
+              >
+                {(funnelData) => (
+                  <FunnelExpandedChart
+                    funnelData={funnelData}
+                    onBarClick={onBarClick}
+                  />
+                )}
+              </FunnelDataResolver>
+            </Suspense>
+          ) : (
+            <FunnelChartLoading />
+          )}
+        </div>
+      ) : null}
+    </li>
   )
 }
 
@@ -163,27 +335,35 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
   }
 
   return (
-    <li
-      onClick={onClick}
-      className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 transition-colors hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
-    >
-      <div>
-        <FunnelIcon className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
-        <Text
-          as='span'
-          size='sm'
-          weight='semibold'
-          className='mt-2 block group-hover:dark:text-gray-400'
-        >
-          {t('dashboard.newFunnel')}
-        </Text>
-      </div>
+    <li className='mb-3'>
+      <button
+        type='button'
+        onClick={onClick}
+        className='group flex min-h-[96px] w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 transition-colors hover:border-gray-400 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus-visible:outline-hidden dark:border-gray-500 dark:hover:border-gray-600 dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-950'
+      >
+        <div>
+          <FunnelIcon className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
+          <Text
+            as='span'
+            size='sm'
+            weight='semibold'
+            className='mt-2 block group-hover:dark:text-gray-400'
+          >
+            {t('dashboard.newFunnel')}
+          </Text>
+        </div>
+      </button>
     </li>
   )
 }
 
 const FunnelsList = ({
   funnels,
+  activeFunnelId,
+  funnelDataPromise,
+  onToggleFunnel,
+  onFunnelDataResolved,
+  onBarClick,
   openFunnelSettings,
   deleteFunnel,
   loading,
@@ -192,11 +372,16 @@ const FunnelsList = ({
   const { isAuthenticated } = useAuth()
 
   return (
-    <div role='list' className='grid grid-cols-1 gap-3 lg:grid-cols-3'>
+    <ul className='mt-4'>
       {_map(funnels, (funnel) => (
         <FunnelCard
           key={funnel.id}
           funnel={funnel}
+          isExpanded={activeFunnelId === funnel.id}
+          funnelDataPromise={funnelDataPromise}
+          onToggleFunnel={onToggleFunnel}
+          onFunnelDataResolved={onFunnelDataResolved}
+          onBarClick={onBarClick}
           deleteFunnel={deleteFunnel}
           openFunnelSettings={openFunnelSettings}
           loading={loading}
@@ -206,7 +391,7 @@ const FunnelsList = ({
       {isAuthenticated && allowedToManage ? (
         <AddFunnel openFunnelSettings={openFunnelSettings} />
       ) : null}
-    </div>
+    </ul>
   )
 }
 
