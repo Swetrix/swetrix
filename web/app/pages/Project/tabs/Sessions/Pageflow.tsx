@@ -158,7 +158,7 @@ const Duration = ({ seconds }: { seconds: number }) => (
   <Text
     size='xs'
     weight='medium'
-    colour='muted'
+    colour='secondary'
     className='inline-flex items-center gap-1 tabular-nums'
   >
     <ClockIcon className='h-3 w-3' aria-hidden />
@@ -199,7 +199,7 @@ const MetadataPanel = ({
                 as='dt'
                 size='xs'
                 weight='medium'
-                colour='muted'
+                colour='secondary'
                 tracking='tight'
                 className='font-mono leading-5'
               >
@@ -208,7 +208,7 @@ const MetadataPanel = ({
               <Text
                 as='dd'
                 size='xs'
-                colour='secondary'
+                colour='primary'
                 className={cn(
                   'leading-5 wrap-break-word',
                   needsTruncation && 'cursor-help',
@@ -226,7 +226,7 @@ const MetadataPanel = ({
           as='button'
           size='xs'
           weight='medium'
-          colour='muted'
+          colour='secondary'
           type='button'
           onClick={() => setShowAll(!showAll)}
           className='block w-full border-t border-gray-200/70 px-3 py-1.5 text-left transition-colors hover:bg-gray-100/70 hover:text-gray-700 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-none focus-visible:ring-inset dark:border-slate-800/80 dark:hover:bg-slate-900/60 dark:hover:text-gray-200 dark:focus-visible:ring-slate-300'
@@ -306,7 +306,7 @@ const PageflowItem = ({
                 {value ? (
                   <Text
                     size='xs'
-                    colour='muted'
+                    colour='secondary'
                     className='min-w-0 flex-1 wrap-anywhere'
                   >
                     · {value}
@@ -341,7 +341,7 @@ const PageflowItem = ({
             )}
           </div>
           <time dateTime={created} className='hidden shrink-0 sm:inline-block'>
-            <Text size='xs' colour='muted' className='tabular-nums'>
+            <Text size='xs' colour='secondary' className='tabular-nums'>
               {displayCreated}
             </Text>
           </time>
@@ -355,7 +355,7 @@ const PageflowItem = ({
                 as='button'
                 size='xs'
                 weight='medium'
-                colour='muted'
+                colour='secondary'
                 type='button'
                 aria-expanded={isExpanded}
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -421,7 +421,7 @@ const Terminator = ({ isLive, t }: { isLive?: boolean; t: TFunction }) => (
         size='xs'
         weight='medium'
         tracking='tight'
-        colour={isLive ? 'error' : 'muted'}
+        colour={isLive ? 'error' : 'secondary'}
       >
         {isLive ? t('project.sessionInProgress') : t('project.endOfSession')}
       </Text>
