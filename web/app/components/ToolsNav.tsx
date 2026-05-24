@@ -256,11 +256,15 @@ export function ToolsNav({ className }: ToolsNavProps) {
                 as='p'
                 size='sm'
                 weight='medium'
-                colour={isActive ? 'primary' : 'muted'}
+                colour={isActive ? 'primary' : 'secondary'}
               >
                 {tool.title}
               </Text>
-              <Text as='p' size='xs' colour='muted'>
+              <Text
+                as='p'
+                size='xs'
+                colour={isActive ? 'primary' : 'secondary'}
+              >
                 {tool.description}
               </Text>
             </div>
@@ -299,7 +303,7 @@ export function ToolsNavMobile({ className }: ToolsNavProps) {
             <Text as='p' size='sm' weight='medium' colour='primary'>
               {currentTool?.title || 'Tools'}
             </Text>
-            <Text as='p' size='xs' colour='muted'>
+            <Text as='p' size='xs' colour='secondary'>
               {currentTool?.description || 'Select a tool'}
             </Text>
           </div>
@@ -330,10 +334,10 @@ export function ToolsNavMobile({ className }: ToolsNavProps) {
                 >
                   <Icon className='mt-0.5 h-5 w-5 shrink-0 text-gray-400 dark:text-gray-500' />
                   <div className='min-w-0'>
-                    <Text as='p' size='sm' weight='medium' colour='muted'>
+                    <Text as='p' size='sm' weight='medium' colour='secondary'>
                       {tool.title}
                     </Text>
-                    <Text as='p' size='xs' colour='muted'>
+                    <Text as='p' size='xs' colour='secondary'>
                       {tool.description}
                     </Text>
                   </div>
