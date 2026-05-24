@@ -453,6 +453,7 @@ const SessionsViewInner = ({
           onLoadMore={loadMoreSessions}
           disabled={sessionsLoading}
           className={sessionsLoading && _isEmpty(sessions) ? 'hidden' : ''}
+          spinnerClassName='mr-0! ml-0!'
         />
       </div>
     </>

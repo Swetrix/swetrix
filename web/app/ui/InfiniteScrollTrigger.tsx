@@ -9,6 +9,7 @@ interface InfiniteScrollTriggerProps {
   isLoading: boolean
   onLoadMore: () => void
   className?: string
+  spinnerClassName?: string
   disabled?: boolean
   root?: RefObject<Element | null>
   rootMargin?: string
@@ -19,6 +20,7 @@ const InfiniteScrollTrigger = ({
   isLoading,
   onLoadMore,
   className,
+  spinnerClassName,
   disabled = false,
   root,
   rootMargin = '240px',
@@ -72,7 +74,8 @@ const InfiniteScrollTrigger = ({
     >
       <Spin
         className={cx(
-          'size-5 text-gray-400 transition-opacity duration-150 ease-out dark:text-gray-500',
+          'transition-opacity duration-150 ease-out',
+          spinnerClassName || 'size-5 text-gray-400 dark:text-gray-500',
           !isLoading && 'opacity-0',
         )}
       />

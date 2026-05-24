@@ -678,6 +678,7 @@ const ExperimentsView = ({
   const isMountedRef = useRef(true)
   const [total, setTotal] = useState(0)
   const [experiments, setExperiments] = useState<Experiment[]>([])
+  const [experimentsServerSkip, setExperimentsServerSkip] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
   const processedActionRef = useRef<string | null>(null)
@@ -756,6 +757,7 @@ const ExperimentsView = ({
             total: number
           }
           if (experimentsRequestModeRef.current === 'append') {
+            setExperimentsServerSkip((prev) => prev + result.results.length)
             setExperiments((prev) => {
               const existingIds = new Set(
                 prev.map((experiment) => experiment.id),
@@ -766,6 +768,7 @@ const ExperimentsView = ({
               return [...prev, ...uniqueExperiments]
             })
           } else {
+            setExperimentsServerSkip(result.results.length)
             setExperiments(result.results)
           }
           setTotal(result.total)
@@ -993,7 +996,7 @@ const ExperimentsView = ({
     })
   }, [updateExperimentSearchParams])
 
-  const canLoadMoreExperiments = experiments.length < total
+  const canLoadMoreExperiments = experimentsServerSkip < total
   const loadMoreExperiments = useCallback(() => {
     if (isLoading || !canLoadMoreExperiments) {
       return
@@ -1001,14 +1004,14 @@ const ExperimentsView = ({
 
     loadExperiments(
       DEFAULT_EXPERIMENTS_TAKE,
-      experiments.length,
+      experimentsServerSkip,
       true,
       filterQuery || undefined,
       'append',
     )
   }, [
     canLoadMoreExperiments,
-    experiments.length,
+    experimentsServerSkip,
     filterQuery,
     isLoading,
     loadExperiments,
