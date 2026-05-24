@@ -559,7 +559,7 @@ export const SessionDetailView = ({
                         aria-hidden='true'
                       />
                     ) : (
-                      <GlobeIcon className='h-5 w-5' />
+                      <GlobeIcon className='size-4' />
                     )}
                   </Text>
                   <Text

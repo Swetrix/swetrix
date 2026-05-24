@@ -112,7 +112,6 @@ const PasswordRequiredModal = ({
               variant='secondary'
               className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
               as={Link}
-              // @ts-expect-error
               to={routes.main}
             >
               {t('common.cancel')}

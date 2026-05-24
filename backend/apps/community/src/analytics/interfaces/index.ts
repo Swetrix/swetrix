@@ -213,6 +213,7 @@ export interface IPageflow {
   value: string
   created: string
   created_utc?: string
+  psid?: string
   metadata?: [string, string][]
 }
 

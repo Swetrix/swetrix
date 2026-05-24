@@ -212,6 +212,7 @@ export interface IPageflow {
   type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
   value: string
   created: string
+  psid?: string
   metadata?: [string, string][]
 }
 

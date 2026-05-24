@@ -60,6 +60,7 @@ import {
   TooltipRoot,
   TooltipTrigger,
   TooltipContent,
+  tooltipContentClasses,
 } from '~/ui/Tooltip'
 import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
@@ -2443,7 +2444,7 @@ const Panel = ({
                       {rowTooltipRenderer && !rowTooltipFollowCursor ? (
                         <TooltipRoot>
                           <TooltipTrigger asChild>{rowBarEl}</TooltipTrigger>
-                          <TooltipContent className='max-w-xs rounded-md bg-gray-50 px-2 py-1 text-xs text-gray-900 shadow-md ring-1 ring-black/10 md:text-sm dark:bg-slate-900 dark:text-gray-50'>
+                          <TooltipContent contentVariant='chart'>
                             {rowTooltipRenderer(entry)}
                           </TooltipContent>
                         </TooltipRoot>
@@ -2554,7 +2555,10 @@ const Panel = ({
           typeof document !== 'undefined'
             ? createPortal(
                 <div
-                  className='pointer-events-none fixed z-50 max-w-xs rounded-md bg-gray-50 px-2 py-1 text-xs text-gray-900 shadow-md ring-1 ring-black/10 md:text-sm dark:bg-slate-900 dark:text-gray-50'
+                  className={tooltipContentClasses({
+                    contentVariant: 'chart',
+                    className: 'pointer-events-none fixed',
+                  })}
                   style={{
                     left: (() => {
                       const pad = 8
