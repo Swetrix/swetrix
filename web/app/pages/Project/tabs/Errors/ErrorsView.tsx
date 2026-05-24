@@ -578,6 +578,12 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
 
   // Initialize state from deferred data
   const initialDataProcessed = useRef(false)
+  const errorsProxyRequestRef = useRef<{
+    mode: 'append' | 'replace'
+    limit?: number
+  } | null>(null)
+  const preserveErrorsRevalidationRef = useRef(false)
+  const preserveErrorsRevalidationStartedRef = useRef(false)
 
   const [errorOptions, setErrorOptions] = useState<Record<string, boolean>>({
     [ERROR_FILTERS_MAPPING.showResolved]: false,
@@ -674,6 +680,15 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   useEffect(() => {
     if (!initialDataProcessed.current) return
     if (revalidator.state === 'idle') {
+      if (preserveErrorsRevalidationRef.current) {
+        if (preserveErrorsRevalidationStartedRef.current) {
+          preserveErrorsRevalidationRef.current = false
+          preserveErrorsRevalidationStartedRef.current = false
+          setErrorsLoading(false)
+        }
+        return
+      }
+
       if (deferredData.errorsData) {
         const errorsList = deferredData.errorsData.errors || []
         setErrors(errorsList)
@@ -685,14 +700,18 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
       }
       setErrorsLoading(false)
     } else if (revalidator.state === 'loading') {
+      if (preserveErrorsRevalidationRef.current) {
+        preserveErrorsRevalidationStartedRef.current = true
+      }
       setErrorsLoading(true)
     }
   }, [revalidator.state, deferredData])
 
   // Load more errors via proxy
   const loadMoreErrors = useCallback(() => {
-    if (errorsLoading) return
+    if (errorsLoading || errorsProxy.isLoading) return
 
+    errorsProxyRequestRef.current = { mode: 'append' }
     errorsProxy.fetchErrors(id, {
       timeBucket,
       period: period === 'custom' ? '' : period,
@@ -723,13 +742,29 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     if (revalidator.state === 'loading') return
 
     if (errorsProxy.data && !errorsProxy.isLoading) {
+      const proxyRequest = errorsProxyRequestRef.current
+      if (!proxyRequest) {
+        return
+      }
+
       const newErrors = errorsProxy.data.errors || []
-      setErrors((prev) => [...prev, ...newErrors])
-      setErrorsSkip((prev) => prev + ERRORS_TAKE)
-      setCanLoadMoreErrors(newErrors.length >= ERRORS_TAKE)
+      if (proxyRequest.mode === 'replace') {
+        const visibleErrors = newErrors.slice(0, proxyRequest.limit)
+        setErrors(visibleErrors)
+        setErrorsSkip(visibleErrors.length)
+        setCanLoadMoreErrors(newErrors.length > (proxyRequest.limit || 0))
+      } else {
+        setErrors((prev) => [...prev, ...newErrors])
+        setErrorsSkip((prev) => prev + newErrors.length)
+        setCanLoadMoreErrors(newErrors.length >= ERRORS_TAKE)
+      }
+      setErrorsLoading(false)
+      errorsProxyRequestRef.current = null
     }
     if (errorsProxy.error) {
       toast.error(errorsProxy.error)
+      setErrorsLoading(false)
+      errorsProxyRequestRef.current = null
     }
   }, [
     errorsProxy.data,
@@ -854,9 +889,30 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     ],
   )
 
-  // Handle refresh trigger - use revalidator for URL-based data
   useEffect(() => {
     if (errorsRefreshTrigger > 0) {
+      if (!activeEID) {
+        if (errorsProxy.isLoading) {
+          return
+        }
+
+        const limit = Math.max(errors.length, ERRORS_TAKE)
+        errorsProxyRequestRef.current = { mode: 'replace', limit }
+        preserveErrorsRevalidationRef.current = true
+        setErrorsLoading(true)
+        errorsProxy.fetchErrors(id, {
+          timeBucket,
+          period: period === 'custom' ? '' : period,
+          from: from || undefined,
+          to: to || undefined,
+          timezone: timezone || '',
+          filters,
+          take: limit + 1,
+          skip: 0,
+          options: errorOptions,
+        })
+      }
+
       revalidator.revalidate()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

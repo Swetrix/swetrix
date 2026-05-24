@@ -784,8 +784,14 @@ const FeatureFlagsViewInner = ({
   )
 
   const loadFlagProfiles = useCallback(
-    async (flagId: string, append = false, resultFilter?: boolean) => {
-      const currentProfiles = append ? flagProfiles[flagId] || [] : []
+    async (
+      flagId: string,
+      append = false,
+      resultFilter?: boolean,
+      options: { take?: number; limit?: number } = {},
+    ) => {
+      const existingProfiles = flagProfiles[flagId] || []
+      const currentProfiles = append ? existingProfiles : []
       const skip = append ? currentProfiles.length : 0
       const filter = resultFilter ?? flagResultFilters[flagId] ?? true
       const apiFilter = filter ? 'true' : 'false'
@@ -797,16 +803,21 @@ const FeatureFlagsViewInner = ({
           from,
           to,
           timezone,
-          take: DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
+          take: options.take || DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
           skip,
           resultFilter: apiFilter,
         })
         if (isMountedRef.current && result) {
+          const visibleProfiles =
+            typeof options.limit === 'number'
+              ? result.profiles.slice(0, options.limit)
+              : result.profiles
+
           setFlagProfiles((prev) => ({
             ...prev,
             [flagId]: append
-              ? [...currentProfiles, ...result.profiles]
-              : result.profiles,
+              ? [...currentProfiles, ...visibleProfiles]
+              : visibleProfiles,
           }))
           setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: result.total }))
         }
@@ -895,7 +906,14 @@ const FeatureFlagsViewInner = ({
       setFlagStats({})
       if (expandedFlagId) {
         setFlagProfiles((prev) => ({ [expandedFlagId]: prev[expandedFlagId] }))
-        loadFlagProfiles(expandedFlagId)
+        const limit = Math.max(
+          flagProfiles[expandedFlagId]?.length || 0,
+          DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
+        )
+        loadFlagProfiles(expandedFlagId, false, undefined, {
+          take: limit,
+          limit,
+        })
       } else {
         setFlagProfiles({})
         setFlagProfilesTotal({})
