@@ -35,6 +35,8 @@ const BROWSER_MAP: Record<string, string> = {
   'chromium-webview': 'Chrome WebView',
   fxios: 'Mobile Firefox',
   edge: 'Edge',
+  ie: 'Internet Explorer',
+  'internet explorer': 'Internet Explorer',
 }
 
 const OS_MAP: Record<string, string> = {
@@ -76,10 +78,26 @@ function mapBrowser(raw: string | null, device: string | null): string | null {
   return mapped
 }
 
-function mapOS(raw: string | null): string | null {
-  if (!raw) return null
+function mapOS(raw: string | null): {
+  name: string | null
+  version: string | null
+} {
+  if (!raw) return { name: null, version: null }
+
+  const windowsMatch = raw.match(/^windows(?:\s+(.+))?$/i)
+  const windowsVersion = windowsMatch?.[1]?.trim() || null
+  const windowsVersionKey = windowsVersion?.toLowerCase()
+
+  if (
+    windowsMatch &&
+    windowsVersionKey !== 'phone' &&
+    windowsVersionKey !== 'mobile'
+  ) {
+    return { name: 'Windows', version: windowsVersion }
+  }
+
   const key = raw.toLowerCase()
-  return OS_MAP[key] ?? raw
+  return { name: OS_MAP[key] ?? raw, version: null }
 }
 
 function mapDevice(raw: string | null): string {
@@ -352,8 +370,8 @@ export class UmamiMapper implements ImportMapper {
           dv: device,
           br: truncate(browser, 30),
           brv: null,
-          os: truncate(os, 25),
-          osv: null,
+          os: truncate(os.name, 25),
+          osv: truncate(os.version, 20),
           lc: truncate(normalizeNull(row.language), 35),
           ref: truncate(ref, 2048),
           so: truncate(normalizeNull(row.utm_source), 256),
