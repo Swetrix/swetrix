@@ -375,22 +375,17 @@ const SessionsViewInner = ({
   // Session Detail View
   if (activePSID) {
     return (
-      <>
-        <DashboardHeader
-          backLink={`?${pureSearchParams}`}
-          backButtonLabel={t('project.backToSessions')}
-          showLiveVisitors={false}
-        />
-        <SessionDetailView
-          activeSession={activeSession}
-          sessionId={activePSID}
-          sessionLoading={sessionLoading}
-          timeFormat={timeFormat}
-          rotateXAxis={rotateXAxis}
-          dataNames={dataNames}
-          websiteUrl={project?.websiteUrl}
-        />
-      </>
+      <SessionDetailView
+        activeSession={activeSession}
+        sessionId={activePSID}
+        sessionLoading={sessionLoading}
+        timeFormat={timeFormat}
+        rotateXAxis={rotateXAxis}
+        dataNames={dataNames}
+        websiteUrl={project?.websiteUrl}
+        backLink={`?${pureSearchParams}`}
+        backButtonLabel={t('project.backToSessions')}
+      />
     )
   }
 

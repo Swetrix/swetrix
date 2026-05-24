@@ -17,6 +17,7 @@ import { Link } from '~/ui/Link'
 import { BrowserIcon, OSIcon } from '../SharedIcons'
 import { PROJECT_TABS } from '~/lib/constants'
 import { SessionDetails as SessionDetailsType } from '~/lib/models/Project'
+import { BackButton } from '~/pages/Project/View/components/BackButton'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -69,6 +70,8 @@ interface SessionDetailViewProps {
   rotateXAxis: boolean
   dataNames: Record<string, string>
   websiteUrl?: string | null
+  backLink?: string
+  backButtonLabel?: string
 }
 
 interface PlatformPart {
@@ -201,6 +204,8 @@ export const SessionDetailView = ({
   rotateXAxis,
   dataNames,
   websiteUrl,
+  backLink,
+  backButtonLabel,
 }: SessionDetailViewProps) => {
   const {
     t,
@@ -455,28 +460,45 @@ export const SessionDetailView = ({
   )
 
   return (
-    <div className='grid gap-3 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start xl:grid-cols-[minmax(0,1fr)_390px]'>
-      <section className='order-2 min-w-0 rounded-lg border border-gray-200 bg-white px-4 py-4 lg:order-1 dark:border-slate-800/60 dark:bg-slate-900/25'>
-        <Text
-          as='h3'
-          size='xs'
-          weight='semibold'
-          tracking='wide'
-          className='mb-3 uppercase'
-        >
-          {t('project.pageflow')}
-        </Text>
-        <Pageflow
-          pages={activeSession?.pages || []}
-          timeFormat={timeFormat}
-          zoomedTimeRange={zoomedTimeRange}
-          sdur={activeSession?.details?.sdur}
-          isLive={activeSession?.details?.isLive}
-          websiteUrl={websiteUrl}
-        />
-      </section>
+    <div className='grid gap-x-3 gap-y-2 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start xl:grid-cols-[minmax(0,1fr)_390px]'>
+      {backLink ? (
+        <div className='order-1 lg:hidden'>
+          <BackButton to={backLink} label={backButtonLabel} className='w-fit' />
+        </div>
+      ) : null}
 
-      <aside className='order-1 lg:sticky lg:top-14 lg:order-2 lg:self-start'>
+      <div className='order-3 min-w-0 space-y-2 lg:order-1'>
+        {backLink ? (
+          <div className='hidden lg:block'>
+            <BackButton
+              to={backLink}
+              label={backButtonLabel}
+              className='w-fit'
+            />
+          </div>
+        ) : null}
+        <section className='min-w-0 rounded-lg border border-gray-200 bg-white px-4 py-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+          <Text
+            as='h3'
+            size='xs'
+            weight='semibold'
+            tracking='wide'
+            className='mb-3 uppercase'
+          >
+            {t('project.pageflow')}
+          </Text>
+          <Pageflow
+            pages={activeSession?.pages || []}
+            timeFormat={timeFormat}
+            zoomedTimeRange={zoomedTimeRange}
+            sdur={activeSession?.details?.sdur}
+            isLive={activeSession?.details?.isLive}
+            websiteUrl={websiteUrl}
+          />
+        </section>
+      </div>
+
+      <aside className='order-2 mb-1 lg:sticky lg:top-14 lg:mb-0 lg:self-start'>
         <div className='space-y-3 rounded-lg border border-gray-200 bg-white px-4 py-4 lg:min-h-[calc(100dvh-3.5rem)] dark:border-slate-800/60 dark:bg-slate-900/25'>
           <div className='pb-1'>
             <div className='min-w-0'>
@@ -587,7 +609,7 @@ export const SessionDetailView = ({
                                 weight='medium'
                                 colour='primary'
                                 truncate
-                                className='inline-flex min-w-0 max-w-full cursor-default items-center gap-1 rounded-sm bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
+                                className='inline-flex max-w-full min-w-0 cursor-default items-center gap-1 rounded-sm bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300'
                               >
                                 <span className='flex size-4 shrink-0 items-center justify-center'>
                                   {icon}
