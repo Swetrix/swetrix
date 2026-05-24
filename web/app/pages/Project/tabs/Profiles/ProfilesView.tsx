@@ -1,6 +1,4 @@
-import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import { DownloadSimpleIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
@@ -30,6 +28,7 @@ import {
   useCurrentProject,
   useProjectPassword,
 } from '~/providers/CurrentProjectProvider'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import LoadingBar from '~/ui/LoadingBar'
 
 import Filters from '../../View/components/Filters'
@@ -406,24 +405,13 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
         <NoProfiles filters={filters} />
       ) : null}
       <Profiles profiles={profiles} timeFormat={timeFormat} />
-      {canLoadMoreProfiles ? (
-        <button
-          type='button'
-          title={t('project.loadMore')}
-          onClick={() => loadProfiles()}
-          className={cx(
-            'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
-            {
-              'cursor-not-allowed opacity-50':
-                profilesLoading || profilesLoading === null,
-              hidden: profilesLoading && _isEmpty(profiles),
-            },
-          )}
-        >
-          <DownloadSimpleIcon className='mr-2 h-5 w-5' />
-          {t('project.loadMore')}
-        </button>
-      ) : null}
+      <InfiniteScrollTrigger
+        hasMore={canLoadMoreProfiles}
+        isLoading={profilesLoading || profilesLoading === null}
+        onLoadMore={() => loadProfiles()}
+        disabled={profilesLoading || profilesLoading === null}
+        className={profilesLoading && _isEmpty(profiles) ? 'hidden' : ''}
+      />
     </>
   )
 }

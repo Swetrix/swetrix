@@ -30,6 +30,7 @@ import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import Flag from '~/ui/Flag'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
@@ -751,18 +752,13 @@ export const ProfileDetails = ({
                   />
                 ))}
               </div>
-              {canLoadMoreSessions ? (
-                <div className='px-4 pt-4'>
-                  <Button
-                    onClick={onLoadMoreSessions}
-                    disabled={!!sessionsLoading}
-                    loading={!!sessionsLoading}
-                    className='w-full'
-                  >
-                    {t('project.loadMore')}
-                  </Button>
-                </div>
-              ) : null}
+              <InfiniteScrollTrigger
+                hasMore={canLoadMoreSessions}
+                isLoading={!!sessionsLoading}
+                onLoadMore={onLoadMoreSessions}
+                disabled={!!sessionsLoading}
+                className='mt-2'
+              />
             </>
           )}
         </section>

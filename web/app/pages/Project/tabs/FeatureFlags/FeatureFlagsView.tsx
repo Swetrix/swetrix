@@ -14,7 +14,6 @@ import {
   UsersIcon,
   PulseIcon,
   CaretDownIcon,
-  DownloadSimpleIcon,
   CheckIcon,
   XIcon,
 } from '@phosphor-icons/react'
@@ -59,11 +58,11 @@ import type {
 } from '~/routes/projects.$id'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import Input from '~/ui/Input'
 import Spin from '~/ui/icons/Spin'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
-import Pagination from '~/ui/Pagination'
 import StatusPage from '~/ui/StatusPage'
 import { Switch } from '~/ui/Switch'
 import { Text } from '~/ui/Text'
@@ -471,30 +470,12 @@ const FeatureFlagRow = ({
                     />
                   ))}
                 </ul>
-                {canLoadMoreProfiles ? (
-                  <button
-                    type='button'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      onLoadMoreProfiles(flag.id)
-                    }}
-                    disabled={profilesLoading}
-                    className={cx(
-                      'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
-                      {
-                        'cursor-not-allowed opacity-50': profilesLoading,
-                      },
-                    )}
-                  >
-                    {profilesLoading ? (
-                      <Spin className='mr-2 size-5' />
-                    ) : (
-                      <DownloadSimpleIcon className='mr-2 h-5 w-5' />
-                    )}
-                    {t('featureFlags.loadMore')}
-                  </button>
-                ) : null}
+                <InfiniteScrollTrigger
+                  hasMore={canLoadMoreProfiles}
+                  isLoading={profilesLoading}
+                  onLoadMore={() => onLoadMoreProfiles(flag.id)}
+                  disabled={profilesLoading}
+                />
               </>
             )}
           </div>
@@ -585,10 +566,10 @@ const FeatureFlagsViewInner = ({
     Record<string, FeatureFlagStats | null>
   >({})
   const [statsLoading, setStatsLoading] = useState<Record<string, boolean>>({})
-  const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
   const processedActionRef = useRef<string | null>(null)
+  const flagsRequestModeRef = useRef<'replace' | 'append'>('replace')
 
   const isMountedRef = useRef(true)
 
@@ -634,13 +615,17 @@ const FeatureFlagsViewInner = ({
     }
   }, [revalidator.state, deferredData.featureFlagsData, isSearchMode])
 
-  const pageAmount = Math.ceil(total / DEFAULT_FEATURE_FLAGS_TAKE)
-
   const loadFlags = useCallback(
-    (take: number, skip: number, search?: string) => {
+    (
+      take: number,
+      skip: number,
+      search?: string,
+      mode: 'replace' | 'append' = 'replace',
+    ) => {
       if (listFetcher.state !== 'idle') {
         return
       }
+      flagsRequestModeRef.current = mode
       setIsSearchMode(true)
 
       listFetcher.submit(
@@ -669,8 +654,19 @@ const FeatureFlagsViewInner = ({
             results: ProjectFeatureFlag[]
             total: number
           }
-          setFlags(result.results)
+          if (flagsRequestModeRef.current === 'append') {
+            setFlags((prev) => {
+              const existingIds = new Set(prev.map((flag) => flag.id))
+              const uniqueFlags = result.results.filter(
+                (flag) => !existingIds.has(flag.id),
+              )
+              return [...prev, ...uniqueFlags]
+            })
+          } else {
+            setFlags(result.results)
+          }
           setTotal(result.total)
+          setError(null)
         } else if (listFetcher.data.error) {
           setError(listFetcher.data.error)
         }
@@ -689,16 +685,11 @@ const FeatureFlagsViewInner = ({
     if (actionFetcher.data.intent === 'delete-feature-flag') {
       if (actionFetcher.data.success) {
         toast.success(t('featureFlags.deleted'))
-        if (page === 1 && !filterQuery) {
-          setIsSearchMode(false)
-          revalidator.revalidate()
-        } else {
-          loadFlags(
-            DEFAULT_FEATURE_FLAGS_TAKE,
-            (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE,
-            filterQuery || undefined,
-          )
-        }
+        loadFlags(
+          Math.max(flags.length, DEFAULT_FEATURE_FLAGS_TAKE),
+          0,
+          filterQuery || undefined,
+        )
       } else if (actionFetcher.data.error) {
         toast.error(actionFetcher.data.error)
       }
@@ -720,9 +711,8 @@ const FeatureFlagsViewInner = ({
     actionFetcher.state,
     t,
     loadFlags,
-    page,
+    flags.length,
     filterQuery,
-    revalidator,
   ])
 
   // Debounced search to avoid excessive API calls
@@ -739,7 +729,6 @@ const FeatureFlagsViewInner = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
       setFilterQuery(value)
-      setPage(1) // Reset to first page when searching
       debouncedLoadFlags(value)
     },
     [debouncedLoadFlags],
@@ -878,31 +867,14 @@ const FeatureFlagsViewInner = ({
     [loadFlagProfiles],
   )
 
-  // Handle page changes - use fetcher for pagination
-  useEffect(() => {
-    if (page > 1 || isSearchMode) {
-      loadFlags(
-        DEFAULT_FEATURE_FLAGS_TAKE,
-        (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE,
-        filterQuery || undefined,
-      )
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page])
-
   // Refresh feature flags data when refresh button is clicked
   useEffect(() => {
     if (featureFlagsRefreshTrigger > 0) {
-      if (page === 1 && !filterQuery) {
-        setIsSearchMode(false)
-        revalidator.revalidate()
-      } else {
-        loadFlags(
-          DEFAULT_FEATURE_FLAGS_TAKE,
-          (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE,
-          filterQuery || undefined,
-        )
-      }
+      loadFlags(
+        Math.max(flags.length, DEFAULT_FEATURE_FLAGS_TAKE),
+        0,
+        filterQuery || undefined,
+      )
       setFlagStats({})
       if (expandedFlagId) {
         setFlagProfiles((prev) => ({ [expandedFlagId]: prev[expandedFlagId] }))
@@ -952,16 +924,11 @@ const FeatureFlagsViewInner = ({
   }
 
   const handleModalSuccess = () => {
-    if (page === 1 && !filterQuery) {
-      setIsSearchMode(false)
-      revalidator.revalidate()
-    } else {
-      loadFlags(
-        DEFAULT_FEATURE_FLAGS_TAKE,
-        (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE,
-        filterQuery || undefined,
-      )
-    }
+    loadFlags(
+      Math.max(flags.length, DEFAULT_FEATURE_FLAGS_TAKE),
+      0,
+      filterQuery || undefined,
+    )
   }
 
   const handleDeleteFlag = useCallback(
@@ -985,6 +952,20 @@ const FeatureFlagsViewInner = ({
     },
     [actionFetcher],
   )
+
+  const canLoadMoreFlags = flags.length < total
+  const loadMoreFlags = useCallback(() => {
+    if (isLoading || !canLoadMoreFlags) {
+      return
+    }
+
+    loadFlags(
+      DEFAULT_FEATURE_FLAGS_TAKE,
+      flags.length,
+      filterQuery || undefined,
+      'append',
+    )
+  }, [canLoadMoreFlags, filterQuery, flags.length, isLoading, loadFlags])
 
   if (error && !isLoading) {
     return (
@@ -1093,16 +1074,13 @@ const FeatureFlagsViewInner = ({
             ) : null}
           </>
         )}
-        {pageAmount > 1 ? (
-          <Pagination
-            className='mt-4'
-            page={page}
-            pageAmount={pageAmount}
-            setPage={setPage}
-            total={total}
-            pageSize={DEFAULT_FEATURE_FLAGS_TAKE}
-          />
-        ) : null}
+        <InfiniteScrollTrigger
+          hasMore={canLoadMoreFlags}
+          isLoading={isLoading}
+          onLoadMore={loadMoreFlags}
+          disabled={isLoading}
+          className='mt-2'
+        />
 
         <FeatureFlagSettingsModal
           isOpen={isModalOpen}

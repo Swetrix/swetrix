@@ -33,9 +33,9 @@ import Button from '~/ui/Button'
 import { Badge } from '~/ui/Badge'
 import Input from '~/ui/Input'
 import Spin from '~/ui/icons/Spin'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
-import Pagination from '~/ui/Pagination'
 import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
@@ -678,10 +678,11 @@ const ExperimentsView = ({
   const isMountedRef = useRef(true)
   const [total, setTotal] = useState(0)
   const [experiments, setExperiments] = useState<Experiment[]>([])
-  const [page, setPage] = useState(1)
+  const [experimentsServerSkip, setExperimentsServerSkip] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
   const processedActionRef = useRef<string | null>(null)
+  const experimentsRequestModeRef = useRef<'replace' | 'append'>('replace')
 
   // Results view state
   const viewingResultsId = useMemo(
@@ -709,8 +710,6 @@ const ExperimentsView = ({
     }
   }, [])
 
-  const pageAmount = Math.ceil(total / DEFAULT_EXPERIMENTS_TAKE)
-
   const updateExperimentSearchParams = useCallback(
     (updater: (params: URLSearchParams) => void) => {
       const nextSearchParams = new URLSearchParams(searchParams.toString())
@@ -721,10 +720,17 @@ const ExperimentsView = ({
   )
 
   const loadExperiments = useCallback(
-    (take: number, skip: number, showLoading = true, search?: string) => {
+    (
+      take: number,
+      skip: number,
+      showLoading = true,
+      search?: string,
+      mode: 'replace' | 'append' = 'replace',
+    ) => {
       if (showLoading) {
         setIsLoading(true)
       }
+      experimentsRequestModeRef.current = mode
 
       listFetcher.submit(
         {
@@ -750,7 +756,21 @@ const ExperimentsView = ({
             results: Experiment[]
             total: number
           }
-          setExperiments(result.results)
+          if (experimentsRequestModeRef.current === 'append') {
+            setExperimentsServerSkip((prev) => prev + result.results.length)
+            setExperiments((prev) => {
+              const existingIds = new Set(
+                prev.map((experiment) => experiment.id),
+              )
+              const uniqueExperiments = result.results.filter(
+                (experiment) => !existingIds.has(experiment.id),
+              )
+              return [...prev, ...uniqueExperiments]
+            })
+          } else {
+            setExperimentsServerSkip(result.results.length)
+            setExperiments(result.results)
+          }
           setTotal(result.total)
           setError(null)
         } else if (listFetcher.data.error) {
@@ -776,8 +796,8 @@ const ExperimentsView = ({
       if (actionFetcher.data.success) {
         toast.success(t('experiments.deleted'))
         loadExperiments(
-          DEFAULT_EXPERIMENTS_TAKE,
-          (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+          Math.max(experiments.length, DEFAULT_EXPERIMENTS_TAKE),
+          0,
           true,
           filterQuery || undefined,
         )
@@ -788,8 +808,8 @@ const ExperimentsView = ({
       if (actionFetcher.data.success) {
         toast.success(t('experiments.started'))
         loadExperiments(
-          DEFAULT_EXPERIMENTS_TAKE,
-          (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+          Math.max(experiments.length, DEFAULT_EXPERIMENTS_TAKE),
+          0,
           true,
           filterQuery || undefined,
         )
@@ -800,8 +820,8 @@ const ExperimentsView = ({
       if (actionFetcher.data.success) {
         toast.success(t('experiments.paused'))
         loadExperiments(
-          DEFAULT_EXPERIMENTS_TAKE,
-          (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+          Math.max(experiments.length, DEFAULT_EXPERIMENTS_TAKE),
+          0,
           true,
           filterQuery || undefined,
         )
@@ -812,8 +832,8 @@ const ExperimentsView = ({
       if (actionFetcher.data.success) {
         toast.success(t('experiments.completed'))
         loadExperiments(
-          DEFAULT_EXPERIMENTS_TAKE,
-          (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+          Math.max(experiments.length, DEFAULT_EXPERIMENTS_TAKE),
+          0,
           true,
           filterQuery || undefined,
         )
@@ -826,7 +846,7 @@ const ExperimentsView = ({
     actionFetcher.state,
     t,
     loadExperiments,
-    page,
+    experiments.length,
     filterQuery,
   ])
 
@@ -842,7 +862,6 @@ const ExperimentsView = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
       setFilterQuery(value)
-      setPage(1)
       debouncedLoadExperiments(value)
     },
     [debouncedLoadExperiments],
@@ -855,14 +874,9 @@ const ExperimentsView = ({
   }, [debouncedLoadExperiments])
 
   useEffect(() => {
-    loadExperiments(
-      DEFAULT_EXPERIMENTS_TAKE,
-      (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
-      true,
-      filterQuery || undefined,
-    )
+    loadExperiments(DEFAULT_EXPERIMENTS_TAKE, 0, true, filterQuery || undefined)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page])
+  }, [])
 
   useEffect(() => {
     if (experimentsRefreshTrigger > 0) {
@@ -875,27 +889,27 @@ const ExperimentsView = ({
         return
       }
       loadExperiments(
-        DEFAULT_EXPERIMENTS_TAKE,
-        (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+        Math.max(experiments.length, DEFAULT_EXPERIMENTS_TAKE),
+        0,
         true,
         filterQuery || undefined,
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [experimentsRefreshTrigger, viewingResultsId, isModalOpen, page])
+  }, [experimentsRefreshTrigger, viewingResultsId, isModalOpen])
 
   useEffect(() => {
     if (!viewingResultsId && shouldRefreshListOnReturn) {
       setShouldRefreshListOnReturn(false)
       loadExperiments(
-        DEFAULT_EXPERIMENTS_TAKE,
-        (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+        Math.max(experiments.length, DEFAULT_EXPERIMENTS_TAKE),
+        0,
         true,
         filterQuery || undefined,
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewingResultsId, shouldRefreshListOnReturn, page])
+  }, [viewingResultsId, shouldRefreshListOnReturn])
 
   const handleNewExperiment = useCallback(() => {
     updateExperimentSearchParams((params) => {
@@ -925,12 +939,12 @@ const ExperimentsView = ({
 
   const handleModalSuccess = useCallback(() => {
     loadExperiments(
-      DEFAULT_EXPERIMENTS_TAKE,
-      (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+      Math.max(experiments.length, DEFAULT_EXPERIMENTS_TAKE),
+      0,
       true,
       filterQuery || undefined,
     )
-  }, [page, filterQuery, loadExperiments])
+  }, [experiments.length, filterQuery, loadExperiments])
 
   const handleDeleteExperiment = useCallback(
     (experimentId: string) => {
@@ -981,6 +995,27 @@ const ExperimentsView = ({
       params.delete('experimentId')
     })
   }, [updateExperimentSearchParams])
+
+  const canLoadMoreExperiments = experimentsServerSkip < total
+  const loadMoreExperiments = useCallback(() => {
+    if (isLoading || !canLoadMoreExperiments) {
+      return
+    }
+
+    loadExperiments(
+      DEFAULT_EXPERIMENTS_TAKE,
+      experimentsServerSkip,
+      true,
+      filterQuery || undefined,
+      'append',
+    )
+  }, [
+    canLoadMoreExperiments,
+    experimentsServerSkip,
+    filterQuery,
+    isLoading,
+    loadExperiments,
+  ])
 
   if (error && isLoading === false && _isEmpty(experiments)) {
     return (
@@ -1091,16 +1126,13 @@ const ExperimentsView = ({
             ) : null}
           </>
         )}
-        {pageAmount > 1 ? (
-          <Pagination
-            className='mt-4'
-            page={page}
-            pageAmount={pageAmount}
-            setPage={setPage}
-            total={total}
-            pageSize={DEFAULT_EXPERIMENTS_TAKE}
-          />
-        ) : null}
+        <InfiniteScrollTrigger
+          hasMore={canLoadMoreExperiments}
+          isLoading={!!isLoading}
+          onLoadMore={loadMoreExperiments}
+          disabled={!!isLoading}
+          className='mt-2'
+        />
 
         <ExperimentSettingsModal
           isOpen={isModalOpen}

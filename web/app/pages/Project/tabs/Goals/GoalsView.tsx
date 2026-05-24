@@ -72,9 +72,9 @@ import BillboardChart from '~/ui/BillboardChart'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Spin from '~/ui/icons/Spin'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
-import Pagination from '~/ui/Pagination'
 import ProgressRing from '~/ui/ProgressRing'
 import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
@@ -810,10 +810,10 @@ const GoalsViewInner = ({
     {},
   )
   const [statsLoading, setStatsLoading] = useState<Record<string, boolean>>({})
-  const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const goalsRequestModeRef = useRef<'replace' | 'append'>('replace')
   const filtersKey = useMemo(() => JSON.stringify(filters), [filters])
 
   // Expanded goal state
@@ -855,14 +855,11 @@ const GoalsViewInner = ({
     }
   }, [revalidator.state, deferredData.goalsData, isSearchMode])
 
-  const pageAmount = Math.ceil(total / DEFAULT_GOALS_TAKE)
-
   // Debounced search handler
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSetSearch = useCallback(
     _debounce((value: string) => {
       setDebouncedSearch(value)
-      setPage(1) // Reset to first page when search changes
     }, 300),
     [],
   )
@@ -876,8 +873,14 @@ const GoalsViewInner = ({
   }, [filterQuery, debouncedSetSearch])
 
   const loadGoals = useCallback(
-    (take: number, skip: number, search?: string) => {
+    (
+      take: number,
+      skip: number,
+      search?: string,
+      mode: 'replace' | 'append' = 'replace',
+    ) => {
       if (fetcher.state !== 'idle') return
+      goalsRequestModeRef.current = mode
       setIsSearchMode(true)
       setError(null)
 
@@ -906,7 +909,17 @@ const GoalsViewInner = ({
             results: Goal[]
             total: number
           }
-          setGoals(result.results)
+          if (goalsRequestModeRef.current === 'append') {
+            setGoals((prev) => {
+              const existingIds = new Set(prev.map((goal) => goal.id))
+              const uniqueGoals = result.results.filter(
+                (goal) => !existingIds.has(goal.id),
+              )
+              return [...prev, ...uniqueGoals]
+            })
+          } else {
+            setGoals(result.results)
+          }
           setTotal(result.total)
           setError(null)
         } else if (fetcher.data.error) {
@@ -1002,17 +1015,12 @@ const GoalsViewInner = ({
     [timeBucket, timeFormat, timezone],
   )
 
-  // Handle page/search changes - use fetcher for pagination
   useEffect(() => {
-    if (page > 1 || debouncedSearch || isSearchMode) {
-      loadGoals(
-        DEFAULT_GOALS_TAKE,
-        (page - 1) * DEFAULT_GOALS_TAKE,
-        debouncedSearch || undefined,
-      )
+    if (debouncedSearch || isSearchMode) {
+      loadGoals(DEFAULT_GOALS_TAKE, 0, debouncedSearch || undefined)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, debouncedSearch])
+  }, [debouncedSearch])
 
   useEffect(() => {
     // Load stats for all goals when goals change or date range changes
@@ -1035,16 +1043,11 @@ const GoalsViewInner = ({
   // Refresh goals data when refresh button is clicked
   useEffect(() => {
     if (goalsRefreshTrigger > 0) {
-      if (page === 1 && !debouncedSearch) {
-        setIsSearchMode(false)
-        revalidator.revalidate()
-      } else {
-        loadGoals(
-          DEFAULT_GOALS_TAKE,
-          (page - 1) * DEFAULT_GOALS_TAKE,
-          debouncedSearch || undefined,
-        )
-      }
+      loadGoals(
+        Math.max(goals.length, DEFAULT_GOALS_TAKE),
+        0,
+        debouncedSearch || undefined,
+      )
       // Clear cached chart data for non-expanded goals, silently refresh expanded goal
       if (expandedGoalId) {
         setGoalChartData((prev) => ({
@@ -1074,36 +1077,26 @@ const GoalsViewInner = ({
   }
 
   const handleModalSuccess = () => {
-    if (page === 1 && !debouncedSearch) {
-      setIsSearchMode(false)
-      revalidator.revalidate()
-    } else {
-      loadGoals(
-        DEFAULT_GOALS_TAKE,
-        (page - 1) * DEFAULT_GOALS_TAKE,
-        debouncedSearch || undefined,
-      )
-    }
+    loadGoals(
+      Math.max(goals.length, DEFAULT_GOALS_TAKE),
+      0,
+      debouncedSearch || undefined,
+    )
   }
 
   // Handle fetcher responses for delete
   useEffect(() => {
     if (fetcher.data?.success && fetcher.data?.intent === 'delete-goal') {
       toast.success(t('goals.deleted'))
-      if (page === 1 && !debouncedSearch) {
-        setIsSearchMode(false)
-        revalidator.revalidate()
-      } else {
-        loadGoals(
-          DEFAULT_GOALS_TAKE,
-          (page - 1) * DEFAULT_GOALS_TAKE,
-          debouncedSearch || undefined,
-        )
-      }
+      loadGoals(
+        Math.max(goals.length, DEFAULT_GOALS_TAKE),
+        0,
+        debouncedSearch || undefined,
+      )
     } else if (fetcher.data?.error && fetcher.data?.intent === 'delete-goal') {
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, t, page, debouncedSearch, revalidator]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetcher.data, t, goals.length, debouncedSearch, loadGoals]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDeleteGoal = (goalId: string) => {
     const formData = new FormData()
@@ -1111,6 +1104,20 @@ const GoalsViewInner = ({
     formData.set('goalId', goalId)
     fetcher.submit(formData, { method: 'post' })
   }
+
+  const canLoadMoreGoals = goals.length < total
+  const loadMoreGoals = useCallback(() => {
+    if (isLoading || !canLoadMoreGoals) {
+      return
+    }
+
+    loadGoals(
+      DEFAULT_GOALS_TAKE,
+      goals.length,
+      debouncedSearch || undefined,
+      'append',
+    )
+  }, [canLoadMoreGoals, debouncedSearch, goals.length, isLoading, loadGoals])
 
   if (error && !isLoading) {
     return (
@@ -1214,16 +1221,13 @@ const GoalsViewInner = ({
             ) : null}
           </>
         )}
-        {pageAmount > 1 ? (
-          <Pagination
-            className='mt-4'
-            page={page}
-            pageAmount={pageAmount}
-            setPage={setPage}
-            total={total}
-            pageSize={DEFAULT_GOALS_TAKE}
-          />
-        ) : null}
+        <InfiniteScrollTrigger
+          hasMore={canLoadMoreGoals}
+          isLoading={isLoading}
+          onLoadMore={loadMoreGoals}
+          disabled={isLoading}
+          className='mt-2'
+        />
 
         <GoalSettingsModal
           isOpen={isModalOpen}

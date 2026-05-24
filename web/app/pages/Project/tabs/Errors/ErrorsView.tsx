@@ -100,6 +100,7 @@ import { Badge } from '~/ui/Badge'
 import BillboardChart from '~/ui/BillboardChart'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
@@ -1536,21 +1537,12 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
               )}
             </ClientOnly>
 
-            {canLoadMoreErrors ? (
-              <button
-                type='button'
-                title={t('project.loadMore')}
-                onClick={loadMoreErrors}
-                className={cx(
-                  'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
-                  {
-                    'cursor-not-allowed opacity-50': errorsLoading,
-                  },
-                )}
-              >
-                {t('project.loadMore')}
-              </button>
-            ) : null}
+            <InfiniteScrollTrigger
+              hasMore={canLoadMoreErrors}
+              isLoading={!!errorsLoading}
+              onLoadMore={loadMoreErrors}
+              disabled={!!errorsLoading}
+            />
           </div>
         </>
       ) : null}
