@@ -1,3 +1,5 @@
+import { runSeoToolAction, type SeoToolSlug } from './seoTools.server'
+
 export type ToolActionData = {
   error: string | null
   result: unknown | null
@@ -14,6 +16,9 @@ type ToolSlug =
   | 'page-size-checker'
   | 'uptime-sla-calculator'
   | 'website-bandwidth-calculator'
+  | 'serp-snippet-preview'
+  | 'gsc-export-analyzer'
+  | SeoToolSlug
 
 type IssueLevel = 'good' | 'warning' | 'error' | 'info'
 
@@ -1050,6 +1055,20 @@ export async function runTechnicalToolAction(
   if (slug === 'csp-checker') return checkCsp(formData)
   if (slug === 'canonical-url-checker') return checkCanonicalUrl(formData)
   if (slug === 'page-size-checker') return checkPageSize(formData)
+  if (
+    slug === 'indexability-checker' ||
+    slug === 'robots-txt-tester' ||
+    slug === 'broken-link-checker' ||
+    slug === 'hreflang-checker' ||
+    slug === 'on-page-seo-checker' ||
+    slug === 'image-seo-checker' ||
+    slug === 'internal-link-analyzer' ||
+    slug === 'ai-search-llm-crawlability-checker' ||
+    slug === 'http-status-bulk-checker' ||
+    slug === 'seo-migration-redirect-validator'
+  ) {
+    return runSeoToolAction(slug, formData)
+  }
 
   return { error: 'This tool does not require a server action', result: null }
 }
