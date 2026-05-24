@@ -5312,6 +5312,7 @@ export class AnalyticsService {
         SELECT
           psidCasted,
           pid,
+          argMaxIf(profileId, created_for_grouping, profileId IS NOT NULL AND profileId != '') AS profileId,
           any(cc) AS cc,
           any(os) AS os,
           any(br) AS br,
@@ -5369,30 +5370,50 @@ export class AnalyticsService {
           AND profileId IS NOT NULL
           AND profileId != ''
         GROUP BY profileId
+      ),
+      sessions_enriched AS (
+        SELECT
+          dsf.psidCasted,
+          dsf.pid,
+          dsf.cc,
+          dsf.os,
+          dsf.br,
+          COALESCE(pc.count, 0) AS pageviews,
+          COALESCE(ec.count, 0) AS customEvents,
+          COALESCE(errc.count, 0) AS errors,
+          dsf.sessionStart,
+          dsf.lastActivity,
+          sda.avg_duration AS sdur,
+          coalesce(nullIf(sda.profileId, ''), dsf.profileId) AS profileId
+        FROM distinct_sessions_filtered dsf
+        LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
+        LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
+        LEFT JOIN error_counts errc ON dsf.psidCasted = errc.psidCasted AND dsf.pid = errc.pid
+        LEFT JOIN session_duration_agg sda ON dsf.psidCasted = sda.psidCasted AND dsf.pid = sda.pid
       )
       SELECT
-        dsf.psidCasted AS psid,
-        dsf.cc,
-        dsf.os,
-        dsf.br,
-        COALESCE(pc.count, 0) AS pageviews,
-        COALESCE(ec.count, 0) AS customEvents,
-        COALESCE(errc.count, 0) AS errors,
-        dsf.sessionStart,
-        dsf.lastActivity,
-        if(dateDiff('second', toTimeZone(dsf.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        sda.avg_duration AS sdur,
-        sda.profileId AS profileId,
-        if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
-        if(fsp.firstPsid = dsf.psidCasted, 1, 0) AS isFirstSession
-      FROM distinct_sessions_filtered dsf
-      LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
-      LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
-      LEFT JOIN error_counts errc ON dsf.psidCasted = errc.psidCasted AND dsf.pid = errc.pid
-      LEFT JOIN session_duration_agg sda ON dsf.psidCasted = sda.psidCasted AND dsf.pid = sda.pid
-      LEFT JOIN first_session_per_profile fsp ON sda.profileId = fsp.profileId
-      WHERE dsf.psidCasted IS NOT NULL
-      ORDER BY dsf.sessionStart DESC
+        se.psidCasted AS psid,
+        se.cc,
+        se.os,
+        se.br,
+        se.pageviews,
+        se.customEvents,
+        se.errors,
+        se.sessionStart,
+        se.lastActivity,
+        if(dateDiff('second', toTimeZone(se.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        se.sdur,
+        se.profileId AS profileId,
+        if(startsWith(ifNull(se.profileId, ''), '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
+        if(
+          ifNull(se.profileId, '') = '',
+          0,
+          if(isNull(fsp.firstPsid) OR fsp.firstPsid = '' OR fsp.firstPsid = se.psidCasted, 1, 0)
+        ) AS isFirstSession
+      FROM sessions_enriched se
+      LEFT JOIN first_session_per_profile fsp ON se.profileId = fsp.profileId
+      WHERE se.psidCasted IS NOT NULL
+      ORDER BY se.sessionStart DESC
       LIMIT {take:UInt32}
       OFFSET {skip:UInt32}
     `
@@ -5423,6 +5444,7 @@ export class AnalyticsService {
         SELECT
           CAST(psid, 'String') AS psidCasted,
           pid,
+          profileId,
           cc,
           os,
           br,
@@ -5440,6 +5462,7 @@ export class AnalyticsService {
         SELECT
           CAST(s.psid, 'String') AS psidCasted,
           matching_custom_events.pid,
+          matching_custom_events.profileId,
           matching_custom_events.cc,
           matching_custom_events.os,
           matching_custom_events.br,
@@ -5469,6 +5492,7 @@ export class AnalyticsService {
         SELECT
           CAST(psid, 'String') AS psidCasted,
           pid,
+          profileId,
           cc,
           os,
           br,
@@ -5489,6 +5513,7 @@ export class AnalyticsService {
         SELECT
           CAST(psid, 'String') AS psidCasted,
           pid,
+          profileId,
           cc,
           os,
           br,
