@@ -12,8 +12,14 @@ const queries = [
     rolloutPercentage UInt8 DEFAULT 100,
     targetingRules Nullable(String),
     enabled Int8 DEFAULT 1,
+    scheduledChange Nullable(String),
+    killSwitchActive Int8 DEFAULT 0,
+    killSwitchValue Int8 DEFAULT 0,
+    killedAt Nullable(DateTime('UTC')),
+    targetingUpdatedAt Nullable(DateTime('UTC')),
     projectId FixedString(12),
-    created DateTime('UTC')
+    created DateTime('UTC'),
+    updated DateTime('UTC') DEFAULT created
   )
   ENGINE = ReplacingMergeTree(created)
   ORDER BY (projectId, id)

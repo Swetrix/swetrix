@@ -14,9 +14,16 @@ import {
   Matches,
   ArrayMaxSize,
   IsIn,
+  IsDateString,
 } from 'class-validator'
 import { Type } from 'class-transformer'
-import { FeatureFlagType, TargetingRule } from '../entity/feature-flag.entity'
+import {
+  FeatureFlagSchedule,
+  FeatureFlagStaleReason,
+  FeatureFlagStatus,
+  FeatureFlagType,
+  TargetingRule,
+} from '../entity/feature-flag.entity'
 
 // Valid targeting rule columns (attribute keys)
 const VALID_TARGETING_COLUMNS = [
@@ -49,6 +56,39 @@ class TargetingRuleDto implements TargetingRule {
   })
   @IsBoolean()
   isExclusive: boolean
+}
+
+class FeatureFlagScheduleDto implements FeatureFlagSchedule {
+  @ApiPropertyOptional({
+    description: 'Whether the flag should be enabled after the scheduled time',
+  })
+  @IsOptional()
+  @IsBoolean()
+  enabled?: boolean
+
+  @ApiPropertyOptional({
+    description: 'Rollout percentage to apply after the scheduled time',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  rolloutPercentage?: number
+
+  @ApiProperty({ description: 'ISO date and time when the change applies' })
+  @IsDateString()
+  applyAt: string
+}
+
+export class KillFeatureFlagDto {
+  @ApiPropertyOptional({
+    description:
+      'Value to force for every visitor while the kill switch is active',
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  killSwitchValue?: boolean
 }
 
 export class CreateFeatureFlagDto {
@@ -115,6 +155,16 @@ export class CreateFeatureFlagDto {
   @IsOptional()
   @IsBoolean()
   enabled?: boolean
+
+  @ApiPropertyOptional({
+    type: FeatureFlagScheduleDto,
+    nullable: true,
+    description: 'One pending scheduled change for this flag',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => FeatureFlagScheduleDto)
+  scheduledChange?: FeatureFlagScheduleDto | null
 }
 
 export class UpdateFeatureFlagDto {
@@ -168,6 +218,16 @@ export class UpdateFeatureFlagDto {
   @IsOptional()
   @IsBoolean()
   enabled?: boolean
+
+  @ApiPropertyOptional({
+    type: FeatureFlagScheduleDto,
+    nullable: true,
+    description: 'One pending scheduled change for this flag',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => FeatureFlagScheduleDto)
+  scheduledChange?: FeatureFlagScheduleDto | null
 }
 
 export class EvaluateFeatureFlagsDto {
@@ -208,14 +268,41 @@ export class FeatureFlagDto {
   @ApiProperty()
   enabled: boolean
 
+  @ApiProperty({ type: FeatureFlagScheduleDto, nullable: true })
+  scheduledChange: FeatureFlagScheduleDto | null
+
+  @ApiProperty()
+  killSwitchActive: boolean
+
+  @ApiProperty()
+  killSwitchValue: boolean
+
   @ApiProperty()
   experimentId: string | null
+
+  @ApiProperty({ nullable: true })
+  killedAt: string | null
+
+  @ApiProperty({ nullable: true })
+  targetingUpdatedAt: string | null
 
   @ApiProperty()
   pid: string
 
   @ApiProperty()
   created: Date
+
+  @ApiProperty()
+  updated: string
+
+  @ApiProperty({ nullable: true })
+  lastEvaluatedAt: string | null
+
+  @ApiProperty({ enum: FeatureFlagStatus })
+  status: FeatureFlagStatus
+
+  @ApiProperty({ enum: FeatureFlagStaleReason, isArray: true })
+  staleReasons: FeatureFlagStaleReason[]
 }
 
 export class FeatureFlagStatsDto {

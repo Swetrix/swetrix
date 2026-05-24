@@ -1326,6 +1326,25 @@ export interface TargetingRule {
   isExclusive: boolean
 }
 
+export interface FeatureFlagSchedule {
+  enabled?: boolean
+  rolloutPercentage?: number
+  applyAt: string
+}
+
+export type FeatureFlagStatus =
+  | 'enabled'
+  | 'disabled'
+  | 'scheduled'
+  | 'killed'
+  | 'stale'
+
+export type FeatureFlagStaleReason =
+  | 'not_evaluated_recently'
+  | 'permanent_rollout'
+  | 'targeting_unchanged'
+  | 'completed_experiment'
+
 export interface ProjectFeatureFlag {
   id: string
   key: string
@@ -1334,9 +1353,18 @@ export interface ProjectFeatureFlag {
   rolloutPercentage: number
   targetingRules: TargetingRule[] | null
   enabled: boolean
+  scheduledChange: FeatureFlagSchedule | null
+  killSwitchActive: boolean
+  killSwitchValue: boolean
+  killedAt: string | null
+  targetingUpdatedAt: string | null
   experimentId: string | null
   pid: string
   created: string
+  updated: string
+  lastEvaluatedAt: string | null
+  status: FeatureFlagStatus
+  staleReasons: FeatureFlagStaleReason[]
 }
 
 export interface FeatureFlagsResponse {

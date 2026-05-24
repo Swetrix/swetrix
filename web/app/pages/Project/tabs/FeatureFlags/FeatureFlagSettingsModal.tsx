@@ -10,6 +10,7 @@ import {
   Transition,
 } from '@headlessui/react'
 import cx from 'clsx'
+import dayjs from 'dayjs'
 import _map from 'lodash/map'
 import {
   TrashIcon,
@@ -19,19 +20,23 @@ import {
   CaretUpDownIcon,
   CheckIcon,
   XIcon,
-  ClipboardIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useCallback, Fragment, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import type { ProjectFeatureFlag, TargetingRule } from '~/api/api.server'
+import type {
+  FeatureFlagSchedule,
+  ProjectFeatureFlag,
+  TargetingRule,
+} from '~/api/api.server'
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
+import CodeBlock from '~/ui/CodeBlock'
 import FilterValueInput, { filterCategoryIcons } from '~/ui/FilterValueInput'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
@@ -52,6 +57,13 @@ const TARGETING_COLUMNS = [
   { value: 'br', label: 'Browser' },
   { value: 'os', label: 'OS' },
 ]
+
+const toDateTimeLocal = (value?: string | Date | null) => {
+  if (!value) return ''
+
+  const date = dayjs(value)
+  return date.isValid() ? date.format('YYYY-MM-DDTHH:mm') : ''
+}
 
 interface FeatureFlagSettingsModalProps {
   isOpen: boolean
@@ -80,7 +92,6 @@ const FeatureFlagSettingsModal = ({
 
   const [isLoading, setIsLoading] = useState(false)
   const [showImplementation, setShowImplementation] = useState(false)
-  const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
   // Filter values cache for targeting rules
   const [filterValuesCache, setFilterValuesCache] = useState<
@@ -95,6 +106,11 @@ const FeatureFlagSettingsModal = ({
   const [rolloutPercentage, setRolloutPercentage] = useState(100)
   const [targetingRules, setTargetingRules] = useState<TargetingRule[]>([])
   const [enabled, setEnabled] = useState(true)
+  const [scheduleChangeEnabled, setScheduleChangeEnabled] = useState(false)
+  const [scheduledApplyAt, setScheduledApplyAt] = useState('')
+  const [scheduledEnabled, setScheduledEnabled] = useState(true)
+  const [scheduledRolloutPercentage, setScheduledRolloutPercentage] =
+    useState(100)
 
   const isSaving = fetcher.state === 'submitting' || fetcher.state === 'loading'
 
@@ -105,6 +121,10 @@ const FeatureFlagSettingsModal = ({
     setRolloutPercentage(100)
     setTargetingRules([])
     setEnabled(true)
+    setScheduleChangeEnabled(false)
+    setScheduledApplyAt('')
+    setScheduledEnabled(true)
+    setScheduledRolloutPercentage(100)
     setShowImplementation(false)
   }
 
@@ -174,6 +194,12 @@ const FeatureFlagSettingsModal = ({
         setRolloutPercentage(flag.rolloutPercentage)
         setTargetingRules(flag.targetingRules || [])
         setEnabled(flag.enabled)
+        setScheduleChangeEnabled(Boolean(flag.scheduledChange))
+        setScheduledApplyAt(toDateTimeLocal(flag.scheduledChange?.applyAt))
+        setScheduledEnabled(flag.scheduledChange?.enabled ?? flag.enabled)
+        setScheduledRolloutPercentage(
+          flag.scheduledChange?.rolloutPercentage ?? flag.rolloutPercentage,
+        )
       } else if (fetcher.data.error) {
         toast.error(fetcher.data.error)
         onClose()
@@ -208,6 +234,30 @@ const FeatureFlagSettingsModal = ({
     e.preventDefault()
     lastHandledData.current = null
 
+    if (scheduleChangeEnabled) {
+      if (!scheduledApplyAt) {
+        toast.error(t('featureFlags.scheduleDateRequired'))
+        return
+      }
+
+      const applyAt = new Date(scheduledApplyAt)
+
+      if (Number.isNaN(applyAt.getTime()) || applyAt.getTime() <= Date.now()) {
+        toast.error(t('featureFlags.scheduleDateInPast'))
+        return
+      }
+    }
+
+    const scheduledChange: FeatureFlagSchedule | null = scheduleChangeEnabled
+      ? {
+          applyAt: new Date(scheduledApplyAt).toISOString(),
+          enabled: scheduledEnabled,
+          ...(flagType === 'rollout'
+            ? { rolloutPercentage: scheduledRolloutPercentage }
+            : {}),
+        }
+      : null
+
     if (isNew) {
       fetcher.submit(
         {
@@ -222,6 +272,7 @@ const FeatureFlagSettingsModal = ({
             targetingRules.length > 0 ? targetingRules : [],
           ),
           enabled: String(enabled),
+          scheduledChange: JSON.stringify(scheduledChange),
         },
         { method: 'POST' },
       )
@@ -240,6 +291,7 @@ const FeatureFlagSettingsModal = ({
             targetingRules.length > 0 ? targetingRules : [],
           ),
           enabled: String(enabled),
+          scheduledChange: JSON.stringify(scheduledChange),
         },
         { method: 'POST' },
       )
@@ -293,16 +345,6 @@ const FeatureFlagSettingsModal = ({
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9_-]/g, '')
     setKey(value)
-  }
-
-  const copyToClipboard = async (code: string, id: string) => {
-    try {
-      await navigator.clipboard.writeText(code)
-      setCopiedCode(id)
-      setTimeout(() => setCopiedCode(null), 2000)
-    } catch {
-      toast.error('Failed to copy to clipboard')
-    }
   }
 
   const jsAllFlagsCode = `// Fetch all feature flags
@@ -503,7 +545,9 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                               <span
                                                 className={cx(
                                                   'flex items-center gap-2',
-                                                  { 'font-medium': selected },
+                                                  {
+                                                    'font-medium': selected,
+                                                  },
                                                 )}
                                               >
                                                 <span className='shrink-0 text-gray-500 dark:text-gray-400'>
@@ -585,7 +629,9 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                               <span
                                                 className={cx(
                                                   'block truncate',
-                                                  { 'font-medium': selected },
+                                                  {
+                                                    'font-medium': selected,
+                                                  },
                                                 )}
                                               >
                                                 {t('featureFlags.is')}
@@ -617,7 +663,9 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                               <span
                                                 className={cx(
                                                   'block truncate',
-                                                  { 'font-medium': selected },
+                                                  {
+                                                    'font-medium': selected,
+                                                  },
                                                 )}
                                               >
                                                 {t('featureFlags.isNot')}
@@ -680,6 +728,64 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                       hint={t('featureFlags.enableFlagHint')}
                     />
 
+                    <div className='rounded-lg bg-gray-50 p-3 ring-1 ring-gray-200/80 dark:bg-slate-900/50 dark:ring-slate-700/60'>
+                      <Checkbox
+                        checked={scheduleChangeEnabled}
+                        onChange={setScheduleChangeEnabled}
+                        label={t('featureFlags.scheduleChange')}
+                        hint={t('featureFlags.scheduleChangeHint')}
+                      />
+
+                      {scheduleChangeEnabled ? (
+                        <div className='mt-3 grid gap-3 sm:grid-cols-2'>
+                          <Input
+                            type='datetime-local'
+                            label={t('featureFlags.scheduleAt')}
+                            value={scheduledApplyAt}
+                            min={dayjs().format('YYYY-MM-DDTHH:mm')}
+                            onChange={(e) =>
+                              setScheduledApplyAt(e.target.value)
+                            }
+                            required
+                          />
+                          <div className='flex items-end pb-2'>
+                            <Checkbox
+                              checked={scheduledEnabled}
+                              onChange={setScheduledEnabled}
+                              label={t('featureFlags.scheduleTargetEnabled')}
+                              hint={t('featureFlags.scheduleTargetEnabledHint')}
+                            />
+                          </div>
+
+                          {flagType === 'rollout' ? (
+                            <div className='sm:col-span-2'>
+                              <label className='mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                                {t('featureFlags.scheduleRolloutPercentage')} (
+                                {scheduledRolloutPercentage}%)
+                              </label>
+                              <input
+                                type='range'
+                                min='0'
+                                max='100'
+                                value={scheduledRolloutPercentage}
+                                onChange={(e) =>
+                                  setScheduledRolloutPercentage(
+                                    Number(e.target.value),
+                                  )
+                                }
+                                className='w-full'
+                              />
+                              <div className='mt-1 flex justify-between text-xs text-gray-500'>
+                                <span>0%</span>
+                                <span>50%</span>
+                                <span>100%</span>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+
                     {/* How to implement section */}
                     <div className='border-t border-gray-200 pt-4 dark:border-slate-700'>
                       <button
@@ -711,84 +817,40 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                             {t('featureFlags.implementationDescription')}
                           </Text>
 
-                          {/* JavaScript SDK */}
                           <div>
-                            <div className='mb-2 flex items-center justify-between'>
-                              <Text as='span' size='sm' weight='medium'>
-                                Fetch all flags
-                              </Text>
-                              <button
-                                type='button'
-                                onClick={() =>
-                                  copyToClipboard(jsAllFlagsCode, 'js-all')
-                                }
-                                className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
-                              >
-                                {copiedCode === 'js-all' ? (
-                                  <CheckIcon className='size-4 text-green-500' />
-                                ) : (
-                                  <ClipboardIcon className='size-4' />
-                                )}
-                                {copiedCode === 'js-all' ? 'Copied!' : 'Copy'}
-                              </button>
-                            </div>
-                            <pre className='overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100'>
-                              <code>{jsAllFlagsCode}</code>
-                            </pre>
+                            <Text
+                              as='p'
+                              size='sm'
+                              weight='medium'
+                              className='mb-2'
+                            >
+                              {t('featureFlags.fetchAllFlags')}
+                            </Text>
+                            <CodeBlock code={jsAllFlagsCode} />
                           </div>
 
-                          {/* Single flag */}
                           <div>
-                            <div className='mb-2 flex items-center justify-between'>
-                              <Text as='span' size='sm' weight='medium'>
-                                Single flag
-                              </Text>
-                              <button
-                                type='button'
-                                onClick={() =>
-                                  copyToClipboard(jsSingleFlagCode, 'js-single')
-                                }
-                                className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
-                              >
-                                {copiedCode === 'js-single' ? (
-                                  <CheckIcon className='size-4 text-green-500' />
-                                ) : (
-                                  <ClipboardIcon className='size-4' />
-                                )}
-                                {copiedCode === 'js-single'
-                                  ? 'Copied!'
-                                  : 'Copy'}
-                              </button>
-                            </div>
-                            <pre className='overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100'>
-                              <code>{jsSingleFlagCode}</code>
-                            </pre>
+                            <Text
+                              as='p'
+                              size='sm'
+                              weight='medium'
+                              className='mb-2'
+                            >
+                              {t('featureFlags.singleFlag')}
+                            </Text>
+                            <CodeBlock code={jsSingleFlagCode} />
                           </div>
 
-                          {/* Cache control */}
                           <div>
-                            <div className='mb-2 flex items-center justify-between'>
-                              <Text as='span' size='sm' weight='medium'>
-                                Cache control
-                              </Text>
-                              <button
-                                type='button'
-                                onClick={() =>
-                                  copyToClipboard(jsCacheCode, 'js-cache')
-                                }
-                                className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
-                              >
-                                {copiedCode === 'js-cache' ? (
-                                  <CheckIcon className='size-4 text-green-500' />
-                                ) : (
-                                  <ClipboardIcon className='size-4' />
-                                )}
-                                {copiedCode === 'js-cache' ? 'Copied!' : 'Copy'}
-                              </button>
-                            </div>
-                            <pre className='overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100'>
-                              <code>{jsCacheCode}</code>
-                            </pre>
+                            <Text
+                              as='p'
+                              size='sm'
+                              weight='medium'
+                              className='mb-2'
+                            >
+                              {t('featureFlags.cacheControl')}
+                            </Text>
+                            <CodeBlock code={jsCacheCode} />
                           </div>
                         </div>
                       ) : null}

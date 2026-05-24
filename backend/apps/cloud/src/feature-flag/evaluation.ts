@@ -17,6 +17,27 @@ export interface TargetingRule {
   isExclusive: boolean // true = exclude, false = include
 }
 
+export interface FeatureFlagSchedule {
+  enabled?: boolean
+  rolloutPercentage?: number
+  applyAt: string | Date
+}
+
+export enum FeatureFlagStatus {
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+  SCHEDULED = 'scheduled',
+  KILLED = 'killed',
+  STALE = 'stale',
+}
+
+export enum FeatureFlagStaleReason {
+  NOT_EVALUATED_RECENTLY = 'not_evaluated_recently',
+  PERMANENT_ROLLOUT = 'permanent_rollout',
+  TARGETING_UNCHANGED = 'targeting_unchanged',
+  COMPLETED_EXPERIMENT = 'completed_experiment',
+}
+
 /**
  * Minimal feature flag interface required for evaluation
  * Both cloud (TypeORM entity) and community (ClickHouse) flags should satisfy this
@@ -27,6 +48,9 @@ interface EvaluatableFeatureFlag {
   flagType: FeatureFlagType
   rolloutPercentage: number
   targetingRules: TargetingRule[] | null
+  scheduledChange?: FeatureFlagSchedule | null
+  killSwitchActive?: boolean
+  killSwitchValue?: boolean
 }
 
 /**
@@ -54,13 +78,19 @@ export function evaluateFlag(
   profileId: string,
   attributes?: Record<string, string>,
 ): boolean {
-  if (!flag.enabled) {
+  if (flag.killSwitchActive) {
+    return Boolean(flag.killSwitchValue)
+  }
+
+  const effectiveFlag = applyDueScheduledChange(flag)
+
+  if (!effectiveFlag.enabled) {
     return false
   }
 
-  if (flag.targetingRules && flag.targetingRules.length > 0) {
+  if (effectiveFlag.targetingRules && effectiveFlag.targetingRules.length > 0) {
     const matchesTargeting = matchesTargetingRules(
-      flag.targetingRules,
+      effectiveFlag.targetingRules,
       attributes,
     )
     if (!matchesTargeting) {
@@ -68,15 +98,55 @@ export function evaluateFlag(
     }
   }
 
-  if (flag.flagType === FeatureFlagType.BOOLEAN) {
+  if (effectiveFlag.flagType === FeatureFlagType.BOOLEAN) {
     return true
   }
 
-  if (flag.flagType === FeatureFlagType.ROLLOUT) {
-    return isInRolloutPercentage(flag.key, flag.rolloutPercentage, profileId)
+  if (effectiveFlag.flagType === FeatureFlagType.ROLLOUT) {
+    return isInRolloutPercentage(
+      effectiveFlag.key,
+      effectiveFlag.rolloutPercentage,
+      profileId,
+    )
   }
 
   return false
+}
+
+export function applyDueScheduledChange<T extends EvaluatableFeatureFlag>(
+  flag: T,
+  now = new Date(),
+): T {
+  if (!isScheduledChangeDue(flag.scheduledChange, now)) {
+    return flag
+  }
+
+  const scheduledChange = flag.scheduledChange
+
+  return {
+    ...flag,
+    enabled: scheduledChange.enabled ?? flag.enabled,
+    rolloutPercentage:
+      scheduledChange.rolloutPercentage ?? flag.rolloutPercentage,
+    scheduledChange: null,
+  }
+}
+
+export function isScheduledChangeDue(
+  scheduledChange?: FeatureFlagSchedule | null,
+  now = new Date(),
+): scheduledChange is FeatureFlagSchedule {
+  if (!scheduledChange?.applyAt) {
+    return false
+  }
+
+  const applyAt = new Date(scheduledChange.applyAt)
+
+  if (Number.isNaN(applyAt.getTime())) {
+    return false
+  }
+
+  return applyAt.getTime() <= now.getTime()
 }
 
 /**
