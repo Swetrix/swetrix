@@ -12,11 +12,11 @@ import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = () => {
   return [
-    ...getTitle('Free Marketing Tools'),
+    ...getTitle('Free Website, SEO and Marketing Tools'),
     ...getDescription(
-      'Professional marketing calculators and generators to optimize your campaigns, track performance, and maximize ROI. No sign-up required.',
+      'Free website, SEO, analytics, hosting, and marketing tools to debug domains, validate technical setup, plan campaigns, and improve performance. No sign-up required.',
     ),
-    ...getPreviewImage(getOgImageUrl('Free Marketing Tools')),
+    ...getPreviewImage(getOgImageUrl('Free Website, SEO and Marketing Tools')),
   ]
 }
 
@@ -39,11 +39,12 @@ export default function Tools() {
       <main className='mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8'>
         <div className='max-w-2xl'>
           <Text as='h1' size='4xl' weight='bold' tracking='tight'>
-            Free Marketing Tools
+            Free Website, SEO and Marketing Tools
           </Text>
           <Text as='p' size='lg' colour='secondary' className='mt-4'>
-            Professional marketing calculators and generators to optimize your
-            campaigns, track performance, and maximize ROI. No sign-up required.
+            Free technical checks, SEO utilities, analytics calculators, and
+            marketing generators to debug your website and improve growth. No
+            sign-up required.
           </Text>
         </div>
 
