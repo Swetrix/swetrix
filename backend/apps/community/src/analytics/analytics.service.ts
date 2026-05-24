@@ -2510,6 +2510,12 @@ export class AnalyticsService {
           .format('YYYY-MM-DD HH:mm:ss')
 
         const periodType = this.getAnalyticsEventType(customEVFilterApplied)
+        const currentFiltersQuery = filtersQuery
+          .replace(/{groupFrom:String}/g, '{groupFromUTC:String}')
+          .replace(/{groupTo:String}/g, '{groupToUTC:String}')
+        const previousFiltersQuery = filtersQuery
+          .replace(/{groupFrom:String}/g, '{periodSubtracted:String}')
+          .replace(/{groupTo:String}/g, '{groupFromUTC:String}')
 
         const queryCurrent = `
           WITH analytics_counts AS (
@@ -2523,7 +2529,7 @@ export class AnalyticsService {
               pid = {pid:FixedString(12)}
               AND type = '${periodType}'
               AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
-              ${filtersQuery}
+              ${currentFiltersQuery}
           ),
           duration_avg AS (
             SELECT avgOrNull(duration) as sdur
@@ -2540,7 +2546,7 @@ export class AnalyticsService {
                     AND type = '${periodType}'
                     AND psid IS NOT NULL
                     AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
-                    ${filtersQuery}
+                    ${currentFiltersQuery}
                 )
               GROUP BY psid
             )
@@ -2563,7 +2569,7 @@ export class AnalyticsService {
                     AND psid IS NOT NULL
                     AND psid != 0
                     AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
-                    ${filtersQuery}
+                    ${currentFiltersQuery}
                 )
               GROUP BY psid
               HAVING count() = 1
@@ -2588,7 +2594,7 @@ export class AnalyticsService {
               pid = {pid:FixedString(12)}
               AND type = '${periodType}'
               AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
-              ${filtersQuery}
+              ${previousFiltersQuery}
           ),
           duration_avg AS (
             SELECT avgOrNull(duration) as sdur
@@ -2605,7 +2611,7 @@ export class AnalyticsService {
                     AND type = '${periodType}'
                     AND psid IS NOT NULL
                     AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
-                    ${filtersQuery}
+                    ${previousFiltersQuery}
                 )
               GROUP BY psid
             )
@@ -2628,7 +2634,7 @@ export class AnalyticsService {
                     AND psid IS NOT NULL
                     AND psid != 0
                     AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
-                    ${filtersQuery}
+                    ${previousFiltersQuery}
                 )
               GROUP BY psid
               HAVING count() = 1
