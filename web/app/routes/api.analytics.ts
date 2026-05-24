@@ -540,9 +540,6 @@ export async function action({ request }: ActionFunctionArgs) {
           request,
           projectId,
           body.profileId,
-          params.period || 'all',
-          formatDateForBackend(params.from) || '',
-          formatDateForBackend(params.to) || '',
           params.timezone || '',
           password || undefined,
         )

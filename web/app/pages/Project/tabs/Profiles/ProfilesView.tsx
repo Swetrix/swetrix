@@ -185,7 +185,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
 
     try {
       const data = await profileProxy.fetchProfile(id, profileId, {
-        period: 'all',
         timezone,
       })
 

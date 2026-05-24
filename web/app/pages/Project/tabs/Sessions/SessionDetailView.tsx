@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 
 import { BrowserIcon, OSIcon } from '../SharedIcons'
+import { InfoRow, PanelSection } from '../components/DetailPanels'
 import { PROJECT_TABS } from '~/lib/constants'
 import { SessionDetails as SessionDetailsType } from '~/lib/models/Project'
 import { BackButton } from '~/pages/Project/View/components/BackButton'
@@ -29,7 +30,6 @@ import {
   getLocaleDisplayName,
   getStringFromTime,
   getTimeFromSeconds,
-  cn,
 } from '~/utils/generic'
 
 import Flag from '~/ui/Flag'
@@ -83,61 +83,6 @@ interface PlatformPart {
 
 const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
 const RECENTLY_ACTIVE_THRESHOLD_SECONDS = RECENTLY_ACTIVE_THRESHOLD_MINUTES * 60
-
-const InfoRow = ({
-  label,
-  value,
-  valueClassName,
-}: {
-  label: string
-  value: React.ReactNode
-  valueClassName?: string
-}) => (
-  <div className='grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] items-center gap-3 border-b border-gray-100 py-1.5 last:border-0 dark:border-slate-800/80'>
-    <Text size='sm' colour='secondary' className='min-w-0'>
-      {label}
-    </Text>
-    <Text
-      as='div'
-      size='sm'
-      weight='medium'
-      colour='primary'
-      className={cn(
-        'flex min-w-0 items-center justify-end gap-1 text-right wrap-break-word',
-        valueClassName,
-      )}
-    >
-      {value}
-    </Text>
-  </div>
-)
-
-const PanelSection = ({
-  title,
-  action,
-  children,
-}: {
-  title: React.ReactNode
-  action?: React.ReactNode
-  children: React.ReactNode
-}) => (
-  <section className='border-t border-gray-100 pt-3 first:border-t-0 first:pt-0 dark:border-slate-800/80'>
-    <div className='mb-1.5 flex items-center justify-between gap-3'>
-      <Text
-        as='h3'
-        size='xs'
-        weight='semibold'
-        colour='primary'
-        className='uppercase'
-        tracking='wide'
-      >
-        {title}
-      </Text>
-      {action}
-    </div>
-    {children}
-  </section>
-)
 
 const formatCompactElapsed = (seconds: number) => {
   const safeSeconds = Math.max(0, seconds)
@@ -361,8 +306,8 @@ export const SessionDetailView = ({
     : formatDateTime(lastActivityAt, language, timeFormat, timezone)
   const lastSeenLabel = lastSeenTime
     ? lastSeenTime === 'now'
-      ? 'seen now'
-      : `seen ${lastSeenTime} ago`
+      ? t('project.online')
+      : t('project.lastSeenAgo', { time: `${lastSeenTime} ago` })
     : t('project.endOfSession')
   const isRecentlyActive =
     !details.isLive &&

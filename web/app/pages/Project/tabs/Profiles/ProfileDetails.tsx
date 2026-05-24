@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import utc from 'dayjs/plugin/utc'
 import _capitalize from 'lodash/capitalize'
 import _isEmpty from 'lodash/isEmpty'
 import {
@@ -43,9 +44,11 @@ import countries from '~/utils/isoCountries'
 import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 
 import { BrowserIcon, OSIcon } from '../SharedIcons'
+import { InfoRow, PanelSection } from '../components/DetailPanels'
 import { Pageflow } from '../Sessions/Pageflow'
 
 dayjs.extend(relativeTime)
+dayjs.extend(utc)
 
 const ONLINE_THRESHOLD_MINUTES = 5
 const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
@@ -131,7 +134,7 @@ const formatDateTime = (
 ) => {
   if (!value) return null
 
-  const date = dayjs(value)
+  const date = dayjs.utc(value)
   if (!date.isValid()) return null
 
   return date.toDate().toLocaleDateString(language, {
@@ -160,8 +163,8 @@ const getSessionDuration = (session: ProfileSession) => {
     return 0
   }
 
-  const first = dayjs(pages[0].created)
-  const last = dayjs(pages[pages.length - 1].created)
+  const first = dayjs.utc(pages[0].created)
+  const last = dayjs.utc(pages[pages.length - 1].created)
   if (!first.isValid() || !last.isValid()) {
     return 0
   }
@@ -171,56 +174,6 @@ const getSessionDuration = (session: ProfileSession) => {
 
 const isSessionLive = (value: ProfileSession['isLive']) =>
   value === true || value === 1
-
-const InfoRow = ({
-  label,
-  value,
-  valueClassName,
-}: {
-  label: string
-  value: ReactNode
-  valueClassName?: string
-}) => (
-  <div className='grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] items-center gap-3 border-b border-gray-100 py-1.5 last:border-0 dark:border-slate-800/80'>
-    <Text size='sm' colour='secondary' className='min-w-0'>
-      {label}
-    </Text>
-    <Text
-      as='div'
-      size='sm'
-      weight='medium'
-      colour='primary'
-      className={cn(
-        'flex min-w-0 items-center justify-end gap-1 text-right wrap-break-word',
-        valueClassName,
-      )}
-    >
-      {value}
-    </Text>
-  </div>
-)
-
-const PanelSection = ({
-  title,
-  children,
-}: {
-  title: ReactNode
-  children: ReactNode
-}) => (
-  <section className='border-t border-gray-100 pt-3 first:border-t-0 first:pt-0 dark:border-slate-800/80'>
-    <Text
-      as='h3'
-      size='xs'
-      weight='semibold'
-      colour='primary'
-      className='mb-1.5 uppercase'
-      tracking='wide'
-    >
-      {title}
-    </Text>
-    {children}
-  </section>
-)
 
 const ActivityCalendar = ({
   data,
@@ -1014,7 +967,7 @@ export const ProfileDetails = ({
                   value={
                     <>
                       <CurrencyDollarIcon className='h-4 w-4 text-emerald-500' />
-                      {new Intl.NumberFormat('en-US', {
+                      {new Intl.NumberFormat(language || 'en-US', {
                         style: 'currency',
                         currency: revenueCurrency,
                         minimumFractionDigits: 2,

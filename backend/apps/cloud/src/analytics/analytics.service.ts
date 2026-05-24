@@ -6299,6 +6299,9 @@ export class AnalyticsService {
     pid: string,
     psids: string[],
     safeTimezone: string,
+    profileId: string,
+    groupFrom: string,
+    groupTo: string,
   ): Promise<Map<string, any[]>> {
     if (_isEmpty(psids)) {
       return new Map()
@@ -6343,8 +6346,10 @@ export class AnalyticsService {
           WHERE
             pid = {pid:FixedString(12)}
             AND type IN ('pageview', 'custom_event', 'error')
+            AND profileId = {profileId:String}
             AND psid IS NOT NULL
             AND toString(psid) IN {psids:Array(String)}
+            AND created BETWEEN {groupFrom:DateTime} AND {groupTo:DateTime}
         )
 
         UNION ALL
@@ -6376,8 +6381,10 @@ export class AnalyticsService {
           FROM revenue
           WHERE
             pid = {pid:FixedString(12)}
+            AND profile_id = {profileId:String}
             AND session_id IS NOT NULL
             AND toString(session_id) IN {psids:Array(String)}
+            AND revenue.created BETWEEN {groupFrom:DateTime} AND {groupTo:DateTime}
             AND revenue.type IN ('sale', 'refund')
           GROUP BY session_id, transaction_id
         )
@@ -6396,7 +6403,14 @@ export class AnalyticsService {
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { pid, psids, timezone: safeTimezone },
+        query_params: {
+          pid,
+          psids,
+          timezone: safeTimezone,
+          profileId,
+          groupFrom,
+          groupTo,
+        },
       })
       .then((resultSet) => resultSet.json<IPageflow>())
 
@@ -6539,6 +6553,9 @@ export class AnalyticsService {
       pid,
       sessions.map((session) => String(session.psid)).filter(Boolean),
       safeTimezone,
+      profileId,
+      paramsData.params.groupFrom,
+      paramsData.params.groupTo,
     )
 
     return sessions.map((session) => ({

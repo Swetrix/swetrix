@@ -1917,18 +1917,12 @@ export async function getProfileServer(
   request: Request,
   pid: string,
   profileId: string,
-  period = 'all',
-  from = '',
-  to = '',
   timezone = '',
   password?: string,
 ): Promise<ServerFetchResult<ProfileDetailsResponse>> {
   const params = new URLSearchParams()
   params.append('pid', pid)
   params.append('profileId', profileId)
-  params.append('period', period)
-  if (from) params.append('from', from)
-  if (to) params.append('to', to)
   if (timezone) params.append('timezone', timezone)
 
   const headers: Record<string, string> = {}
