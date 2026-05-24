@@ -28,7 +28,7 @@ import {
   Session,
 } from '~/lib/models/Project'
 import { useTheme } from '~/providers/ThemeProvider'
-import Button from '~/ui/Button'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
@@ -572,16 +572,13 @@ export const ProfileDetails = ({
                 hideUserDetails
                 currency={currency}
               />
-              {canLoadMoreSessions ? (
-                <Button
-                  onClick={onLoadMoreSessions}
-                  disabled={!!sessionsLoading}
-                  loading={!!sessionsLoading}
-                  className='mt-4 w-full'
-                >
-                  {t('project.loadMore')}
-                </Button>
-              ) : null}
+              <InfiniteScrollTrigger
+                hasMore={canLoadMoreSessions}
+                isLoading={!!sessionsLoading}
+                onLoadMore={onLoadMoreSessions}
+                disabled={!!sessionsLoading}
+                className='mt-2'
+              />
             </>
           )}
         </div>

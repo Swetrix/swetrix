@@ -27,8 +27,8 @@ import {
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import { Badge } from '~/ui/Badge'
-import Button from '~/ui/Button'
 import Flag from '~/ui/Flag'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import { getRelativeDateIfPossible } from '~/utils/date'
@@ -603,18 +603,13 @@ export const ErrorDetails = ({
                   <SessionRow key={session.psid} session={session} />
                 ))}
               </div>
-              {canLoadMoreSessions ? (
-                <Button
-                  variant='secondary'
-                  size='sm'
-                  onClick={() => loadSessions()}
-                  disabled={!!sessionsLoading}
-                  loading={!!sessionsLoading}
-                  className='mx-2 mb-1 justify-center'
-                >
-                  {t('project.loadMore')}
-                </Button>
-              ) : null}
+              <InfiniteScrollTrigger
+                hasMore={canLoadMoreSessions}
+                isLoading={!!sessionsLoading}
+                onLoadMore={() => loadSessions()}
+                disabled={!!sessionsLoading}
+                className='mx-2 mb-1'
+              />
             </div>
           )}
         </SectionCard>

@@ -49,6 +49,7 @@ import { askAI } from '~/api'
 import useSpeechRecognition from '~/hooks/useSpeechRecognition'
 import { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
@@ -1637,6 +1638,7 @@ const ChatHistoryPanel = ({
   const { t } = useTranslation('common')
   const isSearching = search.trim().length >= 2 || tagFilter !== null
   const showEmpty = !isLoading && chats.length === 0
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null)
   const pinned = useMemo(() => chats.filter((c) => c.pinned), [chats])
   const others = useMemo(() => chats.filter((c) => !c.pinned), [chats])
 
@@ -1696,7 +1698,10 @@ const ChatHistoryPanel = ({
             </div>
           ) : null}
 
-          <div className='-mx-1 max-h-[60vh] overflow-y-auto px-1'>
+          <div
+            ref={scrollContainerRef}
+            className='-mx-1 max-h-[60vh] overflow-y-auto px-1'
+          >
             {showEmpty ? (
               <Text
                 as='p'
@@ -1756,18 +1761,14 @@ const ChatHistoryPanel = ({
                   </div>
                 ) : null}
 
-                {chats.length < total ? (
-                  <Button
-                    variant='secondary'
-                    size='xs'
-                    onClick={onLoadMore}
-                    disabled={isFetchingMore}
-                    loading={isFetchingMore}
-                    className='justify-center self-center'
-                  >
-                    {t('project.askAi.loadMore')}
-                  </Button>
-                ) : null}
+                <InfiniteScrollTrigger
+                  hasMore={chats.length < total}
+                  isLoading={isFetchingMore}
+                  onLoadMore={onLoadMore}
+                  disabled={isFetchingMore}
+                  root={scrollContainerRef}
+                  className='py-2'
+                />
               </div>
             )}
             {isLoading && chats.length === 0 ? (
@@ -1947,7 +1948,13 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         if (pendingAllChatsSkip === 0 || pendingAllChatsSkip === null) {
           setAllChats(result.chats)
         } else {
-          setAllChats((prev) => [...prev, ...result.chats])
+          setAllChats((prev) => {
+            const existingIds = new Set(prev.map((chat) => chat.id))
+            const uniqueChats = result.chats.filter(
+              (chat) => !existingIds.has(chat.id),
+            )
+            return [...prev, ...uniqueChats]
+          })
         }
         setAllChatsTotal(result.total)
       }
