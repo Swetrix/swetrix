@@ -295,7 +295,7 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
             {t('dashboard.funnelsDesc')}
           </Text>
           <div className='mt-6'>
-            {isAuthenticated ? (
+            {isAuthenticated && allowedToManage ? (
               <Button size='lg' onClick={() => setIsNewFunnelOpened(true)}>
                 <PlusIcon className='mr-1.5 size-4' />
                 {t('dashboard.newFunnel')}

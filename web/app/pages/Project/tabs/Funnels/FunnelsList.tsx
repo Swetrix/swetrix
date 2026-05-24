@@ -278,7 +278,13 @@ const FunnelCard = ({
             <Button
               variant='icon'
               type='button'
-              onClick={() => deleteFunnel(funnel.id)}
+              disabled={loading}
+              aria-disabled={loading}
+              onClick={() => {
+                if (!loading) {
+                  deleteFunnel(funnel.id)
+                }
+              }}
               aria-label={t('common.delete')}
               className={cx(
                 'p-1.5 text-gray-800 dark:text-slate-400 dark:hover:text-slate-300',
