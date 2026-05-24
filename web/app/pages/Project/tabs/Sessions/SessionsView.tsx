@@ -1,6 +1,4 @@
-import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import { DownloadSimpleIcon } from '@phosphor-icons/react'
 import {
   Component,
   useState,
@@ -33,7 +31,7 @@ import {
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
-import Spin from '~/ui/icons/Spin'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import StatusPage from '~/ui/StatusPage'
@@ -290,9 +288,7 @@ const SessionsViewInner = ({
       }
 
       // Ignore stale proxy responses that were initiated before the last loader update
-      if (
-        proxyRequest.loaderUpdateCounter < loaderUpdateCounterRef.current
-      ) {
+      if (proxyRequest.loaderUpdateCounter < loaderUpdateCounterRef.current) {
         return
       }
 
@@ -303,9 +299,7 @@ const SessionsViewInner = ({
         const visibleSessions = newSessions.slice(0, proxyRequest.limit)
         setSessions(visibleSessions)
         setSessionsSkip(visibleSessions.length)
-        setCanLoadMoreSessions(
-          newSessions.length > (proxyRequest.limit || 0),
-        )
+        setCanLoadMoreSessions(newSessions.length > (proxyRequest.limit || 0))
         hasShownContentRef.current = !_isEmpty(visibleSessions)
       } else {
         setSessions((prev) => {
@@ -453,27 +447,14 @@ const SessionsViewInner = ({
           timeFormat={timeFormat}
           currency={project?.revenueCurrency}
         />
-        {canLoadMoreSessions ? (
-          <button
-            type='button'
-            title={t('project.loadMore')}
-            onClick={loadMoreSessions}
-            className={cx(
-              'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
-              {
-                'cursor-not-allowed opacity-50': sessionsLoading,
-                hidden: sessionsLoading && _isEmpty(sessions),
-              },
-            )}
-          >
-            {sessionsLoading ? (
-              <Spin className='mr-2 size-5' />
-            ) : (
-              <DownloadSimpleIcon className='mr-2 h-5 w-5' />
-            )}
-            {t('project.loadMore')}
-          </button>
-        ) : null}
+        <InfiniteScrollTrigger
+          hasMore={canLoadMoreSessions}
+          isLoading={sessionsLoading}
+          onLoadMore={loadMoreSessions}
+          disabled={sessionsLoading}
+          className={sessionsLoading && _isEmpty(sessions) ? 'hidden' : ''}
+          spinnerClassName='mr-0! ml-0!'
+        />
       </div>
     </>
   )
