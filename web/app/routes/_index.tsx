@@ -330,10 +330,14 @@ const Hero = () => {
     <div className='relative isolate overflow-hidden bg-gray-50 pt-2 dark:bg-slate-950'>
       <div className='relative mx-2 overflow-hidden rounded-t-4xl bg-slate-950 shadow-2xl ring-1 shadow-slate-950/20 ring-black/5 dark:ring-white/10'>
         <div aria-hidden className='pointer-events-none absolute inset-0'>
-          <div
-            className='absolute inset-0 bg-cover bg-center opacity-95 saturate-125'
-            style={{ backgroundImage: "url('/assets/hero-background-4.png')" }}
-          />
+          <picture className='absolute inset-0 block'>
+            <source srcSet='/assets/hero-background-1.avif' type='image/avif' />
+            <img
+              alt=''
+              className='size-full object-cover object-center opacity-95 saturate-125'
+              src='/assets/hero-background.webp'
+            />
+          </picture>
           <div className='absolute inset-0 bg-slate-950/50' />
           <div className='absolute inset-0 bg-radial-[at_50%_0%] from-indigo-300/30 via-slate-950/10 to-slate-950/80' />
           <div className='absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-b from-transparent to-slate-950' />
