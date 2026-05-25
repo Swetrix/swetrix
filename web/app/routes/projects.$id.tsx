@@ -1736,9 +1736,18 @@ export async function action({ request, params }: ActionFunctionArgs) {
       )
       const enabled = formData.get('enabled') === 'true'
       const scheduledChangeRaw = formData.get('scheduledChange')?.toString()
-      const scheduledChange = scheduledChangeRaw
-        ? JSON.parse(scheduledChangeRaw)
-        : null
+      let scheduledChange: unknown = null
+
+      if (scheduledChangeRaw) {
+        try {
+          scheduledChange = JSON.parse(scheduledChangeRaw)
+        } catch {
+          return data<ProjectViewActionData>(
+            { intent, error: 'Invalid JSON in scheduledChange' },
+            { status: 400 },
+          )
+        }
+      }
 
       const result = await serverFetch(request, 'feature-flag', {
         method: 'POST',
@@ -1781,11 +1790,24 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const enabled = formData.has('enabled')
         ? formData.get('enabled') === 'true'
         : undefined
-      const scheduledChange = formData.has('scheduledChange')
-        ? formData.get('scheduledChange')?.toString() === 'null'
-          ? null
-          : JSON.parse(formData.get('scheduledChange')!.toString())
-        : undefined
+      let scheduledChange: unknown = undefined
+
+      if (formData.has('scheduledChange')) {
+        const scheduledChangeRaw = formData.get('scheduledChange')?.toString()
+
+        if (scheduledChangeRaw === 'null') {
+          scheduledChange = null
+        } else {
+          try {
+            scheduledChange = JSON.parse(scheduledChangeRaw || '')
+          } catch {
+            return data<ProjectViewActionData>(
+              { intent, error: 'Invalid JSON in scheduledChange' },
+              { status: 400 },
+            )
+          }
+        }
+      }
 
       const body: Record<string, unknown> = {}
       if (key !== undefined) body.key = key
@@ -1817,7 +1839,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     case 'kill-feature-flag': {
       const flagId = formData.get('flagId')?.toString()
-      const killSwitchValue = formData.get('killSwitchValue') === 'true'
+      const rawKillSwitch = formData.get('killSwitchValue')?.toString()
+
+      if (rawKillSwitch !== 'true' && rawKillSwitch !== 'false') {
+        return data<ProjectViewActionData>(
+          { intent, error: 'Invalid killSwitchValue' },
+          { status: 400 },
+        )
+      }
+
+      const killSwitchValue = rawKillSwitch === 'true'
 
       const result = await serverFetch(request, `feature-flag/${flagId}/kill`, {
         method: 'PUT',

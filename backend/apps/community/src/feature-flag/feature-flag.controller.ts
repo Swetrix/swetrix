@@ -668,6 +668,8 @@ export class FeatureFlagController {
       }
     }
 
+    await this.featureFlagService.applyDueScheduledChanges(flag.projectId)
+
     this.validateScheduledChange(flagDto.scheduledChange)
 
     const updatePayload: Partial<FeatureFlag> = {

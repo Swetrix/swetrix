@@ -141,6 +141,7 @@ export class FeatureFlagController {
     flag: FeatureFlag,
     lastEvaluatedAt: string | null,
     completedExperimentIds: Set<string>,
+    skipEvaluationStaleness = false,
   ) {
     const reasons: FeatureFlagStaleReason[] = []
     const createdAge = this.getAgeInDays(flag.created)
@@ -149,13 +150,18 @@ export class FeatureFlagController {
       flag.targetingUpdatedAt || flag.created,
     )
 
-    if (!lastEvaluatedAt && createdAge >= FEATURE_FLAG_EVALUATION_STALE_DAYS) {
-      reasons.push(FeatureFlagStaleReason.NOT_EVALUATED_RECENTLY)
-    } else if (
-      lastEvaluatedAt &&
-      this.getAgeInDays(lastEvaluatedAt) >= FEATURE_FLAG_EVALUATION_STALE_DAYS
-    ) {
-      reasons.push(FeatureFlagStaleReason.NOT_EVALUATED_RECENTLY)
+    if (!skipEvaluationStaleness) {
+      if (
+        !lastEvaluatedAt &&
+        createdAge >= FEATURE_FLAG_EVALUATION_STALE_DAYS
+      ) {
+        reasons.push(FeatureFlagStaleReason.NOT_EVALUATED_RECENTLY)
+      } else if (
+        lastEvaluatedAt &&
+        this.getAgeInDays(lastEvaluatedAt) >= FEATURE_FLAG_EVALUATION_STALE_DAYS
+      ) {
+        reasons.push(FeatureFlagStaleReason.NOT_EVALUATED_RECENTLY)
+      }
     }
 
     if (
@@ -200,11 +206,19 @@ export class FeatureFlagController {
   }
 
   private async decorateFeatureFlags(projectId: string, flags: FeatureFlag[]) {
-    const lastEvaluatedAtByFlag =
-      await this.featureFlagService.getLastEvaluatedAtByFlagIds(
-        projectId,
-        flags.map((flag) => flag.id),
-      )
+    let skipEvaluationStaleness = false
+    let lastEvaluatedAtByFlag = new Map<string, string>()
+
+    try {
+      lastEvaluatedAtByFlag =
+        await this.featureFlagService.getLastEvaluatedAtByFlagIds(
+          projectId,
+          flags.map((flag) => flag.id),
+        )
+    } catch {
+      skipEvaluationStaleness = true
+    }
+
     const experimentIds = flags
       .map((flag) => flag.experimentId)
       .filter((id): id is string => Boolean(id))
@@ -231,6 +245,7 @@ export class FeatureFlagController {
         effectiveFlag,
         lastEvaluatedAt,
         completedExperimentIds,
+        skipEvaluationStaleness,
       )
 
       return {
@@ -719,6 +734,8 @@ export class FeatureFlagController {
         )
       }
     }
+
+    await this.featureFlagService.applyDueScheduledChanges(flag.project.id)
 
     this.validateScheduledChange(flagDto.scheduledChange)
 

@@ -742,7 +742,9 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                             type='datetime-local'
                             label={t('featureFlags.scheduleAt')}
                             value={scheduledApplyAt}
-                            min={dayjs().format('YYYY-MM-DDTHH:mm')}
+                            min={dayjs()
+                              .add(1, 'minute')
+                              .format('YYYY-MM-DDTHH:mm')}
                             onChange={(e) =>
                               setScheduledApplyAt(e.target.value)
                             }

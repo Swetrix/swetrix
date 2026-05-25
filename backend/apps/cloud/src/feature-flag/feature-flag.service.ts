@@ -10,6 +10,7 @@ import {
 } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { clickhouse } from '../common/integrations/clickhouse'
+import { AppLoggerService } from '../logger/logger.service'
 import { FeatureFlag } from './entity/feature-flag.entity'
 import {
   evaluateFlag as sharedEvaluateFlag,
@@ -22,6 +23,7 @@ export class FeatureFlagService {
   constructor(
     @InjectRepository(FeatureFlag)
     private featureFlagRepository: Repository<FeatureFlag>,
+    private readonly logger: AppLoggerService,
   ) {}
 
   async paginate(
@@ -135,20 +137,24 @@ export class FeatureFlagService {
     `
 
     try {
-      const { data } = await clickhouse
-        .query({
-          query,
-          query_params: { pid: projectId, flagIds },
-        })
-        .then((resultSet) =>
-          resultSet.json<{ flagId: string; lastEvaluatedAt: string }>(),
-        )
+      const resultSet = await clickhouse.query({
+        query,
+        query_params: { pid: projectId, flagIds },
+      })
+      const { data } = await resultSet.json<{
+        flagId: string
+        lastEvaluatedAt: string
+      }>()
 
       for (const row of data) {
         result.set(row.flagId, row.lastEvaluatedAt)
       }
-    } catch {
-      return result
+    } catch (err) {
+      this.logger.error(
+        { err, projectId, flagIds },
+        'Failed to get feature flag evaluation timestamps',
+      )
+      throw err
     }
 
     return result
