@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 
-import { useTheme } from '~/providers/ThemeProvider'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
@@ -60,22 +59,21 @@ const LOGOS: ImageLogo[] = [
 
 export const LogoCloud = () => {
   const { t } = useTranslation('common')
-  const { theme } = useTheme()
 
   return (
-    <section className='rounded-b-4xl bg-gray-100/80 pt-14 pb-16 dark:bg-slate-900/50'>
+    <section className='mx-2 -mt-px rounded-b-4xl bg-slate-950 pt-14 pb-16 ring-1 ring-black/5 dark:ring-white/10'>
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
         <Text
           as='p'
           size='xs'
           weight='semibold'
-          colour='muted'
-          className='text-center tracking-[0.18em] uppercase'
+          colour='inherit'
+          className='text-center tracking-[0.18em] text-slate-400 uppercase'
         >
           {t('main.logoCloud.title')}
         </Text>
 
-        <ul className='mx-auto mt-10 grid max-w-5xl grid-cols-2 items-center justify-items-center gap-x-8 gap-y-10 sm:grid-cols-3 sm:gap-x-12 lg:max-w-6xl lg:grid-cols-6 lg:gap-x-8'>
+        <ul className='mx-auto mt-10 grid max-w-6xl grid-cols-2 items-center justify-items-center gap-x-8 gap-y-10 sm:grid-cols-3 sm:gap-x-12 lg:grid-cols-6 lg:gap-x-8'>
           {LOGOS.map((logo) => (
             <li
               key={logo.name}
@@ -83,12 +81,12 @@ export const LogoCloud = () => {
             >
               <img
                 alt={logo.name}
-                src={logo.dark && theme === 'dark' ? logo.dark : logo.light}
+                src={logo.dark ?? logo.light}
                 loading='lazy'
                 className={cn(
                   'w-auto max-w-[180px] object-contain',
                   logo.heightClass,
-                  !logo.dark && 'dark:brightness-0 dark:invert',
+                  !logo.dark && 'brightness-0 invert',
                 )}
               />
             </li>

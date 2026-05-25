@@ -23,6 +23,7 @@ import FAQ from '~/components/marketing/FAQ'
 import Integrations from '~/components/marketing/Integrations'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
 import useBreakpoint from '~/hooks/useBreakpoint'
+import Button from '~/ui/Button'
 import {
   LIVE_DEMO_URL,
   isSelfhosted,
@@ -271,7 +272,6 @@ const Testimonials = ({
 }
 
 const LiveDemoPreview = () => {
-  const { t } = useTranslation('common')
   const { theme } = useTheme()
   const {
     i18n: { language },
@@ -281,32 +281,18 @@ const LiveDemoPreview = () => {
 
   if (isUpToLg) {
     return (
-      <div className='relative z-20 mx-auto mt-10 overflow-hidden rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'>
+      <div className='relative z-20 mx-auto mt-10 overflow-hidden rounded-2xl bg-white/80 p-1.5 shadow-2xl ring-1 shadow-slate-950/20 ring-white/40 backdrop-blur-md dark:bg-slate-950/80 dark:ring-white/10'>
         <img
           src={
             theme === 'dark'
               ? '/assets/screenshot_dark.png'
               : '/assets/screenshot_light.png'
           }
-          className='relative h-auto w-full'
+          className='relative h-auto w-full rounded-xl'
           width={2328}
           height={1666}
-          // eslint-disable-next-line react/no-unknown-property
-          fetchPriority='high'
           alt='Swetrix Analytics dashboard'
         />
-        <div className='absolute inset-0 flex items-center justify-center bg-slate-900/20 opacity-100 backdrop-blur-[1px] transition-opacity duration-200'>
-          <a
-            href={LIVE_DEMO_URL}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
-            aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
-          >
-            <ArrowRightIcon className='mr-2 h-4 w-4' />
-            {t('common.liveDemo')}
-          </a>
-        </div>
       </div>
     )
   }
@@ -315,7 +301,7 @@ const LiveDemoPreview = () => {
 
   return (
     <div
-      className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-gray-50 shadow-lg ring-1 ring-black/5 transition-shadow ease-out sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-950 dark:ring-white/10'
+      className='relative z-20 mx-auto mt-12 w-full max-w-[1480px] overflow-hidden rounded-2xl bg-white/90 p-2 shadow-2xl ring-1 shadow-slate-950/25 ring-white/40 backdrop-blur-xl dark:bg-slate-950/90 dark:ring-white/10'
       style={{
         transform: 'translateZ(0)',
         WebkitTransform: 'translateZ(0)',
@@ -324,26 +310,13 @@ const LiveDemoPreview = () => {
         WebkitMaskImage: '-webkit-radial-gradient(white, black)',
       }}
     >
-      <div className='pointer-events-none relative h-[580px] overflow-hidden rounded-2xl lg:h-[640px] xl:h-[700px]'>
+      <div className='relative h-[580px] overflow-hidden rounded-xl bg-slate-950 lg:h-[640px] xl:h-[700px]'>
         <iframe
           src={`https://swetrix.com${localisedDemoPath}?tab=traffic&theme=${theme}&embedded=true`}
-          className='size-full rounded-2xl'
+          className='size-full rounded-xl'
           title='Swetrix Analytics Live Demo'
-          style={{ pointerEvents: 'none' }}
-          tabIndex={-1}
+          loading='eager'
         />
-        <div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-slate-900/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100'>
-          <a
-            href={LIVE_DEMO_URL}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
-            aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
-          >
-            <ArrowRightIcon className='mr-2 h-4 w-4' />
-            {t('main.seeLiveDemo')}
-          </a>
-        </div>
       </div>
     </div>
   )
@@ -354,75 +327,96 @@ const Hero = () => {
   const { stats } = useLoaderData<typeof loader>()
 
   return (
-    <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-900/50'>
-      <div className='relative mx-2 overflow-hidden rounded-4xl'>
-        <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
-          <div className='absolute inset-0 rounded-4xl bg-linear-115 from-slate-100 from-28% via-purple-500 via-70% to-indigo-600 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-950 dark:opacity-45 dark:ring-white/10' />
+    <div className='relative isolate overflow-hidden bg-gray-50 pt-2 dark:bg-slate-950'>
+      <div className='relative mx-2 overflow-hidden rounded-t-4xl bg-slate-950 shadow-2xl ring-1 shadow-slate-950/20 ring-black/5 dark:ring-white/10'>
+        <div aria-hidden className='pointer-events-none absolute inset-0'>
+          <div
+            className='absolute inset-0 bg-cover bg-center opacity-95 saturate-125'
+            style={{ backgroundImage: "url('/assets/hero-background-4.png')" }}
+          />
+          <div className='absolute inset-0 bg-slate-950/50' />
+          <div className='absolute inset-0 bg-radial-[at_50%_0%] from-indigo-300/30 via-slate-950/10 to-slate-950/80' />
+          <div className='absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-b from-transparent to-slate-950' />
         </div>
-        <Header transparent />
-        <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
-          <div className='z-20 col-span-6 flex flex-col items-start'>
+        <Header transparent inverted />
+        <section className='relative z-10 mx-auto flex max-w-[1500px] flex-col items-center px-4 pt-14 pb-6 sm:px-6 sm:pt-16 lg:px-8 lg:pt-20'>
+          <div className='flex w-full flex-col items-center'>
             <Text
               as='h1'
               weight='semibold'
-              tracking='tight'
-              className='max-w-5xl text-left text-5xl text-pretty sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl'
+              className='mx-auto max-w-6xl text-center [font-family:Geist,ui-sans-serif,system-ui,sans-serif] text-5xl leading-[0.98] text-balance text-white sm:text-6xl lg:text-7xl xl:text-8xl'
             >
               {t('main.slogan')}
             </Text>
-            <Text as='p' size='lg' className='mt-4 max-w-2xl text-left'>
+            <Text
+              as='p'
+              size='lg'
+              className='mx-auto mt-5 max-w-3xl text-center leading-8 text-white/80'
+            >
               {t('main.description')}
             </Text>
-            <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
+            <div className='mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center'>
               <Link
                 to={routesPath.signup}
-                className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
+                className='inline-flex h-12 items-center justify-center rounded-md bg-white px-5 text-slate-950 shadow-lg ring-1 shadow-slate-950/20 ring-white/30 transition-colors hover:bg-gray-100'
                 aria-label={t('titles.signup')}
               >
-                <span className='mr-1 text-center text-base font-semibold'>
+                <span className='text-center text-base font-semibold'>
                   {t('main.startAXDayFreeTrial', { amount: 14 })}
                 </span>
-                <ArrowRightIcon className='mt-[1px] h-4 w-5' />
+                <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-5' />
               </Link>
+              <Button
+                to={LIVE_DEMO_URL}
+                linkProps={{
+                  target: '_blank',
+                  rel: 'noopener noreferrer',
+                }}
+                variant='secondary'
+                size='xl'
+                className='h-12 border-white/25 bg-white/10 px-5 text-base font-semibold text-white shadow-none ring-white/25 backdrop-blur-md hover:bg-white/20 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
+                aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
+              >
+                {t('common.liveDemo')}
+              </Button>
             </div>
-            <div className='mt-8 grid w-full grid-cols-2 gap-3 text-slate-900 dark:text-gray-50'>
-              <div className='flex items-center gap-3 text-sm'>
-                <StarIcon className='size-5' />
+            <div className='mt-8 flex max-w-4xl flex-wrap justify-center gap-x-16 gap-y-3 text-white'>
+              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
+                <StarIcon className='size-5 shrink-0' />
                 <span>{t('main.heroBenefits.trial', { days: 14 })}</span>
               </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <GaugeIcon className='size-5' />
+              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
+                <GaugeIcon className='size-5 shrink-0' />
                 <span>{t('main.heroBenefits.quickSetup')}</span>
               </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <CookieIcon className='size-5' />
+              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
+                <CookieIcon className='size-5 shrink-0' />
                 <span>{t('main.heroBenefits.cookieless')}</span>
               </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <GithubLogoIcon className='size-5' />
+              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
+                <GithubLogoIcon className='size-5 shrink-0' />
                 <span>{t('main.heroBenefits.openSource')}</span>
               </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <DatabaseIcon className='size-5' />
+              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
+                <DatabaseIcon className='size-5 shrink-0' />
                 <span>{t('main.heroBenefits.dataOwnership')}</span>
               </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <HardDrivesIcon className='size-5' />
+              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
+                <HardDrivesIcon className='size-5 shrink-0' />
                 <span>{t('main.heroBenefits.selfHostable')}</span>
               </div>
             </div>
-            <Testimonials className='mt-8 hidden lg:block' stats={stats} />
+            <Testimonials className='dark mt-8' stats={stats} />
           </div>
-          <div className='col-span-6 mt-10 overflow-visible lg:mt-0 lg:mr-0 lg:ml-4'>
+          <div className='w-full'>
             <ClientOnly
               fallback={
-                <div className='h-[240px] w-full rounded-2xl bg-slate-800/10 ring-1 ring-black/5 sm:h-[320px] md:h-[580px] lg:h-[640px] xl:h-[700px] dark:bg-slate-800/20 dark:ring-white/10' />
+                <div className='mx-auto mt-12 h-[580px] w-full max-w-[1480px] rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur-xl lg:h-[640px] xl:h-[700px]' />
               }
             >
               {() => <LiveDemoPreview />}
             </ClientOnly>
           </div>
-          <Testimonials className='mt-8 lg:hidden' stats={stats} />
         </section>
       </div>
     </div>
