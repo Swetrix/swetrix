@@ -603,7 +603,7 @@
       ]
     },
     "slogan": "Turn traffic into insights",
-    "description": "Get all the insights you need about your users and website visitors without the hassle of showing cookie banners. Experience intuitive, easy-to-use and GDPR-compliant web analytics without invading the privacy of your visitors.",
+    "description": "Swetrix is a privacy-first Google Analytics alternative that helps you understand visitors, traffic sources and website performance with simple, cookieless, GDPR-compliant insights - no cookie banners or invasive tracking.",
     "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
     "startAXDayFreeTrial": "Start a {{amount}}-day free trial",
     "metric": "Metric",
