@@ -17,6 +17,27 @@ export interface TargetingRule {
   isExclusive: boolean // true = exclude, false = include
 }
 
+export interface FeatureFlagSchedule {
+  enabled?: boolean
+  rolloutPercentage?: number
+  applyAt: string | Date
+}
+
+export enum FeatureFlagStatus {
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+  SCHEDULED = 'scheduled',
+  KILLED = 'killed',
+  STALE = 'stale',
+}
+
+export enum FeatureFlagStaleReason {
+  NOT_EVALUATED_RECENTLY = 'not_evaluated_recently',
+  PERMANENT_ROLLOUT = 'permanent_rollout',
+  TARGETING_UNCHANGED = 'targeting_unchanged',
+  COMPLETED_EXPERIMENT = 'completed_experiment',
+}
+
 /**
  * Minimal feature flag interface required for evaluation
  * Both cloud (TypeORM entity) and community (ClickHouse) flags should satisfy this
@@ -27,6 +48,9 @@ export interface EvaluatableFeatureFlag {
   flagType: FeatureFlagType
   rolloutPercentage: number
   targetingRules: TargetingRule[] | null
+  scheduledChange?: FeatureFlagSchedule | null
+  killSwitchActive?: boolean
+  killSwitchValue?: boolean
 }
 
 interface ExperimentVariant {
@@ -59,15 +83,19 @@ export function evaluateFlag(
   profileId: string,
   attributes?: Record<string, string>,
 ): boolean {
-  // If flag is disabled, always return false
-  if (!flag.enabled) {
+  if (flag.killSwitchActive) {
+    return Boolean(flag.killSwitchValue)
+  }
+
+  const effectiveFlag = applyDueScheduledChange(flag)
+
+  if (!effectiveFlag.enabled) {
     return false
   }
 
-  // Check targeting rules if any exist
-  if (flag.targetingRules && flag.targetingRules.length > 0) {
+  if (effectiveFlag.targetingRules && effectiveFlag.targetingRules.length > 0) {
     const matchesTargeting = matchesTargetingRules(
-      flag.targetingRules,
+      effectiveFlag.targetingRules,
       attributes,
     )
     if (!matchesTargeting) {
@@ -75,17 +103,55 @@ export function evaluateFlag(
     }
   }
 
-  // For boolean flags, return true if enabled and targeting matches
-  if (flag.flagType === FeatureFlagType.BOOLEAN) {
+  if (effectiveFlag.flagType === FeatureFlagType.BOOLEAN) {
     return true
   }
 
-  // For rollout flags, use percentage-based rollout
-  if (flag.flagType === FeatureFlagType.ROLLOUT) {
-    return isInRolloutPercentage(flag.key, flag.rolloutPercentage, profileId)
+  if (effectiveFlag.flagType === FeatureFlagType.ROLLOUT) {
+    return isInRolloutPercentage(
+      effectiveFlag.key,
+      effectiveFlag.rolloutPercentage,
+      profileId,
+    )
   }
 
   return false
+}
+
+export function applyDueScheduledChange<T extends EvaluatableFeatureFlag>(
+  flag: T,
+  now = new Date(),
+): T {
+  if (!isScheduledChangeDue(flag.scheduledChange, now)) {
+    return flag
+  }
+
+  const scheduledChange = flag.scheduledChange
+
+  return {
+    ...flag,
+    enabled: scheduledChange.enabled ?? flag.enabled,
+    rolloutPercentage:
+      scheduledChange.rolloutPercentage ?? flag.rolloutPercentage,
+    scheduledChange: null,
+  }
+}
+
+export function isScheduledChangeDue(
+  scheduledChange?: FeatureFlagSchedule | null,
+  now = new Date(),
+): scheduledChange is FeatureFlagSchedule {
+  if (!scheduledChange?.applyAt) {
+    return false
+  }
+
+  const applyAt = new Date(scheduledChange.applyAt)
+
+  if (Number.isNaN(applyAt.getTime())) {
+    return false
+  }
+
+  return applyAt.getTime() <= now.getTime()
 }
 
 /**
@@ -108,15 +174,11 @@ function matchesTargetingRules(
 
     const matches = matchesRule(attributeValue, rule.filter)
 
-    // If isExclusive (exclude), we want the rule to NOT match
-    // If not isExclusive (include), we want the rule to match
     if (rule.isExclusive) {
-      // Exclude: if it matches, targeting fails
       if (matches) {
         return false
       }
     } else {
-      // Include: if it doesn't match, targeting fails
       if (!matches) {
         return false
       }
@@ -131,7 +193,6 @@ function matchesTargetingRules(
  * Supports case-insensitive matching
  */
 function matchesRule(attributeValue: string, filterValue: string): boolean {
-  // Case-insensitive exact match
   return attributeValue.toLowerCase() === filterValue.toLowerCase()
 }
 
@@ -151,17 +212,13 @@ function isInRolloutPercentage(
     return false
   }
 
-  // Create a consistent hash based on flag key and profile ID
-  // Using SHA-256 for better cryptographic properties
   const hash = crypto
     .createHash('sha256')
     .update(`${flagKey}:${profileId}`)
     .digest('hex')
 
-  // Convert first 8 hex characters to a number (0 to 2^32-1)
   const hashValue = parseInt(hash.substring(0, 8), 16)
 
-  // Normalize to 0-100 range
   const normalizedValue = (hashValue / 0xffffffff) * 100
 
   return normalizedValue < percentage

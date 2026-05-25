@@ -41,16 +41,30 @@ import {
   FeatureFlagStatsDto,
   EvaluatedFlagsResponseDto,
   FeatureFlagProfilesResponseDto,
+  KillFeatureFlagDto,
 } from './dto/feature-flag.dto'
 import { FeatureFlagService } from './feature-flag.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { checkRateLimit, getIPFromHeaders, getIPDetails } from '../common/utils'
 import { ExperimentService } from '../experiment/experiment.service'
-import { ExposureTrigger } from '../experiment/entity/experiment.entity'
-import { getExperimentVariant } from './evaluation'
+import {
+  ExperimentStatus,
+  ExposureTrigger,
+} from '../experiment/entity/experiment.entity'
+import {
+  FeatureFlagSchedule,
+  FeatureFlagStaleReason,
+  FeatureFlagStatus,
+  applyDueScheduledChange,
+  getExperimentVariant,
+  isScheduledChangeDue,
+} from './evaluation'
 
 const FEATURE_FLAGS_MAXIMUM = 50 // Maximum feature flags per project
 const FEATURE_FLAGS_PAGINATION_MAX_TAKE = 100
+const FEATURE_FLAG_EVALUATION_STALE_DAYS = 30
+const FEATURE_FLAG_TARGETING_STALE_DAYS = 90
+const DAY_IN_MS = 24 * 60 * 60 * 1000
 
 @ApiTags('Feature Flag')
 @Controller(['feature-flag', 'v1/feature-flag'])
@@ -62,6 +76,164 @@ export class FeatureFlagController {
     private readonly analyticsService: AnalyticsService,
     private readonly experimentService: ExperimentService,
   ) {}
+
+  private validateScheduledChange(
+    scheduledChange?: FeatureFlagSchedule | null,
+  ) {
+    if (!scheduledChange) {
+      return
+    }
+
+    if (
+      scheduledChange.enabled === undefined &&
+      scheduledChange.rolloutPercentage === undefined
+    ) {
+      throw new BadRequestException(
+        'Scheduled change must include enabled or rolloutPercentage',
+      )
+    }
+
+    const applyAt = new Date(scheduledChange.applyAt)
+
+    if (Number.isNaN(applyAt.getTime())) {
+      throw new BadRequestException('Scheduled change date is invalid')
+    }
+
+    if (applyAt.getTime() <= Date.now()) {
+      throw new BadRequestException('Scheduled change must be in the future')
+    }
+  }
+
+  private hasTargetingRulesChanged(
+    current: FeatureFlag['targetingRules'],
+    next?: FeatureFlag['targetingRules'],
+  ) {
+    if (next === undefined) {
+      return false
+    }
+
+    return JSON.stringify(current || []) !== JSON.stringify(next || [])
+  }
+
+  private getAgeInDays(value?: Date | string | null) {
+    if (!value) {
+      return Number.POSITIVE_INFINITY
+    }
+
+    const date = new Date(value)
+
+    if (Number.isNaN(date.getTime())) {
+      return Number.POSITIVE_INFINITY
+    }
+
+    return (Date.now() - date.getTime()) / DAY_IN_MS
+  }
+
+  private getStaleReasons(
+    flag: FeatureFlag,
+    lastEvaluatedAt: string | null,
+    completedExperimentIds: Set<string>,
+  ) {
+    const reasons: FeatureFlagStaleReason[] = []
+    const createdAge = this.getAgeInDays(flag.created)
+    const updatedAge = this.getAgeInDays(flag.updated || flag.created)
+    const targetingAge = this.getAgeInDays(
+      flag.targetingUpdatedAt || flag.created,
+    )
+
+    if (!lastEvaluatedAt && createdAge >= FEATURE_FLAG_EVALUATION_STALE_DAYS) {
+      reasons.push(FeatureFlagStaleReason.NOT_EVALUATED_RECENTLY)
+    } else if (
+      lastEvaluatedAt &&
+      this.getAgeInDays(lastEvaluatedAt) >= FEATURE_FLAG_EVALUATION_STALE_DAYS
+    ) {
+      reasons.push(FeatureFlagStaleReason.NOT_EVALUATED_RECENTLY)
+    }
+
+    if (
+      flag.flagType === 'rollout' &&
+      (flag.rolloutPercentage === 0 || flag.rolloutPercentage === 100) &&
+      updatedAge >= FEATURE_FLAG_EVALUATION_STALE_DAYS
+    ) {
+      reasons.push(FeatureFlagStaleReason.PERMANENT_ROLLOUT)
+    }
+
+    if (
+      flag.targetingRules?.length > 0 &&
+      targetingAge >= FEATURE_FLAG_TARGETING_STALE_DAYS
+    ) {
+      reasons.push(FeatureFlagStaleReason.TARGETING_UNCHANGED)
+    }
+
+    if (flag.experimentId && completedExperimentIds.has(flag.experimentId)) {
+      reasons.push(FeatureFlagStaleReason.COMPLETED_EXPERIMENT)
+    }
+
+    return reasons
+  }
+
+  private getFlagStatus(
+    flag: FeatureFlag,
+    staleReasons: FeatureFlagStaleReason[],
+  ) {
+    if (flag.killSwitchActive) {
+      return FeatureFlagStatus.KILLED
+    }
+
+    if (!isScheduledChangeDue(flag.scheduledChange) && flag.scheduledChange) {
+      return FeatureFlagStatus.SCHEDULED
+    }
+
+    if (staleReasons.length > 0) {
+      return FeatureFlagStatus.STALE
+    }
+
+    return flag.enabled ? FeatureFlagStatus.ENABLED : FeatureFlagStatus.DISABLED
+  }
+
+  private async decorateFeatureFlags(projectId: string, flags: FeatureFlag[]) {
+    const lastEvaluatedAtByFlag =
+      await this.featureFlagService.getLastEvaluatedAtByFlagIds(
+        projectId,
+        flags.map((flag) => flag.id),
+      )
+    const experimentIds = flags
+      .map((flag) => flag.experimentId)
+      .filter((id): id is string => Boolean(id))
+    const completedExperimentIds = new Set<string>()
+
+    if (experimentIds.length > 0) {
+      const experiments = await this.experimentService.findByProject(projectId)
+
+      for (const experiment of experiments) {
+        if (
+          experiment.status === ExperimentStatus.COMPLETED &&
+          experimentIds.includes(experiment.id)
+        ) {
+          completedExperimentIds.add(experiment.id)
+        }
+      }
+    }
+
+    return _map(flags, (flag) => {
+      const effectiveFlag = applyDueScheduledChange(flag)
+      const lastEvaluatedAt =
+        lastEvaluatedAtByFlag.get(effectiveFlag.id) || null
+      const staleReasons = this.getStaleReasons(
+        effectiveFlag,
+        lastEvaluatedAt,
+        completedExperimentIds,
+      )
+
+      return {
+        ...effectiveFlag,
+        pid: projectId,
+        lastEvaluatedAt,
+        staleReasons,
+        status: this.getFlagStatus(effectiveFlag, staleReasons),
+      }
+    })
+  }
 
   @ApiBearerAuth()
   @Get('/project/:projectId')
@@ -95,16 +267,18 @@ export class FeatureFlagController {
     const safeSkip =
       typeof skip === 'number' && Number.isFinite(skip) ? Math.max(skip, 0) : 0
 
+    await this.featureFlagService.applyDueScheduledChanges(projectId)
+
     const result = await this.featureFlagService.paginate(
       { take: safeTake, skip: safeSkip },
       projectId,
       search,
     )
 
-    result.results = _map(result.results, (flag) => ({
-      ...flag,
-      pid: flag.projectId,
-    })) as any
+    result.results = (await this.decorateFeatureFlags(
+      projectId,
+      result.results,
+    )) as any
 
     return result
   }
@@ -130,10 +304,14 @@ export class FeatureFlagController {
 
     this.projectService.allowedToView(project, userId)
 
-    return {
-      ...flag,
-      pid: flag.projectId,
-    }
+    await this.featureFlagService.applyDueScheduledChanges(flag.projectId)
+
+    const freshFlag = (await this.featureFlagService.findOne(flagId)) || flag
+    const [decoratedFlag] = await this.decorateFeatureFlags(flag.projectId, [
+      freshFlag,
+    ])
+
+    return decoratedFlag
   }
 
   @ApiBearerAuth()
@@ -179,6 +357,8 @@ export class FeatureFlagController {
       )
     }
 
+    this.validateScheduledChange(flagDto.scheduledChange)
+
     try {
       const newFlag = await this.featureFlagService.create({
         key: flagDto.key,
@@ -187,13 +367,19 @@ export class FeatureFlagController {
         rolloutPercentage: flagDto.rolloutPercentage ?? 100,
         targetingRules: flagDto.targetingRules || null,
         enabled: flagDto.enabled ?? true,
+        scheduledChange: flagDto.scheduledChange || null,
+        killSwitchActive: false,
+        killSwitchValue: false,
+        killedAt: null,
+        targetingUpdatedAt: new Date().toISOString(),
         projectId: flagDto.pid,
       })
 
-      return {
-        ...newFlag,
-        pid: flagDto.pid,
-      }
+      const [decoratedFlag] = await this.decorateFeatureFlags(flagDto.pid, [
+        newFlag,
+      ])
+
+      return decoratedFlag
     } catch (reason) {
       this.logger.error({ reason }, 'Error while creating feature flag')
       throw new BadRequestException(
@@ -268,9 +454,9 @@ export class FeatureFlagController {
     const { country, city, region } = getIPDetails(ip)
     this.analyticsService.checkCountryBlacklist(project, country)
 
-    const flags = await this.featureFlagService.findEnabledByProject(
-      evaluateDto.pid,
-    )
+    await this.featureFlagService.applyDueScheduledChanges(evaluateDto.pid)
+
+    const flags = await this.featureFlagService.findByProject(evaluateDto.pid)
 
     const { deviceType, browserName, osName } =
       await this.analyticsService.getRequestInformation(headers)
@@ -482,6 +668,10 @@ export class FeatureFlagController {
       }
     }
 
+    this.validateScheduledChange(flagDto.scheduledChange)
+
+    await this.featureFlagService.applyDueScheduledChanges(flag.projectId)
+
     const updatePayload: Partial<FeatureFlag> = {
       ..._pick(flagDto, [
         'key',
@@ -490,7 +680,14 @@ export class FeatureFlagController {
         'rolloutPercentage',
         'targetingRules',
         'enabled',
+        'scheduledChange',
       ]),
+    }
+
+    if (
+      this.hasTargetingRulesChanged(flag.targetingRules, flagDto.targetingRules)
+    ) {
+      updatePayload.targetingUpdatedAt = new Date().toISOString()
     }
 
     const updatedFlag = await this.featureFlagService.update(id, updatePayload)
@@ -499,10 +696,99 @@ export class FeatureFlagController {
       throw new NotFoundException('Feature flag not found after update')
     }
 
-    return {
-      ...updatedFlag,
-      pid: flag.projectId,
+    const [decoratedFlag] = await this.decorateFeatureFlags(flag.projectId, [
+      updatedFlag,
+    ])
+
+    return decoratedFlag
+  }
+
+  @ApiBearerAuth()
+  @Put('/:id/kill')
+  @Auth()
+  @ApiResponse({ status: 200, type: FeatureFlagDto })
+  @ApiOperation({ summary: 'Activate the feature flag kill switch' })
+  async killFeatureFlag(
+    @Param('id') id: string,
+    @Body() killDto: KillFeatureFlagDto,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ id, uid }, 'PUT /feature-flag/:id/kill')
+
+    const flag = await this.featureFlagService.findOne(id)
+
+    if (_isEmpty(flag)) {
+      throw new NotFoundException()
     }
+
+    const project = await this.projectService.getFullProject(flag.projectId)
+
+    this.projectService.allowedToManage(
+      project,
+      uid,
+      'You are not allowed to manage this feature flag',
+    )
+
+    await this.featureFlagService.applyDueScheduledChanges(flag.projectId)
+
+    const updatedFlag = await this.featureFlagService.update(id, {
+      killSwitchActive: true,
+      killSwitchValue: killDto.killSwitchValue ?? false,
+      killedAt: new Date().toISOString(),
+    })
+
+    if (!updatedFlag) {
+      throw new NotFoundException('Feature flag not found after update')
+    }
+
+    const [decoratedFlag] = await this.decorateFeatureFlags(flag.projectId, [
+      updatedFlag,
+    ])
+
+    return decoratedFlag
+  }
+
+  @ApiBearerAuth()
+  @Put('/:id/release-kill-switch')
+  @Auth()
+  @ApiResponse({ status: 200, type: FeatureFlagDto })
+  @ApiOperation({ summary: 'Release the feature flag kill switch' })
+  async releaseFeatureFlagKillSwitch(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ id, uid }, 'PUT /feature-flag/:id/release-kill-switch')
+
+    const flag = await this.featureFlagService.findOne(id)
+
+    if (_isEmpty(flag)) {
+      throw new NotFoundException()
+    }
+
+    const project = await this.projectService.getFullProject(flag.projectId)
+
+    this.projectService.allowedToManage(
+      project,
+      uid,
+      'You are not allowed to manage this feature flag',
+    )
+
+    await this.featureFlagService.applyDueScheduledChanges(flag.projectId)
+
+    const updatedFlag = await this.featureFlagService.update(id, {
+      killSwitchActive: false,
+      killedAt: null,
+    })
+
+    if (!updatedFlag) {
+      throw new NotFoundException('Feature flag not found after update')
+    }
+
+    const [decoratedFlag] = await this.decorateFeatureFlags(flag.projectId, [
+      updatedFlag,
+    ])
+
+    return decoratedFlag
   }
 
   @ApiBearerAuth()

@@ -9,10 +9,13 @@ import {
   UpdateResult,
 } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
+import { clickhouse } from '../common/integrations/clickhouse'
+import { AppLoggerService } from '../logger/logger.service'
 import { FeatureFlag } from './entity/feature-flag.entity'
 import {
   evaluateFlag as sharedEvaluateFlag,
   evaluateFlags as sharedEvaluateFlags,
+  isScheduledChangeDue,
 } from './evaluation'
 
 @Injectable()
@@ -20,6 +23,7 @@ export class FeatureFlagService {
   constructor(
     @InjectRepository(FeatureFlag)
     private featureFlagRepository: Repository<FeatureFlag>,
+    private readonly logger: AppLoggerService,
   ) {}
 
   async paginate(
@@ -90,6 +94,70 @@ export class FeatureFlagService {
       where: { project: { id: projectId }, enabled: true },
       order: { key: 'ASC' },
     })
+  }
+
+  async applyDueScheduledChanges(projectId: string): Promise<void> {
+    const flags = await this.featureFlagRepository.find({
+      where: { project: { id: projectId } },
+    })
+
+    await Promise.all(
+      flags
+        .filter((flag) => isScheduledChangeDue(flag.scheduledChange))
+        .map((flag) =>
+          this.featureFlagRepository.update(flag.id, {
+            enabled: flag.scheduledChange?.enabled ?? flag.enabled,
+            rolloutPercentage:
+              flag.scheduledChange?.rolloutPercentage ?? flag.rolloutPercentage,
+            scheduledChange: null,
+          }),
+        ),
+    )
+  }
+
+  async getLastEvaluatedAtByFlagIds(
+    projectId: string,
+    flagIds: string[],
+  ): Promise<Map<string, string>> {
+    const result = new Map<string, string>()
+
+    if (flagIds.length === 0) {
+      return result
+    }
+
+    const query = `
+      SELECT
+        flagId,
+        max(created) as lastEvaluatedAt
+      FROM feature_flag_evaluations
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND flagId IN {flagIds:Array(String)}
+      GROUP BY flagId
+    `
+
+    try {
+      const resultSet = await clickhouse.query({
+        query,
+        query_params: { pid: projectId, flagIds },
+      })
+      const { data } = await resultSet.json<{
+        flagId: string
+        lastEvaluatedAt: string
+      }>()
+
+      for (const row of data) {
+        result.set(row.flagId, row.lastEvaluatedAt)
+      }
+    } catch (err) {
+      this.logger.error(
+        { err, projectId, flagIds },
+        'Failed to get feature flag evaluation timestamps',
+      )
+      throw err
+    }
+
+    return result
   }
 
   async create(

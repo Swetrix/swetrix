@@ -1735,6 +1735,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
         formData.get('targetingRules')?.toString() || '[]',
       )
       const enabled = formData.get('enabled') === 'true'
+      const scheduledChangeRaw = formData.get('scheduledChange')?.toString()
+      let scheduledChange: unknown = null
+
+      if (scheduledChangeRaw) {
+        try {
+          scheduledChange = JSON.parse(scheduledChangeRaw)
+        } catch {
+          return data<ProjectViewActionData>(
+            { intent, error: 'Invalid JSON in scheduledChange' },
+            { status: 400 },
+          )
+        }
+      }
 
       const result = await serverFetch(request, 'feature-flag', {
         method: 'POST',
@@ -1746,6 +1759,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
           rolloutPercentage,
           targetingRules,
           enabled,
+          scheduledChange,
         },
       })
 
@@ -1776,6 +1790,24 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const enabled = formData.has('enabled')
         ? formData.get('enabled') === 'true'
         : undefined
+      let scheduledChange: unknown = undefined
+
+      if (formData.has('scheduledChange')) {
+        const scheduledChangeRaw = formData.get('scheduledChange')?.toString()
+
+        if (scheduledChangeRaw === 'null') {
+          scheduledChange = null
+        } else {
+          try {
+            scheduledChange = JSON.parse(scheduledChangeRaw || '')
+          } catch {
+            return data<ProjectViewActionData>(
+              { intent, error: 'Invalid JSON in scheduledChange' },
+              { status: 400 },
+            )
+          }
+        }
+      }
 
       const body: Record<string, unknown> = {}
       if (key !== undefined) body.key = key
@@ -1785,11 +1817,67 @@ export async function action({ request, params }: ActionFunctionArgs) {
         body.rolloutPercentage = rolloutPercentage
       if (targetingRules !== undefined) body.targetingRules = targetingRules
       if (enabled !== undefined) body.enabled = enabled
+      if (scheduledChange !== undefined) body.scheduledChange = scheduledChange
 
       const result = await serverFetch(request, `feature-flag/${flagId}`, {
         method: 'PUT',
         body,
       })
+
+      if (result.error) {
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'kill-feature-flag': {
+      const flagId = formData.get('flagId')?.toString()
+      const rawKillSwitch = formData.get('killSwitchValue')?.toString()
+
+      if (rawKillSwitch !== 'true' && rawKillSwitch !== 'false') {
+        return data<ProjectViewActionData>(
+          { intent, error: 'Invalid killSwitchValue' },
+          { status: 400 },
+        )
+      }
+
+      const killSwitchValue = rawKillSwitch === 'true'
+
+      const result = await serverFetch(request, `feature-flag/${flagId}/kill`, {
+        method: 'PUT',
+        body: { killSwitchValue },
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'release-feature-flag-kill-switch': {
+      const flagId = formData.get('flagId')?.toString()
+
+      const result = await serverFetch(
+        request,
+        `feature-flag/${flagId}/release-kill-switch`,
+        {
+          method: 'PUT',
+        },
+      )
 
       if (result.error) {
         return data<ProjectViewActionData>(

@@ -21,6 +21,7 @@ import { PaginationOptionsInterface } from '../common/pagination/pagination.resu
 import {
   evaluateFlag as sharedEvaluateFlag,
   evaluateFlags as sharedEvaluateFlags,
+  isScheduledChangeDue,
 } from './evaluation'
 
 dayjs.extend(utc)
@@ -33,6 +34,21 @@ const ALLOWED_FLAG_KEYS = [
   'targetingRules',
   'enabled',
   'experimentId',
+  'scheduledChange',
+  'killSwitchActive',
+  'killSwitchValue',
+  'killedAt',
+  'targetingUpdatedAt',
+  'updated',
+]
+
+const NULLABLE_FLAG_KEYS = [
+  'description',
+  'targetingRules',
+  'experimentId',
+  'scheduledChange',
+  'killedAt',
+  'targetingUpdatedAt',
 ]
 
 @Injectable()
@@ -51,6 +67,15 @@ export class FeatureFlagService {
       }
     }
 
+    let scheduledChange = null
+    if (flag.scheduledChange) {
+      try {
+        scheduledChange = JSON.parse(flag.scheduledChange)
+      } catch {
+        scheduledChange = null
+      }
+    }
+
     return {
       id: flag.id,
       key: flag.key,
@@ -60,8 +85,14 @@ export class FeatureFlagService {
       targetingRules,
       enabled: Boolean(flag.enabled),
       experimentId: flag.experimentId || null,
+      scheduledChange,
+      killSwitchActive: Boolean(flag.killSwitchActive),
+      killSwitchValue: Boolean(flag.killSwitchValue),
+      killedAt: flag.killedAt || null,
+      targetingUpdatedAt: flag.targetingUpdatedAt || null,
       projectId: flag.projectId,
       created: flag.created,
+      updated: flag.updated || flag.created,
     }
   }
 
@@ -76,8 +107,22 @@ export class FeatureFlagService {
         : null
     }
 
+    if (flag.scheduledChange !== undefined) {
+      result.scheduledChange = flag.scheduledChange
+        ? JSON.stringify(flag.scheduledChange)
+        : null
+    }
+
     if (flag.enabled !== undefined) {
       result.enabled = flag.enabled ? 1 : 0
+    }
+
+    if (flag.killSwitchActive !== undefined) {
+      result.killSwitchActive = flag.killSwitchActive ? 1 : 0
+    }
+
+    if (flag.killSwitchValue !== undefined) {
+      result.killSwitchValue = flag.killSwitchValue ? 1 : 0
     }
 
     return result
@@ -262,10 +307,16 @@ export class FeatureFlagService {
     const description = flagData.description || null
     const targetingRules = flagData.targetingRules || null
     const experimentId = flagData.experimentId || null
+    const scheduledChange = flagData.scheduledChange || null
+    const killSwitchActive = flagData.killSwitchActive ?? false
+    const killSwitchValue = flagData.killSwitchValue ?? false
 
     const formattedFlag = this.formatFlagToClickhouse({
       ...flagData,
       enabled,
+      scheduledChange,
+      killSwitchActive,
+      killSwitchValue,
     })
 
     await clickhouse.insert({
@@ -281,8 +332,14 @@ export class FeatureFlagService {
           targetingRules: formattedFlag.targetingRules || null,
           enabled: formattedFlag.enabled ?? 1,
           experimentId: formattedFlag.experimentId || null,
+          scheduledChange: formattedFlag.scheduledChange || null,
+          killSwitchActive: formattedFlag.killSwitchActive ?? 0,
+          killSwitchValue: formattedFlag.killSwitchValue ?? 0,
+          killedAt: formattedFlag.killedAt || null,
+          targetingUpdatedAt: formattedFlag.targetingUpdatedAt || created,
           projectId: flagData.projectId,
           created,
+          updated: created,
         },
       ],
     })
@@ -299,8 +356,14 @@ export class FeatureFlagService {
       targetingRules,
       enabled,
       experimentId,
+      scheduledChange,
+      killSwitchActive,
+      killSwitchValue,
+      killedAt: flagData.killedAt || null,
+      targetingUpdatedAt: flagData.targetingUpdatedAt || created,
       projectId: flagData.projectId,
       created,
+      updated: created,
     }
   }
 
@@ -336,6 +399,9 @@ export class FeatureFlagService {
       return existingFlag
     }
 
+    filtered.updated = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+    columns.push('updated')
+
     const formattedData = this.formatFlagToClickhouse(
       filtered as Partial<FeatureFlag>,
     )
@@ -350,18 +416,24 @@ export class FeatureFlagService {
         return `${col}={${col}:Int8}`
       }
 
+      if (col === 'killSwitchActive' || col === 'killSwitchValue') {
+        return `${col}={${col}:Int8}`
+      }
+
       if (col === 'rolloutPercentage') {
         return `${col}={${col}:UInt8}`
       }
 
-      // Handle nullable string columns
-      if (
-        value === null &&
-        (col === 'description' ||
-          col === 'targetingRules' ||
-          col === 'experimentId')
-      ) {
+      if (value === null && NULLABLE_FLAG_KEYS.includes(col)) {
         return `${col}=NULL`
+      }
+
+      if (
+        col === 'killedAt' ||
+        col === 'targetingUpdatedAt' ||
+        col === 'updated'
+      ) {
+        return `${col}={${col}:DateTime}`
       }
 
       return `${col}={${col}:String}`
@@ -398,6 +470,63 @@ export class FeatureFlagService {
       query,
       query_params: { projectId },
     })
+  }
+
+  async applyDueScheduledChanges(projectId: string): Promise<void> {
+    const flags = await this.findByProject(projectId)
+    const dueFlags = flags.filter((flag) =>
+      isScheduledChangeDue(flag.scheduledChange),
+    )
+
+    await Promise.all(
+      dueFlags.map((flag) =>
+        this.update(flag.id, {
+          enabled: flag.scheduledChange?.enabled ?? flag.enabled,
+          rolloutPercentage:
+            flag.scheduledChange?.rolloutPercentage ?? flag.rolloutPercentage,
+          scheduledChange: null,
+        }),
+      ),
+    )
+  }
+
+  async getLastEvaluatedAtByFlagIds(
+    projectId: string,
+    flagIds: string[],
+  ): Promise<Map<string, string>> {
+    const result = new Map<string, string>()
+
+    if (flagIds.length === 0) {
+      return result
+    }
+
+    try {
+      const { data } = await clickhouse
+        .query({
+          query: `
+            SELECT
+              flagId,
+              max(created) as lastEvaluatedAt
+            FROM feature_flag_evaluations
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND flagId IN {flagIds:Array(String)}
+            GROUP BY flagId
+          `,
+          query_params: { pid: projectId, flagIds },
+        })
+        .then((resultSet) =>
+          resultSet.json<{ flagId: string; lastEvaluatedAt: string }>(),
+        )
+
+      for (const row of data) {
+        result.set(row.flagId, row.lastEvaluatedAt)
+      }
+    } catch {
+      return result
+    }
+
+    return result
   }
 
   /**

@@ -16,6 +16,8 @@ import {
   CaretDownIcon,
   CheckIcon,
   XIcon,
+  WarningOctagonIcon,
+  ArrowCounterClockwiseIcon,
 } from '@phosphor-icons/react'
 import {
   useState,
@@ -41,6 +43,8 @@ import type {
   ProjectFeatureFlag,
   FeatureFlagStats,
   FeatureFlagProfile,
+  FeatureFlagStaleReason,
+  FeatureFlagStatus,
 } from '~/api/api.server'
 import {
   useFeatureFlagStatsProxy,
@@ -66,6 +70,7 @@ import Modal from '~/ui/Modal'
 import StatusPage from '~/ui/StatusPage'
 import { Switch } from '~/ui/Switch'
 import { Text } from '~/ui/Text'
+import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
 import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 import routes from '~/utils/routes'
@@ -77,6 +82,24 @@ dayjs.extend(relativeTime)
 
 const DEFAULT_FEATURE_FLAGS_TAKE = 20
 const DEFAULT_FEATURE_FLAG_PROFILES_TAKE = 15
+
+const STATUS_BADGE: Record<
+  FeatureFlagStatus,
+  { colour: 'red' | 'yellow' | 'green' | 'slate' | 'sky'; labelKey: string }
+> = {
+  enabled: { colour: 'green', labelKey: 'featureFlags.enabled' },
+  disabled: { colour: 'slate', labelKey: 'featureFlags.disabled' },
+  scheduled: { colour: 'sky', labelKey: 'featureFlags.scheduled' },
+  killed: { colour: 'red', labelKey: 'featureFlags.killed' },
+  stale: { colour: 'yellow', labelKey: 'featureFlags.stale' },
+}
+
+const STALE_REASON_LABEL_KEYS: Record<FeatureFlagStaleReason, string> = {
+  not_evaluated_recently: 'featureFlags.staleReasonNotEvaluated',
+  permanent_rollout: 'featureFlags.staleReasonPermanentRollout',
+  targeting_unchanged: 'featureFlags.staleReasonTargetingUnchanged',
+  completed_experiment: 'featureFlags.staleReasonCompletedExperiment',
+}
 
 interface FeatureFlagProfileRowProps {
   profile: FeatureFlagProfile
@@ -179,6 +202,8 @@ interface FeatureFlagRowProps {
   onDelete: (id: string) => void
   onEdit: (id: string) => void
   onToggle: (id: string, enabled: boolean) => void
+  onKill: (id: string) => void
+  onReleaseKillSwitch: (id: string) => void
   onToggleExpand: (id: string) => void
   onLoadMoreProfiles: (id: string) => void
   onResultFilterChange: (id: string, filter: boolean) => void
@@ -197,14 +222,21 @@ const FeatureFlagRow = ({
   onDelete,
   onEdit,
   onToggle,
+  onKill,
+  onReleaseKillSwitch,
   onToggleExpand,
   onLoadMoreProfiles,
   onResultFilterChange,
   timeFormat,
 }: FeatureFlagRowProps) => {
-  const { t } = useTranslation()
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation()
   const location = useLocation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showKillModal, setShowKillModal] = useState(false)
+  const [showReleaseModal, setShowReleaseModal] = useState(false)
 
   const targetingRulesCount = flag.targetingRules?.length || 0
   const experimentSearch = useMemo(() => {
@@ -214,6 +246,56 @@ const FeatureFlagRow = ({
     params.set('experimentId', flag.experimentId)
     return params.toString()
   }, [flag.experimentId, location.search])
+  const statusMeta = STATUS_BADGE[flag.status] || STATUS_BADGE.disabled
+  const scheduledAtText = useMemo(() => {
+    if (!flag.scheduledChange?.applyAt) return null
+
+    return dayjs(flag.scheduledChange.applyAt)
+      .toDate()
+      .toLocaleDateString(language, {
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        minute: 'numeric',
+        hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+      })
+  }, [flag.scheduledChange?.applyAt, language, timeFormat])
+  const scheduledDetails = useMemo(() => {
+    const details: string[] = []
+
+    if (!flag.scheduledChange) return ''
+
+    if (flag.scheduledChange.enabled !== undefined) {
+      details.push(
+        flag.scheduledChange.enabled
+          ? t('featureFlags.scheduledEnable')
+          : t('featureFlags.scheduledDisable'),
+      )
+    }
+
+    if (flag.scheduledChange.rolloutPercentage !== undefined) {
+      details.push(
+        t('featureFlags.scheduledRollout', {
+          percentage: flag.scheduledChange.rolloutPercentage,
+        }),
+      )
+    }
+
+    return details.join(', ')
+  }, [flag.scheduledChange, t])
+  const staleReasons = useMemo(
+    () =>
+      (flag.staleReasons || [])
+        .map((reason) => t(STALE_REASON_LABEL_KEYS[reason] || reason))
+        .join(', '),
+    [flag.staleReasons, t],
+  )
+  const toggleActionLabel = flag.enabled
+    ? t('featureFlags.disable')
+    : t('featureFlags.enable')
+  const killSwitchActionLabel = flag.killSwitchActive
+    ? t('featureFlags.releaseKillSwitch')
+    : t('featureFlags.killSwitch')
 
   return (
     <>
@@ -245,31 +327,27 @@ const FeatureFlagRow = ({
                   <ToggleRightIcon className='size-4 text-indigo-600 dark:text-indigo-500' />
                   <span>{flag.key}</span>
                 </Text>
-                {/* Status badge */}
-                <Badge
-                  label={
-                    flag.enabled
-                      ? t('featureFlags.enabled')
-                      : t('featureFlags.disabled')
-                  }
-                  colour={flag.enabled ? 'green' : 'slate'}
-                  className='text-[0.625rem] leading-3'
-                />
-                {/* Flag type badge */}
-                <Badge
-                  label={
-                    flag.flagType === 'rollout' ? (
-                      `${flag.rolloutPercentage}%`
-                    ) : (
-                      <span className='flex items-center gap-1'>
-                        <ToggleRightIcon className='size-3' />
-                        {t('featureFlags.boolean')}
-                      </span>
-                    )
-                  }
-                  colour='sky'
-                  className='text-[0.625rem] leading-3'
-                />
+                {flag.status !== 'enabled' ? (
+                  <Badge
+                    label={t(statusMeta.labelKey)}
+                    colour={statusMeta.colour}
+                    className='text-[0.625rem] leading-3'
+                  />
+                ) : null}
+                {flag.status !== 'stale' && flag.staleReasons?.length > 0 ? (
+                  <Badge
+                    label={t('featureFlags.stale')}
+                    colour='yellow'
+                    className='text-[0.625rem] leading-3'
+                  />
+                ) : null}
+                {flag.flagType === 'rollout' ? (
+                  <Badge
+                    label={`${flag.rolloutPercentage}%`}
+                    colour='sky'
+                    className='text-[0.625rem] leading-3'
+                  />
+                ) : null}
                 {flag.experimentId ? (
                   <Link
                     to={{ search: experimentSearch }}
@@ -292,6 +370,32 @@ const FeatureFlagRow = ({
               {flag.experimentId ? (
                 <Text className='mt-1' as='p' size='xs' colour='muted'>
                   {t('featureFlags.experimentLinkedHint')}
+                </Text>
+              ) : null}
+              {flag.killSwitchActive ? (
+                <Text className='mt-1' as='p' size='xs' colour='error'>
+                  {t('featureFlags.killSwitchActiveHint', {
+                    value: flag.killSwitchValue ? 'true' : 'false',
+                  })}
+                </Text>
+              ) : null}
+              {flag.scheduledChange && scheduledAtText ? (
+                <Text className='mt-1' as='p' size='xs' colour='muted'>
+                  {t('featureFlags.scheduledFor', {
+                    date: scheduledAtText,
+                  })}
+                  {scheduledDetails
+                    ? ` · ${t('featureFlags.scheduledChangeSummary', {
+                        details: scheduledDetails,
+                      })}`
+                    : ''}
+                </Text>
+              ) : null}
+              {staleReasons ? (
+                <Text className='mt-1' as='p' size='xs' colour='muted'>
+                  {t('featureFlags.staleReasons', {
+                    reasons: staleReasons,
+                  })}
                 </Text>
               ) : null}
               {targetingRulesCount > 0 ? (
@@ -372,57 +476,114 @@ const FeatureFlagRow = ({
                 </Text>
               )}
             </div>
-            {/* Action buttons */}
             <div className='flex items-center gap-1'>
-              <button
-                type='button'
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  onToggle(flag.id, !flag.enabled)
-                }}
-                aria-label={
-                  flag.enabled
-                    ? t('featureFlags.disable')
-                    : t('featureFlags.enable')
+              <Tooltip
+                text={toggleActionLabel}
+                ariaLabel={toggleActionLabel}
+                asChild
+                disableHoverableContent
+                tooltipNode={
+                  <button
+                    type='button'
+                    aria-disabled={flag.killSwitchActive}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (flag.killSwitchActive) return
+                      onToggle(flag.id, !flag.enabled)
+                    }}
+                    aria-label={toggleActionLabel}
+                    className={cx(
+                      'inline-flex size-8 items-center justify-center rounded-md border border-transparent transition-colors aria-disabled:cursor-not-allowed aria-disabled:opacity-40',
+                      flag.enabled
+                        ? 'text-green-600 hover:border-green-300 hover:bg-green-50 dark:text-green-400 hover:dark:border-green-700/80 dark:hover:bg-green-900/30'
+                        : 'text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:text-gray-500 hover:dark:border-slate-700/80 dark:hover:bg-slate-900',
+                    )}
+                  >
+                    {flag.enabled ? (
+                      <ToggleRightIcon className='size-5' aria-hidden />
+                    ) : (
+                      <ToggleLeftIcon className='size-5' aria-hidden />
+                    )}
+                  </button>
                 }
-                className={cx(
-                  'rounded-md border border-transparent p-1.5 transition-colors',
-                  flag.enabled
-                    ? 'text-green-600 hover:border-green-300 hover:bg-green-50 dark:text-green-400 hover:dark:border-green-700/80 dark:hover:bg-green-900/30'
-                    : 'text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:text-gray-500 hover:dark:border-slate-700/80 dark:hover:bg-slate-900',
-                )}
-              >
-                {flag.enabled ? (
-                  <ToggleRightIcon className='size-5' />
-                ) : (
-                  <ToggleLeftIcon className='size-5' />
-                )}
-              </button>
-              <button
-                type='button'
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  onEdit(flag.id)
-                }}
-                aria-label={t('common.edit')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
-              >
-                <PencilIcon className='size-4' />
-              </button>
-              <button
-                type='button'
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setShowDeleteModal(true)
-                }}
-                aria-label={t('common.delete')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
-              >
-                <TrashIcon className='size-4' />
-              </button>
+              />
+              <Tooltip
+                text={killSwitchActionLabel}
+                ariaLabel={killSwitchActionLabel}
+                asChild
+                disableHoverableContent
+                tooltipNode={
+                  <button
+                    type='button'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (flag.killSwitchActive) {
+                        setShowReleaseModal(true)
+                      } else {
+                        setShowKillModal(true)
+                      }
+                    }}
+                    aria-label={killSwitchActionLabel}
+                    className={cx(
+                      'inline-flex size-8 items-center justify-center rounded-md border border-transparent transition-colors',
+                      flag.killSwitchActive
+                        ? 'text-sky-600 hover:border-sky-300 hover:bg-sky-50 dark:text-sky-300 hover:dark:border-sky-700/80 dark:hover:bg-sky-900/30'
+                        : 'text-red-600 hover:border-red-300 hover:bg-red-50 dark:text-red-400 hover:dark:border-red-700/80 dark:hover:bg-red-900/30',
+                    )}
+                  >
+                    {flag.killSwitchActive ? (
+                      <ArrowCounterClockwiseIcon
+                        className='size-4'
+                        aria-hidden
+                      />
+                    ) : (
+                      <WarningOctagonIcon className='size-4' aria-hidden />
+                    )}
+                  </button>
+                }
+              />
+              <Tooltip
+                text={t('common.edit')}
+                ariaLabel={t('common.edit')}
+                asChild
+                disableHoverableContent
+                tooltipNode={
+                  <button
+                    type='button'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      onEdit(flag.id)
+                    }}
+                    aria-label={t('common.edit')}
+                    className='inline-flex size-8 items-center justify-center rounded-md border border-transparent text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+                  >
+                    <PencilIcon className='size-4' aria-hidden />
+                  </button>
+                }
+              />
+              <Tooltip
+                text={t('common.delete')}
+                ariaLabel={t('common.delete')}
+                asChild
+                disableHoverableContent
+                tooltipNode={
+                  <button
+                    type='button'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setShowDeleteModal(true)
+                    }}
+                    aria-label={t('common.delete')}
+                    className='inline-flex size-8 items-center justify-center rounded-md border border-transparent text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+                  >
+                    <TrashIcon className='size-4' aria-hidden />
+                  </button>
+                }
+              />
               <CaretDownIcon
                 className={cx(
                   'size-5 text-gray-500 transition-transform dark:text-gray-400',
@@ -494,6 +655,33 @@ const FeatureFlagRow = ({
         submitType='danger'
         type='error'
         isOpened={showDeleteModal}
+      />
+      <Modal
+        onClose={() => setShowKillModal(false)}
+        onSubmit={() => {
+          onKill(flag.id)
+          setShowKillModal(false)
+        }}
+        submitText={t('featureFlags.killSwitchSubmit')}
+        closeText={t('common.close')}
+        title={t('featureFlags.killSwitchConfirmTitle')}
+        message={t('featureFlags.killSwitchConfirmMessage')}
+        submitType='danger'
+        type='warning'
+        isOpened={showKillModal}
+      />
+      <Modal
+        onClose={() => setShowReleaseModal(false)}
+        onSubmit={() => {
+          onReleaseKillSwitch(flag.id)
+          setShowReleaseModal(false)
+        }}
+        submitText={t('featureFlags.releaseKillSwitchSubmit')}
+        closeText={t('common.close')}
+        title={t('featureFlags.releaseKillSwitchConfirmTitle')}
+        message={t('featureFlags.releaseKillSwitchConfirmMessage')}
+        type='info'
+        isOpened={showReleaseModal}
       />
     </>
   )
@@ -701,6 +889,24 @@ const FeatureFlagsViewInner = ({
             ? t('featureFlags.flagEnabled')
             : t('featureFlags.flagDisabled'),
         )
+        setFlags((prev) => prev.map((f) => (f.id === updated.id ? updated : f)))
+      } else if (actionFetcher.data.error) {
+        toast.error(actionFetcher.data.error)
+      }
+    } else if (actionFetcher.data.intent === 'kill-feature-flag') {
+      if (actionFetcher.data.success && actionFetcher.data.data) {
+        const updated = actionFetcher.data.data as ProjectFeatureFlag
+        toast.success(t('featureFlags.killSwitchActivated'))
+        setFlags((prev) => prev.map((f) => (f.id === updated.id ? updated : f)))
+      } else if (actionFetcher.data.error) {
+        toast.error(actionFetcher.data.error)
+      }
+    } else if (
+      actionFetcher.data.intent === 'release-feature-flag-kill-switch'
+    ) {
+      if (actionFetcher.data.success && actionFetcher.data.data) {
+        const updated = actionFetcher.data.data as ProjectFeatureFlag
+        toast.success(t('featureFlags.killSwitchReleased'))
         setFlags((prev) => prev.map((f) => (f.id === updated.id ? updated : f)))
       } else if (actionFetcher.data.error) {
         toast.error(actionFetcher.data.error)
@@ -953,6 +1159,32 @@ const FeatureFlagsViewInner = ({
     [actionFetcher],
   )
 
+  const handleKillFlag = useCallback(
+    (flagId: string) => {
+      processedActionRef.current = null
+      actionFetcher.submit(
+        {
+          intent: 'kill-feature-flag',
+          flagId,
+          killSwitchValue: 'false',
+        },
+        { method: 'POST' },
+      )
+    },
+    [actionFetcher],
+  )
+
+  const handleReleaseKillSwitch = useCallback(
+    (flagId: string) => {
+      processedActionRef.current = null
+      actionFetcher.submit(
+        { intent: 'release-feature-flag-kill-switch', flagId },
+        { method: 'POST' },
+      )
+    },
+    [actionFetcher],
+  )
+
   const canLoadMoreFlags = flags.length < total
   const loadMoreFlags = useCallback(() => {
     if (isLoading || !canLoadMoreFlags) {
@@ -1053,6 +1285,8 @@ const FeatureFlagsViewInner = ({
                     onDelete={handleDeleteFlag}
                     onEdit={handleEditFlag}
                     onToggle={handleToggleFlag}
+                    onKill={handleKillFlag}
+                    onReleaseKillSwitch={handleReleaseKillSwitch}
                     onToggleExpand={handleToggleExpand}
                     onLoadMoreProfiles={handleLoadMoreProfiles}
                     onResultFilterChange={handleResultFilterChange}

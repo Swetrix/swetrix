@@ -6,13 +6,18 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   Unique,
+  UpdateDateColumn,
 } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 import { Project } from '../../project/entity/project.entity'
-import { FeatureFlagType, TargetingRule } from '../evaluation'
+import {
+  FeatureFlagSchedule,
+  FeatureFlagType,
+  TargetingRule,
+} from '../evaluation'
 
 // Re-export types for backward compatibility
-export { FeatureFlagType, TargetingRule }
+export { FeatureFlagSchedule, FeatureFlagType, TargetingRule }
 
 @Entity()
 @Unique(['project', 'key'])
@@ -46,6 +51,26 @@ export class FeatureFlag {
   targetingRules: TargetingRule[] | null
 
   @ApiProperty()
+  @Column('json', { nullable: true })
+  scheduledChange: FeatureFlagSchedule | null
+
+  @ApiProperty()
+  @Column('boolean', { default: false })
+  killSwitchActive: boolean
+
+  @ApiProperty()
+  @Column('boolean', { default: false })
+  killSwitchValue: boolean
+
+  @ApiProperty()
+  @Column('datetime', { nullable: true })
+  killedAt: Date | null
+
+  @ApiProperty()
+  @Column('datetime', { nullable: true })
+  targetingUpdatedAt: Date | null
+
+  @ApiProperty()
   @Column({
     type: 'boolean',
     default: true,
@@ -64,4 +89,8 @@ export class FeatureFlag {
   @ApiProperty()
   @CreateDateColumn()
   created: Date
+
+  @ApiProperty()
+  @UpdateDateColumn()
+  updated: Date
 }
