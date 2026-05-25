@@ -68,7 +68,7 @@ export const LogoCloud = () => {
           size='xs'
           weight='semibold'
           colour='inherit'
-          className='text-center tracking-[0.18em] text-slate-400 uppercase'
+          className='text-center tracking-[0.18em] text-gray-200 uppercase'
         >
           {t('main.logoCloud.title')}
         </Text>

@@ -132,7 +132,7 @@ export const FeedbackDual = () => {
                 <Text as='p' size='base' weight='medium' colour='primary'>
                   Alex Bowles
                 </Text>
-                <Text as='p' size='base' colour='muted'>
+                <Text as='p' size='base' colour='secondary'>
                   Co-founder of Casterlabs
                 </Text>
               </div>
@@ -178,7 +178,7 @@ export const FeedbackDual = () => {
                 <Text as='p' size='base' weight='medium' colour='primary'>
                   Alper Alkan
                 </Text>
-                <Text as='p' size='base' colour='muted'>
+                <Text as='p' size='base' colour='secondary'>
                   Co-founder of Phalcode
                 </Text>
               </div>
@@ -331,7 +331,7 @@ const Hero = () => {
       <div className='relative mx-2 overflow-hidden rounded-t-4xl bg-slate-950 shadow-2xl ring-1 shadow-slate-950/20 ring-black/5 dark:ring-white/10'>
         <div aria-hidden className='pointer-events-none absolute inset-0'>
           <picture className='absolute inset-0 block'>
-            <source srcSet='/assets/hero-background-1.avif' type='image/avif' />
+            <source srcSet='/assets/hero-background.avif' type='image/avif' />
             <img
               alt=''
               className='size-full object-cover object-center opacity-95 saturate-125'
