@@ -45,7 +45,7 @@ const DashboardMockup = () => (
         <Text
           size='xxs'
           weight='semibold'
-          colour='muted'
+          colour='secondary'
           tracking='wide'
           className='uppercase'
         >
@@ -103,7 +103,7 @@ const DashboardMockup = () => (
       </svg>
       <div className='mt-1 flex justify-between'>
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-          <Text key={d} size='xxs' colour='muted'>
+          <Text key={d} size='xxs' colour='secondary'>
             {d}
           </Text>
         ))}
@@ -116,10 +116,10 @@ const DashboardMockup = () => (
         Events
       </Text>
       <div className='mt-2 mb-1.5 flex items-center justify-between px-1'>
-        <Text size='xxs' weight='medium' colour='muted'>
+        <Text size='xxs' weight='medium' colour='secondary'>
           Event
         </Text>
-        <Text size='xxs' weight='medium' colour='muted'>
+        <Text size='xxs' weight='medium' colour='secondary'>
           Quantity
         </Text>
       </div>
@@ -136,7 +136,7 @@ const DashboardMockup = () => (
             className='relative flex items-center justify-between rounded-sm px-1 py-1.5'
           >
             <div
-              className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+              className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/30'
               style={{ width: `${barW}%` }}
             />
             <Text size='xs' className='relative z-10'>
@@ -146,10 +146,10 @@ const DashboardMockup = () => (
               <Text size='xs' weight='medium'>
                 {count}
               </Text>
-              <Text size='xs' colour='muted' className='mx-1.5'>
+              <Text size='xs' colour='secondary' className='mx-1.5'>
                 |
               </Text>
-              <Text size='xs' colour='muted'>
+              <Text size='xs' colour='secondary'>
                 {pct}%
               </Text>
             </span>
@@ -168,7 +168,7 @@ const DashboardMockup = () => (
           { label: 'Bounce rate', value: '42%', up: false },
         ].map(({ label, value, up }) => (
           <div key={label} className='flex items-center justify-between'>
-            <Text size='xs' colour='muted'>
+            <Text size='xs' colour='secondary'>
               {label}
             </Text>
             <div className='flex items-center gap-1.5'>
@@ -195,10 +195,10 @@ const DashboardMockup = () => (
         Pages
       </Text>
       <div className='mb-1 flex items-center justify-between px-1'>
-        <Text size='xs' weight='medium' colour='muted'>
+        <Text size='xs' weight='medium' colour='secondary'>
           Page
         </Text>
-        <Text size='xs' weight='medium' colour='muted'>
+        <Text size='xs' weight='medium' colour='secondary'>
           Visitors
         </Text>
       </div>
