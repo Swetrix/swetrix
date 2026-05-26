@@ -2139,10 +2139,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (filterInternalUsers !== undefined)
         body.filterInternalUsers = filterInternalUsers
       if (featureFlagMode !== undefined) body.featureFlagMode = featureFlagMode
-      if (featureFlagKey !== undefined) body.featureFlagKey = featureFlagKey
-      if (existingFeatureFlagId !== undefined)
+      if (featureFlagMode === 'create' && featureFlagKey)
+        body.featureFlagKey = featureFlagKey
+      if (featureFlagMode === 'link') body.featureFlagKey = null
+      if (featureFlagMode === 'link' && existingFeatureFlagId)
         body.existingFeatureFlagId = existingFeatureFlagId
-      if (goalId !== undefined) body.goalId = goalId
+      if (goalId !== undefined) body.goalId = goalId || null
       if (variants !== undefined) body.variants = variants
 
       const result = await serverFetch(request, `experiment/${experimentId}`, {

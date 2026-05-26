@@ -1023,6 +1023,7 @@ const ExperimentResults = ({
   )
   const canCompleteExperiment =
     results?.status === 'running' || results?.status === 'paused'
+  const isCompleted = results?.status === 'completed'
 
   if (!experiment || !results) {
     if (isLoading) {
@@ -1048,30 +1049,30 @@ const ExperimentResults = ({
       <DashboardHeader
         onBack={onBack}
         showLiveVisitors={false}
+        showRefreshButton={!isCompleted}
+        showPeriodSelector={!isCompleted}
         rightContent={
-          <Tooltip
-            text={
-              results.status === 'running'
-                ? t('experiments.editDisabledRunning')
-                : results.status === 'completed'
-                  ? t('experiments.editDisabledCompleted')
+          !isCompleted ? (
+            <Tooltip
+              text={
+                results.status === 'running'
+                  ? t('experiments.editDisabledRunning')
                   : t('common.edit')
-            }
-            tooltipNode={
-              <Button
-                variant='ghost'
-                size='xs'
-                type='button'
-                onClick={() => setIsSettingsOpen(true)}
-                disabled={
-                  results.status === 'running' || results.status === 'completed'
-                }
-              >
-                <PencilIcon className='mr-1 size-4' />
-                {t('common.edit')}
-              </Button>
-            }
-          />
+              }
+              tooltipNode={
+                <Button
+                  variant='ghost'
+                  size='xs'
+                  type='button'
+                  onClick={() => setIsSettingsOpen(true)}
+                  disabled={results.status === 'running'}
+                >
+                  <PencilIcon className='mr-1 size-4' />
+                  {t('common.edit')}
+                </Button>
+              }
+            />
+          ) : undefined
         }
       />
       <ExperimentSettingsModal
@@ -1152,12 +1153,12 @@ const ExperimentResults = ({
           </Alert>
         ) : null}
         {healthWarnings.length > 0 ? (
-          <div className='grid gap-2 lg:grid-cols-2'>
+          <div className='grid w-full gap-2'>
             {healthWarnings.map((warning) => (
               <div
                 key={warning.code}
                 className={cx(
-                  'rounded-md px-3 py-2 ring-1',
+                  'w-full rounded-md px-3 py-2 ring-1',
                   warning.severity === 'danger'
                     ? 'bg-red-50 ring-red-200 dark:bg-red-900/20 dark:ring-red-800/70'
                     : 'bg-yellow-50 ring-yellow-200 dark:bg-yellow-900/20 dark:ring-yellow-800/70',
@@ -1203,7 +1204,7 @@ const ExperimentResults = ({
           </div>
         ) : null}
         {stopRecommendation ? (
-          <div className='flex flex-col gap-3 rounded-md bg-green-50 px-3 py-2 ring-1 ring-green-200 sm:flex-row sm:items-center sm:justify-between dark:bg-green-900/20 dark:ring-green-800/70'>
+          <div className='flex w-full flex-col gap-3 rounded-md bg-green-50 px-3 py-2 ring-1 ring-green-200 sm:flex-row sm:items-center sm:justify-between dark:bg-green-900/20 dark:ring-green-800/70'>
             <div className='flex items-start gap-2'>
               <CheckCircleIcon
                 className='mt-0.5 size-4 shrink-0 text-green-600 dark:text-green-300'
@@ -1237,7 +1238,7 @@ const ExperimentResults = ({
           </div>
         ) : null}
         {results.hasWinner && results.winnerKey ? (
-          <div className='flex items-center gap-3 rounded-md border border-green-300 bg-green-50 px-3 py-2 dark:border-green-700 dark:bg-green-900/20'>
+          <div className='flex w-full items-center gap-3 rounded-md border border-green-300 bg-green-50 px-3 py-2 dark:border-green-700 dark:bg-green-900/20'>
             <TrophyIcon
               className='size-5 text-green-600 dark:text-green-400'
               weight='duotone'
