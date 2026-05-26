@@ -9,7 +9,7 @@ interface ToolCallFilter {
   isContains?: boolean
 }
 
-export interface ToolCallParam {
+interface ToolCallParam {
   /** Locale key under project.askAi.params (with fallback) */
   labelKey: string
   /** Fallback label if no translation exists */

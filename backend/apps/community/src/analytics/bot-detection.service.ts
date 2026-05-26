@@ -8,7 +8,7 @@ import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectService } from '../project/project.service'
 import { getIPDetails } from '../common/utils'
 
-export type BotReason =
+type BotReason =
   | 'user_agent'
   | 'headless_browser'
   | 'suspicious_headers'

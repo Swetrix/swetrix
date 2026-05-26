@@ -1468,7 +1468,7 @@ export async function getFeatureFlagProfilesServer(
 
 export type GoalConditionRelation = 'AND' | 'OR'
 
-export type GoalConditionOperator =
+type GoalConditionOperator =
   | 'equals'
   | 'not_equals'
   | 'contains'
@@ -1476,7 +1476,7 @@ export type GoalConditionOperator =
   | 'exists'
   | 'not_exists'
 
-export type GoalConditionEventType = 'any' | 'pageview' | 'custom_event'
+type GoalConditionEventType = 'any' | 'pageview' | 'custom_event'
 
 export interface GoalCondition {
   id?: string
@@ -1510,13 +1510,13 @@ export interface GoalsResponse {
   total: number
 }
 
-export interface ConversionTimeBucket {
+interface ConversionTimeBucket {
   average: number | null
   median: number | null
   p75: number | null
 }
 
-export interface ConversionTimeToConvert {
+interface ConversionTimeToConvert {
   fromSessionStart?: ConversionTimeBucket
   fromFirstPage?: ConversionTimeBucket
   fromFirstFunnelStep?: ConversionTimeBucket
@@ -1803,7 +1803,7 @@ export interface ExperimentChartData {
   winProbability: Record<string, number[]>
 }
 
-export interface ExperimentResultWindow {
+interface ExperimentResultWindow {
   mode: 'selected' | 'active_overlap' | 'final'
   from: string
   to: string
@@ -2490,7 +2490,7 @@ interface UserFlowLink {
   value: number
 }
 
-export interface UserFlowData {
+interface UserFlowData {
   nodes: UserFlowNode[]
   links: UserFlowLink[]
 }

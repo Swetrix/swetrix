@@ -30,9 +30,9 @@ export const SEO_ORGANIC_POSITION_BUCKETS = [
   { key: 'pos51Plus', label: '51+', color: '#e2e8f0' },
 ] as const
 
-export type SEOImpressionPositionBucketKey =
+type SEOImpressionPositionBucketKey =
   (typeof SEO_IMPRESSION_POSITION_BUCKETS)[number]['key']
-export type SEOOrganicPositionBucketKey =
+type SEOOrganicPositionBucketKey =
   (typeof SEO_ORGANIC_POSITION_BUCKETS)[number]['key']
 
 export interface ImpressionsByPositionEntry {

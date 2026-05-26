@@ -4,14 +4,14 @@ import { downloadText } from '~/utils/download'
 
 import { parseSegments } from './contentSegments'
 
-export interface ExportMessagePart {
+interface ExportMessagePart {
   type: 'text' | 'toolCall'
   text?: string
   toolName?: string
   args?: unknown
 }
 
-export interface ExportMessageToolCall {
+interface ExportMessageToolCall {
   toolName: string
   args?: unknown
   timestamp?: string

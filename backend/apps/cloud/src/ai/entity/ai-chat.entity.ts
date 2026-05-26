@@ -11,7 +11,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { Project } from '../../project/entity/project.entity'
 import { User } from '../../user/entities/user.entity'
 
-export interface ChatMessageToolCall {
+interface ChatMessageToolCall {
   toolName: string
   args?: unknown
   timestamp?: string

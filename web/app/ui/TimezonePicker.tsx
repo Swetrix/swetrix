@@ -439,7 +439,6 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
             setSearchValue(event.target.value)
           }}
           onKeyDown={handleInputKeyDown}
-          role='combobox'
           aria-expanded={isOpen}
           aria-controls={listboxId}
           aria-activedescendant={

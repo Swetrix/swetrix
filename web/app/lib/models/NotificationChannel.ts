@@ -6,7 +6,7 @@ export type NotificationChannelType =
   | 'webhook'
   | 'webpush'
 
-export type NotificationChannelScope = 'user' | 'organisation' | 'project'
+type NotificationChannelScope = 'user' | 'organisation' | 'project'
 
 export interface NotificationChannel {
   id: string

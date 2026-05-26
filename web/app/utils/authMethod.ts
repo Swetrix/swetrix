@@ -1,7 +1,7 @@
 export const LAST_AUTH_METHOD_COOKIE = 'swx_last_auth_method'
 export const LAST_AUTH_METHOD_MAX_AGE = 31536000
 
-export const LAST_AUTH_METHODS = [
+const LAST_AUTH_METHODS = [
   'email',
   'google',
   'github',

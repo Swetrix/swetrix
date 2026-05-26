@@ -170,7 +170,6 @@ const MultiSelect = ({
         <input
           ref={inputRef}
           type='text'
-          role='combobox'
           aria-expanded={isOpen}
           aria-controls={listboxId}
           aria-autocomplete='list'

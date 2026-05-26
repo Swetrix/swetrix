@@ -1,6 +1,6 @@
 import { QueryCondition, QueryMetric, QueryTime } from '../alert/dto/alert.dto'
 
-export interface AlertContextBase {
+interface AlertContextBase {
   alert_name: string
   project_name: string
   project_id: string
@@ -20,18 +20,18 @@ export interface AlertContextErrors extends AlertContextBase {
   is_new_only: boolean
 }
 
-export interface AlertContextCustomEvents extends AlertContextBase {
+interface AlertContextCustomEvents extends AlertContextBase {
   event_name: string
   event_count: number
   every_event_mode: boolean
 }
 
-export interface AlertContextPageViews extends AlertContextBase {
+interface AlertContextPageViews extends AlertContextBase {
   views?: number
   unique_views?: number
 }
 
-export interface AlertContextOnline extends AlertContextBase {
+interface AlertContextOnline extends AlertContextBase {
   online_count: number
 }
 
