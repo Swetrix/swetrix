@@ -2991,7 +2991,8 @@
       "navDesc": "Add a website to start tracking analytics.",
       "title": "Let's set up your first project",
       "desc": "Create a project to start tracking your website's analytics. Enter a name for it to continue.",
-      "placeholder": "My awesome website"
+      "placeholder": "My awesome website",
+      "timezoneDesc": "Project charts, date ranges, and timestamps will use this timezone. You can update it later."
     },
     "installTracking": {
       "navTitle": "Install tracking script",

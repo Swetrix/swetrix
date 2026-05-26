@@ -18,6 +18,10 @@ import {
   redirectIfNotAuthenticated,
   createHeadersWithCookies,
 } from '~/utils/session.server'
+import { isValidHttpUrl } from '~/utils/url'
+
+const INVALID_WEBSITE_URL_ERROR =
+  'Please enter a valid URL (e.g., https://example.com)'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,
@@ -150,6 +154,7 @@ export interface OnboardingActionData {
   error?: string
   fieldErrors?: {
     name?: string
+    websiteUrl?: string
   }
   project?: Project
   user?: User
@@ -164,27 +169,78 @@ export async function action({ request }: ActionFunctionArgs) {
   switch (intent) {
     case 'create-project': {
       const name = formData.get('name')?.toString() || ''
+      const trimmedName = name.trim()
+      const websiteUrl = formData.get('websiteUrl')?.toString().trim()
+      const timezone = formData.get('timezone')?.toString()
+      const fieldErrors: OnboardingActionData['fieldErrors'] = {}
 
-      if (!name.trim()) {
+      if (!trimmedName) {
+        fieldErrors.name = 'Project name is required'
+      }
+
+      if (trimmedName.length > 50) {
+        fieldErrors.name = 'Project name must be 50 characters or less'
+      }
+
+      if (websiteUrl && !isValidHttpUrl(websiteUrl)) {
+        fieldErrors.websiteUrl = INVALID_WEBSITE_URL_ERROR
+      }
+
+      if (fieldErrors.name || fieldErrors.websiteUrl) {
         return data<OnboardingActionData>(
-          { intent, fieldErrors: { name: 'Project name is required' } },
+          { intent, fieldErrors },
           { status: 400 },
         )
       }
 
-      if (name.length > 50) {
-        return data<OnboardingActionData>(
-          {
-            intent,
-            fieldErrors: { name: 'Project name must be 50 characters or less' },
-          },
-          { status: 400 },
-        )
+      const body: {
+        name: string
+        websiteUrl?: string
+      } = {
+        name: trimmedName,
+      }
+      if (websiteUrl) body.websiteUrl = websiteUrl
+
+      let updatedUser: User | undefined
+      const responseCookies: string[] = []
+
+      if (timezone) {
+        const authResult = await getAuthenticatedUser(request)
+        const authenticatedUser = authResult?.user.user
+
+        responseCookies.push(...(authResult?.cookies || []))
+
+        if (!authenticatedUser?.email) {
+          return data<OnboardingActionData>(
+            { intent, error: 'Unable to update timezone' },
+            { status: 400 },
+          )
+        }
+
+        if (authenticatedUser.timezone !== timezone) {
+          const userResult = await serverFetch<User>(request, 'user', {
+            method: 'PUT',
+            body: {
+              email: authenticatedUser.email,
+              timezone,
+            },
+          })
+
+          if (userResult.error) {
+            return data<OnboardingActionData>(
+              { intent, error: userResult.error as string },
+              { status: 400 },
+            )
+          }
+
+          updatedUser = userResult.data as User
+          responseCookies.push(...userResult.cookies)
+        }
       }
 
       const result = await serverFetch<Project>(request, 'project', {
         method: 'POST',
-        body: { name },
+        body,
       })
 
       if (result.error) {
@@ -194,9 +250,16 @@ export async function action({ request }: ActionFunctionArgs) {
         )
       }
 
+      responseCookies.push(...result.cookies)
+
       return data<OnboardingActionData>(
-        { intent, success: true, project: result.data as Project },
-        { headers: createHeadersWithCookies(result.cookies) },
+        {
+          intent,
+          success: true,
+          project: result.data as Project,
+          user: updatedUser,
+        },
+        { headers: createHeadersWithCookies(responseCookies) },
       )
     }
 
