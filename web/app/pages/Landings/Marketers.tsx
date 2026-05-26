@@ -171,6 +171,7 @@ const Marketers = () => {
                       integrationLink: (
                         <a
                           href={INTEGRATIONS_URL}
+                          aria-label='Open integrations'
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-blue-600 hover:underline dark:text-blue-500'
@@ -179,6 +180,7 @@ const Marketers = () => {
                       discordUrl: (
                         <a
                           href={DISCORD_URL}
+                          aria-label='Open Swetrix Discord'
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-blue-600 hover:underline dark:text-blue-500'

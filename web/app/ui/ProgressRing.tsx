@@ -91,12 +91,13 @@ const ProgressRing = ({
         'relative inline-flex items-center justify-center',
         className,
       )}
-      role='progressbar'
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={displayValue}
-      aria-label={ariaLabel ?? `Progress: ${displayValue}%`}
     >
+      <progress
+        className='sr-only'
+        max={100}
+        value={displayValue}
+        aria-label={ariaLabel ?? `Progress: ${displayValue}%`}
+      />
       <svg width={size} height={size} className='-rotate-90' aria-hidden='true'>
         <circle
           cx={center}

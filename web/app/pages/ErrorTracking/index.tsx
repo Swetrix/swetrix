@@ -145,6 +145,7 @@ const ErrorTracking = () => {
                 oneLC: (
                   <a
                     href='https://swetrix.com/docs/swetrix-js-reference#trackerrors'
+                    aria-label='Open error tracking documentation'
                     className='font-medium text-red-600 hover:underline dark:text-red-400'
                     target='_blank'
                     rel='noopener noreferrer'

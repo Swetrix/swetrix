@@ -501,6 +501,7 @@ const RichTemplateInput = forwardRef<
           </div>
           <textarea
             ref={taRef}
+            aria-label={typeof label === 'string' ? label : placeholder || 'Template'}
             rows={rows}
             value={value}
             onChange={onChangeInternal}
@@ -580,7 +581,6 @@ const SuggestionMenu = ({
         top: caret.top + caret.lineHeight + 4,
         left: caret.left,
       }}
-      role='listbox'
     >
       {variables.map((v, i) => (
         <button
@@ -591,8 +591,6 @@ const SuggestionMenu = ({
             e.preventDefault()
             onPick(v.name)
           }}
-          role='option'
-          aria-selected={i === activeIndex}
           className={cx(
             'flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left transition-colors',
             i === activeIndex

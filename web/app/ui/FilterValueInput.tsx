@@ -395,6 +395,7 @@ const FilterValueInput = ({
             },
           )}
           placeholder={placeholder}
+          aria-label={placeholder}
           value={isOpen ? inputValue : displayValue}
           onChange={handleInputChange}
           onFocus={handleFocus}

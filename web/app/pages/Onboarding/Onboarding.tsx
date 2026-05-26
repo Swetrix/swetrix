@@ -407,6 +407,7 @@ const SetupTrackingStep = ({ project }: { project: Project }) => {
             url: (
               <a
                 href={INTEGRATIONS_URL}
+                aria-label='Open integrations'
                 target='_blank'
                 rel='noopener noreferrer'
                 className='font-medium underline decoration-dashed hover:decoration-solid'

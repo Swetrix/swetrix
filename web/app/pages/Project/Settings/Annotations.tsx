@@ -221,7 +221,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                   >
                     {t('project.settings.annotations.text')}
                   </th>
-                  {allowedToManage ? <th /> : null}
+                  {allowedToManage ? <th aria-label='Actions' /> : null}
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-950'>
@@ -242,6 +242,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                           <button
                             type='button'
                             onClick={() => openEditModal(annotation)}
+                            aria-label={t('common.edit')}
                             className='rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200'
                             title={t('common.edit')}
                           >
@@ -250,6 +251,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                           <button
                             type='button'
                             onClick={() => setDeleteAnnotationItem(annotation)}
+                            aria-label={t('common.delete')}
                             className='rounded p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300'
                             title={t('common.delete')}
                           >

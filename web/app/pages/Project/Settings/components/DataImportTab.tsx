@@ -508,7 +508,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                   >
                     {t('project.settings.dataImport.created')}
                   </th>
-                  <th scope='col' />
+                  <th scope='col' aria-label='Actions' />
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
@@ -600,6 +600,7 @@ export default function DataImportTab({ projectId }: DataImportTabProps) {
                   1: (
                     <a
                       href='https://swetrix.com/docs/data-import'
+                      aria-label='Open data import documentation'
                       target='_blank'
                       rel='noreferrer'
                       className='text-indigo-600 hover:text-indigo-500 dark:text-slate-300 dark:hover:text-white'

@@ -106,13 +106,17 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
               (project) => (
                 <li
                   key={project.id}
-                  className='cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800'
-                  onClick={() => onSelect(project)}
+                  className='hover:bg-gray-50 dark:hover:bg-slate-800'
                 >
-                  <div className='flex items-center px-4 py-4 sm:px-6'>
+                  <button
+                    type='button'
+                    aria-label={project.name}
+                    onClick={() => onSelect(project)}
+                    className='flex w-full cursor-pointer items-center px-4 py-4 text-left sm:px-6'
+                  >
                     <div className='min-w-0 flex-1'>
                       <Text
-                        as='p'
+                        as='span'
                         size='sm'
                         weight='medium'
                         className='truncate'
@@ -120,7 +124,7 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
                         {project.name}
                       </Text>
                     </div>
-                  </div>
+                  </button>
                 </li>
               ),
             )}
@@ -168,6 +172,7 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
   return projects.map((project) => (
     <tr
       key={project.id}
+      aria-label={project.name}
       className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'
     >
       <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
@@ -186,7 +191,9 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
               text={t('organisations.projectOwnedBy', {
                 email: project.admin.email,
               })}
-              tooltipNode={<InfoIcon className='size-5 text-gray-400' />}
+              tooltipNode={
+                <InfoIcon className='size-5 text-gray-400' aria-hidden='true' />
+              }
             />
           ) : null}
 
@@ -387,7 +394,7 @@ export const Projects = ({ organisation }: ProjectsProps) => {
                   >
                     {t('common.name')}
                   </th>
-                  <th scope='col' />
+                  <th scope='col' aria-label='Actions' />
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>

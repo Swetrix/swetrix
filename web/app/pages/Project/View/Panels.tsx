@@ -432,7 +432,8 @@ const KVTable = ({
             />
           </th>
           <th className='w-[30%] sm:w-1/6'>
-            <p
+            <button
+              type='button'
               onClick={() => onSortBy('quantity')}
               className='flex cursor-pointer items-center justify-end'
             >
@@ -446,10 +447,11 @@ const KVTable = ({
                   sort.label === 'quantity' ? sort.sortByDescend : null
                 }
               />
-            </p>
+            </button>
           </th>
           <th className='w-[30%] pr-2 sm:w-1/6'>
-            <p
+            <button
+              type='button'
               onClick={() => onSortBy('conversion')}
               className='flex cursor-pointer items-center justify-end'
             >
@@ -463,7 +465,7 @@ const KVTable = ({
                   sort.label === 'conversion' ? sort.sortByDescend : null
                 }
               />
-            </p>
+            </button>
           </th>
         </tr>
       </thead>
@@ -832,7 +834,8 @@ const CustomEvents = ({
               />
             </th>
             <th className='w-[40%] pr-2 sm:w-2/6'>
-              <p
+              <button
+                type='button'
                 className='flex cursor-pointer items-center justify-end hover:opacity-90'
                 onClick={() => onSortBy('quantity')}
               >
@@ -847,27 +850,19 @@ const CustomEvents = ({
                   }
                 />
                 &nbsp;&nbsp;
-              </p>
+              </button>
             </th>
           </tr>
         </thead>
         <tbody>
           {_map(keys, (ev) => (
             <Fragment key={ev}>
-              <tr
-                className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  const link = _getFilterLink(null, ev)
-                  navigate(link)
-                  setTriggerEventWhenFiltersChange(ev)
-                }}
-              >
+              <tr className='group text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'>
                 <td className='flex items-center py-1 text-left'>
                   <button
                     className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
                     type='button'
+                    aria-label={`${activeEvents[ev] ? 'Hide' : 'Show'} ${ev} details`}
                     onClick={toggleDetails(ev)}
                   >
                     {loadingEvents[ev] ? (
@@ -878,11 +873,25 @@ const CustomEvents = ({
                       <CaretDownIcon className='size-5 text-gray-500 dark:text-gray-300' />
                     )}
                   </button>
-                  <span className='pl-2'>{ev}</span>
-                  <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block peer-hover:hidden dark:text-gray-300' />
-                  <div className='ml-2 h-4 w-4 group-hover:hidden peer-hover:block' />
+                  <button
+                    type='button'
+                    aria-label={`${ev} filters`}
+                    onClick={() => {
+                      const link = _getFilterLink(null, ev)
+                      navigate(link)
+                      setTriggerEventWhenFiltersChange(ev)
+                    }}
+                    className='flex min-w-0 cursor-pointer items-center pl-2 text-left'
+                  >
+                    <span>{ev}</span>
+                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block peer-hover:hidden dark:text-gray-300' />
+                    <span className='ml-2 h-4 w-4 group-hover:hidden peer-hover:block' />
+                  </button>
                 </td>
-                <td className='w-[40%] py-1 pr-2 text-right sm:w-2/6'>
+                <td
+                  aria-label={`${ev} total`}
+                  className='w-[40%] py-1 pr-2 text-right sm:w-2/6'
+                >
                   <span className='inline-flex items-center justify-end'>
                     <Text size='sm' weight='medium'>
                       {eventsData[ev]}
@@ -1988,13 +1997,11 @@ const DetailsTable = ({
           <div
             className='sticky top-0 z-10 grid bg-white text-sm font-semibold text-gray-900 sm:text-base dark:bg-slate-950 dark:text-gray-50'
             style={{ gridTemplateColumns }}
-            role='row'
           >
             <button
               type='button'
               className='flex cursor-pointer items-center py-1 pl-2 text-left hover:opacity-90'
               onClick={() => onSortBy('name')}
-              role='columnheader'
             >
               <span className='truncate'>
                 {tnMapping[activeTabId as keyof typeof tnMapping]}
@@ -2011,7 +2018,6 @@ const DetailsTable = ({
               type='button'
               className='flex cursor-pointer items-center justify-end py-1 pr-2 text-right hover:opacity-90'
               onClick={() => onSortBy('quantity')}
-              role='columnheader'
             >
               <span className='truncate'>
                 {valuesHeaderName || t('project.visitors')}
@@ -2032,7 +2038,6 @@ const DetailsTable = ({
                 type='button'
                 className='flex cursor-pointer items-center justify-end py-1 pr-2 text-right hover:opacity-90'
                 onClick={() => onSortBy(col.sortLabel)}
-                role='columnheader'
               >
                 <span className='truncate'>{col.header}</span>
                 <Sort
@@ -2047,10 +2052,7 @@ const DetailsTable = ({
               </button>
             ))}
             {!hidePercentageInDetails ? (
-              <div
-                className='flex items-center justify-end py-1 pr-2 text-right'
-                role='columnheader'
-              >
+              <div className='flex items-center justify-end py-1 pr-2 text-right'>
                 <span className='truncate'>{t('project.percentage')}</span>
               </div>
             ) : null}
@@ -2072,35 +2074,32 @@ const DetailsTable = ({
               const valueData = valueMapper(count)
 
               const isOddRow = virtualRow.index % 2 === 1
-
-              return (
-                <div
-                  key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    transform: `translateY(${virtualRow.start}px)`,
-                    width: '100%',
-                    height: `${virtualRow.size}px`,
-                    gridTemplateColumns,
-                  }}
-                  className={cx(
-                    'group grid cursor-pointer items-center text-sm text-gray-900 hover:bg-gray-100 sm:text-base dark:text-gray-50 hover:dark:bg-slate-800',
-                    {
-                      'bg-gray-50 dark:bg-slate-900': isOddRow,
-                      'cursor-default': disableRowClick,
-                    },
-                  )}
-                  role='row'
-                  onClick={() => {
-                    if (disableRowClick) return
-                    const link = getFilterLink(id, entryName)
-                    if (link) {
-                      navigate(link)
-                      closeDetails()
-                    }
-                  }}
-                >
+              const rowKey = `${id}-${entryName}-${Object.values(rest).join('-')}`
+              const rowStyle = {
+                position: 'absolute' as const,
+                top: 0,
+                transform: `translateY(${virtualRow.start}px)`,
+                width: '100%',
+                height: `${virtualRow.size}px`,
+                gridTemplateColumns,
+              }
+              const rowClassName = cx(
+                'group grid cursor-pointer items-center text-sm text-gray-900 hover:bg-gray-100 sm:text-base dark:text-gray-50 hover:dark:bg-slate-800',
+                {
+                  'bg-gray-50 dark:bg-slate-900': isOddRow,
+                  'cursor-default': disableRowClick,
+                },
+              )
+              const openDetailsRow = () => {
+                if (disableRowClick) return
+                const link = getFilterLink(id, entryName)
+                if (link) {
+                  navigate(link)
+                  closeDetails()
+                }
+              }
+              const rowContent = (
+                <>
                   <div className='flex min-w-0 items-center py-1 pl-2 text-left'>
                     <span
                       className={cx(
@@ -2116,7 +2115,6 @@ const DetailsTable = ({
                           href={rowData as string}
                           target='_blank'
                           rel='noopener noreferrer nofollow'
-                          onClick={(e) => e.stopPropagation()}
                         >
                           {rowData}
                         </a>
@@ -2147,7 +2145,27 @@ const DetailsTable = ({
                   {!hidePercentageInDetails ? (
                     <div className='py-1 pr-2 text-right'>{perc}%</div>
                   ) : null}
-                </div>
+                </>
+              )
+
+              if (disableRowClick || linkContent) {
+                return (
+                  <div key={rowKey} style={rowStyle} className={rowClassName}>
+                    {rowContent}
+                  </div>
+                )
+              }
+
+              return (
+                <button
+                  key={rowKey}
+                  type='button'
+                  style={rowStyle}
+                  className={cx(rowClassName, 'border-0 p-0 text-left')}
+                  onClick={openDetailsRow}
+                >
+                  {rowContent}
+                </button>
               )
             })}
           </div>
@@ -2765,7 +2783,8 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                   />
                 </th>
                 <th className='w-[30%] sm:w-1/6'>
-                  <p
+                  <button
+                    type='button'
                     className='flex cursor-pointer items-center justify-end hover:opacity-90'
                     onClick={() => onSortBy('value')}
                   >
@@ -2780,10 +2799,11 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                       }
                     />
                     &nbsp;&nbsp;
-                  </p>
+                  </button>
                 </th>
                 <th className='w-[30%] pr-2 sm:w-1/6'>
-                  <p
+                  <button
+                    type='button'
                     className='flex cursor-pointer items-center justify-end hover:opacity-90'
                     onClick={() => onSortBy('count')}
                   >
@@ -2797,7 +2817,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                         sort.label === 'count' ? sort.sortByDescend : null
                       }
                     />
-                  </p>
+                  </button>
                 </th>
               </tr>
             </thead>

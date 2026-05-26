@@ -439,7 +439,7 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
             setSearchValue(event.target.value)
           }}
           onKeyDown={handleInputKeyDown}
-          aria-expanded={isOpen}
+          aria-label={t('profileSettings.timezone')}
           aria-controls={listboxId}
           aria-activedescendant={
             isOpen && filteredOptions[activeIndex]
@@ -468,12 +468,11 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
         leaveTo='opacity-0 -translate-y-0.5'
       >
         <div className='absolute z-50 mt-1 w-full min-w-[200px] overflow-hidden rounded-md bg-white text-sm ring-1 ring-gray-200 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-800'>
-          <div
-            id={listboxId}
-            role='listbox'
-            aria-label={t('profileSettings.timezone')}
-            className='max-h-80 overflow-auto py-1'
-          >
+	          <div
+	            id={listboxId}
+	            aria-label={t('profileSettings.timezone')}
+	            className='max-h-80 overflow-auto py-1'
+	          >
             {filteredOptions.length ? (
               filteredOptions.map((option, index) => {
                 const selected = option.value === selectedTimezone?.value
@@ -481,12 +480,11 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
 
                 return (
                   <button
-                    id={`${listboxId}-option-${index}`}
-                    key={option.value}
-                    type='button'
-                    role='option'
-                    aria-selected={selected}
-                    onMouseEnter={() => setActiveIndex(index)}
+	                    id={`${listboxId}-option-${index}`}
+	                    key={option.value}
+	                    type='button'
+	                    aria-pressed={selected}
+	                    onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => handleSelect(option)}
                     className={cx(
                       'mx-1 flex w-[calc(100%-0.5rem)] cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left transition-colors duration-100 ease-out select-none',

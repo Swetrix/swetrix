@@ -451,6 +451,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                         </label>
                         <input
                           type='range'
+                          aria-label={t('featureFlags.rolloutPercentage')}
                           min='0'
                           max='100'
                           value={rolloutPercentage}
@@ -767,6 +768,9 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                               </label>
                               <input
                                 type='range'
+                                aria-label={t(
+                                  'featureFlags.scheduleRolloutPercentage',
+                                )}
                                 min='0'
                                 max='100'
                                 value={scheduledRolloutPercentage}

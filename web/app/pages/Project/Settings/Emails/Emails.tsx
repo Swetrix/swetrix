@@ -185,42 +185,50 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
                 className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-950'
               >
                 {_map(reportFrequencyForEmailsOptions, (item, index) => (
-                  <li
-                    onClick={() => changeRole(item)}
-                    className={cx(
-                      'group flex cursor-pointer items-center justify-between p-4 hover:bg-indigo-600',
-                      index === 0 && 'rounded-t-md',
-                    )}
-                    key={item.value}
-                  >
-                    <div>
-                      <Text
-                        as='p'
-                        weight='bold'
-                        colour='secondary'
-                        className='group-hover:text-gray-200'
-                      >
-                        {t(`profileSettings.${_toLower(item.label)}`)}
-                      </Text>
-                    </div>
-                    {reportFrequency === item.value ? (
-                      <span className='text-indigo-600 group-hover:text-gray-200'>
-                        <CheckIcon className='ml-1 h-7 w-7 pt-px' />
-                      </span>
-                    ) : null}
+                  <li key={item.value}>
+                    <button
+                      type='button'
+                      onClick={() => changeRole(item)}
+                      className={cx(
+                        'group flex w-full cursor-pointer items-center justify-between p-4 text-left hover:bg-indigo-600',
+                        index === 0 && 'rounded-t-md',
+                      )}
+                    >
+                      <div>
+                        <Text
+                          as='span'
+                          weight='bold'
+                          colour='secondary'
+                          className='group-hover:text-gray-200'
+                        >
+                          {t(`profileSettings.${_toLower(item.label)}`)}
+                        </Text>
+                      </div>
+                      {reportFrequency === item.value ? (
+                        <span className='text-indigo-600 group-hover:text-gray-200'>
+                          <CheckIcon
+                            className='ml-1 h-7 w-7 pt-px'
+                            aria-hidden='true'
+                          />
+                        </span>
+                      ) : null}
+                    </button>
                   </li>
                 ))}
-                <li
-                  onClick={onRemove}
-                  className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
-                >
-                  <Text
-                    as='p'
-                    weight='bold'
-                    className='text-red-600 dark:text-red-500'
+                <li>
+                  <button
+                    type='button'
+                    onClick={onRemove}
+                    className='group flex w-full cursor-pointer items-center justify-between rounded-b-md p-4 text-left hover:bg-gray-200 dark:hover:bg-gray-700'
                   >
-                    {t('project.settings.removeMember')}
-                  </Text>
+                    <Text
+                      as='span'
+                      weight='bold'
+                      className='text-red-600 dark:text-red-500'
+                    >
+                      {t('project.settings.removeMember')}
+                    </Text>
+                  </button>
                 </li>
               </ul>
             ) : null}
@@ -533,7 +541,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
                   >
                     {t('auth.common.addedOn')}
                   </th>
-                  <th scope='col' />
+                  <th scope='col' aria-label='Actions' />
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>

@@ -170,7 +170,7 @@ const MultiSelect = ({
         <input
           ref={inputRef}
           type='text'
-          aria-expanded={isOpen}
+          aria-label={placeholder}
           aria-controls={listboxId}
           aria-autocomplete='list'
           aria-activedescendant={activeOptionId}
@@ -197,8 +197,6 @@ const MultiSelect = ({
         >
           <div
             id={listboxId}
-            role='listbox'
-            aria-multiselectable='true'
             className='absolute top-full z-30 mt-1.5 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/60'
           >
             {_isEmpty(items) ? (
@@ -216,12 +214,11 @@ const MultiSelect = ({
                 const isActive = index === activeIndex
                 const optionId = `${optionIdPrefix}-${index}`
                 return (
-                  <button
-                    type='button'
-                    id={optionId}
-                    role='option'
-                    aria-selected={isSelected}
-                    key={`${itemKey(item)}-select`}
+	                  <button
+	                    type='button'
+	                    id={optionId}
+	                    aria-pressed={isSelected}
+	                    key={`${itemKey(item)}-select`}
                     onClick={() => handleSelectItem(item)}
                     onMouseEnter={() => setActiveIndex(index)}
                     className={cx(

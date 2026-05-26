@@ -364,6 +364,7 @@ const Subscribe = () => {
                       contact: (
                         <a
                           href={`mailto:${CONTACT_EMAIL}`}
+                          aria-label='Contact support'
                           className='font-medium underline decoration-dashed hover:decoration-solid'
                         />
                       ),

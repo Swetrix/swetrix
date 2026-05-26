@@ -33,6 +33,7 @@ const WaitingForCaptchaEvent = () => {
                 turl: (
                   <a
                     href={TROUBLESHOOTING_URL}
+                    aria-label='Open troubleshooting guide'
                     className='font-medium underline decoration-dashed hover:decoration-solid'
                     target='_blank'
                     rel='noreferrer noopener'
@@ -41,6 +42,7 @@ const WaitingForCaptchaEvent = () => {
                 guideurl: (
                   <a
                     href={CAPTCHA_INTEGRATION_GUIDE_URL}
+                    aria-label='Open CAPTCHA integration guide'
                     className='font-medium underline decoration-dashed hover:decoration-solid'
                     target='_blank'
                     rel='noreferrer noopener'

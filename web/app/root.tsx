@@ -273,14 +273,13 @@ export function ErrorBoundary() {
                         )}
                       </button>
                       {crashStackShown ? (
-                        <span
+                        <section
                           id='crash-stack'
-                          role='region'
                           aria-labelledby='crash-stack-toggle'
                           className='text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'
                         >
                           {error.stack}
-                        </span>
+                        </section>
                       ) : null}
                     </>
                   ) : (

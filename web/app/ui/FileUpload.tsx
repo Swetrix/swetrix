@@ -134,6 +134,7 @@ export default function FileUpload({
           accept={accept}
           multiple={multiple}
           disabled={isDisabled}
+          aria-label={typeof label === 'string' ? label : 'Upload file'}
           aria-describedby={showHint ? hintId : undefined}
           onChange={handleChange}
         />

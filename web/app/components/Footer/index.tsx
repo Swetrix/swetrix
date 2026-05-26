@@ -861,6 +861,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                       url: (
                         <a
                           href='https://swetrix.com'
+                          aria-label='Open Swetrix website'
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-indigo-400 hover:text-indigo-300'

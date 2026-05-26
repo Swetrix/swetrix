@@ -82,17 +82,17 @@ const PasswordStrength = ({ password, className }: PasswordStrengthProps) => {
   const trackBg = 'bg-gray-200 dark:bg-slate-800'
 
   return (
-    <div
-      className={cx('space-y-1.5', className)}
-      role='progressbar'
-      aria-valuemin={0}
-      aria-valuemax={totalSegments}
-      aria-valuenow={currentConfig.segments}
-      aria-valuetext={currentConfig.label || undefined}
-      aria-label={t('auth.passwordStrength.label', {
-        defaultValue: 'Password strength',
-      })}
-    >
+    <div className={cx('space-y-1.5', className)}>
+      <progress
+        className='sr-only'
+        max={totalSegments}
+        value={currentConfig.segments}
+        aria-label={t('auth.passwordStrength.label', {
+          defaultValue: 'Password strength',
+        })}
+      >
+        {currentConfig.label}
+      </progress>
       <div className='flex gap-1.5'>
         {Array.from({ length: totalSegments }).map((_, index) => (
           <div
