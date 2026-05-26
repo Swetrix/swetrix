@@ -214,11 +214,11 @@ const MultiSelect = ({
                 const isActive = index === activeIndex
                 const optionId = `${optionIdPrefix}-${index}`
                 return (
-	                  <button
-	                    type='button'
-	                    id={optionId}
-	                    aria-pressed={isSelected}
-	                    key={`${itemKey(item)}-select`}
+                  <button
+                    type='button'
+                    id={optionId}
+                    aria-pressed={isSelected}
+                    key={`${itemKey(item)}-select`}
                     onClick={() => handleSelectItem(item)}
                     onMouseEnter={() => setActiveIndex(index)}
                     className={cx(

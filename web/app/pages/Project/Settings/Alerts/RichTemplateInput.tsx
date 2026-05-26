@@ -501,7 +501,9 @@ const RichTemplateInput = forwardRef<
           </div>
           <textarea
             ref={taRef}
-            aria-label={typeof label === 'string' ? label : placeholder || 'Template'}
+            aria-label={
+              typeof label === 'string' ? label : placeholder || 'Template'
+            }
             rows={rows}
             value={value}
             onChange={onChangeInternal}

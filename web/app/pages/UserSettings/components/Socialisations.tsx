@@ -216,9 +216,15 @@ const Socialisations = () => {
                   <div className='flex items-center gap-3'>
                     <div className='hidden shrink-0 sm:block'>
                       {theme === 'dark' ? (
-                        <Light className='h-9 w-9 rounded-md' aria-hidden='true' />
+                        <Light
+                          className='h-9 w-9 rounded-md'
+                          aria-hidden='true'
+                        />
                       ) : (
-                        <Dark className='h-9 w-9 rounded-md' aria-hidden='true' />
+                        <Dark
+                          className='h-9 w-9 rounded-md'
+                          aria-hidden='true'
+                        />
                       )}
                     </div>
                     <span className='font-medium'>{name}</span>

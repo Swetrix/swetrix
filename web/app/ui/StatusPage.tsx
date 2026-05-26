@@ -79,10 +79,7 @@ const StatusPage = ({
   if (loading) {
     return (
       <div className='flex min-h-page items-center justify-center bg-gray-50 dark:bg-slate-950'>
-        <output
-          className='flex flex-col items-center'
-          aria-live='polite'
-        >
+        <output className='flex flex-col items-center' aria-live='polite'>
           <Spin />
           <span className='sr-only'>{t('common.loading')}</span>
         </output>

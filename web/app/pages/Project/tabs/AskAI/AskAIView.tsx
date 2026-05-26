@@ -741,7 +741,9 @@ const AssistantMessage = ({
       followUps.length > 0 &&
       onFollowUpClick ? (
         <fieldset className='mt-4 border-t border-gray-200/80 p-0 dark:border-slate-800/80'>
-          <legend className='sr-only'>{t('project.askAi.followUps.title')}</legend>
+          <legend className='sr-only'>
+            {t('project.askAi.followUps.title')}
+          </legend>
           {_map(followUps, (suggestion, idx) => (
             <button
               key={`${idx}-${suggestion}`}
