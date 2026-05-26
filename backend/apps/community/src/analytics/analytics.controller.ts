@@ -40,7 +40,7 @@ import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { PageviewsDto } from './dto/pageviews.dto'
 import { EventsDto } from './dto/events.dto'
-import { GetDataDto, ChartRenderMode } from './dto/getData.dto'
+import { GetDataDto, ChartRenderMode, TimeBucketType } from './dto/getData.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
 import { GetVersionFiltersDto } from './dto/get-version-filters.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
@@ -2720,9 +2720,16 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    const finalTimeBucket =
-      timeBucket ||
-      (['1h', 'today', 'yesterday', '1d'].includes(period) ? 'hour' : 'day')
+    const defaultTimeBucket = ['1h', 'today', 'yesterday', '1d'].includes(
+      period,
+    )
+      ? TimeBucketType.HOUR
+      : TimeBucketType.DAY
+    const finalTimeBucket = (timeBucket || defaultTimeBucket) as TimeBucketType
+    let groupTimeBucket: TimeBucketType | null = finalTimeBucket
+    if (period === 'all' || period === 'custom') {
+      groupTimeBucket = null
+    }
 
     this.logger.log(
       `pid: ${pid}, period: ${period}, timeBucket: ${finalTimeBucket}, filters: ${filters}`,
@@ -2735,7 +2742,7 @@ export class AnalyticsController {
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
-      null,
+      groupTimeBucket,
       period,
       safeTimezone,
       diff,

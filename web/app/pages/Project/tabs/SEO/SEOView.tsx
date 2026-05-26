@@ -56,6 +56,7 @@ import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
@@ -103,10 +104,12 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     isActiveCompare,
   } = useViewProjectContext()
   const { seoRefreshTrigger } = useRefreshTriggers()
-  const { fetchDashboard, data, isLoading } = useGSCDashboardProxy()
+  const { fetchDashboard, data, error, isLoading } = useGSCDashboardProxy()
   const {
     fetchDashboard: fetchCompareDashboard,
     data: compareData,
+    error: compareError,
+    isLoading: isCompareLoading,
     resetData: resetCompareData,
   } = useGSCDashboardProxy()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -237,6 +240,8 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
 
   const noopFilterLink = useCallback(() => '#', [])
   const gscFilters = useMemo(() => getGSCCompatibleFilters(filters), [filters])
+  const gscLoading = isLoading || isCompareLoading
+  const gscError = error || compareError
 
   const [isManualRefreshing, setIsManualRefreshing] = useState(false)
 
@@ -307,8 +312,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   const handleManualRefresh = useCallback(async () => {
     if (isManualRefreshing) return
     setIsManualRefreshing(true)
-    await loadData()
-    setIsManualRefreshing(false)
+    try {
+      await loadData()
+    } finally {
+      setIsManualRefreshing(false)
+    }
   }, [isManualRefreshing, loadData])
 
   const manualRefreshButton = useMemo(
@@ -645,7 +653,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [t],
   )
 
-  if (isLoading && !data) {
+  if (gscLoading && !data) {
     return (
       <>
         <DashboardHeader
@@ -661,6 +669,32 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         />
         <div className='flex min-h-[400px] items-center justify-center'>
           <Loader />
+        </div>
+      </>
+    )
+  }
+
+  if (gscError && !data) {
+    return (
+      <>
+        <DashboardHeader
+          showSearchButton={false}
+          showRefreshButton={false}
+          rightContent={
+            <ProjectViewHeaderActions
+              tnMapping={tnMapping}
+              extraActions={manualRefreshButton}
+            />
+          }
+          timeBucketSelectorItems={seoPeriodPairs}
+        />
+        <div className='mx-auto flex min-h-[400px] max-w-xl flex-col items-center justify-center px-4 text-center'>
+          <Text as='h3' size='lg' weight='medium'>
+            {t('apiNotifications.somethingWentWrong')}
+          </Text>
+          <Text as='p' size='sm' colour='secondary' className='mt-2'>
+            {gscError}
+          </Text>
         </div>
       </>
     )
@@ -735,6 +769,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
       {filters.length > 0 ? (
         <Filters className='mb-3' tnMapping={tnMapping} />
       ) : null}
+      {gscLoading && data ? <LoadingBar /> : null}
 
       <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
         <div className='mb-3 flex w-full items-center justify-end gap-1 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
@@ -928,7 +963,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={isLoading}
+          dataLoading={gscLoading}
           rowTooltipRenderer={seoGscRowTooltip}
           rowTooltipFollowCursor
         />
@@ -943,7 +978,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={isLoading}
+          dataLoading={gscLoading}
           rowTooltipRenderer={seoGscRowTooltip}
           rowTooltipFollowCursor
         />
@@ -998,7 +1033,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={isLoading}
+          dataLoading={gscLoading}
         />
         <Panel
           name={t('project.devices')}
@@ -1013,7 +1048,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={isLoading}
+          dataLoading={gscLoading}
         />
       </div>
     </>

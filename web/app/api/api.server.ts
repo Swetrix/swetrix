@@ -49,6 +49,7 @@ interface ServerFetchOptions {
   headers?: Record<string, string>
   /** Skip authentication - for public endpoints */
   skipAuth?: boolean
+  timeoutMs?: number
 }
 
 interface ServerFetchResult<T> {
@@ -69,6 +70,7 @@ export async function serverFetch<T = unknown>(
     body,
     headers: customHeaders = {},
     skipAuth = false,
+    timeoutMs = 15000,
   } = options
 
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
@@ -105,11 +107,15 @@ export async function serverFetch<T = unknown>(
     : undefined
 
   try {
-    const response = await fetchWithTimeout(url, {
-      method,
-      headers: fetchHeaders,
-      body: serializedBody,
-    })
+    const response = await fetchWithTimeout(
+      url,
+      {
+        method,
+        headers: fetchHeaders,
+        body: serializedBody,
+      },
+      timeoutMs,
+    )
 
     if ((response.status === 401 || response.status === 403) && !skipAuth) {
       const refreshResult = await tryRefreshToken(request)
@@ -118,11 +124,15 @@ export async function serverFetch<T = unknown>(
         fetchHeaders['Authorization'] =
           `Bearer ${refreshResult.tokens.accessToken}`
 
-        const retryResponse = await fetchWithTimeout(url, {
-          method,
-          headers: fetchHeaders,
-          body: serializedBody,
-        })
+        const retryResponse = await fetchWithTimeout(
+          url,
+          {
+            method,
+            headers: fetchHeaders,
+            body: serializedBody,
+          },
+          timeoutMs,
+        )
 
         if (retryResponse.ok) {
           const retryContentType = retryResponse.headers.get('content-type')
@@ -2801,6 +2811,7 @@ export async function getGSCDashboardServer(
     `log/gsc-dashboard?${queryParams.toString()}`,
     {
       headers,
+      timeoutMs: 60000,
     },
   )
 }

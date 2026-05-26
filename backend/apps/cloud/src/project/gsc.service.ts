@@ -41,6 +41,7 @@ const MAX_ROW_LIMIT = 25000
 const MAX_BRANDED_PAGES = 10
 const MAX_FILTER_EXPRESSION_LENGTH = 500
 const MAX_FILTERS = 20
+const MAX_EXPENSIVE_ANALYTICS_RANGE_DAYS = 180
 
 const IMPRESSION_POSITION_BUCKETS = [
   { key: 'pos1To3', label: '1-3' },
@@ -511,7 +512,7 @@ export class GSCService {
         }
       } else if (column === 'device' || column === 'dv') {
         dimension = 'device'
-        expression = expression.toLowerCase()
+        expression = expression.toUpperCase()
       } else {
         continue
       }
@@ -747,9 +748,9 @@ export class GSCService {
 
     try {
       const rows = await this.queryGSC(gsc, from, to, {
-        dimensions: isHourly ? ['HOUR'] : ['date'],
+        dimensions: isHourly ? ['hour'] : ['date'],
         rowLimit: 5000,
-        dataState: isHourly ? 'HOURLY_ALL' : 'all',
+        dataState: isHourly ? 'hourly_all' : 'all',
         dimensionFilterGroups,
       })
 
@@ -1091,6 +1092,9 @@ export class GSCService {
     const fromDate = dayjs(from)
     const toDate = dayjs(to)
     const durationMs = toDate.diff(fromDate)
+    const rangeDays = Math.abs(toDate.diff(fromDate, 'day'))
+    const shouldLoadExpensiveAnalytics =
+      rangeDays <= MAX_EXPENSIVE_ANALYTICS_RANGE_DAYS
     const prevTo = fromDate
       .subtract(1, 'millisecond')
       .format('YYYY-MM-DD HH:mm:ss')
@@ -1116,10 +1120,17 @@ export class GSCService {
       this.getKeywords(pid, from, to, 50, 0, filtersStr, undefined, ctx),
       this.getTopCountries(pid, from, to, 50, 0, filtersStr, ctx),
       this.getTopDevices(pid, from, to, 50, 0, filtersStr, ctx),
-      this.getBrandedTraffic(pid, from, to, filtersStr, ctx),
-      this.getPositionAnalytics(pid, from, to, filtersStr, ctx).catch(() =>
-        emptyPositionAnalytics(),
-      ),
+      shouldLoadExpensiveAnalytics
+        ? this.getBrandedTraffic(pid, from, to, filtersStr, ctx).catch(() => ({
+            branded: 0,
+            nonBranded: 0,
+          }))
+        : Promise.resolve({ branded: 0, nonBranded: 0 }),
+      shouldLoadExpensiveAnalytics
+        ? this.getPositionAnalytics(pid, from, to, filtersStr, ctx).catch(() =>
+            emptyPositionAnalytics(),
+          )
+        : Promise.resolve(emptyPositionAnalytics()),
     ])
 
     return {
