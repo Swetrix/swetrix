@@ -234,7 +234,7 @@ const PanelContainer = ({
               <span className='ml-1.5 flex items-center'>{tooltip}</span>
             ) : null}
           </Text>
-          <div className='scrollbar-thin flex items-center gap-2.5 overflow-x-auto'>
+          <div className='flex scrollbar-thin items-center gap-2.5 overflow-x-auto'>
             {tabs && onTabChange ? (
               <>
                 {tabs.map((tab, index) => {
@@ -1681,7 +1681,7 @@ const CombinedMetadataPanel = ({
         >
           {title}
         </Text>
-        <div className='scrollbar-thin flex items-center gap-2.5 overflow-x-auto'>
+        <div className='flex scrollbar-thin items-center gap-2.5 overflow-x-auto'>
           {modeTabs.map((tab) => (
             <button
               key={tab.id}
@@ -1982,7 +1982,7 @@ const DetailsTable = ({
       </div>
       <div
         ref={parentRef}
-        className='scrollbar-thin max-h-[500px] overflow-x-auto overflow-y-auto'
+        className='max-h-[500px] scrollbar-thin overflow-x-auto overflow-y-auto'
       >
         <div className='min-w-[640px]'>
           <div
@@ -2104,7 +2104,7 @@ const DetailsTable = ({
                   <div className='flex min-w-0 items-center py-1 pl-2 text-left'>
                     <span
                       className={cx(
-                        'scrollbar-thin hover-always-overflow flex min-w-0 items-center whitespace-nowrap',
+                        'hover-always-overflow flex min-w-0 scrollbar-thin items-center whitespace-nowrap',
                         {
                           capitalize,
                         },
@@ -2112,7 +2112,7 @@ const DetailsTable = ({
                     >
                       {linkContent ? (
                         <a
-                          className='scrollbar-thin hover-always-overflow whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500'
+                          className='hover-always-overflow scrollbar-thin whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500'
                           href={rowData as string}
                           target='_blank'
                           rel='noopener noreferrer nofollow'
@@ -2397,7 +2397,7 @@ const Panel = ({
                           {linkContent ? (
                             <a
                               className={cx(
-                                'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
+                                'hover-always-overflow flex scrollbar-thin items-center text-sm whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
                                 {
                                   capitalize,
                                 },
@@ -2412,7 +2412,7 @@ const Panel = ({
                           ) : (
                             <span
                               className={cx(
-                                'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-gray-900 dark:text-gray-100',
+                                'hover-always-overflow flex scrollbar-thin items-center text-sm whitespace-nowrap text-gray-900 dark:text-gray-100',
                                 {
                                   capitalize,
                                 },

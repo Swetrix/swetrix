@@ -326,6 +326,7 @@ export class AnalyticsController {
         paramsData,
         safeTimezone,
         mode,
+        period,
       )
     } else {
       result = await this.analyticsService.groupByTimeBucket(

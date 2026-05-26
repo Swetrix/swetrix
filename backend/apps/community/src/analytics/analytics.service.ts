@@ -4288,7 +4288,7 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        countIf(captcha_event = 'generate') as generated,
+        greatest(countIf(captcha_event = 'generate'), countIf(captcha_event = 'pass')) as generated,
         countIf(captcha_event = 'pass') as passed,
         countIf(captcha_event = 'verify_fail') as failed,
         countIf(captcha_event = 'validation_fail') as validationFailed,
@@ -4337,8 +4337,13 @@ export class AnalyticsService {
       const index = x.indexOf(dateString)
 
       if (index !== -1) {
-        generated[index] = Number(result[row].generated || 0)
-        passed[index] = Number(result[row].passed || 0)
+        const passedCount = Number(result[row].passed || 0)
+
+        generated[index] = Math.max(
+          Number(result[row].generated || 0),
+          passedCount,
+        )
+        passed[index] = passedCount
         failed[index] = Number(result[row].failed || 0)
         validationFailed[index] = Number(result[row].validationFailed || 0)
         replayed[index] = Number(result[row].replayed || 0)
@@ -4373,9 +4378,8 @@ export class AnalyticsService {
         ${CAPTCHA_EVENT_SQL} as captcha_event,
         ${CAPTCHA_SOLVE_MS_SQL} as solve_ms
       SELECT
-        countIf(captcha_event = 'generate') as generated,
+        greatest(countIf(captcha_event = 'generate'), countIf(captcha_event = 'pass')) as generated,
         countIf(captcha_event = 'pass') as passed,
-        if(generated = 0, NULL, round(passed / generated * 100, 2)) as passRate,
         round(quantileExactIf(0.5)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP50,
         round(quantileExactIf(0.75)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP75,
         round(quantileExactIf(0.95)(solve_ms, captcha_event = 'pass' AND solve_ms > 0) / 1000, 2) as solveP95
@@ -4421,13 +4425,13 @@ export class AnalyticsService {
     ])
 
     const row = summary.data?.[0] || {}
+    const passed = Number(row.passed || 0)
+    const generated = Math.max(Number(row.generated || 0), passed)
 
     return {
-      generated: Number(row.generated || 0),
-      passRate:
-        row.passRate === null || row.passRate === undefined
-          ? null
-          : Number(row.passRate),
+      generated,
+      passed,
+      passRate: generated === 0 ? null : _round((passed / generated) * 100, 2),
       solveP50: Number(row.solveP50 || 0),
       solveP75: Number(row.solveP75 || 0),
       solveP95: Number(row.solveP95 || 0),
@@ -4445,10 +4449,12 @@ export class AnalyticsService {
     paramsData: any,
     safeTimezone: string,
     mode: ChartRenderMode,
+    period: string,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
     let summary: unknown = {}
+    let previousSummary: unknown = null
 
     const promises = [
       // Getting params
@@ -4502,12 +4508,38 @@ export class AnalyticsService {
       })(),
     ]
 
+    if (period !== 'all') {
+      promises.push(
+        (async () => {
+          const { groupFrom, groupTo } = paramsData.params
+          const periodSubtracted = dayjs
+            .utc(groupFrom)
+            .subtract(
+              Math.abs(
+                dayjs.utc(groupFrom).diff(dayjs.utc(groupTo), 'minutes'),
+              ),
+              'minutes',
+            )
+            .format('YYYY-MM-DD HH:mm:ss')
+
+          previousSummary = await this.getCaptchaSummary(filtersQuery, {
+            params: {
+              ...paramsData.params,
+              groupFrom: periodSubtracted,
+              groupTo: groupFrom,
+            },
+          })
+        })(),
+      )
+    }
+
     await Promise.all(promises)
 
     return Promise.resolve({
       params,
       chart,
       summary,
+      previousSummary,
     })
   }
 

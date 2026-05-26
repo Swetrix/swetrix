@@ -1690,6 +1690,7 @@ interface CaptchaChartData {
 
 interface CaptchaSummaryData {
   generated: number
+  passed: number
   passRate: number | null
   solveP50: number
   solveP75: number
@@ -1702,6 +1703,7 @@ export interface CaptchaDataResponse {
   params: Record<string, CaptchaPanelData[]>
   chart?: CaptchaChartData
   summary?: CaptchaSummaryData
+  previousSummary?: CaptchaSummaryData | null
 }
 
 export async function getCaptchaDataServer(

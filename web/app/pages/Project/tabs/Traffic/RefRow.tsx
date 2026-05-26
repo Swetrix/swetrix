@@ -31,7 +31,7 @@ const RefRow = ({ rowName }: { rowName: string | null }) => {
 
   if (rowName === null) {
     return (
-      <div className='scrollbar-thin hover-always-overflow flex items-center'>
+      <div className='hover-always-overflow flex scrollbar-thin items-center'>
         <LinkIcon className='float-left mr-1.5 size-5' />
         <span className='italic'>{t('project.directNone')}</span>
       </div>
@@ -39,7 +39,7 @@ const RefRow = ({ rowName }: { rowName: string | null }) => {
   }
 
   return (
-    <div className='scrollbar-thin hover-always-overflow flex min-w-0 items-center'>
+    <div className='hover-always-overflow flex min-w-0 scrollbar-thin items-center'>
       {faviconHost ? (
         <img
           className='float-left mr-1.5 size-5'

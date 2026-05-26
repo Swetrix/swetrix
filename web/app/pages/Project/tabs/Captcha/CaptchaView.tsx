@@ -90,8 +90,14 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const { theme } = useTheme()
   const { project } = useCurrentProject()
   const { captchaRefreshTrigger } = useContext(RefreshTriggersContext)
-  const { period, timeBucket, dateRange, timeFormat, size } =
-    useContext(ViewProjectContext)
+  const {
+    period,
+    timeBucket,
+    dateRange,
+    timeFormat,
+    size,
+    activePeriodCompare,
+  } = useContext(ViewProjectContext)
   const [searchParams] = useSearchParams()
   const isEmbedded = searchParams.get('embedded') === 'true'
   const isMountedRef = useRef(true)
@@ -178,10 +184,12 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
       const compareTo = searchParams.get('compareTo') || ''
       const compareEnabled =
         searchParams.get('compare') === 'true' && compareFrom && compareTo
+      const shouldFetchCustomCompare =
+        compareEnabled && activePeriodCompare !== 'previous'
 
       const [data, compareData] = await Promise.all([
         captchaProxy.fetchCaptcha(projectId, requestParams),
-        compareEnabled
+        shouldFetchCustomCompare
           ? captchaProxy.fetchCaptcha(projectId, {
               ...requestParams,
               period: '',
@@ -203,7 +211,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
         return
       }
 
-      const { params, chart, summary } = data
+      const { params, chart, summary, previousSummary } = data
 
       if (chart && chart.x) {
         setChartData(chart)
@@ -221,7 +229,11 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
       setIsPanelsDataEmpty(!hasData)
 
       setSummaryData(summary || null)
-      setSummaryCompareData(compareData?.summary || null)
+      setSummaryCompareData(
+        shouldFetchCustomCompare
+          ? compareData?.summary || null
+          : previousSummary || null,
+      )
       setAnalyticsLoading(false)
       setDataLoading(false)
     } catch (reason) {
@@ -239,7 +251,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   useEffect(() => {
     loadCaptcha()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, dateRange, period, timeBucket, projectId])
+  }, [filters, dateRange, period, timeBucket, projectId, activePeriodCompare])
 
   // Refresh captcha data when refresh button is clicked
   useEffect(() => {
@@ -312,6 +324,15 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
           value: summaryData.generated || 0,
           change: summaryCompareData
             ? (summaryData.generated || 0) - (summaryCompareData.generated || 0)
+            : undefined,
+          goodChangeDirection: 'down' as const,
+          valueMapper: formatNumber,
+        },
+        {
+          label: t('project.captchaAnalytics.passed'),
+          value: summaryData.passed || 0,
+          change: summaryCompareData
+            ? (summaryData.passed || 0) - (summaryCompareData.passed || 0)
             : undefined,
           goodChangeDirection: 'down' as const,
           valueMapper: formatNumber,

@@ -84,7 +84,7 @@ const LiveVisitorsDropdown = () => {
         <div
           id='live-visitors-dropdown'
           className={cn(
-            'scrollbar-thin absolute top-full right-0 z-40 mt-1 max-w-[calc(100vw-1rem)] origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-xs text-gray-900 shadow-md transition duration-150 ease-out outline-none max-sm:fixed max-sm:top-20 max-sm:right-2 max-sm:left-2 max-sm:w-auto max-sm:max-w-none sm:w-[250px] dark:border-slate-700/50 dark:bg-slate-950 dark:text-gray-50',
+            'absolute top-full right-0 z-40 mt-1 max-w-[calc(100vw-1rem)] origin-top-right transform cursor-auto scrollbar-thin overflow-hidden rounded-md border border-black/10 bg-white text-xs text-gray-900 shadow-md transition duration-150 ease-out outline-none max-sm:fixed max-sm:top-20 max-sm:right-2 max-sm:left-2 max-sm:w-auto max-sm:max-w-none sm:w-[250px] dark:border-slate-700/50 dark:bg-slate-950 dark:text-gray-50',
             liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-0',
             isDropdownVisible
               ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
@@ -106,7 +106,7 @@ const LiveVisitorsDropdown = () => {
                 <XIcon className='h-4 w-4 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
               </button>
             </div>
-            <div className='scrollbar-thin max-h-72 overflow-y-auto px-1.5 max-sm:max-h-[calc(100dvh-7rem)] sm:max-h-80'>
+            <div className='max-h-72 scrollbar-thin overflow-y-auto px-1.5 max-sm:max-h-[calc(100dvh-7rem)] sm:max-h-80'>
               {isLoading ? (
                 <Text as='p' size='xs' className='flex items-center py-2'>
                   <Spin className='ml-0' />
