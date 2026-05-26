@@ -264,9 +264,9 @@ const Subscribe = () => {
                 }
                 className='flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-2.5 py-1.5 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:hover:bg-slate-900'
               >
-                <span className='text-xs font-medium text-gray-700 dark:text-gray-200'>
+                <Text as='span' colour='secondary' size='xs' weight='medium'>
                   {t('pricing.billedYearly')}
-                </span>
+                </Text>
                 <span className='rounded-md bg-green-100 px-1.5 py-0.5 text-xs font-semibold text-green-700 dark:bg-green-500/20 dark:text-green-300'>
                   -17%
                 </span>
@@ -317,13 +317,13 @@ const Subscribe = () => {
                         <Text
                           as='span'
                           size='sm'
-                          colour='muted'
+                          colour='secondary'
                           weight='medium'
                         >
                           /{t('pricing.perMonth')}
                         </Text>
                       </Text>
-                      <Text as='span' size='xs' colour='muted'>
+                      <Text as='span' size='xs' colour='secondary'>
                         {selectedBillingFrequency === 'monthly'
                           ? t('pricing.billedMonthly')
                           : t('pricing.billedAnnuallyAt', {
@@ -331,7 +331,7 @@ const Subscribe = () => {
                             })}
                       </Text>
                     </div>
-                    <Text as='span' size='sm' colour='muted'>
+                    <Text as='span' size='sm' colour='secondary'>
                       {t('pricing.upToXEvents', {
                         amount: formatEventsLong(
                           planTier.monthlyUsageLimit,
@@ -346,19 +346,10 @@ const Subscribe = () => {
 
             {showAllPlans && (
               <div className='mt-2 rounded-lg bg-gray-50 px-4 py-3 ring-1 ring-gray-200 ring-inset dark:bg-slate-900/50 dark:ring-slate-800'>
-                <Text
-                  as='p'
-                  size='sm'
-                  weight='medium'
-                  className='text-gray-900 dark:text-gray-100'
-                >
+                <Text as='p' size='sm' weight='medium' colour='primary'>
                   {t('checkout.customPlanTitle')}
                 </Text>
-                <Text
-                  as='p'
-                  size='sm'
-                  className='mt-1 text-gray-600 dark:text-gray-400'
-                >
+                <Text as='p' size='sm' colour='secondary' className='mt-1'>
                   <Trans
                     t={t}
                     i18nKey='checkout.customPlanDesc'
@@ -532,7 +523,8 @@ const Subscribe = () => {
               <Text
                 as='p'
                 size='sm'
-                className='leading-relaxed text-gray-700 dark:text-gray-300'
+                className='leading-relaxed'
+                colour='secondary'
               >
                 {t('auth.signup.testimonial')}
               </Text>
@@ -543,19 +535,10 @@ const Subscribe = () => {
                   className='size-10 rounded-full ring-2 ring-gray-100 dark:ring-slate-800'
                 />
                 <div>
-                  <Text
-                    as='p'
-                    size='sm'
-                    weight='medium'
-                    className='text-gray-900 dark:text-white'
-                  >
+                  <Text as='p' size='sm' weight='medium' colour='primary'>
                     Alper Alkan
                   </Text>
-                  <Text
-                    as='p'
-                    size='xs'
-                    className='text-gray-500 dark:text-slate-400'
-                  >
+                  <Text as='p' size='xs' colour='secondary'>
                     Co-founder of Phalcode
                   </Text>
                 </div>
