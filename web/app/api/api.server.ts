@@ -34,8 +34,12 @@ export function getClientIP(request: Request): string | null {
 async function fetchWithTimeout(
   input: string | URL,
   init: Parameters<typeof fetch>[1] = {},
-  timeoutMs = 15000,
+  timeoutMs?: number,
 ): Promise<Response> {
+  if (timeoutMs === undefined) {
+    return fetch(input, init)
+  }
+
   const controller = new AbortController()
   const id = setTimeout(() => controller.abort(), timeoutMs)
   return fetch(input, { ...init, signal: controller.signal }).finally(() =>
@@ -49,6 +53,7 @@ interface ServerFetchOptions {
   headers?: Record<string, string>
   /** Skip authentication - for public endpoints */
   skipAuth?: boolean
+  timeoutMs?: number
 }
 
 interface ServerFetchResult<T> {
@@ -69,6 +74,7 @@ export async function serverFetch<T = unknown>(
     body,
     headers: customHeaders = {},
     skipAuth = false,
+    timeoutMs = 15000,
   } = options
 
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
@@ -105,11 +111,15 @@ export async function serverFetch<T = unknown>(
     : undefined
 
   try {
-    const response = await fetchWithTimeout(url, {
-      method,
-      headers: fetchHeaders,
-      body: serializedBody,
-    })
+    const response = await fetchWithTimeout(
+      url,
+      {
+        method,
+        headers: fetchHeaders,
+        body: serializedBody,
+      },
+      timeoutMs,
+    )
 
     if ((response.status === 401 || response.status === 403) && !skipAuth) {
       const refreshResult = await tryRefreshToken(request)
@@ -118,11 +128,15 @@ export async function serverFetch<T = unknown>(
         fetchHeaders['Authorization'] =
           `Bearer ${refreshResult.tokens.accessToken}`
 
-        const retryResponse = await fetchWithTimeout(url, {
-          method,
-          headers: fetchHeaders,
-          body: serializedBody,
-        })
+        const retryResponse = await fetchWithTimeout(
+          url,
+          {
+            method,
+            headers: fetchHeaders,
+            body: serializedBody,
+          },
+          timeoutMs,
+        )
 
         if (retryResponse.ok) {
           const retryContentType = retryResponse.headers.get('content-type')
@@ -209,6 +223,7 @@ export async function streamingServerFetch(
     body,
     headers: customHeaders = {},
     skipAuth = false,
+    timeoutMs,
   } = options
 
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
@@ -236,11 +251,17 @@ export async function streamingServerFetch(
     }
   }
 
-  const response = await fetch(url, {
-    method,
-    headers: fetchHeaders,
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  const serializedBody = body ? JSON.stringify(body) : undefined
+
+  const response = await fetchWithTimeout(
+    url,
+    {
+      method,
+      headers: fetchHeaders,
+      body: serializedBody,
+    },
+    timeoutMs,
+  )
 
   // If 401/403, try to refresh the token and retry
   if ((response.status === 401 || response.status === 403) && !skipAuth) {
@@ -250,11 +271,15 @@ export async function streamingServerFetch(
       fetchHeaders['Authorization'] =
         `Bearer ${refreshResult.tokens.accessToken}`
 
-      const retryResponse = await fetch(url, {
-        method,
-        headers: fetchHeaders,
-        body: body ? JSON.stringify(body) : undefined,
-      })
+      const retryResponse = await fetchWithTimeout(
+        url,
+        {
+          method,
+          headers: fetchHeaders,
+          body: serializedBody,
+        },
+        timeoutMs,
+      )
 
       // If the response is not ok, we still want to propagate the refreshed cookies
       const finalResponse = new Response(retryResponse.body, retryResponse)
@@ -2740,6 +2765,18 @@ type GSCOrganicPositionEntry = { date: string } & Record<
   number
 >
 
+interface GSCBrandedTraffic {
+  branded: number
+  nonBranded: number
+  skipped?: false
+}
+
+interface GSCSkippedBrandedTraffic {
+  skipped: true
+  branded: null
+  nonBranded: null
+}
+
 export interface GSCDashboardResponse {
   notConnected?: boolean
   noProperty?: boolean
@@ -2760,12 +2797,10 @@ export interface GSCDashboardResponse {
   topQueries?: GSCTopQueryEntry[]
   topCountries?: GSCTopCountryEntry[]
   topDevices?: GSCTopDeviceEntry[]
-  brandedTraffic?: {
-    branded: number
-    nonBranded: number
-  }
-  impressionsByPosition?: GSCImpressionsByPositionEntry[]
-  organicPositions?: GSCOrganicPositionEntry[]
+  brandedTraffic?: GSCBrandedTraffic | GSCSkippedBrandedTraffic
+  positionAnalyticsSkipped?: boolean
+  impressionsByPosition?: GSCImpressionsByPositionEntry[] | null
+  organicPositions?: GSCOrganicPositionEntry[] | null
 }
 
 export async function getGSCDashboardServer(
@@ -2801,6 +2836,7 @@ export async function getGSCDashboardServer(
     `log/gsc-dashboard?${queryParams.toString()}`,
     {
       headers,
+      timeoutMs: 60000,
     },
   )
 }

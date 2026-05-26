@@ -56,6 +56,7 @@ import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
@@ -103,10 +104,12 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     isActiveCompare,
   } = useViewProjectContext()
   const { seoRefreshTrigger } = useRefreshTriggers()
-  const { fetchDashboard, data, isLoading } = useGSCDashboardProxy()
+  const { fetchDashboard, data, error, isLoading } = useGSCDashboardProxy()
   const {
     fetchDashboard: fetchCompareDashboard,
     data: compareData,
+    error: compareError,
+    isLoading: isCompareLoading,
     resetData: resetCompareData,
   } = useGSCDashboardProxy()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -237,6 +240,8 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
 
   const noopFilterLink = useCallback(() => '#', [])
   const gscFilters = useMemo(() => getGSCCompatibleFilters(filters), [filters])
+  const gscLoading = isLoading || isCompareLoading
+  const gscError = error || compareError
 
   const [isManualRefreshing, setIsManualRefreshing] = useState(false)
 
@@ -307,8 +312,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   const handleManualRefresh = useCallback(async () => {
     if (isManualRefreshing) return
     setIsManualRefreshing(true)
-    await loadData()
-    setIsManualRefreshing(false)
+    try {
+      await loadData()
+    } finally {
+      setIsManualRefreshing(false)
+    }
   }, [isManualRefreshing, loadData])
 
   const manualRefreshButton = useMemo(
@@ -403,10 +411,15 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [data?.topDevices],
   )
 
-  const brandedTraffic = useMemo(
-    () => data?.brandedTraffic || { branded: 0, nonBranded: 0 },
-    [data?.brandedTraffic],
-  )
+  const isBrandedTrafficSkipped = data?.brandedTraffic?.skipped === true
+
+  const brandedTraffic = useMemo(() => {
+    if (!data?.brandedTraffic || data.brandedTraffic.skipped) {
+      return { branded: 0, nonBranded: 0 }
+    }
+
+    return data.brandedTraffic
+  }, [data?.brandedTraffic])
 
   const donutChartOptions = useMemo(
     () =>
@@ -428,6 +441,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     () => data?.organicPositions || [],
     [data?.organicPositions],
   )
+
+  const isPositionAnalyticsSkipped =
+    data?.positionAnalyticsSkipped === true ||
+    data?.impressionsByPosition === null ||
+    data?.organicPositions === null
 
   const hasImpressionsByPositionData = useMemo(
     () => impressionsByPosition.some((bucket) => bucket.impressions > 0),
@@ -645,7 +663,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [t],
   )
 
-  if (isLoading && !data) {
+  if (gscLoading && !data) {
     return (
       <>
         <DashboardHeader
@@ -661,6 +679,32 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         />
         <div className='flex min-h-[400px] items-center justify-center'>
           <Loader />
+        </div>
+      </>
+    )
+  }
+
+  if (gscError && !data) {
+    return (
+      <>
+        <DashboardHeader
+          showSearchButton={false}
+          showRefreshButton={false}
+          rightContent={
+            <ProjectViewHeaderActions
+              tnMapping={tnMapping}
+              extraActions={manualRefreshButton}
+            />
+          }
+          timeBucketSelectorItems={seoPeriodPairs}
+        />
+        <div className='mx-auto flex min-h-[400px] max-w-xl flex-col items-center justify-center px-4 text-center'>
+          <Text as='h3' size='lg' weight='medium'>
+            {t('apiNotifications.somethingWentWrong')}
+          </Text>
+          <Text as='p' size='sm' colour='secondary' className='mt-2'>
+            {gscError}
+          </Text>
         </div>
       </>
     )
@@ -735,6 +779,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
       {filters.length > 0 ? (
         <Filters className='mb-3' tnMapping={tnMapping} />
       ) : null}
+      {gscLoading && data ? <LoadingBar /> : null}
 
       <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
         <div className='mb-3 flex w-full items-center justify-end gap-1 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
@@ -868,7 +913,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
               {t('project.seo.brandedTraffic')}
             </Text>
           </div>
-          {brandedTraffic.branded + brandedTraffic.nonBranded > 0 ? (
+          {isBrandedTrafficSkipped ? (
+            <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
+          ) : brandedTraffic.branded + brandedTraffic.nonBranded > 0 ? (
             <BillboardChart
               options={donutChartOptions}
               className='[&_.bb-chart-arc]:text-xs [&_.bb-chart-arcs-title]:fill-gray-900 [&_.bb-chart-arcs-title]:text-lg [&_.bb-chart-arcs-title]:font-semibold dark:[&_.bb-chart-arcs-title]:fill-gray-100'
@@ -887,7 +934,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           type='impressionsByPosition'
           contentClassName='relative flex min-h-[21rem] flex-col overflow-hidden'
         >
-          {hasImpressionsByPositionData ? (
+          {isPositionAnalyticsSkipped ? (
+            <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
+          ) : hasImpressionsByPositionData ? (
             <BillboardChart
               options={impressionsByPositionOptions}
               className='seo-impressions-position-chart min-h-72 flex-1 [&_svg]:overflow-visible!'
@@ -904,7 +953,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           type='organicPositions'
           contentClassName='relative flex min-h-[21rem] flex-col overflow-hidden'
         >
-          {hasOrganicPositions ? (
+          {isPositionAnalyticsSkipped ? (
+            <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
+          ) : hasOrganicPositions ? (
             <BillboardChart
               options={organicPositionsOptions}
               className='min-h-80 flex-1 [&_svg]:overflow-visible!'
@@ -928,7 +979,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={isLoading}
+          dataLoading={gscLoading}
           rowTooltipRenderer={seoGscRowTooltip}
           rowTooltipFollowCursor
         />
@@ -943,7 +994,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={isLoading}
+          dataLoading={gscLoading}
           rowTooltipRenderer={seoGscRowTooltip}
           rowTooltipFollowCursor
         />
@@ -998,7 +1049,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={isLoading}
+          dataLoading={gscLoading}
         />
         <Panel
           name={t('project.devices')}
@@ -1013,7 +1064,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={isLoading}
+          dataLoading={gscLoading}
         />
       </div>
     </>

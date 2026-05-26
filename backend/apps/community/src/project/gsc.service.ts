@@ -41,6 +41,7 @@ const MAX_ROW_LIMIT = 25000
 const MAX_BRANDED_PAGES = 10
 const MAX_FILTER_EXPRESSION_LENGTH = 500
 const MAX_FILTERS = 20
+const MAX_EXPENSIVE_ANALYTICS_RANGE_DAYS = 180
 
 const IMPRESSION_POSITION_BUCKETS = [
   { key: 'pos1To3', label: '1-3' },
@@ -64,6 +65,38 @@ type OrganicPositionSeriesEntry = { date: string } & Record<
   OrganicPositionBucketKey,
   number
 >
+type BrandedTrafficAnalytics = { branded: number; nonBranded: number }
+type SkippedBrandedAnalytics = {
+  skipped: true
+  branded: null
+  nonBranded: null
+}
+type PositionAnalytics = {
+  impressionsByPosition: {
+    key: ImpressionPositionBucketKey
+    label: string
+    impressions: number
+    percentage: number
+  }[]
+  organicPositions: OrganicPositionSeriesEntry[]
+}
+type SkippedPositionAnalytics = {
+  skipped: true
+  impressionsByPosition: null
+  organicPositions: null
+}
+
+const SKIPPED_BRANDED_ANALYTICS: SkippedBrandedAnalytics = {
+  skipped: true,
+  branded: null,
+  nonBranded: null,
+}
+
+const SKIPPED_POSITION_ANALYTICS: SkippedPositionAnalytics = {
+  skipped: true,
+  impressionsByPosition: null,
+  organicPositions: null,
+}
 
 const initialImpressionPositionBuckets = (): Record<
   ImpressionPositionBucketKey,
@@ -84,16 +117,6 @@ const initialOrganicPositionEntry = (
   pos11To20: 0,
   pos21To50: 0,
   pos51Plus: 0,
-})
-
-const emptyPositionAnalytics = () => ({
-  impressionsByPosition: IMPRESSION_POSITION_BUCKETS.map(({ key, label }) => ({
-    key,
-    label,
-    impressions: 0,
-    percentage: 0,
-  })),
-  organicPositions: [] as OrganicPositionSeriesEntry[],
 })
 
 const getImpressionPositionBucketKey = (
@@ -570,7 +593,7 @@ export class GSCService {
         }
       } else if (column === 'device' || column === 'dv') {
         dimension = 'device'
-        expression = expression.toLowerCase()
+        expression = expression.toUpperCase()
       } else {
         continue
       }
@@ -808,9 +831,9 @@ export class GSCService {
 
     try {
       const rows = await this.queryGSC(gsc, from, to, {
-        dimensions: isHourly ? ['HOUR'] : ['date'],
+        dimensions: isHourly ? ['hour'] : ['date'],
         rowLimit: 5000,
-        dataState: isHourly ? 'HOURLY_ALL' : 'all',
+        dataState: isHourly ? 'hourly_all' : 'all',
         dimensionFilterGroups,
       })
 
@@ -968,7 +991,7 @@ export class GSCService {
     to: string,
     filtersStr?: string,
     ctx?: GSCContext,
-  ): Promise<{ branded: number; nonBranded: number }> {
+  ): Promise<BrandedTrafficAnalytics> {
     const brandKeywords = await this.getProjectBrandKeywords(pid)
     if (_isEmpty(brandKeywords)) {
       return { branded: 0, nonBranded: 0 }
@@ -1025,15 +1048,7 @@ export class GSCService {
     to: string,
     filtersStr?: string,
     ctx?: GSCContext,
-  ): Promise<{
-    impressionsByPosition: {
-      key: ImpressionPositionBucketKey
-      label: string
-      impressions: number
-      percentage: number
-    }[]
-    organicPositions: OrganicPositionSeriesEntry[]
-  }> {
+  ): Promise<PositionAnalytics> {
     const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
 
@@ -1156,6 +1171,9 @@ export class GSCService {
     const fromDate = dayjs(from)
     const toDate = dayjs(to)
     const durationMs = toDate.diff(fromDate)
+    const rangeDays = Math.abs(toDate.diff(fromDate, 'day'))
+    const shouldLoadExpensiveAnalytics =
+      rangeDays <= MAX_EXPENSIVE_ANALYTICS_RANGE_DAYS
     const prevTo = fromDate
       .subtract(1, 'millisecond')
       .format('YYYY-MM-DD HH:mm:ss')
@@ -1181,10 +1199,16 @@ export class GSCService {
       this.getKeywords(pid, from, to, 50, 0, filtersStr, undefined, ctx),
       this.getTopCountries(pid, from, to, 50, 0, filtersStr, ctx),
       this.getTopDevices(pid, from, to, 50, 0, filtersStr, ctx),
-      this.getBrandedTraffic(pid, from, to, filtersStr, ctx),
-      this.getPositionAnalytics(pid, from, to, filtersStr, ctx).catch(() =>
-        emptyPositionAnalytics(),
-      ),
+      shouldLoadExpensiveAnalytics
+        ? this.getBrandedTraffic(pid, from, to, filtersStr, ctx).catch(
+            () => SKIPPED_BRANDED_ANALYTICS,
+          )
+        : Promise.resolve(SKIPPED_BRANDED_ANALYTICS),
+      shouldLoadExpensiveAnalytics
+        ? this.getPositionAnalytics(pid, from, to, filtersStr, ctx).catch(
+            () => SKIPPED_POSITION_ANALYTICS,
+          )
+        : Promise.resolve(SKIPPED_POSITION_ANALYTICS),
     ])
 
     return {
@@ -1197,6 +1221,7 @@ export class GSCService {
       topCountries,
       topDevices,
       brandedTraffic,
+      positionAnalyticsSkipped: 'skipped' in positionAnalytics,
       impressionsByPosition: positionAnalytics.impressionsByPosition,
       organicPositions: positionAnalytics.organicPositions,
     }

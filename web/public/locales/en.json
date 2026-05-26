@@ -1783,6 +1783,7 @@
       "brandedTraffic": "Branded traffic",
       "others": "Others",
       "noBrandData": "No query data",
+      "analyticsSkipped": "Skipped for this date range",
       "impressionsByPosition": "Impressions by position",
       "organicPositions": "Organic positions",
       "allPositions": "All positions",
