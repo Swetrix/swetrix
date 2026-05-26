@@ -70,8 +70,8 @@ const HotkeysList = ({ title, hotkeys }: HotkeysListProps) => (
     <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-700'>
       <caption className='sr-only'>{title}</caption>
       <thead>
-        <tr>
-          <th scope='colgroup' colSpan={2} className='pb-2 text-left'>
+        <tr aria-label={title}>
+          <th colSpan={2} className='pb-2 text-left'>
             <Text as='span' size='base' weight='semibold'>
               {title}
             </Text>

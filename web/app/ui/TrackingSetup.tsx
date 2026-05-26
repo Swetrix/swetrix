@@ -560,6 +560,9 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
                   url: (
                     <a
                       href={`${DOCS_URL}/install-script`}
+                      aria-label={t(
+                        'ariaLabels.openTrackingSetupDocumentation',
+                      )}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='font-medium underline decoration-dashed hover:decoration-solid'

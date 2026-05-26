@@ -99,13 +99,16 @@ function CopyButton({
   value,
   className,
   title,
+  'aria-label': ariaLabel,
 }: {
   value: string
   className?: string
   title?: string
+  'aria-label'?: string
 }) {
   const { t } = useTranslation('common')
   const [copied, setCopied] = useState(false)
+  const label = ariaLabel ?? title ?? t('project.settings.proxy.copy')
 
   const onCopy = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -124,16 +127,17 @@ function CopyButton({
     <button
       type='button'
       onClick={onCopy}
-      title={title ?? t('project.settings.proxy.copy')}
+      title={title ?? label}
+      aria-label={label}
       className={cx(
         'inline-flex items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200',
         className,
       )}
     >
       {copied ? (
-        <CheckIcon className='size-4 text-emerald-500' />
+        <CheckIcon className='size-4 text-emerald-500' aria-hidden='true' />
       ) : (
-        <CopyIcon className='size-4' />
+        <CopyIcon className='size-4' aria-hidden='true' />
       )}
     </button>
   )
@@ -191,7 +195,7 @@ function DnsRecordTable({ domain }: { domain: ProxyDomain }) {
           </tr>
         </thead>
         <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
-          <tr>
+          <tr aria-label={t('ariaLabels.dnsRecord')}>
             <td className='px-3 py-2.5'>
               <Text as='span' size='sm' colour='primary' className='font-mono'>
                 CNAME
@@ -209,6 +213,7 @@ function DnsRecordTable({ domain }: { domain: ProxyDomain }) {
                 </Text>
                 <CopyButton
                   value={domain.hostname}
+                  aria-label={t('project.settings.proxy.copy')}
                   className='size-6 shrink-0'
                 />
               </div>
@@ -225,6 +230,7 @@ function DnsRecordTable({ domain }: { domain: ProxyDomain }) {
                 </Text>
                 <CopyButton
                   value={domain.proxyTarget}
+                  aria-label={t('project.settings.proxy.copy')}
                   className='size-6 shrink-0'
                 />
               </div>

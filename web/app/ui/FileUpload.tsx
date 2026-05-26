@@ -1,5 +1,6 @@
 import { useCallback, useId, useRef, useState } from 'react'
 import { UploadIcon, SpinnerIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 
 import { cn } from '~/utils/generic'
 
@@ -30,6 +31,7 @@ export default function FileUpload({
   hint,
   className,
 }: FileUploadProps) {
+  const { t } = useTranslation('common')
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
@@ -134,6 +136,9 @@ export default function FileUpload({
           accept={accept}
           multiple={multiple}
           disabled={isDisabled}
+          aria-label={
+            typeof label === 'string' ? label : t('ariaLabels.uploadFile')
+          }
           aria-describedby={showHint ? hintId : undefined}
           onChange={handleChange}
         />

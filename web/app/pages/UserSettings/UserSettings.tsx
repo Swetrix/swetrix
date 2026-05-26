@@ -1064,7 +1064,10 @@ const UserSettings = () => {
                                 >
                                   {t('profileSettings.sharedTable.joinedOn')}
                                 </th>
-                                <th scope='col' />
+                                <th
+                                  scope='col'
+                                  aria-label={t('ariaLabels.actions')}
+                                />
                               </tr>
                             </thead>
                             <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
@@ -1117,7 +1120,10 @@ const UserSettings = () => {
                                 >
                                   {t('profileSettings.sharedTable.joinedOn')}
                                 </th>
-                                <th scope='col' />
+                                <th
+                                  scope='col'
+                                  aria-label={t('ariaLabels.actions')}
+                                />
                               </tr>
                             </thead>
                             <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
@@ -1163,7 +1169,10 @@ const UserSettings = () => {
                                     'profileSettings.organisationsTable.joinedOn',
                                   )}
                                 </th>
-                                <th scope='col' />
+                                <th
+                                  scope='col'
+                                  aria-label={t('ariaLabels.actions')}
+                                />
                               </tr>
                             </thead>
                             <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>

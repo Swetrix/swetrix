@@ -8,6 +8,7 @@ import {
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import React, { memo, Fragment, Key } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { cn } from '~/utils/generic'
 import { CaretDownIcon } from '@phosphor-icons/react'
@@ -62,6 +63,8 @@ function Dropdown<T>({
   loading,
   position = 'down',
 }: DropdownProps<T>) {
+  const { t } = useTranslation('common')
+
   return (
     <Menu as='div' className={cn('relative inline-block text-left', className)}>
       {({ open, close }) => (
@@ -147,7 +150,7 @@ function Dropdown<T>({
               {loading ? (
                 <div className='flex items-center justify-center px-4 py-3'>
                   <Spin className='mr-0! ml-0!' />
-                  <span className='sr-only'>Loading...</span>
+                  <span className='sr-only'>{t('common.loading')}</span>
                 </div>
               ) : (
                 _map(items, (item) => (

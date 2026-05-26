@@ -740,11 +740,10 @@ const AssistantMessage = ({
       followUps &&
       followUps.length > 0 &&
       onFollowUpClick ? (
-        <div
-          role='group'
-          aria-label={t('project.askAi.followUps.title')}
-          className='mt-4 border-t border-gray-200/80 dark:border-slate-800/80'
-        >
+        <fieldset className='mt-4 border-t border-gray-200/80 p-0 dark:border-slate-800/80'>
+          <legend className='sr-only'>
+            {t('project.askAi.followUps.title')}
+          </legend>
           {_map(followUps, (suggestion, idx) => (
             <button
               key={`${idx}-${suggestion}`}
@@ -759,7 +758,7 @@ const AssistantMessage = ({
               />
             </button>
           ))}
-        </div>
+        </fieldset>
       ) : null}
 
       {!isStreaming && hasContent ? (
@@ -887,6 +886,7 @@ const UserMessage = ({
         <div className='w-full max-w-[85%] rounded-2xl border border-gray-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900'>
           <textarea
             ref={editRef}
+            aria-label={t('project.askAi.editMessage')}
             value={draft}
             onChange={(e) => {
               setDraft(e.target.value)
@@ -1374,6 +1374,7 @@ const TagEditor = ({
         <input
           ref={inputRef}
           type='text'
+          aria-label={t('project.askAi.tagPlaceholder')}
           value={input}
           onChange={(e) => {
             setInput(e.target.value)
@@ -1504,6 +1505,7 @@ const ChatRow = ({
             <input
               ref={nameInputRef}
               type='text'
+              aria-label={t('project.askAi.renameChatPlaceholder')}
               value={nameDraft}
               maxLength={200}
               onChange={(e) => setNameDraft(e.target.value)}

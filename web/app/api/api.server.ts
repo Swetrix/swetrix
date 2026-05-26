@@ -2396,7 +2396,7 @@ export async function generateSSOAuthURLServer(
 
 export type { SSOHashSuccessResponse, SSOHashResponse } from '~/lib/models/Auth'
 
-import type { SSOHashSuccessResponse, SSOHashResponse } from '~/lib/models/Auth'
+import type { SSOHashResponse } from '~/lib/models/Auth'
 import { Stats } from '~/lib/models/Stats'
 
 export async function getJWTBySSOHashServer(

@@ -56,6 +56,7 @@ const CurrentTime = () => {
                 ) : (
                   <a
                     href={isAuthenticated ? '/user-settings' : '/login'}
+                    aria-label={t('ariaLabels.openTimezoneSettings')}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='border-b border-dashed border-gray-500 hover:border-solid hover:text-gray-900 dark:hover:text-white'

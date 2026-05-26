@@ -472,6 +472,7 @@ const OpenStartup = ({ stats }: OpenStartupProps) => {
               livedemo: (
                 <a
                   href={LIVE_DEMO_URL}
+                  aria-label={t('ariaLabels.openLiveDemo')}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='font-medium underline decoration-dashed hover:decoration-solid'

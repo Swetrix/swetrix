@@ -101,11 +101,8 @@ const Testimonials = ({ className }: { className?: string }) => {
         ))}
       </div>
       <div className='mt-1 flex flex-col items-center justify-center gap-1 md:items-start'>
-        <div
-          className='relative inline-flex'
-          role='img'
-          aria-label='5 out of 5 stars'
-        >
+        <div className='relative inline-flex'>
+          <span className='sr-only'>{t('ariaLabels.fiveOutOfFiveStars')}</span>
           <StarIcon
             className='size-5 text-yellow-500'
             aria-hidden='true'

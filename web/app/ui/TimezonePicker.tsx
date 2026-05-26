@@ -439,7 +439,7 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
             setSearchValue(event.target.value)
           }}
           onKeyDown={handleInputKeyDown}
-          aria-expanded={isOpen}
+          aria-label={t('profileSettings.timezone')}
           aria-controls={listboxId}
           aria-activedescendant={
             isOpen && filteredOptions[activeIndex]
@@ -470,7 +470,6 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
         <div className='absolute z-50 mt-1 w-full min-w-[200px] overflow-hidden rounded-md bg-white text-sm ring-1 ring-gray-200 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-800'>
           <div
             id={listboxId}
-            role='listbox'
             aria-label={t('profileSettings.timezone')}
             className='max-h-80 overflow-auto py-1'
           >
@@ -484,8 +483,7 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
                     id={`${listboxId}-option-${index}`}
                     key={option.value}
                     type='button'
-                    role='option'
-                    aria-selected={selected}
+                    aria-pressed={selected}
                     onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => handleSelect(option)}
                     className={cx(

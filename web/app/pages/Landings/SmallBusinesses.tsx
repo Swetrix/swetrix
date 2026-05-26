@@ -172,6 +172,7 @@ const SmallBusinesses = () => {
                       integrationLink: (
                         <a
                           href={INTEGRATIONS_URL}
+                          aria-label={t('ariaLabels.openIntegrations')}
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-blue-600 hover:underline dark:text-blue-500'
@@ -180,6 +181,7 @@ const SmallBusinesses = () => {
                       discordUrl: (
                         <a
                           href={DISCORD_URL}
+                          aria-label={t('ariaLabels.openSwetrixDiscord')}
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-blue-600 hover:underline dark:text-blue-500'
@@ -188,6 +190,7 @@ const SmallBusinesses = () => {
                       twitterUrl: (
                         <a
                           href={TWITTER_URL}
+                          aria-label={t('ariaLabels.openSwetrixOnX')}
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-blue-600 hover:underline dark:text-blue-500'

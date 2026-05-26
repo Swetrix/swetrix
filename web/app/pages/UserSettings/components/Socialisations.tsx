@@ -194,7 +194,11 @@ const Socialisations = () => {
             >
               {t('common.status')}
             </th>
-            <th scope='col' className='px-4 py-3' />
+            <th
+              scope='col'
+              aria-label={t('ariaLabels.actions')}
+              className='px-4 py-3'
+            />
           </tr>
         </thead>
         <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
@@ -206,15 +210,25 @@ const Socialisations = () => {
             return (
               <tr
                 key={key}
+                aria-label={name}
                 className='hover:bg-gray-50 dark:hover:bg-slate-900/50'
               >
-                <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
+                <td
+                  aria-label={name}
+                  className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'
+                >
                   <div className='flex items-center gap-3'>
                     <div className='hidden shrink-0 sm:block'>
                       {theme === 'dark' ? (
-                        <Light className='h-9 w-9 rounded-md' />
+                        <Light
+                          className='h-9 w-9 rounded-md'
+                          aria-hidden='true'
+                        />
                       ) : (
-                        <Dark className='h-9 w-9 rounded-md' />
+                        <Dark
+                          className='h-9 w-9 rounded-md'
+                          aria-hidden='true'
+                        />
                       )}
                     </div>
                     <span className='font-medium'>{name}</span>

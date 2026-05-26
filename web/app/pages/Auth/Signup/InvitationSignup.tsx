@@ -208,6 +208,7 @@ const InvitationSignup = () => {
                     db: (
                       <a
                         href={HAVE_I_BEEN_PWNED_URL}
+                        aria-label={t('ariaLabels.openHaveIBeenPwned')}
                         className='font-medium underline decoration-dashed hover:decoration-solid'
                         target='_blank'
                         rel='noreferrer noopener'

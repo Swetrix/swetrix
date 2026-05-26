@@ -422,7 +422,7 @@ const People = ({ project }: PeopleProps) => {
                   >
                     {t('profileSettings.sharedTable.joinedOn')}
                   </th>
-                  <th scope='col' />
+                  <th scope='col' aria-label={t('ariaLabels.actions')} />
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
