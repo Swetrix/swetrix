@@ -5800,18 +5800,18 @@ export class AnalyticsService {
       ),
       sessions_enriched AS (
         SELECT
-          dsf.psidCasted,
-          dsf.pid,
-          dsf.cc,
-          dsf.os,
-          dsf.br,
+          dsf.psidCasted AS psidCasted,
+          dsf.pid AS pid,
+          dsf.cc AS cc,
+          dsf.os AS os,
+          dsf.br AS br,
           COALESCE(pc.count, 0) AS pageviews,
           COALESCE(ec.count, 0) AS customEvents,
           COALESCE(errc.count, 0) AS errors,
           toFloat64(COALESCE(rt.revenue, toDecimal64(0, 4))) AS revenue,
           toFloat64(COALESCE(rt.refunds, toDecimal64(0, 4))) AS refunds,
-          dsf.sessionStart,
-          dsf.lastActivity,
+          dsf.sessionStart AS sessionStart,
+          dsf.lastActivity AS lastActivity,
           sda.avg_duration AS sdur,
           coalesce(nullIf(sda.profileId, ''), dsf.profileId) AS profileId
         FROM distinct_sessions_filtered dsf
