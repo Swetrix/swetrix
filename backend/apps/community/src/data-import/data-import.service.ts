@@ -21,6 +21,8 @@ const IMPORT_CREATE_LOCK_TTL_MS = 10_000
 const IMPORT_CREATE_LOCK_WAIT_MS = 5_000
 const IMPORT_CREATE_LOCK_RETRY_MS = 100
 const CLICKHOUSE_DATE_TIME_REGEX = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/
+const ISO_DATE_TIME_REGEX =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/
 
 function formatClickHouseDateTime(value: Date | string): string {
   if (value instanceof Date) {
@@ -31,12 +33,14 @@ function formatClickHouseDateTime(value: Date | string): string {
     return value
   }
 
-  const date = new Date(value)
-  if (!Number.isNaN(date.getTime())) {
-    return date.toISOString().replace('T', ' ').replace('Z', '').slice(0, 19)
+  if (ISO_DATE_TIME_REGEX.test(value)) {
+    const date = new Date(value)
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString().replace('T', ' ').replace('Z', '').slice(0, 19)
+    }
   }
 
-  return value.replace('T', ' ').replace(/Z$/, '').slice(0, 19)
+  throw new Error('Invalid datetime input')
 }
 
 function formatNullableClickHouseDateTime(
