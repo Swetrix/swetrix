@@ -80,7 +80,7 @@
     "pricing": "Pricing",
     "loading": "Loading...",
     "accountSettings": "Account settings",
-    "liveDemo": "Live demo",
+    "liveDemo": "View live demo",
     "dashboard": "Dashboard",
     "logout": "Logout",
     "save": "Save",
@@ -613,7 +613,8 @@
       "dataOwnership": "100% data ownership",
       "openSource": "Open-source",
       "selfHostable": "Self-hostable",
-      "quickSetup": "Quick setup"
+      "quickSetup": "Quick setup",
+      "realTimeDashboard": "Real-time dashboard"
     },
     "integrations": {
       "title": "Works with the tools you already use",

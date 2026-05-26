@@ -1,8 +1,6 @@
 import _map from 'lodash/map'
 import {
   CookieIcon,
-  HardDrivesIcon,
-  DatabaseIcon,
   GaugeIcon,
   GithubLogoIcon,
   ArrowRightIcon,
@@ -355,7 +353,7 @@ const Hero = () => {
             <Text
               as='p'
               size='lg'
-              className='mx-auto mt-5 max-w-3xl text-center leading-8 text-white/80'
+              className='mx-auto mt-5 max-w-3xl text-center leading-8 text-gray-50'
             >
               {t('main.description')}
             </Text>
@@ -384,30 +382,22 @@ const Hero = () => {
                 {t('common.liveDemo')}
               </Button>
             </div>
-            <div className='mt-8 flex max-w-4xl flex-wrap justify-center gap-x-16 gap-y-3 text-white'>
-              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
-                <StarIcon className='size-5 shrink-0' />
-                <span>{t('main.heroBenefits.trial', { days: 14 })}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
+            <div className='mt-8 flex max-w-4xl flex-wrap justify-center gap-x-16 gap-y-3 text-gray-50'>
+              <div className='flex items-center gap-2 text-sm whitespace-nowrap'>
                 <GaugeIcon className='size-5 shrink-0' />
                 <span>{t('main.heroBenefits.quickSetup')}</span>
               </div>
-              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
+              <div className='flex items-center gap-2 text-sm whitespace-nowrap'>
                 <CookieIcon className='size-5 shrink-0' />
                 <span>{t('main.heroBenefits.cookieless')}</span>
               </div>
-              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
+              <div className='flex items-center gap-2 text-sm whitespace-nowrap'>
+                <StarIcon className='size-5 shrink-0' />
+                <span>{t('main.heroBenefits.realTimeDashboard')}</span>
+              </div>
+              <div className='flex items-center gap-2 text-sm whitespace-nowrap'>
                 <GithubLogoIcon className='size-5 shrink-0' />
                 <span>{t('main.heroBenefits.openSource')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
-                <DatabaseIcon className='size-5 shrink-0' />
-                <span>{t('main.heroBenefits.dataOwnership')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm whitespace-nowrap'>
-                <HardDrivesIcon className='size-5 shrink-0' />
-                <span>{t('main.heroBenefits.selfHostable')}</span>
               </div>
             </div>
             <Testimonials className='dark mt-8' stats={stats} />
