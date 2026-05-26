@@ -5,6 +5,10 @@ interface ParsedIp {
   bytes: number[]
 }
 
+interface ParseIpOptions {
+  preserveIPv4Mapped?: boolean
+}
+
 const parseIPv4 = (address: string): number[] | null => {
   const parts = address.split('.')
   if (parts.length !== 4) return null
@@ -75,7 +79,10 @@ const isIPv4MappedIPv6 = (bytes: number[]): boolean => {
   )
 }
 
-const parseIp = (address: string): ParsedIp | null => {
+const parseIp = (
+  address: string,
+  options: ParseIpOptions = {},
+): ParsedIp | null => {
   const version = isIP(address)
 
   if (version === 4) {
@@ -86,7 +93,7 @@ const parseIp = (address: string): ParsedIp | null => {
   if (version === 6) {
     const bytes = parseIPv6Bytes(address)
     if (!bytes) return null
-    if (isIPv4MappedIPv6(bytes)) {
+    if (isIPv4MappedIPv6(bytes) && !options.preserveIPv4Mapped) {
       return { version: 4, bytes: bytes.slice(12) }
     }
     return { version: 6, bytes }
@@ -123,7 +130,10 @@ const matchesSingleRange = (address: string, range: string): boolean => {
   const target = parseIp(address)
   if (!target) return false
 
-  const [rangeAddress, prefixText] = range.split('/')
+  const rangeParts = range.split('/')
+  if (rangeParts.length > 2) return false
+
+  const [rangeAddress, prefixText] = rangeParts
   const parsedRange = parseIp(rangeAddress)
   if (!parsedRange) return false
 
@@ -136,7 +146,16 @@ const matchesSingleRange = (address: string, range: string): boolean => {
   }
 
   if (!/^\d+$/.test(prefixText)) return false
-  return matchesPrefix(target, parsedRange, Number(prefixText))
+  if (matchesPrefix(target, parsedRange, Number(prefixText))) return true
+
+  const targetAsIPv6 = parseIp(address, { preserveIPv4Mapped: true })
+  const rangeAsIPv6 = parseIp(rangeAddress, { preserveIPv4Mapped: true })
+
+  return !!(
+    targetAsIPv6 &&
+    rangeAsIPv6 &&
+    matchesPrefix(targetAsIPv6, rangeAsIPv6, Number(prefixText))
+  )
 }
 
 export const isIpInRange = (
