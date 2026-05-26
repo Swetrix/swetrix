@@ -20,6 +20,38 @@ const IMPORT_IN_PROGRESS_ERROR =
 const IMPORT_CREATE_LOCK_TTL_MS = 10_000
 const IMPORT_CREATE_LOCK_WAIT_MS = 5_000
 const IMPORT_CREATE_LOCK_RETRY_MS = 100
+const CLICKHOUSE_DATE_TIME_REGEX = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/
+const ISO_DATE_TIME_REGEX =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/
+
+function formatClickHouseDateTime(value: Date | string): string {
+  if (value instanceof Date) {
+    return value.toISOString().replace('T', ' ').replace('Z', '').slice(0, 19)
+  }
+
+  if (CLICKHOUSE_DATE_TIME_REGEX.test(value)) {
+    return value
+  }
+
+  if (ISO_DATE_TIME_REGEX.test(value)) {
+    const date = new Date(value)
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString().replace('T', ' ').replace('Z', '').slice(0, 19)
+    }
+  }
+
+  throw new Error('Invalid datetime input')
+}
+
+function formatNullableClickHouseDateTime(
+  value: Date | string | null | undefined,
+): string | null {
+  if (!value) {
+    return null
+  }
+
+  return formatClickHouseDateTime(value)
+}
 
 @Injectable()
 export class DataImportService {
@@ -115,11 +147,7 @@ export class DataImportService {
 
       const id = await this.getNextId(projectId)
 
-      const now = new Date()
-        .toISOString()
-        .replace('T', ' ')
-        .replace('Z', '')
-        .slice(0, 19)
+      const now = formatClickHouseDateTime(new Date())
 
       await clickhouse.insert({
         table: `${CLICKHOUSE_DB}.data_import`,
@@ -219,6 +247,12 @@ export class DataImportService {
           ...updates,
           id,
           projectId,
+          createdAt: formatClickHouseDateTime(
+            updates.createdAt ?? existing.createdAt,
+          ),
+          finishedAt: formatNullableClickHouseDateTime(
+            updates.finishedAt ?? existing.finishedAt,
+          ),
           version: nextVersion,
         },
       ],
@@ -243,11 +277,7 @@ export class DataImportService {
       dateTo: string | null
     },
   ): Promise<void> {
-    const now = new Date()
-      .toISOString()
-      .replace('T', ' ')
-      .replace('Z', '')
-      .slice(0, 19)
+    const now = formatClickHouseDateTime(new Date())
     await this.updateStatus(id, projectId, {
       status: DataImportStatus.COMPLETED,
       importedRows: stats.importedRows,
@@ -264,11 +294,7 @@ export class DataImportService {
     projectId: string,
     errorMessage: string,
   ): Promise<void> {
-    const now = new Date()
-      .toISOString()
-      .replace('T', ' ')
-      .replace('Z', '')
-      .slice(0, 19)
+    const now = formatClickHouseDateTime(new Date())
     await this.updateStatus(id, projectId, {
       status: DataImportStatus.FAILED,
       errorMessage,
