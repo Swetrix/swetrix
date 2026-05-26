@@ -411,10 +411,15 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [data?.topDevices],
   )
 
-  const brandedTraffic = useMemo(
-    () => data?.brandedTraffic || { branded: 0, nonBranded: 0 },
-    [data?.brandedTraffic],
-  )
+  const isBrandedTrafficSkipped = data?.brandedTraffic?.skipped === true
+
+  const brandedTraffic = useMemo(() => {
+    if (!data?.brandedTraffic || data.brandedTraffic.skipped) {
+      return { branded: 0, nonBranded: 0 }
+    }
+
+    return data.brandedTraffic
+  }, [data?.brandedTraffic])
 
   const donutChartOptions = useMemo(
     () =>
@@ -436,6 +441,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     () => data?.organicPositions || [],
     [data?.organicPositions],
   )
+
+  const isPositionAnalyticsSkipped =
+    data?.positionAnalyticsSkipped === true ||
+    data?.impressionsByPosition === null ||
+    data?.organicPositions === null
 
   const hasImpressionsByPositionData = useMemo(
     () => impressionsByPosition.some((bucket) => bucket.impressions > 0),
@@ -903,7 +913,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
               {t('project.seo.brandedTraffic')}
             </Text>
           </div>
-          {brandedTraffic.branded + brandedTraffic.nonBranded > 0 ? (
+          {isBrandedTrafficSkipped ? (
+            <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
+          ) : brandedTraffic.branded + brandedTraffic.nonBranded > 0 ? (
             <BillboardChart
               options={donutChartOptions}
               className='[&_.bb-chart-arc]:text-xs [&_.bb-chart-arcs-title]:fill-gray-900 [&_.bb-chart-arcs-title]:text-lg [&_.bb-chart-arcs-title]:font-semibold dark:[&_.bb-chart-arcs-title]:fill-gray-100'
@@ -922,7 +934,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           type='impressionsByPosition'
           contentClassName='relative flex min-h-[21rem] flex-col overflow-hidden'
         >
-          {hasImpressionsByPositionData ? (
+          {isPositionAnalyticsSkipped ? (
+            <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
+          ) : hasImpressionsByPositionData ? (
             <BillboardChart
               options={impressionsByPositionOptions}
               className='seo-impressions-position-chart min-h-72 flex-1 [&_svg]:overflow-visible!'
@@ -939,7 +953,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           type='organicPositions'
           contentClassName='relative flex min-h-[21rem] flex-col overflow-hidden'
         >
-          {hasOrganicPositions ? (
+          {isPositionAnalyticsSkipped ? (
+            <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
+          ) : hasOrganicPositions ? (
             <BillboardChart
               options={organicPositionsOptions}
               className='min-h-80 flex-1 [&_svg]:overflow-visible!'

@@ -65,6 +65,38 @@ type OrganicPositionSeriesEntry = { date: string } & Record<
   OrganicPositionBucketKey,
   number
 >
+type BrandedTrafficAnalytics = { branded: number; nonBranded: number }
+type SkippedBrandedAnalytics = {
+  skipped: true
+  branded: null
+  nonBranded: null
+}
+type PositionAnalytics = {
+  impressionsByPosition: {
+    key: ImpressionPositionBucketKey
+    label: string
+    impressions: number
+    percentage: number
+  }[]
+  organicPositions: OrganicPositionSeriesEntry[]
+}
+type SkippedPositionAnalytics = {
+  skipped: true
+  impressionsByPosition: null
+  organicPositions: null
+}
+
+const SKIPPED_BRANDED_ANALYTICS: SkippedBrandedAnalytics = {
+  skipped: true,
+  branded: null,
+  nonBranded: null,
+}
+
+const SKIPPED_POSITION_ANALYTICS: SkippedPositionAnalytics = {
+  skipped: true,
+  impressionsByPosition: null,
+  organicPositions: null,
+}
 
 const initialImpressionPositionBuckets = (): Record<
   ImpressionPositionBucketKey,
@@ -85,16 +117,6 @@ const initialOrganicPositionEntry = (
   pos11To20: 0,
   pos21To50: 0,
   pos51Plus: 0,
-})
-
-const emptyPositionAnalytics = () => ({
-  impressionsByPosition: IMPRESSION_POSITION_BUCKETS.map(({ key, label }) => ({
-    key,
-    label,
-    impressions: 0,
-    percentage: 0,
-  })),
-  organicPositions: [] as OrganicPositionSeriesEntry[],
 })
 
 const getImpressionPositionBucketKey = (
@@ -908,7 +930,7 @@ export class GSCService {
     to: string,
     filtersStr?: string,
     ctx?: GSCContext,
-  ): Promise<{ branded: number; nonBranded: number }> {
+  ): Promise<BrandedTrafficAnalytics> {
     const brandKeywords = await this.getProjectBrandKeywords(pid)
     if (_isEmpty(brandKeywords)) {
       return { branded: 0, nonBranded: 0 }
@@ -965,15 +987,7 @@ export class GSCService {
     to: string,
     filtersStr?: string,
     ctx?: GSCContext,
-  ): Promise<{
-    impressionsByPosition: {
-      key: ImpressionPositionBucketKey
-      label: string
-      impressions: number
-      percentage: number
-    }[]
-    organicPositions: OrganicPositionSeriesEntry[]
-  }> {
+  ): Promise<PositionAnalytics> {
     const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
 
@@ -1121,16 +1135,15 @@ export class GSCService {
       this.getTopCountries(pid, from, to, 50, 0, filtersStr, ctx),
       this.getTopDevices(pid, from, to, 50, 0, filtersStr, ctx),
       shouldLoadExpensiveAnalytics
-        ? this.getBrandedTraffic(pid, from, to, filtersStr, ctx).catch(() => ({
-            branded: 0,
-            nonBranded: 0,
-          }))
-        : Promise.resolve({ branded: 0, nonBranded: 0 }),
-      shouldLoadExpensiveAnalytics
-        ? this.getPositionAnalytics(pid, from, to, filtersStr, ctx).catch(() =>
-            emptyPositionAnalytics(),
+        ? this.getBrandedTraffic(pid, from, to, filtersStr, ctx).catch(
+            () => SKIPPED_BRANDED_ANALYTICS,
           )
-        : Promise.resolve(emptyPositionAnalytics()),
+        : Promise.resolve(SKIPPED_BRANDED_ANALYTICS),
+      shouldLoadExpensiveAnalytics
+        ? this.getPositionAnalytics(pid, from, to, filtersStr, ctx).catch(
+            () => SKIPPED_POSITION_ANALYTICS,
+          )
+        : Promise.resolve(SKIPPED_POSITION_ANALYTICS),
     ])
 
     return {
@@ -1143,6 +1156,7 @@ export class GSCService {
       topCountries,
       topDevices,
       brandedTraffic,
+      positionAnalyticsSkipped: 'skipped' in positionAnalytics,
       impressionsByPosition: positionAnalytics.impressionsByPosition,
       organicPositions: positionAnalytics.organicPositions,
     }
