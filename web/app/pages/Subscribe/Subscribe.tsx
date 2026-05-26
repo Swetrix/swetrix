@@ -4,6 +4,7 @@ import {
   CreditCardIcon,
   CheckIcon,
   StarIcon,
+  ArrowRightIcon,
 } from '@phosphor-icons/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -431,12 +432,13 @@ const Subscribe = () => {
             ) : (
               <Button
                 size='xl'
-                className='w-full justify-center'
+                className='flex w-full items-center justify-center gap-1'
                 onClick={handleStartCheckout}
                 loading={generatePayLinkFetcher.state !== 'idle'}
                 disabled={generatePayLinkFetcher.state !== 'idle'}
               >
-                {t('checkout.next')}
+                <span>{t('checkout.next')}</span>
+                <ArrowRightIcon className='size-4 translate-y-px' />
               </Button>
             )}
           </div>
