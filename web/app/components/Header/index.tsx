@@ -115,7 +115,7 @@ const getCallsToAction = (t: typeof i18nextT) => [
   },
 ]
 
-const SolutionsMenu = () => {
+const SolutionsMenu = ({ inverted }: { inverted?: boolean }) => {
   const { t } = useTranslation('common')
   const solutions = getSolutions(t)
   const ctas = getCallsToAction(t)
@@ -148,7 +148,10 @@ const SolutionsMenu = () => {
     >
       <button
         type='button'
-        className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
+        className={cn(
+          'underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold focus:outline-hidden',
+          inverted ? 'text-white' : 'text-slate-800 dark:text-white',
+        )}
       >
         <span>{t('header.solutions.title')}</span>
         <CaretDownIcon
@@ -270,9 +273,11 @@ const SolutionsMenu = () => {
 const ProfileMenu = ({
   logoutHandler,
   openFeedback,
+  inverted,
 }: {
   logoutHandler: () => void
   openFeedback: () => void
+  inverted?: boolean
 }) => {
   const { user } = useAuth()
   const {
@@ -285,7 +290,12 @@ const ProfileMenu = ({
       {({ open }) => (
         <>
           <div>
-            <MenuButton className='underline-animate flex items-center justify-center text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
+            <MenuButton
+              className={cn(
+                'underline-animate flex items-center justify-center text-base leading-6 font-semibold focus:outline-hidden',
+                inverted ? 'text-white' : 'text-slate-800 dark:text-white',
+              )}
+            >
               <span>{t('common.account')}</span>
               <CaretDownIcon
                 className={cx(
@@ -469,18 +479,29 @@ const ProfileMenu = ({
   )
 }
 
-const Separator = () => (
-  <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
+const Separator = ({ inverted }: { inverted?: boolean }) => (
+  <svg
+    viewBox='0 0 2 2'
+    className={cn(
+      'h-0.5 w-0.5 flex-none',
+      inverted ? 'fill-white/70' : 'fill-gray-400',
+    )}
+  >
     <circle cx={1} cy={1} r={1} />
   </svg>
 )
 
-const CommunityLinks = () => {
+const CommunityLinks = ({ inverted }: { inverted?: boolean }) => {
   return (
     <span className='flex items-center gap-2'>
       <a
         href={DISCORD_URL}
-        className='inline-flex items-center rounded-md p-1 text-indigo-600 transition-colors hover:text-indigo-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900/60 dark:text-indigo-400 dark:hover:text-indigo-100 dark:focus-visible:ring-slate-300/60'
+        className={cn(
+          'inline-flex items-center rounded-md p-1 transition-colors focus:outline-hidden focus-visible:ring-2',
+          inverted
+            ? 'text-white/85 hover:text-white focus-visible:ring-white/70'
+            : 'text-indigo-600 hover:text-indigo-500 focus-visible:ring-slate-900/60 dark:text-indigo-400 dark:hover:text-indigo-100 dark:focus-visible:ring-slate-300/60',
+        )}
         target='_blank'
         rel='noreferrer noopener'
       >
@@ -493,7 +514,12 @@ const CommunityLinks = () => {
       </a>
       <a
         href={GITHUB_URL}
-        className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900/60 dark:text-gray-200 dark:hover:text-white dark:focus-visible:ring-slate-300/60'
+        className={cn(
+          'inline-flex items-center rounded-md p-1 transition-colors focus:outline-hidden focus-visible:ring-2',
+          inverted
+            ? 'text-white/85 hover:text-white focus-visible:ring-white/70'
+            : 'text-slate-700 hover:text-slate-500 focus-visible:ring-slate-900/60 dark:text-gray-200 dark:hover:text-white dark:focus-visible:ring-slate-300/60',
+        )}
         target='_blank'
         rel='noreferrer noopener'
       >
@@ -513,11 +539,13 @@ const AuthedHeader = ({
   colourBackground,
   openMenu,
   openFeedback,
+  inverted,
 }: {
   logoutHandler: () => void
   colourBackground: boolean
   openMenu: () => void
   openFeedback: () => void
+  inverted?: boolean
 }) => {
   const { t } = useTranslation('common')
 
@@ -533,16 +561,19 @@ const AuthedHeader = ({
           <div className='flex items-center'>
             {/* Logo */}
             <Link to={routes.main}>
-              <SwetrixLogo />
+              <SwetrixLogo theme={inverted ? 'dark' : undefined} />
             </Link>
 
             <div className='ml-10 hidden gap-4 space-x-1 lg:flex'>
               {!isSelfhosted && !isDisableMarketingPages ? (
-                <SolutionsMenu />
+                <SolutionsMenu inverted={inverted} />
               ) : null}
               <a
                 href={DOCS_URL}
-                className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
+                className={cn(
+                  'underline-animate text-base leading-6 font-semibold focus:outline-hidden',
+                  inverted ? 'text-white' : 'text-slate-800 dark:text-white',
+                )}
                 target='_blank'
                 rel='noreferrer noopener'
               >
@@ -550,24 +581,33 @@ const AuthedHeader = ({
               </a>
               <Link
                 to={routes.dashboard}
-                className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
+                className={cn(
+                  'underline-animate text-base leading-6 font-semibold focus:outline-hidden',
+                  inverted ? 'text-white' : 'text-slate-800 dark:text-white',
+                )}
               >
                 {t('common.dashboard')}
               </Link>
             </div>
           </div>
           <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-2'>
-            <CommunityLinks />
+            <CommunityLinks inverted={inverted} />
             <ProfileMenu
               logoutHandler={logoutHandler}
               openFeedback={openFeedback}
+              inverted={inverted}
             />
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
             <button
               type='button'
               onClick={openMenu}
-              className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
+              className={cn(
+                'rounded-md p-1 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50',
+                inverted
+                  ? 'text-white hover:text-white'
+                  : 'text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300',
+              )}
               aria-label={t('common.openMenu')}
             >
               <ListIcon className='h-8 w-8 flex-none' aria-hidden='true' />
@@ -583,10 +623,12 @@ const NotAuthedHeader = ({
   colourBackground,
   refPage,
   openMenu,
+  inverted,
 }: {
   colourBackground: boolean
   refPage?: boolean
   openMenu: () => void
+  inverted?: boolean
 }) => {
   const { t } = useTranslation('common')
 
@@ -602,22 +644,27 @@ const NotAuthedHeader = ({
           <div className='flex items-center'>
             {/* Logo */}
             {refPage ? (
-              <SwetrixLogo />
+              <SwetrixLogo theme={inverted ? 'dark' : undefined} />
             ) : (
               <Link to={routes.main}>
-                <SwetrixLogo />
+                <SwetrixLogo theme={inverted ? 'dark' : undefined} />
               </Link>
             )}
 
             {!refPage ? (
               <div className='ml-10 hidden items-center gap-4 space-x-1 lg:flex'>
                 {!isSelfhosted && !isDisableMarketingPages ? (
-                  <SolutionsMenu />
+                  <SolutionsMenu inverted={inverted} />
                 ) : null}
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={`${routes.main}#pricing`}
-                    className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
+                    className={cn(
+                      'underline-animate text-base leading-6 font-semibold focus:outline-hidden',
+                      inverted
+                        ? 'text-white'
+                        : 'text-slate-800 dark:text-white',
+                    )}
                     key='Pricing'
                   >
                     {t('common.pricing')}
@@ -625,13 +672,16 @@ const NotAuthedHeader = ({
                 ) : null}
                 <a
                   href={DOCS_URL}
-                  className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
+                  className={cn(
+                    'underline-animate text-base leading-6 font-semibold focus:outline-hidden',
+                    inverted ? 'text-white' : 'text-slate-800 dark:text-white',
+                  )}
                   target='_blank'
                   rel='noreferrer noopener'
                 >
                   {t('common.docs')}
                 </a>
-                <CommunityLinks />
+                <CommunityLinks inverted={inverted} />
               </div>
             ) : null}
           </div>
@@ -640,14 +690,20 @@ const NotAuthedHeader = ({
               <>
                 <Link
                   to={routes.signin}
-                  className='underline-animate flex items-center text-base leading-6 font-semibold text-slate-800 dark:text-white'
+                  className={cn(
+                    'underline-animate flex items-center text-base leading-6 font-semibold',
+                    inverted ? 'text-white' : 'text-slate-800 dark:text-white',
+                  )}
                 >
                   {t('auth.common.signin')}
                 </Link>
-                <Separator />
+                <Separator inverted={inverted} />
                 <Link
                   to={routes.signup}
-                  className='underline-animate flex items-center text-base leading-6 font-semibold text-slate-800 dark:text-white'
+                  className={cn(
+                    'underline-animate flex items-center text-base leading-6 font-semibold',
+                    inverted ? 'text-white' : 'text-slate-800 dark:text-white',
+                  )}
                 >
                   {isSelfhosted ? t('header.signUp') : t('header.startForFree')}
                   <ArrowRightIcon className='mt-[1px] ml-1 size-4' />
@@ -659,7 +715,12 @@ const NotAuthedHeader = ({
             <button
               type='button'
               onClick={openMenu}
-              className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
+              className={cn(
+                'rounded-md p-1 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50',
+                inverted
+                  ? 'text-white hover:text-white'
+                  : 'text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300',
+              )}
               aria-label={t('common.openMenu')}
             >
               <ListIcon className='h-8 w-8 flex-none' aria-hidden='true' />
@@ -674,9 +735,10 @@ const NotAuthedHeader = ({
 interface HeaderProps {
   refPage?: boolean
   transparent?: boolean
+  inverted?: boolean
 }
 
-const Header = ({ refPage, transparent }: HeaderProps) => {
+const Header = ({ refPage, transparent, inverted }: HeaderProps) => {
   const { t } = useTranslation('common')
   const { isAuthenticated, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -710,12 +772,14 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
           colourBackground={!transparent}
           openMenu={openMenu}
           openFeedback={openFeedback}
+          inverted={inverted}
         />
       ) : (
         <NotAuthedHeader
           colourBackground={!transparent}
           refPage={refPage}
           openMenu={openMenu}
+          inverted={inverted}
         />
       )}
 

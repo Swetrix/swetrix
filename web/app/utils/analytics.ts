@@ -9,69 +9,69 @@ const SWETRIX_API_PROXY_PATH = '/_internal_data_inngest_proxy'
 const isIframe = isBrowser ? window.self !== window.top : false
 
 const REFS_TO_IGNORE = [
-  /https:\/\/swetrix.com\/projects\/(?!new$)[^/]+$/i,
-  /https:\/\/swetrix.com\/projects\/settings/i,
-  /https:\/\/swetrix.com\/verify/i,
-  /https:\/\/swetrix.com\/password-reset/i,
-  /https:\/\/swetrix.com\/change-email/i,
-  /https:\/\/swetrix.com\/share/i,
-  /https:\/\/swetrix.com\/captchas\/(?!new$)[^/]+$/i,
-  /https:\/\/swetrix.com\/captchas\/settings/i,
-  /https:\/\/swetrix.com\/organisations\/[^/]+/i,
-  /https:\/\/swetrix.com\/signup\/invitation\/[^/]+/i,
+  /https:\/\/swetrix.com\/(?:[^/]+\/)?projects\/(?!new$)[^/]+$/i,
+  /https:\/\/swetrix.com\/(?:[^/]+\/)?projects\/settings/i,
+  /https:\/\/swetrix.com\/(?:[^/]+\/)?verify/i,
+  /https:\/\/swetrix.com\/(?:[^/]+\/)?password-reset/i,
+  /https:\/\/swetrix.com\/(?:[^/]+\/)?change-email/i,
+  /https:\/\/swetrix.com\/(?:[^/]+\/)?share/i,
+  /https:\/\/swetrix.com\/(?:[^/]+\/)?captchas\/(?!new$)[^/]+$/i,
+  /https:\/\/swetrix.com\/(?:[^/]+\/)?captchas\/settings/i,
+  /https:\/\/swetrix.com\/(?:[^/]+\/)?organisations\/[^/]+/i,
+  /https:\/\/swetrix.com\/(?:[^/]+\/)?signup\/invitation\/[^/]+/i,
 ]
 
 const PATHS_REPLACEMENT_MAP = [
   {
-    regex: /^\/projects\/(?!new$)[^/]+$/i,
+    regex: /^\/(?:[^/]+\/)?projects\/(?!new$)[^/]+$/i,
     replacement: '/projects/[id]',
   },
   {
-    regex: /^\/projects\/settings/i,
+    regex: /^\/(?:[^/]+\/)?projects\/settings/i,
     replacement: '/projects/settings/[id]',
   },
   {
-    regex: /^\/verify/i,
+    regex: /^\/(?:[^/]+\/)?verify/i,
     replacement: '/verify/[token]',
   },
   {
-    regex: /^\/password-reset/i,
+    regex: /^\/(?:[^/]+\/)?password-reset/i,
     replacement: '/password-reset/[token]',
   },
   {
-    regex: /^\/change-email/i,
+    regex: /^\/(?:[^/]+\/)?change-email/i,
     replacement: '/change-email/[token]',
   },
   {
-    regex: /^\/reports-unsubscribe/i,
+    regex: /^\/(?:[^/]+\/)?reports-unsubscribe/i,
     replacement: '/reports-unsubscribe/[token]',
   },
   {
-    regex: /^\/share/i,
+    regex: /^\/(?:[^/]+\/)?share/i,
     replacement: '/share/[token]',
   },
   {
-    regex: /\/projects\/([^/]+)\/alerts\/create/i,
+    regex: /^\/(?:[^/]+\/)?projects\/([^/]+)\/alerts\/create/i,
     replacement: '/projects/[id]/alerts/create',
   },
   {
-    regex: /\/projects\/([^/]+)\/subscribers\/invite/i,
+    regex: /^\/(?:[^/]+\/)?projects\/([^/]+)\/subscribers\/invite/i,
     replacement: '/projects/[id]/subscribers/invite',
   },
   {
-    regex: /\/projects\/([^/]+)\/alerts\/settings/i,
+    regex: /^\/(?:[^/]+\/)?projects\/([^/]+)\/alerts\/settings/i,
     replacement: '/projects/[id]/alerts/settings/[alert]',
   },
   {
-    regex: /\/projects\/([^/]+)\/password/i,
+    regex: /^\/(?:[^/]+\/)?projects\/([^/]+)\/password/i,
     replacement: '/projects/[id]/password',
   },
   {
-    regex: /^\/organisations\/[^/]+/i,
+    regex: /^\/(?:[^/]+\/)?organisations\/[^/]+/i,
     replacement: '/organisations/[id]',
   },
   {
-    regex: /^\/signup\/invitation\/[^/]+/i,
+    regex: /^\/(?:[^/]+\/)?signup\/invitation\/[^/]+/i,
     replacement: '/signup/invitation/[id]',
   },
 ]

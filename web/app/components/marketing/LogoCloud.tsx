@@ -58,24 +58,46 @@ const LOGOS: ImageLogo[] = [
   },
 ]
 
-export const LogoCloud = () => {
+type LogoCloudVariant = 'old' | 'new'
+
+interface LogoCloudProps {
+  variant?: LogoCloudVariant
+}
+
+export const LogoCloud = ({ variant = 'new' }: LogoCloudProps) => {
   const { t } = useTranslation('common')
   const { theme } = useTheme()
+  const isNewVariant = variant === 'new'
 
   return (
-    <section className='rounded-b-4xl bg-gray-100/80 pt-14 pb-16 dark:bg-slate-900/50'>
+    <section
+      className={cn(
+        'rounded-b-4xl pt-14 pb-16',
+        isNewVariant
+          ? 'mx-2 -mt-px bg-slate-950 ring-1 ring-black/5 dark:ring-white/10'
+          : 'bg-gray-100/80 dark:bg-slate-900/50',
+      )}
+    >
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
         <Text
           as='p'
           size='xs'
           weight='semibold'
-          colour='muted'
-          className='text-center tracking-[0.18em] uppercase'
+          colour={isNewVariant ? 'inherit' : 'muted'}
+          className={cn(
+            'text-center tracking-[0.18em] uppercase',
+            isNewVariant && 'text-gray-200',
+          )}
         >
           {t('main.logoCloud.title')}
         </Text>
 
-        <ul className='mx-auto mt-10 grid max-w-5xl grid-cols-2 items-center justify-items-center gap-x-8 gap-y-10 sm:grid-cols-3 sm:gap-x-12 lg:max-w-6xl lg:grid-cols-6 lg:gap-x-8'>
+        <ul
+          className={cn(
+            'mx-auto mt-10 grid grid-cols-2 items-center justify-items-center gap-x-8 gap-y-10 sm:grid-cols-3 sm:gap-x-12 lg:max-w-6xl lg:grid-cols-6 lg:gap-x-8',
+            isNewVariant ? 'max-w-6xl' : 'max-w-5xl',
+          )}
+        >
           {LOGOS.map((logo) => (
             <li
               key={logo.name}
@@ -83,12 +105,21 @@ export const LogoCloud = () => {
             >
               <img
                 alt={logo.name}
-                src={logo.dark && theme === 'dark' ? logo.dark : logo.light}
+                src={
+                  isNewVariant
+                    ? (logo.dark ?? logo.light)
+                    : logo.dark && theme === 'dark'
+                      ? logo.dark
+                      : logo.light
+                }
                 loading='lazy'
                 className={cn(
                   'w-auto max-w-[180px] object-contain',
                   logo.heightClass,
-                  !logo.dark && 'dark:brightness-0 dark:invert',
+                  !logo.dark &&
+                    (isNewVariant
+                      ? 'brightness-0 invert'
+                      : 'dark:brightness-0 dark:invert'),
                 )}
               />
             </li>

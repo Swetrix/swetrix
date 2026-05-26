@@ -23,6 +23,7 @@ import FAQ from '~/components/marketing/FAQ'
 import Integrations from '~/components/marketing/Integrations'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
 import useBreakpoint from '~/hooks/useBreakpoint'
+import Button from '~/ui/Button'
 import {
   LIVE_DEMO_URL,
   isSelfhosted,
@@ -39,6 +40,7 @@ import { FeaturesGrid } from '~/components/marketing/FeaturesGrid'
 import { LogoCloud } from '~/components/marketing/LogoCloud'
 import { WhySwitch } from '~/components/marketing/WhySwitch'
 import { Text } from '~/ui/Text'
+import { getExperimentVariant } from '~/utils/analytics.server'
 
 export const meta: MetaFunction = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -56,19 +58,43 @@ export const sitemap: SitemapFunction = () => ({
   exclude: isSelfhosted || isDisableMarketingPages,
 })
 
+const DEFAULT_LANDING_HERO_EXPERIMENT_ID = 'landing-page-hero-redesign'
+const OLD_LANDING_HERO_VARIANT = 'old'
+const NEW_LANDING_HERO_VARIANT = 'new'
+
+type LandingHeroVariant =
+  | typeof OLD_LANDING_HERO_VARIANT
+  | typeof NEW_LANDING_HERO_VARIANT
+
+const getLandingHeroVariant = (variant: string | null): LandingHeroVariant => {
+  return variant === NEW_LANDING_HERO_VARIANT
+    ? NEW_LANDING_HERO_VARIANT
+    : OLD_LANDING_HERO_VARIANT
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
   }
 
-  const [metainfoResult, stats] = await Promise.all([
-    serverFetch<Metainfo>(request, 'user/metainfo', { skipAuth: true }),
-    getGeneralStats(request),
-  ])
+  const landingHeroExperimentId =
+    process.env.LANDING_HERO_EXPERIMENT_ID || DEFAULT_LANDING_HERO_EXPERIMENT_ID
+
+  const [metainfoResult, stats, landingHeroExperimentVariant] =
+    await Promise.all([
+      serverFetch<Metainfo>(request, 'user/metainfo', { skipAuth: true }),
+      getGeneralStats(request),
+      getExperimentVariant(
+        request,
+        landingHeroExperimentId,
+        OLD_LANDING_HERO_VARIANT,
+      ),
+    ])
 
   return {
     metainfo: metainfoResult.data ?? DEFAULT_METAINFO,
     stats,
+    landingHeroVariant: getLandingHeroVariant(landingHeroExperimentVariant),
   }
 }
 
@@ -131,7 +157,7 @@ export const FeedbackDual = () => {
                 <Text as='p' size='base' weight='medium' colour='primary'>
                   Alex Bowles
                 </Text>
-                <Text as='p' size='base' colour='muted'>
+                <Text as='p' size='base' colour='secondary'>
                   Co-founder of Casterlabs
                 </Text>
               </div>
@@ -177,7 +203,7 @@ export const FeedbackDual = () => {
                 <Text as='p' size='base' weight='medium' colour='primary'>
                   Alper Alkan
                 </Text>
-                <Text as='p' size='base' colour='muted'>
+                <Text as='p' size='base' colour='secondary'>
                   Co-founder of Phalcode
                 </Text>
               </div>
@@ -270,7 +296,7 @@ const Testimonials = ({
   )
 }
 
-const LiveDemoPreview = () => {
+const OldLiveDemoPreview = () => {
   const { t } = useTranslation('common')
   const { theme } = useTheme()
   const {
@@ -291,8 +317,6 @@ const LiveDemoPreview = () => {
           className='relative h-auto w-full'
           width={2328}
           height={1666}
-          // eslint-disable-next-line react/no-unknown-property
-          fetchPriority='high'
           alt='Swetrix Analytics dashboard'
         />
         <div className='absolute inset-0 flex items-center justify-center bg-slate-900/20 opacity-100 backdrop-blur-[1px] transition-opacity duration-200'>
@@ -349,9 +373,59 @@ const LiveDemoPreview = () => {
   )
 }
 
-const Hero = () => {
+const NewLiveDemoPreview = () => {
+  const { theme } = useTheme()
+  const {
+    i18n: { language },
+  } = useTranslation('common')
+
+  const isUpToLg = !useBreakpoint('lg')
+
+  if (isUpToLg) {
+    return (
+      <div className='relative z-20 mx-auto mt-10 overflow-hidden rounded-2xl bg-white/80 p-1.5 shadow-2xl ring-1 shadow-slate-950/20 ring-white/40 backdrop-blur-md dark:bg-slate-950/80 dark:ring-white/10'>
+        <img
+          src={
+            theme === 'dark'
+              ? '/assets/screenshot_dark.png'
+              : '/assets/screenshot_light.png'
+          }
+          className='relative h-auto w-full rounded-xl'
+          width={2328}
+          height={1666}
+          alt='Swetrix Analytics dashboard'
+        />
+      </div>
+    )
+  }
+
+  const localisedDemoPath = localisePath('/projects/STEzHcB1rALV', language)
+
+  return (
+    <div
+      className='relative z-20 mx-auto mt-12 w-full max-w-[1480px] overflow-hidden rounded-2xl bg-white/90 p-2 shadow-2xl ring-1 shadow-slate-950/25 ring-white/40 backdrop-blur-xl dark:bg-slate-950/90 dark:ring-white/10'
+      style={{
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
+        willChange: 'transform',
+        contain: 'paint',
+        WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+      }}
+    >
+      <div className='relative h-[580px] overflow-hidden rounded-xl bg-slate-950 lg:h-[640px] xl:h-[700px]'>
+        <iframe
+          src={`https://swetrix.com${localisedDemoPath}?tab=traffic&theme=${theme}&embedded=true`}
+          className='size-full rounded-xl'
+          title='Swetrix Analytics Live Demo'
+          loading='eager'
+        />
+      </div>
+    </div>
+  )
+}
+
+const OldHero = ({ stats }: { stats: Stats | null }) => {
   const { t } = useTranslation('common')
-  const { stats } = useLoaderData<typeof loader>()
 
   return (
     <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-900/50'>
@@ -419,7 +493,7 @@ const Hero = () => {
                 <div className='h-[240px] w-full rounded-2xl bg-slate-800/10 ring-1 ring-black/5 sm:h-[320px] md:h-[580px] lg:h-[640px] xl:h-[700px] dark:bg-slate-800/20 dark:ring-white/10' />
               }
             >
-              {() => <LiveDemoPreview />}
+              {() => <OldLiveDemoPreview />}
             </ClientOnly>
           </div>
           <Testimonials className='mt-8 lg:hidden' stats={stats} />
@@ -427,6 +501,112 @@ const Hero = () => {
       </div>
     </div>
   )
+}
+
+const NewHero = ({ stats }: { stats: Stats | null }) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div className='relative isolate overflow-hidden bg-gray-50 pt-2 dark:bg-slate-950'>
+      <div className='relative mx-2 overflow-hidden rounded-t-4xl bg-slate-950 shadow-2xl ring-1 shadow-slate-950/20 ring-black/5 dark:ring-white/10'>
+        <div aria-hidden className='pointer-events-none absolute inset-0'>
+          <picture className='absolute inset-0 block'>
+            <source srcSet='/assets/hero-background.avif' type='image/avif' />
+            <img
+              alt=''
+              className='size-full object-cover object-center opacity-95 saturate-125'
+              src='/assets/hero-background.webp'
+            />
+          </picture>
+          <div className='absolute inset-0 bg-slate-950/50' />
+          <div className='absolute inset-0 bg-radial-[at_50%_0%] from-indigo-300/30 via-slate-950/10 to-slate-950/80' />
+          <div className='absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-b from-transparent to-slate-950' />
+        </div>
+        <Header transparent inverted />
+        <section className='relative z-10 mx-auto flex max-w-[1500px] flex-col items-center px-4 pt-14 pb-6 sm:px-6 sm:pt-16 lg:px-8 lg:pt-20'>
+          <div className='flex w-full flex-col items-center'>
+            <Text
+              as='h1'
+              weight='semibold'
+              className='mx-auto max-w-6xl text-center [font-family:Geist,ui-sans-serif,system-ui,sans-serif] text-5xl leading-[0.98] text-balance text-white sm:text-6xl lg:text-7xl xl:text-8xl'
+            >
+              {t('main.slogan')}
+            </Text>
+            <Text
+              as='p'
+              size='lg'
+              className='mx-auto mt-5 max-w-3xl text-center leading-8 text-gray-50'
+            >
+              {t('main.description')}
+            </Text>
+            <div className='mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center'>
+              <Link
+                to={routesPath.signup}
+                className='inline-flex h-12 items-center justify-center rounded-md bg-white px-5 text-slate-950 shadow-lg ring-1 shadow-slate-950/20 ring-white/30 transition-colors hover:bg-gray-100'
+                aria-label={t('titles.signup')}
+              >
+                <span className='text-center text-base font-semibold'>
+                  {t('main.startAXDayFreeTrial', { amount: 14 })}
+                </span>
+                <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-5' />
+              </Link>
+              <Button
+                to={LIVE_DEMO_URL}
+                linkProps={{
+                  target: '_blank',
+                  rel: 'noopener noreferrer',
+                }}
+                variant='secondary'
+                size='xl'
+                className='h-12 border-white/25 bg-white/10 px-5 text-base font-semibold text-white shadow-none ring-white/25 backdrop-blur-md hover:bg-white/20 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
+                aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
+              >
+                {t('common.liveDemo')}
+              </Button>
+            </div>
+            <div className='mt-8 flex max-w-4xl flex-wrap justify-center gap-x-16 gap-y-3 text-gray-50'>
+              <div className='flex items-center gap-2 text-sm whitespace-nowrap'>
+                <GaugeIcon className='size-5 shrink-0' />
+                <span>{t('main.heroBenefits.quickSetup')}</span>
+              </div>
+              <div className='flex items-center gap-2 text-sm whitespace-nowrap'>
+                <CookieIcon className='size-5 shrink-0' />
+                <span>{t('main.heroBenefits.cookieless')}</span>
+              </div>
+              <div className='flex items-center gap-2 text-sm whitespace-nowrap'>
+                <StarIcon className='size-5 shrink-0' />
+                <span>{t('main.heroBenefits.realTimeDashboard')}</span>
+              </div>
+              <div className='flex items-center gap-2 text-sm whitespace-nowrap'>
+                <GithubLogoIcon className='size-5 shrink-0' />
+                <span>{t('main.heroBenefits.openSource')}</span>
+              </div>
+            </div>
+            <Testimonials className='dark mt-8' stats={stats} />
+          </div>
+          <div className='w-full'>
+            <ClientOnly
+              fallback={
+                <div className='mx-auto mt-12 h-[580px] w-full max-w-[1480px] rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur-xl lg:h-[640px] xl:h-[700px]' />
+              }
+            >
+              {() => <NewLiveDemoPreview />}
+            </ClientOnly>
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+const Hero = ({ variant }: { variant: LandingHeroVariant }) => {
+  const { stats } = useLoaderData<typeof loader>()
+
+  if (variant === NEW_LANDING_HERO_VARIANT) {
+    return <NewHero stats={stats} />
+  }
+
+  return <OldHero stats={stats} />
 }
 
 const SOFTWARE_APPLICATION_JSONLD = {
@@ -472,14 +652,14 @@ const SOFTWARE_APPLICATION_JSONLD = {
 }
 
 export default function Index() {
-  const { metainfo } = useLoaderData<typeof loader>()
+  const { landingHeroVariant, metainfo } = useLoaderData<typeof loader>()
 
   return (
     <div className='overflow-hidden'>
       <main className='bg-gray-50 dark:bg-slate-950'>
-        <Hero />
+        <Hero variant={landingHeroVariant} />
 
-        <LogoCloud />
+        <LogoCloud variant={landingHeroVariant} />
 
         <FeaturesGrid />
 

@@ -4,11 +4,11 @@
     "@tailwindcss/forms",
     "@tailwindcss/typography",
     "tailwindcss",
-    "@swetrix/node",
+    // "@swetrix/node",
   ],
-  "ignore": [
-    "./app/utils/analytics.server.ts",
-  ],
+  // "ignore": [
+  //   "./app/utils/analytics.server.ts",
+  // ],
   "project": ["./app/**/*.{js,ts,tsx,jsx,cjs}"],
   "paths": {
     "~/*": ["./app/*"],
