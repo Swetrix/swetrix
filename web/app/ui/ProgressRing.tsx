@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { cn } from '~/utils/generic'
 
@@ -60,6 +61,7 @@ const ProgressRing = ({
   thresholds = DEFAULT_THRESHOLDS,
   ariaLabel,
 }: ProgressRingProps) => {
+  const { t } = useTranslation('common')
   const normalizedValue = useMemo(() => {
     const safeValue = Number.isFinite(value) ? value : 0
     return Math.min(100, Math.max(0, safeValue))
@@ -96,7 +98,9 @@ const ProgressRing = ({
         className='sr-only'
         max={100}
         value={displayValue}
-        aria-label={ariaLabel ?? `Progress: ${displayValue}%`}
+        aria-label={
+          ariaLabel ?? t('ariaLabels.progress', { value: displayValue })
+        }
       />
       <svg width={size} height={size} className='-rotate-90' aria-hidden='true'>
         <circle

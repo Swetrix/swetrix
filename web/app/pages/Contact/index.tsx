@@ -62,21 +62,21 @@ const Contact = () => {
               mail: (
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
-                  aria-label='Email Swetrix support'
+                  aria-label={t('ariaLabels.emailSupport')}
                   className='font-medium underline decoration-dashed hover:decoration-solid'
                 />
               ),
               twitter: (
                 <a
                   href={TWITTER_URL}
-                  aria-label='Open Swetrix on X'
+                  aria-label={t('ariaLabels.openSwetrixOnX')}
                   className='font-medium underline decoration-dashed hover:decoration-solid'
                 />
               ),
               discord: (
                 <a
                   href={DISCORD_URL}
-                  aria-label='Open Swetrix Discord'
+                  aria-label={t('ariaLabels.openSwetrixDiscord')}
                   className='font-medium underline decoration-dashed hover:decoration-solid'
                 />
               ),
@@ -92,7 +92,7 @@ const Contact = () => {
                 feedback: (
                   <button
                     type='button'
-                    aria-label='Open feedback form'
+                    aria-label={t('ariaLabels.openFeedbackForm')}
                     onClick={() => setFeedbackOpen(true)}
                     className='font-medium underline decoration-dashed hover:decoration-solid'
                   />

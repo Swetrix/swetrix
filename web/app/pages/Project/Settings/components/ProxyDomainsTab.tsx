@@ -195,7 +195,7 @@ function DnsRecordTable({ domain }: { domain: ProxyDomain }) {
           </tr>
         </thead>
         <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
-          <tr aria-label='DNS record'>
+          <tr aria-label={t('ariaLabels.dnsRecord')}>
             <td className='px-3 py-2.5'>
               <Text as='span' size='sm' colour='primary' className='font-mono'>
                 CNAME

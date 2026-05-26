@@ -31,7 +31,7 @@ const WaitingForAnEvent = () => {
                 turl: (
                   <a
                     href={TROUBLESHOOTING_URL}
-                    aria-label='Open troubleshooting guide'
+                    aria-label={t('ariaLabels.openTroubleshootingGuide')}
                     className='font-medium underline decoration-dashed hover:decoration-solid'
                     target='_blank'
                     rel='noreferrer noopener'

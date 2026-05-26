@@ -221,7 +221,9 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                   >
                     {t('project.settings.annotations.text')}
                   </th>
-                  {allowedToManage ? <th aria-label='Actions' /> : null}
+                  {allowedToManage ? (
+                    <th aria-label={t('ariaLabels.actions')} />
+                  ) : null}
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-950'>

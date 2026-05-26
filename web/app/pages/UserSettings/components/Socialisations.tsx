@@ -194,7 +194,11 @@ const Socialisations = () => {
             >
               {t('common.status')}
             </th>
-            <th scope='col' aria-label='Actions' className='px-4 py-3' />
+            <th
+              scope='col'
+              aria-label={t('ariaLabels.actions')}
+              className='px-4 py-3'
+            />
           </tr>
         </thead>
         <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>

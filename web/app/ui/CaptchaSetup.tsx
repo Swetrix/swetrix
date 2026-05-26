@@ -130,7 +130,7 @@ const CaptchaSetup = ({ projectId }: CaptchaSetupProps) => {
                   url: (
                     <a
                       href={CAPTCHA_DOCS_URL}
-                      aria-label='Open CAPTCHA documentation'
+                      aria-label={t('ariaLabels.openCaptchaDocumentation')}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='font-medium underline decoration-dashed hover:decoration-solid'
@@ -175,7 +175,9 @@ const CaptchaSetup = ({ projectId }: CaptchaSetupProps) => {
                   url: (
                     <a
                       href={CAPTCHA_VALIDATION_DOCS_URL}
-                      aria-label='Open CAPTCHA validation documentation'
+                      aria-label={t(
+                        'ariaLabels.openCaptchaValidationDocumentation',
+                      )}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='font-medium underline decoration-dashed hover:decoration-solid'

@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
@@ -205,6 +206,7 @@ const RichTemplateInput = forwardRef<
     },
     ref,
   ) => {
+    const { t } = useTranslation('common')
     const taRef = useRef<HTMLTextAreaElement | null>(null)
     useImperativeHandle(ref, () => taRef.current as HTMLTextAreaElement)
     const mirrorRef = useRef<HTMLDivElement | null>(null)
@@ -502,7 +504,9 @@ const RichTemplateInput = forwardRef<
           <textarea
             ref={taRef}
             aria-label={
-              typeof label === 'string' ? label : placeholder || 'Template'
+              typeof label === 'string'
+                ? label
+                : placeholder || t('ariaLabels.template')
             }
             rows={rows}
             value={value}

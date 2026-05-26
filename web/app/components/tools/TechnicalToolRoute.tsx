@@ -6,6 +6,7 @@ import {
   XCircleIcon,
 } from '@phosphor-icons/react'
 import { useMemo, useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { MetaFunction } from 'react-router'
 import { redirect, useFetcher } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
@@ -3476,6 +3477,7 @@ function getDecliningPages(rows: GscRow[]) {
 }
 
 function GscExportAnalyzer() {
+  const { t } = useTranslation('common')
   const [analysis, setAnalysis] = useState<GscAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [fileName, setFileName] = useState('')
@@ -3504,7 +3506,7 @@ function GscExportAnalyzer() {
           </Text>
           <input
             type='file'
-            aria-label='Google Search Console CSV'
+            aria-label={t('ariaLabels.googleSearchConsoleCsv')}
             accept='.csv,text/csv'
             onChange={(event) => handleFile(event.target.files?.[0])}
             className='mt-2 block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 ring-1 ring-gray-300 transition-shadow duration-150 ease-out ring-inset file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-900 hover:ring-gray-400 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:file:bg-slate-800 dark:file:text-slate-100 dark:hover:ring-slate-600 dark:focus:ring-slate-300'

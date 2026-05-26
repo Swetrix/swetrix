@@ -141,7 +141,7 @@ const Performance = () => {
                 wpostatsUrl: (
                   <a
                     href='https://wpostats.com/?utm_source=swetrix.com'
-                    aria-label='Open WPO Stats'
+                    aria-label={t('ariaLabels.openWpoStats')}
                     className='font-medium text-orange-600 hover:underline dark:text-orange-400'
                     target='_blank'
                     rel='noopener noreferrer'

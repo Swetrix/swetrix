@@ -538,7 +538,7 @@ const BillingPricing = ({
                     mail: (
                       <a
                         title={`Email us at ${CONTACT_EMAIL}`}
-                        aria-label='Email Swetrix support'
+                        aria-label={t('ariaLabels.emailSupport')}
                         href={`mailto:${CONTACT_EMAIL}`}
                         className='font-medium underline decoration-dashed hover:decoration-solid'
                       />

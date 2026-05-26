@@ -197,7 +197,7 @@ const ModalMessage = ({
           </Text>
           <input
             type='text'
-            aria-label='Date range'
+            aria-label={t('ariaLabels.dateRange')}
             className='m-0 h-0 w-0 border-0 p-0 focus:border-transparent focus:text-transparent focus:shadow-none focus:ring-transparent'
           />
           <DatePicker
@@ -1484,7 +1484,9 @@ const ProjectSettings = () => {
                         url: (
                           <a
                             href='https://docs.swetrix.com/selfhosting/google-search-console'
-                            aria-label='Open Google Search Console self-hosting guide'
+                            aria-label={t(
+                              'ariaLabels.openGoogleSearchConsoleSelfHostingGuide',
+                            )}
                             target='_blank'
                             rel='noopener noreferrer'
                             className='font-medium underline decoration-dashed hover:decoration-solid'
@@ -1604,7 +1606,9 @@ const ProjectSettings = () => {
                           url: (
                             <a
                               href='https://search.google.com/search-console/about'
-                              aria-label='Open Google Search Console'
+                              aria-label={t(
+                                'ariaLabels.openGoogleSearchConsole',
+                              )}
                               target='_blank'
                               rel='noopener noreferrer'
                               className='font-medium underline decoration-dashed hover:decoration-solid'
@@ -1677,7 +1681,9 @@ const ProjectSettings = () => {
                             url: (
                               <a
                                 href='https://swetrix.com/docs/captcha/server-side-validation'
-                                aria-label='Open CAPTCHA server-side validation guide'
+                                aria-label={t(
+                                  'ariaLabels.openCaptchaServerValidationGuide',
+                                )}
                                 target='_blank'
                                 rel='noopener noreferrer'
                                 className='font-medium underline decoration-dashed hover:decoration-solid'

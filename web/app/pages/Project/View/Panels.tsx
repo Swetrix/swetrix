@@ -862,7 +862,12 @@ const CustomEvents = ({
                   <button
                     className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
                     type='button'
-                    aria-label={`${activeEvents[ev] ? 'Hide' : 'Show'} ${ev} details`}
+                    aria-label={t(
+                      activeEvents[ev]
+                        ? 'ariaLabels.hideEventDetails'
+                        : 'ariaLabels.showEventDetails',
+                      { event: ev },
+                    )}
                     onClick={toggleDetails(ev)}
                   >
                     {loadingEvents[ev] ? (
@@ -875,7 +880,7 @@ const CustomEvents = ({
                   </button>
                   <button
                     type='button'
-                    aria-label={`${ev} filters`}
+                    aria-label={t('ariaLabels.eventFilters', { event: ev })}
                     onClick={() => {
                       const link = _getFilterLink(null, ev)
                       navigate(link)
@@ -889,7 +894,7 @@ const CustomEvents = ({
                   </button>
                 </td>
                 <td
-                  aria-label={`${ev} total`}
+                  aria-label={t('ariaLabels.eventTotal', { event: ev })}
                   className='w-[40%] py-1 pr-2 text-right sm:w-2/6'
                 >
                   <span className='inline-flex items-center justify-end'>

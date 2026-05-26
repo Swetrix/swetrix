@@ -663,7 +663,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
       aria-labelledby='footer-heading'
     >
       <h2 id='footer-heading' className='sr-only'>
-        Footer
+        {t('ariaLabels.footer')}
       </h2>
       <div className='absolute top-full left-1/2 mt-10 h-[20rem] w-[36rem] -translate-x-1/2 bg-[#C8F2F8]/50 mix-blend-plus-lighter blur-[256px]' />
       <div className='absolute top-full left-1/2 size-96 -translate-x-1/2 bg-[#C8F2F8]/50 mix-blend-overlay blur-[256px]' />
@@ -861,7 +861,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                       url: (
                         <a
                           href='https://swetrix.com'
-                          aria-label='Open Swetrix website'
+                          aria-label={t('ariaLabels.openSwetrixWebsite')}
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-indigo-400 hover:text-indigo-300'
