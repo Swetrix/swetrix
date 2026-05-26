@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import {
   BROWSER_LOGO_MAP,
   INTEGRATIONS_URL,
+  DEFAULT_TIMEZONE,
   isSelfhosted,
   whitelist,
   languages,
@@ -34,6 +35,7 @@ import type {
 import Button from '~/ui/Button'
 import Flag from '~/ui/Flag'
 import Input from '~/ui/Input'
+import TimezonePicker from '~/ui/TimezonePicker'
 import TrackingSetup from '~/ui/TrackingSetup'
 import Loader from '~/ui/Loader'
 import Alert from '~/ui/Alert'
@@ -41,6 +43,7 @@ import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
+import { isValidHttpUrl } from '~/utils/url'
 
 const MAX_PROJECT_NAME_LENGTH = 50
 const ANIMATION_DURATION = 0.4
@@ -450,11 +453,16 @@ const Onboarding = () => {
   })
   const [direction, setDirection] = useState(0)
   const [projectName, setProjectName] = useState('')
+  const [projectWebsiteUrl, setProjectWebsiteUrl] = useState('')
+  const [projectTimezone, setProjectTimezone] = useState(
+    () => user?.timezone || DEFAULT_TIMEZONE,
+  )
   const [project, setProject] = useState<Project | null>(loaderProject)
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language)
 
   const [newProjectErrors, setNewProjectErrors] = useState<{
     name?: string
+    websiteUrl?: string
   }>({})
 
   const currentStep = STEPS[currentStepIndex]
@@ -467,6 +475,12 @@ const Onboarding = () => {
   const progressStepIndex = stepsForProgress.indexOf(currentStep)
 
   useEffect(() => {
+    if (user?.timezone) {
+      setProjectTimezone(user.timezone)
+    }
+  }, [user?.timezone])
+
+  useEffect(() => {
     if (!fetcher.data) return
     if (lastHandledFetcherDataRef.current === fetcher.data) return
     lastHandledFetcherDataRef.current = fetcher.data
@@ -475,6 +489,7 @@ const Onboarding = () => {
       const { intent, project: newProject } = fetcher.data
 
       if (intent === 'create-project' && newProject) {
+        loadUser()
         setTimeout(() => setProject(newProject), 0)
         goToStep('setup_tracking', { persist: true })
       } else if (intent === 'update-step') {
@@ -485,11 +500,8 @@ const Onboarding = () => {
       }
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
-    } else if (fetcher.data?.fieldErrors?.name) {
-      setTimeout(
-        () => setNewProjectErrors({ name: fetcher.data!.fieldErrors!.name }),
-        0,
-      )
+    } else if (fetcher.data?.fieldErrors) {
+      setTimeout(() => setNewProjectErrors(fetcher.data!.fieldErrors!), 0)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data, fetcher.submit, loadUser, logout, navigate])
@@ -561,6 +573,14 @@ const Onboarding = () => {
     }
   }
 
+  const clearNewProjectError = (field: keyof typeof newProjectErrors) => {
+    setNewProjectErrors((current) => {
+      const errors = { ...current }
+      delete errors[field]
+      return errors
+    })
+  }
+
   const handleCreateProject = (e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault()
     e?.stopPropagation()
@@ -568,18 +588,25 @@ const Onboarding = () => {
     if (fetcher.state !== 'idle') return
 
     const trimmedName = projectName.trim()
+    const trimmedWebsiteUrl = projectWebsiteUrl.trim()
+    const errors: typeof newProjectErrors = {}
 
     if (!trimmedName) {
-      setNewProjectErrors({ name: t('project.settings.noNameError') })
-      return
+      errors.name = t('project.settings.noNameError')
     }
 
     if (trimmedName.length > MAX_PROJECT_NAME_LENGTH) {
-      setNewProjectErrors({
-        name: t('project.settings.pxCharsError', {
-          amount: MAX_PROJECT_NAME_LENGTH,
-        }),
+      errors.name = t('project.settings.pxCharsError', {
+        amount: MAX_PROJECT_NAME_LENGTH,
       })
+    }
+
+    if (trimmedWebsiteUrl && !isValidHttpUrl(trimmedWebsiteUrl)) {
+      errors.websiteUrl = t('project.settings.invalidUrl')
+    }
+
+    if (Object.keys(errors).length) {
+      setNewProjectErrors(errors)
       return
     }
 
@@ -587,6 +614,10 @@ const Onboarding = () => {
     const formData = new FormData()
     formData.set('intent', 'create-project')
     formData.set('name', trimmedName)
+    formData.set('timezone', projectTimezone)
+    if (trimmedWebsiteUrl) {
+      formData.set('websiteUrl', trimmedWebsiteUrl)
+    }
     fetcher.submit(formData, { method: 'post' })
   }
 
@@ -850,7 +881,7 @@ const Onboarding = () => {
 
                         <ProjectVisualisation />
 
-                        <div className='w-full sm:max-w-1/2'>
+                        <div className='w-full sm:max-w-md'>
                           <Input
                             label={t('project.settings.name')}
                             hint={t('project.settings.nameHint')}
@@ -861,10 +892,42 @@ const Onboarding = () => {
                             value={projectName}
                             onChange={(e) => {
                               setProjectName(e.target.value)
-                              setNewProjectErrors({})
+                              clearNewProjectError('name')
                             }}
                             error={newProjectErrors.name}
                           />
+                          <Input
+                            name='websiteUrl'
+                            label={t('project.settings.websiteUrl')}
+                            hint={t('project.settings.websiteUrlHint')}
+                            value={projectWebsiteUrl}
+                            placeholder={t(
+                              'project.settings.websiteUrlPlaceholder',
+                            )}
+                            className='mt-4'
+                            onChange={(e) => {
+                              setProjectWebsiteUrl(e.target.value)
+                              clearNewProjectError('websiteUrl')
+                            }}
+                            error={newProjectErrors.websiteUrl}
+                          />
+                          <div className='mt-4'>
+                            <Text as='p' size='sm' weight='medium'>
+                              {t('profileSettings.timezone')}
+                            </Text>
+                            <Text
+                              as='p'
+                              size='xs'
+                              colour='secondary'
+                              className='mt-1 mb-2'
+                            >
+                              {t('onboarding.createProject.timezoneDesc')}
+                            </Text>
+                            <TimezonePicker
+                              value={projectTimezone}
+                              onChange={setProjectTimezone}
+                            />
+                          </div>
                         </div>
                       </form>
                     )}
