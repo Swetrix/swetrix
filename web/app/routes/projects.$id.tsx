@@ -13,6 +13,7 @@ import { data, redirect } from 'react-router'
 
 import {
   serverFetch,
+  authMeServer,
   getProjectDataServer,
   getOverallStatsServer,
   getCustomEventsDataServer,
@@ -549,6 +550,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     cookies.push(createProjectPasswordCookie(projectId || '', password))
   }
 
+  let userTimezone = DEFAULT_TIMEZONE
+  if (hasAuthTokens(request)) {
+    const authResult = await authMeServer(request)
+    cookies.push(...authResult.cookies)
+
+    if (authResult.data?.user?.timezone) {
+      userTimezone = authResult.data.user.timezone
+    }
+  }
+
   // Parse URL params for analytics data
   const tab =
     (url.searchParams.get('tab') as keyof typeof PROJECT_TABS) ||
@@ -557,7 +568,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const urlTimeBucket = url.searchParams.get('timeBucket')
   const from = formatDateForBackend(url.searchParams.get('from') || '')
   const to = formatDateForBackend(url.searchParams.get('to') || '')
-  const timezone = url.searchParams.get('timezone') || DEFAULT_TIMEZONE
+  const timezone = url.searchParams.get('timezone') || userTimezone
   const filters = parseFiltersFromUrl(url.searchParams)
 
   // Ensure the time bucket is valid for the selected period and date range
