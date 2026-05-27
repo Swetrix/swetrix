@@ -61,6 +61,7 @@ import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import {
   attachDataPointClickHandlers,
   getChartPointWindow,
+  type ChartDataPoint,
   type ChartDataPointClick,
 } from '~/pages/Project/View/utils/chartPoint'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
@@ -303,7 +304,11 @@ const getGoalChartSettings = (
       onclick: onDataPointClick
         ? (d: any) => {
             if (d?.x) {
-              onDataPointClick({ x: d.x, index: d.index })
+              onDataPointClick({
+                x: d.x,
+                index: d.index,
+                xValue: chartData.x?.[d.index],
+              })
             }
           }
         : undefined,
@@ -426,7 +431,12 @@ const getGoalChartSettings = (
     },
     onrendered: onDataPointClick
       ? function (this: any) {
-          attachDataPointClickHandlers(this, columns, onDataPointClick)
+          attachDataPointClickHandlers(
+            this,
+            columns,
+            onDataPointClick,
+            chartData.x,
+          )
         }
       : undefined,
   }
@@ -444,7 +454,7 @@ interface GoalRowProps {
   onDelete: (id: string) => void
   onEdit: (id: string) => void
   onToggleExpand: (id: string) => void
-  onChartDataPointClick: (goalId: string, d: { x: Date; index: number }) => void
+  onChartDataPointClick: (goalId: string, d: ChartDataPoint) => void
 }
 
 const GoalRow = ({
@@ -1001,10 +1011,11 @@ const GoalsViewInner = ({
   }
 
   const handleChartDataPointClick = useCallback(
-    (goalId: string, d: { x: Date; index: number }) => {
+    (goalId: string, d: { x: Date; index: number; xValue?: string }) => {
       setSessionsDrawer({
         ...getChartPointWindow({
           x: d.x,
+          xValue: d.xValue,
           timeBucket,
           timezone,
           timeFormat,

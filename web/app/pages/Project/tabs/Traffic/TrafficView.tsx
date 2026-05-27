@@ -341,10 +341,11 @@ const TrafficViewInner = ({
   } | null>(null)
 
   const handleDataPointClick = useCallback(
-    (d: { x: Date; index: number }) => {
+    (d: { x: Date; index: number; xValue?: string }) => {
       setSessionsDrawer(
         getChartPointWindow({
           x: d.x,
+          xValue: d.xValue,
           timeBucket,
           timezone,
           timeFormat,

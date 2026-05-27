@@ -5,7 +5,13 @@ import utc from 'dayjs/plugin/utc'
 dayjs.extend(utc)
 dayjs.extend(timezonePlugin)
 
-export type ChartDataPointClick = (d: { x: Date; index: number }) => void
+export type ChartDataPoint = {
+  x: Date
+  index: number
+  xValue?: string
+}
+
+export type ChartDataPointClick = (d: ChartDataPoint) => void
 
 type EventRectsGroup = SVGElement & {
   __clickHandlers?: {
@@ -42,6 +48,7 @@ export const attachDataPointClickHandlers = (
   chartInstance: any,
   columns: any[],
   onDataPointClick?: ChartDataPointClick,
+  chartXValues?: string[],
 ) => {
   if (!chartInstance?.$) return
 
@@ -116,7 +123,11 @@ export const attachDataPointClickHandlers = (
     const xValues = columns[0]?.slice(1) as Date[] | undefined
     if (!xValues || index >= xValues.length) return
 
-    onDataPointClick({ x: xValues[index], index })
+    onDataPointClick({
+      x: xValues[index],
+      index,
+      xValue: chartXValues?.[index],
+    })
   }
 
   eventRectsGroup.addEventListener('mousemove', handleMouseMove)
@@ -131,16 +142,33 @@ export const attachDataPointClickHandlers = (
 
 export const getChartPointWindow = ({
   x,
+  xValue,
   timeBucket,
   timezone,
   timeFormat,
 }: {
   x: Date
+  xValue?: string
   timeBucket: string
   timezone: string
   timeFormat: string
 }) => {
-  const date = dayjs(x).tz(timezone)
+  const chartDate = dayjs(x)
+  let wallTime = chartDate.format('YYYY-MM-DD HH:mm:ss')
+
+  if (xValue) {
+    wallTime = xValue
+  }
+
+  if (timeBucket === 'year') {
+    wallTime = `${wallTime.slice(0, 4)}-01-01 00:00:00`
+  } else if (timeBucket === 'month') {
+    wallTime = `${wallTime.slice(0, 7)}-01 00:00:00`
+  } else if (timeBucket === 'day') {
+    wallTime = `${wallTime.slice(0, 10)} 00:00:00`
+  }
+
+  const date = dayjs.tz(wallTime, timezone)
 
   switch (timeBucket) {
     case 'minute':

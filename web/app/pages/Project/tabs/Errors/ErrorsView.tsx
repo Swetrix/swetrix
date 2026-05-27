@@ -195,7 +195,11 @@ const getErrorTrendsChartSettings = (
       onclick: onDataPointClick
         ? (d: any) => {
             if (d?.x) {
-              onDataPointClick({ x: d.x, index: d.index })
+              onDataPointClick({
+                x: d.x,
+                index: d.index,
+                xValue: chartData.x?.[d.index],
+              })
             }
           }
         : undefined,
@@ -306,7 +310,12 @@ const getErrorTrendsChartSettings = (
     },
     onrendered: onDataPointClick
       ? function (this: any) {
-          attachDataPointClickHandlers(this, columns, onDataPointClick)
+          attachDataPointClickHandlers(
+            this,
+            columns,
+            onDataPointClick,
+            chartData.x,
+          )
         }
       : undefined,
   }
@@ -854,10 +863,11 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   }, [t, errorOptions])
 
   const handleOverviewDataPointClick = useCallback(
-    (d: { x: Date; index: number }) => {
+    (d: { x: Date; index: number; xValue?: string }) => {
       setSessionsDrawer(
         getChartPointWindow({
           x: d.x,
+          xValue: d.xValue,
           timeBucket,
           timezone,
           timeFormat,
@@ -868,12 +878,13 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   )
 
   const handleActiveErrorDataPointClick = useCallback(
-    (d: { x: Date; index: number }) => {
+    (d: { x: Date; index: number; xValue?: string }) => {
       if (!activeError?.details.eid) return
 
       setSessionsDrawer({
         ...getChartPointWindow({
           x: d.x,
+          xValue: d.xValue,
           timeBucket: activeError.timeBucket || timeBucket,
           timezone,
           timeFormat,

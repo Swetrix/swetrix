@@ -729,7 +729,11 @@ const getSettings = (
       onclick: onDataPointClick
         ? (d: any) => {
             if (d?.x) {
-              onDataPointClick({ x: d.x, index: d.index })
+              onDataPointClick({
+                x: d.x,
+                index: d.index,
+                xValue: chart.x?.[d.index],
+              })
             }
           }
         : undefined,
@@ -1102,6 +1106,7 @@ const getSettings = (
                 chartInstance,
                 columns,
                 onDataPointClick,
+                chart.x,
               )
             } catch {
               // ignore
@@ -1560,7 +1565,11 @@ const getSettingsError = (
       onclick: onDataPointClick
         ? (d: any) => {
             if (d?.x) {
-              onDataPointClick({ x: d.x, index: d.index })
+              onDataPointClick({
+                x: d.x,
+                index: d.index,
+                xValue: chart.x?.[d.index],
+              })
             }
           }
         : undefined,
@@ -1686,7 +1695,7 @@ const getSettingsError = (
     },
     onrendered: onDataPointClick
       ? function (this: any) {
-          attachDataPointClickHandlers(this, columns, onDataPointClick)
+          attachDataPointClickHandlers(this, columns, onDataPointClick, chart.x)
         }
       : undefined,
   }
@@ -2006,7 +2015,11 @@ const getSettingsPerf = (
       onclick: onDataPointClick
         ? (d: any) => {
             if (d?.x) {
-              onDataPointClick({ x: d.x, index: d.index })
+              onDataPointClick({
+                x: d.x,
+                index: d.index,
+                xValue: chart.x?.[d.index],
+              })
             }
           }
         : undefined,
@@ -2286,7 +2299,7 @@ const getSettingsPerf = (
     },
     onrendered: onDataPointClick
       ? function (this: any) {
-          attachDataPointClickHandlers(this, columns, onDataPointClick)
+          attachDataPointClickHandlers(this, columns, onDataPointClick, chart.x)
         }
       : undefined,
     zoom:
