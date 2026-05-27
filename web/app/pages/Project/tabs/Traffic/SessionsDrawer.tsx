@@ -473,7 +473,13 @@ export const SessionsDrawer = ({
             <div className='ml-3 flex shrink-0 items-center gap-2'>
               {!initialLoading &&
               (displayTotalCount != null || sessions.length > 0) ? (
-                <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
+                <Text
+                  as='span'
+                  size='xs'
+                  weight='medium'
+                  colour='muted'
+                  className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 dark:bg-slate-800'
+                >
                   <UsersIcon className='size-3.5' />
                   {displayTotalCount != null ? (
                     displayTotalCount
@@ -483,14 +489,16 @@ export const SessionsDrawer = ({
                       {hasMore ? '+' : ''}
                     </>
                   )}
-                </span>
+                </Text>
               ) : null}
               <DrawerClose asChild>
                 <button
                   type='button'
                   className='rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-300'
                 >
-                  <span className='sr-only'>{t('common.close')}</span>
+                  <Text as='span' className='sr-only'>
+                    {t('common.close')}
+                  </Text>
                   <XIcon className='size-5' />
                 </button>
               </DrawerClose>
@@ -512,9 +520,9 @@ export const SessionsDrawer = ({
                 className='size-10 text-red-400 dark:text-red-500'
                 weight='duotone'
               />
-              <span className='mt-3 text-sm text-gray-500 dark:text-gray-400'>
+              <Text as='p' size='sm' colour='muted' className='mt-3'>
                 {error}
-              </span>
+              </Text>
             </div>
           ) : sessions.length === 0 ? (
             <div className='flex flex-col items-center justify-center py-16 text-center'>
@@ -522,9 +530,9 @@ export const SessionsDrawer = ({
                 className='size-10 text-gray-300 dark:text-slate-600'
                 weight='duotone'
               />
-              <span className='mt-3 text-sm text-gray-500 dark:text-gray-400'>
+              <Text as='p' size='sm' colour='muted' className='mt-3'>
                 {t('project.noSessionsFound')}
-              </span>
+              </Text>
             </div>
           ) : (
             <>
