@@ -74,18 +74,7 @@ interface ErrorEventOptions extends CommonOptions {
 
 interface PerformanceOptions extends Omit<
   CommonOptions,
-  | 'psid'
-  | 'profileId'
-  | 'os'
-  | 'osv'
-  | 'lc'
-  | 'ref'
-  | 'so'
-  | 'me'
-  | 'ca'
-  | 'te'
-  | 'co'
-  | 'meta'
+  'os' | 'osv' | 'lc' | 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co' | 'meta'
 > {
   type: 'performance'
   dns: number
@@ -188,6 +177,8 @@ export const eventTransformer = (opts: EventTransformerOptions) => {
     return {
       type: 'performance' as const,
       pid: opts.pid,
+      psid: opts.psid ?? null,
+      profileId: opts.profileId ?? null,
       host: opts.host || null,
       pg: opts.pg || null,
       dv: opts.dv || null,

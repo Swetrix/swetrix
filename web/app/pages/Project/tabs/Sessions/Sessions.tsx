@@ -108,10 +108,9 @@ export const Session = ({
         getTimeFromSeconds(session.sdur),
       )
     } else {
-      const diffSeconds = dayjs.utc(session.lastActivity).diff(
-        sessionStartTime,
-        'seconds',
-      )
+      const diffSeconds = dayjs
+        .utc(session.lastActivity)
+        .diff(sessionStartTime, 'seconds')
       if (diffSeconds > 0) {
         sessionDurationString = getStringFromTime(
           getTimeFromSeconds(diffSeconds),

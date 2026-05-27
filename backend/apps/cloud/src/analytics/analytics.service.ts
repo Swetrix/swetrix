@@ -5919,6 +5919,55 @@ export class AnalyticsService {
       `
     }
 
+    if (sessionEvent === 'performance') {
+      return `
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          profileId,
+          cc,
+          os,
+          br,
+          toTimeZone(created, {timezone:String}) AS created_for_grouping
+        FROM events
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND type = 'performance'
+          AND psid IS NOT NULL
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+          ${primaryEventFilterQuery}
+        UNION ALL
+        SELECT
+          CAST(pageviews.psid, 'String') AS psidCasted,
+          performance_events.pid,
+          pageviews.profileId,
+          pageviews.cc,
+          pageviews.os,
+          pageviews.br,
+          toTimeZone(performance_events.created, {timezone:String}) AS created_for_grouping
+        FROM (
+          SELECT pid, pg, created
+          FROM events
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND type = 'performance'
+            AND (psid IS NULL OR psid = 0)
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            ${filtersQuery}
+            ${primaryEventFilterQuery}
+        ) AS performance_events
+        INNER JOIN events AS pageviews
+          ON pageviews.pid = performance_events.pid
+          AND pageviews.type = 'pageview'
+          AND pageviews.psid IS NOT NULL
+          AND pageviews.psid != 0
+          AND pageviews.created BETWEEN subtractSeconds(performance_events.created, 2) AND addSeconds(performance_events.created, 2)
+          AND ifNull(pageviews.pg, '') = ifNull(performance_events.pg, '')
+      `
+    }
+
     if (sessionEvent !== 'traffic') {
       return `
         SELECT
