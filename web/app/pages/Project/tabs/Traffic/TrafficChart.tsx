@@ -3,6 +3,7 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Annotation } from '~/lib/models/Project'
+import type { ChartDataPointClick } from '~/pages/Project/View/utils/chartPoint'
 
 import { MainChart } from '../../View/components/MainChart'
 import { getSettings } from '../../View/ViewProject.helpers'
@@ -24,7 +25,7 @@ interface TrafficChartProps {
   annotations?: Annotation[]
   period?: string
   timezone?: string
-  onDataPointClick?: (d: { x: Date; index: number }) => void
+  onDataPointClick?: ChartDataPointClick
 }
 
 export const TrafficChart = ({
