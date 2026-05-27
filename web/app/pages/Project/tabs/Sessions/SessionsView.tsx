@@ -451,6 +451,7 @@ const SessionsViewInner = ({
         <Sessions
           sessions={sessions}
           timeFormat={timeFormat}
+          timezone={timezone}
           currency={project?.revenueCurrency}
         />
         <InfiniteScrollTrigger

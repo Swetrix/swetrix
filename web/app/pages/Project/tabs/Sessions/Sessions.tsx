@@ -2,6 +2,7 @@ import cx from 'clsx'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import utc from 'dayjs/plugin/utc'
 import _map from 'lodash/map'
 import {
   FileTextIcon,
@@ -29,6 +30,7 @@ import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 
 dayjs.extend(duration)
 dayjs.extend(relativeTime)
+dayjs.extend(utc)
 
 const ONLINE_THRESHOLD_MINUTES = 5
 const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
@@ -49,7 +51,7 @@ type OnlineStatus = 'online' | 'recently_active' | 'offline'
 
 const getOnlineStatus = (lastActivity: string): OnlineStatus => {
   const now = dayjs()
-  const lastActivityTime = dayjs(lastActivity)
+  const lastActivityTime = dayjs.utc(lastActivity)
   const minutesAgo = now.diff(lastActivityTime, 'minute')
 
   if (minutesAgo < ONLINE_THRESHOLD_MINUTES) {
@@ -66,6 +68,7 @@ const getOnlineStatus = (lastActivity: string): OnlineStatus => {
 interface SessionsProps {
   sessions: SessionType[]
   timeFormat: '12-hour' | '24-hour'
+  timezone: string
   hideNewReturnBadge?: boolean
   hideUserDetails?: boolean
   currency?: string
@@ -74,6 +77,7 @@ interface SessionsProps {
 interface SessionProps {
   session: SessionType
   timeFormat: '12-hour' | '24-hour'
+  timezone: string
   hideNewReturnBadge?: boolean
   hideUserDetails?: boolean
   currency?: string
@@ -82,6 +86,7 @@ interface SessionProps {
 export const Session = ({
   session,
   timeFormat,
+  timezone,
   hideNewReturnBadge,
   hideUserDetails,
   currency,
@@ -94,7 +99,7 @@ export const Session = ({
   const location = useLocation()
   const { theme } = useTheme()
 
-  const sessionStartTime = dayjs(session.sessionStart)
+  const sessionStartTime = dayjs.utc(session.sessionStart)
 
   let sessionDurationString = ''
   if (!session.isLive) {
@@ -103,7 +108,7 @@ export const Session = ({
         getTimeFromSeconds(session.sdur),
       )
     } else {
-      const diffSeconds = dayjs(session.lastActivity).diff(
+      const diffSeconds = dayjs.utc(session.lastActivity).diff(
         sessionStartTime,
         'seconds',
       )
@@ -134,6 +139,7 @@ export const Session = ({
         hour: 'numeric',
         minute: 'numeric',
         hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+        timeZone: timezone,
       })
 
     if (session.isLive) {
@@ -158,6 +164,7 @@ export const Session = ({
     session.isLive,
     language,
     timeFormat,
+    timezone,
     sessionDurationString,
     sessionStartTime,
     t,
@@ -169,7 +176,7 @@ export const Session = ({
   )
 
   const lastActivityAgo = useMemo(
-    () => dayjs(session.lastActivity).fromNow(true),
+    () => dayjs.utc(session.lastActivity).fromNow(true),
     [session.lastActivity],
   )
 
@@ -409,6 +416,7 @@ export const Session = ({
 export const Sessions: React.FC<SessionsProps> = ({
   sessions,
   timeFormat,
+  timezone,
   hideNewReturnBadge,
   hideUserDetails,
   currency,
@@ -428,6 +436,7 @@ export const Sessions: React.FC<SessionsProps> = ({
               key={session.psid}
               session={session}
               timeFormat={timeFormat}
+              timezone={timezone}
               hideNewReturnBadge={hideNewReturnBadge}
               hideUserDetails={hideUserDetails}
               currency={currency}

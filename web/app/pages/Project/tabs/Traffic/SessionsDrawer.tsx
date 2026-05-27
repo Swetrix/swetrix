@@ -537,6 +537,7 @@ export const SessionsDrawer = ({
                       key={session.psid}
                       session={session}
                       timeFormat={timeFormat}
+                      timezone={timezone}
                     />
                   ),
                 )}
