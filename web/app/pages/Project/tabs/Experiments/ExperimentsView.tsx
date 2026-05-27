@@ -22,6 +22,11 @@ import { Link } from '~/ui/Link'
 import { useFetcher, useLocation, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
+import type {
+  AnalyticsFilter,
+  ExperimentResults as ExperimentResultsSummary,
+  ExperimentVariantResult,
+} from '~/api/api.server'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import {
   useViewProjectContext,
@@ -57,7 +62,7 @@ type MultipleVariantHandling = 'exclude' | 'first_exposure'
 
 type FeatureFlagMode = 'create' | 'link'
 
-const SPLIT_RAIL_COLORS = [
+const VARIANT_RAIL_COLORS = [
   'bg-indigo-500',
   'bg-emerald-500',
   'bg-amber-500',
@@ -105,104 +110,278 @@ interface ExperimentRowProps {
   onStart: (id: string) => void
   onPause: (id: string) => void
   onComplete: (id: string) => void
+  period: string
+  timeBucket: string
+  from: string
+  to: string
+  timezone?: string
+  filters: AnalyticsFilter[]
 }
 
-const ExperimentSplitRail = ({
-  variants,
-}: {
-  variants: ExperimentVariant[]
-}) => {
-  const { t } = useTranslation()
-  const totalAllocation = variants.reduce(
-    (sum, variant) => sum + variant.rolloutPercentage,
-    0,
+const normaliseProbability = (value: number) => {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(100, value))
+}
+
+const formatProbability = (value: number) => {
+  const safeValue = normaliseProbability(value)
+  return Number.isInteger(safeValue)
+    ? `${safeValue}%`
+    : `${safeValue.toFixed(2)}%`
+}
+
+const sortResultVariants = (
+  variants: ExperimentVariantResult[],
+  experimentVariants: ExperimentVariant[],
+) => {
+  const variantOrder = new Map(
+    experimentVariants.map((variant, index) => [variant.key, index]),
   )
 
-  if (totalAllocation <= 0) {
-    return <div className='h-1.5 rounded-full bg-gray-200 dark:bg-slate-800' />
+  return [...variants].sort((a, b) => {
+    const aOrder = variantOrder.get(a.key) ?? Number.MAX_SAFE_INTEGER
+    const bOrder = variantOrder.get(b.key) ?? Number.MAX_SAFE_INTEGER
+
+    if (aOrder !== bOrder) return aOrder - bOrder
+    if (a.isControl && !b.isControl) return -1
+    if (!a.isControl && b.isControl) return 1
+    return b.probabilityOfBeingBest - a.probabilityOfBeingBest
+  })
+}
+
+const ExperimentWinningRail = ({
+  experiment,
+  period,
+  timeBucket,
+  from,
+  to,
+  timezone,
+  filters,
+}: {
+  experiment: Experiment
+  period: string
+  timeBucket: string
+  from: string
+  to: string
+  timezone?: string
+  filters: AnalyticsFilter[]
+}) => {
+  const { t } = useTranslation()
+  const {
+    data: winningData,
+    state: winningState,
+    submit: submitWinning,
+  } = useFetcher<ProjectViewActionData>()
+  const filtersPayload = useMemo(() => JSON.stringify(filters), [filters])
+  const shouldLoadResults = experiment.status !== 'draft'
+
+  useEffect(() => {
+    if (!shouldLoadResults) return
+
+    submitWinning(
+      {
+        intent: 'get-experiment-results',
+        experimentId: experiment.id,
+        period,
+        timeBucket,
+        from,
+        to,
+        timezone: timezone || '',
+        filters: filtersPayload,
+      },
+      { method: 'POST' },
+    )
+  }, [
+    experiment.id,
+    filtersPayload,
+    from,
+    period,
+    shouldLoadResults,
+    submitWinning,
+    timeBucket,
+    timezone,
+    to,
+  ])
+
+  const results =
+    winningData?.success && winningData.data
+      ? (winningData.data as ExperimentResultsSummary)
+      : null
+  const resultVariants = useMemo(
+    () => sortResultVariants(results?.variants || [], experiment.variants),
+    [experiment.variants, results?.variants],
+  )
+  const totalProbability = resultVariants.reduce(
+    (sum, variant) =>
+      sum + normaliseProbability(variant.probabilityOfBeingBest),
+    0,
+  )
+  const hasResultData =
+    Boolean(results?.totalExposures) &&
+    resultVariants.length > 0 &&
+    totalProbability > 0
+  const isLoading = shouldLoadResults && winningState !== 'idle' && !results
+  const leader = hasResultData
+    ? resultVariants.reduce((current, variant) =>
+        variant.probabilityOfBeingBest > current.probabilityOfBeingBest
+          ? variant
+          : current,
+      )
+    : null
+  const isDeclaredWinner = Boolean(
+    results?.hasWinner && leader && results.winnerKey === leader.key,
+  )
+
+  if (isLoading) {
+    return (
+      <div>
+        <span className='block rounded-full py-1'>
+          <span className='block h-1.5 animate-pulse rounded-full bg-gray-200 dark:bg-slate-800' />
+        </span>
+        <Text
+          as='p'
+          size='xs'
+          colour='muted'
+          className='mt-1 text-right tabular-nums'
+        >
+          {t('common.loading')}
+        </Text>
+      </div>
+    )
   }
 
-  return (
-    <Tooltip
-      asChild
-      ariaLabel={t('experiments.split')}
-      contentClassName='bg-gray-50 px-2 py-1 text-gray-900 shadow-md ring-black/10 dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-800'
-      arrowClassName='fill-gray-50 dark:fill-slate-900'
-      text={
-        <ul className='m-0 max-h-[250px] min-w-56 list-none overflow-y-auto p-0 md:max-h-[350px]'>
-          <li className='sticky top-0 mb-1 border-b border-gray-200 bg-gray-50 pb-1 dark:border-slate-800 dark:bg-slate-900'>
-            <Text
-              as='div'
-              size='xs'
-              weight='semibold'
-              colour='primary'
-              truncate
-              className='max-w-[220px] md:text-sm'
-            >
-              {t('experiments.split')}
-            </Text>
-          </li>
-          {variants.map((variant, index) => {
-            const colour = SPLIT_RAIL_COLORS[index % SPLIT_RAIL_COLORS.length]
+  if (!hasResultData || !leader) {
+    return (
+      <div>
+        <span className='block rounded-full py-1'>
+          <span className='block h-1.5 rounded-full bg-gray-200 dark:bg-slate-800' />
+        </span>
+        <Text
+          as='p'
+          size='xs'
+          colour='muted'
+          className='mt-1 text-right tabular-nums'
+        >
+          {t('experiments.noDataYet')}
+        </Text>
+      </div>
+    )
+  }
 
-            return (
-              <li
-                key={variant.id || `${variant.key}-${index}`}
-                className='flex items-center justify-between gap-3 py-px leading-snug'
+  const leaderLabel = `${leader.name} ${formatProbability(
+    leader.probabilityOfBeingBest,
+  )}`
+
+  return (
+    <div>
+      <Tooltip
+        asChild
+        ariaLabel={t('experiments.probabilityOfWinning')}
+        contentVariant='chart'
+        text={
+          <ul className='m-0 max-h-[250px] min-w-56 list-none overflow-y-auto p-0 md:max-h-[350px]'>
+            <li className='sticky top-0 mb-1 border-b border-gray-200 bg-gray-50 pb-1 dark:border-slate-800 dark:bg-slate-900'>
+              <Text
+                as='div'
+                size='xs'
+                weight='semibold'
+                colour='primary'
+                truncate
+                className='max-w-[220px] md:text-sm'
               >
-                <div className='mr-4 flex min-w-0 items-center gap-2'>
-                  <span className={cx('size-2 rounded-full', colour)} />
+                {t('experiments.probabilityOfWinning')}
+              </Text>
+            </li>
+            {resultVariants.map((variant, index) => {
+              const colour =
+                VARIANT_RAIL_COLORS[index % VARIANT_RAIL_COLORS.length]
+              const isWinner =
+                results?.hasWinner && results.winnerKey === variant.key
+
+              return (
+                <li
+                  key={variant.key}
+                  className='flex items-center justify-between gap-3 py-px leading-snug'
+                >
+                  <div className='mr-4 flex min-w-0 items-center gap-2'>
+                    <span className={cx('size-2 rounded-full', colour)} />
+                    <Text
+                      as='span'
+                      size='xs'
+                      colour='secondary'
+                      truncate
+                      className='md:text-sm'
+                    >
+                      {variant.name}
+                    </Text>
+                    {variant.isControl ? (
+                      <Text
+                        as='span'
+                        size='xxs'
+                        colour='secondary'
+                        className='rounded bg-gray-100 px-1.5 py-0.5 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'
+                      >
+                        {t('experiments.control')}
+                      </Text>
+                    ) : null}
+                    {isWinner ? (
+                      <Text
+                        as='span'
+                        size='xxs'
+                        colour='success'
+                        className='rounded bg-emerald-50 px-1.5 py-0.5 ring-1 ring-emerald-200 dark:bg-emerald-900/20 dark:ring-emerald-800/70'
+                      >
+                        {t('experiments.winner')}
+                      </Text>
+                    ) : null}
+                  </div>
                   <Text
                     as='span'
                     size='xs'
-                    colour='secondary'
-                    truncate
-                    className='md:text-sm'
+                    colour='primary'
+                    className='font-mono whitespace-nowrap tabular-nums md:text-sm'
                   >
-                    {variant.name}
+                    {formatProbability(variant.probabilityOfBeingBest)}
                   </Text>
-                  {variant.isControl ? (
-                    <Text
-                      as='span'
-                      size='xxs'
-                      colour='secondary'
-                      className='rounded bg-gray-100 px-1.5 py-0.5 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'
-                    >
-                      {t('experiments.control')}
-                    </Text>
-                  ) : null}
-                </div>
-                <Text
-                  as='span'
-                  size='xs'
-                  colour='primary'
-                  className='font-mono whitespace-nowrap tabular-nums md:text-sm'
-                >
-                  {variant.rolloutPercentage}%
-                </Text>
-              </li>
-            )
-          })}
-        </ul>
-      }
-      tooltipNode={
-        <span className='block cursor-help rounded-full py-1'>
-          <span className='flex h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
-            {variants.map((variant, index) => (
-              <span
-                key={variant.id || `${variant.key}-${index}`}
-                className={SPLIT_RAIL_COLORS[index % SPLIT_RAIL_COLORS.length]}
-                style={{
-                  width: `${
-                    (variant.rolloutPercentage / totalAllocation) * 100
-                  }%`,
-                }}
-              />
-            ))}
+                </li>
+              )
+            })}
+          </ul>
+        }
+        tooltipNode={
+          <span className='block cursor-help rounded-full py-1'>
+            <span className='flex h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
+              {resultVariants.map((variant, index) => (
+                <span
+                  key={variant.key}
+                  className={
+                    VARIANT_RAIL_COLORS[index % VARIANT_RAIL_COLORS.length]
+                  }
+                  style={{
+                    width: `${
+                      (normaliseProbability(variant.probabilityOfBeingBest) /
+                        totalProbability) *
+                      100
+                    }%`,
+                  }}
+                />
+              ))}
+            </span>
           </span>
-        </span>
-      }
-    />
+        }
+      />
+      <Text
+        as='p'
+        size='xs'
+        colour={isDeclaredWinner ? 'success' : 'muted'}
+        weight={isDeclaredWinner ? 'semibold' : 'normal'}
+        truncate
+        title={leaderLabel}
+        className='mt-1 text-right tabular-nums'
+      >
+        {leaderLabel}
+      </Text>
+    </div>
   )
 }
 
@@ -271,6 +450,12 @@ const ExperimentRow = ({
   onStart,
   onPause,
   onComplete,
+  period,
+  timeBucket,
+  from,
+  to,
+  timezone,
+  filters,
 }: ExperimentRowProps) => {
   const { t } = useTranslation()
   const location = useLocation()
@@ -284,13 +469,6 @@ const ExperimentRow = ({
     [experiment, t],
   )
   const launchBlockerText = launchGuardrails.blockers.join(', ')
-  const allocationLabel = useMemo(
-    () =>
-      experiment.variants
-        .map((variant) => `${variant.rolloutPercentage}%`)
-        .join(' / '),
-    [experiment.variants],
-  )
   const timingLabel = useMemo(() => {
     if (experiment.status === 'completed' && experiment.endedAt) {
       return t('experiments.endedAtDate', {
@@ -369,7 +547,7 @@ const ExperimentRow = ({
         <div className='flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-x-4 sm:px-5'>
           <Link
             to={{ search: resultsSearch }}
-            className='grid min-w-0 flex-auto gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900'
+            className='grid min-w-0 flex-auto gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 sm:grid-cols-[minmax(0,1fr)_220px] sm:items-center dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900'
           >
             <div className='min-w-0'>
               <div className='flex min-w-0 flex-wrap items-center gap-2'>
@@ -409,22 +587,18 @@ const ExperimentRow = ({
                 <Text as='span' size='xs' colour='muted'>
                   {timingLabel}
                 </Text>
-                <span className='size-1 rounded-full bg-gray-300 sm:hidden dark:bg-slate-700' />
-                <Text as='span' size='xs' colour='muted' className='sm:hidden'>
-                  {allocationLabel}
-                </Text>
               </div>
             </div>
-            <div className='hidden sm:block'>
-              <ExperimentSplitRail variants={experiment.variants} />
-              <Text
-                as='p'
-                size='xs'
-                colour='muted'
-                className='mt-1 text-right tabular-nums'
-              >
-                {allocationLabel}
-              </Text>
+            <div>
+              <ExperimentWinningRail
+                experiment={experiment}
+                period={period}
+                timeBucket={timeBucket}
+                from={from}
+                to={to}
+                timezone={timezone}
+                filters={filters}
+              />
             </div>
           </Link>
           <div className='flex w-full flex-wrap items-center gap-1 sm:w-auto sm:shrink-0 sm:justify-end'>
@@ -668,7 +842,7 @@ const ExperimentsView = ({
 }: ExperimentsViewProps) => {
   const { id } = useCurrentProject()
   const { experimentsRefreshTrigger } = useRefreshTriggers()
-  const { timeBucket } = useViewProjectContext()
+  const { filters, timeBucket } = useViewProjectContext()
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const listFetcher = useFetcher<ProjectViewActionData>()
@@ -1110,6 +1284,12 @@ const ExperimentsView = ({
                   onStart={handleStartExperiment}
                   onPause={handlePauseExperiment}
                   onComplete={handleCompleteExperiment}
+                  period={period}
+                  timeBucket={timeBucket}
+                  from={from}
+                  to={to}
+                  timezone={timezone}
+                  filters={filters}
                 />
               ))}
             </ul>
