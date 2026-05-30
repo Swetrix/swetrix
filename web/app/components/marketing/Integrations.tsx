@@ -272,7 +272,7 @@ const Integrations = () => {
           >
             {t('main.integrations.title')}
           </Text>
-          <Text as='p' size='lg' colour='secondary' className='mt-6 leading-8'>
+          <Text as='p' size='base' colour='secondary' className='mt-6'>
             {t('main.integrations.description')}
           </Text>
         </div>
