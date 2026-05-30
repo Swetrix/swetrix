@@ -396,7 +396,7 @@ const MarketingPricing = ({
               onChange={(event) =>
                 setSelectedTierIndex(Number(event.target.value))
               }
-              className='h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600 [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-blue-600 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-sm [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-600 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-sm'
+              className='h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600 active:[&::-moz-range-thumb]:cursor-grabbing active:[&::-webkit-slider-thumb]:cursor-grabbing [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-blue-600 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-sm [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-600 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-sm'
               style={{
                 background: `linear-gradient(to right, rgb(37 99 235) 0%, rgb(37 99 235) ${sliderPercent}%, rgb(209 213 219) ${sliderPercent}%, rgb(209 213 219) 100%)`,
               }}
