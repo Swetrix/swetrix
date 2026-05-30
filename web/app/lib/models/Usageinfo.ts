@@ -4,6 +4,7 @@ export interface UsageInfo {
   customEvents: number
   captcha: number
   errors: number
+  projects: number
   trafficPerc: number
   customEventsPerc: number
   captchaPerc: number

@@ -1,0 +1,584 @@
+export type CurrencyCode = 'USD' | 'EUR' | 'GBP'
+export type BillingInterval = 'monthly' | 'yearly'
+export type PlanTypeCode = 'standard' | 'plus' | 'enterprise'
+export type EventTierCode =
+  | '100k'
+  | '200k'
+  | '500k'
+  | '1m'
+  | '2m'
+  | '5m'
+  | '10m'
+  | '15m'
+  | '20m'
+  | '30m'
+  | '40m'
+  | '50m'
+
+export type PlanCode =
+  | 'none'
+  | 'free'
+  | 'trial'
+  | 'hobby'
+  | '50k'
+  | 'freelancer'
+  | '100k'
+  | '200k'
+  | '500k'
+  | 'startup'
+  | '2m'
+  | 'enterprise'
+  | '10m'
+  | '15m'
+  | '20m'
+  | '30m'
+  | '40m'
+  | '50m'
+
+export interface PlanPrice {
+  amount: number
+  paddlePlanId: number | null
+}
+
+export interface PlanLimit {
+  index: number
+  planCode: PlanCode
+  monthlyUsageLimit: number
+  legacy: boolean
+  price: Record<CurrencyCode, Record<BillingInterval, number>>
+  pid?: number
+  ypid?: number
+  maxAlerts: number
+}
+
+type PlanPriceCatalog = Record<
+  PlanTypeCode,
+  Partial<
+    Record<EventTierCode, Record<BillingInterval, Record<CurrencyCode, PlanPrice>>>
+  >
+>
+
+export const PLAN_TYPES = {
+  standard: {
+    nameKey: 'pricing.planTypes.standard.name',
+    sortOrder: 1,
+    descriptionKey: 'pricing.planTypes.standard.description',
+    ctaKey: 'pricing.planTypes.standard.cta',
+  },
+  plus: {
+    nameKey: 'pricing.planTypes.plus.name',
+    sortOrder: 2,
+    descriptionKey: 'pricing.planTypes.plus.description',
+    ctaKey: 'pricing.planTypes.plus.cta',
+  },
+  enterprise: {
+    nameKey: 'pricing.planTypes.enterprise.name',
+    sortOrder: 3,
+    contactSales: true,
+    descriptionKey: 'pricing.planTypes.enterprise.description',
+    ctaKey: 'pricing.planTypes.enterprise.cta',
+  },
+} as const satisfies Record<
+  PlanTypeCode,
+  {
+    nameKey: string
+    sortOrder: number
+    descriptionKey: string
+    ctaKey: string
+    contactSales?: boolean
+  }
+>
+
+export const EVENT_TIERS = {
+  '100k': { monthlyEvents: 100000, sortOrder: 1, planCode: '100k' },
+  '200k': { monthlyEvents: 200000, sortOrder: 2, planCode: '200k' },
+  '500k': { monthlyEvents: 500000, sortOrder: 3, planCode: '500k' },
+  '1m': { monthlyEvents: 1000000, sortOrder: 4, planCode: 'startup' },
+  '2m': { monthlyEvents: 2000000, sortOrder: 5, planCode: '2m' },
+  '5m': { monthlyEvents: 5000000, sortOrder: 6, planCode: 'enterprise' },
+  '10m': { monthlyEvents: 10000000, sortOrder: 7, planCode: '10m' },
+  '15m': { monthlyEvents: 15000000, sortOrder: 8, planCode: '15m' },
+  '20m': { monthlyEvents: 20000000, sortOrder: 9, planCode: '20m' },
+  '30m': { monthlyEvents: 30000000, sortOrder: 10, planCode: '30m' },
+  '40m': { monthlyEvents: 40000000, sortOrder: 11, planCode: '40m' },
+  '50m': { monthlyEvents: 50000000, sortOrder: 12, planCode: '50m' },
+} as const satisfies Record<
+  EventTierCode,
+  { monthlyEvents: number; sortOrder: number; planCode: PlanCode }
+>
+
+export const EVENT_TIER_CODES = Object.keys(EVENT_TIERS) as EventTierCode[]
+export const PLAN_TYPE_CODES = Object.keys(PLAN_TYPES) as PlanTypeCode[]
+export const SELF_SERVE_PLAN_TYPES: PlanTypeCode[] = ['standard', 'plus']
+
+const price = (
+  monthly: Record<CurrencyCode, number>,
+  yearly: Record<CurrencyCode, number>,
+  paddleMonthly: number | null = null,
+  paddleYearly: number | null = null,
+): Record<BillingInterval, Record<CurrencyCode, PlanPrice>> => ({
+  monthly: {
+    USD: { amount: monthly.USD, paddlePlanId: paddleMonthly },
+    EUR: { amount: monthly.EUR, paddlePlanId: paddleMonthly },
+    GBP: { amount: monthly.GBP, paddlePlanId: paddleMonthly },
+  },
+  yearly: {
+    USD: { amount: yearly.USD, paddlePlanId: paddleYearly },
+    EUR: { amount: yearly.EUR, paddlePlanId: paddleYearly },
+    GBP: { amount: yearly.GBP, paddlePlanId: paddleYearly },
+  },
+})
+
+export const PLAN_PRICES: PlanPriceCatalog = {
+  standard: {
+    '100k': price(
+      { USD: 19, EUR: 17, GBP: 15 },
+      { USD: 190, EUR: 170, GBP: 150 },
+      916455,
+      916456,
+    ),
+    '200k': price(
+      { USD: 29, EUR: 25, GBP: 23 },
+      { USD: 290, EUR: 250, GBP: 230 },
+      854654,
+      854655,
+    ),
+    '500k': price(
+      { USD: 49, EUR: 42, GBP: 39 },
+      { USD: 490, EUR: 420, GBP: 390 },
+      854656,
+      854657,
+    ),
+    '1m': price(
+      { USD: 79, EUR: 69, GBP: 59 },
+      { USD: 790, EUR: 690, GBP: 590 },
+      752317,
+      776470,
+    ),
+    '2m': price(
+      { USD: 119, EUR: 99, GBP: 89 },
+      { USD: 1190, EUR: 990, GBP: 890 },
+      854663,
+      854664,
+    ),
+    '5m': price(
+      { USD: 179, EUR: 149, GBP: 139 },
+      { USD: 1790, EUR: 1490, GBP: 1390 },
+      752318,
+      776471,
+    ),
+    '10m': price(
+      { USD: 249, EUR: 209, GBP: 189 },
+      { USD: 2490, EUR: 2090, GBP: 1890 },
+      854665,
+      854666,
+    ),
+    '15m': price(
+      { USD: 349, EUR: 299, GBP: 259 },
+      { USD: 3490, EUR: 2990, GBP: 2590 },
+      916451,
+      916452,
+    ),
+    '20m': price(
+      { USD: 419, EUR: 359, GBP: 319 },
+      { USD: 4190, EUR: 3590, GBP: 3190 },
+      916453,
+      916454,
+    ),
+    '30m': price(
+      { USD: 579, EUR: 499, GBP: 449 },
+      { USD: 5790, EUR: 4990, GBP: 4490 },
+    ),
+    '40m': price(
+      { USD: 739, EUR: 639, GBP: 579 },
+      { USD: 7390, EUR: 6390, GBP: 5790 },
+    ),
+    '50m': price(
+      { USD: 899, EUR: 779, GBP: 699 },
+      { USD: 8990, EUR: 7790, GBP: 6990 },
+    ),
+  },
+  plus: {
+    '100k': price(
+      { USD: 49, EUR: 42, GBP: 39 },
+      { USD: 490, EUR: 420, GBP: 390 },
+    ),
+    '200k': price(
+      { USD: 79, EUR: 69, GBP: 59 },
+      { USD: 790, EUR: 690, GBP: 590 },
+    ),
+    '500k': price(
+      { USD: 129, EUR: 109, GBP: 99 },
+      { USD: 1290, EUR: 1090, GBP: 990 },
+    ),
+    '1m': price(
+      { USD: 199, EUR: 169, GBP: 149 },
+      { USD: 1990, EUR: 1690, GBP: 1490 },
+    ),
+    '2m': price(
+      { USD: 299, EUR: 249, GBP: 229 },
+      { USD: 2990, EUR: 2490, GBP: 2290 },
+    ),
+    '5m': price(
+      { USD: 449, EUR: 379, GBP: 349 },
+      { USD: 4490, EUR: 3790, GBP: 3490 },
+    ),
+    '10m': price(
+      { USD: 649, EUR: 549, GBP: 499 },
+      { USD: 6490, EUR: 5490, GBP: 4990 },
+    ),
+    '15m': price(
+      { USD: 899, EUR: 759, GBP: 679 },
+      { USD: 8990, EUR: 7590, GBP: 6790 },
+    ),
+    '20m': price(
+      { USD: 1099, EUR: 929, GBP: 829 },
+      { USD: 10990, EUR: 9290, GBP: 8290 },
+    ),
+    '30m': price(
+      { USD: 1499, EUR: 1299, GBP: 1199 },
+      { USD: 14990, EUR: 12990, GBP: 11990 },
+    ),
+    '40m': price(
+      { USD: 1899, EUR: 1649, GBP: 1499 },
+      { USD: 18990, EUR: 16490, GBP: 14990 },
+    ),
+    '50m': price(
+      { USD: 2299, EUR: 1999, GBP: 1799 },
+      { USD: 22990, EUR: 19990, GBP: 17990 },
+    ),
+  },
+  enterprise: {},
+}
+
+export const PLAN_ENTITLEMENTS = {
+  standard: {
+    websites: 50,
+    teamMembers: 10,
+    organisations: 3,
+    apiRateLimitPerHour: 600,
+    sessionReplaysIncluded: 0,
+    featureKeys: [
+      'pricing.benefits.coreAnalytics',
+      'pricing.benefits.customEventsAndGoals',
+      'pricing.benefits.webVitals',
+      'pricing.benefits.errorTracking',
+      'pricing.benefits.emailReports',
+      'pricing.benefits.funnelsAndJourneys',
+      'pricing.benefits.visitorSessionsAndProfiles',
+      'pricing.benefits.featureFlags',
+      'pricing.benefits.experiments',
+      'pricing.benefits.revenueAnalytics',
+      'pricing.benefits.standardApi',
+    ],
+  },
+  plus: {
+    websites: 100,
+    teamMembers: 25,
+    organisations: 10,
+    apiRateLimitPerHour: 5000,
+    sessionReplaysIncluded: 'byEventTier',
+    sessionReplayQuota: {
+      '100k': 5000,
+      '200k': 10000,
+      '500k': 25000,
+      '1m': 50000,
+      '2m': 100000,
+      '5m': 250000,
+      '10m': 500000,
+      '15m': 750000,
+      '20m': 1000000,
+      '30m': 1500000,
+      '40m': 2000000,
+      '50m': 2500000,
+    },
+    featureKeys: [
+      'pricing.benefits.everythingInStandard',
+      'pricing.benefits.sessionReplay',
+      'pricing.benefits.moreOrganisations',
+      'pricing.benefits.higherApiLimits',
+      'pricing.benefits.dataExportWorkflows',
+      'pricing.benefits.largerReplayQuota',
+      'pricing.benefits.prioritySupport',
+    ],
+  },
+  enterprise: {
+    websites: 'custom',
+    teamMembers: 'custom',
+    organisations: 'custom',
+    apiRateLimitPerHour: 'custom',
+    sessionReplaysIncluded: 'custom',
+    featureKeys: [
+      'pricing.benefits.everythingInPlus',
+      'pricing.benefits.ssoSaml',
+      'pricing.benefits.dedicatedInstance',
+      'pricing.benefits.onPremise',
+      'pricing.benefits.manualInvoicing',
+      'pricing.benefits.sla',
+      'pricing.benefits.whitelabeling',
+      'pricing.benefits.securityLegalSupport',
+    ],
+  },
+} as const
+
+export const ADDONS = {
+  websiteBundles: [
+    {
+      code: 'websites_50',
+      quantity: 50,
+      labelKey: 'pricing.addons.websiteBundle',
+      monthly: { USD: 7.5, EUR: 7, GBP: 6 },
+    },
+    {
+      code: 'websites_250',
+      quantity: 250,
+      labelKey: 'pricing.addons.websiteBundle',
+      monthly: { USD: 30, EUR: 27, GBP: 24 },
+    },
+    {
+      code: 'websites_1000',
+      quantity: 1000,
+      labelKey: 'pricing.addons.websiteBundle',
+      monthly: { USD: 99, EUR: 89, GBP: 79 },
+    },
+  ],
+  sessionReplayBundles: [
+    {
+      code: 'replays_5000',
+      quantity: 5000,
+      labelKey: 'pricing.addons.sessionReplayBundle',
+      monthly: { USD: 19, EUR: 17, GBP: 15 },
+    },
+    {
+      code: 'replays_25000',
+      quantity: 25000,
+      labelKey: 'pricing.addons.sessionReplayBundle',
+      monthly: { USD: 79, EUR: 69, GBP: 59 },
+    },
+    {
+      code: 'replays_100000',
+      quantity: 100000,
+      labelKey: 'pricing.addons.sessionReplayBundle',
+      monthly: { USD: 249, EUR: 209, GBP: 189 },
+    },
+  ],
+} as const
+
+export const LEGACY_PLAN_LIMITS = {
+  none: {
+    index: 0,
+    planCode: 'none',
+    monthlyUsageLimit: 0,
+    legacy: false,
+    price: {
+      USD: { monthly: 0, yearly: 0 },
+      EUR: { monthly: 0, yearly: 0 },
+      GBP: { monthly: 0, yearly: 0 },
+    },
+    maxAlerts: 0,
+  },
+  free: {
+    index: 0,
+    planCode: 'free',
+    monthlyUsageLimit: 5000,
+    legacy: true,
+    price: {
+      USD: { monthly: 0, yearly: 0 },
+      EUR: { monthly: 0, yearly: 0 },
+      GBP: { monthly: 0, yearly: 0 },
+    },
+    maxAlerts: 1,
+  },
+  trial: {
+    index: 0,
+    planCode: 'trial',
+    monthlyUsageLimit: 10000000,
+    legacy: false,
+    price: {
+      USD: { monthly: 0, yearly: 0 },
+      EUR: { monthly: 0, yearly: 0 },
+      GBP: { monthly: 0, yearly: 0 },
+    },
+    maxAlerts: 50,
+  },
+  hobby: {
+    index: 1,
+    planCode: 'hobby',
+    monthlyUsageLimit: 10000,
+    legacy: true,
+    price: {
+      USD: { monthly: 5, yearly: 50 },
+      EUR: { monthly: 5, yearly: 50 },
+      GBP: { monthly: 4, yearly: 40 },
+    },
+    pid: 813694,
+    ypid: 813695,
+    maxAlerts: 50,
+  },
+  '50k': {
+    index: 1.5,
+    planCode: '50k',
+    monthlyUsageLimit: 50000,
+    legacy: true,
+    price: {
+      USD: { monthly: 12, yearly: 120 },
+      EUR: { monthly: 10, yearly: 100 },
+      GBP: { monthly: 10, yearly: 100 },
+    },
+    pid: 918109,
+    ypid: 918110,
+    maxAlerts: 50,
+  },
+  freelancer: {
+    index: 2,
+    planCode: 'freelancer',
+    monthlyUsageLimit: 100000,
+    legacy: true,
+    price: {
+      USD: { monthly: 15, yearly: 150 },
+      EUR: { monthly: 15, yearly: 150 },
+      GBP: { monthly: 14, yearly: 140 },
+    },
+    pid: 752316,
+    ypid: 776469,
+    maxAlerts: 50,
+  },
+} as const satisfies Partial<Record<PlanCode, PlanLimit>>
+
+const createPlanLimit = (
+  eventTierCode: EventTierCode,
+  index: number,
+): PlanLimit => {
+  const tier = EVENT_TIERS[eventTierCode]
+  const monthly = PLAN_PRICES.standard[eventTierCode]?.monthly
+  const yearly = PLAN_PRICES.standard[eventTierCode]?.yearly
+
+  return {
+    index,
+    planCode: tier.planCode,
+    monthlyUsageLimit: tier.monthlyEvents,
+    legacy: false,
+    price: {
+      USD: {
+        monthly: monthly?.USD.amount ?? 0,
+        yearly: yearly?.USD.amount ?? 0,
+      },
+      EUR: {
+        monthly: monthly?.EUR.amount ?? 0,
+        yearly: yearly?.EUR.amount ?? 0,
+      },
+      GBP: {
+        monthly: monthly?.GBP.amount ?? 0,
+        yearly: yearly?.GBP.amount ?? 0,
+      },
+    },
+    ...(monthly?.USD.paddlePlanId ? { pid: monthly.USD.paddlePlanId } : {}),
+    ...(yearly?.USD.paddlePlanId ? { ypid: yearly.USD.paddlePlanId } : {}),
+    maxAlerts: 50,
+  }
+}
+
+export const PLAN_LIMITS = {
+  ...LEGACY_PLAN_LIMITS,
+  ...EVENT_TIER_CODES.reduce(
+    (limits, tierCode, index) => ({
+      ...limits,
+      [EVENT_TIERS[tierCode].planCode]: createPlanLimit(tierCode, index + 2.5),
+    }),
+    {} as Record<PlanCode, PlanLimit>,
+  ),
+} as Record<PlanCode, PlanLimit>
+
+export const STANDARD_PLANS = EVENT_TIER_CODES.map(
+  (tierCode) => EVENT_TIERS[tierCode].planCode,
+)
+
+export const PURCHASABLE_LEGACY_PLANS: PlanCode[] = ['hobby', '50k']
+
+export const isPaidPlanCode = (planCode?: string | null) =>
+  !!planCode && !['none', 'free', 'trial'].includes(planCode)
+
+export const getEffectivePlanType = (
+  planType?: string | null,
+  planCode?: string | null,
+): PlanTypeCode => {
+  if (planType && planType in PLAN_TYPES) {
+    return planType as PlanTypeCode
+  }
+
+  if (isPaidPlanCode(planCode)) {
+    return 'standard'
+  }
+
+  return 'standard'
+}
+
+export const getEventTierByPlanCode = (planCode?: string | null) =>
+  EVENT_TIER_CODES.map((code) => ({ code, ...EVENT_TIERS[code] })).find(
+    (tier) => tier.planCode === planCode,
+  )
+
+export const getPlanPrice = (
+  planType: PlanTypeCode,
+  eventTier: EventTierCode,
+  billingInterval: BillingInterval,
+  currencyCode: CurrencyCode,
+) =>
+  PLAN_PRICES[planType]?.[eventTier]?.[billingInterval]?.[currencyCode] ??
+  PLAN_PRICES[planType]?.[eventTier]?.[billingInterval]?.USD ??
+  null
+
+export const getPlanMonthlyPrice = (
+  planType: PlanTypeCode,
+  eventTier: EventTierCode,
+  billingInterval: BillingInterval,
+  currencyCode: CurrencyCode,
+) => {
+  const planPrice = getPlanPrice(
+    planType,
+    eventTier,
+    billingInterval,
+    currencyCode,
+  )
+
+  if (!planPrice) return null
+  return billingInterval === 'yearly'
+    ? Math.round((planPrice.amount / 12) * 100) / 100
+    : planPrice.amount
+}
+
+export const getIncludedSessionReplays = (
+  planType: PlanTypeCode,
+  eventTier: EventTierCode,
+) => {
+  const entitlements = PLAN_ENTITLEMENTS[planType]
+
+  if (typeof entitlements.sessionReplaysIncluded === 'number') {
+    return entitlements.sessionReplaysIncluded
+  }
+
+  if (
+    entitlements.sessionReplaysIncluded === 'byEventTier' &&
+    'sessionReplayQuota' in entitlements
+  ) {
+    return entitlements.sessionReplayQuota[eventTier] ?? 0
+  }
+
+  return entitlements.sessionReplaysIncluded
+}
+
+export const formatEventTier = (eventTier: EventTierCode) =>
+  EVENT_TIERS[eventTier].monthlyEvents.toLocaleString('en-US')
+
+export const formatCompactNumber = (value: number) => {
+  if (value >= 1000000) {
+    const compact = value / 1000000
+    return `${Number.isInteger(compact) ? compact : compact.toFixed(1)}M`
+  }
+
+  if (value >= 1000) {
+    return `${value / 1000}k`
+  }
+
+  return String(value)
+}

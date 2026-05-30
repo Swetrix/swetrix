@@ -21,6 +21,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.10",
     "@nivo/sankey": "^0.99.0",
+    "@number-flow/react": "^0.6.0",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-router/fs-routes": "^7.15.1",

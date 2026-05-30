@@ -12,6 +12,15 @@ import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import { Metainfo } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { User } from '~/lib/models/User'
+import {
+  EVENT_TIERS,
+  PLAN_TYPES,
+  getPlanPrice,
+  type BillingInterval,
+  type CurrencyCode,
+  type EventTierCode,
+  type PlanTypeCode,
+} from '~/lib/pricing/catalog'
 import UserSettings from '~/pages/UserSettings'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
@@ -92,6 +101,60 @@ export interface UserSettingsActionData {
     twoFactorRecoveryCode?: string
   }
   data?: unknown
+}
+
+const resolveCatalogSelection = (formData: FormData) => {
+  const rawPlanType = formData.get('planType')?.toString()
+  const rawEventTier = formData.get('eventTier')?.toString()
+  const rawBillingInterval = formData.get('billingFrequency')?.toString()
+  const rawCurrencyCode = formData.get('currency')?.toString() || 'USD'
+
+  if (rawPlanType || rawEventTier || rawBillingInterval) {
+    if (!rawPlanType || !(rawPlanType in PLAN_TYPES)) {
+      return { error: 'billing.invalidPlanSelection' }
+    }
+    if (!rawEventTier || !(rawEventTier in EVENT_TIERS)) {
+      return { error: 'billing.invalidPlanSelection' }
+    }
+    if (
+      rawBillingInterval !== 'monthly' &&
+      rawBillingInterval !== 'yearly'
+    ) {
+      return { error: 'billing.invalidPlanSelection' }
+    }
+    if (!['USD', 'EUR', 'GBP'].includes(rawCurrencyCode)) {
+      return { error: 'billing.invalidCurrency' }
+    }
+
+    const planType = rawPlanType as PlanTypeCode
+    const eventTier = rawEventTier as EventTierCode
+    const billingFrequency = rawBillingInterval as BillingInterval
+    const currency = rawCurrencyCode as CurrencyCode
+    const selectedPrice = getPlanPrice(
+      planType,
+      eventTier,
+      billingFrequency,
+      currency,
+    )
+
+    if (!selectedPrice?.paddlePlanId) {
+      return { error: 'billing.planNotConfiguredForCheckout' }
+    }
+
+    return {
+      planId: selectedPrice.paddlePlanId,
+      planType,
+      eventTier,
+    }
+  }
+
+  const planId = Number(formData.get('planId'))
+
+  if (!Number.isFinite(planId) || planId <= 0 || !Number.isInteger(planId)) {
+    return { error: 'billing.invalidPlanSelection' }
+  }
+
+  return { planId }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -495,22 +558,18 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'preview-subscription-update': {
-      const planId = Number(formData.get('planId'))
+      const selection = resolveCatalogSelection(formData)
 
-      if (
-        !Number.isFinite(planId) ||
-        planId <= 0 ||
-        !Number.isInteger(planId)
-      ) {
+      if ('error' in selection) {
         return data<UserSettingsActionData>(
-          { intent, error: 'Invalid planId' },
+          { intent, error: selection.error },
           { status: 400 },
         )
       }
 
       const result = await serverFetch(request, 'user/preview-plan', {
         method: 'POST',
-        body: { planId },
+        body: selection,
       })
 
       if (result.error) {
@@ -527,15 +586,11 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'generate-pay-link': {
-      const planId = Number(formData.get('planId'))
+      const selection = resolveCatalogSelection(formData)
 
-      if (
-        !Number.isFinite(planId) ||
-        planId <= 0 ||
-        !Number.isInteger(planId)
-      ) {
+      if ('error' in selection) {
         return data<UserSettingsActionData>(
-          { intent, error: 'Invalid planId' },
+          { intent, error: selection.error },
           { status: 400 },
         )
       }
@@ -545,7 +600,7 @@ export async function action({ request }: ActionFunctionArgs) {
         'user/generate-pay-link',
         {
           method: 'POST',
-          body: { planId },
+          body: selection,
         },
       )
 
@@ -563,22 +618,18 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'change-subscription-plan': {
-      const planId = Number(formData.get('planId'))
+      const selection = resolveCatalogSelection(formData)
 
-      if (
-        !Number.isFinite(planId) ||
-        planId <= 0 ||
-        !Number.isInteger(planId)
-      ) {
+      if ('error' in selection) {
         return data<UserSettingsActionData>(
-          { intent, error: 'Invalid planId' },
+          { intent, error: selection.error },
           { status: 400 },
         )
       }
 
       const result = await serverFetch(request, 'user/change-plan', {
         method: 'POST',
-        body: { planId },
+        body: selection,
       })
 
       if (result.error) {

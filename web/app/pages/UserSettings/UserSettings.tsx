@@ -181,6 +181,7 @@ const DEFAULT_USAGE_INFO: UsageInfo = {
   errors: 0,
   customEvents: 0,
   captcha: 0,
+  projects: 0,
   trafficPerc: 0,
   errorsPerc: 0,
   customEventsPerc: 0,
@@ -272,7 +273,11 @@ const UserSettings = () => {
     cancellationEffectiveDate,
     subCancelURL,
     maxEventsCount = 0,
-  } = user || {}
+    maxProjects = 0,
+    maxApiKeyRequestsPerHour = 0,
+    sessionReplaysIncluded = 0,
+    purchasedWebsiteAddons = 0,
+  } = user || ({} as Partial<User>)
 
   const isSubscriber = !['none', 'trial', 'free'].includes(planCode || '')
   const isLegacyTrial = planCode === 'trial'
@@ -291,6 +296,16 @@ const UserSettings = () => {
     return Math.min(100, Math.max(0, raw))
   })()
   const remainingUsage = _round(Math.max(0, 100 - totalUsage), 2)
+  const projectsUsage =
+    maxProjects > 0
+      ? Math.min(100, _round((usageInfo.projects / maxProjects) * 100, 2))
+      : 0
+  const replayLimitLabel =
+    typeof sessionReplaysIncluded === 'number'
+      ? sessionReplaysIncluded.toLocaleString()
+      : sessionReplaysIncluded === 'custom'
+        ? t('pricing.custom')
+        : sessionReplaysIncluded || '0'
 
   const isTrialEnded = (() => {
     if (!trialEndDate) {
@@ -1649,6 +1664,61 @@ const UserSettings = () => {
                               percentage: remainingUsage,
                             })}
                           </Text>
+                        </div>
+
+                        <div className='mt-5 grid gap-4 border-t border-gray-200 pt-4 sm:grid-cols-3 dark:border-slate-800'>
+                          <div>
+                            <Text as='p' size='xs' colour='muted'>
+                              {t('billing.websites')}
+                            </Text>
+                            <Text as='p' size='sm' weight='semibold' className='mt-1'>
+                              {(usageInfo.projects || 0).toLocaleString()} /{' '}
+                              {(maxProjects || 0).toLocaleString()}
+                            </Text>
+                            {purchasedWebsiteAddons ? (
+                              <Text as='p' size='xs' colour='muted' className='mt-1'>
+                                {t('billing.addedWebsites', {
+                                  amount: purchasedWebsiteAddons.toLocaleString(),
+                                })}
+                              </Text>
+                            ) : null}
+                            <div className='mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
+                              <div
+                                className='h-full rounded-full bg-slate-900 dark:bg-slate-100'
+                                style={{ width: `${projectsUsage}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <Text as='p' size='xs' colour='muted'>
+                              {t('billing.sessionReplays')}
+                            </Text>
+                            <Text as='p' size='sm' weight='semibold' className='mt-1'>
+                              {t('billing.perMonthQuota', {
+                                amount: replayLimitLabel,
+                              })}
+                            </Text>
+                            <Text as='p' size='xs' colour='muted' className='mt-1'>
+                              {t('billing.recordedSessionsQuota')}
+                            </Text>
+                          </div>
+
+                          <div>
+                            <Text as='p' size='xs' colour='muted'>
+                              {t('billing.api')}
+                            </Text>
+                            <Text as='p' size='sm' weight='semibold' className='mt-1'>
+                              {t('billing.perHourQuota', {
+                                amount: (
+                                  maxApiKeyRequestsPerHour || 0
+                                ).toLocaleString(),
+                              })}
+                            </Text>
+                            <Text as='p' size='xs' colour='muted' className='mt-1'>
+                              {t('billing.currentRateLimit')}
+                            </Text>
+                          </div>
                         </div>
 
                         <Text

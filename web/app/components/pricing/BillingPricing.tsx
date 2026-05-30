@@ -1,34 +1,45 @@
 import dayjs from 'dayjs'
-import _includes from 'lodash/includes'
 import _isNil from 'lodash/isNil'
-import _map from 'lodash/map'
 import _round from 'lodash/round'
-import { QuestionIcon } from '@phosphor-icons/react'
-import React, { memo, useEffect, useMemo, useState } from 'react'
+import { ArrowRightIcon, CheckIcon } from '@phosphor-icons/react'
+import type { TFunction } from 'i18next'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import {
   BillingFrequency,
-  CURRENCIES,
   CONTACT_EMAIL,
-  PLAN_LIMITS,
-  STANDARD_PLANS,
-  PURCHASABLE_LEGACY_PLANS,
+  CURRENCIES,
   paddleLanguageMapping,
+  PLAN_LIMITS,
 } from '~/lib/constants'
 import { Metainfo, DEFAULT_METAINFO } from '~/lib/models/Metainfo'
+import {
+  ADDONS,
+  EVENT_TIER_CODES,
+  EVENT_TIERS,
+  PLAN_ENTITLEMENTS,
+  PLAN_TYPES,
+  getEffectivePlanType,
+  getEventTierByPlanCode,
+  getIncludedSessionReplays,
+  getPlanMonthlyPrice,
+  getPlanPrice,
+  type BillingInterval,
+  type CurrencyCode,
+  type EventTierCode,
+  type PlanTypeCode,
+} from '~/lib/pricing/catalog'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { UserSettingsActionData } from '~/routes/user-settings'
-import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import { Switch } from '~/ui/Switch'
 import { Text } from '~/ui/Text'
-import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
@@ -38,8 +49,51 @@ interface BillingPricingProps {
   openCheckout: (options: Record<string, any>) => boolean
 }
 
+interface PendingSelection {
+  planType: PlanTypeCode
+  eventTier: EventTierCode
+  billingFrequency: BillingInterval
+  currency: CurrencyCode
+}
+
+const planTypeOptions: PlanTypeCode[] = ['standard', 'plus', 'enterprise']
+
 const formatEventsLong = (value: number): string =>
   value.toLocaleString('en-US')
+
+const formatPrice = (amount: number | null) => {
+  if (amount === null) return null
+  return Number.isInteger(amount) ? amount.toFixed(0) : amount.toFixed(2)
+}
+
+const formatReplayQuota = (value: number | string, t: TFunction) => {
+  if (value === 0) return t('pricing.sessionReplay.none')
+  if (typeof value === 'number') {
+    return t('pricing.sessionReplay.included', {
+      amount: formatEventsLong(value),
+    })
+  }
+  return t('pricing.sessionReplay.customQuota')
+}
+
+const getPlanName = (planType: PlanTypeCode, t: TFunction) =>
+  t(`pricing.planTypes.${planType}.name`)
+
+const getCheckoutErrorMessage = (
+  error: string | undefined,
+  t: TFunction,
+) => {
+  if (error?.startsWith('billing.')) {
+    return t(error)
+  }
+
+  return error || t('billing.checkoutPreparationError')
+}
+
+const getSelectionRank = (
+  planType: PlanTypeCode,
+  eventTier: EventTierCode,
+) => PLAN_TYPES[planType].sortOrder * 100 + EVENT_TIERS[eventTier].sortOrder
 
 const BillingPricing = ({
   lastEvent,
@@ -57,24 +111,34 @@ const BillingPricing = ({
   const changePlanFetcher = useFetcher<UserSettingsActionData>()
   const generatePayLinkFetcher = useFetcher<UserSettingsActionData>()
 
-  const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
-  const [loadingTier, setLoadingTier] = useState<any>(null)
+  const currentPlanType = getEffectivePlanType(user?.planType, user?.planCode)
+  const currentEventTier =
+    getEventTierByPlanCode(user?.planCode)?.code || '100k'
+
+  const [selectedPlanType, setSelectedPlanType] =
+    useState<PlanTypeCode>(currentPlanType)
+  const [selectedEventTier, setSelectedEventTier] =
+    useState<EventTierCode>(currentEventTier)
+  const [selectedBillingFrequency, setSelectedBillingFrequency] =
+    useState<BillingInterval>(
+      (user?.billingFrequency as BillingInterval) || BillingFrequency.monthly,
+    )
+  const [selectionLoading, setSelectionLoading] = useState(false)
   const [
     isNewPlanConfirmationModalOpened,
     setIsNewPlanConfirmationModalOpened,
   ] = useState(false)
-  const [newPlanId, setNewPlanId] = useState<number | null>(null)
-  const [downgradeTo, setDowngradeTo] = useState<{
-    planCode: string
-    name: string
-    pid: string
-    ypid: string
-  } | null>(null)
+  const [pendingSelection, setPendingSelection] =
+    useState<PendingSelection | null>(null)
   const [showDowngradeModal, setShowDowngradeModal] = useState(false)
-  const [billingFrequency, setBillingFrequency] = useState(
-    user?.billingFrequency || BillingFrequency.monthly,
-  )
-  const [enableLegacyPlans, setEnableLegacyPlans] = useState(false)
+
+  useEffect(() => {
+    setSelectedPlanType(currentPlanType)
+    setSelectedEventTier(currentEventTier)
+    setSelectedBillingFrequency(
+      (user?.billingFrequency as BillingInterval) || BillingFrequency.monthly,
+    )
+  }, [currentEventTier, currentPlanType, user?.billingFrequency])
 
   const subUpdatePreview = useMemo(() => {
     if (
@@ -96,15 +160,15 @@ const BillingPricing = ({
     changePlanFetcher.state === 'submitting' ||
     changePlanFetcher.state === 'loading'
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const legacyParam = urlParams.get('__ENABLE_LEGACY_PLANS')
-    if (legacyParam === 'true') {
-      setEnableLegacyPlans(true)
-    }
-  }, [])
+  const closeUpdateModal = useCallback(
+    (force?: boolean) => {
+      if (isSubUpdating && !force) return
+      setIsNewPlanConfirmationModalOpened(false)
+      setPendingSelection(null)
+    },
+    [isSubUpdating],
+  )
 
-  // Handle change plan fetcher response
   useEffect(() => {
     if (changePlanFetcher.data?.success) {
       loadUser()
@@ -115,26 +179,21 @@ const BillingPricing = ({
         '[ERROR] An error occured while updating subscription:',
         changePlanFetcher.data.error,
       )
-      toast.error('An error occured while updating subscription')
+      toast.error(t('billing.subscriptionUpdateError'))
       closeUpdateModal(true)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [changePlanFetcher.data])
+  }, [changePlanFetcher.data, closeUpdateModal, loadUser, t])
 
-  // Handle preview fetcher error
   useEffect(() => {
     if (previewFetcher.data?.error) {
       console.error(
         '[ERROR] An error occured while loading subscription update pricing preview:',
         previewFetcher.data.error,
       )
-      toast.error(
-        'An error occured while loading subscription update pricing preview',
-      )
+      toast.error(t('billing.pricingPreviewError'))
     }
-  }, [previewFetcher.data?.error])
+  }, [previewFetcher.data?.error, t])
 
-  // Handle generate pay link fetcher response
   useEffect(() => {
     if (
       generatePayLinkFetcher.data?.success &&
@@ -145,89 +204,143 @@ const BillingPricing = ({
       const opened = openCheckout({
         override: url,
         locale: paddleLanguageMapping[language] || language,
-        title: loadingTier?.name,
+        title: t('pricing.selectedPlanWithEvents', {
+          plan: getPlanName(selectedPlanType, t),
+          events: formatEventsLong(EVENT_TIERS[selectedEventTier].monthlyEvents),
+        }),
         displayModeTheme: theme,
         country: metainfo.country,
       })
 
       if (!opened) {
         toast.error(t('billing.paddleStillLoading'))
-        setPlanCodeLoading(null)
-        setLoadingTier(null)
+        setSelectionLoading(false)
       }
 
-      // Clear data to prevent infinite loops if re-rendering occurs
       generatePayLinkFetcher.data = undefined
     } else if (generatePayLinkFetcher.data?.error) {
       console.error(
         '[ERROR] An error occured while generating pay link:',
         generatePayLinkFetcher.data.error,
       )
-      toast.error('An error occured while preparing checkout')
-      setPlanCodeLoading(null)
-      setLoadingTier(null)
+      toast.error(
+        getCheckoutErrorMessage(generatePayLinkFetcher.data.error, t),
+      )
+      setSelectionLoading(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [generatePayLinkFetcher.data])
+  }, [
+    generatePayLinkFetcher.data,
+    language,
+    metainfo.country,
+    openCheckout,
+    selectedEventTier,
+    selectedPlanType,
+    t,
+    theme,
+  ])
 
-  const PLAN_CODES_ARRAY = useMemo(() => {
-    let basePlans = STANDARD_PLANS
-
-    if (enableLegacyPlans) {
-      basePlans = [...PURCHASABLE_LEGACY_PLANS, ...STANDARD_PLANS]
-    }
-
-    if (!isAuthenticated) return basePlans
-
-    const userPlan = user?.planCode
-
-    if (userPlan === 'trial' || userPlan === 'none') {
-      return basePlans
-    }
-
-    return _includes(basePlans, userPlan) ? basePlans : [userPlan, ...basePlans]
-  }, [isAuthenticated, user?.planCode, enableLegacyPlans])
-
-  const currencyCode = user?.tierCurrency || metainfo.code
+  const currencyCode = (
+    (user?.tierCurrency || metainfo.code) in CURRENCIES
+      ? user?.tierCurrency || metainfo.code
+      : 'USD'
+  ) as CurrencyCode
   const currency = CURRENCIES[currencyCode]
+  const selectedPrice = getPlanPrice(
+    selectedPlanType,
+    selectedEventTier,
+    selectedBillingFrequency,
+    currencyCode,
+  )
+  const selectedMonthlyPrice = getPlanMonthlyPrice(
+    selectedPlanType,
+    selectedEventTier,
+    selectedBillingFrequency,
+    currencyCode,
+  )
+  const currentPlanLimit = user?.planCode ? PLAN_LIMITS[user.planCode] : null
+  const currentEvents = currentPlanLimit?.monthlyUsageLimit || 0
+  const selectedEvents = EVENT_TIERS[selectedEventTier].monthlyEvents
+  const selectedReplayQuota = getIncludedSessionReplays(
+    selectedPlanType,
+    selectedEventTier,
+  )
+  const isTrialingPaidPlan =
+    !!user?.trialEndDate &&
+    !['none', 'trial', 'free'].includes(user?.planCode || '') &&
+    dayjs(user.trialEndDate).isAfter(dayjs())
+  const sameSelection =
+    user?.planCode === EVENT_TIERS[selectedEventTier].planCode &&
+    currentPlanType === selectedPlanType &&
+    user?.billingFrequency === selectedBillingFrequency
+  const currentRank = getSelectionRank(currentPlanType, currentEventTier)
+  const selectedRank = getSelectionRank(selectedPlanType, selectedEventTier)
+  const isDowngrade =
+    !user?.cancellationEffectiveDate && selectedRank < currentRank
+  const isUnpaid = ['free', 'trial', 'none'].includes(user?.planCode || '')
+  const cannotSelfServe =
+    selectedPlanType === 'enterprise' || !selectedPrice?.paddlePlanId
 
   useEffect(() => {
     if (!lastEvent) return
 
-    const lastEventHandler = async (data: { event: string }) => {
-      if (_isNil(data)) return
-      if (data.event === 'Checkout.Complete') {
+    const lastEventHandler = async (eventData: { event: string }) => {
+      if (_isNil(eventData)) return
+      if (eventData.event === 'Checkout.Complete') {
         setTimeout(async () => {
           await loadUser()
           toast.success(t('apiNotifications.subscriptionUpdated'))
         }, 3000)
-        setPlanCodeLoading(null)
-        setDowngradeTo(null)
-      } else if (data.event === 'Checkout.Close') {
-        setPlanCodeLoading(null)
-        setDowngradeTo(null)
+        setSelectionLoading(false)
+      } else if (eventData.event === 'Checkout.Close') {
+        setSelectionLoading(false)
       }
     }
     lastEventHandler(lastEvent)
   }, [lastEvent, t, loadUser])
 
-  const loadSubUpdatePreview = (planId: number) => {
-    setIsNewPlanConfirmationModalOpened(true)
-    previewFetcher.submit(
-      { intent: 'preview-subscription-update', planId: String(planId) },
-      { method: 'POST', action: '/user-settings' },
-    )
+  const submitSelection = (
+    intent:
+      | 'preview-subscription-update'
+      | 'change-subscription-plan'
+      | 'generate-pay-link',
+    selection: PendingSelection,
+  ) => {
+    const formData = new FormData()
+    formData.set('intent', intent)
+    formData.set('planType', selection.planType)
+    formData.set('eventTier', selection.eventTier)
+    formData.set('billingFrequency', selection.billingFrequency)
+    formData.set('currency', selection.currency)
+
+    if (intent === 'preview-subscription-update') {
+      previewFetcher.submit(formData, { method: 'POST', action: '/user-settings' })
+    } else if (intent === 'change-subscription-plan') {
+      changePlanFetcher.submit(formData, {
+        method: 'POST',
+        action: '/user-settings',
+      })
+    } else {
+      generatePayLinkFetcher.submit(formData, {
+        method: 'POST',
+        action: '/user-settings',
+      })
+    }
   }
 
-  const onPlanChange = async (tier: any) => {
-    if (!user) return
+  const selectedSelection: PendingSelection = {
+    planType: selectedPlanType,
+    eventTier: selectedEventTier,
+    billingFrequency: selectedBillingFrequency,
+    currency: currencyCode,
+  }
 
-    const isSelectingDifferentPlan =
-      user.planCode !== tier.planCode ||
-      user.billingFrequency !== billingFrequency ||
-      !isUnselectablePlanCode(user.planCode)
+  const onPlanChange = async () => {
+    if (!user || selectionLoading || sameSelection) return
 
-    if (planCodeLoading || !isSelectingDifferentPlan) return
+    if (cannotSelfServe || !selectedPrice?.paddlePlanId) {
+      toast.error(t('billing.planNotConfiguredForCheckout'))
+      return
+    }
 
     if (
       user.subID &&
@@ -239,144 +352,101 @@ const BillingPricing = ({
         return
       }
 
-      const planId = Number(
-        billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
-      )
-      setNewPlanId(planId)
-      loadSubUpdatePreview(planId)
+      setPendingSelection(selectedSelection)
+      setIsNewPlanConfirmationModalOpened(true)
+      submitSelection('preview-subscription-update', selectedSelection)
       return
     }
 
-    setPlanCodeLoading(tier.planCode)
-    setLoadingTier(tier)
-
-    const planId = Number(
-      billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
-    )
-
-    generatePayLinkFetcher.submit(
-      { intent: 'generate-pay-link', planId: String(planId) },
-      { method: 'POST', action: '/user-settings' },
-    )
-  }
-
-  const closeUpdateModal = (force?: boolean) => {
-    if (isSubUpdating && !force) return
-    setIsNewPlanConfirmationModalOpened(false)
-    setNewPlanId(null)
+    setSelectionLoading(true)
+    submitSelection('generate-pay-link', selectedSelection)
   }
 
   const updateSubscription = () => {
-    changePlanFetcher.submit(
-      { intent: 'change-subscription-plan', planId: String(newPlanId) },
-      { method: 'POST', action: '/user-settings' },
-    )
+    if (!pendingSelection) return
+    submitSelection('change-subscription-plan', pendingSelection)
   }
 
-  const downgradeHandler = (tier: any) => {
-    if (!user) return
-
-    if (isTrialingPaidPlan) {
-      toast.error(t('billing.cannotChangePlanDuringTrial'))
-      return
+  const getActionLabel = (): string => {
+    if (selectedPlanType === 'enterprise') {
+      return t('pricing.contactUs')
     }
 
-    if (planCodeLoading === null && user.planCode !== tier.planCode) {
-      setDowngradeTo(tier)
-      setShowDowngradeModal(true)
+    if (!selectedPrice?.paddlePlanId) {
+      return t('pricing.contactUs')
     }
-  }
 
-  const isUnselectablePlanCode = (planCode: any): boolean => {
-    return ['free', 'trial', 'none'].includes(planCode)
-  }
-
-  const isTrialingPaidPlan =
-    !!user?.trialEndDate &&
-    !['none', 'trial', 'free'].includes(user?.planCode || '') &&
-    dayjs(user.trialEndDate).isAfter(dayjs())
-
-  const userPlancodeID = user?.planCode ? PLAN_LIMITS[user.planCode]?.index : 0
-
-  const getActionLabel = (tier: any): string => {
-    const planCodeID = tier.index
-    const downgrade =
-      !user?.cancellationEffectiveDate && planCodeID < userPlancodeID
-    if (
-      user?.cancellationEffectiveDate ||
-      isUnselectablePlanCode(user?.planCode)
-    ) {
+    if (user?.cancellationEffectiveDate || isUnpaid) {
       return t('pricing.subscribe')
     }
-    if (planCodeID > userPlancodeID) {
-      return t('pricing.upgrade')
-    }
-    if (downgrade) {
-      return t('pricing.downgrade')
-    }
-    if (
-      user?.billingFrequency === billingFrequency &&
-      user?.planCode === tier.planCode
-    ) {
+
+    if (sameSelection) {
       return t('pricing.yourPlan')
     }
-    return billingFrequency === BillingFrequency.monthly
+
+    if (selectedRank > currentRank) {
+      return t('pricing.upgrade')
+    }
+
+    if (isDowngrade) {
+      return t('pricing.downgrade')
+    }
+
+    return selectedBillingFrequency === BillingFrequency.monthly
       ? t('pricing.switchToMonthly')
       : t('pricing.switchToYearly')
   }
 
-  const isDisabledForTier = (tier: any): boolean => {
-    return (
-      planCodeLoading !== null ||
-      (tier.planCode === user?.planCode &&
-        (user?.billingFrequency === billingFrequency ||
-          isUnselectablePlanCode(user?.planCode)))
-    )
-  }
-
-  const tiers = useMemo(() => {
-    const validCodes = PLAN_CODES_ARRAY.filter(
-      (code): code is keyof typeof PLAN_LIMITS =>
-        typeof code === 'string' && code in PLAN_LIMITS,
-    )
-    return validCodes.map((code) => PLAN_LIMITS[code])
-  }, [PLAN_CODES_ARRAY])
-
   const yearlyDiscount = useMemo(() => {
-    const firstTier = tiers[0]
-    if (!firstTier) return 0
+    const monthlyPrice = getPlanPrice(
+      selectedPlanType,
+      selectedEventTier,
+      'monthly',
+      currencyCode,
+    )?.amount
+    const yearlyPrice = getPlanPrice(
+      selectedPlanType,
+      selectedEventTier,
+      'yearly',
+      currencyCode,
+    )?.amount
 
-    const monthlyPrice = firstTier.price[currencyCode]?.monthly ?? 0
-    const yearlyPrice = firstTier.price[currencyCode]?.yearly ?? 0
-
-    if (monthlyPrice === 0) return 0
+    if (!monthlyPrice || !yearlyPrice) return 0
 
     const annualCostIfMonthly = monthlyPrice * 12
     const savings = annualCostIfMonthly - yearlyPrice
     const discountPercentage = (savings / annualCostIfMonthly) * 100
 
     return _round(discountPercentage, 0)
-  }, [tiers, currencyCode])
+  }, [currencyCode, selectedEventTier, selectedPlanType])
 
   const toggleBillingFrequency = () => {
-    setBillingFrequency((currentFrequency) =>
-      currentFrequency === BillingFrequency.yearly
-        ? BillingFrequency.monthly
-        : BillingFrequency.yearly,
+    setSelectedBillingFrequency((currentFrequency) =>
+      currentFrequency === 'yearly' ? 'monthly' : 'yearly',
     )
   }
 
+  const actionLabel = getActionLabel()
+
   return (
     <>
-      <div className='rounded-xl border border-gray-200 p-4 sm:p-6 dark:border-white/10'>
-        <div className='mb-3 flex items-center justify-between'>
-          <Text as='h2' size='2xl' weight='bold' tracking='tight'>
-            {t('common.billing')}
-          </Text>
+      <div className='rounded-xl border border-gray-200 bg-white p-4 sm:p-6 dark:border-white/10 dark:bg-slate-950'>
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+          <div>
+            <Text as='h2' size='2xl' weight='bold'>
+              {t('common.billing')}
+            </Text>
+            <Text as='p' size='sm' colour='secondary' className='mt-1'>
+              {t('pricing.planWithEvents', {
+                plan: getPlanName(currentPlanType, t),
+                events: formatEventsLong(currentEvents),
+              })}
+            </Text>
+          </div>
           <button
             type='button'
             onClick={toggleBillingFrequency}
-            className='flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:border-white/10 dark:bg-slate-950 dark:hover:bg-slate-900'
+            className='flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:border-white/10 dark:bg-slate-900 dark:hover:bg-slate-800'
           >
             <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
               {t('pricing.billedYearly')}
@@ -387,120 +457,213 @@ const BillingPricing = ({
               </span>
             ) : null}
             <Switch
-              checked={billingFrequency === BillingFrequency.yearly}
+              checked={selectedBillingFrequency === BillingFrequency.yearly}
               visualOnly
             />
           </button>
         </div>
 
-        <div className='space-y-2'>
-          {_map(tiers, (tier) => (
-            <div
-              key={tier.planCode}
-              className={cn(
-                'flex items-center justify-between rounded-xl border px-4 py-3 text-black backdrop-blur-sm dark:bg-white/2 dark:text-white',
-                {
-                  'border-gray-200 dark:border-white/10':
-                    user?.planCode !== tier.planCode ||
-                    isUnselectablePlanCode(tier.planCode),
-                  'border-indigo-500 dark:border-gray-50':
-                    user?.planCode === tier.planCode &&
-                    !isUnselectablePlanCode(tier.planCode),
-                },
-              )}
-            >
-              <div>
-                <span className='text-base font-medium'>
-                  {formatEventsLong(tier.monthlyUsageLimit)}
-                </span>
-                &nbsp;
-                <span className='text-sm text-gray-500 dark:text-gray-400'>
-                  {t('pricing.eventsPerMonth')}
-                </span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                {tier.legacy ? (
-                  <Badge
-                    label={
-                      <Tooltip
-                        text={t('pricing.legacyDescription')}
-                        tooltipNode={
-                          <span className='flex items-center gap-1'>
-                            {t('pricing.legacy')}
-                            <QuestionIcon className='size-4 stroke-yellow-800 dark:stroke-yellow-500' />
-                          </span>
-                        }
-                      />
-                    }
-                    colour='yellow'
-                  />
-                ) : null}
-                <div className='text-sm'>
-                  <span className='font-semibold text-black dark:text-white'>
-                    {currency.symbol}
-                    {Number(
-                      (billingFrequency === BillingFrequency.monthly
-                        ? tier.price[currencyCode]?.monthly
-                        : tier.price[currencyCode]?.yearly) ?? 0,
-                    ).toFixed(2)}
-                  </span>
-                  &nbsp;
-                  <span className='text-sm'>
-                    /
-                    {t(
-                      billingFrequency === BillingFrequency.monthly
-                        ? 'pricing.perMonth'
-                        : 'pricing.perYear',
-                    )}
-                  </span>
-                </div>
-                <Button
-                  size='xs'
-                  onClick={() => {
-                    const action = getActionLabel(tier)
+        <div className='mt-5 grid gap-3 lg:grid-cols-3'>
+          {planTypeOptions.map((planType) => {
+            const entitlements = PLAN_ENTITLEMENTS[planType]
+            const isSelected = selectedPlanType === planType
+            const planMonthlyPrice =
+              planType === 'enterprise'
+                ? null
+                : getPlanMonthlyPrice(
+                    planType,
+                    selectedEventTier,
+                    selectedBillingFrequency,
+                    currencyCode,
+                  )
 
-                    if (action === t('pricing.downgrade')) {
-                      downgradeHandler(tier)
+            return (
+              <button
+                key={planType}
+                type='button'
+                onClick={() => setSelectedPlanType(planType)}
+                className={cn(
+                  'rounded-lg p-4 text-left ring-1 ring-inset transition-all duration-150',
+                  planType === 'enterprise'
+                    ? 'bg-slate-900 text-gray-50 ring-slate-700 dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700'
+                    : 'bg-gray-50 text-gray-950 ring-gray-200 hover:ring-gray-300 dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700 dark:hover:ring-slate-600',
+                  isSelected && 'ring-2 ring-slate-900 dark:ring-slate-100',
+                )}
+              >
+                <div className='flex items-center justify-between gap-2'>
+                  <Text as='span' size='base' weight='semibold' colour='inherit'>
+                    {getPlanName(planType, t)}
+                  </Text>
+                </div>
+                <Text as='span' size='sm' colour='inherit' className='mt-3 block'>
+                  {planType === 'enterprise'
+                    ? t('pricing.custom')
+                    : `${currency.symbol}${formatPrice(planMonthlyPrice)}/${t(
+                        'pricing.perMonth',
+                      )}`}
+                </Text>
+                <Text
+                  as='span'
+                  size='xs'
+                  colour='inherit'
+                  className='mt-1 block text-gray-500 dark:text-gray-400'
+                >
+                  {typeof entitlements.websites === 'number'
+                    ? t('pricing.websiteCount', {
+                        count: entitlements.websites,
+                      })
+                    : t('pricing.customLimits')}
+                </Text>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className='mt-6'>
+          <Text as='p' size='sm' weight='medium' colour='secondary'>
+            {t('pricing.eventVolume')}
+          </Text>
+          <div className='mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-6'>
+            {EVENT_TIER_CODES.map((eventTier) => {
+              const tier = EVENT_TIERS[eventTier]
+              const isSelected = selectedEventTier === eventTier
+              return (
+                <button
+                  key={eventTier}
+                  type='button'
+                  onClick={() => setSelectedEventTier(eventTier)}
+                  className={cn(
+                    'rounded-lg px-3 py-2 text-left text-sm font-medium ring-1 ring-inset transition-colors',
+                    isSelected
+                      ? 'bg-slate-900 text-gray-50 ring-slate-900 dark:bg-slate-100 dark:text-slate-950 dark:ring-slate-100'
+                      : 'bg-gray-50 text-gray-700 ring-gray-200 hover:bg-gray-100 dark:bg-slate-900 dark:text-gray-200 dark:ring-slate-700 dark:hover:bg-slate-800',
+                  )}
+                >
+                  {formatEventsLong(tier.monthlyEvents)}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className='mt-6 rounded-lg bg-gray-50 p-4 ring-1 ring-gray-200 ring-inset dark:bg-slate-900 dark:ring-slate-700'>
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+            <div>
+              <Text as='p' size='base' weight='semibold'>
+                {t('pricing.selectedPlanWithEvents', {
+                  plan: getPlanName(selectedPlanType, t),
+                  events: formatEventsLong(selectedEvents),
+                })}
+              </Text>
+              <Text as='p' size='sm' colour='secondary' className='mt-1'>
+                {typeof PLAN_ENTITLEMENTS[selectedPlanType].websites === 'number'
+                  ? t('pricing.websiteCount', {
+                      count: PLAN_ENTITLEMENTS[selectedPlanType].websites,
+                    })
+                  : t('pricing.customLimits')}
+                , {formatReplayQuota(selectedReplayQuota, t)}
+              </Text>
+            </div>
+            <div className='flex flex-col items-start gap-3 sm:items-end'>
+              <Text as='p' size='2xl' weight='bold'>
+                {selectedPlanType === 'enterprise'
+                  ? t('pricing.custom')
+                  : `${currency.symbol}${formatPrice(selectedMonthlyPrice)}/${t(
+                      'pricing.perMonth',
+                    )}`}
+              </Text>
+              {cannotSelfServe ? (
+                <Button to={routes.contact} size='sm' className='gap-1'>
+                  {t('pricing.contactUs')}
+                  <ArrowRightIcon className='size-4' />
+                </Button>
+              ) : (
+                <Button
+                  size='sm'
+                  onClick={() => {
+                    if (actionLabel === t('pricing.downgrade')) {
+                      setShowDowngradeModal(true)
                     } else {
-                      onPlanChange(tier)
+                      onPlanChange()
                     }
                   }}
                   type='button'
-                  loading={planCodeLoading === tier.planCode}
-                  disabled={isDisabledForTier(tier)}
+                  loading={selectionLoading}
+                  disabled={selectionLoading || sameSelection || !isAuthenticated}
+                  className='gap-1'
                 >
-                  {getActionLabel(tier)}
+                  {actionLabel}
+                  {!sameSelection ? <ArrowRightIcon className='size-4' /> : null}
                 </Button>
-              </div>
+              )}
             </div>
-          ))}
+          </div>
+        </div>
 
-          <a
-            href={routes.contact}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='group flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-black backdrop-blur-sm dark:border-white/10 dark:bg-white/2 dark:text-white'
-          >
-            <span className='text-base font-medium'>
-              {t('pricing.overXEvents', { amount: formatEventsLong(20000000) })}
-            </span>
-            <Text as='p' size='sm' className='group-hover:underline'>
-              {t('pricing.contactUs')}
+        <div className='mt-6 grid gap-4 lg:grid-cols-2'>
+          <div>
+            <Text as='p' size='sm' weight='semibold'>
+              {t('pricing.addons.websiteTitle')}
             </Text>
-          </a>
+            <div className='mt-3 space-y-2'>
+              {ADDONS.websiteBundles.map((bundle) => (
+                <div
+                  key={bundle.code}
+                  className='flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 ring-1 ring-gray-200 ring-inset dark:bg-slate-900 dark:ring-slate-700'
+                >
+                  <div className='flex items-center gap-2'>
+                    <CheckIcon className='size-4 text-gray-500 dark:text-gray-400' />
+                    <Text as='span' size='sm'>
+                      {t(bundle.labelKey, {
+                        amount: formatEventsLong(bundle.quantity),
+                      })}
+                    </Text>
+                  </div>
+                  <Text as='span' size='sm' colour='secondary'>
+                    {currency.symbol}
+                    {formatPrice(bundle.monthly[currencyCode])}/{t('pricing.perMonth')}
+                  </Text>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Text as='p' size='sm' weight='semibold'>
+              {t('pricing.addons.sessionReplayTitle')}
+            </Text>
+            <div className='mt-3 space-y-2'>
+              {ADDONS.sessionReplayBundles.map((bundle) => (
+                <div
+                  key={bundle.code}
+                  className='flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 ring-1 ring-gray-200 ring-inset dark:bg-slate-900 dark:ring-slate-700'
+                >
+                  <div className='flex items-center gap-2'>
+                    <CheckIcon className='size-4 text-gray-500 dark:text-gray-400' />
+                    <Text as='span' size='sm'>
+                      {t(bundle.labelKey, {
+                        amount: formatEventsLong(bundle.quantity),
+                      })}
+                    </Text>
+                  </div>
+                  <Text as='span' size='sm' colour='secondary'>
+                    {currency.symbol}
+                    {formatPrice(bundle.monthly[currencyCode])}/{t('pricing.perMonth')}
+                  </Text>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       <div className='checkout-container' id='checkout-container' />
 
       <Modal
-        onClose={() => {
-          setDowngradeTo(null)
-          setShowDowngradeModal(false)
-        }}
+        onClose={() => setShowDowngradeModal(false)}
         onSubmit={() => {
           setShowDowngradeModal(false)
-          if (downgradeTo) onPlanChange(downgradeTo)
+          onPlanChange()
         }}
         submitText={t('common.yes')}
         closeText={t('common.no')}
@@ -537,7 +700,9 @@ const BillingPricing = ({
                   components={{
                     mail: (
                       <a
-                        title={`Email us at ${CONTACT_EMAIL}`}
+                        title={t('ariaLabels.emailSupportTitle', {
+                          email: CONTACT_EMAIL,
+                        })}
                         aria-label={t('ariaLabels.emailSupport')}
                         href={`mailto:${CONTACT_EMAIL}`}
                         className='font-medium underline decoration-dashed hover:decoration-solid'

@@ -28,6 +28,15 @@ export enum PlanCode {
   '10m' = '10m',
   '15m' = '15m',
   '20m' = '20m',
+  '30m' = '30m',
+  '40m' = '40m',
+  '50m' = '50m',
+}
+
+export enum PlanType {
+  standard = 'standard',
+  plus = 'plus',
+  enterprise = 'enterprise',
 }
 
 export enum DashboardBlockReason {
@@ -45,6 +54,58 @@ interface PlanSignature {
   pid?: string
   ypid?: string
 }
+
+export const PLAN_TYPE_ENTITLEMENTS = {
+  [PlanType.standard]: {
+    websites: 50,
+    teamMembers: 10,
+    organisations: 3,
+    apiRateLimitPerHour: 600,
+    sessionReplaysIncluded: 0,
+  },
+  [PlanType.plus]: {
+    websites: 100,
+    teamMembers: 25,
+    organisations: 10,
+    apiRateLimitPerHour: 5000,
+    sessionReplaysIncluded: 50000,
+  },
+  [PlanType.enterprise]: {
+    websites: 'custom',
+    teamMembers: 'custom',
+    organisations: 'custom',
+    apiRateLimitPerHour: 'custom',
+    sessionReplaysIncluded: 'custom',
+  },
+} as const
+
+export const getEffectivePlanType = (
+  user?: {
+    planCode?: PlanCode | null
+    planType?: PlanType | null
+  } | null,
+): PlanType | null => {
+  if (!user) {
+    return null
+  }
+
+  if (user.planType) {
+    return user.planType
+  }
+
+  if (
+    user.planCode &&
+    ![PlanCode.none, PlanCode.free, PlanCode.trial].includes(user.planCode)
+  ) {
+    return PlanType.standard
+  }
+
+  return null
+}
+
+export const getPlanTypeEntitlements = (
+  planType?: PlanType | null,
+) => PLAN_TYPE_ENTITLEMENTS[planType || PlanType.standard]
 
 export const ACCOUNT_PLANS = {
   [PlanCode.none]: {
@@ -152,6 +213,27 @@ export const ACCOUNT_PLANS = {
     ypid: '916454',
     maxAlerts: 50,
   },
+  [PlanCode['30m']]: {
+    id: PlanCode['30m'],
+    monthlyUsageLimit: 30000000,
+    pid: null,
+    ypid: null,
+    maxAlerts: 50,
+  },
+  [PlanCode['40m']]: {
+    id: PlanCode['40m'],
+    monthlyUsageLimit: 40000000,
+    pid: null,
+    ypid: null,
+    maxAlerts: 50,
+  },
+  [PlanCode['50m']]: {
+    id: PlanCode['50m'],
+    monthlyUsageLimit: 50000000,
+    pid: null,
+    ypid: null,
+    maxAlerts: 50,
+  },
 }
 
 export const getNextPlan = (planCode: PlanCode): PlanSignature | undefined => {
@@ -234,6 +316,20 @@ export class User {
     default: PlanCode.none,
   })
   planCode: PlanCode
+
+  @Column({
+    type: 'enum',
+    enum: PlanType,
+    nullable: true,
+    default: null,
+  })
+  planType: PlanType | null
+
+  @Column({ type: 'json', nullable: true })
+  addonOverrides: Record<string, unknown> | null
+
+  @Column({ type: 'json', nullable: true })
+  entitlementOverrides: Record<string, unknown> | null
 
   @Column('varchar', { length: 100, nullable: true, default: null })
   nickname: string | null

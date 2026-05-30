@@ -798,14 +798,33 @@ export class UserController {
 
   @Get('usageinfo')
   async getUsageInfo(@CurrentUserId() uid: string): Promise<IUsageInfo> {
-    const rawInfo = await this.projectService.getRedisUsageInfo(uid)
+    const [rawInfo, projects] = await Promise.all([
+      this.projectService.getRedisUsageInfo(uid),
+      this.projectService.countByAdminId(uid),
+    ])
+    const usage = rawInfo || {
+      total: 0,
+      traffic: 0,
+      customEvents: 0,
+      captcha: 0,
+      errors: 0,
+    }
 
     const info: IUsageInfo = {
-      ...rawInfo,
-      trafficPerc: _round((rawInfo.traffic / rawInfo.total) * 100, 2),
-      customEventsPerc: _round((rawInfo.customEvents / rawInfo.total) * 100, 2),
-      captchaPerc: _round((rawInfo.captcha / rawInfo.total) * 100, 2),
-      errorsPerc: _round((rawInfo.errors / rawInfo.total) * 100, 2),
+      ...usage,
+      projects,
+      trafficPerc: usage.total
+        ? _round((usage.traffic / usage.total) * 100, 2)
+        : 0,
+      customEventsPerc: usage.total
+        ? _round((usage.customEvents / usage.total) * 100, 2)
+        : 0,
+      captchaPerc: usage.total
+        ? _round((usage.captcha / usage.total) * 100, 2)
+        : 0,
+      errorsPerc: usage.total
+        ? _round((usage.errors / usage.total) * 100, 2)
+        : 0,
     }
 
     return info
@@ -818,9 +837,9 @@ export class UserController {
     @Body() body: IChangePlanDTO,
   ): Promise<void> {
     this.logger.log({ body, id }, 'POST /change-plan')
-    const { planId } = body
+    const { planId, planType } = body
 
-    await this.userService.updateSubscription(id, planId)
+    await this.userService.updateSubscription(id, planId, planType)
     await this.projectService.clearProjectsRedisCache(id)
   }
 
@@ -831,9 +850,12 @@ export class UserController {
     @Body() body: IChangePlanDTO,
   ): Promise<any> {
     this.logger.log({ body, id }, 'POST /generate-pay-link')
-    const { planId } = body
+    const { planId, planType, eventTier } = body
 
-    return this.userService.generatePayLink(id, planId)
+    return this.userService.generatePayLink(id, planId, {
+      planType,
+      eventTier,
+    })
   }
 
   @ApiBearerAuth()
@@ -843,9 +865,9 @@ export class UserController {
     @Body() body: IChangePlanDTO,
   ): Promise<any> {
     this.logger.log({ body, id }, 'POST /preview-plan')
-    const { planId } = body
+    const { planId, planType } = body
 
-    return this.userService.previewSubscription(id, planId)
+    return this.userService.previewSubscription(id, planId, planType)
   }
 
   @ApiBearerAuth()

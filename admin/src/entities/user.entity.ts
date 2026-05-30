@@ -24,6 +24,15 @@ export enum PlanCode {
   '10m' = '10m',
   '15m' = '15m',
   '20m' = '20m',
+  '30m' = '30m',
+  '40m' = '40m',
+  '50m' = '50m',
+}
+
+export enum PlanType {
+  standard = 'standard',
+  plus = 'plus',
+  enterprise = 'enterprise',
 }
 
 export enum DashboardBlockReason {
@@ -45,6 +54,20 @@ export class User {
   })
   planCode: PlanCode
 
+  @Column({
+    type: 'enum',
+    enum: PlanType,
+    nullable: true,
+    default: null,
+  })
+  planType: PlanType | null
+
+  @Column({ type: 'json', nullable: true })
+  addonOverrides: Record<string, unknown> | null
+
+  @Column({ type: 'json', nullable: true })
+  entitlementOverrides: Record<string, unknown> | null
+
   @Column('varchar', { length: 100, nullable: true, default: null })
   nickname: string | null
 
@@ -65,6 +88,9 @@ export class User {
 
   @Column('int', { default: 50 })
   maxProjects: number
+
+  @Column('int', { default: 600 })
+  maxApiKeyRequestsPerHour: number
 
   @Column({
     type: 'enum',

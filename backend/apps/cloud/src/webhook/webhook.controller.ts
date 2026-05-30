@@ -17,6 +17,8 @@ import {
   ACCOUNT_PLANS,
   BillingFrequency,
   DashboardBlockReason,
+  PlanType,
+  getPlanTypeEntitlements,
   isNextPlan,
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
@@ -101,9 +103,17 @@ export class WebhookController {
           status,
         } = body
         let uid
+        let requestedPlanType: PlanType | null = null
 
         try {
-          uid = JSON.parse(passthrough)?.uid
+          const passthroughData = JSON.parse(passthrough)
+          uid = passthroughData?.uid
+          if (
+            passthroughData?.planType &&
+            Object.values(PlanType).includes(passthroughData.planType)
+          ) {
+            requestedPlanType = passthroughData.planType
+          }
         } catch {
           this.logger.error(
             `[${body.alert_name}] Cannot parse the uid: ${JSON.stringify(body)}`,
@@ -160,8 +170,22 @@ export class WebhookController {
                 }
               : {}
 
+        const planType = requestedPlanType || PlanType.standard
+        const entitlements = getPlanTypeEntitlements(planType)
+        const limitParams: Record<string, any> = {}
+
+        if (typeof entitlements.websites === 'number') {
+          limitParams.maxProjects = entitlements.websites
+        }
+
+        if (typeof entitlements.apiRateLimitPerHour === 'number') {
+          limitParams.maxApiKeyRequestsPerHour =
+            entitlements.apiRateLimitPerHour
+        }
+
         const updateParams: Record<string, any> = {
           planCode: plan.id,
+          planType,
           subID,
           subUpdateURL,
           subCancelURL,
@@ -172,6 +196,7 @@ export class WebhookController {
           tierCurrency: currency,
           cancellationEffectiveDate: null,
           ...statusParams,
+          ...limitParams,
         }
 
         if (isTrialing && nextBillDate) {

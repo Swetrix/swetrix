@@ -32,6 +32,9 @@ import {
   TRIAL_DURATION,
   BillingFrequency,
   PlanCode,
+  PlanType,
+  getEffectivePlanType,
+  getPlanTypeEntitlements,
 } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
@@ -210,10 +213,56 @@ export class UserService {
 
   omitSensitiveData(user: Partial<User>): Partial<User> {
     const maxEventsCount = ACCOUNT_PLANS[user?.planCode]?.monthlyUsageLimit || 0
+    const effectivePlanType = getEffectivePlanType(user)
+    const entitlements = getPlanTypeEntitlements(effectivePlanType)
+    const entitlementOverrides = user?.entitlementOverrides || {}
+    const addonOverrides = user?.addonOverrides || {}
+    const numberOverride = (source: Record<string, unknown>, key: string) =>
+      typeof source[key] === 'number' ? (source[key] as number) : null
+
+    const purchasedWebsiteAddons =
+      numberOverride(addonOverrides, 'websites') ||
+      numberOverride(addonOverrides, 'additionalWebsites') ||
+      0
+    const websiteOverride = numberOverride(entitlementOverrides, 'websites')
+    const apiOverride = numberOverride(
+      entitlementOverrides,
+      'apiRateLimitPerHour',
+    )
+    const replayOverride = numberOverride(
+      entitlementOverrides,
+      'sessionReplaysIncluded',
+    )
+    const includedWebsites =
+      websiteOverride ??
+      (typeof entitlements.websites === 'number'
+        ? entitlements.websites
+        : user?.maxProjects)
+    const apiRateLimitPerHour =
+      apiOverride ??
+      (typeof entitlements.apiRateLimitPerHour === 'number'
+        ? entitlements.apiRateLimitPerHour
+        : user?.maxApiKeyRequestsPerHour)
+    const sessionReplaysIncluded =
+      replayOverride ?? entitlements.sessionReplaysIncluded
 
     const enhancedUser = {
       ...user,
+      effectivePlanType,
       maxEventsCount,
+      maxProjects:
+        typeof includedWebsites === 'number'
+          ? Math.max(
+              user?.maxProjects || 0,
+              includedWebsites + purchasedWebsiteAddons,
+            )
+          : user?.maxProjects,
+      maxApiKeyRequestsPerHour:
+        typeof apiRateLimitPerHour === 'number'
+          ? Math.max(user?.maxApiKeyRequestsPerHour || 0, apiRateLimitPerHour)
+          : user?.maxApiKeyRequestsPerHour,
+      sessionReplaysIncluded,
+      purchasedWebsiteAddons,
     }
 
     return _omit(enhancedUser, [
@@ -455,7 +504,30 @@ export class UserService {
     return CURRENCY_BY_COUNTRY[country] || USD
   }
 
-  getPlanById(planId: number) {
+  private normalizePlanType(planType?: string | null): PlanType {
+    if (planType && Object.values(PlanType).includes(planType as PlanType)) {
+      return planType as PlanType
+    }
+
+    return PlanType.standard
+  }
+
+  private getAccountLimitUpdates(planType?: PlanType | null) {
+    const entitlements = getPlanTypeEntitlements(planType)
+    const updates: Record<string, unknown> = {}
+
+    if (typeof entitlements.websites === 'number') {
+      updates.maxProjects = entitlements.websites
+    }
+
+    if (typeof entitlements.apiRateLimitPerHour === 'number') {
+      updates.maxApiKeyRequestsPerHour = entitlements.apiRateLimitPerHour
+    }
+
+    return updates
+  }
+
+  getPlanById(planId: number, requestedPlanType?: string | null) {
     if (!planId) {
       return null
     }
@@ -485,25 +557,31 @@ export class UserService {
       return {
         planCode,
         billingFrequency,
+        planType: this.normalizePlanType(requestedPlanType),
       }
     }
 
     return null
   }
 
-  async previewSubscription(id: string, planID: number) {
+  async previewSubscription(
+    id: string,
+    planID: number,
+    requestedPlanType?: string | null,
+  ) {
     const user = await this.findOne({ where: { id } })
-    const plan = this.getPlanById(planID)
+    const plan = this.getPlanById(planID, requestedPlanType)
 
     if (!plan) {
       throw new BadRequestException('Plan not found')
     }
 
-    const { planCode, billingFrequency } = plan
+    const { planCode, billingFrequency, planType } = plan
 
     if (
       user.planCode === planCode &&
-      user.billingFrequency === billingFrequency
+      user.billingFrequency === billingFrequency &&
+      getEffectivePlanType(user) === planType
     ) {
       throw new BadRequestException('You are already subscribed to this plan')
     }
@@ -614,19 +692,24 @@ export class UserService {
     }
   }
 
-  async updateSubscription(id: string, planID: number) {
+  async updateSubscription(
+    id: string,
+    planID: number,
+    requestedPlanType?: string | null,
+  ) {
     const user = await this.findOne({ where: { id } })
-    const plan = this.getPlanById(planID)
+    const plan = this.getPlanById(planID, requestedPlanType)
 
     if (!plan) {
       throw new BadRequestException('Plan not found')
     }
 
-    const { planCode, billingFrequency } = plan
+    const { planCode, billingFrequency, planType } = plan
 
     if (
       user.planCode === planCode &&
-      user.billingFrequency === billingFrequency
+      user.billingFrequency === billingFrequency &&
+      getEffectivePlanType(user) === planType
     ) {
       throw new BadRequestException('You are already subscribed to this plan')
     }
@@ -656,6 +739,7 @@ export class UserService {
           keep_modifiers: false,
           passthrough: JSON.stringify({
             uid: id,
+            planType,
           }),
         }),
       })
@@ -681,19 +765,30 @@ export class UserService {
 
     const updateParams = {
       planCode,
+      planType,
       subID,
       nextBillDate: date,
       billingFrequency,
       tierCurrency: currency,
+      ...this.getAccountLimitUpdates(planType),
     }
 
     await this.update(id, updateParams)
   }
 
-  async generatePayLink(id: string, productId: number) {
+  async generatePayLink(
+    id: string,
+    productId: number,
+    context: { planType?: string | null; eventTier?: string | null } = {},
+  ) {
     const user = await this.findOne({ where: { id } })
     if (!user) {
       throw new BadRequestException('User not found')
+    }
+
+    const plan = this.getPlanById(productId, context.planType)
+    if (!plan) {
+      throw new BadRequestException('Plan not found')
     }
 
     const url = 'https://vendors.paddle.com/api/2.0/product/generate_pay_link'
@@ -711,7 +806,11 @@ export class UserService {
           vendor_auth_code: PADDLE_API_KEY,
           product_id: productId,
           customer_email: user.email,
-          passthrough: JSON.stringify({ uid: id }),
+          passthrough: JSON.stringify({
+            uid: id,
+            planType: plan.planType,
+            eventTier: context.eventTier || null,
+          }),
           ...(isTrial
             ? {
                 trial_days: TRIAL_DURATION,

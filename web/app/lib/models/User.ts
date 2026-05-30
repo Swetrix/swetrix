@@ -14,12 +14,25 @@ enum PlanCode {
   trial = 'trial',
   hobby = 'hobby',
   freelancer = 'freelancer',
+  '50k' = '50k',
+  '100k' = '100k',
   '200k' = '200k',
   '500k' = '500k',
   startup = 'startup',
   '2m' = '2m',
   enterprise = 'enterprise',
   '10m' = '10m',
+  '15m' = '15m',
+  '20m' = '20m',
+  '30m' = '30m',
+  '40m' = '40m',
+  '50m' = '50m',
+}
+
+export enum PlanType {
+  standard = 'standard',
+  plus = 'plus',
+  enterprise = 'enterprise',
 }
 
 enum OnboardingStep {
@@ -38,6 +51,10 @@ enum OnboardingStep {
 export interface User {
   id: string
   planCode: PlanCode
+  planType: PlanType | null
+  effectivePlanType: PlanType | null
+  addonOverrides: Record<string, unknown> | null
+  entitlementOverrides: Record<string, unknown> | null
   nickname: string
   email: string
   isActive: boolean
@@ -68,6 +85,10 @@ export interface User {
   githubId: number | null
   registeredWithGithub: boolean
   maxEventsCount: number
+  maxProjects: number
+  maxApiKeyRequestsPerHour: number
+  sessionReplaysIncluded: number | string
+  purchasedWebsiteAddons: number
   tierCurrency: 'USD' | 'EUR' | 'GBP' | null
   showLiveVisitorsInTitle: boolean
   receiveLoginNotifications: boolean

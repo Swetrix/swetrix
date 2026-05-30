@@ -7,6 +7,7 @@ export interface IUsageInfoRedis {
 }
 
 export interface IUsageInfo extends IUsageInfoRedis {
+  projects: number
   trafficPerc: number
   customEventsPerc: number
   captchaPerc: number
