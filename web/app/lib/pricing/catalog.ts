@@ -188,14 +188,20 @@ export const PLAN_PRICES: PlanPriceCatalog = {
     '30m': price(
       { USD: 519, EUR: 449, GBP: 389 },
       { USD: 5190, EUR: 4490, GBP: 3890 },
+      925498,
+      925499,
     ),
     '40m': price(
       { USD: 619, EUR: 529, GBP: 459 },
       { USD: 6190, EUR: 5290, GBP: 4590 },
+      925500,
+      925501,
     ),
     '50m': price(
       { USD: 719, EUR: 619, GBP: 539 },
       { USD: 7190, EUR: 6190, GBP: 5390 },
+      925503,
+      925505
     ),
   },
   plus: {
