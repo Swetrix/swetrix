@@ -47,8 +47,7 @@ const planCards: PlanTypeCode[] = ['standard', 'plus', 'enterprise']
 const visibleBenefitsCount = 7
 const botProtectionDocsUrl =
   'https://swetrix.com/docs/sitesettings/bot-protection'
-const managedProxyDocsUrl =
-  'https://swetrix.com/docs/adblockers/managed-proxy'
+const managedProxyDocsUrl = 'https://swetrix.com/docs/adblockers/managed-proxy'
 
 const formatEvents = (value: number) => value.toLocaleString('en-US')
 
@@ -67,6 +66,9 @@ const formatCompactEvents = (value: number) => {
 const eventTierLabels = EVENT_TIER_CODES.map((tierCode) =>
   formatCompactEvents(EVENT_TIERS[tierCode].monthlyEvents),
 )
+const customEventTierLabel = '50M+'
+const eventTierOptionLabels = [...eventTierLabels, customEventTierLabel]
+const customEventTierIndex = eventTierOptionLabels.length - 1
 
 const getPriceFormat = (value: number) => ({
   minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
@@ -219,7 +221,10 @@ const BenefitRow = ({
 }) => {
   return (
     <div className='flex items-start gap-2.5'>
-      <CheckIcon className='mt-0.5 size-4 shrink-0 text-emerald-600' weight='bold' />
+      <CheckIcon
+        className='mt-0.5 size-4 shrink-0 text-emerald-600'
+        weight='bold'
+      />
       <div className='flex min-w-0 items-center gap-1.5'>
         <Text
           as='p'
@@ -272,27 +277,28 @@ const MarketingPricing = ({
     metainfo.code in CURRENCIES ? metainfo.code : 'USD'
   ) as CurrencyCode
   const currency = CURRENCIES[currencyCode]
-  const selectedTier = EVENT_TIER_CODES[selectedTierIndex]
+  const isCustomEventTier = selectedTierIndex === customEventTierIndex
+  const selectedTier =
+    EVENT_TIER_CODES[
+      isCustomEventTier ? EVENT_TIER_CODES.length - 1 : selectedTierIndex
+    ]
   const selectedMonthlyEvents = EVENT_TIERS[selectedTier].monthlyEvents
+  const selectedMonthlyEventsLabel = `${formatEvents(selectedMonthlyEvents)}${
+    isCustomEventTier ? '+' : ''
+  }`
   const isYearly = billingFrequency === 'yearly'
 
   const sliderPercent = useMemo(() => {
-    if (EVENT_TIER_CODES.length <= 1) return 0
-    return (selectedTierIndex / (EVENT_TIER_CODES.length - 1)) * 100
+    if (eventTierOptionLabels.length <= 1) return 0
+    return (selectedTierIndex / (eventTierOptionLabels.length - 1)) * 100
   }, [selectedTierIndex])
 
-  const proMonthlyPrice = getPlanPrice(
-    'standard',
-    selectedTier,
-    'monthly',
-    currencyCode,
-  )?.amount
-  const proYearlyPrice = getPlanPrice(
-    'standard',
-    selectedTier,
-    'yearly',
-    currencyCode,
-  )?.amount
+  const proMonthlyPrice = isCustomEventTier
+    ? null
+    : getPlanPrice('standard', selectedTier, 'monthly', currencyCode)?.amount
+  const proYearlyPrice = isCustomEventTier
+    ? null
+    : getPlanPrice('standard', selectedTier, 'yearly', currencyCode)?.amount
   const yearlyDiscount =
     proMonthlyPrice && proYearlyPrice
       ? Math.round(
@@ -309,7 +315,7 @@ const MarketingPricing = ({
 
   return (
     <section id='pricing' className='relative bg-gray-50 p-2 dark:bg-slate-950'>
-      <div className='overflow-hidden rounded-2xl bg-gray-100 dark:bg-slate-900/50 py-16 ring-1 ring-gray-200/70 dark:ring-white/10 sm:py-20'>
+      <div className='overflow-hidden rounded-2xl bg-gray-100 py-16 ring-1 ring-gray-200/70 sm:py-20 dark:bg-slate-900/50 dark:ring-white/10'>
         <div className='mx-auto max-w-7xl'>
           <div className='mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8'>
             <Text
@@ -335,11 +341,7 @@ const MarketingPricing = ({
             <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
               <div>
                 <div className='flex items-center gap-1.5'>
-                  <Text
-                    as='h3'
-                    size='lg'
-                    colour='secondary'
-                  >
+                  <Text as='h3' size='lg' colour='secondary'>
                     {t('pricing.monthlyEvents')}
                   </Text>
                   <Tooltip
@@ -356,7 +358,7 @@ const MarketingPricing = ({
                   colour='primary'
                   className='mt-1'
                 >
-                  {formatEvents(selectedMonthlyEvents)}
+                  {selectedMonthlyEventsLabel}
                 </Text>
               </div>
 
@@ -365,7 +367,7 @@ const MarketingPricing = ({
                   type='button'
                   aria-pressed={isYearly}
                   onClick={toggleBillingFrequency}
-                  className='flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white px-3 py-2 transition-colors hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800'
+                  className='flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-slate-900 dark:hover:bg-slate-800'
                 >
                   <Text as='span' size='sm' weight='medium' colour='primary'>
                     {t('pricing.billedYearly')}
@@ -390,13 +392,13 @@ const MarketingPricing = ({
               aria-label={t('pricing.monthlyEventVolume')}
               type='range'
               min={0}
-              max={EVENT_TIER_CODES.length - 1}
+              max={eventTierOptionLabels.length - 1}
               step={1}
               value={selectedTierIndex}
               onChange={(event) =>
                 setSelectedTierIndex(Number(event.target.value))
               }
-              className='h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600 active:[&::-moz-range-thumb]:cursor-grabbing active:[&::-webkit-slider-thumb]:cursor-grabbing [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-blue-600 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-sm [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-600 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-sm'
+              className='h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600 [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-blue-600 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-sm active:[&::-moz-range-thumb]:cursor-grabbing [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-600 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-sm active:[&::-webkit-slider-thumb]:cursor-grabbing'
               style={{
                 background: `linear-gradient(to right, rgb(37 99 235) 0%, rgb(37 99 235) ${sliderPercent}%, rgb(209 213 219) ${sliderPercent}%, rgb(209 213 219) 100%)`,
               }}
@@ -405,10 +407,10 @@ const MarketingPricing = ({
             <div
               className='mt-3 grid gap-1'
               style={{
-                gridTemplateColumns: `repeat(${EVENT_TIER_CODES.length}, minmax(0, 1fr))`,
+                gridTemplateColumns: `repeat(${eventTierOptionLabels.length}, minmax(0, 1fr))`,
               }}
             >
-              {eventTierLabels.map((label, index) => (
+              {eventTierOptionLabels.map((label, index) => (
                 <Text
                   key={label}
                   as='button'
@@ -437,33 +439,22 @@ const MarketingPricing = ({
                   0,
                   benefits.length - visibleBenefits.length,
                 )
-                const monthlyPrice = getPlanPrice(
-                  planType,
-                  selectedTier,
-                  'monthly',
-                  currencyCode,
-                )?.amount
-                const yearlyPrice = getPlanPrice(
-                  planType,
-                  selectedTier,
-                  'yearly',
-                  currencyCode,
-                )?.amount
+                const monthlyPlan = isCustomEventTier
+                  ? null
+                  : getPlanPrice(
+                      planType,
+                      selectedTier,
+                      'monthly',
+                      currencyCode,
+                    )
+                const yearlyPlan = isCustomEventTier
+                  ? null
+                  : getPlanPrice(planType, selectedTier, 'yearly', currencyCode)
+                const monthlyPrice = monthlyPlan?.amount
+                const yearlyPrice = yearlyPlan?.amount
                 const yearlyMonthlyPrice = yearlyPrice
                   ? Math.round((yearlyPrice / 12) * 100) / 100
                   : null
-                const monthlyPlan = getPlanPrice(
-                  planType,
-                  selectedTier,
-                  'monthly',
-                  currencyCode,
-                )
-                const yearlyPlan = getPlanPrice(
-                  planType,
-                  selectedTier,
-                  'yearly',
-                  currencyCode,
-                )
                 const hasPublishedPrice = Boolean(monthlyPrice && yearlyPrice)
                 const canSelfServe = Boolean(
                   monthlyPlan?.paddlePlanId && yearlyPlan?.paddlePlanId,
@@ -485,15 +476,13 @@ const MarketingPricing = ({
                         size='lg'
                         weight='bold'
                         colour='primary'
-                        className={
-                          isEnterprise ? 'dark' : ''
-                        }
+                        className={isEnterprise ? 'dark' : ''}
                       >
                         {getPlanName(planType, t)}
                       </Text>
                     </div>
 
-                    <div className='mt-2 min-h-[72px]'>
+                    <div className='mt-2 min-h-[78px]'>
                       {hasPublishedPrice ? (
                         <>
                           <div className='flex min-h-10 flex-wrap items-end gap-2'>
@@ -502,9 +491,7 @@ const MarketingPricing = ({
                               size='3xl'
                               weight='bold'
                               colour='primary'
-                              className={
-                                isEnterprise ? 'dark' : ''
-                              }
+                              className={isEnterprise ? 'dark' : ''}
                             >
                               <PriceAmount
                                 value={
@@ -520,12 +507,7 @@ const MarketingPricing = ({
                               size='base'
                               weight='medium'
                               colour='secondary'
-                              className={cn(
-                                'pb-1',
-                                isEnterprise
-                                  ? 'dark'
-                                  : '',
-                              )}
+                              className={cn('pb-1', isEnterprise ? 'dark' : '')}
                             >
                               {`/${t(
                                 isYearly
@@ -535,7 +517,7 @@ const MarketingPricing = ({
                             </Text>
                           </div>
                           {isYearly ? (
-                            <div className='mt-2 flex h-6 flex-wrap items-baseline gap-1'>
+                            <div className='mt-1 flex h-6 flex-wrap items-baseline gap-1'>
                               <Text
                                 as='span'
                                 size='sm'
@@ -543,9 +525,7 @@ const MarketingPricing = ({
                                 colour='secondary'
                                 className={cn(
                                   'line-through',
-                                  isEnterprise
-                                    ? 'dark'
-                                    : '',
+                                  isEnterprise ? 'dark' : '',
                                 )}
                               >
                                 {formatPrice(
@@ -558,11 +538,7 @@ const MarketingPricing = ({
                                 size='sm'
                                 weight='bold'
                                 colour='primary'
-                                className={
-                                  isEnterprise
-                                    ? 'dark'
-                                    : ''
-                                }
+                                className={isEnterprise ? 'dark' : ''}
                               >
                                 {formatPrice(
                                   yearlyMonthlyPrice,
@@ -574,11 +550,7 @@ const MarketingPricing = ({
                                 size='sm'
                                 weight='medium'
                                 colour='secondary'
-                                className={
-                                  isEnterprise
-                                    ? 'dark'
-                                    : ''
-                                }
+                                className={isEnterprise ? 'dark' : ''}
                               >
                                 /{t('pricing.intervals.month')}
                               </Text>
@@ -593,9 +565,7 @@ const MarketingPricing = ({
                           size='3xl'
                           weight='bold'
                           colour='primary'
-                          className={
-                            isEnterprise ? 'dark' : ''
-                          }
+                          className={isEnterprise ? 'dark' : ''}
                         >
                           {t('pricing.custom')}
                         </Text>
@@ -612,7 +582,10 @@ const MarketingPricing = ({
                       }
                       variant='primary'
                       size='lg'
-                      className={cn('mt-5 justify-center gap-2', isEnterprise ? 'dark' : '')}
+                      className={cn(
+                        'mt-4 justify-center gap-2',
+                        isEnterprise ? 'dark' : '',
+                      )}
                     >
                       <Text
                         as='span'
@@ -667,9 +640,7 @@ const MarketingPricing = ({
                             size='sm'
                             weight='medium'
                             colour='primary'
-                            className={
-                              isEnterprise ? 'dark' : ''
-                            }
+                            className={isEnterprise ? 'dark' : ''}
                           >
                             {showAllBenefits
                               ? t('common.showLess')
