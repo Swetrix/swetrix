@@ -18,6 +18,7 @@ import {
   LockIcon,
   CaretDownIcon,
   CreditCardIcon,
+  ArrowRightIcon,
 } from '@phosphor-icons/react'
 import _round from 'lodash/round'
 import React, {
@@ -48,14 +49,19 @@ import {
   languageFlag,
   CONTACT_EMAIL,
   paddleLanguageMapping,
+  CURRENCIES,
 } from '~/lib/constants'
-import BillingPricing from '~/components/pricing/BillingPricing'
 import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { usePaddle } from '~/hooks/usePaddle'
 import { changeLanguage } from '~/i18n'
 import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { User } from '~/lib/models/User'
+import {
+  ADDONS,
+  getEffectivePlanType,
+  type CurrencyCode,
+} from '~/lib/pricing/catalog'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -77,6 +83,7 @@ import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import Flag from '~/ui/Flag'
 import TimezonePicker from '~/ui/TimezonePicker'
+import Tooltip from '~/ui/Tooltip'
 import { getCookie, setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
 import {
@@ -188,6 +195,9 @@ const DEFAULT_USAGE_INFO: UsageInfo = {
   captchaPerc: 0,
 }
 
+const formatBillingPrice = (amount: number) =>
+  Number.isInteger(amount) ? amount.toFixed(0) : amount.toFixed(2)
+
 interface SettingsSectionProps {
   title?: string
   description?: string
@@ -247,9 +257,8 @@ const UserSettings = () => {
   const [cancellationFeedback, setCancellationFeedback] = useState('')
   const [isCancellingSubscription, setIsCancellingSubscription] =
     useState(false)
-  const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
 
-  const { openCheckout } = usePaddle({ onEvent: setLastEvent })
+  const { openCheckout } = usePaddle()
 
   const metainfo = useMemo(() => {
     if (metainfoFetcher.data?.success && metainfoFetcher.data.data) {
@@ -306,6 +315,19 @@ const UserSettings = () => {
       : sessionReplaysIncluded === 'custom'
         ? t('pricing.custom')
         : sessionReplaysIncluded || '0'
+  const currentPlanType = getEffectivePlanType(user?.planType, planCode)
+  const currentPlanName = t(`pricing.planTypes.${currentPlanType}.name`)
+  const hasActiveSubscription = isSubscriber && !cancellationEffectiveDate
+  const currencyCode = (
+    (user?.tierCurrency || metainfo.code) in CURRENCIES
+      ? user?.tierCurrency || metainfo.code
+      : 'USD'
+  ) as CurrencyCode
+  const currency = CURRENCIES[currencyCode]
+  const websiteAddon = ADDONS.websiteBundles[0]
+  const sessionReplayAddon = ADDONS.sessionReplayBundles[0]
+  const websiteAddonPrice = websiteAddon.monthly[currencyCode]
+  const sessionReplayAddonPrice = sessionReplayAddon.monthly[currencyCode]
 
   const isTrialEnded = (() => {
     if (!trialEndDate) {
@@ -1503,79 +1525,79 @@ const UserSettings = () => {
                         </Alert>
                       ) : null}
 
-                      <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950'>
-                        <Text
-                          as='p'
-                          size='sm'
-                          colour='secondary'
-                          className='mb-4'
-                        >
-                          {t('billing.usageOverview', {
-                            tracked: (usageInfo.total || 0).toLocaleString(),
-                            trackedPerc: totalUsage || 0,
-                            maxEvents: (maxEventsCount || 0).toLocaleString(),
-                          })}
-                        </Text>
+                      <Text
+                        as='p'
+                        size='sm'
+                        colour='secondary'
+                        className='mb-4'
+                      >
+                        {t('billing.usageOverview', {
+                          tracked: (usageInfo.total || 0).toLocaleString(),
+                          trackedPerc: totalUsage || 0,
+                          maxEvents: (maxEventsCount || 0).toLocaleString(),
+                        })}
+                      </Text>
 
-                        <div className='mb-4 grid grid-cols-2 gap-3'>
-                          <div className='flex items-center'>
-                            <div className='size-2 rounded-full bg-blue-600 dark:bg-blue-500' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              colour='secondary'
-                              className='ml-2'
-                            >
-                              {t('billing.pageviews', {
-                                quantity: usageInfo.traffic || 0,
-                                percentage: usageInfo.trafficPerc || 0,
-                              })}
-                            </Text>
-                          </div>
-                          <div className='flex items-center'>
-                            <div className='size-2 rounded-full bg-fuchsia-600 dark:bg-fuchsia-500' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              colour='secondary'
-                              className='ml-2'
-                            >
-                              {t('billing.customEvents', {
-                                quantity: usageInfo.customEvents || 0,
-                                percentage: usageInfo.customEventsPerc || 0,
-                              })}
-                            </Text>
-                          </div>
-                          <div className='flex items-center'>
-                            <div className='size-2 rounded-full bg-lime-600 dark:bg-lime-500' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              colour='secondary'
-                              className='ml-2'
-                            >
-                              {t('billing.captcha', {
-                                quantity: usageInfo.captcha || 0,
-                                percentage: usageInfo.captchaPerc || 0,
-                              })}
-                            </Text>
-                          </div>
-                          <div className='flex items-center'>
-                            <div className='size-2 rounded-full bg-red-600 dark:bg-red-500' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              colour='secondary'
-                              className='ml-2'
-                            >
-                              {t('billing.errors', {
-                                quantity: usageInfo.errors || 0,
-                                percentage: usageInfo.errorsPerc || 0,
-                              })}
-                            </Text>
-                          </div>
+                      <div className='grid grid-cols-2 gap-x-6 gap-y-3'>
+                        <div className='flex items-center'>
+                          <div className='size-2 rounded-full bg-blue-600 dark:bg-blue-500' />
+                          <Text
+                            as='span'
+                            size='sm'
+                            colour='secondary'
+                            className='ml-2'
+                          >
+                            {t('billing.pageviews', {
+                              quantity: usageInfo.traffic || 0,
+                              percentage: usageInfo.trafficPerc || 0,
+                            })}
+                          </Text>
                         </div>
+                        <div className='flex items-center'>
+                          <div className='size-2 rounded-full bg-fuchsia-600 dark:bg-fuchsia-500' />
+                          <Text
+                            as='span'
+                            size='sm'
+                            colour='secondary'
+                            className='ml-2'
+                          >
+                            {t('billing.customEvents', {
+                              quantity: usageInfo.customEvents || 0,
+                              percentage: usageInfo.customEventsPerc || 0,
+                            })}
+                          </Text>
+                        </div>
+                        <div className='flex items-center'>
+                          <div className='size-2 rounded-full bg-lime-600 dark:bg-lime-500' />
+                          <Text
+                            as='span'
+                            size='sm'
+                            colour='secondary'
+                            className='ml-2'
+                          >
+                            {t('billing.captcha', {
+                              quantity: usageInfo.captcha || 0,
+                              percentage: usageInfo.captchaPerc || 0,
+                            })}
+                          </Text>
+                        </div>
+                        <div className='flex items-center'>
+                          <div className='size-2 rounded-full bg-red-600 dark:bg-red-500' />
+                          <Text
+                            as='span'
+                            size='sm'
+                            colour='secondary'
+                            className='ml-2'
+                          >
+                            {t('billing.errors', {
+                              quantity: usageInfo.errors || 0,
+                              percentage: usageInfo.errorsPerc || 0,
+                            })}
+                          </Text>
+                        </div>
+                      </div>
 
+                      <div className='mt-5'>
                         <Text
                           as='p'
                           size='base'
@@ -1665,81 +1687,125 @@ const UserSettings = () => {
                             })}
                           </Text>
                         </div>
+                      </div>
 
-                        <div className='mt-5 grid gap-4 border-t border-gray-200 pt-4 sm:grid-cols-3 dark:border-slate-800'>
-                          <div>
+                      <div className='mt-6 grid gap-5 border-t border-gray-200 pt-5 sm:grid-cols-3 dark:border-slate-800'>
+                        <div>
+                          <div className='flex items-center gap-1.5'>
                             <Text as='p' size='xs' colour='muted'>
                               {t('billing.websites')}
                             </Text>
-                            <Text as='p' size='sm' weight='semibold' className='mt-1'>
-                              {(usageInfo.projects || 0).toLocaleString()} /{' '}
-                              {(maxProjects || 0).toLocaleString()}
-                            </Text>
-                            {purchasedWebsiteAddons ? (
-                              <Text as='p' size='xs' colour='muted' className='mt-1'>
-                                {t('billing.addedWebsites', {
-                                  amount: purchasedWebsiteAddons.toLocaleString(),
-                                })}
-                              </Text>
-                            ) : null}
-                            <div className='mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
-                              <div
-                                className='h-full rounded-full bg-slate-900 dark:bg-slate-100'
-                                style={{ width: `${projectsUsage}%` }}
-                              />
-                            </div>
+                            <Tooltip
+                              ariaLabel={t('billing.websitesAddonTooltip')}
+                              text={t('billing.websitesAddonTooltip')}
+                            />
                           </div>
-
-                          <div>
-                            <Text as='p' size='xs' colour='muted'>
-                              {t('billing.sessionReplays')}
-                            </Text>
-                            <Text as='p' size='sm' weight='semibold' className='mt-1'>
-                              {t('billing.perMonthQuota', {
-                                amount: replayLimitLabel,
+                          <Text
+                            as='p'
+                            size='sm'
+                            weight='semibold'
+                            className='mt-1'
+                          >
+                            {(usageInfo.projects || 0).toLocaleString()} /{' '}
+                            {(maxProjects || 0).toLocaleString()}
+                          </Text>
+                          {purchasedWebsiteAddons ? (
+                            <Text
+                              as='p'
+                              size='xs'
+                              colour='muted'
+                              className='mt-1'
+                            >
+                              {t('billing.addedWebsites', {
+                                amount: purchasedWebsiteAddons.toLocaleString(),
                               })}
                             </Text>
-                            <Text as='p' size='xs' colour='muted' className='mt-1'>
-                              {t('billing.recordedSessionsQuota')}
-                            </Text>
-                          </div>
-
-                          <div>
-                            <Text as='p' size='xs' colour='muted'>
-                              {t('billing.api')}
-                            </Text>
-                            <Text as='p' size='sm' weight='semibold' className='mt-1'>
-                              {t('billing.perHourQuota', {
-                                amount: (
-                                  maxApiKeyRequestsPerHour || 0
-                                ).toLocaleString(),
-                              })}
-                            </Text>
-                            <Text as='p' size='xs' colour='muted' className='mt-1'>
-                              {t('billing.currentRateLimit')}
-                            </Text>
+                          ) : null}
+                          <div className='mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
+                            <div
+                              className='h-full rounded-full bg-slate-900 dark:bg-slate-100'
+                              style={{ width: `${projectsUsage}%` }}
+                            />
                           </div>
                         </div>
 
-                        <Text
-                          as='p'
-                          size='sm'
-                          colour='secondary'
-                          className='mt-3'
-                        >
-                          {t('billing.resetDate', {
-                            days: Math.ceil(
-                              (new Date(
-                                new Date().getFullYear(),
-                                new Date().getMonth() + 1,
-                                1,
-                              ).getTime() -
-                                new Date().getTime()) /
-                                (1000 * 60 * 60 * 24),
-                            ),
-                          })}
-                        </Text>
+                        <div>
+                          <div className='flex items-center gap-1.5'>
+                            <Text as='p' size='xs' colour='muted'>
+                              {t('billing.sessionReplays')}
+                            </Text>
+                            <Tooltip
+                              ariaLabel={t(
+                                'billing.sessionReplaysAddonTooltip',
+                              )}
+                              text={t('billing.sessionReplaysAddonTooltip')}
+                            />
+                          </div>
+                          <Text
+                            as='p'
+                            size='sm'
+                            weight='semibold'
+                            className='mt-1'
+                          >
+                            {t('billing.perMonthQuota', {
+                              amount: replayLimitLabel,
+                            })}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='xs'
+                            colour='muted'
+                            className='mt-1'
+                          >
+                            {t('billing.recordedSessionsQuota')}
+                          </Text>
+                        </div>
+
+                        <div>
+                          <Text as='p' size='xs' colour='muted'>
+                            {t('billing.api')}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='sm'
+                            weight='semibold'
+                            className='mt-1'
+                          >
+                            {t('billing.perHourQuota', {
+                              amount: (
+                                maxApiKeyRequestsPerHour || 0
+                              ).toLocaleString(),
+                            })}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='xs'
+                            colour='muted'
+                            className='mt-1'
+                          >
+                            {t('billing.currentRateLimit')}
+                          </Text>
+                        </div>
                       </div>
+
+                      <Text
+                        as='p'
+                        size='sm'
+                        colour='secondary'
+                        className='mt-4'
+                      >
+                        {t('billing.resetDate', {
+                          days: Math.ceil(
+                            (new Date(
+                              new Date().getFullYear(),
+                              new Date().getMonth() + 1,
+                              1,
+                            ).getTime() -
+                              new Date().getTime()) /
+                              (1000 * 60 * 60 * 24),
+                          ),
+                        })}
+                      </Text>
                     </SettingsSection>
 
                     <SettingsSection
@@ -1750,43 +1816,187 @@ const UserSettings = () => {
                           : t('billing.selectPlan')
                       }
                     >
-                      <Text
-                        as='p'
-                        size='sm'
-                        colour='secondary'
-                        className='mb-4'
-                      >
-                        {t('billing.membersNotification')}
-                      </Text>
-
-                      <BillingPricing
-                        lastEvent={lastEvent}
-                        metainfo={metainfo}
-                        openCheckout={openCheckout}
-                      />
-
-                      <div className='mt-4 flex flex-wrap gap-3'>
-                        {subUpdateURL && !cancellationEffectiveDate ? (
-                          <Button
-                            size='lg'
-                            onClick={onUpdatePaymentDetails}
-                            type='button'
+                      <div className='flex flex-col gap-4 border-t border-gray-200 pt-4 md:flex-row md:items-start md:justify-between dark:border-slate-800'>
+                        <div className='max-w-2xl'>
+                          <Text as='p' size='base' weight='semibold'>
+                            {isSubscriber
+                              ? t('billing.currentPlanTitle', {
+                                  plan: currentPlanName,
+                                })
+                              : t('billing.noPlanSelected')}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='sm'
+                            colour='secondary'
+                            className='mt-1'
                           >
-                            {t('billing.update')}
-                          </Button>
-                        ) : null}
-                        {subCancelURL && !cancellationEffectiveDate ? (
-                          <Button
-                            variant='danger-outline'
-                            size='lg'
-                            onClick={() => setIsCancelSubModalOpened(true)}
-                            type='button'
+                            {isSubscriber
+                              ? t('billing.currentPlanDescription', {
+                                  events: (
+                                    maxEventsCount || 0
+                                  ).toLocaleString(),
+                                })
+                              : t('billing.noPlanDescription')}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='sm'
+                            colour='secondary'
+                            className='mt-3'
                           >
-                            {t('billing.cancelSub')}
+                            {t('billing.membersNotification')}
+                          </Text>
+                        </div>
+
+                        <div className='flex shrink-0 flex-wrap gap-3'>
+                          <Button
+                            to={routes.billing_choose_plan}
+                            size='lg'
+                            className='gap-1'
+                          >
+                            {isSubscriber
+                              ? t('billing.managePlan')
+                              : t('billing.choosePlan')}
+                            <ArrowRightIcon className='size-4' />
                           </Button>
-                        ) : null}
+                          {subUpdateURL && !cancellationEffectiveDate ? (
+                            <Button
+                              variant='secondary'
+                              size='lg'
+                              onClick={onUpdatePaymentDetails}
+                              type='button'
+                            >
+                              {t('billing.update')}
+                            </Button>
+                          ) : null}
+                          {subCancelURL && !cancellationEffectiveDate ? (
+                            <Button
+                              variant='danger-outline'
+                              size='lg'
+                              onClick={() => setIsCancelSubModalOpened(true)}
+                              type='button'
+                            >
+                              {t('billing.cancelSub')}
+                            </Button>
+                          ) : null}
+                        </div>
                       </div>
                     </SettingsSection>
+
+                    {hasActiveSubscription ? (
+                      <SettingsSection
+                        title={t('billing.addonsTitle')}
+                        description={t('billing.addonsDesc')}
+                      >
+                        <div className='grid gap-6 border-t border-gray-200 pt-4 lg:grid-cols-2 dark:border-slate-800'>
+                          <div>
+                            <div className='flex items-start justify-between gap-3'>
+                              <div>
+                                <Text as='h4' size='base' weight='semibold'>
+                                  {t('billing.websiteAddonTitle')}
+                                </Text>
+                                <Text
+                                  as='p'
+                                  size='sm'
+                                  colour='secondary'
+                                  className='mt-1'
+                                >
+                                  {t('billing.websiteAddonDescription', {
+                                    amount: websiteAddon.quantity,
+                                    unitPrice: `${currency.symbol}${formatBillingPrice(
+                                      websiteAddonPrice / websiteAddon.quantity,
+                                    )}`,
+                                  })}
+                                </Text>
+                              </div>
+                              {purchasedWebsiteAddons ? (
+                                <Text
+                                  as='span'
+                                  size='xs'
+                                  weight='semibold'
+                                  className='shrink-0 rounded-md bg-emerald-100 px-2 py-1 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+                                >
+                                  {t('billing.activeAddonAmount', {
+                                    amount:
+                                      purchasedWebsiteAddons.toLocaleString(),
+                                  })}
+                                </Text>
+                              ) : null}
+                            </div>
+                            <Text
+                              as='p'
+                              size='lg'
+                              weight='bold'
+                              className='mt-4'
+                            >
+                              {currency.symbol}
+                              {formatBillingPrice(websiteAddonPrice)}
+                              <Text
+                                as='span'
+                                size='sm'
+                                weight='medium'
+                                colour='secondary'
+                              >
+                                /{t('pricing.intervals.month')}
+                              </Text>
+                            </Text>
+                            <Button
+                              to={routes.contact}
+                              variant='secondary'
+                              size='lg'
+                              className='mt-4 gap-1'
+                            >
+                              {t('billing.requestAddon')}
+                              <ArrowRightIcon className='size-4' />
+                            </Button>
+                          </div>
+
+                          <div>
+                            <Text as='h4' size='base' weight='semibold'>
+                              {t('billing.sessionReplayAddonTitle')}
+                            </Text>
+                            <Text
+                              as='p'
+                              size='sm'
+                              colour='secondary'
+                              className='mt-1'
+                            >
+                              {t('billing.sessionReplayAddonDescription', {
+                                amount:
+                                  sessionReplayAddon.quantity.toLocaleString(),
+                              })}
+                            </Text>
+                            <Text
+                              as='p'
+                              size='lg'
+                              weight='bold'
+                              className='mt-4'
+                            >
+                              {currency.symbol}
+                              {formatBillingPrice(sessionReplayAddonPrice)}
+                              <Text
+                                as='span'
+                                size='sm'
+                                weight='medium'
+                                colour='secondary'
+                              >
+                                /{t('pricing.intervals.month')}
+                              </Text>
+                            </Text>
+                            <Button
+                              to={routes.contact}
+                              variant='secondary'
+                              size='lg'
+                              className='mt-4 gap-1'
+                            >
+                              {t('billing.requestAddon')}
+                              <ArrowRightIcon className='size-4' />
+                            </Button>
+                          </div>
+                        </div>
+                      </SettingsSection>
+                    ) : null}
                   </>
                 )}
               </>

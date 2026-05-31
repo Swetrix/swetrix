@@ -17,6 +17,7 @@ import {
   getPlanPrice,
   type BillingInterval,
   type CurrencyCode,
+  type EventTierCode,
   type PlanTypeCode,
 } from '~/lib/pricing/catalog'
 import { useAuth } from '~/providers/AuthProvider'
@@ -28,6 +29,17 @@ import routes from '~/utils/routes'
 
 interface MarketingPricingProps {
   metainfo?: Metainfo
+  onSelectPlan?: (selection: MarketingPricingSelection) => void
+  getActionLabel?: (selection: MarketingPricingSelection) => string
+  loadingPlanType?: PlanTypeCode | null
+  disabled?: boolean
+}
+
+export interface MarketingPricingSelection {
+  planType: PlanTypeCode
+  eventTier: EventTierCode
+  billingFrequency: BillingInterval
+  currency: CurrencyCode
 }
 
 interface BenefitTooltip {
@@ -265,6 +277,10 @@ const BillingFrequencySwitch = ({ checked }: { checked: boolean }) => (
 
 const MarketingPricing = ({
   metainfo = DEFAULT_METAINFO,
+  onSelectPlan,
+  getActionLabel,
+  loadingPlanType,
+  disabled,
 }: MarketingPricingProps) => {
   const { isAuthenticated } = useAuth()
   const { t } = useTranslation('common')
@@ -457,8 +473,19 @@ const MarketingPricing = ({
                   : null
                 const hasPublishedPrice = Boolean(monthlyPrice && yearlyPrice)
                 const canSelfServe = Boolean(
-                  monthlyPlan?.paddlePlanId && yearlyPlan?.paddlePlanId,
+                  (isYearly ? yearlyPlan : monthlyPlan)?.paddlePlanId,
                 )
+                const selection: MarketingPricingSelection = {
+                  planType,
+                  eventTier: selectedTier,
+                  billingFrequency,
+                  currency: currencyCode,
+                }
+                const actionLabel =
+                  getActionLabel?.(selection) ||
+                  (canSelfServe
+                    ? t('pricing.startFreeTrial')
+                    : t('pricing.contactUs'))
 
                 return (
                   <div
@@ -574,14 +601,23 @@ const MarketingPricing = ({
 
                     <Button
                       to={
-                        canSelfServe
-                          ? isAuthenticated
-                            ? routes.billing
-                            : routes.signup
-                          : routes.contact
+                        onSelectPlan && canSelfServe
+                          ? undefined
+                          : canSelfServe
+                            ? isAuthenticated
+                              ? routes.billing_choose_plan
+                              : routes.signup
+                            : routes.contact
+                      }
+                      onClick={
+                        onSelectPlan && canSelfServe
+                          ? () => onSelectPlan(selection)
+                          : undefined
                       }
                       variant='primary'
                       size='lg'
+                      loading={loadingPlanType === planType}
+                      disabled={disabled}
                       className={cn(
                         'mt-4 justify-center gap-2',
                         isEnterprise ? 'dark' : '',
@@ -593,9 +629,7 @@ const MarketingPricing = ({
                         weight='semibold'
                         colour='inherit'
                       >
-                        {canSelfServe
-                          ? t('pricing.startFreeTrial')
-                          : t('pricing.contactUs')}
+                        {actionLabel}
                       </Text>
                       <ArrowRightIcon className='size-4' />
                     </Button>
