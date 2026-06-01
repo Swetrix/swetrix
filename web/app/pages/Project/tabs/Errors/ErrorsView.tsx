@@ -1041,7 +1041,17 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     typeof project?.isErrorDataExists === 'boolean' &&
     !project.isErrorDataExists
   ) {
-    return <WaitingForAnError />
+    return (
+      <div>
+        <DashboardHeader
+          showLiveVisitors
+          showSearchButton={false}
+          hideTimeBucket
+          rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
+        />
+        <WaitingForAnError />
+      </div>
+    )
   }
 
   if (activeEID) {
