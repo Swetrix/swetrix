@@ -1908,7 +1908,7 @@ export interface ProfilesResponse {
 export async function getProfilesServer(
   request: Request,
   pid: string,
-  period = '3d',
+  period = '7d',
   filters: AnalyticsFilter[] = [],
   from = '',
   to = '',

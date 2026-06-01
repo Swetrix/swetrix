@@ -509,7 +509,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const result = await getProfilesServer(
           request,
           projectId,
-          params.period || '3d',
+          params.period || '7d',
           params.filters || [],
           formatDateForBackend(params.from) || '',
           formatDateForBackend(params.to) || '',
