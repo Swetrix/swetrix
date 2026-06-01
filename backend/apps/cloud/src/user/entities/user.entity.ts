@@ -65,14 +65,14 @@ export const PLAN_TYPE_ENTITLEMENTS = {
     websites: 50,
     teamMembers: 10,
     organisations: 3,
-    apiRateLimitPerHour: 600,
+    apiRateLimitPerHour: 300,
     sessionReplaysIncluded: 0,
   },
   [PlanType.plus]: {
     websites: 100,
     teamMembers: 25,
     organisations: 10,
-    apiRateLimitPerHour: 5000,
+    apiRateLimitPerHour: 6000,
     sessionReplaysIncluded: 50000,
   },
   [PlanType.enterprise]: {

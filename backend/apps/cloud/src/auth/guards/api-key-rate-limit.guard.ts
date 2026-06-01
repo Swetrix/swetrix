@@ -1,6 +1,10 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { checkRateLimitForApiKey } from '../../common/utils'
-import { PlanCode } from '../../user/entities/user.entity'
+import {
+  getEffectivePlanType,
+  getPlanTypeEntitlements,
+  PlanCode,
+} from '../../user/entities/user.entity'
 
 @Injectable()
 export class ApiKeyRateLimitGuard implements CanActivate {
@@ -11,12 +15,19 @@ export class ApiKeyRateLimitGuard implements CanActivate {
     if (request.headers['x-api-key']) {
       if (!user) return false
 
+      const effectivePlanType = getEffectivePlanType(user)
+      const entitlements = effectivePlanType
+        ? getPlanTypeEntitlements(effectivePlanType)
+        : null
+      const planTypeLimit = entitlements?.apiRateLimitPerHour
       const reqAmount =
         user.planCode === PlanCode.none ||
         user.isAccountBillingSuspended ||
         user.dashboardBlockReason !== null
           ? 0
-          : user.maxApiKeyRequestsPerHour
+          : typeof planTypeLimit === 'number'
+            ? planTypeLimit
+            : user.maxApiKeyRequestsPerHour
       return checkRateLimitForApiKey(user.apiKey, reqAmount)
     }
 
