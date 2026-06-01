@@ -436,7 +436,7 @@ export class User {
   @Column('int', { default: 50 })
   maxProjects: number
 
-  @Column('int', { default: 600 })
+  @Column('int', { default: 300 })
   maxApiKeyRequestsPerHour: number
 
   @Column({ default: false })
