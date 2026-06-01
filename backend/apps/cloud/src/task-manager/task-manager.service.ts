@@ -38,6 +38,7 @@ import {
   getNextPlan,
   DashboardBlockReason,
   ReportFrequency as UserReportFrequency,
+  getDefaultAccountLimitUpdates,
 } from '../user/entities/user.entity'
 import {
   SEND_WARNING_AT_PERC,
@@ -1470,6 +1471,8 @@ export class TaskManagerService {
           subUpdateURL: null,
           subCancelURL: null,
           billingFrequency: BillingFrequency.Monthly,
+          planType: null,
+          ...getDefaultAccountLimitUpdates(),
         })
         await this.projectService.clearProjectsRedisCache(user.id)
       }

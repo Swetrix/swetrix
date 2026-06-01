@@ -60,6 +60,14 @@ interface PlanSignature {
   ypid?: string
 }
 
+type AccountLimitUpdates = {
+  maxProjects?: number
+  maxApiKeyRequestsPerHour?: number
+}
+
+export const DEFAULT_MAX_PROJECTS = 50
+export const DEFAULT_API_KEY_REQUESTS_PER_HOUR = 300
+
 export const PLAN_TYPE_ENTITLEMENTS = {
   [PlanType.standard]: {
     websites: 50,
@@ -119,9 +127,48 @@ export const getEffectivePlanType = (
   return null
 }
 
-export const getPlanTypeEntitlements = (
+export const getPlanTypeEntitlements = (planType?: PlanType | null) =>
+  PLAN_TYPE_ENTITLEMENTS[planType || PlanType.standard]
+
+const getNumericLimitOverride = (
+  overrides: Record<string, unknown> | null | undefined,
+  key: string,
+) => {
+  const value = overrides?.[key]
+
+  return typeof value === 'number' ? value : null
+}
+
+export const getDefaultAccountLimitUpdates = () => ({
+  maxProjects: DEFAULT_MAX_PROJECTS,
+  maxApiKeyRequestsPerHour: DEFAULT_API_KEY_REQUESTS_PER_HOUR,
+})
+
+export const getPlanTypeAccountLimitUpdates = (
   planType?: PlanType | null,
-) => PLAN_TYPE_ENTITLEMENTS[planType || PlanType.standard]
+  entitlementOverrides?: Record<string, unknown> | null,
+): AccountLimitUpdates => {
+  const entitlements = getPlanTypeEntitlements(planType)
+  const maxProjects =
+    typeof entitlements.websites === 'number'
+      ? entitlements.websites
+      : getNumericLimitOverride(entitlementOverrides, 'websites')
+  const maxApiKeyRequestsPerHour =
+    typeof entitlements.apiRateLimitPerHour === 'number'
+      ? entitlements.apiRateLimitPerHour
+      : getNumericLimitOverride(entitlementOverrides, 'apiRateLimitPerHour')
+  const updates: AccountLimitUpdates = {}
+
+  if (typeof maxProjects === 'number') {
+    updates.maxProjects = maxProjects
+  }
+
+  if (typeof maxApiKeyRequestsPerHour === 'number') {
+    updates.maxApiKeyRequestsPerHour = maxApiKeyRequestsPerHour
+  }
+
+  return updates
+}
 
 export const planTypeHasFeature = (
   planType: PlanType | null | undefined,
@@ -433,10 +480,10 @@ export class User {
   @Column('varchar', { length: 60, nullable: true })
   twoFactorRecoveryCode: string
 
-  @Column('int', { default: 50 })
+  @Column('int', { default: DEFAULT_MAX_PROJECTS })
   maxProjects: number
 
-  @Column('int', { default: 300 })
+  @Column('int', { default: DEFAULT_API_KEY_REQUESTS_PER_HOUR })
   maxApiKeyRequestsPerHour: number
 
   @Column({ default: false })

@@ -18,7 +18,7 @@ import {
   BillingFrequency,
   DashboardBlockReason,
   PlanType,
-  getPlanTypeEntitlements,
+  getPlanTypeAccountLimitUpdates,
   isNextPlan,
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
@@ -171,18 +171,6 @@ export class WebhookController {
               : {}
 
         const planType = requestedPlanType || PlanType.standard
-        const entitlements = getPlanTypeEntitlements(planType)
-        const limitParams: Record<string, any> = {}
-
-        if (typeof entitlements.websites === 'number') {
-          limitParams.maxProjects = entitlements.websites
-        }
-
-        if (typeof entitlements.apiRateLimitPerHour === 'number') {
-          limitParams.maxApiKeyRequestsPerHour =
-            entitlements.apiRateLimitPerHour
-        }
-
         const updateParams: Record<string, any> = {
           planCode: plan.id,
           planType,
@@ -196,7 +184,10 @@ export class WebhookController {
           tierCurrency: currency,
           cancellationEffectiveDate: null,
           ...statusParams,
-          ...limitParams,
+          ...getPlanTypeAccountLimitUpdates(
+            planType,
+            currentUser.entitlementOverrides,
+          ),
         }
 
         if (isTrialing && nextBillDate) {

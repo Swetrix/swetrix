@@ -35,6 +35,7 @@ import {
   PlanType,
   getEffectivePlanType,
   getPlanTypeEntitlements,
+  getPlanTypeAccountLimitUpdates,
 } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
@@ -512,21 +513,6 @@ export class UserService {
     return PlanType.standard
   }
 
-  private getAccountLimitUpdates(planType?: PlanType | null) {
-    const entitlements = getPlanTypeEntitlements(planType)
-    const updates: Record<string, unknown> = {}
-
-    if (typeof entitlements.websites === 'number') {
-      updates.maxProjects = entitlements.websites
-    }
-
-    if (typeof entitlements.apiRateLimitPerHour === 'number') {
-      updates.maxApiKeyRequestsPerHour = entitlements.apiRateLimitPerHour
-    }
-
-    return updates
-  }
-
   getPlanById(planId: number, requestedPlanType?: string | null) {
     if (!planId) {
       return null
@@ -770,7 +756,7 @@ export class UserService {
       nextBillDate: date,
       billingFrequency,
       tierCurrency: currency,
-      ...this.getAccountLimitUpdates(planType),
+      ...getPlanTypeAccountLimitUpdates(planType, user.entitlementOverrides),
     }
 
     await this.update(id, updateParams)
