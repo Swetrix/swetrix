@@ -387,7 +387,7 @@ const BillingPricing = ({
       <main className='min-h-min-footer bg-gray-50 pb-16 dark:bg-slate-950'>
         <div className='mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 lg:px-8'>
           <Button
-            to={routes.billing}
+            to={`${routes.user_settings}?tab=billing`}
             variant='ghost'
             size='sm'
             className='mb-4 gap-1'
