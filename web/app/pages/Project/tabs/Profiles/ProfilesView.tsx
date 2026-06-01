@@ -127,7 +127,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       }
 
       const dataProfiles = await profilesProxy.fetchProfiles(id, {
-        period: period === 'custom' && dateRange ? '' : period,
+        period: period === 'custom' && dateRange ? 'custom' : period,
         filters,
         from: period === 'custom' && dateRange ? from : '',
         to: period === 'custom' && dateRange ? to : '',
