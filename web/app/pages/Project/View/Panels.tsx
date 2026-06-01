@@ -36,6 +36,7 @@ import React, {
   useState,
   useEffect,
   useMemo,
+  useCallback,
   Fragment,
   useRef,
 } from 'react'
@@ -1887,43 +1888,81 @@ const DetailsTable = ({
   const parentRef = useRef<HTMLDivElement>(null)
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
-  const [sortedData, setSortedData] = useState(data)
   const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
     sortByDescend: false,
   })
-  const filteredData = useMemo(() => {
-    if (!search) return sortedData
-    const searchLower = search.toLowerCase()
-    const getSearchLabel = (entry: Entry): string => {
+
+  const getNameLabel = useCallback(
+    (entry: Entry): string => {
       if (activeTabId === 'cc') {
-        const code = (entry as any)?.cc || entry?.name
+        const code = entry.cc || entry.name
         try {
           const countryName = code ? countries.getName(code, language) : ''
-          return (countryName || '').toLowerCase()
+          return countryName || entry.name || ''
         } catch {
-          return (entry?.name || '').toLowerCase()
+          return entry.name || ''
         }
       }
+
       if (activeTabId === 'lc') {
         try {
           return (
             getLocaleDisplayName(entry?.name, language) ||
             entry?.name ||
             ''
-          ).toLowerCase()
+          )
         } catch {
-          return (entry?.name || '').toLowerCase()
+          return entry?.name || ''
         }
       }
-      return (entry?.name || '').toLowerCase()
+
+      try {
+        return decodeURIComponent(entry.name || '')
+      } catch {
+        return entry.name || ''
+      }
+    },
+    [activeTabId, language],
+  )
+
+  const sortedData = useMemo(() => {
+    if (!sort.sortByAscend && !sort.sortByDescend) {
+      return data
     }
 
-    return sortedData.filter((entry) => {
-      return getSearchLabel(entry).includes(searchLower)
+    const getNumericValue = (entry: Entry): number => {
+      if (sort.label === 'quantity') return entry.count
+      const extra = detailsExtraColumns?.find((c) => c.sortLabel === sort.label)
+      if (extra) return extra.getSortValue(entry)
+      return 0
+    }
+
+    return [...data].sort((a, b) => {
+      if (sort.label === 'name') {
+        const aValue = getNameLabel(a)
+        const bValue = getNameLabel(b)
+
+        return sort.sortByAscend
+          ? aValue.localeCompare(bValue, language, { sensitivity: 'base' })
+          : bValue.localeCompare(aValue, language, { sensitivity: 'base' })
+      }
+
+      const aValue = getNumericValue(a)
+      const bValue = getNumericValue(b)
+
+      return sort.sortByAscend ? aValue - bValue : bValue - aValue
     })
-  }, [search, sortedData, activeTabId, language])
+  }, [data, detailsExtraColumns, getNameLabel, language, sort])
+
+  const filteredData = useMemo(() => {
+    if (!search) return sortedData
+    const searchLower = search.toLowerCase()
+    return sortedData.filter((entry) => {
+      return getNameLabel(entry).toLowerCase().includes(searchLower)
+    })
+  }, [search, sortedData, getNameLabel])
 
   const rowVirtualizer = useVirtualizer({
     count: filteredData.length,
@@ -1933,42 +1972,33 @@ const DetailsTable = ({
   })
 
   const onSortBy = (label: string) => {
-    const getValue = (entry: Entry): number | string => {
-      if (label === 'quantity') return entry.count
-      if (label === 'name') return entry.name || ''
-      const extra = detailsExtraColumns?.find((c) => c.sortLabel === label)
-      if (extra) return extra.getSortValue(entry)
-      return 0
-    }
+    setSort((currentSort) => {
+      const startsWithAscend = label === 'name'
 
-    if (sort.sortByAscend) {
-      const newData = [...sortedData].sort((a, b) => {
-        if (label === 'name')
-          return (getValue(a) as string).localeCompare(getValue(b) as string)
-        return (getValue(a) as number) - (getValue(b) as number)
-      })
-      setSortedData(newData)
-      setSort({ label, sortByAscend: false, sortByDescend: true })
-      return
-    }
+      if (
+        currentSort.label !== label ||
+        (!currentSort.sortByAscend && !currentSort.sortByDescend)
+      ) {
+        return {
+          label,
+          sortByAscend: startsWithAscend,
+          sortByDescend: !startsWithAscend,
+        }
+      }
 
-    if (sort.sortByDescend) {
-      setSortedData([...data])
-      setSort({ label, sortByAscend: false, sortByDescend: false })
-      return
-    }
+      if (currentSort.sortByAscend) {
+        return startsWithAscend
+          ? { label, sortByAscend: false, sortByDescend: true }
+          : { label, sortByAscend: false, sortByDescend: false }
+      }
 
-    const newData = [...sortedData].sort((a, b) => {
-      if (label === 'name')
-        return (getValue(a) as string).localeCompare(getValue(b) as string)
-      return (getValue(b) as number) - (getValue(a) as number)
+      return startsWithAscend
+        ? { label, sortByAscend: false, sortByDescend: false }
+        : { label, sortByAscend: true, sortByDescend: false }
     })
-    setSortedData(newData)
-    setSort({ label, sortByAscend: true, sortByDescend: false })
   }
 
   useEffect(() => {
-    setSortedData(data)
     setSort({
       label: 'quantity',
       sortByAscend: false,
