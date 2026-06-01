@@ -35,6 +35,20 @@ export enum PlanType {
   enterprise = 'enterprise',
 }
 
+export interface WebsiteAddon {
+  code: 'websites'
+  quantity: number
+  pendingQuantity: number | null
+  billingInterval: 'monthly' | 'yearly' | null
+  pendingBillingInterval: 'monthly' | 'yearly' | null
+  currency: 'USD' | 'EUR' | 'GBP' | null
+  status: 'active' | 'past_due' | 'cancelled' | 'legacy' | null
+  periodEnd: string | null
+  nextChargeDate: string | null
+  isLegacy: boolean
+  failedChargeAttempts: number
+}
+
 enum OnboardingStep {
   LANGUAGE = 'language',
   WELCOME = 'welcome',
@@ -89,6 +103,7 @@ export interface User {
   maxApiKeyRequestsPerHour: number
   sessionReplaysIncluded: number | string
   purchasedWebsiteAddons: number
+  websiteAddon?: WebsiteAddon | null
   tierCurrency: 'USD' | 'EUR' | 'GBP' | null
   showLiveVisitorsInTitle: boolean
   receiveLoginNotifications: boolean

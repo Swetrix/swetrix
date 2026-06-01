@@ -32,6 +32,7 @@ interface SelectProps<T> {
   onSelect: (item: T) => void
   selectedItem?: T
   wrap?: boolean
+  disabled?: boolean
 }
 
 function Select<T>({
@@ -54,6 +55,7 @@ function Select<T>({
   selectedItem,
   hintClassName,
   wrap,
+  disabled,
 }: SelectProps<T>) {
   const isItemSelected = (item: T): boolean => {
     if (!selectedItem) return false
@@ -76,6 +78,7 @@ function Select<T>({
       id={id || ''}
       value={selectedItem}
       onChange={onSelect}
+      disabled={disabled}
     >
       {({ open }) => (
         <>
@@ -111,6 +114,8 @@ function Select<T>({
               aria-describedby={hintId}
               className={cx(
                 'relative w-full rounded-md border-0 bg-white py-2 pr-9 pl-3 text-left text-sm font-medium text-gray-900 ring-1 ring-gray-300 transition-[background-color,box-shadow] duration-150 ease-out ring-inset hover:ring-gray-400 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:ring-slate-600 dark:focus-visible:ring-slate-300',
+                disabled &&
+                  'cursor-not-allowed opacity-60 hover:ring-gray-300 dark:hover:ring-slate-700/80',
                 buttonClassName,
               )}
             >

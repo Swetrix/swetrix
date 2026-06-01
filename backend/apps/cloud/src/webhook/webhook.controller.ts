@@ -195,6 +195,7 @@ export class WebhookController {
         }
 
         await this.userService.update(currentUser.id, updateParams)
+        await this.userService.refreshWebsiteAddonEntitlements(currentUser.id)
         await this.projectService.clearProjectsRedisCache(currentUser.id)
 
         if (body.alert_name === 'subscription_created' && isTrialing) {
@@ -231,6 +232,13 @@ export class WebhookController {
         const user = await this.userService.findOne({
           where: { subID },
         })
+
+        if (user?.id) {
+          await this.userService.scheduleWebsiteAddonCancellation(
+            user.id,
+            cancellationEffectiveDate,
+          )
+        }
 
         if (user?.email) {
           const isTrialing =

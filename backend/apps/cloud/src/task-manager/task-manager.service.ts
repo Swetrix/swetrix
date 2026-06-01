@@ -1447,6 +1447,15 @@ export class TaskManagerService {
     })
   }
 
+  @Cron(CronExpression.EVERY_HOUR)
+  async processWebsiteAddonRenewals() {
+    await this.userService.processDueWebsiteAddonRenewals().catch((reason) => {
+      this.logger.error(
+        `[CRON WORKER](processWebsiteAddonRenewals) Error occured: ${reason}`,
+      )
+    })
+  }
+
   @Cron(CronExpression.EVERY_2_HOURS)
   async cleanUpUnpaidSubUsers() {
     const users = await this.userService.find({
@@ -1461,6 +1470,9 @@ export class TaskManagerService {
       const now = new Date()
 
       if (now > cancellationEffectiveDate) {
+        await this.userService.clearWebsiteAddonsForCancelledSubscription(
+          user.id,
+        )
         await this.userService.update(user.id, {
           cancellationEffectiveDate: null,
           planCode: PlanCode.none,

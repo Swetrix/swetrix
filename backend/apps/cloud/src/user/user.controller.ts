@@ -65,6 +65,7 @@ import { AppLoggerService } from '../logger/logger.service'
 import { DeleteSelfDTO } from './dto/delete-self.dto'
 import { CancelSubscriptionDTO } from './dto/cancel-subscription.dto'
 import { CreateFeedbackDTO } from './dto/create-feedback.dto'
+import { UpdateWebsiteAddonDTO } from './dto/update-website-addon.dto'
 import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
@@ -107,10 +108,16 @@ export class UserController {
         this.projectService.getRedisCount(uid),
       ])
 
-    const sanitizedUser = this.userService.omitSensitiveData(user)
+    const sanitizedUser = this.userService.omitSensitiveData(user) as Partial<
+      User
+    > & { websiteAddon?: unknown }
 
     sanitizedUser.sharedProjects = sharedProjects
     sanitizedUser.organisationMemberships = organisationMemberships
+    sanitizedUser.websiteAddon = await this.userService.getWebsiteAddonSummary(
+      uid,
+      user,
+    )
 
     return {
       user: sanitizedUser,
@@ -868,6 +875,39 @@ export class UserController {
     const { planId, planType } = body
 
     return this.userService.previewSubscription(id, planId, planType)
+  }
+
+  @ApiBearerAuth()
+  @Post('addons/websites/preview')
+  async previewWebsiteAddon(
+    @CurrentUserId() id: string,
+    @Body() body: UpdateWebsiteAddonDTO,
+  ): Promise<any> {
+    this.logger.log({ body, id }, 'POST /addons/websites/preview')
+
+    return this.userService.previewWebsiteAddon(
+      id,
+      body.quantity,
+      body.billingInterval,
+    )
+  }
+
+  @ApiBearerAuth()
+  @Put('addons/websites')
+  async updateWebsiteAddon(
+    @CurrentUserId() id: string,
+    @Body() body: UpdateWebsiteAddonDTO,
+  ): Promise<Partial<User>> {
+    this.logger.log({ body, id }, 'PUT /addons/websites')
+
+    const user = await this.userService.updateWebsiteAddon(
+      id,
+      body.quantity,
+      body.billingInterval,
+    )
+    await this.projectService.clearProjectsRedisCache(id)
+
+    return user
   }
 
   @ApiBearerAuth()
