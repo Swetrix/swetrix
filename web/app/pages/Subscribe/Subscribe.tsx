@@ -13,11 +13,7 @@ import { useFetcher, useLoaderData, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { usePaddle } from '~/hooks/usePaddle'
-import {
-  CURRENCIES,
-  paddleLanguageMapping,
-  TRIAL_DAYS,
-} from '~/lib/constants'
+import { CURRENCIES, paddleLanguageMapping, TRIAL_DAYS } from '~/lib/constants'
 import {
   EVENT_TIER_CODES,
   EVENT_TIERS,
@@ -69,10 +65,7 @@ const formatReplayQuota = (
 const getPlanName = (planType: PlanTypeCode, t: TFunction) =>
   t(`pricing.planTypes.${planType}.name`)
 
-const getCheckoutErrorMessage = (
-  error: string | undefined,
-  t: TFunction,
-) => {
+const getCheckoutErrorMessage = (error: string | undefined, t: TFunction) => {
   if (error?.startsWith('billing.')) {
     return t(error)
   }
@@ -188,9 +181,7 @@ const Subscribe = () => {
 
       generatePayLinkFetcher.data = undefined
     } else if (generatePayLinkFetcher.data?.error) {
-      toast.error(
-        getCheckoutErrorMessage(generatePayLinkFetcher.data.error, t),
-      )
+      toast.error(getCheckoutErrorMessage(generatePayLinkFetcher.data.error, t))
     }
   }, [
     generatePayLinkFetcher.data,
@@ -253,12 +244,10 @@ const Subscribe = () => {
 
   const faqItems = useMemo(() => {
     const faqValues = {
-      lowestPlanEventsAmount: EVENT_TIERS['100k'].monthlyEvents.toLocaleString(
-        'en-US',
-      ),
-      moderatePlanEventsAmount: EVENT_TIERS[
-        '500k'
-      ].monthlyEvents.toLocaleString('en-US'),
+      lowestPlanEventsAmount:
+        EVENT_TIERS['100k'].monthlyEvents.toLocaleString('en-US'),
+      moderatePlanEventsAmount:
+        EVENT_TIERS['500k'].monthlyEvents.toLocaleString('en-US'),
     }
 
     return [0, 1, 4].map((idx) => ({
@@ -353,7 +342,7 @@ const Subscribe = () => {
                     type='button'
                     onClick={() => setSelectedPlanType(planType)}
                     className={cn(
-                      'rounded-lg bg-white p-4 text-left ring-1 ring-inset transition-all duration-150 dark:bg-slate-950',
+                      'rounded-lg bg-white p-4 text-left ring-1 transition-all duration-150 ring-inset dark:bg-slate-950',
                       isSelected
                         ? 'ring-2 ring-slate-900 dark:ring-slate-200'
                         : 'ring-gray-200 hover:ring-gray-300 dark:ring-slate-700 dark:hover:ring-slate-600',
@@ -364,12 +353,21 @@ const Subscribe = () => {
                         {getPlanName(planType, t)}
                       </Text>
                     </div>
-                    <Text as='span' size='sm' colour='secondary' className='mt-3 block'>
+                    <Text
+                      as='span'
+                      size='sm'
+                      colour='secondary'
+                      className='mt-3 block'
+                    >
                       {currency.symbol}
-                      {formatPrice(price)}
-                      /{t('pricing.perMonth')}
+                      {formatPrice(price)}/{t('pricing.perMonth')}
                     </Text>
-                    <Text as='span' size='xs' colour='muted' className='mt-1 block'>
+                    <Text
+                      as='span'
+                      size='xs'
+                      colour='muted'
+                      className='mt-1 block'
+                    >
                       {t('pricing.websiteCount', {
                         count: entitlements.websites,
                       })}
@@ -405,7 +403,7 @@ const Subscribe = () => {
                     type='button'
                     onClick={() => setSelectedEventTier(eventTier)}
                     className={cn(
-                      'flex items-center justify-between rounded-lg bg-white px-4 py-3 text-left ring-1 ring-inset transition-all duration-150 dark:bg-slate-950',
+                      'flex items-center justify-between rounded-lg bg-white px-4 py-3 text-left ring-1 transition-all duration-150 ring-inset dark:bg-slate-950',
                       isSelected
                         ? 'ring-2 ring-slate-900 dark:ring-slate-200'
                         : 'ring-gray-200 hover:ring-gray-300 dark:ring-slate-700 dark:hover:ring-slate-600',
@@ -416,8 +414,7 @@ const Subscribe = () => {
                     </Text>
                     <Text as='span' size='sm' colour='secondary'>
                       {currency.symbol}
-                      {formatPrice(price)}
-                      /{t('pricing.perMonth')}
+                      {formatPrice(price)}/{t('pricing.perMonth')}
                     </Text>
                   </button>
                 )
@@ -451,7 +448,11 @@ const Subscribe = () => {
                     i18n.language,
                   )}{' '}
                   {t('pricing.eventsWithReplay', {
-                    replayQuota: formatReplayQuota(replayQuota, t, i18n.language),
+                    replayQuota: formatReplayQuota(
+                      replayQuota,
+                      t,
+                      i18n.language,
+                    ),
                   })}
                 </Text>
               </div>

@@ -54,7 +54,10 @@ export interface PlanLimit {
 type PlanPriceCatalog = Record<
   PlanTypeCode,
   Partial<
-    Record<EventTierCode, Record<BillingInterval, Record<CurrencyCode, PlanPrice>>>
+    Record<
+      EventTierCode,
+      Record<BillingInterval, Record<CurrencyCode, PlanPrice>>
+    >
   >
 >
 
@@ -201,57 +204,81 @@ export const PLAN_PRICES: PlanPriceCatalog = {
       { USD: 719, EUR: 619, GBP: 539 },
       { USD: 7190, EUR: 6190, GBP: 5390 },
       925503,
-      925505
+      925505,
     ),
   },
   plus: {
     '100k': price(
       { USD: 39, EUR: 35, GBP: 29 },
       { USD: 390, EUR: 350, GBP: 290 },
+      925536,
+      925537,
     ),
     '200k': price(
       { USD: 59, EUR: 49, GBP: 45 },
       { USD: 590, EUR: 490, GBP: 450 },
+      925538,
+      925539,
     ),
     '500k': price(
       { USD: 109, EUR: 95, GBP: 79 },
       { USD: 1090, EUR: 950, GBP: 790 },
+      925540,
+      925541,
     ),
     '1m': price(
       { USD: 179, EUR: 159, GBP: 135 },
       { USD: 1790, EUR: 1590, GBP: 1350 },
+      925542,
+      925543,
     ),
     '2m': price(
       { USD: 279, EUR: 239, GBP: 209 },
       { USD: 2790, EUR: 2390, GBP: 2090 },
+      925544,
+      925545,
     ),
     '5m': price(
       { USD: 439, EUR: 379, GBP: 329 },
       { USD: 4390, EUR: 3790, GBP: 3290 },
+      925546,
+      925547,
     ),
     '10m': price(
       { USD: 629, EUR: 539, GBP: 469 },
       { USD: 6290, EUR: 5390, GBP: 4690 },
+      925548,
+      925549,
     ),
     '15m': price(
-      { USD: 919, EUR: 789, GBP: 679 },
-      { USD: 9190, EUR: 7890, GBP: 6790 },
+      { USD: 919, EUR: 799, GBP: 699 },
+      { USD: 9190, EUR: 7990, GBP: 6990 },
+      925550,
+      925551,
     ),
     '20m': price(
       { USD: 1139, EUR: 979, GBP: 849 },
       { USD: 11390, EUR: 9790, GBP: 8490 },
+      925552,
+      925553,
     ),
     '30m': price(
       { USD: 1459, EUR: 1249, GBP: 1079 },
       { USD: 14590, EUR: 12490, GBP: 10790 },
+      925554,
+      925555,
     ),
     '40m': price(
       { USD: 1799, EUR: 1549, GBP: 1329 },
       { USD: 17990, EUR: 15490, GBP: 13290 },
+      925556,
+      925557,
     ),
     '50m': price(
       { USD: 2159, EUR: 1859, GBP: 1599 },
       { USD: 21590, EUR: 18590, GBP: 15990 },
+      925558,
+      925559,
     ),
   },
   enterprise: {},

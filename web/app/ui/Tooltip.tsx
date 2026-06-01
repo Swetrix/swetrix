@@ -130,7 +130,7 @@ const Tooltip = ({
           aria-label={triggerAriaLabel}
         >
           {tooltipNode || (
-            <QuestionIcon className='cursor-help size-4 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800' />
+            <QuestionIcon className='size-4 cursor-help fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800' />
           )}
         </TooltipTrigger>
         <TooltipContent

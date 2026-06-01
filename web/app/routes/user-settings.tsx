@@ -116,10 +116,7 @@ const resolveCatalogSelection = (formData: FormData) => {
     if (!rawEventTier || !(rawEventTier in EVENT_TIERS)) {
       return { error: 'billing.invalidPlanSelection' }
     }
-    if (
-      rawBillingInterval !== 'monthly' &&
-      rawBillingInterval !== 'yearly'
-    ) {
+    if (rawBillingInterval !== 'monthly' && rawBillingInterval !== 'yearly') {
       return { error: 'billing.invalidPlanSelection' }
     }
     if (!['USD', 'EUR', 'GBP'].includes(rawCurrencyCode)) {
