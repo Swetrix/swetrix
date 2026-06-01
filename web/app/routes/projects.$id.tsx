@@ -752,7 +752,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           analyticsParams,
         ).then((res) => res.data)
       }
-    } else if (tab === PROJECT_TABS.featureFlags) {
+    } else if (
+      tab === PROJECT_TABS.featureFlags &&
+      (isSelfhosted || project.featureAccess?.featureFlags === true)
+    ) {
       featureFlagsData = getProjectFeatureFlagsServer(request, projectId).then(
         (res) => res.data,
       )

@@ -2002,6 +2002,7 @@ export class ProjectController {
       brandKeywords: parseBrandKeywords(project.brandKeywords),
       isAccessConfirmed,
       isLocked: !!project.admin?.dashboardBlockReason,
+      featureAccess: this.projectService.getProjectFeatureAccess(project),
       isDataExists,
       isErrorDataExists,
       isCaptchaDataExists,

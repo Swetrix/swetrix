@@ -39,6 +39,11 @@ export enum PlanType {
   enterprise = 'enterprise',
 }
 
+export enum PlanFeatureCode {
+  featureFlags = 'featureFlags',
+  experiments = 'experiments',
+}
+
 export enum DashboardBlockReason {
   'exceeding_plan_limits' = 'exceeding_plan_limits',
   'trial_ended' = 'trial_ended',
@@ -79,6 +84,17 @@ export const PLAN_TYPE_ENTITLEMENTS = {
   },
 } as const
 
+export const PLAN_TYPE_RANK = {
+  [PlanType.standard]: 1,
+  [PlanType.plus]: 2,
+  [PlanType.enterprise]: 3,
+} as const
+
+export const PLAN_FEATURE_REQUIRED_PLAN = {
+  [PlanFeatureCode.featureFlags]: PlanType.plus,
+  [PlanFeatureCode.experiments]: PlanType.plus,
+} as const
+
 export const getEffectivePlanType = (
   user?: {
     planCode?: PlanCode | null
@@ -106,6 +122,31 @@ export const getEffectivePlanType = (
 export const getPlanTypeEntitlements = (
   planType?: PlanType | null,
 ) => PLAN_TYPE_ENTITLEMENTS[planType || PlanType.standard]
+
+export const planTypeHasFeature = (
+  planType: PlanType | null | undefined,
+  feature: PlanFeatureCode,
+) => {
+  if (!planType) {
+    return false
+  }
+
+  return (
+    PLAN_TYPE_RANK[planType] >=
+    PLAN_TYPE_RANK[PLAN_FEATURE_REQUIRED_PLAN[feature]]
+  )
+}
+
+export const userHasPlanFeature = (
+  user:
+    | {
+        planCode?: PlanCode | null
+        planType?: PlanType | null
+      }
+    | null
+    | undefined,
+  feature: PlanFeatureCode,
+) => planTypeHasFeature(getEffectivePlanType(user), feature)
 
 export const ACCOUNT_PLANS = {
   [PlanCode.none]: {

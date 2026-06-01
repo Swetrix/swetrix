@@ -1990,6 +1990,19 @@
       "resolve": "We are still counting your stats and have not deleted any data. Once the billing issue is fixed, dashboard access will be restored right away.",
       "manageSubscription": "Manage subscription"
     },
+    "featureAccess": {
+      "featureFlags": {
+        "ownerTitle": "Feature Flags are not available on your plan",
+        "viewerTitle": "Feature Flags are not available for this project"
+      },
+      "experiments": {
+        "ownerTitle": "Experiments are not available on your plan",
+        "viewerTitle": "Experiments are not available for this project"
+      },
+      "ownerDescription": "This feature is included in Plus and Enterprise. Upgrade your plan to use it in this project.",
+      "viewerDescription": "The project owner does not have access to this feature on their current plan. Contact them to upgrade the project plan.",
+      "upgradePlan": "Upgrade plan"
+    },
     "waiting": {
       "title": "No events yet",
       "desc": "No events have been tracked yet. Follow the installation steps below to start collecting data. Still not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for setup help."

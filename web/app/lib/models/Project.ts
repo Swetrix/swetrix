@@ -1,4 +1,5 @@
 import { Organisation, Role } from './Organisation'
+import type { ProjectFeatureAccess } from '~/lib/pricing/features'
 
 interface OverallPeriodStats {
   all: number
@@ -250,6 +251,7 @@ export interface Project {
   isDataExists: boolean
   isErrorDataExists: boolean
   isCaptchaDataExists: boolean
+  featureAccess?: ProjectFeatureAccess
   botsProtectionLevel: 'off' | 'basic' | 'strict'
   role?: Role
   gscPropertyUri?: string | null

@@ -37,7 +37,7 @@ import dayjsTimezone from 'dayjs/plugin/timezone'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
-import { PlanCode } from '../user/entities/user.entity'
+import { PlanCode, PlanFeatureCode } from '../user/entities/user.entity'
 import {
   AnalyticsService,
   DataType,
@@ -149,6 +149,10 @@ export class ExperimentController {
     }
 
     this.projectService.allowedToView(project, userId)
+    this.projectService.assertProjectOwnerFeatureAccess(
+      project,
+      PlanFeatureCode.experiments,
+    )
 
     const safeTake =
       typeof take === 'number' ? Math.min(Math.max(take, 1), 200) : undefined
@@ -199,6 +203,10 @@ export class ExperimentController {
     )
 
     this.projectService.allowedToView(project, userId)
+    this.projectService.assertProjectOwnerFeatureAccess(
+      project,
+      PlanFeatureCode.experiments,
+    )
 
     return {
       ..._omit(experiment, ['project', 'goal', 'featureFlag']),
@@ -249,19 +257,23 @@ export class ExperimentController {
       uid,
       'You are not allowed to add experiments to this project',
     )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      project,
+      PlanFeatureCode.experiments,
+    )
 
     const experimentsCount = await this.experimentService.count({
       where: { project: { id: experimentDto.pid } },
     })
 
-    if (user.planCode === PlanCode.none) {
+    if (project.admin?.planCode === PlanCode.none) {
       throw new HttpException(
         'You cannot create new experiments due to no active subscription. Please upgrade your account plan to continue.',
         HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
-    if (user.isAccountBillingSuspended) {
+    if (project.admin?.isAccountBillingSuspended) {
       throw new HttpException(
         'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
         HttpStatus.PAYMENT_REQUIRED,
@@ -438,6 +450,10 @@ export class ExperimentController {
       experiment.project,
       uid,
       'You are not allowed to manage this experiment',
+    )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      experiment.project,
+      PlanFeatureCode.experiments,
     )
 
     if (experiment.status === ExperimentStatus.RUNNING) {
@@ -665,6 +681,10 @@ export class ExperimentController {
       uid,
       'You are not allowed to manage this experiment',
     )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      experiment.project,
+      PlanFeatureCode.experiments,
+    )
 
     if (experiment.featureFlag) {
       if (experiment.featureFlagMode === FeatureFlagMode.CREATE) {
@@ -710,6 +730,10 @@ export class ExperimentController {
       experiment.project,
       uid,
       'You are not allowed to manage this experiment',
+    )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      experiment.project,
+      PlanFeatureCode.experiments,
     )
 
     if (experiment.status === ExperimentStatus.RUNNING) {
@@ -836,6 +860,10 @@ export class ExperimentController {
       uid,
       'You are not allowed to manage this experiment',
     )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      experiment.project,
+      PlanFeatureCode.experiments,
+    )
 
     if (experiment.status !== ExperimentStatus.RUNNING) {
       throw new BadRequestException('Can only pause a running experiment')
@@ -889,6 +917,10 @@ export class ExperimentController {
       experiment.project,
       uid,
       'You are not allowed to manage this experiment',
+    )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      experiment.project,
+      PlanFeatureCode.experiments,
     )
 
     if (
@@ -952,6 +984,10 @@ export class ExperimentController {
       experiment.project.id,
     )
     this.projectService.allowedToView(project, userId)
+    this.projectService.assertProjectOwnerFeatureAccess(
+      project,
+      PlanFeatureCode.experiments,
+    )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
 

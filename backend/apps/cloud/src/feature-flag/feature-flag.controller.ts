@@ -31,7 +31,7 @@ import _round from 'lodash/round'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
-import { PlanCode } from '../user/entities/user.entity'
+import { PlanCode, PlanFeatureCode } from '../user/entities/user.entity'
 import {
   AnalyticsService,
   getLowestPossibleTimeBucket,
@@ -282,6 +282,10 @@ export class FeatureFlagController {
     }
 
     this.projectService.allowedToView(project, userId)
+    this.projectService.assertProjectOwnerFeatureAccess(
+      project,
+      PlanFeatureCode.featureFlags,
+    )
 
     const safeTake =
       typeof take === 'number' && Number.isFinite(take)
@@ -329,6 +333,10 @@ export class FeatureFlagController {
     const project = await this.projectService.getFullProject(flag.project.id)
 
     this.projectService.allowedToView(project, userId)
+    this.projectService.assertProjectOwnerFeatureAccess(
+      project,
+      PlanFeatureCode.featureFlags,
+    )
 
     await this.featureFlagService.applyDueScheduledChanges(flag.project.id)
 
@@ -382,19 +390,23 @@ export class FeatureFlagController {
       uid,
       'You are not allowed to add feature flags to this project',
     )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      project,
+      PlanFeatureCode.featureFlags,
+    )
 
     const flagsCount = await this.featureFlagService.count({
       where: { project: { id: flagDto.pid } },
     })
 
-    if (user.planCode === PlanCode.none) {
+    if (project.admin?.planCode === PlanCode.none) {
       throw new HttpException(
         'You cannot create new feature flags due to no active subscription. Please upgrade your account plan to continue.',
         HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
-    if (user.isAccountBillingSuspended) {
+    if (project.admin?.isAccountBillingSuspended) {
       throw new HttpException(
         'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
         HttpStatus.PAYMENT_REQUIRED,
@@ -508,6 +520,15 @@ export class FeatureFlagController {
     // This prevents project ID enumeration attacks
     if (_isEmpty(project) || !project.active) {
       return { flags: {} }
+    }
+
+    if (
+      !this.projectService.projectOwnerHasFeature(
+        project,
+        PlanFeatureCode.featureFlags,
+      )
+    ) {
+      return { flags: {}, experiments: {} }
     }
 
     this.analyticsService.checkIpBlacklist(project, ip)
@@ -721,6 +742,10 @@ export class FeatureFlagController {
       uid,
       'You are not allowed to manage this feature flag',
     )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      flag.project,
+      PlanFeatureCode.featureFlags,
+    )
 
     // Check for duplicate key if key is being changed
     if (flagDto.key && flagDto.key !== flag.key) {
@@ -797,6 +822,10 @@ export class FeatureFlagController {
       uid,
       'You are not allowed to manage this feature flag',
     )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      flag.project,
+      PlanFeatureCode.featureFlags,
+    )
 
     await this.featureFlagService.applyDueScheduledChanges(flag.project.id)
 
@@ -847,6 +876,10 @@ export class FeatureFlagController {
       uid,
       'You are not allowed to manage this feature flag',
     )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      flag.project,
+      PlanFeatureCode.featureFlags,
+    )
 
     await this.featureFlagService.applyDueScheduledChanges(flag.project.id)
 
@@ -896,6 +929,10 @@ export class FeatureFlagController {
       uid,
       'You are not allowed to manage this feature flag',
     )
+    this.projectService.assertProjectOwnerFeatureAccess(
+      flag.project,
+      PlanFeatureCode.featureFlags,
+    )
 
     await this.featureFlagService.delete(id)
 
@@ -930,6 +967,10 @@ export class FeatureFlagController {
 
     const project = await this.projectService.getFullProject(flag.project.id)
     this.projectService.allowedToView(project, userId)
+    this.projectService.assertProjectOwnerFeatureAccess(
+      project,
+      PlanFeatureCode.featureFlags,
+    )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const timeBucket = getLowestPossibleTimeBucket(period, from, to)
@@ -1039,6 +1080,10 @@ export class FeatureFlagController {
 
     const project = await this.projectService.getFullProject(flag.project.id)
     this.projectService.allowedToView(project, userId)
+    this.projectService.assertProjectOwnerFeatureAccess(
+      project,
+      PlanFeatureCode.featureFlags,
+    )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const timeBucket = getLowestPossibleTimeBucket(period, from, to)

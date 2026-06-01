@@ -7,6 +7,8 @@ import {
   InternalServerErrorException,
   ConflictException,
   NotFoundException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import {
@@ -79,6 +81,10 @@ import { ReportFrequency } from './enums'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { Organisation } from '../organisation/entity/organisation.entity'
 import { OrganisationRole } from '../organisation/entity/organisation-member.entity'
+import {
+  PlanFeatureCode,
+  userHasPlanFeature,
+} from '../user/entities/user.entity'
 
 dayjs.extend(utc)
 
@@ -197,6 +203,8 @@ export class ProjectService {
           'admin.id',
           'admin.dashboardBlockReason',
           'admin.isAccountBillingSuspended',
+          'admin.planCode',
+          'admin.planType',
           'organisation.id',
           'organisationMembers.role',
           'organisationMembers.confirmed',
@@ -267,6 +275,7 @@ export class ProjectService {
           dashboardBlockReason: true,
           isAccountBillingSuspended: true,
           planCode: true,
+          planType: true,
         },
         organisation: {
           id: true,
@@ -295,6 +304,8 @@ export class ProjectService {
         'project',
         'admin.id',
         'admin.dashboardBlockReason',
+        'admin.planCode',
+        'admin.planType',
         'share.id',
         'share.role',
         'share.confirmed',
@@ -554,6 +565,40 @@ export class ProjectService {
 
   find(options: FindManyOptions<Project>) {
     return this.projectsRepository.find(options)
+  }
+
+  getProjectFeatureAccess(project: Project | null | undefined) {
+    return {
+      [PlanFeatureCode.featureFlags]: this.projectOwnerHasFeature(
+        project,
+        PlanFeatureCode.featureFlags,
+      ),
+      [PlanFeatureCode.experiments]: this.projectOwnerHasFeature(
+        project,
+        PlanFeatureCode.experiments,
+      ),
+    }
+  }
+
+  projectOwnerHasFeature(
+    project: Project | null | undefined,
+    feature: PlanFeatureCode,
+  ) {
+    return userHasPlanFeature(project?.admin, feature)
+  }
+
+  assertProjectOwnerFeatureAccess(
+    project: Project | null | undefined,
+    feature: PlanFeatureCode,
+  ) {
+    if (this.projectOwnerHasFeature(project, feature)) {
+      return
+    }
+
+    throw new HttpException(
+      'This feature is not available on the current project owner plan.',
+      HttpStatus.PAYMENT_REQUIRED,
+    )
   }
 
   allowedToView(
@@ -1479,6 +1524,7 @@ export class ProjectService {
         ...project,
         isAccessConfirmed,
         isLocked: !!project.admin?.dashboardBlockReason,
+        featureAccess: this.getProjectFeatureAccess(project),
         isDataExists: _includes(pidsWithData, project?.id),
         isErrorDataExists: _includes(pidsWithErrorData, project?.id),
         organisationId: project?.organisation?.id,

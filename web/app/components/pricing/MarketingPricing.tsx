@@ -309,20 +309,6 @@ const MarketingPricing = ({
     return (selectedTierIndex / (eventTierOptionLabels.length - 1)) * 100
   }, [selectedTierIndex])
 
-  const proMonthlyPrice = isCustomEventTier
-    ? null
-    : getPlanPrice('standard', selectedTier, 'monthly', currencyCode)?.amount
-  const proYearlyPrice = isCustomEventTier
-    ? null
-    : getPlanPrice('standard', selectedTier, 'yearly', currencyCode)?.amount
-  const yearlyDiscount =
-    proMonthlyPrice && proYearlyPrice
-      ? Math.round(
-          ((proMonthlyPrice * 12 - proYearlyPrice) / (proMonthlyPrice * 12)) *
-            100,
-        )
-      : 0
-
   const toggleBillingFrequency = () => {
     setBillingFrequency((currentFrequency) =>
       currentFrequency === 'yearly' ? 'monthly' : 'yearly',
@@ -388,17 +374,16 @@ const MarketingPricing = ({
                   <Text as='span' size='sm' weight='medium' colour='primary'>
                     {t('pricing.billedYearly')}
                   </Text>
-                  {yearlyDiscount > 0 ? (
-                    <Text
-                      as='span'
-                      size='xs'
-                      weight='semibold'
-                      colour='success'
-                      className='rounded-md bg-emerald-500/20 px-1.5 py-0.5'
-                    >
-                      -{yearlyDiscount} %
-                    </Text>
-                  ) : null}
+                  <Text
+                    as='span'
+                    size='xs'
+                    weight='semibold'
+                    colour='success'
+                    className='rounded-md bg-emerald-500/20 px-1.5 py-0.5'
+                  >
+                    {/* 2 months free */}
+                    -17 %
+                  </Text>
                   <BillingFrequencySwitch checked={isYearly} />
                 </button>
               </div>

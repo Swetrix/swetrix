@@ -25,6 +25,7 @@ import { AppLoggerService } from '../logger/logger.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from '../analytics/dto/getData.dto'
+import { PlanFeatureCode } from '../user/entities/user.entity'
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
@@ -652,6 +653,14 @@ Chart "link" field (REQUIRED whenever the chart corresponds to data the user can
       .describe(
         'End of custom range (YYYY-MM-DD or full ISO datetime). Pair with "from".',
       )
+    const canAccessFeatureFlags = this.projectService.projectOwnerHasFeature(
+      project,
+      PlanFeatureCode.featureFlags,
+    )
+    const canAccessExperiments = this.projectService.projectOwnerHasFeature(
+      project,
+      PlanFeatureCode.experiments,
+    )
 
     return {
       getProjectInfo: tool({
@@ -901,6 +910,12 @@ Filter modifiers:
             { pid: project.id, flagId: params.flagId },
             'Tool: getFeatureFlagStats called',
           )
+          if (!canAccessFeatureFlags) {
+            return {
+              error:
+                'Feature flags are not available on the current project owner plan.',
+            }
+          }
           try {
             return await this.getFeatureFlagStats(project.id, params, timezone)
           } catch (error) {
@@ -932,6 +947,12 @@ Filter modifiers:
             { pid: project.id, experimentId: params.experimentId },
             'Tool: getExperimentResults called',
           )
+          if (!canAccessExperiments) {
+            return {
+              error:
+                'Experiments are not available on the current project owner plan.',
+            }
+          }
           try {
             return await this.getExperimentResults(project.id, params, timezone)
           } catch (error) {
@@ -1012,14 +1033,26 @@ Filter modifiers:
   }
 
   private async getProjectInfo(project: Project) {
+    const canAccessFeatureFlags = this.projectService.projectOwnerHasFeature(
+      project,
+      PlanFeatureCode.featureFlags,
+    )
+    const canAccessExperiments = this.projectService.projectOwnerHasFeature(
+      project,
+      PlanFeatureCode.experiments,
+    )
     const [funnels, goals, featureFlags, experiments] = await Promise.all([
       this.projectService.getFunnels(project.id),
       this.goalService.find({
         where: { project: { id: project.id }, active: true },
         order: { name: 'ASC' },
       }),
-      this.featureFlagService.findByProject(project.id).catch(() => []),
-      this.experimentService.findByProject(project.id).catch(() => []),
+      canAccessFeatureFlags
+        ? this.featureFlagService.findByProject(project.id).catch(() => [])
+        : [],
+      canAccessExperiments
+        ? this.experimentService.findByProject(project.id).catch(() => [])
+        : [],
     ])
 
     return {
@@ -1046,6 +1079,7 @@ Filter modifiers:
         rolloutPercentage: f.rolloutPercentage,
         enabled: f.enabled,
       })),
+      featureFlagsAvailable: canAccessFeatureFlags,
       experiments: _map(experiments, (e) => ({
         id: e.id,
         name: e.name,
@@ -1061,6 +1095,7 @@ Filter modifiers:
         })),
         goalId: e.goal?.id || null,
       })),
+      experimentsAvailable: canAccessExperiments,
     }
   }
 
