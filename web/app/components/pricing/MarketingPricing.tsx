@@ -275,7 +275,7 @@ const BillingFrequencySwitch = ({ checked }: { checked: boolean }) => (
   </span>
 )
 
-const MarketingPricing = ({
+export const PricingInternal = ({
   metainfo = DEFAULT_METAINFO,
   onSelectPlan,
   getActionLabel,
@@ -316,6 +316,333 @@ const MarketingPricing = ({
   }
 
   return (
+    <>
+      <div className='mx-auto mt-10 max-w-xl px-4 sm:px-6 lg:px-8'>
+        <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+          <div>
+            <div className='flex items-center gap-1.5'>
+              <Text as='h3' size='lg' colour='secondary'>
+                {t('pricing.monthlyEvents')}
+              </Text>
+              <Tooltip
+                ariaLabel={`${t('common.learnMore')}: ${t(
+                  'pricing.monthlyEvents',
+                )}`}
+                text={t('pricing.monthlyEventsTooltip')}
+              />
+            </div>
+            <Text
+              as='p'
+              size='3xl'
+              weight='bold'
+              colour='primary'
+              className='mt-1'
+            >
+              {selectedMonthlyEventsLabel}
+            </Text>
+          </div>
+
+          <div className='flex justify-start sm:justify-end'>
+            <button
+              type='button'
+              aria-pressed={isYearly}
+              onClick={toggleBillingFrequency}
+              className='flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-slate-900 dark:hover:bg-slate-800'
+            >
+              <Text as='span' size='sm' weight='medium' colour='primary'>
+                {t('pricing.billedYearly')}
+              </Text>
+              <Text
+                as='span'
+                size='xs'
+                weight='semibold'
+                colour='success'
+                className='rounded-md bg-emerald-500/20 px-1.5 py-0.5'
+              >
+                -17 %
+              </Text>
+              <BillingFrequencySwitch checked={isYearly} />
+            </button>
+          </div>
+        </div>
+
+        <input
+          aria-label={t('pricing.monthlyEventVolume')}
+          type='range'
+          min={0}
+          max={eventTierOptionLabels.length - 1}
+          step={1}
+          value={selectedTierIndex}
+          onChange={(event) => setSelectedTierIndex(Number(event.target.value))}
+          className='h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600 [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-blue-600 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-sm active:[&::-moz-range-thumb]:cursor-grabbing [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-600 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-sm active:[&::-webkit-slider-thumb]:cursor-grabbing'
+          style={{
+            background: `linear-gradient(to right, rgb(37 99 235) 0%, rgb(37 99 235) ${sliderPercent}%, rgb(209 213 219) ${sliderPercent}%, rgb(209 213 219) 100%)`,
+          }}
+        />
+
+        <div
+          className='mt-3 grid gap-1'
+          style={{
+            gridTemplateColumns: `repeat(${eventTierOptionLabels.length}, minmax(0, 1fr))`,
+          }}
+        >
+          {eventTierOptionLabels.map((label, index) => (
+            <Text
+              key={label}
+              as='button'
+              type='button'
+              size='xs'
+              weight={index === selectedTierIndex ? 'bold' : 'medium'}
+              colour={index === selectedTierIndex ? 'primary' : 'secondary'}
+              className='text-center'
+              onClick={() => setSelectedTierIndex(index)}
+            >
+              {label}
+            </Text>
+          ))}
+        </div>
+      </div>
+
+      <NumberFlowGroup>
+        <div className='mx-auto mt-6 grid max-w-7xl gap-4 px-4 sm:px-6 lg:grid-cols-3 lg:px-8'>
+          {planCards.map((planType) => {
+            const isEnterprise = planType === 'enterprise'
+            const benefits = getBenefits(planType, t)
+            const visibleBenefits = showAllBenefits
+              ? benefits
+              : benefits.slice(0, visibleBenefitsCount)
+            const hiddenBenefitsCount = Math.max(
+              0,
+              benefits.length - visibleBenefits.length,
+            )
+            const monthlyPlan = isCustomEventTier
+              ? null
+              : getPlanPrice(planType, selectedTier, 'monthly', currencyCode)
+            const yearlyPlan = isCustomEventTier
+              ? null
+              : getPlanPrice(planType, selectedTier, 'yearly', currencyCode)
+            const monthlyPrice = monthlyPlan?.amount
+            const yearlyPrice = yearlyPlan?.amount
+            const yearlyMonthlyPrice = yearlyPrice
+              ? Math.round((yearlyPrice / 12) * 100) / 100
+              : null
+            const hasPublishedPrice = Boolean(monthlyPrice && yearlyPrice)
+            const canSelfServe = Boolean(
+              (isYearly ? yearlyPlan : monthlyPlan)?.paddlePlanId,
+            )
+            const selection: MarketingPricingSelection = {
+              planType,
+              eventTier: selectedTier,
+              billingFrequency,
+              currency: currencyCode,
+            }
+            const actionLabel =
+              getActionLabel?.(selection) ||
+              (canSelfServe
+                ? t('pricing.startFreeTrial')
+                : t('pricing.contactUs'))
+
+            return (
+              <div
+                key={planType}
+                className={cn(
+                  'flex min-h-[520px] flex-col rounded-2xl p-5 shadow-sm ring-1 dark:ring-white/10',
+                  isEnterprise
+                    ? 'bg-slate-900 ring-slate-700'
+                    : 'bg-white ring-gray-200 dark:bg-slate-900',
+                )}
+              >
+                <div className='flex items-start justify-between gap-3'>
+                  <Text
+                    as='h3'
+                    size='lg'
+                    weight='bold'
+                    colour='primary'
+                    className={isEnterprise ? 'dark' : ''}
+                  >
+                    {getPlanName(planType, t)}
+                  </Text>
+                </div>
+
+                <div className='mt-2 min-h-[78px]'>
+                  {hasPublishedPrice ? (
+                    <>
+                      <div className='flex min-h-10 flex-wrap items-end gap-2'>
+                        <Text
+                          as='p'
+                          size='3xl'
+                          weight='bold'
+                          colour='primary'
+                          className={isEnterprise ? 'dark' : ''}
+                        >
+                          <PriceAmount
+                            value={
+                              isYearly
+                                ? (yearlyPrice ?? null)
+                                : (monthlyPrice ?? null)
+                            }
+                            currencySymbol={currency.symbol}
+                          />
+                        </Text>
+                        <Text
+                          as='p'
+                          size='base'
+                          weight='medium'
+                          colour='secondary'
+                          className={cn('pb-1', isEnterprise ? 'dark' : '')}
+                        >
+                          {`/${t(
+                            isYearly
+                              ? 'pricing.intervals.year'
+                              : 'pricing.intervals.month',
+                          )}`}
+                        </Text>
+                      </div>
+                      {isYearly ? (
+                        <div className='mt-1 flex h-6 flex-wrap items-baseline gap-1'>
+                          <Text
+                            as='span'
+                            size='sm'
+                            weight='medium'
+                            colour='secondary'
+                            className={cn(
+                              'line-through',
+                              isEnterprise ? 'dark' : '',
+                            )}
+                          >
+                            {formatPrice(monthlyPrice ?? null, currency.symbol)}
+                          </Text>
+                          <Text
+                            as='span'
+                            size='sm'
+                            weight='bold'
+                            colour='primary'
+                            className={isEnterprise ? 'dark' : ''}
+                          >
+                            {formatPrice(yearlyMonthlyPrice, currency.symbol)}
+                          </Text>
+                          <Text
+                            as='span'
+                            size='sm'
+                            weight='medium'
+                            colour='secondary'
+                            className={isEnterprise ? 'dark' : ''}
+                          >
+                            /{t('pricing.intervals.month')}
+                          </Text>
+                        </div>
+                      ) : (
+                        <div className='mt-2 h-6' aria-hidden='true' />
+                      )}
+                    </>
+                  ) : (
+                    <Text
+                      as='p'
+                      size='3xl'
+                      weight='bold'
+                      colour='primary'
+                      className={isEnterprise ? 'dark' : ''}
+                    >
+                      {t('pricing.custom')}
+                    </Text>
+                  )}
+                </div>
+
+                <Button
+                  to={
+                    onSelectPlan && canSelfServe
+                      ? undefined
+                      : canSelfServe
+                        ? isAuthenticated
+                          ? routes.billing_choose_plan
+                          : routes.signup
+                        : routes.contact
+                  }
+                  onClick={
+                    onSelectPlan && canSelfServe
+                      ? () => onSelectPlan(selection)
+                      : undefined
+                  }
+                  variant='primary'
+                  size='lg'
+                  loading={loadingPlanType === planType}
+                  disabled={disabled}
+                  className={cn(
+                    'mt-4 justify-center gap-2',
+                    isEnterprise ? 'dark' : '',
+                  )}
+                >
+                  <Text as='span' size='sm' weight='semibold' colour='inherit'>
+                    {actionLabel}
+                  </Text>
+                  <ArrowRightIcon className='size-4' />
+                </Button>
+
+                <div className='mt-5 space-y-3'>
+                  {visibleBenefits.map((benefit) => (
+                    <BenefitRow
+                      key={benefit.label}
+                      benefit={benefit}
+                      isEnterprise={isEnterprise}
+                    />
+                  ))}
+                  {hiddenBenefitsCount > 0 || showAllBenefits ? (
+                    <button
+                      type='button'
+                      onClick={() => setShowAllBenefits((value) => !value)}
+                      className='underline-animate flex items-center gap-2.5'
+                    >
+                      {showAllBenefits ? (
+                        <CaretUpIcon
+                          className={cn(
+                            'size-4',
+                            isEnterprise ? 'text-gray-200' : 'text-gray-700',
+                          )}
+                          weight='bold'
+                        />
+                      ) : (
+                        <CaretDownIcon
+                          className={cn(
+                            'size-4',
+                            isEnterprise ? 'text-gray-200' : 'text-gray-700',
+                          )}
+                          weight='bold'
+                        />
+                      )}
+                      <Text
+                        as='span'
+                        size='sm'
+                        weight='medium'
+                        colour='primary'
+                        className={isEnterprise ? 'dark' : ''}
+                      >
+                        {showAllBenefits
+                          ? t('common.showLess')
+                          : t('common.showMore', {
+                              count: hiddenBenefitsCount,
+                            })}
+                      </Text>
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </NumberFlowGroup>
+    </>
+  )
+}
+
+const MarketingPricing = ({
+  metainfo = DEFAULT_METAINFO,
+  onSelectPlan,
+  getActionLabel,
+  loadingPlanType,
+  disabled,
+}: MarketingPricingProps) => {
+  const { t } = useTranslation('common')
+  return (
     <section id='pricing' className='relative bg-gray-50 p-2 dark:bg-slate-950'>
       <div className='overflow-hidden rounded-2xl bg-gray-100 py-16 ring-1 ring-gray-200/70 sm:py-20 dark:bg-slate-900/50 dark:ring-white/10'>
         <div className='mx-auto max-w-7xl'>
@@ -339,342 +666,13 @@ const MarketingPricing = ({
             </Text>
           </div>
 
-          <div className='mx-auto mt-10 max-w-xl px-4 sm:px-6 lg:px-8'>
-            <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-              <div>
-                <div className='flex items-center gap-1.5'>
-                  <Text as='h3' size='lg' colour='secondary'>
-                    {t('pricing.monthlyEvents')}
-                  </Text>
-                  <Tooltip
-                    ariaLabel={`${t('common.learnMore')}: ${t(
-                      'pricing.monthlyEvents',
-                    )}`}
-                    text={t('pricing.monthlyEventsTooltip')}
-                  />
-                </div>
-                <Text
-                  as='p'
-                  size='3xl'
-                  weight='bold'
-                  colour='primary'
-                  className='mt-1'
-                >
-                  {selectedMonthlyEventsLabel}
-                </Text>
-              </div>
-
-              <div className='flex justify-start sm:justify-end'>
-                <button
-                  type='button'
-                  aria-pressed={isYearly}
-                  onClick={toggleBillingFrequency}
-                  className='flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-slate-900 dark:hover:bg-slate-800'
-                >
-                  <Text as='span' size='sm' weight='medium' colour='primary'>
-                    {t('pricing.billedYearly')}
-                  </Text>
-                  <Text
-                    as='span'
-                    size='xs'
-                    weight='semibold'
-                    colour='success'
-                    className='rounded-md bg-emerald-500/20 px-1.5 py-0.5'
-                  >
-                    {/* 2 months free */}
-                    -17 %
-                  </Text>
-                  <BillingFrequencySwitch checked={isYearly} />
-                </button>
-              </div>
-            </div>
-
-            <input
-              aria-label={t('pricing.monthlyEventVolume')}
-              type='range'
-              min={0}
-              max={eventTierOptionLabels.length - 1}
-              step={1}
-              value={selectedTierIndex}
-              onChange={(event) =>
-                setSelectedTierIndex(Number(event.target.value))
-              }
-              className='h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600 [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-blue-600 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-sm active:[&::-moz-range-thumb]:cursor-grabbing [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-600 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-sm active:[&::-webkit-slider-thumb]:cursor-grabbing'
-              style={{
-                background: `linear-gradient(to right, rgb(37 99 235) 0%, rgb(37 99 235) ${sliderPercent}%, rgb(209 213 219) ${sliderPercent}%, rgb(209 213 219) 100%)`,
-              }}
-            />
-
-            <div
-              className='mt-3 grid gap-1'
-              style={{
-                gridTemplateColumns: `repeat(${eventTierOptionLabels.length}, minmax(0, 1fr))`,
-              }}
-            >
-              {eventTierOptionLabels.map((label, index) => (
-                <Text
-                  key={label}
-                  as='button'
-                  type='button'
-                  size='xs'
-                  weight={index === selectedTierIndex ? 'bold' : 'medium'}
-                  colour={index === selectedTierIndex ? 'primary' : 'secondary'}
-                  className='text-center'
-                  onClick={() => setSelectedTierIndex(index)}
-                >
-                  {label}
-                </Text>
-              ))}
-            </div>
-          </div>
-
-          <NumberFlowGroup>
-            <div className='mx-auto mt-6 grid max-w-7xl gap-4 px-4 sm:px-6 lg:grid-cols-3 lg:px-8'>
-              {planCards.map((planType) => {
-                const isEnterprise = planType === 'enterprise'
-                const benefits = getBenefits(planType, t)
-                const visibleBenefits = showAllBenefits
-                  ? benefits
-                  : benefits.slice(0, visibleBenefitsCount)
-                const hiddenBenefitsCount = Math.max(
-                  0,
-                  benefits.length - visibleBenefits.length,
-                )
-                const monthlyPlan = isCustomEventTier
-                  ? null
-                  : getPlanPrice(
-                      planType,
-                      selectedTier,
-                      'monthly',
-                      currencyCode,
-                    )
-                const yearlyPlan = isCustomEventTier
-                  ? null
-                  : getPlanPrice(planType, selectedTier, 'yearly', currencyCode)
-                const monthlyPrice = monthlyPlan?.amount
-                const yearlyPrice = yearlyPlan?.amount
-                const yearlyMonthlyPrice = yearlyPrice
-                  ? Math.round((yearlyPrice / 12) * 100) / 100
-                  : null
-                const hasPublishedPrice = Boolean(monthlyPrice && yearlyPrice)
-                const canSelfServe = Boolean(
-                  (isYearly ? yearlyPlan : monthlyPlan)?.paddlePlanId,
-                )
-                const selection: MarketingPricingSelection = {
-                  planType,
-                  eventTier: selectedTier,
-                  billingFrequency,
-                  currency: currencyCode,
-                }
-                const actionLabel =
-                  getActionLabel?.(selection) ||
-                  (canSelfServe
-                    ? t('pricing.startFreeTrial')
-                    : t('pricing.contactUs'))
-
-                return (
-                  <div
-                    key={planType}
-                    className={cn(
-                      'flex min-h-[520px] flex-col rounded-2xl p-5 shadow-sm ring-1 dark:ring-white/10',
-                      isEnterprise
-                        ? 'bg-slate-900 ring-slate-700'
-                        : 'bg-white ring-gray-200 dark:bg-slate-900',
-                    )}
-                  >
-                    <div className='flex items-start justify-between gap-3'>
-                      <Text
-                        as='h3'
-                        size='lg'
-                        weight='bold'
-                        colour='primary'
-                        className={isEnterprise ? 'dark' : ''}
-                      >
-                        {getPlanName(planType, t)}
-                      </Text>
-                    </div>
-
-                    <div className='mt-2 min-h-[78px]'>
-                      {hasPublishedPrice ? (
-                        <>
-                          <div className='flex min-h-10 flex-wrap items-end gap-2'>
-                            <Text
-                              as='p'
-                              size='3xl'
-                              weight='bold'
-                              colour='primary'
-                              className={isEnterprise ? 'dark' : ''}
-                            >
-                              <PriceAmount
-                                value={
-                                  isYearly
-                                    ? (yearlyPrice ?? null)
-                                    : (monthlyPrice ?? null)
-                                }
-                                currencySymbol={currency.symbol}
-                              />
-                            </Text>
-                            <Text
-                              as='p'
-                              size='base'
-                              weight='medium'
-                              colour='secondary'
-                              className={cn('pb-1', isEnterprise ? 'dark' : '')}
-                            >
-                              {`/${t(
-                                isYearly
-                                  ? 'pricing.intervals.year'
-                                  : 'pricing.intervals.month',
-                              )}`}
-                            </Text>
-                          </div>
-                          {isYearly ? (
-                            <div className='mt-1 flex h-6 flex-wrap items-baseline gap-1'>
-                              <Text
-                                as='span'
-                                size='sm'
-                                weight='medium'
-                                colour='secondary'
-                                className={cn(
-                                  'line-through',
-                                  isEnterprise ? 'dark' : '',
-                                )}
-                              >
-                                {formatPrice(
-                                  monthlyPrice ?? null,
-                                  currency.symbol,
-                                )}
-                              </Text>
-                              <Text
-                                as='span'
-                                size='sm'
-                                weight='bold'
-                                colour='primary'
-                                className={isEnterprise ? 'dark' : ''}
-                              >
-                                {formatPrice(
-                                  yearlyMonthlyPrice,
-                                  currency.symbol,
-                                )}
-                              </Text>
-                              <Text
-                                as='span'
-                                size='sm'
-                                weight='medium'
-                                colour='secondary'
-                                className={isEnterprise ? 'dark' : ''}
-                              >
-                                /{t('pricing.intervals.month')}
-                              </Text>
-                            </div>
-                          ) : (
-                            <div className='mt-2 h-6' aria-hidden='true' />
-                          )}
-                        </>
-                      ) : (
-                        <Text
-                          as='p'
-                          size='3xl'
-                          weight='bold'
-                          colour='primary'
-                          className={isEnterprise ? 'dark' : ''}
-                        >
-                          {t('pricing.custom')}
-                        </Text>
-                      )}
-                    </div>
-
-                    <Button
-                      to={
-                        onSelectPlan && canSelfServe
-                          ? undefined
-                          : canSelfServe
-                            ? isAuthenticated
-                              ? routes.billing_choose_plan
-                              : routes.signup
-                            : routes.contact
-                      }
-                      onClick={
-                        onSelectPlan && canSelfServe
-                          ? () => onSelectPlan(selection)
-                          : undefined
-                      }
-                      variant='primary'
-                      size='lg'
-                      loading={loadingPlanType === planType}
-                      disabled={disabled}
-                      className={cn(
-                        'mt-4 justify-center gap-2',
-                        isEnterprise ? 'dark' : '',
-                      )}
-                    >
-                      <Text
-                        as='span'
-                        size='sm'
-                        weight='semibold'
-                        colour='inherit'
-                      >
-                        {actionLabel}
-                      </Text>
-                      <ArrowRightIcon className='size-4' />
-                    </Button>
-
-                    <div className='mt-5 space-y-3'>
-                      {visibleBenefits.map((benefit) => (
-                        <BenefitRow
-                          key={benefit.label}
-                          benefit={benefit}
-                          isEnterprise={isEnterprise}
-                        />
-                      ))}
-                      {hiddenBenefitsCount > 0 || showAllBenefits ? (
-                        <button
-                          type='button'
-                          onClick={() => setShowAllBenefits((value) => !value)}
-                          className='underline-animate flex items-center gap-2.5'
-                        >
-                          {showAllBenefits ? (
-                            <CaretUpIcon
-                              className={cn(
-                                'size-4',
-                                isEnterprise
-                                  ? 'text-gray-200'
-                                  : 'text-gray-700',
-                              )}
-                              weight='bold'
-                            />
-                          ) : (
-                            <CaretDownIcon
-                              className={cn(
-                                'size-4',
-                                isEnterprise
-                                  ? 'text-gray-200'
-                                  : 'text-gray-700',
-                              )}
-                              weight='bold'
-                            />
-                          )}
-                          <Text
-                            as='span'
-                            size='sm'
-                            weight='medium'
-                            colour='primary'
-                            className={isEnterprise ? 'dark' : ''}
-                          >
-                            {showAllBenefits
-                              ? t('common.showLess')
-                              : t('common.showMore', {
-                                  count: hiddenBenefitsCount,
-                                })}
-                          </Text>
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </NumberFlowGroup>
+          <PricingInternal
+            metainfo={metainfo}
+            onSelectPlan={onSelectPlan}
+            getActionLabel={getActionLabel}
+            loadingPlanType={loadingPlanType}
+            disabled={disabled}
+          />
         </div>
       </div>
     </section>

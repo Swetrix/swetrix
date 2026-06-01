@@ -7,7 +7,8 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import MarketingPricing, {
+import {
+  PricingInternal,
   type MarketingPricingSelection,
 } from '~/components/pricing/MarketingPricing'
 import {
@@ -80,6 +81,7 @@ const BillingPricing = ({
   const currentEventTier =
     getEventTierByPlanCode(user?.planCode)?.code || '100k'
   const currentPlanLimit = user?.planCode ? PLAN_LIMITS[user.planCode] : null
+  const hasPaidPlan = !['none', 'trial', 'free'].includes(user?.planCode || '')
 
   const [activeSelection, setActiveSelection] =
     useState<PendingSelection | null>(null)
@@ -217,13 +219,18 @@ const BillingPricing = ({
 
   const isTrialingPaidPlan =
     !!user?.trialEndDate &&
-    !['none', 'trial', 'free'].includes(user?.planCode || '') &&
+    hasPaidPlan &&
     dayjs(user.trialEndDate).isAfter(dayjs())
 
   const hasActiveSubscription =
-    !!user?.subID &&
-    !user.cancellationEffectiveDate &&
-    !['none', 'trial', 'free'].includes(user.planCode || '')
+    !!user?.subID && !user.cancellationEffectiveDate && hasPaidPlan
+
+  const choosePlanDescription = hasPaidPlan
+    ? t('billing.choosePlanCurrentPlanDesc', {
+        plan: getPlanName(currentPlanType, t),
+        events: formatEventsLong(currentPlanLimit?.monthlyUsageLimit || 0),
+      })
+    : t('billing.choosePlanPageDesc')
 
   const getSelectionMeta = (selection: PendingSelection) => {
     const selectedPrice = getPlanPrice(
@@ -337,13 +344,12 @@ const BillingPricing = ({
     const { cannotSelfServe, isDowngrade, sameSelection, selectedRank } =
       getSelectionMeta(selection)
     const currentRank = getSelectionRank(currentPlanType, currentEventTier)
-    const isUnpaid = ['free', 'trial', 'none'].includes(user?.planCode || '')
 
     if (cannotSelfServe) {
       return t('pricing.contactUs')
     }
 
-    if (user?.cancellationEffectiveDate || isUnpaid) {
+    if (user?.cancellationEffectiveDate || !hasPaidPlan) {
       return t('pricing.subscribe')
     }
 
@@ -386,32 +392,43 @@ const BillingPricing = ({
     <>
       <main className='min-h-min-footer bg-gray-50 pb-16 dark:bg-slate-950'>
         <div className='mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 lg:px-8'>
-          <Button
-            to={`${routes.user_settings}?tab=billing`}
-            variant='ghost'
-            size='sm'
-            className='mb-4 gap-1'
-          >
-            <ArrowLeftIcon className='size-4' />
-            {t('billing.backToBilling')}
-          </Button>
-          <div className='max-w-3xl'>
-            <Text as='h1' size='3xl' weight='bold'>
-              {t('billing.choosePlanTitle')}
-            </Text>
-            <Text as='p' size='base' colour='secondary' className='mt-2'>
-              {t('billing.choosePlanPageDesc', {
-                plan: getPlanName(currentPlanType, t),
-                events: formatEventsLong(
-                  currentPlanLimit?.monthlyUsageLimit || 0,
-                ),
-              })}
-            </Text>
+          <div className='grid gap-6 lg:grid-cols-[1fr_minmax(0,40rem)_1fr] lg:items-start'>
+            <Button
+              to={`${routes.user_settings}?tab=billing`}
+              variant='ghost'
+              size='sm'
+              className='w-fit gap-1 justify-self-start lg:mt-1'
+            >
+              <ArrowLeftIcon className='size-4' />
+              {t('billing.backToBilling')}
+            </Button>
+
+            <div className='mx-auto max-w-3xl text-center'>
+              <Text
+                as='h1'
+                size='3xl'
+                weight='bold'
+                colour='primary'
+                className='text-balance sm:text-4xl'
+              >
+                {t('billing.choosePlanTitle')}
+              </Text>
+              <Text
+                as='p'
+                size='base'
+                colour='secondary'
+                className='mt-4 text-pretty'
+              >
+                {choosePlanDescription}
+              </Text>
+            </div>
+
+            <div aria-hidden='true' />
           </div>
         </div>
 
-        <div className='mt-6'>
-          <MarketingPricing
+        <div className='mt-2'>
+          <PricingInternal
             metainfo={metainfo}
             onSelectPlan={handlePlanSelection}
             getActionLabel={getActionLabel}
