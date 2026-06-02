@@ -3036,6 +3036,7 @@
     },
     "benefits": {
       "funnels": "Funnels",
+      "everythingFrom": "everything from {{plan}}",
       "unlimitedMembers": "Unlimited members",
       "eventsAndGoals": "Events & Goals",
       "sessionUserProfileAnalysis": "Session & User profile analysis",

@@ -472,7 +472,12 @@ const Subscribe = () => {
                   <>
                     {currency.symbol}
                     {formatPrice(monthlyPrice)}
-                    <Text as='span' size='sm' colour='secondary' weight='medium'>
+                    <Text
+                      as='span'
+                      size='sm'
+                      colour='secondary'
+                      weight='medium'
+                    >
                       /{t('pricing.perMonth')}
                     </Text>
                   </>

@@ -1,4 +1,5 @@
 import {
+  ArrowLeftIcon,
   ArrowRightIcon,
   CaretDownIcon,
   CaretUpIcon,
@@ -224,6 +225,31 @@ const BenefitTooltipContent = ({ tooltip }: { tooltip: BenefitTooltip }) => (
   </span>
 )
 
+const PlanInheritanceRow = ({
+  label,
+  isEnterprise,
+}: {
+  label: string
+  isEnterprise: boolean
+}) => {
+  return (
+    <div className='flex items-start gap-2.5'>
+      <ArrowLeftIcon
+        className='mt-0.5 size-4 shrink-0 text-emerald-600'
+        weight='bold'
+      />
+      <Text
+        as='p'
+        size='sm'
+        colour='primary'
+        className={cn('italic', isEnterprise ? 'dark' : '')}
+      >
+        {label}
+      </Text>
+    </div>
+  )
+}
+
 const BenefitRow = ({
   benefit,
   isEnterprise,
@@ -409,6 +435,17 @@ export const PricingInternal = ({
         <div className='mx-auto mt-6 grid max-w-7xl gap-4 px-4 sm:px-6 lg:grid-cols-3 lg:px-8'>
           {planCards.map((planType) => {
             const isEnterprise = planType === 'enterprise'
+            const inheritancePlanType =
+              planType === 'plus'
+                ? 'standard'
+                : planType === 'enterprise'
+                  ? 'plus'
+                  : null
+            const inheritanceLabel = inheritancePlanType
+              ? t('pricing.benefits.everythingFrom', {
+                  plan: getPlanName(inheritancePlanType, t),
+                })
+              : null
             const benefits = getBenefits(planType, t)
             const showAllBenefits = !!expandedBenefitsByPlan[planType]
             const visibleBenefits = showAllBenefits
@@ -582,6 +619,12 @@ export const PricingInternal = ({
                 </Button>
 
                 <div className='mt-5 space-y-3'>
+                  {inheritanceLabel ? (
+                    <PlanInheritanceRow
+                      label={inheritanceLabel}
+                      isEnterprise={isEnterprise}
+                    />
+                  ) : null}
                   {visibleBenefits.map((benefit) => (
                     <BenefitRow
                       key={benefit.label}

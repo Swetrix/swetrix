@@ -112,6 +112,7 @@ export const EVENT_TIERS = {
 
 export const EVENT_TIER_CODES = Object.keys(EVENT_TIERS) as EventTierCode[]
 export const SELF_SERVE_PLAN_TYPES: PlanTypeCode[] = ['standard', 'plus']
+const UNPAID_PLAN_CODES = new Set(['none', 'free', 'trial'])
 
 const isProduction = () =>
   typeof window === 'undefined'
@@ -322,7 +323,7 @@ export const PLAN_ENTITLEMENTS = {
     websites: 50,
     teamMembers: 10,
     organisations: 3,
-    apiRateLimitPerHour: 600,
+    apiRateLimitPerHour: 300,
     sessionReplaysIncluded: 0,
     featureKeys: [
       'pricing.benefits.eventsAndGoals',
@@ -342,7 +343,7 @@ export const PLAN_ENTITLEMENTS = {
     websites: 100,
     teamMembers: 25,
     organisations: 10,
-    apiRateLimitPerHour: 5000,
+    apiRateLimitPerHour: 6000,
     sessionReplaysIncluded: 'byEventTier',
     sessionReplayQuota: {
       '100k': 5000,
@@ -594,6 +595,10 @@ export const getEffectivePlanType = (
   planType?: string | null,
   _planCode?: string | null,
 ): PlanTypeCode => {
+  if (_planCode && UNPAID_PLAN_CODES.has(_planCode)) {
+    return 'standard'
+  }
+
   if (planType && planType in PLAN_TYPES) {
     return planType as PlanTypeCode
   }
