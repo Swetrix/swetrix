@@ -199,11 +199,6 @@ const DEFAULT_USAGE_INFO: UsageInfo = {
   captchaPerc: 0,
 }
 
-const WEBSITE_ADDON_QUANTITY_OPTIONS = Array.from(
-  { length: 21 },
-  (_, index) => index * 50,
-)
-
 const formatBillingPrice = (amount: number) =>
   Number.isInteger(amount) ? amount.toFixed(0) : amount.toFixed(2)
 
@@ -318,10 +313,6 @@ const UserSettings = () => {
     return Math.min(100, Math.max(0, raw))
   })()
   const remainingUsage = _round(Math.max(0, 100 - totalUsage), 2)
-  const projectsUsage =
-    maxProjects > 0
-      ? Math.min(100, _round((usageInfo.projects / maxProjects) * 100, 2))
-      : 0
   const replayLimitLabel =
     typeof sessionReplaysIncluded === 'number'
       ? sessionReplaysIncluded.toLocaleString()
@@ -535,7 +526,8 @@ const UserSettings = () => {
   const currentWebsiteAddonPreview = useMemo(() => {
     if (
       websiteAddonPreview?.quantity === selectedWebsiteAddonQuantity &&
-      websiteAddonPreview.billingInterval === selectedWebsiteAddonBillingInterval
+      websiteAddonPreview.billingInterval ===
+        selectedWebsiteAddonBillingInterval
     ) {
       return websiteAddonPreview
     }
@@ -582,7 +574,8 @@ const UserSettings = () => {
   const isWebsiteAddonDisabled = !!websiteAddonDisabledReason
   const hasWebsiteAddonChanges =
     selectedWebsiteAddonQuantity !== activeWebsiteAddonQuantity ||
-    selectedWebsiteAddonBillingInterval !== currentWebsiteAddonBillingInterval ||
+    selectedWebsiteAddonBillingInterval !==
+      currentWebsiteAddonBillingInterval ||
     hasPendingWebsiteAddonChange
   const websiteAddonPreviewError =
     websiteAddonPreviewFetcher.data?.intent === 'preview-website-addon' &&
@@ -674,11 +667,7 @@ const UserSettings = () => {
   useEffect(() => {
     setSelectedWebsiteAddonQuantity(activeWebsiteAddonQuantity)
     setSelectedWebsiteAddonBillingInterval(currentWebsiteAddonBillingInterval)
-  }, [
-    activeWebsiteAddonQuantity,
-    currentWebsiteAddonBillingInterval,
-    user?.id,
-  ])
+  }, [activeWebsiteAddonQuantity, currentWebsiteAddonBillingInterval, user?.id])
 
   useEffect(() => {
     if (
@@ -1794,19 +1783,6 @@ const UserSettings = () => {
                         </Alert>
                       ) : null}
 
-                      <Text
-                        as='p'
-                        size='sm'
-                        colour='secondary'
-                        className='mb-4'
-                      >
-                        {t('billing.usageOverview', {
-                          tracked: (usageInfo.total || 0).toLocaleString(),
-                          trackedPerc: totalUsage || 0,
-                          maxEvents: (maxEventsCount || 0).toLocaleString(),
-                        })}
-                      </Text>
-
                       <div className='grid grid-cols-2 gap-x-6 gap-y-3'>
                         <div className='flex items-center'>
                           <div className='size-2 rounded-full bg-blue-600 dark:bg-blue-500' />
@@ -1978,24 +1954,19 @@ const UserSettings = () => {
                             {(usageInfo.projects || 0).toLocaleString()} /{' '}
                             {(maxProjects || 0).toLocaleString()}
                           </Text>
-                          {purchasedWebsiteAddons ? (
-                            <Text
-                              as='p'
-                              size='xs'
-                              colour='muted'
-                              className='mt-1'
-                            >
-                              {t('billing.addedWebsites', {
-                                amount: purchasedWebsiteAddons.toLocaleString(),
-                              })}
-                            </Text>
-                          ) : null}
-                          <div className='mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
-                            <div
-                              className='h-full rounded-full bg-slate-900 dark:bg-slate-100'
-                              style={{ width: `${projectsUsage}%` }}
-                            />
-                          </div>
+                          <Text
+                            as='p'
+                            size='xs'
+                            colour='muted'
+                            className='mt-1'
+                          >
+                            {purchasedWebsiteAddons
+                              ? t('billing.addedWebsites', {
+                                  amount:
+                                    purchasedWebsiteAddons.toLocaleString(),
+                                })
+                              : t('billing.websitesIncludedCaption')}
+                          </Text>
                         </div>
 
                         <div>
@@ -2157,8 +2128,8 @@ const UserSettings = () => {
                       title={t('billing.addonsTitle')}
                       description={t('billing.addonsDesc')}
                     >
-                      <div className='grid gap-4 border-t border-gray-200 pt-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)] dark:border-slate-800'>
-                        <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
+                      <div className='grid gap-x-8 gap-y-6 border-t border-gray-200 pt-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.85fr)] dark:border-slate-800'>
+                        <div>
                           <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
                             <div>
                               <Text as='h4' size='base' weight='semibold'>
@@ -2179,7 +2150,10 @@ const UserSettings = () => {
                                 })}
                               </Text>
                             </div>
-                            <Text as='span' className={websiteAddonStatusClassName}>
+                            <Text
+                              as='span'
+                              className={websiteAddonStatusClassName}
+                            >
                               {websiteAddonStatusLabel}
                             </Text>
                           </div>
@@ -2197,7 +2171,9 @@ const UserSettings = () => {
                                   className='mt-1'
                                 >
                                   {t('billing.xofy', {
-                                    x: (usageInfo.projects || 0).toLocaleString(),
+                                    x: (
+                                      usageInfo.projects || 0
+                                    ).toLocaleString(),
                                     y: (
                                       displayedWebsiteLimit || 0
                                     ).toLocaleString(),
@@ -2246,6 +2222,12 @@ const UserSettings = () => {
                             </div>
                           </div>
 
+                          {websiteAddonDisabledReason ? (
+                            <Alert variant='info' className='mt-4'>
+                              {websiteAddonDisabledReason}
+                            </Alert>
+                          ) : null}
+
                           <div className='mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.8fr)]'>
                             <div>
                               <Text as='label' size='sm' weight='medium'>
@@ -2268,29 +2250,21 @@ const UserSettings = () => {
                                 >
                                   <MinusIcon className='size-4' />
                                 </Button>
-                                <Select<number>
-                                  selectedItem={selectedWebsiteAddonQuantity}
-                                  items={WEBSITE_ADDON_QUANTITY_OPTIONS}
-                                  onSelect={setSelectedWebsiteAddonQuantity}
-                                  disabled={isWebsiteAddonDisabled}
-                                  className='min-w-44 flex-1'
-                                  title={
-                                    selectedWebsiteAddonQuantity
-                                      ? t('billing.extraWebsitesAmount', {
-                                          amount:
-                                            selectedWebsiteAddonQuantity.toLocaleString(),
-                                        })
-                                      : t('billing.noAdditionalWebsites')
-                                  }
-                                  labelExtractor={(amount) =>
-                                    amount
-                                      ? t('billing.extraWebsitesAmount', {
-                                          amount: amount.toLocaleString(),
-                                        })
-                                      : t('billing.noAdditionalWebsites')
-                                  }
-                                  keyExtractor={(amount) => String(amount)}
-                                />
+                                <div
+                                  aria-live='polite'
+                                  className={cx(
+                                    'flex min-w-44 flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-center text-sm font-semibold text-slate-900 tabular-nums dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-50',
+                                    isWebsiteAddonDisabled &&
+                                      'cursor-not-allowed opacity-60',
+                                  )}
+                                >
+                                  {selectedWebsiteAddonQuantity
+                                    ? t('billing.extraWebsitesAmount', {
+                                        amount:
+                                          selectedWebsiteAddonQuantity.toLocaleString(),
+                                      })
+                                    : t('billing.noAdditionalWebsites')}
+                                </div>
                                 <Button
                                   variant='icon'
                                   aria-label={t(
@@ -2315,31 +2289,31 @@ const UserSettings = () => {
                                 {t('billing.websiteAddonBillingInterval')}
                               </Text>
                               <div className='mt-1.5 grid grid-cols-2 rounded-md border border-gray-300 bg-gray-50 p-1 dark:border-slate-700/80 dark:bg-slate-950'>
-                                {(['monthly', 'yearly'] as BillingInterval[]).map(
-                                  (interval) => (
-                                    <button
-                                      key={interval}
-                                      type='button'
-                                      disabled={isWebsiteAddonDisabled}
-                                      onClick={() =>
-                                        setSelectedWebsiteAddonBillingInterval(
-                                          interval,
-                                        )
-                                      }
-                                      className={cx(
-                                        'rounded-sm px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
-                                        selectedWebsiteAddonBillingInterval ===
-                                          interval
-                                          ? 'bg-white text-slate-900 ring-1 ring-gray-200 dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700'
-                                          : 'text-gray-600 hover:text-slate-900 dark:text-gray-300 dark:hover:text-gray-50',
-                                      )}
-                                    >
-                                      {interval === 'monthly'
-                                        ? t('billing.websiteAddonMonthly')
-                                        : t('billing.websiteAddonYearly')}
-                                    </button>
-                                  ),
-                                )}
+                                {(
+                                  ['monthly', 'yearly'] as BillingInterval[]
+                                ).map((interval) => (
+                                  <button
+                                    key={interval}
+                                    type='button'
+                                    disabled={isWebsiteAddonDisabled}
+                                    onClick={() =>
+                                      setSelectedWebsiteAddonBillingInterval(
+                                        interval,
+                                      )
+                                    }
+                                    className={cx(
+                                      'rounded-sm px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+                                      selectedWebsiteAddonBillingInterval ===
+                                        interval
+                                        ? 'bg-white text-slate-900 ring-1 ring-gray-200 dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700'
+                                        : 'text-gray-600 hover:text-slate-900 dark:text-gray-300 dark:hover:text-gray-50',
+                                    )}
+                                  >
+                                    {interval === 'monthly'
+                                      ? t('billing.websiteAddonMonthly')
+                                      : t('billing.websiteAddonYearly')}
+                                  </button>
+                                ))}
                               </div>
                               <Text
                                 as='p'
@@ -2352,11 +2326,6 @@ const UserSettings = () => {
                             </div>
                           </div>
 
-                          {websiteAddonDisabledReason ? (
-                            <Alert variant='info' className='mt-4'>
-                              {websiteAddonDisabledReason}
-                            </Alert>
-                          ) : null}
                           {hasPendingWebsiteAddonChange &&
                           !websiteAddonDisabledReason ? (
                             <Alert variant='warning' className='mt-4'>
@@ -2393,7 +2362,9 @@ const UserSettings = () => {
                                       ? `${currency.symbol}${formatBillingPrice(
                                           currentWebsiteAddonPreview.dueNow,
                                         )}`
-                                      : t('billing.websiteAddonNoImmediateCharge')}
+                                      : t(
+                                          'billing.websiteAddonNoImmediateCharge',
+                                        )}
                                   </Text>
                                 </div>
                                 <div>
@@ -2474,7 +2445,7 @@ const UserSettings = () => {
                           </div>
                         </div>
 
-                        <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
+                        <div className='border-t border-gray-200 pt-6 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-8 dark:border-slate-800'>
                           <div className='flex items-start justify-between gap-3'>
                             <div>
                               <Text as='h4' size='base' weight='semibold'>
@@ -2501,12 +2472,7 @@ const UserSettings = () => {
                               {t('billing.comingSoon')}
                             </Text>
                           </div>
-                          <Text
-                            as='p'
-                            size='lg'
-                            weight='bold'
-                            className='mt-4'
-                          >
+                          <Text as='p' size='lg' weight='bold' className='mt-4'>
                             {currency.symbol}
                             {formatBillingPrice(sessionReplayAddonPrice)}
                             <Text
