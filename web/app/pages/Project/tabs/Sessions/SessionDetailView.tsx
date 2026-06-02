@@ -81,7 +81,9 @@ interface PlatformPart {
   icon?: React.ReactNode
 }
 
+const ONLINE_THRESHOLD_MINUTES = 5
 const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
+const ONLINE_THRESHOLD_SECONDS = ONLINE_THRESHOLD_MINUTES * 60
 const RECENTLY_ACTIVE_THRESHOLD_SECONDS = RECENTLY_ACTIVE_THRESHOLD_MINUTES * 60
 
 const formatCompactElapsed = (seconds: number) => {
@@ -309,6 +311,10 @@ export const SessionDetailView = ({
       ? t('project.online')
       : t('project.lastSeenAgo', { time: lastSeenTime })
     : t('project.endOfSession')
+  const isOnline =
+    !details.isLive &&
+    secondsSinceLastActivity !== null &&
+    secondsSinceLastActivity < ONLINE_THRESHOLD_SECONDS
   const isRecentlyActive =
     !details.isLive &&
     secondsSinceLastActivity !== null &&
@@ -393,6 +399,8 @@ export const SessionDetailView = ({
         >
           {details.isLive ? (
             <PulsatingCircle className='relative' type='small' />
+          ) : isOnline ? (
+            <span className='block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900' />
           ) : isRecentlyActive ? (
             <span className='block h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-slate-900' />
           ) : (
