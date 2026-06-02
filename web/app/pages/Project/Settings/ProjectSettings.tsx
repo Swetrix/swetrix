@@ -1752,15 +1752,12 @@ const ProjectSettings = () => {
                     </div>
                   </>
                 ) : (
-                  <div className='mt-4 max-w-2xl rounded-lg bg-gray-50 p-5 ring-1 ring-gray-200/80 ring-inset dark:bg-slate-900 dark:ring-slate-700/60'>
-                    <Text as='h3' size='sm' weight='semibold'>
-                      {t('project.settings.captcha.emptyTitle')}
-                    </Text>
+                  <div className='mt-4 max-w-2xl'>
                     <Text
                       as='p'
                       size='sm'
                       colour='secondary'
-                      className='mt-2 leading-6'
+                      className='leading-6'
                     >
                       {t('project.settings.captcha.emptyDescription')}
                     </Text>
@@ -1772,7 +1769,7 @@ const ProjectSettings = () => {
                     >
                       {t('project.settings.captcha.noKeyGenerated')}
                     </Text>
-                    <div className='mt-5 flex flex-col gap-3 sm:flex-row sm:items-center'>
+                    <div className='mt-4 flex flex-wrap items-center gap-3'>
                       <Button type='button' onClick={onRegenerateCaptchaKey}>
                         {t('project.settings.captcha.generateKey')}
                       </Button>
