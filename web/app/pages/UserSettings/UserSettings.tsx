@@ -1202,6 +1202,9 @@ const UserSettings = () => {
         <Text as='h2' size='3xl' weight='bold' className='mt-2'>
           {t('titles.profileSettings')}
         </Text>
+
+        <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
+
         <div className='mt-6 flex flex-col gap-6 md:flex-row'>
           <div className='md:hidden'>
             <Select
