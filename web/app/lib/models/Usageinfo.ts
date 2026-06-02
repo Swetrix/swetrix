@@ -1,4 +1,4 @@
-export interface UsageInfoBreakdown {
+interface UsageInfoBreakdown {
   total: number
   traffic: number
   customEvents: number
