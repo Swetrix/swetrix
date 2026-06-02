@@ -119,6 +119,13 @@ The `trackViews` function returns a `Promise` with an object with some methods a
 }
 ```
 
+## Noscript fallback
+
+The `/log/noscript` image pixel records pageviews for visitors with JavaScript disabled.
+It accepts the required `pid` query parameter and an optional `pg` page path, for example `/` or `/login`.
+If `pg` is not provided, the API tries to recover it from the `Referer` header and stores only the URL pathname.
+If neither value is available, `pg` is stored as `null` and will be displayed in dashboard as `Not set`.
+
 ## pageview()
 
 This function is used to manually track a page view event.
