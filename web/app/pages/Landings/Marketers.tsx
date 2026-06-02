@@ -6,11 +6,7 @@ import { Link } from '~/ui/Link'
 import Header from '~/components/Header'
 import { ComparisonTable } from '~/components/marketing/ComparisonTable'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import {
-  DISCORD_URL,
-  INTEGRATIONS_URL,
-  LIVE_DEMO_URL,
-} from '~/lib/constants'
+import { DISCORD_URL, INTEGRATIONS_URL, LIVE_DEMO_URL } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 import { Text } from '~/ui/Text'
 import routesPath from '~/utils/routes'
