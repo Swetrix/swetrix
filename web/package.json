@@ -19,6 +19,7 @@
     "translate": "node scripts/translate.js"
   },
   "dependencies": {
+    "@calcom/embed-react": "^1.5.3",
     "@headlessui/react": "^2.2.10",
     "@nivo/sankey": "^0.99.0",
     "@phosphor-icons/react": "^2.1.10",

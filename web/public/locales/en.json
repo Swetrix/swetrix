@@ -2940,6 +2940,10 @@
       "desc": "Have product feedback, bugs, or ideas? <feedback>Give feedback</feedback> and include screenshots if useful."
     }
   },
+  "bookACall": {
+    "title": "Close the gaps in your website analytics",
+    "description": "Consent prompts, browser privacy controls, and ad blockers can leave reports undercounted. Book a call and we'll review your setup, estimate what's missing, and show how Swetrix measures traffic without tracking cookies."
+  },
   "feedback": {
     "giveFeedback": "Give feedback",
     "title": "Share feedback",
@@ -3104,6 +3108,7 @@
     "blog": "Stay updated with the latest insights, product updates, case studies, and use cases from Swetrix.",
     "captcha": "Swetrix Captcha is a privacy-first alternative to traditional CAPTCHAs. Protect your website from bots and spam without annoying your users with puzzles.",
     "contact": "Contact Swetrix (cookieless & privacy-first Google Analytics alternative) for support, feedback, or any questions and suggestions.",
+    "bookACall": "Book a call with Swetrix to review gaps caused by consent prompts, browser privacy controls, and ad blockers, then see how cookieless analytics gives you clearer traffic data.",
     "errorTracking": "Privacy-first end-user error tracking by Swetrix. Set up in one line, see errors by browser/device/location, and fix issues faster. 14-day free trial - no card required.",
     "login": "Log in to Swetrix to view your cookieless, privacy-friendly analytics - real-time insights, no tracking cookies, no GA clutter.",
     "signup": "Create your Swetrix account and start tracking website traffic with cookieless, privacy-friendly analytics - simple setup, real-time stats.",

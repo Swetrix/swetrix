@@ -7,7 +7,6 @@ import Header from '~/components/Header'
 import { ComparisonTable } from '~/components/marketing/ComparisonTable'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import {
-  BOOK_A_CALL_URL,
   DISCORD_URL,
   LIVE_DEMO_URL,
   INTEGRATIONS_URL,
@@ -118,18 +117,16 @@ const Startups = () => {
                   </span>
                 </a>
               </div>
-              <a
-                href={BOOK_A_CALL_URL}
+              <Link
+                to={routesPath.bookACall}
                 className='mx-auto mt-8 flex max-w-max items-center border-0 font-bold text-slate-900 hover:underline dark:text-gray-100'
-                target='_blank'
-                rel='noopener noreferrer'
-                aria-label={`${t('common.bookACall')} (opens in a new tab)`}
+                aria-label={t('common.bookACall')}
               >
                 <span className='text-base font-semibold'>
                   {t('common.bookACall')}
                 </span>
                 <ArrowRightIcon className='mt-[1px] h-4 w-5' />
-              </a>
+              </Link>
             </div>
           </div>
           <div className='relative z-20 mx-auto mt-10 block max-w-[1300px] px-4 md:px-0'>
