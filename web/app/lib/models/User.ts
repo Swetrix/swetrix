@@ -29,13 +29,13 @@ enum PlanCode {
   '50m' = '50m',
 }
 
-export enum PlanType {
+enum PlanType {
   standard = 'standard',
   plus = 'plus',
   enterprise = 'enterprise',
 }
 
-export interface WebsiteAddon {
+interface WebsiteAddon {
   code: 'websites'
   quantity: number
   pendingQuantity: number | null

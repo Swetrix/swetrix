@@ -322,10 +322,8 @@ export class UserService {
   }
 
   private getWebsiteAddonCurrency(user: User): string {
-    return (
-      typeof user.tierCurrency === 'string' &&
+    return typeof user.tierCurrency === 'string' &&
       WEBSITE_ADDON_CURRENCIES.includes(user.tierCurrency)
-    )
       ? user.tierCurrency
       : 'USD'
   }
@@ -354,10 +352,7 @@ export class UserService {
   ): Date {
     return dayjs
       .utc(from)
-      .add(
-        1,
-        billingInterval === BillingFrequency.Yearly ? 'year' : 'month',
-      )
+      .add(1, billingInterval === BillingFrequency.Yearly ? 'year' : 'month')
       .toDate()
   }
 
@@ -809,7 +804,8 @@ export class UserService {
     if (preview.changeType === 'none') {
       if (
         addon &&
-        (addon.pendingQuantity !== null || addon.pendingBillingInterval !== null)
+        (addon.pendingQuantity !== null ||
+          addon.pendingBillingInterval !== null)
       ) {
         await this.userAddonRepository.update(addon.id, {
           pendingQuantity: null,
@@ -842,9 +838,7 @@ export class UserService {
     const currentQuantity = isInactiveAddon ? 0 : addon.quantity
 
     if (preview.dueNow > 0) {
-      const chargePeriodStart = isInactiveAddon
-        ? now
-        : addon.periodStart || now
+      const chargePeriodStart = isInactiveAddon ? now : addon.periodStart || now
       const chargePeriodEnd = isInactiveAddon
         ? this.getWebsiteAddonPeriodEnd(now, billingInterval)
         : addon.periodEnd ||

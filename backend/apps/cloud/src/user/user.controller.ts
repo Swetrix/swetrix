@@ -108,9 +108,9 @@ export class UserController {
         this.projectService.getRedisCount(uid),
       ])
 
-    const sanitizedUser = this.userService.omitSensitiveData(user) as Partial<
-      User
-    > & { websiteAddon?: unknown }
+    const sanitizedUser = this.userService.omitSensitiveData(
+      user,
+    ) as Partial<User> & { websiteAddon?: unknown }
 
     sanitizedUser.sharedProjects = sharedProjects
     sanitizedUser.organisationMemberships = organisationMemberships

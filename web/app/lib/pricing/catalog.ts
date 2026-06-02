@@ -35,7 +35,7 @@ export type PlanCode =
   | '40m'
   | '50m'
 
-export interface PlanPrice {
+interface PlanPrice {
   amount: number
   paddlePlanId: number | null
 }
@@ -111,7 +111,6 @@ export const EVENT_TIERS = {
 >
 
 export const EVENT_TIER_CODES = Object.keys(EVENT_TIERS) as EventTierCode[]
-export const PLAN_TYPE_CODES = Object.keys(PLAN_TYPES) as PlanTypeCode[]
 export const SELF_SERVE_PLAN_TYPES: PlanTypeCode[] = ['standard', 'plus']
 
 const price = (
@@ -132,7 +131,7 @@ const price = (
   },
 })
 
-export const PLAN_PRICES: PlanPriceCatalog = {
+const PLAN_PRICES: PlanPriceCatalog = {
   standard: {
     '100k': price(
       { USD: 19, EUR: 17, GBP: 15 },
@@ -396,7 +395,7 @@ export const ADDONS = {
   ],
 } as const
 
-export const LEGACY_PLAN_LIMITS = {
+const LEGACY_PLAN_LIMITS = {
   none: {
     index: 0,
     planCode: 'none',
@@ -521,13 +520,7 @@ export const PLAN_LIMITS = {
   ),
 } as Record<PlanCode, PlanLimit>
 
-export const STANDARD_PLANS = EVENT_TIER_CODES.map(
-  (tierCode) => EVENT_TIERS[tierCode].planCode,
-)
-
-export const PURCHASABLE_LEGACY_PLANS: PlanCode[] = ['hobby', '50k']
-
-export const isPaidPlanCode = (planCode?: string | null) =>
+const isPaidPlanCode = (planCode?: string | null) =>
   !!planCode && !['none', 'free', 'trial'].includes(planCode)
 
 export const getEffectivePlanType = (
@@ -597,20 +590,4 @@ export const getIncludedSessionReplays = (
   }
 
   return entitlements.sessionReplaysIncluded
-}
-
-export const formatEventTier = (eventTier: EventTierCode) =>
-  EVENT_TIERS[eventTier].monthlyEvents.toLocaleString('en-US')
-
-export const formatCompactNumber = (value: number) => {
-  if (value >= 1000000) {
-    const compact = value / 1000000
-    return `${Number.isInteger(compact) ? compact : compact.toFixed(1)}M`
-  }
-
-  if (value >= 1000) {
-    return `${value / 1000}k`
-  }
-
-  return String(value)
 }

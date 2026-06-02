@@ -19,8 +19,6 @@ import {
   CaretDownIcon,
   CreditCardIcon,
   ArrowRightIcon,
-  MinusIcon,
-  PlusIcon,
 } from '@phosphor-icons/react'
 import _round from 'lodash/round'
 import React, {
@@ -199,6 +197,11 @@ const DEFAULT_USAGE_INFO: UsageInfo = {
   captchaPerc: 0,
 }
 
+const WEBSITE_ADDON_QUANTITY_OPTIONS = Array.from(
+  { length: 21 },
+  (_, index) => index * 50,
+)
+
 const formatBillingPrice = (amount: number) =>
   Number.isInteger(amount) ? amount.toFixed(0) : amount.toFixed(2)
 
@@ -256,6 +259,17 @@ const UserSettings = () => {
   const metainfoFetcher = useFetcher<UserSettingsActionData>()
   const websiteAddonFetcher = useFetcher<UserSettingsActionData>()
   const websiteAddonPreviewFetcher = useFetcher<UserSettingsActionData>()
+
+  // Stable submit handle for the preview fetcher. Effects must depend on this,
+  // not on the fetcher object (whose identity changes on every state transition
+  // and would otherwise create an infinite submit loop).
+  const websiteAddonPreviewFetcherRef = useRef(websiteAddonPreviewFetcher)
+  websiteAddonPreviewFetcherRef.current = websiteAddonPreviewFetcher
+  const websiteAddonPreviewSubmit = useCallback(
+    (...args: Parameters<typeof websiteAddonPreviewFetcher.submit>) =>
+      websiteAddonPreviewFetcherRef.current.submit(...args),
+    [],
+  )
 
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -328,9 +342,10 @@ const UserSettings = () => {
   ) as CurrencyCode
   const currency = CURRENCIES[currencyCode]
   const websiteAddonBundle = ADDONS.websiteBundles[0]
-  const sessionReplayAddon = ADDONS.sessionReplayBundles[0]
   const websiteAddonPrice = websiteAddonBundle.monthly[currencyCode]
-  const sessionReplayAddonPrice = sessionReplayAddon.monthly[currencyCode]
+  // Session replay add-on pricing is hidden until self-serve replay billing ships.
+  // const sessionReplayAddon = ADDONS.sessionReplayBundles[0]
+  // const sessionReplayAddonPrice = sessionReplayAddon.monthly[currencyCode]
   const activeWebsiteAddonQuantity =
     websiteAddon?.quantity ?? purchasedWebsiteAddons
   const currentWebsiteAddonBillingInterval = (websiteAddon?.billingInterval ||
@@ -395,10 +410,15 @@ const UserSettings = () => {
     }
   }
 
-  const onWebsiteAddonQuantityStep = (direction: 1 | -1) => {
-    setSelectedWebsiteAddonQuantity((value) =>
-      Math.min(1000, Math.max(0, value + direction * 50)),
-    )
+  const onWebsiteAddonModalOpen = () => {
+    setSelectedWebsiteAddonQuantity(activeWebsiteAddonQuantity)
+    setSelectedWebsiteAddonBillingInterval(currentWebsiteAddonBillingInterval)
+    setIsWebsiteAddonModalOpened(true)
+  }
+
+  const onWebsiteAddonModalClose = () => {
+    if (isWebsiteAddonSubmitting) return
+    setIsWebsiteAddonModalOpened(false)
   }
 
   const onWebsiteAddonUpdate = () => {
@@ -475,6 +495,8 @@ const UserSettings = () => {
     selectedWebsiteAddonBillingInterval,
     setSelectedWebsiteAddonBillingInterval,
   ] = useState<BillingInterval>(currentWebsiteAddonBillingInterval)
+  const [isWebsiteAddonModalOpened, setIsWebsiteAddonModalOpened] =
+    useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const translatedFrequencies = useMemo(
@@ -611,41 +633,13 @@ const UserSettings = () => {
     websiteAddonPrice *
       (selectedWebsiteAddonQuantity / websiteAddonBundle.quantity) *
       (selectedWebsiteAddonBillingInterval === 'yearly' ? 10 : 1)
-  const websiteAddonStatusLabel = (() => {
-    if (hasPendingWebsiteAddonChange) {
-      return t('billing.websiteAddonPending')
-    }
-
-    if (isWebsiteAddonLegacy) {
-      return t('billing.websiteAddonLegacy')
-    }
-
-    if (websiteAddon?.status === 'past_due') {
-      return t('billing.websiteAddonPastDue')
-    }
-
-    if (activeWebsiteAddonQuantity > 0) {
-      return t('billing.websiteAddonActive')
-    }
-
-    return t('billing.websiteAddonIncluded')
-  })()
-  const websiteAddonStatusClassName = cx(
-    'shrink-0 rounded-md px-2 py-1 text-xs font-semibold',
-    {
-      'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300':
-        activeWebsiteAddonQuantity > 0 &&
-        !hasPendingWebsiteAddonChange &&
-        !isWebsiteAddonLegacy &&
-        websiteAddon?.status !== 'past_due',
-      'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300':
-        hasPendingWebsiteAddonChange || websiteAddon?.status === 'past_due',
-      'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200':
-        !hasPendingWebsiteAddonChange &&
-        websiteAddon?.status !== 'past_due' &&
-        (activeWebsiteAddonQuantity === 0 || isWebsiteAddonLegacy),
-    },
-  )
+  // Yearly add-on billing is only offered to subscribers on a yearly plan;
+  // monthly subscribers can still buy the add-on, billed monthly.
+  const canSelectYearlyWebsiteAddon = user?.billingFrequency === 'yearly'
+  const activeWebsiteAddonRecurringAmount =
+    websiteAddonPrice *
+    (activeWebsiteAddonQuantity / websiteAddonBundle.quantity) *
+    (currentWebsiteAddonBillingInterval === 'yearly' ? 10 : 1)
 
   const formatBillingDate = useCallback(
     (date?: string | null) => {
@@ -673,7 +667,8 @@ const UserSettings = () => {
     if (
       activeTab !== TAB_MAPPING.BILLING ||
       !user?.id ||
-      isWebsiteAddonDisabled
+      isWebsiteAddonDisabled ||
+      !isWebsiteAddonModalOpened
     ) {
       return
     }
@@ -682,17 +677,21 @@ const UserSettings = () => {
     formData.set('intent', 'preview-website-addon')
     formData.set('quantity', String(selectedWebsiteAddonQuantity))
     formData.set('billingInterval', selectedWebsiteAddonBillingInterval)
-    websiteAddonPreviewFetcher.submit(formData, {
+    websiteAddonPreviewSubmit(formData, {
       method: 'POST',
       action: '/user-settings',
     })
+    // `websiteAddonPreviewSubmit` is the fetcher's stable submit fn. Depending on
+    // the whole fetcher object here causes an infinite loop: submit() changes the
+    // fetcher identity, which re-runs this effect, which submits again.
   }, [
     activeTab,
     user?.id,
     isWebsiteAddonDisabled,
+    isWebsiteAddonModalOpened,
     selectedWebsiteAddonQuantity,
     selectedWebsiteAddonBillingInterval,
-    websiteAddonPreviewFetcher,
+    websiteAddonPreviewSubmit,
   ])
 
   useEffect(() => {
@@ -811,6 +810,7 @@ const UserSettings = () => {
       mergeUser(websiteAddonFetcher.data.user)
       toast.success(t('billing.websiteAddonUpdated'))
       loadUser()
+      setIsWebsiteAddonModalOpened(false)
       return
     }
 
@@ -1937,7 +1937,7 @@ const UserSettings = () => {
                       <div className='mt-6 grid gap-5 border-t border-gray-200 pt-5 sm:grid-cols-3 dark:border-slate-800'>
                         <div>
                           <div className='flex items-center gap-1.5'>
-                            <Text as='p' size='xs' colour='muted'>
+                            <Text as='p' size='xs' colour='secondary'>
                               {t('billing.websites')}
                             </Text>
                             <Tooltip
@@ -1957,7 +1957,7 @@ const UserSettings = () => {
                           <Text
                             as='p'
                             size='xs'
-                            colour='muted'
+                            colour='secondary'
                             className='mt-1'
                           >
                             {purchasedWebsiteAddons
@@ -1971,7 +1971,7 @@ const UserSettings = () => {
 
                         <div>
                           <div className='flex items-center gap-1.5'>
-                            <Text as='p' size='xs' colour='muted'>
+                            <Text as='p' size='xs' colour='secondary'>
                               {t('billing.sessionReplays')}
                             </Text>
                             <Tooltip
@@ -1994,7 +1994,7 @@ const UserSettings = () => {
                           <Text
                             as='p'
                             size='xs'
-                            colour='muted'
+                            colour='secondary'
                             className='mt-1'
                           >
                             {t('billing.recordedSessionsQuota')}
@@ -2002,7 +2002,7 @@ const UserSettings = () => {
                         </div>
 
                         <div>
-                          <Text as='p' size='xs' colour='muted'>
+                          <Text as='p' size='xs' colour='secondary'>
                             {t('billing.api')}
                           </Text>
                           <Text
@@ -2020,7 +2020,7 @@ const UserSettings = () => {
                           <Text
                             as='p'
                             size='xs'
-                            colour='muted'
+                            colour='secondary'
                             className='mt-1'
                           >
                             {t('billing.currentRateLimit')}
@@ -2128,372 +2128,141 @@ const UserSettings = () => {
                       title={t('billing.addonsTitle')}
                       description={t('billing.addonsDesc')}
                     >
-                      <div className='grid gap-x-8 gap-y-6 border-t border-gray-200 pt-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.85fr)] dark:border-slate-800'>
-                        <div>
-                          <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-                            <div>
-                              <Text as='h4' size='base' weight='semibold'>
-                                {t('billing.websiteAddonTitle')}
-                              </Text>
-                              <Text
-                                as='p'
-                                size='sm'
-                                colour='secondary'
-                                className='mt-1'
-                              >
-                                {t('billing.websiteAddonDescription', {
-                                  amount: websiteAddonBundle.quantity,
-                                  unitPrice: `${currency.symbol}${formatBillingPrice(
-                                    websiteAddonPrice /
-                                      websiteAddonBundle.quantity,
-                                  )}`,
-                                })}
-                              </Text>
-                            </div>
-                            <Text
-                              as='span'
-                              className={websiteAddonStatusClassName}
-                            >
-                              {websiteAddonStatusLabel}
-                            </Text>
-                          </div>
+                      <div className='max-w-2xl border-t border-gray-200 pt-4 dark:border-slate-800'>
+                        <Text as='h4' size='base' weight='semibold'>
+                          {t('billing.websiteAddonTitle')}
+                        </Text>
+                        <Text
+                          as='p'
+                          size='sm'
+                          colour='secondary'
+                          className='mt-1'
+                        >
+                          {t('billing.websiteAddonDescription', {
+                            amount: websiteAddonBundle.quantity,
+                            unitPrice: `${currency.symbol}${formatBillingPrice(
+                              websiteAddonPrice / websiteAddonBundle.quantity,
+                            )}`,
+                          })}
+                        </Text>
 
-                          <div className='mt-4 border-y border-gray-200 py-3 dark:border-slate-800'>
-                            <div className='grid gap-3 sm:grid-cols-3 sm:divide-x sm:divide-gray-200 dark:sm:divide-slate-800'>
-                              <div className='sm:pr-4'>
-                                <Text as='p' size='xs' colour='muted'>
-                                  {t('billing.websiteAddonUsage')}
-                                </Text>
-                                <Text
-                                  as='p'
-                                  size='sm'
-                                  weight='semibold'
-                                  className='mt-1'
-                                >
-                                  {t('billing.xofy', {
-                                    x: (
-                                      usageInfo.projects || 0
-                                    ).toLocaleString(),
-                                    y: (
-                                      displayedWebsiteLimit || 0
-                                    ).toLocaleString(),
-                                  })}
-                                </Text>
-                              </div>
-                              <div className='sm:px-4'>
-                                <Text as='p' size='xs' colour='muted'>
-                                  {t('billing.websiteAddonIncluded')}
-                                </Text>
-                                <Text
-                                  as='p'
-                                  size='sm'
-                                  weight='semibold'
-                                  className='mt-1'
-                                >
-                                  {t('pricing.websiteCount', {
-                                    count: includedWebsiteLimit,
-                                  })}
-                                </Text>
-                              </div>
-                              <div className='sm:pl-4'>
-                                <Text as='p' size='xs' colour='muted'>
-                                  {t('billing.websiteAddonPurchased')}
-                                </Text>
-                                <Text
-                                  as='p'
-                                  size='sm'
-                                  weight='semibold'
-                                  className='mt-1'
-                                >
-                                  {displayedPurchasedWebsites
-                                    ? t('billing.addedWebsites', {
-                                        amount:
-                                          displayedPurchasedWebsites.toLocaleString(),
-                                      })
-                                    : t('billing.noAdditionalWebsites')}
-                                </Text>
-                              </div>
-                            </div>
-                            <div className='mt-3 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
-                              <div
-                                className='h-full rounded-full bg-slate-900 dark:bg-slate-100'
-                                style={{ width: `${displayedProjectsUsage}%` }}
-                              />
-                            </div>
-                          </div>
-
-                          {websiteAddonDisabledReason ? (
-                            <Alert variant='info' className='mt-4'>
-                              {websiteAddonDisabledReason}
-                            </Alert>
-                          ) : null}
-
-                          <div className='mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.8fr)]'>
-                            <div>
-                              <Text as='label' size='sm' weight='medium'>
-                                {t('billing.websiteAddonQuantity')}
-                              </Text>
-                              <div className='mt-1.5 flex items-center gap-2'>
-                                <Button
-                                  variant='icon'
-                                  aria-label={t(
-                                    'billing.websiteAddonDecreaseQuantity',
-                                  )}
-                                  title={t(
-                                    'billing.websiteAddonDecreaseQuantity',
-                                  )}
-                                  disabled={
-                                    isWebsiteAddonDisabled ||
-                                    selectedWebsiteAddonQuantity <= 0
-                                  }
-                                  onClick={() => onWebsiteAddonQuantityStep(-1)}
-                                >
-                                  <MinusIcon className='size-4' />
-                                </Button>
-                                <div
-                                  aria-live='polite'
-                                  className={cx(
-                                    'flex min-w-44 flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-center text-sm font-semibold text-slate-900 tabular-nums dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-50',
-                                    isWebsiteAddonDisabled &&
-                                      'cursor-not-allowed opacity-60',
-                                  )}
-                                >
-                                  {selectedWebsiteAddonQuantity
-                                    ? t('billing.extraWebsitesAmount', {
-                                        amount:
-                                          selectedWebsiteAddonQuantity.toLocaleString(),
-                                      })
-                                    : t('billing.noAdditionalWebsites')}
-                                </div>
-                                <Button
-                                  variant='icon'
-                                  aria-label={t(
-                                    'billing.websiteAddonIncreaseQuantity',
-                                  )}
-                                  title={t(
-                                    'billing.websiteAddonIncreaseQuantity',
-                                  )}
-                                  disabled={
-                                    isWebsiteAddonDisabled ||
-                                    selectedWebsiteAddonQuantity >= 1000
-                                  }
-                                  onClick={() => onWebsiteAddonQuantityStep(1)}
-                                >
-                                  <PlusIcon className='size-4' />
-                                </Button>
-                              </div>
-                            </div>
-
-                            <div>
-                              <Text as='p' size='sm' weight='medium'>
-                                {t('billing.websiteAddonBillingInterval')}
-                              </Text>
-                              <div className='mt-1.5 grid grid-cols-2 rounded-md border border-gray-300 bg-gray-50 p-1 dark:border-slate-700/80 dark:bg-slate-950'>
-                                {(
-                                  ['monthly', 'yearly'] as BillingInterval[]
-                                ).map((interval) => (
-                                  <button
-                                    key={interval}
-                                    type='button'
-                                    disabled={isWebsiteAddonDisabled}
-                                    onClick={() =>
-                                      setSelectedWebsiteAddonBillingInterval(
-                                        interval,
-                                      )
-                                    }
-                                    className={cx(
-                                      'rounded-sm px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
-                                      selectedWebsiteAddonBillingInterval ===
-                                        interval
-                                        ? 'bg-white text-slate-900 ring-1 ring-gray-200 dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700'
-                                        : 'text-gray-600 hover:text-slate-900 dark:text-gray-300 dark:hover:text-gray-50',
-                                    )}
-                                  >
-                                    {interval === 'monthly'
-                                      ? t('billing.websiteAddonMonthly')
-                                      : t('billing.websiteAddonYearly')}
-                                  </button>
-                                ))}
-                              </div>
-                              <Text
-                                as='p'
-                                size='xs'
-                                colour='muted'
-                                className='mt-1'
-                              >
-                                {t('billing.websiteAddonYearlyDiscount')}
-                              </Text>
-                            </div>
-                          </div>
-
-                          {hasPendingWebsiteAddonChange &&
-                          !websiteAddonDisabledReason ? (
-                            <Alert variant='warning' className='mt-4'>
-                              {t('billing.websiteAddonPendingChange', {
-                                date:
-                                  formatBillingDate(
-                                    websiteAddon?.nextChargeDate ||
-                                      websiteAddon?.periodEnd,
-                                  ) || t('billing.websiteAddonNextRenewal'),
+                        <div className='mt-5'>
+                          <div className='flex items-end justify-between gap-4'>
+                            <Text as='p' size='base' weight='bold'>
+                              {t('billing.websiteUsageSummary', {
+                                used: (
+                                  usageInfo.projects || 0
+                                ).toLocaleString(),
+                                total: (
+                                  displayedWebsiteLimit || 0
+                                ).toLocaleString(),
                               })}
-                            </Alert>
-                          ) : null}
-                          {websiteAddonPreviewErrorMessage ? (
-                            <Alert variant='error' className='mt-4'>
-                              {websiteAddonPreviewErrorMessage}
-                            </Alert>
-                          ) : null}
-
-                          {currentWebsiteAddonPreview &&
-                          hasWebsiteAddonChanges ? (
-                            <div className='mt-4 border-t border-gray-200 pt-4 dark:border-slate-800'>
-                              <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
-                                <div>
-                                  <Text as='p' size='xs' colour='muted'>
-                                    {t('billing.websiteAddonDueNow')}
-                                  </Text>
-                                  <Text
-                                    as='p'
-                                    size='sm'
-                                    weight='semibold'
-                                    className='mt-1'
-                                  >
-                                    {currentWebsiteAddonPreview.dueNow > 0
-                                      ? `${currency.symbol}${formatBillingPrice(
-                                          currentWebsiteAddonPreview.dueNow,
-                                        )}`
-                                      : t(
-                                          'billing.websiteAddonNoImmediateCharge',
-                                        )}
-                                  </Text>
-                                </div>
-                                <div>
-                                  <Text as='p' size='xs' colour='muted'>
-                                    {t('billing.websiteAddonRecurring')}
-                                  </Text>
-                                  <Text
-                                    as='p'
-                                    size='sm'
-                                    weight='semibold'
-                                    className='mt-1'
-                                  >
-                                    {currentWebsiteAddonPreview.quantity > 0
-                                      ? `${currency.symbol}${formatBillingPrice(
-                                          selectedWebsiteAddonRecurringAmount,
-                                        )}/${t(
-                                          selectedWebsiteAddonBillingInterval ===
-                                            'yearly'
-                                            ? 'pricing.intervals.year'
-                                            : 'pricing.intervals.month',
-                                        )}`
-                                      : t('billing.websiteAddonNoNextCharge')}
-                                  </Text>
-                                </div>
-                                <div>
-                                  <Text as='p' size='xs' colour='muted'>
-                                    {t('billing.websiteAddonNextCharge')}
-                                  </Text>
-                                  <Text
-                                    as='p'
-                                    size='sm'
-                                    weight='semibold'
-                                    className='mt-1'
-                                  >
-                                    {formatBillingDate(
-                                      currentWebsiteAddonPreview.nextChargeDate,
-                                    ) || t('billing.websiteAddonNoNextCharge')}
-                                  </Text>
-                                </div>
-                                {currentWebsiteAddonPreview.effectiveDate ? (
-                                  <div>
-                                    <Text as='p' size='xs' colour='muted'>
-                                      {t('billing.websiteAddonEffectiveOn')}
-                                    </Text>
-                                    <Text
-                                      as='p'
-                                      size='sm'
-                                      weight='semibold'
-                                      className='mt-1'
-                                    >
-                                      {formatBillingDate(
-                                        currentWebsiteAddonPreview.effectiveDate,
-                                      )}
-                                    </Text>
-                                  </div>
-                                ) : null}
-                              </div>
-                            </div>
-                          ) : null}
-
-                          <div className='mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-                            <Text as='p' size='xs' colour='muted'>
-                              {t('billing.websiteAddonMaxSelfServe')}
                             </Text>
-                            <Button
-                              size='lg'
-                              onClick={onWebsiteAddonUpdate}
-                              loading={isWebsiteAddonSubmitting}
-                              disabled={
-                                isWebsiteAddonDisabled ||
-                                !hasWebsiteAddonChanges ||
-                                isWebsiteAddonPreviewLoading ||
-                                !!websiteAddonPreviewError
-                              }
-                            >
-                              {t('billing.websiteAddonSave')}
-                            </Button>
+                            <Text as='p' size='sm' colour='secondary'>
+                              {t('billing.xPercentUsed', {
+                                percentage: displayedProjectsUsage,
+                              })}
+                            </Text>
+                          </div>
+                          <div className='mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
+                            <div
+                              className='h-full rounded-full bg-slate-900 dark:bg-slate-100'
+                              style={{ width: `${displayedProjectsUsage}%` }}
+                            />
+                          </div>
+                          <div className='mt-2 flex flex-wrap gap-x-4 gap-y-1'>
+                            <Text as='p' size='xs' colour='secondary'>
+                              {t('billing.websiteAddonIncludedCount', {
+                                count: includedWebsiteLimit,
+                              })}
+                            </Text>
+                            <Text as='p' size='xs' colour='secondary'>
+                              {displayedPurchasedWebsites
+                                ? t('billing.websiteAddonPurchasedCount', {
+                                    count: displayedPurchasedWebsites,
+                                  })
+                                : t('billing.noAdditionalWebsites')}
+                            </Text>
                           </div>
                         </div>
 
-                        <div className='border-t border-gray-200 pt-6 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-8 dark:border-slate-800'>
-                          <div className='flex items-start justify-between gap-3'>
-                            <div>
-                              <Text as='h4' size='base' weight='semibold'>
-                                {t('billing.sessionReplayAddonTitle')}
-                              </Text>
-                              <Text
-                                as='p'
-                                size='sm'
-                                colour='secondary'
-                                className='mt-1'
-                              >
-                                {t('billing.sessionReplayAddonDescription', {
-                                  amount:
-                                    sessionReplayAddon.quantity.toLocaleString(),
-                                })}
-                              </Text>
-                            </div>
-                            <Text
-                              as='span'
-                              size='xs'
-                              weight='semibold'
-                              className='shrink-0 rounded-md bg-slate-100 px-2 py-1 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
-                            >
-                              {t('billing.comingSoon')}
-                            </Text>
-                          </div>
-                          <Text as='p' size='lg' weight='bold' className='mt-4'>
-                            {currency.symbol}
-                            {formatBillingPrice(sessionReplayAddonPrice)}
-                            <Text
-                              as='span'
-                              size='sm'
-                              weight='medium'
-                              colour='secondary'
-                            >
-                              /{t('pricing.intervals.month')}
-                            </Text>
-                          </Text>
+                        {activeWebsiteAddonQuantity > 0 ? (
                           <Text
                             as='p'
                             size='sm'
                             colour='secondary'
-                            className='mt-3'
+                            className='mt-4'
                           >
-                            {t('billing.sessionReplayAddonComingSoon')}
+                            {t('billing.websiteAddonActiveSummary', {
+                              count:
+                                activeWebsiteAddonQuantity.toLocaleString(),
+                              amount: `${currency.symbol}${formatBillingPrice(
+                                activeWebsiteAddonRecurringAmount,
+                              )}`,
+                              interval: t(
+                                currentWebsiteAddonBillingInterval === 'yearly'
+                                  ? 'pricing.intervals.year'
+                                  : 'pricing.intervals.month',
+                              ),
+                            })}
                           </Text>
-                        </div>
+                        ) : null}
+
+                        {hasPendingWebsiteAddonChange &&
+                        !websiteAddonDisabledReason ? (
+                          <Alert variant='warning' className='mt-4'>
+                            {t('billing.websiteAddonPendingChange', {
+                              date:
+                                formatBillingDate(
+                                  websiteAddon?.nextChargeDate ||
+                                    websiteAddon?.periodEnd,
+                                ) || t('billing.websiteAddonNextRenewal'),
+                            })}
+                          </Alert>
+                        ) : null}
+
+                        {websiteAddonDisabledReason ? (
+                          <Alert variant='info' className='mt-4'>
+                            {websiteAddonDisabledReason}
+                          </Alert>
+                        ) : null}
+
+                        <Button
+                          size='lg'
+                          className='mt-5 gap-1'
+                          onClick={onWebsiteAddonModalOpen}
+                          disabled={isWebsiteAddonDisabled}
+                        >
+                          {activeWebsiteAddonQuantity > 0
+                            ? t('billing.websiteAddonManage')
+                            : t('billing.websiteAddonBuy')}
+                          <ArrowRightIcon className='size-4' />
+                        </Button>
                       </div>
+
+                      {/* Additional session replays add-on is temporarily hidden
+                          until self-serve replay pricing is finalised.
+                      <div className='mt-8 border-t border-gray-200 pt-6 dark:border-slate-800'>
+                        <Text as='h4' size='base' weight='semibold'>
+                          {t('billing.sessionReplayAddonTitle')}
+                        </Text>
+                        <Text as='p' size='sm' colour='secondary' className='mt-1'>
+                          {t('billing.sessionReplayAddonDescription', {
+                            amount: sessionReplayAddon.quantity.toLocaleString(),
+                          })}
+                        </Text>
+                        <Text as='p' size='lg' weight='bold' className='mt-4'>
+                          {currency.symbol}
+                          {formatBillingPrice(sessionReplayAddonPrice)}
+                          <Text as='span' size='sm' weight='medium' colour='secondary'>
+                            /{t('pricing.intervals.month')}
+                          </Text>
+                        </Text>
+                        <Text as='p' size='sm' colour='secondary' className='mt-3'>
+                          {t('billing.sessionReplayAddonComingSoon')}
+                        </Text>
+                      </div>
+                      */}
                     </SettingsSection>
                   </>
                 )}
@@ -2709,6 +2478,178 @@ const UserSettings = () => {
         message={t('profileSettings.passwordChangeWarningModal.body')}
         isOpened={isPasswordChangeModalOpened}
       />
+      <Modal
+        onClose={onWebsiteAddonModalClose}
+        onSubmit={onWebsiteAddonUpdate}
+        submitText={t('billing.websiteAddonSave')}
+        closeText={t('common.cancel')}
+        title={t('billing.websiteAddonTitle')}
+        size='medium'
+        overflowVisible
+        isLoading={isWebsiteAddonSubmitting}
+        submitDisabled={
+          isWebsiteAddonDisabled ||
+          !hasWebsiteAddonChanges ||
+          isWebsiteAddonPreviewLoading ||
+          !!websiteAddonPreviewError
+        }
+        isOpened={isWebsiteAddonModalOpened}
+        message={
+          <div className='space-y-5 text-left'>
+            <Text as='p' size='sm' colour='secondary'>
+              {t('billing.websiteAddonDescription', {
+                amount: websiteAddonBundle.quantity,
+                unitPrice: `${currency.symbol}${formatBillingPrice(
+                  websiteAddonPrice / websiteAddonBundle.quantity,
+                )}`,
+              })}
+            </Text>
+
+            <Select<number>
+              label={t('billing.websiteAddonQuantity')}
+              className='w-full'
+              selectedItem={selectedWebsiteAddonQuantity}
+              items={WEBSITE_ADDON_QUANTITY_OPTIONS}
+              onSelect={setSelectedWebsiteAddonQuantity}
+              title={
+                selectedWebsiteAddonQuantity
+                  ? t('billing.extraWebsitesAmount', {
+                      amount: selectedWebsiteAddonQuantity.toLocaleString(),
+                    })
+                  : t('billing.noAdditionalWebsites')
+              }
+              labelExtractor={(amount) =>
+                amount
+                  ? t('billing.extraWebsitesAmount', {
+                      amount: amount.toLocaleString(),
+                    })
+                  : t('billing.noAdditionalWebsites')
+              }
+              keyExtractor={(amount) => String(amount)}
+            />
+
+            <div>
+              <Text as='p' size='sm' weight='medium' colour='primary'>
+                {t('billing.websiteAddonBillingInterval')}
+              </Text>
+              <div className='mt-1.5 grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1 dark:bg-slate-900'>
+                {(['monthly', 'yearly'] as BillingInterval[]).map(
+                  (interval) => {
+                    const isActive =
+                      selectedWebsiteAddonBillingInterval === interval
+                    const isDisabled =
+                      interval === 'yearly' && !canSelectYearlyWebsiteAddon
+
+                    return (
+                      <button
+                        key={interval}
+                        type='button'
+                        aria-pressed={isActive}
+                        disabled={isDisabled}
+                        onClick={() =>
+                          setSelectedWebsiteAddonBillingInterval(interval)
+                        }
+                        className={cx(
+                          'flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                          isActive
+                            ? 'bg-white text-slate-900 shadow-sm ring-1 ring-gray-200 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700'
+                            : 'text-gray-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100',
+                          isDisabled &&
+                            'cursor-not-allowed opacity-50 hover:text-gray-600 dark:hover:text-gray-400',
+                        )}
+                      >
+                        {interval === 'monthly'
+                          ? t('billing.websiteAddonMonthly')
+                          : t('billing.websiteAddonYearly')}
+                        {interval === 'yearly' ? (
+                          <span className='rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300'>
+                            {t('billing.websiteAddonYearlySavings')}
+                          </span>
+                        ) : null}
+                      </button>
+                    )
+                  },
+                )}
+              </div>
+              <Text as='p' size='xs' colour='secondary' className='mt-1.5'>
+                {canSelectYearlyWebsiteAddon
+                  ? t('billing.websiteAddonYearlyDiscount')
+                  : t('billing.websiteAddonYearlyOnlyNote')}
+              </Text>
+            </div>
+
+            {websiteAddonPreviewErrorMessage ? (
+              <Alert variant='error'>{websiteAddonPreviewErrorMessage}</Alert>
+            ) : null}
+
+            <div className='rounded-lg bg-gray-50 p-4 ring-1 ring-gray-200 dark:bg-slate-900/60 dark:ring-slate-800'>
+              {isWebsiteAddonPreviewLoading && !currentWebsiteAddonPreview ? (
+                <div className='flex justify-center py-2'>
+                  <Loader />
+                </div>
+              ) : currentWebsiteAddonPreview ? (
+                <div className='space-y-3'>
+                  <div className='flex items-center justify-between gap-4'>
+                    <Text as='span' size='sm' colour='secondary'>
+                      {t('billing.websiteAddonDueNow')}
+                    </Text>
+                    <Text as='span' size='sm' weight='semibold'>
+                      {currentWebsiteAddonPreview.dueNow > 0
+                        ? `${currency.symbol}${formatBillingPrice(
+                            currentWebsiteAddonPreview.dueNow,
+                          )}`
+                        : t('billing.websiteAddonNoImmediateCharge')}
+                    </Text>
+                  </div>
+                  <div className='flex items-center justify-between gap-4'>
+                    <Text as='span' size='sm' colour='secondary'>
+                      {t('billing.websiteAddonRecurring')}
+                    </Text>
+                    <Text as='span' size='sm' weight='semibold'>
+                      {currentWebsiteAddonPreview.quantity > 0
+                        ? `${currency.symbol}${formatBillingPrice(
+                            selectedWebsiteAddonRecurringAmount,
+                          )}/${t(
+                            selectedWebsiteAddonBillingInterval === 'yearly'
+                              ? 'pricing.intervals.year'
+                              : 'pricing.intervals.month',
+                          )}`
+                        : t('billing.websiteAddonNoNextCharge')}
+                    </Text>
+                  </div>
+                  <div className='flex items-center justify-between gap-4'>
+                    <Text as='span' size='sm' colour='secondary'>
+                      {t('billing.websiteAddonNextCharge')}
+                    </Text>
+                    <Text as='span' size='sm' weight='semibold'>
+                      {formatBillingDate(
+                        currentWebsiteAddonPreview.nextChargeDate,
+                      ) || t('billing.websiteAddonNoNextCharge')}
+                    </Text>
+                  </div>
+                  {currentWebsiteAddonPreview.effectiveDate ? (
+                    <div className='flex items-center justify-between gap-4'>
+                      <Text as='span' size='sm' colour='secondary'>
+                        {t('billing.websiteAddonEffectiveOn')}
+                      </Text>
+                      <Text as='span' size='sm' weight='semibold'>
+                        {formatBillingDate(
+                          currentWebsiteAddonPreview.effectiveDate,
+                        )}
+                      </Text>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <Text as='p' size='sm' colour='secondary'>
+                  {t('billing.websiteAddonNoChangesHint')}
+                </Text>
+              )}
+            </div>
+          </div>
+        }
+      />
+
       <Modal
         onClose={() => {
           if (!isCancellingSubscription) {

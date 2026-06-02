@@ -251,10 +251,7 @@ export async function action({ request }: ActionFunctionArgs) {
           ? result.error[0]
           : (result.error as string)
 
-        return data<UserSettingsActionData>(
-          { intent, error },
-          { status: 400 },
-        )
+        return data<UserSettingsActionData>({ intent, error }, { status: 400 })
       }
 
       return data<UserSettingsActionData>(
@@ -277,10 +274,7 @@ export async function action({ request }: ActionFunctionArgs) {
           ? result.error[0]
           : (result.error as string)
 
-        return data<UserSettingsActionData>(
-          { intent, error },
-          { status: 400 },
-        )
+        return data<UserSettingsActionData>({ intent, error }, { status: 400 })
       }
 
       return data<UserSettingsActionData>(
@@ -511,14 +505,10 @@ export async function action({ request }: ActionFunctionArgs) {
       const quantity = Number(formData.get('quantity'))
       const billingInterval = formData.get('billingInterval')?.toString()
 
-      const result = await serverFetch<User>(
-        request,
-        'user/addons/websites',
-        {
-          method: 'PUT',
-          body: { quantity, billingInterval },
-        },
-      )
+      const result = await serverFetch<User>(request, 'user/addons/websites', {
+        method: 'PUT',
+        body: { quantity, billingInterval },
+      })
 
       if (result.error) {
         return data<UserSettingsActionData>(

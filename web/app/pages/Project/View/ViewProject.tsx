@@ -1617,14 +1617,10 @@ const ViewProjectContent = () => {
                                 <ExperimentsView
                                   period={period}
                                   from={
-                                    dateRange
-                                      ? getFormatDate(dateRange[0])
-                                      : ''
+                                    dateRange ? getFormatDate(dateRange[0]) : ''
                                   }
                                   to={
-                                    dateRange
-                                      ? getFormatDate(dateRange[1])
-                                      : ''
+                                    dateRange ? getFormatDate(dateRange[1]) : ''
                                   }
                                   timezone={timezone}
                                 />
@@ -1637,14 +1633,10 @@ const ViewProjectContent = () => {
                                 <FeatureFlagsView
                                   period={period}
                                   from={
-                                    dateRange
-                                      ? getFormatDate(dateRange[0])
-                                      : ''
+                                    dateRange ? getFormatDate(dateRange[0]) : ''
                                   }
                                   to={
-                                    dateRange
-                                      ? getFormatDate(dateRange[1])
-                                      : ''
+                                    dateRange ? getFormatDate(dateRange[1]) : ''
                                   }
                                   timezone={timezone}
                                 />

@@ -643,16 +643,7 @@ export const CURRENCIES: ICurrencies = {
   GBP,
 }
 
-export const BillingFrequency = {
-  monthly: 'monthly',
-  yearly: 'yearly',
-}
-
-export {
-  PLAN_LIMITS,
-  STANDARD_PLANS,
-  PURCHASABLE_LEGACY_PLANS,
-} from '../pricing/catalog'
+export { PLAN_LIMITS } from '../pricing/catalog'
 
 export const TRIAL_DAYS = 14
 

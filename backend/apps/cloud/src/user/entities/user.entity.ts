@@ -66,9 +66,9 @@ type AccountLimitUpdates = {
 }
 
 export const DEFAULT_MAX_PROJECTS = 50
-export const DEFAULT_API_KEY_REQUESTS_PER_HOUR = 300
+const DEFAULT_API_KEY_REQUESTS_PER_HOUR = 300
 
-export const PLAN_TYPE_ENTITLEMENTS = {
+const PLAN_TYPE_ENTITLEMENTS = {
   [PlanType.standard]: {
     websites: 50,
     teamMembers: 10,
@@ -92,13 +92,13 @@ export const PLAN_TYPE_ENTITLEMENTS = {
   },
 } as const
 
-export const PLAN_TYPE_RANK = {
+const PLAN_TYPE_RANK = {
   [PlanType.standard]: 1,
   [PlanType.plus]: 2,
   [PlanType.enterprise]: 3,
 } as const
 
-export const PLAN_FEATURE_REQUIRED_PLAN = {
+const PLAN_FEATURE_REQUIRED_PLAN = {
   [PlanFeatureCode.featureFlags]: PlanType.plus,
   [PlanFeatureCode.experiments]: PlanType.plus,
 } as const
@@ -170,7 +170,7 @@ export const getPlanTypeAccountLimitUpdates = (
   return updates
 }
 
-export const planTypeHasFeature = (
+const planTypeHasFeature = (
   planType: PlanType | null | undefined,
   feature: PlanFeatureCode,
 ) => {
