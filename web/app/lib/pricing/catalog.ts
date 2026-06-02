@@ -25,9 +25,9 @@ export type PlanCode =
   | '100k'
   | '200k'
   | '500k'
-  | 'startup'
+  | '1m'
   | '2m'
-  | 'enterprise'
+  | '5m'
   | '10m'
   | '15m'
   | '20m'
@@ -96,9 +96,9 @@ export const EVENT_TIERS = {
   '100k': { monthlyEvents: 100000, sortOrder: 1, planCode: '100k' },
   '200k': { monthlyEvents: 200000, sortOrder: 2, planCode: '200k' },
   '500k': { monthlyEvents: 500000, sortOrder: 3, planCode: '500k' },
-  '1m': { monthlyEvents: 1000000, sortOrder: 4, planCode: 'startup' },
+  '1m': { monthlyEvents: 1000000, sortOrder: 4, planCode: '1m' },
   '2m': { monthlyEvents: 2000000, sortOrder: 5, planCode: '2m' },
-  '5m': { monthlyEvents: 5000000, sortOrder: 6, planCode: 'enterprise' },
+  '5m': { monthlyEvents: 5000000, sortOrder: 6, planCode: '5m' },
   '10m': { monthlyEvents: 10000000, sortOrder: 7, planCode: '10m' },
   '15m': { monthlyEvents: 15000000, sortOrder: 8, planCode: '15m' },
   '20m': { monthlyEvents: 20000000, sortOrder: 9, planCode: '20m' },

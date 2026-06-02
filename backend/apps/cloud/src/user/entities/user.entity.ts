@@ -22,9 +22,9 @@ export enum PlanCode {
   '100k' = '100k',
   '200k' = '200k',
   '500k' = '500k',
-  startup = 'startup',
+  '1m' = '1m',
   '2m' = '2m',
-  enterprise = 'enterprise',
+  '5m' = '5m',
   '10m' = '10m',
   '15m' = '15m',
   '20m' = '20m',
@@ -259,8 +259,8 @@ export const ACCOUNT_PLANS = {
     ypid: '854657',
     maxAlerts: 50,
   },
-  [PlanCode.startup]: {
-    id: PlanCode.startup,
+  [PlanCode['1m']]: {
+    id: PlanCode['1m'],
     monthlyUsageLimit: 1000000,
     pid: '752317',
     ypid: '776470',
@@ -273,8 +273,8 @@ export const ACCOUNT_PLANS = {
     ypid: '854664',
     maxAlerts: 50,
   },
-  [PlanCode.enterprise]: {
-    id: PlanCode.enterprise,
+  [PlanCode['5m']]: {
+    id: PlanCode['5m'],
     monthlyUsageLimit: 5000000,
     pid: '752318',
     ypid: '776471',
