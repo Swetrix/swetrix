@@ -1909,9 +1909,7 @@ const DetailsTable = ({
       if (activeTabId === 'lc') {
         try {
           return (
-            getLocaleDisplayName(entry?.name, language) ||
-            entry?.name ||
-            ''
+            getLocaleDisplayName(entry?.name, language) || entry?.name || ''
           )
         } catch {
           return entry?.name || ''

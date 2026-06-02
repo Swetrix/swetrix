@@ -181,6 +181,29 @@ const TRANSPARENT_GIF_BUFFER = Buffer.from(
   'base64',
 )
 
+const getPagePath = (page?: string | string[] | null) => {
+  const value = Array.isArray(page) ? page[0] : page
+  if (!value) return null
+
+  const path = value.trim().split('#')[0].split('?')[0]
+  if (!path.startsWith('/') || path.startsWith('//')) return null
+
+  return path || '/'
+}
+
+const getPageFromReferrer = (referrer?: string | string[] | null) => {
+  const value = Array.isArray(referrer) ? referrer[0] : referrer
+  if (!value) return null
+
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+    return getPagePath(url.pathname)
+  } catch {
+    return null
+  }
+}
+
 @ApiTags('Analytics')
 @UseGuards(OptionalJwtAccessTokenGuard, AuthenticationGuard)
 @UsePipes(
@@ -1538,8 +1561,11 @@ export class AnalyticsController {
   ) {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = data
+    const referrer = headers.referer || headers.referrer
+    const pg =
+      getPagePath(data.pg) || getPageFromReferrer(referrer) || undefined
 
-    const logDTO: PageviewsDto = { pid }
+    const logDTO: PageviewsDto = { pid, pg }
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
@@ -1548,8 +1574,8 @@ export class AnalyticsController {
       userAgent,
       headers,
       ip,
-      headers.referer || headers.referrer,
-      null,
+      referrer,
+      pg ?? null,
       'noscript',
     )
 
@@ -1593,7 +1619,7 @@ export class AnalyticsController {
 
     this.analyticsService.checkCountryBlacklist(project, country)
 
-    this.logger.log(`pid: ${pid}`, 'GET /analytics/noscript')
+    this.logger.log(`pid: ${pid}, pg: ${pg}`, 'GET /analytics/noscript')
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1604,7 +1630,7 @@ export class AnalyticsController {
       profileId,
       pid: logDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
-      pg: null,
+      pg,
       dv: deviceType,
       br: browserName,
       brv: browserVersion,
