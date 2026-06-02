@@ -4,7 +4,7 @@ import { useTheme } from '~/providers/ThemeProvider'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
-interface ImageLogo {
+export interface ImageLogo {
   type: 'image'
   name: string
   light: string
@@ -14,7 +14,7 @@ interface ImageLogo {
   heightClass: string
 }
 
-const LOGOS: ImageLogo[] = [
+export const LOGOS: ImageLogo[] = [
   {
     type: 'image',
     name: 'Casterlabs',

@@ -81,6 +81,8 @@ const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 const MAX_IPBLACKLIST_LENGTH = 300
 const AUTOSAVE_DEBOUNCE_MS = 700
+const CAPTCHA_CLIENT_DOCS_URL =
+  'https://swetrix.com/docs/captcha/client-side-usage'
 
 const DELETE_DATA_MODAL_TABS = [
   {
@@ -1750,14 +1752,38 @@ const ProjectSettings = () => {
                     </div>
                   </>
                 ) : (
-                  <>
-                    <Text as='p' size='sm' colour='secondary' className='mb-4'>
+                  <div className='mt-4 max-w-2xl'>
+                    <Text
+                      as='p'
+                      size='sm'
+                      colour='secondary'
+                      className='leading-6'
+                    >
+                      {t('project.settings.captcha.emptyDescription')}
+                    </Text>
+                    <Text
+                      as='p'
+                      size='sm'
+                      colour='secondary'
+                      className='mt-2 leading-6'
+                    >
                       {t('project.settings.captcha.noKeyGenerated')}
                     </Text>
-                    <Button type='button' onClick={onRegenerateCaptchaKey}>
-                      {t('project.settings.captcha.generateKey')}
-                    </Button>
-                  </>
+                    <div className='mt-4 flex flex-wrap items-center gap-3'>
+                      <Button type='button' onClick={onRegenerateCaptchaKey}>
+                        {t('project.settings.captcha.generateKey')}
+                      </Button>
+                      <a
+                        href={CAPTCHA_CLIENT_DOCS_URL}
+                        aria-label={t('ariaLabels.openCaptchaDocumentation')}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-sm font-medium text-gray-700 underline decoration-dashed hover:text-gray-900 hover:decoration-solid dark:text-gray-200 dark:hover:text-white'
+                      >
+                        {t('project.settings.captcha.readSetupDocs')}
+                      </a>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : null}

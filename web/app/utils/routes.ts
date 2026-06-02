@@ -27,6 +27,7 @@ const routes = Object.freeze({
   security: '/security',
   terms: '/terms',
   contact: '/contact',
+  bookACall: '/book-a-call',
   feedback: '/feedback',
   transfer_confirm: '/project/transfer/confirm',
   transfer_reject: '/project/transfer/cancel',

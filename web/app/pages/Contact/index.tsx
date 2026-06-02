@@ -1,4 +1,4 @@
-import { ArrowSquareOutIcon } from '@phosphor-icons/react'
+import { ArrowSquareOutIcon, ArrowRightIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
@@ -9,37 +9,63 @@ import {
   TWITTER_USERNAME,
   DISCORD_URL,
   DOCS_URL,
-  BOOK_A_CALL_URL,
   isSelfhosted,
 } from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
+import { Link } from '~/ui/Link'
 import { Text } from '~/ui/Text'
+import routesPath from '~/utils/routes'
 
 interface PanelProps {
   href: string
   title: string
   description: string
+  /** Internal links stay on-site (localised <Link>); external ones open in a new tab. */
+  internal?: boolean
 }
 
-const Panel = ({ href, title, description }: PanelProps) => (
-  <a
-    href={href}
-    target='_blank'
-    rel='noopener noreferrer'
-    className='relative block rounded-2xl border border-gray-300/80 bg-gray-100 p-10 transition-colors hover:bg-gray-200 dark:border-slate-900/80 dark:bg-slate-800/80 dark:hover:bg-slate-900'
-  >
-    <ArrowSquareOutIcon
-      aria-hidden='true'
-      className='absolute top-5 right-5 size-5 text-gray-900 dark:text-gray-100'
-    />
-    <Text as='h3' size='lg' weight='semibold' className='leading-7'>
-      {title}
-    </Text>
-    <Text as='p' size='sm' colour='secondary' className='mt-3 leading-6'>
-      {description}
-    </Text>
-  </a>
-)
+const panelClassName =
+  'relative block rounded-2xl border border-gray-300/80 bg-gray-100 p-10 transition-colors hover:bg-gray-200 dark:border-slate-900/80 dark:bg-slate-800/80 dark:hover:bg-slate-900'
+
+const Panel = ({ href, title, description, internal }: PanelProps) => {
+  const body = (
+    <>
+      <Text as='h3' size='lg' weight='semibold' className='leading-7'>
+        {title}
+      </Text>
+      <Text as='p' size='sm' colour='secondary' className='mt-3 leading-6'>
+        {description}
+      </Text>
+    </>
+  )
+
+  if (internal) {
+    return (
+      <Link to={href} className={panelClassName}>
+        <ArrowRightIcon
+          aria-hidden='true'
+          className='absolute top-5 right-5 size-5 text-gray-900 dark:text-gray-100'
+        />
+        {body}
+      </Link>
+    )
+  }
+
+  return (
+    <a
+      href={href}
+      target='_blank'
+      rel='noopener noreferrer'
+      className={panelClassName}
+    >
+      <ArrowSquareOutIcon
+        aria-hidden='true'
+        className='absolute top-5 right-5 size-5 text-gray-900 dark:text-gray-100'
+      />
+      {body}
+    </a>
+  )
+}
 
 const Contact = () => {
   const { t } = useTranslation('common')
@@ -108,7 +134,8 @@ const Contact = () => {
             description={t('contact.docs.desc')}
           />
           <Panel
-            href={BOOK_A_CALL_URL}
+            internal
+            href={routesPath.bookACall}
             title={t('contact.demo.title')}
             description={t('contact.demo.desc')}
           />
