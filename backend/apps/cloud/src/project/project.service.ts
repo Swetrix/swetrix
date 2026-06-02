@@ -104,6 +104,8 @@ const DEFAULT_USAGE_INFO = {
 const CAPTCHA_PASS_CONDITION =
   "type = 'captcha' AND if(indexOf(`meta.key`, 'captcha_event') = 0, 'pass', arrayElement(`meta.value`, indexOf(`meta.key`, 'captcha_event'))) = 'pass'"
 
+type UsageInfoPeriod = 'month' | 'last30Days'
+
 export const deleteProjectRedis = async (id: string) => {
   const key = getRedisProjectKey(id)
 
@@ -912,16 +914,26 @@ export class ProjectService {
     return count as number
   }
 
-  async getRedisUsageInfo(uid: string): Promise<IUsageInfoRedis | null> {
-    const key = getRedisUserUsageInfoKey(uid)
+  async getRedisUsageInfo(
+    uid: string,
+    period: UsageInfoPeriod = 'month',
+  ): Promise<IUsageInfoRedis | null> {
+    const key =
+      period === 'last30Days'
+        ? `${getRedisUserUsageInfoKey(uid)}_last30d`
+        : getRedisUserUsageInfoKey(uid)
     let info: string | IUsageInfoRedis = await redis.get(key)
 
     if (_isEmpty(info)) {
-      const monthStart = dayjs
-        .utc()
-        .startOf('month')
-        .format('YYYY-MM-DD HH:mm:ss')
-      const monthEnd = dayjs.utc().endOf('month').format('YYYY-MM-DD HH:mm:ss')
+      const now = dayjs.utc()
+      const periodStart =
+        period === 'last30Days'
+          ? now.subtract(30, 'day').format('YYYY-MM-DD HH:mm:ss')
+          : now.startOf('month').format('YYYY-MM-DD HH:mm:ss')
+      const periodEnd =
+        period === 'last30Days'
+          ? now.format('YYYY-MM-DD HH:mm:ss')
+          : now.endOf('month').format('YYYY-MM-DD HH:mm:ss')
 
       const projects = await this.find({
         where: {
@@ -946,8 +958,8 @@ export class ProjectService {
         const pidChunk = pids.slice(i, i + CHUNK_SIZE)
         const params = {
           pids: pidChunk,
-          monthStart,
-          monthEnd,
+          periodStart,
+          periodEnd,
         }
 
         const query = `
@@ -958,7 +970,7 @@ export class ProjectService {
             countIf(type = 'error') AS errors
           FROM events
           WHERE pid IN ({pids:Array(FixedString(12))})
-            AND created BETWEEN {monthStart:String} AND {monthEnd:String}
+            AND created BETWEEN {periodStart:String} AND {periodEnd:String}
             AND type IN ('pageview', 'custom_event', 'captcha', 'error')
         `
 

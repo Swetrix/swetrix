@@ -533,7 +533,7 @@ const Subscribe = () => {
             )}
           </div>
 
-          <FAQ items={faqItems} />
+          <FAQ items={faqItems} defaultOpenFirst />
         </div>
 
         <div className='hidden lg:block lg:pt-16'>

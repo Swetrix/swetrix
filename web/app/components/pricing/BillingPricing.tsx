@@ -17,6 +17,7 @@ import {
   PLAN_LIMITS,
 } from '~/lib/constants'
 import { Metainfo, DEFAULT_METAINFO } from '~/lib/models/Metainfo'
+import type { UsageInfo } from '~/lib/models/Usageinfo'
 import {
   EVENT_TIERS,
   PLAN_TYPES,
@@ -31,6 +32,7 @@ import { useTheme } from '~/providers/ThemeProvider'
 import type { UserSettingsActionData } from '~/routes/user-settings'
 import Button from '~/ui/Button'
 import { FAQ } from '~/ui/FAQ'
+import { Link } from '~/ui/Link'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
@@ -39,6 +41,7 @@ import routes from '~/utils/routes'
 interface BillingPricingProps {
   lastEvent?: { event: string } | null
   metainfo?: Metainfo
+  usageInfo?: UsageInfo | null
   openCheckout: (options: Record<string, any>) => boolean
 }
 
@@ -64,6 +67,7 @@ const getSelectionRank = (planType: PlanTypeCode, eventTier: EventTierCode) =>
 const BillingPricing = ({
   lastEvent,
   metainfo = DEFAULT_METAINFO,
+  usageInfo,
   openCheckout,
 }: BillingPricingProps) => {
   const {
@@ -378,7 +382,7 @@ const BillingPricing = ({
         EVENT_TIERS['500k'].monthlyEvents.toLocaleString('en-US'),
     }
 
-    return [0, 1, 4].map((idx) => ({
+    const sharedItems = [0, 1, 4].map((idx) => ({
       question: (
         <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} values={faqValues} />
       ),
@@ -386,7 +390,32 @@ const BillingPricing = ({
         <Trans t={t} i18nKey={`main.faq.items.${idx}.a`} values={faqValues} />
       ),
     }))
-  }, [t])
+
+    const currentUsageItem = {
+      question: t('billing.currentUsageFaqQuestion'),
+      answer: (
+        <p>
+          <Trans
+            t={t}
+            i18nKey='billing.currentUsageFaqAnswer'
+            values={{
+              events: formatEventsLong(usageInfo?.last30Days?.total || 0),
+            }}
+            components={{
+              subscriptionLink: (
+                <Link
+                  to={`${routes.user_settings}?tab=billing`}
+                  className='font-medium underline decoration-dashed hover:decoration-solid'
+                />
+              ),
+            }}
+          />
+        </p>
+      ),
+    }
+
+    return [sharedItems[0]!, currentUsageItem, ...sharedItems.slice(1)]
+  }, [t, usageInfo?.last30Days?.total])
 
   return (
     <>
@@ -441,7 +470,7 @@ const BillingPricing = ({
           <Text as='h2' size='2xl' weight='bold'>
             {t('billing.planFaqTitle')}
           </Text>
-          <FAQ items={faqItems} className='mt-3' />
+          <FAQ items={faqItems} className='mt-3' defaultOpenFirst />
         </div>
       </main>
 

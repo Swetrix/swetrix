@@ -9,6 +9,7 @@ import BillingPricing from '~/components/pricing/BillingPricing'
 import { usePaddle } from '~/hooks/usePaddle'
 import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
+import type { UsageInfo } from '~/lib/models/Usageinfo'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   createHeadersWithCookies,
@@ -34,6 +35,7 @@ export const meta: MetaFunction = () => {
 
 export interface BillingChoosePlanLoaderData {
   metainfo: Metainfo
+  usageInfo: UsageInfo | null
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -43,18 +45,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   redirectIfNotAuthenticated(request)
 
-  const metainfoResult = await serverFetch<Metainfo>(request, 'user/metainfo')
+  const [metainfoResult, usageInfoResult] = await Promise.all([
+    serverFetch<Metainfo>(request, 'user/metainfo'),
+    serverFetch<UsageInfo>(request, 'user/usageinfo'),
+  ])
   const loaderData: BillingChoosePlanLoaderData = {
     metainfo: metainfoResult.data ?? DEFAULT_METAINFO,
+    usageInfo: usageInfoResult.data,
   }
+  const cookies = [...metainfoResult.cookies, ...usageInfoResult.cookies]
 
   return data(loaderData, {
-    headers: createHeadersWithCookies(metainfoResult.cookies),
+    headers: createHeadersWithCookies(cookies),
   })
 }
 
 export default function BillingChoosePlanRoute() {
-  const { metainfo } = useLoaderData<BillingChoosePlanLoaderData>()
+  const { metainfo, usageInfo } = useLoaderData<BillingChoosePlanLoaderData>()
   const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
   const { openCheckout } = usePaddle({ onEvent: setLastEvent })
 
@@ -62,6 +69,7 @@ export default function BillingChoosePlanRoute() {
     <BillingPricing
       lastEvent={lastEvent}
       metainfo={metainfo}
+      usageInfo={usageInfo}
       openCheckout={openCheckout}
     />
   )

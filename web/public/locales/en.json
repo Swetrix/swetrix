@@ -590,7 +590,7 @@
       "items": [
         {
           "q": "What plan should I choose?",
-          "a": "You can start with the {{lowestPlanEventsAmount}} events per month plan. If you already have some traffic, you can start with the {{moderatePlanEventsAmount}} events per month plan.\n\n In any case, you can upgrade or downgrade your plan anytime, and we will pro-rate your subscription if you change your plan so it would be fair for you."
+          "a": "Standard plans are best if you need privacy-first analytics, funnels, error tracking, bot filtering, email reports and API access. Plus plans include everything in Standard and add session replays, feature flags, A/B testing, higher API rate limits, more websites, more team members and priority support.\n\nOnce you've picked a plan type, choose the event volume based on your traffic. You can start with the {{lowestPlanEventsAmount}} events per month plan. If you already have some traffic, you can start with the {{moderatePlanEventsAmount}} events per month plan.\n\nIn any case, you can upgrade or downgrade your plan anytime, and we will pro-rate your subscription if you change your plan so it would be fair for you."
         },
         {
           "q": "What happens if I exceed my plan's limit?",
@@ -2862,6 +2862,8 @@
     "choosePlanPageDesc": "Pick your monthly event volume, plan type, and billing period. You'll see the exact price before checkout.",
     "choosePlanCurrentPlanDesc": "Pick your monthly event volume, plan type, and billing period. Your current plan is {{plan}} with {{events}} events per month, and changes are prorated automatically.",
     "planFaqTitle": "Plan questions",
+    "currentUsageFaqQuestion": "What's my current usage?",
+    "currentUsageFaqAnswer": "You have used {{events}} billable events in the last 30 days. Please see your full usage report, including websites and team members, under the <subscriptionLink>Subscription section</subscriptionLink> in your account settings.",
     "membersNotification": "Invited project members do not need their own subscription; their usage counts toward the account owner's plan limit.",
     "trialDescription": "Your free trial includes all features and unlimited data collection. When it ends, choose a paid plan that matches your usage to keep using Swetrix.",
     "trialChargeWarning": "You will be charged automatically when the trial ends unless you cancel first. You can cancel anytime from this page.",

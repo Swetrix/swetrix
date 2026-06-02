@@ -21,6 +21,7 @@ interface FAQProps {
    * Whether to add horizontal padding to the items.
    */
   withPadding?: boolean
+  defaultOpenFirst?: boolean
 }
 
 export function FAQ({
@@ -28,15 +29,19 @@ export function FAQ({
   className,
   withStructuredData = false,
   withPadding = false,
+  defaultOpenFirst = false,
 }: FAQProps) {
   return (
     <div className={cn('flex flex-col', className)}>
       {_map(items, (item, idx) => {
         const showTopBorder = idx !== 0
+        const defaultOpenProps =
+          defaultOpenFirst && idx === 0 ? { open: true } : {}
 
         return (
           <details
             key={idx}
+            {...defaultOpenProps}
             className={cn(
               'group w-full text-left',
               showTopBorder && 'border-t border-gray-200 dark:border-white/10',

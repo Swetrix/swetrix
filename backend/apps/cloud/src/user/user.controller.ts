@@ -67,7 +67,12 @@ import { CancelSubscriptionDTO } from './dto/cancel-subscription.dto'
 import { CreateFeedbackDTO } from './dto/create-feedback.dto'
 import { UpdateWebsiteAddonDTO } from './dto/update-website-addon.dto'
 import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
-import { IUsageInfo, IMetaInfo } from './interfaces'
+import {
+  IUsageInfo,
+  IUsageInfoBreakdown,
+  IUsageInfoRedis,
+  IMetaInfo,
+} from './interfaces'
 import { ReportFrequency } from '../project/enums'
 import { OrganisationService } from '../organisation/organisation.service'
 import { trackCustom } from '../common/analytics'
@@ -78,6 +83,33 @@ const UNPAID_PLANS = [PlanCode.free, PlanCode.trial, PlanCode.none]
 const ORGANISATION_INVITE_EXPIRE_HOURS = 7 * 24 // 7 days
 const FEEDBACK_ATTACHMENTS_LIMIT = 7
 const FEEDBACK_ATTACHMENT_MAX_SIZE = 5 * 1024 * 1024
+const EMPTY_USAGE_INFO: IUsageInfoRedis = {
+  total: 0,
+  traffic: 0,
+  customEvents: 0,
+  captcha: 0,
+  errors: 0,
+}
+
+const formatUsageInfo = (
+  rawInfo?: IUsageInfoRedis | null,
+): IUsageInfoBreakdown => {
+  const usage = rawInfo || EMPTY_USAGE_INFO
+
+  return {
+    ...usage,
+    trafficPerc: usage.total
+      ? _round((usage.traffic / usage.total) * 100, 2)
+      : 0,
+    customEventsPerc: usage.total
+      ? _round((usage.customEvents / usage.total) * 100, 2)
+      : 0,
+    captchaPerc: usage.total
+      ? _round((usage.captcha / usage.total) * 100, 2)
+      : 0,
+    errorsPerc: usage.total ? _round((usage.errors / usage.total) * 100, 2) : 0,
+  }
+}
 
 @ApiTags('User')
 @Controller('user')
@@ -805,36 +837,17 @@ export class UserController {
 
   @Get('usageinfo')
   async getUsageInfo(@CurrentUserId() uid: string): Promise<IUsageInfo> {
-    const [rawInfo, projects] = await Promise.all([
+    const [rawInfo, rawLast30DaysInfo, projects] = await Promise.all([
       this.projectService.getRedisUsageInfo(uid),
+      this.projectService.getRedisUsageInfo(uid, 'last30Days'),
       this.projectService.countByAdminId(uid),
     ])
-    const usage = rawInfo || {
-      total: 0,
-      traffic: 0,
-      customEvents: 0,
-      captcha: 0,
-      errors: 0,
-    }
 
-    const info: IUsageInfo = {
-      ...usage,
+    return {
+      ...formatUsageInfo(rawInfo),
       projects,
-      trafficPerc: usage.total
-        ? _round((usage.traffic / usage.total) * 100, 2)
-        : 0,
-      customEventsPerc: usage.total
-        ? _round((usage.customEvents / usage.total) * 100, 2)
-        : 0,
-      captchaPerc: usage.total
-        ? _round((usage.captcha / usage.total) * 100, 2)
-        : 0,
-      errorsPerc: usage.total
-        ? _round((usage.errors / usage.total) * 100, 2)
-        : 0,
+      last30Days: formatUsageInfo(rawLast30DaysInfo),
     }
-
-    return info
   }
 
   @ApiBearerAuth()

@@ -195,6 +195,17 @@ const DEFAULT_USAGE_INFO: UsageInfo = {
   errorsPerc: 0,
   customEventsPerc: 0,
   captchaPerc: 0,
+  last30Days: {
+    total: 0,
+    traffic: 0,
+    errors: 0,
+    customEvents: 0,
+    captcha: 0,
+    trafficPerc: 0,
+    errorsPerc: 0,
+    customEventsPerc: 0,
+    captchaPerc: 0,
+  },
 }
 
 const WEBSITE_ADDON_QUANTITY_OPTIONS = Array.from(
