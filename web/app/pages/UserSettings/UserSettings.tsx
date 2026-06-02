@@ -575,12 +575,12 @@ const UserSettings = () => {
     (websiteAddon?.pendingQuantity ?? null) !== null ||
     (websiteAddon?.pendingBillingInterval ?? null) !== null
   const websiteAddonDisabledReason = useMemo(() => {
-    if (!isSubscriber) {
-      return t('billing.websiteAddonRequiresSubscription')
-    }
-
     if (isTrial) {
       return t('billing.websiteAddonUnavailableDuringTrial')
+    }
+
+    if (!isSubscriber) {
+      return t('billing.websiteAddonRequiresSubscription')
     }
 
     if (cancellationEffectiveDate) {
@@ -648,9 +648,7 @@ const UserSettings = () => {
   // monthly subscribers can still buy the add-on, billed monthly.
   const canSelectYearlyWebsiteAddon = user?.billingFrequency === 'yearly'
   const activeWebsiteAddonRecurringAmount =
-    websiteAddonPrice *
-    (activeWebsiteAddonQuantity / websiteAddonBundle.quantity) *
-    (currentWebsiteAddonBillingInterval === 'yearly' ? 10 : 1)
+    websiteAddon?.recurringAmount ?? null
 
   const formatBillingDate = useCallback(
     (date?: string | null) => {
@@ -1971,10 +1969,10 @@ const UserSettings = () => {
                             colour='secondary'
                             className='mt-1'
                           >
-                            {purchasedWebsiteAddons
+                            {activeWebsiteAddonQuantity
                               ? t('billing.addedWebsites', {
                                   amount:
-                                    purchasedWebsiteAddons.toLocaleString(),
+                                    activeWebsiteAddonQuantity.toLocaleString(),
                                 })
                               : t('billing.websitesIncludedCaption')}
                           </Text>
@@ -2197,7 +2195,8 @@ const UserSettings = () => {
                           </div>
                         </div>
 
-                        {activeWebsiteAddonQuantity > 0 ? (
+                        {activeWebsiteAddonQuantity > 0 &&
+                        activeWebsiteAddonRecurringAmount !== null ? (
                           <Text
                             as='p'
                             size='sm'

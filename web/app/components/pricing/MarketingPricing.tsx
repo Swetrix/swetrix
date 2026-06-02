@@ -287,7 +287,9 @@ export const PricingInternal = ({
   const [billingFrequency, setBillingFrequency] =
     useState<BillingInterval>('monthly')
   const [selectedTierIndex, setSelectedTierIndex] = useState(0)
-  const [showAllBenefits, setShowAllBenefits] = useState(false)
+  const [expandedBenefitsByPlan, setExpandedBenefitsByPlan] = useState<
+    Partial<Record<PlanTypeCode, boolean>>
+  >({})
 
   const currencyCode = (
     metainfo.code in CURRENCIES ? metainfo.code : 'USD'
@@ -408,6 +410,7 @@ export const PricingInternal = ({
           {planCards.map((planType) => {
             const isEnterprise = planType === 'enterprise'
             const benefits = getBenefits(planType, t)
+            const showAllBenefits = !!expandedBenefitsByPlan[planType]
             const visibleBenefits = showAllBenefits
               ? benefits
               : benefits.slice(0, visibleBenefitsCount)
@@ -589,7 +592,12 @@ export const PricingInternal = ({
                   {hiddenBenefitsCount > 0 || showAllBenefits ? (
                     <button
                       type='button'
-                      onClick={() => setShowAllBenefits((value) => !value)}
+                      onClick={() =>
+                        setExpandedBenefitsByPlan((current) => ({
+                          ...current,
+                          [planType]: !current[planType],
+                        }))
+                      }
                       className='underline-animate flex items-center gap-2.5'
                     >
                       {showAllBenefits ? (

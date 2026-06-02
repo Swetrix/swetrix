@@ -6,6 +6,24 @@ import {
   PlanCode,
 } from '../../user/entities/user.entity'
 
+const getNumericOverride = (
+  overrides: Record<string, unknown> | null | undefined,
+  key: string,
+) => {
+  const value = overrides?.[key]
+
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+
+  return null
+}
+
 @Injectable()
 export class ApiKeyRateLimitGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
@@ -19,15 +37,21 @@ export class ApiKeyRateLimitGuard implements CanActivate {
       const entitlements = effectivePlanType
         ? getPlanTypeEntitlements(effectivePlanType)
         : null
-      const planTypeLimit = entitlements?.apiRateLimitPerHour
+      const overrideLimit = getNumericOverride(
+        user.entitlementOverrides,
+        'apiRateLimitPerHour',
+      )
+      const planTypeLimit =
+        overrideLimit ??
+        (typeof entitlements?.apiRateLimitPerHour === 'number'
+          ? entitlements.apiRateLimitPerHour
+          : user.maxApiKeyRequestsPerHour)
       const reqAmount =
         user.planCode === PlanCode.none ||
         user.isAccountBillingSuspended ||
         user.dashboardBlockReason !== null
           ? 0
-          : typeof planTypeLimit === 'number'
-            ? planTypeLimit
-            : user.maxApiKeyRequestsPerHour
+          : planTypeLimit
       return checkRateLimitForApiKey(user.apiKey, reqAmount)
     }
 

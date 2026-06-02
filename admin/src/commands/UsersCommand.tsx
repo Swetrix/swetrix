@@ -32,6 +32,9 @@ interface UserWithProjectCount extends User {
   projectCount?: number
 }
 
+const numberValue = (source: Record<string, unknown> | null, key: string) =>
+  source && typeof source[key] === 'number' ? (source[key] as number) : null
+
 export function UsersCommand({ onBack, initialUser, showListOnBack = true }: UsersCommandProps) {
   const [mode, setMode] = useState<Mode>(initialUser ? 'detail' : 'list')
   const [loading, setLoading] = useState(false)
@@ -215,6 +218,8 @@ export function UsersCommand({ onBack, initialUser, showListOnBack = true }: Use
   }
 
   async function handlePlanTypeSelect(item: { value: string }) {
+    if (!selectedUser) return
+
     const nextPlanType =
       item.value === 'clear' ? null : (item.value as PlanType)
     const update: Partial<User> = { planType: nextPlanType }
@@ -222,7 +227,17 @@ export function UsersCommand({ onBack, initialUser, showListOnBack = true }: Use
     if (nextPlanType) {
       const entitlements = planEntitlements[nextPlanType]
       if (typeof entitlements.websites === 'number') {
-        update.maxProjects = entitlements.websites
+        const purchasedWebsiteAddons =
+          (selectedUser as User & { purchasedWebsiteAddons?: number })
+            .purchasedWebsiteAddons ??
+          numberValue(selectedUser.addonOverrides, 'websites') ??
+          numberValue(selectedUser.addonOverrides, 'additionalWebsites') ??
+          0
+
+        update.maxProjects = Math.max(
+          entitlements.websites + purchasedWebsiteAddons,
+          selectedUser.maxProjects || 0,
+        )
       }
       if (typeof entitlements.apiRateLimitPerHour === 'number') {
         update.maxApiKeyRequestsPerHour = entitlements.apiRateLimitPerHour
@@ -405,7 +420,7 @@ export function UsersCommand({ onBack, initialUser, showListOnBack = true }: Use
               {selectedUser.isActive ? 'Active' : 'Inactive'}
             </Text>
           </Text>
-          <Text><Text color="cyan">Event Bucket:</Text> {selectedUser.planCode}</Text>
+          <Text><Text color="cyan">Event Bucket:</Text> {effectiveLimits.eventBucket}</Text>
           <Text><Text color="cyan">Plan Type:</Text> {selectedUser.planType || `${effectiveLimits.planType} fallback`}</Text>
           <Text><Text color="cyan">Websites Included:</Text> {effectiveLimits.websitesIncluded}</Text>
           <Text><Text color="cyan">Purchased Website Add-ons:</Text> {effectiveLimits.purchasedWebsiteAddons}</Text>

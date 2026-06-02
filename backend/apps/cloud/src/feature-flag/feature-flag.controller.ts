@@ -528,7 +528,7 @@ export class FeatureFlagController {
         PlanFeatureCode.featureFlags,
       )
     ) {
-      return { flags: {}, experiments: {} }
+      return { flags: {} }
     }
 
     this.analyticsService.checkIpBlacklist(project, ip)

@@ -113,6 +113,15 @@ export const EVENT_TIERS = {
 export const EVENT_TIER_CODES = Object.keys(EVENT_TIERS) as EventTierCode[]
 export const SELF_SERVE_PLAN_TYPES: PlanTypeCode[] = ['standard', 'plus']
 
+const isProduction = () =>
+  typeof window === 'undefined'
+    ? process.env.NODE_ENV === 'production'
+    : window.REMIX_ENV?.NODE_ENV === 'production'
+
+/**
+ * Paddle receives one product_id per billing interval; USD/EUR/GBP share it and
+ * rely on Paddle localized pricing/overrides for country and locale checkout.
+ */
 const price = (
   monthly: Record<CurrencyCode, number>,
   yearly: Record<CurrencyCode, number>,
@@ -130,6 +139,31 @@ const price = (
     GBP: { amount: yearly.GBP, paddlePlanId: paddleYearly },
   },
 })
+
+const assertCatalogPrice = (
+  eventTierCode: EventTierCode,
+  billingInterval: BillingInterval,
+  currencyCode: CurrencyCode,
+  planPrice: PlanPrice | undefined,
+): PlanPrice => {
+  if (
+    planPrice &&
+    typeof planPrice.amount === 'number' &&
+    Number.isFinite(planPrice.amount) &&
+    planPrice.paddlePlanId
+  ) {
+    return planPrice
+  }
+
+  const message = `Missing PLAN_PRICES.standard.${eventTierCode}.${billingInterval}.${currencyCode} amount or paddlePlanId`
+
+  if (!isProduction()) {
+    throw new Error(message)
+  }
+
+  console.warn(message)
+  return { amount: 0, paddlePlanId: null }
+}
 
 const PLAN_PRICES: PlanPriceCatalog = {
   standard: {
@@ -483,6 +517,42 @@ const createPlanLimit = (
   const tier = EVENT_TIERS[eventTierCode]
   const monthly = PLAN_PRICES.standard[eventTierCode]?.monthly
   const yearly = PLAN_PRICES.standard[eventTierCode]?.yearly
+  const monthlyUsd = assertCatalogPrice(
+    eventTierCode,
+    'monthly',
+    'USD',
+    monthly?.USD,
+  )
+  const monthlyEur = assertCatalogPrice(
+    eventTierCode,
+    'monthly',
+    'EUR',
+    monthly?.EUR,
+  )
+  const monthlyGbp = assertCatalogPrice(
+    eventTierCode,
+    'monthly',
+    'GBP',
+    monthly?.GBP,
+  )
+  const yearlyUsd = assertCatalogPrice(
+    eventTierCode,
+    'yearly',
+    'USD',
+    yearly?.USD,
+  )
+  const yearlyEur = assertCatalogPrice(
+    eventTierCode,
+    'yearly',
+    'EUR',
+    yearly?.EUR,
+  )
+  const yearlyGbp = assertCatalogPrice(
+    eventTierCode,
+    'yearly',
+    'GBP',
+    yearly?.GBP,
+  )
 
   return {
     index,
@@ -491,20 +561,20 @@ const createPlanLimit = (
     legacy: false,
     price: {
       USD: {
-        monthly: monthly?.USD.amount ?? 0,
-        yearly: yearly?.USD.amount ?? 0,
+        monthly: monthlyUsd.amount,
+        yearly: yearlyUsd.amount,
       },
       EUR: {
-        monthly: monthly?.EUR.amount ?? 0,
-        yearly: yearly?.EUR.amount ?? 0,
+        monthly: monthlyEur.amount,
+        yearly: yearlyEur.amount,
       },
       GBP: {
-        monthly: monthly?.GBP.amount ?? 0,
-        yearly: yearly?.GBP.amount ?? 0,
+        monthly: monthlyGbp.amount,
+        yearly: yearlyGbp.amount,
       },
     },
-    ...(monthly?.USD.paddlePlanId ? { pid: monthly.USD.paddlePlanId } : {}),
-    ...(yearly?.USD.paddlePlanId ? { ypid: yearly.USD.paddlePlanId } : {}),
+    ...(monthlyUsd.paddlePlanId ? { pid: monthlyUsd.paddlePlanId } : {}),
+    ...(yearlyUsd.paddlePlanId ? { ypid: yearlyUsd.paddlePlanId } : {}),
     maxAlerts: 50,
   }
 }
@@ -520,19 +590,12 @@ export const PLAN_LIMITS = {
   ),
 } as Record<PlanCode, PlanLimit>
 
-const isPaidPlanCode = (planCode?: string | null) =>
-  !!planCode && !['none', 'free', 'trial'].includes(planCode)
-
 export const getEffectivePlanType = (
   planType?: string | null,
-  planCode?: string | null,
+  _planCode?: string | null,
 ): PlanTypeCode => {
   if (planType && planType in PLAN_TYPES) {
     return planType as PlanTypeCode
-  }
-
-  if (isPaidPlanCode(planCode)) {
-    return 'standard'
   }
 
   return 'standard'
@@ -549,9 +612,7 @@ export const getPlanPrice = (
   billingInterval: BillingInterval,
   currencyCode: CurrencyCode,
 ) =>
-  PLAN_PRICES[planType]?.[eventTier]?.[billingInterval]?.[currencyCode] ??
-  PLAN_PRICES[planType]?.[eventTier]?.[billingInterval]?.USD ??
-  null
+  PLAN_PRICES[planType]?.[eventTier]?.[billingInterval]?.[currencyCode] ?? null
 
 export const getPlanMonthlyPrice = (
   planType: PlanTypeCode,

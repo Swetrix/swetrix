@@ -240,7 +240,18 @@ const Subscribe = () => {
     new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000),
   )
 
-  const dueEndAmount = selectedPrice?.amount ?? 0
+  const formatMonthlyPriceLabel = (amount: number | null) =>
+    amount === null
+      ? t('pricing.custom')
+      : `${currency.symbol}${formatPrice(amount)}/${t('pricing.perMonth')}`
+  const formatSelectedPriceLabel = (amount: number | null | undefined) =>
+    amount === null || amount === undefined
+      ? t('pricing.custom')
+      : `${currency.symbol}${formatPrice(amount)}/${
+          selectedBillingFrequency === 'yearly'
+            ? t('pricing.perYear')
+            : t('pricing.perMonth')
+        }`
 
   const faqItems = useMemo(() => {
     const faqValues = {
@@ -359,8 +370,7 @@ const Subscribe = () => {
                       colour='secondary'
                       className='mt-3 block'
                     >
-                      {currency.symbol}
-                      {formatPrice(price)}/{t('pricing.perMonth')}
+                      {formatMonthlyPriceLabel(price)}
                     </Text>
                     <Text
                       as='span'
@@ -413,8 +423,7 @@ const Subscribe = () => {
                       {formatEventsLong(tier.monthlyEvents, i18n.language)}
                     </Text>
                     <Text as='span' size='sm' colour='secondary'>
-                      {currency.symbol}
-                      {formatPrice(price)}/{t('pricing.perMonth')}
+                      {formatMonthlyPriceLabel(price)}
                     </Text>
                   </button>
                 )
@@ -457,11 +466,17 @@ const Subscribe = () => {
                 </Text>
               </div>
               <Text as='p' size='2xl' weight='bold'>
-                {currency.symbol}
-                {formatPrice(monthlyPrice)}
-                <Text as='span' size='sm' colour='secondary' weight='medium'>
-                  /{t('pricing.perMonth')}
-                </Text>
+                {monthlyPrice === null ? (
+                  t('pricing.custom')
+                ) : (
+                  <>
+                    {currency.symbol}
+                    {formatPrice(monthlyPrice)}
+                    <Text as='span' size='sm' colour='secondary' weight='medium'>
+                      /{t('pricing.perMonth')}
+                    </Text>
+                  </>
+                )}
               </Text>
             </div>
           </div>
@@ -485,11 +500,7 @@ const Subscribe = () => {
                 {t('checkout.dueEnd', { date: formattedEndDate })}
               </Text>
               <Text as='p' size='base'>
-                {currency.symbol}
-                {formatPrice(dueEndAmount)}
-                {selectedBillingFrequency === 'yearly'
-                  ? `/${t('pricing.perYear')}`
-                  : `/${t('pricing.perMonth')}`}
+                {formatSelectedPriceLabel(selectedPrice?.amount)}
               </Text>
             </div>
           </div>

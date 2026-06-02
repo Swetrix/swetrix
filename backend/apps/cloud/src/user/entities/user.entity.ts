@@ -113,18 +113,18 @@ export const getEffectivePlanType = (
     return null
   }
 
+  if (
+    !user.planCode ||
+    [PlanCode.none, PlanCode.free, PlanCode.trial].includes(user.planCode)
+  ) {
+    return null
+  }
+
   if (user.planType) {
     return user.planType
   }
 
-  if (
-    user.planCode &&
-    ![PlanCode.none, PlanCode.free, PlanCode.trial].includes(user.planCode)
-  ) {
-    return PlanType.standard
-  }
-
-  return null
+  return PlanType.standard
 }
 
 export const getPlanTypeEntitlements = (planType?: PlanType | null) =>

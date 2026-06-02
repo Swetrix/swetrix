@@ -11,10 +11,17 @@ interface PlanFeatureLockedProps {
   feature: PlanFeatureCode
 }
 
+const allowedFeatures = ['featureFlags', 'experiments'] as const
+
 const PlanFeatureLocked = ({ feature }: PlanFeatureLockedProps) => {
   const { t } = useTranslation('common')
-  const { isOwner } = useProjectFeatureAccess(feature)
+  const safeFeature = allowedFeatures.includes(feature) ? feature : null
+  const { isOwner } = useProjectFeatureAccess(safeFeature || 'featureFlags')
   const audience = isOwner ? 'owner' : 'viewer'
+
+  if (!safeFeature) {
+    return null
+  }
 
   return (
     <div className='mx-auto w-full max-w-2xl py-16 text-center'>
@@ -25,7 +32,7 @@ const PlanFeatureLocked = ({ feature }: PlanFeatureLockedProps) => {
         />
       </div>
       <Text as='h3' size='xl' weight='medium' tracking='tight'>
-        {t(`project.featureAccess.${feature}.${audience}Title`)}
+        {t(`project.featureAccess.${safeFeature}.${audience}Title`)}
       </Text>
       <Text
         as='p'

@@ -26,6 +26,7 @@ export enum UserAddonChargeStatus {
 
 @Entity()
 @Index(['addonId', 'createdAt'])
+@Index(['idempotencyKey'], { unique: true })
 export class UserAddonCharge {
   @PrimaryGeneratedColumn('uuid')
   id: string
@@ -80,6 +81,9 @@ export class UserAddonCharge {
 
   @Column({ type: 'timestamp', nullable: true })
   periodEnd: Date | null
+
+  @Column('varchar', { length: 191, nullable: true })
+  idempotencyKey: string | null
 
   @Column('int', { nullable: true })
   paddleInvoiceId: number | null

@@ -64,6 +64,9 @@ export class UserAddon {
   @Column('varchar', { length: 3, default: 'USD' })
   currency: string
 
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  recurringAmount: string | null
+
   @Column({ type: 'timestamp', nullable: true })
   periodStart: Date | null
 
@@ -88,6 +91,12 @@ export class UserAddon {
 
   @Column({ type: 'timestamp', nullable: true })
   cancelledAt: Date | null
+
+  @Column('varchar', { length: 36, nullable: true })
+  lastChargeId: string | null
+
+  @Column({ type: 'timestamp', nullable: true })
+  lastChargeAt: Date | null
 
   @CreateDateColumn()
   createdAt: Date

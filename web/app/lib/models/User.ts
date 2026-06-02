@@ -45,6 +45,7 @@ interface WebsiteAddon {
   status: 'active' | 'past_due' | 'cancelled' | 'legacy' | null
   periodEnd: string | null
   nextChargeDate: string | null
+  recurringAmount: number | null
   isLegacy: boolean
   failedChargeAttempts: number
 }

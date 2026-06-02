@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import {
+  EntityManager,
   FindManyOptions,
   FindOneOptions,
   In,
@@ -121,6 +122,7 @@ const FEEDBACK_ATTACHMENT_UPLOAD_TIMEOUT_MS = 10_000
 const WEBSITE_ADDON_BUNDLE_SIZE = 50
 const WEBSITE_ADDON_MAX_QUANTITY = 1000
 const WEBSITE_ADDON_RETRY_DELAY_HOURS = 6
+const WEBSITE_ADDON_RENEWAL_CLAIM_MINUTES = 15
 const WEBSITE_ADDON_MAX_FAILED_CHARGES = 3
 const WEBSITE_ADDON_MONTHLY_PRICE: Record<string, number> = {
   USD: 7.5,
@@ -169,6 +171,7 @@ interface WebsiteAddonSummary {
   status: UserAddonStatus | 'legacy' | null
   periodEnd: string | null
   nextChargeDate: string | null
+  recurringAmount: number | null
   isLegacy: boolean
   failedChargeAttempts: number
 }
@@ -296,6 +299,51 @@ export class UserService {
       this.getNumericOverride(addonOverrides, 'additionalWebsites') ||
       0
     )
+  }
+
+  private getMoneyValue(value?: string | null): number | null {
+    if (value === null || value === undefined) {
+      return null
+    }
+
+    const amount = _toNumber(value)
+    return Number.isFinite(amount) ? amount : null
+  }
+
+  private isDuplicateEntryError(reason: unknown): boolean {
+    const error = reason as { code?: string; errno?: number }
+    return error?.code === 'ER_DUP_ENTRY' || error?.errno === 1062
+  }
+
+  private getAddonChargeRepository(manager?: EntityManager) {
+    return manager
+      ? manager.getRepository(UserAddonCharge)
+      : this.userAddonChargeRepository
+  }
+
+  private async getLockedUser(
+    manager: EntityManager,
+    userId: string,
+  ): Promise<User | null> {
+    return manager
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .setLock('pessimistic_write')
+      .where('user.id = :userId', { userId })
+      .getOne()
+  }
+
+  private async getLockedWebsiteAddon(
+    manager: EntityManager,
+    userId: string,
+  ): Promise<UserAddon | null> {
+    return manager
+      .getRepository(UserAddon)
+      .createQueryBuilder('addon')
+      .setLock('pessimistic_write')
+      .where('addon.userId = :userId', { userId })
+      .andWhere('addon.code = :code', { code: UserAddonCode.websites })
+      .getOne()
   }
 
   private getIncludedWebsiteLimit(user: Partial<User>): number {
@@ -581,6 +629,7 @@ export class UserService {
   private async syncWebsiteAddonEntitlements(
     user: User,
     quantity: number,
+    manager?: EntityManager,
   ): Promise<void> {
     const addonOverrides = { ...(user.addonOverrides || {}) }
 
@@ -591,12 +640,19 @@ export class UserService {
       delete addonOverrides.additionalWebsites
     }
 
-    await this.update(user.id, {
+    const update = {
       addonOverrides: Object.keys(addonOverrides).length
         ? addonOverrides
         : null,
       maxProjects: this.getIncludedWebsiteLimit(user) + quantity,
-    })
+    }
+
+    if (manager) {
+      await manager.getRepository(User).update(user.id, update)
+      return
+    }
+
+    await this.update(user.id, update)
   }
 
   async refreshWebsiteAddonEntitlements(userId: string): Promise<void> {
@@ -660,6 +716,32 @@ export class UserService {
     return data.response || {}
   }
 
+  private buildWebsiteAddonChargeKey(
+    addon: UserAddon,
+    user: User,
+    kind: UserAddonChargeKind,
+    amount: number,
+    quantity: number,
+    previousQuantity: number | null,
+    billingInterval: BillingFrequency,
+    periodStart: Date | null,
+    periodEnd: Date | null,
+  ): string {
+    return [
+      'website-addon',
+      user.id,
+      addon.id,
+      kind,
+      quantity,
+      previousQuantity ?? 'none',
+      billingInterval,
+      amount.toFixed(2),
+      addon.currency,
+      periodStart ? dayjs.utc(periodStart).toISOString() : 'none',
+      periodEnd ? dayjs.utc(periodEnd).toISOString() : 'none',
+    ].join(':')
+  }
+
   private async chargeWebsiteAddon(
     addon: UserAddon,
     user: User,
@@ -670,23 +752,90 @@ export class UserService {
     billingInterval: BillingFrequency,
     periodStart: Date | null,
     periodEnd: Date | null,
-  ): Promise<void> {
+    manager?: EntityManager,
+  ): Promise<UserAddonCharge> {
+    const chargeRepository = this.getAddonChargeRepository(manager)
     const chargeName = `${quantity.toLocaleString()} additional websites for Swetrix (${billingInterval})`
-    const charge = await this.userAddonChargeRepository.save(
-      this.userAddonChargeRepository.create({
-        addonId: addon.id,
-        userId: user.id,
-        kind,
-        status: UserAddonChargeStatus.pending,
-        quantity,
-        previousQuantity,
-        billingInterval,
-        amount: amount.toFixed(2),
-        currency: addon.currency,
-        periodStart,
-        periodEnd,
-      }),
+    const idempotencyKey = this.buildWebsiteAddonChargeKey(
+      addon,
+      user,
+      kind,
+      amount,
+      quantity,
+      previousQuantity,
+      billingInterval,
+      periodStart,
+      periodEnd,
     )
+
+    if (addon.lastChargeId) {
+      const lastCharge = await chargeRepository.findOne({
+        where: { id: addon.lastChargeId },
+      })
+
+      if (
+        lastCharge?.idempotencyKey === idempotencyKey &&
+        lastCharge.status === UserAddonChargeStatus.succeeded
+      ) {
+        return lastCharge
+      }
+    }
+
+    let charge = await chargeRepository.findOne({
+      where: { idempotencyKey },
+    })
+
+    if (charge?.status === UserAddonChargeStatus.succeeded) {
+      return charge
+    }
+
+    if (charge?.status === UserAddonChargeStatus.pending) {
+      throw new BadRequestException('websiteAddonChargeInProgress')
+    }
+
+    if (charge) {
+      await chargeRepository.update(charge.id, {
+        status: UserAddonChargeStatus.pending,
+        failureReason: null,
+      })
+    } else {
+      try {
+        charge = await chargeRepository.save(
+          chargeRepository.create({
+            addonId: addon.id,
+            userId: user.id,
+            kind,
+            status: UserAddonChargeStatus.pending,
+            quantity,
+            previousQuantity,
+            billingInterval,
+            amount: amount.toFixed(2),
+            currency: addon.currency,
+            periodStart,
+            periodEnd,
+            idempotencyKey,
+          }),
+        )
+      } catch (reason) {
+        if (!this.isDuplicateEntryError(reason)) {
+          throw reason
+        }
+
+        charge = await chargeRepository.findOne({
+          where: { idempotencyKey },
+        })
+
+        if (charge?.status === UserAddonChargeStatus.succeeded) {
+          return charge
+        }
+
+        throw new BadRequestException('websiteAddonChargeInProgress')
+      }
+    }
+
+    if (!charge) {
+      throw new InternalServerErrorException('Unable to create add-on charge')
+    }
 
     try {
       const response = await this.createPaddleOneOffCharge(
@@ -695,7 +844,7 @@ export class UserService {
         chargeName,
       )
 
-      await this.userAddonChargeRepository.update(charge.id, {
+      const update = {
         status: UserAddonChargeStatus.succeeded,
         paddleInvoiceId:
           typeof response.invoice_id === 'number' ? response.invoice_id : null,
@@ -705,9 +854,17 @@ export class UserService {
           ? String(response.receipt_url)
           : null,
         paddleResponse: response,
-      })
+        failureReason: null,
+      }
+
+      await chargeRepository.update(charge.id, update)
+
+      return {
+        ...charge,
+        ...update,
+      } as UserAddonCharge
     } catch (reason) {
-      await this.userAddonChargeRepository.update(charge.id, {
+      await chargeRepository.update(charge.id, {
         status: UserAddonChargeStatus.failed,
         failureReason:
           reason instanceof Error ? reason.message : 'Paddle charge failed',
@@ -737,6 +894,7 @@ export class UserService {
         status: addon.status,
         periodEnd: this.formatAddonDate(addon.periodEnd),
         nextChargeDate: this.formatAddonDate(addon.nextChargeDate),
+        recurringAmount: this.getMoneyValue(addon.recurringAmount),
         isLegacy: false,
         failedChargeAttempts: addon.failedChargeAttempts,
       }
@@ -760,6 +918,7 @@ export class UserService {
       status: 'legacy',
       periodEnd: null,
       nextChargeDate: null,
+      recurringAmount: null,
       isLegacy: true,
       failedChargeAttempts: 0,
     }
@@ -782,120 +941,145 @@ export class UserService {
   ): Promise<Partial<User>> {
     this.validateWebsiteAddonSelection(quantity, billingInterval)
 
-    const user = await this.findOne({ where: { id: userId } })
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-
-    this.validateWebsiteAddonEligibility(user)
-
-    let addon = await this.getWebsiteAddon(userId)
-    if (!addon && this.getAddonOverrideQuantity(user) > 0) {
-      throw new BadRequestException('legacyWebsiteAddon')
-    }
-
-    const preview = this.buildWebsiteAddonPreview(
-      user,
-      addon,
-      quantity,
-      billingInterval,
-    )
-
-    if (preview.changeType === 'none') {
-      if (
-        addon &&
-        (addon.pendingQuantity !== null ||
-          addon.pendingBillingInterval !== null)
-      ) {
-        await this.userAddonRepository.update(addon.id, {
-          pendingQuantity: null,
-          pendingBillingInterval: null,
-        })
+    await this.usersRepository.manager.transaction(async (manager) => {
+      const user = await this.getLockedUser(manager, userId)
+      if (!user) {
+        throw new BadRequestException('User not found')
       }
 
-      return this.getUserWithWebsiteAddonSummary(userId)
-    }
+      this.validateWebsiteAddonEligibility(user)
 
-    const now = new Date()
+      const addonRepository = manager.getRepository(UserAddon)
+      let addon = await this.getLockedWebsiteAddon(manager, userId)
+      if (!addon && this.getAddonOverrideQuantity(user) > 0) {
+        throw new BadRequestException('legacyWebsiteAddon')
+      }
 
-    if (!addon) {
-      addon = await this.userAddonRepository.save(
-        this.userAddonRepository.create({
-          userId,
-          code: UserAddonCode.websites,
-          quantity: 0,
-          billingInterval,
-          currency: this.getWebsiteAddonCurrency(user),
-          status: UserAddonStatus.cancelled,
-          failedChargeAttempts: 0,
-        }),
-      )
-    }
-
-    const isInactiveAddon =
-      addon.status === UserAddonStatus.cancelled ||
-      (addon.status === UserAddonStatus.past_due && addon.quantity === 0)
-    const currentQuantity = isInactiveAddon ? 0 : addon.quantity
-
-    if (preview.dueNow > 0) {
-      const chargePeriodStart = isInactiveAddon ? now : addon.periodStart || now
-      const chargePeriodEnd = isInactiveAddon
-        ? this.getWebsiteAddonPeriodEnd(now, billingInterval)
-        : addon.periodEnd ||
-          this.getWebsiteAddonPeriodEnd(now, addon.billingInterval)
-
-      await this.chargeWebsiteAddon(
-        addon,
+      const preview = this.buildWebsiteAddonPreview(
         user,
-        isInactiveAddon
-          ? UserAddonChargeKind.initial
-          : UserAddonChargeKind.prorated,
-        preview.dueNow,
+        addon,
         quantity,
-        currentQuantity,
-        isInactiveAddon ? billingInterval : addon.billingInterval,
-        chargePeriodStart,
-        chargePeriodEnd,
-      )
-    }
-
-    if (isInactiveAddon) {
-      const periodEnd = this.getWebsiteAddonPeriodEnd(now, billingInterval)
-
-      await this.userAddonRepository.update(addon.id, {
-        quantity,
-        pendingQuantity: null,
         billingInterval,
-        pendingBillingInterval: null,
-        currency: preview.currency,
-        periodStart: now,
-        periodEnd,
-        nextChargeDate: periodEnd,
-        status: UserAddonStatus.active,
-        failedChargeAttempts: 0,
-        lastChargeFailedAt: null,
-        cancelledAt: null,
-      })
-      await this.syncWebsiteAddonEntitlements(user, quantity)
-    } else if (quantity > currentQuantity) {
-      await this.userAddonRepository.update(addon.id, {
-        quantity,
-        pendingQuantity: null,
-        pendingBillingInterval:
-          billingInterval !== addon.billingInterval ? billingInterval : null,
-        status: UserAddonStatus.active,
-        failedChargeAttempts: 0,
-        lastChargeFailedAt: null,
-      })
-      await this.syncWebsiteAddonEntitlements(user, quantity)
-    } else {
-      await this.userAddonRepository.update(addon.id, {
-        pendingQuantity: quantity !== currentQuantity ? quantity : null,
-        pendingBillingInterval:
-          billingInterval !== addon.billingInterval ? billingInterval : null,
-        status: UserAddonStatus.active,
-      })
-    }
+      )
+
+      if (preview.changeType === 'none') {
+        if (
+          addon &&
+          (addon.pendingQuantity !== null ||
+            addon.pendingBillingInterval !== null)
+        ) {
+          await addonRepository.update(addon.id, {
+            pendingQuantity: null,
+            pendingBillingInterval: null,
+          })
+        }
+
+        return
+      }
+
+      const now = new Date()
+
+      if (!addon) {
+        addon = await addonRepository.save(
+          addonRepository.create({
+            userId,
+            code: UserAddonCode.websites,
+            quantity: 0,
+            billingInterval,
+            currency: this.getWebsiteAddonCurrency(user),
+            status: UserAddonStatus.cancelled,
+            failedChargeAttempts: 0,
+          }),
+        )
+      }
+
+      const isInactiveAddon =
+        addon.status === UserAddonStatus.cancelled ||
+        (addon.status === UserAddonStatus.past_due && addon.quantity === 0)
+      const currentQuantity = isInactiveAddon ? 0 : addon.quantity
+      let charge: UserAddonCharge | null = null
+
+      if (preview.dueNow > 0) {
+        const chargePeriodStart = isInactiveAddon
+          ? now
+          : addon.periodStart || now
+        const chargePeriodEnd = isInactiveAddon
+          ? this.getWebsiteAddonPeriodEnd(now, billingInterval)
+          : addon.periodEnd ||
+            this.getWebsiteAddonPeriodEnd(now, addon.billingInterval)
+
+        charge = await this.chargeWebsiteAddon(
+          addon,
+          user,
+          isInactiveAddon
+            ? UserAddonChargeKind.initial
+            : UserAddonChargeKind.prorated,
+          preview.dueNow,
+          quantity,
+          currentQuantity,
+          isInactiveAddon ? billingInterval : addon.billingInterval,
+          chargePeriodStart,
+          chargePeriodEnd,
+          manager,
+        )
+      }
+
+      if (isInactiveAddon) {
+        const periodEnd = this.getWebsiteAddonPeriodEnd(now, billingInterval)
+        const recurringAmount = this.getWebsiteAddonAmount(
+          quantity,
+          billingInterval,
+          preview.currency,
+        )
+
+        await addonRepository.update(addon.id, {
+          quantity,
+          pendingQuantity: null,
+          billingInterval,
+          pendingBillingInterval: null,
+          currency: preview.currency,
+          recurringAmount: recurringAmount.toFixed(2),
+          periodStart: now,
+          periodEnd,
+          nextChargeDate: periodEnd,
+          status: UserAddonStatus.active,
+          failedChargeAttempts: 0,
+          lastChargeFailedAt: null,
+          cancelledAt: null,
+          lastChargeId: charge?.id || addon.lastChargeId,
+          lastChargeAt: charge ? now : addon.lastChargeAt,
+        })
+        await this.syncWebsiteAddonEntitlements(user, quantity, manager)
+      } else if (quantity > currentQuantity) {
+        const activeBillingInterval = addon.billingInterval
+        const recurringAmount = this.getWebsiteAddonAmount(
+          quantity,
+          activeBillingInterval,
+          preview.currency,
+        )
+
+        await addonRepository.update(addon.id, {
+          quantity,
+          pendingQuantity: null,
+          pendingBillingInterval:
+            billingInterval !== addon.billingInterval ? billingInterval : null,
+          recurringAmount: recurringAmount.toFixed(2),
+          status: UserAddonStatus.active,
+          failedChargeAttempts: 0,
+          lastChargeFailedAt: null,
+          lastChargeId: charge?.id || addon.lastChargeId,
+          lastChargeAt: charge ? now : addon.lastChargeAt,
+        })
+        await this.syncWebsiteAddonEntitlements(user, quantity, manager)
+      } else {
+        await addonRepository.update(addon.id, {
+          pendingQuantity: quantity !== currentQuantity ? quantity : null,
+          pendingBillingInterval:
+            billingInterval !== addon.billingInterval ? billingInterval : null,
+          status: UserAddonStatus.active,
+        })
+      }
+    })
 
     return this.getUserWithWebsiteAddonSummary(userId)
   }
@@ -905,6 +1089,7 @@ export class UserService {
       quantity: 0,
       pendingQuantity: null,
       pendingBillingInterval: null,
+      recurringAmount: null,
       nextChargeDate: null,
       status: UserAddonStatus.cancelled,
       failedChargeAttempts: 0,
@@ -976,6 +1161,7 @@ export class UserService {
         ? null
         : dayjs.utc().add(WEBSITE_ADDON_RETRY_DELAY_HOURS, 'hour').toDate(),
       quantity: shouldRemoveCapacity ? 0 : addon.quantity,
+      recurringAmount: shouldRemoveCapacity ? null : addon.recurringAmount,
       pendingQuantity: shouldRemoveCapacity ? null : addon.pendingQuantity,
       pendingBillingInterval: shouldRemoveCapacity
         ? null
@@ -994,6 +1180,33 @@ export class UserService {
   }
 
   private async processWebsiteAddonRenewal(addon: UserAddon): Promise<void> {
+    const claimStartedAt = new Date()
+    const dueDate = addon.nextChargeDate
+
+    if (!dueDate || dayjs.utc(dueDate).isAfter(dayjs.utc(claimStartedAt))) {
+      return
+    }
+
+    const claimUntil = dayjs
+      .utc(claimStartedAt)
+      .add(WEBSITE_ADDON_RENEWAL_CLAIM_MINUTES, 'minute')
+      .toDate()
+    const claimResult = await this.userAddonRepository.update(
+      {
+        id: addon.id,
+        code: UserAddonCode.websites,
+        status: addon.status,
+        nextChargeDate: LessThan(claimStartedAt),
+      },
+      {
+        nextChargeDate: claimUntil,
+      },
+    )
+
+    if (!claimResult.affected) {
+      return
+    }
+
     const user = addon.user
 
     if (!user || !user.subID || user.cancellationEffectiveDate) {
@@ -1010,7 +1223,7 @@ export class UserService {
       return
     }
 
-    const periodStart = new Date()
+    const periodStart = dueDate
     const periodEnd = this.getWebsiteAddonPeriodEnd(
       periodStart,
       targetBillingInterval,
@@ -1022,7 +1235,7 @@ export class UserService {
     )
 
     try {
-      await this.chargeWebsiteAddon(
+      const charge = await this.chargeWebsiteAddon(
         addon,
         user,
         UserAddonChargeKind.renewal,
@@ -1033,18 +1246,26 @@ export class UserService {
         periodStart,
         periodEnd,
       )
+      const recurringAmount = this.getWebsiteAddonAmount(
+        targetQuantity,
+        targetBillingInterval,
+        addon.currency,
+      )
 
       await this.userAddonRepository.update(addon.id, {
         quantity: targetQuantity,
         pendingQuantity: null,
         billingInterval: targetBillingInterval,
         pendingBillingInterval: null,
+        recurringAmount: recurringAmount.toFixed(2),
         periodStart,
         periodEnd,
         nextChargeDate: periodEnd,
         status: UserAddonStatus.active,
         failedChargeAttempts: 0,
         lastChargeFailedAt: null,
+        lastChargeId: charge.id,
+        lastChargeAt: new Date(),
       })
       await this.syncWebsiteAddonEntitlements(user, targetQuantity)
     } catch (reason) {

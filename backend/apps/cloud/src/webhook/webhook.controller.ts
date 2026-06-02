@@ -170,7 +170,8 @@ export class WebhookController {
                 }
               : {}
 
-        const planType = requestedPlanType || PlanType.standard
+        const planType =
+          requestedPlanType || currentUser.planType || PlanType.standard
         const updateParams: Record<string, any> = {
           planCode: plan.id,
           planType,
