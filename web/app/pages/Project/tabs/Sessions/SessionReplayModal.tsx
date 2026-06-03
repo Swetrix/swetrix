@@ -438,8 +438,9 @@ const TimelineEventItem = ({
       </div>
 
       <div className='min-w-0 pb-4'>
-        <button
-          type='button'
+        <Button
+          variant='ghost'
+          focus={false}
           onClick={() => onSeek(step.offset, false)}
           aria-label={`${step.label}, ${formatReplayTime(step.offset)}`}
           className={cn(
@@ -478,12 +479,13 @@ const TimelineEventItem = ({
               as='span'
               size='xs'
               colour='secondary'
-              className='shrink-0 pt-0.5 font-medium tabular-nums'
+              weight='medium'
+              className='shrink-0 pt-0.5 tabular-nums'
             >
               {formatReplayTime(step.offset)}
             </Text>
           </span>
-        </button>
+        </Button>
       </div>
     </li>
   )
@@ -1114,11 +1116,16 @@ export const SessionReplayModal = ({
                 />
               </span>
               <div className='min-w-0'>
-                <DialogTitle
-                  as='h2'
-                  className='truncate text-base leading-5 font-semibold text-gray-950 dark:text-gray-50'
-                >
-                  {t('project.sessionReplay.title')}
+                <DialogTitle as='h2' className='truncate'>
+                  <Text
+                    as='span'
+                    size='base'
+                    weight='semibold'
+                    colour='primary'
+                    className='block leading-5 text-gray-950 dark:text-gray-50'
+                  >
+                    {t('project.sessionReplay.title')}
+                  </Text>
                 </DialogTitle>
                 <div className='mt-1 flex min-w-0 flex-wrap items-center gap-2'>
                   <Text size='xs' colour='secondary' truncate>
@@ -1152,12 +1159,7 @@ export const SessionReplayModal = ({
             )}
           >
             <div
-              className='group/player relative min-h-[320px] bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-inset'
-              role='application'
-              aria-label={t('project.sessionReplay.title')}
-              tabIndex={canControlReplay ? 0 : -1}
-              onClick={handlePlayerClick}
-              onKeyDown={handlePlayerKeyDown}
+              className='group/player relative min-h-[320px] bg-black'
               onMouseEnter={() => setIsPlayerHovered(true)}
               onMouseLeave={() => {
                 setIsPlayerHovered(false)
@@ -1211,14 +1213,16 @@ export const SessionReplayModal = ({
               />
 
               {/*
-               * Transparent layer above the replay iframe so player clicks reach
-               * React (an iframe would otherwise swallow them). The toggle itself
-               * is handled by the container's onClick via event bubbling.
+               * Transparent layer above the replay iframe so clicks and keys reach
+               * React; an iframe would otherwise swallow them.
                */}
               {canControlReplay ? (
-                <div
-                  className='absolute inset-0 z-10 cursor-pointer'
-                  aria-hidden
+                <button
+                  type='button'
+                  className='absolute inset-0 z-10 cursor-pointer border-0 bg-transparent p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-inset'
+                  aria-label={t('project.sessionReplay.title')}
+                  onClick={handlePlayerClick}
+                  onKeyDown={handlePlayerKeyDown}
                 />
               ) : null}
 
@@ -1312,9 +1316,15 @@ export const SessionReplayModal = ({
                             />
                           </div>
                           <div className='mt-1.5 flex justify-center'>
-                            <span className='rounded bg-black/85 px-1.5 py-0.5 text-xs font-semibold text-white tabular-nums'>
+                            <Text
+                              as='span'
+                              size='xs'
+                              weight='semibold'
+                              colour='inherit'
+                              className='rounded bg-black/85 px-1.5 py-0.5 text-white tabular-nums'
+                            >
                               {formatReplayTime(hoverPreview.offset)}
-                            </span>
+                            </Text>
                           </div>
                         </div>
                       ) : null}
@@ -1398,10 +1408,15 @@ export const SessionReplayModal = ({
                           </PlayerIconButton>
                         }
                       />
-                      <span className='px-1 text-xs text-white/90 tabular-nums sm:text-sm'>
+                      <Text
+                        as='span'
+                        size='xs'
+                        colour='inherit'
+                        className='px-1 text-white/90 tabular-nums sm:text-sm'
+                      >
                         {formatReplayTime(currentTime)} /{' '}
                         {formatReplayTime(duration)}
-                      </span>
+                      </Text>
                     </div>
 
                     <div className='flex items-center gap-0.5'>
@@ -1429,9 +1444,11 @@ export const SessionReplayModal = ({
                           >
                             {settingsView === 'main' ? (
                               <div className='flex flex-col'>
-                                <button
-                                  type='button'
+                                <Button
+                                  variant='ghost'
+                                  focus={false}
                                   role='menuitem'
+                                  tabIndex={0}
                                   onClick={() => setSettingsView('speed')}
                                   className={SETTINGS_ROW_CLASS}
                                 >
@@ -1439,22 +1456,34 @@ export const SessionReplayModal = ({
                                     className='size-5 shrink-0 text-slate-300'
                                     aria-hidden
                                   />
-                                  <span className='flex-1'>
+                                  <Text
+                                    as='span'
+                                    size='sm'
+                                    colour='inherit'
+                                    className='flex-1 text-slate-100'
+                                  >
                                     {t('project.sessionReplay.speed')}
-                                  </span>
-                                  <span className='text-slate-400 tabular-nums'>
+                                  </Text>
+                                  <Text
+                                    as='span'
+                                    size='sm'
+                                    colour='inherit'
+                                    className='text-slate-400 tabular-nums'
+                                  >
                                     {speedLabel}
-                                  </span>
+                                  </Text>
                                   <CaretRightIcon
                                     className='size-4 shrink-0 text-slate-400'
                                     aria-hidden
                                   />
-                                </button>
+                                </Button>
 
-                                <button
-                                  type='button'
+                                <Button
+                                  variant='ghost'
+                                  focus={false}
                                   role='switch'
                                   aria-checked={showTimeline}
+                                  tabIndex={0}
                                   onClick={() =>
                                     setShowTimeline((value) => !value)
                                   }
@@ -1464,15 +1493,22 @@ export const SessionReplayModal = ({
                                     className='size-5 shrink-0 text-slate-300'
                                     aria-hidden
                                   />
-                                  <span className='flex-1'>
+                                  <Text
+                                    as='span'
+                                    size='sm'
+                                    colour='inherit'
+                                    className='flex-1 text-slate-100'
+                                  >
                                     {t('project.sessionReplay.timeline.title')}
-                                  </span>
+                                  </Text>
                                   <SettingsToggle on={showTimeline} />
-                                </button>
+                                </Button>
 
-                                <button
-                                  type='button'
+                                <Button
+                                  variant='ghost'
+                                  focus={false}
                                   role='menuitem'
+                                  tabIndex={canControlReplay ? 0 : -1}
                                   onClick={() => {
                                     setSettingsOpen(false)
                                     downloadScreenshot()
@@ -1484,15 +1520,21 @@ export const SessionReplayModal = ({
                                     className='size-5 shrink-0 text-slate-300'
                                     aria-hidden
                                   />
-                                  <span className='flex-1'>
+                                  <Text
+                                    as='span'
+                                    size='sm'
+                                    colour='inherit'
+                                    className='flex-1 text-slate-100'
+                                  >
                                     {t('project.sessionReplay.screenshot')}
-                                  </span>
-                                </button>
+                                  </Text>
+                                </Button>
                               </div>
                             ) : (
                               <div className='flex flex-col'>
-                                <button
-                                  type='button'
+                                <Button
+                                  variant='ghost'
+                                  focus={false}
                                   onClick={() => setSettingsView('main')}
                                   className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-100 transition-colors duration-150 ease-out hover:bg-white/10 focus-visible:bg-white/10 focus-visible:outline-none'
                                 >
@@ -1500,21 +1542,29 @@ export const SessionReplayModal = ({
                                     className='size-4 shrink-0'
                                     aria-hidden
                                   />
-                                  <span>
+                                  <Text
+                                    as='span'
+                                    size='sm'
+                                    weight='semibold'
+                                    colour='inherit'
+                                    className='text-slate-100'
+                                  >
                                     {t('project.sessionReplay.speed')}
-                                  </span>
-                                </button>
+                                  </Text>
+                                </Button>
                                 <div
                                   className='mx-2 my-1 h-px bg-white/10'
                                   aria-hidden
                                 />
                                 <div className='flex flex-col'>
                                   {SPEEDS.map((item) => (
-                                    <button
+                                    <Button
                                       key={item}
-                                      type='button'
+                                      variant='ghost'
+                                      focus={false}
                                       role='menuitemradio'
                                       aria-checked={speed === item}
+                                      tabIndex={0}
                                       onClick={() => {
                                         setPlaybackSpeed(item)
                                         setSettingsView('main')
@@ -1529,14 +1579,19 @@ export const SessionReplayModal = ({
                                       ) : (
                                         <span aria-hidden />
                                       )}
-                                      <span className='tabular-nums'>
+                                      <Text
+                                        as='span'
+                                        size='sm'
+                                        colour='inherit'
+                                        className='text-slate-100 tabular-nums'
+                                      >
                                         {item === 1
                                           ? t(
                                               'project.sessionReplay.normalSpeed',
                                             )
                                           : `${item}×`}
-                                      </span>
-                                    </button>
+                                      </Text>
+                                    </Button>
                                   ))}
                                 </div>
                               </div>
