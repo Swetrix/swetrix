@@ -8,11 +8,19 @@
 }
 .rrweb-player-root {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  background: #020617;
+}
+.rrweb-player-root > .replayer-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--replay-player-width, 100%);
+  height: var(--replay-player-height, 100%);
   overflow: hidden;
   background: #fff;
+  transform: translate(-50%, -50%) scale(var(--replay-player-scale, 1));
+  transform-origin: center;
 }
 .rrweb-player-root iframe {
   border: 0;

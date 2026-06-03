@@ -62,6 +62,7 @@ const MUTATION_GROUP_MS = 1500
 const PREVIEW_WIDTH = 224
 const PREVIEW_HEIGHT = 126
 const PREVIEW_SEEK_STEP_MS = 500
+const DEFAULT_REPLAY_VIEWPORT = { width: 1280, height: 720 }
 
 type ReplayEvent = Omit<eventWithTime, 'data'> & {
   data?: Record<string, any>
@@ -85,6 +86,20 @@ interface TimelineStep {
 interface HoverPreview {
   offset: number
   percent: number
+}
+
+interface ReplayViewport {
+  width: number
+  height: number
+}
+
+interface ReplayViewportChange extends ReplayViewport {
+  offset: number
+}
+
+interface PlayerSize {
+  width: number
+  height: number
 }
 
 interface SessionReplayModalProps {
@@ -299,18 +314,85 @@ const getNearestStep = (steps: TimelineStep[], offset: number) => {
   return nearest
 }
 
-const getReplayViewport = (events: ReplayEvent[]) => {
-  const meta = events.find(
-    (event) =>
-      event.type === EVENT_META &&
-      typeof event.data?.width === 'number' &&
-      typeof event.data?.height === 'number',
-  )
+const getReplayViewportFromEvent = (
+  event: ReplayEvent,
+): ReplayViewport | null => {
+  const width = Number(event.data?.width)
+  const height = Number(event.data?.height)
 
-  return {
-    width: Number(meta?.data?.width) || 1280,
-    height: Number(meta?.data?.height) || 720,
+  if (
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    width <= 0 ||
+    height <= 0
+  ) {
+    return null
   }
+
+  return { width, height }
+}
+
+const buildReplayViewportChanges = (
+  events: ReplayEvent[],
+): ReplayViewportChange[] => {
+  const firstTimestamp = getTimestamp(events[0])
+  const changes: ReplayViewportChange[] = []
+
+  events.forEach((event) => {
+    const isViewportEvent =
+      event.type === EVENT_META ||
+      (event.type === EVENT_INCREMENTAL &&
+        event.data?.source === SOURCE_VIEWPORT_RESIZE)
+
+    if (!isViewportEvent) return
+
+    const viewport = getReplayViewportFromEvent(event)
+    if (!viewport) return
+
+    changes.push({
+      ...viewport,
+      offset: Math.max(0, getTimestamp(event) - firstTimestamp),
+    })
+  })
+
+  return changes.length
+    ? changes
+    : [{ ...DEFAULT_REPLAY_VIEWPORT, offset: 0 }]
+}
+
+const getReplayViewportAt = (
+  changes: ReplayViewportChange[],
+  offset: number,
+) => {
+  let viewport = changes[0] || { ...DEFAULT_REPLAY_VIEWPORT, offset: 0 }
+
+  for (const change of changes) {
+    if (change.offset > offset) break
+    viewport = change
+  }
+
+  return viewport
+}
+
+const getContainScale = (
+  containerWidth: number,
+  containerHeight: number,
+  contentWidth: number,
+  contentHeight: number,
+) => {
+  if (
+    containerWidth <= 0 ||
+    containerHeight <= 0 ||
+    contentWidth <= 0 ||
+    contentHeight <= 0
+  ) {
+    return 1
+  }
+
+  return Math.max(
+    0.01,
+    Math.min(containerWidth / contentWidth, containerHeight / contentHeight),
+  )
 }
 
 const TimelineRailLine = () => (
@@ -442,6 +524,10 @@ export const SessionReplayModal = ({
   const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null)
   const [isPlayerHovered, setIsPlayerHovered] = useState(false)
   const [isControlsFocused, setIsControlsFocused] = useState(false)
+  const [playerSize, setPlayerSize] = useState<PlayerSize>({
+    width: 0,
+    height: 0,
+  })
   const playerRoot = useRef<HTMLDivElement | null>(null)
   const previewRoot = useRef<HTMLDivElement | null>(null)
   const fullscreenRoot = useRef<HTMLDivElement | null>(null)
@@ -462,15 +548,45 @@ export const SessionReplayModal = ({
     [events, t],
   )
   const hasEvents = events.length > 0
-  const replayViewport = useMemo(() => getReplayViewport(events), [events])
+  const viewportChanges = useMemo(
+    () => buildReplayViewportChanges(events),
+    [events],
+  )
+  const activeReplayViewport = useMemo(
+    () => getReplayViewportAt(viewportChanges, currentTime),
+    [currentTime, viewportChanges],
+  )
+  const previewReplayViewport = useMemo(
+    () =>
+      getReplayViewportAt(
+        viewportChanges,
+        hoverPreview?.offset ?? currentTime,
+      ),
+    [currentTime, hoverPreview?.offset, viewportChanges],
+  )
+  const playerScale = getContainScale(
+    playerSize.width,
+    playerSize.height,
+    activeReplayViewport.width,
+    activeReplayViewport.height,
+  )
+  const playerStyle = {
+    '--replay-player-width': `${activeReplayViewport.width}px`,
+    '--replay-player-height': `${activeReplayViewport.height}px`,
+    '--replay-player-scale': playerScale,
+  } as CSSProperties
   const previewScale = Math.min(
     1,
-    PREVIEW_WIDTH / replayViewport.width,
-    PREVIEW_HEIGHT / replayViewport.height,
+    getContainScale(
+      PREVIEW_WIDTH,
+      PREVIEW_HEIGHT,
+      previewReplayViewport.width,
+      previewReplayViewport.height,
+    ),
   )
   const previewStyle = {
-    '--replay-preview-width': `${replayViewport.width}px`,
-    '--replay-preview-height': `${replayViewport.height}px`,
+    '--replay-preview-width': `${previewReplayViewport.width}px`,
+    '--replay-preview-height': `${previewReplayViewport.height}px`,
     '--replay-preview-scale': previewScale,
   } as CSSProperties
   const progressPercent =
@@ -494,6 +610,30 @@ export const SessionReplayModal = ({
   }, [speed])
 
   useEffect(() => {
+    if (!isOpen || !hasEvents || !playerRoot.current) return
+
+    const root = playerRoot.current
+    const updatePlayerSize = () => {
+      const rect = root.getBoundingClientRect()
+      const width = Math.round(rect.width)
+      const height = Math.round(rect.height)
+
+      setPlayerSize((value) =>
+        value.width === width && value.height === height
+          ? value
+          : { width, height },
+      )
+    }
+
+    updatePlayerSize()
+
+    const observer = new ResizeObserver(updatePlayerSize)
+    observer.observe(root)
+
+    return () => observer.disconnect()
+  }, [hasEvents, isOpen])
+
+  useEffect(() => {
     if (!isOpen) return
 
     let cancelled = false
@@ -506,6 +646,7 @@ export const SessionReplayModal = ({
     setHoverPreview(null)
     setIsPlayerHovered(false)
     setIsControlsFocused(false)
+    setPlayerSize({ width: 0, height: 0 })
 
     fetchSessionReplay(projectId, psid, replay?.replayId)
       .then((result) => {
@@ -996,6 +1137,7 @@ export const SessionReplayModal = ({
                       'rrweb-player-root h-full w-full',
                       (!hasEvents || error) && 'hidden',
                     )}
+                    style={playerStyle}
                   />
                   {canControlReplay ? (
                     <button
