@@ -37,6 +37,7 @@ import {
   getEffectivePlanType,
   getPlanTypeEntitlements,
   getPlanTypeAccountLimitUpdates,
+  getSessionReplayQuota,
   DEFAULT_MAX_PROJECTS,
 } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
@@ -1316,10 +1317,6 @@ export class UserService {
       entitlementOverrides,
       'apiRateLimitPerHour',
     )
-    const replayOverride = numberOverride(
-      entitlementOverrides,
-      'sessionReplaysIncluded',
-    )
     const includedWebsites =
       websiteOverride ??
       (typeof entitlements.websites === 'number'
@@ -1330,8 +1327,7 @@ export class UserService {
       (typeof entitlements.apiRateLimitPerHour === 'number'
         ? entitlements.apiRateLimitPerHour
         : user?.maxApiKeyRequestsPerHour)
-    const sessionReplaysIncluded =
-      replayOverride ?? entitlements.sessionReplaysIncluded
+    const sessionReplaysIncluded = getSessionReplayQuota(user)
 
     const enhancedUser = {
       ...user,

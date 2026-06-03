@@ -6,6 +6,7 @@ import {
 
 import {
   getSessionsServer,
+  getSessionReplayServer,
   getFunnelSessionsServer,
   getGoalSessionsServer,
   getErrorsServer,
@@ -43,6 +44,7 @@ import {
   type AnalyticsParams,
   type AnalyticsFilter,
   type SessionsResponse,
+  type SessionReplayResponse,
   type FunnelSessionsResponse,
   type GoalSessionsResponse,
   type ErrorsResponse,
@@ -97,6 +99,7 @@ function formatDateForBackend(dateStr: string | undefined): string | undefined {
 interface ProxyRequest {
   action:
     | 'getSessions'
+    | 'getSessionReplay'
     | 'getErrors'
     | 'getFeatureFlagStats'
     | 'getFeatureFlagProfiles'
@@ -137,6 +140,8 @@ interface ProxyRequest {
   goalId?: string
   experimentId?: string
   profileId?: string
+  psid?: string
+  replayId?: string
   errorId?: string
   filterType?: string
   filterColumn?: 'br' | 'os'
@@ -206,6 +211,31 @@ export async function action({ request }: ActionFunctionArgs) {
           analyticsParams,
         )
         return data<ProxyResponse<SessionsResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getSessionReplay': {
+        if (!body.psid) {
+          return data<ProxyResponse<SessionReplayResponse>>(
+            { data: null, error: 'psid is required' },
+            { status: 400 },
+          )
+        }
+
+        const result = await getSessionReplayServer(
+          request,
+          projectId,
+          body.psid,
+          body.replayId,
+          password || undefined,
+        )
+        return data<ProxyResponse<SessionReplayResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

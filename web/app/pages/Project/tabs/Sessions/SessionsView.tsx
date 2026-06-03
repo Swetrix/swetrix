@@ -17,6 +17,7 @@ import { useSessionsProxy } from '~/hooks/useAnalyticsProxy'
 import {
   Session,
   SessionDetails as SessionDetailsType,
+  SessionReplayMetadata,
 } from '~/lib/models/Project'
 import NoSessions from '~/pages/Project/tabs/Sessions/components/NoSessions'
 import { SessionDetailView } from '~/pages/Project/tabs/Sessions/SessionDetailView'
@@ -104,6 +105,7 @@ interface ActiveSession {
   timeBucket?: string
   sessionStart?: string
   lastActivity?: string
+  replay?: SessionReplayMetadata | null
 }
 
 interface SessionsViewProps {
@@ -221,6 +223,7 @@ const SessionsViewInner = ({
           matchingSession?.lastActivity ||
           lastPage?.created ||
           apiDetails.created,
+        replay: deferredData.sessionDetails.replay,
       }
     }
     return null

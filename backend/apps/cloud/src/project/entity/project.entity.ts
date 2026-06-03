@@ -193,6 +193,9 @@ export class Project {
   @Column('boolean', { default: false })
   revenueApiEnabled: boolean
 
+  @Column('int', { unsigned: true, default: 30 })
+  sessionReplayRetentionDays: number
+
   @ApiProperty()
   @Column('varchar', { nullable: true, default: null, length: 512 })
   websiteUrl: string | null

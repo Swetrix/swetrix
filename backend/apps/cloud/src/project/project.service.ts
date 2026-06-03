@@ -191,6 +191,7 @@ export class ProjectService {
         )
         .leftJoinAndSelect('organisationMembers.user', 'organisationUser')
         .select([
+          'project.id',
           'project.origins',
           'project.active',
           'project.public',
@@ -200,6 +201,7 @@ export class ProjectService {
           'project.captchaSecretKey',
           'project.captchaDifficulty',
           'project.captchaDifficultyMode',
+          'project.sessionReplayRetentionDays',
           'project.passwordHash',
           'project.isPasswordProtected',
           'admin.id',
@@ -207,6 +209,7 @@ export class ProjectService {
           'admin.isAccountBillingSuspended',
           'admin.planCode',
           'admin.planType',
+          'admin.entitlementOverrides',
           'organisation.id',
           'organisationMembers.role',
           'organisationMembers.confirmed',
@@ -278,6 +281,7 @@ export class ProjectService {
           isAccountBillingSuspended: true,
           planCode: true,
           planType: true,
+          entitlementOverrides: true,
         },
         organisation: {
           id: true,

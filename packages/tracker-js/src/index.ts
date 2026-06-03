@@ -11,6 +11,9 @@ import {
   IPageViewPayload,
   FeatureFlagsOptions,
   ExperimentOptions,
+  SessionReplayOptions,
+  SessionReplayActions,
+  defaultSessionReplayActions,
 } from './Lib.js'
 
 export let LIB_INSTANCE: Lib | null = null
@@ -80,6 +83,16 @@ export function trackErrors(options?: ErrorOptions): ErrorActions {
   }
 
   return LIB_INSTANCE.trackErrors(options)
+}
+
+export function startSessionReplay(
+  options?: SessionReplayOptions,
+): Promise<SessionReplayActions> {
+  if (!LIB_INSTANCE) {
+    return Promise.resolve(defaultSessionReplayActions)
+  }
+
+  return LIB_INSTANCE.startSessionReplay(options)
 }
 
 /**

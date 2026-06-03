@@ -2098,6 +2098,27 @@ export class TaskManagerService {
     await this.userService.deleteRefreshTokensWhere(where)
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async cleanupExpiredSessionReplays() {
+    if (!isPrimaryNode()) {
+      return
+    }
+
+    try {
+      const deleted = await this.analyticsService.cleanupExpiredSessionReplays()
+
+      if (deleted > 0) {
+        this.logger.log(
+          `[CRON WORKER](cleanupExpiredSessionReplays) Deleted ${deleted} expired replay chunks`,
+        )
+      }
+    } catch (reason) {
+      this.logger.error(
+        `[CRON WORKER](cleanupExpiredSessionReplays) Error occured: ${reason}`,
+      )
+    }
+  }
+
   // Verify managed reverse proxy domains: resolve CNAME -> probe TLS to advance
   // the row's status (waiting -> issuing -> live).
   @Cron(CronExpression.EVERY_MINUTE)

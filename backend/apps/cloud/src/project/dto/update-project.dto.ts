@@ -56,4 +56,15 @@ export class UpdateProjectDto extends IntersectionType(
   @IsIn(['manual', 'auto'])
   @IsOptional()
   captchaDifficultyMode?: 'manual' | 'auto'
+
+  @ApiProperty({
+    required: false,
+    description: 'Session replay retention in days.',
+    enum: [30, 90, 365, 1825],
+    default: 30,
+  })
+  @IsInt()
+  @IsIn([30, 90, 365, 1825])
+  @IsOptional()
+  sessionReplayRetentionDays?: number
 }

@@ -8,7 +8,7 @@
     "sourceMap": true,
     "declaration": true,
     "outDir": "dist/esnext",
-    "typeRoots": ["node_modules/@types"]
+    "types": []
   },
   "include": ["src"]
 }

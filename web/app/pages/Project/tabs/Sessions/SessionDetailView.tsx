@@ -7,21 +7,26 @@ import {
   GlobeIcon,
   ClockIcon,
   LinkIcon,
+  PlayIcon,
   UserIcon,
   SignInIcon,
 } from '@phosphor-icons/react'
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 
 import { BrowserIcon, OSIcon } from '../SharedIcons'
 import { InfoRow, PanelSection } from '../components/DetailPanels'
 import { PROJECT_TABS } from '~/lib/constants'
-import { SessionDetails as SessionDetailsType } from '~/lib/models/Project'
+import {
+  SessionDetails as SessionDetailsType,
+  SessionReplayMetadata,
+} from '~/lib/models/Project'
 import { BackButton } from '~/pages/Project/View/components/BackButton'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import Button from '~/ui/Button'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
@@ -40,6 +45,8 @@ import { Pageflow } from './Pageflow'
 import { SessionChart } from './SessionChart'
 
 dayjs.extend(utc)
+
+const SessionReplayModal = lazy(() => import('./SessionReplayModal'))
 
 interface PageflowItem {
   type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
@@ -63,6 +70,7 @@ interface SessionDetailViewProps {
     timeBucket?: string
     sessionStart?: string
     lastActivity?: string
+    replay?: SessionReplayMetadata | null
   } | null
   sessionId?: string | null
   sessionLoading: boolean
@@ -164,6 +172,7 @@ export const SessionDetailView = ({
   const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(
     null,
   )
+  const [isReplayOpen, setIsReplayOpen] = useState(false)
 
   const isTouchDevice = useMemo(() => {
     if (typeof window === 'undefined') return false
@@ -603,6 +612,17 @@ export const SessionDetailView = ({
                 </Text>
               </Link>
             ) : null}
+
+            {activeSession.replay?.hasReplay && sessionId ? (
+              <Button
+                type='button'
+                className='mt-2 w-full justify-center gap-2'
+                onClick={() => setIsReplayOpen(true)}
+              >
+                <PlayIcon className='size-4' />
+                {t('project.watchReplay')}
+              </Button>
+            ) : null}
           </div>
 
           <PanelSection title={t('project.sessionInfo')}>
@@ -696,6 +716,18 @@ export const SessionDetailView = ({
           ) : null}
         </div>
       </aside>
+
+      {activeSession.replay?.hasReplay && sessionId ? (
+        <Suspense fallback={null}>
+          <SessionReplayModal
+            isOpen={isReplayOpen}
+            onClose={() => setIsReplayOpen(false)}
+            projectId={projectId}
+            psid={sessionId}
+            replay={activeSession.replay}
+          />
+        </Suspense>
+      ) : null}
     </div>
   )
 }

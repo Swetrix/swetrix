@@ -354,9 +354,6 @@ const UserSettings = () => {
   const currency = CURRENCIES[currencyCode]
   const websiteAddonBundle = ADDONS.websiteBundles[0]
   const websiteAddonPrice = websiteAddonBundle.monthly[currencyCode]
-  // Session replay add-on pricing is hidden until self-serve replay billing ships.
-  // const sessionReplayAddon = ADDONS.sessionReplayBundles[0]
-  // const sessionReplayAddonPrice = sessionReplayAddon.monthly[currencyCode]
   const activeWebsiteAddonQuantity =
     websiteAddon?.quantity ?? purchasedWebsiteAddons
   const currentWebsiteAddonBillingInterval = (websiteAddon?.billingInterval ||
@@ -2250,29 +2247,30 @@ const UserSettings = () => {
                         </Button>
                       </div>
 
-                      {/* Additional session replays add-on is temporarily hidden
-                          until self-serve replay pricing is finalised.
                       <div className='mt-8 border-t border-gray-200 pt-6 dark:border-slate-800'>
                         <Text as='h4' size='base' weight='semibold'>
-                          {t('billing.sessionReplayAddonTitle')}
+                          {t('billing.sessionReplayCapacityTitle')}
                         </Text>
-                        <Text as='p' size='sm' colour='secondary' className='mt-1'>
-                          {t('billing.sessionReplayAddonDescription', {
-                            amount: sessionReplayAddon.quantity.toLocaleString(),
+                        <Text
+                          as='p'
+                          size='sm'
+                          colour='secondary'
+                          className='mt-1 max-w-xl'
+                        >
+                          {t('billing.sessionReplayCapacityDescription', {
+                            quota: replayLimitLabel,
                           })}
                         </Text>
-                        <Text as='p' size='lg' weight='bold' className='mt-4'>
-                          {currency.symbol}
-                          {formatBillingPrice(sessionReplayAddonPrice)}
-                          <Text as='span' size='sm' weight='medium' colour='secondary'>
-                            /{t('pricing.intervals.month')}
-                          </Text>
-                        </Text>
-                        <Text as='p' size='sm' colour='secondary' className='mt-3'>
-                          {t('billing.sessionReplayAddonComingSoon')}
-                        </Text>
+                        <Button
+                          variant='secondary'
+                          size='lg'
+                          className='mt-5 gap-1'
+                          to={routes.billing_choose_plan}
+                        >
+                          {t('billing.sessionReplayCapacityCta')}
+                          <ArrowRightIcon className='size-4' />
+                        </Button>
                       </div>
-                      */}
                     </SettingsSection>
                   </>
                 )}

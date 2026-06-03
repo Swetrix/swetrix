@@ -114,7 +114,10 @@ import { ProjectOrganisationDto } from './dto/project-organisation.dto'
 import { trackCustom } from '../common/analytics'
 import { PendingInvitationService } from '../pending-invitation/pending-invitation.service'
 import { PendingInvitationType } from '../pending-invitation/pending-invitation.entity'
-import { PlanCode } from '../user/entities/user.entity'
+import {
+  PlanCode,
+  getSessionReplayRetentionEntitlement,
+} from '../user/entities/user.entity'
 
 const PROJECTS_MAXIMUM = 50
 const ORIGINS_ITEMS_MAXIMUM = 1000
@@ -1824,6 +1827,17 @@ export class ProjectController {
     if (projectDTO.captchaDifficultyMode !== undefined) {
       project.captchaDifficultyMode =
         projectDTO.captchaDifficultyMode as Project['captchaDifficultyMode']
+    }
+
+    if (projectDTO.sessionReplayRetentionDays !== undefined) {
+      const maxRetention = getSessionReplayRetentionEntitlement(project.admin)
+      if (projectDTO.sessionReplayRetentionDays > maxRetention) {
+        throw new ForbiddenException(
+          'Your plan does not include this session replay retention period',
+        )
+      }
+
+      project.sessionReplayRetentionDays = projectDTO.sessionReplayRetentionDays
     }
 
     if (projectDTO.name) {

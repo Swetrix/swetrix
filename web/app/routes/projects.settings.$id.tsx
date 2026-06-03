@@ -83,6 +83,7 @@ export interface ProjectSettingsActionData {
     password?: string
     transferEmail?: string
     email?: string
+    sessionReplayRetentionDays?: string
   }
   project?: Project
   subscriber?: Subscriber
@@ -130,6 +131,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const websiteUrl = formData.get('websiteUrl')?.toString()
       const brandKeywords = formData.get('brandKeywords')?.toString()
       const captchaDifficulty = formData.get('captchaDifficulty')?.toString()
+      const sessionReplayRetentionDays = formData
+        .get('sessionReplayRetentionDays')
+        ?.toString()
       const rawCaptchaDifficultyMode = formData
         .get('captchaDifficultyMode')
         ?.toString()
@@ -145,7 +149,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
         fieldErrors.name = 'Project name must be 50 characters or less'
       }
 
-      if (fieldErrors.name) {
+      if (sessionReplayRetentionDays !== undefined) {
+        const retention = Number(sessionReplayRetentionDays)
+        if (![30, 90, 365, 1825].includes(retention)) {
+          fieldErrors.sessionReplayRetentionDays =
+            'Choose a valid session replay retention period'
+        }
+      }
+
+      if (Object.keys(fieldErrors).length > 0) {
         return data<ProjectSettingsActionData>(
           { intent, fieldErrors },
           { status: 400 },
@@ -184,6 +196,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
         updateData.captchaDifficulty = Number(captchaDifficulty)
       if (captchaDifficultyMode !== undefined)
         updateData.captchaDifficultyMode = captchaDifficultyMode
+      if (sessionReplayRetentionDays !== undefined)
+        updateData.sessionReplayRetentionDays = Number(
+          sessionReplayRetentionDays,
+        )
 
       const result = await serverFetch<Project>(request, `project/${id}`, {
         method: 'PUT',

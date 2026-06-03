@@ -71,6 +71,11 @@ import {
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
+import {
+  GetSessionReplayDto,
+  SessionReplayChunkDto,
+  SessionReplayStartDto,
+} from './dto/session-replay.dto'
 import { GetProfilesDto } from './dto/get-profiles.dto'
 import { GetProfileDto, GetProfileSessionsDto } from './dto/get-profile.dto'
 import { ErrorDto } from './dto/error.dto'
@@ -1485,6 +1490,101 @@ export class AnalyticsController {
     return this.analyticsService.getBotStats(pid, period)
   }
 
+  @Post('session-replay/start')
+  @Public()
+  async startSessionReplay(
+    @Body() replayDTO: SessionReplayStartDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    const { 'user-agent': userAgent, origin } = headers
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'session-replay-start', 120, 60)
+    await checkRateLimit(replayDTO.pid, 'session-replay-start', 2000, 60)
+
+    const botResult = await this.analyticsService.checkBot(
+      replayDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      replayDTO.pg,
+      'session_replay',
+    )
+
+    if (botResult.isBot) {
+      return BOT_RESPONSE
+    }
+
+    const project = await this.analyticsService.validate(replayDTO, origin, ip)
+    const { country } = getIPDetails(ip, replayDTO.tz)
+    this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(
+      `pid: ${replayDTO.pid}, replayId: ${replayDTO.replayId}`,
+      'POST /analytics/session-replay/start',
+    )
+
+    return this.analyticsService.startSessionReplay(
+      project,
+      replayDTO.pid,
+      replayDTO.replayId,
+      replayDTO.privacy,
+      userAgent,
+      ip,
+      replayDTO.profileId,
+    )
+  }
+
+  @Post('session-replay/chunk')
+  @Public()
+  async uploadSessionReplayChunk(
+    @Body() replayDTO: SessionReplayChunkDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    const { 'user-agent': userAgent, origin } = headers
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'session-replay-chunk', 600, 60)
+    await checkRateLimit(replayDTO.pid, 'session-replay-chunk', 5000, 60)
+
+    const botResult = await this.analyticsService.checkBot(
+      replayDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      replayDTO.pg,
+      'session_replay',
+    )
+
+    if (botResult.isBot) {
+      return BOT_RESPONSE
+    }
+
+    const project = await this.analyticsService.validate(replayDTO, origin, ip)
+    const { country } = getIPDetails(ip, replayDTO.tz)
+    this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(
+      `pid: ${replayDTO.pid}, replayId: ${replayDTO.replayId}, chunkIndex: ${replayDTO.chunkIndex}`,
+      'POST /analytics/session-replay/chunk',
+    )
+
+    return this.analyticsService.storeSessionReplayChunk(
+      project,
+      replayDTO.pid,
+      replayDTO.replayId,
+      replayDTO.privacy,
+      replayDTO.chunkIndex,
+      replayDTO.events,
+      userAgent,
+      ip,
+    )
+  }
+
   @Post('error')
   @Public()
   async logError(@Body() errorDTO: ErrorDto, @Headers() headers, @Ip() reqIP) {
@@ -2633,6 +2733,31 @@ export class AnalyticsController {
     )
 
     return result
+  }
+
+  @Get('session-replay')
+  @Auth(true, true)
+  async getSessionReplay(
+    @Query() data: GetSessionReplayDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, psid, replayId } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    this.logger.log(
+      `pid: ${pid}, psid: ${psid}, replayId: ${replayId || 'latest'}`,
+      'GET /analytics/session-replay',
+    )
+
+    return this.analyticsService.getSessionReplay(pid, psid, replayId)
   }
 
   @Get('profiles')

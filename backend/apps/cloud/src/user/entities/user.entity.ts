@@ -81,7 +81,7 @@ const PLAN_TYPE_ENTITLEMENTS = {
     teamMembers: 25,
     organisations: 10,
     apiRateLimitPerHour: 6000,
-    sessionReplaysIncluded: 50000,
+    sessionReplaysIncluded: 'byEventTier',
   },
   [PlanType.enterprise]: {
     websites: 'custom',
@@ -91,6 +91,21 @@ const PLAN_TYPE_ENTITLEMENTS = {
     sessionReplaysIncluded: 'custom',
   },
 } as const
+
+const PLUS_SESSION_REPLAY_QUOTA: Partial<Record<PlanCode, number>> = {
+  [PlanCode['100k']]: 5000,
+  [PlanCode['200k']]: 10000,
+  [PlanCode['500k']]: 25000,
+  [PlanCode['1m']]: 50000,
+  [PlanCode['2m']]: 100000,
+  [PlanCode['5m']]: 250000,
+  [PlanCode['10m']]: 500000,
+  [PlanCode['15m']]: 750000,
+  [PlanCode['20m']]: 1000000,
+  [PlanCode['30m']]: 1500000,
+  [PlanCode['40m']]: 2000000,
+  [PlanCode['50m']]: 2500000,
+}
 
 const PLAN_TYPE_RANK = {
   [PlanType.standard]: 1,
@@ -168,6 +183,54 @@ export const getPlanTypeAccountLimitUpdates = (
   }
 
   return updates
+}
+
+export const getSessionReplayQuota = (
+  user?: {
+    planCode?: PlanCode | null
+    planType?: PlanType | null
+    entitlementOverrides?: Record<string, unknown> | null
+  } | null,
+): number | 'custom' => {
+  const replayOverride = getNumericLimitOverride(
+    user?.entitlementOverrides,
+    'sessionReplaysIncluded',
+  )
+
+  if (typeof replayOverride === 'number') {
+    return replayOverride
+  }
+
+  const effectivePlanType = getEffectivePlanType(user)
+  const entitlements = getPlanTypeEntitlements(effectivePlanType)
+
+  if (entitlements.sessionReplaysIncluded === 'custom') {
+    return 'custom'
+  }
+
+  if (entitlements.sessionReplaysIncluded === 'byEventTier') {
+    return PLUS_SESSION_REPLAY_QUOTA[user?.planCode || PlanCode.none] || 0
+  }
+
+  return entitlements.sessionReplaysIncluded
+}
+
+export const getSessionReplayRetentionEntitlement = (
+  user?: {
+    planType?: PlanType | null
+    entitlementOverrides?: Record<string, unknown> | null
+  } | null,
+): number => {
+  const override = getNumericLimitOverride(
+    user?.entitlementOverrides,
+    'sessionReplayRetentionDays',
+  )
+
+  if (typeof override === 'number') {
+    return override
+  }
+
+  return getEffectivePlanType(user) === PlanType.enterprise ? 1825 : 30
 }
 
 const planTypeHasFeature = (
