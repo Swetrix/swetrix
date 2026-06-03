@@ -54,29 +54,63 @@
 .replay-scrubber:focus-visible {
   outline: none;
 }
+/*
+ * The visible track, fill and handle are drawn with regular DOM nodes (see
+ * SessionReplayModal). This native range input only provides the hit area,
+ * dragging and keyboard support, so its own track and thumb are fully
+ * transparent and stretched to the full grab height.
+ */
 .replay-scrubber::-webkit-slider-runnable-track {
-  height: 28px;
+  height: 16px;
   background: transparent;
 }
 .replay-scrubber::-webkit-slider-thumb {
-  width: 12px;
-  height: 12px;
-  margin-top: 8px;
+  width: 16px;
+  height: 16px;
+  margin-top: 0;
   appearance: none;
-  border: 2px solid #0f172a;
+  border: 0;
   border-radius: 9999px;
-  background: #f8fafc;
+  background: transparent;
 }
 .replay-scrubber::-moz-range-track {
-  height: 28px;
+  height: 16px;
   background: transparent;
 }
 .replay-scrubber::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border: 2px solid #0f172a;
+  width: 16px;
+  height: 16px;
+  border: 0;
   border-radius: 9999px;
-  background: #f8fafc;
+  background: transparent;
+}
+
+/*
+ * YouTube-style center bezel that flashes the play / pause glyph in the middle
+ * of the player whenever playback is toggled.
+ */
+@keyframes replay-bezel-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  15% {
+    opacity: 0.95;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+.replay-bezel {
+  animation: replay-bezel-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .replay-bezel {
+    animation: none;
+    opacity: 0;
+  }
 }
 .replayer-mouse {
   position: absolute;
