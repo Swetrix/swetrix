@@ -1983,6 +1983,7 @@
       "hideTimeline": "Hide timeline",
       "timeline": {
         "title": "Timeline",
+        "steps": "{{count}} steps",
         "empty": "No notable replay steps yet.",
         "navigation": "Navigation",
         "fullSnapshot": "Page snapshot",
