@@ -10,7 +10,6 @@ import {
   CameraIcon,
   CaretDownIcon,
   CaretRightIcon,
-  ClockIcon,
   CursorClickIcon,
   ListBulletsIcon,
   PauseIcon,
@@ -1021,23 +1020,6 @@ export const SessionReplayModal = ({
                         })
                       : psid}
                   </Text>
-                  {activeStep ? (
-                    <Badge
-                      colour='slate'
-                      size='sm'
-                      label={
-                        <Text
-                          as='span'
-                          size='xxs'
-                          colour='inherit'
-                          className='inline-flex items-center gap-1 tabular-nums'
-                        >
-                          <ClockIcon className='size-3' aria-hidden />
-                          {formatReplayTime(currentTime)}
-                        </Text>
-                      }
-                    />
-                  ) : null}
                 </div>
               </div>
             </div>
