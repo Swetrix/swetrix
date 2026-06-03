@@ -12,11 +12,9 @@ import {
   CaretRightIcon,
   ClockIcon,
   CursorClickIcon,
-  FastForwardIcon,
   ListBulletsIcon,
   PauseIcon,
   PlayIcon,
-  RewindIcon,
   TextTIcon,
   WarningCircleIcon,
   XIcon,
@@ -442,6 +440,8 @@ export const SessionReplayModal = ({
   const [showTimeline, setShowTimeline] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null)
+  const [isPlayerHovered, setIsPlayerHovered] = useState(false)
+  const [isControlsFocused, setIsControlsFocused] = useState(false)
   const playerRoot = useRef<HTMLDivElement | null>(null)
   const previewRoot = useRef<HTMLDivElement | null>(null)
   const fullscreenRoot = useRef<HTMLDivElement | null>(null)
@@ -479,15 +479,11 @@ export const SessionReplayModal = ({
     () => getNearestStep(timelineSteps, currentTime),
     [currentTime, timelineSteps],
   )
-  const previewStep = useMemo(
-    () =>
-      hoverPreview
-        ? getNearestStep(timelineSteps, hoverPreview.offset)
-        : null,
-    [hoverPreview, timelineSteps],
-  )
   const shouldShowPreview =
     Boolean(hoverPreview) && hasEvents && !error && duration > 0
+  const canControlReplay = hasEvents && !error && duration > 0
+  const shouldShowControls =
+    !isPlaying || isPlayerHovered || isControlsFocused || !canControlReplay
 
   useEffect(() => {
     currentTimeRef.current = currentTime
@@ -508,6 +504,8 @@ export const SessionReplayModal = ({
     setCurrentTime(0)
     setIsPlaying(false)
     setHoverPreview(null)
+    setIsPlayerHovered(false)
+    setIsControlsFocused(false)
 
     fetchSessionReplay(projectId, psid, replay?.replayId)
       .then((result) => {
@@ -675,6 +673,16 @@ export const SessionReplayModal = ({
     setIsPlaying(false)
   }, [syncPlaybackOffset])
 
+  const togglePlayback = useCallback(() => {
+    if (!canControlReplay) return
+
+    if (isPlaying) {
+      pause()
+    } else {
+      play()
+    }
+  }, [canControlReplay, isPlaying, pause, play])
+
   const seekTo = useCallback(
     (offset: number, shouldPlay = isPlaying) => {
       if (!replayer.current) return
@@ -822,6 +830,8 @@ export const SessionReplayModal = ({
     replayer.current?.pause()
     setIsPlaying(false)
     setHoverPreview(null)
+    setIsPlayerHovered(false)
+    setIsControlsFocused(false)
     onClose()
   }
 
@@ -829,7 +839,6 @@ export const SessionReplayModal = ({
     activeReplay?.replayDuration && activeReplay.replayDuration > 0
       ? getStringFromTime(getTimeFromSeconds(activeReplay.replayDuration))
       : formatReplayTime(duration)
-  const canControlReplay = hasEvents && !error && duration > 0
 
   return (
     <Dialog className='relative z-50' open={isOpen} onClose={close}>
@@ -876,10 +885,15 @@ export const SessionReplayModal = ({
                       colour='slate'
                       size='sm'
                       label={
-                        <span className='inline-flex items-center gap-1 tabular-nums'>
+                        <Text
+                          as='span'
+                          size='xxs'
+                          colour='inherit'
+                          className='inline-flex items-center gap-1 tabular-nums'
+                        >
                           <ClockIcon className='size-3' aria-hidden />
                           {formatReplayTime(currentTime)}
-                        </span>
+                        </Text>
                       }
                     />
                   ) : null}
@@ -895,7 +909,9 @@ export const SessionReplayModal = ({
                 className='hidden items-center gap-2 sm:inline-flex'
               >
                 <ListBulletsIcon className='size-4' aria-hidden />
-                {t('project.sessionReplay.timeline.title')}
+                <Text as='span' size='sm' weight='medium' colour='inherit'>
+                  {t('project.sessionReplay.timeline.title')}
+                </Text>
                 <Badge
                   colour='slate'
                   size='sm'
@@ -929,8 +945,15 @@ export const SessionReplayModal = ({
             )}
           >
             <div className='min-h-0 p-2 sm:p-3 lg:p-4'>
-              <div className='relative flex h-full min-h-[420px] flex-col overflow-hidden rounded-lg bg-slate-950 ring-1 ring-slate-900/80 dark:ring-slate-700/70'>
-                <div className='relative min-h-0 flex-1 bg-slate-950'>
+              <div
+                className='relative h-full min-h-[420px] overflow-hidden rounded-lg bg-slate-950 ring-1 ring-slate-900/80 dark:ring-slate-700/70'
+                onMouseEnter={() => setIsPlayerHovered(true)}
+                onMouseLeave={() => {
+                  setIsPlayerHovered(false)
+                  setHoverPreview(null)
+                }}
+              >
+                <div className='relative h-full bg-slate-950'>
                   {isPreparing || isLoading ? (
                     <div className='absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70'>
                       <Loader />
@@ -967,41 +990,6 @@ export const SessionReplayModal = ({
                       </Text>
                     </div>
                   ) : null}
-                  {activeStep && hasEvents && !error ? (
-                    <div className='absolute top-3 left-3 z-20 max-w-[min(420px,calc(100%-1.5rem))] rounded-md bg-slate-950/90 px-2.5 py-2 ring-1 ring-white/10'>
-                      <div className='flex min-w-0 items-center gap-2'>
-                        {(() => {
-                          const { Icon, iconClass } = getTimelineMeta(
-                            activeStep.kind,
-                          )
-                          return (
-                            <Icon
-                              className={cn('size-4 shrink-0', iconClass)}
-                              weight='duotone'
-                              aria-hidden
-                            />
-                          )
-                        })()}
-                        <Text
-                          as='span'
-                          size='xs'
-                          colour='inherit'
-                          weight='medium'
-                          className='min-w-0 truncate text-slate-100'
-                        >
-                          {activeStep.label}
-                        </Text>
-                        <Text
-                          as='span'
-                          size='xs'
-                          colour='inherit'
-                          className='shrink-0 text-slate-400 tabular-nums'
-                        >
-                          {formatReplayTime(activeStep.offset)}
-                        </Text>
-                      </div>
-                    </div>
-                  ) : null}
                   <div
                     ref={playerRoot}
                     className={cn(
@@ -1009,9 +997,36 @@ export const SessionReplayModal = ({
                       (!hasEvents || error) && 'hidden',
                     )}
                   />
+                  {canControlReplay ? (
+                    <button
+                      type='button'
+                      aria-label={
+                        isPlaying ? t('common.pause') : t('common.play')
+                      }
+                      onClick={togglePlayback}
+                      className='absolute inset-0 z-10 cursor-pointer bg-transparent focus-visible:ring-2 focus-visible:ring-slate-100 focus-visible:ring-inset focus-visible:outline-none'
+                    />
+                  ) : null}
                 </div>
 
-                <div className='border-t border-white/10 bg-slate-950 px-3 py-3 text-slate-100'>
+                <div
+                  className={cn(
+                    'absolute inset-x-2 bottom-2 z-30 rounded-lg bg-slate-950/80 px-3 py-3 text-slate-100 ring-1 ring-white/10 backdrop-blur-[2px] transition-opacity duration-150 ease-out motion-reduce:transition-none sm:inset-x-3 sm:bottom-3',
+                    shouldShowControls
+                      ? 'pointer-events-auto opacity-100'
+                      : 'pointer-events-none opacity-0',
+                  )}
+                  onFocusCapture={() => setIsControlsFocused(true)}
+                  onBlurCapture={(event) => {
+                    if (
+                      !event.currentTarget.contains(
+                        event.relatedTarget as Node | null,
+                      )
+                    ) {
+                      setIsControlsFocused(false)
+                    }
+                  }}
+                >
                   <div className='grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2'>
                     <Text
                       as='span'
@@ -1046,7 +1061,7 @@ export const SessionReplayModal = ({
                               style={previewStyle}
                             />
                           </div>
-                          <div className='mt-1.5 flex items-center justify-between gap-2 px-1'>
+                          <div className='mt-1.5 flex justify-center px-1'>
                             <Text
                               as='span'
                               size='xs'
@@ -1056,16 +1071,6 @@ export const SessionReplayModal = ({
                             >
                               {formatReplayTime(hoverPreview.offset)}
                             </Text>
-                            {previewStep ? (
-                              <Text
-                                as='span'
-                                size='xs'
-                                colour='inherit'
-                                className='min-w-0 truncate text-slate-400'
-                              >
-                                {previewStep.label}
-                              </Text>
-                            ) : null}
                           </div>
                         </div>
                       ) : null}
@@ -1141,41 +1146,6 @@ export const SessionReplayModal = ({
                           </PlayerIconButton>
                         }
                       />
-                      <Tooltip
-                        asChild
-                        text={t('project.sessionReplay.back10')}
-                        tooltipNode={
-                          <PlayerIconButton
-                            aria-label={t('project.sessionReplay.back10')}
-                            onClick={() => seekTo(currentTime - 10000)}
-                            disabled={!canControlReplay}
-                          >
-                            <RewindIcon className='size-4' />
-                          </PlayerIconButton>
-                        }
-                      />
-                      <Tooltip
-                        asChild
-                        text={t('project.sessionReplay.forward10')}
-                        tooltipNode={
-                          <PlayerIconButton
-                            aria-label={t('project.sessionReplay.forward10')}
-                            onClick={() => seekTo(currentTime + 10000)}
-                            disabled={!canControlReplay}
-                          >
-                            <FastForwardIcon className='size-4' />
-                          </PlayerIconButton>
-                        }
-                      />
-                      <Text
-                        as='span'
-                        size='xs'
-                        colour='inherit'
-                        className='ml-1 hidden min-w-0 text-slate-400 sm:block'
-                        truncate
-                      >
-                        {activeStep?.detail || activeStep?.label || psid}
-                      </Text>
                     </div>
 
                     <div className='flex flex-wrap items-center gap-1.5 sm:justify-end'>
@@ -1196,7 +1166,15 @@ export const SessionReplayModal = ({
                                 : 'hover:bg-white/10 hover:text-slate-100',
                             )}
                           >
-                            {item}x
+                            <Text
+                              as='span'
+                              size='xs'
+                              weight='medium'
+                              colour='inherit'
+                              className='leading-4'
+                            >
+                              {item}x
+                            </Text>
                           </button>
                         ))}
                       </fieldset>
