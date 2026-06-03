@@ -45,11 +45,20 @@ import type {
   SessionReplayResponse,
 } from '~/api/api.server'
 import { useSessionReplayProxy } from '~/hooks/useAnalyticsProxy'
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
-import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import { cn } from '~/utils/generic'
+
+import {
+  formatAmount as formatPageflowAmount,
+  PAGEFLOW_ICON_BY_TYPE,
+  PAGEFLOW_ICON_COLOR_BY_TYPE,
+  type PageflowEvent,
+  type PageflowEventType,
+} from './Pageflow'
 
 const SPEEDS = [0.5, 1, 1.5, 2, 4]
 const EVENT_FULL_SNAPSHOT = 2
@@ -85,6 +94,15 @@ interface TimelineStep {
     | 'mutation'
 }
 
+interface PageflowMarker {
+  id: string
+  type: PageflowEventType
+  offset: number
+  percent: number
+  label: string
+  detail: string
+}
+
 interface HoverPreview {
   offset: number
   percent: number
@@ -110,6 +128,8 @@ interface SessionReplayModalProps {
   projectId: string
   psid: string
   replay?: SessionReplayMetadata | null
+  pages?: PageflowEvent[]
+  timeFormat: '12-hour' | '24-hour'
 }
 
 const getTimestamp = (event?: ReplayEvent) =>
@@ -120,6 +140,109 @@ const formatReplayTime = (ms: number) => {
   const minutes = Math.floor(seconds / 60)
   const rest = seconds % 60
   return `${minutes}:${String(rest).padStart(2, '0')}`
+}
+
+const PAGEFLOW_EVENT_LABEL_DEFAULTS: Record<PageflowEventType, string> = {
+  pageview: 'Pageview',
+  event: 'Event',
+  error: 'Error',
+  sale: 'Sale',
+  refund: 'Refund',
+}
+
+const PAGEFLOW_MARKER_CLASS =
+  'bg-white/55 ring-white/35 group-hover:bg-white/85 group-focus-visible:bg-white/85'
+
+const PAGEFLOW_SYNC_TOLERANCE_MS = 5000
+const TIMEZONE_SUFFIX_PATTERN = /(?:z|[+-]\d{2}:?\d{2})$/i
+
+const getPageflowTimestamp = (value?: string) => {
+  if (!value) return Number.NaN
+  const normalised = TIMEZONE_SUFFIX_PATTERN.test(value) ? value : `${value}Z`
+  const timestamp = Date.parse(normalised)
+  return Number.isFinite(timestamp) ? timestamp : Number.NaN
+}
+
+const formatReplayStartDate = (
+  timestamp: number,
+  language: string,
+  timeFormat: '12-hour' | '24-hour',
+  timezone: string,
+) => {
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return null
+
+  return new Date(timestamp).toLocaleDateString(language, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+    timeZone: timezone,
+  })
+}
+
+const getPageflowEventLabel = (type: PageflowEventType, t: TFunction) =>
+  String(
+    t(`project.sessionReplay.timelineEvents.${type}`, {
+      defaultValue: PAGEFLOW_EVENT_LABEL_DEFAULTS[type],
+    }),
+  )
+
+const getPageflowEventDetail = (event: PageflowEvent, t: TFunction) => {
+  if (event.type === 'sale' || event.type === 'refund') {
+    const sign = event.type === 'refund' ? '-' : '+'
+    const amount = `${sign}${formatPageflowAmount(
+      event.amount || 0,
+      event.currency,
+    )}`
+    return event.value ? `${amount} · ${event.value}` : amount
+  }
+
+  return event.value || String(t('common.notSet', { defaultValue: 'Not set' }))
+}
+
+const buildPageflowMarkers = (
+  pages: PageflowEvent[] | undefined,
+  replayStartTimestamp: number,
+  duration: number,
+  t: TFunction,
+): PageflowMarker[] => {
+  if (
+    !pages?.length ||
+    !Number.isFinite(replayStartTimestamp) ||
+    replayStartTimestamp <= 0 ||
+    duration <= 0
+  ) {
+    return []
+  }
+
+  return pages
+    .flatMap((event, index) => {
+      const timestamp = getPageflowTimestamp(event.created)
+      const offset = timestamp - replayStartTimestamp
+
+      if (
+        !Number.isFinite(offset) ||
+        offset < -PAGEFLOW_SYNC_TOLERANCE_MS ||
+        offset > duration + PAGEFLOW_SYNC_TOLERANCE_MS
+      ) {
+        return []
+      }
+
+      const safeOffset = Math.min(duration, Math.max(0, offset))
+
+      return {
+        id: `${event.type}-${event.created}-${index}`,
+        type: event.type,
+        offset: safeOffset,
+        percent: (safeOffset / duration) * 100,
+        label: getPageflowEventLabel(event.type, t),
+        detail: getPageflowEventDetail(event, t),
+      }
+    })
+    .sort((a, b) => a.offset - b.offset)
 }
 
 const getEventDetail = (event: ReplayEvent) => {
@@ -262,42 +385,35 @@ const buildTimelineSteps = (
 
 const TIMELINE_KIND_META: Record<
   TimelineStep['kind'],
-  { Icon: ElementType; iconClass: string; markerClass: string }
+  { Icon: ElementType; iconClass: string }
 > = {
   navigation: {
     Icon: PlayIcon,
     iconClass: 'text-sky-600 dark:text-sky-400',
-    markerClass: 'bg-sky-500',
   },
   snapshot: {
     Icon: PlayIcon,
     iconClass: 'text-slate-600 dark:text-slate-300',
-    markerClass: 'bg-slate-400',
   },
   click: {
     Icon: CursorClickIcon,
     iconClass: 'text-emerald-600 dark:text-emerald-400',
-    markerClass: 'bg-emerald-500',
   },
   scroll: {
     Icon: CaretRightIcon,
     iconClass: 'text-gray-600 dark:text-gray-300',
-    markerClass: 'bg-gray-400',
   },
   input: {
     Icon: TextTIcon,
     iconClass: 'text-indigo-600 dark:text-slate-300',
-    markerClass: 'bg-indigo-500 dark:bg-slate-300',
   },
   resize: {
     Icon: CaretRightIcon,
     iconClass: 'text-amber-600 dark:text-amber-400',
-    markerClass: 'bg-amber-500',
   },
   mutation: {
     Icon: ListBulletsIcon,
     iconClass: 'text-gray-500 dark:text-gray-400',
-    markerClass: 'bg-gray-300 dark:bg-slate-500',
   },
 }
 
@@ -523,6 +639,89 @@ const SettingsToggle = ({ on }: { on: boolean }) => (
   </span>
 )
 
+const PageflowMarkerTooltip = ({ marker }: { marker: PageflowMarker }) => {
+  const Icon = PAGEFLOW_ICON_BY_TYPE[marker.type]
+
+  return (
+    <div className='min-w-0'>
+      <div className='flex min-w-0 items-center gap-1.5'>
+        <Icon
+          className={cn(
+            'size-4 shrink-0',
+            PAGEFLOW_ICON_COLOR_BY_TYPE[marker.type],
+          )}
+          weight='duotone'
+          aria-hidden
+        />
+        <Text
+          as='span'
+          size='sm'
+          weight='semibold'
+          colour='inherit'
+          className='min-w-0 leading-4 text-slate-50'
+        >
+          {marker.label}
+        </Text>
+      </div>
+      <Text
+        as='div'
+        size='xs'
+        colour='inherit'
+        className='mt-1 max-w-64 leading-4 wrap-anywhere text-slate-300'
+      >
+        {marker.detail}
+      </Text>
+    </div>
+  )
+}
+
+const PageflowMarkerButton = ({
+  marker,
+  onHover,
+  onSeek,
+}: {
+  marker: PageflowMarker
+  onHover: () => void
+  onSeek: (offset: number, shouldPlay?: boolean) => void
+}) => {
+  const label = `${marker.label}: ${marker.detail}`
+
+  return (
+    <Tooltip
+      asChild
+      ariaLabel={label}
+      delay={80}
+      disableHoverableContent
+      contentClassName='max-w-72 px-2.5 py-2 [--default-transition-duration:150ms]'
+      text={<PageflowMarkerTooltip marker={marker} />}
+      tooltipNode={
+        <Button
+          variant='ghost'
+          focus={false}
+          aria-label={label}
+          onMouseEnter={onHover}
+          onMouseMove={(event: ReactMouseEvent<HTMLButtonElement>) => {
+            event.stopPropagation()
+          }}
+          onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+            event.stopPropagation()
+            onSeek(marker.offset, false)
+          }}
+          className='group pointer-events-auto absolute top-1/2 h-5 w-4 -translate-x-1/2 -translate-y-1/2 justify-center border-transparent bg-transparent p-0 text-slate-100 hover:border-transparent hover:bg-transparent focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-0 focus-visible:outline-none dark:text-slate-100 dark:hover:border-transparent dark:hover:bg-transparent'
+          style={{ left: `${marker.percent}%` }}
+        >
+          <span
+            className={cn(
+              'block h-3 w-1 rounded-full opacity-95 ring-1 ring-black/20 transition-[width,height,opacity,transform] duration-150 ease-out group-hover:h-4 group-hover:w-1.5 group-hover:opacity-100 group-focus-visible:h-4 group-focus-visible:w-1.5 motion-reduce:transition-none',
+              PAGEFLOW_MARKER_CLASS,
+            )}
+          />
+        </Button>
+      }
+    />
+  )
+}
+
 const SETTINGS_ROW_CLASS =
   'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-100 transition-colors duration-150 ease-out hover:bg-white/10 focus-visible:bg-white/10 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent'
 
@@ -532,8 +731,14 @@ export const SessionReplayModal = ({
   projectId,
   psid,
   replay,
+  pages = [],
+  timeFormat,
 }: SessionReplayModalProps) => {
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+  const { timezone } = useViewProjectContext()
   const { fetchSessionReplay, isLoading } = useSessionReplayProxy()
   const [payload, setPayload] = useState<SessionReplayResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -572,7 +777,7 @@ export const SessionReplayModal = ({
     () => (payload?.events || []) as ReplayEvent[],
     [payload?.events],
   )
-  const activeReplay = payload?.replay || replay || null
+  const replayStartTimestamp = getTimestamp(events[0])
   const timelineSteps = useMemo(
     () => buildTimelineSteps(events, t),
     [events, t],
@@ -624,6 +829,20 @@ export const SessionReplayModal = ({
     () => getNearestStep(timelineSteps, currentTime),
     [currentTime, timelineSteps],
   )
+  const pageflowMarkers = useMemo(
+    () => buildPageflowMarkers(pages, replayStartTimestamp, duration, t),
+    [duration, pages, replayStartTimestamp, t],
+  )
+  const replayStartDateTimestamp =
+    replayStartTimestamp || getPageflowTimestamp(pages[0]?.created)
+  const replayStartDate = useMemo(() => {
+    return formatReplayStartDate(
+      replayStartDateTimestamp,
+      language,
+      timeFormat,
+      timezone,
+    )
+  }, [language, replayStartDateTimestamp, timeFormat, timezone])
   const shouldShowPreview =
     Boolean(hoverPreview) && hasEvents && !error && duration > 0
   const canControlReplay = hasEvents && !error && duration > 0
@@ -923,7 +1142,7 @@ export const SessionReplayModal = ({
   )
 
   const handlePlayerClick = useCallback(
-    (event: ReactMouseEvent<HTMLDivElement>) => {
+    (event: ReactMouseEvent<HTMLButtonElement>) => {
       if (!canControlReplay) return
       // Clicks on the controls bar / settings menu drive their own actions.
       if ((event.target as HTMLElement).closest('[data-replay-controls]')) {
@@ -940,7 +1159,7 @@ export const SessionReplayModal = ({
   )
 
   const handlePlayerKeyDown = useCallback(
-    (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    (event: ReactKeyboardEvent<HTMLButtonElement>) => {
       if (!canControlReplay) return
       // Let focused controls (scrubber, buttons, menu) handle their own keys.
       if ((event.target as HTMLElement).closest('[data-replay-controls]')) {
@@ -1086,11 +1305,6 @@ export const SessionReplayModal = ({
     onClose()
   }
 
-  const replayDuration =
-    activeReplay?.replayDuration && activeReplay.replayDuration > 0
-      ? getStringFromTime(getTimeFromSeconds(activeReplay.replayDuration))
-      : formatReplayTime(duration)
-
   return (
     <Dialog className='relative z-50' open={isOpen} onClose={close}>
       <DialogBackdrop
@@ -1107,14 +1321,7 @@ export const SessionReplayModal = ({
           )}
         >
           <div className='flex min-h-16 items-center justify-between gap-3 border-b border-gray-200 px-4 dark:border-slate-800'>
-            <div className='flex min-w-0 items-center gap-3'>
-              <span className='hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-50 ring-1 ring-gray-200/80 sm:flex dark:bg-slate-900 dark:ring-slate-700/70'>
-                <PlayIcon
-                  className='size-4.5 text-gray-700 dark:text-slate-200'
-                  weight='duotone'
-                  aria-hidden
-                />
-              </span>
+            <div className='flex min-w-0 items-center'>
               <div className='min-w-0'>
                 <DialogTitle as='h2' className='truncate'>
                   <Text
@@ -1127,16 +1334,21 @@ export const SessionReplayModal = ({
                     {t('project.sessionReplay.title')}
                   </Text>
                 </DialogTitle>
-                <div className='mt-1 flex min-w-0 flex-wrap items-center gap-2'>
-                  <Text size='xs' colour='secondary' truncate>
-                    {activeReplay
-                      ? t('project.sessionReplay.summary', {
-                          events: activeReplay.eventCount.toLocaleString(),
-                          duration: replayDuration,
-                        })
-                      : psid}
-                  </Text>
-                </div>
+                {replayStartDate ? (
+                  <time
+                    dateTime={new Date(replayStartDateTimestamp).toISOString()}
+                    className='block'
+                  >
+                    <Text
+                      as='span'
+                      size='xs'
+                      colour='secondary'
+                      className='leading-4'
+                    >
+                      {t('project.sessionStartedAt')}: {replayStartDate}
+                    </Text>
+                  </time>
+                ) : null}
               </div>
             </div>
             <div className='flex shrink-0 items-center gap-2'>
@@ -1237,10 +1449,7 @@ export const SessionReplayModal = ({
                     className='replay-bezel flex size-16 items-center justify-center rounded-full bg-black/60'
                   >
                     {bezel.kind === 'play' ? (
-                      <PlayIcon
-                        weight='fill'
-                        className='size-8 translate-x-0.5 text-white'
-                      />
+                      <PlayIcon weight='fill' className='size-8 text-white' />
                     ) : (
                       <PauseIcon weight='fill' className='size-8 text-white' />
                     )}
@@ -1254,10 +1463,7 @@ export const SessionReplayModal = ({
                   aria-hidden
                 >
                   <span className='flex size-16 items-center justify-center rounded-full bg-black/55 ring-1 ring-white/10 transition-transform duration-150 ease-out group-hover/player:scale-105'>
-                    <PlayIcon
-                      weight='fill'
-                      className='size-8 translate-x-0.5 text-white'
-                    />
+                    <PlayIcon weight='fill' className='size-8 text-white' />
                   </span>
                 </div>
               ) : null}
@@ -1295,6 +1501,19 @@ export const SessionReplayModal = ({
                       onMouseMove={updateHoverPreview}
                       onMouseLeave={() => setHoverPreview(null)}
                     >
+                      {pageflowMarkers.length ? (
+                        <div className='pointer-events-none absolute inset-x-0 bottom-full z-30 mb-1 h-5'>
+                          {pageflowMarkers.map((marker) => (
+                            <PageflowMarkerButton
+                              key={marker.id}
+                              marker={marker}
+                              onHover={() => setHoverPreview(null)}
+                              onSeek={seekTo}
+                            />
+                          ))}
+                        </div>
+                      ) : null}
+
                       {shouldShowPreview && hoverPreview ? (
                         <div
                           className='pointer-events-none absolute bottom-full z-40 mb-3 w-56'
@@ -1334,30 +1553,6 @@ export const SessionReplayModal = ({
                           className='absolute inset-y-0 left-0 rounded-full bg-red-600'
                           style={{ width: `${progressPercent}%` }}
                         />
-                        {duration > 0
-                          ? timelineSteps.map((step) => {
-                              const { markerClass } = getTimelineMeta(step.kind)
-                              return (
-                                <span
-                                  key={step.id}
-                                  className={cn(
-                                    'absolute top-1/2 h-2 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60',
-                                    markerClass,
-                                  )}
-                                  style={{
-                                    left: `${Math.min(
-                                      100,
-                                      Math.max(
-                                        0,
-                                        (step.offset / duration) * 100,
-                                      ),
-                                    )}%`,
-                                  }}
-                                  aria-hidden
-                                />
-                              )
-                            })
-                          : null}
                         <span
                           className='absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 scale-0 rounded-full bg-red-600 shadow-sm transition-transform duration-100 ease-out group-hover/scrubber:scale-100'
                           style={{ left: `${progressPercent}%` }}

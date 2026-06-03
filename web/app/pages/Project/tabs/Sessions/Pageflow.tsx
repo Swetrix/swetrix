@@ -26,22 +26,29 @@ import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
 dayjs.extend(utc)
 
-interface Metadata {
+export interface PageflowMetadata {
   key: string
   value: string
 }
 
-type EventType = 'pageview' | 'event' | 'error' | 'sale' | 'refund'
+export type PageflowEventType =
+  | 'pageview'
+  | 'event'
+  | 'error'
+  | 'sale'
+  | 'refund'
+
+export interface PageflowEvent {
+  type: PageflowEventType
+  value: string
+  created: string
+  metadata?: PageflowMetadata[]
+  amount?: number
+  currency?: string
+}
 
 interface PageflowProps {
-  pages: {
-    type: EventType
-    value: string
-    created: string
-    metadata?: Metadata[]
-    amount?: number
-    currency?: string
-  }[]
+  pages: PageflowEvent[]
   timeFormat: '12-hour' | '24-hour'
   zoomedTimeRange?: [Date, Date] | null
   sdur?: number
@@ -53,8 +60,8 @@ interface PageflowItemProps {
   index: number
   value: string
   created: string
-  type: EventType
-  metadata?: Metadata[]
+  type: PageflowEventType
+  metadata?: PageflowMetadata[]
   displayCreated: string
   timeDuration: number | null
   t: TFunction
@@ -63,7 +70,10 @@ interface PageflowItemProps {
   websiteUrl?: string | null
 }
 
-const ICON_BY_TYPE: Record<EventType, React.ElementType> = {
+export const PAGEFLOW_ICON_BY_TYPE: Record<
+  PageflowEventType,
+  React.ElementType
+> = {
   pageview: FileTextIcon,
   event: CursorClickIcon,
   error: WarningIcon,
@@ -71,7 +81,7 @@ const ICON_BY_TYPE: Record<EventType, React.ElementType> = {
   refund: ArrowCounterClockwiseIcon,
 }
 
-const ICON_COLOR_BY_TYPE: Record<EventType, string> = {
+export const PAGEFLOW_ICON_COLOR_BY_TYPE: Record<PageflowEventType, string> = {
   pageview: 'text-yellow-500',
   event: 'text-green-500',
   error: 'text-red-500',
@@ -141,13 +151,17 @@ const TypeIcon = ({
   type,
   className,
 }: {
-  type: EventType
+  type: PageflowEventType
   className?: string
 }) => {
-  const Icon = ICON_BY_TYPE[type]
+  const Icon = PAGEFLOW_ICON_BY_TYPE[type]
   return (
     <Icon
-      className={cn('h-4 w-4 shrink-0', ICON_COLOR_BY_TYPE[type], className)}
+      className={cn(
+        'h-4 w-4 shrink-0',
+        PAGEFLOW_ICON_COLOR_BY_TYPE[type],
+        className,
+      )}
       weight='duotone'
       aria-hidden
     />
@@ -170,7 +184,7 @@ const MetadataPanel = ({
   metadata,
   t,
 }: {
-  metadata: Metadata[]
+  metadata: PageflowMetadata[]
   t: TFunction
 }) => {
   const [showAll, setShowAll] = useState(false)
@@ -240,7 +254,7 @@ const MetadataPanel = ({
   )
 }
 
-const formatAmount = (amount: number, currency?: string) => {
+export const formatAmount = (amount: number, currency?: string) => {
   try {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',

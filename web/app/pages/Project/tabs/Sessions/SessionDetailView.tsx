@@ -41,21 +41,12 @@ import Flag from '~/ui/Flag'
 import countries from '~/utils/isoCountries'
 
 import NoSessionDetails from './NoSessionDetails'
-import { Pageflow } from './Pageflow'
+import { Pageflow, type PageflowEvent } from './Pageflow'
 import { SessionChart } from './SessionChart'
 
 dayjs.extend(utc)
 
 const SessionReplayModal = lazy(() => import('./SessionReplayModal'))
-
-interface PageflowItem {
-  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
-  value: string
-  created: string
-  metadata?: { key: string; value: string }[]
-  amount?: number
-  currency?: string
-}
 
 interface SessionDetailViewProps {
   activeSession: {
@@ -66,7 +57,7 @@ interface SessionDetailViewProps {
       customEvents?: number[]
       errors?: number[]
     }
-    pages?: PageflowItem[]
+    pages?: PageflowEvent[]
     timeBucket?: string
     sessionStart?: string
     lastActivity?: string
@@ -725,6 +716,8 @@ export const SessionDetailView = ({
             projectId={projectId}
             psid={sessionId}
             replay={activeSession.replay}
+            pages={activeSession.pages || []}
+            timeFormat={timeFormat}
           />
         </Suspense>
       ) : null}

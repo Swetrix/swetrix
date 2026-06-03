@@ -1966,7 +1966,6 @@
       "duration": "Replay duration: {{duration}}",
       "expiresAt": "Expires {{date}}",
       "title": "Session replay",
-      "summary": "{{events}} events · {{duration}}",
       "loadError": "Could not load replay",
       "playerError": "Could not initialise replay player",
       "empty": "No replay events were found.",
@@ -1985,6 +1984,13 @@
       "fullscreenError": "Could not enter fullscreen",
       "showTimeline": "Show timeline",
       "hideTimeline": "Hide timeline",
+      "timelineEvents": {
+        "pageview": "Pageview",
+        "event": "Event",
+        "error": "Error",
+        "sale": "Sale",
+        "refund": "Refund"
+      },
       "timeline": {
         "title": "Timeline",
         "steps": "{{count}} steps",
