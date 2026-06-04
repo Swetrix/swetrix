@@ -8,7 +8,7 @@ import { BotDetectionService } from './bot-detection.service'
 import { HeartbeatGateway } from './heartbeat.gateway'
 import { SaltService } from './salt.service'
 import { Salt } from './entities/salt.entity'
-import { SessionReplayR2Service } from './session-replay-r2.service'
+import { SessionReplayS3Service } from './session-replay-s3.service'
 import { UserModule } from '../user/user.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
@@ -34,7 +34,7 @@ import { SessionReplayExportProcessor } from './session-replay-export.processor'
     AnalyticsService,
     BotDetectionService,
     SaltService,
-    SessionReplayR2Service,
+    SessionReplayS3Service,
     SessionReplayExportService,
     SessionReplayExportProcessor,
     HeartbeatGateway,

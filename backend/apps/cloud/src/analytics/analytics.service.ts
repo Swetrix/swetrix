@@ -119,7 +119,7 @@ import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dt
 import { UAParser } from '@ua-parser-js/pro-business'
 import { extensions } from './utils/ua-parser'
 import { In, Not } from 'typeorm'
-import { SessionReplayR2Service } from './session-replay-r2.service'
+import { SessionReplayS3Service } from './session-replay-s3.service'
 import { SessionReplayPrivacyMode } from './dto/session-replay.dto'
 
 dayjs.extend(utc)
@@ -474,7 +474,7 @@ export class AnalyticsService {
     private readonly saltService: SaltService,
     private readonly botDetectionService: BotDetectionService,
     private readonly logger: AppLoggerService,
-    private readonly sessionReplayStorage: SessionReplayR2Service,
+    private readonly sessionReplayStorage: SessionReplayS3Service,
   ) {}
 
   async checkBot(

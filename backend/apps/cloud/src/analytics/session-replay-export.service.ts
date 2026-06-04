@@ -19,7 +19,7 @@ import type { Response } from 'express'
 import { redis } from '../common/constants'
 import { hash } from '../common/utils'
 import { AnalyticsService } from './analytics.service'
-import { SessionReplayR2Service } from './session-replay-r2.service'
+import { SessionReplayS3Service } from './session-replay-s3.service'
 
 export const SESSION_REPLAY_EXPORT_QUEUE = 'session-replay-export'
 
@@ -126,7 +126,7 @@ export class SessionReplayExportService {
 
   constructor(
     private readonly analyticsService: AnalyticsService,
-    private readonly sessionReplayStorage: SessionReplayR2Service,
+    private readonly sessionReplayStorage: SessionReplayS3Service,
     @InjectQueue(SESSION_REPLAY_EXPORT_QUEUE)
     private readonly exportQueue: Queue<SessionReplayExportJobData>,
   ) {}

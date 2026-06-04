@@ -2,9 +2,10 @@ import crypto from 'crypto'
 import { Readable } from 'stream'
 import { Injectable } from '@nestjs/common'
 
-interface R2Config {
+interface S3Config {
   endpoint: string
   bucket: string
+  region: string
   accessKeyId: string
   secretAccessKey: string
 }
@@ -20,30 +21,47 @@ const hmac = (key: Buffer | string, value: string) =>
 const encodeKeyPath = (key: string) =>
   key.split('/').map(encodeURIComponent).join('/')
 
-@Injectable()
-export class SessionReplayR2Service {
-  private getConfig(): R2Config | null {
-    const accountId =
-      process.env.SESSION_REPLAY_R2_ACCOUNT_ID || process.env.R2_ACCOUNT_ID
-    const endpoint =
-      process.env.SESSION_REPLAY_R2_ENDPOINT ||
-      process.env.R2_ENDPOINT ||
-      (accountId ? `https://${accountId}.r2.cloudflarestorage.com` : '')
-    const bucket = process.env.SESSION_REPLAY_R2_BUCKET || process.env.R2_BUCKET
-    const accessKeyId =
-      process.env.SESSION_REPLAY_R2_ACCESS_KEY_ID ||
-      process.env.R2_ACCESS_KEY_ID
-    const secretAccessKey =
-      process.env.SESSION_REPLAY_R2_SECRET_ACCESS_KEY ||
-      process.env.R2_SECRET_ACCESS_KEY
+const normalizeEndpoint = (endpoint: string) => {
+  const value = endpoint.trim().replace(/\/+$/, '')
 
-    if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) {
+  return /^https?:\/\//.test(value) ? value : `https://${value}`
+}
+
+const inferHetznerRegion = (endpoint: string) => {
+  const suffix = '.your-objectstorage.com'
+  const hostname = new URL(endpoint).hostname
+
+  if (!hostname.endsWith(suffix)) {
+    return ''
+  }
+
+  return hostname.slice(0, -suffix.length).split('.')[0] || ''
+}
+
+@Injectable()
+export class SessionReplayS3Service {
+  private getConfig(): S3Config | null {
+    const endpointValue =
+      process.env.SESSION_REPLAY_S3_ENDPOINT || process.env.HETZNER_S3_ENDPOINT
+    const endpoint = endpointValue ? normalizeEndpoint(endpointValue) : ''
+    const region = endpoint ? inferHetznerRegion(endpoint) : ''
+    const bucket =
+      process.env.SESSION_REPLAY_S3_BUCKET || process.env.HETZNER_S3_BUCKET
+    const accessKeyId =
+      process.env.SESSION_REPLAY_S3_ACCESS_KEY_ID ||
+      process.env.HETZNER_S3_ACCESS_KEY_ID
+    const secretAccessKey =
+      process.env.SESSION_REPLAY_S3_SECRET_ACCESS_KEY ||
+      process.env.HETZNER_S3_SECRET_ACCESS_KEY
+
+    if (!endpoint || !bucket || !region || !accessKeyId || !secretAccessKey) {
       return null
     }
 
     return {
-      endpoint: endpoint.replace(/\/+$/, ''),
+      endpoint,
       bucket,
+      region,
       accessKeyId,
       secretAccessKey,
     }
@@ -63,7 +81,7 @@ export class SessionReplayR2Service {
     })
 
     if (!response.ok) {
-      throw new Error(`R2 PUT failed with status ${response.status}`)
+      throw new Error(`Hetzner S3 PUT failed with status ${response.status}`)
     }
   }
 
@@ -75,7 +93,7 @@ export class SessionReplayR2Service {
     }
 
     if (!response.ok) {
-      throw new Error(`R2 GET failed with status ${response.status}`)
+      throw new Error(`Hetzner S3 GET failed with status ${response.status}`)
     }
 
     return Buffer.from(await response.arrayBuffer())
@@ -93,7 +111,7 @@ export class SessionReplayR2Service {
     }
 
     if (!response.ok) {
-      throw new Error(`R2 GET failed with status ${response.status}`)
+      throw new Error(`Hetzner S3 GET failed with status ${response.status}`)
     }
 
     if (!response.body) {
@@ -111,7 +129,7 @@ export class SessionReplayR2Service {
     const response = await this.signedFetch('DELETE', key)
 
     if (!response.ok && response.status !== 404) {
-      throw new Error(`R2 DELETE failed with status ${response.status}`)
+      throw new Error(`Hetzner S3 DELETE failed with status ${response.status}`)
     }
   }
 
@@ -123,19 +141,19 @@ export class SessionReplayR2Service {
   ): Promise<Response> {
     const config = this.getConfig()
     if (!config) {
-      throw new Error('R2 session replay storage is not configured')
+      throw new Error('Hetzner S3 session replay storage is not configured')
     }
 
     const payloadHash = sha256Hex(body || '')
     const now = new Date()
     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '')
     const dateStamp = amzDate.slice(0, 8)
-    const url = new URL(
-      `${config.endpoint}/${config.bucket}/${encodeKeyPath(key)}`,
-    )
+    const endpoint = new URL(config.endpoint)
+    endpoint.hostname = `${config.bucket}.${endpoint.hostname}`
+    endpoint.pathname = `/${encodeKeyPath(key)}`
 
     const headers: HeaderMap = {
-      host: url.host,
+      host: endpoint.host,
       'x-amz-content-sha256': payloadHash,
       'x-amz-date': amzDate,
       ...extraHeaders,
@@ -147,10 +165,10 @@ export class SessionReplayR2Service {
       .map((header) => `${header}:${headers[header].trim()}\n`)
       .join('')
     const signedHeaders = signedHeaderKeys.join(';')
-    const credentialScope = `${dateStamp}/auto/s3/aws4_request`
+    const credentialScope = `${dateStamp}/${config.region}/s3/aws4_request`
     const canonicalRequest = [
       method,
-      url.pathname,
+      endpoint.pathname,
       '',
       canonicalHeaders,
       signedHeaders,
@@ -163,7 +181,7 @@ export class SessionReplayR2Service {
       sha256Hex(canonicalRequest),
     ].join('\n')
     const dateKey = hmac(`AWS4${config.secretAccessKey}`, dateStamp)
-    const regionKey = hmac(dateKey, 'auto')
+    const regionKey = hmac(dateKey, config.region)
     const serviceKey = hmac(regionKey, 's3')
     const signingKey = hmac(serviceKey, 'aws4_request')
     const signature = crypto
@@ -178,7 +196,7 @@ export class SessionReplayR2Service {
     ].join(', ')
     const requestBody = body ? new Uint8Array(body) : undefined
 
-    return fetch(url, {
+    return fetch(endpoint, {
       method,
       headers,
       body: requestBody,
