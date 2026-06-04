@@ -1452,14 +1452,14 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async processWebsiteAddonRenewals() {
-    await Promise.all([
-      this.userService.processDueWebsiteAddonRenewals(),
-      this.userService.processDueSessionReplayAddonRenewals(),
-    ]).catch((reason) => {
+    try {
+      await this.userService.processDueWebsiteAddonRenewals()
+      await this.userService.processDueSessionReplayAddonRenewals()
+    } catch (reason) {
       this.logger.error(
         `[CRON WORKER](processWebsiteAddonRenewals) Error occured: ${reason}`,
       )
-    })
+    }
   }
 
   @Cron(CronExpression.EVERY_2_HOURS)

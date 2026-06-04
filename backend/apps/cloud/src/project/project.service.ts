@@ -1030,6 +1030,14 @@ export class ProjectService {
   }
 
   async getMonthlySessionReplayUsage(uid: string): Promise<number> {
+    const monthStart = dayjs.utc().startOf('month')
+    const key = `monthly_replay_usage:${uid}:${monthStart.format('YYYY-MM')}`
+    const cachedUsage = await redis.get(key)
+
+    if (!_isEmpty(cachedUsage)) {
+      return Number(cachedUsage) || 0
+    }
+
     const projects = await this.find({
       where: {
         admin: { id: uid },
@@ -1038,13 +1046,10 @@ export class ProjectService {
     })
 
     if (_isEmpty(projects)) {
+      await redis.set(key, '0', 'EX', redisUserUsageinfoCacheTimeout)
       return 0
     }
 
-    const monthStart = dayjs
-      .utc()
-      .startOf('month')
-      .format('YYYY-MM-DD HH:mm:ss')
     const CHUNK_SIZE = 5000
     const pids = _map(projects, 'id')
     let usage = 0
@@ -1062,13 +1067,15 @@ export class ProjectService {
           `,
           query_params: {
             pids: pidChunk,
-            monthStart,
+            monthStart: monthStart.format('YYYY-MM-DD HH:mm:ss'),
           },
         })
         .then((resultSet) => resultSet.json<{ usage: number }>())
 
       usage += Number(data[0]?.usage) || 0
     }
+
+    await redis.set(key, `${usage}`, 'EX', redisUserUsageinfoCacheTimeout)
 
     return usage
   }
