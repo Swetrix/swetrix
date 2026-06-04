@@ -44,6 +44,41 @@
 .rrweb-preview-root canvas {
   pointer-events: none;
 }
+.replay-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) 0px;
+  transition: grid-template-rows 240ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.replay-timeline-panel {
+  opacity: 0;
+  transform: translate3d(20px, 0, 0);
+  transition:
+    transform 240ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 160ms ease-out,
+    border-color 160ms ease-out;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+.replay-layout[data-timeline='open'] {
+  grid-template-rows: minmax(0, 1fr) clamp(220px, 34dvh, 360px);
+}
+.replay-layout[data-timeline='open'] .replay-timeline-panel {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+@media (min-width: 80rem) {
+  .replay-layout {
+    grid-template-columns: minmax(0, 1fr) 0px;
+    grid-template-rows: minmax(0, 1fr);
+    transition: grid-template-columns 240ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .replay-layout[data-timeline='open'] {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-rows: minmax(0, 1fr);
+  }
+}
 .replay-scrubber {
   cursor: pointer;
 }
@@ -107,6 +142,11 @@
   animation: replay-bezel-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 @media (prefers-reduced-motion: reduce) {
+  .replay-layout,
+  .replay-timeline-panel {
+    transition-duration: 1ms;
+    transform: none;
+  }
   .replay-bezel {
     animation: none;
     opacity: 0;

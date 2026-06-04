@@ -18,7 +18,7 @@ import {
   PauseIcon,
   PlayIcon,
   TextTIcon,
-  WarningCircleIcon,
+  WarningOctagonIcon,
   XIcon,
 } from '@phosphor-icons/react'
 import type { TFunction } from 'i18next'
@@ -48,6 +48,7 @@ import { useSessionReplayProxy } from '~/hooks/useAnalyticsProxy'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
+import { Switch } from '~/ui/Switch'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
@@ -622,23 +623,6 @@ const PlayerIconButton = ({
   />
 )
 
-const SettingsToggle = ({ on }: { on: boolean }) => (
-  <span
-    aria-hidden
-    className={cn(
-      'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-150 ease-out',
-      on ? 'bg-red-600' : 'bg-white/25',
-    )}
-  >
-    <span
-      className={cn(
-        'inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform duration-150 ease-out',
-        on ? 'translate-x-[18px]' : 'translate-x-[3px]',
-      )}
-    />
-  </span>
-)
-
 const PageflowMarkerTooltip = ({ marker }: { marker: PageflowMarker }) => {
   const Icon = PAGEFLOW_ICON_BY_TYPE[marker.type]
 
@@ -657,8 +641,8 @@ const PageflowMarkerTooltip = ({ marker }: { marker: PageflowMarker }) => {
           as='span'
           size='sm'
           weight='semibold'
-          colour='inherit'
-          className='min-w-0 leading-4 text-slate-50'
+          colour='primary'
+          className='min-w-0 leading-4 dark'
         >
           {marker.label}
         </Text>
@@ -666,8 +650,8 @@ const PageflowMarkerTooltip = ({ marker }: { marker: PageflowMarker }) => {
       <Text
         as='div'
         size='xs'
-        colour='inherit'
-        className='mt-1 max-w-64 leading-4 wrap-anywhere text-slate-300'
+        colour='secondary'
+        className='mt-1 max-w-64 leading-4 wrap-anywhere dark'
       >
         {marker.detail}
       </Text>
@@ -1363,12 +1347,8 @@ export const SessionReplayModal = ({
           </div>
 
           <div
-            className={cn(
-              'grid min-h-0 flex-1 gap-0 bg-black',
-              showTimeline
-                ? 'grid-rows-[minmax(0,1fr)_minmax(220px,34dvh)] xl:grid-cols-[minmax(0,1fr)_360px] xl:grid-rows-1'
-                : 'grid-cols-1',
-            )}
+            className='replay-layout min-h-0 flex-1 bg-black'
+            data-timeline={showTimeline ? 'open' : 'closed'}
           >
             <div
               className='group/player relative min-h-[320px] bg-black'
@@ -1386,18 +1366,18 @@ export const SessionReplayModal = ({
               {!isPreparing && error ? (
                 <div className='absolute inset-0 z-20 flex items-center justify-center px-6 text-center'>
                   <div className='max-w-md'>
-                    <WarningCircleIcon
+                    <WarningOctagonIcon
                       className='mx-auto mb-3 size-8 text-amber-400'
                       weight='duotone'
                     />
                     <Text
-                      colour='inherit'
+                      colour='primary'
                       weight='semibold'
-                      className='text-white'
+                      className='dark'
                     >
                       {t('project.sessionReplay.loadError')}
                     </Text>
-                    <Text as='p' size='sm' className='mt-1 text-slate-300'>
+                    <Text as='p' size='sm' colour='secondary' className='mt-1 dark'>
                       {error}
                     </Text>
                   </div>
@@ -1406,9 +1386,9 @@ export const SessionReplayModal = ({
               {!isPreparing && !error && payload && !hasEvents ? (
                 <div className='absolute inset-0 z-20 flex items-center justify-center px-6 text-center'>
                   <Text
-                    colour='inherit'
+                    colour='primary'
                     weight='semibold'
-                    className='text-white'
+                    className='dark'
                   >
                     {t('project.sessionReplay.empty')}
                   </Text>
@@ -1539,8 +1519,8 @@ export const SessionReplayModal = ({
                               as='span'
                               size='xs'
                               weight='semibold'
-                              colour='inherit'
-                              className='rounded bg-black/85 px-1.5 py-0.5 text-white tabular-nums'
+                              colour='primary'
+                              className='rounded bg-black/85 px-1.5 py-0.5 dark tabular-nums'
                             >
                               {formatReplayTime(hoverPreview.offset)}
                             </Text>
@@ -1606,8 +1586,8 @@ export const SessionReplayModal = ({
                       <Text
                         as='span'
                         size='xs'
-                        colour='inherit'
-                        className='px-1 text-white/90 tabular-nums sm:text-sm'
+                        colour='primary'
+                        className='px-1 tabular-nums dark sm:text-sm'
                       >
                         {formatReplayTime(currentTime)} /{' '}
                         {formatReplayTime(duration)}
@@ -1635,7 +1615,7 @@ export const SessionReplayModal = ({
                         {settingsOpen ? (
                           <div
                             role='menu'
-                            className='absolute right-0 bottom-full z-50 mb-3 w-64 overflow-hidden rounded-xl bg-slate-950/95 p-1.5 text-slate-100 shadow-2xl ring-1 ring-white/10 backdrop-blur-md'
+                            className='absolute right-0 bottom-full z-50 mb-3 w-72 overflow-hidden rounded-xl bg-slate-950/95 p-1.5 text-slate-100 shadow-2xl ring-1 ring-white/10 backdrop-blur-md'
                           >
                             {settingsView === 'main' ? (
                               <div className='flex flex-col'>
@@ -1648,27 +1628,28 @@ export const SessionReplayModal = ({
                                   className={SETTINGS_ROW_CLASS}
                                 >
                                   <GaugeIcon
-                                    className='size-5 shrink-0 text-slate-300'
+                                    weight='duotone'
+                                    className='size-5 shrink-0 text-gray-50'
                                     aria-hidden
                                   />
                                   <Text
                                     as='span'
                                     size='sm'
-                                    colour='inherit'
-                                    className='flex-1 text-slate-100'
+                                    colour='primary'
+                                    className='flex-1 dark'
                                   >
                                     {t('project.sessionReplay.speed')}
                                   </Text>
                                   <Text
                                     as='span'
                                     size='sm'
-                                    colour='inherit'
-                                    className='text-slate-400 tabular-nums'
+                                    colour='secondary'
+                                    className='tabular-nums dark'
                                   >
                                     {speedLabel}
                                   </Text>
                                   <CaretRightIcon
-                                    className='size-4 shrink-0 text-slate-400'
+                                    className='size-4 shrink-0 text-gray-200'
                                     aria-hidden
                                   />
                                 </Button>
@@ -1679,24 +1660,30 @@ export const SessionReplayModal = ({
                                   role='switch'
                                   aria-checked={showTimeline}
                                   tabIndex={0}
-                                  onClick={() =>
+                                  onClick={() => {
                                     setShowTimeline((value) => !value)
-                                  }
+                                    setSettingsOpen(false)
+                                  }}
                                   className={SETTINGS_ROW_CLASS}
                                 >
                                   <ListBulletsIcon
-                                    className='size-5 shrink-0 text-slate-300'
+                                    weight='duotone'
+                                    className='size-5 shrink-0 text-gray-50'
                                     aria-hidden
                                   />
                                   <Text
                                     as='span'
                                     size='sm'
-                                    colour='inherit'
-                                    className='flex-1 text-slate-100'
+                                    colour='primary'
+                                    className='flex-1 dark'
                                   >
                                     {t('project.sessionReplay.timeline.title')}
                                   </Text>
-                                  <SettingsToggle on={showTimeline} />
+                                  <Switch
+                                    checked={showTimeline}
+                                    visualOnly
+                                    className='shrink-0'
+                                  />
                                 </Button>
 
                                 <Button
@@ -1712,14 +1699,15 @@ export const SessionReplayModal = ({
                                   className={SETTINGS_ROW_CLASS}
                                 >
                                   <CameraIcon
-                                    className='size-5 shrink-0 text-slate-300'
+                                    weight='duotone'
+                                    className='size-5 shrink-0 text-gray-50'
                                     aria-hidden
                                   />
                                   <Text
                                     as='span'
                                     size='sm'
-                                    colour='inherit'
-                                    className='flex-1 text-slate-100'
+                                    colour='primary'
+                                    className='flex-1 dark'
                                   >
                                     {t('project.sessionReplay.screenshot')}
                                   </Text>
@@ -1741,8 +1729,8 @@ export const SessionReplayModal = ({
                                     as='span'
                                     size='sm'
                                     weight='semibold'
-                                    colour='inherit'
-                                    className='text-slate-100'
+                                    colour='primary'
+                                    className='dark'
                                   >
                                     {t('project.sessionReplay.speed')}
                                   </Text>
@@ -1777,8 +1765,8 @@ export const SessionReplayModal = ({
                                       <Text
                                         as='span'
                                         size='sm'
-                                        colour='inherit'
-                                        className='text-slate-100 tabular-nums'
+                                        colour='primary'
+                                        className='dark tabular-nums'
                                       >
                                         {item === 1
                                           ? t(
@@ -1825,55 +1813,62 @@ export const SessionReplayModal = ({
               </div>
             </div>
 
-            {showTimeline ? (
-              <aside className='min-h-0 border-t border-gray-200 bg-white xl:border-t-0 xl:border-l dark:border-slate-800 dark:bg-slate-950'>
-                <div className='flex h-12 items-center justify-between gap-3 border-b border-gray-200 px-4 dark:border-slate-800'>
-                  <div className='min-w-0'>
-                    <Text as='h3' size='sm' weight='semibold' truncate>
-                      {t('project.sessionReplay.timeline.title')}
-                    </Text>
-                    <Text size='xs' colour='secondary' className='tabular-nums'>
-                      {t('project.sessionReplay.timeline.steps', {
-                        count: timelineSteps.length,
-                      })}
+            <aside
+              className={cn(
+                'replay-timeline-panel min-h-0 overflow-hidden border-t bg-white xl:border-t-0 xl:border-l dark:bg-slate-950',
+                showTimeline
+                  ? 'border-gray-200 dark:border-slate-800'
+                  : 'border-transparent',
+              )}
+              aria-hidden={!showTimeline}
+              inert={!showTimeline ? true : undefined}
+            >
+              <div className='flex h-12 items-center justify-between gap-3 border-b border-gray-200 px-4 dark:border-slate-800'>
+                <div className='min-w-0'>
+                  <Text as='h3' size='sm' weight='semibold' truncate>
+                    {t('project.sessionReplay.timeline.title')}
+                  </Text>
+                  <Text size='xs' colour='secondary' className='tabular-nums'>
+                    {t('project.sessionReplay.timeline.steps', {
+                      count: timelineSteps.length,
+                    })}
+                  </Text>
+                </div>
+                <Button
+                  variant='icon'
+                  aria-label={t('project.sessionReplay.hideTimeline')}
+                  onClick={() => setShowTimeline(false)}
+                >
+                  <XIcon className='size-4' />
+                </Button>
+              </div>
+              <div className='h-[calc(100%-3rem)] overflow-y-auto px-3 py-3'>
+                {timelineSteps.length ? (
+                  <ol>
+                    {timelineSteps.map((step, index) => (
+                      <TimelineEventItem
+                        key={step.id}
+                        step={step}
+                        isActive={activeStep?.id === step.id}
+                        isLast={index === timelineSteps.length - 1}
+                        onSeek={seekTo}
+                      />
+                    ))}
+                  </ol>
+                ) : (
+                  <div className='flex h-full flex-col items-center justify-center gap-2 px-4 text-center'>
+                    <ListBulletsIcon
+                      className='size-6 text-gray-400 dark:text-slate-500'
+                      weight='duotone'
+                      aria-hidden
+                    />
+                    <Text as='p' size='sm' colour='secondary'>
+                      {t('project.sessionReplay.timeline.empty')}
                     </Text>
                   </div>
-                  <Button
-                    variant='icon'
-                    aria-label={t('project.sessionReplay.hideTimeline')}
-                    onClick={() => setShowTimeline(false)}
-                  >
-                    <XIcon className='size-4' />
-                  </Button>
-                </div>
-                <div className='h-[calc(100%-3rem)] overflow-y-auto px-3 py-3'>
-                  {timelineSteps.length ? (
-                    <ol>
-                      {timelineSteps.map((step, index) => (
-                        <TimelineEventItem
-                          key={step.id}
-                          step={step}
-                          isActive={activeStep?.id === step.id}
-                          isLast={index === timelineSteps.length - 1}
-                          onSeek={seekTo}
-                        />
-                      ))}
-                    </ol>
-                  ) : (
-                    <div className='flex h-full flex-col items-center justify-center gap-2 px-4 text-center'>
-                      <ListBulletsIcon
-                        className='size-6 text-gray-400 dark:text-slate-500'
-                        weight='duotone'
-                        aria-hidden
-                      />
-                      <Text as='p' size='sm' colour='secondary'>
-                        {t('project.sessionReplay.timeline.empty')}
-                      </Text>
-                    </div>
-                  )}
-                </div>
-              </aside>
-            ) : null}
+                )}
+              </div>
+            </aside>
           </div>
         </DialogPanel>
       </div>
