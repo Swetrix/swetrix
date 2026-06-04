@@ -1117,6 +1117,10 @@ export const SessionReplayModal = ({
     duration > 0
       ? Math.min(100, Math.max(0, (currentTime / duration) * 100))
       : 0
+  const progressStyle = {
+    '--replay-progress': `${progressPercent}%`,
+    '--replay-progress-scale': progressPercent / 100,
+  } as CSSProperties
   const activeStep = useMemo(
     () => getNearestStep(timelineSteps, currentTime),
     [currentTime, timelineSteps],
@@ -2002,14 +2006,17 @@ export const SessionReplayModal = ({
                         </div>
                       ) : null}
 
-                      <div className='relative h-[3px] w-full rounded-full bg-white/30 transition-[height] duration-100 ease-out group-hover/scrubber:h-[5px]'>
+                      <div
+                        className='relative h-[3px] w-full rounded-full bg-white/30 transition-[height] duration-100 ease-out group-hover/scrubber:h-[5px]'
+                        data-playing={isPlaying ? 'true' : 'false'}
+                        style={progressStyle}
+                      >
                         <div
-                          className='absolute inset-y-0 left-0 rounded-full bg-red-600'
-                          style={{ width: `${progressPercent}%` }}
+                          className='replay-progress-fill absolute inset-y-0 left-0 w-full rounded-full bg-red-600'
+                          aria-hidden
                         />
                         <span
-                          className='absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 scale-0 rounded-full bg-red-600 shadow-sm transition-transform duration-100 ease-out group-hover/scrubber:scale-100'
-                          style={{ left: `${progressPercent}%` }}
+                          className='replay-progress-thumb absolute top-1/2 size-3 rounded-full bg-red-600 shadow-sm'
                           aria-hidden
                         />
                       </div>

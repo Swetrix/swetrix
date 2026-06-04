@@ -89,6 +89,33 @@
 .replay-scrubber:focus-visible {
   outline: none;
 }
+.replay-progress-fill {
+  transform: scaleX(var(--replay-progress-scale, 0));
+  transform-origin: left center;
+}
+.replay-progress-thumb {
+  left: var(--replay-progress, 0%);
+  transform: translate3d(-50%, -50%, 0) scale(0);
+}
+.group\/scrubber:hover .replay-progress-thumb {
+  transform: translate3d(-50%, -50%, 0) scale(1);
+}
+[data-playing='true'] .replay-progress-fill {
+  transition: transform 250ms linear;
+}
+[data-playing='true'] .replay-progress-thumb {
+  transition:
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    left 250ms linear;
+}
+[data-playing='false'] .replay-progress-fill {
+  transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+[data-playing='false'] .replay-progress-thumb {
+  transition:
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    left 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
 /*
  * The visible track, fill and handle are drawn with regular DOM nodes (see
  * SessionReplayModal). This native range input only provides the hit area,
@@ -146,6 +173,10 @@
   .replay-timeline-panel {
     transition-duration: 1ms;
     transform: none;
+  }
+  .replay-progress-fill,
+  .replay-progress-thumb {
+    transition: none !important;
   }
   .replay-bezel {
     animation: none;
