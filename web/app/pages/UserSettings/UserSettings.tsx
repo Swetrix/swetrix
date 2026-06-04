@@ -2134,7 +2134,8 @@ const UserSettings = () => {
                       title={t('billing.addonsTitle')}
                       description={t('billing.addonsDesc')}
                     >
-                      <div className='max-w-2xl border-t border-gray-200 pt-4 dark:border-slate-800'>
+                      <div className='border-t border-gray-200 dark:border-slate-800' />
+                      <div className='max-w-2xl pt-4'>
                         <Text as='h4' size='base' weight='semibold'>
                           {t('billing.websiteAddonTitle')}
                         </Text>
@@ -2247,7 +2248,8 @@ const UserSettings = () => {
                         </Button>
                       </div>
 
-                      <div className='mt-8 border-t border-gray-200 pt-6 dark:border-slate-800'>
+                      <div className='border-t border-gray-200 dark:border-slate-800 mt-4' />
+                      <div className='pt-4'>
                         <Text as='h4' size='base' weight='semibold'>
                           {t('billing.sessionReplayCapacityTitle')}
                         </Text>
