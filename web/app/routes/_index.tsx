@@ -630,6 +630,7 @@ const SOFTWARE_APPLICATION_JSONLD = {
     'Cookie-free tracking',
     'Traffic web analytics',
     'Session analysis',
+    'Session replays',
     'Website speed analytics',
     'Error tracking',
     'Funnels',

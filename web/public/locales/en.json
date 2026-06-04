@@ -710,9 +710,17 @@
     "privacyFirst": "Privacy-first",
     "featuresAlt": {
       "heading": "Features you need, no training required",
+      "webHeading": "Web analytics",
+      "webDescription": "Understand traffic, campaigns, events and performance from one privacy-first dashboard.",
+      "productHeading": "Product analytics",
+      "productDescription": "Investigate what people do inside your product, reproduce issues and ship better changes with confidence.",
       "privacy": {
         "title": "Privacy-first analytics",
         "desc": "Track visitors without cookies or personal data. Stay GDPR-compliant out of the box."
+      },
+      "traffic": {
+        "title": "Traffic web analytics",
+        "desc": "See visitors, pageviews, referrers, countries, devices and top pages without sampling."
       },
       "events": {
         "title": "Custom events & goals",
@@ -737,6 +745,14 @@
       "sessions": {
         "title": "Session analysis",
         "desc": "Follow individual user journeys across pages. Understand how visitors navigate your site."
+      },
+      "replays": {
+        "title": "Session replays",
+        "desc": "Watch recorded sessions with timelines, clicks and page changes to understand what blocked a user."
+      },
+      "funnels": {
+        "title": "Funnels",
+        "desc": "Track step-by-step conversion and see exactly where users leave key product flows."
       },
       "organisations": {
         "title": "Organisations",
