@@ -196,10 +196,16 @@ async function parseExportProxyResponse(
 
 export function useSessionReplayExportProxy() {
   const startSessionReplayExport = useCallback(
-    async (projectId: string, psid: string, replayId?: string) => {
+    async (
+      projectId: string,
+      psid: string,
+      replayId?: string,
+      signal?: AbortSignal,
+    ) => {
       const response = await fetch('/api/session-replay-export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal,
         body: JSON.stringify({ projectId, psid, replayId }),
       })
 
@@ -209,9 +215,11 @@ export function useSessionReplayExportProxy() {
   )
 
   const getSessionReplayExportStatus = useCallback(
-    async (projectId: string, exportId: string) => {
+    async (projectId: string, exportId: string, signal?: AbortSignal) => {
       const query = new URLSearchParams({ projectId, exportId })
-      const response = await fetch(`/api/session-replay-export?${query}`)
+      const response = await fetch(`/api/session-replay-export?${query}`, {
+        signal,
+      })
 
       return parseExportProxyResponse(response)
     },

@@ -254,7 +254,7 @@ swetrix.init("YOUR_PROJECT_ID", {
 });
 
 const replay = await swetrix.startSessionReplay({
-  privacy: "normal",
+  privacy: "total",
 });
 
 await replay.stop();
@@ -270,13 +270,13 @@ init("YOUR_PROJECT_ID", {
 });
 
 const replay = await startSessionReplay({
-  privacy: "normal",
+  privacy: "total",
 });
 ```
 
 | Name              | Description                                                                                                                                                                                                                                            | Default value |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
-| privacy           | Controls how much page content is masked. Use `total` to mask all text and inputs and block media/canvas content, `normal` to mask all inputs, or `none` to only force password inputs to stay masked unless you add your own `rrweb` masking options. | `normal`      |
+| privacy           | Controls how much page content is masked. Use `total` to mask all text and inputs and block media/canvas content, `normal` to mask all inputs, or `none` to only force password inputs to stay masked unless you add your own `rrweb` masking options. | `total`       |
 | rrweb             | Advanced recorder options passed to `rrweb.record()`. If you provide an `emit` callback, Swetrix will call it and still upload replay events.                                                                                                          | `undefined`   |
 | flushIntervalMs   | How often replay events are uploaded while recording.                                                                                                                                                                                                  | `5000`        |
 | maxEventsPerChunk | The maximum number of replay events to batch before Swetrix uploads a chunk immediately.                                                                                                                                                               | `100`         |

@@ -93,6 +93,7 @@ const PLAN_TYPE_ENTITLEMENTS = {
 } as const
 
 const PLUS_SESSION_REPLAY_QUOTA: Partial<Record<PlanCode, number>> = {
+  [PlanCode.freelancer]: 5000,
   [PlanCode['100k']]: 5000,
   [PlanCode['200k']]: 10000,
   [PlanCode['500k']]: 25000,
@@ -217,6 +218,7 @@ export const getSessionReplayQuota = (
 
 export const getSessionReplayRetentionEntitlement = (
   user?: {
+    planCode?: PlanCode | null
     planType?: PlanType | null
     entitlementOverrides?: Record<string, unknown> | null
   } | null,
@@ -228,6 +230,10 @@ export const getSessionReplayRetentionEntitlement = (
 
   if (typeof override === 'number') {
     return override
+  }
+
+  if (user?.planType === PlanType.enterprise) {
+    return 1825
   }
 
   return getEffectivePlanType(user) === PlanType.enterprise ? 1825 : 30

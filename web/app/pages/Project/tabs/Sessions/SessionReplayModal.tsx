@@ -1061,6 +1061,8 @@ const SessionReplayModal = ({
   const previewReplayer = useRef<Replayer | null>(null)
   const previewSeekRaf = useRef<number | null>(null)
   const exportPollTimeout = useRef<number | null>(null)
+  const exportAbortController = useRef<AbortController | null>(null)
+  const isModalOpenRef = useRef(isOpen)
   const playStart = useRef({ offset: 0, at: 0, speed: 1 })
   const currentTimeRef = useRef(0)
   const speedRef = useRef(1)
@@ -1166,7 +1168,13 @@ const SessionReplayModal = ({
       window.clearTimeout(exportPollTimeout.current)
       exportPollTimeout.current = null
     }
+    exportAbortController.current?.abort()
+    exportAbortController.current = null
   }, [])
+
+  useEffect(() => {
+    isModalOpenRef.current = isOpen
+  }, [isOpen])
 
   useEffect(() => {
     currentTimeRef.current = currentTime
@@ -1640,6 +1648,8 @@ const SessionReplayModal = ({
 
   const handleExportStatus = useCallback(
     (status: SessionReplayExportResponse) => {
+      if (!isModalOpenRef.current) return true
+
       setExportStatus(status)
 
       if (status.status === 'ready') {
@@ -1680,28 +1690,48 @@ const SessionReplayModal = ({
       clearExportPoll()
 
       const poll = async () => {
+        if (!isModalOpenRef.current) return
+
+        const controller = new AbortController()
+        exportAbortController.current = controller
+
         try {
-          const status = await getSessionReplayExportStatus(projectId, exportId)
+          const status = await getSessionReplayExportStatus(
+            projectId,
+            exportId,
+            controller.signal,
+          )
+
+          if (!isModalOpenRef.current || controller.signal.aborted) return
           if (handleExportStatus(status)) return
 
+          if (!isModalOpenRef.current) return
           exportPollTimeout.current = window.setTimeout(
             poll,
             EXPORT_POLL_INTERVAL_MS,
           )
         } catch {
+          if (!isModalOpenRef.current || controller.signal.aborted) return
+
           clearExportPoll()
           setIsExportStarting(false)
           setExportStatus(null)
           toast.error(t('project.sessionReplay.exportFailed'), {
             id: exportToastId,
           })
+        } finally {
+          if (exportAbortController.current === controller) {
+            exportAbortController.current = null
+          }
         }
       }
 
-      exportPollTimeout.current = window.setTimeout(
-        poll,
-        EXPORT_POLL_INTERVAL_MS,
-      )
+      if (isModalOpenRef.current) {
+        exportPollTimeout.current = window.setTimeout(
+          poll,
+          EXPORT_POLL_INTERVAL_MS,
+        )
+      }
     },
     [
       clearExportPoll,
@@ -1717,6 +1747,8 @@ const SessionReplayModal = ({
     if (!canControlReplay || isReplayExporting) return
 
     clearExportPoll()
+    const controller = new AbortController()
+    exportAbortController.current = controller
     setIsExportStarting(true)
     setSettingsOpen(false)
     toast.loading(t('project.sessionReplay.exportPreparing'), {
@@ -1728,13 +1760,19 @@ const SessionReplayModal = ({
         projectId,
         psid,
         selectedReplayId,
+        controller.signal,
       )
+
+      if (!isModalOpenRef.current || controller.signal.aborted) return
+
       setIsExportStarting(false)
 
       if (!handleExportStatus(status)) {
         startExportPolling(status.exportId)
       }
     } catch (reason) {
+      if (!isModalOpenRef.current || controller.signal.aborted) return
+
       setIsExportStarting(false)
       setExportStatus(null)
       toast.error(
@@ -1743,6 +1781,10 @@ const SessionReplayModal = ({
           : t('project.sessionReplay.exportFailed'),
         { id: exportToastId },
       )
+    } finally {
+      if (exportAbortController.current === controller) {
+        exportAbortController.current = null
+      }
     }
   }, [
     canControlReplay,
@@ -1759,6 +1801,7 @@ const SessionReplayModal = ({
   ])
 
   const close = () => {
+    isModalOpenRef.current = false
     replayer.current?.pause()
     clearExportPoll()
     setIsPlaying(false)

@@ -11,6 +11,9 @@ interface S3Config {
 }
 
 type HeaderMap = Record<string, string>
+type PutObjectBody = Buffer | Readable
+
+const SESSION_REPLAY_STORAGE_TIMEOUT_MS = 30_000
 
 const sha256Hex = (value: Buffer | string) =>
   crypto.createHash('sha256').update(value).digest('hex')
@@ -73,12 +76,25 @@ export class SessionReplayS3Service {
 
   async putObject(
     key: string,
-    body: Buffer,
+    body: PutObjectBody,
     contentType = 'application/json',
+    options: { contentLength?: number; payloadHash?: string } = {},
   ): Promise<void> {
-    const response = await this.signedFetch('PUT', key, body, {
+    const headers: HeaderMap = {
       'content-type': contentType,
-    })
+    }
+
+    if (typeof options.contentLength === 'number') {
+      headers['content-length'] = String(options.contentLength)
+    }
+
+    const response = await this.signedFetch(
+      'PUT',
+      key,
+      body,
+      headers,
+      options.payloadHash,
+    )
 
     if (!response.ok) {
       throw new Error(`Hetzner S3 PUT failed with status ${response.status}`)
@@ -136,15 +152,22 @@ export class SessionReplayS3Service {
   private async signedFetch(
     method: 'PUT' | 'GET' | 'DELETE',
     key: string,
-    body?: Buffer,
+    body?: PutObjectBody,
     extraHeaders: HeaderMap = {},
+    payloadHashOverride?: string,
   ): Promise<Response> {
     const config = this.getConfig()
     if (!config) {
       throw new Error('Hetzner S3 session replay storage is not configured')
     }
 
-    const payloadHash = sha256Hex(body || '')
+    const hasStreamBody = body instanceof Readable
+    if (hasStreamBody && !payloadHashOverride) {
+      throw new Error('Stream uploads require a payload hash')
+    }
+
+    const payloadHash =
+      payloadHashOverride || sha256Hex(body instanceof Readable ? '' : body || '')
     const now = new Date()
     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '')
     const dateStamp = amzDate.slice(0, 8)
@@ -194,12 +217,33 @@ export class SessionReplayS3Service {
       `SignedHeaders=${signedHeaders}`,
       `Signature=${signature}`,
     ].join(', ')
-    const requestBody = body ? new Uint8Array(body) : undefined
-
-    return fetch(endpoint, {
+    const requestBody = body
+      ? hasStreamBody
+        ? (body as any)
+        : new Uint8Array(body)
+      : undefined
+    const controller = new AbortController()
+    const timeout = setTimeout(
+      () => controller.abort(),
+      SESSION_REPLAY_STORAGE_TIMEOUT_MS,
+    )
+    const request: RequestInit & { duplex?: 'half' } = {
       method,
       headers,
-      body: requestBody,
-    })
+      signal: controller.signal,
+    }
+
+    if (requestBody) {
+      request.body = requestBody
+      if (hasStreamBody) {
+        request.duplex = 'half'
+      }
+    }
+
+    try {
+      return await fetch(endpoint, request)
+    } finally {
+      clearTimeout(timeout)
+    }
   }
 }

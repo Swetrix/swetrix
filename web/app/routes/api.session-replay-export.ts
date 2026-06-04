@@ -26,10 +26,19 @@ const getCookieHeaders = (cookies: string[]) => {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const body = (await request.json()) as {
+  let body: {
     projectId?: string
     psid?: string
     replayId?: string
+  }
+
+  try {
+    body = (await request.json()) as typeof body
+  } catch {
+    return data<ProxyResponse<SessionReplayExportResponse>>(
+      { data: null, error: 'Invalid JSON body' },
+      { status: 400 },
+    )
   }
 
   if (!body.projectId || !body.psid) {

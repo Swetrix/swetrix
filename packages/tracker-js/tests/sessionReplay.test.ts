@@ -269,6 +269,62 @@ describe('Session replay tracking', () => {
     expect(freeLove.emit).toBe(emit)
   })
 
+  test('invalid privacy values fall back to total privacy', async () => {
+    const record = jest.fn((options) => {
+      ;(record as any).options = options
+      return jest.fn()
+    })
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const startPromise = startSessionReplay({
+      privacy: 'totl' as any,
+    })
+    resolveRrwebScript(record)
+
+    const actions = await startPromise
+    const startCall = fetchMock.mock.calls.find(([url]) =>
+      String(url).includes('/session-replay/start'),
+    )
+
+    expect(startCall).toBeTruthy()
+    expect(JSON.parse(startCall![1].body as string)).toEqual(
+      expect.objectContaining({ privacy: 'total' }),
+    )
+    expect((record as any).options.maskTextSelector).toBe('*')
+
+    await actions.stop()
+  })
+
+  test('rrweb loader clears failed loads so startSessionReplay can retry', async () => {
+    const record = jest.fn(() => jest.fn())
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const failedStart = startSessionReplay()
+    const failedScript = document.querySelector<HTMLScriptElement>(
+      `script[src="${RRWEB_URL}"]`,
+    )
+    expect(failedScript).toBeTruthy()
+    failedScript!.dispatchEvent(new Event('error'))
+
+    await failedStart
+    expect((window as any).__SWETRIX_RRWEB_LOADING__).toBeUndefined()
+
+    const retryStart = startSessionReplay()
+    const scripts = document.querySelectorAll<HTMLScriptElement>(
+      `script[src="${RRWEB_URL}"]`,
+    )
+    expect(scripts).toHaveLength(2)
+    ;(window as any).rrweb = { record }
+    scripts[1].dispatchEvent(new Event('load'))
+
+    const actions = await retryStart
+    expect(record).toHaveBeenCalled()
+
+    await actions.stop()
+  })
+
   test('user rrweb emit is composed with Swetrix uploads', async () => {
     const record = jest.fn((options) => {
       ;(record as any).options = options

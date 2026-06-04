@@ -192,7 +192,10 @@ export interface ErrorActions {
   stop: () => void
 }
 
-export type SessionReplayPrivacy = 'total' | 'normal' | 'none'
+const SESSION_REPLAY_PRIVACY_VALUES = ['total', 'normal', 'none'] as const
+
+export type SessionReplayPrivacy =
+  (typeof SESSION_REPLAY_PRIVACY_VALUES)[number]
 
 export interface SessionReplayOptions {
   privacy?: SessionReplayPrivacy
@@ -800,7 +803,7 @@ export class Lib {
       return defaultSessionReplayActions
     }
 
-    const privacy = options.privacy || DEFAULT_SESSION_REPLAY_PRIVACY
+    const privacy = this.getSessionReplayPrivacy(options.privacy)
     const replayId = this.createReplayId()
     const started = await this.sendSessionReplayStart(replayId, privacy)
 
@@ -949,6 +952,14 @@ export class Lib {
     }
 
     return Math.random() < sampleRate
+  }
+
+  private getSessionReplayPrivacy(privacy: unknown): SessionReplayPrivacy {
+    return SESSION_REPLAY_PRIVACY_VALUES.includes(
+      privacy as SessionReplayPrivacy,
+    )
+      ? (privacy as SessionReplayPrivacy)
+      : DEFAULT_SESSION_REPLAY_PRIVACY
   }
 
   /**
@@ -1112,6 +1123,12 @@ export class Lib {
 
     if (window.__SWETRIX_RRWEB_LOADING__) {
       this.rrwebLoader = window.__SWETRIX_RRWEB_LOADING__
+      void this.rrwebLoader.catch(() => {
+        if (window.__SWETRIX_RRWEB_LOADING__ === this.rrwebLoader) {
+          delete window.__SWETRIX_RRWEB_LOADING__
+        }
+        this.rrwebLoader = null
+      })
       return this.rrwebLoader
     }
 
@@ -1126,12 +1143,21 @@ export class Lib {
     })
 
     window.__SWETRIX_RRWEB_LOADING__ = this.rrwebLoader
+    const loader = this.rrwebLoader
+    void loader.catch(() => {
+      if (window.__SWETRIX_RRWEB_LOADING__ === loader) {
+        delete window.__SWETRIX_RRWEB_LOADING__
+      }
+      if (this.rrwebLoader === loader) {
+        this.rrwebLoader = null
+      }
+    })
 
     return this.rrwebLoader
   }
 
   private getSessionReplayRecordOptions(
-    privacy: SessionReplayPrivacy,
+    privacy: unknown,
     userOptions: RrwebRecordOptions | undefined,
     emit: RrwebEmit,
   ): RrwebRecordOptions {
@@ -1146,7 +1172,9 @@ export class Lib {
         ? (options.maskInputOptions as Record<string, unknown>)
         : {}
 
-    if (privacy === 'total') {
+    const resolvedPrivacy = this.getSessionReplayPrivacy(privacy)
+
+    if (resolvedPrivacy === 'total') {
       return {
         ...options,
         maskAllInputs: true,
@@ -1161,7 +1189,7 @@ export class Lib {
       }
     }
 
-    if (privacy === 'normal') {
+    if (resolvedPrivacy === 'normal') {
       return {
         ...options,
         maskAllInputs: true,

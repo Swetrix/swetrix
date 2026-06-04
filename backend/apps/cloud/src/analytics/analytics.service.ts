@@ -144,6 +144,41 @@ const MAX_SESSION_REPLAY_EVENTS_PER_CHUNK = 1000
 const MAX_SESSION_REPLAY_CHUNK_BYTES = 900 * 1024
 const SESSION_REPLAY_CLEANUP_BATCH_SIZE = 500
 const SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY = 6
+const RESERVE_REPLAY_USAGE_LUA = `
+local reservationKey = KEYS[1]
+local counterKey = KEYS[2]
+local quota = tonumber(ARGV[1])
+local monthlyUsage = tonumber(ARGV[2]) or 0
+local ttl = tonumber(ARGV[3])
+
+if redis.call("EXISTS", reservationKey) == 1 then
+  return 0
+end
+
+local reservedUsage = tonumber(redis.call("GET", counterKey) or "0")
+local currentUsage = reservedUsage
+if monthlyUsage > currentUsage then
+  currentUsage = monthlyUsage
+end
+
+if currentUsage >= quota then
+  return -1
+end
+
+redis.call("SET", reservationKey, "1", "EX", ttl)
+redis.call("SET", counterKey, currentUsage + 1, "EX", ttl)
+return 1
+`
+const RELEASE_REPLAY_USAGE_LUA = `
+if redis.call("DEL", KEYS[1]) == 1 then
+  local current = tonumber(redis.call("GET", KEYS[2]) or "0")
+  if current > 0 then
+    redis.call("DECR", KEYS[2])
+  end
+  return 1
+end
+return 0
+`
 
 const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
 
@@ -1771,6 +1806,10 @@ export class AnalyticsService {
     return `session-replay:usage:${dayjs.utc().format('YYYY-MM')}:${accountId}:${pid}:${psid}:${replayId}`
   }
 
+  private getReplayUsageCounterKey(accountId: string) {
+    return `session-replay:usage-count:${dayjs.utc().format('YYYY-MM')}:${accountId}`
+  }
+
   private getReplayUsageTtlSeconds() {
     return Math.max(60, dayjs.utc().endOf('month').diff(dayjs.utc(), 'second'))
   }
@@ -1818,35 +1857,68 @@ export class AnalyticsService {
     pid: string,
     psid: string,
     replayId: string,
-  ): Promise<{ reserved: boolean; key?: string }> {
+  ): Promise<{ reserved: boolean; key?: string; counterKey?: string }> {
     const accountId = project.admin?.id || pid
     const key = this.getReplayUsageKey(accountId, pid, psid, replayId)
-    const result = await redis.set(
+    const quota = getSessionReplayQuota(project.admin)
+
+    if (quota === 'custom') {
+      const result = await redis.set(
+        key,
+        '1',
+        'EX',
+        this.getReplayUsageTtlSeconds(),
+        'NX',
+      )
+
+      return result === 'OK' ? { reserved: true, key } : { reserved: false }
+    }
+
+    const counterKey = this.getReplayUsageCounterKey(accountId)
+    const pids = await this.getReplayAccountProjectIds(project, pid)
+    const usage = await this.getMonthlyReplayUsage(pids)
+    const result = await redis.eval(
+      RESERVE_REPLAY_USAGE_LUA,
+      2,
       key,
-      '1',
-      'EX',
+      counterKey,
+      quota,
+      usage,
       this.getReplayUsageTtlSeconds(),
-      'NX',
     )
 
-    if (result !== 'OK') {
+    if (Number(result) === -1) {
+      throw new HttpException(
+        'Monthly session replay quota exceeded',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
+    if (Number(result) !== 1) {
       return { reserved: false }
     }
 
-    const quota = getSessionReplayQuota(project.admin)
-    if (quota !== 'custom') {
-      const pids = await this.getReplayAccountProjectIds(project, pid)
-      const usage = await this.getMonthlyReplayUsage(pids)
-      if (usage >= quota) {
-        await redis.del(key)
-        throw new HttpException(
-          'Monthly session replay quota exceeded',
-          HttpStatus.PAYMENT_REQUIRED,
-        )
-      }
+    return { reserved: true, key, counterKey }
+  }
+
+  private async releaseReplayUsageReservation(
+    reservation: { key?: string; counterKey?: string },
+  ) {
+    if (!reservation.key) {
+      return
     }
 
-    return { reserved: true, key }
+    if (!reservation.counterKey) {
+      await redis.del(reservation.key)
+      return
+    }
+
+    await redis.eval(
+      RELEASE_REPLAY_USAGE_LUA,
+      2,
+      reservation.key,
+      reservation.counterKey,
+    )
   }
 
   async storeSessionReplayChunk(
@@ -1928,7 +2000,7 @@ export class AnalyticsService {
       })
     } catch (reason) {
       await Promise.allSettled([
-        usageReservation.key ? redis.del(usageReservation.key) : undefined,
+        this.releaseReplayUsageReservation(usageReservation),
         this.sessionReplayStorage.deleteObject(objectKey),
       ])
       throw reason

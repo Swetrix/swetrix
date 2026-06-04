@@ -1,5 +1,6 @@
 import { spawn } from 'child_process'
-import { randomUUID } from 'crypto'
+import { createHash, randomUUID } from 'crypto'
+import { createReadStream } from 'fs'
 import * as fs from 'fs/promises'
 import * as os from 'os'
 import * as path from 'path'
@@ -383,8 +384,16 @@ export class SessionReplayExportService {
       await this.updateState(state, { status: 'processing', progress: 90 })
 
       const objectKey = this.getObjectKey(data.pid, data.psid, data.exportId)
-      const output = await fs.readFile(mp4Path)
-      await this.sessionReplayStorage.putObject(objectKey, output, 'video/mp4')
+      const outputHash = await this.hashFile(mp4Path)
+      await this.sessionReplayStorage.putObject(
+        objectKey,
+        createReadStream(mp4Path),
+        'video/mp4',
+        {
+          contentLength: outputStat.size,
+          payloadHash: outputHash,
+        },
+      )
 
       await this.updateState(state, {
         status: 'ready',
@@ -393,21 +402,29 @@ export class SessionReplayExportService {
         error: undefined,
       })
 
-      await this.exportQueue.add(
-        'cleanup-session-replay-export',
-        {
-          type: 'cleanup',
-          exportId: data.exportId,
-          expiresAt: state.expiresAt,
-        },
-        {
-          jobId: `${data.exportId}:cleanup:${hash(state.expiresAt)}`,
-          delay: this.ttlSeconds * 1000,
-          attempts: 3,
-          removeOnComplete: true,
-          removeOnFail: true,
-        },
-      )
+      try {
+        await this.exportQueue.add(
+          'cleanup-session-replay-export',
+          {
+            type: 'cleanup',
+            exportId: data.exportId,
+            expiresAt: state.expiresAt,
+          },
+          {
+            jobId: `${data.exportId}:cleanup:${hash(state.expiresAt)}`,
+            delay: this.ttlSeconds * 1000,
+            attempts: 3,
+            removeOnComplete: true,
+            removeOnFail: true,
+          },
+        )
+      } catch (reason) {
+        this.logger.warn(
+          `Failed to schedule session replay export cleanup ${data.exportId}: ${
+            reason instanceof Error ? reason.message : String(reason)
+          }`,
+        )
+      }
     } catch (reason) {
       await this.markFailed(state, reason)
       throw reason
@@ -427,15 +444,16 @@ export class SessionReplayExportService {
     if (state.expiresAt !== data.expiresAt) return
 
     if (state.objectKey) {
-      await this.sessionReplayStorage
-        .deleteObject(state.objectKey)
-        .catch((reason) =>
-          this.logger.warn(
-            `Failed to delete session replay export ${data.exportId}: ${
-              reason instanceof Error ? reason.message : String(reason)
-            }`,
-          ),
+      try {
+        await this.sessionReplayStorage.deleteObject(state.objectKey)
+      } catch (reason) {
+        this.logger.warn(
+          `Failed to delete session replay export ${data.exportId}: ${
+            reason instanceof Error ? reason.message : String(reason)
+          }`,
         )
+        throw reason
+      }
     }
 
     await this.expireState(state)
@@ -655,6 +673,18 @@ export class SessionReplayExportService {
     }
 
     return 'about:blank'
+  }
+
+  private async hashFile(filePath: string) {
+    const digest = createHash('sha256')
+    await new Promise<void>((resolve, reject) => {
+      const stream = createReadStream(filePath)
+      stream.on('data', (chunk) => digest.update(chunk))
+      stream.on('error', reject)
+      stream.on('end', resolve)
+    })
+
+    return digest.digest('hex')
   }
 
   private async runCommand(

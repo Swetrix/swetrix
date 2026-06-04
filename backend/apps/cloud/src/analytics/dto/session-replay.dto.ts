@@ -31,6 +31,7 @@ export class SessionReplayStartDto {
 
   @ApiProperty({ required: true })
   @IsString()
+  @IsNotEmpty()
   @MaxLength(80)
   replayId: string
 
@@ -85,6 +86,7 @@ export class GetSessionReplayDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(80)
   replayId?: string
 }
@@ -98,15 +100,17 @@ export class GetSessionReplaysDto extends PickType(GetDataDto, [
   'timezone',
 ] as const) {
   @Type(() => Number)
+  @IsOptional()
   @IsInt()
   @Min(0)
   @Max(150)
-  take: number
+  take?: number
 
   @Type(() => Number)
+  @IsOptional()
   @IsInt()
   @Min(0)
-  skip: number
+  skip?: number
 }
 
 export class SessionReplayExportStartDto extends GetSessionReplayDto {}

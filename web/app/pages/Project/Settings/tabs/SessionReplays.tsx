@@ -80,6 +80,7 @@ const SessionReplays = ({
             <label key={days} className={className}>
               <input
                 type='radio'
+                name='retention'
                 className='sr-only'
                 aria-label={label}
                 checked={active}
