@@ -22,12 +22,26 @@ export enum PlanCode {
   '100k' = '100k',
   '200k' = '200k',
   '500k' = '500k',
-  startup = 'startup',
+  '1m' = '1m',
   '2m' = '2m',
-  enterprise = 'enterprise',
+  '5m' = '5m',
   '10m' = '10m',
   '15m' = '15m',
   '20m' = '20m',
+  '30m' = '30m',
+  '40m' = '40m',
+  '50m' = '50m',
+}
+
+export enum PlanType {
+  standard = 'standard',
+  plus = 'plus',
+  enterprise = 'enterprise',
+}
+
+export enum PlanFeatureCode {
+  featureFlags = 'featureFlags',
+  experiments = 'experiments',
 }
 
 export enum DashboardBlockReason {
@@ -45,6 +59,141 @@ interface PlanSignature {
   pid?: string
   ypid?: string
 }
+
+type AccountLimitUpdates = {
+  maxProjects?: number
+  maxApiKeyRequestsPerHour?: number
+}
+
+export const DEFAULT_MAX_PROJECTS = 50
+const DEFAULT_API_KEY_REQUESTS_PER_HOUR = 300
+
+const PLAN_TYPE_ENTITLEMENTS = {
+  [PlanType.standard]: {
+    websites: 50,
+    teamMembers: 10,
+    organisations: 3,
+    apiRateLimitPerHour: 300,
+    sessionReplaysIncluded: 0,
+  },
+  [PlanType.plus]: {
+    websites: 100,
+    teamMembers: 25,
+    organisations: 10,
+    apiRateLimitPerHour: 6000,
+    sessionReplaysIncluded: 50000,
+  },
+  [PlanType.enterprise]: {
+    websites: 'custom',
+    teamMembers: 'custom',
+    organisations: 'custom',
+    apiRateLimitPerHour: 'custom',
+    sessionReplaysIncluded: 'custom',
+  },
+} as const
+
+const PLAN_TYPE_RANK = {
+  [PlanType.standard]: 1,
+  [PlanType.plus]: 2,
+  [PlanType.enterprise]: 3,
+} as const
+
+const PLAN_FEATURE_REQUIRED_PLAN = {
+  [PlanFeatureCode.featureFlags]: PlanType.plus,
+  [PlanFeatureCode.experiments]: PlanType.plus,
+} as const
+
+export const getEffectivePlanType = (
+  user?: {
+    planCode?: PlanCode | null
+    planType?: PlanType | null
+  } | null,
+): PlanType | null => {
+  if (!user) {
+    return null
+  }
+
+  if (
+    !user.planCode ||
+    [PlanCode.none, PlanCode.free, PlanCode.trial].includes(user.planCode)
+  ) {
+    return null
+  }
+
+  if (user.planType) {
+    return user.planType
+  }
+
+  return PlanType.standard
+}
+
+export const getPlanTypeEntitlements = (planType?: PlanType | null) =>
+  PLAN_TYPE_ENTITLEMENTS[planType || PlanType.standard]
+
+const getNumericLimitOverride = (
+  overrides: Record<string, unknown> | null | undefined,
+  key: string,
+) => {
+  const value = overrides?.[key]
+
+  return typeof value === 'number' ? value : null
+}
+
+export const getDefaultAccountLimitUpdates = () => ({
+  maxProjects: DEFAULT_MAX_PROJECTS,
+  maxApiKeyRequestsPerHour: DEFAULT_API_KEY_REQUESTS_PER_HOUR,
+})
+
+export const getPlanTypeAccountLimitUpdates = (
+  planType?: PlanType | null,
+  entitlementOverrides?: Record<string, unknown> | null,
+): AccountLimitUpdates => {
+  const entitlements = getPlanTypeEntitlements(planType)
+  const maxProjects =
+    typeof entitlements.websites === 'number'
+      ? entitlements.websites
+      : getNumericLimitOverride(entitlementOverrides, 'websites')
+  const maxApiKeyRequestsPerHour =
+    typeof entitlements.apiRateLimitPerHour === 'number'
+      ? entitlements.apiRateLimitPerHour
+      : getNumericLimitOverride(entitlementOverrides, 'apiRateLimitPerHour')
+  const updates: AccountLimitUpdates = {}
+
+  if (typeof maxProjects === 'number') {
+    updates.maxProjects = maxProjects
+  }
+
+  if (typeof maxApiKeyRequestsPerHour === 'number') {
+    updates.maxApiKeyRequestsPerHour = maxApiKeyRequestsPerHour
+  }
+
+  return updates
+}
+
+const planTypeHasFeature = (
+  planType: PlanType | null | undefined,
+  feature: PlanFeatureCode,
+) => {
+  if (!planType) {
+    return false
+  }
+
+  return (
+    PLAN_TYPE_RANK[planType] >=
+    PLAN_TYPE_RANK[PLAN_FEATURE_REQUIRED_PLAN[feature]]
+  )
+}
+
+export const userHasPlanFeature = (
+  user:
+    | {
+        planCode?: PlanCode | null
+        planType?: PlanType | null
+      }
+    | null
+    | undefined,
+  feature: PlanFeatureCode,
+) => planTypeHasFeature(getEffectivePlanType(user), feature)
 
 export const ACCOUNT_PLANS = {
   [PlanCode.none]: {
@@ -110,8 +259,8 @@ export const ACCOUNT_PLANS = {
     ypid: '854657',
     maxAlerts: 50,
   },
-  [PlanCode.startup]: {
-    id: PlanCode.startup,
+  [PlanCode['1m']]: {
+    id: PlanCode['1m'],
     monthlyUsageLimit: 1000000,
     pid: '752317',
     ypid: '776470',
@@ -124,8 +273,8 @@ export const ACCOUNT_PLANS = {
     ypid: '854664',
     maxAlerts: 50,
   },
-  [PlanCode.enterprise]: {
-    id: PlanCode.enterprise,
+  [PlanCode['5m']]: {
+    id: PlanCode['5m'],
     monthlyUsageLimit: 5000000,
     pid: '752318',
     ypid: '776471',
@@ -150,6 +299,27 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 20000000,
     pid: '916453',
     ypid: '916454',
+    maxAlerts: 50,
+  },
+  [PlanCode['30m']]: {
+    id: PlanCode['30m'],
+    monthlyUsageLimit: 30000000,
+    pid: null,
+    ypid: null,
+    maxAlerts: 50,
+  },
+  [PlanCode['40m']]: {
+    id: PlanCode['40m'],
+    monthlyUsageLimit: 40000000,
+    pid: null,
+    ypid: null,
+    maxAlerts: 50,
+  },
+  [PlanCode['50m']]: {
+    id: PlanCode['50m'],
+    monthlyUsageLimit: 50000000,
+    pid: null,
+    ypid: null,
     maxAlerts: 50,
   },
 }
@@ -235,6 +405,20 @@ export class User {
   })
   planCode: PlanCode
 
+  @Column({
+    type: 'enum',
+    enum: PlanType,
+    nullable: true,
+    default: null,
+  })
+  planType: PlanType | null
+
+  @Column({ type: 'json', nullable: true })
+  addonOverrides: Record<string, unknown> | null
+
+  @Column({ type: 'json', nullable: true })
+  entitlementOverrides: Record<string, unknown> | null
+
   @Column('varchar', { length: 100, nullable: true, default: null })
   nickname: string | null
 
@@ -296,10 +480,10 @@ export class User {
   @Column('varchar', { length: 60, nullable: true })
   twoFactorRecoveryCode: string
 
-  @Column('int', { default: 50 })
+  @Column('int', { default: DEFAULT_MAX_PROJECTS })
   maxProjects: number
 
-  @Column('int', { default: 600 })
+  @Column('int', { default: DEFAULT_API_KEY_REQUESTS_PER_HOUR })
   maxApiKeyRequestsPerHour: number
 
   @Column({ default: false })

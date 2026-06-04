@@ -20,6 +20,7 @@ const routes = Object.freeze({
   project_settings: '/projects/settings/:id',
   project: '/projects/:id',
   billing: '/billing',
+  billing_choose_plan: '/user-settings/choose-plan',
   privacy: '/privacy',
   cookiePolicy: '/cookie-policy',
   dpa: '/dpa',

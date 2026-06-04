@@ -15,6 +15,8 @@ import { CancellationFeedback } from './entities/cancellation-feedback.entity'
 import { UserFeedback } from './entities/user-feedback.entity'
 import { Message } from '../integrations/telegram/entities/message.entity'
 import { OrganisationModule } from '../organisation/organisation.module'
+import { UserAddon } from './entities/user-addon.entity'
+import { UserAddonCharge } from './entities/user-addon-charge.entity'
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { OrganisationModule } from '../organisation/organisation.module'
       DeleteFeedback,
       CancellationFeedback,
       UserFeedback,
+      UserAddon,
+      UserAddonCharge,
       Message,
     ]),
     ActionTokensModule,

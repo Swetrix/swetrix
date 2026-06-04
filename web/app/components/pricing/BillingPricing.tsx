@@ -1,80 +1,104 @@
 import dayjs from 'dayjs'
-import _includes from 'lodash/includes'
 import _isNil from 'lodash/isNil'
-import _map from 'lodash/map'
-import _round from 'lodash/round'
-import { QuestionIcon } from '@phosphor-icons/react'
-import React, { memo, useEffect, useMemo, useState } from 'react'
+import { ArrowLeftIcon } from '@phosphor-icons/react'
+import type { TFunction } from 'i18next'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import {
-  BillingFrequency,
-  CURRENCIES,
+  PricingInternal,
+  type MarketingPricingSelection,
+} from '~/components/pricing/MarketingPricing'
+import {
   CONTACT_EMAIL,
-  PLAN_LIMITS,
-  STANDARD_PLANS,
-  PURCHASABLE_LEGACY_PLANS,
   paddleLanguageMapping,
+  PLAN_LIMITS,
 } from '~/lib/constants'
 import { Metainfo, DEFAULT_METAINFO } from '~/lib/models/Metainfo'
+import type { UsageInfo } from '~/lib/models/Usageinfo'
+import {
+  EVENT_TIERS,
+  PLAN_TYPES,
+  getEffectivePlanType,
+  getEventTierByPlanCode,
+  getPlanPrice,
+  type EventTierCode,
+  type PlanTypeCode,
+} from '~/lib/pricing/catalog'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { UserSettingsActionData } from '~/routes/user-settings'
-import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
+import { FAQ } from '~/ui/FAQ'
+import { Link } from '~/ui/Link'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
-import { Switch } from '~/ui/Switch'
 import { Text } from '~/ui/Text'
-import Tooltip from '~/ui/Tooltip'
-import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 interface BillingPricingProps {
   lastEvent?: { event: string } | null
   metainfo?: Metainfo
+  usageInfo?: UsageInfo | null
   openCheckout: (options: Record<string, any>) => boolean
 }
+
+type PendingSelection = MarketingPricingSelection
 
 const formatEventsLong = (value: number): string =>
   value.toLocaleString('en-US')
 
+const getPlanName = (planType: PlanTypeCode, t: TFunction) =>
+  t(`pricing.planTypes.${planType}.name`)
+
+const getCheckoutErrorMessage = (error: string | undefined, t: TFunction) => {
+  if (error?.startsWith('billing.')) {
+    return t(error)
+  }
+
+  return error || t('billing.checkoutPreparationError')
+}
+
+const getSelectionRank = (planType: PlanTypeCode, eventTier: EventTierCode) =>
+  PLAN_TYPES[planType].sortOrder * 100 + EVENT_TIERS[eventTier].sortOrder
+
 const BillingPricing = ({
   lastEvent,
   metainfo = DEFAULT_METAINFO,
+  usageInfo,
   openCheckout,
 }: BillingPricingProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const { isAuthenticated, user, loadUser } = useAuth()
+  const { user, loadUser } = useAuth()
   const { theme } = useTheme()
 
   const previewFetcher = useFetcher<UserSettingsActionData>()
   const changePlanFetcher = useFetcher<UserSettingsActionData>()
   const generatePayLinkFetcher = useFetcher<UserSettingsActionData>()
 
-  const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
-  const [loadingTier, setLoadingTier] = useState<any>(null)
+  const currentPlanType = getEffectivePlanType(user?.planType, user?.planCode)
+  const currentEventTier =
+    getEventTierByPlanCode(user?.planCode)?.code || '100k'
+  const currentPlanLimit = user?.planCode ? PLAN_LIMITS[user.planCode] : null
+  const hasPaidPlan = !['none', 'trial', 'free'].includes(user?.planCode || '')
+
+  const [activeSelection, setActiveSelection] =
+    useState<PendingSelection | null>(null)
+  const [selectionLoading, setSelectionLoading] =
+    useState<PendingSelection | null>(null)
   const [
     isNewPlanConfirmationModalOpened,
     setIsNewPlanConfirmationModalOpened,
   ] = useState(false)
-  const [newPlanId, setNewPlanId] = useState<number | null>(null)
-  const [downgradeTo, setDowngradeTo] = useState<{
-    planCode: string
-    name: string
-    pid: string
-    ypid: string
-  } | null>(null)
-  const [showDowngradeModal, setShowDowngradeModal] = useState(false)
-  const [billingFrequency, setBillingFrequency] = useState(
-    user?.billingFrequency || BillingFrequency.monthly,
-  )
-  const [enableLegacyPlans, setEnableLegacyPlans] = useState(false)
+  const [pendingSelection, setPendingSelection] =
+    useState<PendingSelection | null>(null)
+  const [downgradeSelection, setDowngradeSelection] =
+    useState<PendingSelection | null>(null)
 
   const subUpdatePreview = useMemo(() => {
     if (
@@ -96,15 +120,15 @@ const BillingPricing = ({
     changePlanFetcher.state === 'submitting' ||
     changePlanFetcher.state === 'loading'
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const legacyParam = urlParams.get('__ENABLE_LEGACY_PLANS')
-    if (legacyParam === 'true') {
-      setEnableLegacyPlans(true)
-    }
-  }, [])
+  const closeUpdateModal = useCallback(
+    (force?: boolean) => {
+      if (isSubUpdating && !force) return
+      setIsNewPlanConfirmationModalOpened(false)
+      setPendingSelection(null)
+    },
+    [isSubUpdating],
+  )
 
-  // Handle change plan fetcher response
   useEffect(() => {
     if (changePlanFetcher.data?.success) {
       loadUser()
@@ -115,392 +139,350 @@ const BillingPricing = ({
         '[ERROR] An error occured while updating subscription:',
         changePlanFetcher.data.error,
       )
-      toast.error('An error occured while updating subscription')
+      toast.error(t('billing.subscriptionUpdateError'))
       closeUpdateModal(true)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [changePlanFetcher.data])
+  }, [changePlanFetcher.data, closeUpdateModal, loadUser, t])
 
-  // Handle preview fetcher error
   useEffect(() => {
     if (previewFetcher.data?.error) {
       console.error(
         '[ERROR] An error occured while loading subscription update pricing preview:',
         previewFetcher.data.error,
       )
-      toast.error(
-        'An error occured while loading subscription update pricing preview',
-      )
+      toast.error(t('billing.pricingPreviewError'))
     }
-  }, [previewFetcher.data?.error])
+  }, [previewFetcher.data?.error, t])
 
-  // Handle generate pay link fetcher response
   useEffect(() => {
     if (
       generatePayLinkFetcher.data?.success &&
       generatePayLinkFetcher.data?.data
     ) {
       const url = (generatePayLinkFetcher.data.data as any).url
+      const checkoutSelection = activeSelection || selectionLoading
 
       const opened = openCheckout({
         override: url,
         locale: paddleLanguageMapping[language] || language,
-        title: loadingTier?.name,
+        title: checkoutSelection
+          ? t('pricing.selectedPlanWithEvents', {
+              plan: getPlanName(checkoutSelection.planType, t),
+              events: formatEventsLong(
+                EVENT_TIERS[checkoutSelection.eventTier].monthlyEvents,
+              ),
+            })
+          : t('pricing.title'),
         displayModeTheme: theme,
         country: metainfo.country,
       })
 
       if (!opened) {
         toast.error(t('billing.paddleStillLoading'))
-        setPlanCodeLoading(null)
-        setLoadingTier(null)
+        setSelectionLoading(null)
       }
 
-      // Clear data to prevent infinite loops if re-rendering occurs
       generatePayLinkFetcher.data = undefined
     } else if (generatePayLinkFetcher.data?.error) {
       console.error(
         '[ERROR] An error occured while generating pay link:',
         generatePayLinkFetcher.data.error,
       )
-      toast.error('An error occured while preparing checkout')
-      setPlanCodeLoading(null)
-      setLoadingTier(null)
+      toast.error(getCheckoutErrorMessage(generatePayLinkFetcher.data.error, t))
+      setSelectionLoading(null)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [generatePayLinkFetcher.data])
-
-  const PLAN_CODES_ARRAY = useMemo(() => {
-    let basePlans = STANDARD_PLANS
-
-    if (enableLegacyPlans) {
-      basePlans = [...PURCHASABLE_LEGACY_PLANS, ...STANDARD_PLANS]
-    }
-
-    if (!isAuthenticated) return basePlans
-
-    const userPlan = user?.planCode
-
-    if (userPlan === 'trial' || userPlan === 'none') {
-      return basePlans
-    }
-
-    return _includes(basePlans, userPlan) ? basePlans : [userPlan, ...basePlans]
-  }, [isAuthenticated, user?.planCode, enableLegacyPlans])
-
-  const currencyCode = user?.tierCurrency || metainfo.code
-  const currency = CURRENCIES[currencyCode]
+  }, [
+    activeSelection,
+    generatePayLinkFetcher.data,
+    language,
+    metainfo.country,
+    openCheckout,
+    selectionLoading,
+    t,
+    theme,
+  ])
 
   useEffect(() => {
     if (!lastEvent) return
 
-    const lastEventHandler = async (data: { event: string }) => {
-      if (_isNil(data)) return
-      if (data.event === 'Checkout.Complete') {
+    const lastEventHandler = async (eventData: { event: string }) => {
+      if (_isNil(eventData)) return
+      if (eventData.event === 'Checkout.Complete') {
         setTimeout(async () => {
           await loadUser()
           toast.success(t('apiNotifications.subscriptionUpdated'))
         }, 3000)
-        setPlanCodeLoading(null)
-        setDowngradeTo(null)
-      } else if (data.event === 'Checkout.Close') {
-        setPlanCodeLoading(null)
-        setDowngradeTo(null)
+        setSelectionLoading(null)
+        setActiveSelection(null)
+      } else if (eventData.event === 'Checkout.Close') {
+        setSelectionLoading(null)
       }
     }
     lastEventHandler(lastEvent)
   }, [lastEvent, t, loadUser])
 
-  const loadSubUpdatePreview = (planId: number) => {
-    setIsNewPlanConfirmationModalOpened(true)
-    previewFetcher.submit(
-      { intent: 'preview-subscription-update', planId: String(planId) },
-      { method: 'POST', action: '/user-settings' },
+  const isTrialingPaidPlan =
+    !!user?.trialEndDate &&
+    hasPaidPlan &&
+    dayjs(user.trialEndDate).isAfter(dayjs())
+
+  const hasActiveSubscription =
+    !!user?.subID && !user.cancellationEffectiveDate && hasPaidPlan
+
+  const choosePlanDescription = hasPaidPlan
+    ? t('billing.choosePlanCurrentPlanDesc', {
+        plan: getPlanName(currentPlanType, t),
+        events: formatEventsLong(currentPlanLimit?.monthlyUsageLimit || 0),
+      })
+    : t('billing.choosePlanPageDesc')
+
+  const getSelectionMeta = (selection: PendingSelection) => {
+    const selectedPrice = getPlanPrice(
+      selection.planType,
+      selection.eventTier,
+      selection.billingFrequency,
+      selection.currency,
     )
+    const sameSelection =
+      user?.planCode === EVENT_TIERS[selection.eventTier].planCode &&
+      currentPlanType === selection.planType &&
+      user?.billingFrequency === selection.billingFrequency
+    const currentRank = getSelectionRank(currentPlanType, currentEventTier)
+    const selectedRank = getSelectionRank(
+      selection.planType,
+      selection.eventTier,
+    )
+
+    return {
+      selectedPrice,
+      sameSelection,
+      selectedRank,
+      isDowngrade:
+        !user?.cancellationEffectiveDate && selectedRank < currentRank,
+      cannotSelfServe:
+        selection.planType === 'enterprise' || !selectedPrice?.paddlePlanId,
+    }
   }
 
-  const onPlanChange = async (tier: any) => {
-    if (!user) return
+  const submitSelection = (
+    intent:
+      | 'preview-subscription-update'
+      | 'change-subscription-plan'
+      | 'generate-pay-link',
+    selection: PendingSelection,
+  ) => {
+    const formData = new FormData()
+    formData.set('intent', intent)
+    formData.set('planType', selection.planType)
+    formData.set('eventTier', selection.eventTier)
+    formData.set('billingFrequency', selection.billingFrequency)
+    formData.set('currency', selection.currency)
 
-    const isSelectingDifferentPlan =
-      user.planCode !== tier.planCode ||
-      user.billingFrequency !== billingFrequency ||
-      !isUnselectablePlanCode(user.planCode)
+    if (intent === 'preview-subscription-update') {
+      previewFetcher.submit(formData, {
+        method: 'POST',
+        action: '/user-settings',
+      })
+    } else if (intent === 'change-subscription-plan') {
+      changePlanFetcher.submit(formData, {
+        method: 'POST',
+        action: '/user-settings',
+      })
+    } else {
+      generatePayLinkFetcher.submit(formData, {
+        method: 'POST',
+        action: '/user-settings',
+      })
+    }
+  }
 
-    if (planCodeLoading || !isSelectingDifferentPlan) return
+  const startPlanChange = (selection: PendingSelection) => {
+    setActiveSelection(selection)
 
-    if (
-      user.subID &&
-      !user.cancellationEffectiveDate &&
-      user.planCode !== 'none'
-    ) {
+    if (hasActiveSubscription) {
       if (isTrialingPaidPlan) {
         toast.error(t('billing.cannotChangePlanDuringTrial'))
         return
       }
 
-      const planId = Number(
-        billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
-      )
-      setNewPlanId(planId)
-      loadSubUpdatePreview(planId)
+      setPendingSelection(selection)
+      setIsNewPlanConfirmationModalOpened(true)
+      submitSelection('preview-subscription-update', selection)
       return
     }
 
-    setPlanCodeLoading(tier.planCode)
-    setLoadingTier(tier)
-
-    const planId = Number(
-      billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
-    )
-
-    generatePayLinkFetcher.submit(
-      { intent: 'generate-pay-link', planId: String(planId) },
-      { method: 'POST', action: '/user-settings' },
-    )
+    setSelectionLoading(selection)
+    submitSelection('generate-pay-link', selection)
   }
 
-  const closeUpdateModal = (force?: boolean) => {
-    if (isSubUpdating && !force) return
-    setIsNewPlanConfirmationModalOpened(false)
-    setNewPlanId(null)
-  }
+  const handlePlanSelection = (selection: PendingSelection) => {
+    const { cannotSelfServe, isDowngrade, sameSelection } =
+      getSelectionMeta(selection)
 
-  const updateSubscription = () => {
-    changePlanFetcher.submit(
-      { intent: 'change-subscription-plan', planId: String(newPlanId) },
-      { method: 'POST', action: '/user-settings' },
-    )
-  }
+    if (selectionLoading || sameSelection) return
 
-  const downgradeHandler = (tier: any) => {
-    if (!user) return
+    if (cannotSelfServe) {
+      toast.error(t('billing.planNotConfiguredForCheckout'))
+      return
+    }
 
     if (isTrialingPaidPlan) {
       toast.error(t('billing.cannotChangePlanDuringTrial'))
       return
     }
 
-    if (planCodeLoading === null && user.planCode !== tier.planCode) {
-      setDowngradeTo(tier)
-      setShowDowngradeModal(true)
+    if (isDowngrade) {
+      setDowngradeSelection(selection)
+      return
     }
+
+    startPlanChange(selection)
   }
 
-  const isUnselectablePlanCode = (planCode: any): boolean => {
-    return ['free', 'trial', 'none'].includes(planCode)
+  const updateSubscription = () => {
+    if (!pendingSelection) return
+    submitSelection('change-subscription-plan', pendingSelection)
   }
 
-  const isTrialingPaidPlan =
-    !!user?.trialEndDate &&
-    !['none', 'trial', 'free'].includes(user?.planCode || '') &&
-    dayjs(user.trialEndDate).isAfter(dayjs())
+  const getActionLabel = (selection: MarketingPricingSelection): string => {
+    const { cannotSelfServe, isDowngrade, sameSelection, selectedRank } =
+      getSelectionMeta(selection)
+    const currentRank = getSelectionRank(currentPlanType, currentEventTier)
 
-  const userPlancodeID = user?.planCode ? PLAN_LIMITS[user.planCode]?.index : 0
+    if (cannotSelfServe) {
+      return t('pricing.contactUs')
+    }
 
-  const getActionLabel = (tier: any): string => {
-    const planCodeID = tier.index
-    const downgrade =
-      !user?.cancellationEffectiveDate && planCodeID < userPlancodeID
-    if (
-      user?.cancellationEffectiveDate ||
-      isUnselectablePlanCode(user?.planCode)
-    ) {
+    if (user?.cancellationEffectiveDate || !hasPaidPlan) {
       return t('pricing.subscribe')
     }
-    if (planCodeID > userPlancodeID) {
-      return t('pricing.upgrade')
-    }
-    if (downgrade) {
-      return t('pricing.downgrade')
-    }
-    if (
-      user?.billingFrequency === billingFrequency &&
-      user?.planCode === tier.planCode
-    ) {
+
+    if (sameSelection) {
       return t('pricing.yourPlan')
     }
-    return billingFrequency === BillingFrequency.monthly
+
+    if (selectedRank > currentRank) {
+      return t('pricing.upgrade')
+    }
+
+    if (isDowngrade) {
+      return t('pricing.downgrade')
+    }
+
+    return selection.billingFrequency === 'monthly'
       ? t('pricing.switchToMonthly')
       : t('pricing.switchToYearly')
   }
 
-  const isDisabledForTier = (tier: any): boolean => {
-    return (
-      planCodeLoading !== null ||
-      (tier.planCode === user?.planCode &&
-        (user?.billingFrequency === billingFrequency ||
-          isUnselectablePlanCode(user?.planCode)))
-    )
-  }
+  const faqItems = useMemo(() => {
+    const faqValues = {
+      lowestPlanEventsAmount:
+        EVENT_TIERS['100k'].monthlyEvents.toLocaleString('en-US'),
+      moderatePlanEventsAmount:
+        EVENT_TIERS['500k'].monthlyEvents.toLocaleString('en-US'),
+    }
 
-  const tiers = useMemo(() => {
-    const validCodes = PLAN_CODES_ARRAY.filter(
-      (code): code is keyof typeof PLAN_LIMITS =>
-        typeof code === 'string' && code in PLAN_LIMITS,
-    )
-    return validCodes.map((code) => PLAN_LIMITS[code])
-  }, [PLAN_CODES_ARRAY])
+    const sharedItems = [0, 1, 4].map((idx) => ({
+      question: (
+        <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} values={faqValues} />
+      ),
+      answer: (
+        <Trans t={t} i18nKey={`main.faq.items.${idx}.a`} values={faqValues} />
+      ),
+    }))
 
-  const yearlyDiscount = useMemo(() => {
-    const firstTier = tiers[0]
-    if (!firstTier) return 0
+    const currentUsageItem = {
+      question: t('billing.currentUsageFaqQuestion'),
+      answer: (
+        <p>
+          <Trans
+            t={t}
+            i18nKey='billing.currentUsageFaqAnswer'
+            values={{
+              events: formatEventsLong(usageInfo?.last30Days?.total || 0),
+            }}
+            components={{
+              subscriptionLink: (
+                <Link
+                  to={`${routes.user_settings}?tab=billing`}
+                  className='font-medium underline decoration-dashed hover:decoration-solid'
+                />
+              ),
+            }}
+          />
+        </p>
+      ),
+    }
 
-    const monthlyPrice = firstTier.price[currencyCode]?.monthly ?? 0
-    const yearlyPrice = firstTier.price[currencyCode]?.yearly ?? 0
-
-    if (monthlyPrice === 0) return 0
-
-    const annualCostIfMonthly = monthlyPrice * 12
-    const savings = annualCostIfMonthly - yearlyPrice
-    const discountPercentage = (savings / annualCostIfMonthly) * 100
-
-    return _round(discountPercentage, 0)
-  }, [tiers, currencyCode])
-
-  const toggleBillingFrequency = () => {
-    setBillingFrequency((currentFrequency) =>
-      currentFrequency === BillingFrequency.yearly
-        ? BillingFrequency.monthly
-        : BillingFrequency.yearly,
-    )
-  }
+    return [sharedItems[0]!, currentUsageItem, ...sharedItems.slice(1)]
+  }, [t, usageInfo?.last30Days?.total])
 
   return (
     <>
-      <div className='rounded-xl border border-gray-200 p-4 sm:p-6 dark:border-white/10'>
-        <div className='mb-3 flex items-center justify-between'>
-          <Text as='h2' size='2xl' weight='bold' tracking='tight'>
-            {t('common.billing')}
-          </Text>
-          <button
-            type='button'
-            onClick={toggleBillingFrequency}
-            className='flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:border-white/10 dark:bg-slate-950 dark:hover:bg-slate-900'
-          >
-            <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
-              {t('pricing.billedYearly')}
-            </span>
-            {yearlyDiscount > 0 ? (
-              <span className='rounded-md bg-emerald-100 px-1.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400'>
-                -{yearlyDiscount} %
-              </span>
-            ) : null}
-            <Switch
-              checked={billingFrequency === BillingFrequency.yearly}
-              visualOnly
-            />
-          </button>
-        </div>
-
-        <div className='space-y-2'>
-          {_map(tiers, (tier) => (
-            <div
-              key={tier.planCode}
-              className={cn(
-                'flex items-center justify-between rounded-xl border px-4 py-3 text-black backdrop-blur-sm dark:bg-white/2 dark:text-white',
-                {
-                  'border-gray-200 dark:border-white/10':
-                    user?.planCode !== tier.planCode ||
-                    isUnselectablePlanCode(tier.planCode),
-                  'border-indigo-500 dark:border-gray-50':
-                    user?.planCode === tier.planCode &&
-                    !isUnselectablePlanCode(tier.planCode),
-                },
-              )}
+      <main className='min-h-min-footer bg-gray-50 pb-16 dark:bg-slate-950'>
+        <div className='mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 lg:px-8'>
+          <div className='grid gap-6 lg:grid-cols-[1fr_minmax(0,40rem)_1fr] lg:items-start'>
+            <Button
+              to={`${routes.user_settings}?tab=billing`}
+              variant='ghost'
+              size='sm'
+              className='w-fit gap-1 justify-self-start lg:mt-1'
             >
-              <div>
-                <span className='text-base font-medium'>
-                  {formatEventsLong(tier.monthlyUsageLimit)}
-                </span>
-                &nbsp;
-                <span className='text-sm text-gray-500 dark:text-gray-400'>
-                  {t('pricing.eventsPerMonth')}
-                </span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                {tier.legacy ? (
-                  <Badge
-                    label={
-                      <Tooltip
-                        text={t('pricing.legacyDescription')}
-                        tooltipNode={
-                          <span className='flex items-center gap-1'>
-                            {t('pricing.legacy')}
-                            <QuestionIcon className='size-4 stroke-yellow-800 dark:stroke-yellow-500' />
-                          </span>
-                        }
-                      />
-                    }
-                    colour='yellow'
-                  />
-                ) : null}
-                <div className='text-sm'>
-                  <span className='font-semibold text-black dark:text-white'>
-                    {currency.symbol}
-                    {Number(
-                      (billingFrequency === BillingFrequency.monthly
-                        ? tier.price[currencyCode]?.monthly
-                        : tier.price[currencyCode]?.yearly) ?? 0,
-                    ).toFixed(2)}
-                  </span>
-                  &nbsp;
-                  <span className='text-sm'>
-                    /
-                    {t(
-                      billingFrequency === BillingFrequency.monthly
-                        ? 'pricing.perMonth'
-                        : 'pricing.perYear',
-                    )}
-                  </span>
-                </div>
-                <Button
-                  size='xs'
-                  onClick={() => {
-                    const action = getActionLabel(tier)
+              <ArrowLeftIcon className='size-4' />
+              {t('billing.backToBilling')}
+            </Button>
 
-                    if (action === t('pricing.downgrade')) {
-                      downgradeHandler(tier)
-                    } else {
-                      onPlanChange(tier)
-                    }
-                  }}
-                  type='button'
-                  loading={planCodeLoading === tier.planCode}
-                  disabled={isDisabledForTier(tier)}
-                >
-                  {getActionLabel(tier)}
-                </Button>
-              </div>
+            <div className='mx-auto max-w-3xl text-center'>
+              <Text
+                as='h1'
+                size='3xl'
+                weight='bold'
+                colour='primary'
+                className='text-balance sm:text-4xl'
+              >
+                {t('billing.choosePlanTitle')}
+              </Text>
+              <Text
+                as='p'
+                size='base'
+                colour='secondary'
+                className='mt-4 text-pretty'
+              >
+                {choosePlanDescription}
+              </Text>
             </div>
-          ))}
 
-          <a
-            href={routes.contact}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='group flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-black backdrop-blur-sm dark:border-white/10 dark:bg-white/2 dark:text-white'
-          >
-            <span className='text-base font-medium'>
-              {t('pricing.overXEvents', { amount: formatEventsLong(20000000) })}
-            </span>
-            <Text as='p' size='sm' className='group-hover:underline'>
-              {t('pricing.contactUs')}
-            </Text>
-          </a>
+            <div aria-hidden='true' />
+          </div>
         </div>
-      </div>
+
+        <div className='mt-2'>
+          <PricingInternal
+            metainfo={metainfo}
+            onSelectPlan={handlePlanSelection}
+            getActionLabel={getActionLabel}
+            loadingPlanType={selectionLoading?.planType ?? null}
+            disabled={Boolean(selectionLoading)}
+          />
+        </div>
+
+        <div className='mx-auto w-full max-w-4xl px-4 pt-10 sm:px-6 lg:px-8'>
+          <Text as='h2' size='2xl' weight='bold'>
+            {t('billing.planFaqTitle')}
+          </Text>
+          <FAQ items={faqItems} className='mt-3' defaultOpenFirst />
+        </div>
+      </main>
 
       <div className='checkout-container' id='checkout-container' />
 
       <Modal
-        onClose={() => {
-          setDowngradeTo(null)
-          setShowDowngradeModal(false)
-        }}
+        onClose={() => setDowngradeSelection(null)}
         onSubmit={() => {
-          setShowDowngradeModal(false)
-          if (downgradeTo) onPlanChange(downgradeTo)
+          if (!downgradeSelection) return
+          const selection = downgradeSelection
+          setDowngradeSelection(null)
+          startPlanChange(selection)
         }}
         submitText={t('common.yes')}
         closeText={t('common.no')}
@@ -513,7 +495,7 @@ const BillingPricing = ({
             values={{ email: CONTACT_EMAIL }}
           />
         }
-        isOpened={showDowngradeModal}
+        isOpened={Boolean(downgradeSelection)}
       />
 
       <Modal
@@ -537,7 +519,9 @@ const BillingPricing = ({
                   components={{
                     mail: (
                       <a
-                        title={`Email us at ${CONTACT_EMAIL}`}
+                        title={t('ariaLabels.emailSupportTitle', {
+                          email: CONTACT_EMAIL,
+                        })}
                         aria-label={t('ariaLabels.emailSupport')}
                         href={`mailto:${CONTACT_EMAIL}`}
                         className='font-medium underline decoration-dashed hover:decoration-solid'

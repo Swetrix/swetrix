@@ -237,6 +237,11 @@ swetrix.trackError({
 
 Fetches all feature flags for the project. Results are cached for 5 minutes by default. This cache is shared with experiment assignments.
 
+<Callout type="info">
+  On Swetrix Cloud, the project owner must be on Plus or Enterprise for feature flag evaluation. If
+  the project is on a plan without Feature Flags, evaluation returns an empty result.
+</Callout>
+
 ```javascript
 const flags = await swetrix.getFeatureFlags({
   profileId: "user-123",
@@ -278,8 +283,10 @@ swetrix.clearFeatureFlagsCache();
 Fetches variant assignments for running A/B test experiments that use default feature-flag exposure. Results are cached for 5 minutes by default and share the cache with feature flags.
 
 <Callout type="info">
+  On Swetrix Cloud, the project owner must be on Plus or Enterprise for experiment evaluation.
   Experiment assignments and feature flags are evaluated by the same request, so they share the same
-  5-minute cache.
+  5-minute cache. If the project is on a plan without Experiments, evaluation returns an empty
+  result.
 </Callout>
 
 ```javascript

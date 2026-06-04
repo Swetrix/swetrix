@@ -1,4 +1,4 @@
-export interface UsageInfo {
+interface UsageInfoBreakdown {
   total: number
   traffic: number
   customEvents: number
@@ -8,4 +8,9 @@ export interface UsageInfo {
   customEventsPerc: number
   captchaPerc: number
   errorsPerc: number
+}
+
+export interface UsageInfo extends UsageInfoBreakdown {
+  projects: number
+  last30Days: UsageInfoBreakdown
 }

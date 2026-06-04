@@ -1,5 +1,6 @@
 import { Auth } from '~/lib/models/Auth'
 import { User } from '~/lib/models/User'
+import type { ProjectFeatureAccess } from '~/lib/pricing/features'
 import {
   getAccessToken,
   getRefreshToken,
@@ -2075,6 +2076,7 @@ export interface Project {
   created: string
   isOwner: boolean
   isLocked: boolean
+  featureAccess?: ProjectFeatureAccess
   isCaptchaProject: boolean
   isCaptchaEnabled: boolean
   isAnalyticsProject: boolean

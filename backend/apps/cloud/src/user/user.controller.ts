@@ -65,8 +65,14 @@ import { AppLoggerService } from '../logger/logger.service'
 import { DeleteSelfDTO } from './dto/delete-self.dto'
 import { CancelSubscriptionDTO } from './dto/cancel-subscription.dto'
 import { CreateFeedbackDTO } from './dto/create-feedback.dto'
+import { UpdateWebsiteAddonDTO } from './dto/update-website-addon.dto'
 import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
-import { IUsageInfo, IMetaInfo } from './interfaces'
+import {
+  IUsageInfo,
+  IUsageInfoBreakdown,
+  IUsageInfoRedis,
+  IMetaInfo,
+} from './interfaces'
 import { ReportFrequency } from '../project/enums'
 import { OrganisationService } from '../organisation/organisation.service'
 import { trackCustom } from '../common/analytics'
@@ -77,6 +83,33 @@ const UNPAID_PLANS = [PlanCode.free, PlanCode.trial, PlanCode.none]
 const ORGANISATION_INVITE_EXPIRE_HOURS = 7 * 24 // 7 days
 const FEEDBACK_ATTACHMENTS_LIMIT = 7
 const FEEDBACK_ATTACHMENT_MAX_SIZE = 5 * 1024 * 1024
+const EMPTY_USAGE_INFO: IUsageInfoRedis = {
+  total: 0,
+  traffic: 0,
+  customEvents: 0,
+  captcha: 0,
+  errors: 0,
+}
+
+const formatUsageInfo = (
+  rawInfo?: IUsageInfoRedis | null,
+): IUsageInfoBreakdown => {
+  const usage = rawInfo || EMPTY_USAGE_INFO
+
+  return {
+    ...usage,
+    trafficPerc: usage.total
+      ? _round((usage.traffic / usage.total) * 100, 2)
+      : 0,
+    customEventsPerc: usage.total
+      ? _round((usage.customEvents / usage.total) * 100, 2)
+      : 0,
+    captchaPerc: usage.total
+      ? _round((usage.captcha / usage.total) * 100, 2)
+      : 0,
+    errorsPerc: usage.total ? _round((usage.errors / usage.total) * 100, 2) : 0,
+  }
+}
 
 @ApiTags('User')
 @Controller('user')
@@ -107,10 +140,16 @@ export class UserController {
         this.projectService.getRedisCount(uid),
       ])
 
-    const sanitizedUser = this.userService.omitSensitiveData(user)
+    const sanitizedUser = this.userService.omitSensitiveData(
+      user,
+    ) as Partial<User> & { websiteAddon?: unknown }
 
     sanitizedUser.sharedProjects = sharedProjects
     sanitizedUser.organisationMemberships = organisationMemberships
+    sanitizedUser.websiteAddon = await this.userService.getWebsiteAddonSummary(
+      uid,
+      user,
+    )
 
     return {
       user: sanitizedUser,
@@ -798,17 +837,17 @@ export class UserController {
 
   @Get('usageinfo')
   async getUsageInfo(@CurrentUserId() uid: string): Promise<IUsageInfo> {
-    const rawInfo = await this.projectService.getRedisUsageInfo(uid)
+    const [rawInfo, rawLast30DaysInfo, projects] = await Promise.all([
+      this.projectService.getRedisUsageInfo(uid),
+      this.projectService.getRedisUsageInfo(uid, 'last30Days'),
+      this.projectService.countByAdminId(uid),
+    ])
 
-    const info: IUsageInfo = {
-      ...rawInfo,
-      trafficPerc: _round((rawInfo.traffic / rawInfo.total) * 100, 2),
-      customEventsPerc: _round((rawInfo.customEvents / rawInfo.total) * 100, 2),
-      captchaPerc: _round((rawInfo.captcha / rawInfo.total) * 100, 2),
-      errorsPerc: _round((rawInfo.errors / rawInfo.total) * 100, 2),
+    return {
+      ...formatUsageInfo(rawInfo),
+      projects,
+      last30Days: formatUsageInfo(rawLast30DaysInfo),
     }
-
-    return info
   }
 
   @ApiBearerAuth()
@@ -818,9 +857,9 @@ export class UserController {
     @Body() body: IChangePlanDTO,
   ): Promise<void> {
     this.logger.log({ body, id }, 'POST /change-plan')
-    const { planId } = body
+    const { planId, planType } = body
 
-    await this.userService.updateSubscription(id, planId)
+    await this.userService.updateSubscription(id, planId, planType)
     await this.projectService.clearProjectsRedisCache(id)
   }
 
@@ -831,9 +870,12 @@ export class UserController {
     @Body() body: IChangePlanDTO,
   ): Promise<any> {
     this.logger.log({ body, id }, 'POST /generate-pay-link')
-    const { planId } = body
+    const { planId, planType, eventTier } = body
 
-    return this.userService.generatePayLink(id, planId)
+    return this.userService.generatePayLink(id, planId, {
+      planType,
+      eventTier,
+    })
   }
 
   @ApiBearerAuth()
@@ -843,9 +885,42 @@ export class UserController {
     @Body() body: IChangePlanDTO,
   ): Promise<any> {
     this.logger.log({ body, id }, 'POST /preview-plan')
-    const { planId } = body
+    const { planId, planType } = body
 
-    return this.userService.previewSubscription(id, planId)
+    return this.userService.previewSubscription(id, planId, planType)
+  }
+
+  @ApiBearerAuth()
+  @Post('addons/websites/preview')
+  async previewWebsiteAddon(
+    @CurrentUserId() id: string,
+    @Body() body: UpdateWebsiteAddonDTO,
+  ): Promise<any> {
+    this.logger.log({ body, id }, 'POST /addons/websites/preview')
+
+    return this.userService.previewWebsiteAddon(
+      id,
+      body.quantity,
+      body.billingInterval,
+    )
+  }
+
+  @ApiBearerAuth()
+  @Put('addons/websites')
+  async updateWebsiteAddon(
+    @CurrentUserId() id: string,
+    @Body() body: UpdateWebsiteAddonDTO,
+  ): Promise<Partial<User>> {
+    this.logger.log({ body, id }, 'PUT /addons/websites')
+
+    const user = await this.userService.updateWebsiteAddon(
+      id,
+      body.quantity,
+      body.billingInterval,
+    )
+    await this.projectService.clearProjectsRedisCache(id)
+
+    return user
   }
 
   @ApiBearerAuth()

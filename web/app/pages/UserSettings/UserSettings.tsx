@@ -18,6 +18,7 @@ import {
   LockIcon,
   CaretDownIcon,
   CreditCardIcon,
+  ArrowRightIcon,
 } from '@phosphor-icons/react'
 import _round from 'lodash/round'
 import React, {
@@ -48,20 +49,27 @@ import {
   languageFlag,
   CONTACT_EMAIL,
   paddleLanguageMapping,
+  CURRENCIES,
 } from '~/lib/constants'
-import BillingPricing from '~/components/pricing/BillingPricing'
 import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { usePaddle } from '~/hooks/usePaddle'
 import { changeLanguage } from '~/i18n'
 import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { User } from '~/lib/models/User'
+import {
+  ADDONS,
+  getEffectivePlanType,
+  type BillingInterval,
+  type CurrencyCode,
+} from '~/lib/pricing/catalog'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type {
   UserSettingsActionData,
   UserSettingsLoaderData,
+  WebsiteAddonPreview,
 } from '~/routes/user-settings'
 import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
@@ -77,6 +85,7 @@ import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import Flag from '~/ui/Flag'
 import TimezonePicker from '~/ui/TimezonePicker'
+import Tooltip from '~/ui/Tooltip'
 import { getCookie, setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
 import {
@@ -181,11 +190,31 @@ const DEFAULT_USAGE_INFO: UsageInfo = {
   errors: 0,
   customEvents: 0,
   captcha: 0,
+  projects: 0,
   trafficPerc: 0,
   errorsPerc: 0,
   customEventsPerc: 0,
   captchaPerc: 0,
+  last30Days: {
+    total: 0,
+    traffic: 0,
+    errors: 0,
+    customEvents: 0,
+    captcha: 0,
+    trafficPerc: 0,
+    errorsPerc: 0,
+    customEventsPerc: 0,
+    captchaPerc: 0,
+  },
 }
+
+const WEBSITE_ADDON_QUANTITY_OPTIONS = Array.from(
+  { length: 21 },
+  (_, index) => index * 50,
+)
+
+const formatBillingPrice = (amount: number) =>
+  Number.isInteger(amount) ? amount.toFixed(0) : amount.toFixed(2)
 
 interface SettingsSectionProps {
   title?: string
@@ -239,6 +268,19 @@ const UserSettings = () => {
   const fetcher = useFetcher<UserSettingsActionData>()
   const profileAutosaveFetcher = useFetcher<UserSettingsActionData>()
   const metainfoFetcher = useFetcher<UserSettingsActionData>()
+  const websiteAddonFetcher = useFetcher<UserSettingsActionData>()
+  const websiteAddonPreviewFetcher = useFetcher<UserSettingsActionData>()
+
+  // Stable submit handle for the preview fetcher. Effects must depend on this,
+  // not on the fetcher object (whose identity changes on every state transition
+  // and would otherwise create an infinite submit loop).
+  const websiteAddonPreviewFetcherRef = useRef(websiteAddonPreviewFetcher)
+  websiteAddonPreviewFetcherRef.current = websiteAddonPreviewFetcher
+  const websiteAddonPreviewSubmit = useCallback(
+    (...args: Parameters<typeof websiteAddonPreviewFetcher.submit>) =>
+      websiteAddonPreviewFetcherRef.current.submit(...args),
+    [],
+  )
 
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -246,9 +288,8 @@ const UserSettings = () => {
   const [cancellationFeedback, setCancellationFeedback] = useState('')
   const [isCancellingSubscription, setIsCancellingSubscription] =
     useState(false)
-  const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
 
-  const { openCheckout } = usePaddle({ onEvent: setLastEvent })
+  const { openCheckout } = usePaddle()
 
   const metainfo = useMemo(() => {
     if (metainfoFetcher.data?.success && metainfoFetcher.data.data) {
@@ -272,7 +313,13 @@ const UserSettings = () => {
     cancellationEffectiveDate,
     subCancelURL,
     maxEventsCount = 0,
-  } = user || {}
+    maxProjects = 0,
+    maxApiKeyRequestsPerHour = 0,
+    sessionReplaysIncluded = 0,
+    purchasedWebsiteAddons = 0,
+    websiteAddon,
+    isAccountBillingSuspended,
+  } = user || ({} as Partial<User>)
 
   const isSubscriber = !['none', 'trial', 'free'].includes(planCode || '')
   const isLegacyTrial = planCode === 'trial'
@@ -291,6 +338,30 @@ const UserSettings = () => {
     return Math.min(100, Math.max(0, raw))
   })()
   const remainingUsage = _round(Math.max(0, 100 - totalUsage), 2)
+  const replayLimitLabel =
+    typeof sessionReplaysIncluded === 'number'
+      ? sessionReplaysIncluded.toLocaleString()
+      : sessionReplaysIncluded === 'custom'
+        ? t('pricing.custom')
+        : sessionReplaysIncluded || '0'
+  const currentPlanType = getEffectivePlanType(user?.planType, planCode)
+  const currentPlanName = t(`pricing.planTypes.${currentPlanType}.name`)
+  const currencyCode = (
+    (user?.tierCurrency || metainfo.code) in CURRENCIES
+      ? user?.tierCurrency || metainfo.code
+      : 'USD'
+  ) as CurrencyCode
+  const currency = CURRENCIES[currencyCode]
+  const websiteAddonBundle = ADDONS.websiteBundles[0]
+  const websiteAddonPrice = websiteAddonBundle.monthly[currencyCode]
+  // Session replay add-on pricing is hidden until self-serve replay billing ships.
+  // const sessionReplayAddon = ADDONS.sessionReplayBundles[0]
+  // const sessionReplayAddonPrice = sessionReplayAddon.monthly[currencyCode]
+  const activeWebsiteAddonQuantity =
+    websiteAddon?.quantity ?? purchasedWebsiteAddons
+  const currentWebsiteAddonBillingInterval = (websiteAddon?.billingInterval ||
+    'monthly') as BillingInterval
+  const isWebsiteAddonLegacy = !!websiteAddon?.isLegacy
 
   const isTrialEnded = (() => {
     if (!trialEndDate) {
@@ -350,6 +421,29 @@ const UserSettings = () => {
     }
   }
 
+  const onWebsiteAddonModalOpen = () => {
+    setSelectedWebsiteAddonQuantity(activeWebsiteAddonQuantity)
+    setSelectedWebsiteAddonBillingInterval(currentWebsiteAddonBillingInterval)
+    setIsWebsiteAddonModalOpened(true)
+  }
+
+  const onWebsiteAddonModalClose = () => {
+    if (isWebsiteAddonSubmitting) return
+    setIsWebsiteAddonModalOpened(false)
+  }
+
+  const onWebsiteAddonUpdate = () => {
+    const formData = new FormData()
+    formData.set('intent', 'update-website-addon')
+    formData.set('quantity', String(selectedWebsiteAddonQuantity))
+    formData.set('billingInterval', selectedWebsiteAddonBillingInterval)
+
+    websiteAddonFetcher.submit(formData, {
+      method: 'POST',
+      action: '/user-settings',
+    })
+  }
+
   const tabs = getTabs(t)
   const sidebarGroups = useMemo<SettingsTabGroup<SettingsTab>[]>(
     () => [
@@ -406,6 +500,14 @@ const UserSettings = () => {
   const [reportFrequency, setReportFrequency] = useState(
     () => user?.reportFrequency,
   )
+  const [selectedWebsiteAddonQuantity, setSelectedWebsiteAddonQuantity] =
+    useState(activeWebsiteAddonQuantity)
+  const [
+    selectedWebsiteAddonBillingInterval,
+    setSelectedWebsiteAddonBillingInterval,
+  ] = useState<BillingInterval>(currentWebsiteAddonBillingInterval)
+  const [isWebsiteAddonModalOpened, setIsWebsiteAddonModalOpened] =
+    useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const translatedFrequencies = useMemo(
@@ -420,6 +522,9 @@ const UserSettings = () => {
   const [deletionPassword, setDeletionPassword] = useState('')
 
   const lastHandledProfileAutosaveData = useRef<UserSettingsActionData | null>(
+    null,
+  )
+  const lastHandledWebsiteAddonData = useRef<UserSettingsActionData | null>(
     null,
   )
   const shouldHandleFetcherData =
@@ -438,12 +543,165 @@ const UserSettings = () => {
   const pendingToggles = useRef<Map<string, boolean>>(new Map())
 
   const isSubmitting = fetcher.state === 'submitting'
+  const isWebsiteAddonSubmitting = websiteAddonFetcher.state !== 'idle'
+  const websiteAddonPreview = useMemo(() => {
+    if (
+      websiteAddonPreviewFetcher.data?.success &&
+      websiteAddonPreviewFetcher.data.intent === 'preview-website-addon'
+    ) {
+      return websiteAddonPreviewFetcher.data.data as WebsiteAddonPreview
+    }
+
+    return null
+  }, [websiteAddonPreviewFetcher.data])
+  const isWebsiteAddonPreviewLoading =
+    websiteAddonPreviewFetcher.state !== 'idle'
+  const currentWebsiteAddonPreview = useMemo(() => {
+    if (
+      websiteAddonPreview?.quantity === selectedWebsiteAddonQuantity &&
+      websiteAddonPreview.billingInterval ===
+        selectedWebsiteAddonBillingInterval
+    ) {
+      return websiteAddonPreview
+    }
+
+    return null
+  }, [
+    websiteAddonPreview,
+    selectedWebsiteAddonQuantity,
+    selectedWebsiteAddonBillingInterval,
+  ])
+  const hasPendingWebsiteAddonChange =
+    (websiteAddon?.pendingQuantity ?? null) !== null ||
+    (websiteAddon?.pendingBillingInterval ?? null) !== null
+  const websiteAddonDisabledReason = useMemo(() => {
+    if (isTrial) {
+      return t('billing.websiteAddonUnavailableDuringTrial')
+    }
+
+    if (!isSubscriber) {
+      return t('billing.websiteAddonRequiresSubscription')
+    }
+
+    if (cancellationEffectiveDate) {
+      return t('billing.websiteAddonUnavailableCancelled')
+    }
+
+    if (isAccountBillingSuspended) {
+      return t('billing.websiteAddonUnavailableSuspended')
+    }
+
+    if (isWebsiteAddonLegacy) {
+      return t('billing.websiteAddonLegacyManaged')
+    }
+
+    return null
+  }, [
+    isSubscriber,
+    isTrial,
+    cancellationEffectiveDate,
+    isAccountBillingSuspended,
+    isWebsiteAddonLegacy,
+    t,
+  ])
+  const isWebsiteAddonDisabled = !!websiteAddonDisabledReason
+  const hasWebsiteAddonChanges =
+    selectedWebsiteAddonQuantity !== activeWebsiteAddonQuantity ||
+    selectedWebsiteAddonBillingInterval !==
+      currentWebsiteAddonBillingInterval ||
+    hasPendingWebsiteAddonChange
+  const websiteAddonPreviewError =
+    websiteAddonPreviewFetcher.data?.intent === 'preview-website-addon' &&
+    websiteAddonPreviewFetcher.data.error
+      ? websiteAddonPreviewFetcher.data.error
+      : null
+  const websiteAddonPreviewErrorMessage = websiteAddonPreviewError
+    ? (() => {
+        const billingTranslated = t(`billing.${websiteAddonPreviewError}`)
+        const apiTranslated = t(`apiNotifications.${websiteAddonPreviewError}`)
+
+        return billingTranslated !== `billing.${websiteAddonPreviewError}`
+          ? billingTranslated
+          : apiTranslated !== `apiNotifications.${websiteAddonPreviewError}`
+            ? apiTranslated
+            : websiteAddonPreviewError
+      })()
+    : null
+  const includedWebsiteLimit =
+    currentWebsiteAddonPreview?.includedWebsites ??
+    Math.max(0, (maxProjects || 0) - activeWebsiteAddonQuantity)
+  const displayedWebsiteLimit = maxProjects
+  const displayedProjectsUsage =
+    displayedWebsiteLimit > 0
+      ? Math.min(
+          100,
+          _round((usageInfo.projects / displayedWebsiteLimit) * 100, 2),
+        )
+      : 0
+  const displayedPurchasedWebsites = activeWebsiteAddonQuantity
+  const selectedWebsiteAddonRecurringAmount =
+    currentWebsiteAddonPreview?.recurringAmount ??
+    websiteAddonPrice *
+      (selectedWebsiteAddonQuantity / websiteAddonBundle.quantity) *
+      (selectedWebsiteAddonBillingInterval === 'yearly' ? 10 : 1)
+  // Yearly add-on billing is only offered to subscribers on a yearly plan;
+  // monthly subscribers can still buy the add-on, billed monthly.
+  const canSelectYearlyWebsiteAddon = user?.billingFrequency === 'yearly'
+  const activeWebsiteAddonRecurringAmount =
+    websiteAddon?.recurringAmount ?? null
+
+  const formatBillingDate = useCallback(
+    (date?: string | null) => {
+      if (!date) return null
+
+      return language === 'en'
+        ? dayjs(date).locale(language).format('MMMM D, YYYY')
+        : dayjs(date).locale(language).format('D MMMM, YYYY')
+    },
+    [language],
+  )
 
   const activeTabConfig = useMemo(
     () => _find(tabs, (tab) => tab.id === activeTab),
     [tabs, activeTab],
   )
   const activeTabLabel = activeTabConfig?.label
+
+  useEffect(() => {
+    setSelectedWebsiteAddonQuantity(activeWebsiteAddonQuantity)
+    setSelectedWebsiteAddonBillingInterval(currentWebsiteAddonBillingInterval)
+  }, [activeWebsiteAddonQuantity, currentWebsiteAddonBillingInterval, user?.id])
+
+  useEffect(() => {
+    if (
+      activeTab !== TAB_MAPPING.BILLING ||
+      !user?.id ||
+      isWebsiteAddonDisabled ||
+      !isWebsiteAddonModalOpened
+    ) {
+      return
+    }
+
+    const formData = new FormData()
+    formData.set('intent', 'preview-website-addon')
+    formData.set('quantity', String(selectedWebsiteAddonQuantity))
+    formData.set('billingInterval', selectedWebsiteAddonBillingInterval)
+    websiteAddonPreviewSubmit(formData, {
+      method: 'POST',
+      action: '/user-settings',
+    })
+    // `websiteAddonPreviewSubmit` is the fetcher's stable submit fn. Depending on
+    // the whole fetcher object here causes an infinite loop: submit() changes the
+    // fetcher identity, which re-runs this effect, which submits again.
+  }, [
+    activeTab,
+    user?.id,
+    isWebsiteAddonDisabled,
+    isWebsiteAddonModalOpened,
+    selectedWebsiteAddonQuantity,
+    selectedWebsiteAddonBillingInterval,
+    websiteAddonPreviewSubmit,
+  ])
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
@@ -540,6 +798,49 @@ const UserSettings = () => {
     navigate,
     loadUser,
     shouldHandleFetcherData,
+  ])
+
+  useEffect(() => {
+    if (
+      websiteAddonFetcher.state !== 'idle' ||
+      !websiteAddonFetcher.data ||
+      lastHandledWebsiteAddonData.current === websiteAddonFetcher.data
+    ) {
+      return
+    }
+
+    lastHandledWebsiteAddonData.current = websiteAddonFetcher.data
+
+    if (
+      websiteAddonFetcher.data.success &&
+      websiteAddonFetcher.data.intent === 'update-website-addon' &&
+      websiteAddonFetcher.data.user
+    ) {
+      mergeUser(websiteAddonFetcher.data.user)
+      toast.success(t('billing.websiteAddonUpdated'))
+      loadUser()
+      setIsWebsiteAddonModalOpened(false)
+      return
+    }
+
+    if (websiteAddonFetcher.data.error) {
+      const translated = t(`apiNotifications.${websiteAddonFetcher.data.error}`)
+      const billingTranslated = t(`billing.${websiteAddonFetcher.data.error}`)
+
+      toast.error(
+        billingTranslated !== `billing.${websiteAddonFetcher.data.error}`
+          ? billingTranslated
+          : translated !== `apiNotifications.${websiteAddonFetcher.data.error}`
+            ? translated
+            : websiteAddonFetcher.data.error,
+      )
+    }
+  }, [
+    websiteAddonFetcher.data,
+    websiteAddonFetcher.state,
+    mergeUser,
+    t,
+    loadUser,
   ])
 
   const flushProfileAutosave = useCallback(() => {
@@ -899,6 +1200,9 @@ const UserSettings = () => {
         <Text as='h2' size='3xl' weight='bold' className='mt-2'>
           {t('titles.profileSettings')}
         </Text>
+
+        <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
+
         <div className='mt-6 flex flex-col gap-6 md:flex-row'>
           <div className='md:hidden'>
             <Select
@@ -1488,79 +1792,66 @@ const UserSettings = () => {
                         </Alert>
                       ) : null}
 
-                      <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950'>
-                        <Text
-                          as='p'
-                          size='sm'
-                          colour='secondary'
-                          className='mb-4'
-                        >
-                          {t('billing.usageOverview', {
-                            tracked: (usageInfo.total || 0).toLocaleString(),
-                            trackedPerc: totalUsage || 0,
-                            maxEvents: (maxEventsCount || 0).toLocaleString(),
-                          })}
-                        </Text>
-
-                        <div className='mb-4 grid grid-cols-2 gap-3'>
-                          <div className='flex items-center'>
-                            <div className='size-2 rounded-full bg-blue-600 dark:bg-blue-500' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              colour='secondary'
-                              className='ml-2'
-                            >
-                              {t('billing.pageviews', {
-                                quantity: usageInfo.traffic || 0,
-                                percentage: usageInfo.trafficPerc || 0,
-                              })}
-                            </Text>
-                          </div>
-                          <div className='flex items-center'>
-                            <div className='size-2 rounded-full bg-fuchsia-600 dark:bg-fuchsia-500' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              colour='secondary'
-                              className='ml-2'
-                            >
-                              {t('billing.customEvents', {
-                                quantity: usageInfo.customEvents || 0,
-                                percentage: usageInfo.customEventsPerc || 0,
-                              })}
-                            </Text>
-                          </div>
-                          <div className='flex items-center'>
-                            <div className='size-2 rounded-full bg-lime-600 dark:bg-lime-500' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              colour='secondary'
-                              className='ml-2'
-                            >
-                              {t('billing.captcha', {
-                                quantity: usageInfo.captcha || 0,
-                                percentage: usageInfo.captchaPerc || 0,
-                              })}
-                            </Text>
-                          </div>
-                          <div className='flex items-center'>
-                            <div className='size-2 rounded-full bg-red-600 dark:bg-red-500' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              colour='secondary'
-                              className='ml-2'
-                            >
-                              {t('billing.errors', {
-                                quantity: usageInfo.errors || 0,
-                                percentage: usageInfo.errorsPerc || 0,
-                              })}
-                            </Text>
-                          </div>
+                      <div className='grid grid-cols-2 gap-x-6 gap-y-3'>
+                        <div className='flex items-center'>
+                          <div className='size-2 rounded-full bg-blue-600 dark:bg-blue-500' />
+                          <Text
+                            as='span'
+                            size='sm'
+                            colour='secondary'
+                            className='ml-2'
+                          >
+                            {t('billing.pageviews', {
+                              quantity: usageInfo.traffic || 0,
+                              percentage: usageInfo.trafficPerc || 0,
+                            })}
+                          </Text>
                         </div>
+                        <div className='flex items-center'>
+                          <div className='size-2 rounded-full bg-fuchsia-600 dark:bg-fuchsia-500' />
+                          <Text
+                            as='span'
+                            size='sm'
+                            colour='secondary'
+                            className='ml-2'
+                          >
+                            {t('billing.customEvents', {
+                              quantity: usageInfo.customEvents || 0,
+                              percentage: usageInfo.customEventsPerc || 0,
+                            })}
+                          </Text>
+                        </div>
+                        <div className='flex items-center'>
+                          <div className='size-2 rounded-full bg-lime-600 dark:bg-lime-500' />
+                          <Text
+                            as='span'
+                            size='sm'
+                            colour='secondary'
+                            className='ml-2'
+                          >
+                            {t('billing.captcha', {
+                              quantity: usageInfo.captcha || 0,
+                              percentage: usageInfo.captchaPerc || 0,
+                            })}
+                          </Text>
+                        </div>
+                        <div className='flex items-center'>
+                          <div className='size-2 rounded-full bg-red-600 dark:bg-red-500' />
+                          <Text
+                            as='span'
+                            size='sm'
+                            colour='secondary'
+                            className='ml-2'
+                          >
+                            {t('billing.errors', {
+                              quantity: usageInfo.errors || 0,
+                              percentage: usageInfo.errorsPerc || 0,
+                            })}
+                          </Text>
+                        </div>
+                      </div>
 
+                      <div className='mt-5'>
                         <Text
                           as='p'
                           size='base'
@@ -1650,26 +1941,120 @@ const UserSettings = () => {
                             })}
                           </Text>
                         </div>
-
-                        <Text
-                          as='p'
-                          size='sm'
-                          colour='secondary'
-                          className='mt-3'
-                        >
-                          {t('billing.resetDate', {
-                            days: Math.ceil(
-                              (new Date(
-                                new Date().getFullYear(),
-                                new Date().getMonth() + 1,
-                                1,
-                              ).getTime() -
-                                new Date().getTime()) /
-                                (1000 * 60 * 60 * 24),
-                            ),
-                          })}
-                        </Text>
                       </div>
+
+                      <div className='mt-6 grid gap-5 border-t border-gray-200 pt-5 sm:grid-cols-3 dark:border-slate-800'>
+                        <div>
+                          <div className='flex items-center gap-1.5'>
+                            <Text as='p' size='xs' colour='secondary'>
+                              {t('billing.websites')}
+                            </Text>
+                            <Tooltip
+                              ariaLabel={t('billing.websitesAddonTooltip')}
+                              text={t('billing.websitesAddonTooltip')}
+                            />
+                          </div>
+                          <Text
+                            as='p'
+                            size='sm'
+                            weight='semibold'
+                            className='mt-1'
+                          >
+                            {(usageInfo.projects || 0).toLocaleString()} /{' '}
+                            {(maxProjects || 0).toLocaleString()}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='xs'
+                            colour='secondary'
+                            className='mt-1'
+                          >
+                            {activeWebsiteAddonQuantity
+                              ? t('billing.addedWebsites', {
+                                  amount:
+                                    activeWebsiteAddonQuantity.toLocaleString(),
+                                })
+                              : t('billing.websitesIncludedCaption')}
+                          </Text>
+                        </div>
+
+                        <div>
+                          <div className='flex items-center gap-1.5'>
+                            <Text as='p' size='xs' colour='secondary'>
+                              {t('billing.sessionReplays')}
+                            </Text>
+                            <Tooltip
+                              ariaLabel={t(
+                                'billing.sessionReplaysAddonTooltip',
+                              )}
+                              text={t('billing.sessionReplaysAddonTooltip')}
+                            />
+                          </div>
+                          <Text
+                            as='p'
+                            size='sm'
+                            weight='semibold'
+                            className='mt-1'
+                          >
+                            {t('billing.perMonthQuota', {
+                              amount: replayLimitLabel,
+                            })}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='xs'
+                            colour='secondary'
+                            className='mt-1'
+                          >
+                            {t('billing.recordedSessionsQuota')}
+                          </Text>
+                        </div>
+
+                        <div>
+                          <Text as='p' size='xs' colour='secondary'>
+                            {t('billing.api')}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='sm'
+                            weight='semibold'
+                            className='mt-1'
+                          >
+                            {t('billing.perHourQuota', {
+                              amount: (
+                                maxApiKeyRequestsPerHour || 0
+                              ).toLocaleString(),
+                            })}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='xs'
+                            colour='secondary'
+                            className='mt-1'
+                          >
+                            {t('billing.currentRateLimit')}
+                          </Text>
+                        </div>
+                      </div>
+
+                      <Text
+                        as='p'
+                        size='sm'
+                        colour='secondary'
+                        className='mt-4'
+                      >
+                        {t('billing.resetDate', {
+                          days: Math.ceil(
+                            (new Date(
+                              new Date().getFullYear(),
+                              new Date().getMonth() + 1,
+                              1,
+                            ).getTime() -
+                              new Date().getTime()) /
+                              (1000 * 60 * 60 * 24),
+                          ),
+                        })}
+                      </Text>
                     </SettingsSection>
 
                     <SettingsSection
@@ -1680,42 +2065,214 @@ const UserSettings = () => {
                           : t('billing.selectPlan')
                       }
                     >
-                      <Text
-                        as='p'
-                        size='sm'
-                        colour='secondary'
-                        className='mb-4'
-                      >
-                        {t('billing.membersNotification')}
-                      </Text>
-
-                      <BillingPricing
-                        lastEvent={lastEvent}
-                        metainfo={metainfo}
-                        openCheckout={openCheckout}
-                      />
-
-                      <div className='mt-4 flex flex-wrap gap-3'>
-                        {subUpdateURL && !cancellationEffectiveDate ? (
-                          <Button
-                            size='lg'
-                            onClick={onUpdatePaymentDetails}
-                            type='button'
+                      <div className='flex flex-col gap-4 border-t border-gray-200 pt-4 md:flex-row md:items-start md:justify-between dark:border-slate-800'>
+                        <div className='max-w-2xl'>
+                          <Text as='p' size='base' weight='semibold'>
+                            {isSubscriber
+                              ? t('billing.currentPlanTitle', {
+                                  plan: currentPlanName,
+                                })
+                              : t('billing.noPlanSelected')}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='sm'
+                            colour='secondary'
+                            className='mt-1'
                           >
-                            {t('billing.update')}
-                          </Button>
-                        ) : null}
-                        {subCancelURL && !cancellationEffectiveDate ? (
-                          <Button
-                            variant='danger-outline'
-                            size='lg'
-                            onClick={() => setIsCancelSubModalOpened(true)}
-                            type='button'
+                            {isSubscriber
+                              ? t('billing.currentPlanDescription', {
+                                  events: (
+                                    maxEventsCount || 0
+                                  ).toLocaleString(),
+                                })
+                              : t('billing.noPlanDescription')}
+                          </Text>
+                          <Text
+                            as='p'
+                            size='sm'
+                            colour='secondary'
+                            className='mt-3'
                           >
-                            {t('billing.cancelSub')}
+                            {t('billing.membersNotification')}
+                          </Text>
+                        </div>
+
+                        <div className='flex shrink-0 flex-wrap gap-3'>
+                          <Button
+                            to={routes.billing_choose_plan}
+                            size='lg'
+                            className='gap-1'
+                          >
+                            {isSubscriber
+                              ? t('billing.managePlan')
+                              : t('billing.choosePlan')}
+                            <ArrowRightIcon className='size-4' />
                           </Button>
-                        ) : null}
+                          {subUpdateURL && !cancellationEffectiveDate ? (
+                            <Button
+                              variant='secondary'
+                              size='lg'
+                              onClick={onUpdatePaymentDetails}
+                              type='button'
+                            >
+                              {t('billing.update')}
+                            </Button>
+                          ) : null}
+                          {subCancelURL && !cancellationEffectiveDate ? (
+                            <Button
+                              variant='danger-outline'
+                              size='lg'
+                              onClick={() => setIsCancelSubModalOpened(true)}
+                              type='button'
+                            >
+                              {t('billing.cancelSub')}
+                            </Button>
+                          ) : null}
+                        </div>
                       </div>
+                    </SettingsSection>
+
+                    <SettingsSection
+                      title={t('billing.addonsTitle')}
+                      description={t('billing.addonsDesc')}
+                    >
+                      <div className='max-w-2xl border-t border-gray-200 pt-4 dark:border-slate-800'>
+                        <Text as='h4' size='base' weight='semibold'>
+                          {t('billing.websiteAddonTitle')}
+                        </Text>
+                        <Text
+                          as='p'
+                          size='sm'
+                          colour='secondary'
+                          className='mt-1'
+                        >
+                          {t('billing.websiteAddonDescription', {
+                            amount: websiteAddonBundle.quantity,
+                            unitPrice: `${currency.symbol}${formatBillingPrice(
+                              websiteAddonPrice / websiteAddonBundle.quantity,
+                            )}`,
+                          })}
+                        </Text>
+
+                        <div className='mt-5'>
+                          <div className='flex items-end justify-between gap-4'>
+                            <Text as='p' size='base' weight='bold'>
+                              {t('billing.websiteUsageSummary', {
+                                used: (
+                                  usageInfo.projects || 0
+                                ).toLocaleString(),
+                                total: (
+                                  displayedWebsiteLimit || 0
+                                ).toLocaleString(),
+                              })}
+                            </Text>
+                            <Text as='p' size='sm' colour='secondary'>
+                              {t('billing.xPercentUsed', {
+                                percentage: displayedProjectsUsage,
+                              })}
+                            </Text>
+                          </div>
+                          <div className='mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
+                            <div
+                              className='h-full rounded-full bg-slate-900 dark:bg-slate-100'
+                              style={{ width: `${displayedProjectsUsage}%` }}
+                            />
+                          </div>
+                          <div className='mt-2 flex flex-wrap gap-x-4 gap-y-1'>
+                            <Text as='p' size='xs' colour='secondary'>
+                              {t('billing.websiteAddonIncludedCount', {
+                                count: includedWebsiteLimit,
+                              })}
+                            </Text>
+                            <Text as='p' size='xs' colour='secondary'>
+                              {displayedPurchasedWebsites
+                                ? t('billing.websiteAddonPurchasedCount', {
+                                    count: displayedPurchasedWebsites,
+                                  })
+                                : t('billing.noAdditionalWebsites')}
+                            </Text>
+                          </div>
+                        </div>
+
+                        {activeWebsiteAddonQuantity > 0 &&
+                        activeWebsiteAddonRecurringAmount !== null ? (
+                          <Text
+                            as='p'
+                            size='sm'
+                            colour='secondary'
+                            className='mt-4'
+                          >
+                            {t('billing.websiteAddonActiveSummary', {
+                              count:
+                                activeWebsiteAddonQuantity.toLocaleString(),
+                              amount: `${currency.symbol}${formatBillingPrice(
+                                activeWebsiteAddonRecurringAmount,
+                              )}`,
+                              interval: t(
+                                currentWebsiteAddonBillingInterval === 'yearly'
+                                  ? 'pricing.intervals.year'
+                                  : 'pricing.intervals.month',
+                              ),
+                            })}
+                          </Text>
+                        ) : null}
+
+                        {hasPendingWebsiteAddonChange &&
+                        !websiteAddonDisabledReason ? (
+                          <Alert variant='warning' className='mt-4'>
+                            {t('billing.websiteAddonPendingChange', {
+                              date:
+                                formatBillingDate(
+                                  websiteAddon?.nextChargeDate ||
+                                    websiteAddon?.periodEnd,
+                                ) || t('billing.websiteAddonNextRenewal'),
+                            })}
+                          </Alert>
+                        ) : null}
+
+                        {websiteAddonDisabledReason ? (
+                          <Alert variant='info' className='mt-4'>
+                            {websiteAddonDisabledReason}
+                          </Alert>
+                        ) : null}
+
+                        <Button
+                          size='lg'
+                          className='mt-5 gap-1'
+                          onClick={onWebsiteAddonModalOpen}
+                          disabled={isWebsiteAddonDisabled}
+                        >
+                          {activeWebsiteAddonQuantity > 0
+                            ? t('billing.websiteAddonManage')
+                            : t('billing.websiteAddonBuy')}
+                          <ArrowRightIcon className='size-4' />
+                        </Button>
+                      </div>
+
+                      {/* Additional session replays add-on is temporarily hidden
+                          until self-serve replay pricing is finalised.
+                      <div className='mt-8 border-t border-gray-200 pt-6 dark:border-slate-800'>
+                        <Text as='h4' size='base' weight='semibold'>
+                          {t('billing.sessionReplayAddonTitle')}
+                        </Text>
+                        <Text as='p' size='sm' colour='secondary' className='mt-1'>
+                          {t('billing.sessionReplayAddonDescription', {
+                            amount: sessionReplayAddon.quantity.toLocaleString(),
+                          })}
+                        </Text>
+                        <Text as='p' size='lg' weight='bold' className='mt-4'>
+                          {currency.symbol}
+                          {formatBillingPrice(sessionReplayAddonPrice)}
+                          <Text as='span' size='sm' weight='medium' colour='secondary'>
+                            /{t('pricing.intervals.month')}
+                          </Text>
+                        </Text>
+                        <Text as='p' size='sm' colour='secondary' className='mt-3'>
+                          {t('billing.sessionReplayAddonComingSoon')}
+                        </Text>
+                      </div>
+                      */}
                     </SettingsSection>
                   </>
                 )}
@@ -1931,6 +2488,178 @@ const UserSettings = () => {
         message={t('profileSettings.passwordChangeWarningModal.body')}
         isOpened={isPasswordChangeModalOpened}
       />
+      <Modal
+        onClose={onWebsiteAddonModalClose}
+        onSubmit={onWebsiteAddonUpdate}
+        submitText={t('billing.websiteAddonSave')}
+        closeText={t('common.cancel')}
+        title={t('billing.websiteAddonTitle')}
+        size='medium'
+        overflowVisible
+        isLoading={isWebsiteAddonSubmitting}
+        submitDisabled={
+          isWebsiteAddonDisabled ||
+          !hasWebsiteAddonChanges ||
+          isWebsiteAddonPreviewLoading ||
+          !!websiteAddonPreviewError
+        }
+        isOpened={isWebsiteAddonModalOpened}
+        message={
+          <div className='space-y-5 text-left'>
+            <Text as='p' size='sm' colour='secondary'>
+              {t('billing.websiteAddonDescription', {
+                amount: websiteAddonBundle.quantity,
+                unitPrice: `${currency.symbol}${formatBillingPrice(
+                  websiteAddonPrice / websiteAddonBundle.quantity,
+                )}`,
+              })}
+            </Text>
+
+            <Select<number>
+              label={t('billing.websiteAddonQuantity')}
+              className='w-full'
+              selectedItem={selectedWebsiteAddonQuantity}
+              items={WEBSITE_ADDON_QUANTITY_OPTIONS}
+              onSelect={setSelectedWebsiteAddonQuantity}
+              title={
+                selectedWebsiteAddonQuantity
+                  ? t('billing.extraWebsitesAmount', {
+                      amount: selectedWebsiteAddonQuantity.toLocaleString(),
+                    })
+                  : t('billing.noAdditionalWebsites')
+              }
+              labelExtractor={(amount) =>
+                amount
+                  ? t('billing.extraWebsitesAmount', {
+                      amount: amount.toLocaleString(),
+                    })
+                  : t('billing.noAdditionalWebsites')
+              }
+              keyExtractor={(amount) => String(amount)}
+            />
+
+            <div>
+              <Text as='p' size='sm' weight='medium' colour='primary'>
+                {t('billing.websiteAddonBillingInterval')}
+              </Text>
+              <div className='mt-1.5 grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1 dark:bg-slate-900'>
+                {(['monthly', 'yearly'] as BillingInterval[]).map(
+                  (interval) => {
+                    const isActive =
+                      selectedWebsiteAddonBillingInterval === interval
+                    const isDisabled =
+                      interval === 'yearly' && !canSelectYearlyWebsiteAddon
+
+                    return (
+                      <button
+                        key={interval}
+                        type='button'
+                        aria-pressed={isActive}
+                        disabled={isDisabled}
+                        onClick={() =>
+                          setSelectedWebsiteAddonBillingInterval(interval)
+                        }
+                        className={cx(
+                          'flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                          isActive
+                            ? 'bg-white text-slate-900 shadow-sm ring-1 ring-gray-200 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700'
+                            : 'text-gray-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100',
+                          isDisabled &&
+                            'cursor-not-allowed opacity-50 hover:text-gray-600 dark:hover:text-gray-400',
+                        )}
+                      >
+                        {interval === 'monthly'
+                          ? t('billing.websiteAddonMonthly')
+                          : t('billing.websiteAddonYearly')}
+                        {interval === 'yearly' ? (
+                          <span className='rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300'>
+                            {t('billing.websiteAddonYearlySavings')}
+                          </span>
+                        ) : null}
+                      </button>
+                    )
+                  },
+                )}
+              </div>
+              <Text as='p' size='xs' colour='secondary' className='mt-1.5'>
+                {canSelectYearlyWebsiteAddon
+                  ? t('billing.websiteAddonYearlyDiscount')
+                  : t('billing.websiteAddonYearlyOnlyNote')}
+              </Text>
+            </div>
+
+            {websiteAddonPreviewErrorMessage ? (
+              <Alert variant='error'>{websiteAddonPreviewErrorMessage}</Alert>
+            ) : null}
+
+            <div className='rounded-lg bg-gray-50 p-4 ring-1 ring-gray-200 dark:bg-slate-900/60 dark:ring-slate-800'>
+              {isWebsiteAddonPreviewLoading && !currentWebsiteAddonPreview ? (
+                <div className='flex justify-center py-2'>
+                  <Loader />
+                </div>
+              ) : currentWebsiteAddonPreview ? (
+                <div className='space-y-3'>
+                  <div className='flex items-center justify-between gap-4'>
+                    <Text as='span' size='sm' colour='secondary'>
+                      {t('billing.websiteAddonDueNow')}
+                    </Text>
+                    <Text as='span' size='sm' weight='semibold'>
+                      {currentWebsiteAddonPreview.dueNow > 0
+                        ? `${currency.symbol}${formatBillingPrice(
+                            currentWebsiteAddonPreview.dueNow,
+                          )}`
+                        : t('billing.websiteAddonNoImmediateCharge')}
+                    </Text>
+                  </div>
+                  <div className='flex items-center justify-between gap-4'>
+                    <Text as='span' size='sm' colour='secondary'>
+                      {t('billing.websiteAddonRecurring')}
+                    </Text>
+                    <Text as='span' size='sm' weight='semibold'>
+                      {currentWebsiteAddonPreview.quantity > 0
+                        ? `${currency.symbol}${formatBillingPrice(
+                            selectedWebsiteAddonRecurringAmount,
+                          )}/${t(
+                            selectedWebsiteAddonBillingInterval === 'yearly'
+                              ? 'pricing.intervals.year'
+                              : 'pricing.intervals.month',
+                          )}`
+                        : t('billing.websiteAddonNoNextCharge')}
+                    </Text>
+                  </div>
+                  <div className='flex items-center justify-between gap-4'>
+                    <Text as='span' size='sm' colour='secondary'>
+                      {t('billing.websiteAddonNextCharge')}
+                    </Text>
+                    <Text as='span' size='sm' weight='semibold'>
+                      {formatBillingDate(
+                        currentWebsiteAddonPreview.nextChargeDate,
+                      ) || t('billing.websiteAddonNoNextCharge')}
+                    </Text>
+                  </div>
+                  {currentWebsiteAddonPreview.effectiveDate ? (
+                    <div className='flex items-center justify-between gap-4'>
+                      <Text as='span' size='sm' colour='secondary'>
+                        {t('billing.websiteAddonEffectiveOn')}
+                      </Text>
+                      <Text as='span' size='sm' weight='semibold'>
+                        {formatBillingDate(
+                          currentWebsiteAddonPreview.effectiveDate,
+                        )}
+                      </Text>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <Text as='p' size='sm' colour='secondary'>
+                  {t('billing.websiteAddonNoChangesHint')}
+                </Text>
+              )}
+            </div>
+          </div>
+        }
+      />
+
       <Modal
         onClose={() => {
           if (!isCancellingSubscription) {

@@ -1,40 +1,77 @@
 import {
-  RocketLaunchIcon,
-  BellIcon,
-  CreditCardIcon,
-  CheckIcon,
-  StarIcon,
   ArrowRightIcon,
+  BellIcon,
+  CheckIcon,
+  CreditCardIcon,
+  RocketLaunchIcon,
+  StarIcon,
 } from '@phosphor-icons/react'
+import type { TFunction } from 'i18next'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useFetcher, useNavigate, useLoaderData } from 'react-router'
+import { useFetcher, useLoaderData, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { usePaddle } from '~/hooks/usePaddle'
+import { CURRENCIES, paddleLanguageMapping, TRIAL_DAYS } from '~/lib/constants'
 import {
-  BillingFrequency,
-  CONTACT_EMAIL,
-  CURRENCIES,
-  paddleLanguageMapping,
-  PLAN_LIMITS,
-  STANDARD_PLANS,
-  TRIAL_DAYS,
-} from '~/lib/constants'
+  EVENT_TIER_CODES,
+  EVENT_TIERS,
+  PLAN_ENTITLEMENTS,
+  SELF_SERVE_PLAN_TYPES,
+  getIncludedSessionReplays,
+  getPlanMonthlyPrice,
+  getPlanPrice,
+  type BillingInterval,
+  type CurrencyCode,
+  type EventTierCode,
+  type PlanTypeCode,
+} from '~/lib/pricing/catalog'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { SubscribeLoaderData } from '~/routes/subscribe'
 import Button from '~/ui/Button'
 import { FAQ } from '~/ui/FAQ'
-import { Text } from '~/ui/Text'
 import { Switch } from '~/ui/Switch'
+import { Text } from '~/ui/Text'
+import { trackCustom } from '~/utils/analytics'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
-import { trackCustom } from '~/utils/analytics'
 
-const INITIAL_VISIBLE_PLANS = 3
+const INITIAL_VISIBLE_TIERS = 4
+
 const formatEventsLong = (value: number, locale = 'en-US') =>
   value.toLocaleString(locale)
+
+const formatPrice = (amount: number | null) => {
+  if (amount === null) return null
+  return Number.isInteger(amount) ? amount.toFixed(0) : amount.toFixed(2)
+}
+
+const formatReplayQuota = (
+  value: number | string,
+  t: TFunction,
+  locale = 'en-US',
+) => {
+  if (value === 0) return t('pricing.sessionReplay.none')
+  if (typeof value === 'number') {
+    return t('pricing.sessionReplay.included', {
+      amount: formatEventsLong(value, locale),
+    })
+  }
+  return t('pricing.sessionReplay.customQuota')
+}
+
+const getPlanName = (planType: PlanTypeCode, t: TFunction) =>
+  t(`pricing.planTypes.${planType}.name`)
+
+const getCheckoutErrorMessage = (error: string | undefined, t: TFunction) => {
+  if (error?.startsWith('billing.')) {
+    return t(error)
+  }
+
+  return error || t('billing.checkoutPreparationError')
+}
 
 const Subscribe = () => {
   const { t, i18n } = useTranslation('common')
@@ -43,12 +80,13 @@ const Subscribe = () => {
   const navigate = useNavigate()
   const { metainfo } = useLoaderData<SubscribeLoaderData>()
 
-  const [selectedPlan, setSelectedPlan] = useState('100k')
-  const [selectedBillingFrequency, setSelectedBillingFrequency] = useState<
-    'monthly' | 'yearly'
-  >('monthly')
-  const [showAllPlans, setShowAllPlans] = useState(false)
-
+  const [selectedPlanType, setSelectedPlanType] =
+    useState<PlanTypeCode>('standard')
+  const [selectedEventTier, setSelectedEventTier] =
+    useState<EventTierCode>('100k')
+  const [selectedBillingFrequency, setSelectedBillingFrequency] =
+    useState<BillingInterval>('monthly')
+  const [showAllTiers, setShowAllTiers] = useState(false)
   const [hasCompletedCheckout, setHasCompletedCheckout] = useState(false)
 
   const onPaddleEvent = useCallback(
@@ -64,15 +102,28 @@ const Subscribe = () => {
     onEvent: onPaddleEvent,
   })
 
-  const currencyCode = user?.tierCurrency || metainfo.code
+  const currencyCode = (
+    (user?.tierCurrency || metainfo.code) in CURRENCIES
+      ? user?.tierCurrency || metainfo.code
+      : 'USD'
+  ) as CurrencyCode
   const currency = CURRENCIES[currencyCode] || CURRENCIES.USD
-  const tier = PLAN_LIMITS[selectedPlan as keyof typeof PLAN_LIMITS]
-  const monthlyPrice =
-    tier?.price?.[currencyCode]?.monthly ?? tier?.price?.USD?.monthly
-  const yearlyPrice =
-    tier?.price?.[currencyCode]?.yearly ?? tier?.price?.USD?.yearly
-  const displayPrice =
-    selectedBillingFrequency === 'yearly' ? yearlyPrice : monthlyPrice
+  const selectedPrice = getPlanPrice(
+    selectedPlanType,
+    selectedEventTier,
+    selectedBillingFrequency,
+    currencyCode,
+  )
+  const monthlyPrice = getPlanMonthlyPrice(
+    selectedPlanType,
+    selectedEventTier,
+    selectedBillingFrequency,
+    currencyCode,
+  )
+  const replayQuota = getIncludedSessionReplays(
+    selectedPlanType,
+    selectedEventTier,
+  )
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -80,7 +131,7 @@ const Subscribe = () => {
     if (!hasCompletedCheckout) return
 
     let attempts = 0
-    const MAX_POLL_ATTEMPTS = 30
+    const maxPollAttempts = 30
 
     pollRef.current = setInterval(async () => {
       attempts += 1
@@ -93,11 +144,11 @@ const Subscribe = () => {
           navigate(routes.dashboard)
           return
         }
-      } catch {
-        // ignore, keep polling
+      } catch (error) {
+        void error
       }
 
-      if (attempts >= MAX_POLL_ATTEMPTS) {
+      if (attempts >= maxPollAttempts) {
         if (pollRef.current) clearInterval(pollRef.current)
         navigate(routes.dashboard)
       }
@@ -110,7 +161,6 @@ const Subscribe = () => {
 
   const generatePayLinkFetcher = useFetcher<any>()
 
-  // Handle generate pay link fetcher response
   useEffect(() => {
     if (
       generatePayLinkFetcher.data?.success &&
@@ -129,10 +179,9 @@ const Subscribe = () => {
         toast.error(t('apiNotifications.somethingWentWrong'))
       }
 
-      // Clear data
       generatePayLinkFetcher.data = undefined
     } else if (generatePayLinkFetcher.data?.error) {
-      toast.error('An error occured while preparing checkout')
+      toast.error(getCheckoutErrorMessage(generatePayLinkFetcher.data.error, t))
     }
   }, [
     generatePayLinkFetcher.data,
@@ -145,13 +194,19 @@ const Subscribe = () => {
 
   const handleStartCheckout = () => {
     trackCustom('SUBSCRIBE_START_CHECKOUT', {
-      plan: selectedPlan,
+      planType: selectedPlanType,
+      eventTier: selectedEventTier,
       billingFrequency: selectedBillingFrequency,
       currency: currencyCode,
       paddleLoadError,
       isPaddleLoaded,
       paddleWindowExists: !!(window as any).Paddle,
     })
+
+    if (!selectedPrice?.paddlePlanId) {
+      toast.error(t('billing.planNotConfiguredForCheckout'))
+      return
+    }
 
     if (paddleLoadError) {
       toast.error(t('billing.paddleLoadError'))
@@ -163,27 +218,14 @@ const Subscribe = () => {
       return
     }
 
-    if (!tier) return
-
-    const hasPid = 'pid' in tier && typeof tier.pid === 'number'
-    const hasYpid = 'ypid' in tier && typeof tier.ypid === 'number'
-
-    const product =
-      selectedBillingFrequency === BillingFrequency.monthly
-        ? hasPid
-          ? tier.pid
-          : undefined
-        : hasYpid
-          ? tier.ypid
-          : undefined
-
-    if (!product) {
-      toast.error(t('apiNotifications.somethingWentWrong'))
-      return
-    }
-
     generatePayLinkFetcher.submit(
-      { intent: 'generate-pay-link', planId: String(product) },
+      {
+        intent: 'generate-pay-link',
+        planType: selectedPlanType,
+        eventTier: selectedEventTier,
+        billingFrequency: selectedBillingFrequency,
+        currency: currencyCode,
+      },
       { method: 'POST', action: '/user-settings' },
     )
   }
@@ -198,12 +240,25 @@ const Subscribe = () => {
     new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000),
   )
 
+  const formatMonthlyPriceLabel = (amount: number | null) =>
+    amount === null
+      ? t('pricing.custom')
+      : `${currency.symbol}${formatPrice(amount)}/${t('pricing.perMonth')}`
+  const formatSelectedPriceLabel = (amount: number | null | undefined) =>
+    amount === null || amount === undefined
+      ? t('pricing.custom')
+      : `${currency.symbol}${formatPrice(amount)}/${
+          selectedBillingFrequency === 'yearly'
+            ? t('pricing.perYear')
+            : t('pricing.perMonth')
+        }`
+
   const faqItems = useMemo(() => {
     const faqValues = {
       lowestPlanEventsAmount:
-        PLAN_LIMITS['100k'].monthlyUsageLimit.toLocaleString('en-US'),
+        EVENT_TIERS['100k'].monthlyEvents.toLocaleString('en-US'),
       moderatePlanEventsAmount:
-        PLAN_LIMITS['500k'].monthlyUsageLimit.toLocaleString('en-US'),
+        EVENT_TIERS['500k'].monthlyEvents.toLocaleString('en-US'),
     }
 
     return [0, 1, 4].map((idx) => ({
@@ -216,13 +271,16 @@ const Subscribe = () => {
     }))
   }, [t])
 
+  const visibleTiers = showAllTiers
+    ? EVENT_TIER_CODES
+    : EVENT_TIER_CODES.slice(0, INITIAL_VISIBLE_TIERS)
+
   return (
     <div className='flex min-h-screen flex-col items-center bg-gray-50 p-4 lg:p-8 dark:bg-slate-950'>
-      <div className='grid w-full max-w-5xl grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_380px] lg:gap-16'>
-        {/* Left Column */}
+      <div className='grid w-full max-w-6xl grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_380px] lg:gap-16'>
         <div className='flex flex-col gap-8'>
           <div>
-            <Text as='h1' size='4xl' weight='bold' tracking='tight'>
+            <Text as='h1' size='4xl' weight='bold'>
               {t('checkout.title')}
             </Text>
             <Text as='p' size='lg' colour='secondary' className='mt-2'>
@@ -252,15 +310,15 @@ const Subscribe = () => {
           </div>
 
           <div>
-            <div className='mb-3 flex items-center justify-between'>
+            <div className='mb-3 flex items-center justify-between gap-3'>
               <Text as='p' size='sm' colour='secondary'>
                 {t('checkout.selectPlan')}
               </Text>
               <button
                 type='button'
                 onClick={() =>
-                  setSelectedBillingFrequency((f) =>
-                    f === 'monthly' ? 'yearly' : 'monthly',
+                  setSelectedBillingFrequency((frequency) =>
+                    frequency === 'monthly' ? 'yearly' : 'monthly',
                   )
                 }
                 className='flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-2.5 py-1.5 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:hover:bg-slate-900'
@@ -278,115 +336,153 @@ const Subscribe = () => {
               </button>
             </div>
 
-            <div className='space-y-2'>
-              {STANDARD_PLANS.slice(
-                0,
-                showAllPlans ? undefined : INITIAL_VISIBLE_PLANS,
-              ).map((planCode) => {
-                const planTier =
-                  PLAN_LIMITS[planCode as keyof typeof PLAN_LIMITS]
-                if (!planTier) return null
-                const isSelected = selectedPlan === planCode
-                const monthlyPrice =
-                  planTier.price?.[currencyCode]?.monthly ??
-                  planTier.price?.USD?.monthly
-                const yearlyPrice =
-                  planTier.price?.[currencyCode]?.yearly ??
-                  planTier.price?.USD?.yearly
-
-                const displayPrice =
-                  selectedBillingFrequency === 'monthly'
-                    ? monthlyPrice
-                    : Math.round((yearlyPrice || 0) / 12)
+            <div className='grid gap-2 sm:grid-cols-2'>
+              {SELF_SERVE_PLAN_TYPES.map((planType) => {
+                const entitlements = PLAN_ENTITLEMENTS[planType]
+                const isSelected = selectedPlanType === planType
+                const price = getPlanMonthlyPrice(
+                  planType,
+                  selectedEventTier,
+                  selectedBillingFrequency,
+                  currencyCode,
+                )
 
                 return (
                   <button
-                    key={planCode}
+                    key={planType}
                     type='button'
-                    onClick={() => setSelectedPlan(planCode)}
+                    onClick={() => setSelectedPlanType(planType)}
                     className={cn(
-                      'flex w-full items-center justify-between rounded-lg bg-white px-4 py-3 text-left ring-1 transition-all duration-150 ring-inset dark:bg-slate-950',
+                      'rounded-lg bg-white p-4 text-left ring-1 transition-all duration-150 ring-inset dark:bg-slate-950',
                       isSelected
-                        ? 'ring-2 ring-indigo-500 dark:ring-slate-200'
+                        ? 'ring-2 ring-slate-900 dark:ring-slate-200'
                         : 'ring-gray-200 hover:ring-gray-300 dark:ring-slate-700 dark:hover:ring-slate-600',
                     )}
                   >
-                    <div className='flex flex-col items-start'>
+                    <div className='flex items-center justify-between gap-2'>
                       <Text as='span' size='base' weight='semibold'>
-                        {currency.symbol}
-                        {displayPrice}
-                        <Text
-                          as='span'
-                          size='sm'
-                          colour='secondary'
-                          weight='medium'
-                        >
-                          /{t('pricing.perMonth')}
-                        </Text>
-                      </Text>
-                      <Text as='span' size='xs' colour='secondary'>
-                        {selectedBillingFrequency === 'monthly'
-                          ? t('pricing.billedMonthly')
-                          : t('pricing.billedAnnuallyAt', {
-                              amount: `${currency.symbol}${yearlyPrice}`,
-                            })}
+                        {getPlanName(planType, t)}
                       </Text>
                     </div>
-                    <Text as='span' size='sm' colour='secondary'>
-                      {t('pricing.upToXEvents', {
-                        amount: formatEventsLong(
-                          planTier.monthlyUsageLimit,
-                          i18n.language,
-                        ),
+                    <Text
+                      as='span'
+                      size='sm'
+                      colour='secondary'
+                      className='mt-3 block'
+                    >
+                      {formatMonthlyPriceLabel(price)}
+                    </Text>
+                    <Text
+                      as='span'
+                      size='xs'
+                      colour='muted'
+                      className='mt-1 block'
+                    >
+                      {t('pricing.websiteCount', {
+                        count: entitlements.websites,
+                      })}
+                      ,{' '}
+                      {t('pricing.teamMemberCount', {
+                        count: entitlements.teamMembers,
                       })}
                     </Text>
                   </button>
                 )
               })}
             </div>
+          </div>
 
-            {showAllPlans && (
-              <div className='mt-2 rounded-lg bg-gray-50 px-4 py-3 ring-1 ring-gray-200 ring-inset dark:bg-slate-900/50 dark:ring-slate-800'>
-                <Text as='p' size='sm' weight='medium' colour='primary'>
-                  {t('checkout.customPlanTitle')}
-                </Text>
-                <Text as='p' size='sm' colour='secondary' className='mt-1'>
-                  <Trans
-                    t={t}
-                    i18nKey='checkout.customPlanDesc'
-                    values={{
-                      count: formatEventsLong(
-                        PLAN_LIMITS['20m'].monthlyUsageLimit,
-                        i18n.language,
-                      ),
-                    }}
-                    components={{
-                      contact: (
-                        <a
-                          href={`mailto:${CONTACT_EMAIL}`}
-                          aria-label={t('ariaLabels.contactSupport')}
-                          className='font-medium underline decoration-dashed hover:decoration-solid'
-                        />
-                      ),
-                    }}
-                  />
-                </Text>
-              </div>
-            )}
+          <div>
+            <Text as='p' size='sm' colour='secondary' className='mb-3'>
+              {t('pricing.eventVolume')}
+            </Text>
+            <div className='grid gap-2 sm:grid-cols-2'>
+              {visibleTiers.map((eventTier) => {
+                const tier = EVENT_TIERS[eventTier]
+                const isSelected = selectedEventTier === eventTier
+                const price = getPlanMonthlyPrice(
+                  selectedPlanType,
+                  eventTier,
+                  selectedBillingFrequency,
+                  currencyCode,
+                )
+
+                return (
+                  <button
+                    key={eventTier}
+                    type='button'
+                    onClick={() => setSelectedEventTier(eventTier)}
+                    className={cn(
+                      'flex items-center justify-between rounded-lg bg-white px-4 py-3 text-left ring-1 transition-all duration-150 ring-inset dark:bg-slate-950',
+                      isSelected
+                        ? 'ring-2 ring-slate-900 dark:ring-slate-200'
+                        : 'ring-gray-200 hover:ring-gray-300 dark:ring-slate-700 dark:hover:ring-slate-600',
+                    )}
+                  >
+                    <Text as='span' size='sm' weight='semibold'>
+                      {formatEventsLong(tier.monthlyEvents, i18n.language)}
+                    </Text>
+                    <Text as='span' size='sm' colour='secondary'>
+                      {formatMonthlyPriceLabel(price)}
+                    </Text>
+                  </button>
+                )
+              })}
+            </div>
 
             <div className='mt-3'>
               <Button
                 variant='ghost'
                 size='xs'
-                onClick={() => setShowAllPlans((v) => !v)}
-                className='rounded-full'
+                onClick={() => setShowAllTiers((value) => !value)}
               >
-                {showAllPlans
+                {showAllTiers
                   ? t('common.showLess')
                   : t('common.showMore', {
-                      count: STANDARD_PLANS.length - INITIAL_VISIBLE_PLANS,
+                      count: EVENT_TIER_CODES.length - INITIAL_VISIBLE_TIERS,
                     })}
               </Button>
+            </div>
+          </div>
+
+          <div className='rounded-lg bg-white p-4 ring-1 ring-gray-200 ring-inset dark:bg-slate-950 dark:ring-slate-800'>
+            <div className='flex flex-wrap items-center justify-between gap-3'>
+              <div>
+                <Text as='p' size='base' weight='semibold'>
+                  {getPlanName(selectedPlanType, t)}
+                </Text>
+                <Text as='p' size='sm' colour='secondary' className='mt-1'>
+                  {formatEventsLong(
+                    EVENT_TIERS[selectedEventTier].monthlyEvents,
+                    i18n.language,
+                  )}{' '}
+                  {t('pricing.eventsWithReplay', {
+                    replayQuota: formatReplayQuota(
+                      replayQuota,
+                      t,
+                      i18n.language,
+                    ),
+                  })}
+                </Text>
+              </div>
+              <Text as='p' size='2xl' weight='bold'>
+                {monthlyPrice === null ? (
+                  t('pricing.custom')
+                ) : (
+                  <>
+                    {currency.symbol}
+                    {formatPrice(monthlyPrice)}
+                    <Text
+                      as='span'
+                      size='sm'
+                      colour='secondary'
+                      weight='medium'
+                    >
+                      /{t('pricing.perMonth')}
+                    </Text>
+                  </>
+                )}
+              </Text>
             </div>
           </div>
 
@@ -409,8 +505,7 @@ const Subscribe = () => {
                 {t('checkout.dueEnd', { date: formattedEndDate })}
               </Text>
               <Text as='p' size='base'>
-                {currency.symbol}
-                {displayPrice}
+                {formatSelectedPriceLabel(selectedPrice?.amount)}
               </Text>
             </div>
           </div>
@@ -430,7 +525,7 @@ const Subscribe = () => {
                   </Text>
                 </div>
               </div>
-            ) : (
+            ) : selectedPrice?.paddlePlanId ? (
               <Button
                 size='xl'
                 className='flex w-full items-center justify-center gap-1'
@@ -441,13 +536,22 @@ const Subscribe = () => {
                 <span>{t('checkout.next')}</span>
                 <ArrowRightIcon className='size-4 translate-y-px' />
               </Button>
+            ) : (
+              <Button
+                to={routes.contact}
+                size='xl'
+                variant='secondary'
+                className='flex w-full items-center justify-center gap-1'
+              >
+                <span>{t('pricing.contactUs')}</span>
+                <ArrowRightIcon className='size-4 translate-y-px' />
+              </Button>
             )}
           </div>
 
-          <FAQ items={faqItems} />
+          <FAQ items={faqItems} defaultOpenFirst />
         </div>
 
-        {/* Right Column (Timeline) */}
         <div className='hidden lg:block lg:pt-16'>
           <div className='rounded-lg bg-white p-6 ring-1 ring-gray-200 ring-inset dark:bg-slate-950 dark:ring-slate-800'>
             <div className='flex items-start gap-5'>

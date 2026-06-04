@@ -17,6 +17,8 @@ import {
   ACCOUNT_PLANS,
   BillingFrequency,
   DashboardBlockReason,
+  PlanType,
+  getPlanTypeAccountLimitUpdates,
   isNextPlan,
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
@@ -101,9 +103,17 @@ export class WebhookController {
           status,
         } = body
         let uid
+        let requestedPlanType: PlanType | null = null
 
         try {
-          uid = JSON.parse(passthrough)?.uid
+          const passthroughData = JSON.parse(passthrough)
+          uid = passthroughData?.uid
+          if (
+            passthroughData?.planType &&
+            Object.values(PlanType).includes(passthroughData.planType)
+          ) {
+            requestedPlanType = passthroughData.planType
+          }
         } catch {
           this.logger.error(
             `[${body.alert_name}] Cannot parse the uid: ${JSON.stringify(body)}`,
@@ -160,8 +170,11 @@ export class WebhookController {
                 }
               : {}
 
+        const planType =
+          requestedPlanType || currentUser.planType || PlanType.standard
         const updateParams: Record<string, any> = {
           planCode: plan.id,
+          planType,
           subID,
           subUpdateURL,
           subCancelURL,
@@ -172,6 +185,10 @@ export class WebhookController {
           tierCurrency: currency,
           cancellationEffectiveDate: null,
           ...statusParams,
+          ...getPlanTypeAccountLimitUpdates(
+            planType,
+            currentUser.entitlementOverrides,
+          ),
         }
 
         if (isTrialing && nextBillDate) {
@@ -179,6 +196,7 @@ export class WebhookController {
         }
 
         await this.userService.update(currentUser.id, updateParams)
+        await this.userService.refreshWebsiteAddonEntitlements(currentUser.id)
         await this.projectService.clearProjectsRedisCache(currentUser.id)
 
         if (body.alert_name === 'subscription_created' && isTrialing) {
@@ -215,6 +233,13 @@ export class WebhookController {
         const user = await this.userService.findOne({
           where: { subID },
         })
+
+        if (user?.id) {
+          await this.userService.scheduleWebsiteAddonCancellation(
+            user.id,
+            cancellationEffectiveDate,
+          )
+        }
 
         if (user?.email) {
           const isTrialing =

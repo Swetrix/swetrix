@@ -47,6 +47,7 @@ import { toast } from 'sonner'
 
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
+import { useProjectFeatureAccess } from '~/hooks/useProjectFeatureAccess'
 import useSize from '~/hooks/useSize'
 import { changeLanguage } from '~/i18n'
 import {
@@ -101,6 +102,7 @@ const AskAIView = lazy(() => import('../tabs/AskAI'))
 const CaptchaView = lazy(() => import('../tabs/Captcha/CaptchaView'))
 import LockedDashboard from './components/LockedDashboard'
 import PasswordRequiredModal from './components/PasswordRequiredModal'
+import PlanFeatureLocked from './components/PlanFeatureLocked'
 import ProjectSidebar, {
   MobileSidebarTrigger,
 } from './components/ProjectSidebar'
@@ -293,6 +295,8 @@ const ViewProjectContent = () => {
     submitPassword,
   } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
+  const experimentsAccess = useProjectFeatureAccess('experiments')
+  const featureFlagsAccess = useProjectFeatureAccess('featureFlags')
 
   const { theme, setTheme } = useTheme()
 
@@ -1609,28 +1613,36 @@ const ViewProjectContent = () => {
                               />
                             ) : null}
                             {activeTab === PROJECT_TABS.experiments ? (
-                              <ExperimentsView
-                                period={period}
-                                from={
-                                  dateRange ? getFormatDate(dateRange[0]) : ''
-                                }
-                                to={
-                                  dateRange ? getFormatDate(dateRange[1]) : ''
-                                }
-                                timezone={timezone}
-                              />
+                              experimentsAccess.hasAccess ? (
+                                <ExperimentsView
+                                  period={period}
+                                  from={
+                                    dateRange ? getFormatDate(dateRange[0]) : ''
+                                  }
+                                  to={
+                                    dateRange ? getFormatDate(dateRange[1]) : ''
+                                  }
+                                  timezone={timezone}
+                                />
+                              ) : (
+                                <PlanFeatureLocked feature='experiments' />
+                              )
                             ) : null}
                             {activeTab === PROJECT_TABS.featureFlags ? (
-                              <FeatureFlagsView
-                                period={period}
-                                from={
-                                  dateRange ? getFormatDate(dateRange[0]) : ''
-                                }
-                                to={
-                                  dateRange ? getFormatDate(dateRange[1]) : ''
-                                }
-                                timezone={timezone}
-                              />
+                              featureFlagsAccess.hasAccess ? (
+                                <FeatureFlagsView
+                                  period={period}
+                                  from={
+                                    dateRange ? getFormatDate(dateRange[0]) : ''
+                                  }
+                                  to={
+                                    dateRange ? getFormatDate(dateRange[1]) : ''
+                                  }
+                                  timezone={timezone}
+                                />
+                              ) : (
+                                <PlanFeatureLocked feature='featureFlags' />
+                              )
                             ) : null}
                             {activeTab === PROJECT_TABS.captcha ? (
                               <CaptchaView projectId={id} />

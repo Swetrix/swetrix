@@ -12,6 +12,15 @@ import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
 import { Metainfo } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { User } from '~/lib/models/User'
+import {
+  EVENT_TIERS,
+  PLAN_TYPES,
+  getPlanPrice,
+  type BillingInterval,
+  type CurrencyCode,
+  type EventTierCode,
+  type PlanTypeCode,
+} from '~/lib/pricing/catalog'
 import UserSettings from '~/pages/UserSettings'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
@@ -94,6 +103,85 @@ export interface UserSettingsActionData {
   data?: unknown
 }
 
+export interface WebsiteAddonPreview {
+  code: 'websites'
+  quantity: number
+  currentQuantity: number
+  pendingQuantity: number | null
+  billingInterval: 'monthly' | 'yearly'
+  currentBillingInterval: 'monthly' | 'yearly' | null
+  pendingBillingInterval: 'monthly' | 'yearly' | null
+  currency: string
+  dueNow: number
+  recurringAmount: number
+  nextChargeDate: string | null
+  effectiveDate: string | null
+  includedWebsites: number
+  totalWebsites: number
+  activeExtraWebsites: number
+  changeType:
+    | 'none'
+    | 'new'
+    | 'increase'
+    | 'decrease'
+    | 'cancel'
+    | 'interval_change'
+    | 'reactivate'
+  isLegacy: boolean
+  status: 'active' | 'past_due' | 'cancelled' | null
+}
+
+const resolveCatalogSelection = (formData: FormData) => {
+  const rawPlanType = formData.get('planType')?.toString()
+  const rawEventTier = formData.get('eventTier')?.toString()
+  const rawBillingInterval = formData.get('billingFrequency')?.toString()
+  const rawCurrencyCode = formData.get('currency')?.toString() || 'USD'
+
+  if (rawPlanType || rawEventTier || rawBillingInterval) {
+    if (!rawPlanType || !(rawPlanType in PLAN_TYPES)) {
+      return { error: 'billing.invalidPlanSelection' }
+    }
+    if (!rawEventTier || !(rawEventTier in EVENT_TIERS)) {
+      return { error: 'billing.invalidPlanSelection' }
+    }
+    if (rawBillingInterval !== 'monthly' && rawBillingInterval !== 'yearly') {
+      return { error: 'billing.invalidPlanSelection' }
+    }
+    if (!['USD', 'EUR', 'GBP'].includes(rawCurrencyCode)) {
+      return { error: 'billing.invalidCurrency' }
+    }
+
+    const planType = rawPlanType as PlanTypeCode
+    const eventTier = rawEventTier as EventTierCode
+    const billingFrequency = rawBillingInterval as BillingInterval
+    const currency = rawCurrencyCode as CurrencyCode
+    const selectedPrice = getPlanPrice(
+      planType,
+      eventTier,
+      billingFrequency,
+      currency,
+    )
+
+    if (!selectedPrice?.paddlePlanId) {
+      return { error: 'billing.planNotConfiguredForCheckout' }
+    }
+
+    return {
+      planId: selectedPrice.paddlePlanId,
+      planType,
+      eventTier,
+    }
+  }
+
+  const planId = Number(formData.get('planId'))
+
+  if (!Number.isFinite(planId) || planId <= 0 || !Number.isInteger(planId)) {
+    return { error: 'billing.invalidPlanSelection' }
+  }
+
+  return { planId }
+}
+
 export async function action({ request }: ActionFunctionArgs) {
   redirectIfNotAuthenticated(request)
 
@@ -159,10 +247,11 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<UserSettingsActionData>(
-          { intent, error: result.error as string },
-          { status: 400 },
-        )
+        const error = Array.isArray(result.error)
+          ? result.error[0]
+          : (result.error as string)
+
+        return data<UserSettingsActionData>({ intent, error }, { status: 400 })
       }
 
       return data<UserSettingsActionData>(
@@ -181,10 +270,11 @@ export async function action({ request }: ActionFunctionArgs) {
       )
 
       if (result.error) {
-        return data<UserSettingsActionData>(
-          { intent, error: result.error as string },
-          { status: 400 },
-        )
+        const error = Array.isArray(result.error)
+          ? result.error[0]
+          : (result.error as string)
+
+        return data<UserSettingsActionData>({ intent, error }, { status: 400 })
       }
 
       return data<UserSettingsActionData>(
@@ -385,6 +475,54 @@ export async function action({ request }: ActionFunctionArgs) {
       )
     }
 
+    case 'preview-website-addon': {
+      const quantity = Number(formData.get('quantity'))
+      const billingInterval = formData.get('billingInterval')?.toString()
+
+      const result = await serverFetch<WebsiteAddonPreview>(
+        request,
+        'user/addons/websites/preview',
+        {
+          method: 'POST',
+          body: { quantity, billingInterval },
+        },
+      )
+
+      if (result.error) {
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'update-website-addon': {
+      const quantity = Number(formData.get('quantity'))
+      const billingInterval = formData.get('billingInterval')?.toString()
+
+      const result = await serverFetch<User>(request, 'user/addons/websites', {
+        method: 'PUT',
+        body: { quantity, billingInterval },
+      })
+
+      if (result.error) {
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true, user: result.data as User },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
     case 'accept-project-share': {
       const shareId = formData.get('shareId')?.toString()
 
@@ -495,22 +633,18 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'preview-subscription-update': {
-      const planId = Number(formData.get('planId'))
+      const selection = resolveCatalogSelection(formData)
 
-      if (
-        !Number.isFinite(planId) ||
-        planId <= 0 ||
-        !Number.isInteger(planId)
-      ) {
+      if ('error' in selection) {
         return data<UserSettingsActionData>(
-          { intent, error: 'Invalid planId' },
+          { intent, error: selection.error },
           { status: 400 },
         )
       }
 
       const result = await serverFetch(request, 'user/preview-plan', {
         method: 'POST',
-        body: { planId },
+        body: selection,
       })
 
       if (result.error) {
@@ -527,15 +661,11 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'generate-pay-link': {
-      const planId = Number(formData.get('planId'))
+      const selection = resolveCatalogSelection(formData)
 
-      if (
-        !Number.isFinite(planId) ||
-        planId <= 0 ||
-        !Number.isInteger(planId)
-      ) {
+      if ('error' in selection) {
         return data<UserSettingsActionData>(
-          { intent, error: 'Invalid planId' },
+          { intent, error: selection.error },
           { status: 400 },
         )
       }
@@ -545,7 +675,7 @@ export async function action({ request }: ActionFunctionArgs) {
         'user/generate-pay-link',
         {
           method: 'POST',
-          body: { planId },
+          body: selection,
         },
       )
 
@@ -563,22 +693,18 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'change-subscription-plan': {
-      const planId = Number(formData.get('planId'))
+      const selection = resolveCatalogSelection(formData)
 
-      if (
-        !Number.isFinite(planId) ||
-        planId <= 0 ||
-        !Number.isInteger(planId)
-      ) {
+      if ('error' in selection) {
         return data<UserSettingsActionData>(
-          { intent, error: 'Invalid planId' },
+          { intent, error: selection.error },
           { status: 400 },
         )
       }
 
       const result = await serverFetch(request, 'user/change-plan', {
         method: 'POST',
-        body: { planId },
+        body: selection,
       })
 
       if (result.error) {
