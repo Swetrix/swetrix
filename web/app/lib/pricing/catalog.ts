@@ -387,49 +387,6 @@ export const PLAN_ENTITLEMENTS = {
   },
 } as const
 
-export const ADDONS = {
-  websiteBundles: [
-    {
-      code: 'websites_50',
-      quantity: 50,
-      labelKey: 'pricing.addons.websiteBundle',
-      monthly: { USD: 7.5, EUR: 7, GBP: 6 },
-    },
-    {
-      code: 'websites_250',
-      quantity: 250,
-      labelKey: 'pricing.addons.websiteBundle',
-      monthly: { USD: 30, EUR: 27, GBP: 24 },
-    },
-    {
-      code: 'websites_1000',
-      quantity: 1000,
-      labelKey: 'pricing.addons.websiteBundle',
-      monthly: { USD: 99, EUR: 89, GBP: 79 },
-    },
-  ],
-  sessionReplayBundles: [
-    {
-      code: 'replays_5000',
-      quantity: 5000,
-      labelKey: 'pricing.addons.sessionReplayBundle',
-      monthly: { USD: 19, EUR: 17, GBP: 15 },
-    },
-    {
-      code: 'replays_25000',
-      quantity: 25000,
-      labelKey: 'pricing.addons.sessionReplayBundle',
-      monthly: { USD: 79, EUR: 69, GBP: 59 },
-    },
-    {
-      code: 'replays_100000',
-      quantity: 100000,
-      labelKey: 'pricing.addons.sessionReplayBundle',
-      monthly: { USD: 249, EUR: 209, GBP: 189 },
-    },
-  ],
-} as const
-
 const LEGACY_PLAN_LIMITS = {
   none: {
     index: 0,

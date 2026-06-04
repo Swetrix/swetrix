@@ -2996,9 +2996,9 @@
     "addonsTitle": "Add-ons",
     "addonsDesc": "Add-ons are recurring subscription extras. They are available for active paid subscriptions.",
     "websiteAddonTitle": "Additional websites",
-    "websiteAddonDescription": "Add websites in chunks of {{amount}} at {{unitPrice}} per website per month.",
+    "websiteAddonDescription": "Add websites in chunks of {{amount}} to your active subscription.",
     "sessionReplayAddonTitle": "Additional session replays",
-    "sessionReplayAddonDescription": "Add recorded sessions in chunks of {{amount}} at {{bundlePrice}} per month.",
+    "sessionReplayAddonDescription": "Add recorded sessions in chunks of {{amount}} to your active subscription.",
     "sessionReplayCapacityTitle": "Session replay capacity",
     "sessionReplayCapacityDescription": "Your current plan includes {{quota}} recorded sessions per month. For higher capacity or longer retention, choose a larger Plus plan or contact us for a custom entitlement.",
     "sessionReplayCapacityCta": "Review replay plans",
@@ -3211,12 +3211,6 @@
         "customEventLimits": "Enterprise plans are flexible for event limits, API rate limits, and project quantity.",
         "manualInvoicing": "We accept all major credit & debit cards. Enterprise customers can also pay by ACH, SEPA, wire transfer, or invoice."
       }
-    },
-    "addons": {
-      "websiteTitle": "Website add-ons",
-      "sessionReplayTitle": "Session replay add-ons",
-      "websiteBundle": "+{{amount}} websites",
-      "sessionReplayBundle": "+{{amount}} recorded sessions"
     },
     "billedAnnuallyAt": "Billed annually at {{amount}}",
     "switchToMonthly": "Switch to monthly billing",

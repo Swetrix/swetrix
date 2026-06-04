@@ -58,7 +58,6 @@ import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { User } from '~/lib/models/User'
 import {
-  ADDONS,
   getEffectivePlanType,
   type BillingInterval,
   type CurrencyCode,
@@ -210,13 +209,17 @@ const DEFAULT_USAGE_INFO: UsageInfo = {
   },
 }
 
+const WEBSITE_ADDON_QUANTITY_STEP = 50
+const SESSION_REPLAY_ADDON_QUANTITY_STEP = 5000
+const ADDON_QUANTITY_OPTION_COUNT = 21
+
 const WEBSITE_ADDON_QUANTITY_OPTIONS = Array.from(
-  { length: 21 },
-  (_, index) => index * 50,
+  { length: ADDON_QUANTITY_OPTION_COUNT },
+  (_, index) => index * WEBSITE_ADDON_QUANTITY_STEP,
 )
 const SESSION_REPLAY_ADDON_QUANTITY_OPTIONS = Array.from(
-  { length: 21 },
-  (_, index) => index * 5000,
+  { length: ADDON_QUANTITY_OPTION_COUNT },
+  (_, index) => index * SESSION_REPLAY_ADDON_QUANTITY_STEP,
 )
 
 const formatBillingPrice = (amount: number) =>
@@ -371,15 +374,11 @@ const UserSettings = () => {
       : 'USD'
   ) as CurrencyCode
   const currency = CURRENCIES[currencyCode]
-  const websiteAddonBundle = ADDONS.websiteBundles[0]
-  const websiteAddonPrice = websiteAddonBundle.monthly[currencyCode]
   const activeWebsiteAddonQuantity =
     websiteAddon?.quantity ?? purchasedWebsiteAddons
   const currentWebsiteAddonBillingInterval = (websiteAddon?.billingInterval ||
     'monthly') as BillingInterval
   const isWebsiteAddonLegacy = !!websiteAddon?.isLegacy
-  const sessionReplayAddonBundle = ADDONS.sessionReplayBundles[0]
-  const sessionReplayAddonPrice = sessionReplayAddonBundle.monthly[currencyCode]
   const activeSessionReplayAddonQuantity =
     sessionReplayAddon?.quantity ?? purchasedSessionReplayAddons
   const currentSessionReplayAddonBillingInterval =
@@ -701,11 +700,6 @@ const UserSettings = () => {
         )
       : 0
   const displayedPurchasedWebsites = activeWebsiteAddonQuantity
-  const selectedWebsiteAddonRecurringAmount =
-    currentWebsiteAddonPreview?.recurringAmount ??
-    websiteAddonPrice *
-      (selectedWebsiteAddonQuantity / websiteAddonBundle.quantity) *
-      (selectedWebsiteAddonBillingInterval === 'yearly' ? 10 : 1)
   // Yearly add-on billing is only offered to subscribers on a yearly plan;
   // monthly subscribers can still buy the add-on, billed monthly.
   const canSelectYearlyWebsiteAddon = user?.billingFrequency === 'yearly'
@@ -832,11 +826,6 @@ const UserSettings = () => {
           ),
         )
       : 0
-  const selectedSessionReplayAddonRecurringAmount =
-    currentSessionReplayAddonPreview?.recurringAmount ??
-    sessionReplayAddonPrice *
-      (selectedSessionReplayAddonQuantity / sessionReplayAddonBundle.quantity) *
-      (selectedSessionReplayAddonBillingInterval === 'yearly' ? 10 : 1)
   const canSelectYearlySessionReplayAddon = user?.billingFrequency === 'yearly'
   const activeSessionReplayAddonRecurringAmount =
     sessionReplayAddon?.recurringAmount ?? null
@@ -2436,10 +2425,7 @@ const UserSettings = () => {
                           className='mt-1'
                         >
                           {t('billing.websiteAddonDescription', {
-                            amount: websiteAddonBundle.quantity,
-                            unitPrice: `${currency.symbol}${formatBillingPrice(
-                              websiteAddonPrice / websiteAddonBundle.quantity,
-                            )}`,
+                            amount: WEBSITE_ADDON_QUANTITY_STEP,
                           })}
                         </Text>
 
@@ -2550,10 +2536,7 @@ const UserSettings = () => {
                           className='mt-1'
                         >
                           {t('billing.sessionReplayAddonDescription', {
-                            amount: sessionReplayAddonBundle.quantity,
-                            bundlePrice: `${currency.symbol}${formatBillingPrice(
-                              sessionReplayAddonPrice,
-                            )}`,
+                            amount: SESSION_REPLAY_ADDON_QUANTITY_STEP,
                           })}
                         </Text>
 
@@ -2894,10 +2877,7 @@ const UserSettings = () => {
           <div className='space-y-5 text-left'>
             <Text as='p' size='sm' colour='secondary'>
               {t('billing.websiteAddonDescription', {
-                amount: websiteAddonBundle.quantity,
-                unitPrice: `${currency.symbol}${formatBillingPrice(
-                  websiteAddonPrice / websiteAddonBundle.quantity,
-                )}`,
+                amount: WEBSITE_ADDON_QUANTITY_STEP,
               })}
             </Text>
 
@@ -3004,7 +2984,7 @@ const UserSettings = () => {
                     <Text as='span' size='sm' weight='semibold'>
                       {currentWebsiteAddonPreview.quantity > 0
                         ? `${currency.symbol}${formatBillingPrice(
-                            selectedWebsiteAddonRecurringAmount,
+                            currentWebsiteAddonPreview.recurringAmount,
                           )}/${t(
                             selectedWebsiteAddonBillingInterval === 'yearly'
                               ? 'pricing.intervals.year'
@@ -3066,10 +3046,7 @@ const UserSettings = () => {
           <div className='space-y-5 text-left'>
             <Text as='p' size='sm' colour='secondary'>
               {t('billing.sessionReplayAddonDescription', {
-                amount: sessionReplayAddonBundle.quantity,
-                bundlePrice: `${currency.symbol}${formatBillingPrice(
-                  sessionReplayAddonPrice,
-                )}`,
+                amount: SESSION_REPLAY_ADDON_QUANTITY_STEP,
               })}
             </Text>
 
@@ -3181,7 +3158,7 @@ const UserSettings = () => {
                     <Text as='span' size='sm' weight='semibold'>
                       {currentSessionReplayAddonPreview.quantity > 0
                         ? `${currency.symbol}${formatBillingPrice(
-                            selectedSessionReplayAddonRecurringAmount,
+                            currentSessionReplayAddonPreview.recurringAmount,
                           )}/${t(
                             selectedSessionReplayAddonBillingInterval ===
                               'yearly'
