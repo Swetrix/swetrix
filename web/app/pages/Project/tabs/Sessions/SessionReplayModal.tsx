@@ -51,6 +51,7 @@ import Loader from '~/ui/Loader'
 import { Switch } from '~/ui/Switch'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
+import { downloadBlob } from '~/utils/download'
 import { cn } from '~/utils/generic'
 
 import {
@@ -75,6 +76,8 @@ const PREVIEW_WIDTH = 224
 const PREVIEW_HEIGHT = 126
 const PREVIEW_SEEK_STEP_MS = 500
 const DEFAULT_REPLAY_VIEWPORT = { width: 1280, height: 720 }
+const XHTML_XMLNS = 'http://www.w3.org/1999/xhtml'
+const SCREENSHOT_ASSET_WAIT_MS = 1000
 
 type ReplayEvent = Omit<eventWithTime, 'data'> & {
   data?: Record<string, any>
@@ -162,6 +165,302 @@ const getPageflowTimestamp = (value?: string) => {
   const normalised = TIMEZONE_SUFFIX_PATTERN.test(value) ? value : `${value}Z`
   const timestamp = Date.parse(normalised)
   return Number.isFinite(timestamp) ? timestamp : Number.NaN
+}
+
+const isTransparentColour = (colour?: string) => {
+  if (!colour) return true
+
+  const normalised = colour.replace(/\s/g, '').toLowerCase()
+  return (
+    normalised === 'transparent' ||
+    /^rgba?\(.+(?:,|\/)0(?:\.0+)?\)$/.test(normalised)
+  )
+}
+
+const escapeSvgAttribute = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+
+const getElementStyle = (element: Element) =>
+  'style' in element
+    ? (element as HTMLElement | SVGElement).style
+    : undefined
+
+const isElementTag = (element: Element, tagName: string) =>
+  element.tagName.toLowerCase() === tagName
+
+const getReplayScreenshotBackground = (doc: Document) => {
+  const view = doc.defaultView
+  if (!view) return '#ffffff'
+
+  const colours = [
+    doc.body ? view.getComputedStyle(doc.body).backgroundColor : undefined,
+    view.getComputedStyle(doc.documentElement).backgroundColor,
+  ]
+
+  return colours.find((colour) => !isTransparentColour(colour)) || '#ffffff'
+}
+
+const getReplayFrameSize = (iframe: HTMLIFrameElement, doc: Document) => {
+  const width =
+    Number(iframe.getAttribute('width')) ||
+    iframe.clientWidth ||
+    doc.documentElement.clientWidth ||
+    DEFAULT_REPLAY_VIEWPORT.width
+  const height =
+    Number(iframe.getAttribute('height')) ||
+    iframe.clientHeight ||
+    doc.documentElement.clientHeight ||
+    DEFAULT_REPLAY_VIEWPORT.height
+
+  return {
+    width: Math.max(1, Math.round(width)),
+    height: Math.max(1, Math.round(height)),
+  }
+}
+
+const getReplayScrollPosition = (iframe: HTMLIFrameElement, doc: Document) => ({
+  x: Math.max(
+    0,
+    Math.round(
+      iframe.contentWindow?.scrollX ||
+        doc.documentElement.scrollLeft ||
+        doc.body?.scrollLeft ||
+        0,
+    ),
+  ),
+  y: Math.max(
+    0,
+    Math.round(
+      iframe.contentWindow?.scrollY ||
+        doc.documentElement.scrollTop ||
+        doc.body?.scrollTop ||
+        0,
+    ),
+  ),
+})
+
+const waitForReplayScreenshotAssets = async (doc: Document) => {
+  const fontPromise =
+    doc.fonts?.ready.then(() => undefined).catch(() => undefined) ||
+    Promise.resolve()
+  const imagePromise = Promise.all(
+    Array.from(doc.images, (image) => {
+      if (image.complete) return Promise.resolve()
+
+      return new Promise<void>((resolve) => {
+        image.addEventListener('load', () => resolve(), { once: true })
+        image.addEventListener('error', () => resolve(), { once: true })
+      })
+    }),
+  ).then(() => undefined)
+  const timeoutPromise = new Promise<void>((resolve) =>
+    window.setTimeout(resolve, SCREENSHOT_ASSET_WAIT_MS),
+  )
+
+  await Promise.race([
+    Promise.all([fontPromise, imagePromise]).then(() => undefined),
+    timeoutPromise,
+  ])
+  await new Promise<void>((resolve) =>
+    window.requestAnimationFrame(() => resolve()),
+  )
+}
+
+const getReplayStylesheetText = (doc: Document) => {
+  const rules: string[] = []
+
+  Array.from(doc.styleSheets).forEach((sheet) => {
+    try {
+      Array.from(sheet.cssRules).forEach((rule) => rules.push(rule.cssText))
+    } catch {
+      return
+    }
+  })
+
+  return rules.join('\n')
+}
+
+const inlineReplayElementStyle = (
+  source: Element,
+  target: Element,
+  view: Window,
+) => {
+  const targetStyle = getElementStyle(target)
+  if (!targetStyle) return
+
+  const computed = view.getComputedStyle(source)
+  for (let index = 0; index < computed.length; index += 1) {
+    const property = computed.item(index)
+    if (!property) continue
+
+    targetStyle.setProperty(
+      property,
+      computed.getPropertyValue(property),
+      computed.getPropertyPriority(property),
+    )
+  }
+}
+
+const copyReplayElementState = (source: Element, target: Element) => {
+  if (isElementTag(source, 'input') && isElementTag(target, 'input')) {
+    const sourceInput = source as HTMLInputElement
+    const targetInput = target as HTMLInputElement
+
+    targetInput.value = sourceInput.value
+    targetInput.setAttribute('value', sourceInput.value)
+
+    if (sourceInput.checked) {
+      targetInput.setAttribute('checked', '')
+    } else {
+      targetInput.removeAttribute('checked')
+    }
+  } else if (
+    isElementTag(source, 'textarea') &&
+    isElementTag(target, 'textarea')
+  ) {
+    const sourceTextArea = source as HTMLTextAreaElement
+    const targetTextArea = target as HTMLTextAreaElement
+
+    targetTextArea.value = sourceTextArea.value
+    targetTextArea.textContent = sourceTextArea.value
+  } else if (
+    isElementTag(source, 'select') &&
+    isElementTag(target, 'select')
+  ) {
+    const sourceSelect = source as HTMLSelectElement
+    const targetSelect = target as HTMLSelectElement
+
+    Array.from(sourceSelect.options).forEach((option, index) => {
+      const targetOption = targetSelect.options[index]
+      if (!targetOption) return
+
+      targetOption.selected = option.selected
+      if (option.selected) {
+        targetOption.setAttribute('selected', '')
+      } else {
+        targetOption.removeAttribute('selected')
+      }
+    })
+  }
+}
+
+const replaceReplayCanvas = (
+  source: Element,
+  target: Element,
+  doc: Document,
+) => {
+  if (!isElementTag(source, 'canvas') || !isElementTag(target, 'canvas')) {
+    return
+  }
+
+  try {
+    const sourceCanvas = source as HTMLCanvasElement
+    const targetCanvas = target as HTMLCanvasElement
+    const image = doc.createElement('img')
+    image.src = sourceCanvas.toDataURL('image/png')
+    image.width = sourceCanvas.width
+    image.height = sourceCanvas.height
+    image.style.cssText = targetCanvas.style.cssText
+    targetCanvas.replaceWith(image)
+  } catch {
+    return
+  }
+}
+
+const buildReplayScreenshotDocument = (
+  doc: Document,
+  backgroundColour: string,
+) => {
+  const view = doc.defaultView
+  if (!view) throw new Error('Replay frame is unavailable')
+
+  const cloneRoot = doc.documentElement.cloneNode(true) as HTMLElement
+  cloneRoot.setAttribute('xmlns', XHTML_XMLNS)
+
+  const sourceElements = [
+    doc.documentElement,
+    ...Array.from(doc.documentElement.querySelectorAll('*')),
+  ]
+  const cloneElements = [
+    cloneRoot,
+    ...Array.from(cloneRoot.querySelectorAll('*')),
+  ]
+
+  sourceElements.forEach((source, index) => {
+    const target = cloneElements[index]
+    if (!target) return
+
+    inlineReplayElementStyle(source, target, view)
+    copyReplayElementState(source, target)
+    replaceReplayCanvas(source, target, doc)
+  })
+
+  let cloneHead = cloneRoot.querySelector('head')
+  if (!cloneHead) {
+    cloneHead = doc.createElement('head')
+    cloneRoot.insertBefore(cloneHead, cloneRoot.firstChild)
+  }
+
+  const base = doc.createElement('base')
+  base.href = doc.baseURI || window.location.href
+  cloneHead.prepend(base)
+
+  const stylesheetText = getReplayStylesheetText(doc)
+  if (stylesheetText) {
+    const style = doc.createElement('style')
+    style.textContent = stylesheetText
+    cloneHead.appendChild(style)
+  }
+
+  getElementStyle(cloneRoot)?.setProperty(
+    'background-color',
+    backgroundColour,
+    'important',
+  )
+  const cloneBody = cloneRoot.querySelector('body')
+  if (cloneBody) {
+    getElementStyle(cloneBody)?.setProperty(
+      'background-color',
+      backgroundColour,
+      'important',
+    )
+  }
+
+  return cloneRoot
+}
+
+const buildReplayScreenshotSvg = (
+  iframe: HTMLIFrameElement,
+  doc: Document,
+  width: number,
+  height: number,
+  backgroundColour: string,
+) => {
+  const cloneRoot = buildReplayScreenshotDocument(doc, backgroundColour)
+  const scroll = getReplayScrollPosition(iframe, doc)
+  const contentWidth = Math.max(
+    width + scroll.x,
+    doc.documentElement.scrollWidth,
+    doc.body?.scrollWidth || 0,
+  )
+  const contentHeight = Math.max(
+    height + scroll.y,
+    doc.documentElement.scrollHeight,
+    doc.body?.scrollHeight || 0,
+  )
+  const serialized = new XMLSerializer().serializeToString(cloneRoot)
+  const fill = escapeSvgAttribute(backgroundColour)
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
+    `<rect width="100%" height="100%" fill="${fill}"/>`,
+    `<foreignObject x="${-scroll.x}" y="${-scroll.y}" width="${contentWidth}" height="${contentHeight}">`,
+    serialized,
+    '</foreignObject></svg>',
+  ].join('')
 }
 
 const formatReplayStartDate = (
@@ -1230,50 +1529,55 @@ export const SessionReplayModal = ({
 
   const downloadScreenshot = async () => {
     try {
-      const iframe = playerRoot.current?.querySelector('iframe')
+      const iframe =
+        replayer.current?.iframe || playerRoot.current?.querySelector('iframe')
       const doc = iframe?.contentDocument
       if (!iframe || !doc) {
         throw new Error('Replay frame is unavailable')
       }
 
-      const width = iframe.clientWidth || doc.documentElement.clientWidth
-      const height = iframe.clientHeight || doc.documentElement.clientHeight
-      const serialized = new XMLSerializer().serializeToString(
-        doc.documentElement,
+      await waitForReplayScreenshotAssets(doc)
+
+      const { width, height } = getReplayFrameSize(iframe, doc)
+      const backgroundColour = getReplayScreenshotBackground(doc)
+      const svgMarkup = buildReplayScreenshotSvg(
+        iframe,
+        doc,
+        width,
+        height,
+        backgroundColour,
       )
-      const svg = new Blob(
-        [
-          `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject width="100%" height="100%">${serialized}</foreignObject></svg>`,
-        ],
-        { type: 'image/svg+xml;charset=utf-8' },
-      )
+      const svg = new Blob([svgMarkup], {
+        type: 'image/svg+xml;charset=utf-8',
+      })
       const url = URL.createObjectURL(svg)
       const image = new Image()
 
-      await new Promise<void>((resolve, reject) => {
-        image.onload = () => resolve()
-        image.onerror = () => reject(new Error('Screenshot failed'))
-        image.src = url
-      })
+      try {
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve()
+          image.onerror = () => reject(new Error('Screenshot failed'))
+          image.src = url
+        })
+      } finally {
+        URL.revokeObjectURL(url)
+      }
 
       const canvas = document.createElement('canvas')
       canvas.width = width
       canvas.height = height
       const context = canvas.getContext('2d')
       if (!context) throw new Error('Screenshot failed')
+      context.fillStyle = backgroundColour
+      context.fillRect(0, 0, width, height)
       context.drawImage(image, 0, 0, width, height)
-      URL.revokeObjectURL(url)
 
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve, 'image/png'),
       )
       if (!blob) throw new Error('Screenshot failed')
 
-      const link = document.createElement('a')
-      link.href = URL.createObjectURL(blob)
-      link.download = `swetrix-replay-${psid}.png`
-      link.click()
-      URL.revokeObjectURL(link.href)
+      downloadBlob(blob, `swetrix-replay-${psid}.png`)
       toast.success(t('project.sessionReplay.screenshotDownloaded'))
     } catch {
       toast.error(t('project.sessionReplay.screenshotError'))
