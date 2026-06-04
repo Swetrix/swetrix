@@ -210,6 +210,7 @@ export class ProjectService {
           'admin.planCode',
           'admin.planType',
           'admin.entitlementOverrides',
+          'admin.addonOverrides',
           'organisation.id',
           'organisationMembers.role',
           'organisationMembers.confirmed',
@@ -1026,6 +1027,50 @@ export class ProjectService {
     }
 
     return info as IUsageInfoRedis
+  }
+
+  async getMonthlySessionReplayUsage(uid: string): Promise<number> {
+    const projects = await this.find({
+      where: {
+        admin: { id: uid },
+      },
+      select: ['id'],
+    })
+
+    if (_isEmpty(projects)) {
+      return 0
+    }
+
+    const monthStart = dayjs
+      .utc()
+      .startOf('month')
+      .format('YYYY-MM-DD HH:mm:ss')
+    const CHUNK_SIZE = 5000
+    const pids = _map(projects, 'id')
+    let usage = 0
+
+    for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
+      const pidChunk = pids.slice(i, i + CHUNK_SIZE)
+
+      const { data } = await clickhouse
+        .query({
+          query: `
+            SELECT uniqExact(concat(toString(psid), ':', replayId)) AS usage
+            FROM session_replay_chunks
+            WHERE pid IN {pids:Array(FixedString(12))}
+              AND created >= {monthStart:DateTime}
+          `,
+          query_params: {
+            pids: pidChunk,
+            monthStart,
+          },
+        })
+        .then((resultSet) => resultSet.json<{ usage: number }>())
+
+      usage += Number(data[0]?.usage) || 0
+    }
+
+    return usage
   }
 
   async clearProjectsRedisCache(uid: string): Promise<void> {

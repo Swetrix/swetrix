@@ -191,15 +191,18 @@ export const getSessionReplayQuota = (
     planCode?: PlanCode | null
     planType?: PlanType | null
     entitlementOverrides?: Record<string, unknown> | null
+    addonOverrides?: Record<string, unknown> | null
   } | null,
 ): number | 'custom' => {
   const replayOverride = getNumericLimitOverride(
     user?.entitlementOverrides,
     'sessionReplaysIncluded',
   )
+  const replayAddons =
+    getNumericLimitOverride(user?.addonOverrides, 'sessionReplays') || 0
 
   if (typeof replayOverride === 'number') {
-    return replayOverride
+    return replayOverride + replayAddons
   }
 
   const effectivePlanType = getEffectivePlanType(user)
@@ -210,10 +213,13 @@ export const getSessionReplayQuota = (
   }
 
   if (entitlements.sessionReplaysIncluded === 'byEventTier') {
-    return PLUS_SESSION_REPLAY_QUOTA[user?.planCode || PlanCode.none] || 0
+    return (
+      (PLUS_SESSION_REPLAY_QUOTA[user?.planCode || PlanCode.none] || 0) +
+      replayAddons
+    )
   }
 
-  return entitlements.sessionReplaysIncluded
+  return entitlements.sessionReplaysIncluded + replayAddons
 }
 
 export const getSessionReplayRetentionEntitlement = (

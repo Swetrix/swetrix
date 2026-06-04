@@ -704,7 +704,10 @@ export class TaskManagerService {
           async (pid, index) => {
             const projectData = data[pid] || {}
             const topCountry = topCountries[pid]?.cc || null
-            const errorStats = errorCounts[pid] || { count: 0, uniqueErrors: 0 }
+            const errorStats = errorCounts[pid] || {
+              count: 0,
+              uniqueErrors: 0,
+            }
             const pidTotalSessions = totalSessions[pid] || 0
 
             const projectGoals = await this.goalService.findByProject(pid)
@@ -1449,7 +1452,10 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async processWebsiteAddonRenewals() {
-    await this.userService.processDueWebsiteAddonRenewals().catch((reason) => {
+    await Promise.all([
+      this.userService.processDueWebsiteAddonRenewals(),
+      this.userService.processDueSessionReplayAddonRenewals(),
+    ]).catch((reason) => {
       this.logger.error(
         `[CRON WORKER](processWebsiteAddonRenewals) Error occured: ${reason}`,
       )
@@ -1471,6 +1477,9 @@ export class TaskManagerService {
 
       if (now > cancellationEffectiveDate) {
         await this.userService.clearWebsiteAddonsForCancelledSubscription(
+          user.id,
+        )
+        await this.userService.clearSessionReplayAddonsForCancelledSubscription(
           user.id,
         )
         await this.userService.update(user.id, {

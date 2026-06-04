@@ -13,6 +13,7 @@ import { User, BillingFrequency } from './user.entity'
 
 export enum UserAddonCode {
   websites = 'websites',
+  sessionReplays = 'session_replays',
 }
 
 export enum UserAddonStatus {

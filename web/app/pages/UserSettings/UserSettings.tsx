@@ -67,6 +67,7 @@ import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type {
+  SessionReplayAddonPreview,
   UserSettingsActionData,
   UserSettingsLoaderData,
   WebsiteAddonPreview,
@@ -191,6 +192,7 @@ const DEFAULT_USAGE_INFO: UsageInfo = {
   customEvents: 0,
   captcha: 0,
   projects: 0,
+  sessionReplays: 0,
   trafficPerc: 0,
   errorsPerc: 0,
   customEventsPerc: 0,
@@ -211,6 +213,10 @@ const DEFAULT_USAGE_INFO: UsageInfo = {
 const WEBSITE_ADDON_QUANTITY_OPTIONS = Array.from(
   { length: 21 },
   (_, index) => index * 50,
+)
+const SESSION_REPLAY_ADDON_QUANTITY_OPTIONS = Array.from(
+  { length: 21 },
+  (_, index) => index * 5000,
 )
 
 const formatBillingPrice = (amount: number) =>
@@ -270,6 +276,8 @@ const UserSettings = () => {
   const metainfoFetcher = useFetcher<UserSettingsActionData>()
   const websiteAddonFetcher = useFetcher<UserSettingsActionData>()
   const websiteAddonPreviewFetcher = useFetcher<UserSettingsActionData>()
+  const sessionReplayAddonFetcher = useFetcher<UserSettingsActionData>()
+  const sessionReplayAddonPreviewFetcher = useFetcher<UserSettingsActionData>()
 
   // Stable submit handle for the preview fetcher. Effects must depend on this,
   // not on the fetcher object (whose identity changes on every state transition
@@ -279,6 +287,15 @@ const UserSettings = () => {
   const websiteAddonPreviewSubmit = useCallback(
     (...args: Parameters<typeof websiteAddonPreviewFetcher.submit>) =>
       websiteAddonPreviewFetcherRef.current.submit(...args),
+    [],
+  )
+  const sessionReplayAddonPreviewFetcherRef = useRef(
+    sessionReplayAddonPreviewFetcher,
+  )
+  sessionReplayAddonPreviewFetcherRef.current = sessionReplayAddonPreviewFetcher
+  const sessionReplayAddonPreviewSubmit = useCallback(
+    (...args: Parameters<typeof sessionReplayAddonPreviewFetcher.submit>) =>
+      sessionReplayAddonPreviewFetcherRef.current.submit(...args),
     [],
   )
 
@@ -317,7 +334,9 @@ const UserSettings = () => {
     maxApiKeyRequestsPerHour = 0,
     sessionReplaysIncluded = 0,
     purchasedWebsiteAddons = 0,
+    purchasedSessionReplayAddons = 0,
     websiteAddon,
+    sessionReplayAddon,
     isAccountBillingSuspended,
   } = user || ({} as Partial<User>)
 
@@ -359,6 +378,13 @@ const UserSettings = () => {
   const currentWebsiteAddonBillingInterval = (websiteAddon?.billingInterval ||
     'monthly') as BillingInterval
   const isWebsiteAddonLegacy = !!websiteAddon?.isLegacy
+  const sessionReplayAddonBundle = ADDONS.sessionReplayBundles[0]
+  const sessionReplayAddonPrice = sessionReplayAddonBundle.monthly[currencyCode]
+  const activeSessionReplayAddonQuantity =
+    sessionReplayAddon?.quantity ?? purchasedSessionReplayAddons
+  const currentSessionReplayAddonBillingInterval =
+    (sessionReplayAddon?.billingInterval || 'monthly') as BillingInterval
+  const isSessionReplayAddonLegacy = !!sessionReplayAddon?.isLegacy
 
   const isTrialEnded = (() => {
     if (!trialEndDate) {
@@ -441,6 +467,31 @@ const UserSettings = () => {
     })
   }
 
+  const onSessionReplayAddonModalOpen = () => {
+    setSelectedSessionReplayAddonQuantity(activeSessionReplayAddonQuantity)
+    setSelectedSessionReplayAddonBillingInterval(
+      currentSessionReplayAddonBillingInterval,
+    )
+    setIsSessionReplayAddonModalOpened(true)
+  }
+
+  const onSessionReplayAddonModalClose = () => {
+    if (isSessionReplayAddonSubmitting) return
+    setIsSessionReplayAddonModalOpened(false)
+  }
+
+  const onSessionReplayAddonUpdate = () => {
+    const formData = new FormData()
+    formData.set('intent', 'update-session-replay-addon')
+    formData.set('quantity', String(selectedSessionReplayAddonQuantity))
+    formData.set('billingInterval', selectedSessionReplayAddonBillingInterval)
+
+    sessionReplayAddonFetcher.submit(formData, {
+      method: 'POST',
+      action: '/user-settings',
+    })
+  }
+
   const tabs = getTabs(t)
   const sidebarGroups = useMemo<SettingsTabGroup<SettingsTab>[]>(
     () => [
@@ -505,6 +556,16 @@ const UserSettings = () => {
   ] = useState<BillingInterval>(currentWebsiteAddonBillingInterval)
   const [isWebsiteAddonModalOpened, setIsWebsiteAddonModalOpened] =
     useState(false)
+  const [
+    selectedSessionReplayAddonQuantity,
+    setSelectedSessionReplayAddonQuantity,
+  ] = useState(activeSessionReplayAddonQuantity)
+  const [
+    selectedSessionReplayAddonBillingInterval,
+    setSelectedSessionReplayAddonBillingInterval,
+  ] = useState<BillingInterval>(currentSessionReplayAddonBillingInterval)
+  const [isSessionReplayAddonModalOpened, setIsSessionReplayAddonModalOpened] =
+    useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const translatedFrequencies = useMemo(
@@ -524,6 +585,8 @@ const UserSettings = () => {
   const lastHandledWebsiteAddonData = useRef<UserSettingsActionData | null>(
     null,
   )
+  const lastHandledSessionReplayAddonData =
+    useRef<UserSettingsActionData | null>(null)
   const shouldHandleFetcherData =
     useDeduplicateFetcherResponse<UserSettingsActionData>()
   const profileUpdateToast = useRef('profileSettings.updated')
@@ -541,6 +604,8 @@ const UserSettings = () => {
 
   const isSubmitting = fetcher.state === 'submitting'
   const isWebsiteAddonSubmitting = websiteAddonFetcher.state !== 'idle'
+  const isSessionReplayAddonSubmitting =
+    sessionReplayAddonFetcher.state !== 'idle'
   const websiteAddonPreview = useMemo(() => {
     if (
       websiteAddonPreviewFetcher.data?.success &&
@@ -646,6 +711,135 @@ const UserSettings = () => {
   const canSelectYearlyWebsiteAddon = user?.billingFrequency === 'yearly'
   const activeWebsiteAddonRecurringAmount =
     websiteAddon?.recurringAmount ?? null
+  const sessionReplayAddonPreview = useMemo(() => {
+    if (
+      sessionReplayAddonPreviewFetcher.data?.success &&
+      sessionReplayAddonPreviewFetcher.data.intent ===
+        'preview-session-replay-addon'
+    ) {
+      return sessionReplayAddonPreviewFetcher.data
+        .data as SessionReplayAddonPreview
+    }
+
+    return null
+  }, [sessionReplayAddonPreviewFetcher.data])
+  const isSessionReplayAddonPreviewLoading =
+    sessionReplayAddonPreviewFetcher.state !== 'idle'
+  const currentSessionReplayAddonPreview = useMemo(() => {
+    if (
+      sessionReplayAddonPreview?.quantity ===
+        selectedSessionReplayAddonQuantity &&
+      sessionReplayAddonPreview.billingInterval ===
+        selectedSessionReplayAddonBillingInterval
+    ) {
+      return sessionReplayAddonPreview
+    }
+
+    return null
+  }, [
+    sessionReplayAddonPreview,
+    selectedSessionReplayAddonQuantity,
+    selectedSessionReplayAddonBillingInterval,
+  ])
+  const hasPendingSessionReplayAddonChange =
+    (sessionReplayAddon?.pendingQuantity ?? null) !== null ||
+    (sessionReplayAddon?.pendingBillingInterval ?? null) !== null
+  const sessionReplayAddonDisabledReason = useMemo(() => {
+    if (isTrial) {
+      return t('billing.sessionReplayAddonUnavailableDuringTrial')
+    }
+
+    if (!isSubscriber) {
+      return t('billing.sessionReplayAddonRequiresSubscription')
+    }
+
+    if (cancellationEffectiveDate) {
+      return t('billing.sessionReplayAddonUnavailableCancelled')
+    }
+
+    if (isAccountBillingSuspended) {
+      return t('billing.sessionReplayAddonUnavailableSuspended')
+    }
+
+    if (sessionReplaysIncluded === 'custom') {
+      return t('billing.sessionReplayAddonUnavailableCustom')
+    }
+
+    if (isSessionReplayAddonLegacy) {
+      return t('billing.sessionReplayAddonLegacyManaged')
+    }
+
+    return null
+  }, [
+    isSubscriber,
+    isTrial,
+    cancellationEffectiveDate,
+    isAccountBillingSuspended,
+    sessionReplaysIncluded,
+    isSessionReplayAddonLegacy,
+    t,
+  ])
+  const isSessionReplayAddonDisabled = !!sessionReplayAddonDisabledReason
+  const hasSessionReplayAddonChanges =
+    selectedSessionReplayAddonQuantity !== activeSessionReplayAddonQuantity ||
+    selectedSessionReplayAddonBillingInterval !==
+      currentSessionReplayAddonBillingInterval ||
+    hasPendingSessionReplayAddonChange
+  const sessionReplayAddonPreviewError =
+    sessionReplayAddonPreviewFetcher.data?.intent ===
+      'preview-session-replay-addon' &&
+    sessionReplayAddonPreviewFetcher.data.error
+      ? sessionReplayAddonPreviewFetcher.data.error
+      : null
+  const sessionReplayAddonPreviewErrorMessage = sessionReplayAddonPreviewError
+    ? (() => {
+        const billingTranslated = t(`billing.${sessionReplayAddonPreviewError}`)
+        const apiTranslated = t(
+          `apiNotifications.${sessionReplayAddonPreviewError}`,
+        )
+
+        return billingTranslated !== `billing.${sessionReplayAddonPreviewError}`
+          ? billingTranslated
+          : apiTranslated !==
+              `apiNotifications.${sessionReplayAddonPreviewError}`
+            ? apiTranslated
+            : sessionReplayAddonPreviewError
+      })()
+    : null
+  const includedSessionReplayLimit =
+    currentSessionReplayAddonPreview?.includedSessionReplays ??
+    (typeof sessionReplaysIncluded === 'number'
+      ? Math.max(0, sessionReplaysIncluded - activeSessionReplayAddonQuantity)
+      : sessionReplaysIncluded)
+  const displayedSessionReplayLimit =
+    currentSessionReplayAddonPreview?.totalSessionReplays ??
+    sessionReplaysIncluded
+  const displayedSessionReplayLimitLabel =
+    typeof displayedSessionReplayLimit === 'number'
+      ? displayedSessionReplayLimit.toLocaleString()
+      : displayedSessionReplayLimit === 'custom'
+        ? t('pricing.custom')
+        : displayedSessionReplayLimit || '0'
+  const displayedSessionReplayUsage =
+    typeof displayedSessionReplayLimit === 'number' &&
+    displayedSessionReplayLimit > 0
+      ? Math.min(
+          100,
+          _round(
+            ((usageInfo.sessionReplays || 0) / displayedSessionReplayLimit) *
+              100,
+            2,
+          ),
+        )
+      : 0
+  const selectedSessionReplayAddonRecurringAmount =
+    currentSessionReplayAddonPreview?.recurringAmount ??
+    sessionReplayAddonPrice *
+      (selectedSessionReplayAddonQuantity / sessionReplayAddonBundle.quantity) *
+      (selectedSessionReplayAddonBillingInterval === 'yearly' ? 10 : 1)
+  const canSelectYearlySessionReplayAddon = user?.billingFrequency === 'yearly'
+  const activeSessionReplayAddonRecurringAmount =
+    sessionReplayAddon?.recurringAmount ?? null
 
   const formatBillingDate = useCallback(
     (date?: string | null) => {
@@ -668,6 +862,17 @@ const UserSettings = () => {
     setSelectedWebsiteAddonQuantity(activeWebsiteAddonQuantity)
     setSelectedWebsiteAddonBillingInterval(currentWebsiteAddonBillingInterval)
   }, [activeWebsiteAddonQuantity, currentWebsiteAddonBillingInterval, user?.id])
+
+  useEffect(() => {
+    setSelectedSessionReplayAddonQuantity(activeSessionReplayAddonQuantity)
+    setSelectedSessionReplayAddonBillingInterval(
+      currentSessionReplayAddonBillingInterval,
+    )
+  }, [
+    activeSessionReplayAddonQuantity,
+    currentSessionReplayAddonBillingInterval,
+    user?.id,
+  ])
 
   useEffect(() => {
     if (
@@ -698,6 +903,34 @@ const UserSettings = () => {
     selectedWebsiteAddonQuantity,
     selectedWebsiteAddonBillingInterval,
     websiteAddonPreviewSubmit,
+  ])
+
+  useEffect(() => {
+    if (
+      activeTab !== TAB_MAPPING.BILLING ||
+      !user?.id ||
+      isSessionReplayAddonDisabled ||
+      !isSessionReplayAddonModalOpened
+    ) {
+      return
+    }
+
+    const formData = new FormData()
+    formData.set('intent', 'preview-session-replay-addon')
+    formData.set('quantity', String(selectedSessionReplayAddonQuantity))
+    formData.set('billingInterval', selectedSessionReplayAddonBillingInterval)
+    sessionReplayAddonPreviewSubmit(formData, {
+      method: 'POST',
+      action: '/user-settings',
+    })
+  }, [
+    activeTab,
+    user?.id,
+    isSessionReplayAddonDisabled,
+    isSessionReplayAddonModalOpened,
+    selectedSessionReplayAddonQuantity,
+    selectedSessionReplayAddonBillingInterval,
+    sessionReplayAddonPreviewSubmit,
   ])
 
   useEffect(() => {
@@ -835,6 +1068,55 @@ const UserSettings = () => {
   }, [
     websiteAddonFetcher.data,
     websiteAddonFetcher.state,
+    mergeUser,
+    t,
+    loadUser,
+  ])
+
+  useEffect(() => {
+    if (
+      sessionReplayAddonFetcher.state !== 'idle' ||
+      !sessionReplayAddonFetcher.data ||
+      lastHandledSessionReplayAddonData.current ===
+        sessionReplayAddonFetcher.data
+    ) {
+      return
+    }
+
+    lastHandledSessionReplayAddonData.current = sessionReplayAddonFetcher.data
+
+    if (
+      sessionReplayAddonFetcher.data.success &&
+      sessionReplayAddonFetcher.data.intent === 'update-session-replay-addon' &&
+      sessionReplayAddonFetcher.data.user
+    ) {
+      mergeUser(sessionReplayAddonFetcher.data.user)
+      toast.success(t('billing.sessionReplayAddonUpdated'))
+      loadUser()
+      setIsSessionReplayAddonModalOpened(false)
+      return
+    }
+
+    if (sessionReplayAddonFetcher.data.error) {
+      const translated = t(
+        `apiNotifications.${sessionReplayAddonFetcher.data.error}`,
+      )
+      const billingTranslated = t(
+        `billing.${sessionReplayAddonFetcher.data.error}`,
+      )
+
+      toast.error(
+        billingTranslated !== `billing.${sessionReplayAddonFetcher.data.error}`
+          ? billingTranslated
+          : translated !==
+              `apiNotifications.${sessionReplayAddonFetcher.data.error}`
+            ? translated
+            : sessionReplayAddonFetcher.data.error,
+      )
+    }
+  }, [
+    sessionReplayAddonFetcher.data,
+    sessionReplayAddonFetcher.state,
     mergeUser,
     t,
     loadUser,
@@ -1993,8 +2275,11 @@ const UserSettings = () => {
                             weight='semibold'
                             className='mt-1'
                           >
-                            {t('billing.perMonthQuota', {
-                              amount: replayLimitLabel,
+                            {t('billing.sessionReplayUsageSummary', {
+                              used: (
+                                usageInfo.sessionReplays || 0
+                              ).toLocaleString(),
+                              total: replayLimitLabel,
                             })}
                           </Text>
                           <Text
@@ -2003,7 +2288,12 @@ const UserSettings = () => {
                             colour='secondary'
                             className='mt-1'
                           >
-                            {t('billing.recordedSessionsQuota')}
+                            {activeSessionReplayAddonQuantity
+                              ? t('billing.addedSessionReplays', {
+                                  amount:
+                                    activeSessionReplayAddonQuantity.toLocaleString(),
+                                })
+                              : t('billing.recordedSessionsQuota')}
                           </Text>
                         </div>
 
@@ -2248,28 +2538,124 @@ const UserSettings = () => {
                         </Button>
                       </div>
 
-                      <div className='border-t border-gray-200 dark:border-slate-800 mt-4' />
-                      <div className='pt-4'>
+                      <div className='mt-4 border-t border-gray-200 dark:border-slate-800' />
+                      <div className='max-w-2xl pt-4'>
                         <Text as='h4' size='base' weight='semibold'>
-                          {t('billing.sessionReplayCapacityTitle')}
+                          {t('billing.sessionReplayAddonTitle')}
                         </Text>
                         <Text
                           as='p'
                           size='sm'
                           colour='secondary'
-                          className='mt-1 max-w-xl'
+                          className='mt-1'
                         >
-                          {t('billing.sessionReplayCapacityDescription', {
-                            quota: replayLimitLabel,
+                          {t('billing.sessionReplayAddonDescription', {
+                            amount: sessionReplayAddonBundle.quantity,
+                            bundlePrice: `${currency.symbol}${formatBillingPrice(
+                              sessionReplayAddonPrice,
+                            )}`,
                           })}
                         </Text>
+
+                        <div className='mt-5'>
+                          <div className='flex items-end justify-between gap-4'>
+                            <Text as='p' size='base' weight='bold'>
+                              {t('billing.sessionReplayUsageSummary', {
+                                used: (
+                                  usageInfo.sessionReplays || 0
+                                ).toLocaleString(),
+                                total: displayedSessionReplayLimitLabel,
+                              })}
+                            </Text>
+                            <Text as='p' size='sm' colour='secondary'>
+                              {t('billing.xPercentUsed', {
+                                percentage: displayedSessionReplayUsage,
+                              })}
+                            </Text>
+                          </div>
+                          <div className='mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800'>
+                            <div
+                              className='h-full rounded-full bg-slate-900 dark:bg-slate-100'
+                              style={{
+                                width: `${displayedSessionReplayUsage}%`,
+                              }}
+                            />
+                          </div>
+                          <div className='mt-2 flex flex-wrap gap-x-4 gap-y-1'>
+                            <Text as='p' size='xs' colour='secondary'>
+                              {t('billing.sessionReplayAddonIncludedCount', {
+                                count:
+                                  typeof includedSessionReplayLimit === 'number'
+                                    ? includedSessionReplayLimit.toLocaleString()
+                                    : t('pricing.custom'),
+                              })}
+                            </Text>
+                            <Text as='p' size='xs' colour='secondary'>
+                              {activeSessionReplayAddonQuantity
+                                ? t(
+                                    'billing.sessionReplayAddonPurchasedCount',
+                                    {
+                                      count:
+                                        activeSessionReplayAddonQuantity.toLocaleString(),
+                                    },
+                                  )
+                                : t('billing.noAdditionalSessionReplays')}
+                            </Text>
+                          </div>
+                        </div>
+
+                        {activeSessionReplayAddonQuantity > 0 &&
+                        activeSessionReplayAddonRecurringAmount !== null ? (
+                          <Text
+                            as='p'
+                            size='sm'
+                            colour='secondary'
+                            className='mt-4'
+                          >
+                            {t('billing.sessionReplayAddonActiveSummary', {
+                              count:
+                                activeSessionReplayAddonQuantity.toLocaleString(),
+                              amount: `${currency.symbol}${formatBillingPrice(
+                                activeSessionReplayAddonRecurringAmount,
+                              )}`,
+                              interval: t(
+                                currentSessionReplayAddonBillingInterval ===
+                                  'yearly'
+                                  ? 'pricing.intervals.year'
+                                  : 'pricing.intervals.month',
+                              ),
+                            })}
+                          </Text>
+                        ) : null}
+
+                        {hasPendingSessionReplayAddonChange &&
+                        !sessionReplayAddonDisabledReason ? (
+                          <Alert variant='warning' className='mt-4'>
+                            {t('billing.sessionReplayAddonPendingChange', {
+                              date:
+                                formatBillingDate(
+                                  sessionReplayAddon?.nextChargeDate ||
+                                    sessionReplayAddon?.periodEnd,
+                                ) || t('billing.sessionReplayAddonNextRenewal'),
+                            })}
+                          </Alert>
+                        ) : null}
+
+                        {sessionReplayAddonDisabledReason ? (
+                          <Alert variant='info' className='mt-4'>
+                            {sessionReplayAddonDisabledReason}
+                          </Alert>
+                        ) : null}
+
                         <Button
-                          variant='secondary'
                           size='lg'
                           className='mt-5 gap-1'
-                          to={routes.billing_choose_plan}
+                          onClick={onSessionReplayAddonModalOpen}
+                          disabled={isSessionReplayAddonDisabled}
                         >
-                          {t('billing.sessionReplayCapacityCta')}
+                          {activeSessionReplayAddonQuantity > 0
+                            ? t('billing.sessionReplayAddonManage')
+                            : t('billing.sessionReplayAddonBuy')}
                           <ArrowRightIcon className='size-4' />
                         </Button>
                       </div>
@@ -2653,6 +3039,184 @@ const UserSettings = () => {
               ) : (
                 <Text as='p' size='sm' colour='secondary'>
                   {t('billing.websiteAddonNoChangesHint')}
+                </Text>
+              )}
+            </div>
+          </div>
+        }
+      />
+
+      <Modal
+        onClose={onSessionReplayAddonModalClose}
+        onSubmit={onSessionReplayAddonUpdate}
+        submitText={t('billing.sessionReplayAddonSave')}
+        closeText={t('common.cancel')}
+        title={t('billing.sessionReplayAddonTitle')}
+        size='medium'
+        overflowVisible
+        isLoading={isSessionReplayAddonSubmitting}
+        submitDisabled={
+          isSessionReplayAddonDisabled ||
+          !hasSessionReplayAddonChanges ||
+          isSessionReplayAddonPreviewLoading ||
+          !!sessionReplayAddonPreviewError
+        }
+        isOpened={isSessionReplayAddonModalOpened}
+        message={
+          <div className='space-y-5 text-left'>
+            <Text as='p' size='sm' colour='secondary'>
+              {t('billing.sessionReplayAddonDescription', {
+                amount: sessionReplayAddonBundle.quantity,
+                bundlePrice: `${currency.symbol}${formatBillingPrice(
+                  sessionReplayAddonPrice,
+                )}`,
+              })}
+            </Text>
+
+            <Select<number>
+              label={t('billing.sessionReplayAddonQuantity')}
+              className='w-full'
+              selectedItem={selectedSessionReplayAddonQuantity}
+              items={SESSION_REPLAY_ADDON_QUANTITY_OPTIONS}
+              onSelect={setSelectedSessionReplayAddonQuantity}
+              title={
+                selectedSessionReplayAddonQuantity
+                  ? t('billing.extraSessionReplaysAmount', {
+                      amount:
+                        selectedSessionReplayAddonQuantity.toLocaleString(),
+                    })
+                  : t('billing.noAdditionalSessionReplays')
+              }
+              labelExtractor={(amount) =>
+                amount
+                  ? t('billing.extraSessionReplaysAmount', {
+                      amount: amount.toLocaleString(),
+                    })
+                  : t('billing.noAdditionalSessionReplays')
+              }
+              keyExtractor={(amount) => String(amount)}
+            />
+
+            <div>
+              <Text as='p' size='sm' weight='medium' colour='primary'>
+                {t('billing.sessionReplayAddonBillingInterval')}
+              </Text>
+              <div className='mt-1.5 grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1 dark:bg-slate-900'>
+                {(['monthly', 'yearly'] as BillingInterval[]).map(
+                  (interval) => {
+                    const isActive =
+                      selectedSessionReplayAddonBillingInterval === interval
+                    const isDisabled =
+                      interval === 'yearly' &&
+                      !canSelectYearlySessionReplayAddon
+
+                    return (
+                      <button
+                        key={interval}
+                        type='button'
+                        aria-pressed={isActive}
+                        disabled={isDisabled}
+                        onClick={() =>
+                          setSelectedSessionReplayAddonBillingInterval(interval)
+                        }
+                        className={cx(
+                          'flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                          isActive
+                            ? 'bg-white text-slate-900 shadow-sm ring-1 ring-gray-200 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700'
+                            : 'text-gray-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100',
+                          isDisabled &&
+                            'cursor-not-allowed opacity-50 hover:text-gray-600 dark:hover:text-gray-400',
+                        )}
+                      >
+                        {interval === 'monthly'
+                          ? t('billing.sessionReplayAddonMonthly')
+                          : t('billing.sessionReplayAddonYearly')}
+                        {interval === 'yearly' ? (
+                          <span className='rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300'>
+                            {t('billing.sessionReplayAddonYearlySavings')}
+                          </span>
+                        ) : null}
+                      </button>
+                    )
+                  },
+                )}
+              </div>
+              <Text as='p' size='xs' colour='secondary' className='mt-1.5'>
+                {canSelectYearlySessionReplayAddon
+                  ? t('billing.sessionReplayAddonYearlyDiscount')
+                  : t('billing.sessionReplayAddonYearlyOnlyNote')}
+              </Text>
+            </div>
+
+            {sessionReplayAddonPreviewErrorMessage ? (
+              <Alert variant='error'>
+                {sessionReplayAddonPreviewErrorMessage}
+              </Alert>
+            ) : null}
+
+            <div className='rounded-lg bg-gray-50 p-4 ring-1 ring-gray-200 dark:bg-slate-900/60 dark:ring-slate-800'>
+              {isSessionReplayAddonPreviewLoading &&
+              !currentSessionReplayAddonPreview ? (
+                <div className='flex justify-center py-2'>
+                  <Loader />
+                </div>
+              ) : currentSessionReplayAddonPreview ? (
+                <div className='space-y-3'>
+                  <div className='flex items-center justify-between gap-4'>
+                    <Text as='span' size='sm' colour='secondary'>
+                      {t('billing.sessionReplayAddonDueNow')}
+                    </Text>
+                    <Text as='span' size='sm' weight='semibold'>
+                      {currentSessionReplayAddonPreview.dueNow > 0
+                        ? `${currency.symbol}${formatBillingPrice(
+                            currentSessionReplayAddonPreview.dueNow,
+                          )}`
+                        : t('billing.sessionReplayAddonNoImmediateCharge')}
+                    </Text>
+                  </div>
+                  <div className='flex items-center justify-between gap-4'>
+                    <Text as='span' size='sm' colour='secondary'>
+                      {t('billing.sessionReplayAddonRecurring')}
+                    </Text>
+                    <Text as='span' size='sm' weight='semibold'>
+                      {currentSessionReplayAddonPreview.quantity > 0
+                        ? `${currency.symbol}${formatBillingPrice(
+                            selectedSessionReplayAddonRecurringAmount,
+                          )}/${t(
+                            selectedSessionReplayAddonBillingInterval ===
+                              'yearly'
+                              ? 'pricing.intervals.year'
+                              : 'pricing.intervals.month',
+                          )}`
+                        : t('billing.sessionReplayAddonNoNextCharge')}
+                    </Text>
+                  </div>
+                  <div className='flex items-center justify-between gap-4'>
+                    <Text as='span' size='sm' colour='secondary'>
+                      {t('billing.sessionReplayAddonNextCharge')}
+                    </Text>
+                    <Text as='span' size='sm' weight='semibold'>
+                      {formatBillingDate(
+                        currentSessionReplayAddonPreview.nextChargeDate,
+                      ) || t('billing.sessionReplayAddonNoNextCharge')}
+                    </Text>
+                  </div>
+                  {currentSessionReplayAddonPreview.effectiveDate ? (
+                    <div className='flex items-center justify-between gap-4'>
+                      <Text as='span' size='sm' colour='secondary'>
+                        {t('billing.sessionReplayAddonEffectiveOn')}
+                      </Text>
+                      <Text as='span' size='sm' weight='semibold'>
+                        {formatBillingDate(
+                          currentSessionReplayAddonPreview.effectiveDate,
+                        )}
+                      </Text>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <Text as='p' size='sm' colour='secondary'>
+                  {t('billing.sessionReplayAddonNoChangesHint')}
                 </Text>
               )}
             </div>

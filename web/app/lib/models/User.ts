@@ -50,6 +50,21 @@ interface WebsiteAddon {
   failedChargeAttempts: number
 }
 
+interface SessionReplayAddon {
+  code: 'session_replays'
+  quantity: number
+  pendingQuantity: number | null
+  billingInterval: 'monthly' | 'yearly' | null
+  pendingBillingInterval: 'monthly' | 'yearly' | null
+  currency: 'USD' | 'EUR' | 'GBP' | null
+  status: 'active' | 'past_due' | 'cancelled' | 'legacy' | null
+  periodEnd: string | null
+  nextChargeDate: string | null
+  recurringAmount: number | null
+  isLegacy: boolean
+  failedChargeAttempts: number
+}
+
 enum OnboardingStep {
   LANGUAGE = 'language',
   WELCOME = 'welcome',
@@ -104,7 +119,9 @@ export interface User {
   maxApiKeyRequestsPerHour: number
   sessionReplaysIncluded: number | string
   purchasedWebsiteAddons: number
+  purchasedSessionReplayAddons: number
   websiteAddon?: WebsiteAddon | null
+  sessionReplayAddon?: SessionReplayAddon | null
   tierCurrency: 'USD' | 'EUR' | 'GBP' | null
   showLiveVisitorsInTitle: boolean
   receiveLoginNotifications: boolean
