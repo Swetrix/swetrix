@@ -1896,7 +1896,7 @@ export class AnalyticsService {
     }
   }
 
-  async getSessionReplaySummary(pid: string, psid: string) {
+  async getSessionReplaySummary(pid: string, psid: string, replayId?: string) {
     const { data } = await clickhouse
       .query({
         query: `
@@ -1912,12 +1912,13 @@ export class AnalyticsService {
           FROM session_replay_chunks
           WHERE pid = {pid:FixedString(12)}
             AND psid = toUInt64OrNull({psid:String})
+            ${replayId ? 'AND replayId = {replayId:String}' : ''}
             AND expiresAt > now()
           GROUP BY replayId
           ORDER BY lastCreated DESC
           LIMIT 1
         `,
-        query_params: { pid, psid },
+        query_params: { pid, psid, replayId: replayId || '' },
       })
       .then((resultSet) =>
         resultSet.json<{
@@ -2004,7 +2005,7 @@ export class AnalyticsService {
     events.sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0))
 
     return {
-      replay: await this.getSessionReplaySummary(pid, psid),
+      replay: await this.getSessionReplaySummary(pid, psid, selectedReplayId),
       events,
     }
   }

@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { Readable } from 'stream'
 import { Injectable } from '@nestjs/common'
 
 interface R2Config {
@@ -78,6 +79,32 @@ export class SessionReplayR2Service {
     }
 
     return Buffer.from(await response.arrayBuffer())
+  }
+
+  async getObjectStream(key: string): Promise<{
+    body: Readable
+    contentLength?: string
+    contentType?: string
+  } | null> {
+    const response = await this.signedFetch('GET', key)
+
+    if (response.status === 404) {
+      return null
+    }
+
+    if (!response.ok) {
+      throw new Error(`R2 GET failed with status ${response.status}`)
+    }
+
+    if (!response.body) {
+      return null
+    }
+
+    return {
+      body: Readable.fromWeb(response.body as any),
+      contentLength: response.headers.get('content-length') || undefined,
+      contentType: response.headers.get('content-type') || undefined,
+    }
   }
 
   async deleteObject(key: string): Promise<void> {

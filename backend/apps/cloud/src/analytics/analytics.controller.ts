@@ -12,6 +12,7 @@ import {
   Controller,
   Body,
   Query,
+  Param,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -28,7 +29,9 @@ import {
   Header,
   HttpException,
   HttpStatus,
+  StreamableFile,
 } from '@nestjs/common'
+import type { Response as ExpressResponse } from 'express'
 
 import { OptionalJwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
@@ -73,9 +76,11 @@ import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
 import {
   GetSessionReplayDto,
+  SessionReplayExportStartDto,
   SessionReplayChunkDto,
   SessionReplayStartDto,
 } from './dto/session-replay.dto'
+import { SessionReplayExportService } from './session-replay-export.service'
 import { GetProfilesDto } from './dto/get-profiles.dto'
 import { GetProfileDto, GetProfileSessionsDto } from './dto/get-profile.dto'
 import { ErrorDto } from './dto/error.dto'
@@ -240,6 +245,7 @@ export class AnalyticsController {
     private readonly logger: AppLoggerService,
     private readonly gscService: GSCService,
     private readonly experimentService: ExperimentService,
+    private readonly sessionReplayExportService: SessionReplayExportService,
   ) {}
 
   @ApiBearerAuth()
@@ -2758,6 +2764,79 @@ export class AnalyticsController {
     )
 
     return this.analyticsService.getSessionReplay(pid, psid, replayId)
+  }
+
+  @Post('session-replay/export')
+  @Auth(true, true)
+  async startSessionReplayExport(
+    @Body() data: SessionReplayExportStartDto,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: { 'x-password'?: string; 'user-agent'?: string },
+    @Ip() requestIp: string,
+  ) {
+    const { pid, psid, replayId } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+    await checkRateLimit(uid || ip || pid, 'session-replay-export-user', 5, 60)
+    await checkRateLimit(pid, 'session-replay-export-project', 20, 60)
+
+    this.logger.log(
+      `pid: ${pid}, psid: ${psid}, replayId: ${replayId || 'latest'}`,
+      'POST /analytics/session-replay/export',
+    )
+
+    return this.sessionReplayExportService.startExport(pid, psid, replayId)
+  }
+
+  @Get('session-replay/export/:exportId')
+  @Auth(true, true)
+  async getSessionReplayExport(
+    @Param('exportId') exportId: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const exportState =
+      await this.sessionReplayExportService.assertExportAccess(exportId)
+
+    await this.analyticsService.checkProjectAccess(
+      exportState.pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(exportState.pid)
+
+    return this.sessionReplayExportService.getExport(exportId)
+  }
+
+  @Get('session-replay/export/:exportId/download')
+  @Auth(true, true)
+  async downloadSessionReplayExport(
+    @Param('exportId') exportId: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: { 'x-password'?: string },
+    @Response({ passthrough: true }) response: ExpressResponse,
+  ): Promise<StreamableFile> {
+    const exportState =
+      await this.sessionReplayExportService.assertExportAccess(exportId)
+
+    await this.analyticsService.checkProjectAccess(
+      exportState.pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(exportState.pid)
+
+    return this.sessionReplayExportService.downloadExport(exportId, response)
   }
 
   @Get('profiles')

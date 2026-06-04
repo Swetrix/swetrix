@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from 'react'
 import type {
   SessionsResponse,
   SessionReplayResponse,
+  SessionReplayExportResponse,
   ErrorsResponse,
   FeatureFlagStats,
   FeatureFlagProfilesResponse,
@@ -136,6 +137,72 @@ export function useSessionReplayProxy() {
   )
 
   return { fetchSessionReplay, data, error, isLoading }
+}
+
+async function parseExportProxyResponse(
+  response: Response,
+): Promise<SessionReplayExportResponse> {
+  let result: ProxyResponse<SessionReplayExportResponse>
+  try {
+    result =
+      (await response.json()) as ProxyResponse<SessionReplayExportResponse>
+  } catch {
+    throw new Error(
+      `Invalid JSON from /api/session-replay-export (status ${response.status})`,
+    )
+  }
+
+  if (!response.ok || !result.data) {
+    throw new Error(
+      result.error || `Request failed (status ${response.status})`,
+    )
+  }
+
+  return result.data
+}
+
+export function useSessionReplayExportProxy() {
+  const startSessionReplayExport = useCallback(
+    async (projectId: string, psid: string, replayId?: string) => {
+      const response = await fetch('/api/session-replay-export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId, psid, replayId }),
+      })
+
+      return parseExportProxyResponse(response)
+    },
+    [],
+  )
+
+  const getSessionReplayExportStatus = useCallback(
+    async (projectId: string, exportId: string) => {
+      const query = new URLSearchParams({ projectId, exportId })
+      const response = await fetch(`/api/session-replay-export?${query}`)
+
+      return parseExportProxyResponse(response)
+    },
+    [],
+  )
+
+  const getSessionReplayExportDownloadUrl = useCallback(
+    (projectId: string, exportId: string) => {
+      const query = new URLSearchParams({
+        action: 'download',
+        projectId,
+        exportId,
+      })
+
+      return `/api/session-replay-export?${query}`
+    },
+    [],
+  )
+
+  return {
+    startSessionReplayExport,
+    getSessionReplayExportStatus,
+    getSessionReplayExportDownloadUrl,
+  }
 }
 
 export function useErrorsProxy() {

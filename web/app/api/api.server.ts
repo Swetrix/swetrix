@@ -1146,6 +1146,22 @@ export interface SessionReplayResponse {
   events: Record<string, unknown>[]
 }
 
+export type SessionReplayExportStatus =
+  | 'queued'
+  | 'processing'
+  | 'ready'
+  | 'failed'
+  | 'expired'
+
+export interface SessionReplayExportResponse {
+  exportId: string
+  status: SessionReplayExportStatus
+  progress: number
+  filename: string
+  expiresAt: string
+  error?: string
+}
+
 export interface SessionDetailsResponse {
   details: {
     psid: string

@@ -12,6 +12,7 @@ import {
   CornersInIcon,
   CornersOutIcon,
   CursorClickIcon,
+  DownloadSimpleIcon,
   GaugeIcon,
   GearSixIcon,
   ListBulletsIcon,
@@ -41,10 +42,14 @@ import './replayPlayer.css'
 import { toast } from 'sonner'
 
 import type {
+  SessionReplayExportResponse,
   SessionReplayMetadata,
   SessionReplayResponse,
 } from '~/api/api.server'
-import { useSessionReplayProxy } from '~/hooks/useAnalyticsProxy'
+import {
+  useSessionReplayExportProxy,
+  useSessionReplayProxy,
+} from '~/hooks/useAnalyticsProxy'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
@@ -78,6 +83,7 @@ const PREVIEW_SEEK_STEP_MS = 500
 const DEFAULT_REPLAY_VIEWPORT = { width: 1280, height: 720 }
 const XHTML_XMLNS = 'http://www.w3.org/1999/xhtml'
 const SCREENSHOT_ASSET_WAIT_MS = 1000
+const EXPORT_POLL_INTERVAL_MS = 2000
 
 type ReplayEvent = Omit<eventWithTime, 'data'> & {
   data?: Record<string, any>
@@ -178,15 +184,10 @@ const isTransparentColour = (colour?: string) => {
 }
 
 const escapeSvgAttribute = (value: string) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
+  value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
 
 const getElementStyle = (element: Element) =>
-  'style' in element
-    ? (element as HTMLElement | SVGElement).style
-    : undefined
+  'style' in element ? (element as HTMLElement | SVGElement).style : undefined
 
 const isElementTag = (element: Element, tagName: string) =>
   element.tagName.toLowerCase() === tagName
@@ -326,10 +327,7 @@ const copyReplayElementState = (source: Element, target: Element) => {
 
     targetTextArea.value = sourceTextArea.value
     targetTextArea.textContent = sourceTextArea.value
-  } else if (
-    isElementTag(source, 'select') &&
-    isElementTag(target, 'select')
-  ) {
+  } else if (isElementTag(source, 'select') && isElementTag(target, 'select')) {
     const sourceSelect = source as HTMLSelectElement
     const targetSelect = target as HTMLSelectElement
 
@@ -941,7 +939,7 @@ const PageflowMarkerTooltip = ({ marker }: { marker: PageflowMarker }) => {
           size='sm'
           weight='semibold'
           colour='primary'
-          className='min-w-0 leading-4 dark'
+          className='dark min-w-0 leading-4'
         >
           {marker.label}
         </Text>
@@ -950,7 +948,7 @@ const PageflowMarkerTooltip = ({ marker }: { marker: PageflowMarker }) => {
         as='div'
         size='xs'
         colour='secondary'
-        className='mt-1 max-w-64 leading-4 wrap-anywhere dark'
+        className='dark mt-1 max-w-64 leading-4 wrap-anywhere'
       >
         {marker.detail}
       </Text>
@@ -1023,9 +1021,17 @@ export const SessionReplayModal = ({
   } = useTranslation('common')
   const { timezone } = useViewProjectContext()
   const { fetchSessionReplay, isLoading } = useSessionReplayProxy()
+  const {
+    startSessionReplayExport,
+    getSessionReplayExportStatus,
+    getSessionReplayExportDownloadUrl,
+  } = useSessionReplayExportProxy()
   const [payload, setPayload] = useState<SessionReplayResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPreparing, setIsPreparing] = useState(false)
+  const [isExportStarting, setIsExportStarting] = useState(false)
+  const [exportStatus, setExportStatus] =
+    useState<SessionReplayExportResponse | null>(null)
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -1052,6 +1058,7 @@ export const SessionReplayModal = ({
   const replayer = useRef<Replayer | null>(null)
   const previewReplayer = useRef<Replayer | null>(null)
   const previewSeekRaf = useRef<number | null>(null)
+  const exportPollTimeout = useRef<number | null>(null)
   const playStart = useRef({ offset: 0, at: 0, speed: 1 })
   const currentTimeRef = useRef(0)
   const speedRef = useRef(1)
@@ -1129,6 +1136,14 @@ export const SessionReplayModal = ({
   const shouldShowPreview =
     Boolean(hoverPreview) && hasEvents && !error && duration > 0
   const canControlReplay = hasEvents && !error && duration > 0
+  const isReplayExporting =
+    isExportStarting ||
+    exportStatus?.status === 'queued' ||
+    exportStatus?.status === 'processing'
+  const exportProgress = Math.max(
+    0,
+    Math.min(100, Math.round(exportStatus?.progress || 0)),
+  )
   const shouldShowControls =
     !isPlaying ||
     isPlayerHovered ||
@@ -1137,6 +1152,14 @@ export const SessionReplayModal = ({
     !canControlReplay
   const speedLabel =
     speed === 1 ? t('project.sessionReplay.normalSpeed') : `${speed}×`
+  const exportToastId = `session-replay-export-${psid}`
+
+  const clearExportPoll = useCallback(() => {
+    if (exportPollTimeout.current) {
+      window.clearTimeout(exportPollTimeout.current)
+      exportPollTimeout.current = null
+    }
+  }, [])
 
   useEffect(() => {
     currentTimeRef.current = currentTime
@@ -1354,6 +1377,18 @@ export const SessionReplayModal = ({
   useEffect(() => {
     if (!isOpen) setSettingsOpen(false)
   }, [isOpen])
+
+  useEffect(() => {
+    if (isOpen) return
+
+    clearExportPoll()
+    setIsExportStarting(false)
+    setExportStatus(null)
+  }, [clearExportPoll, isOpen])
+
+  useEffect(() => {
+    return () => clearExportPoll()
+  }, [clearExportPoll])
 
   const flashBezel = useCallback((kind: 'play' | 'pause') => {
     setBezel({ kind, key: performance.now() })
@@ -1584,9 +1619,144 @@ export const SessionReplayModal = ({
     }
   }
 
+  const downloadExport = useCallback(
+    (exportId: string) => {
+      const anchor = document.createElement('a')
+      anchor.href = getSessionReplayExportDownloadUrl(projectId, exportId)
+      anchor.rel = 'noopener'
+      document.body.appendChild(anchor)
+      anchor.click()
+      document.body.removeChild(anchor)
+    },
+    [getSessionReplayExportDownloadUrl, projectId],
+  )
+
+  const handleExportStatus = useCallback(
+    (status: SessionReplayExportResponse) => {
+      setExportStatus(status)
+
+      if (status.status === 'ready') {
+        clearExportPoll()
+        setIsExportStarting(false)
+        downloadExport(status.exportId)
+        toast.success(t('project.sessionReplay.exportDownloaded'), {
+          id: exportToastId,
+        })
+        setExportStatus(null)
+        return true
+      }
+
+      if (status.status === 'failed' || status.status === 'expired') {
+        clearExportPoll()
+        setIsExportStarting(false)
+        toast.error(status.error || t('project.sessionReplay.exportFailed'), {
+          id: exportToastId,
+        })
+        setExportStatus(null)
+        return true
+      }
+
+      toast.loading(
+        t('project.sessionReplay.exportPreparingProgress', {
+          progress: Math.max(0, Math.min(100, Math.round(status.progress))),
+        }),
+        { id: exportToastId },
+      )
+
+      return false
+    },
+    [clearExportPoll, downloadExport, exportToastId, t],
+  )
+
+  const startExportPolling = useCallback(
+    (exportId: string) => {
+      clearExportPoll()
+
+      const poll = async () => {
+        try {
+          const status = await getSessionReplayExportStatus(projectId, exportId)
+          if (handleExportStatus(status)) return
+
+          exportPollTimeout.current = window.setTimeout(
+            poll,
+            EXPORT_POLL_INTERVAL_MS,
+          )
+        } catch {
+          clearExportPoll()
+          setIsExportStarting(false)
+          setExportStatus(null)
+          toast.error(t('project.sessionReplay.exportFailed'), {
+            id: exportToastId,
+          })
+        }
+      }
+
+      exportPollTimeout.current = window.setTimeout(
+        poll,
+        EXPORT_POLL_INTERVAL_MS,
+      )
+    },
+    [
+      clearExportPoll,
+      exportToastId,
+      getSessionReplayExportStatus,
+      handleExportStatus,
+      projectId,
+      t,
+    ],
+  )
+
+  const exportReplay = useCallback(async () => {
+    if (!canControlReplay || isReplayExporting) return
+
+    clearExportPoll()
+    setIsExportStarting(true)
+    setSettingsOpen(false)
+    toast.loading(t('project.sessionReplay.exportPreparing'), {
+      id: exportToastId,
+    })
+
+    try {
+      const status = await startSessionReplayExport(
+        projectId,
+        psid,
+        replay?.replayId,
+      )
+      setIsExportStarting(false)
+
+      if (!handleExportStatus(status)) {
+        startExportPolling(status.exportId)
+      }
+    } catch (reason) {
+      setIsExportStarting(false)
+      setExportStatus(null)
+      toast.error(
+        reason instanceof Error
+          ? reason.message
+          : t('project.sessionReplay.exportFailed'),
+        { id: exportToastId },
+      )
+    }
+  }, [
+    canControlReplay,
+    clearExportPoll,
+    exportToastId,
+    handleExportStatus,
+    isReplayExporting,
+    projectId,
+    psid,
+    replay?.replayId,
+    startExportPolling,
+    startSessionReplayExport,
+    t,
+  ])
+
   const close = () => {
     replayer.current?.pause()
+    clearExportPoll()
     setIsPlaying(false)
+    setIsExportStarting(false)
+    setExportStatus(null)
     setHoverPreview(null)
     setIsPlayerHovered(false)
     setIsControlsFocused(false)
@@ -1674,14 +1844,15 @@ export const SessionReplayModal = ({
                       className='mx-auto mb-3 size-8 text-amber-400'
                       weight='duotone'
                     />
-                    <Text
-                      colour='primary'
-                      weight='semibold'
-                      className='dark'
-                    >
+                    <Text colour='primary' weight='semibold' className='dark'>
                       {t('project.sessionReplay.loadError')}
                     </Text>
-                    <Text as='p' size='sm' colour='secondary' className='mt-1 dark'>
+                    <Text
+                      as='p'
+                      size='sm'
+                      colour='secondary'
+                      className='dark mt-1'
+                    >
                       {error}
                     </Text>
                   </div>
@@ -1689,11 +1860,7 @@ export const SessionReplayModal = ({
               ) : null}
               {!isPreparing && !error && payload && !hasEvents ? (
                 <div className='absolute inset-0 z-20 flex items-center justify-center px-6 text-center'>
-                  <Text
-                    colour='primary'
-                    weight='semibold'
-                    className='dark'
-                  >
+                  <Text colour='primary' weight='semibold' className='dark'>
                     {t('project.sessionReplay.empty')}
                   </Text>
                 </div>
@@ -1824,7 +1991,7 @@ export const SessionReplayModal = ({
                               size='xs'
                               weight='semibold'
                               colour='primary'
-                              className='rounded bg-black/85 px-1.5 py-0.5 dark tabular-nums'
+                              className='dark rounded bg-black/85 px-1.5 py-0.5 tabular-nums'
                             >
                               {formatReplayTime(hoverPreview.offset)}
                             </Text>
@@ -1891,7 +2058,7 @@ export const SessionReplayModal = ({
                         as='span'
                         size='xs'
                         colour='primary'
-                        className='px-1 tabular-nums dark sm:text-sm'
+                        className='dark px-1 tabular-nums sm:text-sm'
                       >
                         {formatReplayTime(currentTime)} /{' '}
                         {formatReplayTime(duration)}
@@ -1940,7 +2107,7 @@ export const SessionReplayModal = ({
                                     as='span'
                                     size='sm'
                                     colour='primary'
-                                    className='flex-1 dark'
+                                    className='dark flex-1'
                                   >
                                     {t('project.sessionReplay.speed')}
                                   </Text>
@@ -1948,7 +2115,7 @@ export const SessionReplayModal = ({
                                     as='span'
                                     size='sm'
                                     colour='secondary'
-                                    className='tabular-nums dark'
+                                    className='dark tabular-nums'
                                   >
                                     {speedLabel}
                                   </Text>
@@ -1979,7 +2146,7 @@ export const SessionReplayModal = ({
                                     as='span'
                                     size='sm'
                                     colour='primary'
-                                    className='flex-1 dark'
+                                    className='dark flex-1'
                                   >
                                     {t('project.sessionReplay.timeline.title')}
                                   </Text>
@@ -2011,10 +2178,54 @@ export const SessionReplayModal = ({
                                     as='span'
                                     size='sm'
                                     colour='primary'
-                                    className='flex-1 dark'
+                                    className='dark flex-1'
                                   >
                                     {t('project.sessionReplay.screenshot')}
                                   </Text>
+                                </Button>
+
+                                <Button
+                                  variant='ghost'
+                                  focus={false}
+                                  role='menuitem'
+                                  tabIndex={
+                                    canControlReplay && !isReplayExporting
+                                      ? 0
+                                      : -1
+                                  }
+                                  onClick={exportReplay}
+                                  disabled={
+                                    !canControlReplay || isReplayExporting
+                                  }
+                                  className={SETTINGS_ROW_CLASS}
+                                >
+                                  <DownloadSimpleIcon
+                                    weight='duotone'
+                                    className='size-5 shrink-0 text-gray-50'
+                                    aria-hidden
+                                  />
+                                  <Text
+                                    as='span'
+                                    size='sm'
+                                    colour='primary'
+                                    className='dark flex-1'
+                                  >
+                                    {t('project.sessionReplay.exportMp4')}
+                                  </Text>
+                                  {isReplayExporting ? (
+                                    <Text
+                                      as='span'
+                                      size='sm'
+                                      colour='secondary'
+                                      className='dark tabular-nums'
+                                    >
+                                      {isExportStarting
+                                        ? t(
+                                            'project.sessionReplay.exportStarting',
+                                          )
+                                        : `${exportProgress}%`}
+                                    </Text>
+                                  ) : null}
                                 </Button>
                               </div>
                             ) : (

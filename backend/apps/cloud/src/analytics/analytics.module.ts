@@ -1,5 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { BullModule } from '@nestjs/bullmq'
 
 import { AnalyticsService } from './analytics.service'
 import { AnalyticsController } from './analytics.controller'
@@ -13,6 +14,11 @@ import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
 import { RevenueModule } from '../revenue/revenue.module'
 import { ExperimentModule } from '../experiment/experiment.module'
+import {
+  SessionReplayExportService,
+  SESSION_REPLAY_EXPORT_QUEUE,
+} from './session-replay-export.service'
+import { SessionReplayExportProcessor } from './session-replay-export.processor'
 
 @Module({
   imports: [
@@ -22,12 +28,15 @@ import { ExperimentModule } from '../experiment/experiment.module'
     ProjectModule,
     forwardRef(() => RevenueModule),
     forwardRef(() => ExperimentModule),
+    BullModule.registerQueue({ name: SESSION_REPLAY_EXPORT_QUEUE }),
   ],
   providers: [
     AnalyticsService,
     BotDetectionService,
     SaltService,
     SessionReplayR2Service,
+    SessionReplayExportService,
+    SessionReplayExportProcessor,
     HeartbeatGateway,
   ],
   exports: [AnalyticsService, BotDetectionService, SaltService],

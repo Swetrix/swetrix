@@ -87,3 +87,5 @@ export class GetSessionReplayDto {
   @MaxLength(80)
   replayId?: string
 }
+
+export class SessionReplayExportStartDto extends GetSessionReplayDto {}
