@@ -283,13 +283,6 @@ const ReplaysViewInner = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [replaysRefreshTrigger])
 
-  const openReplay = (replay: SessionReplayListItem) => {
-    const params = new URLSearchParams(searchParams)
-    params.set('psid', replay.psid)
-    params.set('replayId', replay.replayId)
-    setSearchParams(params)
-  }
-
   const closeReplay = () => {
     const params = new URLSearchParams(searchParams)
     params.delete('psid')
@@ -334,7 +327,6 @@ const ReplaysViewInner = ({
         timeFormat={timeFormat}
         timezone={timezone}
         currency={project?.revenueCurrency}
-        onWatchReplay={openReplay}
       />
       <InfiniteScrollTrigger
         hasMore={canLoadMoreReplays}
