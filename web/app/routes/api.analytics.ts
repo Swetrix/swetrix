@@ -6,6 +6,7 @@ import {
 
 import {
   getSessionsServer,
+  getSessionReplaysServer,
   getSessionReplayServer,
   getFunnelSessionsServer,
   getGoalSessionsServer,
@@ -44,6 +45,7 @@ import {
   type AnalyticsParams,
   type AnalyticsFilter,
   type SessionsResponse,
+  type SessionReplaysResponse,
   type SessionReplayResponse,
   type FunnelSessionsResponse,
   type GoalSessionsResponse,
@@ -99,6 +101,7 @@ function formatDateForBackend(dateStr: string | undefined): string | undefined {
 interface ProxyRequest {
   action:
     | 'getSessions'
+    | 'getSessionReplays'
     | 'getSessionReplay'
     | 'getErrors'
     | 'getFeatureFlagStats'
@@ -211,6 +214,22 @@ export async function action({ request }: ActionFunctionArgs) {
           analyticsParams,
         )
         return data<ProxyResponse<SessionsResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+          })
+      }
+
+      case 'getSessionReplays': {
+        const result = await getSessionReplaysServer(
+          request,
+          projectId,
+          analyticsParams,
+        )
+        return data<ProxyResponse<SessionReplaysResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

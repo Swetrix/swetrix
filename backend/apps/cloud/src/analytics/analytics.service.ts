@@ -6316,6 +6316,238 @@ export class AnalyticsService {
     return data
   }
 
+  async getSessionReplaysList(
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+    customEVFilterApplied = false,
+  ): Promise<object[]> {
+    const primaryEventsSubquery = this.buildSessionsListPrimaryEventsSubquery(
+      filtersQuery,
+      customEVFilterApplied,
+      'traffic',
+    )
+
+    const query = `
+      WITH filtered_sessions AS (
+        SELECT
+          psidCasted,
+          pid,
+          argMaxIf(profileId, created_for_grouping, profileId IS NOT NULL AND profileId != '') AS profileId,
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          min(created_for_grouping) AS sessionStart,
+          max(created_for_grouping) AS lastActivity
+        FROM (${primaryEventsSubquery}) AS primary_events
+        GROUP BY psidCasted, pid
+      ),
+      replay_summary AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          replayId,
+          argMax(privacyMode, created) AS privacyMode,
+          count() AS chunkCount,
+          sum(eventCount) AS eventCount,
+          min(firstEventTimestamp) AS firstEventTimestamp,
+          max(lastEventTimestamp) AS lastEventTimestamp,
+          min(created) AS replayCreatedAt,
+          max(created) AS lastReplayCreatedAt,
+          max(expiresAt) AS replayExpiresAt
+        FROM session_replay_chunks
+        WHERE pid = {pid:FixedString(12)}
+          AND expiresAt > now()
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid, replayId
+      ),
+      pageview_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      event_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      error_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'error' AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      revenue_totals AS (
+        SELECT
+          psidCasted,
+          pid,
+          sum(CASE WHEN type = 'sale' THEN amount ELSE 0 END) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as revenue,
+          sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refunds
+        FROM (
+          SELECT
+            CAST(session_id, 'String') AS psidCasted,
+            pid,
+            argMax(type, synced_at) AS type,
+            argMax(amount, synced_at) AS amount
+          FROM revenue
+          WHERE pid = {pid:FixedString(12)} AND session_id IS NOT NULL
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND revenue.type IN ('sale', 'refund')
+          GROUP BY psidCasted, pid, transaction_id
+        )
+        GROUP BY psidCasted, pid
+      ),
+      session_duration_agg AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
+          argMax(profileId, lastSeen) as profileId
+        FROM sessions
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY psidCasted, pid
+      ),
+      replays_enriched AS (
+        SELECT
+          rs.psidCasted AS psidCasted,
+          rs.pid AS pid,
+          rs.replayId AS replayId,
+          rs.privacyMode AS privacyMode,
+          rs.chunkCount AS chunkCount,
+          rs.eventCount AS eventCount,
+          rs.firstEventTimestamp AS firstEventTimestamp,
+          rs.lastEventTimestamp AS lastEventTimestamp,
+          rs.replayCreatedAt AS replayCreatedAt,
+          rs.lastReplayCreatedAt AS lastReplayCreatedAt,
+          rs.replayExpiresAt AS replayExpiresAt,
+          fs.cc AS cc,
+          fs.os AS os,
+          fs.br AS br,
+          COALESCE(pc.count, 0) AS pageviews,
+          COALESCE(ec.count, 0) AS customEvents,
+          COALESCE(errc.count, 0) AS errors,
+          toFloat64(COALESCE(rt.revenue, toDecimal64(0, 4))) AS revenue,
+          toFloat64(COALESCE(rt.refunds, toDecimal64(0, 4))) AS refunds,
+          fs.sessionStart AS sessionStart,
+          fs.lastActivity AS lastActivity,
+          sda.avg_duration AS sdur,
+          coalesce(nullIf(sda.profileId, ''), fs.profileId) AS profileId
+        FROM replay_summary rs
+        INNER JOIN filtered_sessions fs ON rs.psidCasted = fs.psidCasted AND rs.pid = fs.pid
+        LEFT JOIN pageview_counts pc ON rs.psidCasted = pc.psidCasted AND rs.pid = pc.pid
+        LEFT JOIN event_counts ec ON rs.psidCasted = ec.psidCasted AND rs.pid = ec.pid
+        LEFT JOIN error_counts errc ON rs.psidCasted = errc.psidCasted AND rs.pid = errc.pid
+        LEFT JOIN revenue_totals rt ON rs.psidCasted = rt.psidCasted AND rs.pid = rt.pid
+        LEFT JOIN session_duration_agg sda ON rs.psidCasted = sda.psidCasted AND rs.pid = sda.pid
+      ),
+      first_session_per_profile AS (
+        SELECT
+          profileId,
+          argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+        GROUP BY profileId
+      )
+      SELECT
+        re.psidCasted AS psid,
+        re.replayId,
+        re.privacyMode,
+        re.chunkCount,
+        re.eventCount,
+        re.firstEventTimestamp,
+        re.lastEventTimestamp,
+        re.replayCreatedAt,
+        re.lastReplayCreatedAt,
+        re.replayExpiresAt,
+        re.cc,
+        re.os,
+        re.br,
+        re.pageviews,
+        re.customEvents,
+        re.errors,
+        re.revenue,
+        re.refunds,
+        re.sessionStart,
+        re.lastActivity,
+        if(dateDiff('second', re.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        re.sdur,
+        re.profileId AS profileId,
+        if(startsWith(ifNull(re.profileId, ''), '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
+        if(
+          ifNull(re.profileId, '') = '',
+          0,
+          if(isNull(fsp.firstPsid) OR fsp.firstPsid = '' OR fsp.firstPsid = re.psidCasted, 1, 0)
+        ) AS isFirstSession
+      FROM replays_enriched re
+      LEFT JOIN first_session_per_profile fsp ON re.profileId = fsp.profileId
+      ORDER BY re.lastReplayCreatedAt DESC, re.replayId DESC
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          ...paramsData.params,
+          timezone: safeTimezone,
+          take,
+          skip,
+        },
+      })
+      .then((resultSet) => resultSet.json<any>())
+
+    return data.map((row: any) => {
+      const firstTimestamp =
+        row.firstEventTimestamp === null ||
+        typeof row.firstEventTimestamp === 'undefined'
+          ? Number.NaN
+          : Number(row.firstEventTimestamp)
+      const lastTimestamp =
+        row.lastEventTimestamp === null ||
+        typeof row.lastEventTimestamp === 'undefined'
+          ? Number.NaN
+          : Number(row.lastEventTimestamp)
+      const sessionDuration = Number(row.sdur) || 0
+      const replayDuration =
+        Number.isFinite(firstTimestamp) &&
+        Number.isFinite(lastTimestamp) &&
+        lastTimestamp > firstTimestamp
+          ? Math.round((lastTimestamp - firstTimestamp) / 1000)
+          : sessionDuration
+
+      return {
+        ...row,
+        hasReplay: 1,
+        chunkCount: Number(row.chunkCount) || 0,
+        eventCount: Number(row.eventCount) || 0,
+        replayDuration,
+        replayStart:
+          Number.isFinite(firstTimestamp) && firstTimestamp > 0
+            ? dayjs.utc(firstTimestamp).format('YYYY-MM-DD HH:mm:ss')
+            : row.replayCreatedAt,
+      }
+    })
+  }
+
   private buildSessionsListPrimaryEventsSubquery(
     filtersQuery: string,
     customEVFilterApplied: boolean,

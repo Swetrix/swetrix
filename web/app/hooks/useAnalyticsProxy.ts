@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 
 import type {
   SessionsResponse,
+  SessionReplaysResponse,
   SessionReplayResponse,
   SessionReplayExportResponse,
   ErrorsResponse,
@@ -102,6 +103,38 @@ export function useSessionsProxy() {
   )
 
   return { fetchSessions, data, error, isLoading }
+}
+
+export function useSessionReplaysProxy() {
+  const [data, setData] = useState<SessionReplaysResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchSessionReplays = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const result = await postAnalytics<SessionReplaysResponse>({
+          action: 'getSessionReplays',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
+  return { fetchSessionReplays, data, error, isLoading }
 }
 
 export function useSessionReplayProxy() {

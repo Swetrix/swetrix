@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, PickType } from '@nestjs/swagger'
 import {
   ArrayMaxSize,
   IsArray,
@@ -16,6 +16,7 @@ import {
 import { Type } from 'class-transformer'
 
 import { PID_REGEX } from '../../common/constants'
+import { GetDataDto } from './getData.dto'
 
 const SESSION_REPLAY_PRIVACY_MODES = ['total', 'normal', 'free-love'] as const
 
@@ -86,6 +87,26 @@ export class GetSessionReplayDto {
   @IsString()
   @MaxLength(80)
   replayId?: string
+}
+
+export class GetSessionReplaysDto extends PickType(GetDataDto, [
+  'pid',
+  'period',
+  'from',
+  'to',
+  'filters',
+  'timezone',
+] as const) {
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(150)
+  take: number
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  skip: number
 }
 
 export class SessionReplayExportStartDto extends GetSessionReplayDto {}

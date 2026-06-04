@@ -76,6 +76,7 @@ import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
 import {
   GetSessionReplayDto,
+  GetSessionReplaysDto,
   SessionReplayExportStartDto,
   SessionReplayChunkDto,
   SessionReplayStartDto,
@@ -2378,6 +2379,86 @@ export class AnalyticsController {
     )
 
     return { sessions, appliedFilters, take, skip }
+  }
+
+  @Get('session-replays')
+  @Auth(true, true)
+  async getSessionReplays(
+    @Query() data: GetSessionReplaysDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of session replays to return is 150',
+      )
+    }
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/session-replays',
+    )
+
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        ['pageview', 'custom_event', 'error'] as const,
+      )
+
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    const replays = await this.analyticsService.getSessionReplaysList(
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+      customEVFilterApplied,
+    )
+
+    return { replays, appliedFilters, take, skip }
   }
 
   @Get('errors')

@@ -995,6 +995,27 @@ export interface SessionsResponse {
   appliedFilters: AnalyticsFilter[]
 }
 
+export type SessionReplayPrivacy = 'total' | 'normal' | 'free-love'
+
+export interface SessionReplayListItem extends Session {
+  replayId: string
+  privacyMode: SessionReplayPrivacy
+  chunkCount: number
+  eventCount: number
+  replayStart: string
+  replayCreatedAt: string
+  lastReplayCreatedAt: string
+  firstEventTimestamp?: number | string | null
+  lastEventTimestamp?: number | string | null
+}
+
+export interface SessionReplaysResponse {
+  replays: SessionReplayListItem[]
+  take: number
+  skip: number
+  appliedFilters: AnalyticsFilter[]
+}
+
 export type SessionEventType = 'traffic' | 'performance' | 'error'
 
 export async function getSessionsServer(
@@ -1027,6 +1048,38 @@ export async function getSessionsServer(
   return serverFetch<SessionsResponse>(
     request,
     `log/sessions?${queryParams.toString()}`,
+    {
+      headers,
+    },
+  )
+}
+
+export async function getSessionReplaysServer(
+  request: Request,
+  pid: string,
+  params: AnalyticsParams & {
+    take?: number
+    skip?: number
+  },
+): Promise<ServerFetchResult<SessionReplaysResponse>> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  queryParams.append('take', String(params.take || 30))
+  queryParams.append('skip', String(params.skip || 0))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<SessionReplaysResponse>(
+    request,
+    `log/session-replays?${queryParams.toString()}`,
     {
       headers,
     },
@@ -1128,8 +1181,6 @@ interface PageflowItem {
   amount?: number
   currency?: string
 }
-
-export type SessionReplayPrivacy = 'total' | 'normal' | 'free-love'
 
 export interface SessionReplayMetadata {
   hasReplay: boolean

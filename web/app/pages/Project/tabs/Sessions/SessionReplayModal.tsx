@@ -138,6 +138,7 @@ interface SessionReplayModalProps {
   projectId: string
   psid: string
   replay?: SessionReplayMetadata | null
+  replayId?: string
   pages?: PageflowEvent[]
   timeFormat: '12-hour' | '24-hour'
 }
@@ -1012,6 +1013,7 @@ export const SessionReplayModal = ({
   projectId,
   psid,
   replay,
+  replayId,
   pages = [],
   timeFormat,
 }: SessionReplayModalProps) => {
@@ -1152,7 +1154,8 @@ export const SessionReplayModal = ({
     !canControlReplay
   const speedLabel =
     speed === 1 ? t('project.sessionReplay.normalSpeed') : `${speed}×`
-  const exportToastId = `session-replay-export-${psid}`
+  const selectedReplayId = replayId || replay?.replayId
+  const exportToastId = `session-replay-export-${psid}-${selectedReplayId || 'latest'}`
 
   const clearExportPoll = useCallback(() => {
     if (exportPollTimeout.current) {
@@ -1208,7 +1211,7 @@ export const SessionReplayModal = ({
     setIsControlsFocused(false)
     setPlayerSize({ width: 0, height: 0 })
 
-    fetchSessionReplay(projectId, psid, replay?.replayId)
+    fetchSessionReplay(projectId, psid, selectedReplayId)
       .then((result) => {
         if (cancelled) return
         if (!result) {
@@ -1232,7 +1235,7 @@ export const SessionReplayModal = ({
     return () => {
       cancelled = true
     }
-  }, [fetchSessionReplay, isOpen, projectId, psid, replay?.replayId, t])
+  }, [fetchSessionReplay, isOpen, projectId, psid, selectedReplayId, t])
 
   useEffect(() => {
     if (!isOpen || !hasEvents || !playerRoot.current) return
@@ -1720,7 +1723,7 @@ export const SessionReplayModal = ({
       const status = await startSessionReplayExport(
         projectId,
         psid,
-        replay?.replayId,
+        selectedReplayId,
       )
       setIsExportStarting(false)
 
@@ -1745,7 +1748,7 @@ export const SessionReplayModal = ({
     isReplayExporting,
     projectId,
     psid,
-    replay?.replayId,
+    selectedReplayId,
     startExportPolling,
     startSessionReplayExport,
     t,
