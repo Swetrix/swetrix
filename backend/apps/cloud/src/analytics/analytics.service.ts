@@ -1901,9 +1901,10 @@ export class AnalyticsService {
     return { reserved: true, key, counterKey }
   }
 
-  private async releaseReplayUsageReservation(
-    reservation: { key?: string; counterKey?: string },
-  ) {
+  private async releaseReplayUsageReservation(reservation: {
+    key?: string
+    counterKey?: string
+  }) {
     if (!reservation.key) {
       return
     }

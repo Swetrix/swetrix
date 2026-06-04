@@ -167,7 +167,8 @@ export class SessionReplayS3Service {
     }
 
     const payloadHash =
-      payloadHashOverride || sha256Hex(body instanceof Readable ? '' : body || '')
+      payloadHashOverride ||
+      sha256Hex(body instanceof Readable ? '' : body || '')
     const now = new Date()
     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '')
     const dateStamp = amzDate.slice(0, 8)
