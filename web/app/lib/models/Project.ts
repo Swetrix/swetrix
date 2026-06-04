@@ -85,7 +85,7 @@ export interface SwetrixError {
   sessions: number
 }
 
-export type SessionReplayPrivacy = 'total' | 'normal' | 'none'
+type SessionReplayPrivacy = 'total' | 'normal' | 'none'
 
 export interface SessionReplayMetadata {
   hasReplay: boolean

@@ -78,7 +78,7 @@ const formatDate = (
   })
 }
 
-export const ReplayRow = ({
+const ReplayRow = ({
   replay,
   timeFormat,
   timezone,

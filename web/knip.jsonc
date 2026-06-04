@@ -4,6 +4,8 @@
     "@tailwindcss/forms",
     "@tailwindcss/typography",
     "tailwindcss",
+    "rrweb",
+    "dom-player",
     // "@swetrix/node",
   ],
   // "ignore": [

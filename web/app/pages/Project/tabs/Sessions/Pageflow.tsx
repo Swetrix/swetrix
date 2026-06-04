@@ -26,7 +26,7 @@ import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
 dayjs.extend(utc)
 
-export interface PageflowMetadata {
+interface PageflowMetadata {
   key: string
   value: string
 }

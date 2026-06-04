@@ -1007,7 +1007,7 @@ const PageflowMarkerButton = ({
 const SETTINGS_ROW_CLASS =
   'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-100 transition-colors duration-150 ease-out hover:bg-white/10 focus-visible:bg-white/10 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent'
 
-export const SessionReplayModal = ({
+const SessionReplayModal = ({
   isOpen,
   onClose,
   projectId,

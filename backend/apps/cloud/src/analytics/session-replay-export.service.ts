@@ -23,7 +23,7 @@ import { SessionReplayR2Service } from './session-replay-r2.service'
 
 export const SESSION_REPLAY_EXPORT_QUEUE = 'session-replay-export'
 
-export type SessionReplayExportStatus =
+type SessionReplayExportStatus =
   | 'queued'
   | 'processing'
   | 'ready'

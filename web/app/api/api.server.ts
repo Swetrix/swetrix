@@ -995,7 +995,7 @@ export interface SessionsResponse {
   appliedFilters: AnalyticsFilter[]
 }
 
-export type SessionReplayPrivacy = 'total' | 'normal' | 'none'
+type SessionReplayPrivacy = 'total' | 'normal' | 'none'
 
 export interface SessionReplayListItem extends Session {
   replayId: string
@@ -1197,7 +1197,7 @@ export interface SessionReplayResponse {
   events: Record<string, unknown>[]
 }
 
-export type SessionReplayExportStatus =
+type SessionReplayExportStatus =
   | 'queued'
   | 'processing'
   | 'ready'
