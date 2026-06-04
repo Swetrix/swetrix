@@ -78,6 +78,12 @@ Error details can also point you toward the sessions that experienced a specific
 
 ## Privacy and retention
 
+Session replays can capture page state, user interactions, and non-password input values depending
+on the privacy mode and masking options you choose. We recommend asking users for explicit consent
+before starting replay recording, especially on public websites or pages that may contain personal
+data. If a user opts out or withdraws consent, do not call `startSessionReplay()` for that visitor,
+or stop the active replay if one is already running.
+
 Choose the privacy mode in code when you start the replay:
 
 - `total`: masks all text and inputs, and blocks media/canvas content.
@@ -87,6 +93,7 @@ Choose the privacy mode in code when you start the replay:
 Configure replay retention in **Project Settings > Session replays**. Retention changes apply only to newly recorded replay chunks; existing replay chunks keep the expiry date they were recorded with.
 
 <Callout type="warn">
-  Review your privacy policy, consent flow, and masking settings before recording replays on pages
-  that may contain personal, financial, health, authentication, or other sensitive data.
+  Review your privacy policy, consent flow, masking settings, and legal basis before recording
+  replays on pages that may contain personal, financial, health, authentication, or other sensitive
+  data. This page is not legal advice, and requirements vary by jurisdiction and use case.
 </Callout>

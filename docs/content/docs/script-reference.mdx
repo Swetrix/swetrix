@@ -241,8 +241,9 @@ This function starts recording the current browser session so you can watch it l
 
 <Callout type="warn">
   Session replays may capture page content, user interactions, and non-password input values
-  depending on the privacy mode you choose. Do not record sensitive pages unless you have reviewed
-  your masking settings, consent requirements, and legal basis for collecting this data.
+  depending on the privacy mode you choose. We recommend gating `startSessionReplay()` behind your
+  consent flow where applicable, and not recording sensitive pages unless you have reviewed your
+  masking settings, consent requirements, and legal basis for collecting this data.
 </Callout>
 
 Call `startSessionReplay()` after `init()`. If you set `sessionReplay: true` in `init()`, Swetrix preloads the recorder first so starting a replay is faster. If you do not preload it, `startSessionReplay()` loads the recorder when it is called.
