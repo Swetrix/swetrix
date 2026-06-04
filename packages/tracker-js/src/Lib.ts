@@ -192,13 +192,16 @@ export interface ErrorActions {
   stop: () => void
 }
 
-export type SessionReplayPrivacy = 'total' | 'normal' | 'free-love'
+export type SessionReplayPrivacy = 'total' | 'normal' | 'none'
 
 export interface SessionReplayOptions {
   privacy?: SessionReplayPrivacy
   rrweb?: RrwebRecordOptions
   flushIntervalMs?: number
   maxEventsPerChunk?: number
+  sampleRate?: number
+  maxDurationMs?: number
+  idleTimeoutMs?: number
 }
 
 export interface SessionReplayActions {
@@ -279,6 +282,15 @@ const DEFAULT_RRWEB_FILE = 'rrweb.min.js'
 const DEFAULT_RRWEB_URL = `https://swetrix.org/${DEFAULT_RRWEB_FILE}`
 const DEFAULT_SESSION_REPLAY_FLUSH_INTERVAL = 5000
 const DEFAULT_SESSION_REPLAY_MAX_EVENTS = 100
+const DEFAULT_SESSION_REPLAY_PRIVACY: SessionReplayPrivacy = 'total'
+const SESSION_REPLAY_ACTIVITY_EVENTS = [
+  'click',
+  'keydown',
+  'mousedown',
+  'mousemove',
+  'scroll',
+  'touchstart',
+] as const
 
 // Default cache duration: 5 minutes
 const DEFAULT_CACHE_DURATION = 5 * 60 * 1000
@@ -773,6 +785,10 @@ export class Lib {
       return defaultSessionReplayActions
     }
 
+    if (!this.shouldSampleSessionReplay(options.sampleRate)) {
+      return defaultSessionReplayActions
+    }
+
     try {
       await this.preloadSessionReplay()
     } catch {
@@ -784,7 +800,7 @@ export class Lib {
       return defaultSessionReplayActions
     }
 
-    const privacy = options.privacy || 'normal'
+    const privacy = options.privacy || DEFAULT_SESSION_REPLAY_PRIVACY
     const replayId = this.createReplayId()
     const started = await this.sendSessionReplayStart(replayId, privacy)
 
@@ -801,11 +817,21 @@ export class Lib {
       options.maxEventsPerChunk > 0
         ? Math.floor(options.maxEventsPerChunk)
         : DEFAULT_SESSION_REPLAY_MAX_EVENTS
+    const maxDurationMs =
+      typeof options.maxDurationMs === 'number' && options.maxDurationMs > 0
+        ? options.maxDurationMs
+        : null
+    const idleTimeoutMs =
+      typeof options.idleTimeoutMs === 'number' && options.idleTimeoutMs > 0
+        ? options.idleTimeoutMs
+        : null
 
     let chunkIndex = 0
     let stopped = false
     let events: RrwebEvent[] = []
     let flushing = Promise.resolve()
+    let maxDurationTimer: ReturnType<typeof setTimeout> | undefined
+    let idleTimer: ReturnType<typeof setTimeout> | undefined
 
     const flush = async (useBeacon = false) => {
       if (!events.length) return
@@ -853,27 +879,76 @@ export class Lib {
         void flush(true)
       }
     }
+    const clearIdleTimer = () => {
+      if (idleTimer) {
+        clearTimeout(idleTimer)
+        idleTimer = undefined
+      }
+    }
+    const stopSessionReplay = async () => {
+      if (stopped) return
+      stopped = true
+      clearInterval(timer)
+      if (maxDurationTimer) {
+        clearTimeout(maxDurationTimer)
+      }
+      clearIdleTimer()
+      window.removeEventListener('pagehide', flushOnPageExit)
+      document.removeEventListener('visibilitychange', flushOnHidden)
+      SESSION_REPLAY_ACTIVITY_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, resetIdleTimer)
+      })
+      stopRecording?.()
+      await flush()
+      this.sessionReplayActions = null
+    }
+    const resetIdleTimer = () => {
+      if (!idleTimeoutMs || stopped) return
+      clearIdleTimer()
+      idleTimer = setTimeout(() => void stopSessionReplay(), idleTimeoutMs)
+    }
 
     window.addEventListener('pagehide', flushOnPageExit)
     document.addEventListener('visibilitychange', flushOnHidden)
 
+    if (maxDurationMs) {
+      maxDurationTimer = setTimeout(
+        () => void stopSessionReplay(),
+        maxDurationMs,
+      )
+    }
+
+    if (idleTimeoutMs) {
+      SESSION_REPLAY_ACTIVITY_EVENTS.forEach((eventName) => {
+        window.addEventListener(eventName, resetIdleTimer, { passive: true })
+      })
+      resetIdleTimer()
+    }
+
     this.sessionReplayActions = {
-      stop: async () => {
-        if (stopped) return
-        stopped = true
-        clearInterval(timer)
-        window.removeEventListener('pagehide', flushOnPageExit)
-        document.removeEventListener('visibilitychange', flushOnHidden)
-        stopRecording?.()
-        await flush()
-        this.sessionReplayActions = null
-      },
+      stop: stopSessionReplay,
       flush: async () => {
         await flush()
       },
     }
 
     return this.sessionReplayActions
+  }
+
+  private shouldSampleSessionReplay(sampleRate?: number): boolean {
+    if (typeof sampleRate !== 'number') {
+      return true
+    }
+
+    if (sampleRate <= 0) {
+      return false
+    }
+
+    if (sampleRate >= 1) {
+      return true
+    }
+
+    return Math.random() < sampleRate
   }
 
   /**
@@ -1061,7 +1136,7 @@ export class Lib {
     emit: RrwebEmit,
   ): RrwebRecordOptions {
     const options: RrwebRecordOptions = {
-      ...(userOptions || {}),
+      ...userOptions,
       emit,
     }
 

@@ -194,6 +194,33 @@ const variantWithFallback = await getExperiment('checkout-redesign-experiment-id
 clearExperimentsCache()
 ```
 
+### `startSessionReplay(options?)`
+
+Start recording a session replay. Session replays use `total` privacy by default, which masks text and inputs and blocks media/canvas capture unless you explicitly choose another mode.
+
+```javascript
+const replay = await startSessionReplay({
+  privacy: 'total',
+  sampleRate: 0.25,
+  maxDurationMs: 10 * 60 * 1000,
+  idleTimeoutMs: 2 * 60 * 1000,
+})
+
+// Stop or flush manually when needed
+await replay.flush()
+await replay.stop()
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `privacy` | Privacy mode: `total`, `normal`, or `none`. | `'total'` |
+| `sampleRate` | Fraction of sessions to record (`0` to `1`). | `1` |
+| `maxDurationMs` | Stop recording after this duration. | `undefined` |
+| `idleTimeoutMs` | Stop recording after this much visitor inactivity. | `undefined` |
+| `flushIntervalMs` | Upload buffered replay events at this interval. | `5000` |
+| `maxEventsPerChunk` | Upload once this many events are buffered. | `100` |
+| `rrweb` | Additional rrweb record options. | `undefined` |
+
 ### Session & Profile IDs
 
 ```javascript

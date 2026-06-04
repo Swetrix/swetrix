@@ -98,10 +98,7 @@ export const ReplayRow = ({
       return t('project.unknownUser')
     }
 
-    return getProfileDisplayName(
-      replay.profileId,
-      Boolean(replay.isIdentified),
-    )
+    return getProfileDisplayName(replay.profileId, Boolean(replay.isIdentified))
   }, [replay.profileId, replay.isIdentified, t])
 
   const replayStartedAt = useMemo(
@@ -112,11 +109,16 @@ export const ReplayRow = ({
         timeFormat,
         timezone,
       ),
-    [language, replay.replayCreatedAt, replay.replayStart, timeFormat, timezone],
+    [
+      language,
+      replay.replayCreatedAt,
+      replay.replayStart,
+      timeFormat,
+      timezone,
+    ],
   )
   const replayExpiresAt = useMemo(
-    () =>
-      formatDate(replay.replayExpiresAt, language, timeFormat, timezone),
+    () => formatDate(replay.replayExpiresAt, language, timeFormat, timezone),
     [language, replay.replayExpiresAt, timeFormat, timezone],
   )
   const durationString = useMemo(() => {
@@ -215,10 +217,7 @@ export const ReplayRow = ({
                     text={replay.br || t('project.unknown')}
                     tooltipNode={
                       <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
-                        <BrowserIcon
-                          browser={replay.br}
-                          className='size-3.5'
-                        />
+                        <BrowserIcon browser={replay.br} className='size-3.5' />
                       </div>
                     }
                   />

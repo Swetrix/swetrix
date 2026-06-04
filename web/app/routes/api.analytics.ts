@@ -220,7 +220,7 @@ export async function action({ request }: ActionFunctionArgs) {
               ? result.error.join(', ')
               : result.error
             : null,
-          })
+        })
       }
 
       case 'getSessionReplays': {

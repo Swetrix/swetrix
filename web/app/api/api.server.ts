@@ -995,7 +995,7 @@ export interface SessionsResponse {
   appliedFilters: AnalyticsFilter[]
 }
 
-export type SessionReplayPrivacy = 'total' | 'normal' | 'free-love'
+export type SessionReplayPrivacy = 'total' | 'normal' | 'none'
 
 export interface SessionReplayListItem extends Session {
   replayId: string

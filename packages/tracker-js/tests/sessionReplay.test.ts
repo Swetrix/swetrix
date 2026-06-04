@@ -122,6 +122,16 @@ describe('Session replay tracking', () => {
 
     const actions = await startPromise
     const recordOptions = (record as any).options
+    expect(recordOptions.maskTextSelector).toBe('*')
+
+    const startCall = fetchMock.mock.calls.find(([url]) =>
+      String(url).includes('/session-replay/start'),
+    )
+    expect(startCall).toBeTruthy()
+    expect(JSON.parse(startCall![1].body as string)).toEqual(
+      expect.objectContaining({ privacy: 'total' }),
+    )
+
     recordOptions.emit({ type: 2, timestamp: 100 })
     recordOptions.emit({ type: 3, timestamp: 200 })
 
@@ -140,6 +150,86 @@ describe('Session replay tracking', () => {
     )
 
     await actions.stop()
+  })
+
+  test('sampleRate can skip recording before loading rrweb', async () => {
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const actions = await startSessionReplay({ sampleRate: 0 })
+    await actions.flush()
+    await actions.stop()
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(document.querySelector(`script[src="${RRWEB_URL}"]`)).toBeNull()
+  })
+
+  test('maxDurationMs stops recording and flushes buffered events', async () => {
+    jest.useFakeTimers()
+    const stopRecording = jest.fn()
+    const record = jest.fn((options) => {
+      ;(record as any).options = options
+      return stopRecording
+    })
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const startPromise = startSessionReplay({
+      flushIntervalMs: 60_000,
+      maxDurationMs: 1000,
+    })
+    resolveRrwebScript(record)
+
+    await startPromise
+    ;(record as any).options.emit({ type: 2, timestamp: 100 })
+
+    await jest.advanceTimersByTimeAsync(1000)
+    await Promise.resolve()
+
+    expect(stopRecording).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.swetrix.com/log/session-replay/chunk',
+      expect.objectContaining({
+        body: expect.stringContaining('"timestamp":100'),
+      }),
+    )
+  })
+
+  test('idleTimeoutMs stops after inactivity and resets on activity', async () => {
+    jest.useFakeTimers()
+    const stopRecording = jest.fn()
+    const record = jest.fn((options) => {
+      ;(record as any).options = options
+      return stopRecording
+    })
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const startPromise = startSessionReplay({
+      flushIntervalMs: 60_000,
+      idleTimeoutMs: 1000,
+    })
+    resolveRrwebScript(record)
+
+    await startPromise
+    ;(record as any).options.emit({ type: 2, timestamp: 200 })
+
+    await jest.advanceTimersByTimeAsync(900)
+    window.dispatchEvent(new Event('mousemove'))
+    await jest.advanceTimersByTimeAsync(900)
+
+    expect(stopRecording).not.toHaveBeenCalled()
+
+    await jest.advanceTimersByTimeAsync(100)
+    await Promise.resolve()
+
+    expect(stopRecording).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.swetrix.com/log/session-replay/chunk',
+      expect.objectContaining({
+        body: expect.stringContaining('"timestamp":200'),
+      }),
+    )
   })
 
   test('privacy modes map to rrweb options and keep internal emit', () => {
@@ -168,7 +258,7 @@ describe('Session replay tracking', () => {
     expect(normal.emit).toBe(emit)
 
     const freeLove = (lib as any).getSessionReplayRecordOptions(
-      'free-love',
+      'none',
       { maskInputOptions: { email: false } },
       emit,
     )

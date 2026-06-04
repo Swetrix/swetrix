@@ -167,8 +167,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = ReplacingMergeTree(created)
   PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, psid, replayId, chunkIndex)
-  TTL expiresAt;`,
+  ORDER BY (pid, psid, replayId, chunkIndex);`,
 ]
 
 const initialiseDatabase = async () => {

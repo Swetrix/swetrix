@@ -19,8 +19,7 @@ const queries = [
   )
   ENGINE = ReplacingMergeTree(created)
   PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, psid, replayId, chunkIndex)
-  TTL expiresAt;`,
+  ORDER BY (pid, psid, replayId, chunkIndex);`,
 ]
 
 queriesRunner(queries)

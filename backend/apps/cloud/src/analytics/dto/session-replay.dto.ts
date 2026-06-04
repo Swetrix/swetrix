@@ -18,7 +18,7 @@ import { Type } from 'class-transformer'
 import { PID_REGEX } from '../../common/constants'
 import { GetDataDto } from './getData.dto'
 
-const SESSION_REPLAY_PRIVACY_MODES = ['total', 'normal', 'free-love'] as const
+const SESSION_REPLAY_PRIVACY_MODES = ['total', 'normal', 'none'] as const
 
 export type SessionReplayPrivacyMode =
   (typeof SESSION_REPLAY_PRIVACY_MODES)[number]
@@ -34,7 +34,7 @@ export class SessionReplayStartDto {
   @MaxLength(80)
   replayId: string
 
-  @ApiProperty({ enum: SESSION_REPLAY_PRIVACY_MODES, default: 'normal' })
+  @ApiProperty({ enum: SESSION_REPLAY_PRIVACY_MODES, default: 'total' })
   @IsIn(SESSION_REPLAY_PRIVACY_MODES)
   privacy: SessionReplayPrivacyMode
 

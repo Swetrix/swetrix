@@ -143,6 +143,7 @@ const SESSION_REPLAY_RETENTION_VALUES = [30, 90, 365, 1825] as const
 const MAX_SESSION_REPLAY_EVENTS_PER_CHUNK = 1000
 const MAX_SESSION_REPLAY_CHUNK_BYTES = 900 * 1024
 const SESSION_REPLAY_CLEANUP_BATCH_SIZE = 500
+const SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY = 6
 
 const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
 
@@ -150,6 +151,29 @@ type FunnelStepDetails = Record<
   keyof Required<IFunnelBreakdowns>,
   Record<number, Record<string, number>>
 >
+
+const mapLimit = async <T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> => {
+  const results: R[] = new Array(items.length)
+  const concurrency = Math.max(1, Math.min(limit, items.length))
+  let nextIndex = 0
+
+  const workers = Array.from({ length: concurrency }).map(async () => {
+    while (true) {
+      const current = nextIndex++
+      if (current >= items.length) {
+        break
+      }
+      results[current] = await fn(items[current], current)
+    }
+  })
+
+  await Promise.all(workers)
+  return results
+}
 
 const GMT_0_TIMEZONES = [
   'Atlantic/Azores',
@@ -1738,15 +1762,37 @@ export class AnalyticsService {
     ].join('/')
   }
 
-  private getReplayUsageKey(pid: string, psid: string, replayId: string) {
-    return `session-replay:usage:${dayjs.utc().format('YYYY-MM')}:${pid}:${psid}:${replayId}`
+  private getReplayUsageKey(
+    accountId: string,
+    pid: string,
+    psid: string,
+    replayId: string,
+  ) {
+    return `session-replay:usage:${dayjs.utc().format('YYYY-MM')}:${accountId}:${pid}:${psid}:${replayId}`
   }
 
   private getReplayUsageTtlSeconds() {
     return Math.max(60, dayjs.utc().endOf('month').diff(dayjs.utc(), 'second'))
   }
 
-  private async getMonthlyReplayUsage(pid: string): Promise<number> {
+  private async getReplayAccountProjectIds(
+    project: Project,
+    pid: string,
+  ): Promise<string[]> {
+    const adminId = project.admin?.id
+    if (!adminId) {
+      return [pid]
+    }
+
+    const projectIds = await this.projectService.getProjectIdsByAdminId(adminId)
+    return Array.from(new Set([pid, ...projectIds])).filter(Boolean)
+  }
+
+  private async getMonthlyReplayUsage(pids: string[]): Promise<number> {
+    if (_isEmpty(pids)) {
+      return 0
+    }
+
     const monthStart = dayjs
       .utc()
       .startOf('month')
@@ -1757,10 +1803,10 @@ export class AnalyticsService {
         query: `
           SELECT uniqExact(concat(toString(psid), ':', replayId)) AS usage
           FROM session_replay_chunks
-          WHERE pid = {pid:FixedString(12)}
+          WHERE pid IN {pids:Array(FixedString(12))}
             AND created >= {monthStart:DateTime}
         `,
-        query_params: { pid, monthStart },
+        query_params: { pids, monthStart },
       })
       .then((resultSet) => resultSet.json<{ usage: number }>())
 
@@ -1773,7 +1819,8 @@ export class AnalyticsService {
     psid: string,
     replayId: string,
   ): Promise<{ reserved: boolean; key?: string }> {
-    const key = this.getReplayUsageKey(pid, psid, replayId)
+    const accountId = project.admin?.id || pid
+    const key = this.getReplayUsageKey(accountId, pid, psid, replayId)
     const result = await redis.set(
       key,
       '1',
@@ -1788,7 +1835,8 @@ export class AnalyticsService {
 
     const quota = getSessionReplayQuota(project.admin)
     if (quota !== 'custom') {
-      const usage = await this.getMonthlyReplayUsage(pid)
+      const pids = await this.getReplayAccountProjectIds(project, pid)
+      const usage = await this.getMonthlyReplayUsage(pids)
       if (usage >= quota) {
         await redis.del(key)
         throw new HttpException(
@@ -1973,7 +2021,7 @@ export class AnalyticsService {
     const { data: chunks } = await clickhouse
       .query({
         query: `
-          SELECT objectKey
+          SELECT chunkIndex, objectKey
           FROM session_replay_chunks
           WHERE pid = {pid:FixedString(12)}
             AND psid = toUInt64OrNull({psid:String})
@@ -1983,26 +2031,28 @@ export class AnalyticsService {
         `,
         query_params: { pid, psid, replayId: selectedReplayId },
       })
-      .then((resultSet) => resultSet.json<{ objectKey: string }>())
-
-    const events: Record<string, unknown>[] = []
-
-    for (const chunk of chunks) {
-      const compressed = await this.sessionReplayStorage.getObject(
-        chunk.objectKey,
+      .then((resultSet) =>
+        resultSet.json<{ chunkIndex: number; objectKey: string }>(),
       )
-      if (!compressed) continue
 
-      const parsed = JSON.parse(gunzipSync(compressed).toString('utf8')) as {
-        events?: Record<string, unknown>[]
-      }
+    const chunkEvents = await mapLimit(
+      chunks,
+      SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY,
+      async (chunk) => {
+        const compressed = await this.sessionReplayStorage.getObject(
+          chunk.objectKey,
+        )
+        if (!compressed) return []
 
-      if (Array.isArray(parsed.events)) {
-        events.push(...parsed.events)
-      }
-    }
+        const parsed = JSON.parse(gunzipSync(compressed).toString('utf8')) as {
+          events?: Record<string, unknown>[]
+        }
 
-    events.sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0))
+        return Array.isArray(parsed.events) ? parsed.events : []
+      },
+    )
+
+    const events = chunkEvents.flat()
 
     return {
       replay: await this.getSessionReplaySummary(pid, psid, selectedReplayId),
@@ -2035,21 +2085,28 @@ export class AnalyticsService {
 
     const objectKeys = data.map((row) => row.objectKey)
 
-    await Promise.allSettled(
+    const deleteResults = await Promise.allSettled(
       objectKeys.map((objectKey) =>
         this.sessionReplayStorage.deleteObject(objectKey),
       ),
     )
+    const deletedObjectKeys = objectKeys.filter(
+      (_, index) => deleteResults[index].status === 'fulfilled',
+    )
+
+    if (_isEmpty(deletedObjectKeys)) {
+      return 0
+    }
 
     await clickhouse.command({
       query: `
         ALTER TABLE session_replay_chunks
         DELETE WHERE objectKey IN ({objectKeys:Array(String)})
       `,
-      query_params: { objectKeys },
+      query_params: { objectKeys: deletedObjectKeys },
     })
 
-    return objectKeys.length
+    return deletedObjectKeys.length
   }
 
   formatFunnel(data: IFunnelCHResponse[], pages: string[]): IFunnel[] {

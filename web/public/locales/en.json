@@ -3135,7 +3135,7 @@
     },
     "benefits": {
       "funnels": "Funnels",
-      "everythingFrom": "everything from {{plan}}",
+      "everythingFrom": "Everything from {{plan}}",
       "unlimitedMembers": "Unlimited members",
       "eventsAndGoals": "Events & Goals",
       "sessionUserProfileAnalysis": "Session & User profile analysis",
@@ -3164,6 +3164,12 @@
       "tooltips": {
         "advancedBotDetection": "Swetrix filters automated traffic before it is stored, from known bot user agents and headless browsers to stricter checks for suspicious headers, probe paths, referrer spam, and datacenter IPs. Blocked bot requests never count toward your event quota.",
         "adBlockerBypass": "Route the tracker script and analytics traffic through a managed reverse proxy on your own subdomain, so requests are served first-party from your domain.",
+        "sessionReplays": {
+          "description": "A session replay is a recorded browser session that you can play back to debug user journeys, errors, and drop-offs.",
+          "recording": "Replays are recorded only after you explicitly start recording through the tracker. Regular analytics events and pageviews do not create replays automatically.",
+          "quota": "Quota is based on recorded replays, also shown as recorded sessions, per month. It is not based on replay minutes, storage size, or how many times a replay is watched.",
+          "plans": "Standard includes 0 replays, Plus includes a monthly quota proportional to the selected event tier, and Enterprise is custom."
+        },
         "plusWebsites": "Swetrix has no limit on the number of websites you can add. You can purchase more websites via add-ons. Bulk discounts are available if you contact support.",
         "customEventLimits": "Enterprise plans are flexible for event limits, API rate limits, and project quantity.",
         "manualInvoicing": "We accept all major credit & debit cards. Enterprise customers can also pay by ACH, SEPA, wire transfer, or invoice."

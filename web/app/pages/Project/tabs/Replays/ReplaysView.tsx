@@ -1,5 +1,14 @@
 import _isEmpty from 'lodash/isEmpty'
-import { Component, lazy, Suspense, use, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Component,
+  lazy,
+  Suspense,
+  use,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData, useRevalidator, useSearchParams } from 'react-router'
@@ -89,8 +98,7 @@ function ReplaysDataResolver({
 }: {
   children: (data: DeferredReplaysData) => React.ReactNode
 }) {
-  const { replaysData: replaysDataPromise } =
-    useLoaderData<ProjectLoaderData>()
+  const { replaysData: replaysDataPromise } = useLoaderData<ProjectLoaderData>()
 
   const replaysData = replaysDataPromise ? use(replaysDataPromise) : null
 

@@ -296,10 +296,7 @@ const ProductAnalyticsMockup = () => (
 
     <div className='absolute top-0 left-0 w-[245px] -rotate-2 rounded-2xl bg-white p-4 ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800'>
       <div className='flex items-center gap-2'>
-        <WarningOctagonIcon
-          weight='duotone'
-          className='size-5 text-red-500'
-        />
+        <WarningOctagonIcon weight='duotone' className='size-5 text-red-500' />
         <Text as='h3' size='sm' weight='semibold'>
           Error tracking
         </Text>
