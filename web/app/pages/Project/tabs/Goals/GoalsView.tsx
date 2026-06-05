@@ -29,7 +29,7 @@ import {
   use,
   type MouseEvent,
 } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher, useLoaderData, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
@@ -49,6 +49,7 @@ import {
   tbsFormatMapperTooltip24h,
   chartTypes,
   DEFAULT_TIMEZONE,
+  DOCS_URL,
 } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
@@ -88,6 +89,7 @@ import GoalSettingsModal from './GoalSettingsModal'
 import { LoaderView } from '../../View/components/LoaderView'
 
 const DEFAULT_GOALS_TAKE = 20
+const GOALS_DOCS_URL = `${DOCS_URL}/analytics-dashboard/goals`
 const GOAL_TOOLTIP_BREAKDOWN_LIMIT = 3
 
 const isDurationValue = (seconds?: number | null): seconds is number =>
@@ -1171,7 +1173,21 @@ const GoalsViewInner = ({
               colour='secondary'
               className='mx-auto mt-2 max-w-md whitespace-pre-wrap'
             >
-              {t('goals.description')}
+              <Trans
+                t={t}
+                i18nKey='goals.description'
+                components={{
+                  docs: (
+                    <a
+                      href={GOALS_DOCS_URL}
+                      aria-label={t('ariaLabels.openGoalsGuide')}
+                      className='font-medium underline decoration-dashed hover:decoration-solid'
+                      target='_blank'
+                      rel='noreferrer noopener'
+                    />
+                  ),
+                }}
+              />
             </Text>
             <div className='mt-6'>
               <Button size='lg' onClick={handleNewGoal}>

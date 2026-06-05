@@ -4,7 +4,7 @@ import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import { FunnelIcon, PlusIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import {
   useSearchParams,
   useFetcher,
@@ -14,7 +14,7 @@ import {
 import { toast } from 'sonner'
 
 import type { FunnelDataResponse } from '~/api/api.server'
-import { FUNNELS_PERIOD_PAIRS } from '~/lib/constants'
+import { DOCS_URL, FUNNELS_PERIOD_PAIRS } from '~/lib/constants'
 import type { Funnel } from '~/lib/models/Project'
 import NewFunnel from '~/modals/NewFunnel'
 import FunnelsList from '~/pages/Project/tabs/Funnels/FunnelsList'
@@ -45,6 +45,8 @@ import { SessionsDrawer } from '../Traffic/SessionsDrawer'
 interface FunnelsViewProps {
   tnMapping: Record<string, string>
 }
+
+const FUNNELS_DOCS_URL = `${DOCS_URL}/analytics-dashboard/funnels`
 
 const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
   const { funnelData: funnelDataPromise } = useLoaderData<ProjectLoaderData>()
@@ -292,7 +294,21 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
             colour='secondary'
             className='mx-auto mt-2 max-w-md whitespace-pre-wrap'
           >
-            {t('dashboard.funnelsDesc')}
+            <Trans
+              t={t}
+              i18nKey='dashboard.funnelsDesc'
+              components={{
+                docs: (
+                  <a
+                    href={FUNNELS_DOCS_URL}
+                    aria-label={t('ariaLabels.openFunnelsGuide')}
+                    className='font-medium underline decoration-dashed hover:decoration-solid'
+                    target='_blank'
+                    rel='noreferrer noopener'
+                  />
+                ),
+              }}
+            />
           </Text>
           <div className='mt-6'>
             {isAuthenticated && allowedToManage ? (

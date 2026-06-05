@@ -26,6 +26,7 @@ import { Link } from '~/ui/Link'
 import { useLoaderData, useSearchParams } from 'react-router'
 
 import { useGSCDashboardProxy } from '~/hooks/useAnalyticsProxy'
+import { DOCS_URL } from '~/lib/constants'
 import type { TimeBucket } from '~/lib/constants'
 import type { Entry } from '~/lib/models/Entry'
 import BillboardChart from '~/ui/BillboardChart'
@@ -85,6 +86,8 @@ interface SEOViewProps {
   projectId: string
   tnMapping: Record<string, string>
 }
+
+const SEO_DOCS_URL = `${DOCS_URL}/analytics-dashboard/seo`
 
 const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   const {
@@ -740,7 +743,21 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             colour='secondary'
             className='mx-auto mt-2 max-w-md'
           >
-            {t('project.seo.connectGSCDesc')}
+            <Trans
+              t={t}
+              i18nKey='project.seo.connectGSCDesc'
+              components={{
+                docs: (
+                  <a
+                    href={SEO_DOCS_URL}
+                    aria-label={t('ariaLabels.openSeoGuide')}
+                    className='font-medium underline decoration-dashed hover:decoration-solid'
+                    target='_blank'
+                    rel='noreferrer noopener'
+                  />
+                ),
+              }}
+            />
           </Text>
           {data?.noProperty ? (
             <Text
