@@ -2401,7 +2401,7 @@
         "upgradeRequired": "Upgrade to unlock longer replay retention.",
         "upgradeTitle": "Need more replay capacity?",
         "upgradeDescription": "Longer retention and higher replay capacity are available through upgraded replay entitlements.",
-        "upgradeCta": "View plans"
+        "upgradeCta": "Go to billing"
       },
       "dataImport": {
         "importFrom": "Import from",
