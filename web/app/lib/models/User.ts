@@ -116,10 +116,17 @@ export interface User {
   registeredWithGithub: boolean
   maxEventsCount: number
   maxProjects: number
+  includedWebsites: number
+  effectiveProjectLimit: number
   maxApiKeyRequestsPerHour: number
+  apiRateLimitPerHour: number
+  includedSessionReplays: number | string
   sessionReplaysIncluded: number | string
   purchasedWebsiteAddons: number
   purchasedSessionReplayAddons: number
+  sessionReplayRetentionDays: number
+  teamMembers: number | 'custom'
+  organisations: number | 'custom'
   websiteAddon?: WebsiteAddon | null
   sessionReplayAddon?: SessionReplayAddon | null
   tierCurrency: 'USD' | 'EUR' | 'GBP' | null

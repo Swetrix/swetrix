@@ -213,7 +213,7 @@ export function ProjectsCommand({ onBack, initialProject, showListOnBack = true 
           <Text><Text color="cyan">Plan:</Text> {selectedAdmin.planCode}</Text>
           <Text><Text color="cyan">Created:</Text> {new Date(selectedAdmin.created).toLocaleString()}</Text>
           <Text><Text color="cyan">2FA Enabled:</Text> {selectedAdmin.isTwoFactorAuthenticationEnabled ? 'Yes' : 'No'}</Text>
-          <Text><Text color="cyan">Max Projects:</Text> {selectedAdmin.maxProjects}</Text>
+          <Text><Text color="cyan">Legacy Max Projects:</Text> {selectedAdmin.maxProjects}</Text>
         </Box>
 
         {adminProjects.length > 0 && (

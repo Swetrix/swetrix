@@ -86,7 +86,7 @@ export class User {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updated: Date
 
-  @Column('int', { default: 50 })
+  @Column('int', { default: 10 })
   maxProjects: number
 
   @Column('int', { default: 300 })

@@ -64,6 +64,7 @@ export const planEntitlements = {
 } as const
 
 const sessionReplayQuotas: Partial<Record<PlanCode, number>> = {
+  [PlanCode.freelancer]: 5000,
   [PlanCode['100k']]: 5000,
   [PlanCode['200k']]: 10000,
   [PlanCode['500k']]: 25000,
@@ -78,8 +79,11 @@ const sessionReplayQuotas: Partial<Record<PlanCode, number>> = {
   [PlanCode['50m']]: 2500000,
 }
 
-const numberValue = (source: Record<string, unknown> | null, key: string) =>
-  source && typeof source[key] === 'number' ? (source[key] as number) : null
+const numberValue = (source: Record<string, unknown> | null, key: string) => {
+  const value = source?.[key]
+
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
 
 export const getEffectivePlanType = (user: User): PlanType | null => {
   if (user.planType) return user.planType
@@ -91,9 +95,11 @@ export const getEffectiveLimits = (user: User) => {
   const planType = getEffectivePlanType(user) || PlanType.standard
   const entitlements = planEntitlements[planType]
   const addonWebsites =
-    numberValue(user.addonOverrides, 'websites') ||
-    numberValue(user.addonOverrides, 'additionalWebsites') ||
+    numberValue(user.addonOverrides, 'websites') ??
+    numberValue(user.addonOverrides, 'additionalWebsites') ??
     0
+  const addonSessionReplays =
+    numberValue(user.addonOverrides, 'sessionReplays') ?? 0
   const websiteOverride = numberValue(user.entitlementOverrides, 'websites')
   const apiOverride = numberValue(
     user.entitlementOverrides,
@@ -103,11 +109,24 @@ export const getEffectiveLimits = (user: User) => {
     user.entitlementOverrides,
     'sessionReplaysIncluded',
   )
+  const teamMembersOverride = numberValue(
+    user.entitlementOverrides,
+    'teamMembers',
+  )
+  const organisationsOverride = numberValue(
+    user.entitlementOverrides,
+    'organisations',
+  )
   const replayQuota =
     replayOverride ??
     (entitlements.sessionReplaysIncluded === 'byEventTier'
       ? sessionReplayQuotas[user.planCode] || 0
       : entitlements.sessionReplaysIncluded)
+  const effectiveReplayQuota =
+    typeof replayQuota === 'number'
+      ? replayQuota + addonSessionReplays
+      : replayQuota
+  const includedSessionReplays = replayQuota
   const websites =
     websiteOverride ??
     (typeof entitlements.websites === 'number'
@@ -118,14 +137,33 @@ export const getEffectiveLimits = (user: User) => {
     (typeof entitlements.apiRateLimitPerHour === 'number'
       ? entitlements.apiRateLimitPerHour
       : user.maxApiKeyRequestsPerHour)
+  const teamMembers =
+    teamMembersOverride ??
+    (typeof entitlements.teamMembers === 'number'
+      ? entitlements.teamMembers
+      : 'custom')
+  const organisations =
+    organisationsOverride ??
+    (typeof entitlements.organisations === 'number'
+      ? entitlements.organisations
+      : 'custom')
 
   return {
     planType,
     eventBucket: eventBuckets[user.planCode] || 0,
+    includedWebsites: websites,
     websitesIncluded:
       typeof websites === 'number' ? websites + addonWebsites : websites,
+    effectiveProjectLimit:
+      typeof websites === 'number' ? websites + addonWebsites : websites,
+    maxProjects:
+      typeof websites === 'number' ? websites + addonWebsites : websites,
     purchasedWebsiteAddons: addonWebsites,
-    replayQuota,
+    includedSessionReplays,
+    replayQuota: effectiveReplayQuota,
+    purchasedSessionReplayAddons: addonSessionReplays,
     apiRateLimitPerHour,
+    teamMembers,
+    organisations,
   }
 }

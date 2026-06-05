@@ -3,6 +3,7 @@ import { Box, Text, useInput } from 'ink'
 import SelectInput from 'ink-select-input'
 import { Spinner } from '../components/Spinner.js'
 import { AppDataSource, User, Project, OrganisationMember } from '../db/mysql.js'
+import { getEffectiveLimits } from '../billing/pricing.js'
 
 interface LimitsCommandProps {
   onBack: () => void
@@ -13,6 +14,7 @@ type Mode = 'list' | 'detail'
 interface UserWithLimits extends User {
   projectCount: number
   usagePercent: number
+  effectiveProjectLimit: number | 'custom'
 }
 
 export function LimitsCommand({ onBack }: LimitsCommandProps) {
@@ -59,13 +61,23 @@ export function LimitsCommand({ onBack }: LimitsCommandProps) {
         .getMany()
 
       const usersApproaching: UserWithLimits[] = (usersWithCounts as (User & { projectCount: number })[])
-        .map(user => ({
-          ...user,
-          projectCount: user.projectCount || 0,
-          usagePercent: user.maxProjects > 0 
-            ? Math.round((user.projectCount / user.maxProjects) * 100) 
-            : 0,
-        }))
+        .map(user => {
+          const effectiveLimits = getEffectiveLimits(user)
+          const effectiveProjectLimit = effectiveLimits.effectiveProjectLimit
+
+          return {
+            ...user,
+            projectCount: user.projectCount || 0,
+            effectiveProjectLimit,
+            usagePercent:
+              typeof effectiveProjectLimit === 'number' &&
+              effectiveProjectLimit > 0
+                ? Math.round(
+                    (user.projectCount / effectiveProjectLimit) * 100,
+                  )
+                : 0,
+          }
+        })
         .filter(user => user.usagePercent >= threshold)
         .sort((a, b) => b.usagePercent - a.usagePercent)
         .slice(0, 50)
@@ -133,7 +145,7 @@ export function LimitsCommand({ onBack }: LimitsCommandProps) {
           <Text>
             <Text color="cyan">Projects:</Text>{' '}
             <Text color={userWithLimits && userWithLimits.usagePercent >= 90 ? 'red' : 'yellow'} bold>
-              {userWithLimits?.projectCount || 0} / {selectedUser.maxProjects}
+              {userWithLimits?.projectCount || 0} / {userWithLimits?.effectiveProjectLimit ?? selectedUser.maxProjects}
             </Text>
             <Text color="gray"> ({userWithLimits?.usagePercent || 0}%)</Text>
           </Text>
@@ -165,7 +177,7 @@ export function LimitsCommand({ onBack }: LimitsCommandProps) {
   const userItems = users.map(user => {
     const color = user.usagePercent >= 100 ? 'red' : user.usagePercent >= 90 ? 'yellow' : 'white'
     return {
-      label: `${user.email} (${user.planCode}) - ${user.projectCount}/${user.maxProjects} projects (${user.usagePercent}%)`,
+      label: `${user.email} (${user.planCode}) - ${user.projectCount}/${user.effectiveProjectLimit} projects (${user.usagePercent}%)`,
       value: user.id,
     }
   })

@@ -618,15 +618,8 @@ const ProjectSettings = () => {
   )
 
   const sessionReplayMaxRetentionDays = useMemo(() => {
-    const override = user?.entitlementOverrides?.sessionReplayRetentionDays
-    if (typeof override === 'number') {
-      return override
-    }
-    if (user?.effectivePlanType === 'enterprise') {
-      return 1825
-    }
-    return 30
-  }, [user?.effectivePlanType, user?.entitlementOverrides])
+    return user?.sessionReplayRetentionDays || 30
+  }, [user?.sessionReplayRetentionDays])
 
   const activeTab = useMemo<SettingsTab>(() => {
     const tab = searchParams.get('tab') as SettingsTab

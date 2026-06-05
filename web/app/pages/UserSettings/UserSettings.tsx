@@ -334,7 +334,9 @@ const UserSettings = () => {
     subCancelURL,
     maxEventsCount = 0,
     maxProjects = 0,
+    includedWebsites,
     maxApiKeyRequestsPerHour = 0,
+    includedSessionReplays,
     sessionReplaysIncluded = 0,
     purchasedWebsiteAddons = 0,
     purchasedSessionReplayAddons = 0,
@@ -690,6 +692,7 @@ const UserSettings = () => {
     : null
   const includedWebsiteLimit =
     currentWebsiteAddonPreview?.includedWebsites ??
+    includedWebsites ??
     Math.max(0, (maxProjects || 0) - activeWebsiteAddonQuantity)
   const displayedWebsiteLimit = maxProjects
   const displayedProjectsUsage =
@@ -802,9 +805,8 @@ const UserSettings = () => {
     : null
   const includedSessionReplayLimit =
     currentSessionReplayAddonPreview?.includedSessionReplays ??
-    (typeof sessionReplaysIncluded === 'number'
-      ? Math.max(0, sessionReplaysIncluded - activeSessionReplayAddonQuantity)
-      : sessionReplaysIncluded)
+    includedSessionReplays ??
+    sessionReplaysIncluded
   const displayedSessionReplayLimit =
     currentSessionReplayAddonPreview?.totalSessionReplays ??
     sessionReplaysIncluded

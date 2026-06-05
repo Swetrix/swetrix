@@ -458,13 +458,16 @@ export function UsersCommand({ onBack, initialUser, showListOnBack = true }: Use
           </Text>
           <Text><Text color="cyan">Event Bucket:</Text> {effectiveLimits.eventBucket}</Text>
           <Text><Text color="cyan">Plan Type:</Text> {selectedUser.planType || `${effectiveLimits.planType} fallback`}</Text>
-          <Text><Text color="cyan">Websites Included:</Text> {effectiveLimits.websitesIncluded}</Text>
+          <Text><Text color="cyan">Websites Included:</Text> {effectiveLimits.includedWebsites}</Text>
           <Text><Text color="cyan">Purchased Website Add-ons:</Text> {effectiveLimits.purchasedWebsiteAddons}</Text>
+          <Text><Text color="cyan">Effective Project Limit:</Text> {effectiveLimits.effectiveProjectLimit}</Text>
           <Text><Text color="cyan">Replay Quota:</Text> {effectiveLimits.replayQuota}</Text>
           <Text><Text color="cyan">API Rate Limit:</Text> {effectiveLimits.apiRateLimitPerHour}/hour</Text>
+          <Text><Text color="cyan">Team Members:</Text> {effectiveLimits.teamMembers}</Text>
+          <Text><Text color="cyan">Organisations:</Text> {effectiveLimits.organisations}</Text>
           <Text><Text color="cyan">Created:</Text> {new Date(selectedUser.created).toLocaleString()}</Text>
           <Text><Text color="cyan">2FA Enabled:</Text> {selectedUser.isTwoFactorAuthenticationEnabled ? 'Yes' : 'No'}</Text>
-          <Text><Text color="cyan">Max Projects:</Text> {selectedUser.maxProjects}</Text>
+          <Text><Text color="cyan">Legacy Max Projects:</Text> {selectedUser.maxProjects}</Text>
           <Text><Text color="cyan">API Key:</Text> {selectedUser.apiKey ? 'Set' : 'Not set'}</Text>
           {selectedUser.dashboardBlockReason && (
             <Text>
