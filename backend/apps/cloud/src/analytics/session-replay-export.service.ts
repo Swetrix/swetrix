@@ -155,7 +155,8 @@ export class SessionReplayExportService {
 
     this.validateReplayMetadata(replay.eventCount, replay.replayDuration)
 
-    const exportReplayId = replayId || 'session'
+    const resolvedReplayId = replay.replayId || replayId
+    const exportReplayId = resolvedReplayId || 'session'
     const exportId = hash(
       `${EXPORT_RENDERER_VERSION}:${pid}:${psid}:${exportReplayId}:${replay.eventCount}:${replay.replayDuration}`,
     )
@@ -182,7 +183,7 @@ export class SessionReplayExportService {
       exportId,
       pid,
       psid,
-      replayId,
+      replayId: resolvedReplayId,
       status: 'queued',
       progress: 0,
       filename: this.getFilename(psid),
@@ -201,7 +202,7 @@ export class SessionReplayExportService {
           exportId,
           pid,
           psid,
-          replayId,
+          replayId: resolvedReplayId,
         },
         {
           jobId: exportId,

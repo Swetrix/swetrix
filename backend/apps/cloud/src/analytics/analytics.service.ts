@@ -156,12 +156,20 @@ local activeReplayKey = KEYS[1]
 local proposedReplayId = ARGV[1]
 local chunkIndexRange = tonumber(ARGV[2])
 local ttl = tonumber(ARGV[3])
+local maxDurationMs = tonumber(ARGV[4])
+local time = redis.call("TIME")
+local currentTimeMs = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
 
 local replayId = redis.call("HGET", activeReplayKey, "replayId")
+local replayStartTs = tonumber(redis.call("HGET", activeReplayKey, "replayStartTs") or "")
 local nextChunkIndex = tonumber(redis.call("HGET", activeReplayKey, "nextChunkIndex") or "0")
 
-if replayId == false or replayId == nil or replayId == "" then
+if
+  replayId == false or replayId == nil or replayId == "" or
+  replayStartTs == nil or replayStartTs + maxDurationMs <= currentTimeMs
+then
   replayId = proposedReplayId
+  replayStartTs = currentTimeMs
   nextChunkIndex = 0
 end
 
@@ -171,6 +179,8 @@ redis.call(
   activeReplayKey,
   "replayId",
   replayId,
+  "replayStartTs",
+  tostring(replayStartTs),
   "nextChunkIndex",
   allocatedChunkIndex + chunkIndexRange
 )
@@ -1983,6 +1993,7 @@ export class AnalyticsService {
       replayId,
       SESSION_REPLAY_CHUNK_INDEX_RANGE,
       this.getActiveReplayTtlSeconds(),
+      MAX_SESSION_REPLAY_DURATION_MS,
     )
     const [resolvedReplayId, nextChunkIndex] = Array.isArray(result)
       ? result
