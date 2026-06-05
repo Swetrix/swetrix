@@ -1,12 +1,61 @@
 import _includes from 'lodash/includes'
-import * as Swetrix from 'swetrix'
+import {
+  init,
+  startSessionReplay,
+  track,
+  trackError as swetrixTrackError,
+  trackErrors as swetrixTrackErrors,
+  trackViews as swetrixTrackViews,
+  type IErrorEventPayload,
+  type IPageViewPayload,
+  type TrackEventOptions,
+} from 'swetrix'
 
-import { isBrowser, isDevelopment, isSelfhosted } from '~/lib/constants'
+import {
+  isBrowser,
+  isDevelopment,
+  isSelfhosted,
+  stripLangFromPath,
+} from '~/lib/constants'
+import routes from '~/utils/routes'
 
 export const SWETRIX_PID = 'STEzHcB1rALV'
 const SWETRIX_API_PROXY_PATH = '/_internal_data_inngest_proxy'
 
 const isIframe = isBrowser ? window.self !== window.top : false
+type SessionReplayActions = Awaited<ReturnType<typeof startSessionReplay>>
+
+let sessionReplayActions: SessionReplayActions | null = null
+let sessionReplayStart: Promise<SessionReplayActions | null> | null = null
+let sessionReplayStop: Promise<void> | null = null
+let sessionReplayShouldRun = false
+let sessionReplayPrivatePathVersion = 0
+let sessionReplayRestartAfterStop = false
+
+const SESSION_REPLAY_PUBLIC_PATHS = new Set<string>([
+  routes.main,
+  routes.performance,
+  routes.errorTracking,
+  routes.captchaLanding,
+  routes.captchaDemo,
+  routes.forMarketers,
+  routes.forStartups,
+  routes.forSmallBusinesses,
+  routes.gaAlternative,
+  routes.blog,
+  routes.privacy,
+  routes.cookiePolicy,
+  routes.dpa,
+  routes.security,
+  routes.terms,
+  routes.imprint,
+  routes.dataPolicy,
+  routes.open,
+  routes.contact,
+  routes.bookACall,
+])
+
+const SESSION_REPLAY_PUBLIC_PREFIXES = [`${routes.blog}/`, '/comparison/']
 
 const REFS_TO_IGNORE = [
   /https:\/\/swetrix.com\/(?:[^/]+\/)?projects\/(?!new$)[^/]+$/i,
@@ -106,7 +155,79 @@ const getNewPath = (path: string | undefined | null) => {
   return path
 }
 
-Swetrix.init(SWETRIX_PID, {
+const getSessionReplayPath = (pathname: string) => {
+  const path = stripLangFromPath(pathname)
+
+  if (path.length > 1 && path.endsWith('/')) {
+    return path.slice(0, -1)
+  }
+
+  return path
+}
+
+const canTrackSessionReplay = (pathname: string) => {
+  const path = getSessionReplayPath(pathname)
+
+  return (
+    SESSION_REPLAY_PUBLIC_PATHS.has(path) ||
+    SESSION_REPLAY_PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix))
+  )
+}
+
+const stopSessionReplayActions = async (actions: SessionReplayActions) => {
+  try {
+    await actions.stop()
+  } catch (reason) {
+    console.error('Failed to stop Swetrix session replay:', reason)
+  }
+}
+
+const queueSessionReplayStop = (actions: SessionReplayActions) => {
+  const stop = stopSessionReplayActions(actions).finally(() => {
+    if (sessionReplayStop === stop) {
+      sessionReplayStop = null
+    }
+  })
+
+  sessionReplayStop = stop
+
+  return stop
+}
+
+const stopActiveSessionReplay = () => {
+  const actions = sessionReplayActions
+  sessionReplayActions = null
+
+  if (actions) {
+    void queueSessionReplayStop(actions)
+  }
+}
+
+const markSessionReplayPrivate = () => {
+  sessionReplayShouldRun = false
+  sessionReplayPrivatePathVersion += 1
+  stopActiveSessionReplay()
+}
+
+const startSessionReplayOnPublicPath = async (privatePathVersion: number) => {
+  if (sessionReplayStop) {
+    await sessionReplayStop
+  }
+
+  if (
+    !sessionReplayShouldRun ||
+    privatePathVersion !== sessionReplayPrivatePathVersion ||
+    !canTrackSessionReplay(window.location.pathname)
+  ) {
+    return null
+  }
+
+  return startSessionReplay({
+    privacy: 'normal',
+  })
+}
+
+init(SWETRIX_PID, {
   disabled: isDevelopment,
   apiURL: isSelfhosted ? undefined : SWETRIX_API_PROXY_PATH,
 })
@@ -116,12 +237,12 @@ export const trackViews = () => {
     return
   }
 
-  Swetrix.trackViews({
+  swetrixTrackViews({
     callback: ({ pg, ref }) => {
       const result = {
         pg,
         ref,
-      } as Swetrix.IPageViewPayload
+      } as IPageViewPayload
 
       result.pg = getNewPath(pg)
 
@@ -135,12 +256,89 @@ export const trackViews = () => {
   })
 }
 
+export const trackSessionReplay = (pathname: string) => {
+  if (isSelfhosted || !isBrowser || isDevelopment || isIframe) {
+    markSessionReplayPrivate()
+    return
+  }
+
+  sessionReplayShouldRun = canTrackSessionReplay(pathname)
+
+  if (!sessionReplayShouldRun) {
+    markSessionReplayPrivate()
+    return
+  }
+
+  if (sessionReplayActions || sessionReplayStart) {
+    return
+  }
+
+  const privatePathVersion = sessionReplayPrivatePathVersion
+
+  sessionReplayStart = startSessionReplayOnPublicPath(privatePathVersion)
+    .then(async (actions) => {
+      if (!actions) {
+        return null
+      }
+
+      const isPublicPath = canTrackSessionReplay(window.location.pathname)
+
+      if (
+        !sessionReplayShouldRun ||
+        !isPublicPath ||
+        privatePathVersion !== sessionReplayPrivatePathVersion
+      ) {
+        await queueSessionReplayStop(actions)
+
+        if (
+          sessionReplayShouldRun &&
+          isPublicPath &&
+          privatePathVersion !== sessionReplayPrivatePathVersion
+        ) {
+          sessionReplayRestartAfterStop = true
+        }
+
+        return null
+      }
+
+      sessionReplayActions = actions
+
+      return actions
+    })
+    .catch((reason) => {
+      console.error('Failed to start Swetrix session replay:', reason)
+      return null
+    })
+    .finally(() => {
+      sessionReplayStart = null
+
+      if (sessionReplayRestartAfterStop) {
+        sessionReplayRestartAfterStop = false
+        trackSessionReplay(window.location.pathname)
+      }
+    })
+}
+
+export const stopSessionReplayIfPrivatePath = (pathname: string) => {
+  if (
+    isSelfhosted ||
+    !isBrowser ||
+    isDevelopment ||
+    isIframe ||
+    canTrackSessionReplay(pathname)
+  ) {
+    return
+  }
+
+  markSessionReplayPrivate()
+}
+
 export const trackErrors = () => {
   if (isSelfhosted || !isBrowser || isDevelopment || isIframe) {
     return
   }
 
-  Swetrix.trackErrors({
+  swetrixTrackErrors({
     callback: ({ message, pg, filename }) => {
       if (_includes(message, 'Minified React error')) {
         return false
@@ -161,23 +359,23 @@ export const trackErrors = () => {
   })
 }
 
-export const trackError = (payload: Swetrix.IErrorEventPayload) => {
+export const trackError = (payload: IErrorEventPayload) => {
   if (isSelfhosted || !isBrowser || isDevelopment || isIframe) {
     return
   }
 
-  Swetrix.trackError(payload)
+  swetrixTrackError(payload)
 }
 
 export const trackCustom = (
   ev: string,
-  meta?: Swetrix.TrackEventOptions['meta'],
+  meta?: TrackEventOptions['meta'],
 ) => {
   if (isSelfhosted || !isBrowser || isDevelopment || isIframe) {
     return
   }
 
-  Swetrix.track({
+  track({
     ev,
     meta,
   }).catch((reason) => {
