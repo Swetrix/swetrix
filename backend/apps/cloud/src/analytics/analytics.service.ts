@@ -2096,7 +2096,7 @@ export class AnalyticsService {
       case -3:
         throw new PayloadTooLargeException('Session replay is too large')
       case -4:
-        throw new BadRequestException('Session replay chunk already exists')
+        return { ...keys, chunkIndex, eventCount, uncompressedBytes }
       case -5:
         throw new PayloadTooLargeException('Session replay is too long')
       default:

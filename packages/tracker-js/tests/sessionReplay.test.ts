@@ -298,11 +298,13 @@ describe('Session replay tracking', () => {
     const scripts = document.querySelectorAll<HTMLScriptElement>(
       `script[src="${RRWEB_URL}"]`,
     )
-    expect(scripts).toHaveLength(2)
+    expect(scripts[1]).toBeTruthy()
+    expect(scripts[1]).not.toBe(failedScript)
     ;(window as any).rrweb = { record }
     scripts[1].dispatchEvent(new Event('load'))
 
     const actions = await retryStart
+    expect((window as any).rrweb.record).toBe(record)
     expect(record).toHaveBeenCalled()
 
     await actions.stop()
