@@ -668,8 +668,21 @@ export class SessionReplayExportService {
 
       const href = this.getEventData(event).href
       if (typeof href === 'string' && href) {
-        return href
+        return this.getSafeReplayHref(href)
       }
+    }
+
+    return 'about:blank'
+  }
+
+  private getSafeReplayHref(href: string) {
+    try {
+      const url = new URL(href)
+      if (url.protocol === 'https:' || url.protocol === 'http:') {
+        return url.toString()
+      }
+    } catch {
+      return 'about:blank'
     }
 
     return 'about:blank'

@@ -143,6 +143,10 @@ const MAX_FILTER_VALUES = 100
 const SESSION_REPLAY_RETENTION_VALUES = [30, 90, 365, 1825] as const
 const MAX_SESSION_REPLAY_EVENTS_PER_CHUNK = 1000
 const MAX_SESSION_REPLAY_CHUNK_BYTES = 900 * 1024
+const MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY = 1200
+const MAX_SESSION_REPLAY_EVENTS_PER_REPLAY = 100000
+const MAX_SESSION_REPLAY_BYTES_PER_REPLAY = 150 * 1024 * 1024
+const MAX_SESSION_REPLAY_DURATION_MS = 30 * 60 * 1000
 const SESSION_REPLAY_CLEANUP_BATCH_SIZE = 500
 const SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY = 6
 const RESERVE_REPLAY_USAGE_LUA = `
@@ -179,6 +183,98 @@ if redis.call("DEL", KEYS[1]) == 1 then
   return 1
 end
 return 0
+`
+const RESERVE_REPLAY_CHUNK_LUA = `
+local chunkSetKey = KEYS[1]
+local countersKey = KEYS[2]
+local firstTsKey = KEYS[3]
+local lastTsKey = KEYS[4]
+local maxChunks = tonumber(ARGV[1])
+local maxEvents = tonumber(ARGV[2])
+local maxBytes = tonumber(ARGV[3])
+local maxDurationMs = tonumber(ARGV[4])
+local chunkIndex = ARGV[5]
+local eventCount = tonumber(ARGV[6])
+local uncompressedBytes = tonumber(ARGV[7])
+local firstTimestamp = tonumber(ARGV[8])
+local lastTimestamp = tonumber(ARGV[9])
+local ttl = tonumber(ARGV[10])
+
+if redis.call("SADD", chunkSetKey, chunkIndex) == 0 then
+  return -4
+end
+
+local chunks = redis.call("HINCRBY", countersKey, "chunks", 1)
+local events = redis.call("HINCRBY", countersKey, "events", eventCount)
+local bytes = redis.call("HINCRBY", countersKey, "bytes", uncompressedBytes)
+
+if firstTimestamp ~= nil then
+  redis.call("ZADD", firstTsKey, firstTimestamp, chunkIndex)
+end
+
+if lastTimestamp ~= nil then
+  redis.call("ZADD", lastTsKey, lastTimestamp, chunkIndex)
+end
+
+local first = redis.call("ZRANGE", firstTsKey, 0, 0, "WITHSCORES")
+local last = redis.call("ZREVRANGE", lastTsKey, 0, 0, "WITHSCORES")
+local duration = 0
+
+if first[2] ~= nil and last[2] ~= nil then
+  duration = tonumber(last[2]) - tonumber(first[2])
+end
+
+local result = 1
+if chunks > maxChunks then
+  result = -1
+elseif events > maxEvents then
+  result = -2
+elseif bytes > maxBytes then
+  result = -3
+elseif duration > maxDurationMs then
+  result = -5
+end
+
+if result ~= 1 then
+  redis.call("SREM", chunkSetKey, chunkIndex)
+  redis.call("HINCRBY", countersKey, "chunks", -1)
+  redis.call("HINCRBY", countersKey, "events", -eventCount)
+  redis.call("HINCRBY", countersKey, "bytes", -uncompressedBytes)
+  redis.call("ZREM", firstTsKey, chunkIndex)
+  redis.call("ZREM", lastTsKey, chunkIndex)
+  return result
+end
+
+redis.call("EXPIRE", chunkSetKey, ttl)
+redis.call("EXPIRE", countersKey, ttl)
+redis.call("EXPIRE", firstTsKey, ttl)
+redis.call("EXPIRE", lastTsKey, ttl)
+return 1
+`
+const RELEASE_REPLAY_CHUNK_LUA = `
+local chunkSetKey = KEYS[1]
+local countersKey = KEYS[2]
+local firstTsKey = KEYS[3]
+local lastTsKey = KEYS[4]
+local chunkIndex = ARGV[1]
+local eventCount = tonumber(ARGV[2])
+local uncompressedBytes = tonumber(ARGV[3])
+
+if redis.call("SREM", chunkSetKey, chunkIndex) ~= 1 then
+  return 0
+end
+
+local chunks = redis.call("HINCRBY", countersKey, "chunks", -1)
+redis.call("HINCRBY", countersKey, "events", -eventCount)
+redis.call("HINCRBY", countersKey, "bytes", -uncompressedBytes)
+redis.call("ZREM", firstTsKey, chunkIndex)
+redis.call("ZREM", lastTsKey, chunkIndex)
+
+if chunks <= 0 then
+  redis.call("DEL", chunkSetKey, countersKey, firstTsKey, lastTsKey)
+end
+
+return 1
 `
 
 const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
@@ -1819,6 +1915,36 @@ export class AnalyticsService {
     return Math.max(60, dayjs.utc().endOf('month').diff(dayjs.utc(), 'second'))
   }
 
+  private getReplayLimitKeys(pid: string, psid: string, replayId: string) {
+    const prefix = `session-replay:limits:${pid}:${psid}:${replayId}`
+    return {
+      chunkSetKey: `${prefix}:chunks`,
+      countersKey: `${prefix}:counters`,
+      firstTsKey: `${prefix}:first`,
+      lastTsKey: `${prefix}:last`,
+    }
+  }
+
+  private getReplayLimitTtlSeconds(retention: { expiresAt: string }) {
+    return Math.max(
+      60,
+      dayjs.utc(retention.expiresAt).diff(dayjs.utc(), 'second'),
+    )
+  }
+
+  private getReplayChunkTimestamps(events: Record<string, unknown>[]) {
+    const timestamps = events
+      .map((event) =>
+        typeof event.timestamp === 'number' ? event.timestamp : null,
+      )
+      .filter((timestamp): timestamp is number => timestamp !== null)
+
+    return {
+      firstEventTimestamp: timestamps.length ? Math.min(...timestamps) : null,
+      lastEventTimestamp: timestamps.length ? Math.max(...timestamps) : null,
+    }
+  }
+
   private async getReplayAccountProjectIds(
     project: Project,
     pid: string,
@@ -1927,6 +2053,97 @@ export class AnalyticsService {
     )
   }
 
+  private async reserveReplayChunkStorage(
+    pid: string,
+    psid: string,
+    replayId: string,
+    chunkIndex: number,
+    eventCount: number,
+    uncompressedBytes: number,
+    retention: { expiresAt: string },
+    timestamps: {
+      firstEventTimestamp: number | null
+      lastEventTimestamp: number | null
+    },
+  ) {
+    const keys = this.getReplayLimitKeys(pid, psid, replayId)
+    const result = await redis.eval(
+      RESERVE_REPLAY_CHUNK_LUA,
+      4,
+      keys.chunkSetKey,
+      keys.countersKey,
+      keys.firstTsKey,
+      keys.lastTsKey,
+      MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY,
+      MAX_SESSION_REPLAY_EVENTS_PER_REPLAY,
+      MAX_SESSION_REPLAY_BYTES_PER_REPLAY,
+      MAX_SESSION_REPLAY_DURATION_MS,
+      chunkIndex,
+      eventCount,
+      uncompressedBytes,
+      timestamps.firstEventTimestamp ?? '',
+      timestamps.lastEventTimestamp ?? '',
+      this.getReplayLimitTtlSeconds(retention),
+    )
+
+    switch (Number(result)) {
+      case 1:
+        return { ...keys, chunkIndex, eventCount, uncompressedBytes }
+      case -1:
+        throw new PayloadTooLargeException('Session replay has too many chunks')
+      case -2:
+        throw new PayloadTooLargeException('Session replay has too many events')
+      case -3:
+        throw new PayloadTooLargeException('Session replay is too large')
+      case -4:
+        throw new BadRequestException('Session replay chunk already exists')
+      case -5:
+        throw new PayloadTooLargeException('Session replay is too long')
+      default:
+        throw new InternalServerErrorException(
+          'Unable to reserve session replay chunk',
+        )
+    }
+  }
+
+  private async releaseReplayChunkStorageReservation(reservation: {
+    chunkSetKey: string
+    countersKey: string
+    firstTsKey: string
+    lastTsKey: string
+    chunkIndex: number
+    eventCount: number
+    uncompressedBytes: number
+  }) {
+    await redis.eval(
+      RELEASE_REPLAY_CHUNK_LUA,
+      4,
+      reservation.chunkSetKey,
+      reservation.countersKey,
+      reservation.firstTsKey,
+      reservation.lastTsKey,
+      reservation.chunkIndex,
+      reservation.eventCount,
+      reservation.uncompressedBytes,
+    )
+  }
+
+  private validateSessionReplayReadSize(replay: {
+    chunkCount: number
+    eventCount: number
+    uncompressedBytes: number
+    replayDuration: number
+  }) {
+    if (
+      replay.chunkCount > MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY ||
+      replay.eventCount > MAX_SESSION_REPLAY_EVENTS_PER_REPLAY ||
+      replay.uncompressedBytes > MAX_SESSION_REPLAY_BYTES_PER_REPLAY ||
+      replay.replayDuration * 1000 > MAX_SESSION_REPLAY_DURATION_MS
+    ) {
+      throw new PayloadTooLargeException('Session replay is too large to load')
+    }
+  }
+
   async storeSessionReplayChunk(
     project: Project,
     pid: string,
@@ -1951,16 +2168,21 @@ export class AnalyticsService {
     const retention = this.getSessionReplayRetention(project)
     const payload = JSON.stringify({ events })
     const uncompressedBytes = Buffer.byteLength(payload)
+    const timestamps = this.getReplayChunkTimestamps(events)
 
     if (uncompressedBytes > MAX_SESSION_REPLAY_CHUNK_BYTES) {
       throw new PayloadTooLargeException('Session replay chunk is too large')
     }
 
-    const usageReservation = await this.reserveReplayUsage(
-      project,
+    const chunkReservation = await this.reserveReplayChunkStorage(
       pid,
       psid,
       replayId,
+      chunkIndex,
+      events.length,
+      uncompressedBytes,
+      retention,
+      timestamps,
     )
     const objectKey = this.getSessionReplayObjectKey(
       pid,
@@ -1969,13 +2191,18 @@ export class AnalyticsService {
       chunkIndex,
     )
     const compressed = gzipSync(Buffer.from(payload))
-    const timestamps = events
-      .map((event) =>
-        typeof event.timestamp === 'number' ? event.timestamp : null,
-      )
-      .filter((timestamp): timestamp is number => timestamp !== null)
+    let usageReservation: Awaited<
+      ReturnType<AnalyticsService['reserveReplayUsage']>
+    > | null = null
 
     try {
+      usageReservation = await this.reserveReplayUsage(
+        project,
+        pid,
+        psid,
+        replayId,
+      )
+
       await this.sessionReplayStorage.putObject(objectKey, compressed)
 
       await clickhouse.insert({
@@ -1992,12 +2219,8 @@ export class AnalyticsService {
             eventCount: events.length,
             uncompressedBytes,
             compressedBytes: compressed.byteLength,
-            firstEventTimestamp: timestamps.length
-              ? Math.min(...timestamps)
-              : null,
-            lastEventTimestamp: timestamps.length
-              ? Math.max(...timestamps)
-              : null,
+            firstEventTimestamp: timestamps.firstEventTimestamp,
+            lastEventTimestamp: timestamps.lastEventTimestamp,
             created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
             expiresAt: retention.expiresAt,
           },
@@ -2006,7 +2229,10 @@ export class AnalyticsService {
       })
     } catch (reason) {
       await Promise.allSettled([
-        this.releaseReplayUsageReservation(usageReservation),
+        this.releaseReplayChunkStorageReservation(chunkReservation),
+        usageReservation
+          ? this.releaseReplayUsageReservation(usageReservation)
+          : Promise.resolve(),
         this.sessionReplayStorage.deleteObject(objectKey),
       ])
       throw reason
@@ -2018,7 +2244,7 @@ export class AnalyticsService {
       chunkIndex,
       eventCount: events.length,
       ...retention,
-      countedUsage: usageReservation.reserved,
+      countedUsage: usageReservation?.reserved || false,
     }
   }
 
@@ -2031,6 +2257,7 @@ export class AnalyticsService {
             argMax(privacyMode, latestCreated) AS privacyMode,
             count() AS chunkCount,
             sum(eventCount) AS eventCount,
+            sum(uncompressedBytes) AS uncompressedBytes,
             min(firstEventTimestamp) AS firstEventTimestamp,
             max(lastEventTimestamp) AS lastEventTimestamp,
             max(expiresAt) AS replayExpiresAt,
@@ -2041,6 +2268,7 @@ export class AnalyticsService {
               chunkIndex,
               argMax(privacyMode, created) AS privacyMode,
               argMax(eventCount, created) AS eventCount,
+              argMax(uncompressedBytes, created) AS uncompressedBytes,
               argMax(firstEventTimestamp, created) AS firstEventTimestamp,
               argMax(lastEventTimestamp, created) AS lastEventTimestamp,
               argMax(expiresAt, created) AS expiresAt,
@@ -2064,6 +2292,7 @@ export class AnalyticsService {
           privacyMode: SessionReplayPrivacyMode
           chunkCount: number
           eventCount: number
+          uncompressedBytes: number
           firstEventTimestamp: number | string | null
           lastEventTimestamp: number | string | null
           replayExpiresAt: string
@@ -2088,6 +2317,7 @@ export class AnalyticsService {
       privacyMode: replay.privacyMode,
       chunkCount: Number(replay.chunkCount) || 0,
       eventCount: Number(replay.eventCount) || 0,
+      uncompressedBytes: Number(replay.uncompressedBytes) || 0,
       replayDuration: duration || 0,
       replayExpiresAt: replay.replayExpiresAt,
     }
@@ -2101,12 +2331,14 @@ export class AnalyticsService {
     replay: Awaited<ReturnType<AnalyticsService['getSessionReplaySummary']>>
     events: Record<string, unknown>[]
   }> {
-    const selectedReplayId =
-      replayId || (await this.getSessionReplaySummary(pid, psid))?.replayId
+    const replay = await this.getSessionReplaySummary(pid, psid, replayId)
+    const selectedReplayId = replay?.replayId
 
     if (!selectedReplayId) {
       return { replay: null, events: [] }
     }
+
+    this.validateSessionReplayReadSize(replay)
 
     const { data: chunks } = await clickhouse
       .query({
@@ -2148,7 +2380,7 @@ export class AnalyticsService {
     const events = chunkEvents.flat()
 
     return {
-      replay: await this.getSessionReplaySummary(pid, psid, selectedReplayId),
+      replay,
       events,
     }
   }

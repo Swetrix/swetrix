@@ -26,7 +26,7 @@ swetrix.init("YOUR_PROJECT_ID", {
 });
 
 await swetrix.startSessionReplay({
-  privacy: "normal",
+  privacy: "total",
 });
 ```
 
@@ -86,8 +86,8 @@ or stop the active replay if one is already running.
 
 Choose the privacy mode in code when you start the replay:
 
-- `total`: masks all text and inputs, and blocks media/canvas content.
-- `normal`: masks all inputs. This is the default.
+- `total`: masks all text and inputs, and blocks media/canvas content. This is the default.
+- `normal`: masks all inputs.
 - `none`: only forces password inputs to stay masked unless you add your own recorder masking options.
 
 Configure replay retention in **Project Settings > Session replays**. Retention changes apply only to newly recorded replay chunks; existing replay chunks keep the expiry date they were recorded with.

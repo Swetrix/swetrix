@@ -63,6 +63,43 @@ if (source.includes(defaultPageStyle)) {
   throw new Error('Could not find rrvideo HTML page style')
 }
 
+const defaultBrowserContext = [
+  '        const context = yield browser.newContext({',
+  '            viewport: scaledViewport,',
+  '            recordVideo: {',
+  '                dir: defaultVideoDir,',
+  '                size: scaledViewport,',
+  '            },',
+  '        });',
+  '        const page = yield context.newPage();',
+  "        yield page.goto('about:blank');",
+].join('\n')
+const networkLockedBrowserContext = [
+  '        const context = yield browser.newContext({',
+  '            viewport: scaledViewport,',
+  "            serviceWorkers: 'block',",
+  '            recordVideo: {',
+  '                dir: defaultVideoDir,',
+  '                size: scaledViewport,',
+  '            },',
+  '        });',
+  "        yield context.route('**/*', (route) => {",
+  '            const url = route.request().url();',
+  "            if (url === 'about:blank' || url.startsWith('data:') || url.startsWith('blob:')) {",
+  '                return route.continue();',
+  '            }',
+  "            return route.abort('blockedbyclient');",
+  '        });',
+  '        const page = yield context.newPage();',
+  "        yield page.goto('about:blank');",
+].join('\n')
+
+if (source.includes(defaultBrowserContext)) {
+  source = source.replace(defaultBrowserContext, networkLockedBrowserContext)
+} else if (!source.includes(networkLockedBrowserContext)) {
+  throw new Error('Could not find rrvideo browser context block')
+}
+
 const blockStart = source.indexOf(
   '      const userConfig = ${JSON.stringify((config === null',
 )
