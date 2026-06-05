@@ -1985,6 +1985,7 @@
       "expiresAt": "Expires {{date}}",
       "eventsCount": "{{count}} replay events",
       "title": "Session replay",
+      "loading": "Preparing replay...",
       "loadError": "Could not load replay",
       "delete": "Delete replay",
       "deleted": "Replay deleted",
