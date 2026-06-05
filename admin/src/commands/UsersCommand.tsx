@@ -264,7 +264,28 @@ export function UsersCommand({ onBack, initialUser, showListOnBack = true }: Use
       return
     }
 
-    await updateSelectedUser({ [target]: parsed } as Partial<User>)
+    const update = { [target]: parsed } as Partial<User>
+
+    if (target === 'entitlementOverrides' && selectedUser) {
+      const websiteOverride = numberValue(parsed, 'websites')
+      const apiOverride = numberValue(parsed, 'apiRateLimitPerHour')
+      const purchasedWebsiteAddons =
+        (selectedUser as User & { purchasedWebsiteAddons?: number })
+          .purchasedWebsiteAddons ??
+        numberValue(selectedUser.addonOverrides, 'websites') ??
+        numberValue(selectedUser.addonOverrides, 'additionalWebsites') ??
+        0
+
+      if (typeof websiteOverride === 'number') {
+        update.maxProjects = websiteOverride + purchasedWebsiteAddons
+      }
+
+      if (typeof apiOverride === 'number') {
+        update.maxApiKeyRequestsPerHour = apiOverride
+      }
+    }
+
+    await updateSelectedUser(update)
   }
 
   if (loading) {

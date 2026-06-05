@@ -320,7 +320,7 @@ const PLAN_PRICES: PlanPriceCatalog = {
 
 export const PLAN_ENTITLEMENTS = {
   standard: {
-    websites: 50,
+    websites: 10,
     teamMembers: 10,
     organisations: 3,
     apiRateLimitPerHour: 300,

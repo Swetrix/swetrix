@@ -410,12 +410,12 @@ export class UserService {
       'websites',
     )
 
-    if (typeof entitlements.websites === 'number') {
-      return entitlements.websites
-    }
-
     if (typeof websiteOverride === 'number') {
       return websiteOverride
+    }
+
+    if (typeof entitlements.websites === 'number') {
+      return entitlements.websites
     }
 
     return Math.max(

@@ -1,0 +1,1 @@
+ALTER TABLE `user` ALTER COLUMN `maxProjects` SET DEFAULT '10';
