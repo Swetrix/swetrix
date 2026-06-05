@@ -1964,16 +1964,21 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
 
-    const [isDataExists, isErrorDataExists, isCaptchaDataExists] =
-      await Promise.all([
-        !_isEmpty(
-          await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
-        ),
-        !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
-        !_isEmpty(
-          await this.projectService.getPIDsWhereCaptchaDataExists([id]),
-        ),
-      ])
+    const [
+      isDataExists,
+      isErrorDataExists,
+      isCaptchaDataExists,
+      isReplayDataExists,
+    ] = await Promise.all([
+      !_isEmpty(
+        await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+      ),
+      !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
+      !_isEmpty(await this.projectService.getPIDsWhereCaptchaDataExists([id])),
+      !_isEmpty(
+        await this.projectService.getPIDsWhereSessionReplayDataExists([id]),
+      ),
+    ])
 
     let role
     let isAccessConfirmed = true
@@ -2020,6 +2025,7 @@ export class ProjectController {
       isDataExists,
       isErrorDataExists,
       isCaptchaDataExists,
+      isReplayDataExists,
       organisationId: project.organisation?.id,
       role,
     }

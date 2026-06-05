@@ -1,7 +1,8 @@
 import { LockIcon } from '@phosphor-icons/react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 
 import { useProjectFeatureAccess } from '~/hooks/useProjectFeatureAccess'
+import { DOCS_URL } from '~/lib/constants'
 import type { PlanFeatureCode } from '~/lib/pricing/features'
 import Button from '~/ui/Button'
 import { Text } from '~/ui/Text'
@@ -11,7 +12,18 @@ interface PlanFeatureLockedProps {
   feature: PlanFeatureCode
 }
 
-const allowedFeatures = ['featureFlags', 'experiments'] as const
+const allowedFeatures = ['featureFlags', 'experiments', 'replays'] as const
+const featureDocsUrls: Record<(typeof allowedFeatures)[number], string> = {
+  featureFlags: `${DOCS_URL}/analytics-dashboard/feature-flags`,
+  experiments: `${DOCS_URL}/analytics-dashboard/experiments`,
+  replays: `${DOCS_URL}/analytics-dashboard/session-replays`,
+}
+const featureDocsAriaLabels: Record<(typeof allowedFeatures)[number], string> =
+  {
+    featureFlags: 'ariaLabels.openFeatureFlagsGuide',
+    experiments: 'ariaLabels.openExperimentsGuide',
+    replays: 'ariaLabels.openSessionReplaysGuide',
+  }
 
 const PlanFeatureLocked = ({ feature }: PlanFeatureLockedProps) => {
   const { t } = useTranslation('common')
@@ -38,9 +50,31 @@ const PlanFeatureLocked = ({ feature }: PlanFeatureLockedProps) => {
         as='p'
         size='sm'
         colour='secondary'
-        className='mx-auto mt-2 max-w-md whitespace-pre-line'
+        className='mx-auto mt-2 max-w-md'
       >
         {t(`project.featureAccess.${audience}Description`)}
+      </Text>
+      <Text
+        as='p'
+        size='sm'
+        colour='secondary'
+        className='mx-auto mt-3 max-w-md'
+      >
+        <Trans
+          t={t}
+          i18nKey={`project.featureAccess.${safeFeature}.description`}
+          components={{
+            docs: (
+              <a
+                href={featureDocsUrls[safeFeature]}
+                aria-label={t(featureDocsAriaLabels[safeFeature])}
+                className='font-medium underline decoration-dashed hover:decoration-solid'
+                target='_blank'
+                rel='noreferrer noopener'
+              />
+            ),
+          }}
+        />
       </Text>
       {isOwner ? (
         <div className='mt-6 flex justify-center'>

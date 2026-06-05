@@ -738,7 +738,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           password || undefined,
         ).then((res) => res.data)
       }
-    } else if (tab === PROJECT_TABS.replays) {
+    } else if (
+      tab === PROJECT_TABS.replays &&
+      (isSelfhosted || project.featureAccess?.replays === true)
+    ) {
       replaysData = getSessionReplaysServer(
         request,
         projectId,

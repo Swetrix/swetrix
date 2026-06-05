@@ -584,6 +584,10 @@ export class ProjectService {
         project,
         PlanFeatureCode.experiments,
       ),
+      [PlanFeatureCode.replays]: this.projectOwnerHasFeature(
+        project,
+        PlanFeatureCode.replays,
+      ),
     }
   }
 
@@ -1204,6 +1208,43 @@ export class ProjectService {
       FROM events
       WHERE pid IN (${pids})
         AND type = 'captcha'
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then((resultSet) => resultSet.json<{ pid: string }>())
+
+    return _map(data, ({ pid }) => pid)
+  }
+
+  async getPIDsWhereSessionReplayDataExists(
+    projectIds: string[],
+  ): Promise<string[]> {
+    if (_isEmpty(projectIds)) {
+      return []
+    }
+
+    const params = _reduce(
+      projectIds,
+      (acc, curr, index) => ({
+        ...acc,
+        [`pid_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const pids = _join(
+      _map(params, (val, key) => `{${key}:FixedString(12)}`),
+      ',',
+    )
+
+    const query = `
+      SELECT DISTINCT pid
+      FROM session_replay_chunks
+      WHERE pid IN (${pids})
     `
 
     const { data } = await clickhouse

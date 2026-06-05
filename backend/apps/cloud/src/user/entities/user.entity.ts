@@ -42,6 +42,7 @@ export enum PlanType {
 export enum PlanFeatureCode {
   featureFlags = 'featureFlags',
   experiments = 'experiments',
+  replays = 'replays',
 }
 
 export enum DashboardBlockReason {
@@ -117,6 +118,7 @@ const PLAN_TYPE_RANK = {
 const PLAN_FEATURE_REQUIRED_PLAN = {
   [PlanFeatureCode.featureFlags]: PlanType.plus,
   [PlanFeatureCode.experiments]: PlanType.plus,
+  [PlanFeatureCode.replays]: PlanType.plus,
 } as const
 
 export const getEffectivePlanType = (

@@ -301,6 +301,7 @@ const ViewProjectContent = () => {
   const projectPassword = useProjectPassword(id)
   const experimentsAccess = useProjectFeatureAccess('experiments')
   const featureFlagsAccess = useProjectFeatureAccess('featureFlags')
+  const replaysAccess = useProjectFeatureAccess('replays')
 
   const { theme, setTheme } = useTheme()
 
@@ -1614,7 +1615,11 @@ const ViewProjectContent = () => {
                               />
                             ) : null}
                             {activeTab === PROJECT_TABS.replays ? (
-                              <ReplaysView tnMapping={tnMapping} />
+                              replaysAccess.hasAccess ? (
+                                <ReplaysView tnMapping={tnMapping} />
+                              ) : (
+                                <PlanFeatureLocked feature='replays' />
+                              )
                             ) : null}
                             {activeTab === PROJECT_TABS.errors ? (
                               <ErrorsView />

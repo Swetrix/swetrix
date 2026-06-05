@@ -179,6 +179,8 @@
     "openDataImportDocumentation": "Open data import documentation",
     "openErrorTrackingDocumentation": "Open error tracking documentation",
     "openErrorTrackingGuide": "Open error tracking guide",
+    "openExperimentsGuide": "Open Experiments guide",
+    "openFeatureFlagsGuide": "Open Feature Flags guide",
     "openFeedbackForm": "Open feedback form",
     "openGoogleSearchConsole": "Open Google Search Console",
     "openGoogleSearchConsoleSelfHostingGuide": "Open Google Search Console self-hosting guide",
@@ -188,6 +190,7 @@
     "openSwetrixDiscord": "Open Swetrix Discord",
     "openSwetrixOnX": "Open Swetrix on X",
     "openSwetrixWebsite": "Open Swetrix website",
+    "openSessionReplaysGuide": "Open Session replays guide",
     "openTimezoneSettings": "Open timezone settings",
     "openTrackingSetupDocumentation": "Open tracking setup documentation",
     "openTroubleshootingGuide": "Open troubleshooting guide",
@@ -759,7 +762,7 @@
         "desc": "Invite teammates, assign roles and manage shared projects from one organisation workspace."
       },
       "experiments": {
-        "title": "Experiments & Feature Flags",
+        "title": "Experiments & Feature flags",
         "desc": "Run A/B tests to find what works best. Roll out features gradually with built-in feature flags."
       },
       "captcha": {
@@ -1197,7 +1200,7 @@
     "goals": "Goals",
     "goalsDesc": "Conversion goals help you track important user actions on your website.\nDefine pageview goals or custom event goals to measure how many visitors complete specific actions.",
     "experiments": "Experiments",
-    "featureFlags": "Feature Flags",
+    "featureFlags": "Feature flags",
     "featureFlagsDesc": "Feature flags allow you to toggle features for cohorts or individuals.\nTest the impact before rolling out to everyone.",
     "askAi": "Ask AI",
     "revenue": "Revenue",
@@ -1423,8 +1426,8 @@
     "noChartData": "No chart data available for the selected period"
   },
   "featureFlags": {
-    "title": "Feature Flags",
-    "description": "Feature flags allow you to toggle features for cohorts or individuals.\nTest the impact of new features before rolling out to everyone.",
+    "title": "Feature flags",
+    "description": "Feature flags allow you to toggle features for cohorts or individuals.\nTest the impact of new features before rolling out to everyone.\n<docs>Learn more in the docs</docs>.",
     "add": "Add feature flag",
     "addFlag": "Add Flag",
     "filterFlags": "Filter flags",
@@ -1512,7 +1515,7 @@
   },
   "experiments": {
     "title": "Experiments",
-    "description": "Run A/B tests to compare variants and find what works best.\nCreate experiments linked to goals and let Bayesian statistics determine the winner.",
+    "description": "Run A/B tests to compare variants and find what works best.\nCreate experiments linked to goals and let Bayesian statistics determine the winner.\n<docs>Learn more in the docs</docs>.",
     "create": "Create Experiment",
     "edit": "Edit Experiment",
     "editDisabledRunning": "Pause this experiment to edit settings.",
@@ -2069,15 +2072,22 @@
     },
     "featureAccess": {
       "featureFlags": {
-        "ownerTitle": "Feature Flags are not available on your plan",
-        "viewerTitle": "Feature Flags are not available for this project"
+        "ownerTitle": "Feature flags are not available on your plan",
+        "viewerTitle": "Feature flags are not available for this project",
+        "description": "Feature flags let you roll out changes, target visitors, and toggle features without deploying new code. <docs>Learn more in the docs</docs>."
       },
       "experiments": {
         "ownerTitle": "Experiments are not available on your plan",
-        "viewerTitle": "Experiments are not available for this project"
+        "viewerTitle": "Experiments are not available for this project",
+        "description": "Experiments let you run A/B tests, split traffic between variants, and measure which version performs better. <docs>Learn more in the docs</docs>."
+      },
+      "replays": {
+        "ownerTitle": "Session replays are not available on your plan",
+        "viewerTitle": "Session replays are not available for this project",
+        "description": "Session replays record browser sessions so you can review user journeys, debug issues, and understand drop-offs. <docs>Learn more in the docs</docs>."
       },
       "ownerDescription": "This feature is included in Plus and Enterprise. Upgrade your plan to use it in this project.",
-      "viewerDescription": "The project owner does not have access to this feature on their current plan. Contact them to upgrade the project plan.",
+      "viewerDescription": "This feature is included in Plus and Enterprise. The project owner needs to upgrade the project plan to enable it.",
       "upgradePlan": "Upgrade plan"
     },
     "waiting": {
@@ -2122,8 +2132,15 @@
     "noSessionsFound": "No sessions found for this period.",
     "exploreSessions": "View sessions",
     "noSessionsFiltersDesc": "No sessions match this period and filter set. Try changing the date range or filters.",
-    "noReplaysTitle": "No replays yet",
-    "noReplaysContent": "No session replays were recorded for this period. Try a different date range.",
+    "noReplaysSetupTitle": "No session replays yet",
+    "noReplaysSetupDesc": "Session replays let you watch recorded browser sessions with the analytics context Swetrix already collected. They start recording only after your website calls startSessionReplay().\n<howto>Learn how to set up Session replays</howto>.",
+    "noReplaysSetupSteps": {
+      "startRecorder": "Start the recorder from your site code after Swetrix is initialised.",
+      "choosePrivacy": "Choose a privacy mode before recording pages that may contain sensitive data.",
+      "reviewRecordings": "Recorded sessions will appear here for the selected date range."
+    },
+    "noReplaysTitle": "No replays for this period",
+    "noReplaysContent": "No session replays were recorded for the selected period. Try a different date range.",
     "noReplaysFiltersTitle": "No replays found",
     "noReplaysFiltersDesc": "No replays match this period and filter set. Try changing the date range or filters.",
     "noCaptchaEv": "No CAPTCHA events were recorded for this period.\nIf you have not set up CAPTCHA yet, see the <url>docs</url> to add it to your app.",
