@@ -11,13 +11,30 @@ import { isDevelopment } from './common/constants'
 import { AppModule } from './app.module'
 import { validateLicense } from './common/license'
 
+const DEFAULT_JSON_BODY_LIMIT = '1mb'
+const SESSION_REPLAY_CHUNK_BODY_LIMIT = '15mb'
+const SESSION_REPLAY_CHUNK_PATHS = [
+  '/log/session-replay/chunk',
+  '/v1/log/session-replay/chunk',
+]
+
 async function bootstrap() {
   validateLicense()
 
-  const app = await NestFactory.create<NestExpressApplication>(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: false,
+  })
 
   app.use(cookieParser())
-  app.useBodyParser('json', { limit: '1mb' })
+  app.use(
+    SESSION_REPLAY_CHUNK_PATHS,
+    express.json({ limit: SESSION_REPLAY_CHUNK_BODY_LIMIT }),
+  )
+  app.useBodyParser('json', { limit: DEFAULT_JSON_BODY_LIMIT })
+  app.useBodyParser('urlencoded', {
+    extended: true,
+    limit: DEFAULT_JSON_BODY_LIMIT,
+  })
   app.useGlobalPipes(new ValidationPipe())
 
   app.enableVersioning({
