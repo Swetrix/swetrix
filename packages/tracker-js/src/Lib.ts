@@ -885,15 +885,21 @@ export class Lib {
       options.maxEventsPerChunk > 0
         ? Math.floor(options.maxEventsPerChunk)
         : DEFAULT_SESSION_REPLAY_MAX_EVENTS
-    const maxBytesPerChunk =
-      typeof options.maxBytesPerChunk === 'number' &&
-      options.maxBytesPerChunk > 0
+    const maxBytesPerChunkCandidate =
+      typeof options.maxBytesPerChunk === 'number'
         ? Math.floor(options.maxBytesPerChunk)
+        : Number.NaN
+    const maxBytesPerChunk =
+      maxBytesPerChunkCandidate >= 1
+        ? maxBytesPerChunkCandidate
         : DEFAULT_SESSION_REPLAY_MAX_CHUNK_BYTES
-    const maxBytesPerEvent =
-      typeof options.maxBytesPerEvent === 'number' &&
-      options.maxBytesPerEvent > 0
+    const maxBytesPerEventCandidate =
+      typeof options.maxBytesPerEvent === 'number'
         ? Math.floor(options.maxBytesPerEvent)
+        : Number.NaN
+    const maxBytesPerEvent =
+      maxBytesPerEventCandidate >= 1
+        ? maxBytesPerEventCandidate
         : DEFAULT_SESSION_REPLAY_MAX_EVENT_BYTES
     const maxDurationMs =
       typeof options.maxDurationMs === 'number' && options.maxDurationMs > 0

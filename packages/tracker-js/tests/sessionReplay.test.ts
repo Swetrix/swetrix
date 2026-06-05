@@ -398,6 +398,39 @@ describe('Session replay tracking', () => {
     await actions.stop()
   })
 
+  test('fractional byte limits below one fall back to defaults', async () => {
+    const { recordOptions } = usePackageRrweb()
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const actions = await startSessionReplay({
+      flushIntervalMs: 60_000,
+      maxBytesPerChunk: 0.5,
+      maxBytesPerEvent: 0.5,
+    })
+
+    recordOptions().emit({ type: 3, timestamp: 500 })
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(
+      fetchMock.mock.calls.filter(([url]) =>
+        String(url).includes('/session-replay/chunk'),
+      ),
+    ).toHaveLength(0)
+
+    await actions.flush()
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.swetrix.com/log/session-replay/chunk',
+      expect.objectContaining({
+        body: expect.stringContaining('"timestamp":500'),
+      }),
+    )
+
+    await actions.stop()
+  })
+
   test('script rrweb loader clears failed loads so startSessionReplay can retry', async () => {
     const record = jest.fn(() => jest.fn())
     const trackerScript = document.createElement('script')
