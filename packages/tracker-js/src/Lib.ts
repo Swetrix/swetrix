@@ -208,9 +208,13 @@ export interface SessionReplayOptions {
   rrweb?: RrwebRecordOptions
   flushIntervalMs?: number
   maxEventsPerChunk?: number
+  maxBytesPerChunk?: number
+  maxBytesPerEvent?: number
   sampleRate?: number
   maxDurationMs?: number
   idleTimeoutMs?: number
+  maskAllText?: boolean
+  recordIframes?: boolean
 }
 
 export interface SessionReplayActions {
@@ -291,7 +295,26 @@ const DEFAULT_RRWEB_FILE = 'replaylibrary.min.js'
 const DEFAULT_RRWEB_URL = `https://cdn.jsdelivr.net/npm/swetrix@latest/dist/${DEFAULT_RRWEB_FILE}`
 const DEFAULT_SESSION_REPLAY_FLUSH_INTERVAL = 5000
 const DEFAULT_SESSION_REPLAY_MAX_EVENTS = 100
+const DEFAULT_SESSION_REPLAY_MAX_CHUNK_BYTES = 512 * 1024
+const DEFAULT_SESSION_REPLAY_MAX_EVENT_BYTES = 5 * 1024 * 1024
 const DEFAULT_SESSION_REPLAY_PRIVACY: SessionReplayPrivacy = 'total'
+const DEFAULT_SESSION_REPLAY_SAMPLING = {
+  mousemove: 50,
+  scroll: 150,
+  input: 'last',
+}
+const DEFAULT_SESSION_REPLAY_SLIM_DOM_OPTIONS = {
+  script: true,
+  comment: true,
+  headFavicon: true,
+  headWhitespace: true,
+  headMetaDescKeywords: true,
+  headMetaSocial: true,
+  headMetaRobots: true,
+  headMetaHttpEquiv: true,
+  headMetaAuthorship: true,
+  headMetaVerification: true,
+}
 const SESSION_REPLAY_ACTIVITY_EVENTS = [
   'click',
   'keydown',
@@ -303,6 +326,18 @@ const SESSION_REPLAY_ACTIVITY_EVENTS = [
 
 // Default cache duration: 5 minutes
 const DEFAULT_CACHE_DURATION = 5 * 60 * 1000
+
+const getStringByteLength = (value: string) => {
+  if (typeof TextEncoder !== 'undefined') {
+    return new TextEncoder().encode(value).length
+  }
+
+  if (typeof Blob !== 'undefined') {
+    return new Blob([value]).size
+  }
+
+  return value.length
+}
 
 export class Lib {
   private pageData: PageData | null = null
@@ -850,6 +885,16 @@ export class Lib {
       options.maxEventsPerChunk > 0
         ? Math.floor(options.maxEventsPerChunk)
         : DEFAULT_SESSION_REPLAY_MAX_EVENTS
+    const maxBytesPerChunk =
+      typeof options.maxBytesPerChunk === 'number' &&
+      options.maxBytesPerChunk > 0
+        ? Math.floor(options.maxBytesPerChunk)
+        : DEFAULT_SESSION_REPLAY_MAX_CHUNK_BYTES
+    const maxBytesPerEvent =
+      typeof options.maxBytesPerEvent === 'number' &&
+      options.maxBytesPerEvent > 0
+        ? Math.floor(options.maxBytesPerEvent)
+        : DEFAULT_SESSION_REPLAY_MAX_EVENT_BYTES
     const maxDurationMs =
       typeof options.maxDurationMs === 'number' && options.maxDurationMs > 0
         ? options.maxDurationMs
@@ -862,6 +907,7 @@ export class Lib {
     let chunkIndex = 0
     let stopped = false
     let events: RrwebEvent[] = []
+    let eventsByteLength = 0
     let flushing = Promise.resolve()
     let maxDurationTimer: ReturnType<typeof setTimeout> | undefined
     let idleTimer: ReturnType<typeof setTimeout> | undefined
@@ -871,6 +917,7 @@ export class Lib {
 
       const chunk = events
       events = []
+      eventsByteLength = 0
       const currentChunkIndex = chunkIndex++
 
       flushing = flushing
@@ -897,11 +944,36 @@ export class Lib {
           userEmit?.(event)
         } catch {}
 
+        let eventByteLength = 0
+
+        try {
+          eventByteLength = getStringByteLength(JSON.stringify(event))
+        } catch {
+          return
+        }
+
+        if (eventByteLength > maxBytesPerEvent) {
+          return
+        }
+
+        if (
+          events.length &&
+          eventsByteLength + eventByteLength > maxBytesPerChunk
+        ) {
+          void flush()
+        }
+
         events.push(event)
-        if (events.length >= maxEventsPerChunk) {
+        eventsByteLength += eventByteLength
+        if (
+          events.length >= maxEventsPerChunk ||
+          eventsByteLength >= maxBytesPerChunk
+        ) {
           void flush()
         }
       },
+      Boolean(options.recordIframes),
+      options.maskAllText,
     )
 
     const stopRecording = rrweb.record(recordOptions)
@@ -1246,9 +1318,42 @@ export class Lib {
     privacy: unknown,
     userOptions: RrwebRecordOptions | undefined,
     emit: RrwebEmit,
+    recordIframes: boolean,
+    maskAllText?: boolean,
   ): RrwebRecordOptions {
+    const hasUserSampling =
+      userOptions &&
+      Object.prototype.hasOwnProperty.call(userOptions, 'sampling')
+    const hasUserSlimDOMOptions =
+      userOptions &&
+      Object.prototype.hasOwnProperty.call(userOptions, 'slimDOMOptions')
+    const sampling =
+      typeof userOptions?.sampling === 'object' && userOptions.sampling !== null
+        ? {
+            ...DEFAULT_SESSION_REPLAY_SAMPLING,
+            ...(userOptions.sampling as Record<string, unknown>),
+          }
+        : hasUserSampling
+          ? userOptions?.sampling
+          : DEFAULT_SESSION_REPLAY_SAMPLING
+    const slimDOMOptions =
+      typeof userOptions?.slimDOMOptions === 'object' &&
+      userOptions.slimDOMOptions !== null
+        ? {
+            ...DEFAULT_SESSION_REPLAY_SLIM_DOM_OPTIONS,
+            ...(userOptions.slimDOMOptions as Record<string, unknown>),
+          }
+        : hasUserSlimDOMOptions
+          ? userOptions?.slimDOMOptions
+          : DEFAULT_SESSION_REPLAY_SLIM_DOM_OPTIONS
     const options: RrwebRecordOptions = {
+      recordCanvas: false,
+      recordCrossOriginIframes: false,
+      collectFonts: false,
+      inlineImages: false,
       ...userOptions,
+      sampling,
+      slimDOMOptions,
       emit,
     }
 
@@ -1259,14 +1364,22 @@ export class Lib {
         : {}
 
     const resolvedPrivacy = this.getSessionReplayPrivacy(privacy)
+    const defaultBlockSelector = recordIframes ? undefined : 'iframe'
+    const resolvedMaskAllText =
+      typeof maskAllText === 'boolean'
+        ? maskAllText
+        : resolvedPrivacy === 'total'
+    const textMaskingOptions = resolvedMaskAllText
+      ? { maskTextSelector: '*' }
+      : {}
 
     if (resolvedPrivacy === 'total') {
       return {
         ...options,
+        ...textMaskingOptions,
         maskAllInputs: true,
-        maskTextSelector: '*',
         blockSelector: this.mergeSelectors(
-          options.blockSelector,
+          this.mergeSelectors(options.blockSelector, defaultBlockSelector),
           'img, picture, video, audio, canvas, svg',
         ),
         recordCanvas: false,
@@ -1278,13 +1391,23 @@ export class Lib {
     if (resolvedPrivacy === 'normal') {
       return {
         ...options,
+        ...textMaskingOptions,
         maskAllInputs: true,
+        blockSelector: this.mergeSelectors(
+          options.blockSelector,
+          defaultBlockSelector,
+        ),
         emit,
       }
     }
 
     return {
       ...options,
+      ...textMaskingOptions,
+      blockSelector: this.mergeSelectors(
+        options.blockSelector,
+        defaultBlockSelector,
+      ),
       maskInputOptions: {
         ...maskInputOptions,
         password: true,
@@ -1293,7 +1416,14 @@ export class Lib {
     }
   }
 
-  private mergeSelectors(existing: unknown, required: string): string {
+  private mergeSelectors(
+    existing: unknown,
+    required?: string,
+  ): string | undefined {
+    if (!required) {
+      return typeof existing === 'string' ? existing : undefined
+    }
+
     if (typeof existing === 'string' && existing.trim()) {
       return `${existing}, ${required}`
     }

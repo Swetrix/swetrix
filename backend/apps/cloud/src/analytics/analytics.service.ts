@@ -142,6 +142,7 @@ const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
 const SESSION_REPLAY_RETENTION_VALUES = [30, 90, 365, 1825] as const
 const MAX_SESSION_REPLAY_EVENTS_PER_CHUNK = 1000
+const MAX_SESSION_REPLAY_EVENT_BYTES = 5 * 1024 * 1024
 const MAX_SESSION_REPLAY_CHUNK_BYTES = 15 * 1024 * 1024
 const MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY = 1200
 const MAX_SESSION_REPLAY_EVENTS_PER_REPLAY = 100000
@@ -2156,6 +2157,23 @@ export class AnalyticsService {
     }
   }
 
+  private validateSessionReplayEventSizes(events: Record<string, unknown>[]) {
+    const hasOversizedEvent = events.some((event) => {
+      try {
+        return (
+          Buffer.byteLength(JSON.stringify(event)) >
+          MAX_SESSION_REPLAY_EVENT_BYTES
+        )
+      } catch {
+        return true
+      }
+    })
+
+    if (hasOversizedEvent) {
+      throw new PayloadTooLargeException('Session replay event is too large')
+    }
+  }
+
   async storeSessionReplayChunk(
     project: Project,
     pid: string,
@@ -2175,6 +2193,8 @@ export class AnalyticsService {
     if (events.length > MAX_SESSION_REPLAY_EVENTS_PER_CHUNK) {
       throw new BadRequestException('Session replay chunk has too many events')
     }
+
+    this.validateSessionReplayEventSizes(events)
 
     const psid = await this.resolveReplaySession(pid, userAgent, ip)
     const retention = this.getSessionReplayRetention(project)
