@@ -1451,13 +1451,14 @@ export class AnalyticsController {
         any(br) AS br,
         any(os) AS os,
         any(cc) AS cc,
-        toString(psid) AS psid
+        toString(ifNull(psid, 0)) AS psid
       FROM events
       WHERE
         pid = {pid:FixedString(12)}
         AND type IN ('pageview', 'custom_event')
         AND created >= {since:DateTime}
         AND psid IS NOT NULL
+        AND psid != 0
       GROUP BY psid
     `
 

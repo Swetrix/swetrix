@@ -6688,31 +6688,34 @@ export class AnalyticsService {
       ),
       pageview_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
       event_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
       error_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'error' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
@@ -6724,7 +6727,7 @@ export class AnalyticsService {
           sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refunds
         FROM (
           SELECT
-            CAST(session_id, 'String') AS psidCasted,
+            ifNull(session_id, '') AS psidCasted,
             pid,
             argMax(type, synced_at) AS type,
             argMax(amount, synced_at) AS amount
@@ -6738,7 +6741,7 @@ export class AnalyticsService {
       ),
       session_duration_agg AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(psid) AS psidCasted,
           pid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
           argMax(profileId, lastSeen) as profileId
@@ -6748,7 +6751,7 @@ export class AnalyticsService {
       ),
       replay_summary AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           countDistinct(replayId) AS replayCount,
           min(firstEventTimestamp) AS firstReplayTimestamp,
@@ -6756,13 +6759,14 @@ export class AnalyticsService {
           max(expiresAt) AS replayExpiresAt
         FROM session_replay_chunks
         WHERE pid = {pid:FixedString(12)}
+          AND psid != 0
           AND expiresAt > now()
         GROUP BY psidCasted, pid
       ),
       first_session_per_profile AS (
         SELECT
           profileId,
-          argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
+          argMin(toString(psid), firstSeen) AS firstPsid
         FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
           AND profileId IS NOT NULL
@@ -6896,7 +6900,7 @@ export class AnalyticsService {
           max(chunkExpiresAt) AS replayExpiresAt
         FROM (
           SELECT
-            CAST(psid, 'String') AS psidCasted,
+            toString(ifNull(psid, 0)) AS psidCasted,
             pid,
             replayId,
             chunkIndex,
@@ -6908,6 +6912,7 @@ export class AnalyticsService {
             max(created) AS latestCreated
           FROM session_replay_chunks
           WHERE pid = {pid:FixedString(12)}
+            AND psid != 0
             AND expiresAt > now()
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           GROUP BY psidCasted, pid, replayId, chunkIndex
@@ -6916,31 +6921,34 @@ export class AnalyticsService {
       ),
       pageview_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
       event_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
       error_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'error' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
@@ -6952,7 +6960,7 @@ export class AnalyticsService {
           sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refunds
         FROM (
           SELECT
-            CAST(session_id, 'String') AS psidCasted,
+            ifNull(session_id, '') AS psidCasted,
             pid,
             argMax(type, synced_at) AS type,
             argMax(amount, synced_at) AS amount
@@ -6966,7 +6974,7 @@ export class AnalyticsService {
       ),
       session_duration_agg AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(psid) AS psidCasted,
           pid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
           argMax(profileId, lastSeen) as profileId
@@ -7010,7 +7018,7 @@ export class AnalyticsService {
       first_session_per_profile AS (
         SELECT
           profileId,
-          argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
+          argMin(toString(psid), firstSeen) AS firstPsid
         FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
           AND profileId IS NOT NULL
@@ -7108,7 +7116,7 @@ export class AnalyticsService {
     if (customEVFilterApplied || sessionEvent === 'custom_event') {
       return `
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           profileId,
           cc,
@@ -7126,7 +7134,7 @@ export class AnalyticsService {
           ${primaryEventFilterQuery}
         UNION ALL
         SELECT
-          CAST(s.psid, 'String') AS psidCasted,
+          toString(s.psid) AS psidCasted,
           matching_custom_events.pid,
           matching_custom_events.profileId,
           matching_custom_events.cc,
@@ -7156,7 +7164,7 @@ export class AnalyticsService {
     if (sessionEvent === 'performance') {
       return `
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           profileId,
           cc,
@@ -7174,7 +7182,7 @@ export class AnalyticsService {
           ${primaryEventFilterQuery}
         UNION ALL
         SELECT
-          CAST(pageviews.psid, 'String') AS psidCasted,
+          toString(ifNull(pageviews.psid, 0)) AS psidCasted,
           performance_events.pid,
           pageviews.profileId,
           pageviews.cc,
@@ -7205,7 +7213,7 @@ export class AnalyticsService {
     if (sessionEvent !== 'traffic') {
       return `
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           profileId,
           cc,
@@ -7226,7 +7234,7 @@ export class AnalyticsService {
 
     return `
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           profileId,
           cc,
@@ -7238,6 +7246,7 @@ export class AnalyticsService {
           pid = {pid:FixedString(12)}
           AND type IN ('pageview', 'custom_event', 'error')
           AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${filtersQuery}
       `
