@@ -861,7 +861,7 @@ const TimelineEventItem = ({
         <Button
           variant='ghost'
           focus={false}
-          onClick={() => onSeek(step.offset, false)}
+          onClick={() => onSeek(step.offset)}
           aria-label={`${step.label}, ${formatReplayTime(step.offset)}`}
           className={cn(
             'group w-full rounded-md px-2.5 py-2 text-left transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-950',
@@ -992,7 +992,7 @@ const PageflowMarkerButton = ({
           }}
           onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
             event.stopPropagation()
-            onSeek(marker.offset, false)
+            onSeek(marker.offset)
           }}
           className='group pointer-events-auto absolute top-1/2 h-5 w-4 -translate-x-1/2 -translate-y-1/2 justify-center border-transparent bg-transparent p-0 text-slate-100 hover:border-transparent hover:bg-transparent focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-0 focus-visible:outline-none dark:text-slate-100 dark:hover:border-transparent dark:hover:bg-transparent'
           style={{ left: `${marker.percent}%` }}
@@ -2144,7 +2144,7 @@ const SessionReplayModal = ({
                         step={250}
                         value={Math.min(currentTime, duration)}
                         onChange={(event) =>
-                          seekTo(Number(event.currentTarget.value), false)
+                          seekTo(Number(event.currentTarget.value))
                         }
                         disabled={!canControlReplay}
                         className='replay-scrubber absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent'
