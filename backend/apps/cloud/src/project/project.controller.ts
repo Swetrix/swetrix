@@ -116,10 +116,10 @@ import { PendingInvitationService } from '../pending-invitation/pending-invitati
 import { PendingInvitationType } from '../pending-invitation/pending-invitation.entity'
 import {
   PlanCode,
+  getEffectiveAccountLimits,
   getSessionReplayRetentionEntitlement,
 } from '../user/entities/user.entity'
 
-const PROJECTS_MAXIMUM = 50
 const ORIGINS_ITEMS_MAXIMUM = 1000
 const BLACKLIST_ITEMS_MAXIMUM = 1000
 
@@ -319,7 +319,6 @@ export class ProjectController {
     const initiatingUser = await this.userService.findOne({
       where: { id: userId },
     })
-    const { maxProjects = PROJECTS_MAXIMUM } = initiatingUser
 
     let user = initiatingUser
 
@@ -359,10 +358,11 @@ export class ProjectController {
     }
 
     const projectCount = await this.projectService.countByAdminId(user.id)
+    const { effectiveProjectLimit } = getEffectiveAccountLimits(user)
 
-    if (projectCount >= maxProjects) {
+    if (projectCount >= effectiveProjectLimit) {
       throw new ForbiddenException(
-        `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+        `You cannot create more than ${effectiveProjectLimit} projects on your account plan. Please upgrade to be able to create more projects.`,
       )
     }
 

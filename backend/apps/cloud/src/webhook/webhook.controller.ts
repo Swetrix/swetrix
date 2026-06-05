@@ -18,7 +18,6 @@ import {
   BillingFrequency,
   DashboardBlockReason,
   PlanType,
-  getPlanTypeAccountLimitUpdates,
   isNextPlan,
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
@@ -185,10 +184,6 @@ export class WebhookController {
           tierCurrency: currency,
           cancellationEffectiveDate: null,
           ...statusParams,
-          ...getPlanTypeAccountLimitUpdates(
-            planType,
-            currentUser.entitlementOverrides,
-          ),
         }
 
         if (isTrialing && nextBillDate) {

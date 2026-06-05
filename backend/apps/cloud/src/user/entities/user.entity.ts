@@ -61,13 +61,9 @@ interface PlanSignature {
   ypid?: string
 }
 
-type AccountLimitUpdates = {
-  maxProjects?: number
-  maxApiKeyRequestsPerHour?: number
-}
-
-export const DEFAULT_MAX_PROJECTS = 10
+const DEFAULT_MAX_PROJECTS = 10
 const DEFAULT_API_KEY_REQUESTS_PER_HOUR = 300
+type AccountLimitValue = number | 'custom'
 
 const PLAN_TYPE_ENTITLEMENTS = {
   [PlanType.standard]: {
@@ -145,7 +141,7 @@ export const getEffectivePlanType = (
   return PlanType.standard
 }
 
-export const getPlanTypeEntitlements = (planType?: PlanType | null) =>
+const getPlanTypeEntitlements = (planType?: PlanType | null) =>
   PLAN_TYPE_ENTITLEMENTS[planType || PlanType.standard]
 
 const getNumericLimitOverride = (
@@ -154,49 +150,38 @@ const getNumericLimitOverride = (
 ) => {
   const value = overrides?.[key]
 
-  return typeof value === 'number' ? value : null
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
+
+const getNumericAccountLimit = (value: unknown) =>
+  typeof value === 'number' && Number.isFinite(value) ? value : null
+
+export const getPurchasedWebsiteAddons = (
+  user?: {
+    addonOverrides?: Record<string, unknown> | null
+  } | null,
+): number =>
+  Math.max(
+    0,
+    getNumericLimitOverride(user?.addonOverrides, 'websites') ??
+      getNumericLimitOverride(user?.addonOverrides, 'additionalWebsites') ??
+      0,
+  )
+
+export const getPurchasedSessionReplayAddons = (
+  user?: {
+    addonOverrides?: Record<string, unknown> | null
+  } | null,
+): number =>
+  Math.max(
+    0,
+    getNumericLimitOverride(user?.addonOverrides, 'sessionReplays') ?? 0,
+  )
 
 export const getDefaultAccountLimitUpdates = () => ({
   maxProjects: DEFAULT_MAX_PROJECTS,
   maxApiKeyRequestsPerHour: DEFAULT_API_KEY_REQUESTS_PER_HOUR,
 })
-
-export const getPlanTypeAccountLimitUpdates = (
-  planType?: PlanType | null,
-  entitlementOverrides?: Record<string, unknown> | null,
-): AccountLimitUpdates => {
-  const entitlements = getPlanTypeEntitlements(planType)
-  const websiteOverride = getNumericLimitOverride(
-    entitlementOverrides,
-    'websites',
-  )
-  const apiRateLimitOverride = getNumericLimitOverride(
-    entitlementOverrides,
-    'apiRateLimitPerHour',
-  )
-  const maxProjects =
-    websiteOverride ??
-    (typeof entitlements.websites === 'number'
-      ? entitlements.websites
-      : undefined)
-  const maxApiKeyRequestsPerHour =
-    apiRateLimitOverride ??
-    (typeof entitlements.apiRateLimitPerHour === 'number'
-      ? entitlements.apiRateLimitPerHour
-      : undefined)
-  const updates: AccountLimitUpdates = {}
-
-  if (typeof maxProjects === 'number') {
-    updates.maxProjects = maxProjects
-  }
-
-  if (typeof maxApiKeyRequestsPerHour === 'number') {
-    updates.maxApiKeyRequestsPerHour = maxApiKeyRequestsPerHour
-  }
-
-  return updates
-}
 
 export const getSessionReplayQuota = (
   user?: {
@@ -210,8 +195,7 @@ export const getSessionReplayQuota = (
     user?.entitlementOverrides,
     'sessionReplaysIncluded',
   )
-  const replayAddons =
-    getNumericLimitOverride(user?.addonOverrides, 'sessionReplays') || 0
+  const replayAddons = getPurchasedSessionReplayAddons(user)
 
   if (typeof replayOverride === 'number') {
     return replayOverride + replayAddons
@@ -255,6 +239,82 @@ export const getSessionReplayRetentionEntitlement = (
   }
 
   return getEffectivePlanType(user) === PlanType.enterprise ? 1825 : 30
+}
+
+export const getEffectiveAccountLimits = (
+  user?: {
+    planCode?: PlanCode | null
+    planType?: PlanType | null
+    entitlementOverrides?: Record<string, unknown> | null
+    addonOverrides?: Record<string, unknown> | null
+    maxProjects?: number | null
+    maxApiKeyRequestsPerHour?: number | null
+  } | null,
+) => {
+  const effectivePlanType = getEffectivePlanType(user)
+  const entitlements = getPlanTypeEntitlements(effectivePlanType)
+  const purchasedWebsiteAddons = getPurchasedWebsiteAddons(user)
+  const purchasedSessionReplayAddons = getPurchasedSessionReplayAddons(user)
+  const websiteOverride = getNumericLimitOverride(
+    user?.entitlementOverrides,
+    'websites',
+  )
+  const apiRateLimitOverride = getNumericLimitOverride(
+    user?.entitlementOverrides,
+    'apiRateLimitPerHour',
+  )
+  const teamMembersOverride = getNumericLimitOverride(
+    user?.entitlementOverrides,
+    'teamMembers',
+  )
+  const organisationsOverride = getNumericLimitOverride(
+    user?.entitlementOverrides,
+    'organisations',
+  )
+  const includedWebsites =
+    websiteOverride ??
+    (typeof entitlements.websites === 'number'
+      ? entitlements.websites
+      : (getNumericAccountLimit(user?.maxProjects) ?? DEFAULT_MAX_PROJECTS))
+  const apiRateLimitPerHour =
+    apiRateLimitOverride ??
+    (typeof entitlements.apiRateLimitPerHour === 'number'
+      ? entitlements.apiRateLimitPerHour
+      : (getNumericAccountLimit(user?.maxApiKeyRequestsPerHour) ??
+        DEFAULT_API_KEY_REQUESTS_PER_HOUR))
+  const teamMembers =
+    teamMembersOverride ??
+    (typeof entitlements.teamMembers === 'number'
+      ? entitlements.teamMembers
+      : 'custom')
+  const organisations =
+    organisationsOverride ??
+    (typeof entitlements.organisations === 'number'
+      ? entitlements.organisations
+      : 'custom')
+  const sessionReplaysIncluded = getSessionReplayQuota(user)
+  const includedSessionReplays =
+    sessionReplaysIncluded === 'custom'
+      ? sessionReplaysIncluded
+      : Math.max(0, sessionReplaysIncluded - purchasedSessionReplayAddons)
+  const sessionReplayRetentionDays = getSessionReplayRetentionEntitlement(user)
+  const effectiveProjectLimit = includedWebsites + purchasedWebsiteAddons
+
+  return {
+    effectivePlanType,
+    includedWebsites,
+    purchasedWebsiteAddons,
+    effectiveProjectLimit,
+    maxProjects: effectiveProjectLimit,
+    apiRateLimitPerHour,
+    maxApiKeyRequestsPerHour: apiRateLimitPerHour,
+    includedSessionReplays,
+    sessionReplaysIncluded,
+    purchasedSessionReplayAddons,
+    sessionReplayRetentionDays,
+    teamMembers: teamMembers as AccountLimitValue,
+    organisations: organisations as AccountLimitValue,
+  }
 }
 
 const planTypeHasFeature = (

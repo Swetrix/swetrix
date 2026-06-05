@@ -35,10 +35,10 @@ import {
   PlanCode,
   PlanType,
   getEffectivePlanType,
-  getPlanTypeEntitlements,
-  getPlanTypeAccountLimitUpdates,
+  getEffectiveAccountLimits,
+  getPurchasedWebsiteAddons,
+  getPurchasedSessionReplayAddons,
   getSessionReplayQuota,
-  DEFAULT_MAX_PROJECTS,
 } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
@@ -328,25 +328,12 @@ export class UserService {
     return this.usersRepository.count(options)
   }
 
-  private getNumericOverride(
-    source: Record<string, unknown> | null | undefined,
-    key: string,
-  ): number | null {
-    const value = source?.[key]
-    return typeof value === 'number' ? value : null
-  }
-
   private getAddonOverrideQuantity(user: Partial<User>): number {
-    const addonOverrides = user?.addonOverrides || {}
-    return (
-      this.getNumericOverride(addonOverrides, 'websites') ||
-      this.getNumericOverride(addonOverrides, 'additionalWebsites') ||
-      0
-    )
+    return getPurchasedWebsiteAddons(user)
   }
 
   private getSessionReplayAddonOverrideQuantity(user: Partial<User>): number {
-    return this.getNumericOverride(user?.addonOverrides, 'sessionReplays') || 0
+    return getPurchasedSessionReplayAddons(user)
   }
 
   private getMoneyValue(value?: string | null): number | null {
@@ -403,46 +390,13 @@ export class UserService {
   }
 
   private getIncludedWebsiteLimit(user: Partial<User>): number {
-    const effectivePlanType = getEffectivePlanType(user)
-    const entitlements = getPlanTypeEntitlements(effectivePlanType)
-    const websiteOverride = this.getNumericOverride(
-      user?.entitlementOverrides,
-      'websites',
-    )
-
-    if (typeof websiteOverride === 'number') {
-      return websiteOverride
-    }
-
-    if (typeof entitlements.websites === 'number') {
-      return entitlements.websites
-    }
-
-    return Math.max(
-      DEFAULT_MAX_PROJECTS,
-      (user?.maxProjects || DEFAULT_MAX_PROJECTS) -
-        this.getAddonOverrideQuantity(user),
-    )
+    return getEffectiveAccountLimits(user).includedWebsites
   }
 
   private getIncludedSessionReplayLimit(
     user: Partial<User>,
   ): number | 'custom' {
-    const replayOverride = this.getNumericOverride(
-      user?.entitlementOverrides,
-      'sessionReplaysIncluded',
-    )
-
-    if (typeof replayOverride === 'number') {
-      return replayOverride
-    }
-
-    const addonQuantity = this.getSessionReplayAddonOverrideQuantity(user)
-    const totalQuota = getSessionReplayQuota(user)
-
-    return totalQuota === 'custom'
-      ? totalQuota
-      : Math.max(0, totalQuota - addonQuantity)
+    return getEffectiveAccountLimits(user).includedSessionReplays
   }
 
   private getWebsiteAddonCurrency(user: User): string {
@@ -976,7 +930,6 @@ export class UserService {
       addonOverrides: Object.keys(addonOverrides).length
         ? addonOverrides
         : null,
-      maxProjects: this.getIncludedWebsiteLimit(user) + quantity,
     }
 
     if (manager) {
@@ -2265,54 +2218,24 @@ export class UserService {
 
   omitSensitiveData(user: Partial<User>): Partial<User> {
     const maxEventsCount = ACCOUNT_PLANS[user?.planCode]?.monthlyUsageLimit || 0
-    const effectivePlanType = getEffectivePlanType(user)
-    const entitlements = getPlanTypeEntitlements(effectivePlanType)
-    const entitlementOverrides = user?.entitlementOverrides || {}
-    const addonOverrides = user?.addonOverrides || {}
-    const numberOverride = (source: Record<string, unknown>, key: string) =>
-      typeof source[key] === 'number' ? (source[key] as number) : null
-
-    const purchasedWebsiteAddons =
-      numberOverride(addonOverrides, 'websites') ||
-      numberOverride(addonOverrides, 'additionalWebsites') ||
-      0
-    const purchasedSessionReplayAddons =
-      numberOverride(addonOverrides, 'sessionReplays') || 0
-    const websiteOverride = numberOverride(entitlementOverrides, 'websites')
-    const apiOverride = numberOverride(
-      entitlementOverrides,
-      'apiRateLimitPerHour',
-    )
-    const includedWebsites =
-      websiteOverride ??
-      (typeof entitlements.websites === 'number'
-        ? entitlements.websites
-        : user?.maxProjects)
-    const apiRateLimitPerHour =
-      apiOverride ??
-      (typeof entitlements.apiRateLimitPerHour === 'number'
-        ? entitlements.apiRateLimitPerHour
-        : user?.maxApiKeyRequestsPerHour)
-    const sessionReplaysIncluded = getSessionReplayQuota(user)
+    const limits = getEffectiveAccountLimits(user)
 
     const enhancedUser = {
       ...user,
-      effectivePlanType,
+      effectivePlanType: limits.effectivePlanType,
       maxEventsCount,
-      maxProjects:
-        typeof includedWebsites === 'number'
-          ? Math.max(
-              user?.maxProjects || 0,
-              includedWebsites + purchasedWebsiteAddons,
-            )
-          : user?.maxProjects,
-      maxApiKeyRequestsPerHour:
-        typeof apiRateLimitPerHour === 'number'
-          ? Math.max(user?.maxApiKeyRequestsPerHour || 0, apiRateLimitPerHour)
-          : user?.maxApiKeyRequestsPerHour,
-      sessionReplaysIncluded,
-      purchasedWebsiteAddons,
-      purchasedSessionReplayAddons,
+      includedWebsites: limits.includedWebsites,
+      purchasedWebsiteAddons: limits.purchasedWebsiteAddons,
+      maxProjects: limits.effectiveProjectLimit,
+      effectiveProjectLimit: limits.effectiveProjectLimit,
+      maxApiKeyRequestsPerHour: limits.apiRateLimitPerHour,
+      apiRateLimitPerHour: limits.apiRateLimitPerHour,
+      includedSessionReplays: limits.includedSessionReplays,
+      sessionReplaysIncluded: limits.sessionReplaysIncluded,
+      purchasedSessionReplayAddons: limits.purchasedSessionReplayAddons,
+      sessionReplayRetentionDays: limits.sessionReplayRetentionDays,
+      teamMembers: limits.teamMembers,
+      organisations: limits.organisations,
     }
 
     return _omit(enhancedUser, [
@@ -2805,7 +2728,6 @@ export class UserService {
       nextBillDate: date,
       billingFrequency,
       tierCurrency: currency,
-      ...getPlanTypeAccountLimitUpdates(planType, user.entitlementOverrides),
     }
 
     await this.update(id, updateParams)
