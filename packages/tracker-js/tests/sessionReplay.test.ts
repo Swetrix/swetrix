@@ -4,9 +4,7 @@ import { Lib } from '../src/Lib'
 import { setLocation } from './testUtils'
 
 const PROJECT_ID = 'test-project-id'
-const RRWEB_URL = 'https://swetrix.org/rrweb.min.js'
-const SIBLING_RRWEB_URL = 'https://cdn.swetrix.test/assets/rrweb.min.js'
-const LOCAL_RRWEB_URL = 'http://localhost:8080/dist/rrweb.min.js'
+const RRWEB_URL = 'https://cdn.jsdelivr.net/npm/swetrix@latest/dist/replaylibrary.min.js'
 
 const loadTracker = async () => {
   jest.resetModules()
@@ -76,9 +74,9 @@ describe('Session replay tracking', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  test('session replay script defaults to the loaded tracker script directory', async () => {
+  test('session replay script uses jsDelivr for the public swetrix.org loader', async () => {
     const script = document.createElement('script')
-    script.src = 'https://cdn.swetrix.test/assets/swetrix.js'
+    script.src = 'https://swetrix.org/swetrix.js'
     document.head.appendChild(script)
 
     const { init } = await loadTracker()
@@ -86,22 +84,7 @@ describe('Session replay tracking', () => {
 
     expect(
       document.querySelector<HTMLScriptElement>(
-        `script[src="${SIBLING_RRWEB_URL}"]`,
-      ),
-    ).toBeTruthy()
-  })
-
-  test('session replay script resolves beside a localhost tracker build', async () => {
-    const script = document.createElement('script')
-    script.src = 'http://localhost:8080/dist/swetrix.js'
-    document.head.appendChild(script)
-
-    const { init } = await loadTracker()
-    init(PROJECT_ID, { devMode: true, sessionReplay: true })
-
-    expect(
-      document.querySelector<HTMLScriptElement>(
-        `script[src="${LOCAL_RRWEB_URL}"]`,
+        `script[src="${RRWEB_URL}"]`,
       ),
     ).toBeTruthy()
   })

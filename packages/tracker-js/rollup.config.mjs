@@ -8,7 +8,7 @@ import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 
 const require = createRequire(import.meta.url)
-const rrwebDistFile = 'rrweb.min.js'
+const rrwebDistFile = 'replaylibrary.min.js'
 const rrwebPackageFile = 'rrweb.umd.min.cjs'
 const rrwebDistPath = join(dirname(require.resolve('rrweb')), rrwebPackageFile)
 

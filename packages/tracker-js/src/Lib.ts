@@ -281,8 +281,8 @@ export const defaultSessionReplayActions: SessionReplayActions = {
 
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 const DEFAULT_API_BASE = 'https://api.swetrix.com'
-const DEFAULT_RRWEB_FILE = 'rrweb.min.js'
-const DEFAULT_RRWEB_URL = `https://swetrix.org/${DEFAULT_RRWEB_FILE}`
+const DEFAULT_RRWEB_FILE = 'replaylibrary.min.js'
+const DEFAULT_RRWEB_URL = `https://cdn.jsdelivr.net/npm/swetrix@latest/dist/${DEFAULT_RRWEB_FILE}`
 const DEFAULT_SESSION_REPLAY_FLUSH_INTERVAL = 5000
 const DEFAULT_SESSION_REPLAY_MAX_EVENTS = 100
 const DEFAULT_SESSION_REPLAY_PRIVACY: SessionReplayPrivacy = 'total'
@@ -1102,6 +1102,14 @@ export class Lib {
     })
 
     if (trackerScript?.src) {
+      const { hostname, pathname } = new URL(trackerScript.src)
+      if (
+        hostname === 'swetrix.org' &&
+        /^\/swetrix(\.min)?\.js$/i.test(pathname)
+      ) {
+        return DEFAULT_RRWEB_URL
+      }
+
       return new URL(DEFAULT_RRWEB_FILE, trackerScript.src).toString()
     }
 
