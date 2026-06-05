@@ -145,6 +145,28 @@ describe('Session replay tracking', () => {
     await actions.stop()
   })
 
+  test('concurrent startSessionReplay calls share one recorder', async () => {
+    const { stopRecording } = usePackageRrweb()
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const [firstActions, secondActions] = await Promise.all([
+      startSessionReplay({ flushIntervalMs: 60_000 }),
+      startSessionReplay({ flushIntervalMs: 10_000 }),
+    ])
+
+    expect(firstActions).toBe(secondActions)
+    expect(mockRrwebRecord).toHaveBeenCalledTimes(1)
+    expect(
+      fetchMock.mock.calls.filter(([url]) =>
+        String(url).includes('/session-replay/start'),
+      ),
+    ).toHaveLength(1)
+
+    await firstActions.stop()
+    expect(stopRecording).toHaveBeenCalledTimes(1)
+  })
+
   test('sampleRate can skip recording before loading rrweb', async () => {
     const { init, startSessionReplay } = await loadTracker()
 

@@ -314,6 +314,7 @@ export class Lib {
   private cachedData: CachedData | null = null
   private rrwebLoader: Promise<void> | null = null
   private sessionReplayActions: SessionReplayActions | null = null
+  private sessionReplayInitPromise: Promise<SessionReplayActions> | null = null
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
@@ -790,6 +791,29 @@ export class Lib {
       return this.sessionReplayActions
     }
 
+    if (this.sessionReplayInitPromise) {
+      return this.sessionReplayInitPromise
+    }
+
+    const initPromise = this.initialiseSessionReplay(options)
+    this.sessionReplayInitPromise = initPromise
+
+    try {
+      return await initPromise
+    } finally {
+      if (this.sessionReplayInitPromise === initPromise) {
+        this.sessionReplayInitPromise = null
+      }
+    }
+  }
+
+  private async initialiseSessionReplay(
+    options: SessionReplayOptions,
+  ): Promise<SessionReplayActions> {
+    if (this.sessionReplayActions) {
+      return this.sessionReplayActions
+    }
+
     if (!this.canTrack()) {
       return defaultSessionReplayActions
     }
@@ -910,6 +934,7 @@ export class Lib {
       stopRecording?.()
       await flush()
       this.sessionReplayActions = null
+      this.sessionReplayInitPromise = null
     }
     const resetIdleTimer = () => {
       if (!idleTimeoutMs || stopped) return

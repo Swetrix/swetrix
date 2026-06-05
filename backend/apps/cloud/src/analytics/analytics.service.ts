@@ -2088,7 +2088,13 @@ export class AnalyticsService {
 
     switch (Number(result)) {
       case 1:
-        return { ...keys, chunkIndex, eventCount, uncompressedBytes }
+        return {
+          ...keys,
+          chunkIndex,
+          eventCount,
+          uncompressedBytes,
+          duplicate: false,
+        }
       case -1:
         throw new PayloadTooLargeException('Session replay has too many chunks')
       case -2:
@@ -2096,7 +2102,13 @@ export class AnalyticsService {
       case -3:
         throw new PayloadTooLargeException('Session replay is too large')
       case -4:
-        return { ...keys, chunkIndex, eventCount, uncompressedBytes }
+        return {
+          ...keys,
+          chunkIndex,
+          eventCount,
+          uncompressedBytes,
+          duplicate: true,
+        }
       case -5:
         throw new PayloadTooLargeException('Session replay is too long')
       default:
@@ -2184,6 +2196,18 @@ export class AnalyticsService {
       retention,
       timestamps,
     )
+
+    if (chunkReservation.duplicate) {
+      return {
+        replayId,
+        psid,
+        chunkIndex,
+        eventCount: events.length,
+        ...retention,
+        countedUsage: false,
+      }
+    }
+
     const objectKey = this.getSessionReplayObjectKey(
       pid,
       psid,
@@ -2414,10 +2438,6 @@ export class AnalyticsService {
 
     const objectKeys = chunks.map((chunk) => chunk.objectKey).filter(Boolean)
 
-    await mapLimit(objectKeys, SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY, (key) =>
-      this.sessionReplayStorage.deleteObject(key),
-    )
-
     await clickhouse.command({
       query: `
         ALTER TABLE session_replay_chunks
@@ -2426,7 +2446,12 @@ export class AnalyticsService {
           AND replayId = {replayId:String}
       `,
       query_params: { pid, psid, replayId: selectedReplayId },
+      clickhouse_settings: { mutations_sync: '2' },
     })
+
+    await mapLimit(objectKeys, SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY, (key) =>
+      this.sessionReplayStorage.deleteObject(key),
+    )
 
     return { deleted: true, deletedChunks: objectKeys.length }
   }

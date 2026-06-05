@@ -303,6 +303,9 @@ const ReplaysViewInner = ({
 
   const removeReplayFromList = (psid: string, replayId: string) => {
     const removedReplayKey = `${psid}:${replayId}`
+    const removed = replays.some(
+      (replay) => `${replay.psid}:${replay.replayId}` === removedReplayKey,
+    )
 
     setReplays((prev) => {
       const next = prev.filter(
@@ -311,7 +314,9 @@ const ReplaysViewInner = ({
       hasShownContentRef.current = !_isEmpty(next)
       return next
     })
-    setReplaysSkip((prev) => Math.max(0, prev - 1))
+    if (removed) {
+      setReplaysSkip((prev) => Math.max(0, prev - 1))
+    }
   }
 
   const deleteReplay = async () => {
