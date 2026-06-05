@@ -42,6 +42,7 @@ export enum PlanType {
 export enum PlanFeatureCode {
   featureFlags = 'featureFlags',
   experiments = 'experiments',
+  replays = 'replays',
 }
 
 export enum DashboardBlockReason {
@@ -65,12 +66,12 @@ type AccountLimitUpdates = {
   maxApiKeyRequestsPerHour?: number
 }
 
-export const DEFAULT_MAX_PROJECTS = 50
+export const DEFAULT_MAX_PROJECTS = 10
 const DEFAULT_API_KEY_REQUESTS_PER_HOUR = 300
 
 const PLAN_TYPE_ENTITLEMENTS = {
   [PlanType.standard]: {
-    websites: 50,
+    websites: 10,
     teamMembers: 10,
     organisations: 3,
     apiRateLimitPerHour: 300,
@@ -117,6 +118,7 @@ const PLAN_TYPE_RANK = {
 const PLAN_FEATURE_REQUIRED_PLAN = {
   [PlanFeatureCode.featureFlags]: PlanType.plus,
   [PlanFeatureCode.experiments]: PlanType.plus,
+  [PlanFeatureCode.replays]: PlanType.plus,
 } as const
 
 export const getEffectivePlanType = (
@@ -165,14 +167,24 @@ export const getPlanTypeAccountLimitUpdates = (
   entitlementOverrides?: Record<string, unknown> | null,
 ): AccountLimitUpdates => {
   const entitlements = getPlanTypeEntitlements(planType)
+  const websiteOverride = getNumericLimitOverride(
+    entitlementOverrides,
+    'websites',
+  )
+  const apiRateLimitOverride = getNumericLimitOverride(
+    entitlementOverrides,
+    'apiRateLimitPerHour',
+  )
   const maxProjects =
-    typeof entitlements.websites === 'number'
+    websiteOverride ??
+    (typeof entitlements.websites === 'number'
       ? entitlements.websites
-      : getNumericLimitOverride(entitlementOverrides, 'websites')
+      : undefined)
   const maxApiKeyRequestsPerHour =
-    typeof entitlements.apiRateLimitPerHour === 'number'
+    apiRateLimitOverride ??
+    (typeof entitlements.apiRateLimitPerHour === 'number'
       ? entitlements.apiRateLimitPerHour
-      : getNumericLimitOverride(entitlementOverrides, 'apiRateLimitPerHour')
+      : undefined)
   const updates: AccountLimitUpdates = {}
 
   if (typeof maxProjects === 'number') {

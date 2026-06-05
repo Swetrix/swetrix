@@ -255,6 +255,8 @@ swetrix.init("YOUR_PROJECT_ID", {
 
 const replay = await swetrix.startSessionReplay({
   privacy: "total",
+  maskAllText: true,
+  maxBytesPerChunk: 512 * 1024,
 });
 
 await replay.stop();
@@ -271,6 +273,8 @@ init("YOUR_PROJECT_ID", {
 
 const replay = await startSessionReplay({
   privacy: "total",
+  maskAllText: true,
+  maxBytesPerChunk: 512 * 1024,
 });
 ```
 
@@ -279,9 +283,42 @@ For npm installs, Swetrix dynamically imports the installed `rrweb` package only
 | Name              | Description                                                                                                                                                                                                                                            | Default value |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
 | privacy           | Controls how much page content is masked. Use `total` to mask all text and inputs and block media/canvas content, `normal` to mask all inputs, or `none` to only force password inputs to stay masked unless you add your own `rrweb` masking options. | `total`       |
+| maskAllText       | Masks all non-input text with asterisks. Defaults to `true` when `privacy` is `total`, and `false` for `normal` or `none`.                                                                                                                             | privacy-based |
 | rrweb             | Advanced recorder options passed to `rrweb.record()`. If you provide an `emit` callback, Swetrix will call it and still upload replay events.                                                                                                          | `undefined`   |
 | flushIntervalMs   | How often replay events are uploaded while recording.                                                                                                                                                                                                  | `5000`        |
 | maxEventsPerChunk | The maximum number of replay events to batch before Swetrix uploads a chunk immediately.                                                                                                                                                               | `100`         |
+| maxBytesPerChunk  | The approximate maximum byte size to buffer before Swetrix uploads a chunk immediately.                                                                                                                                                                | `524288`      |
+| maxBytesPerEvent  | Drops a single replay event if it is larger than this many bytes. This protects the visitor's browser and your replay storage from unusually large snapshots.                                                                                          | `5242880`     |
+| recordIframes     | Allows iframe elements to be captured. Iframes are blocked by default to reduce replay size and avoid recording embedded third-party content.                                                                                                          | `false`       |
+
+To mask text while keeping media less restricted than `total` privacy, combine `normal` privacy with `maskAllText`:
+
+```javascript
+await swetrix.startSessionReplay({
+  privacy: "normal",
+  maskAllText: true,
+});
+```
+
+By default, iframe elements are blocked from replay snapshots. If you own the iframe content and need it in the replay, opt in explicitly:
+
+```javascript
+await swetrix.startSessionReplay({
+  privacy: "normal",
+  recordIframes: true,
+});
+```
+
+Cross-origin iframe recording also requires rrweb's cross-origin iframe support and should only be enabled for domains you control:
+
+```javascript
+await swetrix.startSessionReplay({
+  recordIframes: true,
+  rrweb: {
+    recordCrossOriginIframes: true,
+  },
+});
+```
 
 The function returns a `Promise` with controls for the active replay:
 

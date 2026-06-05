@@ -27,12 +27,69 @@ swetrix.init("YOUR_PROJECT_ID", {
 
 await swetrix.startSessionReplay({
   privacy: "total",
+  maskAllText: true,
+  maxBytesPerChunk: 512 * 1024,
 });
 ```
 
 The optional `preloadSessionReplay: true` setting preloads the replay recorder. Recording still begins only after `startSessionReplay()` is called.
 
 See the [tracking script reference](/swetrix-js-reference#startsessionreplay) for all privacy modes, recorder options, and code examples.
+
+To mask all text while using the less restrictive `normal` privacy mode, set `maskAllText: true`:
+
+```javascript
+await swetrix.startSessionReplay({
+  privacy: "normal",
+  maskAllText: true,
+});
+```
+
+## Replay size controls
+
+Swetrix keeps replay recordings lighter by default:
+
+- Mousemove and scroll events are sampled before upload.
+- Script tags, comments, and noisy metadata are removed from DOM snapshots where possible.
+- Media, canvas, SVG, inline images, fonts, and iframe content are not recorded unless you opt into more capture.
+- Replay chunks are uploaded when they reach 100 events or roughly 512 KiB, whichever happens first.
+- A single replay event larger than 5 MiB is dropped before upload.
+
+You can tune the client-side chunk limits:
+
+```javascript
+await swetrix.startSessionReplay({
+  maxEventsPerChunk: 100,
+  maxBytesPerChunk: 512 * 1024,
+  maxBytesPerEvent: 5 * 1024 * 1024,
+});
+```
+
+## Recording iframes
+
+Iframe capture is disabled by default because embedded pages can be large, sensitive, or controlled by another vendor. This keeps replay storage predictable and avoids recording third-party content unintentionally.
+
+If the iframe is part of your own product and you need it in the replay, enable it explicitly:
+
+```javascript
+await swetrix.startSessionReplay({
+  privacy: "normal",
+  recordIframes: true,
+});
+```
+
+Cross-origin iframe recording also requires rrweb's cross-origin iframe support and should only be enabled for domains you control:
+
+```javascript
+await swetrix.startSessionReplay({
+  recordIframes: true,
+  rrweb: {
+    recordCrossOriginIframes: true,
+  },
+});
+```
+
+Third-party iframes that you do not control cannot be captured reliably because browsers restrict access to their contents.
 
 ## Replays list
 
@@ -89,6 +146,8 @@ Choose the privacy mode in code when you start the replay:
 - `total`: masks all text and inputs, and blocks media/canvas content. This is the default.
 - `normal`: masks all inputs.
 - `none`: only forces password inputs to stay masked unless you add your own recorder masking options.
+
+Set `maskAllText: true` to mask all non-input text with asterisks in any privacy mode. If you do not set it explicitly, Swetrix enables it for `total` privacy and leaves it disabled for `normal` and `none`.
 
 Configure replay retention in **Project Settings > Session replays**. Retention changes apply only to newly recorded replay chunks; existing replay chunks keep the expiry date they were recorded with.
 

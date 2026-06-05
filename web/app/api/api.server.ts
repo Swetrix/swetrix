@@ -2233,6 +2233,10 @@ export interface Project {
   isOwner: boolean
   isLocked: boolean
   featureAccess?: ProjectFeatureAccess
+  isDataExists?: boolean
+  isErrorDataExists?: boolean
+  isCaptchaDataExists?: boolean
+  isReplayDataExists?: boolean
   isCaptchaProject: boolean
   isCaptchaEnabled: boolean
   isAnalyticsProject: boolean

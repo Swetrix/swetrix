@@ -37,7 +37,7 @@ import {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Replayer } from 'dom-player'
+import { Replayer, ReplayerEvents } from 'dom-player'
 import type { eventWithTime } from 'dom-player'
 import './replayPlayer.css'
 import { toast } from 'sonner'
@@ -87,6 +87,7 @@ const DEFAULT_REPLAY_VIEWPORT = { width: 1280, height: 720 }
 const XHTML_XMLNS = 'http://www.w3.org/1999/xhtml'
 const SCREENSHOT_ASSET_WAIT_MS = 1000
 const EXPORT_POLL_INTERVAL_MS = 2000
+const PLAYER_READY_FALLBACK_MS = 8000
 
 type ReplayEvent = Omit<eventWithTime, 'data'> & {
   data?: Record<string, any>
@@ -860,7 +861,7 @@ const TimelineEventItem = ({
         <Button
           variant='ghost'
           focus={false}
-          onClick={() => onSeek(step.offset, false)}
+          onClick={() => onSeek(step.offset)}
           aria-label={`${step.label}, ${formatReplayTime(step.offset)}`}
           className={cn(
             'group w-full rounded-md px-2.5 py-2 text-left transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-950',
@@ -991,7 +992,7 @@ const PageflowMarkerButton = ({
           }}
           onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
             event.stopPropagation()
-            onSeek(marker.offset, false)
+            onSeek(marker.offset)
           }}
           className='group pointer-events-auto absolute top-1/2 h-5 w-4 -translate-x-1/2 -translate-y-1/2 justify-center border-transparent bg-transparent p-0 text-slate-100 hover:border-transparent hover:bg-transparent focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-0 focus-visible:outline-none dark:text-slate-100 dark:hover:border-transparent dark:hover:bg-transparent'
           style={{ left: `${marker.percent}%` }}
@@ -1043,6 +1044,7 @@ const SessionReplayModal = ({
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isPlayerReady, setIsPlayerReady] = useState(false)
   const [speed, setSpeed] = useState(1)
   const [showTimeline, setShowTimeline] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -1150,7 +1152,9 @@ const SessionReplayModal = ({
   }, [language, replayStartDateTimestamp, timeFormat, timezone])
   const shouldShowPreview =
     Boolean(hoverPreview) && hasEvents && !error && duration > 0
-  const canControlReplay = hasEvents && !error && duration > 0
+  const shouldShowReplayLoading =
+    isPreparing || isLoading || (hasEvents && !error && !isPlayerReady)
+  const canControlReplay = hasEvents && !error && duration > 0 && isPlayerReady
   const isReplayExporting =
     isExportStarting ||
     exportStatus?.status === 'queued' ||
@@ -1160,11 +1164,12 @@ const SessionReplayModal = ({
     Math.min(100, Math.round(exportStatus?.progress || 0)),
   )
   const shouldShowControls =
-    !isPlaying ||
-    isPlayerHovered ||
-    isControlsFocused ||
-    settingsOpen ||
-    !canControlReplay
+    !shouldShowReplayLoading &&
+    (!isPlaying ||
+      isPlayerHovered ||
+      isControlsFocused ||
+      settingsOpen ||
+      !canControlReplay)
   const speedLabel =
     speed === 1 ? t('project.sessionReplay.normalSpeed') : `${speed}×`
   const selectedReplayId = replayId || replay?.replayId
@@ -1225,6 +1230,7 @@ const SessionReplayModal = ({
     setDuration(0)
     setCurrentTime(0)
     setIsPlaying(false)
+    setIsPlayerReady(false)
     setHoverPreview(null)
     setIsPlayerHovered(false)
     setIsControlsFocused(false)
@@ -1262,14 +1268,32 @@ const SessionReplayModal = ({
     const root = playerRoot.current
     root.innerHTML = ''
     setIsPlaying(false)
+    setIsPlayerReady(false)
     setCurrentTime(0)
+    let instance: Replayer | null = null
+    let readyFallback: number | null = null
+    let readyRaf: number | null = null
+
+    const markPlayerReady = () => {
+      if (readyFallback) {
+        window.clearTimeout(readyFallback)
+        readyFallback = null
+      }
+
+      if (readyRaf) return
+      readyRaf = window.requestAnimationFrame(() => {
+        readyRaf = null
+        setIsPlayerReady(true)
+      })
+    }
 
     try {
-      const instance = new Replayer(events as eventWithTime[], {
+      instance = new Replayer(events as eventWithTime[], {
         root,
         speed: speedRef.current,
         insertStyleRules: ['html, body { background-color: #fff; }'],
       })
+      instance.on(ReplayerEvents.FullsnapshotRebuilded, markPlayerReady)
       replayer.current = instance
       const metadata = instance.getMetaData()
       const fallbackDuration =
@@ -1277,6 +1301,15 @@ const SessionReplayModal = ({
           ? getTimestamp(events[events.length - 1]) - getTimestamp(events[0])
           : 0
       setDuration(Math.max(0, metadata.totalTime || fallbackDuration))
+
+      if (events.some((event) => event.type === EVENT_FULL_SNAPSHOT)) {
+        readyFallback = window.setTimeout(
+          markPlayerReady,
+          PLAYER_READY_FALLBACK_MS,
+        )
+      } else {
+        markPlayerReady()
+      }
     } catch (reason) {
       setError(
         reason instanceof Error
@@ -1286,8 +1319,11 @@ const SessionReplayModal = ({
     }
 
     return () => {
-      replayer.current?.pause()
-      replayer.current = null
+      if (readyFallback) window.clearTimeout(readyFallback)
+      if (readyRaf) window.cancelAnimationFrame(readyRaf)
+      instance?.off(ReplayerEvents.FullsnapshotRebuilded, markPlayerReady)
+      instance?.pause()
+      if (replayer.current === instance) replayer.current = null
       root.innerHTML = ''
     }
   }, [events, hasEvents, isOpen, t])
@@ -1911,9 +1947,16 @@ const SessionReplayModal = ({
                 setHoverPreview(null)
               }}
             >
-              {isPreparing || isLoading ? (
-                <div className='absolute inset-0 z-30 flex items-center justify-center bg-black/70'>
-                  <Loader />
+              {shouldShowReplayLoading ? (
+                <div className='absolute inset-0 z-40 flex items-center justify-center bg-black/80 px-6 text-center'>
+                  <Loader
+                    className='flex-col gap-3 pt-0! text-slate-100'
+                    label={t('project.sessionReplay.loading')}
+                    labelClassName='text-sm font-medium text-slate-100'
+                    showLabel
+                    spinnerAlwaysLight
+                    spinnerClassName='size-5'
+                  />
                 </div>
               ) : null}
               {!isPreparing && error ? (
@@ -2101,7 +2144,7 @@ const SessionReplayModal = ({
                         step={250}
                         value={Math.min(currentTime, duration)}
                         onChange={(event) =>
-                          seekTo(Number(event.currentTarget.value), false)
+                          seekTo(Number(event.currentTarget.value))
                         }
                         disabled={!canControlReplay}
                         className='replay-scrubber absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent'

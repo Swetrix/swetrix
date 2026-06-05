@@ -379,7 +379,10 @@ const ReplaysViewInner = ({
       ) : null}
       {replaysLoading && _isEmpty(replays) ? <LoaderView /> : null}
       {!replaysLoading && _isEmpty(replays) && !hasShownContentRef.current ? (
-        <NoReplays filters={filters} />
+        <NoReplays
+          filters={filters}
+          hasReplayData={Boolean(project?.isReplayDataExists)}
+        />
       ) : null}
       <Replays
         replays={replays}

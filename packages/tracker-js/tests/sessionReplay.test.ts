@@ -167,6 +167,78 @@ describe('Session replay tracking', () => {
     expect(stopRecording).toHaveBeenCalledTimes(1)
   })
 
+  test('uses backend replay id and chunk index across page loads without browser storage', async () => {
+    const replayId = 'server-replay-id'
+    const setItemSpy = jest.spyOn(Storage.prototype, 'setItem')
+    const getItemSpy = jest.spyOn(Storage.prototype, 'getItem')
+    let startCount = 0
+
+    fetchMock.mockImplementation((url) => {
+      if (String(url).includes('/session-replay/start')) {
+        const nextChunkIndex = startCount === 0 ? 0 : 1200
+        startCount += 1
+
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ replayId, nextChunkIndex }),
+        })
+      }
+
+      return Promise.resolve({ ok: true })
+    })
+
+    const { recordOptions } = usePackageRrweb()
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const firstActions = await startSessionReplay({ flushIntervalMs: 60_000 })
+
+    recordOptions().emit({ type: 2, timestamp: 100 })
+    await firstActions.flush()
+
+    const firstChunkCall = fetchMock.mock.calls.find(([url]) =>
+      String(url).includes('/session-replay/chunk'),
+    )
+    const firstChunkBody = JSON.parse(firstChunkCall![1].body as string)
+    expect(firstChunkBody).toEqual(
+      expect.objectContaining({
+        replayId,
+        chunkIndex: 0,
+      }),
+    )
+
+    const secondModule = await loadTracker()
+    secondModule.init(PROJECT_ID, { devMode: true })
+    const secondActions = await secondModule.startSessionReplay({
+      flushIntervalMs: 60_000,
+    })
+    const startCalls = fetchMock.mock.calls.filter(([url]) =>
+      String(url).includes('/session-replay/start'),
+    )
+    expect(startCalls).toHaveLength(2)
+
+    recordOptions().emit({ type: 2, timestamp: 200 })
+    await secondActions.flush()
+
+    const chunkCalls = fetchMock.mock.calls.filter(([url]) =>
+      String(url).includes('/session-replay/chunk'),
+    )
+    const secondChunkBody = JSON.parse(chunkCalls[1][1].body as string)
+    expect(secondChunkBody).toEqual(
+      expect.objectContaining({
+        replayId,
+        chunkIndex: 1200,
+      }),
+    )
+    expect(setItemSpy).not.toHaveBeenCalled()
+    expect(getItemSpy).not.toHaveBeenCalled()
+
+    await secondActions.stop()
+    await firstActions.stop()
+    setItemSpy.mockRestore()
+    getItemSpy.mockRestore()
+  })
+
   test('sampleRate can skip recording before loading rrweb', async () => {
     const { init, startSessionReplay } = await loadTracker()
 
@@ -242,33 +314,113 @@ describe('Session replay tracking', () => {
       'total',
       { blockSelector: '.secret', emit: jest.fn() },
       emit,
+      false,
     )
     expect(total.maskAllInputs).toBe(true)
     expect(total.maskTextSelector).toBe('*')
     expect(total.blockSelector).toContain('.secret')
+    expect(total.blockSelector).toContain('iframe')
     expect(total.blockSelector).toContain('img')
     expect(total.recordCanvas).toBe(false)
+    expect(total.recordCrossOriginIframes).toBe(false)
+    expect(total.collectFonts).toBe(false)
     expect(total.inlineImages).toBe(false)
+    expect(total.sampling).toEqual({
+      mousemove: 50,
+      scroll: 150,
+      input: 'last',
+    })
+    expect(total.slimDOMOptions).toEqual(
+      expect.objectContaining({
+        script: true,
+        comment: true,
+        headMetaSocial: true,
+      }),
+    )
     expect(total.emit).toBe(emit)
 
     const normal = (lib as any).getSessionReplayRecordOptions(
       'normal',
       {},
       emit,
+      false,
     )
     expect(normal.maskAllInputs).toBe(true)
+    expect(normal.blockSelector).toBe('iframe')
     expect(normal.emit).toBe(emit)
 
     const freeLove = (lib as any).getSessionReplayRecordOptions(
       'none',
       { maskInputOptions: { email: false } },
       emit,
+      false,
     )
+    expect(freeLove.blockSelector).toBe('iframe')
     expect(freeLove.maskInputOptions).toEqual({
       email: false,
       password: true,
     })
     expect(freeLove.emit).toBe(emit)
+  })
+
+  test('recordIframes opt-in keeps iframe capture available', () => {
+    const lib = new Lib(PROJECT_ID, { devMode: true })
+    const emit = jest.fn()
+
+    const options = (lib as any).getSessionReplayRecordOptions(
+      'normal',
+      {
+        blockSelector: '.secret',
+        recordCrossOriginIframes: true,
+        sampling: { scroll: 500 },
+      },
+      emit,
+      true,
+    )
+
+    expect(options.blockSelector).toBe('.secret')
+    expect(options.recordCrossOriginIframes).toBe(true)
+    expect(options.sampling).toEqual({
+      mousemove: 50,
+      scroll: 500,
+      input: 'last',
+    })
+    expect(options.emit).toBe(emit)
+  })
+
+  test('maskAllText can be enabled outside total privacy', () => {
+    const lib = new Lib(PROJECT_ID, { devMode: true })
+    const emit = jest.fn()
+
+    const options = (lib as any).getSessionReplayRecordOptions(
+      'normal',
+      {},
+      emit,
+      false,
+      true,
+    )
+
+    expect(options.maskAllInputs).toBe(true)
+    expect(options.maskTextSelector).toBe('*')
+    expect(options.emit).toBe(emit)
+  })
+
+  test('maskAllText can be disabled for total privacy', () => {
+    const lib = new Lib(PROJECT_ID, { devMode: true })
+    const emit = jest.fn()
+
+    const options = (lib as any).getSessionReplayRecordOptions(
+      'total',
+      { maskTextSelector: '.masked' },
+      emit,
+      false,
+      false,
+    )
+
+    expect(options.maskAllInputs).toBe(true)
+    expect(options.maskTextSelector).toBe('.masked')
+    expect(options.blockSelector).toContain('img')
+    expect(options.emit).toBe(emit)
   })
 
   test('invalid privacy values fall back to total privacy', async () => {
@@ -288,6 +440,65 @@ describe('Session replay tracking', () => {
       expect.objectContaining({ privacy: 'total' }),
     )
     expect(recordOptions().maskTextSelector).toBe('*')
+
+    await actions.stop()
+  })
+
+  test('oversized replay events are dropped before upload', async () => {
+    const { recordOptions } = usePackageRrweb()
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const actions = await startSessionReplay({
+      flushIntervalMs: 60_000,
+      maxBytesPerEvent: 30,
+    })
+
+    recordOptions().emit({
+      type: 3,
+      timestamp: 400,
+      data: { text: 'x'.repeat(200) },
+    })
+    await actions.flush()
+
+    expect(
+      fetchMock.mock.calls.filter(([url]) =>
+        String(url).includes('/session-replay/chunk'),
+      ),
+    ).toHaveLength(0)
+
+    await actions.stop()
+  })
+
+  test('fractional byte limits below one fall back to defaults', async () => {
+    const { recordOptions } = usePackageRrweb()
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const actions = await startSessionReplay({
+      flushIntervalMs: 60_000,
+      maxBytesPerChunk: 0.5,
+      maxBytesPerEvent: 0.5,
+    })
+
+    recordOptions().emit({ type: 3, timestamp: 500 })
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(
+      fetchMock.mock.calls.filter(([url]) =>
+        String(url).includes('/session-replay/chunk'),
+      ),
+    ).toHaveLength(0)
+
+    await actions.flush()
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.swetrix.com/log/session-replay/chunk',
+      expect.objectContaining({
+        body: expect.stringContaining('"timestamp":500'),
+      }),
+    )
 
     await actions.stop()
   })

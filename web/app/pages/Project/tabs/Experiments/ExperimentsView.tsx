@@ -17,7 +17,7 @@ import {
   MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useFetcher, useLocation, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
@@ -27,6 +27,7 @@ import type {
   ExperimentResults as ExperimentResultsSummary,
   ExperimentVariantResult,
 } from '~/api/api.server'
+import { DOCS_URL } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import {
   useViewProjectContext,
@@ -52,6 +53,7 @@ import { LoaderView } from '../../View/components/LoaderView'
 
 dayjs.extend(relativeTime)
 
+const EXPERIMENTS_DOCS_URL = `${DOCS_URL}/analytics-dashboard/experiments`
 const DEFAULT_EXPERIMENTS_TAKE = 20
 
 type ExperimentStatus = 'draft' | 'running' | 'paused' | 'completed'
@@ -1247,7 +1249,21 @@ const ExperimentsView = ({
               colour='secondary'
               className='mx-auto mt-2 max-w-md whitespace-pre-wrap'
             >
-              {t('experiments.description')}
+              <Trans
+                t={t}
+                i18nKey='experiments.description'
+                components={{
+                  docs: (
+                    <a
+                      href={EXPERIMENTS_DOCS_URL}
+                      aria-label={t('ariaLabels.openExperimentsGuide')}
+                      className='font-medium underline decoration-dashed hover:decoration-solid'
+                      target='_blank'
+                      rel='noreferrer noopener'
+                    />
+                  ),
+                }}
+              />
             </Text>
             <div className='mt-6'>
               <Button size='lg' onClick={handleNewExperiment}>

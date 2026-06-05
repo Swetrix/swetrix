@@ -1,3 +1,3 @@
-export type PlanFeatureCode = 'featureFlags' | 'experiments'
+export type PlanFeatureCode = 'featureFlags' | 'experiments' | 'replays'
 
 export type ProjectFeatureAccess = Record<PlanFeatureCode, boolean>

@@ -205,9 +205,11 @@ If you use the npm package, rrweb is dynamically imported from your installed de
 ```javascript
 const replay = await startSessionReplay({
   privacy: 'total',
+  maskAllText: true,
   sampleRate: 0.25,
   maxDurationMs: 10 * 60 * 1000,
   idleTimeoutMs: 2 * 60 * 1000,
+  maxBytesPerChunk: 512 * 1024,
 })
 
 // Stop or flush manually when needed
@@ -218,12 +220,45 @@ await replay.stop()
 | Option | Description | Default |
 |---|---|---|
 | `privacy` | Privacy mode: `total`, `normal`, or `none`. | `'total'` |
+| `maskAllText` | Mask all non-input text with asterisks. Defaults to `true` when `privacy` is `total`, otherwise `false`. | privacy-based |
 | `sampleRate` | Fraction of sessions to record (`0` to `1`). | `1` |
 | `maxDurationMs` | Stop recording after this duration. | `undefined` |
 | `idleTimeoutMs` | Stop recording after this much visitor inactivity. | `undefined` |
 | `flushIntervalMs` | Upload buffered replay events at this interval. | `5000` |
 | `maxEventsPerChunk` | Upload once this many events are buffered. | `100` |
+| `maxBytesPerChunk` | Upload once buffered replay events reach this approximate byte size. | `524288` |
+| `maxBytesPerEvent` | Drop a single replay event if it is larger than this many bytes. | `5242880` |
+| `recordIframes` | Allow iframe elements to be captured. Iframes are blocked by default to reduce replay size and avoid recording embedded third-party content. | `false` |
 | `rrweb` | Additional rrweb record options. | `undefined` |
+
+To mask text while keeping media less restricted than `total` privacy, combine `normal` privacy with `maskAllText`:
+
+```javascript
+await startSessionReplay({
+  privacy: 'normal',
+  maskAllText: true,
+})
+```
+
+By default, Swetrix blocks iframe elements from replay snapshots. If you own the iframe content and need it in the replay, opt in explicitly:
+
+```javascript
+await startSessionReplay({
+  privacy: 'normal',
+  recordIframes: true,
+})
+```
+
+Cross-origin iframe recording also requires rrweb's cross-origin iframe support and should only be enabled for domains you control:
+
+```javascript
+await startSessionReplay({
+  recordIframes: true,
+  rrweb: {
+    recordCrossOriginIframes: true,
+  },
+})
+```
 
 ### Session & Profile IDs
 

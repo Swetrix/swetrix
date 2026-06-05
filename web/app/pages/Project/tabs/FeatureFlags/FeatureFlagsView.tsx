@@ -28,7 +28,7 @@ import {
   Suspense,
   use,
 } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import {
   useLocation,
@@ -50,6 +50,7 @@ import {
   useFeatureFlagStatsProxy,
   useFeatureFlagProfilesProxy,
 } from '~/hooks/useAnalyticsProxy'
+import { DOCS_URL } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import {
   useViewProjectContext,
@@ -80,6 +81,7 @@ import { LoaderView } from '../../View/components/LoaderView'
 
 dayjs.extend(relativeTime)
 
+const FEATURE_FLAGS_DOCS_URL = `${DOCS_URL}/analytics-dashboard/feature-flags`
 const DEFAULT_FEATURE_FLAGS_TAKE = 20
 const DEFAULT_FEATURE_FLAG_PROFILES_TAKE = 15
 
@@ -1236,7 +1238,21 @@ const FeatureFlagsViewInner = ({
               colour='secondary'
               className='mx-auto mt-2 max-w-md whitespace-pre-wrap'
             >
-              {t('featureFlags.description')}
+              <Trans
+                t={t}
+                i18nKey='featureFlags.description'
+                components={{
+                  docs: (
+                    <a
+                      href={FEATURE_FLAGS_DOCS_URL}
+                      aria-label={t('ariaLabels.openFeatureFlagsGuide')}
+                      className='font-medium underline decoration-dashed hover:decoration-solid'
+                      target='_blank'
+                      rel='noreferrer noopener'
+                    />
+                  ),
+                }}
+              />
             </Text>
             <div className='mt-6'>
               <Button size='lg' onClick={handleNewFlag}>

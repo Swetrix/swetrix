@@ -538,7 +538,7 @@ export const localisePath = (pathname: string, lang: string): string => {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 41
+export const I18N_CACHE_BREAKER = 43
 
 export const roles: Role[] = ['admin', 'viewer']
 

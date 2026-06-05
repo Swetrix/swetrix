@@ -111,7 +111,6 @@ export const EVENT_TIERS = {
 >
 
 export const EVENT_TIER_CODES = Object.keys(EVENT_TIERS) as EventTierCode[]
-export const SELF_SERVE_PLAN_TYPES: PlanTypeCode[] = ['standard', 'plus']
 const UNPAID_PLAN_CODES = new Set(['none', 'free', 'trial'])
 
 const isProduction = () =>
@@ -318,75 +317,6 @@ const PLAN_PRICES: PlanPriceCatalog = {
   enterprise: {},
 }
 
-export const PLAN_ENTITLEMENTS = {
-  standard: {
-    websites: 50,
-    teamMembers: 10,
-    organisations: 3,
-    apiRateLimitPerHour: 300,
-    sessionReplaysIncluded: 0,
-    featureKeys: [
-      'pricing.benefits.eventsAndGoals',
-      'pricing.benefits.funnels',
-      'pricing.benefits.sessionUserProfileAnalysis',
-      'pricing.benefits.errorTracking',
-      'pricing.benefits.advancedBotDetection',
-      'pricing.benefits.adBlockerBypass',
-      'pricing.benefits.emailReports',
-      'pricing.benefits.recaptchaAlternative',
-      'pricing.benefits.restfulApiSdks',
-      'pricing.benefits.googleAnalyticsImport',
-      'pricing.benefits.humanSupport',
-    ],
-  },
-  plus: {
-    websites: 100,
-    teamMembers: 25,
-    organisations: 10,
-    apiRateLimitPerHour: 6000,
-    sessionReplaysIncluded: 'byEventTier',
-    sessionReplayQuota: {
-      '100k': 5000,
-      '200k': 10000,
-      '500k': 25000,
-      '1m': 50000,
-      '2m': 100000,
-      '5m': 250000,
-      '10m': 500000,
-      '15m': 750000,
-      '20m': 1000000,
-      '30m': 1500000,
-      '40m': 2000000,
-      '50m': 2500000,
-    },
-    featureKeys: [
-      'pricing.benefits.sessionReplays',
-      'pricing.benefits.featureFlags',
-      'pricing.benefits.abTesting',
-      'pricing.benefits.twentyXHigherApiRateLimits',
-      'pricing.benefits.prioritySupport',
-    ],
-  },
-  enterprise: {
-    websites: 'custom',
-    teamMembers: 'custom',
-    organisations: 'custom',
-    apiRateLimitPerHour: 'custom',
-    sessionReplaysIncluded: 'custom',
-    featureKeys: [
-      'pricing.benefits.dedicatedAccountManager',
-      'pricing.benefits.customEventLimits',
-      'pricing.benefits.customFeatures',
-      'pricing.benefits.onPremise',
-      'pricing.benefits.dedicatedInstance',
-      'pricing.benefits.ssoSaml',
-      'pricing.benefits.personalOnboarding',
-      'pricing.benefits.manualInvoicing',
-      'pricing.benefits.sla',
-    ],
-  },
-} as const
-
 const LEGACY_PLAN_LIMITS = {
   none: {
     index: 0,
@@ -575,42 +505,3 @@ export const getPlanPrice = (
   currencyCode: CurrencyCode,
 ) =>
   PLAN_PRICES[planType]?.[eventTier]?.[billingInterval]?.[currencyCode] ?? null
-
-export const getPlanMonthlyPrice = (
-  planType: PlanTypeCode,
-  eventTier: EventTierCode,
-  billingInterval: BillingInterval,
-  currencyCode: CurrencyCode,
-) => {
-  const planPrice = getPlanPrice(
-    planType,
-    eventTier,
-    billingInterval,
-    currencyCode,
-  )
-
-  if (!planPrice) return null
-  return billingInterval === 'yearly'
-    ? Math.round((planPrice.amount / 12) * 100) / 100
-    : planPrice.amount
-}
-
-export const getIncludedSessionReplays = (
-  planType: PlanTypeCode,
-  eventTier: EventTierCode,
-) => {
-  const entitlements = PLAN_ENTITLEMENTS[planType]
-
-  if (typeof entitlements.sessionReplaysIncluded === 'number') {
-    return entitlements.sessionReplaysIncluded
-  }
-
-  if (
-    entitlements.sessionReplaysIncluded === 'byEventTier' &&
-    'sessionReplayQuota' in entitlements
-  ) {
-    return entitlements.sessionReplayQuota[eventTier] ?? 0
-  }
-
-  return entitlements.sessionReplaysIncluded
-}

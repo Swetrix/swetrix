@@ -6,12 +6,12 @@ import utc from 'dayjs/plugin/utc'
 import _map from 'lodash/map'
 import {
   CaretRightIcon,
+  ClockIcon,
   CursorClickIcon,
   FileTextIcon,
   ListBulletsIcon,
   TrashIcon,
   UserIcon,
-  VideoCameraIcon,
   WarningIcon,
 } from '@phosphor-icons/react'
 import { useMemo } from 'react'
@@ -131,6 +131,7 @@ const ReplayRow = ({
     if (!replay.replayDuration || replay.replayDuration <= 0) return null
     return getStringFromTime(getTimeFromSeconds(replay.replayDuration))
   }, [replay.replayDuration])
+  const replayDurationString = durationString || '0s'
   const dateLineString = useMemo(() => {
     if (!replayStartedAt) return durationString
 
@@ -255,8 +256,8 @@ const ReplayRow = ({
 
                   <div className='flex items-center gap-3'>
                     <Tooltip
-                      text={t('project.sessionReplay.eventsCount', {
-                        count: replay.eventCount,
+                      text={t('project.sessionReplay.duration', {
+                        duration: replayDurationString,
                       })}
                       tooltipNode={
                         <Text
@@ -266,8 +267,8 @@ const ReplayRow = ({
                           weight='medium'
                           className='flex items-center gap-1'
                         >
-                          <VideoCameraIcon className='size-3.5' />
-                          {replay.eventCount}
+                          <ClockIcon className='size-3.5' />
+                          {replayDurationString}
                         </Text>
                       }
                     />

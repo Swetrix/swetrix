@@ -266,6 +266,7 @@ export interface Project {
   isDataExists: boolean
   isErrorDataExists: boolean
   isCaptchaDataExists: boolean
+  isReplayDataExists: boolean
   featureAccess?: ProjectFeatureAccess
   sessionReplayRetentionDays?: number
   botsProtectionLevel: 'off' | 'basic' | 'strict'

@@ -22,6 +22,7 @@ import {
   type PlanTypeCode,
 } from '~/lib/pricing/catalog'
 import { useAuth } from '~/providers/AuthProvider'
+import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
@@ -447,6 +448,7 @@ export const PricingInternal = ({
       <NumberFlowGroup>
         <div className='mx-auto mt-6 grid max-w-7xl gap-4 px-4 sm:px-6 lg:grid-cols-3 lg:px-8'>
           {planCards.map((planType) => {
+            const isPlus = planType === 'plus'
             const isEnterprise = planType === 'enterprise'
             const inheritancePlanType =
               planType === 'plus'
@@ -499,10 +501,12 @@ export const PricingInternal = ({
               <div
                 key={planType}
                 className={cn(
-                  'flex min-h-[520px] flex-col rounded-2xl p-5 shadow-sm ring-1 dark:ring-white/10',
+                  'flex min-h-[520px] flex-col rounded-2xl p-5',
                   isEnterprise
-                    ? 'bg-slate-900 ring-slate-700'
-                    : 'bg-white ring-gray-200 dark:bg-slate-900',
+                    ? 'bg-slate-900 ring-1 ring-slate-700 dark:ring-white/10'
+                    : isPlus
+                      ? 'bg-white ring-2 ring-slate-900/60 dark:bg-slate-900 dark:ring-slate-200/60'
+                      : 'bg-white ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-white/10',
                 )}
               >
                 <div className='flex items-start justify-between gap-3'>
@@ -515,6 +519,14 @@ export const PricingInternal = ({
                   >
                     {getPlanName(planType, t)}
                   </Text>
+                  {isPlus ? (
+                    <Badge
+                      label={t('pricing.bestValue')}
+                      colour='slate'
+                      size='md'
+                      className='shrink-0'
+                    />
+                  ) : null}
                 </div>
 
                 <div className='mt-2 min-h-[78px]'>

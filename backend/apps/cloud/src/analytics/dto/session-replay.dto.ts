@@ -64,7 +64,7 @@ export class SessionReplayChunkDto extends SessionReplayStartDto {
   @Type(() => Number)
   @IsInt()
   @Min(0)
-  @Max(100000)
+  @Max(4294967295)
   chunkIndex: number
 
   @IsArray()

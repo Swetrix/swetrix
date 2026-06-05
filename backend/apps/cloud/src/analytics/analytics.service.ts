@@ -142,6 +142,7 @@ const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
 const SESSION_REPLAY_RETENTION_VALUES = [30, 90, 365, 1825] as const
 const MAX_SESSION_REPLAY_EVENTS_PER_CHUNK = 1000
+const MAX_SESSION_REPLAY_EVENT_BYTES = 5 * 1024 * 1024
 const MAX_SESSION_REPLAY_CHUNK_BYTES = 15 * 1024 * 1024
 const MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY = 1200
 const MAX_SESSION_REPLAY_EVENTS_PER_REPLAY = 100000
@@ -149,6 +150,44 @@ const MAX_SESSION_REPLAY_BYTES_PER_REPLAY = 150 * 1024 * 1024
 const MAX_SESSION_REPLAY_DURATION_MS = 30 * 60 * 1000
 const SESSION_REPLAY_CLEANUP_BATCH_SIZE = 500
 const SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY = 6
+const SESSION_REPLAY_CHUNK_INDEX_RANGE = MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY
+const RESERVE_REPLAY_START_LUA = `
+local activeReplayKey = KEYS[1]
+local proposedReplayId = ARGV[1]
+local chunkIndexRange = tonumber(ARGV[2])
+local ttl = tonumber(ARGV[3])
+local maxDurationMs = tonumber(ARGV[4])
+local time = redis.call("TIME")
+local currentTimeMs = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
+
+local replayId = redis.call("HGET", activeReplayKey, "replayId")
+local replayStartTs = tonumber(redis.call("HGET", activeReplayKey, "replayStartTs") or "")
+local nextChunkIndex = tonumber(redis.call("HGET", activeReplayKey, "nextChunkIndex") or "0")
+
+if
+  replayId == false or replayId == nil or replayId == "" or
+  replayStartTs == nil or replayStartTs + maxDurationMs <= currentTimeMs
+then
+  replayId = proposedReplayId
+  replayStartTs = currentTimeMs
+  nextChunkIndex = 0
+end
+
+local allocatedChunkIndex = nextChunkIndex
+redis.call(
+  "HSET",
+  activeReplayKey,
+  "replayId",
+  replayId,
+  "replayStartTs",
+  tostring(replayStartTs),
+  "nextChunkIndex",
+  allocatedChunkIndex + chunkIndexRange
+)
+redis.call("EXPIRE", activeReplayKey, ttl)
+
+return { replayId, tostring(allocatedChunkIndex) }
+`
 const RESERVE_REPLAY_USAGE_LUA = `
 local reservationKey = KEYS[1]
 local counterKey = KEYS[2]
@@ -1871,9 +1910,11 @@ export class AnalyticsService {
     await this.recordSessionActivity(psid, pid, resolvedProfileId)
 
     const retention = this.getSessionReplayRetention(project)
+    const replayStart = await this.reserveActiveReplayStart(pid, psid, replayId)
 
     return {
-      replayId,
+      replayId: replayStart.replayId,
+      nextChunkIndex: replayStart.nextChunkIndex,
       psid,
       privacy,
       ...retention,
@@ -1911,6 +1952,10 @@ export class AnalyticsService {
     return `session-replay:usage-count:${dayjs.utc().format('YYYY-MM')}:${accountId}`
   }
 
+  private getActiveReplayKey(pid: string, psid: string) {
+    return `session-replay:active:${pid}:${psid}`
+  }
+
   private getReplayUsageTtlSeconds() {
     return Math.max(60, dayjs.utc().endOf('month').diff(dayjs.utc(), 'second'))
   }
@@ -1930,6 +1975,37 @@ export class AnalyticsService {
       60,
       dayjs.utc(retention.expiresAt).diff(dayjs.utc(), 'second'),
     )
+  }
+
+  private getActiveReplayTtlSeconds() {
+    return Math.max(60, Math.ceil(MAX_SESSION_REPLAY_DURATION_MS / 1000))
+  }
+
+  private async reserveActiveReplayStart(
+    pid: string,
+    psid: string,
+    replayId: string,
+  ) {
+    const result = await redis.eval(
+      RESERVE_REPLAY_START_LUA,
+      1,
+      this.getActiveReplayKey(pid, psid),
+      replayId,
+      SESSION_REPLAY_CHUNK_INDEX_RANGE,
+      this.getActiveReplayTtlSeconds(),
+      MAX_SESSION_REPLAY_DURATION_MS,
+    )
+    const [resolvedReplayId, nextChunkIndex] = Array.isArray(result)
+      ? result
+      : [replayId, 0]
+
+    return {
+      replayId:
+        typeof resolvedReplayId === 'string' && resolvedReplayId
+          ? resolvedReplayId
+          : replayId,
+      nextChunkIndex: Number(nextChunkIndex) || 0,
+    }
   }
 
   private getReplayChunkTimestamps(events: Record<string, unknown>[]) {
@@ -2156,6 +2232,23 @@ export class AnalyticsService {
     }
   }
 
+  private validateSessionReplayEventSizes(events: Record<string, unknown>[]) {
+    const hasOversizedEvent = events.some((event) => {
+      try {
+        return (
+          Buffer.byteLength(JSON.stringify(event)) >
+          MAX_SESSION_REPLAY_EVENT_BYTES
+        )
+      } catch {
+        return true
+      }
+    })
+
+    if (hasOversizedEvent) {
+      throw new PayloadTooLargeException('Session replay event is too large')
+    }
+  }
+
   async storeSessionReplayChunk(
     project: Project,
     pid: string,
@@ -2175,6 +2268,8 @@ export class AnalyticsService {
     if (events.length > MAX_SESSION_REPLAY_EVENTS_PER_CHUNK) {
       throw new BadRequestException('Session replay chunk has too many events')
     }
+
+    this.validateSessionReplayEventSizes(events)
 
     const psid = await this.resolveReplaySession(pid, userAgent, ip)
     const retention = this.getSessionReplayRetention(project)
@@ -6604,31 +6699,34 @@ export class AnalyticsService {
       ),
       pageview_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
       event_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
       error_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'error' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
@@ -6640,7 +6738,7 @@ export class AnalyticsService {
           sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refunds
         FROM (
           SELECT
-            CAST(session_id, 'String') AS psidCasted,
+            ifNull(session_id, '') AS psidCasted,
             pid,
             argMax(type, synced_at) AS type,
             argMax(amount, synced_at) AS amount
@@ -6654,7 +6752,7 @@ export class AnalyticsService {
       ),
       session_duration_agg AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(psid) AS psidCasted,
           pid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
           argMax(profileId, lastSeen) as profileId
@@ -6664,7 +6762,7 @@ export class AnalyticsService {
       ),
       replay_summary AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           countDistinct(replayId) AS replayCount,
           min(firstEventTimestamp) AS firstReplayTimestamp,
@@ -6672,13 +6770,14 @@ export class AnalyticsService {
           max(expiresAt) AS replayExpiresAt
         FROM session_replay_chunks
         WHERE pid = {pid:FixedString(12)}
+          AND psid != 0
           AND expiresAt > now()
         GROUP BY psidCasted, pid
       ),
       first_session_per_profile AS (
         SELECT
           profileId,
-          argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
+          argMin(toString(psid), firstSeen) AS firstPsid
         FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
           AND profileId IS NOT NULL
@@ -6812,7 +6911,7 @@ export class AnalyticsService {
           max(chunkExpiresAt) AS replayExpiresAt
         FROM (
           SELECT
-            CAST(psid, 'String') AS psidCasted,
+            toString(ifNull(psid, 0)) AS psidCasted,
             pid,
             replayId,
             chunkIndex,
@@ -6824,6 +6923,7 @@ export class AnalyticsService {
             max(created) AS latestCreated
           FROM session_replay_chunks
           WHERE pid = {pid:FixedString(12)}
+            AND psid != 0
             AND expiresAt > now()
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           GROUP BY psidCasted, pid, replayId, chunkIndex
@@ -6832,31 +6932,34 @@ export class AnalyticsService {
       ),
       pageview_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
       event_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
       error_counts AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           count() as count
         FROM events
         WHERE pid = {pid:FixedString(12)} AND type = 'error' AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
@@ -6868,7 +6971,7 @@ export class AnalyticsService {
           sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refunds
         FROM (
           SELECT
-            CAST(session_id, 'String') AS psidCasted,
+            ifNull(session_id, '') AS psidCasted,
             pid,
             argMax(type, synced_at) AS type,
             argMax(amount, synced_at) AS amount
@@ -6882,7 +6985,7 @@ export class AnalyticsService {
       ),
       session_duration_agg AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(psid) AS psidCasted,
           pid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
           argMax(profileId, lastSeen) as profileId
@@ -6926,7 +7029,7 @@ export class AnalyticsService {
       first_session_per_profile AS (
         SELECT
           profileId,
-          argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
+          argMin(toString(psid), firstSeen) AS firstPsid
         FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
           AND profileId IS NOT NULL
@@ -7024,7 +7127,7 @@ export class AnalyticsService {
     if (customEVFilterApplied || sessionEvent === 'custom_event') {
       return `
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           profileId,
           cc,
@@ -7042,7 +7145,7 @@ export class AnalyticsService {
           ${primaryEventFilterQuery}
         UNION ALL
         SELECT
-          CAST(s.psid, 'String') AS psidCasted,
+          toString(s.psid) AS psidCasted,
           matching_custom_events.pid,
           matching_custom_events.profileId,
           matching_custom_events.cc,
@@ -7072,7 +7175,7 @@ export class AnalyticsService {
     if (sessionEvent === 'performance') {
       return `
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           profileId,
           cc,
@@ -7090,7 +7193,7 @@ export class AnalyticsService {
           ${primaryEventFilterQuery}
         UNION ALL
         SELECT
-          CAST(pageviews.psid, 'String') AS psidCasted,
+          toString(ifNull(pageviews.psid, 0)) AS psidCasted,
           performance_events.pid,
           pageviews.profileId,
           pageviews.cc,
@@ -7121,7 +7224,7 @@ export class AnalyticsService {
     if (sessionEvent !== 'traffic') {
       return `
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           profileId,
           cc,
@@ -7142,7 +7245,7 @@ export class AnalyticsService {
 
     return `
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          toString(ifNull(psid, 0)) AS psidCasted,
           pid,
           profileId,
           cc,
@@ -7154,6 +7257,7 @@ export class AnalyticsService {
           pid = {pid:FixedString(12)}
           AND type IN ('pageview', 'custom_event', 'error')
           AND psid IS NOT NULL
+          AND psid != 0
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${filtersQuery}
       `
