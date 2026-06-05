@@ -2260,7 +2260,7 @@ export class AnalyticsService {
             sum(uncompressedBytes) AS uncompressedBytes,
             min(firstEventTimestamp) AS firstEventTimestamp,
             max(lastEventTimestamp) AS lastEventTimestamp,
-            max(expiresAt) AS replayExpiresAt,
+            max(chunkExpiresAt) AS replayExpiresAt,
             max(latestCreated) AS lastCreated
           FROM (
             SELECT
@@ -2271,7 +2271,7 @@ export class AnalyticsService {
               argMax(uncompressedBytes, created) AS uncompressedBytes,
               argMax(firstEventTimestamp, created) AS firstEventTimestamp,
               argMax(lastEventTimestamp, created) AS lastEventTimestamp,
-              argMax(expiresAt, created) AS expiresAt,
+              argMax(expiresAt, created) AS chunkExpiresAt,
               max(created) AS latestCreated
             FROM session_replay_chunks
             WHERE pid = {pid:FixedString(12)}
@@ -2383,6 +2383,52 @@ export class AnalyticsService {
       replay,
       events,
     }
+  }
+
+  async deleteSessionReplay(pid: string, psid: string, replayId?: string) {
+    if (!this.sessionReplayStorage.isConfigured()) {
+      throw new InternalServerErrorException(
+        'Session replay storage is not configured',
+      )
+    }
+
+    const replay = await this.getSessionReplaySummary(pid, psid, replayId)
+    const selectedReplayId = replay?.replayId
+
+    if (!selectedReplayId) {
+      return { deleted: false, deletedChunks: 0 }
+    }
+
+    const { data: chunks } = await clickhouse
+      .query({
+        query: `
+          SELECT DISTINCT objectKey
+          FROM session_replay_chunks
+          WHERE pid = {pid:FixedString(12)}
+            AND psid = toUInt64OrNull({psid:String})
+            AND replayId = {replayId:String}
+        `,
+        query_params: { pid, psid, replayId: selectedReplayId },
+      })
+      .then((resultSet) => resultSet.json<{ objectKey: string }>())
+
+    const objectKeys = chunks.map((chunk) => chunk.objectKey).filter(Boolean)
+
+    await mapLimit(objectKeys, SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY, (key) =>
+      this.sessionReplayStorage.deleteObject(key),
+    )
+
+    await clickhouse.command({
+      query: `
+        ALTER TABLE session_replay_chunks
+        DELETE WHERE pid = {pid:FixedString(12)}
+          AND psid = toUInt64OrNull({psid:String})
+          AND replayId = {replayId:String}
+      `,
+      query_params: { pid, psid, replayId: selectedReplayId },
+    })
+
+    return { deleted: true, deletedChunks: objectKeys.length }
   }
 
   async cleanupExpiredSessionReplays(
@@ -6738,7 +6784,7 @@ export class AnalyticsService {
           max(lastEventTimestamp) AS lastEventTimestamp,
           min(latestCreated) AS replayCreatedAt,
           max(latestCreated) AS lastReplayCreatedAt,
-          max(expiresAt) AS replayExpiresAt
+          max(chunkExpiresAt) AS replayExpiresAt
         FROM (
           SELECT
             CAST(psid, 'String') AS psidCasted,
@@ -6749,7 +6795,7 @@ export class AnalyticsService {
             argMax(eventCount, created) AS eventCount,
             argMax(firstEventTimestamp, created) AS firstEventTimestamp,
             argMax(lastEventTimestamp, created) AS lastEventTimestamp,
-            argMax(expiresAt, created) AS expiresAt,
+            argMax(expiresAt, created) AS chunkExpiresAt,
             max(created) AS latestCreated
           FROM session_replay_chunks
           WHERE pid = {pid:FixedString(12)}

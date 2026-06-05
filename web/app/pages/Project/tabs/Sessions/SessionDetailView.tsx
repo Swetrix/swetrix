@@ -11,7 +11,7 @@ import {
   UserIcon,
   SignInIcon,
 } from '@phosphor-icons/react'
-import { lazy, Suspense, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 
@@ -164,6 +164,7 @@ export const SessionDetailView = ({
     null,
   )
   const [isReplayOpen, setIsReplayOpen] = useState(false)
+  const [isReplayDeleted, setIsReplayDeleted] = useState(false)
 
   const isTouchDevice = useMemo(() => {
     if (typeof window === 'undefined') return false
@@ -208,6 +209,10 @@ export const SessionDetailView = ({
   const resetZoom = () => {
     setZoomedTimeRange(null)
   }
+
+  useEffect(() => {
+    setIsReplayDeleted(false)
+  }, [activeSession?.replay?.replayId, sessionId])
 
   if (_isEmpty(activeSession) && sessionLoading) {
     return <Loader />
@@ -411,6 +416,9 @@ export const SessionDetailView = ({
       disableHoverableContent
     />
   )
+  const hasReplay = Boolean(
+    activeSession.replay?.hasReplay && sessionId && !isReplayDeleted,
+  )
 
   return (
     <div className='grid gap-x-3 gap-y-2 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start xl:grid-cols-[minmax(0,1fr)_390px]'>
@@ -604,7 +612,7 @@ export const SessionDetailView = ({
               </Link>
             ) : null}
 
-            {activeSession.replay?.hasReplay && sessionId ? (
+            {hasReplay ? (
               <Button
                 type='button'
                 className='mt-2 w-full justify-center gap-2'
@@ -708,7 +716,7 @@ export const SessionDetailView = ({
         </div>
       </aside>
 
-      {activeSession.replay?.hasReplay && sessionId ? (
+      {hasReplay && sessionId ? (
         <Suspense fallback={null}>
           <SessionReplayModal
             isOpen={isReplayOpen}
@@ -718,6 +726,10 @@ export const SessionDetailView = ({
             replay={activeSession.replay}
             pages={activeSession.pages || []}
             timeFormat={timeFormat}
+            onDeleted={() => {
+              setIsReplayDeleted(true)
+              setIsReplayOpen(false)
+            }}
           />
         </Suspense>
       ) : null}

@@ -4,6 +4,7 @@ import type {
   SessionsResponse,
   SessionReplaysResponse,
   SessionReplayResponse,
+  DeleteSessionReplayResponse,
   SessionReplayExportResponse,
   ErrorsResponse,
   FeatureFlagStats,
@@ -170,6 +171,39 @@ export function useSessionReplayProxy() {
   )
 
   return { fetchSessionReplay, data, error, isLoading }
+}
+
+export function useDeleteSessionReplayProxy() {
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const deleteSessionReplay = useCallback(
+    async (projectId: string, psid: string, replayId?: string) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const result = await postAnalytics<DeleteSessionReplayResponse>({
+          action: 'deleteSessionReplay',
+          projectId,
+          psid,
+          replayId,
+          params: {},
+        })
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        setError(message)
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
+  return { deleteSessionReplay, error, isLoading }
 }
 
 async function parseExportProxyResponse(

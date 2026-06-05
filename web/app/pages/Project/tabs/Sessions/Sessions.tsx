@@ -327,22 +327,6 @@ export const Session = ({
                   <div className='h-3 w-px bg-gray-200 dark:bg-slate-700' />
 
                   <div className='flex items-center gap-3'>
-                    <Tooltip
-                      text={t('dashboard.pageviews')}
-                      tooltipNode={
-                        <Text
-                          as='span'
-                          size='xs'
-                          colour='secondary'
-                          weight='medium'
-                          className='flex items-center gap-1'
-                        >
-                          <FileTextIcon className='size-3.5' />
-                          {session.pageviews}
-                        </Text>
-                      }
-                    />
-
                     {Boolean(session.hasReplay) && (
                       <Tooltip
                         text={
@@ -379,6 +363,22 @@ export const Session = ({
                         }
                       />
                     )}
+
+                    <Tooltip
+                      text={t('dashboard.pageviews')}
+                      tooltipNode={
+                        <Text
+                          as='span'
+                          size='xs'
+                          colour='secondary'
+                          weight='medium'
+                          className='flex items-center gap-1'
+                        >
+                          <FileTextIcon className='size-3.5' />
+                          {session.pageviews}
+                        </Text>
+                      }
+                    />
 
                     {session.customEvents > 0 && (
                       <Tooltip

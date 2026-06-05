@@ -12,13 +12,17 @@ import {
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData, useRevalidator, useSearchParams } from 'react-router'
+import { toast } from 'sonner'
 
 import type {
   SessionReplayListItem,
   SessionReplayMetadata,
   SessionReplaysResponse,
 } from '~/api/api.server'
-import { useSessionReplaysProxy } from '~/hooks/useAnalyticsProxy'
+import {
+  useDeleteSessionReplayProxy,
+  useSessionReplaysProxy,
+} from '~/hooks/useAnalyticsProxy'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
@@ -31,6 +35,7 @@ import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
 import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import LoadingBar from '~/ui/LoadingBar'
+import Modal from '~/ui/Modal'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
 
@@ -148,10 +153,13 @@ const ReplaysViewInner = ({
   const { t } = useTranslation('common')
   const [searchParams, setSearchParams] = useSearchParams()
   const replaysProxy = useSessionReplaysProxy()
+  const deleteReplayProxy = useDeleteSessionReplayProxy()
 
   const [replays, setReplays] = useState<SessionReplayListItem[]>(
     () => deferredData.replaysData?.replays || [],
   )
+  const [replayToDelete, setReplayToDelete] =
+    useState<SessionReplayListItem | null>(null)
   const [replaysSkip, setReplaysSkip] = useState(REPLAYS_TAKE)
   const [canLoadMoreReplays, setCanLoadMoreReplays] = useState(
     () => (deferredData.replaysData?.replays?.length || 0) >= REPLAYS_TAKE,
@@ -175,6 +183,9 @@ const ReplaysViewInner = ({
       ) || null
     )
   }, [activePSID, activeReplayId, replays])
+  const replayToDeleteKey = replayToDelete
+    ? `${replayToDelete.psid}:${replayToDelete.replayId}`
+    : null
 
   const replaysLoading =
     revalidator.state === 'loading' || replaysProxy.isLoading
@@ -290,6 +301,49 @@ const ReplaysViewInner = ({
     setSearchParams(params)
   }
 
+  const removeReplayFromList = (psid: string, replayId: string) => {
+    const removedReplayKey = `${psid}:${replayId}`
+
+    setReplays((prev) => {
+      const next = prev.filter(
+        (replay) => `${replay.psid}:${replay.replayId}` !== removedReplayKey,
+      )
+      hasShownContentRef.current = !_isEmpty(next)
+      return next
+    })
+    setReplaysSkip((prev) => Math.max(0, prev - 1))
+  }
+
+  const deleteReplay = async () => {
+    if (!replayToDelete || deleteReplayProxy.isLoading) return
+
+    const deletedReplay = replayToDelete
+    const result = await deleteReplayProxy.deleteSessionReplay(
+      id,
+      deletedReplay.psid,
+      deletedReplay.replayId,
+    )
+
+    if (!result) {
+      toast.error(
+        deleteReplayProxy.error || t('project.sessionReplay.deleteFailed'),
+      )
+      return
+    }
+
+    removeReplayFromList(deletedReplay.psid, deletedReplay.replayId)
+
+    if (
+      activePSID === deletedReplay.psid &&
+      activeReplayId === deletedReplay.replayId
+    ) {
+      closeReplay()
+    }
+
+    setReplayToDelete(null)
+    toast.success(t('project.sessionReplay.deleted'))
+  }
+
   if (error && !replaysLoading) {
     return (
       <StatusPage
@@ -327,6 +381,10 @@ const ReplaysViewInner = ({
         timeFormat={timeFormat}
         timezone={timezone}
         currency={project?.revenueCurrency}
+        onDeleteReplay={setReplayToDelete}
+        deletingReplayKey={
+          deleteReplayProxy.isLoading ? replayToDeleteKey : null
+        }
       />
       <InfiniteScrollTrigger
         hasMore={canLoadMoreReplays}
@@ -346,9 +404,30 @@ const ReplaysViewInner = ({
             replay={getReplayMetadata(activeReplay, activeReplayId)}
             replayId={activeReplayId}
             timeFormat={timeFormat}
+            onDeleted={(deletedReplayId) => {
+              if (deletedReplayId) {
+                removeReplayFromList(activePSID, deletedReplayId)
+              }
+            }}
           />
         </Suspense>
       ) : null}
+      <Modal
+        type='warning'
+        title={t('project.sessionReplay.deleteConfirmTitle')}
+        message={t('project.sessionReplay.deleteConfirmMessage')}
+        isOpened={Boolean(replayToDelete)}
+        onClose={() => {
+          if (!deleteReplayProxy.isLoading) {
+            setReplayToDelete(null)
+          }
+        }}
+        onSubmit={deleteReplay}
+        closeText={t('common.cancel')}
+        submitText={t('common.delete')}
+        submitType='danger'
+        isLoading={deleteReplayProxy.isLoading}
+      />
     </>
   )
 }

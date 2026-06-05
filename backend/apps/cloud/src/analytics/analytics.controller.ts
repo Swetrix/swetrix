@@ -19,6 +19,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Headers,
   BadRequestException,
   InternalServerErrorException,
@@ -2845,6 +2846,25 @@ export class AnalyticsController {
     )
 
     return this.analyticsService.getSessionReplay(pid, psid, replayId)
+  }
+
+  @Delete('session-replay')
+  @Auth(true, true)
+  async deleteSessionReplay(
+    @Query() data: GetSessionReplayDto,
+    @CurrentUserId() uid: string,
+  ) {
+    const { pid, psid, replayId } = data
+
+    await this.analyticsService.checkManageAccess(pid, uid)
+    await this.analyticsService.checkBillingAccess(pid)
+
+    this.logger.log(
+      `pid: ${pid}, psid: ${psid}, replayId: ${replayId || 'latest'}`,
+      'DELETE /analytics/session-replay',
+    )
+
+    return this.analyticsService.deleteSessionReplay(pid, psid, replayId)
   }
 
   @Post('session-replay/export')

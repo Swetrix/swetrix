@@ -19,6 +19,7 @@ import {
   PauseIcon,
   PlayIcon,
   TextTIcon,
+  TrashIcon,
   WarningOctagonIcon,
   XIcon,
 } from '@phosphor-icons/react'
@@ -47,12 +48,14 @@ import type {
   SessionReplayResponse,
 } from '~/api/api.server'
 import {
+  useDeleteSessionReplayProxy,
   useSessionReplayExportProxy,
   useSessionReplayProxy,
 } from '~/hooks/useAnalyticsProxy'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
 import { Switch } from '~/ui/Switch'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
@@ -141,6 +144,7 @@ interface SessionReplayModalProps {
   replayId?: string
   pages?: PageflowEvent[]
   timeFormat: '12-hour' | '24-hour'
+  onDeleted?: (replayId?: string) => void
 }
 
 const getTimestamp = (event?: ReplayEvent) =>
@@ -1016,6 +1020,7 @@ const SessionReplayModal = ({
   replayId,
   pages = [],
   timeFormat,
+  onDeleted,
 }: SessionReplayModalProps) => {
   const {
     t,
@@ -1023,6 +1028,7 @@ const SessionReplayModal = ({
   } = useTranslation('common')
   const { timezone } = useViewProjectContext()
   const { fetchSessionReplay, isLoading } = useSessionReplayProxy()
+  const deleteReplayProxy = useDeleteSessionReplayProxy()
   const {
     startSessionReplayExport,
     getSessionReplayExportStatus,
@@ -1044,6 +1050,7 @@ const SessionReplayModal = ({
   const [isPlayerHovered, setIsPlayerHovered] = useState(false)
   const [isControlsFocused, setIsControlsFocused] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
   const [settingsView, setSettingsView] = useState<'main' | 'speed'>('main')
   const [bezel, setBezel] = useState<{
     kind: 'play' | 'pause'
@@ -1813,6 +1820,28 @@ const SessionReplayModal = ({
     onClose()
   }
 
+  const deleteReplay = async () => {
+    if (!selectedReplayId || deleteReplayProxy.isLoading) return
+
+    const result = await deleteReplayProxy.deleteSessionReplay(
+      projectId,
+      psid,
+      selectedReplayId,
+    )
+
+    if (!result) {
+      toast.error(
+        deleteReplayProxy.error || t('project.sessionReplay.deleteFailed'),
+      )
+      return
+    }
+
+    setIsDeleteConfirmOpen(false)
+    toast.success(t('project.sessionReplay.deleted'))
+    onDeleted?.(selectedReplayId)
+    close()
+  }
+
   return (
     <Dialog className='relative z-50' open={isOpen} onClose={close}>
       <DialogBackdrop
@@ -2280,6 +2309,41 @@ const SessionReplayModal = ({
                                     </Text>
                                   ) : null}
                                 </Button>
+
+                                <Button
+                                  variant='ghost'
+                                  focus={false}
+                                  role='menuitem'
+                                  tabIndex={
+                                    selectedReplayId &&
+                                    !deleteReplayProxy.isLoading
+                                      ? 0
+                                      : -1
+                                  }
+                                  onClick={() => {
+                                    setSettingsOpen(false)
+                                    setIsDeleteConfirmOpen(true)
+                                  }}
+                                  disabled={
+                                    !selectedReplayId ||
+                                    deleteReplayProxy.isLoading
+                                  }
+                                  className={SETTINGS_ROW_CLASS}
+                                >
+                                  <TrashIcon
+                                    weight='duotone'
+                                    className='size-5 shrink-0 text-red-300'
+                                    aria-hidden
+                                  />
+                                  <Text
+                                    as='span'
+                                    size='sm'
+                                    colour='primary'
+                                    className='dark flex-1'
+                                  >
+                                    {t('project.sessionReplay.delete')}
+                                  </Text>
+                                </Button>
                               </div>
                             ) : (
                               <div className='flex flex-col'>
@@ -2440,6 +2504,23 @@ const SessionReplayModal = ({
           </div>
         </DialogPanel>
       </div>
+      <Modal
+        className='z-[60]'
+        type='warning'
+        title={t('project.sessionReplay.deleteConfirmTitle')}
+        message={t('project.sessionReplay.deleteConfirmMessage')}
+        isOpened={isDeleteConfirmOpen}
+        onClose={() => {
+          if (!deleteReplayProxy.isLoading) {
+            setIsDeleteConfirmOpen(false)
+          }
+        }}
+        onSubmit={deleteReplay}
+        closeText={t('common.cancel')}
+        submitText={t('common.delete')}
+        submitType='danger'
+        isLoading={deleteReplayProxy.isLoading}
+      />
     </Dialog>
   )
 }

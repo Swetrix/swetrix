@@ -1197,6 +1197,11 @@ export interface SessionReplayResponse {
   events: Record<string, unknown>[]
 }
 
+export interface DeleteSessionReplayResponse {
+  deleted: boolean
+  deletedChunks: number
+}
+
 type SessionReplayExportStatus =
   | 'queued'
   | 'processing'
@@ -1306,6 +1311,38 @@ export async function getSessionReplayServer(
     request,
     `log/session-replay?${queryParams.toString()}`,
     {
+      headers,
+      timeoutMs: 30000,
+    },
+  )
+}
+
+export async function deleteSessionReplayServer(
+  request: Request,
+  pid: string,
+  psid: string,
+  replayId?: string,
+  password?: string,
+): Promise<ServerFetchResult<DeleteSessionReplayResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    psid,
+  })
+
+  if (replayId) {
+    queryParams.append('replayId', replayId)
+  }
+
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<DeleteSessionReplayResponse>(
+    request,
+    `log/session-replay?${queryParams.toString()}`,
+    {
+      method: 'DELETE',
       headers,
       timeoutMs: 30000,
     },

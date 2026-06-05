@@ -9,6 +9,7 @@ import {
   CursorClickIcon,
   FileTextIcon,
   ListBulletsIcon,
+  TrashIcon,
   UserIcon,
   VideoCameraIcon,
   WarningIcon,
@@ -51,6 +52,8 @@ interface ReplaysProps {
   timeFormat: '12-hour' | '24-hour'
   timezone: string
   currency?: string
+  onDeleteReplay?: (replay: SessionReplayListItem) => void
+  deletingReplayKey?: string | null
 }
 
 interface ReplayRowProps extends Omit<ReplaysProps, 'replays'> {
@@ -83,6 +86,8 @@ const ReplayRow = ({
   timeFormat,
   timezone,
   currency,
+  onDeleteReplay,
+  deletingReplayKey,
 }: ReplayRowProps) => {
   const {
     t,
@@ -91,6 +96,8 @@ const ReplayRow = ({
   const location = useLocation()
   const { theme } = useTheme()
   const currencySymbol = getCurrencySymbol(currency)
+  const replayKey = `${replay.psid}:${replay.replayId}`
+  const isDeleting = deletingReplayKey === replayKey
 
   const displayName = useMemo(() => {
     if (!replay.profileId) {
@@ -408,6 +415,21 @@ const ReplayRow = ({
               }
             />
           ) : null}
+          {onDeleteReplay ? (
+            <Tooltip
+              text={t('project.sessionReplay.delete')}
+              tooltipNode={
+                <Button
+                  variant='icon'
+                  aria-label={t('project.sessionReplay.delete')}
+                  disabled={isDeleting}
+                  onClick={() => onDeleteReplay(replay)}
+                >
+                  <TrashIcon className='size-4' />
+                </Button>
+              }
+            />
+          ) : null}
         </div>
 
         <div className='flex shrink-0 items-center gap-1 pr-2 sm:hidden'>
@@ -418,6 +440,16 @@ const ReplayRow = ({
           >
             <ListBulletsIcon className='size-4' />
           </Button>
+          {onDeleteReplay ? (
+            <Button
+              variant='icon'
+              aria-label={t('project.sessionReplay.delete')}
+              disabled={isDeleting}
+              onClick={() => onDeleteReplay(replay)}
+            >
+              <TrashIcon className='size-4' />
+            </Button>
+          ) : null}
         </div>
       </div>
     </li>
@@ -429,6 +461,8 @@ export const Replays = ({
   timeFormat,
   timezone,
   currency,
+  onDeleteReplay,
+  deletingReplayKey,
 }: ReplaysProps) => {
   return (
     <ul className='flex flex-col'>
@@ -439,6 +473,8 @@ export const Replays = ({
           timeFormat={timeFormat}
           timezone={timezone}
           currency={currency}
+          onDeleteReplay={onDeleteReplay}
+          deletingReplayKey={deletingReplayKey}
         />
       ))}
     </ul>
