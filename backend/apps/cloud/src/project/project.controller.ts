@@ -1964,21 +1964,22 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
 
+    const [analyticsPIDs, errorPIDs, captchaPIDs, sessionReplayPIDs] =
+      await Promise.all([
+        this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+        this.projectService.getPIDsWhereErrorsDataExists([id]),
+        this.projectService.getPIDsWhereCaptchaDataExists([id]),
+        this.projectService.getPIDsWhereSessionReplayDataExists([id]),
+      ])
+
     const [
       isDataExists,
       isErrorDataExists,
       isCaptchaDataExists,
       isReplayDataExists,
-    ] = await Promise.all([
-      !_isEmpty(
-        await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
-      ),
-      !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
-      !_isEmpty(await this.projectService.getPIDsWhereCaptchaDataExists([id])),
-      !_isEmpty(
-        await this.projectService.getPIDsWhereSessionReplayDataExists([id]),
-      ),
-    ])
+    ] = [analyticsPIDs, errorPIDs, captchaPIDs, sessionReplayPIDs].map(
+      (pids) => !_isEmpty(pids),
+    )
 
     let role
     let isAccessConfirmed = true
