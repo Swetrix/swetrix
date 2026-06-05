@@ -179,7 +179,11 @@
     "openDataImportDocumentation": "Otwórz dokumentację importu danych",
     "openErrorTrackingDocumentation": "Otwórz dokumentację śledzenia błędów",
     "openErrorTrackingGuide": "Otwórz przewodnik śledzenia błędów",
+    "openExperimentsGuide": "Otwórz przewodnik po eksperymentach",
+    "openFeatureFlagsGuide": "Otwórz przewodnik po Feature flags",
     "openFeedbackForm": "Otwórz formularz opinii",
+    "openFunnelsGuide": "Otwórz przewodnik po lejkach",
+    "openGoalsGuide": "Otwórz przewodnik po celach",
     "openGoogleSearchConsole": "Otwórz Google Search Console",
     "openGoogleSearchConsoleSelfHostingGuide": "Otwórz przewodnik self-hostingu Google Search Console",
     "openHaveIBeenPwned": "Otwórz Have I Been Pwned",
@@ -188,6 +192,8 @@
     "openSwetrixDiscord": "Otwórz Discord Swetrix",
     "openSwetrixOnX": "Otwórz Swetrix na X",
     "openSwetrixWebsite": "Otwórz stronę Swetrix",
+    "openSessionReplaysGuide": "Otwórz przewodnik po nagraniach sesji",
+    "openSeoGuide": "Otwórz przewodnik po SEO",
     "openTimezoneSettings": "Otwórz ustawienia strefy czasowej",
     "openTrackingSetupDocumentation": "Otwórz dokumentację konfiguracji śledzenia",
     "openTroubleshootingGuide": "Otwórz poradnik rozwiązywania problemów",
@@ -759,7 +765,7 @@
         "desc": "Zapraszaj członków zespołu, przypisuj role i zarządzaj wspólnymi projektami w jednym obszarze roboczym organizacji."
       },
       "experiments": {
-        "title": "Eksperymenty i flagi funkcji",
+        "title": "Eksperymenty i Feature flags",
         "desc": "Przeprowadzaj testy A/B, aby sprawdzić, co działa najlepiej. Wdrażaj funkcje stopniowo dzięki wbudowanym flagom funkcji."
       },
       "captcha": {
@@ -1197,7 +1203,7 @@
     "goals": "Cele",
     "goalsDesc": "Cele konwersji pomagają śledzić ważne działania użytkowników na Twojej stronie. Zdefiniuj cele odsłon lub cele niestandardowych zdarzeń, aby mierzyć, ilu odwiedzających wykonuje określone działania.",
     "experiments": "Eksperymenty",
-    "featureFlags": "Flagi funkcji",
+    "featureFlags": "Feature flags",
     "featureFlagsDesc": "Flagi funkcji pozwalają włączać i wyłączać funkcje dla kohort lub poszczególnych osób. Przetestuj wpływ przed wdrożeniem dla wszystkich.",
     "askAi": "Zapytaj AI",
     "revenue": "Przychody",
@@ -1206,7 +1212,7 @@
     "webAnalytics": "Analityka WWW",
     "productAnalytics": "Analityka produktu",
     "revenueAnalytics": "Analityka przychodów",
-    "funnelsDesc": "Lejki to potężne narzędzie, które pozwala śledzić współczynnik konwersji użytkowników na kolejnych etapach.\nAnaliza dostarczana przez marketingowy lejek umożliwia odkrywanie potencjalnych problemów, ulepszanie strony oraz zwiększanie współczynnika konwersji.",
+    "funnelsDesc": "Lejki pomagają śledzić, jak odwiedzający przemieszczają się przez sekwencję stron i zdarzeń.\nUżyj ich, aby zauważyć porzucenia podczas rejestracji, kasy, onboardingu lub w dowolnym innym przepływie.\n<docs>Dowiedz się więcej w dokumentacji</docs>.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Sieć",
@@ -1376,7 +1382,7 @@
   },
   "goals": {
     "title": "Cele",
-    "description": "Cele konwersji pomagają śledzić ważne działania użytkowników na Twojej stronie. Zdefiniuj cele odsłon lub cele niestandardowych zdarzeń, aby mierzyć, ilu odwiedzających wykonuje określone działania.",
+    "description": "Cele konwersji pomagają śledzić ważne działania użytkowników w Twojej witrynie.\nZdefiniuj cele odsłon lub niestandardowe cele zdarzeń, aby zmierzyć, ilu odwiedzających wykonuje określone działania.\n<docs>Dowiedz się więcej w dokumentacji</docs>.",
     "add": "Dodaj cel",
     "addGoal": "Dodaj cel",
     "filterGoals": "Dodaj cel",
@@ -1423,8 +1429,8 @@
     "noChartData": "Brak danych na wykresie dla wybranego okresu"
   },
   "featureFlags": {
-    "title": "Flagi funkcji",
-    "description": "Flagi funkcji umożliwiają włączanie i wyłączanie funkcji dla kohort lub pojedynczych użytkowników. Przetestuj wpływ nowych funkcji przed wdrożeniem ich dla wszystkich.",
+    "title": "Feature flags",
+    "description": "Feature flags pozwalają włączać i wyłączać funkcje dla kohort lub pojedynczych osób.\nPrzetestuj wpływ nowych funkcji przed udostępnieniem ich wszystkim.\n<docs>Dowiedz się więcej w dokumentacji</docs>.",
     "add": "Dodaj flagę funkcji",
     "addFlag": "Dodaj flagę",
     "filterFlags": "Filtruj flagi",
@@ -1512,7 +1518,7 @@
   },
   "experiments": {
     "title": "Eksperymenty",
-    "description": "Uruchamiaj testy A/B, aby porównywać warianty i znaleźć najlepsze rozwiązanie. Twórz eksperymenty powiązane z celami i pozwól, aby statystyka bayesowska wyłoniła zwycięzcę.",
+    "description": "Przeprowadzaj testy A/B, aby porównywać warianty i znaleźć to, co działa najlepiej.\nTwórz eksperymenty powiązane z celami i pozwól, aby statystyka bayesowska wyłoniła zwycięzcę.\n<docs>Dowiedz się więcej w dokumentacji</docs>.",
     "create": "Utwórz eksperyment",
     "edit": "Edytuj eksperyment",
     "editDisabledRunning": "Wstrzymaj ten eksperyment, aby edytować ustawienia.",
@@ -1772,7 +1778,7 @@
       "title": "SEO",
       "desc": "Wydajność wyszukiwania dla {{url}}",
       "connectGSC": "Połącz z Google Search Console, aby zobaczyć dane o wydajności wyszukiwania",
-      "connectGSCDesc": "Połącz swoje konto Google Search Console, aby wyświetlać kliknięcia, wyświetlenia, zapytania oraz najpopularniejsze strony z wyszukiwarki Google.",
+      "connectGSCDesc": "Połącz swoje konto Google Search Console, aby wyświetlać kliknięcia, wyświetlenia, zapytania wyszukiwania i najpopularniejsze strony z wyszukiwarki Google.\n<docs>Dowiedz się więcej w dokumentacji</docs>.",
       "connectButton": "Połącz z Search Console",
       "searchEngines": "Wyszukiwarki",
       "aiReferrals": "Odesłania z AI",
@@ -1985,6 +1991,7 @@
       "expiresAt": "Wygasa {{date}}",
       "eventsCount": "{{count}} zdarzeń odtwarzania",
       "title": "Odtwarzanie sesji",
+      "loading": "Przygotowywanie nagrania...",
       "loadError": "Nie udało się załadować odtwarzania",
       "delete": "Usuń odtwarzanie",
       "deleted": "Usunięto odtwarzanie",
@@ -2068,15 +2075,22 @@
     },
     "featureAccess": {
       "featureFlags": {
-        "ownerTitle": "Flagi funkcji nie są dostępne w Twoim planie",
-        "viewerTitle": "Flagi funkcji nie są dostępne dla tego projektu"
+        "ownerTitle": "Feature flags nie są dostępne w Twoim planie",
+        "viewerTitle": "Feature flags nie są dostępne dla tego projektu",
+        "description": "Feature flags pozwalają wdrażać zmiany, docierać do odwiedzających i przełączać funkcje bez wdrażania nowego kodu. <docs>Dowiedz się więcej w dokumentacji</docs>."
       },
       "experiments": {
         "ownerTitle": "Eksperymenty nie są dostępne w Twoim planie",
-        "viewerTitle": "Eksperymenty nie są dostępne dla tego projektu"
+        "viewerTitle": "Eksperymenty nie są dostępne dla tego projektu",
+        "description": "Eksperymenty pozwalają przeprowadzać testy A/B, dzielić ruch między wariantami i mierzyć, która wersja działa lepiej. <docs>Dowiedz się więcej w dokumentacji</docs>."
+      },
+      "replays": {
+        "ownerTitle": "Nagrania sesji nie są dostępne w Twoim planie",
+        "viewerTitle": "Nagrania sesji nie są dostępne dla tego projektu",
+        "description": "Nagrania sesji rejestrują sesje przeglądarki, dzięki czemu możesz przeglądać ścieżki użytkowników, debugować problemy i zrozumieć przyczyny porzuceń. <docs>Dowiedz się więcej w dokumentacji</docs>."
       },
       "ownerDescription": "Ta funkcja jest dostępna w planach Plus i Enterprise. Zmień plan, aby z niej korzystać.",
-      "viewerDescription": "Właściciel projektu nie ma dostępu do tej funkcji w swoim obecnym planie. Skontaktuj się z nim w sprawie ulepszenia planu projektu.",
+      "viewerDescription": "Ta funkcja jest zawarta w planach Plus i Enterprise. Właściciel projektu musi zaktualizować plan projektu, aby ją włączyć.",
       "upgradePlan": "Ulepsz plan"
     },
     "waiting": {
@@ -2121,8 +2135,15 @@
     "noSessionsFound": "Nie znaleziono sesji w tym okresie.",
     "exploreSessions": "Wyświetl sesje",
     "noSessionsFiltersDesc": "Żadne sesje nie pasują do tego okresu i zestawu filtrów. Spróbuj zmienić zakres dat lub filtry.",
-    "noReplaysTitle": "Brak nagrań sesji",
-    "noReplaysContent": "Nie zarejestrowano żadnych nagrań sesji w tym okresie. Wybierz inny zakres dat.",
+    "noReplaysSetupTitle": "Brak nagrań sesji",
+    "noReplaysSetupDesc": "Nagrania sesji pozwalają oglądać zarejestrowane sesje przeglądarki z kontekstem analitycznym, który Swetrix już zebrał. Rozpoczynają nagrywanie dopiero po wywołaniu przez witrynę startSessionReplay().\n<howto>Dowiedz się, jak skonfigurować nagrania sesji</howto>.",
+    "noReplaysSetupSteps": {
+      "startRecorder": "Uruchom rejestrator z kodu swojej strony po zainicjowaniu Swetrix.",
+      "choosePrivacy": "Wybierz tryb prywatności przed nagrywaniem stron, które mogą zawierać wrażliwe dane.",
+      "reviewRecordings": "Nagrane sesje pojawią się tutaj dla wybranego zakresu dat."
+    },
+    "noReplaysTitle": "Brak nagrań dla tego okresu",
+    "noReplaysContent": "W wybranym okresie nie zarejestrowano żadnych nagrań sesji. Spróbuj wybrać inny zakres dat.",
     "noReplaysFiltersTitle": "Nie znaleziono powtórek",
     "noReplaysFiltersDesc": "Żadne powtórki nie pasują do tego okresu i zestawu filtrów. Spróbuj zmienić zakres dat lub filtry.",
     "noCaptchaEv": "Nie zarejestrowano żadnych zdarzeń CAPTCHA w tym okresie.\nJeśli jeszcze nie skonfigurowałeś CAPTCHA, zobacz <url>dokumentację</url>, aby dodać ją do swojej aplikacji.",
@@ -3135,6 +3156,7 @@
     "billedMonthly": "Rozliczane miesięcznie",
     "custom": "Niestandardowy",
     "customLimits": "Niestandardowe limity",
+    "bestValue": "Najlepsza oferta",
     "monthlyEvents": "Zdarzenia miesięcznie",
     "monthlyEventsTooltip": "Zdarzenia obejmują odsłony, zdarzenia niestandardowe, rozwiązania CAPTCHA oraz błędy.",
     "monthlyEventVolume": "Miesięczny wolumen zdarzeń",

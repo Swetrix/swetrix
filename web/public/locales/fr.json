@@ -179,7 +179,11 @@
     "openDataImportDocumentation": "Ouvrir la documentation d'importation de données",
     "openErrorTrackingDocumentation": "Ouvrir la documentation de suivi des erreurs",
     "openErrorTrackingGuide": "Ouvrir le guide de suivi des erreurs",
+    "openExperimentsGuide": "Ouvrir le guide des expérimentations",
+    "openFeatureFlagsGuide": "Ouvrir le guide des Feature flags",
     "openFeedbackForm": "Ouvrir le formulaire de commentaires",
+    "openFunnelsGuide": "Ouvrir le guide des entonnoirs",
+    "openGoalsGuide": "Ouvrir le guide des objectifs",
     "openGoogleSearchConsole": "Ouvrir Google Search Console",
     "openGoogleSearchConsoleSelfHostingGuide": "Ouvrir le guide d'auto-hébergement Google Search Console",
     "openHaveIBeenPwned": "Ouvrir Have I Been Pwned",
@@ -188,6 +192,8 @@
     "openSwetrixDiscord": "Ouvrir le Discord Swetrix",
     "openSwetrixOnX": "Ouvrir Swetrix sur X",
     "openSwetrixWebsite": "Ouvrir le site web de Swetrix",
+    "openSessionReplaysGuide": "Ouvrir le guide des replays de session",
+    "openSeoGuide": "Ouvrir le guide SEO",
     "openTimezoneSettings": "Ouvrir les paramètres de fuseau horaire",
     "openTrackingSetupDocumentation": "Ouvrir la documentation de configuration du suivi",
     "openTroubleshootingGuide": "Ouvrir le guide de dépannage",
@@ -759,7 +765,7 @@
         "desc": "Invitez des membres d'équipe, attribuez des rôles et gérez des projets partagés depuis un seul espace de travail d'organisation."
       },
       "experiments": {
-        "title": "Expérimentations et Feature Flags",
+        "title": "Expérimentations et Feature flags",
         "desc": "Lancez des tests A/B pour trouver ce qui fonctionne le mieux. Déployez des fonctionnalités progressivement avec des feature flags intégrés."
       },
       "captcha": {
@@ -1197,7 +1203,7 @@
     "goals": "Objectifs",
     "goalsDesc": "Les objectifs de conversion vous aident à suivre les actions importantes des utilisateurs sur votre site web. Définissez des objectifs de pages vues ou des objectifs d’événements personnalisés pour mesurer combien de visiteurs réalisent des actions spécifiques.",
     "experiments": "Expériences",
-    "featureFlags": "Drapeaux de fonctionnalités",
+    "featureFlags": "Feature flags",
     "featureFlagsDesc": "Les drapeaux de fonctionnalités vous permettent d’activer ou de désactiver des fonctionnalités pour des cohortes ou des individus. Testez l’impact avant de les déployer pour tout le monde.",
     "askAi": "Demander à l’IA",
     "revenue": "Revenus",
@@ -1206,7 +1212,7 @@
     "webAnalytics": "Analyse web",
     "productAnalytics": "Analyse produit",
     "revenueAnalytics": "Analyse des revenus",
-    "funnelsDesc": "Entonnoirs est un outil puissant qui vous permet de suivre le taux de conversion de vos utilisateurs à travers une série d’étapes.\nL’analyse fournie par l’entonnoir marketing vous permet de détecter d’éventuels problèmes, d’améliorer votre site Web et d’augmenter votre taux de conversion.",
+    "funnelsDesc": "Les entonnoirs vous aident à suivre comment les visiteurs naviguent à travers une séquence de pages et d'événements.\nUtilisez-les pour repérer les abandons lors de l'inscription, du paiement, de l'intégration ou de tout autre flux.\n<docs>En savoir plus dans la documentation</docs>.",
     "frontend": "Front-end",
     "backend": "Back-end",
     "network": "Réseau",
@@ -1376,7 +1382,7 @@
   },
   "goals": {
     "title": "Objectifs",
-    "description": "Les objectifs de conversion vous aident à suivre les actions importantes des utilisateurs sur votre site web. Définissez des objectifs de pages vues ou des objectifs d’événements personnalisés pour mesurer combien de visiteurs réalisent des actions spécifiques.",
+    "description": "Les objectifs de conversion vous aident à suivre les actions importantes des utilisateurs sur votre site web.\nDéfinissez des objectifs de pages vues ou des événements personnalisés pour mesurer combien de visiteurs effectuent des actions spécifiques.\n<docs>En savoir plus dans la documentation</docs>.",
     "add": "Ajouter un objectif",
     "addGoal": "Ajouter un objectif",
     "filterGoals": "Filtrer les objectifs",
@@ -1423,8 +1429,8 @@
     "noChartData": "Aucune donnée de graphique disponible pour la période sélectionnée"
   },
   "featureFlags": {
-    "title": "Drapeaux de fonctionnalités",
-    "description": "Les feature flags vous permettent d’activer ou de désactiver des fonctionnalités pour des cohortes ou des individus. Testez l’impact de nouvelles fonctionnalités avant de les déployer pour tout le monde.",
+    "title": "Feature flags",
+    "description": "Les feature flags vous permettent d'activer ou désactiver des fonctionnalités pour des cohortes ou des individus.\nTestez l'impact de nouvelles fonctionnalités avant de les déployer pour tout le monde.\n<docs>En savoir plus dans la documentation</docs>.",
     "add": "Ajouter un feature flag",
     "addFlag": "Ajouter un flag",
     "filterFlags": "Filtrer les flags",
@@ -1512,7 +1518,7 @@
   },
   "experiments": {
     "title": "Expériences",
-    "description": "Exécutez des tests A/B pour comparer des variantes et trouver ce qui fonctionne le mieux. Créez des expériences liées à des objectifs et laissez les statistiques bayésiennes déterminer le gagnant.",
+    "description": "Exécutez des tests A/B pour comparer des variantes et trouver ce qui fonctionne le mieux.\nCréez des expérimentations liées à des objectifs et laissez les statistiques bayésiennes déterminer le gagnant.\n<docs>En savoir plus dans la documentation</docs>.",
     "create": "Créer une expérience",
     "edit": "Modifier l’expérience",
     "editDisabledRunning": "Mettez cette expérience en pause pour modifier les paramètres.",
@@ -1772,7 +1778,7 @@
       "title": "SEO",
       "desc": "Performances de recherche pour {{url}}",
       "connectGSC": "Connectez Google Search Console pour voir les données de performances de recherche",
-      "connectGSCDesc": "Associez votre compte Google Search Console pour voir les clics, les impressions, les requêtes de recherche et les meilleures pages provenant de la recherche Google.",
+      "connectGSCDesc": "Liez votre compte Google Search Console pour voir les clics, impressions, requêtes de recherche et les meilleures pages depuis Google Search.\n<docs>En savoir plus dans la documentation</docs>.",
       "connectButton": "Connecter Search Console",
       "searchEngines": "Moteurs de recherche",
       "aiReferrals": "Référents IA",
@@ -1985,6 +1991,7 @@
       "expiresAt": "Expire le {{date}}",
       "eventsCount": "{{count}} événements de rediffusion",
       "title": "Rediffusion de session",
+      "loading": "Préparation du replay...",
       "loadError": "Impossible de charger la rediffusion",
       "delete": "Supprimer la rediffusion",
       "deleted": "Rediffusion supprimée",
@@ -2068,15 +2075,22 @@
     },
     "featureAccess": {
       "featureFlags": {
-        "ownerTitle": "Les Feature Flags ne sont pas disponibles avec votre forfait",
-        "viewerTitle": "Les Feature Flags ne sont pas disponibles pour ce projet"
+        "ownerTitle": "Les feature flags ne sont pas disponibles dans votre forfait",
+        "viewerTitle": "Les feature flags ne sont pas disponibles pour ce projet",
+        "description": "Les feature flags vous permettent de déployer des modifications, de cibler des visiteurs et d'activer des fonctionnalités sans déployer de nouveau code. <docs>En savoir plus dans la documentation</docs>."
       },
       "experiments": {
         "ownerTitle": "Les expériences ne sont pas disponibles avec votre forfait",
-        "viewerTitle": "Les expériences ne sont pas disponibles pour ce projet"
+        "viewerTitle": "Les expériences ne sont pas disponibles pour ce projet",
+        "description": "Les expérimentations vous permettent d'effectuer des tests A/B, de répartir le trafic entre les variantes et de mesurer quelle version est la plus performante. <docs>En savoir plus dans la documentation</docs>."
+      },
+      "replays": {
+        "ownerTitle": "Les replays de session ne sont pas disponibles dans votre forfait",
+        "viewerTitle": "Les replays de session ne sont pas disponibles pour ce projet",
+        "description": "Les replays de session enregistrent les sessions du navigateur pour que vous puissiez examiner les parcours utilisateurs, déboguer les problèmes et comprendre les abandons. <docs>En savoir plus dans la documentation</docs>."
       },
       "ownerDescription": "Cette fonctionnalité est incluse dans Plus et Enterprise. Mettez à niveau votre forfait pour l'utiliser dans ce projet.",
-      "viewerDescription": "Le propriétaire du projet n'a pas accès à cette fonctionnalité avec son forfait actuel. Contactez-le pour mettre à niveau le forfait du projet.",
+      "viewerDescription": "Cette fonctionnalité est incluse dans les forfaits Plus et Enterprise. Le propriétaire du projet doit passer à un forfait supérieur pour l'activer.",
       "upgradePlan": "Mettre à niveau le forfait"
     },
     "waiting": {
@@ -2121,8 +2135,15 @@
     "noSessionsFound": "Aucune session trouvée pour cette période.",
     "exploreSessions": "Voir les sessions",
     "noSessionsFiltersDesc": "Aucune session ne correspond à cette période et à ce jeu de filtres. Essayez de modifier la plage de dates ou les filtres.",
-    "noReplaysTitle": "Pas encore de rediffusions",
-    "noReplaysContent": "Aucune rediffusion de session n'a été enregistrée pour cette période. Essayez une autre plage de dates.",
+    "noReplaysSetupTitle": "Pas encore de replays de session",
+    "noReplaysSetupDesc": "Les replays de session vous permettent de regarder des sessions de navigateur enregistrées avec le contexte analytique déjà collecté par Swetrix. Ils ne commencent à enregistrer qu'une fois que votre site web appelle startSessionReplay().\n<howto>Découvrez comment configurer les replays de session</howto>.",
+    "noReplaysSetupSteps": {
+      "startRecorder": "Démarrez l'enregistreur depuis le code de votre site une fois Swetrix initialisé.",
+      "choosePrivacy": "Choisissez un mode de confidentialité avant d'enregistrer des pages pouvant contenir des données sensibles.",
+      "reviewRecordings": "Les sessions enregistrées apparaîtront ici pour la période sélectionnée."
+    },
+    "noReplaysTitle": "Aucune rediffusion pour cette période",
+    "noReplaysContent": "Aucune rediffusion de session n'a été enregistrée pour la période sélectionnée. Essayez une autre plage de dates.",
     "noReplaysFiltersTitle": "Aucun replay trouvé",
     "noReplaysFiltersDesc": "Aucun replay ne correspond à cette période et à cet ensemble de filtres. Essayez de modifier la plage de dates ou les filtres.",
     "noCaptchaEv": "Aucun événement CAPTCHA n'a été enregistré pour cette période.\nSi vous n'avez pas encore configuré le CAPTCHA, consultez la <url>documentation</url> pour l'ajouter à votre application.",
@@ -3135,6 +3156,7 @@
     "billedMonthly": "Facturation mensuelle",
     "custom": "Personnalisé",
     "customLimits": "Limites personnalisées",
+    "bestValue": "Meilleure offre",
     "monthlyEvents": "Événements mensuels",
     "monthlyEventsTooltip": "Les événements incluent les pages vues, les événements personnalisés, les résolutions de CAPTCHA et les événements d'erreur.",
     "monthlyEventVolume": "Volume d'événements mensuel",

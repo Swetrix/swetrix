@@ -179,7 +179,11 @@
     "openDataImportDocumentation": "Datenimport-Dokumentation öffnen",
     "openErrorTrackingDocumentation": "Error-Tracking-Dokumentation öffnen",
     "openErrorTrackingGuide": "Error-Tracking-Anleitung öffnen",
+    "openExperimentsGuide": "Experiments-Leitfaden öffnen",
+    "openFeatureFlagsGuide": "Feature-Flags-Leitfaden öffnen",
     "openFeedbackForm": "Feedback-Formular öffnen",
+    "openFunnelsGuide": "Funnels-Leitfaden öffnen",
+    "openGoalsGuide": "Goals-Leitfaden öffnen",
     "openGoogleSearchConsole": "Google Search Console öffnen",
     "openGoogleSearchConsoleSelfHostingGuide": "Self-Hosting-Anleitung für Google Search Console öffnen",
     "openHaveIBeenPwned": "Have I Been Pwned öffnen",
@@ -188,6 +192,8 @@
     "openSwetrixDiscord": "Swetrix Discord öffnen",
     "openSwetrixOnX": "Swetrix auf X öffnen",
     "openSwetrixWebsite": "Swetrix-Website öffnen",
+    "openSessionReplaysGuide": "Session-Replays-Leitfaden öffnen",
+    "openSeoGuide": "SEO-Leitfaden öffnen",
     "openTimezoneSettings": "Zeitzoneneinstellungen öffnen",
     "openTrackingSetupDocumentation": "Dokumentation zur Tracking-Einrichtung öffnen",
     "openTroubleshootingGuide": "Leitfaden zur Fehlerbehebung öffnen",
@@ -759,7 +765,7 @@
         "desc": "Laden Sie Teammitglieder ein, weisen Sie Rollen zu und verwalten Sie gemeinsame Projekte in einem Organisations-Arbeitsbereich."
       },
       "experiments": {
-        "title": "Experimente & Feature Flags",
+        "title": "Experiments & Feature Flags",
         "desc": "Führen Sie A/B-Tests durch, um herauszufinden, was am besten funktioniert. Führen Sie Funktionen schrittweise mit integrierten Feature Flags ein."
       },
       "captcha": {
@@ -1197,7 +1203,7 @@
     "goals": "Ziele",
     "goalsDesc": "Conversion-Ziele helfen dir, wichtige Nutzeraktionen auf deiner Website nachzuverfolgen. Definiere Seitenaufruf-Ziele oder benutzerdefinierte Ereignisziele, um zu messen, wie viele Besucher bestimmte Aktionen abschließen.",
     "experiments": "Experimente",
-    "featureFlags": "Feature-Flags",
+    "featureFlags": "Feature Flags",
     "featureFlagsDesc": "Mit Feature-Flags kannst du Funktionen für Kohorten oder einzelne Nutzer aktivieren oder deaktivieren. Teste die Auswirkungen, bevor du sie für alle ausrollst.",
     "askAi": "KI fragen",
     "revenue": "Umsatz",
@@ -1206,7 +1212,7 @@
     "webAnalytics": "Webanalyse",
     "productAnalytics": "Produktanalyse",
     "revenueAnalytics": "Umsatzanalyse",
-    "funnelsDesc": "Trichter ist ein leistungsfähiges Tool, mit dem Sie die Konversionsrate Ihrer Benutzer durch eine Reihe von Schritten verfolgen können.\nDie Analyse des Marketing-Trichters gibt Ihnen die Möglichkeit, potenzielle Probleme zu entdecken, Ihre Website zu verbessern und Ihre Konversionsrate zu erhöhen.",
+    "funnelsDesc": "Funnels helfen Ihnen dabei zu verfolgen, wie sich Besucher durch eine Sequenz von Seiten und Events bewegen.\nNutzen Sie sie, um Abbrüche bei Registrierungen, Bezahlvorgängen, beim Onboarding oder in jedem anderen Ablauf zu erkennen.\n<docs>Erfahren Sie mehr in der Dokumentation</docs>.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Netzwerk",
@@ -1376,7 +1382,7 @@
   },
   "goals": {
     "title": "Ziel hinzufügen",
-    "description": "Conversion-Ziele helfen dir, wichtige Nutzeraktionen auf deiner Website nachzuverfolgen. Definiere Seitenaufruf-Ziele oder benutzerdefinierte Ereignisziele, um zu messen, wie viele Besucher bestimmte Aktionen abschließen.",
+    "description": "Conversion-Ziele helfen Ihnen, wichtige Benutzeraktionen auf Ihrer Website zu verfolgen.\nDefinieren Sie Seitenaufruf-Ziele oder benutzerdefinierte Event-Ziele, um zu messen, wie viele Besucher bestimmte Aktionen abschließen.\n<docs>Erfahren Sie mehr in der Dokumentation</docs>.",
     "add": "Ziel hinzufügen",
     "addGoal": "Ziel hinzufügen",
     "filterGoals": "Ziele filtern",
@@ -1424,7 +1430,7 @@
   },
   "featureFlags": {
     "title": "Feature Flags",
-    "description": "Feature Flags ermöglichen es Ihnen, Funktionen für Kohorten oder einzelne Personen ein- und auszuschalten. Testen Sie die Auswirkungen neuer Funktionen, bevor Sie sie für alle ausrollen.",
+    "description": "Mit Feature Flags können Sie Funktionen für Kohorten oder Einzelpersonen umschalten.\nTesten Sie die Auswirkungen neuer Funktionen, bevor Sie sie für alle ausrollen.\n<docs>Erfahren Sie mehr in der Dokumentation</docs>.",
     "add": "Feature Flag hinzufügen",
     "addFlag": "Flag hinzufügen",
     "filterFlags": "Flags filtern",
@@ -1512,7 +1518,7 @@
   },
   "experiments": {
     "title": "Experimente",
-    "description": "Führen Sie A/B-Tests durch, um Varianten zu vergleichen und herauszufinden, was am besten funktioniert. Erstellen Sie Experimente, die mit Zielen verknüpft sind, und lassen Sie bayessche Statistik den Gewinner bestimmen.",
+    "description": "Führen Sie A/B-Tests durch, um Varianten zu vergleichen und herauszufinden, was am besten funktioniert.\nErstellen Sie mit Zielen verknüpfte Experimente und lassen Sie bayessche Statistiken den Gewinner ermitteln.\n<docs>Erfahren Sie mehr in der Dokumentation</docs>.",
     "create": "Experiment erstellen",
     "edit": "Experiment bearbeiten",
     "editDisabledRunning": "Pausieren Sie dieses Experiment, um die Einstellungen zu bearbeiten.",
@@ -1772,7 +1778,7 @@
       "title": "SEO",
       "desc": "Suchleistung für {{url}}",
       "connectGSC": "Verbinden Sie die Google Search Console, um Suchleistungsdaten zu sehen",
-      "connectGSCDesc": "Verknüpfen Sie Ihr Google Search Console-Konto, um Klicks, Impressionen, Suchanfragen und Top-Seiten aus der Google-Suche anzuzeigen.",
+      "connectGSCDesc": "Verknüpfen Sie Ihr Google Search Console-Konto, um Klicks, Impressionen, Suchanfragen und Top-Seiten aus der Google-Suche anzuzeigen.\n<docs>Erfahren Sie mehr in der Dokumentation</docs>.",
       "connectButton": "Search Console verbinden",
       "searchEngines": "Suchmaschinen",
       "aiReferrals": "KI-Verweise",
@@ -1985,6 +1991,7 @@
       "expiresAt": "Läuft am {{date}} ab",
       "eventsCount": "{{count}} Replay-Events",
       "title": "Session-Replay",
+      "loading": "Replay wird vorbereitet...",
       "loadError": "Replay konnte nicht geladen werden",
       "delete": "Replay löschen",
       "deleted": "Replay gelöscht",
@@ -2068,15 +2075,22 @@
     },
     "featureAccess": {
       "featureFlags": {
-        "ownerTitle": "Feature Flags sind in deinem Plan nicht verfügbar",
-        "viewerTitle": "Feature Flags sind für dieses Projekt nicht verfügbar"
+        "ownerTitle": "Feature Flags sind in Ihrem Tarif nicht verfügbar",
+        "viewerTitle": "Feature Flags sind für dieses Projekt nicht verfügbar",
+        "description": "Mit Feature Flags können Sie Änderungen ausrollen, Besucher gezielt ansprechen und Funktionen umschalten, ohne neuen Code bereitzustellen. <docs>Erfahren Sie mehr in der Dokumentation</docs>."
       },
       "experiments": {
         "ownerTitle": "Experimente sind in deinem Plan nicht verfügbar",
-        "viewerTitle": "Experimente sind für dieses Projekt nicht verfügbar"
+        "viewerTitle": "Experimente sind für dieses Projekt nicht verfügbar",
+        "description": "Mit Experimenten können Sie A/B-Tests durchführen, den Traffic zwischen Varianten aufteilen und messen, welche Version besser abschneidet. <docs>Erfahren Sie mehr in der Dokumentation</docs>."
+      },
+      "replays": {
+        "ownerTitle": "Session Replays sind in Ihrem Tarif nicht verfügbar",
+        "viewerTitle": "Session Replays sind für dieses Projekt nicht verfügbar",
+        "description": "Session Replays zeichnen Browsersitzungen auf, sodass Sie Benutzerpfade überprüfen, Probleme beheben und Abbrüche verstehen können. <docs>Erfahren Sie mehr in der Dokumentation</docs>."
       },
       "ownerDescription": "Dieses Feature ist in Plus und Enterprise enthalten. Werte deinen Plan auf, um es in diesem Projekt zu nutzen.",
-      "viewerDescription": "Der Projektinhaber hat in seinem aktuellen Plan keinen Zugriff auf dieses Feature. Kontaktiere ihn, um den Projekt-Plan aufzuwerten.",
+      "viewerDescription": "Diese Funktion ist in Plus und Enterprise enthalten. Der Projekteigentümer muss das Projekt-Abo upgraden, um sie zu aktivieren.",
       "upgradePlan": "Plan upgraden"
     },
     "waiting": {
@@ -2121,8 +2135,15 @@
     "noSessionsFound": "Keine Sitzungen für diesen Zeitraum gefunden.",
     "exploreSessions": "Sitzungen anzeigen",
     "noSessionsFiltersDesc": "Für diesen Zeitraum und diese Filtereinstellungen wurden keine Sitzungen gefunden. Versuchen Sie, den Datumsbereich oder die Filter zu ändern.",
-    "noReplaysTitle": "Noch keine Replays",
-    "noReplaysContent": "Für diesen Zeitraum wurden keine Session-Replays aufgezeichnet. Versuche einen anderen Datumsbereich.",
+    "noReplaysSetupTitle": "Noch keine Session Replays",
+    "noReplaysSetupDesc": "Mit Session Replays können Sie aufgezeichnete Browsersitzungen mit dem von Swetrix gesammelten Analytics-Kontext ansehen. Die Aufzeichnung beginnt erst, nachdem Ihre Website startSessionReplay() aufruft.\n<howto>Erfahren Sie, wie Sie Session Replays einrichten</howto>.",
+    "noReplaysSetupSteps": {
+      "startRecorder": "Starten Sie den Recorder über Ihren Website-Code, nachdem Swetrix initialisiert wurde.",
+      "choosePrivacy": "Wählen Sie einen Datenschutzmodus, bevor Sie Seiten aufzeichnen, die sensible Daten enthalten könnten.",
+      "reviewRecordings": "Hier erscheinen die aufgezeichneten Sitzungen für den ausgewählten Zeitraum."
+    },
+    "noReplaysTitle": "Keine Replays für diesen Zeitraum",
+    "noReplaysContent": "Für den ausgewählten Zeitraum wurden keine Session-Replays aufgezeichnet. Versuchen Sie einen anderen Zeitraum.",
     "noReplaysFiltersTitle": "Keine Replays gefunden",
     "noReplaysFiltersDesc": "Für diesen Zeitraum und diese Filter wurden keine Replays gefunden. Versuchen Sie, den Datumsbereich oder die Filter zu ändern.",
     "noCaptchaEv": "Für diesen Zeitraum wurden keine CAPTCHA-Ereignisse aufgezeichnet.\nWenn Sie CAPTCHA noch nicht eingerichtet haben, lesen Sie die <url>Dokumentation</url>, um es zu Ihrer App hinzuzufügen.",
@@ -3135,6 +3156,7 @@
     "billedMonthly": "Monatliche Abrechnung",
     "custom": "Benutzerdefiniert",
     "customLimits": "Benutzerdefinierte Limits",
+    "bestValue": "Bestes Preis-Leistungs-Verhältnis",
     "monthlyEvents": "Monatliche Events",
     "monthlyEventsTooltip": "Events umfassen Seitenaufrufe, benutzerdefinierte Events, CAPTCHA-Abschlüsse und Fehler-Events.",
     "monthlyEventVolume": "Monatliches Event-Volumen",
