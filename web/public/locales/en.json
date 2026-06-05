@@ -3156,6 +3156,7 @@
     "billedMonthly": "Billed monthly",
     "custom": "Custom",
     "customLimits": "Custom limits",
+    "bestValue": "Best value",
     "monthlyEvents": "Monthly events",
     "monthlyEventsTooltip": "Events include pageviews, custom events, CAPTCHA completions, and error events.",
     "monthlyEventVolume": "Monthly event volume",
