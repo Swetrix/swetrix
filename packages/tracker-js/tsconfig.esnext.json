@@ -8,6 +8,10 @@
     "sourceMap": true,
     "declaration": true,
     "outDir": "dist/esnext",
+    "baseUrl": ".",
+    "paths": {
+      "rrweb": ["src/types/rrweb-shim.d.ts"]
+    },
     "types": []
   },
   "include": ["src"]

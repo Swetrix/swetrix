@@ -22,7 +22,7 @@ To collect replays, install the Swetrix tracking script as usual, initialise it 
 
 ```javascript
 swetrix.init("YOUR_PROJECT_ID", {
-  sessionReplay: true,
+  preloadSessionReplay: true,
 });
 
 await swetrix.startSessionReplay({
@@ -30,7 +30,7 @@ await swetrix.startSessionReplay({
 });
 ```
 
-The optional `sessionReplay: true` setting preloads the replay recorder. Recording still begins only after `startSessionReplay()` is called.
+The optional `preloadSessionReplay: true` setting preloads the replay recorder. Recording still begins only after `startSessionReplay()` is called.
 
 See the [tracking script reference](/swetrix-js-reference#startsessionreplay) for all privacy modes, recorder options, and code examples.
 

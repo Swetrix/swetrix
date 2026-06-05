@@ -5,6 +5,11 @@ import { setLocation } from './testUtils'
 
 const PROJECT_ID = 'test-project-id'
 const RRWEB_URL = 'https://cdn.jsdelivr.net/npm/swetrix@latest/dist/replaylibrary.min.js'
+const mockRrwebRecord = jest.fn()
+
+jest.mock('rrweb', () => ({
+  record: mockRrwebRecord,
+}))
 
 const loadTracker = async () => {
   jest.resetModules()
@@ -18,25 +23,17 @@ const resetReplayGlobals = () => {
   document.body.innerHTML = ''
 }
 
-const resolveRrwebScript = (
-  record: jest.Mock,
-): { recordOptions: () => any } => {
-  let options: any
-  ;(window as any).rrweb = {
-    record: jest.fn((recordOptions) => {
-      options = recordOptions
-      return jest.fn()
-    }),
+const usePackageRrweb = () => {
+  const stopRecording = jest.fn()
+  mockRrwebRecord.mockImplementation((recordOptions) => {
+    ;(mockRrwebRecord as any).options = recordOptions
+    return stopRecording
+  })
+
+  return {
+    recordOptions: () => (mockRrwebRecord as any).options,
+    stopRecording,
   }
-
-  const script = document.querySelector<HTMLScriptElement>(
-    `script[src="${RRWEB_URL}"]`,
-  )
-  expect(script).toBeTruthy()
-  ;(window as any).rrweb.record = record
-  script!.dispatchEvent(new Event('load'))
-
-  return { recordOptions: () => options }
 }
 
 describe('Session replay tracking', () => {
@@ -44,6 +41,8 @@ describe('Session replay tracking', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockRrwebRecord.mockReset()
+    delete (mockRrwebRecord as any).options
     jest.useRealTimers()
     resetReplayGlobals()
     setLocation({ hostname: 'example.com', pathname: '/checkout' })
@@ -62,15 +61,15 @@ describe('Session replay tracking', () => {
     })
   })
 
-  test('init with sessionReplay preloads rrweb but does not record', async () => {
+  test('init with preloadSessionReplay loads npm rrweb but does not record', async () => {
     const { init } = await loadTracker()
 
-    init(PROJECT_ID, { devMode: true, sessionReplay: true })
+    init(PROJECT_ID, { devMode: true, preloadSessionReplay: true })
+    await (window as any).__SWETRIX_RRWEB_LOADING__
 
-    const script = document.querySelector<HTMLScriptElement>(
-      `script[src="${RRWEB_URL}"]`,
-    )
-    expect(script).toBeTruthy()
+    expect((window as any).rrweb.record).toBe(mockRrwebRecord)
+    expect(document.querySelector(`script[src="${RRWEB_URL}"]`)).toBeNull()
+    expect(mockRrwebRecord).not.toHaveBeenCalled()
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
@@ -80,32 +79,43 @@ describe('Session replay tracking', () => {
     document.head.appendChild(script)
 
     const { init } = await loadTracker()
-    init(PROJECT_ID, { devMode: true, sessionReplay: true })
+    init(PROJECT_ID, { devMode: true, preloadSessionReplay: true })
 
     expect(
       document.querySelector<HTMLScriptElement>(
         `script[src="${RRWEB_URL}"]`,
       ),
     ).toBeTruthy()
+    expect(mockRrwebRecord).not.toHaveBeenCalled()
   })
 
-  test('startSessionReplay loads rrweb, records events, and flushes chunks', async () => {
-    const record = jest.fn((options) => {
-      ;(record as any).options = options
-      return jest.fn()
+  test('preloadSessionReplay can load rrweb from a custom script URL', async () => {
+    const rrwebUrl = 'https://cdn.example.com/rrweb.min.js'
+    const { init } = await loadTracker()
+
+    init(PROJECT_ID, {
+      devMode: true,
+      preloadSessionReplay: { rrwebUrl },
     })
+
+    expect(
+      document.querySelector<HTMLScriptElement>(`script[src="${rrwebUrl}"]`),
+    ).toBeTruthy()
+    expect(mockRrwebRecord).not.toHaveBeenCalled()
+  })
+
+  test('startSessionReplay imports npm rrweb, records events, and flushes chunks', async () => {
+    const { recordOptions } = usePackageRrweb()
     const { init, startSessionReplay } = await loadTracker()
 
     init(PROJECT_ID, { devMode: true })
-    const startPromise = startSessionReplay({
+    const actions = await startSessionReplay({
       flushIntervalMs: 60_000,
       maxEventsPerChunk: 2,
     })
-    resolveRrwebScript(record)
-
-    const actions = await startPromise
-    const recordOptions = (record as any).options
-    expect(recordOptions.maskTextSelector).toBe('*')
+    const options = recordOptions()
+    expect(options.maskTextSelector).toBe('*')
+    expect(document.querySelector(`script[src="${RRWEB_URL}"]`)).toBeNull()
 
     const startCall = fetchMock.mock.calls.find(([url]) =>
       String(url).includes('/session-replay/start'),
@@ -115,8 +125,8 @@ describe('Session replay tracking', () => {
       expect.objectContaining({ privacy: 'total' }),
     )
 
-    recordOptions.emit({ type: 2, timestamp: 100 })
-    recordOptions.emit({ type: 3, timestamp: 200 })
+    options.emit({ type: 2, timestamp: 100 })
+    options.emit({ type: 3, timestamp: 200 })
 
     await actions.flush()
 
@@ -145,26 +155,20 @@ describe('Session replay tracking', () => {
 
     expect(fetchMock).not.toHaveBeenCalled()
     expect(document.querySelector(`script[src="${RRWEB_URL}"]`)).toBeNull()
+    expect(mockRrwebRecord).not.toHaveBeenCalled()
   })
 
   test('maxDurationMs stops recording and flushes buffered events', async () => {
     jest.useFakeTimers()
-    const stopRecording = jest.fn()
-    const record = jest.fn((options) => {
-      ;(record as any).options = options
-      return stopRecording
-    })
+    const { recordOptions, stopRecording } = usePackageRrweb()
     const { init, startSessionReplay } = await loadTracker()
 
     init(PROJECT_ID, { devMode: true })
-    const startPromise = startSessionReplay({
+    await startSessionReplay({
       flushIntervalMs: 60_000,
       maxDurationMs: 1000,
     })
-    resolveRrwebScript(record)
-
-    await startPromise
-    ;(record as any).options.emit({ type: 2, timestamp: 100 })
+    recordOptions().emit({ type: 2, timestamp: 100 })
 
     await jest.advanceTimersByTimeAsync(1000)
     await Promise.resolve()
@@ -180,22 +184,15 @@ describe('Session replay tracking', () => {
 
   test('idleTimeoutMs stops after inactivity and resets on activity', async () => {
     jest.useFakeTimers()
-    const stopRecording = jest.fn()
-    const record = jest.fn((options) => {
-      ;(record as any).options = options
-      return stopRecording
-    })
+    const { recordOptions, stopRecording } = usePackageRrweb()
     const { init, startSessionReplay } = await loadTracker()
 
     init(PROJECT_ID, { devMode: true })
-    const startPromise = startSessionReplay({
+    await startSessionReplay({
       flushIntervalMs: 60_000,
       idleTimeoutMs: 1000,
     })
-    resolveRrwebScript(record)
-
-    await startPromise
-    ;(record as any).options.emit({ type: 2, timestamp: 200 })
+    recordOptions().emit({ type: 2, timestamp: 200 })
 
     await jest.advanceTimersByTimeAsync(900)
     window.dispatchEvent(new Event('mousemove'))
@@ -253,19 +250,13 @@ describe('Session replay tracking', () => {
   })
 
   test('invalid privacy values fall back to total privacy', async () => {
-    const record = jest.fn((options) => {
-      ;(record as any).options = options
-      return jest.fn()
-    })
+    const { recordOptions } = usePackageRrweb()
     const { init, startSessionReplay } = await loadTracker()
 
     init(PROJECT_ID, { devMode: true })
-    const startPromise = startSessionReplay({
+    const actions = await startSessionReplay({
       privacy: 'totl' as any,
     })
-    resolveRrwebScript(record)
-
-    const actions = await startPromise
     const startCall = fetchMock.mock.calls.find(([url]) =>
       String(url).includes('/session-replay/start'),
     )
@@ -274,19 +265,23 @@ describe('Session replay tracking', () => {
     expect(JSON.parse(startCall![1].body as string)).toEqual(
       expect.objectContaining({ privacy: 'total' }),
     )
-    expect((record as any).options.maskTextSelector).toBe('*')
+    expect(recordOptions().maskTextSelector).toBe('*')
 
     await actions.stop()
   })
 
-  test('rrweb loader clears failed loads so startSessionReplay can retry', async () => {
+  test('script rrweb loader clears failed loads so startSessionReplay can retry', async () => {
     const record = jest.fn(() => jest.fn())
+    const trackerScript = document.createElement('script')
+    trackerScript.src = 'https://example.com/swetrix.js'
+    document.head.appendChild(trackerScript)
+    const rrwebUrl = 'https://example.com/replaylibrary.min.js'
     const { init, startSessionReplay } = await loadTracker()
 
     init(PROJECT_ID, { devMode: true })
     const failedStart = startSessionReplay()
     const failedScript = document.querySelector<HTMLScriptElement>(
-      `script[src="${RRWEB_URL}"]`,
+      `script[src="${rrwebUrl}"]`,
     )
     expect(failedScript).toBeTruthy()
     failedScript!.dispatchEvent(new Event('error'))
@@ -296,7 +291,7 @@ describe('Session replay tracking', () => {
 
     const retryStart = startSessionReplay()
     const scripts = document.querySelectorAll<HTMLScriptElement>(
-      `script[src="${RRWEB_URL}"]`,
+      `script[src="${rrwebUrl}"]`,
     )
     expect(scripts[1]).toBeTruthy()
     expect(scripts[1]).not.toBe(failedScript)
@@ -311,22 +306,16 @@ describe('Session replay tracking', () => {
   })
 
   test('user rrweb emit is composed with Swetrix uploads', async () => {
-    const record = jest.fn((options) => {
-      ;(record as any).options = options
-      return jest.fn()
-    })
+    const { recordOptions } = usePackageRrweb()
     const userEmit = jest.fn()
     const { init, startSessionReplay } = await loadTracker()
 
     init(PROJECT_ID, { devMode: true })
-    const startPromise = startSessionReplay({
+    const actions = await startSessionReplay({
       rrweb: { emit: userEmit, maskAllInputs: true },
     })
-    resolveRrwebScript(record)
-
-    const actions = await startPromise
     const event = { type: 2, timestamp: 300 }
-    ;(record as any).options.emit(event)
+    recordOptions().emit(event)
     await actions.flush()
 
     expect(userEmit).toHaveBeenCalledWith(event)
@@ -356,8 +345,10 @@ describe('Session replay tracking', () => {
 
     expect(fetchMock).not.toHaveBeenCalled()
     expect(document.querySelector(`script[src="${RRWEB_URL}"]`)).toBeNull()
+    expect(mockRrwebRecord).not.toHaveBeenCalled()
 
     resetReplayGlobals()
+    mockRrwebRecord.mockReset()
     Object.defineProperty(navigator, 'doNotTrack', {
       value: null,
       writable: true,
@@ -371,5 +362,6 @@ describe('Session replay tracking', () => {
 
     expect(fetchMock).not.toHaveBeenCalled()
     expect(document.querySelector(`script[src="${RRWEB_URL}"]`)).toBeNull()
+    expect(mockRrwebRecord).not.toHaveBeenCalled()
   })
 })

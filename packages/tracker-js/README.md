@@ -65,6 +65,7 @@ init('YOUR_PROJECT_ID', {
   disabled: false,
   respectDNT: false,
   profileId: 'user-123',
+  preloadSessionReplay: false,
 })
 ```
 
@@ -75,6 +76,7 @@ init('YOUR_PROJECT_ID', {
 | `disabled` | When `true`, no data is sent. Useful for dev environments. | `false` |
 | `respectDNT` | When `true`, disables tracking for users with Do Not Track enabled. | `false` |
 | `profileId` | Profile ID for long-term user tracking (MAU/DAU). | `undefined` |
+| `preloadSessionReplay` | Preload the session replay recorder after `init()`. Recording only starts after `startSessionReplay()`. | `undefined` |
 
 ### `trackViews(options?)`
 
@@ -197,6 +199,8 @@ clearExperimentsCache()
 ### `startSessionReplay(options?)`
 
 Start recording a session replay. Session replays use `total` privacy by default, which masks text and inputs and blocks media/canvas capture unless you explicitly choose another mode.
+
+If you use the npm package, rrweb is dynamically imported from your installed dependencies only when the recorder is preloaded or started. If you use the CDN/script-tag build, the standalone replay recorder is loaded with an async script tag.
 
 ```javascript
 const replay = await startSessionReplay({

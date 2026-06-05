@@ -11,6 +11,7 @@ const require = createRequire(import.meta.url)
 const rrwebDistFile = 'replaylibrary.min.js'
 const rrwebPackageFile = 'rrweb.umd.min.cjs'
 const rrwebDistPath = join(dirname(require.resolve('rrweb')), rrwebPackageFile)
+const external = ['rrweb']
 
 const copyRrweb = () => ({
   name: 'copy-rrweb',
@@ -26,6 +27,7 @@ const copyRrweb = () => ({
 export default [
   {
     input: 'src/index.ts',
+    external,
     output: [
       { file: pkg.main, format: 'cjs', sourcemap: true },
       { file: pkg.module, format: 'es', sourcemap: true },
@@ -42,6 +44,7 @@ export default [
   },
   {
     input: 'src/index.ts',
+    external,
     output: [{ file: pkg.browser, format: 'umd', name: 'swetrix', sourcemap: true }],
     plugins: [
       typescript({

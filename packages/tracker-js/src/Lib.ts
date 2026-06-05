@@ -28,6 +28,12 @@ interface RrwebGlobal {
   Replayer?: unknown
 }
 
+type RrwebModule = RrwebGlobal & {
+  default?: RrwebGlobal
+}
+
+type SessionReplayPreloadOption = boolean | { rrwebUrl?: string }
+
 declare global {
   interface Window {
     rrweb?: RrwebGlobal
@@ -64,7 +70,7 @@ export interface LibOptions {
   /**
    * Preload session replay recorder code. Recording only starts after calling startSessionReplay().
    */
-  sessionReplay?: boolean | { rrwebUrl?: string }
+  preloadSessionReplay?: SessionReplayPreloadOption
 }
 
 export interface TrackEventOptions {
@@ -314,7 +320,7 @@ export class Lib {
     this.heartbeat = this.heartbeat.bind(this)
     this.captureError = this.captureError.bind(this)
 
-    if (options?.sessionReplay) {
+    if (this.getSessionReplayPreloadOption()) {
       void this.preloadSessionReplay().catch(() => undefined)
     }
   }
@@ -1071,7 +1077,7 @@ export class Lib {
   }
 
   private getSessionReplayUrl(): string {
-    const replayOption = this.options?.sessionReplay
+    const replayOption = this.getSessionReplayPreloadOption()
     if (
       replayOption &&
       typeof replayOption === 'object' &&
@@ -1083,23 +1089,16 @@ export class Lib {
     return this.getDefaultSessionReplayUrl()
   }
 
+  private getSessionReplayPreloadOption(): SessionReplayPreloadOption | undefined {
+    return this.options?.preloadSessionReplay
+  }
+
   private getDefaultSessionReplayUrl(): string {
     if (!isInBrowser()) {
       return DEFAULT_RRWEB_URL
     }
 
-    const trackerScript = Array.from(document.scripts).find((script) => {
-      if (!script.src) {
-        return false
-      }
-
-      try {
-        const { pathname } = new URL(script.src)
-        return /(^|\/)swetrix(\.min)?\.js$/i.test(pathname)
-      } catch {
-        return false
-      }
-    })
+    const trackerScript = this.getTrackerScript()
 
     if (trackerScript?.src) {
       const { hostname, pathname } = new URL(trackerScript.src)
@@ -1114,6 +1113,23 @@ export class Lib {
     }
 
     return DEFAULT_RRWEB_URL
+  }
+
+  private getTrackerScript(): HTMLScriptElement | undefined {
+    const trackerScript = Array.from(document.scripts).find((script) => {
+      if (!script.src) {
+        return false
+      }
+
+      try {
+        const { pathname } = new URL(script.src)
+        return /(^|\/)swetrix(\.min)?\.js$/i.test(pathname)
+      } catch {
+        return false
+      }
+    })
+
+    return trackerScript
   }
 
   private preloadSessionReplay(): Promise<void> {
@@ -1140,15 +1156,7 @@ export class Lib {
       return this.rrwebLoader
     }
 
-    this.rrwebLoader = new Promise<void>((resolve, reject) => {
-      const script = document.createElement('script')
-      script.async = true
-      script.src = this.getSessionReplayUrl()
-      script.crossOrigin = 'anonymous'
-      script.onload = () => resolve()
-      script.onerror = () => reject(new Error('Failed to load rrweb'))
-      document.head.appendChild(script)
-    })
+    this.rrwebLoader = this.loadSessionReplayRecorder()
 
     window.__SWETRIX_RRWEB_LOADING__ = this.rrwebLoader
     const loader = this.rrwebLoader
@@ -1162,6 +1170,51 @@ export class Lib {
     })
 
     return this.rrwebLoader
+  }
+
+  private async loadSessionReplayRecorder(): Promise<void> {
+    const replayOption = this.getSessionReplayPreloadOption()
+    const hasCustomReplayUrl =
+      replayOption && typeof replayOption === 'object' && replayOption.rrwebUrl
+
+    if (hasCustomReplayUrl || this.getTrackerScript()) {
+      await this.loadSessionReplayScript(this.getSessionReplayUrl())
+      return
+    }
+
+    if (await this.loadSessionReplayPackage()) {
+      return
+    }
+
+    await this.loadSessionReplayScript(this.getDefaultSessionReplayUrl())
+  }
+
+  private async loadSessionReplayPackage(): Promise<boolean> {
+    try {
+      const rrwebModule = (await import('rrweb')) as RrwebModule
+      const rrweb = rrwebModule.record ? rrwebModule : rrwebModule.default
+
+      if (!rrweb?.record) {
+        return false
+      }
+
+      window.rrweb = rrweb
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  private loadSessionReplayScript(url: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script')
+      script.async = true
+      script.src = url
+      script.crossOrigin = 'anonymous'
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error('Failed to load rrweb'))
+      document.head.appendChild(script)
+    })
   }
 
   private getSessionReplayRecordOptions(
