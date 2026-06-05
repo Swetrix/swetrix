@@ -1,5 +1,6 @@
 const SWETRIX_API_BASE_URL = 'https://api.swetrix.com/log'
 const PROXY_BASE_PATH = '/_internal_data_inngest_proxy'
+const SWETRIX_LOG_PREFIX = '/log'
 const SWETRIX_PID = 'STEzHcB1rALV'
 
 const jsonError = (status: number, error: string) =>
@@ -10,6 +11,18 @@ const jsonError = (status: number, error: string) =>
     },
   })
 
+const stripSwetrixLogPrefix = (path: string) => {
+  if (path === SWETRIX_LOG_PREFIX) {
+    return ''
+  }
+
+  if (path.startsWith(`${SWETRIX_LOG_PREFIX}/`)) {
+    return path.slice(SWETRIX_LOG_PREFIX.length)
+  }
+
+  return path
+}
+
 const buildTargetUrl = (requestUrl: string) => {
   const url = new URL(requestUrl)
   const pathWithoutBase = url.pathname.startsWith(PROXY_BASE_PATH)
@@ -18,8 +31,9 @@ const buildTargetUrl = (requestUrl: string) => {
   const normalizedPath = pathWithoutBase.startsWith('/')
     ? pathWithoutBase
     : `/${pathWithoutBase}`
+  const targetPath = stripSwetrixLogPrefix(normalizedPath)
 
-  return `${SWETRIX_API_BASE_URL}${normalizedPath}${url.search}`
+  return `${SWETRIX_API_BASE_URL}${targetPath}${url.search}`
 }
 
 export const proxySwetrixAnalyticsRequest = async (request: Request) => {
