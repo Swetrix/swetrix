@@ -367,10 +367,7 @@ export const trackError = (payload: IErrorEventPayload) => {
   swetrixTrackError(payload)
 }
 
-export const trackCustom = (
-  ev: string,
-  meta?: TrackEventOptions['meta'],
-) => {
+export const trackCustom = (ev: string, meta?: TrackEventOptions['meta']) => {
   if (isSelfhosted || !isBrowser || isDevelopment || isIframe) {
     return
   }
