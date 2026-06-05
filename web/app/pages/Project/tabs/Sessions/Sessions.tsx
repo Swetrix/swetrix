@@ -9,6 +9,7 @@ import {
   WarningIcon,
   CursorClickIcon,
   CaretRightIcon,
+  VideoCameraIcon,
 } from '@phosphor-icons/react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -178,6 +179,24 @@ export const Session = ({
     () => dayjs.utc(session.lastActivity).fromNow(true),
     [session.lastActivity],
   )
+  const replayDurationString = useMemo(() => {
+    if (!session.replayDuration || session.replayDuration <= 0) return null
+    return getStringFromTime(getTimeFromSeconds(session.replayDuration))
+  }, [session.replayDuration])
+  const replayExpiresAt = useMemo(() => {
+    if (!session.replayExpiresAt) return null
+    const date = dayjs.utc(session.replayExpiresAt)
+    if (!date.isValid()) return null
+
+    return date.toDate().toLocaleDateString(language, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+      timeZone: timezone,
+    })
+  }, [language, session.replayExpiresAt, timeFormat, timezone])
 
   const params = new URLSearchParams(location.search)
   params.set('psid', session.psid)
@@ -308,6 +327,43 @@ export const Session = ({
                   <div className='h-3 w-px bg-gray-200 dark:bg-slate-700' />
 
                   <div className='flex items-center gap-3'>
+                    {Boolean(session.hasReplay) && (
+                      <Tooltip
+                        text={
+                          <div className='grid gap-1'>
+                            <Text size='xs' colour='inherit'>
+                              {t('project.sessionReplay.available')}
+                            </Text>
+                            {replayDurationString ? (
+                              <Text size='xs' colour='inherit'>
+                                {t('project.sessionReplay.duration', {
+                                  duration: replayDurationString,
+                                })}
+                              </Text>
+                            ) : null}
+                            {replayExpiresAt ? (
+                              <Text size='xs' colour='inherit'>
+                                {t('project.sessionReplay.expiresAt', {
+                                  date: replayExpiresAt,
+                                })}
+                              </Text>
+                            ) : null}
+                          </div>
+                        }
+                        tooltipNode={
+                          <Text
+                            as='span'
+                            size='xs'
+                            colour='secondary'
+                            weight='medium'
+                            className='flex items-center gap-1'
+                          >
+                            <VideoCameraIcon className='size-3.5' />
+                          </Text>
+                        }
+                      />
+                    )}
+
                     <Tooltip
                       text={t('dashboard.pageviews')}
                       tooltipNode={

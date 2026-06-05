@@ -20,6 +20,7 @@ import {
   FlaskIcon,
   IdentificationCardIcon,
   UserListIcon,
+  MonitorPlayIcon,
   ToggleRightIcon,
   MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
@@ -92,6 +93,7 @@ import FunnelsView from '../tabs/Funnels/FunnelsView'
 import GoalsView from '../tabs/Goals/GoalsView'
 import PerformanceView from '../tabs/Performance/PerformanceView'
 import ProfilesView from '../tabs/Profiles/ProfilesView'
+import ReplaysView from '../tabs/Replays/ReplaysView'
 import SessionsView from '../tabs/Sessions/SessionsView'
 import SEOView from '../tabs/SEO/SEOView'
 import TrafficView from '../tabs/Traffic/TrafficView'
@@ -196,6 +198,7 @@ interface RefreshTriggersContextType {
   trafficRefreshTrigger: number
   funnelsRefreshTrigger: number
   profilesRefreshTrigger: number
+  replaysRefreshTrigger: number
   seoRefreshTrigger: number
 }
 
@@ -264,6 +267,7 @@ const defaultRefreshTriggersContext: RefreshTriggersContextType = {
   trafficRefreshTrigger: 0,
   funnelsRefreshTrigger: 0,
   profilesRefreshTrigger: 0,
+  replaysRefreshTrigger: 0,
   seoRefreshTrigger: 0,
 }
 
@@ -352,6 +356,7 @@ const ViewProjectContent = () => {
   const [trafficRefreshTrigger, setTrafficRefreshTrigger] = useState(0)
   const [funnelsRefreshTrigger, setFunnelsRefreshTrigger] = useState(0)
   const [profilesRefreshTrigger, setProfilesRefreshTrigger] = useState(0)
+  const [replaysRefreshTrigger, setReplaysRefreshTrigger] = useState(0)
   const [seoRefreshTrigger, setSeoRefreshTrigger] = useState(0)
   const [activeChartMetrics] = useState<
     Record<keyof typeof CHART_METRICS_MAPPING, boolean>
@@ -766,6 +771,11 @@ const ViewProjectContent = () => {
         icon: UserListIcon,
       },
       {
+        id: PROJECT_TABS.replays,
+        label: t('dashboard.replays'),
+        icon: MonitorPlayIcon,
+      },
+      {
         id: PROJECT_TABS.errors,
         label: t('dashboard.errors'),
         icon: WarningIcon,
@@ -934,6 +944,11 @@ const ViewProjectContent = () => {
 
         if (activeTab === PROJECT_TABS.sessions) {
           setSessionsRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
+        if (activeTab === PROJECT_TABS.replays) {
+          setReplaysRefreshTrigger((prev) => prev + 1)
           return
         }
 
@@ -1298,6 +1313,7 @@ const ViewProjectContent = () => {
       trafficRefreshTrigger,
       funnelsRefreshTrigger,
       profilesRefreshTrigger,
+      replaysRefreshTrigger,
       seoRefreshTrigger,
     }),
     [
@@ -1311,6 +1327,7 @@ const ViewProjectContent = () => {
       trafficRefreshTrigger,
       funnelsRefreshTrigger,
       profilesRefreshTrigger,
+      replaysRefreshTrigger,
       seoRefreshTrigger,
     ],
   )
@@ -1595,6 +1612,9 @@ const ViewProjectContent = () => {
                                 tnMapping={tnMapping}
                                 rotateXAxis={rotateXAxis}
                               />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.replays ? (
+                              <ReplaysView tnMapping={tnMapping} />
                             ) : null}
                             {activeTab === PROJECT_TABS.errors ? (
                               <ErrorsView />

@@ -6,6 +6,9 @@ import {
 
 import {
   getSessionsServer,
+  getSessionReplaysServer,
+  getSessionReplayServer,
+  deleteSessionReplayServer,
   getFunnelSessionsServer,
   getGoalSessionsServer,
   getErrorsServer,
@@ -43,6 +46,9 @@ import {
   type AnalyticsParams,
   type AnalyticsFilter,
   type SessionsResponse,
+  type SessionReplaysResponse,
+  type SessionReplayResponse,
+  type DeleteSessionReplayResponse,
   type FunnelSessionsResponse,
   type GoalSessionsResponse,
   type ErrorsResponse,
@@ -97,6 +103,9 @@ function formatDateForBackend(dateStr: string | undefined): string | undefined {
 interface ProxyRequest {
   action:
     | 'getSessions'
+    | 'getSessionReplays'
+    | 'getSessionReplay'
+    | 'deleteSessionReplay'
     | 'getErrors'
     | 'getFeatureFlagStats'
     | 'getFeatureFlagProfiles'
@@ -137,6 +146,8 @@ interface ProxyRequest {
   goalId?: string
   experimentId?: string
   profileId?: string
+  psid?: string
+  replayId?: string
   errorId?: string
   filterType?: string
   filterColumn?: 'br' | 'os'
@@ -212,6 +223,81 @@ export async function action({ request }: ActionFunctionArgs) {
               ? result.error.join(', ')
               : result.error
             : null,
+        })
+      }
+
+      case 'getSessionReplays': {
+        const result = await getSessionReplaysServer(
+          request,
+          projectId,
+          analyticsParams,
+        )
+        return data<ProxyResponse<SessionReplaysResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getSessionReplay': {
+        if (!body.psid) {
+          return data<ProxyResponse<SessionReplayResponse>>(
+            { data: null, error: 'psid is required' },
+            { status: 400 },
+          )
+        }
+
+        const result = await getSessionReplayServer(
+          request,
+          projectId,
+          body.psid,
+          body.replayId,
+          password || undefined,
+        )
+        return data<ProxyResponse<SessionReplayResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'deleteSessionReplay': {
+        if (!body.psid) {
+          return data<ProxyResponse<DeleteSessionReplayResponse>>(
+            { data: null, error: 'psid is required' },
+            { status: 400 },
+          )
+        }
+
+        const result = await deleteSessionReplayServer(
+          request,
+          projectId,
+          body.psid,
+          body.replayId,
+          password || undefined,
+        )
+
+        if (result.error) {
+          return data<ProxyResponse<DeleteSessionReplayResponse>>(
+            {
+              data: null,
+              error: Array.isArray(result.error)
+                ? result.error.join(', ')
+                : result.error,
+            },
+            { status: 400 },
+          )
+        }
+
+        return data<ProxyResponse<DeleteSessionReplayResponse>>({
+          data: result.data,
+          error: null,
         })
       }
 

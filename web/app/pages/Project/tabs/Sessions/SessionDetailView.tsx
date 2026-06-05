@@ -7,21 +7,26 @@ import {
   GlobeIcon,
   ClockIcon,
   LinkIcon,
+  PlayIcon,
   UserIcon,
   SignInIcon,
 } from '@phosphor-icons/react'
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 
 import { BrowserIcon, OSIcon } from '../SharedIcons'
 import { InfoRow, PanelSection } from '../components/DetailPanels'
 import { PROJECT_TABS } from '~/lib/constants'
-import { SessionDetails as SessionDetailsType } from '~/lib/models/Project'
+import {
+  SessionDetails as SessionDetailsType,
+  SessionReplayMetadata,
+} from '~/lib/models/Project'
 import { BackButton } from '~/pages/Project/View/components/BackButton'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import Button from '~/ui/Button'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
@@ -36,19 +41,12 @@ import Flag from '~/ui/Flag'
 import countries from '~/utils/isoCountries'
 
 import NoSessionDetails from './NoSessionDetails'
-import { Pageflow } from './Pageflow'
+import { Pageflow, type PageflowEvent } from './Pageflow'
 import { SessionChart } from './SessionChart'
 
 dayjs.extend(utc)
 
-interface PageflowItem {
-  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
-  value: string
-  created: string
-  metadata?: { key: string; value: string }[]
-  amount?: number
-  currency?: string
-}
+const SessionReplayModal = lazy(() => import('./SessionReplayModal'))
 
 interface SessionDetailViewProps {
   activeSession: {
@@ -59,10 +57,11 @@ interface SessionDetailViewProps {
       customEvents?: number[]
       errors?: number[]
     }
-    pages?: PageflowItem[]
+    pages?: PageflowEvent[]
     timeBucket?: string
     sessionStart?: string
     lastActivity?: string
+    replay?: SessionReplayMetadata | null
   } | null
   sessionId?: string | null
   sessionLoading: boolean
@@ -164,6 +163,8 @@ export const SessionDetailView = ({
   const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(
     null,
   )
+  const [isReplayOpen, setIsReplayOpen] = useState(false)
+  const [isReplayDeleted, setIsReplayDeleted] = useState(false)
 
   const isTouchDevice = useMemo(() => {
     if (typeof window === 'undefined') return false
@@ -208,6 +209,10 @@ export const SessionDetailView = ({
   const resetZoom = () => {
     setZoomedTimeRange(null)
   }
+
+  useEffect(() => {
+    setIsReplayDeleted(false)
+  }, [activeSession?.replay?.replayId, sessionId])
 
   if (_isEmpty(activeSession) && sessionLoading) {
     return <Loader />
@@ -411,6 +416,9 @@ export const SessionDetailView = ({
       disableHoverableContent
     />
   )
+  const hasReplay = Boolean(
+    activeSession.replay?.hasReplay && sessionId && !isReplayDeleted,
+  )
 
   return (
     <div className='grid gap-x-3 gap-y-2 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start xl:grid-cols-[minmax(0,1fr)_390px]'>
@@ -603,6 +611,17 @@ export const SessionDetailView = ({
                 </Text>
               </Link>
             ) : null}
+
+            {hasReplay ? (
+              <Button
+                type='button'
+                className='mt-2 w-full justify-center gap-2'
+                onClick={() => setIsReplayOpen(true)}
+              >
+                <PlayIcon className='size-4' />
+                {t('project.watchReplay')}
+              </Button>
+            ) : null}
           </div>
 
           <PanelSection title={t('project.sessionInfo')}>
@@ -696,6 +715,24 @@ export const SessionDetailView = ({
           ) : null}
         </div>
       </aside>
+
+      {hasReplay && sessionId ? (
+        <Suspense fallback={null}>
+          <SessionReplayModal
+            isOpen={isReplayOpen}
+            onClose={() => setIsReplayOpen(false)}
+            projectId={projectId}
+            psid={sessionId}
+            replay={activeSession.replay}
+            pages={activeSession.pages || []}
+            timeFormat={timeFormat}
+            onDeleted={() => {
+              setIsReplayDeleted(true)
+              setIsReplayOpen(false)
+            }}
+          />
+        </Suspense>
+      ) : null}
     </div>
   )
 }

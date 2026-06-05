@@ -25,6 +25,7 @@ import {
   DownloadIcon,
   BellRingingIcon,
   GlobeIcon,
+  VideoCameraIcon,
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -69,6 +70,7 @@ import AccessSettings from './tabs/AccessSettings'
 import DangerZone from './tabs/DangerZone'
 import General from './tabs/General'
 import Revenue from './tabs/Revenue'
+import SessionReplays from './tabs/SessionReplays'
 import Shields from './tabs/Shields'
 import ProjectAlerts from './Alerts/ProjectAlertsView'
 import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
@@ -364,6 +366,7 @@ const getFormFromProject = (project: Project): Form => ({
   brandKeywords: project.brandKeywords?.join(', ') || '',
   captchaDifficulty: project.captchaDifficulty || 4,
   captchaDifficultyMode: project.captchaDifficultyMode || 'manual',
+  sessionReplayRetentionDays: project.sessionReplayRetentionDays || 30,
 })
 
 const normaliseProjectAutosaveValue = (value: unknown) =>
@@ -390,7 +393,10 @@ const buildProjectAutosaveFormData = (updates: Partial<Form>) => {
       return
     }
 
-    if (field === 'captchaDifficulty') {
+    if (
+      field === 'captchaDifficulty' ||
+      field === 'sessionReplayRetentionDays'
+    ) {
       formData.set(field, String(value))
       return
     }
@@ -434,6 +440,7 @@ const ProjectSettings = () => {
     websiteUrl?: string
     transferEmail?: string
     email?: string
+    sessionReplayRetentionDays?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
@@ -473,6 +480,7 @@ const ProjectSettings = () => {
     | 'alerts'
     | 'channels'
     | 'revenue'
+    | 'sessionReplays'
     | 'emails'
     | 'people'
     | 'annotations'
@@ -549,6 +557,14 @@ const ProjectSettings = () => {
             visible: !isSelfhosted,
           },
           {
+            id: 'sessionReplays',
+            label: t('project.settings.tabs.sessionReplays'),
+            description: t('project.settings.tabs.sessionReplaysDesc'),
+            icon: VideoCameraIcon,
+            iconColor: 'text-violet-500',
+            visible: !isSelfhosted,
+          },
+          {
             id: 'emails',
             label: t('project.settings.tabs.emails'),
             description: t('project.settings.tabs.emailsDesc'),
@@ -600,6 +616,17 @@ const ProjectSettings = () => {
       ).filter((tab) => tab.visible) as SettingsTabConfig<SettingsTab>[],
     [t, project?.role],
   )
+
+  const sessionReplayMaxRetentionDays = useMemo(() => {
+    const override = user?.entitlementOverrides?.sessionReplayRetentionDays
+    if (typeof override === 'number') {
+      return override
+    }
+    if (user?.effectivePlanType === 'enterprise') {
+      return 1825
+    }
+    return 30
+  }, [user?.effectivePlanType, user?.entitlementOverrides])
 
   const activeTab = useMemo<SettingsTab>(() => {
     const tab = searchParams.get('tab') as SettingsTab
@@ -1451,6 +1478,26 @@ const ProjectSettings = () => {
                   iconColorClass={activeTabConfig.iconColor}
                 />
                 <ProxyDomainsTab projectId={id} />
+              </>
+            ) : null}
+            {activeTab === 'sessionReplays' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <SessionReplays
+                  retentionDays={form.sessionReplayRetentionDays || 30}
+                  maxRetentionDays={sessionReplayMaxRetentionDays}
+                  onRetentionChange={(days) =>
+                    handleFieldAutosave(
+                      { sessionReplayRetentionDays: days },
+                      'project.settings.autosave.sessionReplayRetention',
+                    )
+                  }
+                />
               </>
             ) : null}
 

@@ -12,6 +12,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher, useLoaderData, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
+import SessionReplayPricingTooltip from '~/components/pricing/SessionReplayPricingTooltip'
 import { usePaddle } from '~/hooks/usePaddle'
 import { CURRENCIES, paddleLanguageMapping, TRIAL_DAYS } from '~/lib/constants'
 import {
@@ -447,23 +448,26 @@ const Subscribe = () => {
 
           <div className='rounded-lg bg-white p-4 ring-1 ring-gray-200 ring-inset dark:bg-slate-950 dark:ring-slate-800'>
             <div className='flex flex-wrap items-center justify-between gap-3'>
-              <div>
+              <div className='min-w-0'>
                 <Text as='p' size='base' weight='semibold'>
                   {getPlanName(selectedPlanType, t)}
                 </Text>
-                <Text as='p' size='sm' colour='secondary' className='mt-1'>
-                  {formatEventsLong(
-                    EVENT_TIERS[selectedEventTier].monthlyEvents,
-                    i18n.language,
-                  )}{' '}
-                  {t('pricing.eventsWithReplay', {
-                    replayQuota: formatReplayQuota(
-                      replayQuota,
-                      t,
+                <div className='mt-1 flex min-w-0 items-start gap-1.5'>
+                  <Text as='p' size='sm' colour='secondary'>
+                    {formatEventsLong(
+                      EVENT_TIERS[selectedEventTier].monthlyEvents,
                       i18n.language,
-                    ),
-                  })}
-                </Text>
+                    )}{' '}
+                    {t('pricing.eventsWithReplay', {
+                      replayQuota: formatReplayQuota(
+                        replayQuota,
+                        t,
+                        i18n.language,
+                      ),
+                    })}
+                  </Text>
+                  <SessionReplayPricingTooltip className='mt-0.5 shrink-0' />
+                </div>
               </div>
               <Text as='p' size='2xl' weight='bold'>
                 {monthlyPrice === null ? (

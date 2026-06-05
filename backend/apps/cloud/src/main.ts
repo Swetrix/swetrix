@@ -2,6 +2,7 @@ import './instrument'
 
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe, VersioningType } from '@nestjs/common'
+import { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
@@ -13,9 +14,10 @@ import { validateLicense } from './common/license'
 async function bootstrap() {
   validateLicense()
 
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule)
 
   app.use(cookieParser())
+  app.useBodyParser('json', { limit: '1mb' })
   app.useGlobalPipes(new ValidationPipe())
 
   app.enableVersioning({

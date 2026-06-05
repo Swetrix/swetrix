@@ -44,15 +44,15 @@ export const planEntitlements = {
     websites: 50,
     teamMembers: 10,
     organisations: 3,
-    apiRateLimitPerHour: 600,
+    apiRateLimitPerHour: 300,
     sessionReplaysIncluded: 0,
   },
   [PlanType.plus]: {
     websites: 100,
     teamMembers: 25,
     organisations: 10,
-    apiRateLimitPerHour: 5000,
-    sessionReplaysIncluded: 50000,
+    apiRateLimitPerHour: 6000,
+    sessionReplaysIncluded: 'byEventTier',
   },
   [PlanType.enterprise]: {
     websites: 'custom',
@@ -62,6 +62,21 @@ export const planEntitlements = {
     sessionReplaysIncluded: 'custom',
   },
 } as const
+
+const sessionReplayQuotas: Partial<Record<PlanCode, number>> = {
+  [PlanCode['100k']]: 5000,
+  [PlanCode['200k']]: 10000,
+  [PlanCode['500k']]: 25000,
+  [PlanCode['1m']]: 50000,
+  [PlanCode['2m']]: 100000,
+  [PlanCode['5m']]: 250000,
+  [PlanCode['10m']]: 500000,
+  [PlanCode['15m']]: 750000,
+  [PlanCode['20m']]: 1000000,
+  [PlanCode['30m']]: 1500000,
+  [PlanCode['40m']]: 2000000,
+  [PlanCode['50m']]: 2500000,
+}
 
 const numberValue = (source: Record<string, unknown> | null, key: string) =>
   source && typeof source[key] === 'number' ? (source[key] as number) : null
@@ -88,6 +103,11 @@ export const getEffectiveLimits = (user: User) => {
     user.entitlementOverrides,
     'sessionReplaysIncluded',
   )
+  const replayQuota =
+    replayOverride ??
+    (entitlements.sessionReplaysIncluded === 'byEventTier'
+      ? sessionReplayQuotas[user.planCode] || 0
+      : entitlements.sessionReplaysIncluded)
   const websites =
     websiteOverride ??
     (typeof entitlements.websites === 'number'
@@ -105,7 +125,7 @@ export const getEffectiveLimits = (user: User) => {
     websitesIncluded:
       typeof websites === 'number' ? websites + addonWebsites : websites,
     purchasedWebsiteAddons: addonWebsites,
-    replayQuota: replayOverride ?? entitlements.sessionReplaysIncluded,
+    replayQuota,
     apiRateLimitPerHour,
   }
 }

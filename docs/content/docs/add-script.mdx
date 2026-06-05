@@ -49,6 +49,8 @@ It's important to remember to replace `YOUR_PROJECT_ID` with your actual Project
 
 Done. Now you can start using Swetrix on your website.
 
+To record session replays, start the recorder from your site code after initialising Swetrix. The replay recorder is loaded asynchronously only when you preload or start it. See [`startSessionReplay()`](/swetrix-js-reference#startsessionreplay) for setup and privacy options.
+
 </TabsContent>
 <TabsContent value="npm">
 
@@ -82,6 +84,8 @@ After that you can track anything you want. For example, the following code snip
 Swetrix.init("YOUR_PROJECT_ID");
 Swetrix.trackViews();
 ```
+
+To record session replays, call `Swetrix.startSessionReplay()` after `Swetrix.init()`. The npm package dynamically imports the installed replay recorder only when you preload or start it. See [`startSessionReplay()`](/swetrix-js-reference#startsessionreplay) for setup and privacy options.
 
 </Step>
 </Steps>

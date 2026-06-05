@@ -28,6 +28,8 @@ import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
+import SessionReplayPricingTooltip from './SessionReplayPricingTooltip'
+
 interface MarketingPricingProps {
   metainfo?: Metainfo
   onSelectPlan?: (selection: MarketingPricingSelection) => void
@@ -53,6 +55,7 @@ interface BenefitTooltip {
 interface Benefit {
   label: string
   tooltip?: BenefitTooltip
+  tooltipType?: 'sessionReplays'
 }
 
 const planCards: PlanTypeCode[] = ['standard', 'plus', 'enterprise']
@@ -177,7 +180,10 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
           })}`,
         },
       },
-      { label: t('pricing.benefits.sessionReplays') },
+      {
+        label: t('pricing.benefits.sessionReplays'),
+        tooltipType: 'sessionReplays',
+      },
       { label: t('pricing.benefits.featureFlags') },
       { label: t('pricing.benefits.abTesting') },
       { label: t('pricing.benefits.twentyXHigherApiRateLimits') },
@@ -235,13 +241,17 @@ const PlanInheritanceRow = ({
   return (
     <div className='flex items-start gap-2.5'>
       <ArrowLeftIcon
-        className='mt-0.5 size-4 shrink-0 text-emerald-600'
+        className={cn('mt-0.5 size-4 shrink-0', {
+          'text-gray-700 dark:text-gray-200': !isEnterprise,
+          'text-gray-200': isEnterprise,
+        })}
         weight='bold'
       />
       <Text
         as='p'
         size='sm'
         colour='primary'
+        weight='medium'
         className={cn('italic', isEnterprise ? 'dark' : '')}
       >
         {label}
@@ -272,6 +282,9 @@ const BenefitRow = ({
         >
           {benefit.label}
         </Text>
+        {benefit.tooltipType === 'sessionReplays' ? (
+          <SessionReplayPricingTooltip className={isEnterprise ? 'dark' : ''} />
+        ) : null}
         {benefit.tooltip ? (
           <Tooltip
             ariaLabel={benefit.tooltip.ariaLabel}

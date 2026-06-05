@@ -1,0 +1,269 @@
+/*
+ * Vendored from rrweb/dist/style.css.
+ * Inlined locally so the stylesheet URL doesn't contain "rrweb", which privacy
+ * adblock lists block. Keep in sync with the installed rrweb version.
+ */
+.replayer-wrapper {
+  position: relative;
+}
+.rrweb-player-root {
+  position: relative;
+  overflow: hidden;
+  background: #020617;
+}
+.rrweb-player-root > .replayer-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--replay-player-width, 100%);
+  height: var(--replay-player-height, 100%);
+  overflow: hidden;
+  background: #fff;
+  transform: translate(-50%, -50%) scale(var(--replay-player-scale, 1));
+  transform-origin: center;
+}
+.rrweb-player-root iframe {
+  border: 0;
+}
+.rrweb-preview-root {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+.rrweb-preview-root > .replayer-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--replay-preview-width);
+  height: var(--replay-preview-height);
+  transform: translate(-50%, -50%) scale(var(--replay-preview-scale));
+  transform-origin: center;
+  pointer-events: none;
+}
+.rrweb-preview-root iframe,
+.rrweb-preview-root canvas {
+  pointer-events: none;
+}
+.replay-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) 0px;
+  transition: grid-template-rows 240ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.replay-timeline-panel {
+  opacity: 0;
+  transform: translate3d(20px, 0, 0);
+  transition:
+    transform 240ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 160ms ease-out,
+    border-color 160ms ease-out;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+.replay-layout[data-timeline='open'] {
+  grid-template-rows: minmax(0, 1fr) clamp(220px, 34dvh, 360px);
+}
+.replay-layout[data-timeline='open'] .replay-timeline-panel {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+@media (min-width: 80rem) {
+  .replay-layout {
+    grid-template-columns: minmax(0, 1fr) 0px;
+    grid-template-rows: minmax(0, 1fr);
+    transition: grid-template-columns 240ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .replay-layout[data-timeline='open'] {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-rows: minmax(0, 1fr);
+  }
+}
+.replay-scrubber {
+  cursor: pointer;
+}
+.replay-scrubber:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.replay-scrubber:focus-visible {
+  outline: none;
+}
+.replay-progress-fill {
+  transform: scaleX(var(--replay-progress-scale, 0));
+  transform-origin: left center;
+}
+.replay-progress-thumb {
+  left: var(--replay-progress, 0%);
+  transform: translate3d(-50%, -50%, 0) scale(0);
+}
+.group\/scrubber:hover .replay-progress-thumb {
+  transform: translate3d(-50%, -50%, 0) scale(1);
+}
+[data-playing='true'] .replay-progress-fill {
+  transition: transform 250ms linear;
+}
+[data-playing='true'] .replay-progress-thumb {
+  transition:
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    left 250ms linear;
+}
+[data-playing='false'] .replay-progress-fill {
+  transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+[data-playing='false'] .replay-progress-thumb {
+  transition:
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    left 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+/*
+ * The visible track, fill and handle are drawn with regular DOM nodes (see
+ * SessionReplayModal). This native range input only provides the hit area,
+ * dragging and keyboard support, so its own track and thumb are fully
+ * transparent and stretched to the full grab height.
+ */
+.replay-scrubber::-webkit-slider-runnable-track {
+  height: 16px;
+  background: transparent;
+}
+.replay-scrubber::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  margin-top: 0;
+  appearance: none;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+}
+.replay-scrubber::-moz-range-track {
+  height: 16px;
+  background: transparent;
+}
+.replay-scrubber::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+}
+
+/*
+ * YouTube-style center bezel that flashes the play / pause glyph in the middle
+ * of the player whenever playback is toggled.
+ */
+@keyframes replay-bezel-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  15% {
+    opacity: 0.95;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+.replay-bezel {
+  animation: replay-bezel-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .replay-layout,
+  .replay-timeline-panel {
+    transition-duration: 1ms;
+    transform: none;
+  }
+  .replay-progress-fill,
+  .replay-progress-thumb {
+    transition: none !important;
+  }
+  .replay-bezel {
+    animation: none;
+    opacity: 0;
+  }
+}
+.replayer-mouse {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  transition:
+    left 0.05s linear,
+    top 0.05s linear;
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9JzMwMHB4JyB3aWR0aD0nMzAwcHgnICBmaWxsPSIjMDAwMDAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGRhdGEtbmFtZT0iTGF5ZXIgMSIgdmlld0JveD0iMCAwIDUwIDUwIiB4PSIwcHgiIHk9IjBweCI+PHRpdGxlPkRlc2lnbl90bnA8L3RpdGxlPjxwYXRoIGQ9Ik00OC43MSw0Mi45MUwzNC4wOCwyOC4yOSw0NC4zMywxOEExLDEsMCwwLDAsNDQsMTYuMzlMMi4zNSwxLjA2QTEsMSwwLDAsMCwxLjA2LDIuMzVMMTYuMzksNDRhMSwxLDAsMCwwLDEuNjUuMzZMMjguMjksMzQuMDgsNDIuOTEsNDguNzFhMSwxLDAsMCwwLDEuNDEsMGw0LjM4LTQuMzhBMSwxLDAsMCwwLDQ4LjcxLDQyLjkxWm0tNS4wOSwzLjY3TDI5LDMyYTEsMSwwLDAsMC0xLjQxLDBsLTkuODUsOS44NUwzLjY5LDMuNjlsMzguMTIsMTRMMzIsMjcuNThBMSwxLDAsMCwwLDMyLDI5TDQ2LjU5LDQzLjYyWiI+PC9wYXRoPjwvc3ZnPg==');
+  border-color: transparent; /* otherwise we transition from black when .touch-device class is added */
+}
+.replayer-mouse::after {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: rgb(73, 80, 246);
+  border-radius: 100%;
+  transform: translate(-50%, -50%);
+  opacity: 0.3;
+}
+.replayer-mouse.active::after {
+  animation: click 0.2s ease-in-out 1;
+}
+.replayer-mouse.touch-device {
+  background-image: none; /* there's no passive cursor on touch-only screens */
+  width: 70px;
+  height: 70px;
+  border-width: 4px;
+  border-style: solid;
+  border-radius: 100%;
+  margin-left: -37px;
+  margin-top: -37px;
+  border-color: rgba(73, 80, 246, 0);
+  transition:
+    left 0s linear,
+    top 0s linear,
+    border-color 0.2s ease-in-out;
+}
+.replayer-mouse.touch-device.touch-active {
+  border-color: rgba(73, 80, 246, 1);
+  transition:
+    left 0.25s linear,
+    top 0.25s linear,
+    border-color 0.2s ease-in-out;
+}
+.replayer-mouse.touch-device::after {
+  opacity: 0; /* there's no passive cursor on touch-only screens */
+}
+.replayer-mouse.touch-device.active::after {
+  animation: touch-click 0.2s ease-in-out 1;
+}
+.replayer-mouse-tail {
+  position: absolute;
+  pointer-events: none;
+}
+
+@keyframes click {
+  0% {
+    opacity: 0.3;
+    width: 20px;
+    height: 20px;
+  }
+  50% {
+    opacity: 0.5;
+    width: 10px;
+    height: 10px;
+  }
+}
+
+@keyframes touch-click {
+  0% {
+    opacity: 0;
+    width: 20px;
+    height: 20px;
+  }
+  50% {
+    opacity: 0.5;
+    width: 10px;
+    height: 10px;
+  }
+}

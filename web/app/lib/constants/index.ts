@@ -361,7 +361,6 @@ export const DISCORD_URL = 'https://discord.gg/ZVK8Tw2E8j'
 export const STATUSPAGE_URL = 'https://status.swetrix.com/'
 export const MAIN_URL = 'https://swetrix.com'
 export const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
-export const BOOK_A_CALL_URL = 'https://cal.com/swetrix/30min'
 /** The cal.com link slug (without origin) used by the @calcom/embed-react inline widget. */
 export const BOOK_A_CALL_CAL_LINK = 'swetrix/30min'
 export const PERFORMANCE_LIVE_DEMO_URL =
@@ -561,6 +560,7 @@ const SELFHOSTED_PROJECT_TABS = {
   funnels: 'funnels',
   profiles: 'profiles',
   sessions: 'sessions',
+  replays: 'replays',
   errors: 'errors',
   goals: 'goals',
   experiments: 'experiments',
@@ -575,6 +575,7 @@ const PRODUCTION_PROJECT_TABS = {
   profiles: 'profiles',
   funnels: 'funnels',
   sessions: 'sessions',
+  replays: 'replays',
   errors: 'errors',
   goals: 'goals',
   experiments: 'experiments',

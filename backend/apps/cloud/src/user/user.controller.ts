@@ -65,7 +65,10 @@ import { AppLoggerService } from '../logger/logger.service'
 import { DeleteSelfDTO } from './dto/delete-self.dto'
 import { CancelSubscriptionDTO } from './dto/cancel-subscription.dto'
 import { CreateFeedbackDTO } from './dto/create-feedback.dto'
-import { UpdateWebsiteAddonDTO } from './dto/update-website-addon.dto'
+import {
+  UpdateSessionReplayAddonDTO,
+  UpdateWebsiteAddonDTO,
+} from './dto/update-website-addon.dto'
 import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import {
   IUsageInfo,
@@ -142,7 +145,10 @@ export class UserController {
 
     const sanitizedUser = this.userService.omitSensitiveData(
       user,
-    ) as Partial<User> & { websiteAddon?: unknown }
+    ) as Partial<User> & {
+      websiteAddon?: unknown
+      sessionReplayAddon?: unknown
+    }
 
     sanitizedUser.sharedProjects = sharedProjects
     sanitizedUser.organisationMemberships = organisationMemberships
@@ -150,6 +156,8 @@ export class UserController {
       uid,
       user,
     )
+    sanitizedUser.sessionReplayAddon =
+      await this.userService.getSessionReplayAddonSummary(uid, user)
 
     return {
       user: sanitizedUser,
@@ -643,7 +651,9 @@ export class UserController {
     )
     const url = `${isDevelopment ? request.headers.origin : PRODUCTION_ORIGIN}/verify/${token.id}`
 
-    await this.userService.update(id, { emailRequests: 1 + user.emailRequests })
+    await this.userService.update(id, {
+      emailRequests: 1 + user.emailRequests,
+    })
     await this.mailerService.sendEmail(user.email, LetterTemplate.SignUp, {
       url,
     })
@@ -837,15 +847,18 @@ export class UserController {
 
   @Get('usageinfo')
   async getUsageInfo(@CurrentUserId() uid: string): Promise<IUsageInfo> {
-    const [rawInfo, rawLast30DaysInfo, projects] = await Promise.all([
-      this.projectService.getRedisUsageInfo(uid),
-      this.projectService.getRedisUsageInfo(uid, 'last30Days'),
-      this.projectService.countByAdminId(uid),
-    ])
+    const [rawInfo, rawLast30DaysInfo, projects, sessionReplays] =
+      await Promise.all([
+        this.projectService.getRedisUsageInfo(uid),
+        this.projectService.getRedisUsageInfo(uid, 'last30Days'),
+        this.projectService.countByAdminId(uid),
+        this.projectService.getMonthlySessionReplayUsage(uid),
+      ])
 
     return {
       ...formatUsageInfo(rawInfo),
       projects,
+      sessionReplays,
       last30Days: formatUsageInfo(rawLast30DaysInfo),
     }
   }
@@ -914,6 +927,39 @@ export class UserController {
     this.logger.log({ body, id }, 'PUT /addons/websites')
 
     const user = await this.userService.updateWebsiteAddon(
+      id,
+      body.quantity,
+      body.billingInterval,
+    )
+    await this.projectService.clearProjectsRedisCache(id)
+
+    return user
+  }
+
+  @ApiBearerAuth()
+  @Post('addons/session-replays/preview')
+  async previewSessionReplayAddon(
+    @CurrentUserId() id: string,
+    @Body() body: UpdateSessionReplayAddonDTO,
+  ): Promise<any> {
+    this.logger.log({ body, id }, 'POST /addons/session-replays/preview')
+
+    return this.userService.previewSessionReplayAddon(
+      id,
+      body.quantity,
+      body.billingInterval,
+    )
+  }
+
+  @ApiBearerAuth()
+  @Put('addons/session-replays')
+  async updateSessionReplayAddon(
+    @CurrentUserId() id: string,
+    @Body() body: UpdateSessionReplayAddonDTO,
+  ): Promise<Partial<User>> {
+    this.logger.log({ body, id }, 'PUT /addons/session-replays')
+
+    const user = await this.userService.updateSessionReplayAddon(
       id,
       body.quantity,
       body.billingInterval,

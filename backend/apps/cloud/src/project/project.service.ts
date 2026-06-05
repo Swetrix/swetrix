@@ -191,6 +191,7 @@ export class ProjectService {
         )
         .leftJoinAndSelect('organisationMembers.user', 'organisationUser')
         .select([
+          'project.id',
           'project.origins',
           'project.active',
           'project.public',
@@ -200,6 +201,7 @@ export class ProjectService {
           'project.captchaSecretKey',
           'project.captchaDifficulty',
           'project.captchaDifficultyMode',
+          'project.sessionReplayRetentionDays',
           'project.passwordHash',
           'project.isPasswordProtected',
           'admin.id',
@@ -207,6 +209,8 @@ export class ProjectService {
           'admin.isAccountBillingSuspended',
           'admin.planCode',
           'admin.planType',
+          'admin.entitlementOverrides',
+          'admin.addonOverrides',
           'organisation.id',
           'organisationMembers.role',
           'organisationMembers.confirmed',
@@ -278,6 +282,7 @@ export class ProjectService {
           isAccountBillingSuspended: true,
           planCode: true,
           planType: true,
+          entitlementOverrides: true,
         },
         organisation: {
           id: true,
@@ -1022,6 +1027,57 @@ export class ProjectService {
     }
 
     return info as IUsageInfoRedis
+  }
+
+  async getMonthlySessionReplayUsage(uid: string): Promise<number> {
+    const monthStart = dayjs.utc().startOf('month')
+    const key = `monthly_replay_usage:${uid}:${monthStart.format('YYYY-MM')}`
+    const cachedUsage = await redis.get(key)
+
+    if (!_isEmpty(cachedUsage)) {
+      return Number(cachedUsage) || 0
+    }
+
+    const projects = await this.find({
+      where: {
+        admin: { id: uid },
+      },
+      select: ['id'],
+    })
+
+    if (_isEmpty(projects)) {
+      await redis.set(key, '0', 'EX', redisUserUsageinfoCacheTimeout)
+      return 0
+    }
+
+    const CHUNK_SIZE = 5000
+    const pids = _map(projects, 'id')
+    let usage = 0
+
+    for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
+      const pidChunk = pids.slice(i, i + CHUNK_SIZE)
+
+      const { data } = await clickhouse
+        .query({
+          query: `
+            SELECT uniqExact(concat(toString(psid), ':', replayId)) AS usage
+            FROM session_replay_chunks
+            WHERE pid IN {pids:Array(FixedString(12))}
+              AND created >= {monthStart:DateTime}
+          `,
+          query_params: {
+            pids: pidChunk,
+            monthStart: monthStart.format('YYYY-MM-DD HH:mm:ss'),
+          },
+        })
+        .then((resultSet) => resultSet.json<{ usage: number }>())
+
+      usage += Number(data[0]?.usage) || 0
+    }
+
+    await redis.set(key, `${usage}`, 'EX', redisUserUsageinfoCacheTimeout)
+
+    return usage
   }
 
   async clearProjectsRedisCache(uid: string): Promise<void> {

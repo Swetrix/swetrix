@@ -2,6 +2,10 @@ import { useCallback, useRef, useState } from 'react'
 
 import type {
   SessionsResponse,
+  SessionReplaysResponse,
+  SessionReplayResponse,
+  DeleteSessionReplayResponse,
+  SessionReplayExportResponse,
   ErrorsResponse,
   FeatureFlagStats,
   FeatureFlagProfilesResponse,
@@ -100,6 +104,180 @@ export function useSessionsProxy() {
   )
 
   return { fetchSessions, data, error, isLoading }
+}
+
+export function useSessionReplaysProxy() {
+  const [data, setData] = useState<SessionReplaysResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchSessionReplays = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const result = await postAnalytics<SessionReplaysResponse>({
+          action: 'getSessionReplays',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
+  return { fetchSessionReplays, data, error, isLoading }
+}
+
+export function useSessionReplayProxy() {
+  const [data, setData] = useState<SessionReplayResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchSessionReplay = useCallback(
+    async (projectId: string, psid: string, replayId?: string) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const result = await postAnalytics<SessionReplayResponse>({
+          action: 'getSessionReplay',
+          projectId,
+          psid,
+          replayId,
+          params: {},
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        setError(message)
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
+  return { fetchSessionReplay, data, error, isLoading }
+}
+
+export function useDeleteSessionReplayProxy() {
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const deleteSessionReplay = useCallback(
+    async (projectId: string, psid: string, replayId?: string) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const result = await postAnalytics<DeleteSessionReplayResponse>({
+          action: 'deleteSessionReplay',
+          projectId,
+          psid,
+          replayId,
+          params: {},
+        })
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        setError(message)
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
+  return { deleteSessionReplay, error, isLoading }
+}
+
+async function parseExportProxyResponse(
+  response: Response,
+): Promise<SessionReplayExportResponse> {
+  let result: ProxyResponse<SessionReplayExportResponse>
+  try {
+    result =
+      (await response.json()) as ProxyResponse<SessionReplayExportResponse>
+  } catch {
+    throw new Error(
+      `Invalid JSON from /api/session-replay-export (status ${response.status})`,
+    )
+  }
+
+  if (!response.ok || !result.data) {
+    throw new Error(
+      result.error || `Request failed (status ${response.status})`,
+    )
+  }
+
+  return result.data
+}
+
+export function useSessionReplayExportProxy() {
+  const startSessionReplayExport = useCallback(
+    async (
+      projectId: string,
+      psid: string,
+      replayId?: string,
+      signal?: AbortSignal,
+    ) => {
+      const response = await fetch('/api/session-replay-export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal,
+        body: JSON.stringify({ projectId, psid, replayId }),
+      })
+
+      return parseExportProxyResponse(response)
+    },
+    [],
+  )
+
+  const getSessionReplayExportStatus = useCallback(
+    async (projectId: string, exportId: string, signal?: AbortSignal) => {
+      const query = new URLSearchParams({ projectId, exportId })
+      const response = await fetch(`/api/session-replay-export?${query}`, {
+        signal,
+      })
+
+      return parseExportProxyResponse(response)
+    },
+    [],
+  )
+
+  const getSessionReplayExportDownloadUrl = useCallback(
+    (projectId: string, exportId: string) => {
+      const query = new URLSearchParams({
+        action: 'download',
+        projectId,
+        exportId,
+      })
+
+      return `/api/session-replay-export?${query}`
+    },
+    [],
+  )
+
+  return {
+    startSessionReplayExport,
+    getSessionReplayExportStatus,
+    getSessionReplayExportDownloadUrl,
+  }
 }
 
 export function useErrorsProxy() {

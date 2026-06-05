@@ -7,7 +7,12 @@
     "strict": true,
     "sourceMap": true,
     "declaration": false,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "rrweb": ["src/types/rrweb-shim.d.ts"]
+    },
+    "types": []
   },
   "include": ["src"]
 }

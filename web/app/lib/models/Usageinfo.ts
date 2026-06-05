@@ -12,5 +12,6 @@ interface UsageInfoBreakdown {
 
 export interface UsageInfo extends UsageInfoBreakdown {
   projects: number
+  sessionReplays: number
   last30Days: UsageInfoBreakdown
 }

@@ -14,3 +14,15 @@ export class UpdateWebsiteAddonDTO {
   @IsIn([BillingFrequency.Monthly, BillingFrequency.Yearly])
   billingInterval: BillingFrequency
 }
+
+export class UpdateSessionReplayAddonDTO {
+  @ApiProperty({ example: 5000, minimum: 0, maximum: 100000 })
+  @IsInt()
+  @Min(0)
+  @Max(100000)
+  quantity: number
+
+  @ApiProperty({ example: BillingFrequency.Monthly, enum: BillingFrequency })
+  @IsIn([BillingFrequency.Monthly, BillingFrequency.Yearly])
+  billingInterval: BillingFrequency
+}

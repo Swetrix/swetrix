@@ -65,6 +65,7 @@ init('YOUR_PROJECT_ID', {
   disabled: false,
   respectDNT: false,
   profileId: 'user-123',
+  preloadSessionReplay: false,
 })
 ```
 
@@ -75,6 +76,7 @@ init('YOUR_PROJECT_ID', {
 | `disabled` | When `true`, no data is sent. Useful for dev environments. | `false` |
 | `respectDNT` | When `true`, disables tracking for users with Do Not Track enabled. | `false` |
 | `profileId` | Profile ID for long-term user tracking (MAU/DAU). | `undefined` |
+| `preloadSessionReplay` | Preload the session replay recorder after `init()`. Recording only starts after `startSessionReplay()`. | `undefined` |
 
 ### `trackViews(options?)`
 
@@ -193,6 +195,35 @@ const variantWithFallback = await getExperiment('checkout-redesign-experiment-id
 // Clear the shared feature flag / experiment cache
 clearExperimentsCache()
 ```
+
+### `startSessionReplay(options?)`
+
+Start recording a session replay. Session replays use `total` privacy by default, which masks text and inputs and blocks media/canvas capture unless you explicitly choose another mode.
+
+If you use the npm package, rrweb is dynamically imported from your installed dependencies only when the recorder is preloaded or started. If you use the CDN/script-tag build, the standalone replay recorder is loaded with an async script tag.
+
+```javascript
+const replay = await startSessionReplay({
+  privacy: 'total',
+  sampleRate: 0.25,
+  maxDurationMs: 10 * 60 * 1000,
+  idleTimeoutMs: 2 * 60 * 1000,
+})
+
+// Stop or flush manually when needed
+await replay.flush()
+await replay.stop()
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `privacy` | Privacy mode: `total`, `normal`, or `none`. | `'total'` |
+| `sampleRate` | Fraction of sessions to record (`0` to `1`). | `1` |
+| `maxDurationMs` | Stop recording after this duration. | `undefined` |
+| `idleTimeoutMs` | Stop recording after this much visitor inactivity. | `undefined` |
+| `flushIntervalMs` | Upload buffered replay events at this interval. | `5000` |
+| `maxEventsPerChunk` | Upload once this many events are buffered. | `100` |
+| `rrweb` | Additional rrweb record options. | `undefined` |
 
 ### Session & Profile IDs
 

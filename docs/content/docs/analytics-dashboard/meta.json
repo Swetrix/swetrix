@@ -8,6 +8,7 @@
     "funnels",
     "alerts",
     "profiles-and-sessions",
+    "session-replays",
     "error-tracking",
     "goals",
     "feature-flags",

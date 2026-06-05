@@ -14,6 +14,33 @@ import {
   getPath,
 } from './utils.js'
 
+type RrwebEvent = Record<string, unknown>
+
+type RrwebEmit = (event: RrwebEvent) => void
+
+interface RrwebRecordOptions {
+  emit?: RrwebEmit
+  [key: string]: unknown
+}
+
+interface RrwebGlobal {
+  record?: (options: RrwebRecordOptions) => (() => void) | undefined
+  Replayer?: unknown
+}
+
+type RrwebModule = RrwebGlobal & {
+  default?: RrwebGlobal
+}
+
+type SessionReplayPreloadOption = boolean | { rrwebUrl?: string }
+
+declare global {
+  interface Window {
+    rrweb?: RrwebGlobal
+    __SWETRIX_RRWEB_LOADING__?: Promise<void>
+  }
+}
+
 export interface LibOptions {
   /**
    * When set to `true`, localhost events will be sent to server.
@@ -39,6 +66,11 @@ export interface LibOptions {
    * If set, it will be used for all pageviews and events unless overridden per-call.
    */
   profileId?: string
+
+  /**
+   * Preload session replay recorder code. Recording only starts after calling startSessionReplay().
+   */
+  preloadSessionReplay?: SessionReplayPreloadOption
 }
 
 export interface TrackEventOptions {
@@ -166,6 +198,26 @@ export interface ErrorActions {
   stop: () => void
 }
 
+const SESSION_REPLAY_PRIVACY_VALUES = ['total', 'normal', 'none'] as const
+
+export type SessionReplayPrivacy =
+  (typeof SESSION_REPLAY_PRIVACY_VALUES)[number]
+
+export interface SessionReplayOptions {
+  privacy?: SessionReplayPrivacy
+  rrweb?: RrwebRecordOptions
+  flushIntervalMs?: number
+  maxEventsPerChunk?: number
+  sampleRate?: number
+  maxDurationMs?: number
+  idleTimeoutMs?: number
+}
+
+export interface SessionReplayActions {
+  stop: () => Promise<void>
+  flush: () => Promise<void>
+}
+
 export interface PageData {
   /** Current URL path. */
   path: string
@@ -228,8 +280,26 @@ export const defaultActions = {
   stop() {},
 }
 
+export const defaultSessionReplayActions: SessionReplayActions = {
+  async stop() {},
+  async flush() {},
+}
+
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 const DEFAULT_API_BASE = 'https://api.swetrix.com'
+const DEFAULT_RRWEB_FILE = 'replaylibrary.min.js'
+const DEFAULT_RRWEB_URL = `https://cdn.jsdelivr.net/npm/swetrix@latest/dist/${DEFAULT_RRWEB_FILE}`
+const DEFAULT_SESSION_REPLAY_FLUSH_INTERVAL = 5000
+const DEFAULT_SESSION_REPLAY_MAX_EVENTS = 100
+const DEFAULT_SESSION_REPLAY_PRIVACY: SessionReplayPrivacy = 'total'
+const SESSION_REPLAY_ACTIVITY_EVENTS = [
+  'click',
+  'keydown',
+  'mousedown',
+  'mousemove',
+  'scroll',
+  'touchstart',
+] as const
 
 // Default cache duration: 5 minutes
 const DEFAULT_CACHE_DURATION = 5 * 60 * 1000
@@ -242,11 +312,18 @@ export class Lib {
   private activePage: string | null = null
   private errorListenerExists = false
   private cachedData: CachedData | null = null
+  private rrwebLoader: Promise<void> | null = null
+  private sessionReplayActions: SessionReplayActions | null = null
+  private sessionReplayInitPromise: Promise<SessionReplayActions> | null = null
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
     this.heartbeat = this.heartbeat.bind(this)
     this.captureError = this.captureError.bind(this)
+
+    if (this.getSessionReplayPreloadOption()) {
+      void this.preloadSessionReplay().catch(() => undefined)
+    }
   }
 
   captureError(event: ErrorEvent): void {
@@ -370,7 +447,7 @@ export class Lib {
     }
 
     this.pageViewsOptions = options
-    let interval: NodeJS.Timeout
+    let interval: ReturnType<typeof setInterval>
 
     if (!options?.unique) {
       interval = setInterval(this.trackPathChange, 2000)
@@ -707,6 +784,215 @@ export class Lib {
     }
   }
 
+  async startSessionReplay(
+    options: SessionReplayOptions = {},
+  ): Promise<SessionReplayActions> {
+    if (this.sessionReplayActions) {
+      return this.sessionReplayActions
+    }
+
+    if (this.sessionReplayInitPromise) {
+      return this.sessionReplayInitPromise
+    }
+
+    const initPromise = this.initialiseSessionReplay(options)
+    this.sessionReplayInitPromise = initPromise
+
+    try {
+      return await initPromise
+    } finally {
+      if (this.sessionReplayInitPromise === initPromise) {
+        this.sessionReplayInitPromise = null
+      }
+    }
+  }
+
+  private async initialiseSessionReplay(
+    options: SessionReplayOptions,
+  ): Promise<SessionReplayActions> {
+    if (this.sessionReplayActions) {
+      return this.sessionReplayActions
+    }
+
+    if (!this.canTrack()) {
+      return defaultSessionReplayActions
+    }
+
+    if (!this.shouldSampleSessionReplay(options.sampleRate)) {
+      return defaultSessionReplayActions
+    }
+
+    try {
+      await this.preloadSessionReplay()
+    } catch {
+      return defaultSessionReplayActions
+    }
+
+    const rrweb = window.rrweb
+    if (!rrweb?.record) {
+      return defaultSessionReplayActions
+    }
+
+    const privacy = this.getSessionReplayPrivacy(options.privacy)
+    const replayId = this.createReplayId()
+    const started = await this.sendSessionReplayStart(replayId, privacy)
+
+    if (!started) {
+      return defaultSessionReplayActions
+    }
+
+    const flushIntervalMs =
+      typeof options.flushIntervalMs === 'number' && options.flushIntervalMs > 0
+        ? options.flushIntervalMs
+        : DEFAULT_SESSION_REPLAY_FLUSH_INTERVAL
+    const maxEventsPerChunk =
+      typeof options.maxEventsPerChunk === 'number' &&
+      options.maxEventsPerChunk > 0
+        ? Math.floor(options.maxEventsPerChunk)
+        : DEFAULT_SESSION_REPLAY_MAX_EVENTS
+    const maxDurationMs =
+      typeof options.maxDurationMs === 'number' && options.maxDurationMs > 0
+        ? options.maxDurationMs
+        : null
+    const idleTimeoutMs =
+      typeof options.idleTimeoutMs === 'number' && options.idleTimeoutMs > 0
+        ? options.idleTimeoutMs
+        : null
+
+    let chunkIndex = 0
+    let stopped = false
+    let events: RrwebEvent[] = []
+    let flushing = Promise.resolve()
+    let maxDurationTimer: ReturnType<typeof setTimeout> | undefined
+    let idleTimer: ReturnType<typeof setTimeout> | undefined
+
+    const flush = async (useBeacon = false) => {
+      if (!events.length) return
+
+      const chunk = events
+      events = []
+      const currentChunkIndex = chunkIndex++
+
+      flushing = flushing
+        .catch(() => undefined)
+        .then(() =>
+          this.sendSessionReplayChunk(
+            replayId,
+            privacy,
+            currentChunkIndex,
+            chunk,
+            useBeacon,
+          ),
+        )
+
+      await flushing
+    }
+
+    const userEmit = options.rrweb?.emit
+    const recordOptions = this.getSessionReplayRecordOptions(
+      privacy,
+      options.rrweb,
+      (event) => {
+        try {
+          userEmit?.(event)
+        } catch {}
+
+        events.push(event)
+        if (events.length >= maxEventsPerChunk) {
+          void flush()
+        }
+      },
+    )
+
+    const stopRecording = rrweb.record(recordOptions)
+    const timer = setInterval(() => void flush(), flushIntervalMs)
+    const flushOnPageExit = () => void flush(true)
+    const flushOnHidden = () => {
+      if (document.visibilityState === 'hidden') {
+        void flush(true)
+      }
+    }
+    const clearIdleTimer = () => {
+      if (idleTimer) {
+        clearTimeout(idleTimer)
+        idleTimer = undefined
+      }
+    }
+    const stopSessionReplay = async () => {
+      if (stopped) return
+      stopped = true
+      clearInterval(timer)
+      if (maxDurationTimer) {
+        clearTimeout(maxDurationTimer)
+      }
+      clearIdleTimer()
+      window.removeEventListener('pagehide', flushOnPageExit)
+      document.removeEventListener('visibilitychange', flushOnHidden)
+      SESSION_REPLAY_ACTIVITY_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, resetIdleTimer)
+      })
+      stopRecording?.()
+      await flush()
+      this.sessionReplayActions = null
+      this.sessionReplayInitPromise = null
+    }
+    const resetIdleTimer = () => {
+      if (!idleTimeoutMs || stopped) return
+      clearIdleTimer()
+      idleTimer = setTimeout(() => void stopSessionReplay(), idleTimeoutMs)
+    }
+
+    window.addEventListener('pagehide', flushOnPageExit)
+    document.addEventListener('visibilitychange', flushOnHidden)
+
+    if (maxDurationMs) {
+      maxDurationTimer = setTimeout(
+        () => void stopSessionReplay(),
+        maxDurationMs,
+      )
+    }
+
+    if (idleTimeoutMs) {
+      SESSION_REPLAY_ACTIVITY_EVENTS.forEach((eventName) => {
+        window.addEventListener(eventName, resetIdleTimer, { passive: true })
+      })
+      resetIdleTimer()
+    }
+
+    this.sessionReplayActions = {
+      stop: stopSessionReplay,
+      flush: async () => {
+        await flush()
+      },
+    }
+
+    return this.sessionReplayActions
+  }
+
+  private shouldSampleSessionReplay(sampleRate?: number): boolean {
+    if (typeof sampleRate !== 'number') {
+      return true
+    }
+
+    if (sampleRate <= 0) {
+      return false
+    }
+
+    if (sampleRate >= 1) {
+      return true
+    }
+
+    return Math.random() < sampleRate
+  }
+
+  private getSessionReplayPrivacy(privacy: unknown): SessionReplayPrivacy {
+    return SESSION_REPLAY_PRIVACY_VALUES.includes(
+      privacy as SessionReplayPrivacy,
+    )
+      ? (privacy as SessionReplayPrivacy)
+      : DEFAULT_SESSION_REPLAY_PRIVACY
+  }
+
   /**
    * Gets the API base URL (without /log suffix).
    */
@@ -813,6 +1099,284 @@ export class Lib {
     }
 
     return true
+  }
+
+  private getSessionReplayUrl(): string {
+    const replayOption = this.getSessionReplayPreloadOption()
+    if (
+      replayOption &&
+      typeof replayOption === 'object' &&
+      replayOption.rrwebUrl
+    ) {
+      return replayOption.rrwebUrl
+    }
+
+    return this.getDefaultSessionReplayUrl()
+  }
+
+  private getSessionReplayPreloadOption(): SessionReplayPreloadOption | undefined {
+    return this.options?.preloadSessionReplay
+  }
+
+  private getDefaultSessionReplayUrl(): string {
+    if (!isInBrowser()) {
+      return DEFAULT_RRWEB_URL
+    }
+
+    const trackerScript = this.getTrackerScript()
+
+    if (trackerScript?.src) {
+      const { hostname, pathname } = new URL(trackerScript.src)
+      if (
+        hostname === 'swetrix.org' &&
+        /^\/swetrix(\.min)?\.js$/i.test(pathname)
+      ) {
+        return DEFAULT_RRWEB_URL
+      }
+
+      return new URL(DEFAULT_RRWEB_FILE, trackerScript.src).toString()
+    }
+
+    return DEFAULT_RRWEB_URL
+  }
+
+  private getTrackerScript(): HTMLScriptElement | undefined {
+    const trackerScript = Array.from(document.scripts).find((script) => {
+      if (!script.src) {
+        return false
+      }
+
+      try {
+        const { pathname } = new URL(script.src)
+        return /(^|\/)swetrix(\.min)?\.js$/i.test(pathname)
+      } catch {
+        return false
+      }
+    })
+
+    return trackerScript
+  }
+
+  private preloadSessionReplay(): Promise<void> {
+    if (!isInBrowser()) {
+      return Promise.resolve()
+    }
+
+    if (window.rrweb?.record) {
+      return Promise.resolve()
+    }
+
+    if (this.rrwebLoader) {
+      return this.rrwebLoader
+    }
+
+    if (window.__SWETRIX_RRWEB_LOADING__) {
+      this.rrwebLoader = window.__SWETRIX_RRWEB_LOADING__
+      void this.rrwebLoader.catch(() => {
+        if (window.__SWETRIX_RRWEB_LOADING__ === this.rrwebLoader) {
+          delete window.__SWETRIX_RRWEB_LOADING__
+        }
+        this.rrwebLoader = null
+      })
+      return this.rrwebLoader
+    }
+
+    this.rrwebLoader = this.loadSessionReplayRecorder()
+
+    window.__SWETRIX_RRWEB_LOADING__ = this.rrwebLoader
+    const loader = this.rrwebLoader
+    void loader.catch(() => {
+      if (window.__SWETRIX_RRWEB_LOADING__ === loader) {
+        delete window.__SWETRIX_RRWEB_LOADING__
+      }
+      if (this.rrwebLoader === loader) {
+        this.rrwebLoader = null
+      }
+    })
+
+    return this.rrwebLoader
+  }
+
+  private async loadSessionReplayRecorder(): Promise<void> {
+    const replayOption = this.getSessionReplayPreloadOption()
+    const hasCustomReplayUrl =
+      replayOption && typeof replayOption === 'object' && replayOption.rrwebUrl
+
+    if (hasCustomReplayUrl || this.getTrackerScript()) {
+      await this.loadSessionReplayScript(this.getSessionReplayUrl())
+      return
+    }
+
+    if (await this.loadSessionReplayPackage()) {
+      return
+    }
+
+    await this.loadSessionReplayScript(this.getDefaultSessionReplayUrl())
+  }
+
+  private async loadSessionReplayPackage(): Promise<boolean> {
+    try {
+      const rrwebModule = (await import('rrweb')) as RrwebModule
+      const rrweb = rrwebModule.record ? rrwebModule : rrwebModule.default
+
+      if (!rrweb?.record) {
+        return false
+      }
+
+      window.rrweb = rrweb
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  private loadSessionReplayScript(url: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script')
+      script.async = true
+      script.src = url
+      script.crossOrigin = 'anonymous'
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error('Failed to load rrweb'))
+      document.head.appendChild(script)
+    })
+  }
+
+  private getSessionReplayRecordOptions(
+    privacy: unknown,
+    userOptions: RrwebRecordOptions | undefined,
+    emit: RrwebEmit,
+  ): RrwebRecordOptions {
+    const options: RrwebRecordOptions = {
+      ...userOptions,
+      emit,
+    }
+
+    const maskInputOptions =
+      typeof options.maskInputOptions === 'object' &&
+      options.maskInputOptions !== null
+        ? (options.maskInputOptions as Record<string, unknown>)
+        : {}
+
+    const resolvedPrivacy = this.getSessionReplayPrivacy(privacy)
+
+    if (resolvedPrivacy === 'total') {
+      return {
+        ...options,
+        maskAllInputs: true,
+        maskTextSelector: '*',
+        blockSelector: this.mergeSelectors(
+          options.blockSelector,
+          'img, picture, video, audio, canvas, svg',
+        ),
+        recordCanvas: false,
+        inlineImages: false,
+        emit,
+      }
+    }
+
+    if (resolvedPrivacy === 'normal') {
+      return {
+        ...options,
+        maskAllInputs: true,
+        emit,
+      }
+    }
+
+    return {
+      ...options,
+      maskInputOptions: {
+        ...maskInputOptions,
+        password: true,
+      },
+      emit,
+    }
+  }
+
+  private mergeSelectors(existing: unknown, required: string): string {
+    if (typeof existing === 'string' && existing.trim()) {
+      return `${existing}, ${required}`
+    }
+
+    return required
+  }
+
+  private createReplayId(): string {
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+      return crypto.randomUUID()
+    }
+
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+  }
+
+  private async sendSessionReplayStart(
+    replayId: string,
+    privacy: SessionReplayPrivacy,
+  ): Promise<boolean> {
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/session-replay/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pid: this.projectID,
+          replayId,
+          privacy,
+          pg:
+            this.activePage ||
+            getPath({
+              hash: this.pageViewsOptions?.hash,
+              search: this.pageViewsOptions?.search,
+            }),
+          lc: getLocale(),
+          tz: getTimezone(),
+          profileId: this.options?.profileId,
+        }),
+      })
+
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+
+  private async sendSessionReplayChunk(
+    replayId: string,
+    privacy: SessionReplayPrivacy,
+    chunkIndex: number,
+    events: RrwebEvent[],
+    useBeacon: boolean,
+  ): Promise<void> {
+    const apiBase = this.getApiBase()
+    const url = `${apiBase}/log/session-replay/chunk`
+    const payload = JSON.stringify({
+      pid: this.projectID,
+      replayId,
+      privacy,
+      chunkIndex,
+      events,
+    })
+
+    if (useBeacon && typeof navigator.sendBeacon === 'function') {
+      const sent = navigator.sendBeacon(
+        url,
+        new Blob([payload], { type: 'application/json' }),
+      )
+      if (sent) return
+    }
+
+    try {
+      await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        keepalive: useBeacon,
+        body: payload,
+      })
+    } catch {}
   }
 
   private async sendRequest(path: string, body: object): Promise<void> {

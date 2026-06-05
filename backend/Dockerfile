@@ -1,7 +1,9 @@
 #Stage 1: Build
-FROM node:lts-alpine AS build
+FROM mcr.microsoft.com/playwright:v1.60.0-noble AS build
 WORKDIR /build
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 COPY package*.json ./
+COPY scripts/patch-rrvideo.js ./scripts/patch-rrvideo.js
 RUN npm ci --force
 COPY . .
 RUN npm run deploy:community
@@ -9,7 +11,7 @@ RUN node ./meta/dbip-free-sync.js
 RUN npm prune --omit=dev --force
 
 #Stage 2: Runtime
-FROM node:lts-alpine AS run
+FROM mcr.microsoft.com/playwright:v1.60.0-noble AS run
 LABEL maintainer="swetrix.com <contact@swetrix.com>"
 
 ENV TZ=UTC \
@@ -32,10 +34,11 @@ ENV OIDC_CLIENT_ID='' \
     OIDC_DISCOVERY_URL='' \
     OIDC_CLIENT_SECRET=''
 
-# Install and configure timezone
-RUN apk add --no-cache tzdata && \
+# Install video tooling and configure timezone
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg tzdata && \
     cp /usr/share/zoneinfo/$TZ /etc/localtime && \
-    apk del tzdata
+    rm -rf /var/lib/apt/lists/*
 
 # Use non-root numeric user
 USER 999

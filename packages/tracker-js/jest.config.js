@@ -2,6 +2,7 @@ export default {
   preset: 'ts-jest',
   testEnvironment: '<rootDir>/tests/jsdomEnvironment.ts',
   extensionsToTreatAsEsm: ['.ts'],
+  watchman: false,
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
@@ -10,6 +11,7 @@ export default {
       'ts-jest',
       {
         useESM: true,
+        tsconfig: 'tsconfig.test.json',
       },
     ],
   },

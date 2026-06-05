@@ -704,7 +704,10 @@ export class TaskManagerService {
           async (pid, index) => {
             const projectData = data[pid] || {}
             const topCountry = topCountries[pid]?.cc || null
-            const errorStats = errorCounts[pid] || { count: 0, uniqueErrors: 0 }
+            const errorStats = errorCounts[pid] || {
+              count: 0,
+              uniqueErrors: 0,
+            }
             const pidTotalSessions = totalSessions[pid] || 0
 
             const projectGoals = await this.goalService.findByProject(pid)
@@ -1449,11 +1452,14 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async processWebsiteAddonRenewals() {
-    await this.userService.processDueWebsiteAddonRenewals().catch((reason) => {
+    try {
+      await this.userService.processDueWebsiteAddonRenewals()
+      await this.userService.processDueSessionReplayAddonRenewals()
+    } catch (reason) {
       this.logger.error(
         `[CRON WORKER](processWebsiteAddonRenewals) Error occured: ${reason}`,
       )
-    })
+    }
   }
 
   @Cron(CronExpression.EVERY_2_HOURS)
@@ -1471,6 +1477,9 @@ export class TaskManagerService {
 
       if (now > cancellationEffectiveDate) {
         await this.userService.clearWebsiteAddonsForCancelledSubscription(
+          user.id,
+        )
+        await this.userService.clearSessionReplayAddonsForCancelledSubscription(
           user.id,
         )
         await this.userService.update(user.id, {
@@ -2096,6 +2105,27 @@ export class TaskManagerService {
     }
 
     await this.userService.deleteRefreshTokensWhere(where)
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async cleanupExpiredSessionReplays() {
+    if (!isPrimaryNode()) {
+      return
+    }
+
+    try {
+      const deleted = await this.analyticsService.cleanupExpiredSessionReplays()
+
+      if (deleted > 0) {
+        this.logger.log(
+          `[CRON WORKER](cleanupExpiredSessionReplays) Deleted ${deleted} expired replay chunks`,
+        )
+      }
+    } catch (reason) {
+      this.logger.error(
+        `[CRON WORKER](cleanupExpiredSessionReplays) Error occured: ${reason}`,
+      )
+    }
   }
 
   // Verify managed reverse proxy domains: resolve CNAME -> probe TLS to advance

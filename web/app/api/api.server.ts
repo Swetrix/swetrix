@@ -983,10 +983,34 @@ interface Session {
   profileId: string | null
   isIdentified: 1 | 0
   isFirstSession: 1 | 0
+  hasReplay?: 1 | 0
+  replayDuration?: number | null
+  replayExpiresAt?: string | null
 }
 
 export interface SessionsResponse {
   sessions: Session[]
+  take: number
+  skip: number
+  appliedFilters: AnalyticsFilter[]
+}
+
+type SessionReplayPrivacy = 'total' | 'normal' | 'none'
+
+export interface SessionReplayListItem extends Session {
+  replayId: string
+  privacyMode: SessionReplayPrivacy
+  chunkCount: number
+  eventCount: number
+  replayStart: string
+  replayCreatedAt: string
+  lastReplayCreatedAt: string
+  firstEventTimestamp?: number | string | null
+  lastEventTimestamp?: number | string | null
+}
+
+export interface SessionReplaysResponse {
+  replays: SessionReplayListItem[]
   take: number
   skip: number
   appliedFilters: AnalyticsFilter[]
@@ -1024,6 +1048,38 @@ export async function getSessionsServer(
   return serverFetch<SessionsResponse>(
     request,
     `log/sessions?${queryParams.toString()}`,
+    {
+      headers,
+    },
+  )
+}
+
+export async function getSessionReplaysServer(
+  request: Request,
+  pid: string,
+  params: AnalyticsParams & {
+    take?: number
+    skip?: number
+  },
+): Promise<ServerFetchResult<SessionReplaysResponse>> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  queryParams.append('take', String(params.take || 30))
+  queryParams.append('skip', String(params.skip || 0))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<SessionReplaysResponse>(
+    request,
+    `log/session-replays?${queryParams.toString()}`,
     {
       headers,
     },
@@ -1126,6 +1182,42 @@ interface PageflowItem {
   currency?: string
 }
 
+export interface SessionReplayMetadata {
+  hasReplay: boolean
+  replayId: string
+  privacyMode: SessionReplayPrivacy
+  chunkCount: number
+  eventCount: number
+  replayDuration: number
+  replayExpiresAt: string
+}
+
+export interface SessionReplayResponse {
+  replay: SessionReplayMetadata | null
+  events: Record<string, unknown>[]
+}
+
+export interface DeleteSessionReplayResponse {
+  deleted: boolean
+  deletedChunks: number
+}
+
+type SessionReplayExportStatus =
+  | 'queued'
+  | 'processing'
+  | 'ready'
+  | 'failed'
+  | 'expired'
+
+export interface SessionReplayExportResponse {
+  exportId: string
+  status: SessionReplayExportStatus
+  progress: number
+  filename: string
+  expiresAt: string
+  error?: string
+}
+
 export interface SessionDetailsResponse {
   details: {
     psid: string
@@ -1164,6 +1256,7 @@ export interface SessionDetailsResponse {
   }
   pages?: PageflowItem[]
   timeBucket?: string
+  replay?: SessionReplayMetadata | null
 }
 
 export async function getSessionServer(
@@ -1189,6 +1282,69 @@ export async function getSessionServer(
     `log/session?${queryParams.toString()}`,
     {
       headers,
+    },
+  )
+}
+
+export async function getSessionReplayServer(
+  request: Request,
+  pid: string,
+  psid: string,
+  replayId?: string,
+  password?: string,
+): Promise<ServerFetchResult<SessionReplayResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    psid,
+  })
+
+  if (replayId) {
+    queryParams.append('replayId', replayId)
+  }
+
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<SessionReplayResponse>(
+    request,
+    `log/session-replay?${queryParams.toString()}`,
+    {
+      headers,
+      timeoutMs: 30000,
+    },
+  )
+}
+
+export async function deleteSessionReplayServer(
+  request: Request,
+  pid: string,
+  psid: string,
+  replayId?: string,
+  password?: string,
+): Promise<ServerFetchResult<DeleteSessionReplayResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    psid,
+  })
+
+  if (replayId) {
+    queryParams.append('replayId', replayId)
+  }
+
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<DeleteSessionReplayResponse>(
+    request,
+    `log/session-replay?${queryParams.toString()}`,
+    {
+      method: 'DELETE',
+      headers,
+      timeoutMs: 30000,
     },
   )
 }

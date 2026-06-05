@@ -69,6 +69,7 @@ const ICON_COLORS: Record<string, string> = {
   // Product Analytics
   profiles: 'text-fuchsia-500',
   sessions: 'text-indigo-500',
+  replays: 'text-sky-500',
   errors: 'text-red-500',
   goals: 'text-purple-500',
   experiments: 'text-pink-500',
@@ -439,6 +440,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       [
         PROJECT_TABS.profiles,
         PROJECT_TABS.sessions,
+        PROJECT_TABS.replays,
         PROJECT_TABS.errors,
         PROJECT_TABS.goals,
         PROJECT_TABS.experiments,

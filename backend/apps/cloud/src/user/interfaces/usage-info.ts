@@ -15,5 +15,6 @@ export interface IUsageInfoBreakdown extends IUsageInfoRedis {
 
 export interface IUsageInfo extends IUsageInfoBreakdown {
   projects: number
+  sessionReplays: number
   last30Days: IUsageInfoBreakdown
 }

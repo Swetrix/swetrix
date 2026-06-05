@@ -12,12 +12,14 @@ import {
   Controller,
   Body,
   Query,
+  Param,
   UseGuards,
   UsePipes,
   ValidationPipe,
   Get,
   Post,
   Patch,
+  Delete,
   Headers,
   BadRequestException,
   InternalServerErrorException,
@@ -28,7 +30,9 @@ import {
   Header,
   HttpException,
   HttpStatus,
+  StreamableFile,
 } from '@nestjs/common'
+import type { Response as ExpressResponse } from 'express'
 
 import { OptionalJwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
@@ -71,6 +75,14 @@ import {
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
+import {
+  GetSessionReplayDto,
+  GetSessionReplaysDto,
+  SessionReplayExportStartDto,
+  SessionReplayChunkDto,
+  SessionReplayStartDto,
+} from './dto/session-replay.dto'
+import { SessionReplayExportService } from './session-replay-export.service'
 import { GetProfilesDto } from './dto/get-profiles.dto'
 import { GetProfileDto, GetProfileSessionsDto } from './dto/get-profile.dto'
 import { ErrorDto } from './dto/error.dto'
@@ -235,6 +247,7 @@ export class AnalyticsController {
     private readonly logger: AppLoggerService,
     private readonly gscService: GSCService,
     private readonly experimentService: ExperimentService,
+    private readonly sessionReplayExportService: SessionReplayExportService,
   ) {}
 
   @ApiBearerAuth()
@@ -1485,6 +1498,101 @@ export class AnalyticsController {
     return this.analyticsService.getBotStats(pid, period)
   }
 
+  @Post('session-replay/start')
+  @Public()
+  async startSessionReplay(
+    @Body() replayDTO: SessionReplayStartDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    const { 'user-agent': userAgent, origin } = headers
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'session-replay-start', 120, 60)
+    await checkRateLimit(replayDTO.pid, 'session-replay-start', 2000, 60)
+
+    const botResult = await this.analyticsService.checkBot(
+      replayDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      replayDTO.pg,
+      'session_replay',
+    )
+
+    if (botResult.isBot) {
+      return BOT_RESPONSE
+    }
+
+    const project = await this.analyticsService.validate(replayDTO, origin, ip)
+    const { country } = getIPDetails(ip, replayDTO.tz)
+    this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(
+      `pid: ${replayDTO.pid}, replayId: ${replayDTO.replayId}`,
+      'POST /analytics/session-replay/start',
+    )
+
+    return this.analyticsService.startSessionReplay(
+      project,
+      replayDTO.pid,
+      replayDTO.replayId,
+      replayDTO.privacy,
+      userAgent,
+      ip,
+      replayDTO.profileId,
+    )
+  }
+
+  @Post('session-replay/chunk')
+  @Public()
+  async uploadSessionReplayChunk(
+    @Body() replayDTO: SessionReplayChunkDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    const { 'user-agent': userAgent, origin } = headers
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'session-replay-chunk', 600, 60)
+    await checkRateLimit(replayDTO.pid, 'session-replay-chunk', 5000, 60)
+
+    const botResult = await this.analyticsService.checkBot(
+      replayDTO.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      replayDTO.pg,
+      'session_replay',
+    )
+
+    if (botResult.isBot) {
+      return BOT_RESPONSE
+    }
+
+    const project = await this.analyticsService.validate(replayDTO, origin, ip)
+    const { country } = getIPDetails(ip, replayDTO.tz)
+    this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(
+      `pid: ${replayDTO.pid}, replayId: ${replayDTO.replayId}, chunkIndex: ${replayDTO.chunkIndex}`,
+      'POST /analytics/session-replay/chunk',
+    )
+
+    return this.analyticsService.storeSessionReplayChunk(
+      project,
+      replayDTO.pid,
+      replayDTO.replayId,
+      replayDTO.privacy,
+      replayDTO.chunkIndex,
+      replayDTO.events,
+      userAgent,
+      ip,
+    )
+  }
+
   @Post('error')
   @Public()
   async logError(@Body() errorDTO: ErrorDto, @Headers() headers, @Ip() reqIP) {
@@ -2274,6 +2382,86 @@ export class AnalyticsController {
     return { sessions, appliedFilters, take, skip }
   }
 
+  @Get('session-replays')
+  @Auth(true, true)
+  async getSessionReplays(
+    @Query() data: GetSessionReplaysDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of session replays to return is 150',
+      )
+    }
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/session-replays',
+    )
+
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        ['pageview', 'custom_event', 'error'] as const,
+      )
+
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    const replays = await this.analyticsService.getSessionReplaysList(
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+      customEVFilterApplied,
+    )
+
+    return { replays, appliedFilters, take, skip }
+  }
+
   @Get('errors')
   @Auth(true, true)
   async getErrors(
@@ -2633,6 +2821,123 @@ export class AnalyticsController {
     )
 
     return result
+  }
+
+  @Get('session-replay')
+  @Auth(true, true)
+  async getSessionReplay(
+    @Query() data: GetSessionReplayDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, psid, replayId } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    this.logger.log(
+      `pid: ${pid}, psid: ${psid}, replayId: ${replayId || 'latest'}`,
+      'GET /analytics/session-replay',
+    )
+
+    return this.analyticsService.getSessionReplay(pid, psid, replayId)
+  }
+
+  @Delete('session-replay')
+  @Auth(true, true)
+  async deleteSessionReplay(
+    @Query() data: GetSessionReplayDto,
+    @CurrentUserId() uid: string,
+  ) {
+    const { pid, psid, replayId } = data
+
+    await this.analyticsService.checkManageAccess(pid, uid)
+    await this.analyticsService.checkBillingAccess(pid)
+
+    this.logger.log(
+      `pid: ${pid}, psid: ${psid}, replayId: ${replayId || 'latest'}`,
+      'DELETE /analytics/session-replay',
+    )
+
+    return this.analyticsService.deleteSessionReplay(pid, psid, replayId)
+  }
+
+  @Post('session-replay/export')
+  @Auth(true, true)
+  async startSessionReplayExport(
+    @Body() data: SessionReplayExportStartDto,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: { 'x-password'?: string; 'user-agent'?: string },
+    @Ip() requestIp: string,
+  ) {
+    const { pid, psid, replayId } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+    await checkRateLimit(uid || ip || pid, 'session-replay-export-user', 5, 60)
+    await checkRateLimit(pid, 'session-replay-export-project', 20, 60)
+
+    this.logger.log(
+      `pid: ${pid}, psid: ${psid}, replayId: ${replayId || 'latest'}`,
+      'POST /analytics/session-replay/export',
+    )
+
+    return this.sessionReplayExportService.startExport(pid, psid, replayId)
+  }
+
+  @Get('session-replay/export/:exportId')
+  @Auth(true, true)
+  async getSessionReplayExport(
+    @Param('exportId') exportId: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const exportState =
+      await this.sessionReplayExportService.assertExportAccess(exportId)
+
+    await this.analyticsService.checkProjectAccess(
+      exportState.pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(exportState.pid)
+
+    return this.sessionReplayExportService.getExport(exportId)
+  }
+
+  @Get('session-replay/export/:exportId/download')
+  @Auth(true, true)
+  async downloadSessionReplayExport(
+    @Param('exportId') exportId: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: { 'x-password'?: string },
+    @Response({ passthrough: true }) response: ExpressResponse,
+  ): Promise<StreamableFile> {
+    const exportState =
+      await this.sessionReplayExportService.assertExportAccess(exportId)
+
+    await this.analyticsService.checkProjectAccess(
+      exportState.pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(exportState.pid)
+
+    return this.sessionReplayExportService.downloadExport(exportId, response)
   }
 
   @Get('profiles')

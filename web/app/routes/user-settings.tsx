@@ -131,6 +131,34 @@ export interface WebsiteAddonPreview {
   status: 'active' | 'past_due' | 'cancelled' | null
 }
 
+export interface SessionReplayAddonPreview {
+  code: 'session_replays'
+  quantity: number
+  currentQuantity: number
+  pendingQuantity: number | null
+  billingInterval: 'monthly' | 'yearly'
+  currentBillingInterval: 'monthly' | 'yearly' | null
+  pendingBillingInterval: 'monthly' | 'yearly' | null
+  currency: string
+  dueNow: number
+  recurringAmount: number
+  nextChargeDate: string | null
+  effectiveDate: string | null
+  includedSessionReplays: number | 'custom'
+  totalSessionReplays: number | 'custom'
+  activeExtraSessionReplays: number
+  changeType:
+    | 'none'
+    | 'new'
+    | 'increase'
+    | 'decrease'
+    | 'cancel'
+    | 'interval_change'
+    | 'reactivate'
+  isLegacy: boolean
+  status: 'active' | 'past_due' | 'cancelled' | null
+}
+
 const resolveCatalogSelection = (formData: FormData) => {
   const rawPlanType = formData.get('planType')?.toString()
   const rawEventTier = formData.get('eventTier')?.toString()
@@ -509,6 +537,58 @@ export async function action({ request }: ActionFunctionArgs) {
         method: 'PUT',
         body: { quantity, billingInterval },
       })
+
+      if (result.error) {
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true, user: result.data as User },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'preview-session-replay-addon': {
+      const quantity = Number(formData.get('quantity'))
+      const billingInterval = formData.get('billingInterval')?.toString()
+
+      const result = await serverFetch<SessionReplayAddonPreview>(
+        request,
+        'user/addons/session-replays/preview',
+        {
+          method: 'POST',
+          body: { quantity, billingInterval },
+        },
+      )
+
+      if (result.error) {
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'update-session-replay-addon': {
+      const quantity = Number(formData.get('quantity'))
+      const billingInterval = formData.get('billingInterval')?.toString()
+
+      const result = await serverFetch<User>(
+        request,
+        'user/addons/session-replays',
+        {
+          method: 'PUT',
+          body: { quantity, billingInterval },
+        },
+      )
 
       if (result.error) {
         return data<UserSettingsActionData>(

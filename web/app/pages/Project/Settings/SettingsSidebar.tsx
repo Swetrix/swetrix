@@ -213,7 +213,12 @@ const SettingsSidebar = <TabId extends string>({
       {
         id: 'data',
         label: t('project.settings.sidebarGroups.data'),
-        tabIds: ['annotations', 'revenue', 'import'] as TabId[],
+        tabIds: [
+          'annotations',
+          'revenue',
+          'sessionReplays',
+          'import',
+        ] as TabId[],
       },
       {
         id: 'integrations',

@@ -29,6 +29,7 @@ interface SelectProps<T> {
   keyExtractor?: (item: T, index: number) => string
   iconExtractor?: (item: T, index: number) => React.ReactNode | null
   descriptionExtractor?: (item: T, index: number) => React.ReactNode | null
+  disabledItemExtractor?: (item: T, index: number) => boolean
   onSelect: (item: T) => void
   selectedItem?: T
   wrap?: boolean
@@ -46,6 +47,7 @@ function Select<T>({
   keyExtractor,
   iconExtractor,
   descriptionExtractor,
+  disabledItemExtractor,
   onSelect,
   id,
   buttonClassName,
@@ -170,6 +172,7 @@ function Select<T>({
               >
                 {_map(items, (item, index) => {
                   const selected = isItemSelected(item)
+                  const disabled = disabledItemExtractor?.(item, index) || false
                   const itemDescription = descriptionExtractor
                     ? descriptionExtractor(item, index)
                     : null
@@ -183,13 +186,16 @@ function Select<T>({
                           'relative mx-1 cursor-pointer rounded-md pr-8 pl-3 transition-colors duration-100 ease-out select-none',
                           hasDescriptions ? 'py-2.5' : 'py-2',
                           {
+                            'cursor-not-allowed text-gray-400 dark:text-slate-600':
+                              disabled && !selected,
                             'bg-gray-100 dark:bg-slate-900': focus || selected,
                             'text-gray-700 dark:text-gray-50':
-                              !focus && !selected,
+                              !focus && !selected && !disabled,
                             'text-gray-900 dark:text-white': focus || selected,
                           },
                         )
                       }
+                      disabled={disabled}
                       value={item}
                     >
                       <>

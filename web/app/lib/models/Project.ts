@@ -85,6 +85,18 @@ export interface SwetrixError {
   sessions: number
 }
 
+type SessionReplayPrivacy = 'total' | 'normal' | 'none'
+
+export interface SessionReplayMetadata {
+  hasReplay: boolean
+  replayId: string
+  privacyMode: SessionReplayPrivacy
+  chunkCount: number
+  eventCount: number
+  replayDuration: number
+  replayExpiresAt: string
+}
+
 export interface Session {
   psid: string
   cc: string | null
@@ -105,6 +117,9 @@ export interface Session {
   profileId: string | null
   isIdentified: 1 | 0
   isFirstSession: 1 | 0
+  hasReplay?: 1 | 0
+  replayDuration?: number | null
+  replayExpiresAt?: string | null
 }
 
 export interface SessionDetails {
@@ -252,6 +267,7 @@ export interface Project {
   isErrorDataExists: boolean
   isCaptchaDataExists: boolean
   featureAccess?: ProjectFeatureAccess
+  sessionReplayRetentionDays?: number
   botsProtectionLevel: 'off' | 'basic' | 'strict'
   role?: Role
   gscPropertyUri?: string | null

@@ -197,6 +197,9 @@ export class WebhookController {
 
         await this.userService.update(currentUser.id, updateParams)
         await this.userService.refreshWebsiteAddonEntitlements(currentUser.id)
+        await this.userService.refreshSessionReplayAddonEntitlements(
+          currentUser.id,
+        )
         await this.projectService.clearProjectsRedisCache(currentUser.id)
 
         if (body.alert_name === 'subscription_created' && isTrialing) {
@@ -236,6 +239,10 @@ export class WebhookController {
 
         if (user?.id) {
           await this.userService.scheduleWebsiteAddonCancellation(
+            user.id,
+            cancellationEffectiveDate,
+          )
+          await this.userService.scheduleSessionReplayAddonCancellation(
             user.id,
             cancellationEffectiveDate,
           )

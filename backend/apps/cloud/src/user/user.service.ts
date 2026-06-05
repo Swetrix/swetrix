@@ -37,6 +37,7 @@ import {
   getEffectivePlanType,
   getPlanTypeEntitlements,
   getPlanTypeAccountLimitUpdates,
+  getSessionReplayQuota,
   DEFAULT_MAX_PROJECTS,
 } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
@@ -129,6 +130,13 @@ const WEBSITE_ADDON_MONTHLY_PRICE: Record<string, number> = {
   EUR: 7,
   GBP: 6,
 }
+const SESSION_REPLAY_ADDON_BUNDLE_SIZE = 5000
+const SESSION_REPLAY_ADDON_MAX_QUANTITY = 100000
+const SESSION_REPLAY_ADDON_MONTHLY_PRICE: Record<string, number> = {
+  USD: 19,
+  EUR: 17,
+  GBP: 15,
+}
 const WEBSITE_ADDON_CURRENCIES = ['USD', 'EUR', 'GBP']
 
 type WebsiteAddonChangeType =
@@ -161,8 +169,44 @@ interface WebsiteAddonPreview {
   status: UserAddonStatus | null
 }
 
+interface SessionReplayAddonPreview {
+  code: UserAddonCode.sessionReplays
+  quantity: number
+  currentQuantity: number
+  pendingQuantity: number | null
+  billingInterval: BillingFrequency
+  currentBillingInterval: BillingFrequency | null
+  pendingBillingInterval: BillingFrequency | null
+  currency: string
+  dueNow: number
+  recurringAmount: number
+  nextChargeDate: string | null
+  effectiveDate: string | null
+  includedSessionReplays: number | 'custom'
+  totalSessionReplays: number | 'custom'
+  activeExtraSessionReplays: number
+  changeType: WebsiteAddonChangeType
+  isLegacy: boolean
+  status: UserAddonStatus | null
+}
+
 interface WebsiteAddonSummary {
   code: UserAddonCode.websites
+  quantity: number
+  pendingQuantity: number | null
+  billingInterval: BillingFrequency | null
+  pendingBillingInterval: BillingFrequency | null
+  currency: string | null
+  status: UserAddonStatus | 'legacy' | null
+  periodEnd: string | null
+  nextChargeDate: string | null
+  recurringAmount: number | null
+  isLegacy: boolean
+  failedChargeAttempts: number
+}
+
+interface SessionReplayAddonSummary {
+  code: UserAddonCode.sessionReplays
   quantity: number
   pendingQuantity: number | null
   billingInterval: BillingFrequency | null
@@ -301,6 +345,10 @@ export class UserService {
     )
   }
 
+  private getSessionReplayAddonOverrideQuantity(user: Partial<User>): number {
+    return this.getNumericOverride(user?.addonOverrides, 'sessionReplays') || 0
+  }
+
   private getMoneyValue(value?: string | null): number | null {
     if (value === null || value === undefined) {
       return null
@@ -337,12 +385,20 @@ export class UserService {
     manager: EntityManager,
     userId: string,
   ): Promise<UserAddon | null> {
+    return this.getLockedAddon(manager, userId, UserAddonCode.websites)
+  }
+
+  private async getLockedAddon(
+    manager: EntityManager,
+    userId: string,
+    code: UserAddonCode,
+  ): Promise<UserAddon | null> {
     return manager
       .getRepository(UserAddon)
       .createQueryBuilder('addon')
       .setLock('pessimistic_write')
       .where('addon.userId = :userId', { userId })
-      .andWhere('addon.code = :code', { code: UserAddonCode.websites })
+      .andWhere('addon.code = :code', { code })
       .getOne()
   }
 
@@ -369,6 +425,26 @@ export class UserService {
     )
   }
 
+  private getIncludedSessionReplayLimit(
+    user: Partial<User>,
+  ): number | 'custom' {
+    const replayOverride = this.getNumericOverride(
+      user?.entitlementOverrides,
+      'sessionReplaysIncluded',
+    )
+
+    if (typeof replayOverride === 'number') {
+      return replayOverride
+    }
+
+    const addonQuantity = this.getSessionReplayAddonOverrideQuantity(user)
+    const totalQuota = getSessionReplayQuota(user)
+
+    return totalQuota === 'custom'
+      ? totalQuota
+      : Math.max(0, totalQuota - addonQuantity)
+  }
+
   private getWebsiteAddonCurrency(user: User): string {
     return typeof user.tierCurrency === 'string' &&
       WEBSITE_ADDON_CURRENCIES.includes(user.tierCurrency)
@@ -388,6 +464,21 @@ export class UserService {
     const monthlyPrice =
       WEBSITE_ADDON_MONTHLY_PRICE[currency] || WEBSITE_ADDON_MONTHLY_PRICE.USD
     const bundles = quantity / WEBSITE_ADDON_BUNDLE_SIZE
+    const intervalMultiplier =
+      billingInterval === BillingFrequency.Yearly ? 10 : 1
+
+    return this.roundMoney(bundles * monthlyPrice * intervalMultiplier)
+  }
+
+  private getSessionReplayAddonAmount(
+    quantity: number,
+    billingInterval: BillingFrequency,
+    currency: string,
+  ): number {
+    const monthlyPrice =
+      SESSION_REPLAY_ADDON_MONTHLY_PRICE[currency] ||
+      SESSION_REPLAY_ADDON_MONTHLY_PRICE.USD
+    const bundles = quantity / SESSION_REPLAY_ADDON_BUNDLE_SIZE
     const intervalMultiplier =
       billingInterval === BillingFrequency.Yearly ? 10 : 1
 
@@ -456,11 +547,74 @@ export class UserService {
     }
   }
 
+  private validateSessionReplayAddonSelection(
+    quantity: number,
+    billingInterval: BillingFrequency,
+  ) {
+    if (
+      !Number.isInteger(quantity) ||
+      quantity < 0 ||
+      quantity > SESSION_REPLAY_ADDON_MAX_QUANTITY ||
+      quantity % SESSION_REPLAY_ADDON_BUNDLE_SIZE !== 0
+    ) {
+      throw new BadRequestException('invalidSessionReplayAddonQuantity')
+    }
+
+    if (
+      ![BillingFrequency.Monthly, BillingFrequency.Yearly].includes(
+        billingInterval,
+      )
+    ) {
+      throw new BadRequestException('invalidSessionReplayAddonBillingInterval')
+    }
+  }
+
+  private validateSessionReplayAddonEligibility(user: User) {
+    const isSubscriber = ![
+      PlanCode.none,
+      PlanCode.free,
+      PlanCode.trial,
+    ].includes(user.planCode)
+    const isTrialingPaidPlan =
+      user.trialEndDate && dayjs.utc(user.trialEndDate).isAfter(dayjs.utc())
+
+    if (!isSubscriber || !user.subID) {
+      throw new BadRequestException('sessionReplayAddonRequiresSubscription')
+    }
+
+    if (isTrialingPaidPlan) {
+      throw new BadRequestException('sessionReplayAddonUnavailableDuringTrial')
+    }
+
+    if (user.cancellationEffectiveDate) {
+      throw new BadRequestException('sessionReplayAddonUnavailableCancelled')
+    }
+
+    if (user.isAccountBillingSuspended) {
+      throw new BadRequestException('sessionReplayAddonUnavailableSuspended')
+    }
+
+    if (getSessionReplayQuota(user) === 'custom') {
+      throw new BadRequestException('sessionReplayAddonUnavailableCustom')
+    }
+  }
+
   private async getWebsiteAddon(userId: string): Promise<UserAddon | null> {
     return this.userAddonRepository.findOne({
       where: {
         userId,
         code: UserAddonCode.websites,
+      },
+    })
+  }
+
+  private async getSessionReplayAddon(
+    userId: string,
+  ): Promise<UserAddon | null> {
+    return this.userAddonRepository.findOne({
+      where: {
+        userId,
+        code: UserAddonCode.sessionReplays,
       },
     })
   }
@@ -471,6 +625,34 @@ export class UserService {
     currency: string,
   ): number {
     const fullAmount = this.getWebsiteAddonAmount(
+      addedQuantity,
+      addon.billingInterval,
+      currency,
+    )
+
+    if (!addon.periodStart || !addon.periodEnd) {
+      return fullAmount
+    }
+
+    const now = dayjs.utc()
+    const start = dayjs.utc(addon.periodStart)
+    const end = dayjs.utc(addon.periodEnd)
+    const totalMs = end.diff(start)
+    const remainingMs = end.diff(now)
+
+    if (totalMs <= 0 || remainingMs <= 0) {
+      return fullAmount
+    }
+
+    return this.roundMoney(fullAmount * Math.min(1, remainingMs / totalMs))
+  }
+
+  private getProratedSessionReplayAddonAmount(
+    addon: UserAddon,
+    addedQuantity: number,
+    currency: string,
+  ): number {
+    const fullAmount = this.getSessionReplayAddonAmount(
       addedQuantity,
       addon.billingInterval,
       currency,
@@ -626,6 +808,156 @@ export class UserService {
     return this.buildWebsiteAddonPreview(user, addon, quantity, billingInterval)
   }
 
+  private buildSessionReplayAddonPreview(
+    user: User,
+    addon: UserAddon | null,
+    quantity: number,
+    billingInterval: BillingFrequency,
+  ): SessionReplayAddonPreview {
+    const legacyQuantity = addon
+      ? 0
+      : this.getSessionReplayAddonOverrideQuantity(user)
+    const isLegacy = legacyQuantity > 0
+    const currentQuantity =
+      addon && addon.status !== UserAddonStatus.cancelled
+        ? addon.quantity
+        : legacyQuantity
+    const currentBillingInterval =
+      addon && addon.status !== UserAddonStatus.cancelled
+        ? addon.billingInterval
+        : null
+    const currency = addon?.currency || this.getWebsiteAddonCurrency(user)
+    const includedSessionReplays = this.getIncludedSessionReplayLimit(user)
+    const existingChargeDate = addon?.nextChargeDate || addon?.periodEnd || null
+    let changeType: WebsiteAddonChangeType = 'none'
+    let dueNow = 0
+    let effectiveDate: string | null = null
+
+    if (isLegacy) {
+      return {
+        code: UserAddonCode.sessionReplays,
+        quantity: currentQuantity,
+        currentQuantity,
+        pendingQuantity: null,
+        billingInterval,
+        currentBillingInterval: null,
+        pendingBillingInterval: null,
+        currency,
+        dueNow: 0,
+        recurringAmount: 0,
+        nextChargeDate: null,
+        effectiveDate: null,
+        includedSessionReplays,
+        totalSessionReplays:
+          includedSessionReplays === 'custom'
+            ? includedSessionReplays
+            : includedSessionReplays + currentQuantity,
+        activeExtraSessionReplays: currentQuantity,
+        changeType,
+        isLegacy,
+        status: null,
+      }
+    }
+
+    if (
+      !addon ||
+      addon.status === UserAddonStatus.cancelled ||
+      (addon.status === UserAddonStatus.past_due && currentQuantity === 0)
+    ) {
+      if (quantity > 0) {
+        changeType =
+          addon?.status === UserAddonStatus.past_due ? 'reactivate' : 'new'
+        dueNow = this.getSessionReplayAddonAmount(
+          quantity,
+          billingInterval,
+          currency,
+        )
+      }
+    } else if (quantity > currentQuantity) {
+      changeType = 'increase'
+      dueNow = this.getProratedSessionReplayAddonAmount(
+        addon,
+        quantity - currentQuantity,
+        currency,
+      )
+      if (billingInterval !== addon.billingInterval) {
+        effectiveDate = this.formatAddonDate(existingChargeDate)
+      }
+    } else if (quantity < currentQuantity) {
+      changeType = quantity === 0 ? 'cancel' : 'decrease'
+      effectiveDate = this.formatAddonDate(existingChargeDate)
+    } else if (billingInterval !== addon.billingInterval) {
+      changeType = 'interval_change'
+      effectiveDate = this.formatAddonDate(existingChargeDate)
+    } else if (
+      addon.pendingQuantity !== null ||
+      addon.pendingBillingInterval !== null
+    ) {
+      changeType = 'none'
+    }
+
+    const nextChargeDate =
+      existingChargeDate ||
+      (quantity > 0
+        ? this.getWebsiteAddonPeriodEnd(new Date(), billingInterval)
+        : null)
+    const displayedExtraSessionReplays =
+      changeType === 'decrease' || changeType === 'cancel'
+        ? currentQuantity
+        : quantity
+
+    return {
+      code: UserAddonCode.sessionReplays,
+      quantity,
+      currentQuantity,
+      pendingQuantity: addon?.pendingQuantity ?? null,
+      billingInterval,
+      currentBillingInterval,
+      pendingBillingInterval: addon?.pendingBillingInterval ?? null,
+      currency,
+      dueNow,
+      recurringAmount: this.getSessionReplayAddonAmount(
+        quantity,
+        billingInterval,
+        currency,
+      ),
+      nextChargeDate: this.formatAddonDate(nextChargeDate),
+      effectiveDate,
+      includedSessionReplays,
+      totalSessionReplays:
+        includedSessionReplays === 'custom'
+          ? includedSessionReplays
+          : includedSessionReplays + displayedExtraSessionReplays,
+      activeExtraSessionReplays: currentQuantity,
+      changeType,
+      isLegacy,
+      status: addon?.status || null,
+    }
+  }
+
+  async previewSessionReplayAddon(
+    userId: string,
+    quantity: number,
+    billingInterval: BillingFrequency,
+  ): Promise<SessionReplayAddonPreview> {
+    this.validateSessionReplayAddonSelection(quantity, billingInterval)
+
+    const user = await this.findOne({ where: { id: userId } })
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    this.validateSessionReplayAddonEligibility(user)
+
+    const addon = await this.getSessionReplayAddon(userId)
+    return this.buildSessionReplayAddonPreview(
+      user,
+      addon,
+      quantity,
+      billingInterval,
+    )
+  }
+
   private async syncWebsiteAddonEntitlements(
     user: User,
     quantity: number,
@@ -668,6 +1000,48 @@ export class UserService {
         : this.getAddonOverrideQuantity(user)
 
     await this.syncWebsiteAddonEntitlements(user, addonQuantity)
+  }
+
+  private async syncSessionReplayAddonEntitlements(
+    user: User,
+    quantity: number,
+    manager?: EntityManager,
+  ): Promise<void> {
+    const addonOverrides = { ...(user.addonOverrides || {}) }
+
+    if (quantity > 0) {
+      addonOverrides.sessionReplays = quantity
+    } else {
+      delete addonOverrides.sessionReplays
+    }
+
+    const update = {
+      addonOverrides: Object.keys(addonOverrides).length
+        ? addonOverrides
+        : null,
+    }
+
+    if (manager) {
+      await manager.getRepository(User).update(user.id, update)
+      return
+    }
+
+    await this.update(user.id, update)
+  }
+
+  async refreshSessionReplayAddonEntitlements(userId: string): Promise<void> {
+    const user = await this.findOne({ where: { id: userId } })
+    if (!user) {
+      return
+    }
+
+    const addon = await this.getSessionReplayAddon(userId)
+    const addonQuantity =
+      addon && addon.status !== UserAddonStatus.cancelled
+        ? addon.quantity
+        : this.getSessionReplayAddonOverrideQuantity(user)
+
+    await this.syncSessionReplayAddonEntitlements(user, addonQuantity)
   }
 
   private getPaddleErrorMessage(data: any): string {
@@ -874,6 +1248,164 @@ export class UserService {
     }
   }
 
+  private buildSessionReplayAddonChargeKey(
+    addon: UserAddon,
+    user: User,
+    kind: UserAddonChargeKind,
+    amount: number,
+    quantity: number,
+    previousQuantity: number | null,
+    billingInterval: BillingFrequency,
+    periodStart: Date | null,
+    periodEnd: Date | null,
+  ): string {
+    return [
+      'session-replay-addon',
+      user.id,
+      addon.id,
+      kind,
+      quantity,
+      previousQuantity ?? 'none',
+      billingInterval,
+      amount.toFixed(2),
+      addon.currency,
+      periodStart ? dayjs.utc(periodStart).toISOString() : 'none',
+      periodEnd ? dayjs.utc(periodEnd).toISOString() : 'none',
+    ].join(':')
+  }
+
+  private async chargeSessionReplayAddon(
+    addon: UserAddon,
+    user: User,
+    kind: UserAddonChargeKind,
+    amount: number,
+    quantity: number,
+    previousQuantity: number | null,
+    billingInterval: BillingFrequency,
+    periodStart: Date | null,
+    periodEnd: Date | null,
+    manager?: EntityManager,
+  ): Promise<UserAddonCharge> {
+    const chargeRepository = this.getAddonChargeRepository(manager)
+    const chargeName = `${quantity.toLocaleString()} additional session replays for Swetrix (${billingInterval})`
+    const idempotencyKey = this.buildSessionReplayAddonChargeKey(
+      addon,
+      user,
+      kind,
+      amount,
+      quantity,
+      previousQuantity,
+      billingInterval,
+      periodStart,
+      periodEnd,
+    )
+
+    if (addon.lastChargeId) {
+      const lastCharge = await chargeRepository.findOne({
+        where: { id: addon.lastChargeId },
+      })
+
+      if (
+        lastCharge?.idempotencyKey === idempotencyKey &&
+        lastCharge.status === UserAddonChargeStatus.succeeded
+      ) {
+        return lastCharge
+      }
+    }
+
+    let charge = await chargeRepository.findOne({
+      where: { idempotencyKey },
+    })
+
+    if (charge?.status === UserAddonChargeStatus.succeeded) {
+      return charge
+    }
+
+    if (charge?.status === UserAddonChargeStatus.pending) {
+      throw new BadRequestException('sessionReplayAddonChargeInProgress')
+    }
+
+    if (charge) {
+      await chargeRepository.update(charge.id, {
+        status: UserAddonChargeStatus.pending,
+        failureReason: null,
+      })
+    } else {
+      try {
+        charge = await chargeRepository.save(
+          chargeRepository.create({
+            addonId: addon.id,
+            userId: user.id,
+            kind,
+            status: UserAddonChargeStatus.pending,
+            quantity,
+            previousQuantity,
+            billingInterval,
+            amount: amount.toFixed(2),
+            currency: addon.currency,
+            periodStart,
+            periodEnd,
+            idempotencyKey,
+          }),
+        )
+      } catch (reason) {
+        if (!this.isDuplicateEntryError(reason)) {
+          throw reason
+        }
+
+        charge = await chargeRepository.findOne({
+          where: { idempotencyKey },
+        })
+
+        if (charge?.status === UserAddonChargeStatus.succeeded) {
+          return charge
+        }
+
+        throw new BadRequestException('sessionReplayAddonChargeInProgress')
+      }
+    }
+
+    if (!charge) {
+      throw new InternalServerErrorException('Unable to create add-on charge')
+    }
+
+    try {
+      const response = await this.createPaddleOneOffCharge(
+        user.subID,
+        amount,
+        chargeName,
+      )
+
+      const update = {
+        status: UserAddonChargeStatus.succeeded,
+        paddleInvoiceId:
+          typeof response.invoice_id === 'number' ? response.invoice_id : null,
+        paddleOrderId: response.order_id ? String(response.order_id) : null,
+        paddleStatus: response.status ? String(response.status) : null,
+        paddleReceiptUrl: response.receipt_url
+          ? String(response.receipt_url)
+          : null,
+        paddleResponse: response,
+        failureReason: null,
+      }
+
+      await chargeRepository.update(charge.id, update)
+
+      return {
+        ...charge,
+        ...update,
+      } as UserAddonCharge
+    } catch (reason) {
+      await chargeRepository.update(charge.id, {
+        status: UserAddonChargeStatus.failed,
+        failureReason:
+          reason instanceof Error ? reason.message : 'Paddle charge failed',
+      })
+
+      throw reason
+    }
+  }
+
   async getWebsiteAddonSummary(
     userId: string,
     user?: User,
@@ -931,6 +1463,67 @@ export class UserService {
     return {
       ...sanitizedUser,
       websiteAddon: await this.getWebsiteAddonSummary(userId, user),
+    } as Partial<User>
+  }
+
+  async getSessionReplayAddonSummary(
+    userId: string,
+    user?: User,
+  ): Promise<SessionReplayAddonSummary | null> {
+    const [addon, resolvedUser] = await Promise.all([
+      this.getSessionReplayAddon(userId),
+      user ? Promise.resolve(user) : this.findOne({ where: { id: userId } }),
+    ])
+
+    if (addon) {
+      return {
+        code: UserAddonCode.sessionReplays,
+        quantity: addon.quantity,
+        pendingQuantity: addon.pendingQuantity,
+        billingInterval: addon.billingInterval,
+        pendingBillingInterval: addon.pendingBillingInterval,
+        currency: addon.currency,
+        status: addon.status,
+        periodEnd: this.formatAddonDate(addon.periodEnd),
+        nextChargeDate: this.formatAddonDate(addon.nextChargeDate),
+        recurringAmount: this.getMoneyValue(addon.recurringAmount),
+        isLegacy: false,
+        failedChargeAttempts: addon.failedChargeAttempts,
+      }
+    }
+
+    const legacyQuantity = resolvedUser
+      ? this.getSessionReplayAddonOverrideQuantity(resolvedUser)
+      : 0
+
+    if (!legacyQuantity) {
+      return null
+    }
+
+    return {
+      code: UserAddonCode.sessionReplays,
+      quantity: legacyQuantity,
+      pendingQuantity: null,
+      billingInterval: null,
+      pendingBillingInterval: null,
+      currency: resolvedUser?.tierCurrency || null,
+      status: 'legacy',
+      periodEnd: null,
+      nextChargeDate: null,
+      recurringAmount: null,
+      isLegacy: true,
+      failedChargeAttempts: 0,
+    }
+  }
+
+  async getUserWithAddonSummaries(userId: string): Promise<Partial<User>> {
+    const user = await this.findOne({ where: { id: userId } })
+    const sanitizedUser = this.omitSensitiveData(user)
+
+    return {
+      ...sanitizedUser,
+      websiteAddon: await this.getWebsiteAddonSummary(userId, user),
+      sessionReplayAddon: await this.getSessionReplayAddonSummary(userId, user),
     } as Partial<User>
   }
 
@@ -1081,7 +1674,161 @@ export class UserService {
       }
     })
 
-    return this.getUserWithWebsiteAddonSummary(userId)
+    return this.getUserWithAddonSummaries(userId)
+  }
+
+  async updateSessionReplayAddon(
+    userId: string,
+    quantity: number,
+    billingInterval: BillingFrequency,
+  ): Promise<Partial<User>> {
+    this.validateSessionReplayAddonSelection(quantity, billingInterval)
+
+    await this.usersRepository.manager.transaction(async (manager) => {
+      const user = await this.getLockedUser(manager, userId)
+      if (!user) {
+        throw new BadRequestException('User not found')
+      }
+
+      this.validateSessionReplayAddonEligibility(user)
+
+      const addonRepository = manager.getRepository(UserAddon)
+      let addon = await this.getLockedAddon(
+        manager,
+        userId,
+        UserAddonCode.sessionReplays,
+      )
+      if (!addon && this.getSessionReplayAddonOverrideQuantity(user) > 0) {
+        throw new BadRequestException('legacySessionReplayAddon')
+      }
+
+      const preview = this.buildSessionReplayAddonPreview(
+        user,
+        addon,
+        quantity,
+        billingInterval,
+      )
+
+      if (preview.changeType === 'none') {
+        if (
+          addon &&
+          (addon.pendingQuantity !== null ||
+            addon.pendingBillingInterval !== null)
+        ) {
+          await addonRepository.update(addon.id, {
+            pendingQuantity: null,
+            pendingBillingInterval: null,
+          })
+        }
+
+        return
+      }
+
+      const now = new Date()
+
+      if (!addon) {
+        addon = await addonRepository.save(
+          addonRepository.create({
+            userId,
+            code: UserAddonCode.sessionReplays,
+            quantity: 0,
+            billingInterval,
+            currency: this.getWebsiteAddonCurrency(user),
+            status: UserAddonStatus.cancelled,
+            failedChargeAttempts: 0,
+          }),
+        )
+      }
+
+      const isInactiveAddon =
+        addon.status === UserAddonStatus.cancelled ||
+        (addon.status === UserAddonStatus.past_due && addon.quantity === 0)
+      const currentQuantity = isInactiveAddon ? 0 : addon.quantity
+      let charge: UserAddonCharge | null = null
+
+      if (preview.dueNow > 0) {
+        const chargePeriodStart = isInactiveAddon
+          ? now
+          : addon.periodStart || now
+        const chargePeriodEnd = isInactiveAddon
+          ? this.getWebsiteAddonPeriodEnd(now, billingInterval)
+          : addon.periodEnd ||
+            this.getWebsiteAddonPeriodEnd(now, addon.billingInterval)
+
+        charge = await this.chargeSessionReplayAddon(
+          addon,
+          user,
+          isInactiveAddon
+            ? UserAddonChargeKind.initial
+            : UserAddonChargeKind.prorated,
+          preview.dueNow,
+          quantity,
+          currentQuantity,
+          isInactiveAddon ? billingInterval : addon.billingInterval,
+          chargePeriodStart,
+          chargePeriodEnd,
+          manager,
+        )
+      }
+
+      if (isInactiveAddon) {
+        const periodEnd = this.getWebsiteAddonPeriodEnd(now, billingInterval)
+        const recurringAmount = this.getSessionReplayAddonAmount(
+          quantity,
+          billingInterval,
+          preview.currency,
+        )
+
+        await addonRepository.update(addon.id, {
+          quantity,
+          pendingQuantity: null,
+          billingInterval,
+          pendingBillingInterval: null,
+          currency: preview.currency,
+          recurringAmount: recurringAmount.toFixed(2),
+          periodStart: now,
+          periodEnd,
+          nextChargeDate: periodEnd,
+          status: UserAddonStatus.active,
+          failedChargeAttempts: 0,
+          lastChargeFailedAt: null,
+          cancelledAt: null,
+          lastChargeId: charge?.id || addon.lastChargeId,
+          lastChargeAt: charge ? now : addon.lastChargeAt,
+        })
+        await this.syncSessionReplayAddonEntitlements(user, quantity, manager)
+      } else if (quantity > currentQuantity) {
+        const activeBillingInterval = addon.billingInterval
+        const recurringAmount = this.getSessionReplayAddonAmount(
+          quantity,
+          activeBillingInterval,
+          preview.currency,
+        )
+
+        await addonRepository.update(addon.id, {
+          quantity,
+          pendingQuantity: null,
+          pendingBillingInterval:
+            billingInterval !== addon.billingInterval ? billingInterval : null,
+          recurringAmount: recurringAmount.toFixed(2),
+          status: UserAddonStatus.active,
+          failedChargeAttempts: 0,
+          lastChargeFailedAt: null,
+          lastChargeId: charge?.id || addon.lastChargeId,
+          lastChargeAt: charge ? now : addon.lastChargeAt,
+        })
+        await this.syncSessionReplayAddonEntitlements(user, quantity, manager)
+      } else {
+        await addonRepository.update(addon.id, {
+          pendingQuantity: quantity !== currentQuantity ? quantity : null,
+          pendingBillingInterval:
+            billingInterval !== addon.billingInterval ? billingInterval : null,
+          status: UserAddonStatus.active,
+        })
+      }
+    })
+
+    return this.getUserWithAddonSummaries(userId)
   }
 
   private async cancelWebsiteAddonNow(addon: UserAddon): Promise<void> {
@@ -1142,6 +1889,69 @@ export class UserService {
     const user = await this.findOne({ where: { id: userId } })
     if (user) {
       await this.syncWebsiteAddonEntitlements(user, 0)
+    }
+  }
+
+  private async cancelSessionReplayAddonNow(addon: UserAddon): Promise<void> {
+    await this.userAddonRepository.update(addon.id, {
+      quantity: 0,
+      pendingQuantity: null,
+      pendingBillingInterval: null,
+      recurringAmount: null,
+      nextChargeDate: null,
+      status: UserAddonStatus.cancelled,
+      failedChargeAttempts: 0,
+      lastChargeFailedAt: null,
+      cancelledAt: new Date(),
+    })
+
+    const user =
+      addon.user || (await this.findOne({ where: { id: addon.userId } }))
+    if (user) {
+      await this.syncSessionReplayAddonEntitlements(user, 0)
+    }
+  }
+
+  async scheduleSessionReplayAddonCancellation(
+    userId: string,
+    effectiveDate?: string | Date | null,
+  ): Promise<void> {
+    const addon = await this.getSessionReplayAddon(userId)
+    if (!addon || addon.status === UserAddonStatus.cancelled) {
+      return
+    }
+
+    const effective = effectiveDate ? dayjs.utc(effectiveDate) : null
+    if (effective && effective.isBefore(dayjs.utc())) {
+      await this.cancelSessionReplayAddonNow(addon)
+      return
+    }
+
+    await this.userAddonRepository.update(addon.id, {
+      pendingQuantity: 0,
+      nextChargeDate:
+        effective &&
+        (!addon.nextChargeDate || effective.isBefore(addon.nextChargeDate))
+          ? effective.toDate()
+          : addon.nextChargeDate,
+    })
+  }
+
+  async clearSessionReplayAddonsForCancelledSubscription(
+    userId: string,
+  ): Promise<void> {
+    const addons = await this.userAddonRepository.find({
+      where: { userId, code: UserAddonCode.sessionReplays },
+      relations: ['user'],
+    })
+
+    await Promise.all(
+      addons.map((addon) => this.cancelSessionReplayAddonNow(addon)),
+    )
+
+    const user = await this.findOne({ where: { id: userId } })
+    if (user) {
+      await this.syncSessionReplayAddonEntitlements(user, 0)
     }
   }
 
@@ -1276,6 +2086,139 @@ export class UserService {
     }
   }
 
+  private async handleSessionReplayAddonRenewalFailure(
+    addon: UserAddon,
+    reason: Error,
+  ): Promise<void> {
+    const failedChargeAttempts = addon.failedChargeAttempts + 1
+    const shouldRemoveCapacity =
+      failedChargeAttempts >= WEBSITE_ADDON_MAX_FAILED_CHARGES
+
+    await this.userAddonRepository.update(addon.id, {
+      status: UserAddonStatus.past_due,
+      failedChargeAttempts,
+      lastChargeFailedAt: new Date(),
+      nextChargeDate: shouldRemoveCapacity
+        ? null
+        : dayjs.utc().add(WEBSITE_ADDON_RETRY_DELAY_HOURS, 'hour').toDate(),
+      quantity: shouldRemoveCapacity ? 0 : addon.quantity,
+      recurringAmount: shouldRemoveCapacity ? null : addon.recurringAmount,
+      pendingQuantity: shouldRemoveCapacity ? null : addon.pendingQuantity,
+      pendingBillingInterval: shouldRemoveCapacity
+        ? null
+        : addon.pendingBillingInterval,
+    })
+
+    if (shouldRemoveCapacity) {
+      const user =
+        addon.user || (await this.findOne({ where: { id: addon.userId } }))
+      if (user) {
+        await this.syncSessionReplayAddonEntitlements(user, 0)
+      }
+    }
+
+    console.error('[ERROR] (processSessionReplayAddonRenewal):', reason)
+  }
+
+  private async processSessionReplayAddonRenewal(
+    addon: UserAddon,
+  ): Promise<void> {
+    const claimStartedAt = new Date()
+    const dueDate = addon.nextChargeDate
+
+    if (!dueDate || dayjs.utc(dueDate).isAfter(dayjs.utc(claimStartedAt))) {
+      return
+    }
+
+    const claimUntil = dayjs
+      .utc(claimStartedAt)
+      .add(WEBSITE_ADDON_RENEWAL_CLAIM_MINUTES, 'minute')
+      .toDate()
+    const claimResult = await this.userAddonRepository.update(
+      {
+        id: addon.id,
+        code: UserAddonCode.sessionReplays,
+        status: addon.status,
+        nextChargeDate: LessThan(claimStartedAt),
+      },
+      {
+        nextChargeDate: claimUntil,
+      },
+    )
+
+    if (!claimResult.affected) {
+      return
+    }
+
+    const user = addon.user
+
+    if (!user || !user.subID || user.cancellationEffectiveDate) {
+      await this.cancelSessionReplayAddonNow(addon)
+      return
+    }
+
+    const targetQuantity = addon.pendingQuantity ?? addon.quantity
+    const targetBillingInterval =
+      addon.pendingBillingInterval || addon.billingInterval
+
+    if (targetQuantity <= 0) {
+      await this.cancelSessionReplayAddonNow(addon)
+      return
+    }
+
+    const periodStart = dueDate
+    const periodEnd = this.getWebsiteAddonPeriodEnd(
+      periodStart,
+      targetBillingInterval,
+    )
+    const amount = this.getSessionReplayAddonAmount(
+      targetQuantity,
+      targetBillingInterval,
+      addon.currency,
+    )
+
+    try {
+      const charge = await this.chargeSessionReplayAddon(
+        addon,
+        user,
+        UserAddonChargeKind.renewal,
+        amount,
+        targetQuantity,
+        addon.quantity,
+        targetBillingInterval,
+        periodStart,
+        periodEnd,
+      )
+      const recurringAmount = this.getSessionReplayAddonAmount(
+        targetQuantity,
+        targetBillingInterval,
+        addon.currency,
+      )
+
+      await this.userAddonRepository.update(addon.id, {
+        quantity: targetQuantity,
+        pendingQuantity: null,
+        billingInterval: targetBillingInterval,
+        pendingBillingInterval: null,
+        recurringAmount: recurringAmount.toFixed(2),
+        periodStart,
+        periodEnd,
+        nextChargeDate: periodEnd,
+        status: UserAddonStatus.active,
+        failedChargeAttempts: 0,
+        lastChargeFailedAt: null,
+        lastChargeId: charge.id,
+        lastChargeAt: new Date(),
+      })
+      await this.syncSessionReplayAddonEntitlements(user, targetQuantity)
+    } catch (reason) {
+      await this.handleSessionReplayAddonRenewalFailure(
+        addon,
+        reason instanceof Error ? reason : new Error(String(reason)),
+      )
+    }
+  }
+
   async processDueWebsiteAddonRenewals(): Promise<void> {
     const dueAddons = await this.userAddonRepository.find({
       where: [
@@ -1298,6 +2241,28 @@ export class UserService {
     )
   }
 
+  async processDueSessionReplayAddonRenewals(): Promise<void> {
+    const dueAddons = await this.userAddonRepository.find({
+      where: [
+        {
+          code: UserAddonCode.sessionReplays,
+          status: UserAddonStatus.active,
+          nextChargeDate: LessThan(new Date()),
+        },
+        {
+          code: UserAddonCode.sessionReplays,
+          status: UserAddonStatus.past_due,
+          nextChargeDate: LessThan(new Date()),
+        },
+      ],
+      relations: ['user'],
+    })
+
+    await Promise.allSettled(
+      dueAddons.map((addon) => this.processSessionReplayAddonRenewal(addon)),
+    )
+  }
+
   omitSensitiveData(user: Partial<User>): Partial<User> {
     const maxEventsCount = ACCOUNT_PLANS[user?.planCode]?.monthlyUsageLimit || 0
     const effectivePlanType = getEffectivePlanType(user)
@@ -1311,14 +2276,12 @@ export class UserService {
       numberOverride(addonOverrides, 'websites') ||
       numberOverride(addonOverrides, 'additionalWebsites') ||
       0
+    const purchasedSessionReplayAddons =
+      numberOverride(addonOverrides, 'sessionReplays') || 0
     const websiteOverride = numberOverride(entitlementOverrides, 'websites')
     const apiOverride = numberOverride(
       entitlementOverrides,
       'apiRateLimitPerHour',
-    )
-    const replayOverride = numberOverride(
-      entitlementOverrides,
-      'sessionReplaysIncluded',
     )
     const includedWebsites =
       websiteOverride ??
@@ -1330,8 +2293,7 @@ export class UserService {
       (typeof entitlements.apiRateLimitPerHour === 'number'
         ? entitlements.apiRateLimitPerHour
         : user?.maxApiKeyRequestsPerHour)
-    const sessionReplaysIncluded =
-      replayOverride ?? entitlements.sessionReplaysIncluded
+    const sessionReplaysIncluded = getSessionReplayQuota(user)
 
     const enhancedUser = {
       ...user,
@@ -1350,6 +2312,7 @@ export class UserService {
           : user?.maxApiKeyRequestsPerHour,
       sessionReplaysIncluded,
       purchasedWebsiteAddons,
+      purchasedSessionReplayAddons,
     }
 
     return _omit(enhancedUser, [
@@ -1847,6 +2810,7 @@ export class UserService {
 
     await this.update(id, updateParams)
     await this.refreshWebsiteAddonEntitlements(id)
+    await this.refreshSessionReplayAddonEntitlements(id)
   }
 
   async generatePayLink(

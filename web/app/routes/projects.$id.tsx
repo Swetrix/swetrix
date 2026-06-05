@@ -20,6 +20,7 @@ import {
   getPerfDataServer,
   getPerformanceOverallStatsServer,
   getSessionsServer,
+  getSessionReplaysServer,
   getSessionServer,
   getErrorsServer,
   getErrorServer,
@@ -32,6 +33,7 @@ import {
   type PerformanceDataResponse,
   type PerformanceOverallObject,
   type SessionsResponse,
+  type SessionReplaysResponse,
   type SessionDetailsResponse,
   type ErrorsResponse,
   type ErrorDetailsResponse,
@@ -349,6 +351,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     ...(seoTabId ? { [seoTabId]: t('project.seo.title') } : {}),
     [PROJECT_TABS.profiles]: t('dashboard.profiles'),
     [PROJECT_TABS.sessions]: t('dashboard.sessions'),
+    [PROJECT_TABS.replays]: t('dashboard.replays'),
     [PROJECT_TABS.errors]: t('dashboard.errors'),
     [PROJECT_TABS.funnels]: t('dashboard.funnels'),
     [PROJECT_TABS.goals]: t('dashboard.goals'),
@@ -489,6 +492,7 @@ export interface ProjectLoaderData {
   > | null>
   // Sessions data
   sessionsData?: Promise<SessionsResponse | null>
+  replaysData?: Promise<SessionReplaysResponse | null>
   sessionDetails?: Promise<SessionDetailsResponse | null>
   // Errors data
   errorsData?: Promise<ErrorsResponse | null>
@@ -626,6 +630,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     | Promise<Record<string, PerformanceOverallObject> | null>
     | undefined
   let sessionsData: Promise<SessionsResponse | null> | undefined
+  let replaysData: Promise<SessionReplaysResponse | null> | undefined
   let sessionDetails: Promise<SessionDetailsResponse | null> | undefined
   let errorsData: Promise<ErrorsResponse | null> | undefined
   let errorDetails: Promise<ErrorDetailsResponse | null> | undefined
@@ -733,6 +738,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           password || undefined,
         ).then((res) => res.data)
       }
+    } else if (tab === PROJECT_TABS.replays) {
+      replaysData = getSessionReplaysServer(
+        request,
+        projectId,
+        analyticsParams,
+      ).then((res) => res.data)
     } else if (tab === PROJECT_TABS.errors) {
       errorsData = getErrorsServer(request, projectId, analyticsParams).then(
         (res) => res.data,
@@ -812,6 +823,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       perfCompareData,
       perfOverallCompareStats,
       sessionsData,
+      replaysData,
       sessionDetails,
       errorsData,
       errorDetails,

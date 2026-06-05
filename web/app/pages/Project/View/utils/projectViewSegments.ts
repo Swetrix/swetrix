@@ -48,6 +48,7 @@ const SEO_FILTER_COLUMNS = ['pg', 'keywords', 'cc', 'dv']
 const ANALYTICS_TABS = new Set<ProjectTab>([
   PROJECT_TABS.traffic,
   PROJECT_TABS.sessions,
+  PROJECT_TABS.replays,
   PROJECT_TABS.profiles,
   PROJECT_TABS.funnels,
   PROJECT_TABS.goals,
@@ -59,6 +60,7 @@ const FILTER_OPTIONS_BY_TAB: Partial<Record<ProjectTab, string[]>> = {
   [PROJECT_TABS.performance]: PERFORMANCE_FILTER_COLUMNS,
   [PROJECT_TABS.seo]: ['pg', 'cc', 'dv'],
   [PROJECT_TABS.sessions]: FILTERS_PANELS_ORDER,
+  [PROJECT_TABS.replays]: FILTERS_PANELS_ORDER,
   [PROJECT_TABS.profiles]: FILTERS_PANELS_ORDER,
   [PROJECT_TABS.funnels]: FILTERS_PANELS_ORDER,
   [PROJECT_TABS.goals]: FILTERS_PANELS_ORDER,
