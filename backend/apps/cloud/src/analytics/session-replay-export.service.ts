@@ -46,7 +46,7 @@ export type SessionReplayExportJobData =
       exportId: string
       pid: string
       psid: string
-      replayId: string
+      replayId?: string
     }
   | {
       type: 'cleanup'
@@ -57,7 +57,7 @@ export type SessionReplayExportJobData =
 export interface SessionReplayExportState extends SessionReplayExportResponse {
   pid: string
   psid: string
-  replayId: string
+  replayId?: string
   objectKey?: string
   createdAt: string
   updatedAt: string
@@ -155,8 +155,9 @@ export class SessionReplayExportService {
 
     this.validateReplayMetadata(replay.eventCount, replay.replayDuration)
 
+    const exportReplayId = replayId || 'session'
     const exportId = hash(
-      `${EXPORT_RENDERER_VERSION}:${pid}:${psid}:${replay.replayId}:${replay.eventCount}:${replay.replayDuration}`,
+      `${EXPORT_RENDERER_VERSION}:${pid}:${psid}:${exportReplayId}:${replay.eventCount}:${replay.replayDuration}`,
     )
     const existing = await this.getState(exportId)
 
@@ -181,7 +182,7 @@ export class SessionReplayExportService {
       exportId,
       pid,
       psid,
-      replayId: replay.replayId,
+      replayId,
       status: 'queued',
       progress: 0,
       filename: this.getFilename(psid),
@@ -200,7 +201,7 @@ export class SessionReplayExportService {
           exportId,
           pid,
           psid,
-          replayId: replay.replayId,
+          replayId,
         },
         {
           jobId: exportId,

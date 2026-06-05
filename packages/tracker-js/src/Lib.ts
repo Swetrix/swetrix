@@ -34,6 +34,11 @@ type RrwebModule = RrwebGlobal & {
 
 type SessionReplayPreloadOption = boolean | { rrwebUrl?: string }
 
+interface SessionReplayStartResponse {
+  replayId: string
+  nextChunkIndex: number
+}
+
 declare global {
   interface Window {
     rrweb?: RrwebGlobal
@@ -297,6 +302,7 @@ const DEFAULT_SESSION_REPLAY_FLUSH_INTERVAL = 5000
 const DEFAULT_SESSION_REPLAY_MAX_EVENTS = 100
 const DEFAULT_SESSION_REPLAY_MAX_CHUNK_BYTES = 512 * 1024
 const DEFAULT_SESSION_REPLAY_MAX_EVENT_BYTES = 5 * 1024 * 1024
+const DEFAULT_SESSION_REPLAY_MAX_DURATION_MS = 30 * 60 * 1000
 const DEFAULT_SESSION_REPLAY_PRIVACY: SessionReplayPrivacy = 'total'
 const DEFAULT_SESSION_REPLAY_SAMPLING = {
   mousemove: 50,
@@ -853,6 +859,11 @@ export class Lib {
       return defaultSessionReplayActions
     }
 
+    const maxDurationMs =
+      typeof options.maxDurationMs === 'number' && options.maxDurationMs > 0
+        ? options.maxDurationMs
+        : DEFAULT_SESSION_REPLAY_MAX_DURATION_MS
+
     if (!this.shouldSampleSessionReplay(options.sampleRate)) {
       return defaultSessionReplayActions
     }
@@ -869,12 +880,14 @@ export class Lib {
     }
 
     const privacy = this.getSessionReplayPrivacy(options.privacy)
-    const replayId = this.createReplayId()
-    const started = await this.sendSessionReplayStart(replayId, privacy)
+    const proposedReplayId = this.createReplayId()
+    const started = await this.sendSessionReplayStart(proposedReplayId, privacy)
 
     if (!started) {
       return defaultSessionReplayActions
     }
+
+    const replayId = started.replayId
 
     const flushIntervalMs =
       typeof options.flushIntervalMs === 'number' && options.flushIntervalMs > 0
@@ -901,16 +914,12 @@ export class Lib {
       maxBytesPerEventCandidate >= 1
         ? maxBytesPerEventCandidate
         : DEFAULT_SESSION_REPLAY_MAX_EVENT_BYTES
-    const maxDurationMs =
-      typeof options.maxDurationMs === 'number' && options.maxDurationMs > 0
-        ? options.maxDurationMs
-        : null
     const idleTimeoutMs =
       typeof options.idleTimeoutMs === 'number' && options.idleTimeoutMs > 0
         ? options.idleTimeoutMs
         : null
 
-    let chunkIndex = 0
+    let chunkIndex = started.nextChunkIndex
     let stopped = false
     let events: RrwebEvent[] = []
     let eventsByteLength = 0
@@ -1023,12 +1032,10 @@ export class Lib {
     window.addEventListener('pagehide', flushOnPageExit)
     document.addEventListener('visibilitychange', flushOnHidden)
 
-    if (maxDurationMs) {
-      maxDurationTimer = setTimeout(
-        () => void stopSessionReplay(),
-        maxDurationMs,
-      )
-    }
+    maxDurationTimer = setTimeout(
+      () => void stopSessionReplay(),
+      maxDurationMs,
+    )
 
     if (idleTimeoutMs) {
       SESSION_REPLAY_ACTIVITY_EVENTS.forEach((eventName) => {
@@ -1448,7 +1455,7 @@ export class Lib {
   private async sendSessionReplayStart(
     replayId: string,
     privacy: SessionReplayPrivacy,
-  ): Promise<boolean> {
+  ): Promise<SessionReplayStartResponse | null> {
     try {
       const apiBase = this.getApiBase()
       const response = await fetch(`${apiBase}/log/session-replay/start`, {
@@ -1472,9 +1479,38 @@ export class Lib {
         }),
       })
 
-      return response.ok
+      if (!response.ok) {
+        return null
+      }
+
+      try {
+        const result = (await response.json()) as Partial<{
+          replayId: unknown
+          nextChunkIndex: unknown
+        }>
+        const resolvedReplayId =
+          typeof result.replayId === 'string' && result.replayId
+            ? result.replayId
+            : replayId
+        const resolvedChunkIndex =
+          typeof result.nextChunkIndex === 'number' &&
+          Number.isFinite(result.nextChunkIndex) &&
+          result.nextChunkIndex >= 0
+            ? Math.floor(result.nextChunkIndex)
+            : 0
+
+        return {
+          replayId: resolvedReplayId,
+          nextChunkIndex: resolvedChunkIndex,
+        }
+      } catch {
+        return {
+          replayId,
+          nextChunkIndex: 0,
+        }
+      }
     } catch {
-      return false
+      return null
     }
   }
 

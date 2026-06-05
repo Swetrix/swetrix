@@ -167,6 +167,78 @@ describe('Session replay tracking', () => {
     expect(stopRecording).toHaveBeenCalledTimes(1)
   })
 
+  test('uses backend replay id and chunk index across page loads without browser storage', async () => {
+    const replayId = 'server-replay-id'
+    const setItemSpy = jest.spyOn(Storage.prototype, 'setItem')
+    const getItemSpy = jest.spyOn(Storage.prototype, 'getItem')
+    let startCount = 0
+
+    fetchMock.mockImplementation((url) => {
+      if (String(url).includes('/session-replay/start')) {
+        const nextChunkIndex = startCount === 0 ? 0 : 1200
+        startCount += 1
+
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ replayId, nextChunkIndex }),
+        })
+      }
+
+      return Promise.resolve({ ok: true })
+    })
+
+    const { recordOptions } = usePackageRrweb()
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const firstActions = await startSessionReplay({ flushIntervalMs: 60_000 })
+
+    recordOptions().emit({ type: 2, timestamp: 100 })
+    await firstActions.flush()
+
+    const firstChunkCall = fetchMock.mock.calls.find(([url]) =>
+      String(url).includes('/session-replay/chunk'),
+    )
+    const firstChunkBody = JSON.parse(firstChunkCall![1].body as string)
+    expect(firstChunkBody).toEqual(
+      expect.objectContaining({
+        replayId,
+        chunkIndex: 0,
+      }),
+    )
+
+    const secondModule = await loadTracker()
+    secondModule.init(PROJECT_ID, { devMode: true })
+    const secondActions = await secondModule.startSessionReplay({
+      flushIntervalMs: 60_000,
+    })
+    const startCalls = fetchMock.mock.calls.filter(([url]) =>
+      String(url).includes('/session-replay/start'),
+    )
+    expect(startCalls).toHaveLength(2)
+
+    recordOptions().emit({ type: 2, timestamp: 200 })
+    await secondActions.flush()
+
+    const chunkCalls = fetchMock.mock.calls.filter(([url]) =>
+      String(url).includes('/session-replay/chunk'),
+    )
+    const secondChunkBody = JSON.parse(chunkCalls[1][1].body as string)
+    expect(secondChunkBody).toEqual(
+      expect.objectContaining({
+        replayId,
+        chunkIndex: 1200,
+      }),
+    )
+    expect(setItemSpy).not.toHaveBeenCalled()
+    expect(getItemSpy).not.toHaveBeenCalled()
+
+    await secondActions.stop()
+    await firstActions.stop()
+    setItemSpy.mockRestore()
+    getItemSpy.mockRestore()
+  })
+
   test('sampleRate can skip recording before loading rrweb', async () => {
     const { init, startSessionReplay } = await loadTracker()
 

@@ -150,6 +150,34 @@ const MAX_SESSION_REPLAY_BYTES_PER_REPLAY = 150 * 1024 * 1024
 const MAX_SESSION_REPLAY_DURATION_MS = 30 * 60 * 1000
 const SESSION_REPLAY_CLEANUP_BATCH_SIZE = 500
 const SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY = 6
+const SESSION_REPLAY_CHUNK_INDEX_RANGE = MAX_SESSION_REPLAY_CHUNKS_PER_REPLAY
+const RESERVE_REPLAY_START_LUA = `
+local activeReplayKey = KEYS[1]
+local proposedReplayId = ARGV[1]
+local chunkIndexRange = tonumber(ARGV[2])
+local ttl = tonumber(ARGV[3])
+
+local replayId = redis.call("HGET", activeReplayKey, "replayId")
+local nextChunkIndex = tonumber(redis.call("HGET", activeReplayKey, "nextChunkIndex") or "0")
+
+if replayId == false or replayId == nil or replayId == "" then
+  replayId = proposedReplayId
+  nextChunkIndex = 0
+end
+
+local allocatedChunkIndex = nextChunkIndex
+redis.call(
+  "HSET",
+  activeReplayKey,
+  "replayId",
+  replayId,
+  "nextChunkIndex",
+  allocatedChunkIndex + chunkIndexRange
+)
+redis.call("EXPIRE", activeReplayKey, ttl)
+
+return { replayId, tostring(allocatedChunkIndex) }
+`
 const RESERVE_REPLAY_USAGE_LUA = `
 local reservationKey = KEYS[1]
 local counterKey = KEYS[2]
@@ -1872,9 +1900,11 @@ export class AnalyticsService {
     await this.recordSessionActivity(psid, pid, resolvedProfileId)
 
     const retention = this.getSessionReplayRetention(project)
+    const replayStart = await this.reserveActiveReplayStart(pid, psid, replayId)
 
     return {
-      replayId,
+      replayId: replayStart.replayId,
+      nextChunkIndex: replayStart.nextChunkIndex,
       psid,
       privacy,
       ...retention,
@@ -1912,6 +1942,10 @@ export class AnalyticsService {
     return `session-replay:usage-count:${dayjs.utc().format('YYYY-MM')}:${accountId}`
   }
 
+  private getActiveReplayKey(pid: string, psid: string) {
+    return `session-replay:active:${pid}:${psid}`
+  }
+
   private getReplayUsageTtlSeconds() {
     return Math.max(60, dayjs.utc().endOf('month').diff(dayjs.utc(), 'second'))
   }
@@ -1931,6 +1965,36 @@ export class AnalyticsService {
       60,
       dayjs.utc(retention.expiresAt).diff(dayjs.utc(), 'second'),
     )
+  }
+
+  private getActiveReplayTtlSeconds() {
+    return Math.max(60, Math.ceil(MAX_SESSION_REPLAY_DURATION_MS / 1000))
+  }
+
+  private async reserveActiveReplayStart(
+    pid: string,
+    psid: string,
+    replayId: string,
+  ) {
+    const result = await redis.eval(
+      RESERVE_REPLAY_START_LUA,
+      1,
+      this.getActiveReplayKey(pid, psid),
+      replayId,
+      SESSION_REPLAY_CHUNK_INDEX_RANGE,
+      this.getActiveReplayTtlSeconds(),
+    )
+    const [resolvedReplayId, nextChunkIndex] = Array.isArray(result)
+      ? result
+      : [replayId, 0]
+
+    return {
+      replayId:
+        typeof resolvedReplayId === 'string' && resolvedReplayId
+          ? resolvedReplayId
+          : replayId,
+      nextChunkIndex: Number(nextChunkIndex) || 0,
+    }
   }
 
   private getReplayChunkTimestamps(events: Record<string, unknown>[]) {
