@@ -42,6 +42,7 @@ import {
   DEFAULT_TIMEZONE,
   PlanCode,
   getSessionReplayQuota,
+  getSessionReplayRetentionEntitlement,
 } from '../user/entities/user.entity'
 import {
   redis,
@@ -1720,11 +1721,15 @@ export class AnalyticsService {
     retentionDays: number
     expiresAt: string
   } {
-    const retentionDays = this.isValidSessionReplayRetentionDays(
+    const configuredRetentionDays = this.isValidSessionReplayRetentionDays(
       project.sessionReplayRetentionDays,
     )
       ? project.sessionReplayRetentionDays
       : 30
+    const retentionDays = Math.min(
+      configuredRetentionDays,
+      getSessionReplayRetentionEntitlement(project.admin),
+    )
 
     return {
       retentionDays,
@@ -2023,18 +2028,30 @@ export class AnalyticsService {
         query: `
           SELECT
             replayId,
-            anyLast(privacyMode) AS privacyMode,
+            argMax(privacyMode, latestCreated) AS privacyMode,
             count() AS chunkCount,
             sum(eventCount) AS eventCount,
             min(firstEventTimestamp) AS firstEventTimestamp,
             max(lastEventTimestamp) AS lastEventTimestamp,
             max(expiresAt) AS replayExpiresAt,
-            max(created) AS lastCreated
-          FROM session_replay_chunks
-          WHERE pid = {pid:FixedString(12)}
-            AND psid = toUInt64OrNull({psid:String})
-            ${replayId ? 'AND replayId = {replayId:String}' : ''}
-            AND expiresAt > now()
+            max(latestCreated) AS lastCreated
+          FROM (
+            SELECT
+              replayId,
+              chunkIndex,
+              argMax(privacyMode, created) AS privacyMode,
+              argMax(eventCount, created) AS eventCount,
+              argMax(firstEventTimestamp, created) AS firstEventTimestamp,
+              argMax(lastEventTimestamp, created) AS lastEventTimestamp,
+              argMax(expiresAt, created) AS expiresAt,
+              max(created) AS latestCreated
+            FROM session_replay_chunks
+            WHERE pid = {pid:FixedString(12)}
+              AND psid = toUInt64OrNull({psid:String})
+              ${replayId ? 'AND replayId = {replayId:String}' : ''}
+              AND expiresAt > now()
+            GROUP BY replayId, chunkIndex
+          )
           GROUP BY replayId
           ORDER BY lastCreated DESC
           LIMIT 1
@@ -2094,12 +2111,15 @@ export class AnalyticsService {
     const { data: chunks } = await clickhouse
       .query({
         query: `
-          SELECT chunkIndex, objectKey
+          SELECT
+            chunkIndex,
+            argMax(objectKey, created) AS objectKey
           FROM session_replay_chunks
           WHERE pid = {pid:FixedString(12)}
             AND psid = toUInt64OrNull({psid:String})
             AND replayId = {replayId:String}
             AND expiresAt > now()
+          GROUP BY chunkIndex
           ORDER BY chunkIndex ASC
         `,
         query_params: { pid, psid, replayId: selectedReplayId },
@@ -6476,21 +6496,35 @@ export class AnalyticsService {
       ),
       replay_summary AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          psidCasted,
           pid,
           replayId,
-          argMax(privacyMode, created) AS privacyMode,
+          argMax(privacyMode, latestCreated) AS privacyMode,
           count() AS chunkCount,
           sum(eventCount) AS eventCount,
           min(firstEventTimestamp) AS firstEventTimestamp,
           max(lastEventTimestamp) AS lastEventTimestamp,
-          min(created) AS replayCreatedAt,
-          max(created) AS lastReplayCreatedAt,
+          min(latestCreated) AS replayCreatedAt,
+          max(latestCreated) AS lastReplayCreatedAt,
           max(expiresAt) AS replayExpiresAt
-        FROM session_replay_chunks
-        WHERE pid = {pid:FixedString(12)}
-          AND expiresAt > now()
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        FROM (
+          SELECT
+            CAST(psid, 'String') AS psidCasted,
+            pid,
+            replayId,
+            chunkIndex,
+            argMax(privacyMode, created) AS privacyMode,
+            argMax(eventCount, created) AS eventCount,
+            argMax(firstEventTimestamp, created) AS firstEventTimestamp,
+            argMax(lastEventTimestamp, created) AS lastEventTimestamp,
+            argMax(expiresAt, created) AS expiresAt,
+            max(created) AS latestCreated
+          FROM session_replay_chunks
+          WHERE pid = {pid:FixedString(12)}
+            AND expiresAt > now()
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          GROUP BY psidCasted, pid, replayId, chunkIndex
+        )
         GROUP BY psidCasted, pid, replayId
       ),
       pageview_counts AS (
