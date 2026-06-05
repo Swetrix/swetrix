@@ -18,8 +18,7 @@ CREATE TABLE `user_addon` (
   `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (`id`),
   UNIQUE KEY `IDX_user_addon_user_code` (`userId`,`code`),
-  KEY `IDX_user_addon_next_charge_status` (`nextChargeDate`,`status`),
-  CONSTRAINT `FK_user_addon_user` FOREIGN KEY (`userId`) REFERENCES `user` (`id`) ON DELETE CASCADE
+  KEY `IDX_user_addon_next_charge_status` (`nextChargeDate`,`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `user_addon_charge` (
@@ -45,7 +44,5 @@ CREATE TABLE `user_addon_charge` (
   `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (`id`),
   KEY `IDX_user_addon_charge_addon_created` (`addonId`,`createdAt`),
-  KEY `IDX_user_addon_charge_user` (`userId`),
-  CONSTRAINT `FK_user_addon_charge_addon` FOREIGN KEY (`addonId`) REFERENCES `user_addon` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `FK_user_addon_charge_user` FOREIGN KEY (`userId`) REFERENCES `user` (`id`) ON DELETE CASCADE
+  KEY `IDX_user_addon_charge_user` (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

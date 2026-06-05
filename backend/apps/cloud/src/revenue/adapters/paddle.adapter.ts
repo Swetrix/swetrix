@@ -60,18 +60,21 @@ interface PaddleAdjustment {
   }
   reason: string
   created_at: string
+  updated_at: string
+}
+
+interface PaddleListPagination {
+  per_page: number
+  next?: string
+  has_more: boolean
+  estimated_total?: number
 }
 
 interface PaddleListResponse<T> {
   data: T[]
   meta: {
     request_id: string
-    pagination?: {
-      per_page: number
-      next?: string
-      has_more: boolean
-      estimated_total?: number
-    }
+    pagination?: PaddleListPagination
   }
 }
 
@@ -172,29 +175,21 @@ export class PaddleAdapter {
     after?: Date,
   ): Promise<PaddleTransaction[]> {
     const transactions: PaddleTransaction[] = []
-    let cursor: string | undefined
+    const params = new URLSearchParams({
+      per_page: '30',
+    })
 
-    do {
-      const params = new URLSearchParams({
-        per_page: '50',
-      })
+    params.append('status', 'completed')
+    params.append('status', 'billed')
 
-      // Paddle API: pass each status value separately
-      params.append('status', 'completed')
-      params.append('status', 'billed')
+    if (after && after instanceof Date && !isNaN(after.getTime())) {
+      params.append('updated_at[gte]', this.formatPaddleDate(after))
+    }
 
-      if (after && after instanceof Date && !isNaN(after.getTime())) {
-        // Use RFC 3339 format without milliseconds
-        params.append(
-          'updated_at[gte]',
-          after.toISOString().split('.')[0] + 'Z',
-        )
-      }
+    let url: string | undefined =
+      `${this.baseUrl}/transactions?${params.toString()}`
 
-      if (cursor && cursor.length > 0) {
-        params.append('after', cursor)
-      }
-
+    while (url) {
       const controller = new AbortController()
       const timeout = setTimeout(() => {
         controller.abort()
@@ -202,16 +197,13 @@ export class PaddleAdapter {
 
       let response: Response
       try {
-        response = await fetch(
-          `${this.baseUrl}/transactions?${params.toString()}`,
-          {
-            signal: controller.signal,
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-            },
+        response = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
           },
-        )
+        })
       } catch (error) {
         if (error.name === 'AbortError') {
           this.logger.error(
@@ -236,12 +228,8 @@ export class PaddleAdapter {
       const data: PaddleListResponse<PaddleTransaction> = await response.json()
       transactions.push(...data.data)
 
-      // Only set cursor if has_more is true and next is valid
-      cursor =
-        data.meta.pagination?.has_more && data.meta.pagination?.next
-          ? data.meta.pagination.next
-          : undefined
-    } while (cursor)
+      url = this.getNextPageUrl(data.meta.pagination)
+    }
 
     return transactions
   }
@@ -251,27 +239,16 @@ export class PaddleAdapter {
     after?: Date,
   ): Promise<PaddleAdjustment[]> {
     const adjustments: PaddleAdjustment[] = []
-    let cursor: string | undefined
+    const params = new URLSearchParams({
+      action: 'refund',
+      status: 'approved',
+      per_page: '50',
+    })
 
-    do {
-      const params = new URLSearchParams({
-        action: 'refund',
-        status: 'approved',
-        per_page: '50',
-      })
+    let url: string | undefined =
+      `${this.baseUrl}/adjustments?${params.toString()}`
 
-      if (after && after instanceof Date && !isNaN(after.getTime())) {
-        // Use RFC 3339 format without milliseconds
-        params.append(
-          'updated_at[gte]',
-          after.toISOString().split('.')[0] + 'Z',
-        )
-      }
-
-      if (cursor && cursor.length > 0) {
-        params.append('after', cursor)
-      }
-
+    while (url) {
       const controller = new AbortController()
       const timeout = setTimeout(() => {
         controller.abort()
@@ -279,16 +256,13 @@ export class PaddleAdapter {
 
       let response: Response
       try {
-        response = await fetch(
-          `${this.baseUrl}/adjustments?${params.toString()}`,
-          {
-            signal: controller.signal,
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-            },
+        response = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
           },
-        )
+        })
       } catch (error) {
         if (error.name === 'AbortError') {
           this.logger.error('Paddle API request timed out fetching adjustments')
@@ -309,16 +283,47 @@ export class PaddleAdapter {
       }
 
       const data: PaddleListResponse<PaddleAdjustment> = await response.json()
-      adjustments.push(...data.data)
+      adjustments.push(
+        ...data.data.filter((adjustment) =>
+          this.isOnOrAfterLastSync(
+            adjustment.updated_at || adjustment.created_at,
+            after,
+          ),
+        ),
+      )
 
-      // Only set cursor if has_more is true and next is valid
-      cursor =
-        data.meta.pagination?.has_more && data.meta.pagination?.next
-          ? data.meta.pagination.next
-          : undefined
-    } while (cursor)
+      url = this.getNextPageUrl(data.meta.pagination)
+    }
 
     return adjustments
+  }
+
+  private formatPaddleDate(date: Date): string {
+    return date.toISOString().split('.')[0] + 'Z'
+  }
+
+  private getNextPageUrl(
+    pagination?: PaddleListPagination,
+  ): string | undefined {
+    if (!pagination?.has_more || !pagination.next) {
+      return undefined
+    }
+
+    const nextUrl = new URL(pagination.next, this.baseUrl)
+    return `${this.baseUrl}${nextUrl.pathname}${nextUrl.search}`
+  }
+
+  private isOnOrAfterLastSync(value: string, lastSyncAt?: Date): boolean {
+    if (
+      !(lastSyncAt instanceof Date) ||
+      isNaN(lastSyncAt.getTime()) ||
+      !value
+    ) {
+      return true
+    }
+
+    const date = new Date(value)
+    return isNaN(date.getTime()) || date >= lastSyncAt
   }
 
   private async processTransaction(
