@@ -490,12 +490,16 @@ export const FeaturesGrid = () => {
 
       <div className='mt-14 space-y-20 sm:mt-16 lg:space-y-24'>
         <div className='grid items-center gap-10 lg:grid-cols-2 lg:gap-16'>
-          <DashboardMockup />
-          <FeatureGroup
-            headingKey='webHeading'
-            descriptionKey='webDescription'
-            features={WEB_ANALYTICS_FEATURES}
-          />
+          <div className='order-2 lg:order-1'>
+            <DashboardMockup />
+          </div>
+          <div className='order-1 lg:order-2'>
+            <FeatureGroup
+              headingKey='webHeading'
+              descriptionKey='webDescription'
+              features={WEB_ANALYTICS_FEATURES}
+            />
+          </div>
         </div>
 
         <div className='grid items-center gap-10 lg:grid-cols-2 lg:gap-16'>
