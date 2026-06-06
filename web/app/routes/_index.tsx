@@ -558,7 +558,7 @@ const NewHero = ({ stats }: { stats: Stats | null }) => {
                 }}
                 variant='secondary'
                 size='xl'
-                className='h-12 border-white/25 bg-white/10 px-5 text-center text-base font-semibold text-white shadow-none ring-white/25 backdrop-blur-md hover:bg-white/20 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
+                className='h-12 border-white/25 bg-white/10 px-5 text-center flex justify-center items-center text-base font-semibold text-white shadow-none ring-white/25 backdrop-blur-md hover:bg-white/20 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
                 aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
               >
                 {t('common.liveDemo')}
@@ -606,7 +606,7 @@ const Hero = ({ variant }: { variant: LandingHeroVariant }) => {
     return <NewHero stats={stats} />
   }
 
-  return <OldHero stats={stats} />
+  return <NewHero stats={stats} />
 }
 
 const SOFTWARE_APPLICATION_JSONLD = {
