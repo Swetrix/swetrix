@@ -41,7 +41,9 @@ const MAX_ROW_LIMIT = 25000
 const MAX_BRANDED_PAGES = 10
 const MAX_FILTER_EXPRESSION_LENGTH = 500
 const MAX_FILTERS = 20
-const MAX_EXPENSIVE_ANALYTICS_RANGE_DAYS = 180
+const MAX_BRANDED_TRAFFIC_RANGE_DAYS = 31
+const MAX_POSITION_ANALYTICS_RANGE_DAYS = 31
+const OPTIONAL_ANALYTICS_TIMEOUT_MS = 12000
 
 const IMPRESSION_POSITION_BUCKETS = [
   { key: 'pos1To3', label: '1-3' },
@@ -136,6 +138,31 @@ const getOrganicPositionBucketKey = (
   if (position <= 20) return 'pos11To20'
   if (position <= 50) return 'pos21To50'
   return 'pos51Plus'
+}
+
+const resolveOptionalAnalytics = async <T>(
+  promise: Promise<T>,
+  fallback: T,
+): Promise<T> => {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timeout = setTimeout(
+          () => resolve(fallback),
+          OPTIONAL_ANALYTICS_TIMEOUT_MS,
+        )
+      }),
+    ])
+  } catch {
+    return fallback
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+  }
 }
 
 type GSCRow = {
@@ -828,6 +855,7 @@ export class GSCService {
     const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
     const isHourly = timeBucket === 'hour'
+    const isMonthly = timeBucket === 'month'
 
     try {
       const rows = await this.queryGSC(gsc, from, to, {
@@ -836,6 +864,51 @@ export class GSCService {
         dataState: isHourly ? 'hourly_all' : 'all',
         dimensionFilterGroups,
       })
+
+      if (isMonthly) {
+        const monthlySeries = new Map<
+          string,
+          { clicks: number; impressions: number; weightedPosition: number }
+        >()
+
+        for (const row of rows) {
+          const rawDate = row.keys?.[0]
+          if (!rawDate) continue
+
+          const date = dayjs.utc(rawDate).format('YYYY-MM-01')
+          const clicks = row.clicks || 0
+          const impressions = row.impressions || 0
+          const position = row.position || 0
+          const existing = monthlySeries.get(date) || {
+            clicks: 0,
+            impressions: 0,
+            weightedPosition: 0,
+          }
+
+          existing.clicks += clicks
+          existing.impressions += impressions
+          existing.weightedPosition += position * impressions
+          monthlySeries.set(date, existing)
+        }
+
+        return Array.from(monthlySeries.entries())
+          .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+          .map(([date, entry]) => ({
+            date,
+            clicks: Math.round(entry.clicks),
+            impressions: Math.round(entry.impressions),
+            ctr:
+              entry.impressions > 0
+                ? Number(((entry.clicks / entry.impressions) * 100).toFixed(2))
+                : 0,
+            position:
+              entry.impressions > 0
+                ? Number(
+                    (entry.weightedPosition / entry.impressions).toFixed(1),
+                  )
+                : 0,
+          }))
+      }
 
       return rows.map((row) => ({
         date: row.keys?.[0]
@@ -1053,7 +1126,12 @@ export class GSCService {
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
 
     try {
-      const rows: GSCRow[] = []
+      const impressionBuckets = initialImpressionPositionBuckets()
+      const organicPositionsByDate = new Map<
+        string,
+        OrganicPositionSeriesEntry
+      >()
+      let totalImpressions = 0
       let startRow = 0
 
       while (true) {
@@ -1064,43 +1142,35 @@ export class GSCService {
           dimensionFilterGroups,
         })
 
-        rows.push(...page)
+        for (const row of page) {
+          const position = Number(row.position || 0)
+          const impressions = Math.round(row.impressions || 0)
+          const date = row.keys?.[0]
+
+          if (
+            !date ||
+            !Number.isFinite(position) ||
+            position <= 0 ||
+            impressions <= 0
+          ) {
+            continue
+          }
+
+          const impressionBucket = getImpressionPositionBucketKey(position)
+          impressionBuckets[impressionBucket] += impressions
+          totalImpressions += impressions
+
+          const organicBucket = getOrganicPositionBucketKey(position)
+          const organicEntry =
+            organicPositionsByDate.get(date) ||
+            initialOrganicPositionEntry(date)
+          organicEntry[organicBucket] += 1
+          organicPositionsByDate.set(date, organicEntry)
+        }
 
         if (page.length < MAX_ROW_LIMIT) break
 
         startRow += MAX_ROW_LIMIT
-      }
-
-      const impressionBuckets = initialImpressionPositionBuckets()
-      const organicPositionsByDate = new Map<
-        string,
-        OrganicPositionSeriesEntry
-      >()
-      let totalImpressions = 0
-
-      for (const row of rows) {
-        const position = Number(row.position || 0)
-        const impressions = Math.round(row.impressions || 0)
-        const date = row.keys?.[0]
-
-        if (
-          !date ||
-          !Number.isFinite(position) ||
-          position <= 0 ||
-          impressions <= 0
-        ) {
-          continue
-        }
-
-        const impressionBucket = getImpressionPositionBucketKey(position)
-        impressionBuckets[impressionBucket] += impressions
-        totalImpressions += impressions
-
-        const organicBucket = getOrganicPositionBucketKey(position)
-        const organicEntry =
-          organicPositionsByDate.get(date) || initialOrganicPositionEntry(date)
-        organicEntry[organicBucket] += 1
-        organicPositionsByDate.set(date, organicEntry)
       }
 
       const organicPositions: OrganicPositionSeriesEntry[] = []
@@ -1172,8 +1242,9 @@ export class GSCService {
     const toDate = dayjs(to)
     const durationMs = toDate.diff(fromDate)
     const rangeDays = Math.abs(toDate.diff(fromDate, 'day'))
-    const shouldLoadExpensiveAnalytics =
-      rangeDays <= MAX_EXPENSIVE_ANALYTICS_RANGE_DAYS
+    const shouldLoadBrandedTraffic = rangeDays <= MAX_BRANDED_TRAFFIC_RANGE_DAYS
+    const shouldLoadPositionAnalytics =
+      rangeDays <= MAX_POSITION_ANALYTICS_RANGE_DAYS
     const prevTo = fromDate
       .subtract(1, 'millisecond')
       .format('YYYY-MM-DD HH:mm:ss')
@@ -1199,14 +1270,20 @@ export class GSCService {
       this.getKeywords(pid, from, to, 50, 0, filtersStr, undefined, ctx),
       this.getTopCountries(pid, from, to, 50, 0, filtersStr, ctx),
       this.getTopDevices(pid, from, to, 50, 0, filtersStr, ctx),
-      shouldLoadExpensiveAnalytics
-        ? this.getBrandedTraffic(pid, from, to, filtersStr, ctx).catch(
-            () => SKIPPED_BRANDED_ANALYTICS,
+      shouldLoadBrandedTraffic
+        ? resolveOptionalAnalytics<
+            BrandedTrafficAnalytics | SkippedBrandedAnalytics
+          >(
+            this.getBrandedTraffic(pid, from, to, filtersStr, ctx),
+            SKIPPED_BRANDED_ANALYTICS,
           )
         : Promise.resolve(SKIPPED_BRANDED_ANALYTICS),
-      shouldLoadExpensiveAnalytics
-        ? this.getPositionAnalytics(pid, from, to, filtersStr, ctx).catch(
-            () => SKIPPED_POSITION_ANALYTICS,
+      shouldLoadPositionAnalytics
+        ? resolveOptionalAnalytics<
+            PositionAnalytics | SkippedPositionAnalytics
+          >(
+            this.getPositionAnalytics(pid, from, to, filtersStr, ctx),
+            SKIPPED_POSITION_ANALYTICS,
           )
         : Promise.resolve(SKIPPED_POSITION_ANALYTICS),
     ])
