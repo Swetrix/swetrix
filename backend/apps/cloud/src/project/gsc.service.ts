@@ -141,19 +141,20 @@ const getOrganicPositionBucketKey = (
 }
 
 const resolveOptionalAnalytics = async <T>(
-  promise: Promise<T>,
+  load: (signal: AbortSignal) => Promise<T>,
   fallback: T,
 ): Promise<T> => {
+  const controller = new AbortController()
   let timeout: ReturnType<typeof setTimeout> | undefined
 
   try {
     return await Promise.race([
-      promise,
+      load(controller.signal),
       new Promise<T>((resolve) => {
-        timeout = setTimeout(
-          () => resolve(fallback),
-          OPTIONAL_ANALYTICS_TIMEOUT_MS,
-        )
+        timeout = setTimeout(() => {
+          controller.abort()
+          resolve(fallback)
+        }, OPTIONAL_ANALYTICS_TIMEOUT_MS)
       }),
     ])
   } catch {
@@ -184,6 +185,7 @@ interface QueryGSCOptions {
   startRow?: number
   dataState?: string
   dimensionFilterGroups?: any[]
+  signal?: AbortSignal
 }
 
 export function parseBrandKeywords(
@@ -666,21 +668,24 @@ export class GSCService {
     const startDate = dayjs(from).format('YYYY-MM-DD')
     const endDate = dayjs(to).format('YYYY-MM-DD')
 
-    const { data } = await ctx.sc.searchanalytics.query({
-      siteUrl: ctx.siteUrl,
-      requestBody: {
-        startDate,
-        endDate,
-        ...(options.dimensions ? { dimensions: options.dimensions } : {}),
-        ...(options.rowLimit != null ? { rowLimit: options.rowLimit } : {}),
-        ...(options.startRow != null ? { startRow: options.startRow } : {}),
-        dataState: options.dataState || 'all',
-        ...(options.dimensionFilterGroups &&
-        options.dimensionFilterGroups.length > 0
-          ? { dimensionFilterGroups: options.dimensionFilterGroups }
-          : {}),
+    const { data } = await ctx.sc.searchanalytics.query(
+      {
+        siteUrl: ctx.siteUrl,
+        requestBody: {
+          startDate,
+          endDate,
+          ...(options.dimensions ? { dimensions: options.dimensions } : {}),
+          ...(options.rowLimit != null ? { rowLimit: options.rowLimit } : {}),
+          ...(options.startRow != null ? { startRow: options.startRow } : {}),
+          dataState: options.dataState || 'all',
+          ...(options.dimensionFilterGroups &&
+          options.dimensionFilterGroups.length > 0
+            ? { dimensionFilterGroups: options.dimensionFilterGroups }
+            : {}),
+        },
       },
-    })
+      options.signal ? { signal: options.signal } : undefined,
+    )
 
     return (data.rows || []) as GSCRow[]
   }
@@ -1003,6 +1008,7 @@ export class GSCService {
     to: string,
     filtersStr?: string,
     ctx?: GSCContext,
+    signal?: AbortSignal,
   ): Promise<BrandedTrafficAnalytics> {
     const brandKeywords = await this.getProjectBrandKeywords(pid)
     if (_isEmpty(brandKeywords)) {
@@ -1018,15 +1024,18 @@ export class GSCService {
     let pages = 0
 
     try {
-      while (pages < MAX_BRANDED_PAGES) {
+      while (pages < MAX_BRANDED_PAGES && !signal?.aborted) {
         const rows = await this.queryGSC(gsc, from, to, {
           dimensions: ['query'],
           rowLimit,
           startRow,
           dimensionFilterGroups,
+          signal,
         })
 
         for (const row of rows) {
+          if (signal?.aborted) break
+
           const query = (row.keys?.[0] || '').toLowerCase()
           const clicks = row.clicks || 0
 
@@ -1037,7 +1046,7 @@ export class GSCService {
           }
         }
 
-        if (rows.length < rowLimit) break
+        if (signal?.aborted || rows.length < rowLimit) break
 
         startRow += rowLimit
         pages++
@@ -1060,6 +1069,7 @@ export class GSCService {
     to: string,
     filtersStr?: string,
     ctx?: GSCContext,
+    signal?: AbortSignal,
   ): Promise<PositionAnalytics> {
     const gsc = ctx || (await this.getGSCContext(pid))
     const dimensionFilterGroups = this.getDimensionFilterGroups(filtersStr)
@@ -1073,15 +1083,18 @@ export class GSCService {
       let totalImpressions = 0
       let startRow = 0
 
-      while (true) {
+      while (!signal?.aborted) {
         const page = await this.queryGSC(gsc, from, to, {
           dimensions: ['date', 'query'],
           rowLimit: MAX_ROW_LIMIT,
           startRow,
           dimensionFilterGroups,
+          signal,
         })
 
         for (const row of page) {
+          if (signal?.aborted) break
+
           const position = Number(row.position || 0)
           const impressions = Math.round(row.impressions || 0)
           const date = row.keys?.[0]
@@ -1107,7 +1120,7 @@ export class GSCService {
           organicPositionsByDate.set(date, organicEntry)
         }
 
-        if (page.length < MAX_ROW_LIMIT) break
+        if (signal?.aborted || page.length < MAX_ROW_LIMIT) break
 
         startRow += MAX_ROW_LIMIT
       }
@@ -1176,7 +1189,8 @@ export class GSCService {
     const fromDate = dayjs(from)
     const toDate = dayjs(to)
     const durationMs = toDate.diff(fromDate)
-    const rangeDays = Math.abs(toDate.diff(fromDate, 'day'))
+    const rangeDays =
+      Math.abs(toDate.startOf('day').diff(fromDate.startOf('day'), 'day')) + 1
     const shouldLoadBrandedTraffic = rangeDays <= MAX_BRANDED_TRAFFIC_RANGE_DAYS
     const shouldLoadPositionAnalytics =
       rangeDays <= MAX_POSITION_ANALYTICS_RANGE_DAYS
@@ -1209,7 +1223,8 @@ export class GSCService {
         ? resolveOptionalAnalytics<
             BrandedTrafficAnalytics | SkippedBrandedAnalytics
           >(
-            this.getBrandedTraffic(pid, from, to, filtersStr, ctx),
+            (signal) =>
+              this.getBrandedTraffic(pid, from, to, filtersStr, ctx, signal),
             SKIPPED_BRANDED_ANALYTICS,
           )
         : Promise.resolve(SKIPPED_BRANDED_ANALYTICS),
@@ -1217,7 +1232,8 @@ export class GSCService {
         ? resolveOptionalAnalytics<
             PositionAnalytics | SkippedPositionAnalytics
           >(
-            this.getPositionAnalytics(pid, from, to, filtersStr, ctx),
+            (signal) =>
+              this.getPositionAnalytics(pid, from, to, filtersStr, ctx, signal),
             SKIPPED_POSITION_ANALYTICS,
           )
         : Promise.resolve(SKIPPED_POSITION_ANALYTICS),
