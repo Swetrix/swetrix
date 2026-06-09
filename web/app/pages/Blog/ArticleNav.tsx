@@ -5,7 +5,7 @@ import {
   Transition,
 } from '@headlessui/react'
 import { ArrowUpIcon, CaretUpIcon } from '@phosphor-icons/react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { Fragment, RefObject, useCallback, useEffect, useState } from 'react'
 
 import { Text } from '~/ui/Text'

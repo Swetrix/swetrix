@@ -1,6 +1,6 @@
 import cx from 'clsx'
 import dayjs from 'dayjs'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'

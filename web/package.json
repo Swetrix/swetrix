@@ -39,7 +39,7 @@
     "d3-scale": "^4.0.2",
     "dayjs": "^1.11.21",
     "fast-xml-parser": "^5.8.0",
-    "framer-motion": "^12.40.0",
+    "motion": "^12.40.0",
     "i18n-iso-countries": "^7.14.0",
     "i18next": "^26.3.1",
     "i18next-browser-languagedetector": "^8.2.1",
