@@ -155,6 +155,12 @@ const resources: NavItem[] = [
     iconColor: "text-sky-400",
   },
   {
+    name: "Glossary",
+    href: `${SITE}/glossary`,
+    icon: ArticleIcon,
+    iconColor: "text-violet-400",
+  },
+  {
     name: "Pricing",
     href: `${SITE}/#pricing`,
     icon: CurrencyDollarIcon,

@@ -36,6 +36,7 @@ const routes = Object.freeze({
   ga4_import_connected: '/ga4-import-connected',
   open: '/open',
   blog: '/blog',
+  glossary: '/glossary',
   imprint: '/imprint',
   forMarketers: '/for-marketers',
   forStartups: '/for-startups',

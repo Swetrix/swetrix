@@ -363,6 +363,13 @@ const productionNavigation = {
       iconColor: 'text-sky-400',
     },
     {
+      key: 'glossary',
+      href: routesPath.glossary,
+      internal: true,
+      icon: ArticleIcon,
+      iconColor: 'text-violet-400',
+    },
+    {
       key: 'pricing',
       href: `${routesPath.main}#pricing`,
       internal: true,
@@ -422,6 +429,13 @@ const communityEditionNavigation = {
       internal: false,
       icon: BookOpenIcon,
       iconColor: 'text-sky-400',
+    },
+    {
+      key: 'glossary',
+      href: `https://swetrix.com${routesPath.glossary}`,
+      internal: false,
+      icon: ArticleIcon,
+      iconColor: 'text-violet-400',
     },
     {
       key: 'pricing',

@@ -487,6 +487,7 @@ export const localisedLanguages = whitelist.filter(
 // as do API routes and other internal endpoints.
 const UNLOCALISED_PATH_PATTERNS: RegExp[] = [
   /^\/blog(\/|$)/,
+  /^\/glossary(\/|$)/,
   /^\/api(\/|$)/,
   /^\/backend(\/|$)/,
   /^\/_internal_data/,

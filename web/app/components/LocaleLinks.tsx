@@ -43,7 +43,7 @@ const getAlternateLinks = (location: Location) => {
   }
 }
 
-const NO_ALTERNATE_LINKS = [/^\/blog/i]
+const NO_ALTERNATE_LINKS = [/^\/blog/i, /^\/glossary/i]
 
 const getShouldBeIgnored = (location: Location) => {
   const unprefixed = stripLangFromPath(location.pathname)
