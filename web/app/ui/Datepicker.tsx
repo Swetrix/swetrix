@@ -494,7 +494,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                           onMouseLeave={() => setHoverDate(null)}
                           onClick={() => !disabled && onDayClick(d)}
                           className={cx(
-                            'relative h-9 w-9 rounded-md text-sm select-none',
+                            'relative h-9 w-9 rounded-md text-sm transition-[background-color,color,transform] duration-100 ease-out select-none active:scale-95',
                             {
                               'text-gray-900 dark:text-gray-100':
                                 isCurrentMonth && !disabled,
@@ -653,7 +653,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                         onMouseLeave={() => setHoverDate(null)}
                         onClick={() => !disabled && onDayClick(d)}
                         className={cx(
-                          'relative h-9 w-9 rounded-md text-sm select-none',
+                          'relative h-9 w-9 rounded-md text-sm transition-[background-color,color,transform] duration-100 ease-out select-none active:scale-95',
                           {
                             'text-gray-900 dark:text-gray-100':
                               isCurrentMonth && !disabled,
