@@ -16,7 +16,7 @@ import { BLOG_POSTS_PATH, redis } from '../common/constants'
 
 const parseFrontMatter = require('front-matter')
 
-const REDIS_SITEMAP_KEY = 'blog-sitemap'
+const REDIS_SITEMAP_KEY_PREFIX = 'blog-sitemap:v2'
 // in seconds; 3600 seconds = 1 hour
 const REDIS_SITEMAP_LIFETIME = 3600
 
@@ -34,7 +34,13 @@ interface IParseFontMatter {
   body: string
 }
 
+interface IDirectoryFingerprint {
+  latest: number
+  count: number
+}
+
 const BLOG_POSTS_BASE = path.resolve(BLOG_POSTS_PATH)
+const BLOG_POSTS_REPO_BASE = path.dirname(BLOG_POSTS_BASE)
 
 const isSafePathSegment = (segment: string) => {
   // Express/Nest will decode URL params; explicitly disallow separators/traversal.
@@ -69,6 +75,99 @@ const isValidCategoryPath = (category: string): boolean => {
 }
 
 const categorySegments = (category: string): string[] => category.split('/')
+
+const readGitRef = async (
+  gitDir: string,
+  ref: string,
+): Promise<string | null> => {
+  try {
+    return (await fs.readFile(path.resolve(gitDir, ref), 'utf8')).trim()
+  } catch {
+    try {
+      const packedRefs = await fs.readFile(
+        path.resolve(gitDir, 'packed-refs'),
+        'utf8',
+      )
+      const packedRef = packedRefs
+        .split('\n')
+        .find((line) => line.endsWith(` ${ref}`))
+
+      return packedRef ? packedRef.split(' ')[0] : null
+    } catch {
+      return null
+    }
+  }
+}
+
+const getGitHeadHash = async (): Promise<string | null> => {
+  try {
+    const gitPath = path.resolve(BLOG_POSTS_REPO_BASE, '.git')
+    const gitStats = await fs.stat(gitPath)
+    let gitDir = gitPath
+
+    if (!gitStats.isDirectory()) {
+      const gitFile = await fs.readFile(gitPath, 'utf8')
+      const match = gitFile.match(/^gitdir:\s*(.+)$/m)
+      if (!match) return null
+      gitDir = path.resolve(BLOG_POSTS_REPO_BASE, match[1].trim())
+    }
+
+    const head = (
+      await fs.readFile(path.resolve(gitDir, 'HEAD'), 'utf8')
+    ).trim()
+
+    if (head.startsWith('ref: ')) {
+      return readGitRef(gitDir, head.slice(5).trim())
+    }
+
+    return head
+  } catch {
+    return null
+  }
+}
+
+const getDirectoryFingerprint = async (
+  dir: string,
+): Promise<IDirectoryFingerprint> => {
+  const dirents = await fs.readdir(dir, { withFileTypes: true })
+  let latest = 0
+  let count = 0
+
+  for (const dirent of dirents) {
+    const entryPath = path.resolve(dir, dirent.name)
+
+    if (dirent.isDirectory()) {
+      const nested = await getDirectoryFingerprint(entryPath)
+
+      latest = Math.max(latest, nested.latest)
+      count += nested.count
+      continue
+    }
+
+    if (dirent.isFile() && _endsWith(dirent.name, '.md')) {
+      const stats = await fs.stat(entryPath)
+      latest = Math.max(latest, stats.mtimeMs)
+      count += 1
+    }
+  }
+
+  return { latest, count }
+}
+
+const getSitemapRedisKey = async (): Promise<string> => {
+  const gitHeadHash = await getGitHeadHash()
+
+  if (gitHeadHash) {
+    return `${REDIS_SITEMAP_KEY_PREFIX}:${gitHeadHash}`
+  }
+
+  try {
+    const fingerprint = await getDirectoryFingerprint(BLOG_POSTS_BASE)
+    return `${REDIS_SITEMAP_KEY_PREFIX}:${fingerprint.latest}:${fingerprint.count}`
+  } catch {
+    return REDIS_SITEMAP_KEY_PREFIX
+  }
+}
 
 const getFileNames = async (category?: string): Promise<string[]> => {
   try {
@@ -220,9 +319,13 @@ export class BlogService {
     infiniteRecursive?: boolean,
   ): Promise<any> {
     // Only check/use cache at root level (when category is undefined)
+    let redisSitemapKey = REDIS_SITEMAP_KEY_PREFIX
+
     if (!category) {
+      redisSitemapKey = await getSitemapRedisKey()
+
       try {
-        const rawRedisSitemap = await redis.get(REDIS_SITEMAP_KEY)
+        const rawRedisSitemap = await redis.get(redisSitemapKey)
 
         if (rawRedisSitemap) {
           try {
@@ -333,7 +436,7 @@ export class BlogService {
     if (!category) {
       try {
         await redis.set(
-          REDIS_SITEMAP_KEY,
+          redisSitemapKey,
           JSON.stringify(sitemap),
           'EX',
           REDIS_SITEMAP_LIFETIME,
