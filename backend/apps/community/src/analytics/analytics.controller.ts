@@ -1087,21 +1087,29 @@ export class AnalyticsController {
       .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')
       .format('YYYY-MM-DD HH:mm:ss')
 
-    // Query ClickHouse for active sessions in the last 5 minutes
     const query = `
-      SELECT DISTINCT ON (psid)
-        any(dv) AS dv,
-        any(br) AS br,
-        any(os) AS os,
-        any(cc) AS cc,
-        toString(psid) AS psid
-      FROM events
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND type IN ('pageview', 'custom_event')
-        AND created >= {since:DateTime}
-        AND psid IS NOT NULL
-      GROUP BY psid
+      SELECT
+        dv,
+        br,
+        os,
+        cc,
+        psidCasted AS psid
+      FROM (
+        SELECT
+          any(dv) AS dv,
+          any(br) AS br,
+          any(os) AS os,
+          any(cc) AS cc,
+          toString(psid) AS psidCasted
+        FROM events
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND type IN ('pageview', 'custom_event')
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
+          AND psid != 0
+        GROUP BY psid
+      )
     `
 
     const { data } = await clickhouse

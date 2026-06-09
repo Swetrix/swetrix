@@ -275,6 +275,14 @@ export class PaddleAdapter {
 
       if (!response.ok) {
         const errorText = await response.text()
+        if (this.isAdjustmentReadForbidden(response.status, errorText)) {
+          this.logger.warn(
+            { status: response.status, error: errorText },
+            'Skipping Paddle adjustments sync because the API key cannot read adjustments',
+          )
+          return adjustments
+        }
+
         this.logger.error(
           { status: response.status, error: errorText },
           'Paddle API error fetching adjustments',
@@ -296,6 +304,15 @@ export class PaddleAdapter {
     }
 
     return adjustments
+  }
+
+  private isAdjustmentReadForbidden(
+    status: number,
+    errorText: string,
+  ): boolean {
+    return (
+      status === 403 && errorText.includes('not authorized to read adjustment')
+    )
   }
 
   private formatPaddleDate(date: Date): string {

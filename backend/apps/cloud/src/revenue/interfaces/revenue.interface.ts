@@ -36,6 +36,7 @@ export interface RevenueTransaction {
 }
 
 export const PADDLE_REQUIRED_PERMISSIONS = [
+  'adjustment.read',
   'transaction.read',
   'subscription.read',
   'customer.read',
