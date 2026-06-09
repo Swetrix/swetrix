@@ -158,12 +158,12 @@ function Select<T>({
             <Transition
               show={open}
               as={Fragment}
-              enter='transition ease-out duration-150'
-              enterFrom='opacity-0 -translate-y-0.5'
-              enterTo='opacity-100 translate-y-0'
-              leave='transition ease-in duration-100'
-              leaveFrom='opacity-100 translate-y-0'
-              leaveTo='opacity-0 -translate-y-0.5'
+              enter='transition-[opacity,transform] ease-out duration-150'
+              enterFrom='opacity-0 scale-[0.98] -translate-y-0.5'
+              enterTo='opacity-100 scale-100 translate-y-0'
+              leave='transition-[opacity,transform] ease-out duration-100'
+              leaveFrom='opacity-100 scale-100 translate-y-0'
+              leaveTo='opacity-0 scale-[0.98] -translate-y-0.5'
             >
               <ListboxOptions
                 static

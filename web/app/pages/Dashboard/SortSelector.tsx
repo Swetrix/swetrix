@@ -89,12 +89,12 @@ export const SortSelector = ({
           </PopoverButton>
           <Transition
             as={Fragment}
-            enter='transition ease-out'
-            enterFrom='opacity-0 translate-y-1'
-            enterTo='opacity-100 translate-y-0'
-            leave='transition ease-in duration-150'
-            leaveFrom='opacity-100 translate-y-0'
-            leaveTo='opacity-0 translate-y-1'
+            enter='transition-[opacity,transform] ease-out duration-150'
+            enterFrom='opacity-0 scale-[0.98] translate-y-1'
+            enterTo='opacity-100 scale-100 translate-y-0'
+            leave='transition-[opacity,transform] ease-out duration-100'
+            leaveFrom='opacity-100 scale-100 translate-y-0'
+            leaveTo='opacity-0 scale-[0.98] translate-y-1'
           >
             <PopoverPanel className='absolute right-0 z-20 mt-2 w-max max-w-sm px-4 sm:px-0 lg:max-w-3xl'>
               <div className='overflow-hidden rounded-lg bg-gray-50 p-1 ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800'>

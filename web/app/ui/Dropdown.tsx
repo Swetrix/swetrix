@@ -121,10 +121,10 @@ function Dropdown<T>({
           <Transition
             show={open}
             as={Fragment}
-            enter='transition ease-out duration-150'
+            enter='transition-[opacity,transform] ease-out duration-150'
             enterFrom='transform opacity-0 scale-95 -translate-y-0.5'
             enterTo='transform opacity-100 scale-100 translate-y-0'
-            leave='transition ease-in duration-100'
+            leave='transition-[opacity,transform] ease-out duration-100'
             leaveFrom='transform opacity-100 scale-100 translate-y-0'
             leaveTo='transform opacity-0 scale-95 -translate-y-0.5'
           >

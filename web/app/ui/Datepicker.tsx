@@ -2,6 +2,7 @@ import cx from 'clsx'
 import _clamp from 'lodash/clamp'
 import _isEmpty from 'lodash/isEmpty'
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
+import { Transition, TransitionChild } from '@headlessui/react'
 import React, {
   memo,
   useEffect,
@@ -356,168 +357,203 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
         ) : null}
 
         {/* Popover */}
-        {open ? (
-          options ? (
+        <Transition
+          show={open}
+          as={React.Fragment}
+          enter={
+            options
+              ? 'transition-opacity duration-150 ease-out'
+              : 'transition-[opacity,transform] duration-150 ease-out'
+          }
+          enterFrom={
+            options ? 'opacity-0' : 'opacity-0 scale-[0.98] -translate-y-1'
+          }
+          enterTo={
+            options ? 'opacity-100' : 'opacity-100 scale-100 translate-y-0'
+          }
+          leave={
+            options
+              ? 'transition-opacity duration-100 ease-out'
+              : 'transition-[opacity,transform] duration-100 ease-out'
+          }
+          leaveFrom={
+            options ? 'opacity-100' : 'opacity-100 scale-100 translate-y-0'
+          }
+          leaveTo={
+            options ? 'opacity-0' : 'opacity-0 scale-[0.98] -translate-y-1'
+          }
+        >
+          {options ? (
             // Centered modal when used as input
             <div className='fixed inset-0 z-50 flex items-start justify-center bg-black/20 p-4'>
-              <div
-                ref={popoverRef}
-                className='mt-10 w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-md dark:border-slate-800 dark:bg-slate-950'
+              <TransitionChild
+                as={React.Fragment}
+                enter='transition-[opacity,transform] duration-150 ease-out'
+                enterFrom='opacity-0 scale-[0.98] translate-y-1'
+                enterTo='opacity-100 scale-100 translate-y-0'
+                leave='transition-[opacity,transform] duration-100 ease-out'
+                leaveFrom='opacity-100 scale-100 translate-y-0'
+                leaveTo='opacity-0 scale-[0.98] translate-y-1'
               >
-                <div className='flex items-center justify-between'>
-                  <button
-                    type='button'
-                    className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
-                    onClick={handlePrevMonth}
-                    aria-label='Previous month'
-                  >
-                    <CaretLeftIcon className='size-5' />
-                  </button>
-                  <div className='flex items-center gap-2'>
-                    <div className='relative'>
-                      <select
-                        aria-label='Month'
-                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
-                        value={anchorMonth.getMonth()}
-                        onChange={(e) =>
-                          setAnchor(
-                            anchorMonth.getFullYear(),
-                            Number(e.target.value),
-                          )
-                        }
-                      >
-                        {monthNames.map((m, idx) => (
-                          <option
-                            key={idx}
-                            value={idx}
-                            disabled={
-                              (anchorMonth.getFullYear() === minYear &&
-                                idx < minMonthOfMinYear) ||
-                              (anchorMonth.getFullYear() === maxYear &&
-                                idx > maxMonthOfMaxYear)
-                            }
-                          >
-                            {m}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className='relative'>
-                      <select
-                        aria-label='Year'
-                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
-                        value={anchorMonth.getFullYear()}
-                        onChange={(e) =>
-                          setAnchor(
-                            Number(e.target.value),
-                            anchorMonth.getMonth(),
-                          )
-                        }
-                      >
-                        {Array.from({ length: maxYear - minYear + 1 }).map(
-                          (_, i) => {
-                            const y = minYear + i
-                            return (
-                              <option key={y} value={y}>
-                                {y}
-                              </option>
+                <div
+                  ref={popoverRef}
+                  className='mt-10 w-[320px] origin-top transform-gpu rounded-xl border border-gray-200 bg-white p-3 shadow-md dark:border-slate-800 dark:bg-slate-950'
+                >
+                  <div className='flex items-center justify-between'>
+                    <button
+                      type='button'
+                      className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
+                      onClick={handlePrevMonth}
+                      aria-label='Previous month'
+                    >
+                      <CaretLeftIcon className='size-5' />
+                    </button>
+                    <div className='flex items-center gap-2'>
+                      <div className='relative'>
+                        <select
+                          aria-label='Month'
+                          className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
+                          value={anchorMonth.getMonth()}
+                          onChange={(e) =>
+                            setAnchor(
+                              anchorMonth.getFullYear(),
+                              Number(e.target.value),
                             )
-                          },
-                        )}
-                      </select>
+                          }
+                        >
+                          {monthNames.map((m, idx) => (
+                            <option
+                              key={idx}
+                              value={idx}
+                              disabled={
+                                (anchorMonth.getFullYear() === minYear &&
+                                  idx < minMonthOfMinYear) ||
+                                (anchorMonth.getFullYear() === maxYear &&
+                                  idx > maxMonthOfMaxYear)
+                              }
+                            >
+                              {m}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className='relative'>
+                        <select
+                          aria-label='Year'
+                          className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
+                          value={anchorMonth.getFullYear()}
+                          onChange={(e) =>
+                            setAnchor(
+                              Number(e.target.value),
+                              anchorMonth.getMonth(),
+                            )
+                          }
+                        >
+                          {Array.from({ length: maxYear - minYear + 1 }).map(
+                            (_, i) => {
+                              const y = minYear + i
+                              return (
+                                <option key={y} value={y}>
+                                  {y}
+                                </option>
+                              )
+                            },
+                          )}
+                        </select>
+                      </div>
+                    </div>
+                    <button
+                      type='button'
+                      className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
+                      onClick={handleNextMonth}
+                      aria-label='Next month'
+                    >
+                      <CaretRightIcon className='size-5' />
+                    </button>
+                  </div>
+                  <div className='mt-2 grid grid-cols-7 gap-1 text-center text-xs text-gray-500 dark:text-gray-300'>
+                    {weekdays.map((wd, idx) => (
+                      <div key={idx}>{wd}</div>
+                    ))}
+                  </div>
+                  <div className='mt-1 grid grid-cols-7 gap-1'>
+                    {days.map((d, idx) => {
+                      const disabled = isDisabled(d)
+                      const isStart = !!start && areSameDay(d, start)
+                      const isEnd = !!end && areSameDay(d, end)
+                      const isBetween = inRange(d)
+                      const isCurrentMonth = isInCurrentMonth(d)
+                      return (
+                        <button
+                          key={idx}
+                          type='button'
+                          disabled={disabled}
+                          onMouseEnter={() =>
+                            setHoverDate(start && !end ? startOfDay(d) : null)
+                          }
+                          onMouseLeave={() => setHoverDate(null)}
+                          onClick={() => !disabled && onDayClick(d)}
+                          className={cx(
+                            'relative h-9 w-9 rounded-md text-sm select-none',
+                            {
+                              'text-gray-900 dark:text-gray-100':
+                                isCurrentMonth && !disabled,
+                              'text-gray-400 dark:text-gray-500':
+                                !isCurrentMonth || disabled,
+                              'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900':
+                                isStart || isEnd,
+                              'bg-gray-100 dark:bg-slate-900':
+                                isBetween && !isStart && !isEnd,
+                              'cursor-not-allowed opacity-50': disabled,
+                              'hover:bg-gray-200 dark:hover:bg-slate-800':
+                                !disabled && !isStart && !isEnd,
+                            },
+                          )}
+                        >
+                          {d.getDate()}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <div className='mt-3 flex items-center justify-between'>
+                    <div className='text-xs text-gray-600 dark:text-gray-300'>
+                      {label ||
+                        new Intl.DateTimeFormat(locale, {
+                          year: 'numeric',
+                          month: 'short',
+                        }).format(anchorMonth)}
+                    </div>
+                    <div className='flex gap-2'>
+                      <button
+                        type='button'
+                        className='rounded-md px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-900'
+                        onClick={() => {
+                          setStart(null)
+                          setEnd(null)
+                          setHoverDate(null)
+                        }}
+                      >
+                        Clear
+                      </button>
+                      <button
+                        type='button'
+                        className='rounded-md bg-slate-900 px-2 py-1 text-xs font-semibold text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
+                        disabled={!start}
+                        onClick={() => {
+                          if (!start) return
+                          commitRange(start, end || start)
+                        }}
+                      >
+                        Apply
+                      </button>
                     </div>
                   </div>
-                  <button
-                    type='button'
-                    className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
-                    onClick={handleNextMonth}
-                    aria-label='Next month'
-                  >
-                    <CaretRightIcon className='size-5' />
-                  </button>
                 </div>
-                <div className='mt-2 grid grid-cols-7 gap-1 text-center text-xs text-gray-500 dark:text-gray-300'>
-                  {weekdays.map((wd, idx) => (
-                    <div key={idx}>{wd}</div>
-                  ))}
-                </div>
-                <div className='mt-1 grid grid-cols-7 gap-1'>
-                  {days.map((d, idx) => {
-                    const disabled = isDisabled(d)
-                    const isStart = !!start && areSameDay(d, start)
-                    const isEnd = !!end && areSameDay(d, end)
-                    const isBetween = inRange(d)
-                    const isCurrentMonth = isInCurrentMonth(d)
-                    return (
-                      <button
-                        key={idx}
-                        type='button'
-                        disabled={disabled}
-                        onMouseEnter={() =>
-                          setHoverDate(start && !end ? startOfDay(d) : null)
-                        }
-                        onMouseLeave={() => setHoverDate(null)}
-                        onClick={() => !disabled && onDayClick(d)}
-                        className={cx(
-                          'relative h-9 w-9 rounded-md text-sm select-none',
-                          {
-                            'text-gray-900 dark:text-gray-100':
-                              isCurrentMonth && !disabled,
-                            'text-gray-400 dark:text-gray-500':
-                              !isCurrentMonth || disabled,
-                            'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900':
-                              isStart || isEnd,
-                            'bg-gray-100 dark:bg-slate-900':
-                              isBetween && !isStart && !isEnd,
-                            'cursor-not-allowed opacity-50': disabled,
-                            'hover:bg-gray-200 dark:hover:bg-slate-800':
-                              !disabled && !isStart && !isEnd,
-                          },
-                        )}
-                      >
-                        {d.getDate()}
-                      </button>
-                    )
-                  })}
-                </div>
-                <div className='mt-3 flex items-center justify-between'>
-                  <div className='text-xs text-gray-600 dark:text-gray-300'>
-                    {label ||
-                      new Intl.DateTimeFormat(locale, {
-                        year: 'numeric',
-                        month: 'short',
-                      }).format(anchorMonth)}
-                  </div>
-                  <div className='flex gap-2'>
-                    <button
-                      type='button'
-                      className='rounded-md px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-900'
-                      onClick={() => {
-                        setStart(null)
-                        setEnd(null)
-                        setHoverDate(null)
-                      }}
-                    >
-                      Clear
-                    </button>
-                    <button
-                      type='button'
-                      className='rounded-md bg-slate-900 px-2 py-1 text-xs font-semibold text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
-                      disabled={!start}
-                      onClick={() => {
-                        if (!start) return
-                        commitRange(start, end || start)
-                      }}
-                    >
-                      Apply
-                    </button>
-                  </div>
-                </div>
-              </div>
+              </TransitionChild>
             </div>
           ) : (
             // Anchored popover (toolbar usage)
-            <div className='absolute top-7 right-0 z-50'>
+            <div className='absolute top-7 right-0 z-50 origin-top-right transform-gpu'>
               <div
                 ref={popoverRef}
                 className='w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-md dark:border-slate-800 dark:bg-slate-950'
@@ -673,8 +709,8 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                 </div>
               </div>
             </div>
-          )
-        ) : null}
+          )}
+        </Transition>
       </div>
     )
   },
