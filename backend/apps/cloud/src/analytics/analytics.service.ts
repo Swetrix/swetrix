@@ -6880,10 +6880,14 @@ export class AnalyticsService {
       filtersQuery,
       customEVFilterApplied,
       'traffic',
+      '',
+      true,
     )
 
-    const query = `
-      WITH filtered_sessions AS (
+    const filteredSessionsCTE =
+      _isEmpty(filtersQuery) && !customEVFilterApplied
+        ? `
+      filtered_sessions AS (
         SELECT
           psidCasted,
           pid,
@@ -6895,7 +6899,35 @@ export class AnalyticsService {
           max(created_for_grouping) AS lastActivity
         FROM (${primaryEventsSubquery}) AS primary_events
         GROUP BY psidCasted, pid
+      )`
+        : `
+      matched_sessions AS (
+        SELECT DISTINCT psidCasted, pid
+        FROM (${primaryEventsSubquery}) AS primary_events
+        WHERE psidCasted != '0'
       ),
+      filtered_sessions AS (
+        SELECT
+          toString(ifNull(e.psid, 0)) AS psidCasted,
+          e.pid AS pid,
+          argMaxIf(e.profileId, toTimeZone(e.created, {timezone:String}), e.profileId IS NOT NULL AND e.profileId != '') AS profileId,
+          any(e.cc) AS cc,
+          any(e.os) AS os,
+          any(e.br) AS br,
+          min(toTimeZone(e.created, {timezone:String})) AS sessionStart,
+          max(toTimeZone(e.created, {timezone:String})) AS lastActivity
+        FROM events e
+        INNER JOIN matched_sessions ms ON toString(ifNull(e.psid, 0)) = ms.psidCasted AND e.pid = ms.pid
+        WHERE e.pid = {pid:FixedString(12)}
+          AND e.type IN ('pageview', 'custom_event', 'error')
+          AND e.psid IS NOT NULL
+          AND e.psid != 0
+          AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      )`
+
+    const query = `
+      WITH ${filteredSessionsCTE},
       replay_summary AS (
         SELECT
           psidCasted,
@@ -7123,6 +7155,7 @@ export class AnalyticsService {
     customEVFilterApplied: boolean,
     sessionEvent: SessionsListEventType = 'traffic',
     primaryEventFilterQuery = '',
+    includeProfileMatchedEventsWithPsid = false,
   ): string {
     if (customEVFilterApplied || sessionEvent === 'custom_event') {
       return `
@@ -7159,7 +7192,11 @@ export class AnalyticsService {
           WHERE
             pid = {pid:FixedString(12)}
             AND type = 'custom_event'
-            AND (psid IS NULL OR psid = 0)
+            ${
+              includeProfileMatchedEventsWithPsid
+                ? ''
+                : 'AND (psid IS NULL OR psid = 0)'
+            }
             AND profileId IS NOT NULL
             AND profileId != ''
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
