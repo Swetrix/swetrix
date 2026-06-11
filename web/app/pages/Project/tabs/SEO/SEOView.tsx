@@ -11,6 +11,7 @@ import {
   ChartBarIcon,
   TrendUpIcon,
 } from '@phosphor-icons/react'
+import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _round from 'lodash/round'
 import React, {
@@ -26,10 +27,13 @@ import { Link } from '~/ui/Link'
 import { useLoaderData, useSearchParams } from 'react-router'
 
 import { useGSCDashboardProxy } from '~/hooks/useAnalyticsProxy'
+import { useAnnotations } from '~/hooks/useAnnotations'
 import { DOCS_URL } from '~/lib/constants'
 import type { TimeBucket } from '~/lib/constants'
 import type { Entry } from '~/lib/models/Entry'
 import BillboardChart from '~/ui/BillboardChart'
+import AnnotationModal from '~/modals/AnnotationModal'
+import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { MainChart } from '~/pages/Project/View/components/MainChart'
 import Filters from '~/pages/Project/View/components/Filters'
@@ -95,7 +99,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     i18n: { language },
   } = useTranslation('common')
   const { theme } = useTheme()
-  const { id } = useCurrentProject()
+  const { id, allowedToManage } = useCurrentProject()
   const {
     period,
     timezone,
@@ -116,6 +120,21 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     resetData: resetCompareData,
   } = useGSCDashboardProxy()
   const [searchParams, setSearchParams] = useSearchParams()
+  const {
+    annotations,
+    isAnnotationModalOpen,
+    annotationToEdit,
+    annotationModalDate,
+    annotationActionLoading,
+    contextMenu,
+    onAnnotationCreate,
+    onAnnotationUpdate,
+    onAnnotationDelete,
+    openAnnotationModal,
+    closeAnnotationModal,
+    handleChartContextMenu,
+    closeContextMenu,
+  } = useAnnotations()
 
   const [activeMetrics, setActiveMetrics] = useState<
     Record<SEOMetricKey, boolean>
@@ -348,6 +367,28 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [compareData?.dateSeries, seoTimeBucket],
   )
 
+  const chartXAxisData = useMemo(
+    () => aggregatedSeries.map((entry) => entry.date),
+    [aggregatedSeries],
+  )
+
+  const filteredAnnotations = useMemo(() => {
+    if (!annotations?.length || !chartXAxisData.length) return annotations || []
+
+    const rangeStart = dayjs(chartXAxisData[0]).startOf('day')
+    const rangeEnd = dayjs(chartXAxisData[chartXAxisData.length - 1]).endOf(
+      'day',
+    )
+
+    return annotations.filter((annotation) => {
+      const date = dayjs(annotation.date)
+      return (
+        (date.isAfter(rangeStart) || date.isSame(rangeStart, 'day')) &&
+        (date.isBefore(rangeEnd) || date.isSame(rangeEnd, 'day'))
+      )
+    })
+  }, [annotations, chartXAxisData])
+
   const topPagesAsEntries: Entry[] = useMemo(
     () =>
       (data?.topPages || []).map(
@@ -516,6 +557,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         seoTimeBucket,
         t,
         !noRegionPeriods.includes(period),
+        filteredAnnotations,
         isActiveCompare && compareEnabled && aggregatedCompareSeries.length
           ? aggregatedCompareSeries
           : undefined,
@@ -529,6 +571,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
       compareEnabled,
       aggregatedCompareSeries,
       period,
+      filteredAnnotations,
     ],
   )
 
@@ -894,19 +937,27 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           />
         </div>
         {anyMetricActive && !_isEmpty(aggregatedSeries) ? (
-          <MainChart
-            chartId='seo-main-chart'
-            options={chartOptions}
-            className='h-80 [&_svg]:overflow-visible!'
-            deps={[
-              aggregatedSeries,
-              aggregatedCompareSeries,
-              activeMetrics,
-              seoTimeBucket,
-              timeFormat,
-              period,
-            ]}
-          />
+          <div
+            onContextMenu={(event) =>
+              handleChartContextMenu(event, chartXAxisData)
+            }
+            className='relative'
+          >
+            <MainChart
+              chartId='seo-main-chart'
+              options={chartOptions}
+              className='h-80 [&_svg]:overflow-visible!'
+              deps={[
+                aggregatedSeries,
+                aggregatedCompareSeries,
+                activeMetrics,
+                seoTimeBucket,
+                timeFormat,
+                period,
+                filteredAnnotations,
+              ]}
+            />
+          </div>
         ) : null}
       </div>
 
@@ -1084,6 +1135,44 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           dataLoading={gscLoading}
         />
       </div>
+
+      <AnnotationModal
+        isOpened={isAnnotationModalOpen}
+        onClose={closeAnnotationModal}
+        onSubmit={annotationToEdit ? onAnnotationUpdate : onAnnotationCreate}
+        onDelete={annotationToEdit ? onAnnotationDelete : undefined}
+        loading={annotationActionLoading}
+        annotation={annotationToEdit}
+        defaultDate={annotationModalDate}
+        allowedToManage={allowedToManage}
+      />
+      <ChartContextMenu
+        isOpen={contextMenu.isOpen}
+        x={contextMenu.x}
+        y={contextMenu.y}
+        onClose={closeContextMenu}
+        onAddAnnotation={() => {
+          openAnnotationModal(contextMenu.date || undefined)
+        }}
+        onEditAnnotation={
+          contextMenu.annotation
+            ? () =>
+                openAnnotationModal(
+                  contextMenu.annotation?.date,
+                  contextMenu.annotation!,
+                )
+            : undefined
+        }
+        onDeleteAnnotation={
+          contextMenu.annotation
+            ? () => {
+                onAnnotationDelete(contextMenu.annotation!)
+              }
+            : undefined
+        }
+        existingAnnotation={contextMenu.annotation}
+        allowedToManage={allowedToManage}
+      />
     </>
   )
 }

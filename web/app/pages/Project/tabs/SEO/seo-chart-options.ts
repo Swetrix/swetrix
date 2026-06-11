@@ -1,10 +1,11 @@
-import type { ChartOptions } from 'billboard.js'
+import type { ChartOptions, GridLineOptions } from 'billboard.js'
 import { area, bar, donut, line, scatter } from 'billboard.js'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import _round from 'lodash/round'
 import type { TFunction } from 'i18next'
 
+import type { Annotation } from '~/lib/models/Project'
 import { escapeHtml, nFormatter } from '~/utils/generic'
 import {
   SEO_IMPRESSION_POSITION_BUCKETS,
@@ -30,6 +31,8 @@ const SEO_MAIN_METRIC_COMPARE_COLORS: Record<SEOMetricKey, string> = {
   ctr: 'rgba(13, 148, 136, 0.4)',
 }
 
+const ANNOTATION_CHART_TEXT_MAX_LENGTH = 25
+
 const formatSEOMetricValue = (metric: SEOMetricKey, value: number) => {
   if (metric === SEO_METRICS.ctr) {
     return `${Number(value).toFixed(1)}%`
@@ -46,12 +49,27 @@ const getSEOMetricValue = (entry: DateSeriesEntry, metric: SEOMetricKey) => {
   return entry[metric] ?? 0
 }
 
+const getAnnotationLines = (
+  annotations?: Annotation[],
+): GridLineOptions[] => {
+  return (annotations || []).map<GridLineOptions>((annotation) => ({
+    value: dayjs(annotation.date).toDate(),
+    text:
+      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
+        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
+        : annotation.text,
+    class: `annotation-line annotation-id-${annotation.id}`,
+    position: 'start',
+  }))
+}
+
 export function buildMainChartOptions(
   series: DateSeriesEntry[],
   activeMetrics: Record<SEOMetricKey, boolean>,
   timeBucket: string,
   t: TFunction,
   applyRegions: boolean,
+  annotations?: Annotation[],
   compareSeries?: DateSeriesEntry[],
 ): ChartOptions {
   if (!series.length) return {}
@@ -211,6 +229,9 @@ export function buildMainChartOptions(
       r: 2,
     },
     grid: {
+      x: {
+        lines: getAnnotationLines(annotations),
+      },
       y: {
         show: true,
       },
