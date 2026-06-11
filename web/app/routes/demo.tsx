@@ -12,8 +12,8 @@ export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const lang = getLangFromPath(new URL(request.url).pathname)
+export const loader = async ({ url }: LoaderFunctionArgs) => {
+  const lang = getLangFromPath(url.pathname)
   const demoPath = lang ? localisePath(LIVE_DEMO_URL, lang) : LIVE_DEMO_URL
 
   return redirect(`${MAIN_URL}${demoPath}`)

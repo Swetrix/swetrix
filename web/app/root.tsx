@@ -371,15 +371,13 @@ const buildLocaliseRedirect = (
   return null
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const { url } = request
+export async function loader({ request, url: urlObject }: LoaderFunctionArgs) {
+  const url = urlObject.toString()
   const removedLng = removeMultipleLngParams(url)
 
   if (removedLng !== url) {
     return redirect(removedLng, 301)
   }
-
-  const urlObject = new URL(url)
 
   if (!isSelfhosted && isWWW(urlObject)) {
     const nonWWWLink = _replace(url, 'www.', '')
@@ -392,7 +390,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect(localiseRedirect.url, localiseRedirect.status)
   }
 
-  const locale = detectLanguage(request)
+  const locale = detectLanguage(request, urlObject)
   const theme = detectTheme(request)
   const hasTokens = hasAuthTokens(request)
 

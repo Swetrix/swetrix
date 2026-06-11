@@ -24,9 +24,10 @@ const genericConfig: InitOptions = {
   },
 }
 
-export function detectLanguage(request: Request): string {
-  const url = new URL(request.url)
-
+export function detectLanguage(
+  request: Request,
+  url = new URL(request.url),
+): string {
   // Stage 1: Getting the language from the URL path prefix (/de/page).
   const pathLang = getLangFromPath(url.pathname)
   if (pathLang) {

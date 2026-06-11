@@ -40,7 +40,7 @@ export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, params, url }: LoaderFunctionArgs) {
   const catchAllPath = params['*']
 
   if (!catchAllPath) {
@@ -54,14 +54,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (lang) {
     const stripped = catchAllPath.slice(`${lang}/`.length)
     if (stripped) {
-      const url = new URL(request.url)
       return redirect(`/${stripped}${url.search}`, 301)
     }
   } else if (catchAllPath.startsWith(`${defaultLanguage}/`)) {
     // /en/imprint → /imprint (default language is never present in the path)
     const stripped = catchAllPath.slice(`${defaultLanguage}/`.length)
     if (stripped) {
-      const url = new URL(request.url)
       return redirect(`/${stripped}${url.search}`, 301)
     }
   }
