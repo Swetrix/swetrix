@@ -22,6 +22,7 @@ import React, {
   type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { useIsPresent } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import {
   useNavigate,
@@ -194,6 +195,8 @@ function TrafficDataResolver({
 }: {
   children: (data: DeferredTrafficData) => React.ReactNode
 }) {
+  const isPresent = useIsPresent()
+  const previousDataRef = useRef<DeferredTrafficData | null>(null)
   const {
     trafficData: trafficDataPromise,
     overallStats: overallStatsPromise,
@@ -201,26 +204,48 @@ function TrafficDataResolver({
     overallCompareStats: overallComparePromise,
     customEventsData: customEventsPromise,
   } = useLoaderData<ProjectLoaderData>()
+  const shouldUsePreviousData = !isPresent && !!previousDataRef.current
 
-  const trafficData = trafficDataPromise ? use(trafficDataPromise) : null
-  const overallStats = overallStatsPromise ? use(overallStatsPromise) : null
-  const trafficCompareData = trafficComparePromise
-    ? use(trafficComparePromise)
-    : null
-  const overallCompareStats = overallComparePromise
-    ? use(overallComparePromise)
-    : null
-  const customEventsData = customEventsPromise ? use(customEventsPromise) : null
+  const trafficData = shouldUsePreviousData
+    ? previousDataRef.current!.trafficData
+    : trafficDataPromise
+      ? use(trafficDataPromise)
+      : null
+  const overallStats = shouldUsePreviousData
+    ? previousDataRef.current!.overallStats
+    : overallStatsPromise
+      ? use(overallStatsPromise)
+      : null
+  const trafficCompareData = shouldUsePreviousData
+    ? previousDataRef.current!.trafficCompareData
+    : trafficComparePromise
+      ? use(trafficComparePromise)
+      : null
+  const overallCompareStats = shouldUsePreviousData
+    ? previousDataRef.current!.overallCompareStats
+    : overallComparePromise
+      ? use(overallComparePromise)
+      : null
+  const customEventsData = shouldUsePreviousData
+    ? previousDataRef.current!.customEventsData
+    : customEventsPromise
+      ? use(customEventsPromise)
+      : null
+  const currentData: DeferredTrafficData = {
+    trafficData,
+    overallStats,
+    trafficCompareData,
+    overallCompareStats,
+    customEventsData,
+  }
+
+  if (isPresent) {
+    previousDataRef.current = currentData
+  }
 
   return (
     <>
-      {children({
-        trafficData,
-        overallStats,
-        trafficCompareData,
-        overallCompareStats,
-        customEventsData,
-      })}
+      {children(currentData)}
     </>
   )
 }

@@ -25,6 +25,7 @@ import {
   Suspense,
   use,
 } from 'react'
+import { useIsPresent } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import {
@@ -528,21 +529,39 @@ function ErrorsDataResolver({
 }: {
   children: (data: DeferredErrorsData) => React.ReactNode
 }) {
+  const isPresent = useIsPresent()
+  const previousDataRef = useRef<DeferredErrorsData | null>(null)
   const {
     errorsData: errorsDataPromise,
     errorDetails: errorDetailsPromise,
     errorOverview: errorOverviewPromise,
   } = useLoaderData<ProjectLoaderData>()
+  const shouldUsePreviousData = !isPresent && !!previousDataRef.current
 
-  const errorsData = errorsDataPromise ? use(errorsDataPromise) : null
-  const errorDetails = errorDetailsPromise ? use(errorDetailsPromise) : null
-  const errorOverview = errorOverviewPromise ? use(errorOverviewPromise) : null
+  const errorsData = shouldUsePreviousData
+    ? previousDataRef.current!.errorsData
+    : errorsDataPromise
+      ? use(errorsDataPromise)
+      : null
+  const errorDetails = shouldUsePreviousData
+    ? previousDataRef.current!.errorDetails
+    : errorDetailsPromise
+      ? use(errorDetailsPromise)
+      : null
+  const errorOverview = shouldUsePreviousData
+    ? previousDataRef.current!.errorOverview
+    : errorOverviewPromise
+      ? use(errorOverviewPromise)
+      : null
 
-  // Memoize deferredData so object identity only changes when contained data changes
   const deferredData = useMemo(
     () => ({ errorsData, errorDetails, errorOverview }),
     [errorsData, errorDetails, errorOverview],
   )
+
+  if (isPresent) {
+    previousDataRef.current = deferredData
+  }
 
   return <>{children(deferredData)}</>
 }
