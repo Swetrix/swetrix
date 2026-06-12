@@ -6880,10 +6880,14 @@ export class AnalyticsService {
       filtersQuery,
       customEVFilterApplied,
       'traffic',
+      '',
+      true,
     )
 
-    const query = `
-      WITH filtered_sessions AS (
+    const filteredSessionsCTE =
+      _isEmpty(filtersQuery) && !customEVFilterApplied
+        ? `
+      filtered_sessions AS (
         SELECT
           psidCasted,
           pid,
@@ -6895,7 +6899,36 @@ export class AnalyticsService {
           max(created_for_grouping) AS lastActivity
         FROM (${primaryEventsSubquery}) AS primary_events
         GROUP BY psidCasted, pid
+      )`
+        : `
+      matched_sessions AS (
+        SELECT DISTINCT psidCasted, pid
+        FROM (${primaryEventsSubquery}) AS primary_events
+        WHERE psidCasted != '0'
       ),
+      filtered_sessions AS (
+        SELECT
+          ms.psidCasted AS psidCasted,
+          ms.pid AS pid,
+          argMaxIf(e.profileId, toTimeZone(e.created, {timezone:String}), e.profileId IS NOT NULL AND e.profileId != '') AS profileId,
+          anyIf(e.cc, e.psid IS NOT NULL AND e.psid != 0) AS cc,
+          anyIf(e.os, e.psid IS NOT NULL AND e.psid != 0) AS os,
+          anyIf(e.br, e.psid IS NOT NULL AND e.psid != 0) AS br,
+          minOrNull(if(e.psid IS NOT NULL AND e.psid != 0, toTimeZone(e.created, {timezone:String}), NULL)) AS sessionStart,
+          maxOrNull(if(e.psid IS NOT NULL AND e.psid != 0, toTimeZone(e.created, {timezone:String}), NULL)) AS lastActivity
+        FROM matched_sessions ms
+        LEFT JOIN events e ON toString(ifNull(e.psid, 0)) = ms.psidCasted
+          AND e.pid = ms.pid
+          AND e.type IN ('pageview', 'custom_event', 'error')
+          AND e.psid IS NOT NULL
+          AND e.psid != 0
+          AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
+        WHERE ms.pid = {pid:FixedString(12)}
+        GROUP BY ms.psidCasted, ms.pid
+      )`
+
+    const query = `
+      WITH ${filteredSessionsCTE},
       replay_summary AS (
         SELECT
           psidCasted,
@@ -7123,6 +7156,7 @@ export class AnalyticsService {
     customEVFilterApplied: boolean,
     sessionEvent: SessionsListEventType = 'traffic',
     primaryEventFilterQuery = '',
+    includeProfileMatchedEventsWithPsid = false,
   ): string {
     if (customEVFilterApplied || sessionEvent === 'custom_event') {
       return `
@@ -7154,12 +7188,16 @@ export class AnalyticsService {
           toTimeZone(matching_custom_events.created, {timezone:String}) AS created_for_grouping
         FROM sessions AS s FINAL
         INNER JOIN (
-          SELECT pid, profileId, cc, os, br, created
+          SELECT pid, psid, profileId, cc, os, br, created
           FROM events
           WHERE
             pid = {pid:FixedString(12)}
             AND type = 'custom_event'
-            AND (psid IS NULL OR psid = 0)
+            ${
+              includeProfileMatchedEventsWithPsid
+                ? ''
+                : 'AND (psid IS NULL OR psid = 0)'
+            }
             AND profileId IS NOT NULL
             AND profileId != ''
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -7168,6 +7206,7 @@ export class AnalyticsService {
         ) AS matching_custom_events
           ON s.pid = matching_custom_events.pid
           AND s.profileId = matching_custom_events.profileId
+          AND (matching_custom_events.psid IS NULL OR matching_custom_events.psid = 0 OR matching_custom_events.psid = s.psid)
         WHERE matching_custom_events.created BETWEEN s.firstSeen AND addSeconds(s.lastSeen, 1)
       `
     }
