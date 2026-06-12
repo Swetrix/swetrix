@@ -6908,22 +6908,23 @@ export class AnalyticsService {
       ),
       filtered_sessions AS (
         SELECT
-          toString(ifNull(e.psid, 0)) AS psidCasted,
-          e.pid AS pid,
+          ms.psidCasted AS psidCasted,
+          ms.pid AS pid,
           argMaxIf(e.profileId, toTimeZone(e.created, {timezone:String}), e.profileId IS NOT NULL AND e.profileId != '') AS profileId,
-          any(e.cc) AS cc,
-          any(e.os) AS os,
-          any(e.br) AS br,
-          min(toTimeZone(e.created, {timezone:String})) AS sessionStart,
-          max(toTimeZone(e.created, {timezone:String})) AS lastActivity
-        FROM events e
-        INNER JOIN matched_sessions ms ON toString(ifNull(e.psid, 0)) = ms.psidCasted AND e.pid = ms.pid
-        WHERE e.pid = {pid:FixedString(12)}
+          anyIf(e.cc, e.psid IS NOT NULL AND e.psid != 0) AS cc,
+          anyIf(e.os, e.psid IS NOT NULL AND e.psid != 0) AS os,
+          anyIf(e.br, e.psid IS NOT NULL AND e.psid != 0) AS br,
+          minOrNull(if(e.psid IS NOT NULL AND e.psid != 0, toTimeZone(e.created, {timezone:String}), NULL)) AS sessionStart,
+          maxOrNull(if(e.psid IS NOT NULL AND e.psid != 0, toTimeZone(e.created, {timezone:String}), NULL)) AS lastActivity
+        FROM matched_sessions ms
+        LEFT JOIN events e ON toString(ifNull(e.psid, 0)) = ms.psidCasted
+          AND e.pid = ms.pid
           AND e.type IN ('pageview', 'custom_event', 'error')
           AND e.psid IS NOT NULL
           AND e.psid != 0
           AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
-        GROUP BY psidCasted, pid
+        WHERE ms.pid = {pid:FixedString(12)}
+        GROUP BY ms.psidCasted, ms.pid
       )`
 
     const query = `
@@ -7187,7 +7188,7 @@ export class AnalyticsService {
           toTimeZone(matching_custom_events.created, {timezone:String}) AS created_for_grouping
         FROM sessions AS s FINAL
         INNER JOIN (
-          SELECT pid, profileId, cc, os, br, created
+          SELECT pid, psid, profileId, cc, os, br, created
           FROM events
           WHERE
             pid = {pid:FixedString(12)}
@@ -7205,6 +7206,7 @@ export class AnalyticsService {
         ) AS matching_custom_events
           ON s.pid = matching_custom_events.pid
           AND s.profileId = matching_custom_events.profileId
+          AND (matching_custom_events.psid IS NULL OR matching_custom_events.psid = 0 OR matching_custom_events.psid = s.psid)
         WHERE matching_custom_events.created BETWEEN s.firstSeen AND addSeconds(s.lastSeen, 1)
       `
     }
