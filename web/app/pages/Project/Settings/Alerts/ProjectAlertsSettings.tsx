@@ -27,6 +27,7 @@ import type { NotificationChannelActionData } from '~/routes/notification-channe
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
+import FeedbackButton from '~/ui/FeedbackButton'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Alert from '~/ui/Alert'
@@ -309,6 +310,14 @@ const ProjectAlertsSettings = ({
       form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
       form.alertOnEveryCustomEvent
     )
+  const saveIntent = isSettings && alertId ? 'update-alert' : 'create-alert'
+  const submittedIntent = fetcher.formData?.get('intent')?.toString()
+  const isSavingAlert =
+    fetcher.state !== 'idle' && submittedIntent === saveIntent
+  const alertSaved =
+    fetcher.state === 'idle' &&
+    fetcher.data?.success &&
+    fetcher.data.intent === saveIntent
 
   useEffect(() => {
     if (!shouldIncludeQueryFields) {
@@ -762,7 +771,13 @@ const ProjectAlertsSettings = ({
               >
                 {t('common.cancel')}
               </Button>
-              <Button type='submit'>{t('common.save')}</Button>
+              <FeedbackButton
+                type='submit'
+                loading={isSavingAlert}
+                succeeded={alertSaved}
+              >
+                {t('common.save')}
+              </FeedbackButton>
             </div>
           </div>
         ) : (
@@ -774,7 +789,13 @@ const ProjectAlertsSettings = ({
             >
               {t('common.cancel')}
             </Button>
-            <Button type='submit'>{t('common.save')}</Button>
+            <FeedbackButton
+              type='submit'
+              loading={isSavingAlert}
+              succeeded={alertSaved}
+            >
+              {t('common.save')}
+            </FeedbackButton>
           </div>
         )}
       </fetcher.Form>

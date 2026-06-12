@@ -74,6 +74,7 @@ import type {
 import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
+import FeedbackButton from '~/ui/FeedbackButton'
 import HoldToConfirmButton from '~/ui/HoldToConfirmButton'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
@@ -605,6 +606,13 @@ const UserSettings = () => {
   const pendingToggles = useRef<Map<string, boolean>>(new Map())
 
   const isSubmitting = fetcher.state === 'submitting'
+  const submittedIntent = fetcher.formData?.get('intent')?.toString()
+  const isProfileUpdateSubmitting =
+    fetcher.state !== 'idle' && submittedIntent === 'update-profile'
+  const profileUpdateSucceeded =
+    fetcher.state === 'idle' &&
+    fetcher.data?.success &&
+    fetcher.data.intent === 'update-profile'
   const isWebsiteAddonSubmitting = websiteAddonFetcher.state !== 'idle'
   const isSessionReplayAddonSubmitting =
     sessionReplayAddonFetcher.state !== 'idle'
@@ -1558,9 +1566,14 @@ const UserSettings = () => {
                           onChange={handleInput}
                           error={emailBeenSubmitted ? errors.email : null}
                         />
-                        <Button size='lg' onClick={handleEmailSubmit}>
+                        <FeedbackButton
+                          size='lg'
+                          onClick={handleEmailSubmit}
+                          loading={isProfileUpdateSubmitting}
+                          succeeded={profileUpdateSucceeded}
+                        >
                           {t('profileSettings.update')}
-                        </Button>
+                        </FeedbackButton>
                       </div>
                     ) : null}
                   </div>
@@ -1862,15 +1875,17 @@ const UserSettings = () => {
                       onChange={handleInput}
                       error={passwordBeenSubmitted ? errors.repeat : null}
                     />
-                    <Button
+                    <FeedbackButton
                       size='lg'
                       onClick={handlePasswordSubmit}
                       disabled={
                         !form.currentPassword || !form.password || !form.repeat
                       }
+                      loading={isProfileUpdateSubmitting}
+                      succeeded={profileUpdateSucceeded}
                     >
                       {t('profileSettings.updatePassword')}
-                    </Button>
+                    </FeedbackButton>
                   </div>
                 </SettingsSection>
 

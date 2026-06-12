@@ -18,8 +18,9 @@ interface FeedbackButtonProps extends Omit<ButtonProps, 'loading'> {
 }
 
 const MORPH_LAYER_CLASSES =
-  'col-start-1 row-start-1 flex items-center justify-center transition-[opacity,filter,transform] duration-200 ease-out-quint'
-const MORPH_HIDDEN_CLASSES = 'scale-95 opacity-0 blur-[2px]'
+  'col-start-1 row-start-1 flex items-center justify-center whitespace-nowrap transition-[opacity,filter,transform] duration-200 ease-out-quint motion-reduce:transition-opacity'
+const MORPH_HIDDEN_CLASSES =
+  'scale-95 opacity-0 blur-[2px] motion-reduce:scale-100 motion-reduce:blur-0'
 
 /**
  * Submit button that morphs its content between idle → loading (spinner) →
@@ -78,7 +79,8 @@ const FeedbackButton = ({
           phase !== 'loading' && MORPH_HIDDEN_CLASSES,
         )}
       >
-        <Spin inherit className='mr-0! ml-0!' />
+        <Spin inherit />
+        {children}
       </span>
       <span
         aria-hidden={phase !== 'success'}
@@ -87,7 +89,8 @@ const FeedbackButton = ({
           phase !== 'success' && MORPH_HIDDEN_CLASSES,
         )}
       >
-        <CheckIcon className='size-4' weight='bold' />
+        <CheckIcon className='mr-2 -ml-1 size-4' weight='bold' />
+        {children}
       </span>
     </Button>
   )
