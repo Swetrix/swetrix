@@ -569,18 +569,17 @@ const OldHero = ({ stats }: { stats: Stats | null }) => {
   )
 }
 
-// Parallax: the forest image lags the scroll by translating down up to 200px
-// over the first 1000px of scroll. The wrapper extends 200px above the hero
-// (-top-50) so the travel never reveals a gap at the top.
 const HeroParallaxBackground = () => {
   const reduceMotion = useReducedMotion()
   const { scrollY } = useScroll()
-  const y = useTransform(scrollY, [0, 1000], [0, 200])
+  const scale = useTransform(scrollY, [0, 900], [1, 1.08])
 
   return (
     <motion.div
-      className='absolute inset-x-0 -top-50 bottom-0'
-      style={reduceMotion ? undefined : { y }}
+      className='absolute inset-0 transform-gpu'
+      style={
+        reduceMotion ? undefined : { scale, transformOrigin: 'center 35%' }
+      }
     >
       <picture className='absolute inset-0 block'>
         <source srcSet='/assets/hero-background.avif' type='image/avif' />
