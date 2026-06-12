@@ -86,6 +86,8 @@
     "save": "Save",
     "continue": "Continue",
     "confirm": "Confirm",
+    "holdToDelete": "Hold to delete",
+    "holdToReset": "Hold to reset",
     "amount": "Amount",
     "date": "Date",
     "success": "Success",

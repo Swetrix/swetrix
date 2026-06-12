@@ -49,6 +49,7 @@ import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
 import GoogleGSVG from '~/ui/icons/GoogleG'
 import GoogleSearchConsoleSVG from '~/ui/icons/GoogleSearchConsole'
+import HoldToConfirmButton from '~/ui/HoldToConfirmButton'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -1869,20 +1870,31 @@ const ProjectSettings = () => {
       </div>
       <Modal
         onClose={() => setShowDelete(false)}
-        onSubmit={onDelete}
-        submitText={t('project.settings.delete')}
+        customButtons={
+          <HoldToConfirmButton
+            onConfirm={onDelete}
+            className='w-full justify-center sm:w-auto'
+          >
+            {t('common.holdToDelete')}
+          </HoldToConfirmButton>
+        }
         closeText={t('common.close')}
         title={t('project.settings.qDelete')}
         message={t('project.settings.deleteHint')}
-        submitType='danger'
         type='error'
         isOpened={showDelete}
       />
       <Modal
         onClose={() => setShowReset(false)}
-        onSubmit={handleReset}
+        customButtons={
+          <HoldToConfirmButton
+            onConfirm={handleReset}
+            className='w-full justify-center sm:w-auto'
+          >
+            {t('common.holdToReset')}
+          </HoldToConfirmButton>
+        }
         size='large'
-        submitText={t('project.settings.reset')}
         closeText={t('common.close')}
         title={t('project.settings.qReset')}
         message={
@@ -1899,7 +1911,6 @@ const ProjectSettings = () => {
             fetchFilters={fetchFilters}
           />
         }
-        submitType='danger'
         type='error'
         isOpened={showReset}
       />

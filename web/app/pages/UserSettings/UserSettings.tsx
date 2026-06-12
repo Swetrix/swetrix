@@ -74,6 +74,7 @@ import type {
 import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
+import HoldToConfirmButton from '~/ui/HoldToConfirmButton'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -2785,16 +2786,21 @@ const UserSettings = () => {
           setDeletionPassword('')
           setShowModal(false)
         }}
-        onSubmit={() => {
-          setShowModal(false)
-          onAccountDelete()
-        }}
-        submitText={t('profileSettings.aDelete')}
+        customButtons={
+          <HoldToConfirmButton
+            onConfirm={() => {
+              setShowModal(false)
+              onAccountDelete()
+            }}
+            disabled={!deletionPassword}
+            className='w-full justify-center sm:w-auto'
+          >
+            {t('common.holdToDelete')}
+          </HoldToConfirmButton>
+        }
         closeText={t('common.close')}
         title={t('profileSettings.qDelete')}
-        submitType='danger'
         type='error'
-        submitDisabled={!deletionPassword}
         message={
           <>
             {t('profileSettings.deactivateConfirmation')}

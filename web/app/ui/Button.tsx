@@ -42,7 +42,7 @@ type ButtonVariant =
  */
 type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
-interface ButtonProps extends Omit<
+export interface ButtonProps extends Omit<
   React.ComponentPropsWithoutRef<typeof HeadlessButton>,
   'children'
 > {
@@ -109,7 +109,7 @@ export const buttonClasses = ({
   const isIcon = variant === 'icon'
   return cn(
     'relative inline-flex items-center rounded-md border leading-4 font-medium select-none',
-    'transition-[background-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.98]',
+    'transition-[background-color,color,box-shadow,transform] duration-150 ease-out-quint active:scale-[0.98]',
     focus &&
       'focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus-visible:outline-hidden dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-950',
     'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',

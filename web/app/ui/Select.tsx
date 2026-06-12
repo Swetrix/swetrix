@@ -1,6 +1,5 @@
 import {
   Listbox,
-  Transition,
   Label,
   ListboxButton,
   ListboxOptions,
@@ -9,7 +8,7 @@ import {
 import { CheckIcon, CaretUpDownIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import _map from 'lodash/map'
-import React, { Fragment, Key, memo } from 'react'
+import React, { Key, memo } from 'react'
 import { Text } from './Text'
 
 interface SelectProps<T> {
@@ -82,7 +81,7 @@ function Select<T>({
       onChange={onSelect}
       disabled={disabled}
     >
-      {({ open }) => (
+      {() => (
         <>
           {label ? (
             <Label className={cx('block', fieldLabelClassName)}>
@@ -115,7 +114,7 @@ function Select<T>({
             <ListboxButton
               aria-describedby={hintId}
               className={cx(
-                'relative w-full rounded-md border-0 bg-white py-2 pr-9 pl-3 text-left text-sm font-medium text-gray-900 ring-1 ring-gray-300 transition-[background-color,box-shadow] duration-150 ease-out ring-inset hover:ring-gray-400 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:ring-slate-600 dark:focus-visible:ring-slate-300',
+                'relative w-full rounded-md border-0 bg-white py-2 pr-9 pl-3 text-left text-sm font-medium text-gray-900 ring-1 ring-gray-300 transition-[background-color,box-shadow,transform] duration-150 ease-out-quint ring-inset hover:ring-gray-400 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden active:scale-[0.99] dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:ring-slate-600 dark:focus-visible:ring-slate-300',
                 disabled &&
                   'cursor-not-allowed opacity-60 hover:ring-gray-300 dark:hover:ring-slate-700/80',
                 buttonClassName,
@@ -155,114 +154,103 @@ function Select<T>({
               </span>
             </ListboxButton>
 
-            <Transition
-              show={open}
-              as={Fragment}
-              enter='transition-[opacity,transform] ease-out duration-150'
-              enterFrom='opacity-0 scale-[0.98] -translate-y-0.5'
-              enterTo='opacity-100 scale-100 translate-y-0'
-              leave='transition-[opacity,transform] ease-out duration-100'
-              leaveFrom='opacity-100 scale-100 translate-y-0'
-              leaveTo='opacity-0 scale-[0.98] -translate-y-0.5'
+            <ListboxOptions
+              modal={false}
+              transition
+              className='absolute z-30 mt-1.5 max-h-72 w-full origin-top-left overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 transition-[opacity,transform] duration-150 ease-out-quint focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 data-leave:duration-100 dark:bg-slate-950 dark:ring-slate-700/60'
             >
-              <ListboxOptions
-                static
-                modal={false}
-                className='absolute z-30 mt-1.5 max-h-72 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/60'
-              >
-                {_map(items, (item, index) => {
-                  const selected = isItemSelected(item)
-                  const disabled = disabledItemExtractor?.(item, index) || false
-                  const itemDescription = descriptionExtractor
-                    ? descriptionExtractor(item, index)
-                    : null
-                  return (
-                    <ListboxOption
-                      key={
-                        keyExtractor ? keyExtractor(item, index) : (item as Key)
-                      }
-                      className={({ focus }) =>
-                        cx(
-                          'relative mx-1 cursor-pointer rounded-md pr-8 pl-3 transition-colors duration-100 ease-out select-none',
-                          hasDescriptions ? 'py-2.5' : 'py-2',
-                          {
-                            'cursor-not-allowed text-gray-400 dark:text-slate-600':
-                              disabled && !selected,
-                            'bg-gray-100 dark:bg-slate-900': focus || selected,
-                            'text-gray-700 dark:text-gray-50':
-                              !focus && !selected && !disabled,
-                            'text-gray-900 dark:text-white': focus || selected,
-                          },
-                        )
-                      }
-                      disabled={disabled}
-                      value={item}
-                    >
-                      <>
-                        {iconExtractor ? (
-                          <span
-                            className={cx(
-                              'absolute left-2 flex items-center',
-                              hasDescriptions ? 'top-2.5' : 'inset-y-0',
-                            )}
-                          >
-                            {iconExtractor(item, index)}
-                          </span>
-                        ) : null}
-
-                        <Text
-                          as='span'
-                          size='sm'
-                          weight={selected ? 'semibold' : 'normal'}
-                          colour='inherit'
+              {_map(items, (item, index) => {
+                const selected = isItemSelected(item)
+                const disabled = disabledItemExtractor?.(item, index) || false
+                const itemDescription = descriptionExtractor
+                  ? descriptionExtractor(item, index)
+                  : null
+                return (
+                  <ListboxOption
+                    key={
+                      keyExtractor ? keyExtractor(item, index) : (item as Key)
+                    }
+                    className={({ focus }) =>
+                      cx(
+                        'relative mx-1 cursor-pointer rounded-md pr-8 pl-3 transition-colors duration-100 ease-out select-none',
+                        hasDescriptions ? 'py-2.5' : 'py-2',
+                        {
+                          'cursor-not-allowed text-gray-400 dark:text-slate-600':
+                            disabled && !selected,
+                          'bg-gray-100 dark:bg-slate-900': focus || selected,
+                          'text-gray-700 dark:text-gray-50':
+                            !focus && !selected && !disabled,
+                          'text-gray-900 dark:text-white': focus || selected,
+                        },
+                      )
+                    }
+                    disabled={disabled}
+                    value={item}
+                  >
+                    <>
+                      {iconExtractor ? (
+                        <span
                           className={cx(
-                            'block wrap-break-word',
-                            iconExtractor && 'pl-6',
-                            {
-                              'first-letter:capitalize': capitalise,
-                            },
-                            labelClassName,
+                            'absolute left-2 flex items-center',
+                            hasDescriptions ? 'top-2.5' : 'inset-y-0',
                           )}
                         >
-                          {labelExtractor
-                            ? labelExtractor(item, index)
-                            : (item as React.ReactNode)}
+                          {iconExtractor(item, index)}
+                        </span>
+                      ) : null}
+
+                      <Text
+                        as='span'
+                        size='sm'
+                        weight={selected ? 'semibold' : 'normal'}
+                        colour='inherit'
+                        className={cx(
+                          'block wrap-break-word',
+                          iconExtractor && 'pl-6',
+                          {
+                            'first-letter:capitalize': capitalise,
+                          },
+                          labelClassName,
+                        )}
+                      >
+                        {labelExtractor
+                          ? labelExtractor(item, index)
+                          : (item as React.ReactNode)}
+                      </Text>
+
+                      {itemDescription ? (
+                        <Text
+                          as='span'
+                          size='xs'
+                          colour='secondary'
+                          className={cx(
+                            'mt-0.5 block leading-snug wrap-break-word',
+                            iconExtractor && 'pl-6',
+                          )}
+                        >
+                          {itemDescription}
                         </Text>
+                      ) : null}
 
-                        {itemDescription ? (
-                          <Text
-                            as='span'
-                            size='xs'
-                            colour='secondary'
-                            className={cx(
-                              'mt-0.5 block leading-snug wrap-break-word',
-                              iconExtractor && 'pl-6',
-                            )}
-                          >
-                            {itemDescription}
-                          </Text>
-                        ) : null}
-
-                        {selected ? (
-                          <span
-                            className={cx(
-                              'absolute right-2 flex items-center text-slate-900 dark:text-slate-100',
-                              hasDescriptions ? 'top-2.5' : 'inset-y-0',
-                            )}
-                          >
-                            <CheckIcon
-                              weight='bold'
-                              className='size-4'
-                              aria-hidden='true'
-                            />
-                          </span>
-                        ) : null}
-                      </>
-                    </ListboxOption>
-                  )
-                })}
-              </ListboxOptions>
-            </Transition>
+                      {selected ? (
+                        <span
+                          className={cx(
+                            'absolute right-2 flex items-center text-slate-900 dark:text-slate-100',
+                            hasDescriptions ? 'top-2.5' : 'inset-y-0',
+                          )}
+                        >
+                          <CheckIcon
+                            weight='bold'
+                            className='size-4'
+                            aria-hidden='true'
+                          />
+                        </span>
+                      ) : null}
+                    </>
+                  </ListboxOption>
+                )
+              })}
+            </ListboxOptions>
           </div>
         </>
       )}

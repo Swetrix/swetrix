@@ -29,6 +29,9 @@
   --min-height-including-header: calc(100vh - var(--header-total-height));
 
   --default-transition-duration: 200ms;
+
+  /* Signature easing curve (easeOutQuint) — use for all UI animations */
+  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* Custom Animations */
@@ -118,138 +121,82 @@
 }
 
 /* Tooltip animations */
-@keyframes tooltipSlideDownAndFadeIn {
-  0% {
+@keyframes tooltip-in {
+  from {
     opacity: 0;
-    transform: translateY(-4px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+    transform: scale(0.97);
   }
 }
 
-@keyframes tooltipSlideUpAndFadeIn {
-  0% {
+@keyframes tooltip-out {
+  to {
     opacity: 0;
-    transform: translateY(4px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes tooltipSlideLeftAndFadeIn {
-  0% {
-    opacity: 0;
-    transform: translateX(4px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes tooltipSlideRightAndFadeIn {
-  0% {
-    opacity: 0;
-    transform: translateX(-4px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes tooltipSlideDownAndFadeOut {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-}
-
-@keyframes tooltipSlideUpAndFadeOut {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-}
-
-@keyframes tooltipSlideLeftAndFadeOut {
-  0% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(4px);
-  }
-}
-
-@keyframes tooltipSlideRightAndFadeOut {
-  0% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(-4px);
   }
 }
 
 @layer utilities {
-  /* Base class to enable smooth transform/opacity animations */
   .tooltip-content {
     will-change: transform, opacity;
   }
 
-  /* Open animations (handle both delayed and instant) */
-  .tooltip-content[data-state='delayed-open'][data-side='top'],
-  .tooltip-content[data-state='instant-open'][data-side='top'] {
-    animation: tooltipSlideUpAndFadeIn var(--default-transition-duration, 250ms)
-      cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .tooltip-content[data-state='delayed-open'][data-side='bottom'],
-  .tooltip-content[data-state='instant-open'][data-side='bottom'] {
-    animation: tooltipSlideDownAndFadeIn
-      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .tooltip-content[data-state='delayed-open'][data-side='left'],
-  .tooltip-content[data-state='instant-open'][data-side='left'] {
-    animation: tooltipSlideLeftAndFadeIn
-      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .tooltip-content[data-state='delayed-open'][data-side='right'],
-  .tooltip-content[data-state='instant-open'][data-side='right'] {
-    animation: tooltipSlideRightAndFadeIn
-      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+  @media (prefers-reduced-motion: no-preference) {
+    /* Only animate delayed opens — when a sibling tooltip was recently open,
+       the next one opens instantly (data-state='instant-open') and must
+       appear with no delay and no animation. */
+    .tooltip-content[data-state='delayed-open'] {
+      animation: tooltip-in 125ms var(--ease-out-quint);
+    }
+    .tooltip-content[data-state='closed'] {
+      animation: tooltip-out 100ms ease-out;
+    }
   }
 
-  /* Close animations */
-  .tooltip-content[data-state='closed'][data-side='top'] {
-    animation: tooltipSlideUpAndFadeOut
-      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+  /* Panel row background bars: animate width retargets, and sweep in from
+     zero when rows first mount (entering rows / panel tab switches). */
+  .panel-bar {
+    width: var(--panel-bar-width, 0%);
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: width 400ms var(--ease-out-quint);
+
+      @starting-style {
+        width: 0%;
+      }
+    }
   }
-  .tooltip-content[data-state='closed'][data-side='bottom'] {
-    animation: tooltipSlideDownAndFadeOut
-      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Landing page scroll-driven animations. Progressive enhancement only:
+   browsers without scroll timelines (or reduced-motion users) render the
+   final, fully visible state — content is never hidden without JS. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    @keyframes hero-parallax {
+      to {
+        transform: translateY(40px);
+      }
+    }
+
+    .hero-parallax {
+      animation: hero-parallax linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 100vh;
+    }
   }
-  .tooltip-content[data-state='closed'][data-side='left'] {
-    animation: tooltipSlideLeftAndFadeOut
-      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .tooltip-content[data-state='closed'][data-side='right'] {
-    animation: tooltipSlideRightAndFadeOut
-      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+
+  @supports (animation-timeline: view()) {
+    @keyframes scroll-reveal-rise {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+    }
+
+    .scroll-reveal {
+      animation: scroll-reveal-rise both var(--ease-out-quint);
+      animation-timeline: view();
+      animation-range: entry 10% entry 50%;
+    }
   }
 }
 

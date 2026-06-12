@@ -49,9 +49,7 @@ const getSEOMetricValue = (entry: DateSeriesEntry, metric: SEOMetricKey) => {
   return entry[metric] ?? 0
 }
 
-const getAnnotationLines = (
-  annotations?: Annotation[],
-): GridLineOptions[] => {
+const getAnnotationLines = (annotations?: Annotation[]): GridLineOptions[] => {
   return (annotations || []).map<GridLineOptions>((annotation) => ({
     value: dayjs(annotation.date).toDate(),
     text:

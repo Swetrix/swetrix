@@ -95,7 +95,7 @@ const Modal = ({
     >
       <DialogBackdrop
         transition
-        className='fixed inset-0 bg-gray-900/40 backdrop-blur-[2px] transition-opacity duration-200 data-closed:opacity-0 data-enter:ease-out data-leave:ease-in dark:bg-black/60'
+        className='fixed inset-0 bg-gray-900/40 backdrop-blur-[2px] transition-opacity duration-200 ease-out-quint data-closed:opacity-0 data-leave:duration-150 dark:bg-black/60'
       />
 
       <div className='fixed inset-0 z-10 w-screen overflow-y-auto'>
@@ -103,8 +103,8 @@ const Modal = ({
           <DialogPanel
             transition
             className={cn(
-              'inline-block w-full transform rounded-xl bg-white px-5 pt-5 pb-4 text-left align-bottom shadow-2xl ring-1 ring-gray-200/80 transition-all sm:my-8 sm:align-middle dark:bg-slate-950 dark:ring-slate-700/60',
-              'duration-200 data-closed:translate-y-2 data-closed:scale-[0.98] data-closed:opacity-0 data-enter:ease-out data-leave:ease-in',
+              'inline-block w-full transform rounded-xl bg-white px-5 pt-5 pb-4 text-left align-bottom shadow-2xl ring-1 ring-gray-200/80 transition-[opacity,transform] sm:my-8 sm:align-middle dark:bg-slate-950 dark:ring-slate-700/60',
+              'origin-center duration-200 ease-out-quint data-closed:scale-[0.97] data-closed:opacity-0 data-leave:duration-150',
               {
                 'sm:max-w-lg': size === 'regular',
                 'sm:max-w-2xl': size === 'medium',

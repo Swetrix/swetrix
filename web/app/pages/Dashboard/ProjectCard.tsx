@@ -1,3 +1,4 @@
+import NumberFlow from '@number-flow/react'
 import cx from 'clsx'
 import _find from 'lodash/find'
 import _isNumber from 'lodash/isNumber'
@@ -15,6 +16,11 @@ import { Link } from '~/ui/Link'
 import { useFetcher, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
+import {
+  FLOW_TIMING,
+  FLOW_VALUE_CLASS,
+  useFlowValue,
+} from '~/hooks/useFlowValue'
 import { OverallObject, Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
 import type { DashboardActionData } from '~/routes/dashboard'
@@ -22,7 +28,11 @@ import { Badge, BadgeProps } from '~/ui/Badge'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
-import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
+import {
+  nFormatter,
+  nFormatterSeparated,
+  calculateRelativePercentage,
+} from '~/utils/generic'
 import { getFaviconHost, getFaviconUrl } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
@@ -58,14 +68,41 @@ interface ProjectCardProps {
   refetchProjects: () => void
 }
 
+// Rolls the live visitor count in on load and on every live-stats refresh
+const FlowingNumber = ({ value }: { value: number }) => {
+  const flowValue = useFlowValue(value)
+  const [num, symbol] = nFormatterSeparated(flowValue, 1) as [
+    number,
+    string | null,
+  ]
+
+  return (
+    <NumberFlow
+      className={FLOW_VALUE_CLASS}
+      {...FLOW_TIMING}
+      value={num}
+      suffix={symbol ?? undefined}
+      format={{ maximumFractionDigits: 1 }}
+      willChange
+    />
+  )
+}
+
 interface MiniCardProps {
   labelTKey: string
   total?: number | string | null
   percChange?: number
   hasData?: boolean
+  flow?: boolean
 }
 
-const MiniCard = ({ labelTKey, total, percChange, hasData }: MiniCardProps) => {
+const MiniCard = ({
+  labelTKey,
+  total,
+  percChange,
+  hasData,
+  flow,
+}: MiniCardProps) => {
   const { t } = useTranslation('common')
   const statsDidGrowUp = percChange ? percChange >= 0 : false
   const isLoading = total === null
@@ -91,7 +128,13 @@ const MiniCard = ({ labelTKey, total, percChange, hasData }: MiniCardProps) => {
         ) : (
           <>
             <Text as='p' weight='bold' size='base' colour='secondary'>
-              {_isNumber(total) ? nFormatter(total) : total}
+              {!_isNumber(total) ? (
+                total
+              ) : flow ? (
+                <FlowingNumber value={total} />
+              ) : (
+                nFormatter(total)
+              )}
             </Text>
             {_isNumber(percChange) && percChange !== 0 ? (
               <Text
@@ -461,6 +504,7 @@ export const ProjectCard = ({
         <MiniCard
           labelTKey='dashboard.liveVisitors'
           total={live}
+          flow
           hasData={
             project?.isDataExists ||
             project?.isErrorDataExists ||
