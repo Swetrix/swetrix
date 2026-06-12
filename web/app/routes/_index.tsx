@@ -1,3 +1,4 @@
+import NumberFlow from '@number-flow/react'
 import _map from 'lodash/map'
 import {
   CookieIcon,
@@ -8,7 +9,8 @@ import {
   ArrowRightIcon,
   StarIcon,
 } from '@phosphor-icons/react'
-import React from 'react'
+import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { Link } from '~/ui/Link'
@@ -18,6 +20,11 @@ import { ClientOnly } from 'remix-utils/client-only'
 
 import { getGeneralStats, serverFetch } from '~/api/api.server'
 import Header from '~/components/Header'
+import {
+  FLOW_TIMING,
+  FLOW_VALUE_CLASS,
+  useFlowValue,
+} from '~/hooks/useFlowValue'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import FAQ from '~/components/marketing/FAQ'
 import Integrations from '~/components/marketing/Integrations'
@@ -38,6 +45,7 @@ import routesPath from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { FeaturesGrid } from '~/components/marketing/FeaturesGrid'
 import { LogoCloud } from '~/components/marketing/LogoCloud'
+import { ScrollReveal } from '~/components/marketing/ScrollReveal'
 import { WhySwitch } from '~/components/marketing/WhySwitch'
 import { Text } from '~/ui/Text'
 import { getExperimentVariant } from '~/utils/analytics.server'
@@ -119,7 +127,7 @@ export const FeedbackDual = () => {
   return (
     <section className='mx-auto max-w-7xl px-4 py-20 sm:py-24 lg:px-8'>
       <div className='mx-auto grid max-w-2xl grid-cols-1 lg:max-w-none lg:grid-cols-2'>
-        <div className='flex flex-col pb-10 sm:pb-16 lg:pr-8 lg:pb-0 xl:pr-20'>
+        <ScrollReveal className='flex flex-col pb-10 sm:pb-16 lg:pr-8 lg:pb-0 xl:pr-20'>
           <img
             alt='Casterlabs'
             src={
@@ -163,8 +171,11 @@ export const FeedbackDual = () => {
               </div>
             </figcaption>
           </figure>
-        </div>
-        <div className='flex flex-col border-t border-gray-900/10 pt-10 sm:pt-16 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8 xl:pl-20 dark:border-gray-100/10'>
+        </ScrollReveal>
+        <ScrollReveal
+          delay={0.12}
+          className='flex flex-col border-t border-gray-900/10 pt-10 sm:pt-16 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8 xl:pl-20 dark:border-gray-100/10'
+        >
           <img
             alt='Phalcode'
             src={
@@ -209,7 +220,7 @@ export const FeedbackDual = () => {
               </div>
             </figcaption>
           </figure>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   )
@@ -238,6 +249,53 @@ const REVIEWERS = [
   },
 ]
 
+const TrialsFlow = ({ value, locale }: { value: number; locale: string }) => {
+  const flowValue = useFlowValue(value)
+
+  return (
+    <NumberFlow
+      className={FLOW_VALUE_CLASS}
+      {...FLOW_TIMING}
+      value={flowValue}
+      locales={locale}
+      willChange
+    />
+  )
+}
+
+/**
+ * Wraps the trials count interpolated by <Trans>. The server (and no-JS
+ * visitors) get the plain interpolated text; after hydration it swaps to a
+ * NumberFlow that rolls up from zero. Content is never hidden without JS.
+ * The interpolated text must be formatted with the same locale so the swap
+ * is visually seamless.
+ */
+const TrialsHighlight = ({
+  value,
+  locale,
+  children,
+}: {
+  value?: number
+  locale: string
+  children?: React.ReactNode
+}) => {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  return (
+    <span className='font-semibold text-gray-900 dark:text-gray-50'>
+      {mounted && value ? (
+        <TrialsFlow value={value} locale={locale} />
+      ) : (
+        children
+      )}
+    </span>
+  )
+}
+
 const Testimonials = ({
   className,
   stats,
@@ -245,7 +303,10 @@ const Testimonials = ({
   className?: string
   stats: Stats | null
 }) => {
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
 
   return (
     <div
@@ -283,12 +344,17 @@ const Testimonials = ({
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
           <Trans
             values={{
-              amount: stats?.trials || '> 1000',
+              amount: stats?.trials
+                ? stats.trials.toLocaleString(language)
+                : '> 1000',
             }}
             t={t}
             i18nKey='main.understandTheirUsers'
           >
-            <span className='font-semibold text-gray-900 dark:text-gray-50' />
+            <TrialsHighlight
+              value={stats?.trials || undefined}
+              locale={language}
+            />
           </Trans>
         </div>
       </div>
@@ -383,7 +449,7 @@ const NewLiveDemoPreview = () => {
 
   if (isUpToLg) {
     return (
-      <div className='relative z-20 mx-auto mt-10 overflow-hidden rounded-2xl bg-white/80 p-1.5 shadow-2xl ring-1 shadow-slate-950/20 ring-white/40 backdrop-blur-md dark:bg-slate-950/80 dark:ring-white/10'>
+      <ScrollReveal className='relative z-20 mx-auto mt-10 overflow-hidden rounded-2xl bg-white/80 p-1.5 shadow-2xl ring-1 shadow-slate-950/20 ring-white/40 backdrop-blur-md dark:bg-slate-950/80 dark:ring-white/10'>
         <img
           src={
             theme === 'dark'
@@ -395,7 +461,7 @@ const NewLiveDemoPreview = () => {
           height={1666}
           alt='Swetrix Analytics dashboard'
         />
-      </div>
+      </ScrollReveal>
     )
   }
 
@@ -503,6 +569,31 @@ const OldHero = ({ stats }: { stats: Stats | null }) => {
   )
 }
 
+// Parallax: the forest image lags the scroll by translating down up to 200px
+// over the first 1000px of scroll. The wrapper extends 200px above the hero
+// (-top-50) so the travel never reveals a gap at the top.
+const HeroParallaxBackground = () => {
+  const reduceMotion = useReducedMotion()
+  const { scrollY } = useScroll()
+  const y = useTransform(scrollY, [0, 1000], [0, 200])
+
+  return (
+    <motion.div
+      className='absolute inset-x-0 -top-50 bottom-0'
+      style={reduceMotion ? undefined : { y }}
+    >
+      <picture className='absolute inset-0 block'>
+        <source srcSet='/assets/hero-background.avif' type='image/avif' />
+        <img
+          alt=''
+          className='size-full object-cover object-center opacity-95 saturate-125'
+          src='/assets/hero-background.webp'
+        />
+      </picture>
+    </motion.div>
+  )
+}
+
 const NewHero = ({ stats }: { stats: Stats | null }) => {
   const { t } = useTranslation('common')
 
@@ -510,14 +601,7 @@ const NewHero = ({ stats }: { stats: Stats | null }) => {
     <div className='relative isolate overflow-hidden bg-gray-50 pt-2 dark:bg-slate-950'>
       <div className='relative mx-2 overflow-hidden rounded-t-4xl bg-slate-950 shadow-2xl ring-1 shadow-slate-950/20 ring-black/5 dark:ring-white/10'>
         <div aria-hidden className='pointer-events-none absolute inset-0'>
-          <picture className='absolute inset-0 block'>
-            <source srcSet='/assets/hero-background.avif' type='image/avif' />
-            <img
-              alt=''
-              className='size-full object-cover object-center opacity-95 saturate-125'
-              src='/assets/hero-background.webp'
-            />
-          </picture>
+          <HeroParallaxBackground />
           <div className='absolute inset-0 bg-slate-950/50' />
           <div className='absolute inset-0 bg-radial-[at_50%_0%] from-indigo-300/30 via-slate-950/10 to-slate-950/80' />
           <div className='absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-b from-transparent to-slate-950' />
@@ -606,7 +690,7 @@ const Hero = ({ variant }: { variant: LandingHeroVariant }) => {
     return <NewHero stats={stats} />
   }
 
-  return <OldHero stats={stats} />
+  return <NewHero stats={stats} />
 }
 
 const SOFTWARE_APPLICATION_JSONLD = {

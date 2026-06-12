@@ -166,40 +166,6 @@
   }
 }
 
-/* Landing page scroll-driven animations. Progressive enhancement only:
-   browsers without scroll timelines (or reduced-motion users) render the
-   final, fully visible state — content is never hidden without JS. */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: scroll()) {
-    @keyframes hero-parallax {
-      to {
-        transform: translateY(40px);
-      }
-    }
-
-    .hero-parallax {
-      animation: hero-parallax linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0 100vh;
-    }
-  }
-
-  @supports (animation-timeline: view()) {
-    @keyframes scroll-reveal-rise {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-    }
-
-    .scroll-reveal {
-      animation: scroll-reveal-rise both var(--ease-out-quint);
-      animation-timeline: view();
-      animation-range: entry 10% entry 50%;
-    }
-  }
-}
-
 @layer base {
   *,
   ::after,
