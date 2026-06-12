@@ -4,6 +4,7 @@ import _replace from 'lodash/replace'
 import _startsWith from 'lodash/startsWith'
 import _truncate from 'lodash/truncate'
 import { FunnelIcon, XIcon } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { memo, MouseEvent, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
@@ -312,30 +313,49 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
       <div className='flex min-w-0 flex-1 items-center gap-1'>
         <FunnelIcon className='size-5 shrink-0 text-gray-500 dark:text-gray-400' />
         <div className='flex flex-wrap'>
-          {_map(supported, (props) => {
-            const { column, filter, isExclusive, isContains } = props
-            const key = `${column}-${filter}-${isExclusive}-${isContains}`
+          <AnimatePresence mode='popLayout' initial={false}>
+            {_map(supported, (props) => {
+              const { column, filter, isExclusive, isContains } = props
+              const key = `${column}-${filter}-${isExclusive}-${isContains}`
 
-            return (
-              <Filter
-                key={key}
-                tnMapping={tnMapping}
-                canChangeExclusive
-                removable
-                {...props}
-              />
-            )
-          })}
-          {_map(unsupported, (props) => {
-            const { column, filter, isExclusive, isContains } = props
-            const key = `unsupported-${column}-${filter}-${isExclusive}-${isContains}`
+              return (
+                <motion.span
+                  key={key}
+                  layout
+                  initial={{ opacity: 0, scale: 0.92 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.92 }}
+                  transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                  className='inline-flex'
+                >
+                  <Filter
+                    tnMapping={tnMapping}
+                    canChangeExclusive
+                    removable
+                    {...props}
+                  />
+                </motion.span>
+              )
+            })}
+            {_map(unsupported, (props) => {
+              const { column, filter, isExclusive, isContains } = props
+              const key = `unsupported-${column}-${filter}-${isExclusive}-${isContains}`
 
-            return (
-              <span key={key} className='opacity-60'>
-                <Filter tnMapping={tnMapping} removable {...props} />
-              </span>
-            )
-          })}
+              return (
+                <motion.span
+                  key={key}
+                  layout
+                  initial={{ opacity: 0, scale: 0.92 }}
+                  animate={{ opacity: 0.6, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.92 }}
+                  transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                  className='inline-flex'
+                >
+                  <Filter tnMapping={tnMapping} removable {...props} />
+                </motion.span>
+              )
+            })}
+          </AnimatePresence>
         </div>
         {unsupported.length > 0 ? (
           <span className='ml-1 shrink-0 rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 ring-1 ring-amber-200 ring-inset dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20'>
