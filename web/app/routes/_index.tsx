@@ -689,7 +689,7 @@ const Hero = ({ variant }: { variant: LandingHeroVariant }) => {
     return <NewHero stats={stats} />
   }
 
-  return <NewHero stats={stats} />
+  return <OldHero stats={stats} />
 }
 
 const SOFTWARE_APPLICATION_JSONLD = {
