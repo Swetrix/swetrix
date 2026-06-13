@@ -127,8 +127,8 @@ interface SessionReplayChunkRow {
   eventCount: number
   uncompressedBytes: number
   compressedBytes: number
-  firstEventTimestamp: string
-  lastEventTimestamp: string
+  firstEventTimestamp: number
+  lastEventTimestamp: number
   created: string
   expiresAt: string
 }
@@ -1310,7 +1310,7 @@ export class DemoDataService implements OnModuleInit {
       String(left.created).localeCompare(String(right.created)),
     )
     rows.replayChunks.sort((left, right) =>
-      left.firstEventTimestamp.localeCompare(right.firstEventTimestamp),
+      left.firstEventTimestamp - right.firstEventTimestamp,
     )
 
     return rows
@@ -1963,7 +1963,7 @@ export class DemoDataService implements OnModuleInit {
     if (
       replayTemplates.length === 0 ||
       session.pages.length < 2 ||
-      random() > (session.returning ? 0.09 : 0.045)
+      random() > (session.returning ? 0.28 : 0.16)
     ) {
       return
     }
@@ -2010,8 +2010,8 @@ export class DemoDataService implements OnModuleInit {
         eventCount: intBetween(60, 360, random),
         uncompressedBytes: intBetween(24000, 360000, random),
         compressedBytes: intBetween(900, 95000, random),
-        firstEventTimestamp: this.format(chunkFirstEventTimestamp),
-        lastEventTimestamp: this.format(chunkLastEventTimestamp),
+        firstEventTimestamp: chunkFirstEventTimestamp.valueOf(),
+        lastEventTimestamp: chunkLastEventTimestamp.valueOf(),
         created: this.format(chunkLastEventTimestamp),
         expiresAt: this.format(dayjs.utc().add(10, 'year')),
       })
@@ -2192,7 +2192,7 @@ export class DemoDataService implements OnModuleInit {
       groups.set(id, group)
     }
 
-    return Array.from(groups.values())
+    const templates = Array.from(groups.values())
       .filter((template) => template.chunks.length > 0)
       .map((template) => ({
         ...template,
@@ -2201,6 +2201,15 @@ export class DemoDataService implements OnModuleInit {
         ),
       }))
       .sort((left, right) => left.id.localeCompare(right.id))
+
+    this.logger.log(
+      `Loaded ${templates.length} demo replay templates from ${prefix} with ${templates.reduce(
+        (sum, template) => sum + template.chunks.length,
+        0,
+      )} chunks`,
+    )
+
+    return templates
   }
 
   private async insertRows(rows: DemoRows) {
