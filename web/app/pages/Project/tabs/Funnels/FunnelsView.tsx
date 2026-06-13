@@ -50,7 +50,8 @@ const FUNNELS_DOCS_URL = `${DOCS_URL}/analytics-dashboard/funnels`
 
 const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
   const { funnelData: funnelDataPromise } = useLoaderData<ProjectLoaderData>()
-  const { id, project, mergeProject, allowedToManage } = useCurrentProject()
+  const { id, projectPath, project, mergeProject, allowedToManage } =
+    useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const revalidator = useRevalidator()
   const { isAuthenticated } = useAuth()
@@ -160,14 +161,14 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
         closeFunnelSettings()
         fetcher.submit(
           { intent: 'get-funnels', password: projectPassword },
-          { method: 'POST', action: `/projects/${id}` },
+          { method: 'POST', action: projectPath },
         )
       } else if (intent === 'update-funnel') {
         toast.success(t('apiNotifications.funnelUpdated'))
         closeFunnelSettings()
         fetcher.submit(
           { intent: 'get-funnels', password: projectPassword },
-          { method: 'POST', action: `/projects/${id}` },
+          { method: 'POST', action: projectPath },
         )
 
         const updatedFunnelId = (fetcher.data.data as { id?: string })?.id
@@ -178,7 +179,7 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
         toast.success(t('apiNotifications.funnelDeleted'))
         fetcher.submit(
           { intent: 'get-funnels', password: projectPassword },
-          { method: 'POST', action: `/projects/${id}` },
+          { method: 'POST', action: projectPath },
         )
 
         if (deletedFunnelId.current === activeFunnel?.id) {
@@ -199,6 +200,7 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
     closeFunnelSettings,
     projectPassword,
     id,
+    projectPath,
     fetcher,
     activeFunnel?.id,
     revalidator,
@@ -211,7 +213,7 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
 
     fetcher.submit(
       { intent: 'create-funnel', name, steps: JSON.stringify(steps) },
-      { method: 'POST', action: `/projects/${id}` },
+      { method: 'POST', action: projectPath },
     )
   }
 
@@ -220,7 +222,7 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
 
     fetcher.submit(
       { intent: 'update-funnel', funnelId, name, steps: JSON.stringify(steps) },
-      { method: 'POST', action: `/projects/${id}` },
+      { method: 'POST', action: projectPath },
     )
   }
 
@@ -230,7 +232,7 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
     deletedFunnelId.current = funnelId
     fetcher.submit(
       { intent: 'delete-funnel', funnelId },
-      { method: 'POST', action: `/projects/${id}` },
+      { method: 'POST', action: projectPath },
     )
   }
 

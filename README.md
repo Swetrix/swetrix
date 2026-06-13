@@ -31,7 +31,7 @@
 
 [Swetrix](https://swetrix.com) is an open source, privacy-focused and cookie-less alternative to Google Analytics. Swetrix is designed to be easy to use while providing all the features you need to understand your website users. With Swetrix you can track your site's traffic, monitor your site's speed, analyse user sessions and page flows, see user flows and much more!
 
-Swetrix is made in the 🇬🇧 United Kingdom, and is hosted on Hetzner in 🇩🇪 Germany. Here's our [live demo with our own website statistics](https://swetrix.com/projects/STEzHcB1rALV).
+Swetrix is made in the 🇬🇧 United Kingdom, and is hosted on Hetzner in 🇩🇪 Germany. Here's our [live demo with our own website statistics](https://swetrix.com/demo).
 
 We are a bootstrapped company that is passionate about privacy and open source, funded solely by our subscribers.
 

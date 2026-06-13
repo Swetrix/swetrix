@@ -581,7 +581,7 @@ interface ErrorsViewInnerProps {
 }
 
 const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
-  const { id, allowedToManage, project } = useCurrentProject()
+  const { id, projectPath, allowedToManage, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const revalidator = useRevalidator()
   const errorsProxy = useErrorsProxy()
@@ -848,7 +848,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     pendingStatusUpdate.current = 'resolved'
     errorStatusFetcher.submit(
       { intent: 'update-error-status', eid: activeEID, status: 'resolved' },
-      { method: 'POST', action: `/projects/${id}` },
+      { method: 'POST', action: projectPath },
     )
   }
 
@@ -858,7 +858,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     pendingStatusUpdate.current = 'active'
     errorStatusFetcher.submit(
       { intent: 'update-error-status', eid: activeEID, status: 'active' },
-      { method: 'POST', action: `/projects/${id}` },
+      { method: 'POST', action: projectPath },
     )
   }
 

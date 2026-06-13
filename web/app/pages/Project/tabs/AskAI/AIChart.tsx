@@ -178,10 +178,12 @@ const buildAnnotationLines = (
 interface AIChartProps {
   chart: AIChartData
   projectId?: string
+  projectPath?: string
 }
 
 const buildDashboardUrl = (
   projectId: string,
+  projectPath: string | undefined,
   link: AIChartLink,
 ): string | null => {
   if (!VALID_LINK_TABS.has(link.tab)) return null
@@ -223,7 +225,7 @@ const buildDashboardUrl = (
     }
   }
 
-  return `/projects/${projectId}?${params.toString()}`
+  return `${projectPath || `/projects/${projectId}`}?${params.toString()}`
 }
 
 const CHART_COLORS = [
@@ -539,7 +541,7 @@ const TYPE_ICONS: Record<
   donut: ChartDonutIcon,
 }
 
-const AIChart: React.FC<AIChartProps> = ({ chart, projectId }) => {
+const AIChart: React.FC<AIChartProps> = ({ chart, projectId, projectPath }) => {
   const { t } = useTranslation('common')
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [displayType, setDisplayType] = useState<AIChartType>(chart.chartType)
@@ -557,8 +559,8 @@ const AIChart: React.FC<AIChartProps> = ({ chart, projectId }) => {
 
   const dashboardHref = useMemo(() => {
     if (!projectId || !chart.link) return null
-    return buildDashboardUrl(projectId, chart.link)
-  }, [projectId, chart.link])
+    return buildDashboardUrl(projectId, projectPath, chart.link)
+  }, [projectId, projectPath, chart.link])
 
   const isPieDonutData =
     !_isEmpty(chart.data.labels) && !_isEmpty(chart.data.values)
@@ -1054,6 +1056,7 @@ const AIChart: React.FC<AIChartProps> = ({ chart, projectId }) => {
 export default memo(AIChart, (prevProps, nextProps) => {
   return (
     prevProps.projectId === nextProps.projectId &&
+    prevProps.projectPath === nextProps.projectPath &&
     JSON.stringify(prevProps.chart) === JSON.stringify(nextProps.chart)
   )
 })

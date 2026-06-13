@@ -45,6 +45,7 @@ const App = () => {
 
   const routesWithOutHeader = [
     routesPath.main,
+    routesPath.demo,
     routesPath.performance,
     routesPath.errorTracking,
     routesPath.forMarketers,
@@ -68,7 +69,11 @@ const App = () => {
           duration: 5000,
         }}
       />
-      {!isProjectViewPage && !isOnboardingPage ? <Footer /> : null}
+      {!isProjectViewPage &&
+      !isOnboardingPage &&
+      pathname !== routesPath.demo ? (
+        <Footer />
+      ) : null}
     </>
   )
 }

@@ -80,7 +80,6 @@ import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
 import { getItem, setItem } from '~/utils/localstorage'
-import routes from '~/utils/routes'
 
 import {
   useCurrentProject,
@@ -291,6 +290,7 @@ export const useRefreshTriggers = () => {
 const ViewProjectContent = () => {
   const {
     id,
+    projectSettingsPath,
     project,
     allowedToManage,
     liveVisitors,
@@ -1012,7 +1012,7 @@ const ViewProjectContent = () => {
   )
 
   const openSettingsHandler = () => {
-    navigate(_replace(routes.project_settings, ':id', id))
+    navigate(projectSettingsPath)
   }
 
   const onMainChartZoom = useCallback(

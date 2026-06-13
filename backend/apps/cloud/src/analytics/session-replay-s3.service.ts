@@ -24,6 +24,12 @@ const hmac = (key: Buffer | string, value: string) =>
 const encodeKeyPath = (key: string) =>
   key.split('/').map(encodeURIComponent).join('/')
 
+const encodeQueryValue = (value: string) =>
+  encodeURIComponent(value).replace(
+    /[!'()*]/g,
+    (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`,
+  )
+
 const normalizeEndpoint = (endpoint: string) => {
   const value = endpoint.trim().replace(/\/+$/, '')
 
@@ -40,6 +46,14 @@ const inferHetznerRegion = (endpoint: string) => {
 
   return hostname.slice(0, -suffix.length).split('.')[0] || ''
 }
+
+const decodeXmlValue = (value: string) =>
+  value
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&')
 
 @Injectable()
 export class SessionReplayS3Service {
@@ -149,12 +163,57 @@ export class SessionReplayS3Service {
     }
   }
 
+  async listObjects(prefix: string): Promise<string[]> {
+    const keys: string[] = []
+    let continuationToken: string | undefined
+
+    do {
+      const response = await this.signedFetch(
+        'GET',
+        '',
+        undefined,
+        {},
+        undefined,
+        {
+          'list-type': '2',
+          prefix,
+          'max-keys': '1000',
+          'continuation-token': continuationToken,
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error(`Hetzner S3 LIST failed with status ${response.status}`)
+      }
+
+      const xml = await response.text()
+      const keyRegex = /<Key>([\s\S]*?)<\/Key>/g
+      let keyMatch = keyRegex.exec(xml)
+
+      while (keyMatch) {
+        keys.push(decodeXmlValue(keyMatch[1]))
+        keyMatch = keyRegex.exec(xml)
+      }
+
+      continuationToken = xml.match(
+        /<NextContinuationToken>([\s\S]*?)<\/NextContinuationToken>/,
+      )?.[1]
+
+      if (continuationToken) {
+        continuationToken = decodeXmlValue(continuationToken)
+      }
+    } while (continuationToken)
+
+    return keys
+  }
+
   private async signedFetch(
     method: 'PUT' | 'GET' | 'DELETE',
     key: string,
     body?: PutObjectBody,
     extraHeaders: HeaderMap = {},
     payloadHashOverride?: string,
+    queryParams: Record<string, string | undefined> = {},
   ): Promise<Response> {
     const config = this.getConfig()
     if (!config) {
@@ -173,8 +232,18 @@ export class SessionReplayS3Service {
     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '')
     const dateStamp = amzDate.slice(0, 8)
     const endpoint = new URL(config.endpoint)
+    const canonicalQuery = Object.entries(queryParams)
+      .filter(([, value]) => value !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(
+        ([key, value]) =>
+          `${encodeQueryValue(key)}=${encodeQueryValue(value || '')}`,
+      )
+      .join('&')
+
     endpoint.hostname = `${config.bucket}.${endpoint.hostname}`
     endpoint.pathname = `/${encodeKeyPath(key)}`
+    endpoint.search = canonicalQuery ? `?${canonicalQuery}` : ''
 
     const headers: HeaderMap = {
       host: endpoint.host,
@@ -193,7 +262,7 @@ export class SessionReplayS3Service {
     const canonicalRequest = [
       method,
       endpoint.pathname,
-      '',
+      canonicalQuery,
       canonicalHeaders,
       signedHeaders,
       payloadHash,

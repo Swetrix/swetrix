@@ -16,6 +16,7 @@ import { GoalModule } from '../goal/goal.module'
 import { RevenueModule } from '../revenue/revenue.module'
 import { NotificationChannelModule } from '../notification-channel/notification-channel.module'
 import { NotificationChannel } from '../notification-channel/entity/notification-channel.entity'
+import { DemoDataModule } from '../demo-data/demo-data.module'
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { NotificationChannel } from '../notification-channel/entity/notification
     GoalModule,
     RevenueModule,
     NotificationChannelModule,
+    DemoDataModule,
   ],
   providers: [TaskManagerService, TelegramService],
   exports: [TaskManagerService],

@@ -328,7 +328,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation('common')
   const { pathname } = location
-  const pid = _split(pathname, '/')[2]
+  const pid = data?.project?.id || _split(pathname, '/')[2]
   const previewURL = getProjectOgImageUrl(pid)
 
   if (data?.isPasswordRequired) {
@@ -525,6 +525,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (result.error || !result.data) {
     if (result.status === 404 || result.status === 403) {
       return redirect('/dashboard')
+    }
+
+    // legacy live demo redirect
+    if (projectId === 'STEzHcB1rALV') {
+      return redirect('/demo')
     }
 
     return data<ProjectLoaderData>(
