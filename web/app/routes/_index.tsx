@@ -287,7 +287,7 @@ const TrialsHighlight = ({
 
   return (
     <span className='font-semibold text-gray-900 dark:text-gray-50'>
-      {mounted && value ? (
+      {mounted && value != null ? (
         <TrialsFlow value={value} locale={locale} />
       ) : (
         children
@@ -344,17 +344,15 @@ const Testimonials = ({
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
           <Trans
             values={{
-              amount: stats?.trials
-                ? stats.trials.toLocaleString(language)
-                : '> 1000',
+              amount:
+                stats?.trials != null
+                  ? stats.trials.toLocaleString(language)
+                  : '> 1000',
             }}
             t={t}
             i18nKey='main.understandTheirUsers'
           >
-            <TrialsHighlight
-              value={stats?.trials || undefined}
-              locale={language}
-            />
+            <TrialsHighlight value={stats?.trials} locale={language} />
           </Trans>
         </div>
       </div>

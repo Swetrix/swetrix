@@ -270,34 +270,34 @@ const PanelContainer = ({
                       : dropdownPlaceholder || t('project.campaigns')
 
                     return (
-                      <Dropdown
+                      <div
                         key={`dropdown-${index}`}
-                        title={
-                          <>
-                            {dropdownTitle}
-                            {activeDropdownTab ? (
-                              <PanelTabUnderline layoutId={underlineId} />
-                            ) : null}
-                          </>
-                        }
-                        items={dropdownTabs}
-                        labelExtractor={(item) => item.label}
-                        keyExtractor={(item) => item.id}
-                        onSelect={(item) => {
-                          onTabChange(item.id)
-                        }}
-                        buttonClassName={cx(
-                          'relative border-b-2 border-transparent px-0 py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200 md:px-0',
-                          {
-                            'text-slate-900 dark:text-gray-50':
-                              !!activeDropdownTab,
-                            'text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
-                              !activeDropdownTab,
-                          },
-                        )}
-                        headless
-                        chevron='mini'
-                      />
+                        className='relative inline-flex'
+                      >
+                        <Dropdown
+                          title={dropdownTitle}
+                          items={dropdownTabs}
+                          labelExtractor={(item) => item.label}
+                          keyExtractor={(item) => item.id}
+                          onSelect={(item) => {
+                            onTabChange(item.id)
+                          }}
+                          buttonClassName={cx(
+                            'relative border-b-2 border-transparent px-0 py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200 md:px-0',
+                            {
+                              'text-slate-900 dark:text-gray-50':
+                                !!activeDropdownTab,
+                              'text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
+                                !activeDropdownTab,
+                            },
+                          )}
+                          headless
+                          chevron='mini'
+                        />
+                        {activeDropdownTab ? (
+                          <PanelTabUnderline layoutId={underlineId} />
+                        ) : null}
+                      </div>
                     )
                   }
 

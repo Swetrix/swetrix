@@ -553,7 +553,7 @@ const Dashboard = () => {
                 <AnimatePresence mode='popLayout' initial={false}>
                   {_map(projects, (project) => (
                     <motion.div
-                      key={`${project.id}-${project.name}`}
+                      key={project.id}
                       layout
                       initial={{ opacity: 0, scale: 0.97 }}
                       animate={{ opacity: 1, scale: 1 }}

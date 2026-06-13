@@ -5,7 +5,7 @@ import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
 import _round from 'lodash/round'
 import { motion, type Variants } from 'motion/react'
-import React, { memo } from 'react'
+import React, { memo, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -23,9 +23,28 @@ import {
   getTimeFromSeconds,
 } from '~/utils/generic'
 
-// Animated counterparts of nFormatter / percent / getStringFromTime, so the
-// main metric values roll smoothly on load and when the period changes.
-const CompactNumberFlow = ({ value }: { value: number }) => {
+const useIsHydrated = () => {
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
+  return isHydrated
+}
+
+const StaticCompactNumber = ({ value }: { value: number }) => {
+  const [num, symbol] = nFormatterSeparated(value, 1) as [number, string | null]
+
+  return (
+    <>
+      {num}
+      {symbol}
+    </>
+  )
+}
+
+const AnimatedCompactNumber = ({ value }: { value: number }) => {
   const flowValue = useFlowValue(value)
   const [num, symbol] = nFormatterSeparated(flowValue, 1) as [
     number,
@@ -44,7 +63,17 @@ const CompactNumberFlow = ({ value }: { value: number }) => {
   )
 }
 
-const PercentFlow = ({ value }: { value: number }) => {
+const CompactNumberFlow = ({ value }: { value: number }) => {
+  const isHydrated = useIsHydrated()
+
+  return isHydrated ? (
+    <AnimatedCompactNumber value={value} />
+  ) : (
+    <StaticCompactNumber value={value} />
+  )
+}
+
+const AnimatedPercent = ({ value }: { value: number }) => {
   const flowValue = useFlowValue(value)
 
   return (
@@ -59,7 +88,32 @@ const PercentFlow = ({ value }: { value: number }) => {
   )
 }
 
-const DurationFlow = ({
+const PercentFlow = ({ value }: { value: number }) => {
+  const isHydrated = useIsHydrated()
+
+  return isHydrated ? (
+    <AnimatedPercent value={value} />
+  ) : (
+    <>{_round(value, 1)}%</>
+  )
+}
+
+const StaticDuration = ({
+  value,
+  showMs,
+}: {
+  value?: number
+  showMs?: boolean
+}) => (
+  <>
+    {getStringFromTime(
+      getTimeFromSeconds(Number.isFinite(value) ? value : 0),
+      showMs,
+    )}
+  </>
+)
+
+const AnimatedDuration = ({
   value,
   showMs,
 }: {
@@ -114,6 +168,22 @@ const DurationFlow = ({
         ) : null}
       </>
     </NumberFlowGroup>
+  )
+}
+
+const DurationFlow = ({
+  value,
+  showMs,
+}: {
+  value?: number
+  showMs?: boolean
+}) => {
+  const isHydrated = useIsHydrated()
+
+  return isHydrated ? (
+    <AnimatedDuration value={value} showMs={showMs} />
+  ) : (
+    <StaticDuration value={value} showMs={showMs} />
   )
 }
 

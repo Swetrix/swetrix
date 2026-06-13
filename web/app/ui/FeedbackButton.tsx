@@ -65,6 +65,7 @@ const FeedbackButton = ({
       className={cn('grid', className)}
     >
       <span
+        aria-hidden={phase !== 'idle'}
         className={cn(
           MORPH_LAYER_CLASSES,
           phase !== 'idle' && MORPH_HIDDEN_CLASSES,

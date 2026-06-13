@@ -571,6 +571,7 @@ const UserSettings = () => {
     useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const translatedFrequencies = useMemo(
     () => _map(reportFrequencies, (key) => t(`profileSettings.${key}`)),
     [t],
@@ -971,6 +972,9 @@ const UserSettings = () => {
         setCookie(CONFIRMATION_TIMEOUT, true, 600)
         toast.success(t('profileSettings.confSent'))
       } else if (intent === 'delete-account') {
+        setIsDeleting(false)
+        setShowModal(false)
+        setDeletionPassword('')
         logout()
         toast.success(t('apiNotifications.accountDeleted'))
         navigate(routes.main)
@@ -983,6 +987,9 @@ const UserSettings = () => {
       }
     } else if (fetcher.data?.error || fetcher.data?.fieldErrors) {
       setIsCancellingSubscription(false)
+      if (fetcher.data.intent === 'delete-account') {
+        setIsDeleting(false)
+      }
       if (pendingToggles.current.has('live-visitors')) {
         mergeUser({
           showLiveVisitorsInTitle: pendingToggles.current.get('live-visitors'),
@@ -1414,14 +1421,14 @@ const UserSettings = () => {
   }
 
   const onAccountDelete = () => {
+    if (isDeleting || !deletionPassword) return
+
+    setIsDeleting(true)
     const formData = new FormData()
     formData.set('intent', 'delete-account')
     formData.set('password', deletionPassword)
     formData.set('feedback', deletionFeedback)
     fetcher.submit(formData, { method: 'post' })
-    setTimeout(() => {
-      setDeletionPassword('')
-    }, 300)
   }
 
   const onEmailConfirm = () => {
@@ -2804,10 +2811,9 @@ const UserSettings = () => {
         customButtons={
           <HoldToConfirmButton
             onConfirm={() => {
-              setShowModal(false)
               onAccountDelete()
             }}
-            disabled={!deletionPassword}
+            disabled={!deletionPassword || isDeleting}
             className='w-full justify-center sm:w-auto'
           >
             {t('common.holdToDelete')}
