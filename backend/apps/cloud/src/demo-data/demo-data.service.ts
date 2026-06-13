@@ -39,6 +39,7 @@ const DEMO_PROJECT_ID = 'DEMODEMODEMO'
 const LOCK_KEY = 'demo-data:lock'
 const LAST_GENERATED_AT_KEY = 'demo-data:last-generated-at'
 const LOCK_TTL_SECONDS = 20 * 60
+const LOCK_RENEW_INTERVAL_MS = Math.floor((LOCK_TTL_SECONDS * 1000) / 3)
 const BACKFILL_DAYS = 90
 const DEMO_HOST = 'swetrix.com'
 
@@ -818,19 +819,25 @@ export class DemoDataService implements OnModuleInit {
     }
 
     const token = randomUUID()
-    const hasLock = await redis.set(
-      LOCK_KEY,
-      token,
-      'EX',
-      LOCK_TTL_SECONDS,
-      'NX',
-    )
-
-    if (hasLock !== 'OK') {
-      return
-    }
+    let hasLock = false
+    let lockHeartbeat: ReturnType<typeof setInterval> | undefined
 
     try {
+      const lockResult = await redis.set(
+        LOCK_KEY,
+        token,
+        'EX',
+        LOCK_TTL_SECONDS,
+        'NX',
+      )
+
+      if (lockResult !== 'OK') {
+        return
+      }
+
+      hasLock = true
+      lockHeartbeat = this.startLockHeartbeat(token)
+
       const project = await this.getDemoProject()
 
       if (!project) {
@@ -867,7 +874,13 @@ export class DemoDataService implements OnModuleInit {
         reason instanceof Error ? reason.stack : String(reason),
       )
     } finally {
-      await this.releaseLock(token)
+      if (lockHeartbeat) {
+        clearInterval(lockHeartbeat)
+      }
+
+      if (hasLock) {
+        await this.releaseLock(token)
+      }
     }
   }
 
@@ -2165,6 +2178,30 @@ export class DemoDataService implements OnModuleInit {
         values: values.slice(index, index + 5000),
         format: 'JSONEachRow',
       })
+    }
+  }
+
+  private startLockHeartbeat(token: string) {
+    return setInterval(() => {
+      void this.refreshLock(token)
+    }, LOCK_RENEW_INTERVAL_MS)
+  }
+
+  private async refreshLock(token: string) {
+    try {
+      const renewed = await redis.eval(
+        "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('EXPIRE', KEYS[1], ARGV[2]) else return 0 end",
+        1,
+        LOCK_KEY,
+        token,
+        LOCK_TTL_SECONDS,
+      )
+
+      if (Number(renewed) !== 1) {
+        this.logger.warn('Demo data lock is no longer owned by this process')
+      }
+    } catch (reason) {
+      this.logger.warn(`Unable to refresh demo data lock: ${reason}`)
     }
   }
 

@@ -527,6 +527,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       return redirect('/dashboard')
     }
 
+    // legacy live demo redirect
+    if (projectId === 'STEzHcB1rALV') {
+      return redirect('/demo')
+    }
+
     return data<ProjectLoaderData>(
       {
         project: null,
