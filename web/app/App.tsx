@@ -2,37 +2,26 @@ import _endsWith from 'lodash/endsWith'
 import _includes from 'lodash/includes'
 import _startsWith from 'lodash/startsWith'
 import { useEffect } from 'react'
-import { useLocation, Outlet, useNavigation } from 'react-router'
+import { useLocation, Outlet } from 'react-router'
 import 'dayjs/locale/uk'
 import { Toaster } from 'sonner'
 
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
 import { stripLangFromPath } from '~/lib/constants'
-import {
-  stopSessionReplayIfPrivatePath,
-  trackSessionReplay,
-} from '~/utils/analytics'
+import { trackSessionReplay } from '~/utils/analytics'
 import routesPath from '~/utils/routes'
 
 import { useTheme } from './providers/ThemeProvider'
 
 const App = () => {
   const { pathname: rawPathname } = useLocation()
-  const navigation = useNavigation()
   const pathname = stripLangFromPath(rawPathname)
-  const pendingPathname = navigation.location?.pathname
   const { theme } = useTheme()
 
   useEffect(() => {
-    trackSessionReplay(rawPathname)
-  }, [rawPathname])
-
-  useEffect(() => {
-    if (pendingPathname) {
-      stopSessionReplayIfPrivatePath(pendingPathname)
-    }
-  }, [pendingPathname])
+    trackSessionReplay()
+  }, [])
 
   const isOnboardingPage = pathname === routesPath.onboarding
   const isProjectViewPage =
