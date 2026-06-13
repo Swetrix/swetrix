@@ -152,7 +152,7 @@ const LiveDemoPreview = () => {
   const { theme } = useTheme()
   const isUpToLg = !useBreakpoint('lg')
 
-  const localisedDemoPath = localisePath('/projects/STEzHcB1rALV', language)
+  const localisedDemoPath = localisePath('/demo', language)
 
   if (isUpToLg) {
     return (

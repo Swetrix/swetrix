@@ -335,7 +335,7 @@ const OldLiveDemoPreview = () => {
     )
   }
 
-  const localisedDemoPath = localisePath('/projects/STEzHcB1rALV', language)
+  const localisedDemoPath = localisePath('/demo', language)
 
   return (
     <div
@@ -399,7 +399,7 @@ const NewLiveDemoPreview = () => {
     )
   }
 
-  const localisedDemoPath = localisePath('/projects/STEzHcB1rALV', language)
+  const localisedDemoPath = localisePath('/demo', language)
 
   return (
     <div
