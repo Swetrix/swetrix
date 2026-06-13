@@ -41,6 +41,7 @@ const LAST_GENERATED_AT_KEY = 'demo-data:last-generated-at'
 const LOCK_TTL_SECONDS = 20 * 60
 const LOCK_RENEW_INTERVAL_MS = Math.floor((LOCK_TTL_SECONDS * 1000) / 3)
 const BACKFILL_DAYS = 90
+const BASE_SESSIONS_PER_HOUR = 16
 const DEMO_HOST = 'swetrix.com'
 
 type DemoRandom = () => number
@@ -914,7 +915,7 @@ export class DemoDataService implements OnModuleInit {
       await redis.set(LAST_GENERATED_AT_KEY, to.toISOString())
 
       this.logger.log(
-        `Generated demo data from ${from.toISOString()} to ${to.toISOString()} via ${source}`,
+        `Generated ${rows.sessions.length} demo sessions from ${from.toISOString()} to ${to.toISOString()} via ${source}`,
       )
     } catch (reason) {
       this.logger.error(
@@ -1271,10 +1272,7 @@ export class DemoDataService implements OnModuleInit {
       replayChunks: [],
       revenue: [],
     }
-    const hours = Math.max(1, to.diff(from, 'hour', true))
-    const sessionCount = initial
-      ? Math.min(14000, Math.max(900, Math.round(hours * 6.2)))
-      : Math.min(180, Math.max(28, Math.round(hours * 48)))
+    const sessionCount = this.getSessionCount(from, to, initial, random)
     const returningProfilePool = Array.from({ length: 520 }, (_, index) =>
       this.profileId(`demo-returning-profile-${index}`, index % 3 !== 0),
     )
@@ -1314,6 +1312,66 @@ export class DemoDataService implements OnModuleInit {
     )
 
     return rows
+  }
+
+  private getSessionCount(
+    from: Dayjs,
+    to: Dayjs,
+    initial: boolean,
+    random: DemoRandom,
+  ) {
+    const minutes = Math.max(0, to.diff(from, 'minute', true))
+
+    if (minutes <= 0) {
+      return 0
+    }
+
+    let cursor = from
+    let expected = 0
+
+    while (cursor.isBefore(to)) {
+      const nextCandidate = cursor.add(15, 'minute')
+      const next = nextCandidate.isAfter(to) ? to : nextCandidate
+      const segmentHours = next.diff(cursor, 'hour', true)
+      const midpoint = cursor.add(
+        Math.floor(next.diff(cursor, 'millisecond') / 2),
+        'millisecond',
+      )
+
+      expected +=
+        BASE_SESSIONS_PER_HOUR *
+        this.getTrafficMultiplier(midpoint) *
+        segmentHours
+      cursor = next
+    }
+
+    if (initial) {
+      return Math.min(14000, Math.max(900, Math.round(expected)))
+    }
+
+    const jitteredExpected = expected * (0.9 + random() * 0.2)
+    const floor = Math.floor(jitteredExpected)
+    const rounded = floor + (random() < jitteredExpected - floor ? 1 : 0)
+
+    return Math.max(minutes >= 20 ? 1 : 0, rounded)
+  }
+
+  private getTrafficMultiplier(timestamp: Dayjs) {
+    const hour = timestamp.hour()
+    const day = timestamp.day()
+    const weekdayMultiplier = day >= 1 && day <= 5 ? 1.06 : 0.7
+    const hourMultiplier =
+      hour >= 9 && hour <= 17
+        ? 1.28
+        : hour >= 18 && hour <= 22
+          ? 0.98
+          : hour >= 6 && hour <= 8
+            ? 0.82
+            : hour >= 0 && hour <= 5
+              ? 0.38
+              : 0.58
+
+    return weekdayMultiplier * hourMultiplier
   }
 
   private buildSession(
