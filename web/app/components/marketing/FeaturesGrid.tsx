@@ -22,6 +22,8 @@ import { useTranslation } from 'react-i18next'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
+import { ScrollReveal } from './ScrollReveal'
+
 const WEB_ANALYTICS_FEATURES = [
   { icon: CookieIcon, key: 'privacy', className: 'text-indigo-500' },
   { icon: ChartLineIcon, key: 'traffic', className: 'text-blue-500' },
@@ -490,9 +492,9 @@ export const FeaturesGrid = () => {
 
       <div className='mt-14 space-y-20 sm:mt-16 lg:space-y-24'>
         <div className='grid items-center gap-10 lg:grid-cols-2 lg:gap-16'>
-          <div className='order-2 lg:order-1'>
+          <ScrollReveal className='order-2 lg:order-1'>
             <DashboardMockup />
-          </div>
+          </ScrollReveal>
           <div className='order-1 lg:order-2'>
             <FeatureGroup
               headingKey='webHeading'
@@ -508,7 +510,9 @@ export const FeaturesGrid = () => {
             descriptionKey='productDescription'
             features={PRODUCT_ANALYTICS_FEATURES}
           />
-          <ProductAnalyticsMockup />
+          <ScrollReveal>
+            <ProductAnalyticsMockup />
+          </ScrollReveal>
         </div>
       </div>
     </section>

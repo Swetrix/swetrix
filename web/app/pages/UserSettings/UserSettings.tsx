@@ -74,6 +74,8 @@ import type {
 import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
+import FeedbackButton from '~/ui/FeedbackButton'
+import HoldToConfirmButton from '~/ui/HoldToConfirmButton'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -569,6 +571,7 @@ const UserSettings = () => {
     useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const translatedFrequencies = useMemo(
     () => _map(reportFrequencies, (key) => t(`profileSettings.${key}`)),
     [t],
@@ -604,6 +607,13 @@ const UserSettings = () => {
   const pendingToggles = useRef<Map<string, boolean>>(new Map())
 
   const isSubmitting = fetcher.state === 'submitting'
+  const submittedIntent = fetcher.formData?.get('intent')?.toString()
+  const isProfileUpdateSubmitting =
+    fetcher.state !== 'idle' && submittedIntent === 'update-profile'
+  const profileUpdateSucceeded =
+    fetcher.state === 'idle' &&
+    fetcher.data?.success &&
+    fetcher.data.intent === 'update-profile'
   const isWebsiteAddonSubmitting = websiteAddonFetcher.state !== 'idle'
   const isSessionReplayAddonSubmitting =
     sessionReplayAddonFetcher.state !== 'idle'
@@ -962,6 +972,9 @@ const UserSettings = () => {
         setCookie(CONFIRMATION_TIMEOUT, true, 600)
         toast.success(t('profileSettings.confSent'))
       } else if (intent === 'delete-account') {
+        setIsDeleting(false)
+        setShowModal(false)
+        setDeletionPassword('')
         logout()
         toast.success(t('apiNotifications.accountDeleted'))
         navigate(routes.main)
@@ -974,6 +987,9 @@ const UserSettings = () => {
       }
     } else if (fetcher.data?.error || fetcher.data?.fieldErrors) {
       setIsCancellingSubscription(false)
+      if (fetcher.data.intent === 'delete-account') {
+        setIsDeleting(false)
+      }
       if (pendingToggles.current.has('live-visitors')) {
         mergeUser({
           showLiveVisitorsInTitle: pendingToggles.current.get('live-visitors'),
@@ -1405,14 +1421,14 @@ const UserSettings = () => {
   }
 
   const onAccountDelete = () => {
+    if (isDeleting || !deletionPassword) return
+
+    setIsDeleting(true)
     const formData = new FormData()
     formData.set('intent', 'delete-account')
     formData.set('password', deletionPassword)
     formData.set('feedback', deletionFeedback)
     fetcher.submit(formData, { method: 'post' })
-    setTimeout(() => {
-      setDeletionPassword('')
-    }, 300)
   }
 
   const onEmailConfirm = () => {
@@ -1557,9 +1573,14 @@ const UserSettings = () => {
                           onChange={handleInput}
                           error={emailBeenSubmitted ? errors.email : null}
                         />
-                        <Button size='lg' onClick={handleEmailSubmit}>
+                        <FeedbackButton
+                          size='lg'
+                          onClick={handleEmailSubmit}
+                          loading={isProfileUpdateSubmitting}
+                          succeeded={profileUpdateSucceeded}
+                        >
                           {t('profileSettings.update')}
-                        </Button>
+                        </FeedbackButton>
                       </div>
                     ) : null}
                   </div>
@@ -1861,15 +1882,17 @@ const UserSettings = () => {
                       onChange={handleInput}
                       error={passwordBeenSubmitted ? errors.repeat : null}
                     />
-                    <Button
+                    <FeedbackButton
                       size='lg'
                       onClick={handlePasswordSubmit}
                       disabled={
                         !form.currentPassword || !form.password || !form.repeat
                       }
+                      loading={isProfileUpdateSubmitting}
+                      succeeded={profileUpdateSucceeded}
                     >
                       {t('profileSettings.updatePassword')}
-                    </Button>
+                    </FeedbackButton>
                   </div>
                 </SettingsSection>
 
@@ -2785,16 +2808,20 @@ const UserSettings = () => {
           setDeletionPassword('')
           setShowModal(false)
         }}
-        onSubmit={() => {
-          setShowModal(false)
-          onAccountDelete()
-        }}
-        submitText={t('profileSettings.aDelete')}
+        customButtons={
+          <HoldToConfirmButton
+            onConfirm={() => {
+              onAccountDelete()
+            }}
+            disabled={!deletionPassword || isDeleting}
+            className='w-full justify-center sm:w-auto'
+          >
+            {t('common.holdToDelete')}
+          </HoldToConfirmButton>
+        }
         closeText={t('common.close')}
         title={t('profileSettings.qDelete')}
-        submitType='danger'
         type='error'
-        submitDisabled={!deletionPassword}
         message={
           <>
             {t('profileSettings.deactivateConfirmation')}

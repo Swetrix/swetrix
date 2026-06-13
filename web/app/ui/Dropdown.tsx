@@ -1,13 +1,7 @@
-import {
-  Menu,
-  MenuButton,
-  MenuItems,
-  MenuItem,
-  Transition,
-} from '@headlessui/react'
+import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import React, { memo, Fragment, Key } from 'react'
+import React, { memo, Key } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { cn } from '~/utils/generic'
@@ -78,11 +72,11 @@ function Dropdown<T>({
             onClick={onClick}
             disabled={disabled}
             className={cn(
-              'transition-[background-color,color,box-shadow] duration-150 ease-out',
+              'transition-[background-color,color,box-shadow,transform] duration-150 ease-out-quint',
               {
                 'justify-between': aside,
                 'justify-center': !aside,
-                'inline-flex w-full rounded-md border-0 bg-white px-3 py-2 text-sm font-medium ring-1 ring-gray-300 ring-inset hover:bg-gray-50 hover:ring-gray-400 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden md:px-4 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-900 dark:hover:ring-slate-600 dark:focus-visible:ring-slate-300':
+                'inline-flex w-full rounded-md border-0 bg-white px-3 py-2 text-sm font-medium ring-1 ring-gray-300 ring-inset hover:bg-gray-50 hover:ring-gray-400 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden active:scale-[0.98] md:px-4 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-900 dark:hover:ring-slate-600 dark:focus-visible:ring-slate-300':
                   !headless,
                 'group inline-flex w-full px-3 py-2 text-sm font-medium outline-hidden md:px-4':
                   headless,
@@ -118,67 +112,58 @@ function Dropdown<T>({
             ) : null}
           </MenuButton>
 
-          <Transition
-            show={open}
-            as={Fragment}
-            enter='transition-[opacity,transform] ease-out duration-150'
-            enterFrom='transform opacity-0 scale-95 -translate-y-0.5'
-            enterTo='transform opacity-100 scale-100 translate-y-0'
-            leave='transition-[opacity,transform] ease-out duration-100'
-            leaveFrom='transform opacity-100 scale-100 translate-y-0'
-            leaveTo='transform opacity-0 scale-95 -translate-y-0.5'
+          <MenuItems
+            anchor={{
+              to: position === 'down' ? 'bottom end' : 'top end',
+              offset: 6,
+            }}
+            modal={false}
+            transition
+            className={cn(
+              'z-50 w-40 min-w-max rounded-lg bg-white p-1 shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-700/60',
+              // Scale in from the corner nearest the trigger, not the center
+              position === 'down' ? 'origin-top-right' : 'origin-bottom-right',
+              'transition-[opacity,transform] duration-150 ease-out-quint data-closed:scale-95 data-closed:opacity-0 data-leave:duration-100',
+              menuItemsClassName,
+            )}
           >
-            <MenuItems
-              anchor={{
-                to: position === 'down' ? 'bottom end' : 'top end',
-                offset: 6,
-              }}
-              modal={false}
-              className={cn(
-                'z-50 w-40 min-w-max rounded-lg bg-white p-1 shadow-lg ring-1 ring-gray-200/80 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-700/60',
-                menuItemsClassName,
-              )}
-            >
-              {header ? (
-                <>
-                  <p className='px-2 pt-1.5 pb-1 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400'>
-                    {header}
-                  </p>
-                  <div className='mb-1 h-px bg-gray-100 dark:bg-slate-800' />
-                </>
-              ) : null}
-              {loading ? (
-                <div className='flex items-center justify-center px-4 py-3'>
-                  <Spin className='mr-0! ml-0!' />
-                  <span className='sr-only'>{t('common.loading')}</span>
-                </div>
-              ) : (
-                _map(items, (item) => (
-                  <MenuItem
-                    key={
-                      keyExtractor ? keyExtractor(item, close) : (item as Key)
+            {header ? (
+              <>
+                <p className='px-2 pt-1.5 pb-1 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400'>
+                  {header}
+                </p>
+                <div className='mb-1 h-px bg-gray-100 dark:bg-slate-800' />
+              </>
+            ) : null}
+            {loading ? (
+              <div className='flex items-center justify-center px-4 py-3'>
+                <Spin className='mr-0! ml-0!' />
+                <span className='sr-only'>{t('common.loading')}</span>
+              </div>
+            ) : (
+              _map(items, (item) => (
+                <MenuItem
+                  key={keyExtractor ? keyExtractor(item, close) : (item as Key)}
+                >
+                  <span
+                    className={cn(
+                      'block cursor-pointer rounded-md px-2 py-1.5 text-sm text-gray-700 transition-colors duration-100 ease-out hover:bg-gray-100 hover:text-gray-900 data-focus:bg-gray-100 data-focus:text-gray-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:hover:text-white dark:data-focus:bg-slate-800 dark:data-focus:text-white',
+                      selectItemClassName,
+                    )}
+                    role='menuitem'
+                    tabIndex={0}
+                    onClick={(e: React.MouseEvent<HTMLElement>) =>
+                      onSelect(item, e, close)
                     }
                   >
-                    <span
-                      className={cn(
-                        'block cursor-pointer rounded-md px-2 py-1.5 text-sm text-gray-700 transition-colors duration-100 ease-out hover:bg-gray-100 hover:text-gray-900 data-focus:bg-gray-100 data-focus:text-gray-900 dark:text-gray-50 dark:hover:bg-slate-800 dark:hover:text-white dark:data-focus:bg-slate-800 dark:data-focus:text-white',
-                        selectItemClassName,
-                      )}
-                      role='menuitem'
-                      tabIndex={0}
-                      onClick={(e: React.MouseEvent<HTMLElement>) =>
-                        onSelect(item, e, close)
-                      }
-                    >
-                      {labelExtractor
-                        ? labelExtractor(item, close)
-                        : (item as React.ReactNode)}
-                    </span>
-                  </MenuItem>
-                ))
-              )}
-            </MenuItems>
-          </Transition>
+                    {labelExtractor
+                      ? labelExtractor(item, close)
+                      : (item as React.ReactNode)}
+                  </span>
+                </MenuItem>
+              ))
+            )}
+          </MenuItems>
         </>
       )}
     </Menu>

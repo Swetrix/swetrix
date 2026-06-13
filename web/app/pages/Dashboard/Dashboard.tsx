@@ -9,6 +9,7 @@ import {
   XIcon,
   FolderPlusIcon,
 } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'motion/react'
 import React, {
   useState,
   useEffect,
@@ -549,27 +550,49 @@ const Dashboard = () => {
                     : 'grid-cols-1',
                 )}
               >
-                {_map(projects, (project) => (
-                  <ProjectCard
-                    key={`${project.id}-${project.name}`}
-                    project={project}
-                    live={
-                      liveStats[project.id] ??
-                      (_isEmpty(liveStats) ? null : 'N/A')
-                    }
-                    overallStats={overallStats[project.id]}
-                    activePeriod={activePeriod}
-                    viewMode={_viewMode}
-                    refetchProjects={refetchProjects}
-                  />
-                ))}
-                {_size(projects) % 12 !== 0 ? (
-                  <AddProject
-                    sitesCount={_size(projects)}
-                    onClick={onNewProject}
-                    viewMode={_viewMode}
-                  />
-                ) : null}
+                <AnimatePresence mode='popLayout' initial={false}>
+                  {_map(projects, (project) => (
+                    <motion.div
+                      key={project.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.97 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.97 }}
+                      transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                      // Single-cell grid so the card stretches to fill the row
+                      className='grid'
+                    >
+                      <ProjectCard
+                        project={project}
+                        live={
+                          liveStats[project.id] ??
+                          (_isEmpty(liveStats) ? null : 'N/A')
+                        }
+                        overallStats={overallStats[project.id]}
+                        activePeriod={activePeriod}
+                        viewMode={_viewMode}
+                        refetchProjects={refetchProjects}
+                      />
+                    </motion.div>
+                  ))}
+                  {_size(projects) % 12 !== 0 ? (
+                    <motion.div
+                      key='add-project'
+                      layout
+                      initial={{ opacity: 0, scale: 0.97 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.97 }}
+                      transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                      className='grid'
+                    >
+                      <AddProject
+                        sitesCount={_size(projects)}
+                        onClick={onNewProject}
+                        viewMode={_viewMode}
+                      />
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
               </div>
             )}
             {paginationTotal > PAGE_SIZE_OPTIONS[0] ? (

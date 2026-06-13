@@ -1,3 +1,4 @@
+import NumberFlow from '@number-flow/react'
 import { CaretDownIcon, XIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import React, { useState } from 'react'
@@ -7,6 +8,11 @@ import { Link } from '~/ui/Link'
 
 import type { LiveVisitorInfo } from '~/api/api.server'
 import { useLiveVisitorsProxy } from '~/hooks/useAnalyticsProxy'
+import {
+  FLOW_TIMING,
+  FLOW_VALUE_CLASS,
+  useFlowValue,
+} from '~/hooks/useFlowValue'
 import { PROJECT_TABS } from '~/lib/constants'
 import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
@@ -25,6 +31,14 @@ const LiveVisitorsDropdown = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [liveInfo, setLiveInfo] = useState<LiveVisitorInfo[]>([])
   const { fetchLiveVisitorsInfo } = useLiveVisitorsProxy()
+  const flowLiveVisitors = useFlowValue(liveVisitors)
+
+  // The translation interpolates the amount into the sentence, so split it
+  // around the placeholder to render the number with NumberFlow.
+  const [liveVisitorsLabelStart, liveVisitorsLabelEnd] = t(
+    'dashboard.xLiveVisitors',
+    { amount: '__amount__' },
+  ).split('__amount__')
 
   const getLiveVisitors = async () => {
     setIsLoading(true)
@@ -67,9 +81,14 @@ const LiveVisitorsDropdown = () => {
         >
           <PulsatingCircle className='mr-1.5' type='small' />
           <span>
-            {t('dashboard.xLiveVisitors', {
-              amount: liveVisitors,
-            })}{' '}
+            {liveVisitorsLabelStart}
+            <NumberFlow
+              className={FLOW_VALUE_CLASS}
+              {...FLOW_TIMING}
+              value={flowLiveVisitors}
+              willChange
+            />
+            {liveVisitorsLabelEnd}{' '}
           </span>
           <CaretDownIcon
             className={cn(

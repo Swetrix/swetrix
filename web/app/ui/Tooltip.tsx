@@ -1,6 +1,6 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { QuestionIcon } from '@phosphor-icons/react'
-import React, { forwardRef, memo } from 'react'
+import React, { forwardRef, memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { cn } from '~/utils/generic'
@@ -10,6 +10,23 @@ const TooltipProvider = TooltipPrimitive.Provider
 const TooltipRoot = TooltipPrimitive.Root
 
 const TooltipTrigger = TooltipPrimitive.Trigger
+
+/**
+ * Skip-delay grace period shared across ALL tooltip instances (each renders
+ * its own Radix provider, so Radix's built-in skipDelayDuration can't help).
+ * While any tooltip is open — or was open within the last 300ms — hovering
+ * another tooltip shows it instantly: no open delay and (via the
+ * `data-state='instant-open'` CSS) no entry animation.
+ */
+const SKIP_DELAY_WINDOW_MS = 300
+let lastTooltipActivityAt = 0
+
+const markTooltipActivity = () => {
+  lastTooltipActivityAt = Date.now()
+}
+
+const isWithinSkipDelayWindow = () =>
+  Date.now() - lastTooltipActivityAt < SKIP_DELAY_WINDOW_MS
 
 type TooltipContentVariant = 'default' | 'chart'
 
@@ -112,22 +129,25 @@ const Tooltip = ({
   contentClassName,
   arrowClassName,
   contentVariant = 'default',
-  delay = 50,
+  delay = 300,
   disableHoverableContent,
 }: TooltipProps) => {
   const { t } = useTranslation()
   const triggerAriaLabel = ariaLabel || t('common.learnMore')
+  // Decided on pointer enter, before Radix starts its open timer
+  const [instant, setInstant] = useState(false)
 
   return (
     <TooltipProvider
-      delayDuration={delay}
+      delayDuration={instant ? 0 : delay}
       disableHoverableContent={disableHoverableContent}
     >
-      <TooltipRoot>
+      <TooltipRoot onOpenChange={markTooltipActivity}>
         <TooltipTrigger
           asChild={asChild}
           className={className}
           aria-label={triggerAriaLabel}
+          onPointerEnter={() => setInstant(isWithinSkipDelayWindow())}
         >
           {tooltipNode || (
             <QuestionIcon className='size-4 cursor-help fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800' />

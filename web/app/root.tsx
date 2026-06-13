@@ -7,6 +7,7 @@ import {
 import BillboardCss from 'billboard.js/dist/billboard.min.css?url'
 import cx from 'clsx'
 import _replace from 'lodash/replace'
+import { MotionConfig } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type {
@@ -457,7 +458,10 @@ const Body = () => {
         initialUser={user}
         initialTotalMonthlyEvents={totalMonthlyEvents}
       >
-        <AppWrapper />
+        {/* Drops transform-based motion (keeps opacity) for prefers-reduced-motion users */}
+        <MotionConfig reducedMotion='user'>
+          <AppWrapper />
+        </MotionConfig>
       </AuthProvider>
       <ScrollRestoration />
       <ExternalScripts />

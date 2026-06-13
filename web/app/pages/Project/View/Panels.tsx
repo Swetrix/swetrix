@@ -31,6 +31,7 @@ import {
   ArrowLineLeftIcon,
   MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
+import { motion } from 'motion/react'
 import React, {
   memo,
   useState,
@@ -38,6 +39,7 @@ import React, {
   useMemo,
   useCallback,
   Fragment,
+  useId,
   useRef,
 } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -95,6 +97,24 @@ const getPercentage = (value: number, total: number, precision = 2) => {
   const percentage = (value / total) * 100
   return Number.isFinite(percentage) ? _round(percentage, precision) : 0
 }
+
+const panelBarStyle = (pct: number) =>
+  ({ '--panel-bar-width': `${pct}%` }) as React.CSSProperties
+
+/**
+ * Active-tab underline shared between a panel's tab buttons: rendering it
+ * with a common layoutId makes it glide from the old tab to the new one.
+ * The layoutId must be unique per panel instance — multiple panels render
+ * their tab bars simultaneously.
+ */
+const PanelTabUnderline = ({ layoutId }: { layoutId: string }) => (
+  <motion.span
+    aria-hidden
+    layoutId={layoutId}
+    transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+    className='absolute inset-x-0 -bottom-0.5 h-0.5 bg-slate-900 dark:bg-gray-50'
+  />
+)
 
 const getDocsEmptyStateVariant = (
   id: string,
@@ -209,6 +229,7 @@ const PanelContainer = ({
   dropdownPlaceholder,
 }: PanelContainerProps) => {
   const { t } = useTranslation('common')
+  const underlineId = useId()
 
   return (
     <div
@@ -249,27 +270,34 @@ const PanelContainer = ({
                       : dropdownPlaceholder || t('project.campaigns')
 
                     return (
-                      <Dropdown
+                      <div
                         key={`dropdown-${index}`}
-                        title={dropdownTitle}
-                        items={dropdownTabs}
-                        labelExtractor={(item) => item.label}
-                        keyExtractor={(item) => item.id}
-                        onSelect={(item) => {
-                          onTabChange(item.id)
-                        }}
-                        buttonClassName={cx(
-                          'relative border-b-2 px-0 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200 md:px-0',
-                          {
-                            'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
-                              dropdownTabs.some((t) => t.id === activeTabId),
-                            'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
-                              !dropdownTabs.some((t) => t.id === activeTabId),
-                          },
-                        )}
-                        headless
-                        chevron='mini'
-                      />
+                        className='relative inline-flex'
+                      >
+                        <Dropdown
+                          title={dropdownTitle}
+                          items={dropdownTabs}
+                          labelExtractor={(item) => item.label}
+                          keyExtractor={(item) => item.id}
+                          onSelect={(item) => {
+                            onTabChange(item.id)
+                          }}
+                          buttonClassName={cx(
+                            'relative border-b-2 border-transparent px-0 py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200 md:px-0',
+                            {
+                              'text-slate-900 dark:text-gray-50':
+                                !!activeDropdownTab,
+                              'text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
+                                !activeDropdownTab,
+                            },
+                          )}
+                          headless
+                          chevron='mini'
+                        />
+                        {activeDropdownTab ? (
+                          <PanelTabUnderline layoutId={underlineId} />
+                        ) : null}
+                      </div>
                     )
                   }
 
@@ -282,16 +310,19 @@ const PanelContainer = ({
                         onTabChange(tab.id)
                       }}
                       className={cx(
-                        'relative border-b-2 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                        'relative border-b-2 border-transparent py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200',
                         {
-                          'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
+                          'text-slate-900 dark:text-gray-50':
                             activeTabId === tab.id,
-                          'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
+                          'text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
                             activeTabId !== tab.id,
                         },
                       )}
                     >
                       {tab.label}
+                      {activeTabId === tab.id ? (
+                        <PanelTabUnderline layoutId={underlineId} />
+                      ) : null}
                     </button>
                   )
                 })}
@@ -986,10 +1017,10 @@ const CustomEvents = ({
                   }}
                 >
                   <div
-                    className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                    style={{
-                      width: `${getPercentage(eventsData[ev], maxValue)}%`,
-                    }}
+                    className='panel-bar absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                    style={panelBarStyle(
+                      getPercentage(eventsData[ev], maxValue),
+                    )}
                   />
 
                   <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
@@ -1472,8 +1503,8 @@ const MetadataKeyBody = ({
                     }}
                   >
                     <div
-                      className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                      style={{ width: `${getPercentage(count, maxValue)}%` }}
+                      className='panel-bar absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                      style={panelBarStyle(getPercentage(count, maxValue))}
                     />
 
                     <div className='relative z-10 w-2/6 min-w-0 truncate'>
@@ -1560,8 +1591,8 @@ const MetadataKeyBody = ({
                   }}
                 >
                   <div
-                    className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                    style={{ width: `${getPercentage(count, maxValue)}%` }}
+                    className='panel-bar absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                    style={panelBarStyle(getPercentage(count, maxValue))}
                   />
 
                   <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
@@ -1675,6 +1706,7 @@ const CombinedMetadataPanel = ({
 
   const [canShowDetails, setCanShowDetails] = useState(false)
   const [detailsTrigger, setDetailsTrigger] = useState(0)
+  const underlineId = useId()
 
   const activeDropdownTab = dropdownItems.find(
     (item) => item.id === activeSection.activeKey,
@@ -1703,16 +1735,18 @@ const CombinedMetadataPanel = ({
               type='button'
               onClick={() => setActiveMode(tab.id)}
               className={cx(
-                'relative border-b-2 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                'relative border-b-2 border-transparent py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200',
                 {
-                  'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
-                    activeMode === tab.id,
-                  'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
+                  'text-slate-900 dark:text-gray-50': activeMode === tab.id,
+                  'text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
                     activeMode !== tab.id,
                 },
               )}
             >
               {tab.label}
+              {activeMode === tab.id ? (
+                <PanelTabUnderline layoutId={underlineId} />
+              ) : null}
             </button>
           ))}
           {!_isEmpty(dropdownItems) ? (
@@ -1723,7 +1757,7 @@ const CombinedMetadataPanel = ({
               keyExtractor={(item) => item.id}
               onSelect={(item) => activeSection.onKeyChange(item.id)}
               buttonClassName={cx(
-                'relative border-b-2 px-0 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200 md:px-0',
+                'relative border-b-2 px-0 py-1 text-sm font-bold whitespace-nowrap transition-colors duration-200 md:px-0',
                 {
                   'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
                     !!activeDropdownTab,
@@ -2395,7 +2429,7 @@ const Panel = ({
                       role='presentation'
                     >
                       <div
-                        className={cx('absolute inset-0 rounded-sm', {
+                        className={cx('panel-bar absolute inset-0 rounded-sm', {
                           'bg-blue-50 dark:bg-blue-900/30':
                             highlightColour === 'blue',
                           'bg-red-50 dark:bg-slate-500/15':
@@ -2403,7 +2437,7 @@ const Panel = ({
                           'bg-orange-50 dark:bg-slate-500/15':
                             highlightColour === 'orange',
                         })}
-                        style={{ width: `${perc}%` }}
+                        style={panelBarStyle(perc)}
                       />
 
                       <div className='relative z-10 flex min-w-0 flex-1 items-center'>
@@ -2542,15 +2576,18 @@ const Panel = ({
                                 )}
                               >
                                 <div
-                                  className={cx('absolute inset-0 rounded-sm', {
-                                    'bg-blue-50 dark:bg-blue-900/10':
-                                      highlightColour === 'blue',
-                                    'bg-red-50 dark:bg-slate-600/15':
-                                      highlightColour === 'red',
-                                    'bg-orange-50 dark:bg-slate-600/15':
-                                      highlightColour === 'orange',
-                                  })}
-                                  style={{ width: `${versionPerc}%` }}
+                                  className={cx(
+                                    'panel-bar absolute inset-0 rounded-sm',
+                                    {
+                                      'bg-blue-50 dark:bg-blue-900/10':
+                                        highlightColour === 'blue',
+                                      'bg-red-50 dark:bg-slate-600/15':
+                                        highlightColour === 'red',
+                                      'bg-orange-50 dark:bg-slate-600/15':
+                                        highlightColour === 'orange',
+                                    },
+                                  )}
+                                  style={panelBarStyle(versionPerc)}
                                 />
 
                                 <div className='relative z-10 flex min-w-0 flex-1 items-center'>

@@ -22,7 +22,7 @@ import React, {
   type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
-import { useIsPresent } from 'motion/react'
+import { motion, useIsPresent } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import {
   useNavigate,
@@ -52,6 +52,7 @@ import { MapLoader } from '~/pages/Project/View/components/MapLoader'
 import {
   MetricCard,
   MetricCards,
+  metricCardsContainerVariants,
 } from '~/pages/Project/tabs/Traffic/MetricCards'
 import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
@@ -243,11 +244,7 @@ function TrafficDataResolver({
     previousDataRef.current = currentData
   }
 
-  return (
-    <>
-      {children(currentData)}
-    </>
-  )
+  return <>{children(currentData)}</>
 }
 
 function HasImportedIndicator() {
@@ -1064,7 +1061,12 @@ const TrafficViewInner = ({
             </Suspense>
           </div>
           {!_isEmpty(overall) ? (
-            <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+            <motion.div
+              initial='hidden'
+              animate='visible'
+              variants={metricCardsContainerVariants}
+              className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'
+            >
               <MetricCards
                 overall={overall}
                 overallCompare={overallCompare}
@@ -1094,7 +1096,7 @@ const TrafficViewInner = ({
                     </React.Fragment>
                   ))
                 : null}
-            </div>
+            </motion.div>
           ) : null}
           {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
             <div
