@@ -90,11 +90,12 @@ const AnimatedPercent = ({ value }: { value: number }) => {
 
 const PercentFlow = ({ value }: { value: number }) => {
   const isHydrated = useIsHydrated()
+  const sanitizedValue = Number.isFinite(value) ? _round(value, 1) : 0
 
   return isHydrated ? (
-    <AnimatedPercent value={value} />
+    <AnimatedPercent value={sanitizedValue} />
   ) : (
-    <>{_round(value, 1)}%</>
+    <>{sanitizedValue}%</>
   )
 }
 
