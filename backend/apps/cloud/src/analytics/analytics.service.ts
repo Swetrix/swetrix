@@ -7750,7 +7750,7 @@ export class AnalyticsService {
             AND profileId = {profileId:String}
             AND psid IS NOT NULL
             AND toString(psid) IN {psids:Array(String)}
-            AND created BETWEEN {groupFrom:DateTime} AND {groupTo:DateTime}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         )
 
         UNION ALL
@@ -7785,7 +7785,7 @@ export class AnalyticsService {
             AND profile_id = {profileId:String}
             AND session_id IS NOT NULL
             AND toString(session_id) IN {psids:Array(String)}
-            AND revenue.created BETWEEN {groupFrom:DateTime} AND {groupTo:DateTime}
+            AND revenue.created BETWEEN {groupFrom:String} AND {groupTo:String}
             AND revenue.type IN ('sale', 'refund')
           GROUP BY session_id, transaction_id
         )
