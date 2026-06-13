@@ -47,6 +47,7 @@ import { toast } from 'sonner'
 
 import { askAI } from '~/api'
 import useSpeechRecognition from '~/hooks/useSpeechRecognition'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
@@ -416,10 +417,12 @@ const MessageContent = ({
   content,
   isStreaming,
   projectId,
+  projectPath,
 }: {
   content: string
   isStreaming?: boolean
   projectId?: string
+  projectPath?: string
 }) => {
   const segments = useMemo(() => parseSegments(content), [content])
   const hasAnyContent = segments.length > 0
@@ -439,7 +442,12 @@ const MessageContent = ({
         }
         if (segment.kind === 'chart' && segment.chart) {
           return (
-            <AIChart key={idx} chart={segment.chart} projectId={projectId} />
+            <AIChart
+              key={idx}
+              chart={segment.chart}
+              projectId={projectId}
+              projectPath={projectPath}
+            />
           )
         }
         if (segment.kind === 'chart' && segment.pending) {
@@ -618,6 +626,7 @@ const AssistantMessage = ({
   followUps,
   onFollowUpClick,
   projectId,
+  projectPath,
 }: {
   message: Message
   isStreaming?: boolean
@@ -628,6 +637,7 @@ const AssistantMessage = ({
   followUps?: string[]
   onFollowUpClick?: (prompt: string) => void
   projectId?: string
+  projectPath?: string
 }) => {
   const { t } = useTranslation('common')
   const [userToggled, setUserToggled] = useState(false)
@@ -693,6 +703,7 @@ const AssistantMessage = ({
                     content={part.text}
                     isStreaming={isStreaming ? isLastTextPart : undefined}
                     projectId={projectId}
+                    projectPath={projectPath}
                   />
                 </div>
               )
@@ -727,6 +738,7 @@ const AssistantMessage = ({
             content={message.content}
             isStreaming={isStreaming}
             projectId={projectId}
+            projectPath={projectPath}
           />
         </>
       )}
@@ -1787,6 +1799,7 @@ const ChatHistoryPanel = ({
 
 const AskAIView = ({ projectId }: AskAIViewProps) => {
   const { t } = useTranslation('common')
+  const { projectPath } = useCurrentProject()
   const [searchParams, setSearchParams] = useSearchParams()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -3217,6 +3230,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                         key={msg.id}
                         message={msg}
                         projectId={projectId}
+                        projectPath={projectPath}
                         onRegenerate={() => handleRegenerate(idx)}
                         onFeedback={(rating) =>
                           handleFeedback(idx, msg.id, rating)
@@ -3248,6 +3262,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     message={streamingMessage}
                     isStreaming
                     projectId={projectId}
+                    projectPath={projectPath}
                   />
                 ) : null}
               </div>

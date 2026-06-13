@@ -328,7 +328,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation('common')
   const { pathname } = location
-  const pid = _split(pathname, '/')[2]
+  const pid = data?.project?.id || _split(pathname, '/')[2]
   const previewURL = getProjectOgImageUrl(pid)
 
   if (data?.isPasswordRequired) {

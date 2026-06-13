@@ -13,6 +13,7 @@ const routes = Object.freeze({
   confirm_share: '/share/:id',
   confirm_subcription: '/projects/:id/subscribers/invite',
   main: '/',
+  demo: '/demo',
   dashboard: '/dashboard',
   user_settings: '/user-settings',
   verify: '/verify/:id',

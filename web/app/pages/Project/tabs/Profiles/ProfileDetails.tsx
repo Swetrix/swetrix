@@ -406,7 +406,7 @@ const ProfileSessionFlow = ({
     t,
     i18n: { language },
   } = useTranslation('common')
-  const { id: projectId } = useCurrentProject()
+  const { projectPath } = useCurrentProject()
   const { timezone } = useViewProjectContext()
   const { theme } = useTheme()
   const [isExpanded, setIsExpanded] = useState(index === 0)
@@ -417,7 +417,7 @@ const ProfileSessionFlow = ({
   const durationLabel = getStringFromTime(getTimeFromSeconds(duration))
   const formattedStart =
     formatDateTime(startedAt, language, timeFormat, timezone) || '-'
-  const sessionHref = `/projects/${projectId}?tab=${PROJECT_TABS.sessions}&psid=${encodeURIComponent(session.psid)}`
+  const sessionHref = `${projectPath}?tab=${PROJECT_TABS.sessions}&psid=${encodeURIComponent(session.psid)}`
   const live = isSessionLive(session.isLive)
   const platformParts: PlatformPart[] = [
     ...(session.os

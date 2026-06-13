@@ -243,11 +243,7 @@ function TrafficDataResolver({
     previousDataRef.current = currentData
   }
 
-  return (
-    <>
-      {children(currentData)}
-    </>
-  )
+  return <>{children(currentData)}</>
 }
 
 function HasImportedIndicator() {

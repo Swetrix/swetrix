@@ -40,6 +40,8 @@ import { CHART_METRICS_MAPPING } from '../pages/Project/View/ViewProject.helpers
 
 interface CurrentProjectContextType {
   id: string
+  projectPath: string
+  projectSettingsPath: string
   project: Project | null
   preferences: ProjectPreferences
   allowedToManage: boolean
@@ -60,6 +62,7 @@ const CurrentProjectContext = createContext<
 
 interface CurrentProjectProviderProps {
   id: string
+  projectPath?: string
   children: React.ReactNode
 }
 
@@ -112,7 +115,7 @@ export const useProjectPassword = (id?: string) => {
   return searchParams.get('password') || cachedPassword
 }
 
-const useProject = (id: string) => {
+const useProject = (id: string, projectPath: string) => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const revalidator = useRevalidator()
@@ -164,7 +167,7 @@ const useProject = (id: string) => {
       setIsCheckingStoredPassword(true)
       passwordFetcher.submit(
         { intent: 'get-project', password: storedPassword },
-        { method: 'POST', action: `/projects/${id}` },
+        { method: 'POST', action: projectPath },
       )
     }
   }, [
@@ -172,6 +175,7 @@ const useProject = (id: string) => {
     isPasswordRequired,
     storedPassword,
     id,
+    projectPath,
     passwordFetcher,
   ])
 
@@ -223,11 +227,11 @@ const useProject = (id: string) => {
         lastSubmittedPasswordRef.current = password
         passwordFetcher.submit(
           { intent: 'get-project', password },
-          { method: 'POST', action: `/projects/${id}` },
+          { method: 'POST', action: projectPath },
         )
       })
     },
-    [id, passwordFetcher],
+    [passwordFetcher, projectPath],
   )
 
   const mergeProject = useCallback((updates: Partial<Project>) => {
@@ -310,14 +314,17 @@ const useLiveVisitors = (project: Project | null) => {
 export const CurrentProjectProvider = ({
   children,
   id,
+  projectPath,
 }: CurrentProjectProviderProps) => {
+  const resolvedProjectPath = projectPath || routes.project.replace(':id', id)
+  const projectSettingsPath = routes.project_settings.replace(':id', id)
   const {
     project,
     mergeProject,
     isPasswordRequired,
     isCheckingStoredPassword,
     submitPassword,
-  } = useProject(id)
+  } = useProject(id, resolvedProjectPath)
   const { preferences, updatePreferences } = useProjectPreferences()
   const { liveVisitors, updateLiveVisitors } = useLiveVisitors(project)
 
@@ -325,6 +332,8 @@ export const CurrentProjectProvider = ({
     <CurrentProjectContext.Provider
       value={{
         id,
+        projectPath: resolvedProjectPath,
+        projectSettingsPath,
         project,
         preferences,
         updatePreferences,

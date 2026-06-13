@@ -157,7 +157,7 @@ export const SessionDetailView = ({
     t,
     i18n: { language },
   } = useTranslation('common')
-  const { id: projectId } = useCurrentProject()
+  const { id: projectId, projectPath } = useCurrentProject()
   const { timezone } = useViewProjectContext()
   const { theme } = useTheme()
   const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(
@@ -602,7 +602,7 @@ export const SessionDetailView = ({
 
             {details.profileId ? (
               <Link
-                to={`/projects/${projectId}?tab=${PROJECT_TABS.profiles}&profileId=${encodeURIComponent(details.profileId)}`}
+                to={`${projectPath}?tab=${PROJECT_TABS.profiles}&profileId=${encodeURIComponent(details.profileId)}`}
                 className='mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-1.5 text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
               >
                 <UserIcon className='h-4 w-4' />
