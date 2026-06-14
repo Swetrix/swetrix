@@ -327,7 +327,7 @@ const FeatureVisualization = ({
             />
             <div className='min-w-0 flex-1'>
               <div className='flex items-baseline gap-2'>
-                <Text as='span' size='sm' weight='medium' colour='muted'>
+                <Text as='span' size='sm' weight='medium' colour='secondary'>
                   Event
                 </Text>
                 <Text as='span' size='sm' weight='semibold'>
@@ -335,8 +335,8 @@ const FeatureVisualization = ({
                 </Text>
               </div>
               <div className='mt-0.5 flex items-center gap-1.5'>
-                <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
-                <Text as='span' size='xs' colour='muted'>
+                <ClockIcon className='size-3.5 text-gray-700 dark:text-gray-200' />
+                <Text as='span' size='xs' colour='secondary'>
                   1s
                 </Text>
               </div>
@@ -350,7 +350,7 @@ const FeatureVisualization = ({
             />
             <div className='min-w-0 flex-1'>
               <div className='flex items-baseline gap-2'>
-                <Text as='span' size='sm' weight='medium' colour='muted'>
+                <Text as='span' size='sm' weight='medium' colour='secondary'>
                   Pageview
                 </Text>
                 <Text as='span' size='sm' weight='semibold'>
@@ -358,8 +358,8 @@ const FeatureVisualization = ({
                 </Text>
               </div>
               <div className='mt-0.5 flex items-center gap-1.5'>
-                <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
-                <Text as='span' size='xs' colour='muted'>
+                <ClockIcon className='size-3.5 text-gray-700 dark:text-gray-200' />
+                <Text as='span' size='xs' colour='secondary'>
                   12s
                 </Text>
               </div>
@@ -373,7 +373,7 @@ const FeatureVisualization = ({
             />
             <div className='min-w-0 flex-1'>
               <div className='flex items-baseline gap-2'>
-                <Text as='span' size='sm' weight='medium' colour='muted'>
+                <Text as='span' size='sm' weight='medium' colour='secondary'>
                   Pageview
                 </Text>
                 <Text as='span' size='sm' weight='semibold'>
@@ -381,8 +381,8 @@ const FeatureVisualization = ({
                 </Text>
               </div>
               <div className='mt-0.5 flex items-center gap-1.5'>
-                <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
-                <Text as='span' size='xs' colour='muted'>
+                <ClockIcon className='size-3.5 text-gray-700 dark:text-gray-200' />
+                <Text as='span' size='xs' colour='secondary'>
                   5s
                 </Text>
               </div>
@@ -440,8 +440,8 @@ const SetupTrackingStep = ({ project }: { project: Project }) => {
         />
       </Text>
       <div className='mb-5 flex items-center gap-1.5'>
-        <InfoIcon className='size-3.5 shrink-0 text-gray-400 dark:text-slate-500' />
-        <Text as='p' size='xs' colour='muted'>
+        <InfoIcon className='size-3.5 shrink-0 text-gray-700 dark:text-gray-200' />
+        <Text as='p' size='xs' colour='secondary'>
           {t('onboarding.installTracking.optional')}
         </Text>
       </div>
