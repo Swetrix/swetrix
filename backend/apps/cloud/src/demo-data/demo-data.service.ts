@@ -1307,8 +1307,8 @@ export class DemoDataService implements OnModuleInit {
     rows.experimentExposures.sort((left, right) =>
       String(left.created).localeCompare(String(right.created)),
     )
-    rows.replayChunks.sort((left, right) =>
-      left.firstEventTimestamp - right.firstEventTimestamp,
+    rows.replayChunks.sort(
+      (left, right) => left.firstEventTimestamp - right.firstEventTimestamp,
     )
 
     return rows
