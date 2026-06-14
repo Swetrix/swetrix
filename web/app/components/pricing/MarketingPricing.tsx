@@ -61,7 +61,7 @@ interface Benefit {
 
 const planCards: PlanTypeCode[] = ['standard', 'plus', 'enterprise']
 
-const visibleBenefitsCount = 7
+const visibleBenefitsCount = 9
 const botProtectionDocsUrl =
   'https://swetrix.com/docs/sitesettings/bot-protection'
 const managedProxyDocsUrl = 'https://swetrix.com/docs/adblockers/managed-proxy'
@@ -633,7 +633,7 @@ export const PricingInternal = ({
                   loading={loadingPlanType === planType}
                   disabled={disabled}
                   className={cn(
-                    'mt-4 justify-center gap-2',
+                    'mt-2 justify-center gap-2',
                     isEnterprise ? 'dark' : '',
                   )}
                 >
