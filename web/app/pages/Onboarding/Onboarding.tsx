@@ -49,6 +49,29 @@ const MAX_PROJECT_NAME_LENGTH = 50
 const ANIMATION_DURATION = 0.4
 const EXIT_DURATION = 0.15
 const EASE_OUT_QUART = [0.25, 1, 0.5, 1] as const
+const GENERIC_TIMEZONES = new Set([DEFAULT_TIMEZONE, 'Etc/UTC', 'GMT', 'UTC'])
+
+const isSpecificTimezone = (timezone?: string | null): timezone is string =>
+  !!timezone && !GENERIC_TIMEZONES.has(timezone)
+
+const getBrowserTimezone = () => {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+  if (!timezone || !timezone.includes('/')) {
+    return null
+  }
+
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: timezone }).format(new Date())
+    return timezone
+  } catch {
+    return null
+  }
+}
 
 interface Project {
   id: string
@@ -455,11 +478,14 @@ const Onboarding = () => {
   const [direction, setDirection] = useState(0)
   const [projectName, setProjectName] = useState('')
   const [projectWebsiteUrl, setProjectWebsiteUrl] = useState('')
-  const [projectTimezone, setProjectTimezone] = useState(
-    () => user?.timezone || DEFAULT_TIMEZONE,
-  )
+  const [projectTimezone, setProjectTimezone] = useState(() => {
+    const userTimezone = user?.timezone
+
+    return isSpecificTimezone(userTimezone) ? userTimezone : DEFAULT_TIMEZONE
+  })
   const [project, setProject] = useState<Project | null>(loaderProject)
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language)
+  const hasAppliedBrowserTimezoneRef = useRef(false)
 
   const [newProjectErrors, setNewProjectErrors] = useState<{
     name?: string
@@ -476,8 +502,22 @@ const Onboarding = () => {
   const progressStepIndex = stepsForProgress.indexOf(currentStep)
 
   useEffect(() => {
-    if (user?.timezone) {
-      setProjectTimezone(user.timezone)
+    const userTimezone = user?.timezone
+
+    if (isSpecificTimezone(userTimezone)) {
+      setProjectTimezone(userTimezone)
+      return
+    }
+
+    if (hasAppliedBrowserTimezoneRef.current) {
+      return
+    }
+
+    const browserTimezone = getBrowserTimezone()
+
+    if (browserTimezone) {
+      setProjectTimezone(browserTimezone)
+      hasAppliedBrowserTimezoneRef.current = true
     }
   }, [user?.timezone])
 

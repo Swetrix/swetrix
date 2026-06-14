@@ -98,6 +98,15 @@ const formatOffset = (offsetMinutes: number): string => {
     : `${sign}${hours}`
 }
 
+const isValidTimezone = (timeZone: string, date: Date): boolean => {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone }).format(date)
+    return true
+  } catch {
+    return false
+  }
+}
+
 const getTimezoneCityName = (timeZone: string): string => {
   if (timeZone === 'GMT') {
     return 'UTC'
@@ -155,6 +164,34 @@ const buildOptions = (date = new Date()) =>
     },
     [],
   ).sort((a, b) => a.offset - b.offset)
+
+const buildCustomOption = (
+  timeZone: string,
+  date: Date,
+): TimezoneOption | null => {
+  if (!isValidTimezone(timeZone, date)) {
+    return null
+  }
+
+  const offsetMinutes = getTimezoneOffsetMinutes(timeZone, date)
+  const hr = formatOffset(offsetMinutes)
+  const offsetLabel = `GMT${_includes(hr, '-') ? hr : `+${hr}`}`
+  const cityName = getTimezoneCityName(timeZone)
+  const genericName = getTimezoneName(timeZone, 'longGeneric', date)
+
+  return {
+    value: timeZone,
+    label: `(${offsetLabel}) ${cityName}`,
+    displayName: cityName,
+    cityName,
+    offsetLabel,
+    offset: offsetMinutes / 60,
+    abbrev: getTimezoneName(timeZone, 'short', date),
+    altName: getTimezoneName(timeZone, 'long', date),
+    genericName,
+    regionName: getTimezoneRegionName(genericName),
+  }
+}
 
 const formatInTimezone = (
   date: Date,
@@ -226,9 +263,13 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
     now.getMonth(),
     now.getDate(),
   ).getTime()
-  const options = useMemo(
-    () => buildOptions(new Date(optionsCacheKey + 12 * 60 * 60 * 1000)),
+  const optionsReferenceDate = useMemo(
+    () => new Date(optionsCacheKey + 12 * 60 * 60 * 1000),
     [optionsCacheKey],
+  )
+  const options = useMemo(
+    () => buildOptions(optionsReferenceDate),
+    [optionsReferenceDate],
   )
   const keyExtractor = (option: TimezoneOption) => option.value
 
@@ -254,11 +295,17 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
     }
 
     if (typeof zone === 'string') {
-      return _find(options, (tz) => tz.value === zone) ?? null
+      return (
+        _find(options, (tz) => tz.value === zone) ??
+        buildCustomOption(zone, optionsReferenceDate)
+      )
     }
 
     if (zone.value && !zone.label) {
-      return _find(options, (tz) => tz.value === zone.value) ?? null
+      return (
+        _find(options, (tz) => tz.value === zone.value) ??
+        buildCustomOption(zone.value, optionsReferenceDate)
+      )
     }
 
     return null
