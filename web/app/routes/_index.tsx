@@ -2,8 +2,6 @@ import NumberFlow from '@number-flow/react'
 import _map from 'lodash/map'
 import {
   CookieIcon,
-  HardDrivesIcon,
-  DatabaseIcon,
   GaugeIcon,
   GithubLogoIcon,
   ArrowRightIcon,
@@ -48,7 +46,6 @@ import { LogoCloud } from '~/components/marketing/LogoCloud'
 import { ScrollReveal } from '~/components/marketing/ScrollReveal'
 import { WhySwitch } from '~/components/marketing/WhySwitch'
 import { Text } from '~/ui/Text'
-import { getExperimentVariant } from '~/utils/analytics.server'
 
 export const meta: MetaFunction = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -66,43 +63,18 @@ export const sitemap: SitemapFunction = () => ({
   exclude: isSelfhosted || isDisableMarketingPages,
 })
 
-const DEFAULT_LANDING_HERO_EXPERIMENT_ID = 'landing-page-hero-redesign'
-const OLD_LANDING_HERO_VARIANT = 'old'
-const NEW_LANDING_HERO_VARIANT = 'new'
-
-type LandingHeroVariant =
-  | typeof OLD_LANDING_HERO_VARIANT
-  | typeof NEW_LANDING_HERO_VARIANT
-
-const getLandingHeroVariant = (variant: string | null): LandingHeroVariant => {
-  return variant === NEW_LANDING_HERO_VARIANT
-    ? NEW_LANDING_HERO_VARIANT
-    : OLD_LANDING_HERO_VARIANT
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
   }
-
-  const landingHeroExperimentId =
-    process.env.LANDING_HERO_EXPERIMENT_ID || DEFAULT_LANDING_HERO_EXPERIMENT_ID
-
-  const [metainfoResult, stats, landingHeroExperimentVariant] =
-    await Promise.all([
-      serverFetch<Metainfo>(request, 'user/metainfo', { skipAuth: true }),
-      getGeneralStats(request),
-      getExperimentVariant(
-        request,
-        landingHeroExperimentId,
-        OLD_LANDING_HERO_VARIANT,
-      ),
-    ])
+  const [metainfoResult, stats] = await Promise.all([
+    serverFetch<Metainfo>(request, 'user/metainfo', { skipAuth: true }),
+    getGeneralStats(request),
+  ])
 
   return {
     metainfo: metainfoResult.data ?? DEFAULT_METAINFO,
     stats,
-    landingHeroVariant: getLandingHeroVariant(landingHeroExperimentVariant),
   }
 }
 
@@ -360,84 +332,7 @@ const Testimonials = ({
   )
 }
 
-const OldLiveDemoPreview = () => {
-  const { t } = useTranslation('common')
-  const { theme } = useTheme()
-  const {
-    i18n: { language },
-  } = useTranslation('common')
-
-  const isUpToLg = !useBreakpoint('lg')
-
-  if (isUpToLg) {
-    return (
-      <div className='relative z-20 mx-auto mt-10 overflow-hidden rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'>
-        <img
-          src={
-            theme === 'dark'
-              ? '/assets/screenshot_dark.png'
-              : '/assets/screenshot_light.png'
-          }
-          className='relative h-auto w-full'
-          width={2328}
-          height={1666}
-          alt='Swetrix Analytics dashboard'
-        />
-        <div className='absolute inset-0 flex items-center justify-center bg-slate-900/20 opacity-100 backdrop-blur-[1px] transition-opacity duration-200'>
-          <a
-            href={LIVE_DEMO_URL}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
-            aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
-          >
-            <ArrowRightIcon className='mr-2 h-4 w-4' />
-            {t('common.liveDemo')}
-          </a>
-        </div>
-      </div>
-    )
-  }
-
-  const localisedDemoPath = localisePath('/demo', language)
-
-  return (
-    <div
-      className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-gray-50 shadow-lg ring-1 ring-black/5 transition-shadow ease-out sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-950 dark:ring-white/10'
-      style={{
-        transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)',
-        willChange: 'transform',
-        contain: 'paint',
-        WebkitMaskImage: '-webkit-radial-gradient(white, black)',
-      }}
-    >
-      <div className='pointer-events-none relative h-[580px] overflow-hidden rounded-2xl lg:h-[640px] xl:h-[700px]'>
-        <iframe
-          src={`https://swetrix.com${localisedDemoPath}?tab=traffic&theme=${theme}&embedded=true`}
-          className='size-full rounded-2xl'
-          title='Swetrix Analytics Live Demo'
-          style={{ pointerEvents: 'none' }}
-          tabIndex={-1}
-        />
-        <div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-slate-900/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100'>
-          <a
-            href={LIVE_DEMO_URL}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
-            aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
-          >
-            <ArrowRightIcon className='mr-2 h-4 w-4' />
-            {t('main.seeLiveDemo')}
-          </a>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const NewLiveDemoPreview = () => {
+const LiveDemoPreview = () => {
   const { theme } = useTheme()
   const {
     i18n: { language },
@@ -488,85 +383,6 @@ const NewLiveDemoPreview = () => {
   )
 }
 
-const OldHero = ({ stats }: { stats: Stats | null }) => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-900/50'>
-      <div className='relative mx-2 overflow-hidden rounded-4xl'>
-        <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
-          <div className='absolute inset-0 rounded-4xl bg-linear-115 from-slate-100 from-28% via-purple-500 via-70% to-indigo-600 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-950 dark:opacity-45 dark:ring-white/10' />
-        </div>
-        <Header transparent />
-        <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
-          <div className='z-20 col-span-6 flex flex-col items-start'>
-            <Text
-              as='h1'
-              weight='semibold'
-              tracking='tight'
-              className='max-w-5xl text-left text-5xl text-pretty sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl'
-            >
-              {t('main.slogan')}
-            </Text>
-            <Text as='p' size='lg' className='mt-4 max-w-2xl text-left'>
-              {t('main.description')}
-            </Text>
-            <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
-              <Link
-                to={routesPath.signup}
-                className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
-                aria-label={t('titles.signup')}
-              >
-                <span className='mr-1 text-center text-base font-semibold'>
-                  {t('main.startAXDayFreeTrial', { amount: 14 })}
-                </span>
-                <ArrowRightIcon className='mt-[1px] h-4 w-5' />
-              </Link>
-            </div>
-            <div className='mt-8 grid w-full grid-cols-2 gap-3 text-slate-900 dark:text-gray-50'>
-              <div className='flex items-center gap-3 text-sm'>
-                <StarIcon className='size-5' />
-                <span>{t('main.heroBenefits.trial', { days: 14 })}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <GaugeIcon className='size-5' />
-                <span>{t('main.heroBenefits.quickSetup')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <CookieIcon className='size-5' />
-                <span>{t('main.heroBenefits.cookieless')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <GithubLogoIcon className='size-5' />
-                <span>{t('main.heroBenefits.openSource')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <DatabaseIcon className='size-5' />
-                <span>{t('main.heroBenefits.dataOwnership')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <HardDrivesIcon className='size-5' />
-                <span>{t('main.heroBenefits.selfHostable')}</span>
-              </div>
-            </div>
-            <Testimonials className='mt-8 hidden lg:block' stats={stats} />
-          </div>
-          <div className='col-span-6 mt-10 overflow-visible lg:mt-0 lg:mr-0 lg:ml-4'>
-            <ClientOnly
-              fallback={
-                <div className='h-[240px] w-full rounded-2xl bg-slate-800/10 ring-1 ring-black/5 sm:h-[320px] md:h-[580px] lg:h-[640px] xl:h-[700px] dark:bg-slate-800/20 dark:ring-white/10' />
-              }
-            >
-              {() => <OldLiveDemoPreview />}
-            </ClientOnly>
-          </div>
-          <Testimonials className='mt-8 lg:hidden' stats={stats} />
-        </section>
-      </div>
-    </div>
-  )
-}
-
 const HeroParallaxBackground = () => {
   const reduceMotion = useReducedMotion()
   const { scrollY } = useScroll()
@@ -591,7 +407,8 @@ const HeroParallaxBackground = () => {
   )
 }
 
-const NewHero = ({ stats }: { stats: Stats | null }) => {
+const Hero = () => {
+  const { stats } = useLoaderData<typeof loader>()
   const { t } = useTranslation('common')
 
   return (
@@ -671,23 +488,13 @@ const NewHero = ({ stats }: { stats: Stats | null }) => {
                 <div className='mx-auto mt-12 h-[580px] w-full max-w-[1480px] rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur-xl lg:h-[640px] xl:h-[700px]' />
               }
             >
-              {() => <NewLiveDemoPreview />}
+              {() => <LiveDemoPreview />}
             </ClientOnly>
           </div>
         </section>
       </div>
     </div>
   )
-}
-
-const Hero = ({ variant }: { variant: LandingHeroVariant }) => {
-  const { stats } = useLoaderData<typeof loader>()
-
-  if (variant === NEW_LANDING_HERO_VARIANT) {
-    return <NewHero stats={stats} />
-  }
-
-  return <OldHero stats={stats} />
 }
 
 const SOFTWARE_APPLICATION_JSONLD = {
@@ -734,14 +541,14 @@ const SOFTWARE_APPLICATION_JSONLD = {
 }
 
 export default function Index() {
-  const { landingHeroVariant, metainfo } = useLoaderData<typeof loader>()
+  const { metainfo } = useLoaderData<typeof loader>()
 
   return (
     <div className='overflow-hidden'>
       <main className='bg-gray-50 dark:bg-slate-950'>
-        <Hero variant={landingHeroVariant} />
+        <Hero />
 
-        <LogoCloud variant={landingHeroVariant} />
+        <LogoCloud />
 
         <FeaturesGrid />
 
