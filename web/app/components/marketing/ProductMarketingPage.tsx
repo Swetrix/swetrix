@@ -1,9 +1,12 @@
 import {
   ArrowRightIcon,
-  CheckCircleIcon,
+  BugIcon,
+  ChartBarIcon,
   CookieIcon,
+  CrosshairIcon,
   GaugeIcon,
   GithubLogoIcon,
+  ShieldCheckIcon,
   StarIcon,
 } from '@phosphor-icons/react'
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
@@ -55,9 +58,26 @@ const HERO_TONES: Record<
   },
 }
 
-const SECTION_ACCENTS: Record<ProductMarketingVariant, string> = {
-  errors: 'text-red-600 dark:text-red-400',
-  performance: 'text-amber-600 dark:text-amber-400',
+// Section accent: `rule` tints the short "tick" motif, `text` tints the
+// heading icons. One accent colour per page (red for errors, amber for perf).
+const SECTION_ACCENT: Record<
+  ProductMarketingVariant,
+  { rule: string; text: string }
+> = {
+  errors: {
+    rule: 'bg-red-500 dark:bg-red-400',
+    text: 'text-red-600 dark:text-red-400',
+  },
+  performance: {
+    rule: 'bg-amber-500 dark:bg-amber-400',
+    text: 'text-amber-600 dark:text-amber-400',
+  },
+}
+
+// Icon paired with each section heading.
+const LEAD_ICONS: Record<ProductMarketingVariant, typeof BugIcon> = {
+  errors: BugIcon,
+  performance: GaugeIcon,
 }
 
 const HERO_BENEFITS = [
@@ -334,7 +354,8 @@ export const ProductMarketingSections = ({
   variant: ProductMarketingVariant
 }) => {
   const { t } = useTranslation('common')
-  const accent = SECTION_ACCENTS[variant]
+  const accent = SECTION_ACCENT[variant]
+  const LeadIcon = LEAD_ICONS[variant]
   const fastList = t(`${variant}.fast.list`, {
     returnObjects: true,
   }) as string[]
@@ -344,78 +365,119 @@ export const ProductMarketingSections = ({
           {
             title: t('performance.metrics.title'),
             desc: t('performance.metrics.desc'),
+            icon: ChartBarIcon,
           },
           {
             title: t('performance.privacy.title'),
             desc: t('performance.privacy.desc'),
+            icon: ShieldCheckIcon,
           },
         ]
       : [
           {
             title: t('errors.track.title'),
             desc: t('errors.track.desc'),
+            icon: CrosshairIcon,
           },
           {
             title: t('performance.privacy.title'),
             desc: t('performance.privacy.desc'),
+            icon: ShieldCheckIcon,
           },
         ]
+  const FirstDetailIcon = detailSections[0].icon
+  const SecondDetailIcon = detailSections[1].icon
 
   return (
-    <section className='mx-auto max-w-7xl px-4 py-16 sm:py-20 lg:px-8'>
-      <div className='grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16'>
-        <ScrollReveal>
-          <Text as='h2' size='4xl' weight='bold' tracking='tight'>
-            {t(`${variant}.fast.title`)}
-          </Text>
-          <Text
-            as='p'
-            size='base'
-            colour='secondary'
-            className='mt-5 max-w-2xl leading-8 whitespace-pre-line'
-          >
-            <FastDescription variant={variant} />
-          </Text>
-        </ScrollReveal>
+    <section className='mx-auto max-w-7xl px-4 pt-16 pb-8 sm:pt-24 lg:px-8'>
+      <ScrollReveal className='max-w-3xl'>
+        <LeadIcon
+          weight='duotone'
+          aria-hidden
+          className={cn('size-9', accent.text)}
+        />
+        <Text
+          as='h2'
+          size='4xl'
+          weight='bold'
+          tracking='tight'
+          className='mt-5'
+        >
+          {t(`${variant}.fast.title`)}
+        </Text>
+        <Text
+          as='p'
+          size='lg'
+          colour='secondary'
+          className='mt-5 leading-8 whitespace-pre-line'
+        >
+          <FastDescription variant={variant} />
+        </Text>
+      </ScrollReveal>
 
-        <ScrollReveal delay={0.08} className='lg:pt-1'>
-          <ul className='divide-y divide-gray-200 border-y border-gray-200 dark:divide-slate-800 dark:border-slate-800'>
-            {fastList.map((item) => (
-              <li key={item} className='flex gap-3 py-4'>
-                <CheckCircleIcon
-                  weight='fill'
-                  className={cn('mt-1 size-5 shrink-0', accent)}
-                />
-                <Text
-                  as='span'
-                  size='base'
-                  colour='secondary'
-                  className='leading-7'
-                >
-                  {item}
-                </Text>
-              </li>
-            ))}
-          </ul>
-        </ScrollReveal>
-      </div>
-
-      <div className='mt-16 grid gap-10 border-t border-gray-200 pt-12 lg:grid-cols-2 lg:gap-16 dark:border-slate-800'>
-        {detailSections.map(({ title, desc }, index) => (
-          <ScrollReveal key={title} delay={index * 0.08}>
-            <Text as='h3' size='2xl' weight='bold' tracking='tight'>
-              {title}
-            </Text>
+      <ScrollReveal
+        delay={0.08}
+        className='mt-14 grid grid-cols-1 gap-10 sm:mt-16 lg:grid-cols-3 lg:gap-12'
+      >
+        {fastList.map((item) => (
+          <div key={item}>
+            <div className={cn('h-0.5 w-8 rounded-full', accent.rule)} />
             <Text
               as='p'
               size='base'
               colour='secondary'
-              className='mt-4 max-w-2xl leading-8 whitespace-pre-line'
+              className='mt-4 leading-7'
             >
-              {desc}
+              {item}
             </Text>
-          </ScrollReveal>
+          </div>
         ))}
+      </ScrollReveal>
+
+      <div className='mt-16 grid border-t border-gray-200 pt-12 sm:mt-20 sm:pt-16 lg:grid-cols-2 dark:border-slate-800'>
+        <ScrollReveal className='lg:pr-12 xl:pr-16'>
+          <div className='flex items-center gap-2.5'>
+            <FirstDetailIcon
+              weight='duotone'
+              aria-hidden
+              className={cn('size-6 shrink-0', accent.text)}
+            />
+            <Text as='h3' size='2xl' weight='bold' tracking='tight'>
+              {detailSections[0].title}
+            </Text>
+          </div>
+          <Text
+            as='p'
+            size='base'
+            colour='secondary'
+            className='mt-4 leading-8 whitespace-pre-line'
+          >
+            {detailSections[0].desc}
+          </Text>
+        </ScrollReveal>
+        <ScrollReveal
+          delay={0.08}
+          className='mt-10 border-t border-gray-200 pt-10 lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-12 xl:pl-16 dark:border-slate-800'
+        >
+          <div className='flex items-center gap-2.5'>
+            <SecondDetailIcon
+              weight='duotone'
+              aria-hidden
+              className={cn('size-6 shrink-0', accent.text)}
+            />
+            <Text as='h3' size='2xl' weight='bold' tracking='tight'>
+              {detailSections[1].title}
+            </Text>
+          </div>
+          <Text
+            as='p'
+            size='base'
+            colour='secondary'
+            className='mt-4 leading-8 whitespace-pre-line'
+          >
+            {detailSections[1].desc}
+          </Text>
+        </ScrollReveal>
       </div>
     </section>
   )
