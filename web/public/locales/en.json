@@ -3335,16 +3335,16 @@
     },
     "features": {
       "traffic": {
-        "title": "Traffic Analytics",
+        "title": "Traffic analytics",
         "desc": "Understand your website traffic with real-time analytics. See where your visitors come from, what pages they view, and how they interact with your site.",
         "tip": "Track visitors worldwide with no cookies required."
       },
       "errors": {
-        "title": "Error Tracking",
+        "title": "Error tracking",
         "desc": "Catch and fix bugs before your users notice them. Get detailed error reports with stack traces, browser info, and user context."
       },
       "sessions": {
-        "title": "User Sessions",
+        "title": "User sessions",
         "desc": "See exactly how users navigate through your site. Understand user journeys, identify drop-off points, and optimise the experience.",
         "tip": "View real-time sessions as they happen."
       }
