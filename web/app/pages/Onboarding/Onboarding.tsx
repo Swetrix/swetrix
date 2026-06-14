@@ -394,26 +394,6 @@ const FeatureVisualization = ({
   )
 }
 
-const ProjectVisualisation = () => {
-  return (
-    <div className='mb-8 w-full rounded-xl p-6 ring-1 ring-gray-200 dark:ring-slate-800'>
-      <div className='flex items-start gap-5'>
-        <div className='flex size-20 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-          <FolderPlusIcon
-            className='size-10 text-indigo-500'
-            weight='duotone'
-          />
-        </div>
-        <div className='min-w-0 flex-1 space-y-2 pt-1'>
-          <div className='h-5 w-48 rounded bg-gray-200 dark:bg-slate-900' />
-          <div className='h-3 w-full rounded bg-gray-100 dark:bg-slate-900/50' />
-          <div className='h-3 w-3/4 rounded bg-gray-100 dark:bg-slate-900/50' />
-        </div>
-      </div>
-    </div>
-  )
-}
-
 const SetupTrackingStep = ({ project }: { project: Project }) => {
   const { t } = useTranslation('common')
 
@@ -920,8 +900,6 @@ const Onboarding = () => {
                           {t('onboarding.createProject.desc')}
                         </Text>
 
-                        <ProjectVisualisation />
-
                         <div className='w-full sm:max-w-md'>
                           <Input
                             label={t('project.settings.name')}
@@ -945,14 +923,14 @@ const Onboarding = () => {
                             placeholder={t(
                               'project.settings.websiteUrlPlaceholder',
                             )}
-                            className='mt-4'
+                            className='mt-5'
                             onChange={(e) => {
                               setProjectWebsiteUrl(e.target.value)
                               clearNewProjectError('websiteUrl')
                             }}
                             error={newProjectErrors.websiteUrl}
                           />
-                          <div className='mt-4'>
+                          <div className='mt-5'>
                             <Text as='p' size='sm' weight='medium'>
                               {t('profileSettings.timezone')}
                             </Text>
