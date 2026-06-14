@@ -85,22 +85,8 @@ import {
   useCurrentProject,
   useProjectPassword,
 } from '../../../providers/CurrentProjectProvider'
-import ErrorsView from '../tabs/Errors/ErrorsView'
-import ExperimentsView from '../tabs/Experiments/ExperimentsView'
-import FeatureFlagsView from '../tabs/FeatureFlags/FeatureFlagsView'
-import FunnelsView from '../tabs/Funnels/FunnelsView'
-import GoalsView from '../tabs/Goals/GoalsView'
-import PerformanceView from '../tabs/Performance/PerformanceView'
-import ProfilesView from '../tabs/Profiles/ProfilesView'
-import ReplaysView from '../tabs/Replays/ReplaysView'
-import SessionsView from '../tabs/Sessions/SessionsView'
-import SEOView from '../tabs/SEO/SEOView'
-import TrafficView from '../tabs/Traffic/TrafficView'
-
 import AddAViewModal from './components/AddAViewModal'
 import { ChartManagerProvider } from './components/ChartManager'
-const AskAIView = lazy(() => import('../tabs/AskAI'))
-const CaptchaView = lazy(() => import('../tabs/Captcha/CaptchaView'))
 import LockedDashboard from './components/LockedDashboard'
 import PasswordRequiredModal from './components/PasswordRequiredModal'
 import PlanFeatureLocked from './components/PlanFeatureLocked'
@@ -127,6 +113,26 @@ import {
   SHORTCUTS_GENERAL_LISTENERS,
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
 } from './ViewProject.helpers'
+
+const AskAIView = lazy(() => import('../tabs/AskAI'))
+const CaptchaView = lazy(() => import('../tabs/Captcha/CaptchaView'))
+const ErrorsView = lazy(() => import('../tabs/Errors/ErrorsView'))
+const ExperimentsView = lazy(
+  () => import('../tabs/Experiments/ExperimentsView'),
+)
+const FeatureFlagsView = lazy(
+  () => import('../tabs/FeatureFlags/FeatureFlagsView'),
+)
+const FunnelsView = lazy(() => import('../tabs/Funnels/FunnelsView'))
+const GoalsView = lazy(() => import('../tabs/Goals/GoalsView'))
+const PerformanceView = lazy(
+  () => import('../tabs/Performance/PerformanceView'),
+)
+const ProfilesView = lazy(() => import('../tabs/Profiles/ProfilesView'))
+const ReplaysView = lazy(() => import('../tabs/Replays/ReplaysView'))
+const SessionsView = lazy(() => import('../tabs/Sessions/SessionsView'))
+const SEOView = lazy(() => import('../tabs/SEO/SEOView'))
+const TrafficView = lazy(() => import('../tabs/Traffic/TrafficView'))
 
 interface ViewProjectContextType {
   timezone: string
@@ -1588,64 +1594,50 @@ const ViewProjectContent = () => {
                               ease: [0.23, 1, 0.32, 1],
                             }}
                           >
-                            {activeTab === PROJECT_TABS.ai ? (
-                              <Suspense fallback={<Loader />}>
+                            <Suspense fallback={<Loader />}>
+                              {activeTab === PROJECT_TABS.ai ? (
                                 <AskAIView projectId={id} />
-                              </Suspense>
-                            ) : null}
-                            {activeTab === PROJECT_TABS.traffic ? (
-                              <TrafficView
-                                tnMapping={tnMapping}
-                                customMetrics={customMetrics}
-                                onRemoveCustomMetric={onRemoveCustomMetric}
-                                resetCustomMetrics={resetCustomMetrics}
-                                mode={mode}
-                              />
-                            ) : null}
-                            {activeTab === PROJECT_TABS.performance ? (
-                              <PerformanceView tnMapping={tnMapping} />
-                            ) : null}
-                            {activeTab === PROJECT_TABS.seo ? (
-                              <SEOView projectId={id} tnMapping={tnMapping} />
-                            ) : null}
-                            {activeTab === PROJECT_TABS.funnels ? (
-                              <FunnelsView tnMapping={tnMapping} />
-                            ) : null}
-                            {activeTab === PROJECT_TABS.profiles ? (
-                              <ProfilesView tnMapping={tnMapping} />
-                            ) : null}
-                            {activeTab === PROJECT_TABS.sessions ? (
-                              <SessionsView
-                                tnMapping={tnMapping}
-                                rotateXAxis={rotateXAxis}
-                              />
-                            ) : null}
-                            {activeTab === PROJECT_TABS.replays ? (
-                              replaysAccess.hasAccess ? (
-                                <ReplaysView tnMapping={tnMapping} />
-                              ) : (
-                                <PlanFeatureLocked feature='replays' />
-                              )
-                            ) : null}
-                            {activeTab === PROJECT_TABS.errors ? (
-                              <ErrorsView />
-                            ) : null}
-                            {activeTab === PROJECT_TABS.goals ? (
-                              <GoalsView
-                                tnMapping={tnMapping}
-                                period={period}
-                                from={
-                                  dateRange ? getFormatDate(dateRange[0]) : ''
-                                }
-                                to={
-                                  dateRange ? getFormatDate(dateRange[1]) : ''
-                                }
-                                timezone={timezone}
-                              />
-                            ) : null}
-                            {activeTab === PROJECT_TABS.experiments ? (
-                              experimentsAccess.hasAccess ? (
-                                <ExperimentsView
+                              ) : null}
+                              {activeTab === PROJECT_TABS.traffic ? (
+                                <TrafficView
+                                  tnMapping={tnMapping}
+                                  customMetrics={customMetrics}
+                                  onRemoveCustomMetric={onRemoveCustomMetric}
+                                  resetCustomMetrics={resetCustomMetrics}
+                                  mode={mode}
+                                />
+                              ) : null}
+                              {activeTab === PROJECT_TABS.performance ? (
+                                <PerformanceView tnMapping={tnMapping} />
+                              ) : null}
+                              {activeTab === PROJECT_TABS.seo ? (
+                                <SEOView projectId={id} tnMapping={tnMapping} />
+                              ) : null}
+                              {activeTab === PROJECT_TABS.funnels ? (
+                                <FunnelsView tnMapping={tnMapping} />
+                              ) : null}
+                              {activeTab === PROJECT_TABS.profiles ? (
+                                <ProfilesView tnMapping={tnMapping} />
+                              ) : null}
+                              {activeTab === PROJECT_TABS.sessions ? (
+                                <SessionsView
+                                  tnMapping={tnMapping}
+                                  rotateXAxis={rotateXAxis}
+                                />
+                              ) : null}
+                              {activeTab === PROJECT_TABS.replays ? (
+                                replaysAccess.hasAccess ? (
+                                  <ReplaysView tnMapping={tnMapping} />
+                                ) : (
+                                  <PlanFeatureLocked feature='replays' />
+                                )
+                              ) : null}
+                              {activeTab === PROJECT_TABS.errors ? (
+                                <ErrorsView />
+                              ) : null}
+                              {activeTab === PROJECT_TABS.goals ? (
+                                <GoalsView
+                                  tnMapping={tnMapping}
                                   period={period}
                                   from={
                                     dateRange ? getFormatDate(dateRange[0]) : ''
@@ -1655,29 +1647,51 @@ const ViewProjectContent = () => {
                                   }
                                   timezone={timezone}
                                 />
-                              ) : (
-                                <PlanFeatureLocked feature='experiments' />
-                              )
-                            ) : null}
-                            {activeTab === PROJECT_TABS.featureFlags ? (
-                              featureFlagsAccess.hasAccess ? (
-                                <FeatureFlagsView
-                                  period={period}
-                                  from={
-                                    dateRange ? getFormatDate(dateRange[0]) : ''
-                                  }
-                                  to={
-                                    dateRange ? getFormatDate(dateRange[1]) : ''
-                                  }
-                                  timezone={timezone}
-                                />
-                              ) : (
-                                <PlanFeatureLocked feature='featureFlags' />
-                              )
-                            ) : null}
-                            {activeTab === PROJECT_TABS.captcha ? (
-                              <CaptchaView projectId={id} />
-                            ) : null}
+                              ) : null}
+                              {activeTab === PROJECT_TABS.experiments ? (
+                                experimentsAccess.hasAccess ? (
+                                  <ExperimentsView
+                                    period={period}
+                                    from={
+                                      dateRange
+                                        ? getFormatDate(dateRange[0])
+                                        : ''
+                                    }
+                                    to={
+                                      dateRange
+                                        ? getFormatDate(dateRange[1])
+                                        : ''
+                                    }
+                                    timezone={timezone}
+                                  />
+                                ) : (
+                                  <PlanFeatureLocked feature='experiments' />
+                                )
+                              ) : null}
+                              {activeTab === PROJECT_TABS.featureFlags ? (
+                                featureFlagsAccess.hasAccess ? (
+                                  <FeatureFlagsView
+                                    period={period}
+                                    from={
+                                      dateRange
+                                        ? getFormatDate(dateRange[0])
+                                        : ''
+                                    }
+                                    to={
+                                      dateRange
+                                        ? getFormatDate(dateRange[1])
+                                        : ''
+                                    }
+                                    timezone={timezone}
+                                  />
+                                ) : (
+                                  <PlanFeatureLocked feature='featureFlags' />
+                                )
+                              ) : null}
+                              {activeTab === PROJECT_TABS.captcha ? (
+                                <CaptchaView projectId={id} />
+                              ) : null}
+                            </Suspense>
                           </motion.div>
                         </AnimatePresence>
 
