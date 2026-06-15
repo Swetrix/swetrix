@@ -5,7 +5,6 @@ import { TRIAL_DAYS } from '~/lib/constants'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
-const DAY_MS = 24 * 60 * 60 * 1000
 const REMINDER_LEAD_DAYS = 2
 
 interface TrialStep {
@@ -54,7 +53,7 @@ const StepText = ({
     <Text
       as='p'
       size='xs'
-      colour='muted'
+      colour='secondary'
       className={cn('mt-1 text-pretty', align === 'center' && 'max-w-[20ch]')}
     >
       {step.label}
@@ -69,17 +68,20 @@ export const TrialTimeline = () => {
   } = useTranslation('common')
 
   const { reminderDate, endDate } = useMemo(() => {
-    const now = Date.now()
+    const now = new Date()
+    const reminder = new Date(now)
+    const end = new Date(now)
     const formatter = new Intl.DateTimeFormat(language, {
       month: 'short',
       day: 'numeric',
     })
 
+    reminder.setDate(reminder.getDate() + TRIAL_DAYS - REMINDER_LEAD_DAYS)
+    end.setDate(end.getDate() + TRIAL_DAYS)
+
     return {
-      reminderDate: formatter.format(
-        new Date(now + (TRIAL_DAYS - REMINDER_LEAD_DAYS) * DAY_MS),
-      ),
-      endDate: formatter.format(new Date(now + TRIAL_DAYS * DAY_MS)),
+      reminderDate: formatter.format(reminder),
+      endDate: formatter.format(end),
     }
   }, [language])
 

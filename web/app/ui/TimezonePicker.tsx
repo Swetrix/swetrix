@@ -197,10 +197,22 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
     () => new Date(optionsCacheKey + 12 * 60 * 60 * 1000),
     [optionsCacheKey],
   )
-  const options = useMemo(
-    () => buildOptions(optionsReferenceDate),
-    [optionsReferenceDate],
-  )
+  const options = useMemo(() => {
+    const builtOptions = buildOptions(optionsReferenceDate)
+    const customValue = typeof value === 'string' ? value : value.value
+    const customOption = customValue
+      ? buildCustomOption(customValue, optionsReferenceDate)
+      : null
+
+    if (
+      !customOption ||
+      builtOptions.some((option) => option.value === customOption.value)
+    ) {
+      return builtOptions
+    }
+
+    return [...builtOptions, customOption].sort((a, b) => a.offset - b.offset)
+  }, [optionsReferenceDate, value])
   const keyExtractor = (option: TimezoneOption) => option.value
 
   const parseTimezone = (

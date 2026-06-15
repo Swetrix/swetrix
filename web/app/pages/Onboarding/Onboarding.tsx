@@ -6,7 +6,6 @@ import {
   CursorClickIcon,
   FileTextIcon,
   ClockIcon,
-  FolderPlusIcon,
   InfoIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useRef, useCallback } from 'react'

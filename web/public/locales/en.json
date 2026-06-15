@@ -3330,8 +3330,8 @@
     "dueToday": "Due today, after {{days}} free days",
     "next": "Start free trial",
     "selectPlan": "Choose a plan",
-    "customPlanTitle": "Need more than 20M pageviews?",
-    "customPlanDesc": "Select \"Up to {{count}} monthly pageviews\" and <contact>contact us</contact> for a custom quote.",
+    "customPlanTitle": "Need more than 20M events?",
+    "customPlanDesc": "Select \"Up to {{count}} monthly events\" and <contact>contact us</contact> for a custom quote.",
     "trial": {
       "today": "Today",
       "step1Label": "Your free trial starts with full access",
