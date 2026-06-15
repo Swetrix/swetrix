@@ -869,10 +869,23 @@ export class UserController {
     @CurrentUserId() id: string,
     @Body() body: IChangePlanDTO,
   ): Promise<void> {
-    this.logger.log({ body, id }, 'POST /change-plan')
-    const { planId, planType } = body
+    const { planId, planType, swetrixProfileId, swetrixSessionId } = body
 
-    await this.userService.updateSubscription(id, planId, planType)
+    this.logger.log(
+      {
+        id,
+        planId,
+        planType,
+        hasSwetrixProfileId: !!swetrixProfileId,
+        hasSwetrixSessionId: !!swetrixSessionId,
+      },
+      'POST /change-plan',
+    )
+
+    await this.userService.updateSubscription(id, planId, planType, {
+      swetrixProfileId,
+      swetrixSessionId,
+    })
     await this.projectService.clearProjectsRedisCache(id)
   }
 
@@ -882,12 +895,26 @@ export class UserController {
     @CurrentUserId() id: string,
     @Body() body: IChangePlanDTO,
   ): Promise<any> {
-    this.logger.log({ body, id }, 'POST /generate-pay-link')
-    const { planId, planType, eventTier } = body
+    const { planId, planType, eventTier, swetrixProfileId, swetrixSessionId } =
+      body
+
+    this.logger.log(
+      {
+        id,
+        planId,
+        planType,
+        eventTier,
+        hasSwetrixProfileId: !!swetrixProfileId,
+        hasSwetrixSessionId: !!swetrixSessionId,
+      },
+      'POST /generate-pay-link',
+    )
 
     return this.userService.generatePayLink(id, planId, {
       planType,
       eventTier,
+      swetrixProfileId,
+      swetrixSessionId,
     })
   }
 

@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsIn, IsNumber, IsOptional } from 'class-validator'
+import {
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator'
 
 const PLAN_TYPES = ['standard', 'plus', 'enterprise'] as const
 const EVENT_TIERS = [
@@ -31,4 +37,16 @@ export class IChangePlanDTO {
   @IsOptional()
   @IsIn(EVENT_TIERS)
   eventTier?: string
+
+  @ApiProperty({ example: 'usr_12345', required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  swetrixProfileId?: string
+
+  @ApiProperty({ example: '123456789', required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  swetrixSessionId?: string
 }

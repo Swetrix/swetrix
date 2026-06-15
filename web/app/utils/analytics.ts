@@ -1,6 +1,8 @@
 import _includes from 'lodash/includes'
 import {
   init,
+  getProfileId,
+  getSessionId,
   startSessionReplay,
   track,
   trackError as swetrixTrackError,
@@ -227,4 +229,28 @@ export const trackCustom = (ev: string, meta?: TrackEventOptions['meta']) => {
   }).catch((reason) => {
     console.error('Failed to track custom event:', reason)
   })
+}
+
+export const getRevenueAttribution = async (): Promise<{
+  swetrixProfileId?: string
+  swetrixSessionId?: string
+}> => {
+  if (isSelfhosted || !isBrowser || isIframe) {
+    return {}
+  }
+
+  try {
+    const [profileId, sessionId] = await Promise.all([
+      getProfileId(),
+      getSessionId(),
+    ])
+
+    return {
+      ...(profileId ? { swetrixProfileId: profileId } : {}),
+      ...(sessionId ? { swetrixSessionId: sessionId } : {}),
+    }
+  } catch (reason) {
+    console.error('Failed to get revenue attribution:', reason)
+    return {}
+  }
 }

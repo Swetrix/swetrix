@@ -6,6 +6,7 @@ import { UserModule } from '../user/user.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { WebhookService } from './webhook.service'
+import { RevenueModule } from '../revenue/revenue.module'
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { WebhookService } from './webhook.service'
     ProjectModule,
     AppLoggerModule,
     MailerModule,
+    RevenueModule,
   ],
   providers: [WebhookService],
   exports: [WebhookService],

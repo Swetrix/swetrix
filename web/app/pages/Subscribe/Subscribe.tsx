@@ -22,7 +22,7 @@ import type { SubscribeLoaderData } from '~/routes/subscribe'
 import type { UserSettingsActionData } from '~/routes/user-settings'
 import { FAQ } from '~/ui/FAQ'
 import { Text } from '~/ui/Text'
-import { trackCustom } from '~/utils/analytics'
+import { getRevenueAttribution, trackCustom } from '~/utils/analytics'
 import routes from '~/utils/routes'
 
 import { TrialTimeline } from './TrialTimeline'
@@ -173,7 +173,7 @@ const Subscribe = () => {
     theme,
   ])
 
-  const handlePlanSelection = (selection: MarketingPricingSelection) => {
+  const handlePlanSelection = async (selection: MarketingPricingSelection) => {
     if (
       checkoutInProgressRef.current ||
       selectionLoading ||
@@ -220,6 +220,8 @@ const Subscribe = () => {
     }
 
     setSelectionLoading(selection)
+    const attribution = await getRevenueAttribution()
+
     generatePayLinkFetcher.submit(
       {
         intent: 'generate-pay-link',
@@ -227,6 +229,7 @@ const Subscribe = () => {
         eventTier: selection.eventTier,
         billingFrequency: selection.billingFrequency,
         currency: selection.currency,
+        ...attribution,
       },
       { method: 'POST', action: '/user-settings' },
     )

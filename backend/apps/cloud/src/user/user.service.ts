@@ -2640,6 +2640,10 @@ export class UserService {
     id: string,
     planID: number,
     requestedPlanType?: string | null,
+    context: {
+      swetrixProfileId?: string | null
+      swetrixSessionId?: string | null
+    } = {},
   ) {
     const user = await this.findOne({ where: { id } })
     const plan = this.getPlanById(planID, requestedPlanType)
@@ -2684,6 +2688,8 @@ export class UserService {
           passthrough: JSON.stringify({
             uid: id,
             planType,
+            swetrix_profile_id: context.swetrixProfileId || null,
+            swetrix_session_id: context.swetrixSessionId || null,
           }),
         }),
       })
@@ -2724,7 +2730,12 @@ export class UserService {
   async generatePayLink(
     id: string,
     productId: number,
-    context: { planType?: string | null; eventTier?: string | null } = {},
+    context: {
+      planType?: string | null
+      eventTier?: string | null
+      swetrixProfileId?: string | null
+      swetrixSessionId?: string | null
+    } = {},
   ) {
     const user = await this.findOne({ where: { id } })
     if (!user) {
@@ -2755,6 +2766,8 @@ export class UserService {
             uid: id,
             planType: plan.planType,
             eventTier: context.eventTier || null,
+            swetrix_profile_id: context.swetrixProfileId || null,
+            swetrix_session_id: context.swetrixSessionId || null,
           }),
           ...(isTrial
             ? {

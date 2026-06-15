@@ -36,6 +36,7 @@ import { Link } from '~/ui/Link'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
+import { getRevenueAttribution } from '~/utils/analytics'
 import routes from '~/utils/routes'
 
 interface BillingPricingProps {
@@ -264,6 +265,23 @@ const BillingPricing = ({
     }
   }
 
+  const submitWithRevenueAttribution = (
+    formData: FormData,
+    submit: (formData: FormData) => void,
+  ) => {
+    getRevenueAttribution().then((attribution) => {
+      if (attribution.swetrixProfileId) {
+        formData.set('swetrixProfileId', attribution.swetrixProfileId)
+      }
+
+      if (attribution.swetrixSessionId) {
+        formData.set('swetrixSessionId', attribution.swetrixSessionId)
+      }
+
+      submit(formData)
+    })
+  }
+
   const submitSelection = (
     intent:
       | 'preview-subscription-update'
@@ -284,14 +302,18 @@ const BillingPricing = ({
         action: '/user-settings',
       })
     } else if (intent === 'change-subscription-plan') {
-      changePlanFetcher.submit(formData, {
-        method: 'POST',
-        action: '/user-settings',
+      submitWithRevenueAttribution(formData, (formData) => {
+        changePlanFetcher.submit(formData, {
+          method: 'POST',
+          action: '/user-settings',
+        })
       })
     } else {
-      generatePayLinkFetcher.submit(formData, {
-        method: 'POST',
-        action: '/user-settings',
+      submitWithRevenueAttribution(formData, (formData) => {
+        generatePayLinkFetcher.submit(formData, {
+          method: 'POST',
+          action: '/user-settings',
+        })
       })
     }
   }
