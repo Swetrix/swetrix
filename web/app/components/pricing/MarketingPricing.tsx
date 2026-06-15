@@ -61,7 +61,23 @@ interface Benefit {
 
 const planCards: PlanTypeCode[] = ['standard', 'plus', 'enterprise']
 
-const visibleBenefitsCount = 9
+const visibleBenefitsCount = 10
+const dataImportDocsUrl = 'https://swetrix.com/docs/data-import'
+const goalsDocsUrl = 'https://swetrix.com/docs/analytics-dashboard/goals'
+const performanceDocsUrl =
+  'https://swetrix.com/docs/analytics-dashboard/performance'
+const featureFlagsDocsUrl =
+  'https://swetrix.com/docs/analytics-dashboard/feature-flags'
+const experimentsDocsUrl =
+  'https://swetrix.com/docs/analytics-dashboard/experiments'
+const errorTrackingDocsUrl = 'https://swetrix.com/docs/error-tracking'
+const emailReportsDocsUrl = 'https://swetrix.com/docs/email-reports'
+const eventsApiDocsUrl = 'https://swetrix.com/docs/events-api'
+const statsApiDocsUrl = 'https://swetrix.com/docs/api/stats'
+const funnelsDocsUrl = 'https://swetrix.com/docs/analytics-dashboard/funnels'
+const profilesAndSessionsDocsUrl =
+  'https://swetrix.com/docs/analytics-dashboard/profiles-and-sessions'
+const captchaDocsUrl = 'https://swetrix.com/docs/captcha/introduction'
 const botProtectionDocsUrl =
   'https://swetrix.com/docs/sitesettings/bot-protection'
 const managedProxyDocsUrl = 'https://swetrix.com/docs/adblockers/managed-proxy'
@@ -146,9 +162,36 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
     return [
       { label: t('pricing.websiteCount', { count: 10 }) },
       { label: t('pricing.benefits.unlimitedMembers') },
-      { label: t('pricing.benefits.eventsAndGoals') },
-      { label: t('pricing.benefits.funnels') },
-      { label: t('pricing.benefits.sessionUserProfileAnalysis') },
+      benefitWithTooltip(
+        'pricing.benefits.googleAnalyticsImport',
+        'pricing.benefits.tooltips.googleAnalyticsImport',
+        t,
+        dataImportDocsUrl,
+      ),
+      benefitWithTooltip(
+        'pricing.benefits.eventsAndGoals',
+        'pricing.benefits.tooltips.eventsAndGoals',
+        t,
+        goalsDocsUrl,
+      ),
+      benefitWithTooltip(
+        'pricing.benefits.performanceMonitoring',
+        'pricing.benefits.tooltips.performanceMonitoring',
+        t,
+        performanceDocsUrl,
+      ),
+      benefitWithTooltip(
+        'pricing.benefits.funnels',
+        'pricing.benefits.tooltips.funnels',
+        t,
+        funnelsDocsUrl,
+      ),
+      benefitWithTooltip(
+        'pricing.benefits.sessionUserProfileAnalysis',
+        'pricing.benefits.tooltips.sessionUserProfileAnalysis',
+        t,
+        profilesAndSessionsDocsUrl,
+      ),
       benefitWithTooltip(
         'pricing.benefits.advancedBotDetection',
         'pricing.benefits.tooltips.advancedBotDetection',
@@ -161,11 +204,30 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
         t,
         managedProxyDocsUrl,
       ),
-      { label: t('pricing.benefits.errorTracking') },
-      { label: t('pricing.benefits.emailReports') },
-      { label: t('pricing.benefits.recaptchaAlternative') },
-      { label: t('pricing.benefits.restfulApiSdks') },
-      { label: t('pricing.benefits.googleAnalyticsImport') },
+      benefitWithTooltip(
+        'pricing.benefits.errorTracking',
+        'pricing.benefits.tooltips.errorTracking',
+        t,
+        errorTrackingDocsUrl,
+      ),
+      benefitWithTooltip(
+        'pricing.benefits.emailReports',
+        'pricing.benefits.tooltips.emailReports',
+        t,
+        emailReportsDocsUrl,
+      ),
+      benefitWithTooltip(
+        'pricing.benefits.recaptchaAlternative',
+        'pricing.benefits.tooltips.recaptchaAlternative',
+        t,
+        captchaDocsUrl,
+      ),
+      benefitWithTooltip(
+        'pricing.benefits.restfulApiSdks',
+        'pricing.benefits.tooltips.restfulApiSdks',
+        t,
+        eventsApiDocsUrl,
+      ),
       { label: t('pricing.benefits.humanSupport') },
     ]
   }
@@ -185,9 +247,24 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
         label: t('pricing.benefits.sessionReplays'),
         tooltipType: 'sessionReplays',
       },
-      { label: t('pricing.benefits.featureFlags') },
-      { label: t('pricing.benefits.abTesting') },
-      { label: t('pricing.benefits.twentyXHigherApiRateLimits') },
+      benefitWithTooltip(
+        'pricing.benefits.featureFlags',
+        'pricing.benefits.tooltips.featureFlags',
+        t,
+        featureFlagsDocsUrl,
+      ),
+      benefitWithTooltip(
+        'pricing.benefits.abTesting',
+        'pricing.benefits.tooltips.abTesting',
+        t,
+        experimentsDocsUrl,
+      ),
+      benefitWithTooltip(
+        'pricing.benefits.twentyXHigherApiRateLimits',
+        'pricing.benefits.tooltips.twentyXHigherApiRateLimits',
+        t,
+        statsApiDocsUrl,
+      ),
       { label: t('pricing.benefits.prioritySupport') },
     ]
   }
@@ -200,8 +277,16 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
       t,
     ),
     { label: t('pricing.benefits.customFeatures') },
-    { label: t('pricing.benefits.onPremise') },
-    { label: t('pricing.benefits.dedicatedInstance') },
+    benefitWithTooltip(
+      'pricing.benefits.onPremise',
+      'pricing.benefits.tooltips.onPremise',
+      t,
+    ),
+    benefitWithTooltip(
+      'pricing.benefits.dedicatedInstance',
+      'pricing.benefits.tooltips.dedicatedInstance',
+      t,
+    ),
     { label: t('pricing.benefits.ssoSaml') },
     { label: t('pricing.benefits.personalOnboarding') },
     benefitWithTooltip(

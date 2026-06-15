@@ -3204,6 +3204,7 @@
       "everythingFrom": "Everything from {{plan}}",
       "unlimitedMembers": "Unlimited members",
       "eventsAndGoals": "Events & Goals",
+      "performanceMonitoring": "Performance monitoring",
       "sessionUserProfileAnalysis": "Session & User profile analysis",
       "errorTracking": "Error tracking",
       "advancedBotDetection": "Advanced bot detection",
@@ -3230,14 +3231,28 @@
       "tooltips": {
         "advancedBotDetection": "Swetrix filters automated traffic before it is stored, from known bot user agents and headless browsers to stricter checks for suspicious headers, probe paths, referrer spam, and datacenter IPs. Blocked bot requests never count toward your event quota.",
         "adBlockerBypass": "Route the tracker script and analytics traffic through a managed reverse proxy on your own subdomain, so requests are served first-party from your domain.",
+        "googleAnalyticsImport": "Bring historical analytics into Swetrix from Google Analytics, Plausible, Fathom, Umami, Simple Analytics, and other platforms so your old reports stay available after switching.",
+        "eventsAndGoals": "Track custom events and conversion goals, including pageview goals, event goals, and multi-condition goals based on traffic, campaign, device, or metadata filters.",
+        "performanceMonitoring": "Track real-user site speed metrics such as page load timing, TTFB, DNS, TLS, render time, and backend or frontend delays.",
+        "funnels": "Track ordered page and event steps, measure conversion and dropoff, and inspect sessions for each step.",
+        "sessionUserProfileAnalysis": "Inspect individual profiles and sessions to understand journeys, debug issues, and review pageviews, events, errors, and replays when available.",
+        "errorTracking": "Capture client-side exceptions, stack traces, affected users, sessions, and breakdowns alongside your analytics.",
+        "emailReports": "Receive regular email summaries with key project metrics such as visitors, pageviews, session duration, bounce rate, goals, errors, and top countries.",
+        "recaptchaAlternative": "Use Swetrix CAPTCHA, an open-source, cookieless Proof of Work challenge that blocks bots without image puzzles.",
+        "restfulApiSdks": "Send pageviews and custom events through the tracking script, integrations, SDKs, or the Events API for server-side and native app tracking.",
         "sessionReplays": {
           "description": "A session replay is a recorded browser session that you can play back to debug user journeys, errors, and drop-offs.",
           "recording": "Replays are recorded only after you explicitly start recording through the tracker. Regular analytics events and pageviews do not create replays automatically.",
           "quota": "Quota is based on recorded replays, also shown as recorded sessions, per month. It is not based on replay minutes, storage size, or how many times a replay is watched.",
           "plans": "Standard includes 0 replays, Plus includes a monthly quota proportional to the selected event tier, and Enterprise is custom."
         },
+        "featureFlags": "Roll features out gradually, target cohorts or individual users, and turn changes off without another deploy.",
+        "abTesting": "Run experiments against goals, split visitors across variants, and compare conversion results before shipping a change to everyone.",
+        "twentyXHigherApiRateLimits": "Standard plans include 300 API requests per hour. Plus plans include 6,000 API requests per hour, which is 20x higher.",
         "plusWebsites": "Swetrix has no limit on the number of websites you can add. You can purchase more websites via add-ons. Bulk discounts are available if you contact support.",
         "customEventLimits": "Enterprise plans are flexible for event limits, API rate limits, and project quantity.",
+        "onPremise": "Our team installs Swetrix in your own infrastructure and manages the installation, maintenance, and updates for you.",
+        "dedicatedInstance": "We deploy Swetrix in your preferred location, such as the EU, US, or Asia, manage updates, and keep it separate from the shared Swetrix Cloud environment.",
         "manualInvoicing": "We accept all major credit & debit cards. Enterprise customers can also pay by ACH, SEPA, wire transfer, or invoice."
       }
     },
