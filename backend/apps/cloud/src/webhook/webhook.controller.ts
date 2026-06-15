@@ -9,15 +9,13 @@ import {
   Ip,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import _find from 'lodash/find'
 
 import { ProjectService } from '../project/project.service'
 import { getIPFromHeaders } from '../common/utils'
 import {
-  ACCOUNT_PLANS,
-  BillingFrequency,
   DashboardBlockReason,
   PlanType,
+  getAccountPlanByPaddleProductId,
   isNextPlan,
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
@@ -119,19 +117,14 @@ export class WebhookController {
           )
         }
 
-        let monthlyBilling = true
-        let plan = _find(ACCOUNT_PLANS, ({ pid }) => pid === subscriptionPlanId)
+        const planMatch = getAccountPlanByPaddleProductId(subscriptionPlanId)
 
-        if (!plan) {
-          monthlyBilling = false
-          plan = _find(ACCOUNT_PLANS, ({ ypid }) => ypid === subscriptionPlanId)
-        }
-
-        if (!plan) {
+        if (!planMatch) {
           throw new NotFoundException(
             `The selected account plan (${subscriptionPlanId}) is not available`,
           )
         }
+        const { plan, billingFrequency, planType: resolvedPlanType } = planMatch
 
         let currentUser = uid
           ? await this.userService.findOne({ where: { id: uid } })
@@ -170,7 +163,9 @@ export class WebhookController {
               : {}
 
         const planType =
-          requestedPlanType || currentUser.planType || PlanType.standard
+          requestedPlanType === resolvedPlanType
+            ? requestedPlanType
+            : resolvedPlanType
         const updateParams: Record<string, any> = {
           planCode: plan.id,
           planType,
@@ -178,9 +173,7 @@ export class WebhookController {
           subUpdateURL,
           subCancelURL,
           nextBillDate,
-          billingFrequency: monthlyBilling
-            ? BillingFrequency.Monthly
-            : BillingFrequency.Yearly,
+          billingFrequency,
           tierCurrency: currency,
           cancellationEffectiveDate: null,
           ...statusParams,

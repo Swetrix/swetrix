@@ -57,8 +57,8 @@ interface PlanSignature {
   monthlyUsageLimit: number
   maxAlerts: number
   legacy?: boolean
-  pid?: string
-  ypid?: string
+  pid?: string | null
+  ypid?: string | null
 }
 
 const DEFAULT_MAX_PROJECTS = 10
@@ -116,6 +116,30 @@ const PLAN_FEATURE_REQUIRED_PLAN = {
   [PlanFeatureCode.experiments]: PlanType.plus,
   [PlanFeatureCode.replays]: PlanType.plus,
 } as const
+
+interface PaddleProductIds {
+  pid: string
+  ypid: string
+}
+
+const PLAN_TYPE_PADDLE_PRODUCTS: Partial<
+  Record<PlanType, Partial<Record<PlanCode, PaddleProductIds>>>
+> = {
+  [PlanType.plus]: {
+    [PlanCode['100k']]: { pid: '925536', ypid: '925537' },
+    [PlanCode['200k']]: { pid: '925538', ypid: '925539' },
+    [PlanCode['500k']]: { pid: '925540', ypid: '925541' },
+    [PlanCode['1m']]: { pid: '925542', ypid: '925543' },
+    [PlanCode['2m']]: { pid: '925544', ypid: '925545' },
+    [PlanCode['5m']]: { pid: '925546', ypid: '925547' },
+    [PlanCode['10m']]: { pid: '925548', ypid: '925549' },
+    [PlanCode['15m']]: { pid: '925550', ypid: '925551' },
+    [PlanCode['20m']]: { pid: '925552', ypid: '925553' },
+    [PlanCode['30m']]: { pid: '925554', ypid: '925555' },
+    [PlanCode['40m']]: { pid: '925556', ypid: '925557' },
+    [PlanCode['50m']]: { pid: '925558', ypid: '925559' },
+  },
+}
 
 export const getEffectivePlanType = (
   user?: {
@@ -451,25 +475,25 @@ export const ACCOUNT_PLANS = {
   [PlanCode['30m']]: {
     id: PlanCode['30m'],
     monthlyUsageLimit: 30000000,
-    pid: null,
-    ypid: null,
+    pid: '925498',
+    ypid: '925499',
     maxAlerts: 50,
   },
   [PlanCode['40m']]: {
     id: PlanCode['40m'],
     monthlyUsageLimit: 40000000,
-    pid: null,
-    ypid: null,
+    pid: '925500',
+    ypid: '925501',
     maxAlerts: 50,
   },
   [PlanCode['50m']]: {
     id: PlanCode['50m'],
     monthlyUsageLimit: 50000000,
-    pid: null,
-    ypid: null,
+    pid: '925503',
+    ypid: '925505',
     maxAlerts: 50,
   },
-}
+} satisfies Record<PlanCode, PlanSignature>
 
 export const getNextPlan = (planCode: PlanCode): PlanSignature | undefined => {
   const currentLimit = ACCOUNT_PLANS[planCode].monthlyUsageLimit
@@ -513,6 +537,58 @@ export enum ReportFrequency {
 export enum BillingFrequency {
   Monthly = 'monthly',
   Yearly = 'yearly',
+}
+
+export const getAccountPlanByPaddleProductId = (
+  productId?: string | number | null,
+) => {
+  if (!productId) {
+    return null
+  }
+
+  const stringifiedProductId = String(productId)
+
+  for (const plan of Object.values(ACCOUNT_PLANS)) {
+    if (plan.pid === stringifiedProductId) {
+      return {
+        plan,
+        planType: PlanType.standard,
+        billingFrequency: BillingFrequency.Monthly,
+      }
+    }
+
+    if (plan.ypid === stringifiedProductId) {
+      return {
+        plan,
+        planType: PlanType.standard,
+        billingFrequency: BillingFrequency.Yearly,
+      }
+    }
+
+    for (const [planType, productsByPlanCode] of Object.entries(
+      PLAN_TYPE_PADDLE_PRODUCTS,
+    )) {
+      const products = productsByPlanCode?.[plan.id]
+
+      if (products?.pid === stringifiedProductId) {
+        return {
+          plan,
+          planType: planType as PlanType,
+          billingFrequency: BillingFrequency.Monthly,
+        }
+      }
+
+      if (products?.ypid === stringifiedProductId) {
+        return {
+          plan,
+          planType: planType as PlanType,
+          billingFrequency: BillingFrequency.Yearly,
+        }
+      }
+    }
+  }
+
+  return null
 }
 
 export enum TimeFormat {

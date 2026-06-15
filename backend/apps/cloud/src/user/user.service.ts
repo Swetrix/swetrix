@@ -39,6 +39,7 @@ import {
   getPurchasedWebsiteAddons,
   getPurchasedSessionReplayAddons,
   getSessionReplayQuota,
+  getAccountPlanByPaddleProductId,
 } from './entities/user.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
@@ -2486,40 +2487,25 @@ export class UserService {
   }
 
   getPlanById(planId: number, requestedPlanType?: string | null) {
-    if (!planId) {
+    const planMatch = getAccountPlanByPaddleProductId(planId)
+
+    if (!planMatch) {
       return null
     }
 
-    const stringifiedPlanId = String(planId)
+    const requestedType = requestedPlanType
+      ? this.normalizePlanType(requestedPlanType)
+      : null
 
-    const plan = Object.values(ACCOUNT_PLANS).find(
-      (tier) =>
-        // @ts-ignore
-        tier.pid === stringifiedPlanId ||
-        // @ts-ignore
-        tier.ypid === stringifiedPlanId,
-    )
-
-    // @ts-ignore
-    if (plan && plan.pid) {
-      const planCode = plan.id
-      // @ts-ignore
-      const isMonthly =
-        // @ts-ignore
-        plan.pid === stringifiedPlanId
-
-      const billingFrequency = isMonthly
-        ? BillingFrequency.Monthly
-        : BillingFrequency.Yearly
-
-      return {
-        planCode,
-        billingFrequency,
-        planType: this.normalizePlanType(requestedPlanType),
-      }
+    if (requestedType && requestedType !== planMatch.planType) {
+      return null
     }
 
-    return null
+    return {
+      planCode: planMatch.plan.id,
+      billingFrequency: planMatch.billingFrequency,
+      planType: planMatch.planType,
+    }
   }
 
   async previewSubscription(
