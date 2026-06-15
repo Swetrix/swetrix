@@ -32,6 +32,14 @@
   scrollbar-width: thin;
 }
 
+.panel-header-actions:has([aria-expanded='true']) {
+  scrollbar-width: none;
+}
+
+.panel-header-actions:has([aria-expanded='true'])::-webkit-scrollbar {
+  display: none;
+}
+
 /* custom scrollbar */
 ::-webkit-scrollbar {
   width: 5px;

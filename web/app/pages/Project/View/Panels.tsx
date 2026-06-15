@@ -81,6 +81,8 @@ const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 const CUSTOM_EVENTS_TOP_LIMITS = [1, 3, 5, 10] as const
 const UTM_TRACKING_PANEL_IDS = new Set(['so', 'me', 'ca', 'te', 'co'])
+const PANEL_HEADER_ACTIONS_CLASS =
+  'panel-header-actions flex min-w-0 max-w-full items-center gap-2.5 overflow-x-auto overflow-y-hidden pb-0.5 scrollbar-thin'
 const PANEL_EMPTY_STATE_DOCS = {
   customEvents: 'https://swetrix.com/docs/swetrix-js-reference#track',
   customEventMetadata: 'https://swetrix.com/docs/swetrix-js-reference#track',
@@ -256,7 +258,7 @@ const PanelContainer = ({
               <span className='ml-1.5 flex items-center'>{tooltip}</span>
             ) : null}
           </Text>
-          <div className='flex scrollbar-thin items-center gap-2.5 overflow-x-auto'>
+          <div className={PANEL_HEADER_ACTIONS_CLASS}>
             {tabs && onTabChange ? (
               <>
                 {tabs.map((tab, index) => {
@@ -1728,7 +1730,7 @@ const CombinedMetadataPanel = ({
         >
           {title}
         </Text>
-        <div className='flex scrollbar-thin items-center gap-2.5 overflow-x-auto'>
+        <div className={PANEL_HEADER_ACTIONS_CLASS}>
           {modeTabs.map((tab) => (
             <button
               key={tab.id}
