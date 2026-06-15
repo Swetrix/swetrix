@@ -10,6 +10,7 @@ import type { TFunction } from 'i18next'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { FLOW_VALUE_CLASS } from '~/hooks/useFlowValue'
 import { CURRENCIES, TRIAL_DAYS } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import {
@@ -130,7 +131,7 @@ const PriceAmount = ({
       value={value}
       prefix={currencySymbol}
       format={getPriceFormat(value)}
-      className={className}
+      className={cn(FLOW_VALUE_CLASS, className)}
       willChange
     />
   )
@@ -622,14 +623,17 @@ export const PricingInternal = ({
                 <div className='mt-2 min-h-[78px]'>
                   {hasPublishedPrice ? (
                     <>
-                      <div className='flex min-h-10 flex-wrap items-end justify-between gap-x-3 gap-y-1'>
-                        <div className='flex flex-wrap items-end gap-2'>
+                      <div className='flex min-h-10 flex-wrap items-baseline gap-x-2 gap-y-1'>
+                        <div className='flex flex-wrap items-baseline gap-2'>
                           <Text
-                            as='p'
+                            as='span'
                             size='3xl'
                             weight='bold'
                             colour='primary'
-                            className={isEnterprise ? 'dark' : ''}
+                            className={cn(
+                              'leading-none',
+                              isEnterprise ? 'dark' : '',
+                            )}
                           >
                             <PriceAmount
                               value={
@@ -638,14 +642,18 @@ export const PricingInternal = ({
                                   : (monthlyPrice ?? null)
                               }
                               currencySymbol={currency.symbol}
+                              className='leading-none align-baseline'
                             />
                           </Text>
                           <Text
-                            as='p'
+                            as='span'
                             size='base'
                             weight='medium'
                             colour='secondary'
-                            className={cn('pb-1', isEnterprise ? 'dark' : '')}
+                            className={cn(
+                              'leading-none',
+                              isEnterprise ? 'dark' : '',
+                            )}
                           >
                             {`/${t(
                               isYearly
@@ -656,12 +664,12 @@ export const PricingInternal = ({
                         </div>
                         {showVatNote ? (
                           <Text
-                            as='p'
+                            as='span'
                             size='xs'
                             weight='medium'
                             colour='secondary'
                             className={cn(
-                              'pb-1 text-right',
+                              'ml-auto shrink-0 text-right leading-none',
                               isEnterprise ? 'dark' : '',
                             )}
                           >
