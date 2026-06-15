@@ -4,6 +4,8 @@ import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
 import {
+  ArrowCounterClockwiseIcon,
+  CurrencyDollarIcon,
   GlobeIcon,
   ClockIcon,
   LinkIcon,
@@ -68,6 +70,7 @@ interface SessionDetailViewProps {
   timeFormat: '12-hour' | '24-hour'
   rotateXAxis: boolean
   dataNames: Record<string, string>
+  currency?: string
   websiteUrl?: string | null
   backLink?: string
   backButtonLabel?: string
@@ -142,6 +145,18 @@ const formatSessionId = (id: string | null | undefined) => {
   return `${id.slice(0, 6)}...${id.slice(-5)}`
 }
 
+const formatCurrency = (value: number, currency: string, language: string) => {
+  try {
+    return new Intl.NumberFormat(language || 'en-US', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+    }).format(value)
+  } catch {
+    return `${value.toFixed(2)} ${currency}`
+  }
+}
+
 export const SessionDetailView = ({
   activeSession,
   sessionId,
@@ -149,6 +164,7 @@ export const SessionDetailView = ({
   timeFormat,
   rotateXAxis,
   dataNames,
+  currency,
   websiteUrl,
   backLink,
   backButtonLabel,
@@ -341,6 +357,11 @@ export const SessionDetailView = ({
     : sessionDuration > 0
       ? getStringFromTime(getTimeFromSeconds(sessionDuration))
       : 'N/A'
+  const revenueCurrency = currency || 'USD'
+  const sessionRevenue =
+    typeof details.revenue === 'number' ? details.revenue : null
+  const sessionRefunds =
+    typeof details.refunds === 'number' ? details.refunds : null
   const durationTooltip = (
     <div className='grid min-w-48 gap-1.5'>
       <div className='grid grid-cols-[auto_minmax(0,1fr)] gap-4'>
@@ -630,6 +651,42 @@ export const SessionDetailView = ({
                 label={t('dashboard.sessionDuration')}
                 value={durationValue}
               />
+              {sessionRevenue !== null && sessionRevenue !== 0 ? (
+                <InfoRow
+                  label={t('dashboard.revenue')}
+                  value={
+                    <>
+                      <CurrencyDollarIcon
+                        className={
+                          sessionRevenue > 0
+                            ? 'h-4 w-4 text-emerald-500'
+                            : 'h-4 w-4 text-amber-500'
+                        }
+                      />
+                      {formatCurrency(
+                        sessionRevenue,
+                        revenueCurrency,
+                        language,
+                      )}
+                    </>
+                  }
+                />
+              ) : null}
+              {sessionRefunds !== null && sessionRefunds > 0 ? (
+                <InfoRow
+                  label={t('dashboard.refunds')}
+                  value={
+                    <>
+                      <ArrowCounterClockwiseIcon className='h-4 w-4 text-amber-500' />
+                      {formatCurrency(
+                        sessionRefunds,
+                        revenueCurrency,
+                        language,
+                      )}
+                    </>
+                  }
+                />
+              ) : null}
               <InfoRow
                 label={t('project.mapping.ref')}
                 value={

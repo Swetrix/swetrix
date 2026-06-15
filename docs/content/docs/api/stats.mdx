@@ -803,7 +803,9 @@ curl 'https://api.swetrix.com/v1/log/sessions?pid=YOUR_PROJECT_ID&period=7d&take
       "sessionStart": "2025-05-11T16:09:06Z",
       "lastActivity": "2025-05-11T17:22:02Z",
       "isLive": 1,
-      "sdur": 520
+      "sdur": 520,
+      "revenue": 129.99,
+      "refunds": 20
     },
     {
       "psid": "3653378394154006361",
@@ -958,7 +960,9 @@ curl 'https://api.swetrix.com/v1/log/session?pid=YOUR_PROJECT_ID&psid=SESSION_ID
     "rg": "England",
     "ct": "Liverpool",
     "sdur": 242,
-    "isLive": 0
+    "isLive": 0,
+    "revenue": 129.99,
+    "refunds": 20
   },
   "psid": "14287087333426119778",
   "chart": {
@@ -997,6 +1001,10 @@ The session identifier.
 The timezone to use for the time range. The default is `Etc/GMT`. You can use any timezone supported by [day.js](https://day.js.org/docs/en/timezone/timezone/) library.
 
 <hr />
+
+#### Revenue fields
+
+When revenue tracking is enabled and transactions are attributed to the session, `details.revenue` contains the session's net revenue after refunds, and `details.refunds` contains the total refunded amount for the session. Values use the project's configured revenue currency.
 
 ### GET /v1/log/funnel
 

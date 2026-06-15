@@ -142,6 +142,8 @@ export interface SessionDetails {
 
   sdur?: number
   isLive?: boolean
+  revenue?: number
+  refunds?: number
 }
 
 export interface Profile {

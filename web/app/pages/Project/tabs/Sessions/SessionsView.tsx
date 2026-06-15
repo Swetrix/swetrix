@@ -212,6 +212,8 @@ const SessionsViewInner = ({
         isLive: matchingSession
           ? matchingSession.isLive === 1
           : apiDetails.isLive,
+        revenue: apiDetails.revenue ?? matchingSession?.revenue,
+        refunds: apiDetails.refunds ?? matchingSession?.refunds,
       }
       return {
         details,
@@ -426,6 +428,7 @@ const SessionsViewInner = ({
         timeFormat={timeFormat}
         rotateXAxis={rotateXAxis}
         dataNames={dataNames}
+        currency={project?.revenueCurrency}
         websiteUrl={project?.websiteUrl}
         backLink={`?${pureSearchParams}`}
         backButtonLabel={t('project.backToSessions')}

@@ -6506,6 +6506,24 @@ export class AnalyticsService {
       )
     `
 
+    const querySessionRevenue = `
+      SELECT
+        toFloat64(sum(CASE WHEN type = 'sale' THEN amount ELSE 0 END) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END)) AS revenue,
+        toFloat64(sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END)) AS refunds
+      FROM (
+        SELECT
+          argMax(type, synced_at) AS type,
+          argMax(amount, synced_at) AS amount
+        FROM revenue
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND session_id IS NOT NULL
+          AND toString(session_id) = {psid:String}
+          AND revenue.type IN ('sale', 'refund')
+        GROUP BY pid, session_id, transaction_id
+      )
+    `
+
     const paramsData = {
       params: {
         pid,
@@ -6550,6 +6568,20 @@ export class AnalyticsService {
     if (typeof fromSessionsTable === 'number' && fromSessionsTable > 0) {
       duration = fromSessionsTable
     }
+
+    const { data: revenueRows } = await clickhouse
+      .query({
+        query: querySessionRevenue,
+        query_params: paramsData.params,
+      })
+      .then((resultSet) =>
+        resultSet.json<{
+          revenue: number
+          refunds: number
+        }>(),
+      )
+
+    const revenueTotals = revenueRows[0] || { revenue: 0, refunds: 0 }
 
     // If sessions table exists but `firstSeen` was historically broken (e.g. firstSeen == lastSeen),
     // we can still approximate using the first recorded event time + the session's lastSeen (which
@@ -6658,6 +6690,8 @@ export class AnalyticsService {
         ...(details || {}),
         sdur: duration,
         isLive,
+        revenue: revenueTotals.revenue || 0,
+        refunds: revenueTotals.refunds || 0,
       },
       psid,
       chart: chartData,

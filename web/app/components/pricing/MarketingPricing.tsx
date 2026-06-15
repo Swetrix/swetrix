@@ -642,7 +642,7 @@ export const PricingInternal = ({
                                   : (monthlyPrice ?? null)
                               }
                               currencySymbol={currency.symbol}
-                              className='leading-none align-baseline'
+                              className='align-baseline leading-none'
                             />
                           </Text>
                           <Text
