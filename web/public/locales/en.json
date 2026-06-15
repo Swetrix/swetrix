@@ -3316,7 +3316,22 @@
     "next": "Start free trial",
     "selectPlan": "Select your plan",
     "customPlanTitle": "Need a plan higher than 20M pageviews?",
-    "customPlanDesc": "Select \"Up to {{count}} monthly pageviews\" and <contact>contact us</contact> for a custom quote."
+    "customPlanDesc": "Select \"Up to {{count}} monthly pageviews\" and <contact>contact us</contact> for a custom quote.",
+    "trial": {
+      "title": "How your free trial works",
+      "today": "Today",
+      "step1Title": "Trial starts",
+      "step1Desc": "Full access to every feature. No charge today.",
+      "step2Title": "Friendly reminder",
+      "step2Desc": "We email you 2 days before it ends.",
+      "step3Title": "Trial ends",
+      "step3Desc": "Billed only if you stay - cancel anytime before this.",
+      "footer": "Cancel in one click, anytime. We'll never bill you by surprise."
+    },
+    "faqTrial": {
+      "q": "What happens when my trial ends?",
+      "a": "We'll email you a reminder 2 days before your {{days}}-day trial ends, so you're never caught off guard. If Swetrix isn't the right fit, cancel in one click before then and you won't be charged - no hoops to jump through."
+    }
   },
   "onboarding": {
     "welcome": "Welcome to Swetrix",
