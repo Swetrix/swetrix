@@ -40,6 +40,11 @@
   display: none;
 }
 
+.panel-header-actions button[aria-haspopup='menu'] > svg {
+  transform: none;
+  transition: none;
+}
+
 /* custom scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
