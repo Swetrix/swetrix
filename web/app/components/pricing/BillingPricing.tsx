@@ -463,6 +463,7 @@ const BillingPricing = ({
             getActionLabel={getActionLabel}
             loadingPlanType={selectionLoading?.planType ?? null}
             disabled={Boolean(selectionLoading)}
+            showVatNote
           />
         </div>
 

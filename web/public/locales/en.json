@@ -3163,6 +3163,7 @@
     "monthlyEventsTooltip": "Events include pageviews, custom events, CAPTCHA completions, and error events.",
     "monthlyEventVolume": "Monthly event volume",
     "eventVolume": "Event volume",
+    "vatApplicable": "+VAT if applicable",
     "startFreeTrial": "Start free trial",
     "planWithEvents": "{{plan}} plan, {{events}} events per month",
     "selectedPlanWithEvents": "{{plan}}, {{events}} events",

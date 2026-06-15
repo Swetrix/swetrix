@@ -37,6 +37,7 @@ interface MarketingPricingProps {
   getActionLabel?: (selection: MarketingPricingSelection) => string
   loadingPlanType?: PlanTypeCode | null
   disabled?: boolean
+  showVatNote?: boolean
 }
 
 export interface MarketingPricingSelection {
@@ -406,6 +407,7 @@ export const PricingInternal = ({
   getActionLabel,
   loadingPlanType,
   disabled,
+  showVatNote,
 }: MarketingPricingProps) => {
   const { isAuthenticated } = useAuth()
   const { t } = useTranslation('common')
@@ -620,36 +622,52 @@ export const PricingInternal = ({
                 <div className='mt-2 min-h-[78px]'>
                   {hasPublishedPrice ? (
                     <>
-                      <div className='flex min-h-10 flex-wrap items-end gap-2'>
-                        <Text
-                          as='p'
-                          size='3xl'
-                          weight='bold'
-                          colour='primary'
-                          className={isEnterprise ? 'dark' : ''}
-                        >
-                          <PriceAmount
-                            value={
+                      <div className='flex min-h-10 flex-wrap items-end justify-between gap-x-3 gap-y-1'>
+                        <div className='flex flex-wrap items-end gap-2'>
+                          <Text
+                            as='p'
+                            size='3xl'
+                            weight='bold'
+                            colour='primary'
+                            className={isEnterprise ? 'dark' : ''}
+                          >
+                            <PriceAmount
+                              value={
+                                isYearly
+                                  ? (yearlyPrice ?? null)
+                                  : (monthlyPrice ?? null)
+                              }
+                              currencySymbol={currency.symbol}
+                            />
+                          </Text>
+                          <Text
+                            as='p'
+                            size='base'
+                            weight='medium'
+                            colour='secondary'
+                            className={cn('pb-1', isEnterprise ? 'dark' : '')}
+                          >
+                            {`/${t(
                               isYearly
-                                ? (yearlyPrice ?? null)
-                                : (monthlyPrice ?? null)
-                            }
-                            currencySymbol={currency.symbol}
-                          />
-                        </Text>
-                        <Text
-                          as='p'
-                          size='base'
-                          weight='medium'
-                          colour='secondary'
-                          className={cn('pb-1', isEnterprise ? 'dark' : '')}
-                        >
-                          {`/${t(
-                            isYearly
-                              ? 'pricing.intervals.year'
-                              : 'pricing.intervals.month',
-                          )}`}
-                        </Text>
+                                ? 'pricing.intervals.year'
+                                : 'pricing.intervals.month',
+                            )}`}
+                          </Text>
+                        </div>
+                        {showVatNote ? (
+                          <Text
+                            as='p'
+                            size='xs'
+                            weight='medium'
+                            colour='secondary'
+                            className={cn(
+                              'pb-1 text-right',
+                              isEnterprise ? 'dark' : '',
+                            )}
+                          >
+                            {t('pricing.vatApplicable')}
+                          </Text>
+                        ) : null}
                       </div>
                       {isYearly ? (
                         <div className='mt-1 flex h-6 flex-wrap items-baseline gap-1'>
@@ -804,6 +822,7 @@ const MarketingPricing = ({
   getActionLabel,
   loadingPlanType,
   disabled,
+  showVatNote,
 }: MarketingPricingProps) => {
   const { t } = useTranslation('common')
   return (
@@ -836,6 +855,7 @@ const MarketingPricing = ({
             getActionLabel={getActionLabel}
             loadingPlanType={loadingPlanType}
             disabled={disabled}
+            showVatNote={showVatNote}
           />
         </div>
       </div>

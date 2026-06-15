@@ -311,6 +311,7 @@ const Subscribe = () => {
             onSelectPlan={handlePlanSelection}
             loadingPlanType={selectionLoading?.planType ?? null}
             disabled={Boolean(selectionLoading) || hasCompletedCheckout}
+            showVatNote
           />
         </div>
 
