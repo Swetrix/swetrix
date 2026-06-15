@@ -58,15 +58,18 @@ const Subscribe = () => {
   const [selectionLoading, setSelectionLoading] =
     useState<MarketingPricingSelection | null>(null)
   const [hasCompletedCheckout, setHasCompletedCheckout] = useState(false)
+  const checkoutInProgressRef = useRef(false)
 
   const onPaddleEvent = useCallback((eventData: any) => {
     if (eventData?.event === 'Checkout.Complete') {
+      checkoutInProgressRef.current = false
       setHasCompletedCheckout(true)
       setSelectionLoading(null)
       return
     }
 
     if (eventData?.event === 'Checkout.Close') {
+      checkoutInProgressRef.current = false
       setSelectionLoading(null)
     }
   }, [])
@@ -110,18 +113,24 @@ const Subscribe = () => {
   }, [hasCompletedCheckout, navigate, loadUser])
 
   const generatePayLinkFetcher = useFetcher<UserSettingsActionData>()
+  const handledPayLinkDataRef = useRef<UserSettingsActionData | null>(null)
 
   useEffect(() => {
-    if (
-      generatePayLinkFetcher.data?.success &&
-      generatePayLinkFetcher.data?.data
-    ) {
-      const url = (generatePayLinkFetcher.data.data as PayLinkResponse).url
+    const fetcherData = generatePayLinkFetcher.data
+
+    if (!fetcherData || handledPayLinkDataRef.current === fetcherData) {
+      return
+    }
+
+    handledPayLinkDataRef.current = fetcherData
+
+    if (fetcherData.success && fetcherData.data) {
+      const url = (fetcherData.data as PayLinkResponse).url
 
       if (!url) {
         toast.error(t('billing.checkoutPreparationError'))
+        checkoutInProgressRef.current = false
         setSelectionLoading(null)
-        generatePayLinkFetcher.data = undefined
         return
       }
 
@@ -142,12 +151,16 @@ const Subscribe = () => {
 
       if (!opened) {
         toast.error(t('billing.paddleStillLoading'))
+        checkoutInProgressRef.current = false
         setSelectionLoading(null)
       }
 
-      generatePayLinkFetcher.data = undefined
-    } else if (generatePayLinkFetcher.data?.error) {
-      toast.error(getCheckoutErrorMessage(generatePayLinkFetcher.data.error, t))
+      return
+    }
+
+    if (fetcherData.error) {
+      toast.error(getCheckoutErrorMessage(fetcherData.error, t))
+      checkoutInProgressRef.current = false
       setSelectionLoading(null)
     }
   }, [
@@ -161,7 +174,15 @@ const Subscribe = () => {
   ])
 
   const handlePlanSelection = (selection: MarketingPricingSelection) => {
-    if (selectionLoading || hasCompletedCheckout) return
+    if (
+      checkoutInProgressRef.current ||
+      selectionLoading ||
+      hasCompletedCheckout
+    ) {
+      return
+    }
+
+    checkoutInProgressRef.current = true
 
     const selectedPrice = getPlanPrice(
       selection.planType,
@@ -182,16 +203,19 @@ const Subscribe = () => {
 
     if (!selectedPrice?.paddlePlanId) {
       toast.error(t('billing.planNotConfiguredForCheckout'))
+      checkoutInProgressRef.current = false
       return
     }
 
     if (paddleLoadError) {
       toast.error(t('billing.paddleLoadError'))
+      checkoutInProgressRef.current = false
       return
     }
 
     if (!isPaddleLoaded || !(window as any).Paddle) {
       toast.error(t('billing.paddleStillLoading'))
+      checkoutInProgressRef.current = false
       return
     }
 
