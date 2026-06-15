@@ -6,7 +6,6 @@ import {
   CursorClickIcon,
   FileTextIcon,
   ClockIcon,
-  FolderPlusIcon,
   InfoIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -49,6 +48,29 @@ const MAX_PROJECT_NAME_LENGTH = 50
 const ANIMATION_DURATION = 0.4
 const EXIT_DURATION = 0.15
 const EASE_OUT_QUART = [0.25, 1, 0.5, 1] as const
+const GENERIC_TIMEZONES = new Set([DEFAULT_TIMEZONE, 'Etc/UTC', 'GMT', 'UTC'])
+
+const isSpecificTimezone = (timezone?: string | null): timezone is string =>
+  !!timezone && !GENERIC_TIMEZONES.has(timezone)
+
+const getBrowserTimezone = () => {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+  if (!timezone || !timezone.includes('/')) {
+    return null
+  }
+
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: timezone }).format(new Date())
+    return timezone
+  } catch {
+    return null
+  }
+}
 
 interface Project {
   id: string
@@ -304,7 +326,7 @@ const FeatureVisualization = ({
             />
             <div className='min-w-0 flex-1'>
               <div className='flex items-baseline gap-2'>
-                <Text as='span' size='sm' weight='medium' colour='muted'>
+                <Text as='span' size='sm' weight='medium' colour='secondary'>
                   Event
                 </Text>
                 <Text as='span' size='sm' weight='semibold'>
@@ -312,8 +334,8 @@ const FeatureVisualization = ({
                 </Text>
               </div>
               <div className='mt-0.5 flex items-center gap-1.5'>
-                <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
-                <Text as='span' size='xs' colour='muted'>
+                <ClockIcon className='size-3.5 text-gray-700 dark:text-gray-200' />
+                <Text as='span' size='xs' colour='secondary'>
                   1s
                 </Text>
               </div>
@@ -327,7 +349,7 @@ const FeatureVisualization = ({
             />
             <div className='min-w-0 flex-1'>
               <div className='flex items-baseline gap-2'>
-                <Text as='span' size='sm' weight='medium' colour='muted'>
+                <Text as='span' size='sm' weight='medium' colour='secondary'>
                   Pageview
                 </Text>
                 <Text as='span' size='sm' weight='semibold'>
@@ -335,8 +357,8 @@ const FeatureVisualization = ({
                 </Text>
               </div>
               <div className='mt-0.5 flex items-center gap-1.5'>
-                <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
-                <Text as='span' size='xs' colour='muted'>
+                <ClockIcon className='size-3.5 text-gray-700 dark:text-gray-200' />
+                <Text as='span' size='xs' colour='secondary'>
                   12s
                 </Text>
               </div>
@@ -350,7 +372,7 @@ const FeatureVisualization = ({
             />
             <div className='min-w-0 flex-1'>
               <div className='flex items-baseline gap-2'>
-                <Text as='span' size='sm' weight='medium' colour='muted'>
+                <Text as='span' size='sm' weight='medium' colour='secondary'>
                   Pageview
                 </Text>
                 <Text as='span' size='sm' weight='semibold'>
@@ -358,33 +380,13 @@ const FeatureVisualization = ({
                 </Text>
               </div>
               <div className='mt-0.5 flex items-center gap-1.5'>
-                <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
-                <Text as='span' size='xs' colour='muted'>
+                <ClockIcon className='size-3.5 text-gray-700 dark:text-gray-200' />
+                <Text as='span' size='xs' colour='secondary'>
                   5s
                 </Text>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const ProjectVisualisation = () => {
-  return (
-    <div className='mb-8 w-full rounded-xl p-6 ring-1 ring-gray-200 dark:ring-slate-800'>
-      <div className='flex items-start gap-5'>
-        <div className='flex size-20 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-slate-950 dark:ring-slate-800'>
-          <FolderPlusIcon
-            className='size-10 text-indigo-500'
-            weight='duotone'
-          />
-        </div>
-        <div className='min-w-0 flex-1 space-y-2 pt-1'>
-          <div className='h-5 w-48 rounded bg-gray-200 dark:bg-slate-900' />
-          <div className='h-3 w-full rounded bg-gray-100 dark:bg-slate-900/50' />
-          <div className='h-3 w-3/4 rounded bg-gray-100 dark:bg-slate-900/50' />
         </div>
       </div>
     </div>
@@ -417,8 +419,8 @@ const SetupTrackingStep = ({ project }: { project: Project }) => {
         />
       </Text>
       <div className='mb-5 flex items-center gap-1.5'>
-        <InfoIcon className='size-3.5 shrink-0 text-gray-400 dark:text-slate-500' />
-        <Text as='p' size='xs' colour='muted'>
+        <InfoIcon className='size-3.5 shrink-0 text-gray-700 dark:text-gray-200' />
+        <Text as='p' size='xs' colour='secondary'>
           {t('onboarding.installTracking.optional')}
         </Text>
       </div>
@@ -455,11 +457,14 @@ const Onboarding = () => {
   const [direction, setDirection] = useState(0)
   const [projectName, setProjectName] = useState('')
   const [projectWebsiteUrl, setProjectWebsiteUrl] = useState('')
-  const [projectTimezone, setProjectTimezone] = useState(
-    () => user?.timezone || DEFAULT_TIMEZONE,
-  )
+  const [projectTimezone, setProjectTimezone] = useState(() => {
+    const userTimezone = user?.timezone
+
+    return isSpecificTimezone(userTimezone) ? userTimezone : DEFAULT_TIMEZONE
+  })
   const [project, setProject] = useState<Project | null>(loaderProject)
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language)
+  const hasAppliedBrowserTimezoneRef = useRef(false)
 
   const [newProjectErrors, setNewProjectErrors] = useState<{
     name?: string
@@ -476,8 +481,22 @@ const Onboarding = () => {
   const progressStepIndex = stepsForProgress.indexOf(currentStep)
 
   useEffect(() => {
-    if (user?.timezone) {
-      setProjectTimezone(user.timezone)
+    const userTimezone = user?.timezone
+
+    if (isSpecificTimezone(userTimezone)) {
+      setProjectTimezone(userTimezone)
+      return
+    }
+
+    if (hasAppliedBrowserTimezoneRef.current) {
+      return
+    }
+
+    const browserTimezone = getBrowserTimezone()
+
+    if (browserTimezone) {
+      setProjectTimezone(browserTimezone)
+      hasAppliedBrowserTimezoneRef.current = true
     }
   }, [user?.timezone])
 
@@ -880,8 +899,6 @@ const Onboarding = () => {
                           {t('onboarding.createProject.desc')}
                         </Text>
 
-                        <ProjectVisualisation />
-
                         <div className='w-full sm:max-w-md'>
                           <Input
                             label={t('project.settings.name')}
@@ -905,14 +922,14 @@ const Onboarding = () => {
                             placeholder={t(
                               'project.settings.websiteUrlPlaceholder',
                             )}
-                            className='mt-4'
+                            className='mt-5'
                             onChange={(e) => {
                               setProjectWebsiteUrl(e.target.value)
                               clearNewProjectError('websiteUrl')
                             }}
                             error={newProjectErrors.websiteUrl}
                           />
-                          <div className='mt-4'>
+                          <div className='mt-5'>
                             <Text as='p' size='sm' weight='medium'>
                               {t('profileSettings.timezone')}
                             </Text>

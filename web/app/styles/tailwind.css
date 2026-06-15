@@ -164,6 +164,22 @@
       }
     }
   }
+
+  /* Subscribe trial timeline: gentle, staggered fade-up on first paint.
+     Per-step delay is set inline via animation-delay. `both` fill keeps the
+     from-state during the delay so steps don't flash before animating. */
+  .trial-step {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: trial-step-in 420ms var(--ease-out-quint) both;
+    }
+  }
+}
+
+@keyframes trial-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 
 @layer base {

@@ -25,6 +25,8 @@ import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 import routes from '~/utils/routes'
 
+import { TrialTimeline } from './TrialTimeline'
+
 type PayLinkResponse = {
   url?: string
 }
@@ -214,7 +216,7 @@ const Subscribe = () => {
         EVENT_TIERS['500k'].monthlyEvents.toLocaleString('en-US'),
     }
 
-    return [0, 1, 4].map((idx) => ({
+    const reusedItems = [0, 1, 4].map((idx) => ({
       question: (
         <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} values={faqValues} />
       ),
@@ -222,6 +224,20 @@ const Subscribe = () => {
         <Trans t={t} i18nKey={`main.faq.items.${idx}.a`} values={faqValues} />
       ),
     }))
+
+    return [
+      {
+        question: <Trans t={t} i18nKey='checkout.faqTrial.q' />,
+        answer: (
+          <Trans
+            t={t}
+            i18nKey='checkout.faqTrial.a'
+            values={{ days: TRIAL_DAYS }}
+          />
+        ),
+      },
+      ...reusedItems,
+    ]
   }, [t])
 
   return (
@@ -273,6 +289,8 @@ const Subscribe = () => {
             disabled={Boolean(selectionLoading) || hasCompletedCheckout}
           />
         </div>
+
+        <TrialTimeline />
 
         <div className='mx-auto w-full max-w-4xl px-4 pt-10 sm:px-6 lg:px-8'>
           <Text as='h2' size='2xl' weight='bold'>

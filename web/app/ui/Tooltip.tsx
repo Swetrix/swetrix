@@ -129,7 +129,7 @@ const Tooltip = ({
   contentClassName,
   arrowClassName,
   contentVariant = 'default',
-  delay = 300,
+  delay = 0,
   disableHoverableContent,
 }: TooltipProps) => {
   const { t } = useTranslation()
