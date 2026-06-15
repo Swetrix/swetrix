@@ -3318,15 +3318,11 @@
     "customPlanTitle": "Need a plan higher than 20M pageviews?",
     "customPlanDesc": "Select \"Up to {{count}} monthly pageviews\" and <contact>contact us</contact> for a custom quote.",
     "trial": {
-      "title": "How your free trial works",
       "today": "Today",
-      "step1Title": "Trial starts",
-      "step1Desc": "Full access to every feature. No charge today.",
-      "step2Title": "Friendly reminder",
-      "step2Desc": "We email you 2 days before it ends.",
-      "step3Title": "Trial ends",
-      "step3Desc": "Billed only if you stay - cancel anytime before this.",
-      "footer": "Cancel in one click, anytime. We'll never bill you by surprise."
+      "step1Label": "Full access begins, free",
+      "step2Label": "We email you a reminder",
+      "step3Label": "First payment, unless you cancel",
+      "footer": "Cancel in one click, anytime - we'll never charge you by surprise."
     },
     "faqTrial": {
       "q": "What happens when my trial ends?",
