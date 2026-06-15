@@ -521,7 +521,10 @@ export const PricingInternal = ({
               size='xs'
               weight={index === selectedTierIndex ? 'bold' : 'medium'}
               colour={index === selectedTierIndex ? 'primary' : 'secondary'}
-              className='text-center'
+              className={cn(
+                'text-center whitespace-nowrap',
+                index % 2 === 1 ? 'invisible sm:visible' : '',
+              )}
               onClick={() => setSelectedTierIndex(index)}
             >
               {label}
