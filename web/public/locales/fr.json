@@ -86,6 +86,8 @@
     "save": "Enregistrer",
     "continue": "Continuer",
     "confirm": "Confirmer",
+    "holdToDelete": "Maintenez pour supprimer",
+    "holdToReset": "Maintenez pour réinitialiser",
     "amount": "Montant",
     "date": "Date",
     "success": "Succès",
@@ -204,104 +206,104 @@
     "uploadFile": "Téléverser un fichier"
   },
   "performance": {
-    "slogan": "<span>Contrôle des performances</span> de l'utilisateur final afin de fournir des sites web rapides.",
-    "description": "Offrez une expérience parfaite à vos utilisateurs, et nous vous informerons si votre site est assez rapide.",
+    "slogan": "<span>Suivi des performances</span> des utilisateurs réels pour des sites plus rapides.",
+    "description": "Découvrez la vitesse ressentie par vos visiteurs et repérez les pages lentes à optimiser.",
     "fast": {
-      "title": "Tout le monde aime un site web rapide",
-      "desc": "Les gens adorent les sites web rapides, donc en plus des <indexUrl>analyses de trafic</indexUrl>, Swetrix vous permet d'analyser la vitesse de votre site web et de surveiller d'autres métriques de performance basées sur le trafic réel de vos utilisateurs. Les utilisateurs sont plus susceptibles d'<wpostatsUrl>abandonner votre site web</wpostatsUrl> s'il met trop de temps à charger, prenez les devants sur ces problèmes et mesurez les indicateurs issus des interactions réelles.",
+      "title": "Trouvez les pages lentes avant que les utilisateurs ne partent",
+      "desc": "La vitesse du site affecte le trafic, les conversions et la confiance des utilisateurs. Parallèlement aux <indexUrl>analyses de trafic</indexUrl>, Swetrix mesure les performances du site à partir des visites d'utilisateurs réels, afin que vous puissiez voir quelles pages se chargent lentement.\nUtilisez des données d'interaction réelles pour repérer les problèmes de temps de chargement avant de perdre des visiteurs.",
       "list": [
-        "Mesurer quelles pages prennent trop de temps à charger",
-        "Agréger les données de performance par géolocalisation, navigateur, type d'appareil, page et autres métriques",
-        "Comparer la vitesse du site aux périodes précédentes pour analyser les éventuels problèmes ou améliorations"
+        "Trouvez les pages avec des temps de chargement lents",
+        "Analysez les performances par pays, navigateur, type d'appareil, page et autres dimensions",
+        "Comparez la vitesse du site avec les périodes précédentes pour repérer les régressions ou les améliorations"
       ]
     },
     "metrics": {
-      "title": "Analyser toutes les mesures clés dans un seul outil",
-      "desc": "Avec Swetrix, vous pouvez mesurer les métriques clés telles que le temps de chargement global de la page, des analyses détaillées par TTFB, DNS, temps de résolution TLS et autres métriques. Répartissez les données en différents centiles pour voir comment votre site performe pour les personnes ayant des connexions internet rapides et lentes."
+      "title": "Surveillez les indicateurs clés de performance web",
+      "desc": "Mesurez le temps de chargement de la page, le TTFB, le DNS, le TLS et d'autres indicateurs de performance de site web dans Swetrix. Affichez les centiles pour comprendre les performances de votre site pour les utilisateurs disposant de connexions rapides et lentes."
     },
     "privacy": {
-      "title": "Confidentialité avant tout, facile à utiliser",
-      "desc": "Swetrix est conçu avec une approche axée sur la confidentialité et la transparence. Nous n'utilisons pas de cookies et ne collectons pas d'informations personnelles de nos utilisateurs. Il n'y a pas de suivi entre les sites ou entre les appareils. Les données ne sont jamais vendues aux annonceurs ou à qui que ce soit d'autre.\nLe tableau de bord Swetrix est très intuitif à utiliser, vous donnant des données en temps réel et une vue claire de votre site web. Il n'y a pas de couches de menus, pas besoin d'exporter vos données dans des rapports personnalisés pour bien les comprendre."
+      "title": "Privé et facile à lire",
+      "desc": "Swetrix donne la priorité à la confidentialité et à la transparence. Nous n'utilisons pas de cookies, ne collectons pas d'informations personnelles, ne suivons pas les utilisateurs sur d'autres sites ou appareils, et ne vendons pas de données aux annonceurs.\nLe tableau de bord vous fournit des analyses de site web en temps réel sans menus complexes ni rapports personnalisés pour comprendre ce qui se passe."
     }
   },
   "errors": {
-    "slogan": "Outil de <span>suivi des erreurs</span> des utilisateurs finaux pour offrir des expériences sans bug.",
-    "description": "Concentrez-vous sur la création de belles applications, et nous vous informerons si quelque chose ne va pas.",
+    "slogan": "<span>Suivi des erreurs</span> des utilisateurs finaux pour des applications web fiables.",
+    "description": "Voyez quand quelque chose se casse, où cela s'est produit et quoi réparer ensuite.",
     "fast": {
-      "title": "Offrir des expériences sans bugs",
-      "desc": "Tout le monde déteste les bugs, donc en plus des analyses de <indexUrl>trafic</indexUrl> et de <perfUrl>performance</perfUrl>, Swetrix vous permet de surveiller les erreurs de votre site web pour les résoudre rapidement. Configurez facilement le suivi des erreurs avec <oneLC>une seule ligne de code</oneLC>, afin de pouvoir vous concentrer sur le développement de vos applications plutôt que sur la chasse aux bugs.",
+      "title": "Trouvez et corrigez les erreurs du site web plus rapidement",
+      "desc": "En plus des analyses de <indexUrl>trafic</indexUrl> et de <perfUrl>performances</perfUrl>, Swetrix vous aide à suivre les erreurs du site web des utilisateurs réels. Ajoutez la surveillance des erreurs avec <oneLC>une ligne de code</oneLC> et passez moins de temps à chercher les bugs.",
       "list": [
-        "Obtenez une vue d'ensemble des types d'erreurs présentes sur votre site web",
-        "Visualisez les détails d'erreurs spécifiques et les données agrégées par géolocalisation, navigateur, type d'appareil, page et autres métriques",
-        "Comprenez si le bug est nouveau ou s'est reproduit, facilitant ainsi sa correction"
+        "Voyez quelles erreurs se produisent sur votre site web",
+        "Affichez les détails des erreurs par pays, navigateur, type d'appareil, page et autres dimensions",
+        "Vérifiez si une erreur est nouvelle, récurrente ou est revenue après une correction"
       ]
     },
     "track": {
-      "title": "Suivre toutes les erreurs avec un seul outil",
-      "desc": "Avec Swetrix, vous pouvez suivre exactement quels types derrors vos utilisateurs rencontrent et quand. Nous vous donnons également des informations sur les navigateurs, systèmes d'exploitation, appareils et plus encore, rendant la résolution des problèmes encore plus facile."
+      "title": "Suivez les erreurs en un seul endroit",
+      "desc": "Voyez quelles erreurs les utilisateurs rencontrent, quand elles se sont produites, et quels navigateurs, systèmes d'exploitation, appareils et pages sont affectés. Utilisez ce contexte pour reproduire les problèmes et prioriser les correctifs."
     }
   },
   "captchaPage": {
     "slogan": "Protégez votre site web contre les bots avec un CAPTCHA <span>axé sur la confidentialité</span>",
-    "description": "Swetrix CAPTCHA est une solution de captcha open source et facile à utiliser. Elle est simple à intégrer et offre une protection exceptionnelle contre les bots tout en respectant la vie privée des utilisateurs.",
-    "whySwetrix": "Pourquoi choisir Swetrix CAPTCHA ?",
-    "whySwetrixDesc": "Contrairement aux autres fournisseurs de CAPTCHA, nous plaçons la confidentialité au premier plan. Pas de suivi, pas de cookies, juste une protection efficace contre les bots.",
+    "description": "Swetrix CAPTCHA est un service CAPTCHA open-source qui aide à bloquer les bots et le spam sans cookies ni suivi des utilisateurs.",
+    "whySwetrix": "Pourquoi utiliser Swetrix CAPTCHA ?",
+    "whySwetrixDesc": "Protection contre les bots sans suivi, cookies, ni revente des données des utilisateurs.",
     "features": {
       "privacy": {
         "title": "Axé sur la confidentialité",
-        "desc": "Swetrix CAPTCHA reste riche en fonctionnalités et facile à utiliser tout en étant axé sur la confidentialité. Les défis captcha sont réalisés de manière totalement anonyme et les données d’analyse ne peuvent pas être rattachées à un utilisateur spécifique."
+        "desc": "Swetrix CAPTCHA exécute les défis de manière anonyme. Les données d'analyse sont agrégées et ne peuvent être liées à un utilisateur spécifique."
       },
       "opensource": {
         "title": "Open source",
-        "desc": "Notre code source est доступible à tous sur GitHub, afin que chacun puisse l’analyser et le relire à tout moment. Si vous souhaitez exécuter le CAPTCHA sur votre propre serveur, vous êtes libre de le faire."
+        "desc": "Le code source est disponible sur GitHub pour examen. Vous pouvez également auto-héberger le CAPTCHA sur votre propre serveur."
       },
       "customisable": {
         "title": "Personnalisable",
-        "desc": "Vous pouvez personnaliser le CAPTCHA selon vos préférences : modifier les couleurs du thème et ajuster les réglages pour correspondre au design de votre site."
+        "desc": "Ajustez les couleurs, le thème et les paramètres pour que le CAPTCHA s'adapte au design de votre site web."
       },
       "easy": {
-        "title": "Facile à utiliser",
-        "desc": "Intégrez le CAPTCHA à votre site en quelques minutes. Vous pouvez utiliser nos extraits de code prêts à l’emploi ; il est déjà inclus dans les offres Swetrix Analytics."
+        "title": "Configuration rapide",
+        "desc": "Ajoutez Swetrix CAPTCHA à votre site web avec des extraits de code pré-conçus. Il est inclus dans les forfaits Swetrix Analytics."
       }
     },
     "howItWorks": {
-      "title": "Intégration simple, protection puissante",
-      "desc": "Démarrez avec Swetrix CAPTCHA en trois étapes simples",
+      "title": "Configuration simple, protection forte contre les bots",
+      "desc": "Commencez à utiliser Swetrix CAPTCHA en trois étapes.",
       "step1": {
         "title": "Créer un projet",
-        "desc": "Inscrivez-vous à Swetrix et créez un nouveau projet CAPTCHA depuis votre tableau de bord"
+        "desc": "Inscrivez-vous sur Swetrix et créez un projet CAPTCHA dans votre tableau de bord."
       },
       "step2": {
         "title": "Ajouter le widget",
-        "desc": "Copiez l’extrait de code et ajoutez-le à vos formulaires : quelques lignes suffisent"
+        "desc": "Copiez l'extrait de code et ajoutez-le à vos formulaires."
       },
       "step3": {
-        "title": "Vérifier côté serveur",
-        "desc": "Utilisez notre API pour vérifier la réponse CAPTCHA sur votre serveur et filtrer les bots"
+        "title": "Vérifiez sur votre serveur",
+        "desc": "Utilisez l'API pour vérifier les réponses du CAPTCHA sur votre serveur et bloquer les bots."
       },
       "readDocs": "Lire la documentation"
     },
     "demo": {
-      "tagline": "Essayez par vous-même",
-      "title": "Découvrez Swetrix CAPTCHA",
-      "description": "Swetrix CAPTCHA utilise un défi de preuve de travail invisible. Au lieu de puzzles agaçants, il vérifie l’appareil de l’utilisateur en arrière-plan.",
-      "description2": "Les utilisateurs effectuent une vérification rapide pour prouver qu’ils sont humains. Cette étape simple protège vos formulaires contre le spam et les attaques automatisées.",
-      "seeDevDemo": "Voir la démo pour développeurs",
-      "formTitle": "Démo",
-      "formSubtitle": "Utilisez le formulaire d’exemple pour voir Swetrix CAPTCHA en action.",
-      "nameLabel": "Nom de test",
+      "tagline": "Essayez-le",
+      "title": "Essayez Swetrix CAPTCHA",
+      "description": "Swetrix CAPTCHA utilise un défi de preuve de travail invisible. Au lieu de puzzles, il vérifie l'appareil de l'utilisateur en arrière-plan.",
+      "description2": "Les utilisateurs effectuent une courte vérification pour confirmer qu'ils sont humains. Cela aide à protéger les formulaires contre le spam et les abus automatisés.",
+      "seeDevDemo": "Démo développeur",
+      "formTitle": "Formulaire de démo",
+      "formSubtitle": "Soumettez le formulaire d'exemple pour voir la vérification CAPTCHA en action.",
+      "nameLabel": "Nom",
       "namePlaceholder": "Saisissez votre nom",
-      "messageLabel": "Message de test",
-      "messagePlaceholder": "Saisissez un message (facultatif)",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Entrez un message, facultatif",
       "submit": "Envoyer",
-      "success": "Formulaire envoyé avec succès ! La vérification CAPTCHA a réussi.",
+      "success": "Formulaire soumis. La vérification CAPTCHA a réussi.",
       "errors": {
-        "notCompleted": "Veuillez d’abord terminer la vérification CAPTCHA."
+        "notCompleted": "Complétez la vérification CAPTCHA avant de soumettre."
       }
     },
     "demoPage": {
       "title": "Démo développeur Swetrix CAPTCHA",
-      "subtitle": "Testez et configurez le widget CAPTCHA",
+      "subtitle": "Testez et configurez le widget CAPTCHA.",
       "captchaWidget": "Widget CAPTCHA",
       "configuration": "Configuration",
       "theme": "Thème",
@@ -309,16 +311,16 @@
       "themeLight": "Clair",
       "themeDark": "Sombre",
       "mode": "Mode",
-      "modeReal": "Exemple réel",
+      "modeReal": "Flux réel",
       "modeAlwaysPass": "Toujours réussir",
       "modeAlwaysFail": "Toujours échouer",
-      "serverValidation": "Validation du jeton côté serveur",
+      "serverValidation": "Validation serveur",
       "tokenType": "Type de jeton",
       "tokenAlwaysPass": "Toujours réussir",
       "tokenAlwaysFail": "Toujours échouer",
-      "tokenAlreadyUsed": "Échec (jeton déjà utilisé)",
+      "tokenAlreadyUsed": "Token utilisé",
       "validateButton": "Valider",
-      "learnMore": "En savoir plus sur l’intégration du CAPTCHA dans notre documentation."
+      "learnMore": "Découvrez comment intégrer le CAPTCHA dans la documentation."
     }
   },
   "marketers": {
@@ -3202,6 +3204,7 @@
       "everythingFrom": "Tout de {{plan}}",
       "unlimitedMembers": "Membres illimités",
       "eventsAndGoals": "Événements & Objectifs",
+      "performanceMonitoring": "Surveillance des performances",
       "sessionUserProfileAnalysis": "Analyse des sessions & profils utilisateurs",
       "errorTracking": "Suivi des erreurs",
       "advancedBotDetection": "Détection avancée des bots",
@@ -3228,14 +3231,28 @@
       "tooltips": {
         "advancedBotDetection": "Swetrix filtre le trafic automatisé avant qu'il ne soit stocké, des agents utilisateurs de bots connus et des navigateurs headless aux vérifications plus strictes pour les en-têtes suspects, les chemins de sondage, le spam de référent et les IP de centres de données. Les requêtes de bots bloquées ne sont jamais comptabilisées dans votre quota d'événements.",
         "adBlockerBypass": "Acheminez le script de suivi et le trafic d'analyse via un reverse proxy géré sur votre propre sous-domaine, afin que les requêtes soient traitées en tant que trafic first-party depuis votre domaine.",
+        "googleAnalyticsImport": "Importez votre historique analytique dans Swetrix depuis Google Analytics, Plausible, Fathom, Umami, Simple Analytics et d'autres plateformes pour que vos anciens rapports restent disponibles après la transition.",
+        "eventsAndGoals": "Suivez des événements personnalisés et des objectifs de conversion, notamment les objectifs de pages vues, d'événements et multi-conditions basés sur le trafic, la campagne, l'appareil ou des filtres de métadonnées.",
+        "performanceMonitoring": "Suivez les métriques de vitesse du site pour les utilisateurs réels, telles que le temps de chargement des pages, le TTFB, le DNS, le TLS, le temps de rendu et les délais backend ou frontend.",
+        "funnels": "Suivez les étapes ordonnées des pages et événements, mesurez la conversion et l'abandon, et inspectez les sessions pour chaque étape.",
+        "sessionUserProfileAnalysis": "Inspectez les profils et sessions individuels pour comprendre les parcours, déboguer les problèmes et examiner les pages vues, les événements, les erreurs et les replays lorsqu'ils sont disponibles.",
+        "errorTracking": "Capturez les exceptions côté client, les stack traces, les utilisateurs affectés, les sessions et les répartitions en parallèle de vos analyses.",
+        "emailReports": "Recevez des résumés réguliers par e-mail avec les métriques clés du projet, telles que les visiteurs, les pages vues, la durée de la session, le taux de rebond, les objectifs, les erreurs et les principaux pays.",
+        "recaptchaAlternative": "Utilisez Swetrix CAPTCHA, un défi Proof of Work open-source et sans cookies qui bloque les bots sans utiliser de puzzles d'images.",
+        "restfulApiSdks": "Envoyez des pages vues et des événements personnalisés via le script de suivi, des intégrations, des SDK ou l'API d'événements pour le suivi côté serveur et les applications natives.",
         "sessionReplays": {
           "description": "Un replay de session est une session de navigateur enregistrée que vous pouvez visionner pour déboguer les parcours utilisateurs, les erreurs et les abandons.",
           "recording": "Les replays sont enregistrés uniquement après que vous ayez explicitement démarré l'enregistrement via le tracker. Les événements d'analyse réguliers et les pages vues ne créent pas de replays automatiquement.",
           "quota": "Le quota est basé sur les replays enregistrés, également appelés sessions enregistrées, par mois. Il n'est pas basé sur les minutes de replay, la taille de stockage ou le nombre de fois qu'un replay est visionné.",
           "plans": "Standard inclut 0 replay, Plus inclut un quota mensuel proportionnel au palier d'événements sélectionné, et Entreprise est sur mesure."
         },
+        "featureFlags": "Déployez les fonctionnalités progressivement, ciblez des cohortes ou des utilisateurs individuels, et désactivez les modifications sans avoir à redéployer.",
+        "abTesting": "Lancez des expériences basées sur des objectifs, répartissez les visiteurs entre les variantes et comparez les résultats de conversion avant de déployer un changement pour tous.",
+        "twentyXHigherApiRateLimits": "Les forfaits Standard incluent 300 requêtes API par heure. Les forfaits Plus incluent 6 000 requêtes API par heure, soit 20 fois plus.",
         "plusWebsites": "Swetrix n'a pas de limite sur le nombre de sites web que vous pouvez ajouter. Vous pouvez acheter des sites web supplémentaires via des modules complémentaires. Des remises de volume sont disponibles si vous contactez le support.",
         "customEventLimits": "Les forfaits Entreprise sont flexibles en ce qui concerne les limites d'événements, les limites de requêtes API et la quantité de projets.",
+        "onPremise": "Notre équipe installe Swetrix sur votre propre infrastructure et gère l'installation, la maintenance et les mises à jour pour vous.",
+        "dedicatedInstance": "Nous déployons Swetrix dans votre emplacement préféré, tel que l'UE, les États-Unis ou l'Asie, gérons les mises à jour et le gardons séparé de l'environnement partagé Swetrix Cloud.",
         "manualInvoicing": "Nous acceptons toutes les principales cartes de crédit et de débit. Les clients Entreprise peuvent également payer par ACH, SEPA, virement bancaire ou sur facture."
       }
     },
@@ -3304,76 +3321,87 @@
     }
   },
   "checkout": {
-    "title": "Commencez à suivre votre croissance dès aujourd'hui",
-    "subtitle": "Profitez d'un essai gratuit de {{days}} jours offert. Annulez à tout moment.",
-    "realTimeAnalytics": "Analyses sans cookies en temps réel",
-    "willRemind": "Nous vous le rappellerons avant la fin de votre essai",
-    "freeTrialAnytime": "Essai gratuit de {{days}} jours, annulez à tout moment",
-    "dueEnd": "Dû le {{date}}",
-    "dueToday": "Dû aujourd'hui ({{days}} jours gratuits)",
+    "title": "Commencez votre essai gratuit",
+    "subtitle": "Essayez Swetrix gratuitement pendant {{days}} jours. Annulez à tout moment.",
+    "realTimeAnalytics": "Analyses en temps réel sans cookies",
+    "willRemind": "Nous vous enverrons un e-mail avant la fin de l'essai",
+    "freeTrialAnytime": "Essai gratuit de {{days}} jours. Annulez à tout moment.",
+    "dueEnd": "Échéance le {{date}}",
+    "dueToday": "Échéance aujourd'hui, après {{days}} jours gratuits",
     "next": "Démarrer l'essai gratuit",
-    "selectPlan": "Sélectionnez votre forfait",
-    "customPlanTitle": "Besoin d'un plan supérieur à 20M de pages vues ?",
-    "customPlanDesc": "Sélectionnez « Jusqu'à {{count}} pages vues par mois » et <contact>contactez-nous</contact> pour un devis personnalisé."
+    "selectPlan": "Choisissez un plan",
+    "customPlanTitle": "Besoin de plus de 20M d'événements ?",
+    "customPlanDesc": "Sélectionnez « Jusqu'à {{count}} événements par mois » et <contact>contactez-nous</contact> pour un devis personnalisé.",
+    "trial": {
+      "today": "Aujourd'hui",
+      "step1Label": "Votre essai gratuit commence avec un accès complet",
+      "step2Label": "Nous vous enverrons un rappel par e-mail",
+      "step3Label": "Votre premier paiement sera prélevé sauf si vous annulez",
+      "footer": "Annulez à tout moment avant la fin de l'essai. Nous ne vous facturerons pas avant."
+    },
+    "faqTrial": {
+      "q": "Que se passe-t-il à la fin de mon essai ?",
+      "a": "Nous vous enverrons un e-mail 2 jours avant la fin de votre essai de {{days}} jours. Si vous annulez avant la fin de l'essai, vous ne serez pas facturé."
+    }
   },
   "onboarding": {
     "welcome": "Bienvenue sur Swetrix",
     "title": "Commencer",
-    "skipOnboarding": "Ignorer l’onboarding",
-    "finishOnboarding": "Terminer l’onboarding",
+    "skipOnboarding": "Ignorer la configuration",
+    "finishOnboarding": "Terminer la configuration",
     "selectLanguage": {
-      "title": "Sélectionnez votre langue",
-      "subtitle": "Quelle est votre langue préférée ?"
+      "title": "Choisissez votre langue",
+      "subtitle": "Quelle langue souhaitez-vous utiliser ?"
     },
     "welcomeScreen": {
-      "title": "Bienvenue sur Swetrix !",
-      "subtitle": "Des analyses respectueuses de la vie privée, sans cookies, qui vous fournissent les informations dont vous avez besoin sans compromettre la confidentialité de vos utilisateurs.",
-      "featureTitle": "Un espace pour vos analyses",
-      "featureDesc": "Un endroit pour comprendre votre trafic, suivre les erreurs et prendre des décisions fondées sur les données."
+      "title": "Bienvenue sur Swetrix",
+      "subtitle": "Analytique centrée sur la confidentialité sans cookies, conçue pour vous aider à comprendre votre trafic tout en respectant vos utilisateurs.",
+      "featureTitle": "Votre espace de travail analytique",
+      "featureDesc": "Suivez le trafic, surveillez les erreurs et comprenez comment les gens utilisent votre site."
     },
     "features": {
       "traffic": {
-        "title": "Analyse du trafic",
-        "desc": "Comprenez le trafic de votre site web grâce à des analyses en temps réel. Voyez d’où viennent vos visiteurs, quelles pages ils consultent et comment ils interagissent avec votre site.",
-        "tip": "Suivez les visiteurs dans le monde entier, sans cookies."
+        "title": "Analytique du trafic",
+        "desc": "Découvrez d'où viennent les visiteurs, quelles pages ils consultent et comment ils utilisent votre site en temps réel.",
+        "tip": "Suivez les visiteurs dans le monde entier sans cookies."
       },
       "errors": {
         "title": "Suivi des erreurs",
-        "desc": "Détectez et corrigez les bugs avant que vos utilisateurs ne les remarquent. Obtenez des rapports d’erreurs détaillés avec des traces de pile, des informations sur le navigateur et le contexte utilisateur."
+        "desc": "Trouvez des bugs grâce à des rapports d'erreurs comprenant des traces de pile, des détails sur le navigateur et le contexte de l'utilisateur."
       },
       "sessions": {
         "title": "Sessions utilisateur",
-        "desc": "Voyez exactement comment les utilisateurs naviguent sur votre site. Comprenez les parcours utilisateurs, identifiez les points d’abandon et optimisez l’expérience.",
-        "tip": "Consultez les sessions en temps réel au moment où elles se déroulent."
+        "desc": "Examinez comment les utilisateurs naviguent sur votre site, où ils s'arrêtent et ce qui pourrait avoir besoin d'être corrigé.",
+        "tip": "Regardez les sessions se dérouler."
       }
     },
     "selectPlan": {
       "timeline": {
         "today": "Aujourd'hui",
-        "todayDesc": "Commencez votre essai gratuit avec un accès complet à toutes les fonctionnalités",
+        "todayDesc": "Commencez votre essai gratuit avec un accès complet",
         "reminder": "Jour {{days}}",
-        "reminderDesc": "Nous vous enverrons un petit rappel avant la fin de votre essai",
+        "reminderDesc": "Nous vous enverrons un email avant la fin de l'essai",
         "charge": "Jour {{days}}",
-        "chargeDesc": "Votre abonnement commence, sauf si vous l'annulez avant"
+        "chargeDesc": "Votre abonnement commencera à moins que vous ne l'annuliez avant"
       }
     },
     "createProject": {
       "navTitle": "Créer un projet",
       "navDesc": "Ajoutez un site web pour commencer à collecter des données d’analyse.",
-      "title": "Configurons votre premier projet",
-      "desc": "Créez un projet pour commencer à suivre les statistiques de votre site web. Saisissez un nom pour continuer.",
-      "placeholder": "Mon super site web",
-      "timezoneDesc": "Les graphiques, les plages de dates et les horodatages du projet utiliseront ce fuseau horaire. Vous pourrez le modifier plus tard."
+      "title": "Configurez votre premier projet",
+      "desc": "Créez un projet pour le site web que vous souhaitez suivre. Ajoutez un nom de projet pour continuer.",
+      "placeholder": "Mon site web",
+      "timezoneDesc": "Les graphiques, les plages de dates et les horodatages utiliseront ce fuseau horaire. Vous pourrez le modifier plus tard."
     },
     "installTracking": {
-      "navTitle": "Installer le script de suivi",
+      "navTitle": "Installer le script",
       "navDesc": "Ajoutez le script Swetrix à votre site web.",
-      "title": "Configurez Swetrix sur votre site web",
-      "desc": "Ajoutez le script Swetrix à votre site web. Vous pouvez également utiliser Swetrix pour suivre des événements dans vos applications mobiles ou de bureau et envoyer des événements directement à notre API. En savoir plus sur les intégrations avancées dans notre <url>documentation</url>.",
-      "websiteInstallation": "Installation sur le site web",
-      "pasteScript": "Collez le script sur votre site web",
-      "weAlsoSupport": "Nous prenons également en charge l’installation de Swetrix via NPM (pour React, Vue, etc.), proposons une Events API pour envoyer des événements directement à notre API, ainsi que de nombreuses intégrations avec d’autres services comme WordPress ou Google Tag Manager. <url>En savoir plus</url>.",
-      "optional": "Cette étape est facultative — vous pourrez toujours configurer le suivi plus tard depuis les paramètres de votre projet.",
+      "title": "Ajouter Swetrix à votre site web",
+      "desc": "Ajoutez le script Swetrix à votre site, ou envoyez des événements depuis des applications web, mobiles ou de bureau via l'API. Pour les options de configuration avancées, consultez notre <url>documentation</url>.",
+      "websiteInstallation": "Configuration du site web",
+      "pasteScript": "Collez ce script sur votre site web",
+      "weAlsoSupport": "Vous pouvez également installer Swetrix avec NPM pour des frameworks comme React et Vue, envoyer des événements via l'API Événements, ou utiliser des intégrations telles que WordPress et Google Tag Manager. <url>En savoir plus</url>.",
+      "optional": "Cette étape est facultative. Vous pourrez configurer le suivi plus tard depuis les paramètres du projet.",
       "skipForNow": "Ignorer pour le moment",
       "tabs": {
         "script": "Script",
@@ -3383,22 +3411,22 @@
       },
       "npm": {
         "title": "Paquet NPM",
-        "desc": "Pour React, Vue, Angular et autres frameworks JS.",
+        "desc": "Pour React, Vue, Angular et d'autres frameworks JavaScript.",
         "step1": "1. Installez le paquet",
-        "step2": "2. Importez et initialisez",
-        "entryFileHint": "Ajoutez ceci au fichier d'entrée de votre application (ex. <codeA>index.js</codeA> ou <codeB>App.js</codeB>). <url>Voir la documentation complète</url>"
+        "step2": "2. Importer et initialiser",
+        "entryFileHint": "Ajoutez ceci au fichier d'entrée de votre application, tel que <codeA>index.js</codeA> ou <codeB>App.js</codeB>. <url>Voir la documentation complète</url>"
       },
       "gtm": {
         "title": "Google Tag Manager",
-        "desc": "Ajoutez Swetrix via GTM sans toucher à votre code source.",
-        "step1": "1. Votre ID de projet",
+        "desc": "Ajoutez Swetrix via GTM sans modifier votre base de code.",
+        "step1": "1. Copiez l'ID de votre projet",
         "step2": "2. Créez une balise HTML personnalisée dans GTM avec ce code",
-        "step3": "3. Définissez le déclencheur sur \"All Pages\" (Toutes les pages) et publiez",
-        "viewGuide": "Voir le guide complet de GTM"
+        "step3": "3. Utilisez le déclencheur \"Toutes les pages\" et publiez",
+        "viewGuide": "Voir le guide GTM"
       },
       "platforms": {
         "title": "Guides des plateformes",
-        "desc": "Guides d'intégration étape par étape pour les plateformes populaires.",
+        "desc": "Guides de configuration pour les plateformes populaires.",
         "viewAll": "Voir toutes les intégrations"
       }
     }
@@ -3507,6 +3535,7 @@
     "pp": "Politique de Confidentialité",
     "tos": "Conditions de Service",
     "blog": "Blog",
+    "glossary": "Glossaire",
     "tools": "Outils gratuits",
     "utm": "Générateur UTM",
     "ctr": "Calculatrice de CTR",
