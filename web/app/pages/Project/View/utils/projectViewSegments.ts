@@ -8,10 +8,15 @@ import { Filter } from '../interfaces/traffic'
 
 type ProjectTab = keyof typeof PROJECT_TABS
 
+const TRAFFIC_FILTER_OPTIONS = FILTERS_PANELS_ORDER.includes('ev')
+  ? FILTERS_PANELS_ORDER
+  : FILTERS_PANELS_ORDER.flatMap((column) =>
+      column === 'exitPage' ? [column, 'ev'] : [column],
+    )
+
 const TRAFFIC_FILTER_COLUMNS = [
-  ...FILTERS_PANELS_ORDER,
+  ...TRAFFIC_FILTER_OPTIONS,
   'refn',
-  'ev',
   'ev:key',
   'tag:key',
   'tag:value',
@@ -56,15 +61,15 @@ const ANALYTICS_TABS = new Set<ProjectTab>([
 ])
 
 const FILTER_OPTIONS_BY_TAB: Partial<Record<ProjectTab, string[]>> = {
-  [PROJECT_TABS.traffic]: FILTERS_PANELS_ORDER,
+  [PROJECT_TABS.traffic]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.performance]: PERFORMANCE_FILTER_COLUMNS,
   [PROJECT_TABS.seo]: ['pg', 'cc', 'dv'],
-  [PROJECT_TABS.sessions]: FILTERS_PANELS_ORDER,
-  [PROJECT_TABS.replays]: FILTERS_PANELS_ORDER,
-  [PROJECT_TABS.profiles]: FILTERS_PANELS_ORDER,
-  [PROJECT_TABS.funnels]: FILTERS_PANELS_ORDER,
-  [PROJECT_TABS.goals]: FILTERS_PANELS_ORDER,
-  [PROJECT_TABS.experiments]: FILTERS_PANELS_ORDER,
+  [PROJECT_TABS.sessions]: TRAFFIC_FILTER_OPTIONS,
+  [PROJECT_TABS.replays]: TRAFFIC_FILTER_OPTIONS,
+  [PROJECT_TABS.profiles]: TRAFFIC_FILTER_OPTIONS,
+  [PROJECT_TABS.funnels]: TRAFFIC_FILTER_OPTIONS,
+  [PROJECT_TABS.goals]: TRAFFIC_FILTER_OPTIONS,
+  [PROJECT_TABS.experiments]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.errors]: ['host', ...ERRORS_FILTERS_PANELS_ORDER],
   [PROJECT_TABS.captcha]: CAPTCHA_FILTER_COLUMNS,
 }
