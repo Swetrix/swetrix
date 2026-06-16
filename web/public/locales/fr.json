@@ -90,8 +90,6 @@
     "holdToReset": "Maintenez pour réinitialiser",
     "amount": "Montant",
     "date": "Date",
-    "success": "Succès",
-    "redirecting": "Redirection en cours...",
     "info": "Informations",
     "error": "Erreur",
     "close": "Fermer",
@@ -730,6 +728,10 @@
         "title": "Trafic des analyses web",
         "desc": "Voir les visiteurs, les pages vues, les référents, les pays, les appareils et les meilleures pages sans échantillonnage."
       },
+      "seoGeo": {
+        "title": "Analyses SEO & GEO",
+        "desc": "Connectez Google Search Console pour voir les clics, les impressions, les meilleures requêtes et pages, puis associez-les aux données de référence des moteurs de recherche et de l'IA."
+      },
       "events": {
         "title": "Événements et objectifs personnalisés",
         "desc": "Suivez les inscriptions, les achats et les clics sur les boutons. Définissez des objectifs de conversion pour mesurer l’essentiel."
@@ -737,6 +739,10 @@
       "campaigns": {
         "title": "Campagnes et paramètres UTM",
         "desc": "Voyez quelles campagnes génèrent du trafic et des revenus. Suivez les paramètres UTM et mesurez le ROI."
+      },
+      "alerts": {
+        "title": "Alertes",
+        "desc": "Soyez informé des pics de trafic, des erreurs et des événements personnalisés par e-mail, Slack, Telegram, Discord, webhooks ou notifications push du navigateur."
       },
       "botBlocking": {
         "title": "Blocage des bots",
@@ -3325,6 +3331,7 @@
   "checkout": {
     "title": "Commencez votre essai gratuit",
     "subtitle": "Essayez Swetrix gratuitement pendant {{days}} jours. Annulez à tout moment.",
+    "successRedirect": "Votre paiement est terminé. Nous mettons à jour votre abonnement et vous redirigerons vers votre tableau de bord sous peu.",
     "realTimeAnalytics": "Analyses en temps réel sans cookies",
     "willRemind": "Nous vous enverrons un e-mail avant la fin de l'essai",
     "freeTrialAnytime": "Essai gratuit de {{days}} jours. Annulez à tout moment.",

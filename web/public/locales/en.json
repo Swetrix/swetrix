@@ -728,6 +728,10 @@
         "title": "Traffic web analytics",
         "desc": "See visitors, pageviews, referrers, countries, devices and top pages without sampling."
       },
+      "seoGeo": {
+        "title": "SEO & GEO insights",
+        "desc": "Connect Google Search Console to see clicks, impressions, top queries and pages, then pair it with search engine and AI referral data."
+      },
       "events": {
         "title": "Custom events & goals",
         "desc": "Track signups, purchases and button clicks. Set conversion goals to measure what matters."
@@ -735,6 +739,10 @@
       "campaigns": {
         "title": "Campaigns & UTMs",
         "desc": "See which campaigns drive traffic and revenue. Track UTM parameters and measure ROI."
+      },
+      "alerts": {
+        "title": "Alerts",
+        "desc": "Get notified about traffic spikes, errors and custom events through email, Slack, Telegram, Discord, webhooks or browser push."
       },
       "botBlocking": {
         "title": "Bot blocking",

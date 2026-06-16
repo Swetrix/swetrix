@@ -90,8 +90,6 @@
     "holdToReset": "Przytrzymaj, aby zresetować",
     "amount": "Kwota",
     "date": "Data",
-    "success": "Sukces",
-    "redirecting": "Przekierowywanie...",
     "info": "Informacje",
     "error": "Błąd",
     "close": "Zamknij",
@@ -730,6 +728,10 @@
         "title": "Analityka ruchu internetowego",
         "desc": "Zobacz odwiedzających, odsłony, źródła ruchu, kraje, urządzenia i najpopularniejsze strony bez próbkowania."
       },
+      "seoGeo": {
+        "title": "Statystyki SEO i GEO",
+        "desc": "Połącz Google Search Console, aby zobaczyć kliknięcia, wyświetlenia, najpopularniejsze zapytania i strony, a następnie połącz to z danymi o wejściach z wyszukiwarek i sztucznej inteligencji."
+      },
       "events": {
         "title": "Niestandardowe zdarzenia i cele",
         "desc": "Śledź rejestracje, zakupy i kliknięcia przycisków. Ustaw cele konwersji, aby mierzyć to, co najważniejsze."
@@ -737,6 +739,10 @@
       "campaigns": {
         "title": "Kampanie i UTM-y",
         "desc": "Sprawdź, które kampanie generują ruch i przychody. Śledź parametry UTM i mierz ROI."
+      },
+      "alerts": {
+        "title": "Alerty",
+        "desc": "Otrzymuj powiadomienia o skokach ruchu, błędach i zdarzeniach niestandardowych przez e-mail, Slack, Telegram, Discord, webhooki lub powiadomienia push w przeglądarce."
       },
       "botBlocking": {
         "title": "Blokowanie botów",
@@ -3325,6 +3331,7 @@
   "checkout": {
     "title": "Rozpocznij bezpłatny okres próbny",
     "subtitle": "Wypróbuj Swetrix za darmo przez {{days}} dni. Anuluj w dowolnym momencie.",
+    "successRedirect": "Twój proces zakupu został zakończony. Aktualizujemy Twoją subskrypcję i wkrótce przeniesiemy Cię do panelu.",
     "realTimeAnalytics": "Analityka w czasie rzeczywistym bez plików cookie",
     "willRemind": "Wyślemy Ci e-mail przed zakończeniem okresu próbnego",
     "freeTrialAnytime": "Darmowy okres próbny na {{days}} dni. Anuluj w dowolnym momencie.",

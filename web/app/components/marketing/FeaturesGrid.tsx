@@ -1,4 +1,5 @@
 import {
+  BellRingingIcon,
   BugIcon,
   CaretUpIcon,
   CaretDownIcon,
@@ -8,6 +9,7 @@ import {
   FlaskIcon,
   FunnelIcon,
   GaugeIcon,
+  MagnifyingGlassIcon,
   MegaphoneIcon,
   CookieIcon,
   PlayIcon,
@@ -27,8 +29,10 @@ import { ScrollReveal } from './ScrollReveal'
 const WEB_ANALYTICS_FEATURES = [
   { icon: CookieIcon, key: 'privacy', className: 'text-indigo-500' },
   { icon: ChartLineIcon, key: 'traffic', className: 'text-blue-500' },
+  { icon: MagnifyingGlassIcon, key: 'seoGeo', className: 'text-emerald-500' },
   { icon: CursorClickIcon, key: 'events', className: 'text-purple-500' },
   { icon: MegaphoneIcon, key: 'campaigns', className: 'text-blue-500' },
+  { icon: BellRingingIcon, key: 'alerts', className: 'text-amber-500' },
   { icon: RobotIcon, key: 'botBlocking', className: 'text-slate-500' },
   { icon: GaugeIcon, key: 'perf', className: 'text-amber-500' },
 ] as const

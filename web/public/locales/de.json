@@ -90,8 +90,6 @@
     "holdToReset": "Zum Zurücksetzen gedrückt halten",
     "amount": "Anzahl",
     "date": "Datum",
-    "success": "Erfolg",
-    "redirecting": "Weiterleitung...",
     "info": "Info",
     "error": "Fehler",
     "close": "Schließen",
@@ -730,6 +728,10 @@
         "title": "Traffic Web Analytics",
         "desc": "Sehen Sie Besucher, Seitenaufrufe, Referrer, Länder, Geräte und Top-Seiten ohne Sampling."
       },
+      "seoGeo": {
+        "title": "SEO- & GEO-Einblicke",
+        "desc": "Verbinden Sie die Google Search Console, um Klicks, Impressionen, Top-Suchanfragen und -Seiten zu sehen, und kombinieren Sie diese mit Suchmaschinen- und KI-Referral-Daten."
+      },
       "events": {
         "title": "Benutzerdefinierte Ereignisse & Ziele",
         "desc": "Verfolgen Sie Registrierungen, Käufe und Button-Klicks. Legen Sie Conversion-Ziele fest, um zu messen, was zählt."
@@ -737,6 +739,10 @@
       "campaigns": {
         "title": "Kampagnen & UTMs",
         "desc": "Sehen Sie, welche Kampagnen Traffic und Umsatz bringen. Verfolgen Sie UTM-Parameter und messen Sie den ROI."
+      },
+      "alerts": {
+        "title": "Benachrichtigungen",
+        "desc": "Erhalten Sie Benachrichtigungen über Traffic-Spitzen, Fehler und benutzerdefinierte Ereignisse per E-Mail, Slack, Telegram, Discord, Webhooks oder Browser-Push."
       },
       "botBlocking": {
         "title": "Bot-Blockierung",
@@ -3325,6 +3331,7 @@
   "checkout": {
     "title": "Starten Sie Ihre kostenlose Testversion",
     "subtitle": "Testen Sie Swetrix {{days}} Tage lang kostenlos. Jederzeit kündbar.",
+    "successRedirect": "Ihre Kaufabwicklung ist abgeschlossen. Wir aktualisieren Ihr Abonnement und leiten Sie in Kürze zu Ihrem Dashboard weiter.",
     "realTimeAnalytics": "Echtzeit-Analysen ohne Cookies",
     "willRemind": "Wir benachrichtigen Sie per E-Mail, bevor die Testphase endet",
     "freeTrialAnytime": "{{days}}-tägige kostenlose Testphase. Jederzeit kündbar.",
