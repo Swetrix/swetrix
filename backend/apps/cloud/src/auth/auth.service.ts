@@ -172,6 +172,10 @@ export class AuthService {
     })
   }
 
+  public async sendCustomerSignupEmail(email: string) {
+    await this.mailerService.sendEmail(email, LetterTemplate.SignUp)
+  }
+
   public async createUnverifiedUser(
     email: string,
     password: string,
@@ -675,6 +679,8 @@ export class AuthService {
         registeredViaInvitation: true,
         hasCompletedOnboarding: true,
       })
+    } else {
+      await this.sendCustomerSignupEmail(email)
     }
 
     const jwtTokens = await this.generateJwtTokens(user.id, true)
@@ -1090,6 +1096,8 @@ export class AuthService {
         registeredViaInvitation: true,
         hasCompletedOnboarding: true,
       })
+    } else {
+      await this.sendCustomerSignupEmail(email)
     }
 
     const jwtTokens = await this.generateJwtTokens(user.id, true)

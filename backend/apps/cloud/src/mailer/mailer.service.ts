@@ -11,7 +11,7 @@ const TEMPLATES_PATH = path.join(__dirname, '..', 'common', 'templates')
 const metaInfoJson = {
   [LetterTemplate.SignUp]: {
     subject: {
-      en: () => 'Welcome to Swetrix — your 14-day trial has started',
+      en: () => 'Welcome to Swetrix - your 14-day trial is ready',
     },
   },
   [LetterTemplate.ConfirmPasswordChange]: {

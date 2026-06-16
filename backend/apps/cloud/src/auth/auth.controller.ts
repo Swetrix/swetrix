@@ -140,6 +140,8 @@ export class AuthController {
         registeredViaInvitation: true,
         hasCompletedOnboarding: true,
       })
+    } else {
+      await this.authService.sendCustomerSignupEmail(newUser.email)
     }
 
     await trackCustom(ip, headers['user-agent'], {
