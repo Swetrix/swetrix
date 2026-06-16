@@ -2015,6 +2015,7 @@
       "settings": "Settings",
       "speed": "Playback speed",
       "normalSpeed": "Normal",
+      "skipInactive": "Skip inactive moments",
       "screenshot": "Download screenshot",
       "screenshotError": "Could not capture this replay frame. Cross-origin media can block screenshots.",
       "screenshotDownloaded": "Replay screenshot downloaded",

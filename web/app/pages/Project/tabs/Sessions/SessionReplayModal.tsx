@@ -13,6 +13,7 @@ import {
   CornersOutIcon,
   CursorClickIcon,
   DownloadSimpleIcon,
+  FastForwardIcon,
   GaugeIcon,
   GearSixIcon,
   ListBulletsIcon,
@@ -88,6 +89,7 @@ const XHTML_XMLNS = 'http://www.w3.org/1999/xhtml'
 const SCREENSHOT_ASSET_WAIT_MS = 1000
 const EXPORT_POLL_INTERVAL_MS = 2000
 const PLAYER_READY_FALLBACK_MS = 8000
+const INACTIVE_SKIP_THRESHOLD_MS = 10_000
 
 type ReplayEvent = Omit<eventWithTime, 'data'> & {
   data?: Record<string, any>
@@ -1046,6 +1048,7 @@ const SessionReplayModal = ({
   const [isPlaying, setIsPlaying] = useState(false)
   const [isPlayerReady, setIsPlayerReady] = useState(false)
   const [speed, setSpeed] = useState(1)
+  const [skipInactive, setSkipInactive] = useState(true)
   const [showTimeline, setShowTimeline] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [hoverPreview, setHoverPreview] = useState<HoverPreview | null>(null)
@@ -1072,9 +1075,9 @@ const SessionReplayModal = ({
   const exportPollTimeout = useRef<number | null>(null)
   const exportAbortController = useRef<AbortController | null>(null)
   const isModalOpenRef = useRef(isOpen)
-  const playStart = useRef({ offset: 0, at: 0, speed: 1 })
   const currentTimeRef = useRef(0)
   const speedRef = useRef(1)
+  const skipInactiveRef = useRef(true)
 
   const events = useMemo(
     () => (payload?.events || []) as ReplayEvent[],
@@ -1229,12 +1232,15 @@ const SessionReplayModal = ({
     setError(null)
     setDuration(0)
     setCurrentTime(0)
+    currentTimeRef.current = 0
     setIsPlaying(false)
     setIsPlayerReady(false)
+    setSkipInactive(true)
     setHoverPreview(null)
     setIsPlayerHovered(false)
     setIsControlsFocused(false)
     setPlayerSize({ width: 0, height: 0 })
+    skipInactiveRef.current = true
 
     fetchSessionReplay(projectId, psid, selectedReplayId)
       .then((result) => {
@@ -1270,6 +1276,7 @@ const SessionReplayModal = ({
     setIsPlaying(false)
     setIsPlayerReady(false)
     setCurrentTime(0)
+    currentTimeRef.current = 0
     let instance: Replayer | null = null
     let readyFallback: number | null = null
     let readyRaf: number | null = null
@@ -1291,6 +1298,8 @@ const SessionReplayModal = ({
       instance = new Replayer(events as eventWithTime[], {
         root,
         speed: speedRef.current,
+        skipInactive: skipInactiveRef.current,
+        inactivePeriodThreshold: INACTIVE_SKIP_THRESHOLD_MS,
         insertStyleRules: ['html, body { background-color: #fff; }'],
       })
       instance.on(ReplayerEvents.FullsnapshotRebuilded, markPlayerReady)
@@ -1382,10 +1391,15 @@ const SessionReplayModal = ({
     if (!isOpen || !isPlaying || duration <= 0) return
 
     const timer = window.setInterval(() => {
-      const elapsed =
-        (performance.now() - playStart.current.at) * playStart.current.speed
-      const next = Math.min(duration, playStart.current.offset + elapsed)
+      const next = Math.min(
+        duration,
+        Math.max(
+          0,
+          replayer.current?.getCurrentTime() ?? currentTimeRef.current,
+        ),
+      )
       setCurrentTime(next)
+      currentTimeRef.current = next
 
       if (next >= duration) {
         replayer.current?.pause(duration)
@@ -1455,9 +1469,10 @@ const SessionReplayModal = ({
   const syncPlaybackOffset = useCallback(() => {
     if (!isPlaying) return currentTimeRef.current
 
-    const elapsed =
-      (performance.now() - playStart.current.at) * playStart.current.speed
-    return Math.min(duration, playStart.current.offset + elapsed)
+    return Math.min(
+      duration,
+      Math.max(0, replayer.current?.getCurrentTime() ?? currentTimeRef.current),
+    )
   }, [duration, isPlaying])
 
   const play = useCallback(() => {
@@ -1465,9 +1480,10 @@ const SessionReplayModal = ({
 
     const offset = Math.min(currentTimeRef.current, Math.max(0, duration - 1))
     replayer.current.play(offset)
-    playStart.current = { offset, at: performance.now(), speed }
+    setCurrentTime(offset)
+    currentTimeRef.current = offset
     setIsPlaying(true)
-  }, [duration, speed])
+  }, [duration])
 
   const pause = useCallback(() => {
     if (!replayer.current) return
@@ -1475,6 +1491,7 @@ const SessionReplayModal = ({
     const offset = syncPlaybackOffset()
     replayer.current.pause(offset)
     setCurrentTime(offset)
+    currentTimeRef.current = offset
     setIsPlaying(false)
   }, [syncPlaybackOffset])
 
@@ -1504,17 +1521,12 @@ const SessionReplayModal = ({
       currentTimeRef.current = nextOffset
 
       if (shouldPlay) {
-        playStart.current = {
-          offset: nextOffset,
-          at: performance.now(),
-          speed,
-        }
         setIsPlaying(true)
       } else {
         setIsPlaying(false)
       }
     },
-    [duration, isPlaying, speed],
+    [duration, isPlaying],
   )
 
   const handlePlayerClick = useCallback(
@@ -1597,15 +1609,20 @@ const SessionReplayModal = ({
     setSpeed(nextSpeed)
     replayer.current?.setConfig({ speed: nextSpeed })
     setCurrentTime(offset)
+    currentTimeRef.current = offset
 
     if (isPlaying) {
       replayer.current?.play(offset)
-      playStart.current = {
-        offset,
-        at: performance.now(),
-        speed: nextSpeed,
-      }
     }
+  }
+
+  const setSkipInactiveMoments = (checked: boolean) => {
+    skipInactiveRef.current = checked
+    setSkipInactive(checked)
+    replayer.current?.setConfig({
+      skipInactive: checked,
+      inactivePeriodThreshold: INACTIVE_SKIP_THRESHOLD_MS,
+    })
   }
 
   const toggleFullscreen = async () => {
@@ -2247,6 +2264,37 @@ const SessionReplayModal = ({
                                   <CaretRightIcon
                                     className='size-4 shrink-0 text-gray-200'
                                     aria-hidden
+                                  />
+                                </Button>
+
+                                <Button
+                                  variant='ghost'
+                                  focus={false}
+                                  role='switch'
+                                  aria-checked={skipInactive}
+                                  tabIndex={0}
+                                  onClick={() =>
+                                    setSkipInactiveMoments(!skipInactive)
+                                  }
+                                  className={SETTINGS_ROW_CLASS}
+                                >
+                                  <FastForwardIcon
+                                    weight='duotone'
+                                    className='size-5 shrink-0 text-gray-50'
+                                    aria-hidden
+                                  />
+                                  <Text
+                                    as='span'
+                                    size='sm'
+                                    colour='primary'
+                                    className='dark flex-1'
+                                  >
+                                    {t('project.sessionReplay.skipInactive')}
+                                  </Text>
+                                  <Switch
+                                    checked={skipInactive}
+                                    visualOnly
+                                    className='shrink-0'
                                   />
                                 </Button>
 

@@ -2015,6 +2015,7 @@
       "settings": "Paramètres",
       "speed": "Vitesse de lecture",
       "normalSpeed": "Normal",
+      "skipInactive": "Passer les moments inactifs",
       "screenshot": "Télécharger la capture d'écran",
       "screenshotError": "Impossible de capturer cette image du replay. Les médias cross-origin peuvent bloquer les captures d'écran.",
       "screenshotDownloaded": "Capture d'écran du replay téléchargée",

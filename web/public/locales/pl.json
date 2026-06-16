@@ -2015,6 +2015,7 @@
       "settings": "Ustawienia",
       "speed": "Prędkość odtwarzania",
       "normalSpeed": "Normalna",
+      "skipInactive": "Pomiń nieaktywne momenty",
       "screenshot": "Pobierz zrzut ekranu",
       "screenshotError": "Nie udało się przechwycić tej klatki nagrania. Multimedia z innych źródeł (cross-origin) mogą blokować zrzuty ekranu.",
       "screenshotDownloaded": "Pobrano zrzut ekranu nagrania",

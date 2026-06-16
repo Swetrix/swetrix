@@ -2015,6 +2015,7 @@
       "settings": "Einstellungen",
       "speed": "Wiedergabegeschwindigkeit",
       "normalSpeed": "Normal",
+      "skipInactive": "Inaktive Momente überspringen",
       "screenshot": "Screenshot herunterladen",
       "screenshotError": "Dieser Replay-Frame konnte nicht aufgenommen werden. Cross-Origin-Medien können Screenshots blockieren.",
       "screenshotDownloaded": "Replay-Screenshot heruntergeladen",
