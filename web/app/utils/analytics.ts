@@ -17,6 +17,7 @@ import { isBrowser, isDevelopment, isSelfhosted } from '~/lib/constants'
 
 export const SWETRIX_PID = 'STEzHcB1rALV'
 const SWETRIX_API_PROXY_PATH = '/_internal_data_inngest_proxy'
+const REVENUE_ATTRIBUTION_TIMEOUT_MS = 2_000
 
 const isIframe = isBrowser ? window.self !== window.top : false
 type SessionReplayActions = Awaited<ReturnType<typeof startSessionReplay>>
@@ -239,11 +240,24 @@ export const getRevenueAttribution = async (): Promise<{
     return {}
   }
 
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
+
   try {
-    const [profileId, sessionId] = await Promise.all([
-      getProfileId(),
-      getSessionId(),
-    ])
+    const attributionPromise = Promise.all([getProfileId(), getSessionId()])
+    const timeoutPromise = new Promise<null>((resolve) => {
+      timeoutId = setTimeout(
+        () => resolve(null),
+        REVENUE_ATTRIBUTION_TIMEOUT_MS,
+      )
+    })
+
+    const attribution = await Promise.race([attributionPromise, timeoutPromise])
+
+    if (!attribution) {
+      return {}
+    }
+
+    const [profileId, sessionId] = attribution
 
     return {
       ...(profileId ? { swetrixProfileId: profileId } : {}),
@@ -252,5 +266,9 @@ export const getRevenueAttribution = async (): Promise<{
   } catch (reason) {
     console.error('Failed to get revenue attribution:', reason)
     return {}
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
   }
 }
