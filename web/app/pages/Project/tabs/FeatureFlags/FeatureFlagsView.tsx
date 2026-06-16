@@ -442,7 +442,7 @@ const FeatureFlagRow = ({
                 </div>
               ) : stats ? (
                 <>
-                  <div className='text-right'>
+                  <div className='flex flex-col items-end'>
                     <Text as='p' size='sm' weight='semibold'>
                       {nFormatter(stats.evaluations, 1)}
                     </Text>
@@ -450,7 +450,7 @@ const FeatureFlagRow = ({
                       {t('featureFlags.evaluations')}
                     </Text>
                   </div>
-                  <div className='text-right'>
+                  <div className='flex flex-col items-end'>
                     <Text as='p' size='sm' weight='semibold'>
                       {nFormatter(stats.profileCount, 1)}
                     </Text>
@@ -458,7 +458,7 @@ const FeatureFlagRow = ({
                       {t('featureFlags.users')}
                     </Text>
                   </div>
-                  <div className='text-right'>
+                  <div className='flex flex-col items-end'>
                     <Text
                       as='p'
                       size='sm'
