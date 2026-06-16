@@ -210,6 +210,16 @@ const resolveCatalogSelection = (formData: FormData) => {
   return { planId }
 }
 
+const resolveRevenueAttribution = (formData: FormData) => {
+  const swetrixProfileId = formData.get('swetrixProfileId')?.toString()
+  const swetrixSessionId = formData.get('swetrixSessionId')?.toString()
+
+  return {
+    ...(swetrixProfileId ? { swetrixProfileId } : {}),
+    ...(swetrixSessionId ? { swetrixSessionId } : {}),
+  }
+}
+
 export async function action({ request }: ActionFunctionArgs) {
   redirectIfNotAuthenticated(request)
 
@@ -755,7 +765,10 @@ export async function action({ request }: ActionFunctionArgs) {
         'user/generate-pay-link',
         {
           method: 'POST',
-          body: selection,
+          body: {
+            ...selection,
+            ...resolveRevenueAttribution(formData),
+          },
         },
       )
 
@@ -784,7 +797,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
       const result = await serverFetch(request, 'user/change-plan', {
         method: 'POST',
-        body: selection,
+        body: {
+          ...selection,
+          ...resolveRevenueAttribution(formData),
+        },
       })
 
       if (result.error) {

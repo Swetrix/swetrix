@@ -23,6 +23,13 @@ import { AppLoggerService } from '../logger/logger.service'
 import { WebhookService } from './webhook.service'
 import { LetterTemplate } from '../mailer/letter'
 import { MailerService } from '../mailer/mailer.service'
+import { RevenueService } from '../revenue/revenue.service'
+import { CurrencyService } from '../revenue/currency.service'
+import {
+  RevenueProvider,
+  RevenueStatus,
+  RevenueType,
+} from '../revenue/interfaces/revenue.interface'
 
 @ApiTags('Webhook')
 @Controller('webhook')
@@ -33,7 +40,220 @@ export class WebhookController {
     private readonly webhookService: WebhookService,
     private readonly projectService: ProjectService,
     private readonly mailerService: MailerService,
+    private readonly revenueService: RevenueService,
+    private readonly currencyService: CurrencyService,
   ) {}
+
+  private getPaddleField(
+    body: Record<string, unknown>,
+    fields: string[],
+  ): string | null {
+    for (const field of fields) {
+      const value = body[field]
+
+      if (value !== undefined && value !== null && String(value) !== '') {
+        return String(value)
+      }
+    }
+
+    return null
+  }
+
+  private getPaddleAmount(
+    body: Record<string, unknown>,
+    fields: string[],
+  ): number | null {
+    const rawAmount = this.getPaddleField(body, fields)
+
+    if (!rawAmount) {
+      return null
+    }
+
+    const amount = Number(rawAmount.replace(/,/g, ''))
+
+    return Number.isFinite(amount) && amount !== 0 ? Math.abs(amount) : null
+  }
+
+  private getPaddlePassthrough(
+    body: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const passthrough = this.getPaddleField(body, ['passthrough'])
+
+    if (!passthrough) {
+      return {}
+    }
+
+    try {
+      const parsed = JSON.parse(passthrough)
+
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? parsed
+        : {}
+    } catch {
+      return {}
+    }
+  }
+
+  private getPaddleCreatedAt(body: Record<string, unknown>): Date {
+    const eventTime = this.getPaddleField(body, ['event_time'])
+
+    if (!eventTime) {
+      return new Date()
+    }
+
+    const date = new Date(
+      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(eventTime)
+        ? `${eventTime.replace(' ', 'T')}Z`
+        : eventTime,
+    )
+
+    return isNaN(date.getTime()) ? new Date() : date
+  }
+
+  private getSwetrixRevenueTransactionId(
+    body: Record<string, unknown>,
+    type: RevenueType,
+  ): string | null {
+    const id =
+      type === RevenueType.REFUND
+        ? this.getPaddleField(body, [
+            'alert_id',
+            'refund_id',
+            'subscription_payment_id',
+            'payment_id',
+            'order_id',
+            'checkout_id',
+          ])
+        : this.getPaddleField(body, [
+            'subscription_payment_id',
+            'payment_id',
+            'order_id',
+            'checkout_id',
+            'alert_id',
+          ])
+
+    if (!id) {
+      return null
+    }
+
+    return `paddle:${body.alert_name}:${id}`
+  }
+
+  private async trackSwetrixRevenue(
+    body: Record<string, unknown>,
+    type: RevenueType,
+  ): Promise<void> {
+    const pid = process.env.SWETRIX_PID
+
+    if (!pid) {
+      return
+    }
+
+    try {
+      const amount = this.getPaddleAmount(
+        body,
+        type === RevenueType.REFUND
+          ? ['amount', 'refund_amount', 'sale_gross', 'balance_gross']
+          : ['sale_gross', 'amount', 'balance_gross', 'unit_price'],
+      )
+      const originalCurrency = this.getPaddleField(body, [
+        'currency',
+        'balance_currency',
+      ])?.toUpperCase()
+      const transactionId = this.getSwetrixRevenueTransactionId(body, type)
+
+      if (!amount || !originalCurrency || !transactionId) {
+        this.logger.warn(
+          {
+            alertName: body.alert_name,
+            hasAmount: !!amount,
+            hasCurrency: !!originalCurrency,
+            hasTransactionId: !!transactionId,
+          },
+          'Skipping Swetrix revenue tracking for Paddle webhook',
+        )
+        return
+      }
+
+      const project = await this.projectService.getFullProject(pid)
+
+      if (!project) {
+        this.logger.warn({ pid }, 'Skipping Swetrix revenue tracking')
+        return
+      }
+
+      if (project.paddleApiKeyEnc || project.stripeApiKeyEnc) {
+        this.logger.warn(
+          { pid, alertName: body.alert_name },
+          'Skipping Swetrix revenue webhook because a revenue provider is already connected',
+        )
+        return
+      }
+
+      const targetCurrency = project.revenueCurrency || originalCurrency
+
+      if (!project.revenueApiEnabled) {
+        const result = await this.revenueService.connectApi(pid, targetCurrency)
+
+        if (!result.success) {
+          this.logger.warn(
+            { pid, reason: result.message },
+            'Failed to enable Swetrix API revenue tracking',
+          )
+          return
+        }
+      }
+
+      const passthrough = this.getPaddlePassthrough(body)
+      const convertedAmount = await this.currencyService.convert(
+        amount,
+        originalCurrency,
+        targetCurrency,
+      )
+      const isRefund = type === RevenueType.REFUND
+
+      await this.revenueService.insertTransaction({
+        pid,
+        transactionId,
+        provider: RevenueProvider.API,
+        type,
+        status: isRefund ? RevenueStatus.REFUNDED : RevenueStatus.COMPLETED,
+        amount: isRefund ? -Math.abs(convertedAmount) : convertedAmount,
+        originalAmount: isRefund ? -Math.abs(amount) : amount,
+        originalCurrency,
+        currency: targetCurrency,
+        profileId:
+          this.getPaddleField(passthrough, ['swetrix_profile_id']) || null,
+        sessionId:
+          this.getPaddleField(passthrough, ['swetrix_session_id']) || null,
+        productId: this.getPaddleField(body, ['subscription_plan_id']) || null,
+        productName:
+          this.getPaddleField(body, [
+            'plan_name',
+            'product_name',
+            'checkout_title',
+          ]) || (isRefund ? 'Refund' : 'Swetrix subscription'),
+        metadata: {
+          alertName: body.alert_name,
+          checkoutId: body.checkout_id,
+          orderId: body.order_id,
+          subscriptionId: body.subscription_id,
+          subscriptionPlanId: body.subscription_plan_id,
+          userId: body.user_id,
+          passthrough,
+        },
+        created: this.getPaddleCreatedAt(body),
+        syncedAt: new Date(),
+      })
+
+      await this.revenueService.updateLastSyncAt(pid)
+    } catch (error) {
+      this.logger.error(
+        { error, alertName: body.alert_name },
+        'Failed to track Swetrix revenue from Paddle webhook',
+      )
+    }
+  }
 
   // AWS SNS webhook
   @Post('/sns')
@@ -244,6 +464,12 @@ export class WebhookController {
         break
       }
 
+      case 'payment_succeeded': {
+        await this.trackSwetrixRevenue(body, RevenueType.SALE)
+
+        break
+      }
+
       case 'subscription_payment_succeeded': {
         const {
           passthrough,
@@ -259,6 +485,8 @@ export class WebhookController {
             `[subscription_payment_succeeded] Cannot parse the uid: ${JSON.stringify(body)}`,
           )
         }
+
+        await this.trackSwetrixRevenue(body, RevenueType.SUBSCRIPTION)
 
         let subscriber = await this.userService.findOne({
           where: { subID },
@@ -302,6 +530,13 @@ export class WebhookController {
           await this.userService.update(subscriber.id, updateParams)
           await this.projectService.clearProjectsRedisCache(subscriber.id)
         }
+
+        break
+      }
+
+      case 'payment_refunded':
+      case 'subscription_payment_refunded': {
+        await this.trackSwetrixRevenue(body, RevenueType.REFUND)
 
         break
       }
