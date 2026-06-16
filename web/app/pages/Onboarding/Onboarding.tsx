@@ -425,7 +425,7 @@ const SetupTrackingStep = ({ project }: { project: Project }) => {
         </Text>
       </div>
 
-      <TrackingSetup projectId={project.id} />
+      <TrackingSetup projectId={project.id} showAiInstallPrompt />
     </div>
   )
 }

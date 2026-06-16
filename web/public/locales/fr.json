@@ -3412,10 +3412,15 @@
       "weAlsoSupport": "Vous pouvez également installer Swetrix avec NPM pour des frameworks comme React et Vue, envoyer des événements via l'API Événements, ou utiliser des intégrations telles que WordPress et Google Tag Manager. <url>En savoir plus</url>.",
       "optional": "Cette étape est facultative. Vous pourrez configurer le suivi plus tard depuis les paramètres du projet.",
       "skipForNow": "Ignorer pour le moment",
+      "ai": {
+        "title": "Installer avec l'IA",
+        "desc": "Copiez ce prompt dans votre éditeur de code IA (Claude Code, Cursor, etc.) pour installer Swetrix automatiquement."
+      },
       "tabs": {
         "script": "Script",
         "npm": "NPM",
         "tagManager": "Tag Manager",
+        "ai": "IA",
         "platforms": "Plateformes"
       },
       "npm": {

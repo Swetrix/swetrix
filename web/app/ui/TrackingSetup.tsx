@@ -6,6 +6,7 @@ import {
   ArrowSquareOutIcon,
   CopyIcon,
   CheckIcon,
+  SparkleIcon,
 } from '@phosphor-icons/react'
 import type { CSSProperties } from 'react'
 import { useState } from 'react'
@@ -66,6 +67,7 @@ import {
 } from '~/lib/constants'
 import { Badge } from '~/ui/Badge'
 import CodeBlock from '~/ui/CodeBlock'
+import CopyButton from '~/ui/CopyButton'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
@@ -111,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </noscript>`
 }
 
-type TrackingTab = 'script' | 'npm' | 'gtm' | 'platforms'
+type TrackingTab = 'script' | 'npm' | 'gtm' | 'ai' | 'platforms'
 
 const TRACKING_TABS: {
   id: TrackingTab
@@ -132,6 +134,11 @@ const TRACKING_TABS: {
     id: 'gtm',
     labelKey: 'onboarding.installTracking.tabs.tagManager',
     icon: TagIcon,
+  },
+  {
+    id: 'ai',
+    labelKey: 'onboarding.installTracking.tabs.ai',
+    icon: SparkleIcon,
   },
   {
     id: 'platforms',
@@ -412,6 +419,91 @@ const getGtmSnippet = (pid: string) =>
   })();
 </script>`
 
+const getCspInstruction = () => {
+  if (isSelfhosted) {
+    return `If a Content Security Policy exists, preserve the current policy and add https://swetrix.org to script-src when using the script tag. Add the Swetrix API origin used by apiURL (${API_URL_WITHOUT_TRAILING_SLASH}) to connect-src, and to img-src if you keep the noscript pixel.`
+  }
+
+  return 'If a Content Security Policy exists, preserve the current policy and add https://swetrix.org to script-src when using the script tag. Add https://api.swetrix.com to connect-src, and to img-src if you keep the noscript pixel.'
+}
+
+const getAiInstallPrompt = (
+  pid: string,
+) => `Install Swetrix analytics in this codebase.
+
+Use these exact Swetrix values:
+- Project ID: "${pid}"
+- Browser script URL: "https://swetrix.org/swetrix.js"
+
+Goal:
+- Track page views on every public page.
+- Install Swetrix in the shared/root location so tracking runs once across the whole site.
+- Keep the Project ID exactly as provided.
+- Do not add another analytics provider.
+- Do not send personal data to Swetrix in custom event names or metadata.
+
+First inspect the codebase and choose the least invasive setup for the framework.
+If Swetrix is already installed, update the existing setup instead of adding a duplicate.
+
+For plain HTML or server-rendered templates, place this inside the shared <body> template, footer, or base layout so it appears on every page:
+
+\`\`\`html
+${getSnippet(pid)}
+\`\`\`
+
+For JavaScript frameworks, prefer the official npm package:
+
+\`\`\`bash
+npm install swetrix
+\`\`\`
+
+Then initialize Swetrix once in the browser-only root entry, app shell, or layout:
+
+\`\`\`ts
+${getNpmSnippet(pid)}
+\`\`\`
+
+Framework placement guide:
+- Next.js App Router: create a client Analytics component, call Swetrix from useEffect, and render it from app/layout.tsx. Add the noscript pixel in the root layout body if possible.
+- Next.js Pages Router: initialize in pages/_app.tsx and put the noscript pixel in pages/_document.tsx.
+- React with Vite or CRA: initialize in src/main.tsx or src/index.tsx. Add the noscript pixel to index.html.
+- Remix: create app/components/Analytics.tsx and render it from app/root.tsx inside <body>.
+- Vue, Nuxt, SvelteKit, Astro, Gatsby, Qwik, and Solid: initialize once from the client-side root layout, plugin, or entry component.
+- WordPress, Shopify, Webflow, Wix, Squarespace, Ghost, and similar builders: use the global custom code, theme header, footer, or integration area so the snippet appears on every page.
+
+Implementation requirements:
+- Call init before trackViews.
+- Call trackViews once from the root/shared location. It automatically tracks supported client-side route changes.
+- Use the matching namespace: swetrix.* for script-tag installs, Swetrix.* for npm imports.
+- Keep the noscript image pixel where the framework or platform supports it.
+- If enabling automatic browser error monitoring, call trackErrors after trackViews.
+- For custom events, use track({ ev: "EVENT_NAME", meta: { key: "value" } }) with short event names and non-PII metadata only. Never include email, full name, phone number, payment data, auth tokens, or raw user IDs.
+- If an event location is ambiguous, do not invent tracking. Summarize the suggested event locations instead.
+- Do not enable devMode in production code. Swetrix ignores localhost by default.
+- ${getCspInstruction()}
+
+Useful references:
+- Install guide: https://swetrix.com/docs/install-script
+- Framework guides: https://swetrix.com/docs/integrations
+- Script API reference: https://swetrix.com/docs/swetrix-js-reference
+
+After installing:
+- Search the source for "swetrix" and this Project ID.
+- Visit a deployed page, or temporarily enable devMode only for local verification, and confirm pageviews appear in the Swetrix dashboard within about a minute.
+- Return a short summary of changed files and where Swetrix initializes.`
+
+const PROMPT_PREVIEW_LINES = 12
+
+const getPromptPreview = (prompt: string) => {
+  const lines = prompt.split('\n')
+
+  if (lines.length <= PROMPT_PREVIEW_LINES) {
+    return prompt
+  }
+
+  return lines.slice(0, PROMPT_PREVIEW_LINES).join('\n')
+}
+
 const CopyableField = ({ value }: { value: string }) => {
   const { t } = useTranslation('common')
   const [copied, setCopied] = useState(false)
@@ -452,18 +544,60 @@ const CopyableField = ({ value }: { value: string }) => {
   )
 }
 
-interface TrackingSetupProps {
-  projectId: string
+const AiInstallTab = ({ projectId }: { projectId: string }) => {
+  const { t } = useTranslation('common')
+  const prompt = getAiInstallPrompt(projectId)
+  const preview = getPromptPreview(prompt)
+  const isTruncated = preview !== prompt
+
+  return (
+    <div>
+      <div className='mb-4 flex items-center gap-3'>
+        <div className='flex size-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 dark:border-slate-700'>
+          <SparkleIcon className='size-5 text-gray-700 dark:text-gray-200' />
+        </div>
+        <div>
+          <Text as='h3' size='sm' weight='semibold'>
+            {t('onboarding.installTracking.ai.title')}
+          </Text>
+          <Text as='p' size='xs' colour='secondary'>
+            {t('onboarding.installTracking.ai.desc')}
+          </Text>
+        </div>
+      </div>
+
+      <div className='relative'>
+        <pre className='overflow-hidden rounded-lg bg-white p-4 pr-12 font-mono text-xs leading-relaxed whitespace-pre-wrap text-gray-800 ring-1 ring-gray-200 dark:bg-slate-950 dark:text-gray-200 dark:ring-slate-800'>
+          {preview}
+        </pre>
+        {isTruncated ? (
+          <div className='pointer-events-none absolute inset-x-px bottom-px h-24 rounded-b-lg bg-linear-to-t from-white via-white/90 to-transparent dark:from-slate-950 dark:via-slate-950/90' />
+        ) : null}
+        <CopyButton value={prompt} className='absolute top-2.5 right-2.5' />
+      </div>
+    </div>
+  )
 }
 
-const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
+interface TrackingSetupProps {
+  projectId: string
+  showAiInstallPrompt?: boolean
+}
+
+const TrackingSetup = ({
+  projectId,
+  showAiInstallPrompt,
+}: TrackingSetupProps) => {
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState<TrackingTab>('script')
+  const tabs = showAiInstallPrompt
+    ? TRACKING_TABS
+    : TRACKING_TABS.filter((tab) => tab.id !== 'ai')
 
   return (
     <div>
       <div className='mb-4 flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-slate-900'>
-        {TRACKING_TABS.map((tab) => {
+        {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
           return (
@@ -625,6 +759,8 @@ const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
             </Text>
           </div>
         )}
+
+        {activeTab === 'ai' && <AiInstallTab projectId={projectId} />}
 
         {activeTab === 'platforms' && (
           <div>
