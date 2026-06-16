@@ -1,20 +1,16 @@
-Hi! A week ago we contacted you regarding your website traffic exceeding your
-Swetrix subscription{{#if hitPercentageLimit}} by over {{percentageLimit}}% this
-month{{else}} for two consecutive months{{/if}}. <br /><br />
-Your subscription is still active, we're still counting your stats and we
-haven't deleted any of your data, but as you've outgrown your subscription tier,
-we'd like to ask you to upgrade to a tier that reflects your new traffic
-volumes. Once you have upgraded to an appropriate tier, your dashboard access
-will be restored immediately. A detailed usage report can be found on the
+We emailed you a week ago because your traffic exceeded your Swetrix
+subscription{{#if hitPercentageLimit}} by more than {{percentageLimit}}% this
+month{{else}} for two months in a row{{/if}}. <br /><br />
+Your dashboard is now temporarily locked. Your subscription is still active,
+we're still collecting stats, and we haven't deleted any data. Upgrade to a plan
+that matches your traffic to restore dashboard access. You can find the usage
+report on the
 <a href="{{billingUrl}}" target="_blank">billing page</a>. <br /><br />
-{{#ifEquals user.planCode "10m"}} Your usage exceeds our standard plans, so
-please reply to this email to receive a tailored offering and resolve this
-issue.
+{{#ifEquals user.planCode "10m"}} Your usage is above our standard plans. Reply
+to this email and we'll help you choose a plan for your traffic.
 <br /><br />
-Thank you again for using Swetrix. {{/ifEquals}} {{#ifNotEquals user.planCode
-"10m"}} We recommend that you upgrade to the {{suggestedPlanLimit}} events per
-month plan to keep up with your usage. The cost of the plan will be prorated to
-reflect the amount you have already paid for your current subscription plan.
+{{/ifEquals}} {{#ifNotEquals user.planCode "10m"}} We recommend the
+{{suggestedPlanLimit}} events per month plan. Your upgrade will be prorated
+based on what you've already paid for your current plan.
 <br /><br />
-Thank you for using Swetrix, please reply to this email if you have any
-questions or need help with anything. {{/ifNotEquals}}
+{{/ifNotEquals}} Reply to this email if you have questions or need help.
