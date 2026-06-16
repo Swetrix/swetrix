@@ -3005,6 +3005,7 @@
     "subscriptionUpdateError": "An error occurred while updating subscription",
     "pricingPreviewError": "An error occurred while loading subscription update pricing preview",
     "checkoutPreparationError": "An error occurred while preparing checkout",
+    "checkoutVatMessage": "VAT is calculated by Paddle based on your billing country.",
     "planNotConfiguredForCheckout": "This plan is not configured for self-serve checkout yet",
     "invalidPlanSelection": "Invalid plan selection",
     "invalidCurrency": "Invalid currency",

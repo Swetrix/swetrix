@@ -174,8 +174,11 @@ const BillingPricing = ({
               ),
             })
           : t('pricing.title'),
+        message: t('billing.checkoutVatMessage'),
+        email: user?.email,
         displayModeTheme: theme,
         country: metainfo.country,
+        hideTaxLink: false,
       })
 
       if (!opened) {
@@ -201,6 +204,7 @@ const BillingPricing = ({
     selectionLoading,
     t,
     theme,
+    user?.email,
   ])
 
   useEffect(() => {

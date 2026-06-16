@@ -3005,6 +3005,7 @@
     "subscriptionUpdateError": "Beim Aktualisieren des Abonnements ist ein Fehler aufgetreten",
     "pricingPreviewError": "Beim Laden der Preisvorschau für die Abonnement-Aktualisierung ist ein Fehler aufgetreten",
     "checkoutPreparationError": "Beim Vorbereiten der Kasse ist ein Fehler aufgetreten",
+    "checkoutVatMessage": "Die MwSt. wird von Paddle basierend auf deinem Abrechnungsland berechnet.",
     "planNotConfiguredForCheckout": "Dieser Plan ist noch nicht für Self-Service-Checkout konfiguriert",
     "invalidPlanSelection": "Ungültige Planauswahl",
     "invalidCurrency": "Ungültige Währung",

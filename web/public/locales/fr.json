@@ -3005,6 +3005,7 @@
     "subscriptionUpdateError": "Une erreur s'est produite lors de la mise à jour de l'abonnement",
     "pricingPreviewError": "Une erreur s'est produite lors du chargement de l'aperçu de la tarification pour la mise à jour de l'abonnement",
     "checkoutPreparationError": "Une erreur s'est produite lors de la préparation du paiement",
+    "checkoutVatMessage": "La TVA est calculée par Paddle en fonction de votre pays de facturation.",
     "planNotConfiguredForCheckout": "Ce forfait n'est pas encore configuré pour le paiement en libre-service",
     "invalidPlanSelection": "Sélection de forfait invalide",
     "invalidCurrency": "Devise invalide",

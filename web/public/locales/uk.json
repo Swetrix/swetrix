@@ -3005,6 +3005,7 @@
     "subscriptionUpdateError": "Виникла помилка під час оновлення підписки",
     "pricingPreviewError": "Виникла помилка під час завантаження попереднього перегляду цін для оновлення підписки",
     "checkoutPreparationError": "Виникла помилка під час підготовки до оплати",
+    "checkoutVatMessage": "ПДВ розраховується Paddle на основі країни платника.",
     "planNotConfiguredForCheckout": "Цей план ще не налаштований для самостійної оплати",
     "invalidPlanSelection": "Недійсний вибір плану",
     "invalidCurrency": "Недійсна валюта",

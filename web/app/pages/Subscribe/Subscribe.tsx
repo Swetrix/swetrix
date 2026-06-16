@@ -51,7 +51,7 @@ const Subscribe = () => {
     i18n: { language },
   } = useTranslation('common')
   const { theme } = useTheme()
-  const { loadUser } = useAuth()
+  const { user, loadUser } = useAuth()
   const navigate = useNavigate()
   const { metainfo } = useLoaderData<SubscribeLoaderData>()
 
@@ -145,8 +145,11 @@ const Subscribe = () => {
               ),
             })
           : t('checkout.title'),
+        message: t('billing.checkoutVatMessage'),
+        email: user?.email,
         displayModeTheme: theme,
         country: metainfo.country,
+        hideTaxLink: false,
       })
 
       if (!opened) {
@@ -171,6 +174,7 @@ const Subscribe = () => {
     selectionLoading,
     t,
     theme,
+    user?.email,
   ])
 
   const handlePlanSelection = async (selection: MarketingPricingSelection) => {
