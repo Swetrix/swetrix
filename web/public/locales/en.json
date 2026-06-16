@@ -90,8 +90,6 @@
     "holdToReset": "Hold to reset",
     "amount": "Amount",
     "date": "Date",
-    "success": "Success",
-    "redirecting": "Redirecting...",
     "info": "Info",
     "error": "Error",
     "close": "Close",
@@ -3325,6 +3323,7 @@
   "checkout": {
     "title": "Start your free trial",
     "subtitle": "Try Swetrix free for {{days}} days. Cancel anytime.",
+    "successRedirect": "Your checkout is complete. We're updating your subscription and will take you to your dashboard shortly.",
     "realTimeAnalytics": "Real-time analytics without cookies",
     "willRemind": "We'll email you before the trial ends",
     "freeTrialAnytime": "{{days}}-day free trial. Cancel anytime.",

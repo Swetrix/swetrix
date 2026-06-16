@@ -1,4 +1,3 @@
-import { CheckIcon } from '@phosphor-icons/react'
 import type { TFunction } from 'i18next'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -20,6 +19,7 @@ import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { SubscribeLoaderData } from '~/routes/subscribe'
 import type { UserSettingsActionData } from '~/routes/user-settings'
+import Alert from '~/ui/Alert'
 import { FAQ } from '~/ui/FAQ'
 import { Text } from '~/ui/Text'
 import { getRevenueAttribution, trackCustom } from '~/utils/analytics'
@@ -296,19 +296,7 @@ const Subscribe = () => {
 
         {hasCompletedCheckout ? (
           <div className='mx-auto mt-6 w-full max-w-xl px-4 sm:px-6 lg:px-8'>
-            <div className='rounded-lg border border-green-200 bg-green-50 p-4 text-center dark:border-green-800 dark:bg-green-900/20'>
-              <div className='flex items-center justify-center gap-2'>
-                <CheckIcon className='size-5 text-green-600 dark:text-green-400' />
-                <Text
-                  as='p'
-                  size='sm'
-                  weight='semibold'
-                  className='text-green-700 dark:text-green-300'
-                >
-                  {t('common.success')}! {t('common.redirecting')}
-                </Text>
-              </div>
-            </div>
+            <Alert variant='success'>{t('checkout.successRedirect')}</Alert>
           </div>
         ) : null}
 
