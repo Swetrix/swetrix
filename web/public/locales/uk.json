@@ -3163,6 +3163,7 @@
     "monthlyEventsTooltip": "Події включають перегляди сторінок, кастомні події, виконання CAPTCHA та події помилок.",
     "monthlyEventVolume": "Місячний обсяг подій",
     "eventVolume": "Обсяг подій",
+    "vatApplicable": "+ПДВ, якщо застосовується",
     "startFreeTrial": "Почати безкоштовний пробний період",
     "planWithEvents": "Тариф {{plan}}, {{events}} подій на місяць",
     "selectedPlanWithEvents": "{{plan}}, {{events}} подій",

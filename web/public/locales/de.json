@@ -3163,6 +3163,7 @@
     "monthlyEventsTooltip": "Events umfassen Seitenaufrufe, benutzerdefinierte Events, CAPTCHA-Abschlüsse und Fehler-Events.",
     "monthlyEventVolume": "Monatliches Event-Volumen",
     "eventVolume": "Event-Volumen",
+    "vatApplicable": "+ MwSt., falls zutreffend",
     "startFreeTrial": "Kostenlos testen",
     "planWithEvents": "{{plan}}-Tarif, {{events}} Events pro Monat",
     "selectedPlanWithEvents": "{{plan}}, {{events}} Events",

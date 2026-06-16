@@ -3163,6 +3163,7 @@
     "monthlyEventsTooltip": "Zdarzenia obejmują odsłony, zdarzenia niestandardowe, rozwiązania CAPTCHA oraz błędy.",
     "monthlyEventVolume": "Miesięczny wolumen zdarzeń",
     "eventVolume": "Liczba zdarzeń",
+    "vatApplicable": "+VAT, jeśli dotyczy",
     "startFreeTrial": "Rozpocznij darmowy okres próbny",
     "planWithEvents": "Plan {{plan}}, {{events}} zdarzeń miesięcznie",
     "selectedPlanWithEvents": "{{plan}}, {{events}} zdarzeń",
