@@ -1,9 +1,36 @@
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  BracketsAngleIcon,
+  BugIcon,
   CaretDownIcon,
   CaretUpIcon,
-  CheckIcon,
+  CubeIcon,
+  DownloadSimpleIcon,
+  EnvelopeSimpleIcon,
+  FlagIcon,
+  FlaskIcon,
+  FunnelIcon,
+  GaugeIcon,
+  GlobeIcon,
+  HandshakeIcon,
+  HardDrivesIcon,
+  HeadsetIcon,
+  type Icon,
+  KeyIcon,
+  LightningIcon,
+  MonitorPlayIcon,
+  PuzzlePieceIcon,
+  ReceiptIcon,
+  RobotIcon,
+  SealCheckIcon,
+  ShieldCheckIcon,
+  SlidersHorizontalIcon,
+  TargetIcon,
+  UserCheckIcon,
+  UserCircleIcon,
+  UserFocusIcon,
+  UsersThreeIcon,
 } from '@phosphor-icons/react'
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
 import type { TFunction } from 'i18next'
@@ -56,6 +83,7 @@ interface BenefitTooltip {
 }
 
 interface Benefit {
+  icon: Icon
   label: string
   tooltip?: BenefitTooltip
   tooltipType?: 'sessionReplays'
@@ -141,6 +169,7 @@ const getPlanName = (planType: PlanTypeCode, t: TFunction) =>
   t(`pricing.planTypes.${planType}.name`)
 
 const benefitWithTooltip = (
+  icon: Icon,
   labelKey: string,
   tooltipKey: string,
   t: TFunction,
@@ -149,6 +178,7 @@ const benefitWithTooltip = (
   const label = t(labelKey)
 
   return {
+    icon,
     label,
     tooltip: {
       description: t(tooltipKey),
@@ -162,81 +192,93 @@ const benefitWithTooltip = (
 const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
   if (planType === 'standard') {
     return [
-      { label: t('pricing.websiteCount', { count: 10 }) },
-      { label: t('pricing.benefits.unlimitedMembers') },
+      { icon: GlobeIcon, label: t('pricing.websiteCount', { count: 10 }) },
+      { icon: UsersThreeIcon, label: t('pricing.benefits.unlimitedMembers') },
       benefitWithTooltip(
+        DownloadSimpleIcon,
         'pricing.benefits.googleAnalyticsImport',
         'pricing.benefits.tooltips.googleAnalyticsImport',
         t,
         dataImportDocsUrl,
       ),
       benefitWithTooltip(
+        TargetIcon,
         'pricing.benefits.eventsAndGoals',
         'pricing.benefits.tooltips.eventsAndGoals',
         t,
         goalsDocsUrl,
       ),
       benefitWithTooltip(
+        GaugeIcon,
         'pricing.benefits.performanceMonitoring',
         'pricing.benefits.tooltips.performanceMonitoring',
         t,
         performanceDocsUrl,
       ),
       benefitWithTooltip(
+        FunnelIcon,
         'pricing.benefits.funnels',
         'pricing.benefits.tooltips.funnels',
         t,
         funnelsDocsUrl,
       ),
       benefitWithTooltip(
+        UserFocusIcon,
         'pricing.benefits.sessionUserProfileAnalysis',
         'pricing.benefits.tooltips.sessionUserProfileAnalysis',
         t,
         profilesAndSessionsDocsUrl,
       ),
       benefitWithTooltip(
+        RobotIcon,
         'pricing.benefits.advancedBotDetection',
         'pricing.benefits.tooltips.advancedBotDetection',
         t,
         botProtectionDocsUrl,
       ),
       benefitWithTooltip(
+        ShieldCheckIcon,
         'pricing.benefits.adBlockerBypass',
         'pricing.benefits.tooltips.adBlockerBypass',
         t,
         managedProxyDocsUrl,
       ),
       benefitWithTooltip(
+        BugIcon,
         'pricing.benefits.errorTracking',
         'pricing.benefits.tooltips.errorTracking',
         t,
         errorTrackingDocsUrl,
       ),
       benefitWithTooltip(
+        EnvelopeSimpleIcon,
         'pricing.benefits.emailReports',
         'pricing.benefits.tooltips.emailReports',
         t,
         emailReportsDocsUrl,
       ),
       benefitWithTooltip(
+        UserCheckIcon,
         'pricing.benefits.recaptchaAlternative',
         'pricing.benefits.tooltips.recaptchaAlternative',
         t,
         captchaDocsUrl,
       ),
       benefitWithTooltip(
+        BracketsAngleIcon,
         'pricing.benefits.restfulApiSdks',
         'pricing.benefits.tooltips.restfulApiSdks',
         t,
         eventsApiDocsUrl,
       ),
-      { label: t('pricing.benefits.humanSupport') },
+      { icon: HeadsetIcon, label: t('pricing.benefits.humanSupport') },
     ]
   }
 
   if (planType === 'plus') {
     return [
       {
+        icon: GlobeIcon,
         label: t('pricing.websiteCount', { count: 100 }),
         tooltip: {
           description: t('pricing.benefits.tooltips.plusWebsites'),
@@ -246,57 +288,68 @@ const getBenefits = (planType: PlanTypeCode, t: TFunction): Benefit[] => {
         },
       },
       {
+        icon: MonitorPlayIcon,
         label: t('pricing.benefits.sessionReplays'),
         tooltipType: 'sessionReplays',
       },
       benefitWithTooltip(
+        FlagIcon,
         'pricing.benefits.featureFlags',
         'pricing.benefits.tooltips.featureFlags',
         t,
         featureFlagsDocsUrl,
       ),
       benefitWithTooltip(
+        FlaskIcon,
         'pricing.benefits.abTesting',
         'pricing.benefits.tooltips.abTesting',
         t,
         experimentsDocsUrl,
       ),
       benefitWithTooltip(
+        LightningIcon,
         'pricing.benefits.twentyXHigherApiRateLimits',
         'pricing.benefits.tooltips.twentyXHigherApiRateLimits',
         t,
         statsApiDocsUrl,
       ),
-      { label: t('pricing.benefits.prioritySupport') },
+      { icon: HeadsetIcon, label: t('pricing.benefits.prioritySupport') },
     ]
   }
 
   return [
-    { label: t('pricing.benefits.dedicatedAccountManager') },
+    {
+      icon: UserCircleIcon,
+      label: t('pricing.benefits.dedicatedAccountManager'),
+    },
     benefitWithTooltip(
+      SlidersHorizontalIcon,
       'pricing.benefits.customEventLimits',
       'pricing.benefits.tooltips.customEventLimits',
       t,
     ),
-    { label: t('pricing.benefits.customFeatures') },
+    { icon: PuzzlePieceIcon, label: t('pricing.benefits.customFeatures') },
     benefitWithTooltip(
+      HardDrivesIcon,
       'pricing.benefits.onPremise',
       'pricing.benefits.tooltips.onPremise',
       t,
     ),
     benefitWithTooltip(
+      CubeIcon,
       'pricing.benefits.dedicatedInstance',
       'pricing.benefits.tooltips.dedicatedInstance',
       t,
     ),
-    { label: t('pricing.benefits.ssoSaml') },
-    { label: t('pricing.benefits.personalOnboarding') },
+    { icon: KeyIcon, label: t('pricing.benefits.ssoSaml') },
+    { icon: HandshakeIcon, label: t('pricing.benefits.personalOnboarding') },
     benefitWithTooltip(
+      ReceiptIcon,
       'pricing.benefits.manualInvoicing',
       'pricing.benefits.tooltips.manualInvoicing',
       t,
     ),
-    { label: t('pricing.benefits.sla') },
+    { icon: SealCheckIcon, label: t('pricing.benefits.sla') },
   ]
 }
 
@@ -355,11 +408,16 @@ const BenefitRow = ({
   benefit: Benefit
   isEnterprise: boolean
 }) => {
+  const BenefitIcon = benefit.icon
+
   return (
     <div className='flex items-start gap-2.5'>
-      <CheckIcon
-        className='mt-0.5 size-4 shrink-0 text-emerald-600'
-        weight='bold'
+      <BenefitIcon
+        className={cn(
+          'mt-px size-[18px] shrink-0',
+          isEnterprise ? 'text-gray-200' : 'text-gray-700 dark:text-gray-200',
+        )}
+        weight='regular'
       />
       <div className='flex min-w-0 items-center gap-1.5'>
         <Text
