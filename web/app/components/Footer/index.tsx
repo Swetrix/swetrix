@@ -371,7 +371,7 @@ const productionNavigation = {
     },
     {
       key: 'pricing',
-      href: `${routesPath.main}#pricing`,
+      href: routesPath.pricing,
       internal: true,
       icon: CurrencyDollarIcon,
       iconColor: 'text-emerald-400',
@@ -439,7 +439,7 @@ const communityEditionNavigation = {
     },
     {
       key: 'pricing',
-      href: `https://swetrix.com/#pricing`,
+      href: `https://swetrix.com/pricing`,
       internal: false,
       icon: CurrencyDollarIcon,
       iconColor: 'text-emerald-400',
