@@ -20,6 +20,7 @@ import {
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { formatCurrencyAmount } from '~/lib/pricing/format'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { Text } from '~/ui/Text'
 import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
@@ -65,6 +66,7 @@ interface PageflowItemProps {
   displayCreated: string
   timeDuration: number | null
   t: TFunction
+  language: string
   amount?: number
   currency?: string
   websiteUrl?: string | null
@@ -254,15 +256,19 @@ const MetadataPanel = ({
   )
 }
 
-export const formatAmount = (amount: number, currency?: string) => {
+export const formatAmount = (
+  amount: number,
+  currency?: string,
+  language?: string,
+) => {
+  const absoluteAmount = Math.abs(amount)
+
   try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency || 'USD',
+    return formatCurrencyAmount(absoluteAmount, currency || 'USD', language, {
       maximumFractionDigits: 2,
-    }).format(Math.abs(amount))
+    })
   } catch {
-    return `${Math.abs(amount).toFixed(2)} ${currency || 'USD'}`
+    return `${absoluteAmount.toFixed(2)} ${currency || 'USD'}`
   }
 }
 
@@ -275,6 +281,7 @@ const PageflowItem = ({
   displayCreated,
   timeDuration,
   t,
+  language,
   amount,
   currency,
   websiteUrl,
@@ -315,7 +322,7 @@ const PageflowItem = ({
                   className='leading-4 tabular-nums'
                 >
                   {type === 'refund' ? '−' : '+'}
-                  {formatAmount(amount || 0, currency)}
+                  {formatAmount(amount || 0, currency, language)}
                 </Text>
                 {value ? (
                   <Text
@@ -546,6 +553,7 @@ export const Pageflow = ({
               displayCreated={displayCreated}
               timeDuration={timeDuration}
               t={t}
+              language={language}
               amount={amount}
               currency={currency}
               websiteUrl={websiteUrl}

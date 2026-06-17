@@ -22,6 +22,10 @@ import {
   type EventTierCode,
   type PlanTypeCode,
 } from '~/lib/pricing/catalog'
+import {
+  formatCurrencyAmount,
+  getCurrencyFormatOptions,
+} from '~/lib/pricing/format'
 import { useAuth } from '~/providers/AuthProvider'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
@@ -105,23 +109,15 @@ const customEventTierLabel = '50M+'
 const eventTierOptionLabels = [...eventTierLabels, customEventTierLabel]
 const customEventTierIndex = eventTierOptionLabels.length - 1
 
-const getPriceFormat = (value: number) => ({
-  minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
-  maximumFractionDigits: Number.isInteger(value) ? 0 : 2,
-})
-
-const formatPrice = (value: number | null, currencySymbol: string) =>
-  value === null
-    ? ''
-    : `${currencySymbol}${value.toLocaleString('en-US', getPriceFormat(value))}`
-
 const PriceAmount = ({
   value,
-  currencySymbol,
+  currencyCode,
+  language,
   className,
 }: {
   value: number | null
-  currencySymbol: string
+  currencyCode: CurrencyCode
+  language: string
   className?: string
 }) => {
   if (value === null) return null
@@ -129,8 +125,8 @@ const PriceAmount = ({
   return (
     <NumberFlow
       value={value}
-      prefix={currencySymbol}
-      format={getPriceFormat(value)}
+      locales={language}
+      format={getCurrencyFormatOptions(value, currencyCode)}
       className={cn(FLOW_VALUE_CLASS, className)}
       willChange
     />
@@ -411,7 +407,10 @@ export const PricingInternal = ({
   showVatNote,
 }: MarketingPricingProps) => {
   const { isAuthenticated } = useAuth()
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const [billingFrequency, setBillingFrequency] =
     useState<BillingInterval>('monthly')
   const [selectedTierIndex, setSelectedTierIndex] = useState(0)
@@ -422,7 +421,6 @@ export const PricingInternal = ({
   const currencyCode = (
     metainfo.code in CURRENCIES ? metainfo.code : 'USD'
   ) as CurrencyCode
-  const currency = CURRENCIES[currencyCode]
   const isCustomEventTier = selectedTierIndex === customEventTierIndex
   const selectedTier =
     EVENT_TIER_CODES[
@@ -641,7 +639,8 @@ export const PricingInternal = ({
                                   ? (yearlyPrice ?? null)
                                   : (monthlyPrice ?? null)
                               }
-                              currencySymbol={currency.symbol}
+                              currencyCode={currencyCode}
+                              language={language}
                               className='align-baseline leading-none'
                             />
                           </Text>
@@ -689,7 +688,11 @@ export const PricingInternal = ({
                               isEnterprise ? 'dark' : '',
                             )}
                           >
-                            {formatPrice(monthlyPrice ?? null, currency.symbol)}
+                            {formatCurrencyAmount(
+                              monthlyPrice,
+                              currencyCode,
+                              language,
+                            )}
                           </Text>
                           <Text
                             as='span'
@@ -698,7 +701,11 @@ export const PricingInternal = ({
                             colour='primary'
                             className={isEnterprise ? 'dark' : ''}
                           >
-                            {formatPrice(yearlyMonthlyPrice, currency.symbol)}
+                            {formatCurrencyAmount(
+                              yearlyMonthlyPrice,
+                              currencyCode,
+                              language,
+                            )}
                           </Text>
                           <Text
                             as='span'

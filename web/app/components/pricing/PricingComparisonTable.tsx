@@ -11,6 +11,7 @@ import {
   type EventTierCode,
   type PlanTypeCode,
 } from '~/lib/pricing/catalog'
+import { formatCurrencyAmount } from '~/lib/pricing/format'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import { Text } from '~/ui/Text'
@@ -340,13 +341,15 @@ interface PricingComparisonTableProps {
 export const PricingComparisonTable = ({
   metainfo = DEFAULT_METAINFO,
 }: PricingComparisonTableProps) => {
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const categories = useMemo(() => getCategories(t), [t])
 
   const currencyCode = (
     metainfo.code in CURRENCIES ? metainfo.code : 'USD'
   ) as CurrencyCode
-  const currency = CURRENCIES[currencyCode]
 
   return (
     <section className='relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24'>
@@ -390,7 +393,11 @@ export const PricingComparisonTable = ({
                 const priceLabel =
                   starterPrice != null
                     ? t('pricing.comparison.fromPerMonth', {
-                        price: `${currency.symbol}${starterPrice}`,
+                        price: formatCurrencyAmount(
+                          starterPrice,
+                          currencyCode,
+                          language,
+                        ),
                       })
                     : t('pricing.custom')
 

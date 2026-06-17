@@ -33,12 +33,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/login', 302)
   }
 
-  const metainfoResult = await serverFetch<Metainfo>(request, 'user/metainfo', {
-    skipAuth: true,
-  })
+  let metainfo = DEFAULT_METAINFO
+
+  try {
+    const metainfoResult = await serverFetch<Metainfo>(
+      request,
+      'user/metainfo',
+      {
+        skipAuth: true,
+      },
+    )
+    metainfo = metainfoResult.data ?? DEFAULT_METAINFO
+  } catch (error) {
+    console.error('[ERROR] Failed to fetch pricing metainfo:', error)
+  }
 
   return {
-    metainfo: metainfoResult.data ?? DEFAULT_METAINFO,
+    metainfo,
   }
 }
 
