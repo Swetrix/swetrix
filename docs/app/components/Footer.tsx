@@ -162,7 +162,7 @@ const resources: NavItem[] = [
   },
   {
     name: "Pricing",
-    href: `${SITE}/#pricing`,
+    href: `${SITE}/pricing`,
     icon: CurrencyDollarIcon,
     iconColor: "text-emerald-400",
   },

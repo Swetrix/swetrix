@@ -62,6 +62,7 @@ import {
   type BillingInterval,
   type CurrencyCode,
 } from '~/lib/pricing/catalog'
+import { formatCurrencyAmount } from '~/lib/pricing/format'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -224,9 +225,6 @@ const SESSION_REPLAY_ADDON_QUANTITY_OPTIONS = Array.from(
   (_, index) => index * SESSION_REPLAY_ADDON_QUANTITY_STEP,
 )
 
-const formatBillingPrice = (amount: number) =>
-  Number.isInteger(amount) ? amount.toFixed(0) : amount.toFixed(2)
-
 interface SettingsSectionProps {
   title?: string
   description?: string
@@ -377,7 +375,6 @@ const UserSettings = () => {
       ? user?.tierCurrency || metainfo.code
       : 'USD'
   ) as CurrencyCode
-  const currency = CURRENCIES[currencyCode]
   const activeWebsiteAddonQuantity =
     websiteAddon?.quantity ?? purchasedWebsiteAddons
   const currentWebsiteAddonBillingInterval = (websiteAddon?.billingInterval ||
@@ -2505,9 +2502,11 @@ const UserSettings = () => {
                             {t('billing.websiteAddonActiveSummary', {
                               count:
                                 activeWebsiteAddonQuantity.toLocaleString(),
-                              amount: `${currency.symbol}${formatBillingPrice(
+                              amount: formatCurrencyAmount(
                                 activeWebsiteAddonRecurringAmount,
-                              )}`,
+                                currencyCode,
+                                language,
+                              ),
                               interval: t(
                                 currentWebsiteAddonBillingInterval === 'yearly'
                                   ? 'pricing.intervals.year'
@@ -2623,9 +2622,11 @@ const UserSettings = () => {
                             {t('billing.sessionReplayAddonActiveSummary', {
                               count:
                                 activeSessionReplayAddonQuantity.toLocaleString(),
-                              amount: `${currency.symbol}${formatBillingPrice(
+                              amount: formatCurrencyAmount(
                                 activeSessionReplayAddonRecurringAmount,
-                              )}`,
+                                currencyCode,
+                                language,
+                              ),
                               interval: t(
                                 currentSessionReplayAddonBillingInterval ===
                                   'yearly'
@@ -3000,9 +3001,11 @@ const UserSettings = () => {
                     </Text>
                     <Text as='span' size='sm' weight='semibold'>
                       {currentWebsiteAddonPreview.dueNow > 0
-                        ? `${currency.symbol}${formatBillingPrice(
+                        ? formatCurrencyAmount(
                             currentWebsiteAddonPreview.dueNow,
-                          )}`
+                            currencyCode,
+                            language,
+                          )
                         : t('billing.websiteAddonNoImmediateCharge')}
                     </Text>
                   </div>
@@ -3012,8 +3015,10 @@ const UserSettings = () => {
                     </Text>
                     <Text as='span' size='sm' weight='semibold'>
                       {currentWebsiteAddonPreview.quantity > 0
-                        ? `${currency.symbol}${formatBillingPrice(
+                        ? `${formatCurrencyAmount(
                             currentWebsiteAddonPreview.recurringAmount,
+                            currencyCode,
+                            language,
                           )}/${t(
                             selectedWebsiteAddonBillingInterval === 'yearly'
                               ? 'pricing.intervals.year'
@@ -3174,9 +3179,11 @@ const UserSettings = () => {
                     </Text>
                     <Text as='span' size='sm' weight='semibold'>
                       {currentSessionReplayAddonPreview.dueNow > 0
-                        ? `${currency.symbol}${formatBillingPrice(
+                        ? formatCurrencyAmount(
                             currentSessionReplayAddonPreview.dueNow,
-                          )}`
+                            currencyCode,
+                            language,
+                          )
                         : t('billing.sessionReplayAddonNoImmediateCharge')}
                     </Text>
                   </div>
@@ -3186,8 +3193,10 @@ const UserSettings = () => {
                     </Text>
                     <Text as='span' size='sm' weight='semibold'>
                       {currentSessionReplayAddonPreview.quantity > 0
-                        ? `${currency.symbol}${formatBillingPrice(
+                        ? `${formatCurrencyAmount(
                             currentSessionReplayAddonPreview.recurringAmount,
+                            currencyCode,
+                            language,
                           )}/${t(
                             selectedSessionReplayAddonBillingInterval ===
                               'yearly'

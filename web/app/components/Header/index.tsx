@@ -658,7 +658,7 @@ const NotAuthedHeader = ({
                 ) : null}
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
-                    to={`${routes.main}#pricing`}
+                    to={routes.pricing}
                     className={cn(
                       'underline-animate text-base leading-6 font-semibold focus:outline-hidden',
                       inverted
@@ -944,7 +944,7 @@ const Header = ({ refPage, transparent, inverted }: HeaderProps) => {
                 !isDisableMarketingPages &&
                 !isAuthenticated ? (
                   <Link
-                    to={`${routes.main}#pricing`}
+                    to={routes.pricing}
                     onClick={() => setMobileMenuOpen(false)}
                     className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     key='Pricing'
