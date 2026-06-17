@@ -1126,15 +1126,28 @@ export class GSCService {
       }
 
       const organicPositions: OrganicPositionSeriesEntry[] = []
-      let cursor = dayjs(from).startOf('day')
-      const end = dayjs(to).startOf('day')
+      const datesWithPositionData = Array.from(
+        organicPositionsByDate.keys(),
+      ).sort()
 
-      while (cursor.isBefore(end) || cursor.isSame(end, 'day')) {
-        const date = cursor.format('YYYY-MM-DD')
-        organicPositions.push(
-          organicPositionsByDate.get(date) || initialOrganicPositionEntry(date),
-        )
-        cursor = cursor.add(1, 'day')
+      if (datesWithPositionData.length > 0) {
+        let cursor = dayjs(datesWithPositionData[0]).startOf('day')
+        const requestedEnd = dayjs(to).startOf('day')
+        const lastDataDate = dayjs(
+          datesWithPositionData[datesWithPositionData.length - 1],
+        ).startOf('day')
+        const end = lastDataDate.isBefore(requestedEnd)
+          ? lastDataDate
+          : requestedEnd
+
+        while (cursor.isBefore(end) || cursor.isSame(end, 'day')) {
+          const date = cursor.format('YYYY-MM-DD')
+          organicPositions.push(
+            organicPositionsByDate.get(date) ||
+              initialOrganicPositionEntry(date),
+          )
+          cursor = cursor.add(1, 'day')
+        }
       }
 
       return {
