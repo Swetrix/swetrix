@@ -411,10 +411,10 @@ const BenefitRow = ({
   const BenefitIcon = benefit.icon
 
   return (
-    <div className='flex items-start gap-2.5'>
+    <div className='flex items-center gap-2.5'>
       <BenefitIcon
         className={cn(
-          'mt-px size-[18px] shrink-0',
+          'mt-px size-4 shrink-0',
           isEnterprise ? 'text-gray-200' : 'text-gray-700 dark:text-gray-200',
         )}
         weight='regular'
