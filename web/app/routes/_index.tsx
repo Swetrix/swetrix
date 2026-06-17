@@ -268,17 +268,12 @@ const TrialsHighlight = ({
   )
 }
 
-const Testimonials = ({
-  className,
-  stats,
-}: {
-  className?: string
-  stats: Stats | null
-}) => {
+const Testimonials = ({ className }: { className?: string }) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
+  const { stats } = useLoaderData<typeof loader>()
 
   return (
     <div
@@ -408,7 +403,6 @@ const HeroParallaxBackground = () => {
 }
 
 const Hero = () => {
-  const { stats } = useLoaderData<typeof loader>()
   const { t } = useTranslation('common')
 
   return (
@@ -480,7 +474,7 @@ const Hero = () => {
                 <span>{t('main.heroBenefits.openSource')}</span>
               </div>
             </div>
-            <Testimonials className='dark mt-8' stats={stats} />
+            <Testimonials className='dark mt-8' />
           </div>
           <div className='w-full'>
             <ClientOnly

@@ -1,16 +1,17 @@
+import NumberFlow from '@number-flow/react'
 import {
   CheckIcon,
-  CookieIcon,
-  DatabaseIcon,
-  GaugeIcon,
+  CodeIcon,
+  DownloadSimpleIcon,
   GlobeIcon,
   ShieldCheckIcon,
   LightningIcon,
   ArrowRightIcon,
   StarIcon,
   XIcon,
-  GithubLogoIcon,
 } from '@phosphor-icons/react'
+import _map from 'lodash/map'
+import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { Link } from '~/ui/Link'
@@ -28,6 +29,7 @@ import {
   localisePath,
 } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
+import Button from '~/ui/Button'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
@@ -35,9 +37,16 @@ import { getGeneralStats } from '~/api/api.server'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import FAQ from '~/components/marketing/FAQ'
 import { FeedbackDual } from './_index'
+import { LogoCloud } from '~/components/marketing/LogoCloud'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { FeaturesGrid } from '~/components/marketing/FeaturesGrid'
+import { useEffect, useState } from 'react'
+import {
+  FLOW_TIMING,
+  FLOW_VALUE_CLASS,
+  useFlowValue,
+} from '~/hooks/useFlowValue'
 
 export const meta: MetaFunction = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -73,8 +82,58 @@ const REVIEWERS = [
   { name: 'Andrii', image: '/assets/small-testimonials/andrii.jpg' },
 ]
 
+const TrialsFlow = ({ value, locale }: { value: number; locale: string }) => {
+  const flowValue = useFlowValue(value)
+
+  return (
+    <NumberFlow
+      className={FLOW_VALUE_CLASS}
+      {...FLOW_TIMING}
+      value={flowValue}
+      locales={locale}
+      willChange
+    />
+  )
+}
+
+/**
+ * Wraps the trials count interpolated by <Trans>. The server (and no-JS
+ * visitors) get the plain interpolated text; after hydration it swaps to a
+ * NumberFlow that rolls up from zero. Content is never hidden without JS.
+ * The interpolated text must be formatted with the same locale so the swap
+ * is visually seamless.
+ */
+const TrialsHighlight = ({
+  value,
+  locale,
+  children,
+}: {
+  value?: number
+  locale: string
+  children?: React.ReactNode
+}) => {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  return (
+    <span className='font-semibold text-gray-900 dark:text-gray-50'>
+      {mounted && value != null ? (
+        <TrialsFlow value={value} locale={locale} />
+      ) : (
+        children
+      )}
+    </span>
+  )
+}
+
 const Testimonials = ({ className }: { className?: string }) => {
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const { stats } = useLoaderData<typeof loader>()
 
   return (
@@ -85,16 +144,18 @@ const Testimonials = ({ className }: { className?: string }) => {
       )}
     >
       <div className='flex -space-x-5 overflow-hidden'>
-        {REVIEWERS.map(({ name, image }) => (
+        {_map(REVIEWERS, ({ name, image }) => (
           <div
             key={`${name}${image}`}
-            className='relative inline-flex size-12 overflow-hidden rounded-full border-4 border-white dark:border-slate-800'
+            className='relative inline-flex size-12 overflow-hidden rounded-full border-4 border-gray-50 dark:border-slate-800/90'
           >
             <img
               alt={name}
-              width='400'
-              height='400'
+              width={48}
+              height={48}
               loading='lazy'
+              className='object-cover'
+              style={{ color: 'transparent' }}
               src={image}
             />
           </div>
@@ -102,42 +163,25 @@ const Testimonials = ({ className }: { className?: string }) => {
       </div>
       <div className='mt-1 flex flex-col items-center justify-center gap-1 md:items-start'>
         <div className='relative inline-flex'>
-          <span className='sr-only'>{t('ariaLabels.fiveOutOfFiveStars')}</span>
-          <StarIcon
-            className='size-5 text-yellow-500'
-            aria-hidden='true'
-            weight='fill'
-          />
-          <StarIcon
-            className='size-5 text-yellow-500'
-            aria-hidden='true'
-            weight='fill'
-          />
-          <StarIcon
-            className='size-5 text-yellow-500'
-            aria-hidden='true'
-            weight='fill'
-          />
-          <StarIcon
-            className='size-5 text-yellow-500'
-            aria-hidden='true'
-            weight='fill'
-          />
-          <StarIcon
-            className='size-5 text-yellow-500'
-            aria-hidden='true'
-            weight='fill'
-          />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
         </div>
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
-          <span className='font-semibold text-gray-900 dark:text-gray-50'>
-            {t('gaAlternative.hero.teams', {
-              amount: stats?.trials || '> 1000',
-            })}
-          </span>{' '}
-          <span className='text-gray-700 dark:text-gray-200'>
-            {t('gaAlternative.hero.ditched')}
-          </span>
+          <Trans
+            values={{
+              amount:
+                stats?.trials != null
+                  ? stats.trials.toLocaleString(language)
+                  : '> 1000',
+            }}
+            t={t}
+            i18nKey='main.understandTheirUsers'
+          >
+            <TrialsHighlight value={stats?.trials} locale={language} />
+          </Trans>
         </div>
       </div>
     </div>
@@ -146,154 +190,143 @@ const Testimonials = ({ className }: { className?: string }) => {
 
 const LiveDemoPreview = () => {
   const {
-    t,
     i18n: { language },
   } = useTranslation('common')
   const { theme } = useTheme()
   const isUpToLg = !useBreakpoint('lg')
 
-  const localisedDemoPath = localisePath('/demo', language)
-
   if (isUpToLg) {
     return (
-      <div className='relative z-20 mx-auto mt-10 overflow-hidden rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'>
+      <div className='relative z-20 mx-auto mt-10 overflow-hidden rounded-2xl bg-white/80 p-1.5 shadow-2xl ring-1 shadow-slate-950/20 ring-white/40 backdrop-blur-md dark:bg-slate-950/80 dark:ring-white/10'>
         <img
           src={
             theme === 'dark'
               ? '/assets/screenshot_dark.png'
               : '/assets/screenshot_light.png'
           }
-          className='relative w-full'
-          width='100%'
-          height='auto'
+          className='relative h-auto w-full rounded-xl'
+          width={2328}
+          height={1666}
           alt='Swetrix Analytics dashboard'
         />
-        <div className='absolute inset-0 flex items-center justify-center bg-slate-900/20 opacity-100 backdrop-blur-[1px] transition-opacity duration-200'>
-          <a
-            href={LIVE_DEMO_URL}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900 dark:focus-visible:ring-slate-300'
-            aria-label={
-              t('gaAlternative.hero.viewDemo') + ' (opens in a new tab)'
-            }
-          >
-            <ArrowRightIcon className='mr-2 h-4 w-4' />
-            {t('gaAlternative.hero.viewDemo')}
-          </a>
-        </div>
       </div>
     )
   }
 
+  const localisedDemoPath = localisePath('/demo', language)
+
   return (
-    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/5 transition-shadow ease-out sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10'>
-      <div className='pointer-events-none relative h-[580px] lg:h-[640px] xl:h-[700px]'>
+    <div
+      className='relative z-20 mx-auto mt-12 w-full max-w-[1480px] overflow-hidden rounded-2xl bg-white/90 p-2 shadow-2xl ring-1 shadow-slate-950/25 ring-white/40 backdrop-blur-xl dark:bg-slate-950/90 dark:ring-white/10'
+      style={{
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
+        willChange: 'transform',
+        contain: 'paint',
+      }}
+    >
+      <div className='relative h-[560px] overflow-hidden rounded-xl bg-slate-950 lg:h-[620px] xl:h-[680px]'>
         <iframe
           src={`https://swetrix.com${localisedDemoPath}?tab=traffic&theme=${theme}&embedded=true`}
-          className='size-full'
+          className='size-full rounded-xl'
           title='Swetrix Analytics Live Demo'
-          style={{ pointerEvents: 'none' }}
-          tabIndex={-1}
+          loading='eager'
         />
-        <div className='pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-900/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100'>
-          <a
-            href={LIVE_DEMO_URL}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900 dark:focus-visible:ring-slate-300'
-            aria-label={
-              t('gaAlternative.hero.viewDemo') + ' (opens in a new tab)'
-            }
-          >
-            <ArrowRightIcon className='mr-2 h-4 w-4' />
-            {t('gaAlternative.hero.viewDemo')}
-          </a>
-        </div>
       </div>
     </div>
   )
 }
 
+const HeroParallaxBackground = () => {
+  const reduceMotion = useReducedMotion()
+  const { scrollY } = useScroll()
+  const scale = useTransform(scrollY, [0, 900], [1, 1.08])
+
+  return (
+    <motion.div
+      className='absolute inset-0 transform-gpu'
+      style={
+        reduceMotion ? undefined : { scale, transformOrigin: 'center 35%' }
+      }
+    >
+      <picture className='absolute inset-0 block'>
+        <source srcSet='/assets/hero-background.avif' type='image/avif' />
+        <img
+          alt=''
+          className='size-full object-cover object-center opacity-95 saturate-125'
+          src='/assets/hero-background.webp'
+        />
+      </picture>
+    </motion.div>
+  )
+}
+
 const Hero = () => {
   const { t } = useTranslation('common')
+
   return (
-    <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-900/50'>
-      <div className='relative mx-2 overflow-hidden rounded-4xl'>
-        <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
-          <div className='absolute inset-0 rounded-4xl bg-linear-115 from-amber-100 from-28% via-purple-500 via-70% to-indigo-600 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-950 dark:opacity-60 dark:ring-white/10' />
-          <div className='absolute top-28 -left-24 size-112 rounded-full bg-[radial-gradient(closest-side,#6366f1,transparent)] opacity-25 blur-3xl dark:opacity-20' />
-          <div className='absolute -right-16 -bottom-12 size-104 rounded-full bg-[radial-gradient(closest-side,#eef2ff,transparent)] opacity-30 blur-3xl dark:opacity-20' />
+    <div className='relative isolate overflow-hidden bg-gray-50 pt-2 dark:bg-slate-950'>
+      <div className='relative mx-2 overflow-hidden rounded-t-4xl bg-slate-950 shadow-2xl ring-1 shadow-slate-950/20 ring-black/5 dark:ring-white/10'>
+        <div aria-hidden className='pointer-events-none absolute inset-0'>
+          <HeroParallaxBackground />
+          <div className='absolute inset-0 bg-slate-950/55' />
+          <div className='absolute inset-0 bg-radial-[at_50%_0%] from-indigo-300/30 via-slate-950/10 to-slate-950/80' />
+          <div className='absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-b from-transparent to-slate-950' />
         </div>
-        <Header transparent />
-        <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
-          <div className='z-20 col-span-6 flex flex-col items-start'>
-            <Text
-              as='h1'
-              weight='semibold'
-              tracking='tight'
-              className='max-w-5xl text-left text-5xl text-pretty sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl'
+        <Header transparent inverted />
+        <section className='relative z-10 mx-auto flex max-w-[1500px] flex-col items-center px-4 pt-14 pb-6 sm:px-6 sm:pt-16 lg:px-8 lg:pt-20'>
+          <Text
+            as='h1'
+            weight='semibold'
+            className='mx-auto max-w-5xl text-center text-5xl leading-[0.98] text-balance text-white sm:text-6xl lg:text-7xl'
+          >
+            {t('gaAlternative.hero.title')}
+          </Text>
+          <Text
+            as='p'
+            size='lg'
+            className='mx-auto mt-5 max-w-2xl text-center leading-8 text-gray-50'
+          >
+            {t('gaAlternative.hero.subtitle')}
+          </Text>
+
+          <div className='mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center'>
+            <Link
+              to={routes.signup}
+              className='inline-flex h-12 items-center justify-center rounded-md bg-white px-5 text-slate-950 shadow-lg ring-1 shadow-slate-950/20 ring-white/30 transition-colors hover:bg-gray-100'
+              aria-label={t('gaAlternative.hero.cta', { days: TRIAL_DAYS })}
             >
-              {t('gaAlternative.hero.title')}
-            </Text>
-            <Text as='p' size='lg' className='mt-4 max-w-2xl text-left'>
-              {t('gaAlternative.hero.subtitle')}
-            </Text>
-
-            <div className='mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center'>
-              <Link
-                to={routes.signup}
-                className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
-                aria-label={t('gaAlternative.hero.cta', { count: TRIAL_DAYS })}
-              >
-                <span className='mr-1 text-center text-base font-semibold'>
-                  {t('gaAlternative.hero.cta', { days: TRIAL_DAYS })}
-                </span>
-                <ArrowRightIcon className='mt-px h-4 w-5' />
-              </Link>
-            </div>
-
-            <div className='mt-8 grid w-full grid-cols-2 gap-3 text-slate-900 dark:text-gray-50'>
-              <div className='flex items-center gap-3 text-sm'>
-                <CookieIcon className='size-5' />
-                <span>{t('gaAlternative.hero.features.cookieless')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <ShieldCheckIcon className='size-5' />
-                <span>{t('gaAlternative.hero.features.privacy')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <GaugeIcon className='size-5' />
-                <span>{t('gaAlternative.hero.features.realtime')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <CheckIcon className='size-5' />
-                <span>{t('gaAlternative.hero.features.noSampling')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <DatabaseIcon className='size-5' />
-                <span>{t('gaAlternative.hero.features.ownData')}</span>
-              </div>
-              <div className='flex items-center gap-3 text-sm'>
-                <GithubLogoIcon className='size-5' />
-                <span>{t('gaAlternative.hero.features.openSource')}</span>
-              </div>
-            </div>
-
-            <Testimonials className='mt-8 hidden lg:block' />
+              <span className='text-center text-base font-semibold'>
+                {t('gaAlternative.hero.cta', { days: TRIAL_DAYS })}
+              </span>
+              <ArrowRightIcon className='mt-px ml-1 h-4 w-5' />
+            </Link>
+            <Button
+              to={LIVE_DEMO_URL}
+              linkProps={{
+                target: '_blank',
+                rel: 'noopener noreferrer',
+              }}
+              variant='secondary'
+              size='xl'
+              className='flex h-12 items-center justify-center border-white/25 bg-white/10 px-5 text-center text-base font-semibold text-white shadow-none ring-white/25 backdrop-blur-md hover:bg-white/20 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
+              aria-label={`${t('gaAlternative.hero.viewDemo')} (opens in a new tab)`}
+            >
+              {t('gaAlternative.hero.viewDemo')}
+            </Button>
           </div>
 
-          <div className='col-span-6 mt-10 overflow-visible lg:mt-0 lg:mr-0 lg:ml-4'>
+          <Testimonials className='dark mt-8' />
+
+          <div className='w-full'>
             <ClientOnly
               fallback={
-                <div className='h-[240px] w-full rounded-2xl bg-slate-800/10 ring-1 ring-black/5 sm:h-[320px] md:h-[580px] lg:h-[640px] xl:h-[700px] dark:bg-slate-800/20 dark:ring-white/10' />
+                <div className='mx-auto mt-12 h-[560px] w-full max-w-[1480px] rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur-xl lg:h-[620px] xl:h-[680px]' />
               }
             >
               {() => <LiveDemoPreview />}
             </ClientOnly>
           </div>
-
-          <Testimonials className='mt-8 lg:hidden' />
         </section>
       </div>
     </div>
@@ -530,11 +563,17 @@ const WhySwitch = () => {
   )
 }
 
-const Migration = () => {
+const IMPORT_POINTS = [
+  { key: 'history', Icon: DownloadSimpleIcon, accent: true },
+  { key: 'script', Icon: CodeIcon, accent: false },
+  { key: 'live', Icon: LightningIcon, accent: false },
+] as const
+
+const ImportAndMigrate = () => {
   const { t } = useTranslation('common')
   return (
     <section className='relative mx-auto max-w-7xl px-4 py-20 lg:px-8 lg:py-28'>
-      <div className='grid grid-cols-1 gap-16 lg:grid-cols-2'>
+      <div className='grid grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center'>
         <div>
           <Text
             as='p'
@@ -543,7 +582,7 @@ const Migration = () => {
             tracking='wide'
             className='text-indigo-600 uppercase dark:text-indigo-400'
           >
-            {t('gaAlternative.migration.label')}
+            {t('gaAlternative.import.label')}
           </Text>
           <Text
             as='h2'
@@ -552,139 +591,107 @@ const Migration = () => {
             tracking='tight'
             className='mt-3 sm:text-4xl'
           >
-            {t('gaAlternative.migration.title')}
+            {t('gaAlternative.import.title')}
           </Text>
           <Text
             as='p'
             size='base'
-            className='mt-5 leading-relaxed text-slate-600 dark:text-slate-300'
+            className='mt-5 max-w-xl leading-relaxed text-slate-600 dark:text-slate-300'
           >
-            {t('gaAlternative.migration.subtitle')}
+            {t('gaAlternative.import.subtitle')}
           </Text>
 
           <div className='mt-10 space-y-8'>
-            <div className='border-l-2 border-slate-200 pl-6 dark:border-slate-700'>
-              <span className='inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300'>
-                1
-              </span>
-              <Text as='h3' size='base' weight='semibold' className='mt-2'>
-                {t('gaAlternative.migration.steps.1.title')}
-              </Text>
-              <Text
-                as='p'
-                size='sm'
-                className='mt-1 text-slate-600 dark:text-slate-400'
+            {IMPORT_POINTS.map(({ key, Icon, accent }) => (
+              <div
+                key={key}
+                className={cn(
+                  'border-l-2 pl-6',
+                  accent
+                    ? 'border-indigo-500'
+                    : 'border-slate-200 dark:border-slate-700',
+                )}
               >
-                {t('gaAlternative.migration.steps.1.description')}
-              </Text>
-            </div>
-
-            <div className='border-l-2 border-slate-200 pl-6 dark:border-slate-700'>
-              <span className='inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300'>
-                2
-              </span>
-              <Text as='h3' size='base' weight='semibold' className='mt-2'>
-                {t('gaAlternative.migration.steps.2.title')}
-              </Text>
-              <Text
-                as='p'
-                size='sm'
-                className='mt-1 text-slate-600 dark:text-slate-400'
-              >
-                {t('gaAlternative.migration.steps.2.description')}
-              </Text>
-            </div>
-
-            <div className='border-l-2 border-indigo-500 pl-6'>
-              <span className='inline-block rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'>
-                3
-              </span>
-              <Text as='h3' size='base' weight='semibold' className='mt-2'>
-                {t('gaAlternative.migration.steps.3.title')}
-              </Text>
-              <Text
-                as='p'
-                size='sm'
-                className='mt-1 text-slate-600 dark:text-slate-400'
-              >
-                {t('gaAlternative.migration.steps.3.description')}
-              </Text>
-            </div>
+                <Text
+                  as='h3'
+                  size='base'
+                  weight='semibold'
+                  className='flex items-center gap-2.5'
+                >
+                  <Icon
+                    className={cn(
+                      'size-5',
+                      accent
+                        ? 'text-indigo-600 dark:text-indigo-400'
+                        : 'text-slate-500 dark:text-slate-400',
+                    )}
+                    weight='duotone'
+                  />
+                  {t(`gaAlternative.import.points.${key}.title`)}
+                </Text>
+                <Text
+                  as='p'
+                  size='sm'
+                  className='mt-1.5 leading-relaxed text-slate-600 lg:pl-7 dark:text-slate-400'
+                >
+                  {t(`gaAlternative.import.points.${key}.description`)}
+                </Text>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className='flex flex-col justify-center lg:pl-8'>
-          <div className='overflow-hidden rounded-xl bg-slate-900 p-1 ring-1 ring-white/10'>
-            <div className='flex items-center gap-1.5 border-b border-white/10 px-4 py-2.5'>
-              <span className='size-2.5 rounded-full bg-red-500/80' />
-              <span className='size-2.5 rounded-full bg-yellow-500/80' />
-              <span className='size-2.5 rounded-full bg-green-500/80' />
-              <span className='ml-3 text-xs text-slate-400'>index.html</span>
+        <div className='lg:pl-8'>
+          <div className='overflow-hidden rounded-xl bg-slate-950 ring-1 ring-white/10'>
+            <div className='border-b border-white/10 px-4 py-2.5'>
+              <span className='font-mono text-xs text-slate-400'>
+                {t('gaAlternative.import.snippet.filename')}
+              </span>
             </div>
-            <div className='p-4 font-mono text-sm leading-relaxed'>
-              <div className='text-slate-500'>
-                {"<!-- That's it. Really. -->"}
-              </div>
-              <div className='mt-2'>
-                <span className='text-pink-400'>{'<script '}</span>
-                <span className='text-purple-400'>src</span>
+            <pre className='overflow-x-auto p-4 font-mono text-sm leading-relaxed text-slate-200'>
+              <code>
+                <span className='text-indigo-300'>{'<script '}</span>
+                <span className='text-sky-300'>src</span>
                 <span className='text-slate-400'>=</span>
-                <span className='text-amber-300'>
+                <span className='text-emerald-300'>
                   "https://swetrix.org/swetrix.js"
                 </span>
                 <span className='text-sky-300'> defer</span>
-                <span className='text-pink-400'>{'></script>'}</span>
-              </div>
-              <div className='mt-1'>
-                <span className='text-pink-400'>{'<script>'}</span>
-              </div>
-              <div className='pl-4'>
-                <span className='text-sky-300'>document</span>
-                <span className='text-slate-400'>.</span>
-                <span className='text-amber-300'>addEventListener</span>
-                <span className='text-slate-400'>(</span>
-                <span className='text-emerald-400'>'DOMContentLoaded'</span>
-                <span className='text-slate-400'>,</span>
-                <span className='text-sky-300'> function</span>
-                <span className='text-slate-400'> {'() {'}</span>
-              </div>
-              <div className='pl-8'>
+                <span className='text-indigo-300'>{'></script>'}</span>
+                {'\n'}
+                <span className='text-indigo-300'>{'<script>'}</span>
+                {'\n  '}
                 <span className='text-sky-300'>swetrix</span>
                 <span className='text-slate-400'>.</span>
                 <span className='text-amber-300'>init</span>
                 <span className='text-slate-400'>(</span>
-                <span className='text-emerald-400'>'YOUR_PROJECT_ID'</span>
+                <span className='text-emerald-300'>'YOUR_PROJECT_ID'</span>
                 <span className='text-slate-400'>)</span>
-              </div>
-              <div className='pl-8'>
+                {'\n  '}
                 <span className='text-sky-300'>swetrix</span>
                 <span className='text-slate-400'>.</span>
                 <span className='text-amber-300'>trackViews</span>
                 <span className='text-slate-400'>()</span>
-              </div>
-              <div className='pl-4'>
-                <span className='text-slate-400'>{'}'}</span>
-                <span className='text-slate-400'>)</span>
-              </div>
-              <div>
-                <span className='text-pink-400'>{'</script>'}</span>
-              </div>
+                {'\n'}
+                <span className='text-indigo-300'>{'</script>'}</span>
+              </code>
+            </pre>
+            <div className='border-t border-white/10 px-4 py-2.5 text-xs text-slate-500'>
+              {t('gaAlternative.import.snippet.comment')}
             </div>
           </div>
 
-          <div className='mt-6 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-slate-600 dark:text-slate-400'>
-            <div className='flex items-center gap-2'>
-              <CheckIcon className='size-4 text-emerald-600 dark:text-emerald-400' />
-              <span>{t('gaAlternative.migration.stats.size')}</span>
-            </div>
-            <div className='flex items-center gap-2'>
-              <CheckIcon className='size-4 text-emerald-600 dark:text-emerald-400' />
-              <span>{t('gaAlternative.migration.stats.cookies')}</span>
-            </div>
-            <div className='flex items-center gap-2'>
-              <CheckIcon className='size-4 text-emerald-600 dark:text-emerald-400' />
-              <span>{t('gaAlternative.migration.stats.privacy')}</span>
-            </div>
+          <div className='mt-8 flex justify-center lg:justify-start'>
+            <Link
+              to={routes.signup}
+              className='inline-flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-5 text-white transition-colors hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:bg-transparent dark:hover:text-gray-50'
+              aria-label={t('gaAlternative.import.cta')}
+            >
+              <span className='text-center text-base font-semibold'>
+                {t('gaAlternative.import.cta')}
+              </span>
+              <ArrowRightIcon className='mt-px ml-1 h-4 w-5' />
+            </Link>
           </div>
         </div>
       </div>
@@ -697,11 +704,12 @@ export default function GoogleAnalyticsAlternativeRoute() {
     <div className='overflow-hidden'>
       <main className='bg-gray-50 dark:bg-slate-950'>
         <Hero />
+        <LogoCloud />
+        <ComparisonTable />
+        <WhySwitch />
         <FeedbackDual />
         <FeaturesGrid />
-        <WhySwitch />
-        <ComparisonTable />
-        <Migration />
+        <ImportAndMigrate />
         <MarketingPricing />
         <FAQ includeGAQuestions />
         <DitchGoogle />

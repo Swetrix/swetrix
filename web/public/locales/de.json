@@ -563,29 +563,29 @@
         "cookies": "Cookies"
       }
     },
-    "migration": {
-      "label": "Schnelle Migration",
-      "title": "Wechsel in unter 5 Minuten",
-      "subtitle": "Kein komplexes Setup, kein Tag-Manager erforderlich. Nur ein Script-Tag – fertig.",
-      "steps": {
-        "1": {
-          "title": "Füge ein einziges Script-Tag hinzu",
-          "description": "Keine Cookies, keine Konfiguration, keine Tag-Manager-Akrobatik."
+    "import": {
+      "label": "Behalte deine Historie",
+      "title": "Nimm deine Google Analytics-Daten mit",
+      "subtitle": "GA4 zu verlassen bedeutet nicht, jahrelange Historie zu verlieren. Verbinde dein Google-Konto, importiere deine bestehenden Daten in Swetrix und lass beide parallel laufen, bis du bereit für den endgültigen Wechsel bist.",
+      "points": {
+        "history": {
+          "title": "Importiere deine GA4-Historie",
+          "description": "Verbinde Google mit wenigen Klicks und ziehe deine historischen Analysen in Swetrix, damit deine langfristigen Trends erhalten bleiben."
         },
-        "2": {
-          "title": "Richte deine Events ein",
-          "description": "Tracke Conversions mit einfachen API-Calls. UTM-Parameter funktionieren automatisch."
+        "script": {
+          "title": "Ein Skript, kein Tag Manager",
+          "description": "Füge ein Skript von unter 5KB ein. Keine zu konfigurierenden Container, keine Consent-Banner, kein Sampling."
         },
-        "3": {
-          "title": "Du bist live",
-          "description": "Echtzeitdaten fließen sofort. Keine Verzögerungen, kein Sampling."
+        "live": {
+          "title": "Live in Minuten",
+          "description": "Echtzeitdaten fließen in dem Moment, in dem das Skript lädt. Sieh zu, wie sie direkt neben deinen GA-Zahlen landen."
         }
       },
-      "stats": {
-        "size": "4 KB (gzip-komprimiert)",
-        "cookies": "Keine Cookies",
-        "privacy": "Datenschutz zuerst"
-      }
+      "snippet": {
+        "filename": "index.html",
+        "comment": "Füge dies einmal hinzu. Das ist die gesamte Einrichtung."
+      },
+      "cta": "Starte deine kostenlose Testversion"
     }
   },
   "main": {

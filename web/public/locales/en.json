@@ -563,29 +563,29 @@
         "cookies": "cookies"
       }
     },
-    "migration": {
-      "label": "Quick migration",
-      "title": "Switch in under 5 minutes",
-      "subtitle": "No complex setup, no tag manager required. Just one script tag and you're done.",
-      "steps": {
-        "1": {
-          "title": "Add a single script tag",
-          "description": "No cookies, no configuration, no tag-manager gymnastics."
+    "import": {
+      "label": "Keep your history",
+      "title": "Bring your Google Analytics data with you",
+      "subtitle": "Leaving GA4 doesn't mean losing years of history. Connect your Google account, import your existing data into Swetrix, and run both side by side until you're ready to switch for good.",
+      "points": {
+        "history": {
+          "title": "Import your GA4 history",
+          "description": "Connect Google in a few clicks and pull your historical analytics into Swetrix, so your long-term trends stay intact."
         },
-        "2": {
-          "title": "Set up your events",
-          "description": "Track conversions with simple API calls. UTM parameters work automatically."
+        "script": {
+          "title": "One script, no Tag Manager",
+          "description": "Drop in a script under 5KB. No containers to configure, no consent banners to wire up, no sampling."
         },
-        "3": {
-          "title": "You're live",
-          "description": "Real-time data starts flowing immediately. No delays, no sampling."
+        "live": {
+          "title": "Live in minutes",
+          "description": "Real-time data starts flowing the moment the script loads. Watch it land right next to your GA numbers."
         }
       },
-      "stats": {
-        "size": "4KB gzipped",
-        "cookies": "No cookies",
-        "privacy": "Privacy-first"
-      }
+      "snippet": {
+        "filename": "index.html",
+        "comment": "Add this once. That's the whole setup."
+      },
+      "cta": "Start your free trial"
     }
   },
   "main": {

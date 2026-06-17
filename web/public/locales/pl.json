@@ -563,29 +563,29 @@
         "cookies": "pliki cookie"
       }
     },
-    "migration": {
-      "label": "Szybka migracja",
-      "title": "Przejdź w mniej niż 5 minut",
-      "subtitle": "Bez skomplikowanej konfiguracji, bez potrzeby użycia tag managera. Wystarczy jeden tag script i gotowe.",
-      "steps": {
-        "1": {
-          "title": "Dodaj pojedynczy tag script",
-          "description": "Bez plików cookie, bez konfiguracji, bez gimnastyki z tag managerem."
+    "import": {
+      "label": "Zachowaj swoją historię",
+      "title": "Zabierz swoje dane z Google Analytics ze sobą",
+      "subtitle": "Opuszczenie GA4 nie oznacza utraty lat historii. Podłącz swoje konto Google, zaimportuj istniejące dane do Swetrix i używaj obu systemów równolegle, dopóki nie będziesz gotowy na ostateczną zmianę.",
+      "points": {
+        "history": {
+          "title": "Zaimportuj swoją historię z GA4",
+          "description": "Podłącz Google w kilku kliknięciach i przenieś swoje historyczne statystyki do Swetrix, aby Twoje długoterminowe trendy pozostały nienaruszone."
         },
-        "2": {
-          "title": "Skonfiguruj swoje zdarzenia",
-          "description": "Śledź konwersje prostymi wywołaniami API. Parametry UTM działają automatycznie."
+        "script": {
+          "title": "Jeden skrypt, bez Tag Managera",
+          "description": "Dodaj skrypt o rozmiarze poniżej 5 KB. Bez konfiguracji kontenerów, bez banerów zgody, bez próbkowania (sampling)."
         },
-        "3": {
-          "title": "Działa na żywo",
-          "description": "Dane w czasie rzeczywistym zaczynają spływać natychmiast. Bez opóźnień, bez próbkowania."
+        "live": {
+          "title": "Działa w kilka minut",
+          "description": "Dane w czasie rzeczywistym zaczynają spływać w momencie załadowania skryptu. Zobacz, jak pojawiają się tuż obok Twoich liczb z GA."
         }
       },
-      "stats": {
-        "size": "4 KB (gzip)",
-        "cookies": "Bez plików cookie",
-        "privacy": "Prywatność przede wszystkim"
-      }
+      "snippet": {
+        "filename": "index.html",
+        "comment": "Dodaj to raz. To cała konfiguracja."
+      },
+      "cta": "Rozpocznij darmowy okres próbny"
     }
   },
   "main": {

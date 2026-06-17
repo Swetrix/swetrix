@@ -563,29 +563,29 @@
         "cookies": "cookies"
       }
     },
-    "migration": {
-      "label": "Migration rapide",
-      "title": "Passez à Swetrix en moins de 5 minutes",
-      "subtitle": "Aucune configuration complexe, aucun gestionnaire de balises requis. Une seule balise script et c’est terminé.",
-      "steps": {
-        "1": {
-          "title": "Ajoutez une seule balise script",
-          "description": "Pas de cookies, pas de configuration, pas d’acrobaties avec un gestionnaire de balises."
+    "import": {
+      "label": "Conservez votre historique",
+      "title": "Emportez vos données Google Analytics avec vous",
+      "subtitle": "Quitter GA4 ne signifie pas perdre des années d'historique. Connectez votre compte Google, importez vos données existantes dans Swetrix et exécutez les deux en parallèle jusqu'à ce que vous soyez prêt à changer définitivement.",
+      "points": {
+        "history": {
+          "title": "Importez votre historique GA4",
+          "description": "Connectez Google en quelques clics et importez votre historique d'analyses dans Swetrix, afin que vos tendances à long terme restent intactes."
         },
-        "2": {
-          "title": "Configurez vos événements",
-          "description": "Suivez les conversions avec de simples appels API. Les paramètres UTM fonctionnent automatiquement."
+        "script": {
+          "title": "Un seul script, pas de Tag Manager",
+          "description": "Intégrez un script de moins de 5 Ko. Pas de conteneurs à configurer, pas de bannières de consentement à mettre en place, pas d'échantillonnage."
         },
-        "3": {
-          "title": "C’est en ligne",
-          "description": "Les données en temps réel commencent à arriver immédiatement. Aucun délai, aucun échantillonnage."
+        "live": {
+          "title": "En ligne en quelques minutes",
+          "description": "Les données en temps réel commencent à affluer dès le chargement du script. Observez-les apparaître juste à côté de vos chiffres GA."
         }
       },
-      "stats": {
-        "size": "4 Ko compressés (gzip)",
-        "cookies": "Aucun cookie",
-        "privacy": "Respect de la vie privée avant tout"
-      }
+      "snippet": {
+        "filename": "index.html",
+        "comment": "Ajoutez ceci une seule fois. C'est toute la configuration."
+      },
+      "cta": "Commencez votre essai gratuit"
     }
   },
   "main": {
