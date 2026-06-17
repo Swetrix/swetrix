@@ -293,7 +293,7 @@ export class AuthService {
     if (user && user.isTelegramChatIdConfirmed) {
       await this.telegramService.addMessage(
         user.telegramChatId,
-        '⚠️ *Someone has tried to login to their account with an incorrect password.*',
+        '⚠️ *Someone has tried to login to your account with an incorrect password.*',
         { parse_mode: 'Markdown' },
       )
     }
