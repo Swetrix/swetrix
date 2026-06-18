@@ -2841,18 +2841,53 @@ export class UserService {
   async saveSubscriptionDunning(
     dunning: Partial<SubscriptionDunning>,
   ): Promise<SubscriptionDunning> {
-    if (dunning.id) {
-      const { id, ...update } = dunning
+    const { id, ...dunningParams } = dunning
 
-      await this.subscriptionDunningRepository.update(id, update)
+    if (id) {
+      await this.subscriptionDunningRepository.update(id, dunningParams)
 
       return this.subscriptionDunningRepository.findOne({
         where: { id },
       })
     }
 
-    return this.subscriptionDunningRepository.save(
-      this.subscriptionDunningRepository.create(dunning),
+    if (!dunningParams.userId) {
+      return this.subscriptionDunningRepository.save(
+        this.subscriptionDunningRepository.create(dunningParams),
+      )
+    }
+
+    const userId = dunningParams.userId
+
+    return this.subscriptionDunningRepository.manager.transaction(
+      async (manager) => {
+        await this.getLockedUser(manager, userId)
+
+        const repository = manager.getRepository(SubscriptionDunning)
+        const existingDunning = await repository.findOne({
+          where: {
+            userId,
+            status: In([
+              SubscriptionDunningStatus.active,
+              SubscriptionDunningStatus.locked,
+            ]),
+          },
+          order: {
+            createdAt: 'DESC',
+          },
+          lock: { mode: 'pessimistic_write' },
+        })
+
+        if (existingDunning) {
+          await repository.update(existingDunning.id, dunningParams)
+
+          return repository.findOne({
+            where: { id: existingDunning.id },
+          })
+        }
+
+        return repository.save(repository.create(dunningParams))
+      },
     )
   }
 

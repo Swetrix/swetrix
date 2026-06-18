@@ -314,7 +314,6 @@ export class WebhookController {
         ? SubscriptionDunningStatus.locked
         : SubscriptionDunningStatus.active,
       attempt,
-      emailStage,
       startedAt: dunning?.startedAt || now,
       lastFailedAt: now,
       nextRetryAt,
@@ -337,7 +336,8 @@ export class WebhookController {
       })
     }
 
-    await this.userService.saveSubscriptionDunning(updateParams)
+    const savedDunning =
+      await this.userService.saveSubscriptionDunning(updateParams)
     await this.projectService.clearProjectsRedisCache(user.id)
 
     const billingUrl = updateUrl || this.getBillingUrl(user)
@@ -349,6 +349,9 @@ export class WebhookController {
           LetterTemplate.DashboardLockedPaymentFailure,
           { billingUrl },
         )
+        await this.userService.updateSubscriptionDunning(savedDunning.id, {
+          emailStage,
+        })
       }
 
       return
@@ -371,6 +374,9 @@ export class WebhookController {
             suspendsAtFormatted: this.formatDateForEmail(suspendsAt),
           },
         )
+        await this.userService.updateSubscriptionDunning(savedDunning.id, {
+          emailStage,
+        })
       }
 
       return
@@ -392,6 +398,9 @@ export class WebhookController {
           nextRetryAtFormatted: this.formatDateForEmail(nextRetryAt),
         },
       )
+      await this.userService.updateSubscriptionDunning(savedDunning.id, {
+        emailStage,
+      })
     }
   }
 

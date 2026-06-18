@@ -1497,6 +1497,13 @@ export class TaskManagerService {
         _map(suspensionDunnings, async (dunning) => {
           const user = dunning.user
 
+          await this.mailerService.sendEmail(
+            user.email,
+            LetterTemplate.DashboardLockedPaymentFailure,
+            {
+              billingUrl: user.subUpdateURL || BILLING_URL,
+            },
+          )
           await this.userService.update(user.id, {
             dashboardBlockReason: DashboardBlockReason.payment_failed,
             isAccountBillingSuspended: true,
@@ -1506,13 +1513,6 @@ export class TaskManagerService {
             emailStage: BillingDunningEmailStage.locked,
           })
           await this.projectService.clearProjectsRedisCache(user.id)
-          await this.mailerService.sendEmail(
-            user.email,
-            LetterTemplate.DashboardLockedPaymentFailure,
-            {
-              billingUrl: user.subUpdateURL || BILLING_URL,
-            },
-          )
         }),
       )
 

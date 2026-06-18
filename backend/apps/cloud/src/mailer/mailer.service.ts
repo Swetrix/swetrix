@@ -125,18 +125,18 @@ const metaInfoJson = {
   [LetterTemplate.UsageOverLimit]: {
     subject: {
       en: () =>
-        '[ACTION REQUIRED] You have exceeded your Swetrix subscription plan',
+        'Action required: you have exceeded your Swetrix subscription plan',
     },
   },
   [LetterTemplate.DashboardLockedExceedingLimits]: {
     subject: {
-      en: () => '[ACTION REQUIRED] Your Swetrix dashboard has been locked',
+      en: () => 'Action required: your Swetrix dashboard has been locked',
     },
   },
   [LetterTemplate.DashboardLockedPaymentFailure]: {
     subject: {
       en: () =>
-        '[ACTION REQUIRED] Your Swetrix dashboard has been locked due to a payment issue',
+        'Action required: your Swetrix dashboard has been locked due to a payment issue',
     },
   },
   [LetterTemplate.SocialIdentityLinked]: {
