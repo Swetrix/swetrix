@@ -42,6 +42,7 @@ const App = () => {
     routesPath.forSmallBusinesses,
     routesPath.captchaLanding,
     routesPath.gaAlternative,
+    routesPath.agencies,
   ]
 
   return (

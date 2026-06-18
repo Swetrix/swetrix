@@ -20,6 +20,7 @@ import {
   WarningIcon,
   ShieldCheckIcon,
   ArrowRightIcon,
+  ArrowsLeftRightIcon,
   ListIcon,
   XIcon,
   CaretDownIcon,
@@ -100,6 +101,23 @@ const getSolutions = (t: typeof i18nextT) => [
   },
 ]
 
+const getMoreSolutions = (t: typeof i18nextT) => [
+  {
+    name: t('header.solutions.gaAlternative.title'),
+    description: t('header.solutions.gaAlternative.desc'),
+    link: routes.gaAlternative,
+    icon: ArrowsLeftRightIcon,
+    className: 'text-amber-500 dark:text-amber-400',
+  },
+  {
+    name: t('header.solutions.agencies.title'),
+    description: t('header.solutions.agencies.desc'),
+    link: routes.agencies,
+    icon: BuildingsIcon,
+    className: 'text-sky-500 dark:text-sky-400',
+  },
+]
+
 const getCallsToAction = (t: typeof i18nextT) => [
   {
     name: t('header.watchDemo'),
@@ -115,9 +133,60 @@ const getCallsToAction = (t: typeof i18nextT) => [
   },
 ]
 
+interface SolutionItem {
+  name: string
+  description: string
+  link: string
+  icon: typeof ChartBarIcon
+  className: string
+}
+
+const SolutionTile = ({ item }: { item: SolutionItem }) => (
+  <div className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'>
+    <item.icon
+      className={cn(
+        'mt-1 h-5 w-5 text-gray-600 dark:text-gray-300',
+        item.className,
+      )}
+      aria-hidden='true'
+      weight='duotone'
+    />
+    <div>
+      {_startsWith(item.link, '/') ? (
+        <Link
+          to={item.link}
+          className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+        >
+          {item.name}
+          <span className='absolute inset-0' />
+        </Link>
+      ) : (
+        <a
+          href={item.link}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+        >
+          {item.name}
+          <span className='absolute inset-0' />
+        </a>
+      )}
+
+      <Text
+        as='p'
+        size='xs'
+        className='mt-1 text-gray-600 dark:text-neutral-100'
+      >
+        {item.description}
+      </Text>
+    </div>
+  </div>
+)
+
 const SolutionsMenu = ({ inverted }: { inverted?: boolean }) => {
   const { t } = useTranslation('common')
   const solutions = getSolutions(t)
+  const moreSolutions = getMoreSolutions(t)
   const ctas = getCallsToAction(t)
   const [open, setOpen] = useState(false)
   const closeTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -176,48 +245,12 @@ const SolutionsMenu = ({ inverted }: { inverted?: boolean }) => {
           <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-50/50 p-1.5 dark:divide-slate-700/60 dark:border-slate-700/60 dark:bg-slate-950/50'>
             <div className='grid w-full grid-cols-2 gap-1 p-4'>
               {_map(solutions, (item) => (
-                <div
-                  key={item.name}
-                  className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
-                >
-                  <item.icon
-                    className={cn(
-                      'mt-1 h-5 w-5 text-gray-600 dark:text-gray-300',
-                      item.className,
-                    )}
-                    aria-hidden='true'
-                    weight='duotone'
-                  />
-                  <div>
-                    {_startsWith(item.link, '/') ? (
-                      <Link
-                        to={item.link}
-                        className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-                      >
-                        {item.name}
-                        <span className='absolute inset-0' />
-                      </Link>
-                    ) : (
-                      <a
-                        href={item.link}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-                      >
-                        {item.name}
-                        <span className='absolute inset-0' />
-                      </a>
-                    )}
-
-                    <Text
-                      as='p'
-                      size='xs'
-                      className='mt-1 text-gray-600 dark:text-neutral-100'
-                    >
-                      {item.description}
-                    </Text>
-                  </div>
-                </div>
+                <SolutionTile key={item.name} item={item} />
+              ))}
+            </div>
+            <div className='grid w-full grid-cols-2 gap-1 p-4'>
+              {_map(moreSolutions, (item) => (
+                <SolutionTile key={item.name} item={item} />
               ))}
             </div>
             <div className='grid grid-cols-2 gap-1 px-4 py-2'>
@@ -746,6 +779,7 @@ const Header = ({ refPage, transparent, inverted }: HeaderProps) => {
   const { theme, setTheme } = useTheme()
 
   const solutions = getSolutions(t)
+  const moreSolutions = getMoreSolutions(t)
 
   const logoutHandler = () => {
     setMobileMenuOpen(false)
@@ -881,6 +915,50 @@ const Header = ({ refPage, transparent, inverted }: HeaderProps) => {
                         >
                           <DisclosurePanel className='mt-2 space-y-2'>
                             {_map(solutions, (item) => (
+                              <DisclosureButton
+                                key={item.name}
+                                as='div'
+                                className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
+                              >
+                                <item.icon
+                                  className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300'
+                                  aria-hidden='true'
+                                />
+                                <div>
+                                  {_startsWith(item.link, '/') ? (
+                                    <Link
+                                      to={item.link}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                                    >
+                                      {item.name}
+                                      <span className='absolute inset-0' />
+                                    </Link>
+                                  ) : (
+                                    <a
+                                      href={item.link}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      target='_blank'
+                                      rel='noopener noreferrer'
+                                      className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                                    >
+                                      {item.name}
+                                      <span className='absolute inset-0' />
+                                    </a>
+                                  )}
+
+                                  <Text
+                                    as='p'
+                                    size='xs'
+                                    className='mt-1 text-gray-600 dark:text-neutral-100'
+                                  >
+                                    {item.description}
+                                  </Text>
+                                </div>
+                              </DisclosureButton>
+                            ))}
+                            <div className='mx-2 my-1 border-t border-gray-300/80 dark:border-slate-700/60' />
+                            {_map(moreSolutions, (item) => (
                               <DisclosureButton
                                 key={item.name}
                                 as='div'

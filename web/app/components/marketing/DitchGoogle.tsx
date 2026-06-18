@@ -55,7 +55,7 @@ export const DitchGoogle = () => {
           <div className='mt-9 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row sm:items-center'>
             <Link
               to={routes.signup}
-              className='inline-flex h-12 items-center justify-center rounded-md bg-white px-5 text-slate-950 ring-1 ring-white/30 transition-colors hover:bg-gray-100'
+              className='inline-flex h-12 items-center justify-center rounded-md bg-white px-5 text-slate-950 ring-1 ring-white/30 transition-[transform,background-color] duration-150 ease-out-quint hover:bg-gray-100 active:scale-[0.97]'
               aria-label={t('titles.signup')}
             >
               <span className='text-center text-base font-semibold'>

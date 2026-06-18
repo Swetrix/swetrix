@@ -30,6 +30,8 @@ import {
   MoneyIcon,
   QrCodeIcon,
   PlusCircleIcon,
+  BuildingsIcon,
+  ArrowsLeftRightIcon,
 } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import React, { memo, type FC } from 'react'
@@ -109,6 +111,24 @@ const products: NavItem[] = [
     internal: !isSelfhosted,
     icon: ShieldCheckIcon,
     iconColor: 'text-emerald-400',
+  },
+  {
+    key: 'header.solutions.gaAlternative.title',
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.gaAlternative}`
+      : routesPath.gaAlternative,
+    internal: !isSelfhosted,
+    icon: ArrowsLeftRightIcon,
+    iconColor: 'text-amber-400',
+  },
+  {
+    key: 'header.solutions.agencies.title',
+    href: isSelfhosted
+      ? `https://swetrix.com${routesPath.agencies}`
+      : routesPath.agencies,
+    internal: !isSelfhosted,
+    icon: BuildingsIcon,
+    iconColor: 'text-sky-400',
   },
 ]
 

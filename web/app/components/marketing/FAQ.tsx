@@ -11,9 +11,13 @@ import routesPath from '~/utils/routes'
 
 interface FAQProps {
   includeGAQuestions?: boolean
+  includeAgencyQuestions?: boolean
 }
 
-const FAQ = ({ includeGAQuestions = false }: FAQProps) => {
+const FAQ = ({
+  includeGAQuestions = false,
+  includeAgencyQuestions = false,
+}: FAQProps) => {
   const { t } = useTranslation('common')
 
   const onLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -61,8 +65,26 @@ const FAQ = ({ includeGAQuestions = false }: FAQProps) => {
       return [...gaQuestions, ...questions]
     }
 
+    if (includeAgencyQuestions) {
+      const agencyItems = t('main.faq.agencyItems', {
+        returnObjects: true,
+      }) as {
+        q: string
+        a: string
+      }[]
+
+      const agencyQuestions = Array.isArray(agencyItems)
+        ? agencyItems.map((item, idx) => ({
+            ...item,
+            i18nKey: `main.faq.agencyItems.${idx}`,
+          }))
+        : []
+
+      return [...agencyQuestions, ...questions]
+    }
+
     return questions
-  }, [t, includeGAQuestions])
+  }, [t, includeGAQuestions, includeAgencyQuestions])
 
   const structuredData = {
     '@context': 'https://schema.org',

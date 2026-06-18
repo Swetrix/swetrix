@@ -64,6 +64,7 @@ const routes = Object.freeze({
 
   // Marketing pages
   gaAlternative: '/google-analytics-alternative',
+  agencies: '/agencies',
 })
 
 export default routes

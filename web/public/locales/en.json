@@ -588,6 +588,85 @@
       "cta": "Start your free trial"
     }
   },
+  "agencies": {
+    "hero": {
+      "eyebrow": "For agencies",
+      "title": "Analytics your clients trust, reporting your agency owns",
+      "subtitle": "Run every client site from one privacy-first workspace. Branded dashboards, one invoice, and the GDPR compliance your EU clients need - without the GA4 complexity.",
+      "cta": "Start a {{days}}-day free trial",
+      "viewDemo": "View live demo",
+      "trust": {
+        "oneWorkspace": "All clients, one workspace",
+        "whiteLabel": "White-label reporting",
+        "gdpr": "GDPR-compliant"
+      }
+    },
+    "workspace": {
+      "label": "One workspace",
+      "title": "Every client site in <1>one place</1>",
+      "subtitle": "Stop juggling a dozen GA properties and logins. Group clients into workspaces, switch between sites instantly, and give your whole team exactly the access they need.",
+      "primary": {
+        "title": "All client sites, one login",
+        "description": "Organise sites into organisations, invite your team, and move between client dashboards without re-authenticating or exporting CSVs."
+      },
+      "roles": {
+        "title": "Role-based access for staff and clients",
+        "description": "Give account managers full access, contractors view-only, and clients a read-only window into their own data - and nothing more."
+      },
+      "billing": {
+        "title": "One invoice for the whole roster",
+        "description": "Bill everything to the agency on a single subscription, then add per-site event volume as individual clients grow. No per-seat surprises."
+      },
+      "stats": {
+        "sites": "Up to 100 client sites on Plus",
+        "members": "Unlimited team members",
+        "invoice": "One invoice for the agency"
+      }
+    },
+    "whiteLabel": {
+      "label": "Client reporting",
+      "title": "Reporting that looks like it came from you",
+      "subtitle": "Share live dashboards under your own brand instead of screenshotting GA4. Public or password-protected links, embeddable anywhere, with automated email reports on your schedule.",
+      "points": {
+        "branded": {
+          "title": "Branded, shareable dashboards",
+          "description": "Send clients a live public dashboard or a password-protected link they can open anytime - no Swetrix account required."
+        },
+        "embed": {
+          "title": "Embed in your own portal",
+          "description": "Drop a dashboard straight into your client portal or report deck with a single iframe. It stays in your brand, not ours."
+        },
+        "reports": {
+          "title": "Automated email reports",
+          "description": "Schedule weekly or monthly reports so clients get their numbers without logging in - or chasing you for them."
+        }
+      },
+      "snippet": {
+        "filename": "client-report.html",
+        "comment": "Embed any public dashboard, wrapped in your own brand."
+      },
+      "cta": "Start your free trial"
+    },
+    "compliance": {
+      "label": "Privacy & compliance",
+      "title": "The compliance your EU clients ask for",
+      "subtitle": "Win and keep European clients with analytics that are private by design - no consent headaches, no data-transfer risk.",
+      "points": {
+        "gdpr": {
+          "title": "GDPR-compliant by default",
+          "description": "No personal data and no cross-site profiles, so you can hand clients a setup their legal team will sign off on."
+        },
+        "cookieless": {
+          "title": "No cookie banners",
+          "description": "Cookieless tracking means most client sites can drop the consent banner - and stop losing up to 40% of their data to declines."
+        },
+        "residency": {
+          "title": "EU data, DPA included",
+          "description": "Data is processed in the EU and we'll sign a DPA, so you can answer the procurement questionnaire with confidence."
+        }
+      }
+    }
+  },
   "main": {
     "seeLiveDemo": "See the live demo",
     "goToBilling": "Go to billing",
@@ -643,6 +722,24 @@
         {
           "q": "Will my site run faster than with GA?",
           "a": "Swetrix is designed to be lightweight. Less script weight and fewer third-party calls can mean a faster site, especially on slow connections."
+        }
+      ],
+      "agencyItems": [
+        {
+          "q": "Can I manage multiple client sites from one account?",
+          "a": "Yes. Group client sites into organisations, invite your team, and switch between dashboards without logging out. The Plus plan covers up to 100 websites, and Enterprise removes the limit entirely."
+        },
+        {
+          "q": "Can I white-label dashboards and reports for clients?",
+          "a": "You can share live public or password-protected dashboards, embed them in your own client portal via iframe, and schedule automated email reports - so clients see their data in your context, not a generic GA export."
+        },
+        {
+          "q": "How does billing work for an agency with many clients?",
+          "a": "Everything runs on a single agency subscription with one invoice. Pick an event volume that covers your whole roster and scale it up as clients grow - there are no per-seat fees and team members are unlimited."
+        },
+        {
+          "q": "Is Swetrix GDPR-compliant for my EU clients?",
+          "a": "Yes. Swetrix is cookieless and collects no personal data, so most client sites can skip the cookie banner. Data is processed in the EU and we can sign a DPA for clients who require one."
         }
       ]
     },
@@ -3526,6 +3623,7 @@
     "cookiePolicy": "Cookie Policy",
     "termsAndConditions": "Terms and Conditions",
     "gaAlternative": "Cookieless Google Analytics alternative",
+    "agencies": "Privacy-first analytics for agencies",
     "projectWithPassword": "Website analytics - password required",
     "subscribe": "Start your free trial"
   },
@@ -3556,13 +3654,9 @@
     "watchDemo": "Watch demo",
     "contactSales": "Contact sales",
     "trialBanner": {
-      "pickAPlan": "Pick a plan",
-      "keepUsing": "to keep using without interruption.",
-      "keepUsingEnded": "to keep using Swetrix.",
-      "youHaveXDaysLeft": "You have {{amount}} days left on your free trial",
-      "endsToday": "Your free trial ends today",
-      "endsTomorrow": "Your free trial ends tomorrow",
-      "ended": "Your free trial has ended"
+      "reviewBilling": "Review billing",
+      "endedTitle": "Trial ended",
+      "endedBody": "Your projects and data are kept. Choose a plan to view analytics again."
     },
     "solutions": {
       "title": "Solutions",
@@ -3581,6 +3675,14 @@
       "performance": {
         "title": "Performance monitoring",
         "desc": "Analyse your sites key speed metrics"
+      },
+      "gaAlternative": {
+        "title": "Google Analytics alternative",
+        "desc": "The cookieless, privacy-first GA4 replacement"
+      },
+      "agencies": {
+        "title": "For agencies",
+        "desc": "Manage every client site from one privacy-first workspace"
       }
     }
   },
