@@ -382,9 +382,20 @@ class GeminiTranslator {
     const langLabel = language.name
       ? `${language.name} (${language.id})`
       : language.id
+
+    // Extra per-language guidance to pin a regional variant so the model can't
+    // drift to the wrong one. Keyed by Crowdin language id, then two-letter code.
+    const regionalNotes = {
+      'pt-BR':
+        'Target Brazilian Portuguese (pt-BR) as written and spoken in Brazil. Use Brazilian vocabulary, spelling and grammar (e.g. "você", "tela", "arquivo", "gerenciar", "e-mail", "celular"); do NOT use European Portuguese forms (e.g. "utilizador", "ecrã", "ficheiro", "gerir", "telemóvel").',
+    }
+    const note =
+      regionalNotes[language.id] || regionalNotes[language.twoLettersCode]
+
     return [
       `You are a professional UI/UX translator working on Swetrix — a privacy-focused, developer-oriented web analytics product.`,
       `Translate the supplied user interface strings from English into ${langLabel}.`,
+      ...(note ? [``, `IMPORTANT regional variant: ${note}`] : []),
       ``,
       `Rules (all are mandatory):`,
       `1. Preserve every interpolation placeholder verbatim, exactly as it appears: {{name}}, {{count}}, {{max}} — do not translate, reorder, rename, or alter casing.`,

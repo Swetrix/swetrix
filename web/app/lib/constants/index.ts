@@ -448,29 +448,32 @@ export const MIN_FUNNEL_STEPS = 2
 export const MAX_FUNNEL_STEPS = 10
 
 // List of languages with translations available
-export const whitelist = ['en', 'uk', 'pl', 'de', 'fr']
+export const whitelist = ['de', 'en', 'fr', 'pl', 'pt', 'uk']
 export const whitelistWithCC = {
-  en: 'en-GB',
-  uk: 'uk-UA',
-  pl: 'pl-PL',
   de: 'de-DE',
+  en: 'en-GB',
   fr: 'fr-FR',
+  pl: 'pl-PL',
+  pt: 'pt-BR',
+  uk: 'uk-UA',
 } as Record<string, string>
 export const defaultLanguage = 'en'
 export const languages = {
-  en: 'English',
-  uk: 'Українська',
-  pl: 'Polski',
   de: 'Deutsch',
+  en: 'English',
   fr: 'Français',
+  pl: 'Polski',
+  pt: 'Português (Brasil)',
+  uk: 'Українська',
 } as Record<string, string>
 
 export const languageFlag = {
-  en: 'GB',
-  uk: 'UA',
-  pl: 'PL',
-  fr: 'FR',
   de: 'DE',
+  en: 'GB',
+  fr: 'FR',
+  pl: 'PL',
+  pt: 'BR',
+  uk: 'UA',
 } as Record<string, string>
 
 export const paddleLanguageMapping = {
@@ -539,7 +542,7 @@ export const localisePath = (pathname: string, lang: string): string => {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 45
+export const I18N_CACHE_BREAKER = 46
 
 export const roles: Role[] = ['admin', 'viewer']
 
