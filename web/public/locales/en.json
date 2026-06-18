@@ -52,6 +52,8 @@
     "errorStatusUpdated": "Error status has been updated",
     "enterSegmentName": "Please enter a segment name",
     "inputCannotBeEmpty": "This input field must not be empty",
+    "segmentCreated": "Segment has been created",
+    "segmentUpdated": "Segment has been updated",
     "segmentDeleted": "Segment has been deleted",
     "organisationCreated": "Organisation has been created",
     "organisationCreateError": "Error occurred while creating the organisation",

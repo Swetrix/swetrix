@@ -306,13 +306,18 @@ const AddAViewModal = ({
     ) {
       hasHandledResponse.current = true
       if (fetcher.data.success) {
+        if (fetcher.data.intent === 'create-project-view') {
+          toast.success(t('apiNotifications.segmentCreated'))
+        } else if (fetcher.data.intent === 'update-project-view') {
+          toast.success(t('apiNotifications.segmentUpdated'))
+        }
         onSubmit()
         closeModal()
       } else if (fetcher.data.error) {
         toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.state, fetcher.data, onSubmit, closeModal])
+  }, [fetcher.state, fetcher.data, onSubmit, closeModal, t])
 
   const onViewCreate = () => {
     if (isViewSubmitting) {
