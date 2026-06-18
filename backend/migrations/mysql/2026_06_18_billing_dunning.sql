@@ -1,6 +1,6 @@
 CREATE TABLE `subscription_dunning` (
-  `id` varchar(36) NOT NULL,
-  `userId` varchar(36) NOT NULL,
+  `id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `userId` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `subID` varchar(32) DEFAULT NULL,
   `subscriptionPaymentId` varchar(80) DEFAULT NULL,
   `status` enum('active','recovered','locked','cancelled') NOT NULL DEFAULT 'active',
@@ -20,4 +20,4 @@ CREATE TABLE `subscription_dunning` (
   KEY `IDX_subscription_dunning_payment` (`subscriptionPaymentId`),
   KEY `IDX_subscription_dunning_suspends_status` (`suspendsAt`,`status`),
   CONSTRAINT `FK_subscription_dunning_user` FOREIGN KEY (`userId`) REFERENCES `user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
