@@ -52,6 +52,8 @@
     "errorStatusUpdated": "Stan błędu został zaktualizowany",
     "enterSegmentName": "Wprowadź nazwę segmentu",
     "inputCannotBeEmpty": "To pole nie może być puste",
+    "segmentCreated": "Segment został utworzony",
+    "segmentUpdated": "Segment został zaktualizowany",
     "segmentDeleted": "Segment został usunięty",
     "organisationCreated": "Organizacja została utworzona",
     "organisationCreateError": "Wystąpił błąd podczas tworzenia organizacji",
@@ -588,6 +590,85 @@
       "cta": "Rozpocznij darmowy okres próbny"
     }
   },
+  "agencies": {
+    "hero": {
+      "eyebrow": "Dla agencji",
+      "title": "Analityka, której ufają Twoi klienci, raportowanie, które jest własnością Twojej agencji",
+      "subtitle": "Prowadź wszystkie strony klientów z jednego obszaru roboczego, dbającego o prywatność. Zmodyfikowane pod Twoją markę panele, jedna faktura i zgodność z RODO, której potrzebują Twoi klienci w UE - bez złożoności GA4.",
+      "cta": "Rozpocznij {{days}}-dniowy darmowy okres próbny",
+      "viewDemo": "Zobacz demo na żywo",
+      "trust": {
+        "oneWorkspace": "Wszyscy klienci, jeden obszar roboczy",
+        "whiteLabel": "Raportowanie white-label",
+        "gdpr": "Zgodne z RODO"
+      }
+    },
+    "workspace": {
+      "label": "Jeden obszar roboczy",
+      "title": "Każda strona klienta w <1>jednym miejscu</1>",
+      "subtitle": "Przestań żonglować tuzinem usług GA i logowań. Grupuj klientów w obszarach roboczych, błyskawicznie przełączaj się między witrynami i daj całemu zespołowi dokładnie takie uprawnienia, jakich potrzebują.",
+      "primary": {
+        "title": "Wszystkie strony klientów, jedno logowanie",
+        "description": "Organizuj strony w organizacje, zapraszaj swój zespół i przemieszczaj się między panelami klientów bez konieczności ponownego logowania lub eksportowania plików CSV."
+      },
+      "roles": {
+        "title": "Dostęp oparty na rolach dla pracowników i klientów",
+        "description": "Daj managerom kont pełny dostęp, kontraktorom możliwość podglądu, a klientom okno tylko do odczytu ich własnych danych - i nic poza tym."
+      },
+      "billing": {
+        "title": "Jedna faktura na wszystko",
+        "description": "Rozliczaj wszystko na agencję za pomocą jednej subskrypcji, a następnie dodawaj wolumen zdarzeń na stronę w miarę rozwoju poszczególnych klientów. Żadnych niespodzianek za każdego użytkownika."
+      },
+      "stats": {
+        "sites": "Do 100 stron klientów w planie Plus",
+        "members": "Nielimitowani członkowie zespołu",
+        "invoice": "Jedna faktura dla agencji"
+      }
+    },
+    "whiteLabel": {
+      "label": "Raportowanie dla klienta",
+      "title": "Raportowanie, które wygląda, jakby pochodziło od Ciebie",
+      "subtitle": "Udostępniaj panele informacyjne na żywo pod własną marką, zamiast robić zrzuty ekranu w GA4. Publiczne lub chronione hasłem linki, możliwe do osadzenia w dowolnym miejscu, z automatycznymi raportami e-mail wysyłanymi zgodnie z harmonogramem.",
+      "points": {
+        "branded": {
+          "title": "Obrandowane, udostępniane panele statystyk",
+          "description": "Wyślij klientom publiczny panel statystyk na żywo lub link chroniony hasłem, który mogą otworzyć w dowolnej chwili - bez konta Swetrix."
+        },
+        "embed": {
+          "title": "Osadź we własnym portalu",
+          "description": "Umieść panel bezpośrednio w portalu klienta lub raporcie za pomocą jednego tagu iframe. Pozostanie w barwach Twojej marki, nie naszej."
+        },
+        "reports": {
+          "title": "Zautomatyzowane raporty e-mail",
+          "description": "Zaplanuj cotygodniowe lub comiesięczne raporty, aby klienci otrzymywali swoje dane bez logowania - i bez ciągłego pytania o nie."
+        }
+      },
+      "snippet": {
+        "filename": "client-report.html",
+        "comment": "Osadź dowolny publiczny panel statystyk w barwach własnej marki."
+      },
+      "cta": "Rozpocznij darmowy okres próbny"
+    },
+    "compliance": {
+      "label": "Prywatność i zgodność",
+      "title": "Zgodność, o którą proszą Twoi klienci z UE",
+      "subtitle": "Zdobywaj i zatrzymuj europejskich klientów dzięki analityce domyślnie chroniącej prywatność - bez problemów ze zgodami i ryzyka transferu danych.",
+      "points": {
+        "gdpr": {
+          "title": "Domyślna zgodność z RODO",
+          "description": "Brak danych osobowych i śledzenia między witrynami, więc możesz przekazać klientom rozwiązanie, które zatwierdzi ich zespół prawny."
+        },
+        "cookieless": {
+          "title": "Brak banerów cookie",
+          "description": "Śledzenie bez ciasteczek oznacza, że większość stron Twoich klientów może porzucić baner zgody - i przestać tracić do 40% danych przez odmowy."
+        },
+        "residency": {
+          "title": "Dane w UE i wliczona umowa DPA",
+          "description": "Dane są przetwarzane w UE, a my podpiszemy umowę DPA, dzięki czemu możesz bez obaw wypełniać ankiety przetargowe."
+        }
+      }
+    }
+  },
   "main": {
     "seeLiveDemo": "Zobacz demo na żywo",
     "goToBilling": "Przejdź do rozliczeń",
@@ -643,6 +724,24 @@
         {
           "q": "Czy moja strona będzie działać szybciej niż z GA?",
           "a": "Swetrix jest zaprojektowany jako lekki. Mniejsza waga skryptu i mniej wywołań do usług zewnętrznych mogą oznaczać szybszą stronę, zwłaszcza przy wolnych połączeniach."
+        }
+      ],
+      "agencyItems": [
+        {
+          "q": "Czy mogę zarządzać wieloma stronami klientów z jednego konta?",
+          "a": "Tak. Grupuj strony klientów w organizacje, zapraszaj swój zespół i przełączaj się między panelami bez wylogowywania. Plan Plus obejmuje do 100 stron, a Enterprise całkowicie znosi ten limit."
+        },
+        {
+          "q": "Czy mogę stosować własny branding na panelach i raportach dla klientów?",
+          "a": "Możesz udostępniać publiczne lub chronione hasłem panele statystyk, osadzać je we własnym portalu klienta za pomocą iframe i planować zautomatyzowane raporty e-mail - dzięki czemu klienci widzą dane w Twoim kontekście, a nie jako ogólny eksport z GA."
+        },
+        {
+          "q": "Jak działają płatności w przypadku agencji z wieloma klientami?",
+          "a": "Wszystko działa w ramach jednej subskrypcji agencyjnej z jedną fakturą. Wybierz limit zdarzeń obejmujący wszystkich klientów i zwiększaj go w miarę ich rozwoju - nie ma opłat za użytkownika, a liczba członków zespołu jest nieograniczona."
+        },
+        {
+          "q": "Czy Swetrix jest zgodny z RODO dla moich klientów z UE?",
+          "a": "Tak. Swetrix nie używa plików cookie i nie zbiera danych osobowych, więc większość stron klientów może pominąć baner cookie. Dane są przetwarzane w UE i możemy podpisać DPA dla klientów, którzy tego wymagają."
         }
       ]
     },
@@ -2992,6 +3091,7 @@
     "choosePlanTitle": "Wybierz plan dopasowany do Twojego ruchu",
     "choosePlanPageDesc": "Wybierz miesięczny limit zdarzeń, typ planu i okres rozliczeniowy. Dokładną cenę zobaczysz przed płatnością.",
     "choosePlanCurrentPlanDesc": "Wybierz miesięczny limit zdarzeń, typ planu i okres rozliczeniowy. Twój obecny plan to {{plan}} z limitem {{events}} zdarzeń miesięcznie, a zmiany są proporcjonalnie przeliczane automatycznie.",
+    "compareAllFeatures": "Porównaj wszystkie funkcje",
     "planFaqTitle": "Pytania dotyczące planu",
     "currentUsageFaqQuestion": "Jakie jest moje obecne zużycie?",
     "currentUsageFaqAnswer": "W ciągu ostatnich 30 dni wykorzystano {{events}} płatnych zdarzeń. Zobacz pełny raport zużycia, w tym strony internetowe i członków zespołu, w <subscriptionLink>sekcji Subskrypcja</subscriptionLink> w ustawieniach konta.",
@@ -3526,6 +3626,7 @@
     "cookiePolicy": "Polityka plików cookie",
     "termsAndConditions": "Regulamin",
     "gaAlternative": "Alternatywa dla Google Analytics bez plików cookie",
+    "agencies": "Analityka chroniąca prywatność dla agencji",
     "projectWithPassword": "Analityka strony – wymagane hasło",
     "subscribe": "Rozpocznij darmowy okres próbny"
   },
@@ -3556,13 +3657,9 @@
     "watchDemo": "Obejrzyj demo",
     "contactSales": "Skontaktuj się ze sprzedażą",
     "trialBanner": {
-      "pickAPlan": "Wybierz plan",
-      "keepUsing": "aby kontynuować korzystanie bez przerw.",
-      "keepUsingEnded": "aby dalej korzystać ze Swetrix.",
-      "youHaveXDaysLeft": "Masz jeszcze {{amount}} dni bezpłatnego okresu próbnego",
-      "endsToday": "Twój okres próbny kończy się dzisiaj",
-      "endsTomorrow": "Twój okres próbny kończy się jutro",
-      "ended": "Twój bezpłatny okres próbny dobiegł końca"
+      "reviewBilling": "Sprawdź rozliczenia",
+      "endedTitle": "Okres próbny zakończony",
+      "endedBody": "Twoje projekty i dane są zachowane. Wybierz plan, aby ponownie przeglądać analitykę."
     },
     "solutions": {
       "title": "Rozwiązania",
@@ -3581,6 +3678,14 @@
       "performance": {
         "title": "Monitorowanie wydajności",
         "desc": "Analizuj kluczowe metryki prędkości swoich witryn"
+      },
+      "gaAlternative": {
+        "title": "Alternatywa dla Google Analytics",
+        "desc": "Bezciasteczkowy, chroniący prywatność zamiennik GA4"
+      },
+      "agencies": {
+        "title": "Dla agencji",
+        "desc": "Zarządzaj wszystkimi stronami klientów z jednej przestrzeni roboczej chroniącej prywatność"
       }
     }
   },

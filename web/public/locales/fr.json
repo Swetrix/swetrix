@@ -52,6 +52,8 @@
     "errorStatusUpdated": "Le statut d'erreur a été mis à jour",
     "enterSegmentName": "Veuillez saisir un nom de segment",
     "inputCannotBeEmpty": "Ce champ de saisie ne doit pas être vide",
+    "segmentCreated": "Le segment a été créé",
+    "segmentUpdated": "Le segment a été mis à jour",
     "segmentDeleted": "Le segment a été supprimé",
     "organisationCreated": "L'organisation a été créée",
     "organisationCreateError": "Une erreur s'est produite lors de la création de l'organisation",
@@ -588,6 +590,85 @@
       "cta": "Commencez votre essai gratuit"
     }
   },
+  "agencies": {
+    "hero": {
+      "eyebrow": "Pour les agences",
+      "title": "Des analyses auxquelles vos clients font confiance, des rapports gérés par votre agence",
+      "subtitle": "Gérez tous les sites de vos clients depuis un seul espace de travail axé sur la confidentialité. Tableaux de bord personnalisés, une seule facture et la conformité RGPD dont vos clients européens ont besoin, sans la complexité de GA4.",
+      "cta": "Commencez un essai gratuit de {{days}} jours",
+      "viewDemo": "Voir la démo en direct",
+      "trust": {
+        "oneWorkspace": "Tous les clients, un seul espace de travail",
+        "whiteLabel": "Rapports en marque blanche",
+        "gdpr": "Conforme au RGPD"
+      }
+    },
+    "workspace": {
+      "label": "Un seul espace de travail",
+      "title": "Tous les sites clients au <1>même endroit</1>",
+      "subtitle": "Arrêtez de jongler avec une dizaine de propriétés GA et d'identifiants. Regroupez les clients dans des espaces de travail, passez d'un site à l'autre instantanément et donnez à toute votre équipe exactement l'accès dont elle a besoin.",
+      "primary": {
+        "title": "Tous les sites clients, une seule connexion",
+        "description": "Organisez les sites en organisations, invitez votre équipe et passez d'un tableau de bord client à l'autre sans vous réauthentifier ni exporter de fichiers CSV."
+      },
+      "roles": {
+        "title": "Accès basé sur les rôles pour le personnel et les clients",
+        "description": "Donnez aux gestionnaires de comptes un accès complet, aux sous-traitants un accès en consultation seule, et aux clients une fenêtre en lecture seule sur leurs propres données - et rien de plus."
+      },
+      "billing": {
+        "title": "Une seule facture pour tout le portefeuille",
+        "description": "Facturez tout à l'agence sur un seul abonnement, puis ajoutez le volume d'événements par site à mesure que les clients individuels se développent. Pas de surprises par utilisateur."
+      },
+      "stats": {
+        "sites": "Jusqu'à 100 sites clients avec Plus",
+        "members": "Membres d'équipe illimités",
+        "invoice": "Une seule facture pour l'agence"
+      }
+    },
+    "whiteLabel": {
+      "label": "Rapports clients",
+      "title": "Des rapports qui semblent venir de vous",
+      "subtitle": "Partagez des tableaux de bord en direct sous votre propre marque au lieu de faire des captures d'écran de GA4. Liens publics ou protégés par mot de passe, intégrables partout, avec des rapports automatiques par e-mail selon votre calendrier.",
+      "points": {
+        "branded": {
+          "title": "Tableaux de bord personnalisés et partageables",
+          "description": "Envoyez à vos clients un tableau de bord public en direct ou un lien protégé par mot de passe qu'ils peuvent ouvrir à tout moment : aucun compte Swetrix n'est requis."
+        },
+        "embed": {
+          "title": "Intégration dans votre propre portail",
+          "description": "Intégrez un tableau de bord directement dans votre portail client ou votre rapport avec une simple iframe. Il reste à l'image de votre marque, pas de la nôtre."
+        },
+        "reports": {
+          "title": "Rapports automatisés par e-mail",
+          "description": "Programmez des rapports hebdomadaires ou mensuels pour que vos clients reçoivent leurs chiffres sans se connecter, ni vous courir après."
+        }
+      },
+      "snippet": {
+        "filename": "client-report.html",
+        "comment": "Intégrez n'importe quel tableau de bord public, à l'image de votre marque."
+      },
+      "cta": "Commencer votre essai gratuit"
+    },
+    "compliance": {
+      "label": "Confidentialité et conformité",
+      "title": "La conformité exigée par vos clients européens",
+      "subtitle": "Gagnez et fidélisez des clients européens grâce à des analyses privées dès la conception : aucun casse-tête lié au consentement, aucun risque de transfert de données.",
+      "points": {
+        "gdpr": {
+          "title": "Conforme au RGPD par défaut",
+          "description": "Aucune donnée personnelle ni profilage inter-sites, pour que vous puissiez offrir à vos clients une configuration que leur équipe juridique validera."
+        },
+        "cookieless": {
+          "title": "Pas de bannières de cookies",
+          "description": "Le suivi sans cookies permet à la plupart des sites clients de supprimer la bannière de consentement, et de cesser de perdre jusqu'à 40 % de leurs données à cause des refus."
+        },
+        "residency": {
+          "title": "Données dans l'UE, DPA inclus",
+          "description": "Les données sont traitées dans l'UE et nous signerons un DPA, afin que vous puissiez répondre en toute confiance au questionnaire d'achats."
+        }
+      }
+    }
+  },
   "main": {
     "seeLiveDemo": "Voir la démo en ligne",
     "goToBilling": "Accéder à la facturation",
@@ -643,6 +724,24 @@
         {
           "q": "Mon site sera-t-il plus rapide qu’avec GA ?",
           "a": "Swetrix est conçu pour être léger. Un script plus léger et moins d’appels à des services tiers peuvent rendre un site plus rapide, surtout sur des connexions lentes."
+        }
+      ],
+      "agencyItems": [
+        {
+          "q": "Puis-je gérer plusieurs sites clients depuis un seul compte ?",
+          "a": "Oui. Regroupez les sites clients en organisations, invitez votre équipe et basculez entre les tableaux de bord sans vous déconnecter. Le forfait Plus couvre jusqu'à 100 sites web et le forfait Entreprise supprime entièrement cette limite."
+        },
+        {
+          "q": "Puis-je proposer des tableaux de bord et des rapports en marque blanche pour mes clients ?",
+          "a": "Vous pouvez partager des tableaux de bord publics en direct ou protégés par mot de passe, les intégrer dans votre propre portail client via iframe, et programmer des rapports par e-mail automatisés. Ainsi, les clients consultent leurs données dans votre environnement, pas via une exportation GA générique."
+        },
+        {
+          "q": "Comment fonctionne la facturation pour une agence avec de nombreux clients ?",
+          "a": "Tout fonctionne sur un seul abonnement agence avec une seule facture. Choisissez un volume d'événements qui couvre l'ensemble de votre portefeuille et augmentez-le au fur et à mesure que vos clients grandissent : il n'y a pas de frais par utilisateur et le nombre de membres de l'équipe est illimité."
+        },
+        {
+          "q": "Swetrix est-il conforme au RGPD pour mes clients dans l'UE ?",
+          "a": "Oui. Swetrix est sans cookies et ne collecte aucune donnée personnelle, la plupart des sites clients peuvent donc se passer de la bannière de cookies. Les données sont traitées dans l'UE et nous pouvons signer un DPA pour les clients qui en ont besoin."
         }
       ]
     },
@@ -2992,6 +3091,7 @@
     "choosePlanTitle": "Choisissez un forfait adapté à votre trafic",
     "choosePlanPageDesc": "Choisissez votre volume mensuel d'événements, le type de forfait et la période de facturation. Vous verrez le prix exact avant le paiement.",
     "choosePlanCurrentPlanDesc": "Choisissez votre volume mensuel d'événements, le type de forfait et la période de facturation. Votre forfait actuel est {{plan}} avec {{events}} événements par mois, et les modifications sont réparties automatiquement au prorata.",
+    "compareAllFeatures": "Comparer toutes les fonctionnalités",
     "planFaqTitle": "Questions sur les forfaits",
     "currentUsageFaqQuestion": "Quelle est mon utilisation actuelle ?",
     "currentUsageFaqAnswer": "Vous avez utilisé {{events}} événements facturables au cours des 30 derniers jours. Veuillez consulter votre rapport d'utilisation complet, y compris les sites web et les membres de l'équipe, dans la section <subscriptionLink>Abonnement</subscriptionLink> des paramètres de votre compte.",
@@ -3526,6 +3626,7 @@
     "cookiePolicy": "Politique relative aux cookies",
     "termsAndConditions": "Conditions générales",
     "gaAlternative": "Alternative à Google Analytics sans cookies",
+    "agencies": "Analyses axées sur la confidentialité pour les agences",
     "projectWithPassword": "Analyse du site web – mot de passe requis",
     "subscribe": "Commencez votre essai gratuit"
   },
@@ -3556,13 +3657,9 @@
     "watchDemo": "Voir la démo",
     "contactSales": "Contacter le service commercial",
     "trialBanner": {
-      "pickAPlan": "Choisissez une formule",
-      "keepUsing": "pour continuer à l'utiliser sans interruption.",
-      "keepUsingEnded": "pour continuer à utiliser Swetrix.",
-      "youHaveXDaysLeft": "Il vous reste {{amount}} jours d'essai gratuit",
-      "endsToday": "Votre essai gratuit se termine aujourd'hui",
-      "endsTomorrow": "Votre essai gratuit se termine demain",
-      "ended": "Votre période d'essai gratuit est terminée"
+      "reviewBilling": "Consulter la facturation",
+      "endedTitle": "Essai terminé",
+      "endedBody": "Vos projets et données sont conservés. Choisissez un forfait pour consulter à nouveau les analyses."
     },
     "solutions": {
       "title": "Solutions",
@@ -3581,6 +3678,14 @@
       "performance": {
         "title": "Surveillance des performances",
         "desc": "Analysez les métriques clés de vitesse de vos sites"
+      },
+      "gaAlternative": {
+        "title": "Alternative à Google Analytics",
+        "desc": "Le remplaçant de GA4 sans cookies et axé sur la confidentialité"
+      },
+      "agencies": {
+        "title": "Pour les agences",
+        "desc": "Gérez chaque site client depuis un espace de travail unique axé sur la confidentialité"
       }
     }
   },

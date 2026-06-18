@@ -52,6 +52,8 @@
     "errorStatusUpdated": "Fehlerstatus wurde aktualisiert",
     "enterSegmentName": "Bitte geben Sie einen Segmentnamen ein",
     "inputCannotBeEmpty": "Dieses Eingabefeld darf nicht leer sein",
+    "segmentCreated": "Segment wurde erstellt",
+    "segmentUpdated": "Segment wurde aktualisiert",
     "segmentDeleted": "Segment wurde gelöscht",
     "organisationCreated": "Organisation wurde erstellt",
     "organisationCreateError": "Fehler beim Erstellen der Organisation",
@@ -588,6 +590,85 @@
       "cta": "Starte deine kostenlose Testversion"
     }
   },
+  "agencies": {
+    "hero": {
+      "eyebrow": "Für Agenturen",
+      "title": "Analytics, denen Ihre Kunden vertrauen, Reporting in der Hand Ihrer Agentur",
+      "subtitle": "Verwalten Sie jede Kunden-Website über einen datenschutzorientierten Workspace. Gebrandete Dashboards, eine Rechnung und die DSGVO-Konformität, die Ihre EU-Kunden benötigen – ohne die Komplexität von GA4.",
+      "cta": "Starten Sie eine {{days}}-tägige kostenlose Testversion",
+      "viewDemo": "Live-Demo ansehen",
+      "trust": {
+        "oneWorkspace": "Alle Kunden, ein Workspace",
+        "whiteLabel": "White-Label-Reporting",
+        "gdpr": "DSGVO-konform"
+      }
+    },
+    "workspace": {
+      "label": "Ein Workspace",
+      "title": "Jede Kunden-Website an <1>einem Ort</1>",
+      "subtitle": "Hören Sie auf, mit Dutzenden GA-Properties und Logins zu jonglieren. Gruppieren Sie Kunden in Workspaces, wechseln Sie sofort zwischen Websites und geben Sie Ihrem gesamten Team genau den Zugriff, den es benötigt.",
+      "primary": {
+        "title": "Alle Kunden-Websites, ein Login",
+        "description": "Organisieren Sie Websites in Organisationen, laden Sie Ihr Team ein und wechseln Sie zwischen Kunden-Dashboards, ohne sich neu authentifizieren oder CSVs exportieren zu müssen."
+      },
+      "roles": {
+        "title": "Rollenbasierter Zugriff für Mitarbeiter und Kunden",
+        "description": "Geben Sie Account Managern vollen Zugriff, Auftragnehmern reinen Lesezugriff und Kunden ein Nur-Lese-Fenster für ihre eigenen Daten – und nicht mehr."
+      },
+      "billing": {
+        "title": "Eine Rechnung für den gesamten Kundenstamm",
+        "description": "Stellen Sie der Agentur alles über ein einziges Abonnement in Rechnung und fügen Sie dann das Event-Volumen pro Website hinzu, wenn einzelne Kunden wachsen. Keine Überraschungen pro Nutzerplatz."
+      },
+      "stats": {
+        "sites": "Bis zu 100 Kunden-Websites mit Plus",
+        "members": "Unbegrenzte Teammitglieder",
+        "invoice": "Eine Rechnung für die Agentur"
+      }
+    },
+    "whiteLabel": {
+      "label": "Kunden-Reporting",
+      "title": "Reporting, das aussieht, als käme es von Ihnen",
+      "subtitle": "Teilen Sie Live-Dashboards unter Ihrer eigenen Marke, anstatt Screenshots von GA4 zu machen. Öffentliche oder passwortgeschützte Links, überall einbettbar, mit automatisierten E-Mail-Berichten nach Ihrem Zeitplan.",
+      "points": {
+        "branded": {
+          "title": "Gebrandete, teilbare Dashboards",
+          "description": "Senden Sie Kunden ein öffentliches Live-Dashboard oder einen passwortgeschützten Link, den sie jederzeit öffnen können – kein Swetrix-Konto erforderlich."
+        },
+        "embed": {
+          "title": "In Ihr eigenes Portal einbetten",
+          "description": "Fügen Sie ein Dashboard mit einem einzigen iframe direkt in Ihr Kundenportal oder Ihren Bericht ein. Es bleibt in Ihrem Branding, nicht in unserem."
+        },
+        "reports": {
+          "title": "Automatisierte E-Mail-Berichte",
+          "description": "Planen Sie wöchentliche oder monatliche Berichte, damit Kunden ihre Zahlen erhalten, ohne sich einzuloggen – oder Sie danach fragen müssen."
+        }
+      },
+      "snippet": {
+        "filename": "client-report.html",
+        "comment": "Betten Sie ein beliebiges öffentliches Dashboard im Design Ihrer eigenen Marke ein."
+      },
+      "cta": "Kostenlose Testversion starten"
+    },
+    "compliance": {
+      "label": "Datenschutz & Compliance",
+      "title": "Die Compliance, die Ihre EU-Kunden verlangen",
+      "subtitle": "Gewinnen und behalten Sie europäische Kunden mit Analytics, die von Haus aus privat sind – ohne Consent-Kopfschmerzen und ohne Datentransfer-Risiko.",
+      "points": {
+        "gdpr": {
+          "title": "Standardmäßig DSGVO-konform",
+          "description": "Keine personenbezogenen Daten und keine seitenübergreifenden Profile, sodass Sie Ihren Kunden ein Setup übergeben können, das von deren Rechtsabteilung genehmigt wird."
+        },
+        "cookieless": {
+          "title": "Keine Cookie-Banner",
+          "description": "Cookieloses Tracking bedeutet, dass die meisten Kunden-Websites auf das Consent-Banner verzichten können – und nicht mehr bis zu 40 % ihrer Daten durch Ablehnungen verlieren."
+        },
+        "residency": {
+          "title": "EU-Daten, inklusive AV-Vertrag",
+          "description": "Die Daten werden in der EU verarbeitet und wir unterzeichnen einen AV-Vertrag, damit Sie Beschaffungsfragebögen mit gutem Gewissen beantworten können."
+        }
+      }
+    }
+  },
   "main": {
     "seeLiveDemo": "Live-Demo ansehen",
     "goToBilling": "Zur Abrechnung",
@@ -643,6 +724,24 @@
         {
           "q": "Läuft meine Website schneller als mit GA?",
           "a": "Swetrix ist auf Leichtgewichtigkeit ausgelegt. Weniger Skriptgewicht und weniger Third-Party-Calls können eine Website schneller machen – besonders bei langsamen Verbindungen."
+        }
+      ],
+      "agencyItems": [
+        {
+          "q": "Kann ich mehrere Kunden-Websites von einem Konto aus verwalten?",
+          "a": "Ja. Gruppieren Sie Kunden-Websites in Organisationen, laden Sie Ihr Team ein und wechseln Sie zwischen Dashboards, ohne sich abzumelden. Der Plus-Plan deckt bis zu 100 Websites ab, der Enterprise-Plan hebt das Limit komplett auf."
+        },
+        {
+          "q": "Kann ich Dashboards und Berichte für Kunden per White-Labeling anpassen?",
+          "a": "Sie können öffentliche oder passwortgeschützte Live-Dashboards teilen, diese per iframe in Ihr eigenes Kundenportal einbetten und automatisierte E-Mail-Berichte planen – so sehen Kunden ihre Daten in Ihrem Kontext und nicht als generischen GA-Export."
+        },
+        {
+          "q": "Wie funktioniert die Abrechnung für eine Agentur mit vielen Kunden?",
+          "a": "Alles läuft über ein einziges Agentur-Abo mit einer Rechnung. Wählen Sie ein Event-Volumen, das Ihren gesamten Kundenstamm abdeckt, und skalieren Sie es mit dem Wachstum der Kunden – es gibt keine Gebühren pro Arbeitsplatz und die Anzahl der Teammitglieder ist unbegrenzt."
+        },
+        {
+          "q": "Ist Swetrix für meine EU-Kunden DSGVO-konform?",
+          "a": "Ja. Swetrix ist cookiefrei und sammelt keine personenbezogenen Daten, sodass die meisten Kunden-Websites auf den Cookie-Banner verzichten können. Die Daten werden in der EU verarbeitet und wir können einen AVV (DPA) für Kunden unterzeichnen, die einen benötigen."
         }
       ]
     },
@@ -2992,6 +3091,7 @@
     "choosePlanTitle": "Wählen Sie einen Plan, der zu Ihrem Traffic passt",
     "choosePlanPageDesc": "Wählen Sie Ihr monatliches Event-Volumen, den Plan-Typ und den Abrechnungszeitraum. Sie sehen den genauen Preis vor dem Bezahlen.",
     "choosePlanCurrentPlanDesc": "Wählen Sie Ihr monatliches Event-Volumen, den Plan-Typ und den Abrechnungszeitraum. Ihr aktueller Plan ist {{plan}} mit {{events}} Events pro Monat, und Änderungen werden automatisch anteilig berechnet.",
+    "compareAllFeatures": "Alle Funktionen vergleichen",
     "planFaqTitle": "Fragen zum Plan",
     "currentUsageFaqQuestion": "Wie hoch ist meine aktuelle Nutzung?",
     "currentUsageFaqAnswer": "Sie haben in den letzten 30 Tagen {{events}} abrechenbare Events genutzt. Ihren vollständigen Nutzungsbericht, einschließlich Websites und Teammitglieder, finden Sie im Bereich <subscriptionLink>Abonnement</subscriptionLink> in Ihren Kontoeinstellungen.",
@@ -3526,6 +3626,7 @@
     "cookiePolicy": "Cookie-Richtlinie",
     "termsAndConditions": "Allgemeine Geschäftsbedingungen",
     "gaAlternative": "Cookie-freie Alternative zu Google Analytics",
+    "agencies": "Datenschutzfreundliche Analytics für Agenturen",
     "projectWithPassword": "Website-Analytics – Passwort erforderlich",
     "subscribe": "Starten Sie Ihre kostenlose Testversion"
   },
@@ -3556,13 +3657,9 @@
     "watchDemo": "Demo ansehen",
     "contactSales": "Kontakt zur Verkaufsabteilung",
     "trialBanner": {
-      "pickAPlan": "Wählen Sie einen Tarif",
-      "keepUsing": "um die Nutzung ohne Unterbrechung fortzusetzen.",
-      "keepUsingEnded": "um Swetrix weiter zu nutzen.",
-      "youHaveXDaysLeft": "Sie haben noch {{amount}} Tage in Ihrer kostenlosen Testphase",
-      "endsToday": "Deine kostenlose Testversion endet heute",
-      "endsTomorrow": "Deine kostenlose Testversion endet morgen",
-      "ended": "Ihre kostenlose Testphase ist beendet"
+      "reviewBilling": "Abrechnung überprüfen",
+      "endedTitle": "Testphase beendet",
+      "endedBody": "Deine Projekte und Daten bleiben erhalten. Wähle einen Tarif, um Analytics wieder anzuzeigen."
     },
     "solutions": {
       "title": "Lösungen",
@@ -3581,6 +3678,14 @@
       "performance": {
         "title": "Leistungsüberwachung",
         "desc": "Analysieren Sie Ihre Seiten Schlüsselgeschwindigkeits-Metriken"
+      },
+      "gaAlternative": {
+        "title": "Google Analytics-Alternative",
+        "desc": "Der cookiefreie, datenschutzfreundliche GA4-Ersatz"
+      },
+      "agencies": {
+        "title": "Für Agenturen",
+        "desc": "Verwalte jede Kunden-Website von einem datenschutzfreundlichen Workspace aus"
       }
     }
   },
