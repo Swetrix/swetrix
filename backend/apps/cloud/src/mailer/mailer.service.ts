@@ -93,7 +93,7 @@ const metaInfoJson = {
   },
   [LetterTemplate.TrialFeatureHighlight]: {
     subject: {
-      en: () => 'Bring your GA4 history into Swetrix',
+      en: () => 'Bring your analytics history into Swetrix',
     },
   },
   [LetterTemplate.TrialEndsIn3Days]: {
