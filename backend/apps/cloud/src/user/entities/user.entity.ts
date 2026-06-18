@@ -715,6 +715,9 @@ export class User {
   @Column({ default: false })
   trialReminderSent: boolean
 
+  @Column({ type: 'json', nullable: true })
+  trialLifecycleEmailsSent: Record<string, string> | null
+
   @Column({ default: false })
   showLiveVisitorsInTitle: boolean
 
