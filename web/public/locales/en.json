@@ -3091,6 +3091,7 @@
     "choosePlanTitle": "Choose a plan that fits your traffic",
     "choosePlanPageDesc": "Pick your monthly event volume, plan type, and billing period. You'll see the exact price before checkout.",
     "choosePlanCurrentPlanDesc": "Pick your monthly event volume, plan type, and billing period. Your current plan is {{plan}} with {{events}} events per month, and changes are prorated automatically.",
+    "compareAllFeatures": "Compare all features",
     "planFaqTitle": "Plan questions",
     "currentUsageFaqQuestion": "What's my current usage?",
     "currentUsageFaqAnswer": "You have used {{events}} billable events in the last 30 days. Please see your full usage report, including websites and team members, under the <subscriptionLink>Subscription section</subscriptionLink> in your account settings.",

@@ -336,10 +336,12 @@ const RowTooltipContent = ({
 
 interface PricingComparisonTableProps {
   metainfo?: Metainfo
+  variant?: 'marketing' | 'billing'
 }
 
 export const PricingComparisonTable = ({
   metainfo = DEFAULT_METAINFO,
+  variant = 'marketing',
 }: PricingComparisonTableProps) => {
   const {
     t,
@@ -347,31 +349,33 @@ export const PricingComparisonTable = ({
   } = useTranslation('common')
   const categories = useMemo(() => getCategories(t), [t])
 
+  const isMarketing = variant === 'marketing'
+
   const currencyCode = (
     metainfo.code in CURRENCIES ? metainfo.code : 'USD'
   ) as CurrencyCode
 
-  return (
-    <section className='relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24'>
-      <div className='overflow-x-auto lg:overflow-x-visible'>
-        <table className='w-full min-w-[760px] border-separate border-spacing-0'>
-          <colgroup>
-            <col className='w-[34%]' />
-            <col className='w-[22%]' />
-            <col className='w-[22%]' />
-            <col className='w-[22%]' />
-          </colgroup>
+  const table = (
+    <div className='overflow-x-auto lg:overflow-x-visible'>
+      <table className='w-full min-w-[760px] border-separate border-spacing-0'>
+        <colgroup>
+          <col className='w-[34%]' />
+          <col className='w-[22%]' />
+          <col className='w-[22%]' />
+          <col className='w-[22%]' />
+        </colgroup>
 
-          <thead className='sticky top-0 z-20'>
-            <tr>
-              <th
-                scope='col'
-                className={cn(
-                  'px-4 pt-6 pb-5 text-left align-bottom sm:px-6',
-                  HEADER_BG,
-                  'border-b border-gray-200 dark:border-white/10',
-                )}
-              >
+        <thead className='sticky top-0 z-20'>
+          <tr>
+            <th
+              scope='col'
+              className={cn(
+                'px-4 pt-6 pb-5 text-left align-bottom sm:px-6',
+                HEADER_BG,
+                'border-b border-gray-200 dark:border-white/10',
+              )}
+            >
+              {isMarketing ? (
                 <Text
                   as='h2'
                   size='2xl'
@@ -382,98 +386,103 @@ export const PricingComparisonTable = ({
                 >
                   {t('pricing.comparison.title')}
                 </Text>
-              </th>
-              {PLAN_COLUMNS.map((plan) => {
-                const starterPrice = getPlanPrice(
-                  plan.type,
-                  STARTER_TIER,
-                  'monthly',
-                  currencyCode,
-                )?.amount
-                const priceLabel =
-                  starterPrice != null
-                    ? t('pricing.comparison.fromPerMonth', {
-                        price: formatCurrencyAmount(
-                          starterPrice,
-                          currencyCode,
-                          language,
-                        ),
-                      })
-                    : t('pricing.custom')
+              ) : null}
+            </th>
+            {PLAN_COLUMNS.map((plan) => {
+              const starterPrice = isMarketing
+                ? getPlanPrice(plan.type, STARTER_TIER, 'monthly', currencyCode)
+                    ?.amount
+                : null
+              const priceLabel =
+                starterPrice != null
+                  ? t('pricing.comparison.fromPerMonth', {
+                      price: formatCurrencyAmount(
+                        starterPrice,
+                        currencyCode,
+                        language,
+                      ),
+                    })
+                  : t('pricing.custom')
 
-                return (
-                  // oxlint-disable-next-line jsx-a11y/control-has-associated-label
-                  <th
-                    key={plan.type}
-                    scope='col'
-                    className={cn(
-                      'px-4 pt-6 pb-5 text-center align-bottom sm:px-6',
-                      'border-b border-gray-200 dark:border-white/10',
-                      plan.highlight
-                        ? cn(PLUS_TINT, 'rounded-t-2xl')
-                        : HEADER_BG,
-                    )}
-                  >
-                    <div className='flex flex-col items-center gap-1.5'>
-                      <div className='flex items-center gap-2'>
-                        <Text
-                          as='span'
-                          size='lg'
-                          weight='bold'
-                          colour='primary'
-                        >
-                          {t(`pricing.planTypes.${plan.type}.name`)}
-                        </Text>
-                        {plan.highlight ? (
-                          <Badge
-                            label={t('pricing.bestValue')}
-                            colour='slate'
-                            size='sm'
-                          />
-                        ) : null}
-                      </div>
-                      <Text
-                        as='span'
-                        size='sm'
-                        weight='medium'
-                        colour='secondary'
-                      >
-                        {priceLabel}
+              return (
+                // oxlint-disable-next-line jsx-a11y/control-has-associated-label
+                <th
+                  key={plan.type}
+                  scope='col'
+                  className={cn(
+                    'px-4 pt-6 pb-5 text-center align-bottom sm:px-6',
+                    'border-b border-gray-200 dark:border-white/10',
+                    plan.highlight ? cn(PLUS_TINT, 'rounded-t-2xl') : HEADER_BG,
+                  )}
+                >
+                  <div className='flex flex-col items-center gap-1.5'>
+                    <div className='flex items-center gap-2'>
+                      <Text as='span' size='lg' weight='bold' colour='primary'>
+                        {t(`pricing.planTypes.${plan.type}.name`)}
                       </Text>
-                      <Button
-                        to={plan.to}
-                        variant={plan.highlight ? 'primary' : 'secondary'}
-                        size='sm'
-                        className='mt-1 justify-center gap-1.5'
-                      >
+                      {plan.highlight ? (
+                        <Badge
+                          label={t('pricing.bestValue')}
+                          colour='slate'
+                          size='sm'
+                        />
+                      ) : null}
+                    </div>
+                    {isMarketing ? (
+                      <>
                         <Text
                           as='span'
-                          size='xs'
-                          weight='semibold'
-                          colour='inherit'
+                          size='sm'
+                          weight='medium'
+                          colour='secondary'
                         >
-                          {t(`pricing.planTypes.${plan.type}.cta`)}
+                          {priceLabel}
                         </Text>
-                        <ArrowRightIcon className='size-3.5' />
-                      </Button>
-                    </div>
-                  </th>
-                )
-              })}
-            </tr>
-          </thead>
+                        <Button
+                          to={plan.to}
+                          variant={plan.highlight ? 'primary' : 'secondary'}
+                          size='sm'
+                          className='mt-1 justify-center gap-1.5'
+                        >
+                          <Text
+                            as='span'
+                            size='xs'
+                            weight='semibold'
+                            colour='inherit'
+                          >
+                            {t(`pricing.planTypes.${plan.type}.cta`)}
+                          </Text>
+                          <ArrowRightIcon className='size-3.5' />
+                        </Button>
+                      </>
+                    ) : null}
+                  </div>
+                </th>
+              )
+            })}
+          </tr>
+        </thead>
 
-          <tbody>
-            {categories.map((category, categoryIndex) => (
-              <FeatureCategoryRows
-                key={category.title}
-                category={category}
-                isLastCategory={categoryIndex === categories.length - 1}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
+        <tbody>
+          {categories.map((category, categoryIndex) => (
+            <FeatureCategoryRows
+              key={category.title}
+              category={category}
+              isLastCategory={categoryIndex === categories.length - 1}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+
+  if (!isMarketing) {
+    return table
+  }
+
+  return (
+    <section className='relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24'>
+      {table}
     </section>
   )
 }

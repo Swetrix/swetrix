@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import _isNil from 'lodash/isNil'
-import { ArrowLeftIcon } from '@phosphor-icons/react'
+import { ArrowLeftIcon, CaretDownIcon } from '@phosphor-icons/react'
 import type { TFunction } from 'i18next'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -11,6 +11,7 @@ import {
   PricingInternal,
   type MarketingPricingSelection,
 } from '~/components/pricing/MarketingPricing'
+import { PricingComparisonTable } from '~/components/pricing/PricingComparisonTable'
 import {
   CONTACT_EMAIL,
   paddleLanguageMapping,
@@ -491,6 +492,23 @@ const BillingPricing = ({
             disabled={Boolean(selectionLoading)}
             showVatNote
           />
+        </div>
+
+        <div className='mx-auto w-full max-w-7xl px-4 pt-10 sm:px-6 lg:px-8'>
+          <details className='group/compare'>
+            <summary className='mx-auto flex w-fit cursor-pointer list-none items-center gap-2 rounded-lg px-4 py-2 transition-colors hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:outline-hidden dark:hover:bg-slate-800 dark:focus-visible:ring-slate-300'>
+              <Text as='span' size='sm' weight='medium' colour='primary'>
+                {t('billing.compareAllFeatures')}
+              </Text>
+              <CaretDownIcon
+                className='size-4 shrink-0 text-slate-500 transition-transform duration-200 ease-out group-open/compare:rotate-180 dark:text-slate-400'
+                aria-hidden='true'
+              />
+            </summary>
+            <div className='mt-6'>
+              <PricingComparisonTable metainfo={metainfo} variant='billing' />
+            </div>
+          </details>
         </div>
 
         <div className='mx-auto w-full max-w-4xl px-4 pt-10 sm:px-6 lg:px-8'>
