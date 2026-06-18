@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { ArrowRightIcon } from "@phosphor-icons/react";
 import { Cards, Card } from "fumadocs-ui/components/card";
 import type { ComponentType } from "react";
 import {
@@ -199,6 +199,8 @@ const INTEGRATIONS: {
   },
 ];
 
+const TOTAL_INTEGRATION_GUIDES = 50;
+
 const IntegrationLogo = ({
   icon,
   className,
@@ -214,6 +216,8 @@ const IntegrationLogo = ({
 );
 
 export function IntegrationsGrid() {
+  const moreIntegrationsCount = Math.max(TOTAL_INTEGRATION_GUIDES - INTEGRATIONS.length, 0);
+
   return (
     <Cards className="sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
       {INTEGRATIONS.map((integration) => {
@@ -240,6 +244,12 @@ export function IntegrationsGrid() {
           />
         );
       })}
+      <Card
+        href="/integrations"
+        title={`+${moreIntegrationsCount} more`}
+        icon={<ArrowRightIcon />}
+        className="border-dashed"
+      />
     </Cards>
   );
 }
