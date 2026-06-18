@@ -81,6 +81,31 @@ const metaInfoJson = {
       en: () => '2FA has been disabled on your Swetrix account',
     },
   },
+  [LetterTemplate.TrialWelcome]: {
+    subject: {
+      en: () => 'Your Swetrix trial is active',
+    },
+  },
+  [LetterTemplate.TrialValueCheckIn]: {
+    subject: {
+      en: () => 'Three checks for your Swetrix trial',
+    },
+  },
+  [LetterTemplate.TrialFeatureHighlight]: {
+    subject: {
+      en: () => 'Bring your analytics history into Swetrix',
+    },
+  },
+  [LetterTemplate.TrialEndsIn3Days]: {
+    subject: {
+      en: () => 'Your Swetrix trial ends in 3 days',
+    },
+  },
+  [LetterTemplate.TrialEndsIn3DaysCancelled]: {
+    subject: {
+      en: () => 'Your Swetrix trial access ends in 3 days',
+    },
+  },
   [LetterTemplate.TrialExpired]: {
     subject: {
       en: () => 'Your free Swetrix trial has ended',
@@ -88,12 +113,12 @@ const metaInfoJson = {
   },
   [LetterTemplate.TrialEndsTomorrow]: {
     subject: {
-      en: () => 'Your Swetrix trial ends in 48 hours',
+      en: () => 'Your Swetrix trial ends tomorrow',
     },
   },
   [LetterTemplate.TrialEndingCancelled]: {
     subject: {
-      en: () => 'Your Swetrix trial ends in 48 hours — action needed',
+      en: () => 'Your Swetrix trial access ends tomorrow',
     },
   },
   [LetterTemplate.ProjectSubscriberInvitation]: {
@@ -228,7 +253,8 @@ export class MailerService {
         await this.nodeMailerService.sendMail(message)
       }
     } catch (reason) {
-      this.logger.error(reason, 'sendEmail', true)
+      this.logger.error({ reason, email, templateName }, 'sendEmail')
+      throw reason
     }
   }
 }

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import dayjs from 'dayjs'
-import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
 
 import { SHOW_BANNER_AT_PERC, isSelfhosted, API_URL } from '~/lib/constants'
@@ -13,14 +12,6 @@ import { shouldShowLowEventsBanner } from '~/utils/auth'
 import { DashboardBlockReason } from '~/lib/models/User'
 
 dayjs.extend(utc)
-dayjs.extend(duration)
-
-const TRIAL_STATUS_MAPPING = {
-  ENDED: 1,
-  ENDS_TODAY: 2,
-  ENDS_TOMORROW: 3,
-  ENDS_IN_X_DAYS: 4,
-}
 
 const EventsRunningOutBanner = () => {
   const { t } = useTranslation('common')
@@ -58,27 +49,20 @@ const EventsRunningOutBanner = () => {
   )
 }
 
-interface TrialBannerProps {
-  status: string | null
-  rawStatus: number | null
-}
-
-const TrialBanner = ({ status, rawStatus }: TrialBannerProps) => {
+const TrialBanner = () => {
   const { t } = useTranslation('common')
 
   return (
     <div className='header-banner w-full bg-slate-900 text-gray-100 dark:bg-slate-900/70'>
       <div className='mx-auto max-w-7xl px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
-        <span className='font-medium'>{status}</span>
+        <span className='font-medium'>
+          {t('header.trialBanner.endedTitle')}
+        </span>
         <span className='mx-1.5'>—</span>
         <Link to={routes.billing} className='font-semibold underline'>
-          {t('header.trialBanner.pickAPlan')}
+          {t('header.trialBanner.reviewBilling')}
         </Link>
-        <span className='ml-1.5'>
-          {rawStatus === TRIAL_STATUS_MAPPING.ENDED
-            ? t('header.trialBanner.keepUsingEnded')
-            : t('header.trialBanner.keepUsing')}
-        </span>
+        <span className='ml-1.5'>{t('header.trialBanner.endedBody')}</span>
       </div>
     </div>
   )
@@ -161,7 +145,6 @@ const SelfhostedCantReachAPIBanner = () => {
 }
 
 export const BannerManager = () => {
-  const { t } = useTranslation('common')
   const { user, isAuthenticated, totalMonthlyEvents } = useAuth()
   const [
     showSelfhostedCantReachAPIBanner,
@@ -183,61 +166,15 @@ export const BannerManager = () => {
     checkApiUrl()
   }, [])
 
-  const [rawStatus, status] = useMemo(() => {
-    const { trialEndDate } = user || {}
-
-    if (!trialEndDate) {
-      return [null, null]
-    }
-
-    const now = dayjs.utc()
-    const future = dayjs.utc(trialEndDate)
-    const diff = future.diff(now)
-
-    if (diff < 0) {
-      // trial has already ended
-      return [TRIAL_STATUS_MAPPING.ENDED, t('header.trialBanner.ended')]
-    }
-
-    if (diff < dayjs.duration(1, 'day').asMilliseconds()) {
-      // trial ends today or tomorrow
-      const isToday = future.isSame(now, 'day')
-      const isTomorrow = future.isSame(now.add(1, 'day'), 'day')
-
-      if (isToday) {
-        return [
-          TRIAL_STATUS_MAPPING.ENDS_TODAY,
-          t('header.trialBanner.endsToday'),
-        ]
-      }
-      if (isTomorrow) {
-        return [
-          TRIAL_STATUS_MAPPING.ENDS_TOMORROW,
-          t('header.trialBanner.endsTomorrow'),
-        ]
-      }
-    }
-
-    // trial ends in more than 1 day
-    const amount = Math.round(dayjs.duration(diff).asDays())
-    return [
-      TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
-      t('header.trialBanner.youHaveXDaysLeft', { amount }),
-    ]
-  }, [user, t])
-
-  const trialBannerHidden = useMemo(() => {
-    return (
-      !status || isSelfhosted || !isAuthenticated || user?.planCode !== 'trial'
-    )
-  }, [status, isAuthenticated, user?.planCode])
-
   const isExpiredTrialWithoutSubscription = useMemo(() => {
+    const trialEnded =
+      !!user?.trialEndDate && dayjs.utc(user.trialEndDate).isBefore(dayjs.utc())
+
     return (
       user?.dashboardBlockReason ===
         DashboardBlockReason.subscription_cancelled &&
       user?.planCode === 'none' &&
-      !!user?.trialEndDate &&
+      trialEnded &&
       !user?.subID
     )
   }, [
@@ -265,8 +202,8 @@ export const BannerManager = () => {
     return <SelfhostedCantReachAPIBanner />
   }
 
-  if (!trialBannerHidden || (isExpiredTrialWithoutSubscription && status)) {
-    return <TrialBanner status={status} rawStatus={rawStatus} />
+  if (!isSelfhosted && isAuthenticated && isExpiredTrialWithoutSubscription) {
+    return <TrialBanner />
   }
 
   if (user?.dashboardBlockReason) {

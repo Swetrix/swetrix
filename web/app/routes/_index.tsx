@@ -36,7 +36,6 @@ import {
   localisePath,
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
-import { Stats } from '~/lib/models/Stats'
 import { useTheme } from '~/providers/ThemeProvider'
 import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
