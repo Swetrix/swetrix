@@ -127,6 +127,8 @@ const checkQueryCondition = (
 const CHUNK_SIZE = 5000
 const REPORTS_USERS_CONCURRENCY = 3
 const REPORTS_PROJECTS_CONCURRENCY = 5
+const TRIAL_LIFECYCLE_STEPS_CONCURRENCY = 1
+const TRIAL_LIFECYCLE_EMAILS_CONCURRENCY = 3
 const NO_EVENTS_REMINDER_DELAY_DAYS = 2
 const TRIAL_LIFECYCLE_EMAIL_URLS = {
   dashboardUrl: 'https://swetrix.com/dashboard',
@@ -1575,19 +1577,19 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_4_HOURS)
   async trialReminder() {
     const now = dayjs.utc()
-    const promises = _map(TRIAL_LIFECYCLE_EMAIL_STEPS, (step) =>
-      this.sendTrialLifecycleEmails(step, now),
+    await mapLimit(
+      TRIAL_LIFECYCLE_EMAIL_STEPS,
+      TRIAL_LIFECYCLE_STEPS_CONCURRENCY,
+      async (step) => {
+        try {
+          await this.sendTrialLifecycleEmails(step, now)
+        } catch (reason) {
+          this.logger.error(
+            `[CRON WORKER](trialReminder) Error occured: ${reason}`,
+          )
+        }
+      },
     )
-
-    const results = await Promise.allSettled(promises)
-
-    results.forEach((result) => {
-      if (result.status === 'rejected') {
-        this.logger.error(
-          `[CRON WORKER](trialReminder) Error occured: ${result.reason}`,
-        )
-      }
-    })
   }
 
   private async sendTrialLifecycleEmails(
@@ -1615,42 +1617,38 @@ export class TaskManagerService {
       ],
     })
 
-    const promises = _map(users, async (user) => {
-      const { id, email, cancellationEffectiveDate } = user
-      const sent = user.trialLifecycleEmailsSent || {}
+    await mapLimit(users, TRIAL_LIFECYCLE_EMAILS_CONCURRENCY, async (user) => {
+      try {
+        const { id, email, cancellationEffectiveDate } = user
+        const sent = user.trialLifecycleEmailsSent || {}
 
-      if (sent[step.key]) {
-        return
-      }
+        if (sent[step.key]) {
+          return
+        }
 
-      await this.userService.update(id, {
-        trialLifecycleEmailsSent: {
-          ...sent,
-          [step.key]: now.toISOString(),
-        },
-        ...(step.key === TrialLifecycleEmailKey.EndsTomorrow
-          ? { trialReminderSent: true }
-          : {}),
-      })
+        const template =
+          cancellationEffectiveDate && step.cancelledTemplate
+            ? step.cancelledTemplate
+            : step.template
 
-      const template =
-        cancellationEffectiveDate && step.cancelledTemplate
-          ? step.cancelledTemplate
-          : step.template
+        await this.mailerService.sendEmail(
+          email,
+          template,
+          TRIAL_LIFECYCLE_EMAIL_URLS,
+        )
 
-      await this.mailerService.sendEmail(
-        email,
-        template,
-        TRIAL_LIFECYCLE_EMAIL_URLS,
-      )
-    })
-
-    const results = await Promise.allSettled(promises)
-
-    results.forEach((result) => {
-      if (result.status === 'rejected') {
+        await this.userService.update(id, {
+          trialLifecycleEmailsSent: {
+            ...sent,
+            [step.key]: now.toISOString(),
+          },
+          ...(step.key === TrialLifecycleEmailKey.EndsTomorrow
+            ? { trialReminderSent: true }
+            : {}),
+        })
+      } catch (reason) {
         this.logger.error(
-          `[CRON WORKER](trialReminder:${step.key}) Error occured: ${result.reason}`,
+          `[CRON WORKER](trialReminder:${step.key}) Error occured: ${reason}`,
         )
       }
     })

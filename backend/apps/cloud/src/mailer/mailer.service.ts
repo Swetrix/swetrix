@@ -253,7 +253,8 @@ export class MailerService {
         await this.nodeMailerService.sendMail(message)
       }
     } catch (reason) {
-      this.logger.error(reason, 'sendEmail', true)
+      this.logger.error({ reason, email, templateName }, 'sendEmail')
+      throw reason
     }
   }
 }
