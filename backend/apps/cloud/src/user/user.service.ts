@@ -56,6 +56,11 @@ import {
   UserAddonChargeKind,
   UserAddonChargeStatus,
 } from './entities/user-addon-charge.entity'
+import {
+  BillingDunningEmailStage,
+  SubscriptionDunning,
+  SubscriptionDunningStatus,
+} from './entities/subscription-dunning.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
@@ -280,6 +285,8 @@ export class UserService {
     private readonly userAddonRepository: Repository<UserAddon>,
     @InjectRepository(UserAddonCharge)
     private readonly userAddonChargeRepository: Repository<UserAddonCharge>,
+    @InjectRepository(SubscriptionDunning)
+    private readonly subscriptionDunningRepository: Repository<SubscriptionDunning>,
     private readonly organisationService: OrganisationService,
   ) {}
 
@@ -2812,6 +2819,133 @@ export class UserService {
 
     const bytes = CryptoJS.Rabbit.decrypt(base64, EMAIL_ACTION_ENCRYPTION_KEY)
     return bytes.toString(CryptoJS.enc.Utf8)
+  }
+
+  getOpenSubscriptionDunning(
+    userId: string,
+  ): Promise<SubscriptionDunning | null> {
+    return this.subscriptionDunningRepository.findOne({
+      where: {
+        userId,
+        status: In([
+          SubscriptionDunningStatus.active,
+          SubscriptionDunningStatus.locked,
+        ]),
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    })
+  }
+
+  async saveSubscriptionDunning(
+    dunning: Partial<SubscriptionDunning>,
+  ): Promise<SubscriptionDunning> {
+    if (dunning.id) {
+      const { id, ...update } = dunning
+
+      await this.subscriptionDunningRepository.update(id, update)
+
+      return this.subscriptionDunningRepository.findOne({
+        where: { id },
+      })
+    }
+
+    return this.subscriptionDunningRepository.save(
+      this.subscriptionDunningRepository.create(dunning),
+    )
+  }
+
+  async updateSubscriptionDunning(
+    id: string,
+    update: Partial<SubscriptionDunning>,
+  ): Promise<void> {
+    await this.subscriptionDunningRepository.update(id, update)
+  }
+
+  async resolveOpenSubscriptionDunnings(
+    userId: string,
+    status: SubscriptionDunningStatus,
+  ): Promise<void> {
+    await this.subscriptionDunningRepository.update(
+      {
+        userId,
+        status: In([
+          SubscriptionDunningStatus.active,
+          SubscriptionDunningStatus.locked,
+        ]),
+      },
+      {
+        status,
+        resolvedAt: new Date(),
+      },
+    )
+  }
+
+  async resolveSubscriptionDunningsBySubID(
+    subID: string,
+    status: SubscriptionDunningStatus,
+  ): Promise<void> {
+    await this.subscriptionDunningRepository.update(
+      {
+        subID,
+        status: In([
+          SubscriptionDunningStatus.active,
+          SubscriptionDunningStatus.locked,
+        ]),
+      },
+      {
+        status,
+        resolvedAt: new Date(),
+      },
+    )
+  }
+
+  async getSubscriptionDunningsForFinalWarning(
+    now = new Date(),
+  ): Promise<SubscriptionDunning[]> {
+    const cutoff = dayjs.utc(now).add(24, 'hour').toDate()
+
+    return this.subscriptionDunningRepository
+      .createQueryBuilder('dunning')
+      .leftJoinAndSelect('dunning.user', 'user')
+      .where('dunning.status = :status', {
+        status: SubscriptionDunningStatus.active,
+      })
+      .andWhere('dunning.suspendsAt IS NOT NULL')
+      .andWhere('dunning.suspendsAt < :cutoff', { cutoff })
+      .andWhere('user.dashboardBlockReason IS NULL')
+      .andWhere('user.isAccountBillingSuspended = :isSuspended', {
+        isSuspended: false,
+      })
+      .andWhere(
+        '(dunning.emailStage IS NULL OR dunning.emailStage NOT IN (:...stages))',
+        {
+          stages: [
+            BillingDunningEmailStage.final_warning,
+            BillingDunningEmailStage.locked,
+          ],
+        },
+      )
+      .getMany()
+  }
+
+  async getSubscriptionDunningsForSuspension(
+    now = new Date(),
+  ): Promise<SubscriptionDunning[]> {
+    return this.subscriptionDunningRepository
+      .createQueryBuilder('dunning')
+      .leftJoinAndSelect('dunning.user', 'user')
+      .where('dunning.status = :status', {
+        status: SubscriptionDunningStatus.active,
+      })
+      .andWhere('dunning.suspendsAt IS NOT NULL')
+      .andWhere('dunning.suspendsAt < :now', { now })
+      .andWhere('user.dashboardBlockReason IS NULL')
+      .andWhere('user.isAccountBillingSuspended = :isSuspended', {
+        isSuspended: false,
+      })
+      .getMany()
   }
 
   async getReportUsers(

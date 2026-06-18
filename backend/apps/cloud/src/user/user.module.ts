@@ -17,6 +17,7 @@ import { Message } from '../integrations/telegram/entities/message.entity'
 import { OrganisationModule } from '../organisation/organisation.module'
 import { UserAddon } from './entities/user-addon.entity'
 import { UserAddonCharge } from './entities/user-addon-charge.entity'
+import { SubscriptionDunning } from './entities/subscription-dunning.entity'
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { UserAddonCharge } from './entities/user-addon-charge.entity'
       UserFeedback,
       UserAddon,
       UserAddonCharge,
+      SubscriptionDunning,
       Message,
     ]),
     ActionTokensModule,

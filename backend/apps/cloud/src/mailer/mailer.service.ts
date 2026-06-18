@@ -96,6 +96,21 @@ const metaInfoJson = {
       en: () => 'Your Swetrix trial ends in 48 hours — action needed',
     },
   },
+  [LetterTemplate.SubscriptionPaymentFailed]: {
+    subject: {
+      en: () => 'Action required: your Swetrix payment failed',
+    },
+  },
+  [LetterTemplate.SubscriptionPaymentFinalWarning]: {
+    subject: {
+      en: () => 'Final reminder: update your Swetrix payment details',
+    },
+  },
+  [LetterTemplate.SubscriptionPaymentRecovered]: {
+    subject: {
+      en: () => 'Your Swetrix payment was recovered',
+    },
+  },
   [LetterTemplate.ProjectSubscriberInvitation]: {
     subject: {
       en: () => 'You have been invited to join the project',

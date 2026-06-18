@@ -41,6 +41,10 @@ import {
   getDefaultAccountLimitUpdates,
 } from '../user/entities/user.entity'
 import {
+  BillingDunningEmailStage,
+  SubscriptionDunningStatus,
+} from '../user/entities/subscription-dunning.entity'
+import {
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   JWT_REFRESH_TOKEN_LIFETIME,
@@ -119,6 +123,7 @@ const CHUNK_SIZE = 5000
 const REPORTS_USERS_CONCURRENCY = 3
 const REPORTS_PROJECTS_CONCURRENCY = 5
 const NO_EVENTS_REMINDER_DELAY_DAYS = 2
+const BILLING_URL = 'https://swetrix.com/user-settings?tab=billing'
 const CAPTCHA_PASS_CONDITION =
   "type = 'captcha' AND if(indexOf(`meta.key`, 'captcha_event') = 0, 'pass', arrayElement(`meta.value`, indexOf(`meta.key`, 'captcha_event'))) = 'pass'"
 const TELEGRAM_MARKDOWN_URL_KEYS = new Set(['dashboard_url', 'errors_url'])
@@ -144,6 +149,26 @@ const mapLimit = async <T, R>(
 
   await Promise.all(workers)
   return results
+}
+
+const formatBillingDateForEmail = (
+  date?: Date | string | null,
+): string | null => {
+  if (!date) {
+    return null
+  }
+
+  const parsed = new Date(date)
+
+  if (isNaN(parsed.getTime())) {
+    return null
+  }
+
+  return `${parsed.toLocaleString('en-GB', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'UTC',
+  })} UTC`
 }
 
 const generatePlanUsageQueryForUser = (): string => {
@@ -1462,6 +1487,64 @@ export class TaskManagerService {
     }
   }
 
+  @Cron(CronExpression.EVERY_HOUR)
+  async processBillingDunning() {
+    try {
+      const suspensionDunnings =
+        await this.userService.getSubscriptionDunningsForSuspension()
+
+      await Promise.allSettled(
+        _map(suspensionDunnings, async (dunning) => {
+          const user = dunning.user
+
+          await this.userService.update(user.id, {
+            dashboardBlockReason: DashboardBlockReason.payment_failed,
+            isAccountBillingSuspended: true,
+          })
+          await this.userService.updateSubscriptionDunning(dunning.id, {
+            status: SubscriptionDunningStatus.locked,
+            emailStage: BillingDunningEmailStage.locked,
+          })
+          await this.projectService.clearProjectsRedisCache(user.id)
+          await this.mailerService.sendEmail(
+            user.email,
+            LetterTemplate.DashboardLockedPaymentFailure,
+            {
+              billingUrl: user.subUpdateURL || BILLING_URL,
+            },
+          )
+        }),
+      )
+
+      const warningDunnings =
+        await this.userService.getSubscriptionDunningsForFinalWarning()
+
+      await Promise.allSettled(
+        _map(warningDunnings, async (dunning) => {
+          const user = dunning.user
+
+          await this.mailerService.sendEmail(
+            user.email,
+            LetterTemplate.SubscriptionPaymentFinalWarning,
+            {
+              billingUrl: user.subUpdateURL || BILLING_URL,
+              suspendsAtFormatted: formatBillingDateForEmail(
+                dunning.suspendsAt,
+              ),
+            },
+          )
+          await this.userService.updateSubscriptionDunning(dunning.id, {
+            emailStage: BillingDunningEmailStage.final_warning,
+          })
+        }),
+      )
+    } catch (reason) {
+      this.logger.error(
+        `[CRON WORKER](processBillingDunning) Error occured: ${reason}`,
+      )
+    }
+  }
+
   @Cron(CronExpression.EVERY_2_HOURS)
   async cleanUpUnpaidSubUsers() {
     const users = await this.userService.find({
@@ -1495,6 +1578,10 @@ export class TaskManagerService {
           planType: null,
           ...getDefaultAccountLimitUpdates(),
         })
+        await this.userService.resolveOpenSubscriptionDunnings(
+          user.id,
+          SubscriptionDunningStatus.cancelled,
+        )
         await this.projectService.clearProjectsRedisCache(user.id)
       }
     })
@@ -1593,6 +1680,10 @@ export class TaskManagerService {
         dashboardBlockReason: DashboardBlockReason.trial_ended,
         // trialEndDate: null,
       })
+      await this.userService.resolveOpenSubscriptionDunnings(
+        id,
+        SubscriptionDunningStatus.cancelled,
+      )
       await this.mailerService.sendEmail(email, LetterTemplate.TrialExpired, {
         url: 'https://swetrix.com/user-settings?tab=billing',
       })

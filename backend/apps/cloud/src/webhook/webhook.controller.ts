@@ -15,9 +15,15 @@ import { getIPFromHeaders } from '../common/utils'
 import {
   DashboardBlockReason,
   PlanType,
+  User,
   getAccountPlanByPaddleProductId,
   isNextPlan,
 } from '../user/entities/user.entity'
+import {
+  BillingDunningEmailStage,
+  SubscriptionDunning,
+  SubscriptionDunningStatus,
+} from '../user/entities/subscription-dunning.entity'
 import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
 import { WebhookService } from './webhook.service'
@@ -30,6 +36,10 @@ import {
   RevenueStatus,
   RevenueType,
 } from '../revenue/interfaces/revenue.interface'
+
+const BILLING_URL = 'https://swetrix.com/user-settings?tab=billing'
+const BILLING_DUNNING_GRACE_DAYS = 7
+const BILLING_DUNNING_FINAL_GRACE_HOURS = 24
 
 @ApiTags('Webhook')
 @Controller('webhook')
@@ -108,6 +118,303 @@ export class WebhookController {
     )
 
     return isNaN(date.getTime()) ? new Date() : date
+  }
+
+  private getPaddleDate(
+    body: Record<string, unknown>,
+    fields: string[],
+  ): Date | null {
+    const value = this.getPaddleField(body, fields)
+
+    if (!value) {
+      return null
+    }
+
+    const date = new Date(
+      /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(value)
+        ? `${value.replace(' ', 'T')}Z`
+        : value,
+    )
+
+    return isNaN(date.getTime()) ? null : date
+  }
+
+  private getPaddleNumber(
+    body: Record<string, unknown>,
+    fields: string[],
+  ): number | null {
+    const value = this.getPaddleField(body, fields)
+
+    if (!value) {
+      return null
+    }
+
+    const number = Number(value)
+
+    return Number.isFinite(number) ? number : null
+  }
+
+  private formatDateForEmail(date?: Date | string | null): string | null {
+    if (!date) {
+      return null
+    }
+
+    const parsed = new Date(date)
+
+    if (isNaN(parsed.getTime())) {
+      return null
+    }
+
+    return `${parsed.toLocaleString('en-GB', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'UTC',
+    })} UTC`
+  }
+
+  private formatPaymentAmount(body: Record<string, unknown>): string | null {
+    const amount = this.getPaddleAmount(body, [
+      'amount',
+      'sale_gross',
+      'balance_gross',
+      'unit_price',
+    ])
+    const currency = this.getPaddleField(body, [
+      'currency',
+      'balance_currency',
+    ])?.toUpperCase()
+
+    return amount && currency ? `${currency} ${amount.toFixed(2)}` : null
+  }
+
+  private getBillingUrl(user?: User | null): string {
+    return user?.subUpdateURL || BILLING_URL
+  }
+
+  private getDunningSuspendsAt(
+    dunning: SubscriptionDunning | null,
+    nextRetryAt: Date | null,
+    pausedFrom: Date | null,
+    finalFailure: boolean,
+  ): Date {
+    const now = new Date()
+
+    if (pausedFrom) {
+      return pausedFrom
+    }
+
+    if (finalFailure) {
+      return new Date(
+        now.getTime() + BILLING_DUNNING_FINAL_GRACE_HOURS * 60 * 60 * 1000,
+      )
+    }
+
+    const graceDate = new Date(
+      now.getTime() + BILLING_DUNNING_GRACE_DAYS * 24 * 60 * 60 * 1000,
+    )
+    const retryDate = nextRetryAt
+      ? new Date(
+          nextRetryAt.getTime() +
+            BILLING_DUNNING_FINAL_GRACE_HOURS * 60 * 60 * 1000,
+        )
+      : null
+    const fallbackDate =
+      retryDate && retryDate > graceDate ? retryDate : graceDate
+    const existingDate = dunning?.suspendsAt
+      ? new Date(dunning.suspendsAt)
+      : null
+
+    return existingDate && existingDate > fallbackDate
+      ? existingDate
+      : fallbackDate
+  }
+
+  private async findPaddleSubscriber(
+    body: Record<string, unknown>,
+  ): Promise<User | null> {
+    const passthrough = this.getPaddlePassthrough(body)
+    const uid = this.getPaddleField(passthrough, ['uid'])
+    const subID = this.getPaddleField(body, ['subscription_id'])
+    const email = this.getPaddleField(body, ['email'])
+
+    if (subID) {
+      const user = await this.userService.findOne({ where: { subID } })
+
+      if (user) {
+        return user
+      }
+    }
+
+    if (uid) {
+      const user = await this.userService.findOne({ where: { id: uid } })
+
+      if (user) {
+        return user
+      }
+    }
+
+    return email ? this.userService.findOne({ where: { email } }) : null
+  }
+
+  private async handlePaddlePaymentIssue(
+    body: Record<string, unknown>,
+    knownUser?: User,
+  ): Promise<void> {
+    const user = knownUser || (await this.findPaddleSubscriber(body))
+
+    if (!user) {
+      this.logger.error(
+        `[${body.alert_name}] Cannot find the subscriber: ${JSON.stringify(body)}`,
+      )
+      return
+    }
+
+    const now = new Date()
+    const status = this.getPaddleField(body, ['status'])
+    const isPaused = status === 'paused'
+    const isPaymentFailedWebhook =
+      body.alert_name === 'subscription_payment_failed'
+    const dunning = await this.userService.getOpenSubscriptionDunning(user.id)
+    const nextRetryAt = this.getPaddleDate(body, ['next_retry_date'])
+    const pausedFrom = this.getPaddleDate(body, ['paused_from'])
+    const subID = this.getPaddleField(body, ['subscription_id']) || user.subID
+    const paymentId = this.getPaddleField(body, [
+      'subscription_payment_id',
+      'payment_id',
+      'alert_id',
+    ])
+    const rawAttempt = this.getPaddleNumber(body, ['attempt_number'])
+    const attempt = rawAttempt || dunning?.attempt || 1
+    const updateUrl = this.getPaddleField(body, ['update_url'])
+    const cancelUrl = this.getPaddleField(body, ['cancel_url'])
+    const finalFailure = isPaused || (isPaymentFailedWebhook && !nextRetryAt)
+    const suspendsAt = this.getDunningSuspendsAt(
+      dunning,
+      nextRetryAt,
+      pausedFrom,
+      finalFailure,
+    )
+    const isAlreadyLocked =
+      dunning?.status === SubscriptionDunningStatus.locked ||
+      user.dashboardBlockReason === DashboardBlockReason.payment_failed ||
+      user.isAccountBillingSuspended
+    const shouldSuspendNow =
+      isAlreadyLocked || (isPaused && (!pausedFrom || pausedFrom <= now))
+    const emailStage = shouldSuspendNow
+      ? BillingDunningEmailStage.locked
+      : finalFailure
+        ? BillingDunningEmailStage.final_warning
+        : BillingDunningEmailStage.payment_failed
+    const updateParams: Partial<SubscriptionDunning> = {
+      id: dunning?.id,
+      userId: user.id,
+      subID,
+      subscriptionPaymentId: paymentId,
+      status: shouldSuspendNow
+        ? SubscriptionDunningStatus.locked
+        : SubscriptionDunningStatus.active,
+      attempt,
+      emailStage,
+      startedAt: dunning?.startedAt || now,
+      lastFailedAt: now,
+      nextRetryAt,
+      suspendsAt: shouldSuspendNow ? now : suspendsAt,
+      metadata: body,
+    }
+
+    if (updateUrl) {
+      await this.userService.update(user.id, { subUpdateURL: updateUrl })
+    }
+
+    if (cancelUrl) {
+      await this.userService.update(user.id, { subCancelURL: cancelUrl })
+    }
+
+    if (shouldSuspendNow) {
+      await this.userService.update(user.id, {
+        dashboardBlockReason: DashboardBlockReason.payment_failed,
+        isAccountBillingSuspended: true,
+      })
+    }
+
+    await this.userService.saveSubscriptionDunning(updateParams)
+    await this.projectService.clearProjectsRedisCache(user.id)
+
+    const billingUrl = updateUrl || this.getBillingUrl(user)
+
+    if (shouldSuspendNow) {
+      if (dunning?.emailStage !== BillingDunningEmailStage.locked) {
+        await this.mailerService.sendEmail(
+          user.email,
+          LetterTemplate.DashboardLockedPaymentFailure,
+          { billingUrl },
+        )
+      }
+
+      return
+    }
+
+    if (emailStage === BillingDunningEmailStage.final_warning) {
+      const alreadySentFinalNotice =
+        dunning?.emailStage &&
+        [
+          BillingDunningEmailStage.final_warning,
+          BillingDunningEmailStage.locked,
+        ].includes(dunning.emailStage)
+
+      if (!alreadySentFinalNotice) {
+        await this.mailerService.sendEmail(
+          user.email,
+          LetterTemplate.SubscriptionPaymentFinalWarning,
+          {
+            billingUrl,
+            suspendsAtFormatted: this.formatDateForEmail(suspendsAt),
+          },
+        )
+      }
+
+      return
+    }
+
+    const isNewFailure =
+      dunning?.subscriptionPaymentId !== paymentId ||
+      dunning?.attempt !== attempt ||
+      dunning?.emailStage !== BillingDunningEmailStage.payment_failed
+
+    if (isNewFailure) {
+      await this.mailerService.sendEmail(
+        user.email,
+        LetterTemplate.SubscriptionPaymentFailed,
+        {
+          billingUrl,
+          attempt,
+          amountFormatted: this.formatPaymentAmount(body),
+          nextRetryAtFormatted: this.formatDateForEmail(nextRetryAt),
+        },
+      )
+    }
+  }
+
+  private async notifyPaymentRecovered(
+    user: User,
+    dunning?: SubscriptionDunning | null,
+  ): Promise<void> {
+    const hadBillingIssue =
+      !!dunning ||
+      user.dashboardBlockReason === DashboardBlockReason.payment_failed ||
+      user.isAccountBillingSuspended
+
+    if (!hadBillingIssue) {
+      return
+    }
+
+    await this.mailerService.sendEmail(
+      user.email,
+      LetterTemplate.SubscriptionPaymentRecovered,
+      {
+        billingUrl: this.getBillingUrl(user),
+      },
+    )
   }
 
   private getSwetrixRevenueTransactionId(
@@ -363,24 +670,30 @@ export class WebhookController {
         }
 
         const isTrialing = status === 'trialing'
+        const isPaymentIssueStatus = ['past_due', 'paused'].includes(status)
         const shouldUnlock =
           status === 'active' ||
           body.alert_name === 'subscription_created' ||
           isNextPlan(currentUser.planCode, plan.id)
+        const currentDunning = isPaymentIssueStatus
+          ? null
+          : await this.userService.getOpenSubscriptionDunning(currentUser.id)
+        const shouldNotifyRecovered =
+          !isPaymentIssueStatus &&
+          (shouldUnlock || isTrialing) &&
+          (!!currentDunning ||
+            currentUser.dashboardBlockReason ===
+              DashboardBlockReason.payment_failed ||
+            currentUser.isAccountBillingSuspended)
 
         const statusParams =
-          status === 'paused'
+          !isPaymentIssueStatus && (shouldUnlock || isTrialing)
             ? {
-                dashboardBlockReason: DashboardBlockReason.payment_failed,
-                isAccountBillingSuspended: true,
+                dashboardBlockReason: null,
+                planExceedContactedAt: null,
+                isAccountBillingSuspended: false,
               }
-            : shouldUnlock || isTrialing
-              ? {
-                  dashboardBlockReason: null,
-                  planExceedContactedAt: null,
-                  isAccountBillingSuspended: false,
-                }
-              : {}
+            : {}
 
         const planType =
           requestedPlanType === resolvedPlanType
@@ -410,14 +723,14 @@ export class WebhookController {
         )
         await this.projectService.clearProjectsRedisCache(currentUser.id)
 
-        if (status === 'paused') {
-          await this.mailerService.sendEmail(
-            currentUser.email,
-            LetterTemplate.DashboardLockedPaymentFailure,
-            {
-              billingUrl: 'https://swetrix.com/user-settings?tab=billing',
-            },
+        if (isPaymentIssueStatus) {
+          await this.handlePaddlePaymentIssue(body, currentUser)
+        } else if (shouldNotifyRecovered) {
+          await this.userService.resolveOpenSubscriptionDunnings(
+            currentUser.id,
+            SubscriptionDunningStatus.recovered,
           )
+          await this.notifyPaymentRecovered(currentUser, currentDunning)
         }
 
         break
@@ -433,6 +746,10 @@ export class WebhookController {
           nextBillDate: null,
           cancellationEffectiveDate,
         })
+        await this.userService.resolveSubscriptionDunningsBySubID(
+          subID,
+          SubscriptionDunningStatus.cancelled,
+        )
 
         const user = await this.userService.findOne({
           where: { subID },
@@ -466,6 +783,12 @@ export class WebhookController {
 
       case 'payment_succeeded': {
         await this.trackSwetrixRevenue(body, RevenueType.SALE)
+
+        break
+      }
+
+      case 'subscription_payment_failed': {
+        await this.handlePaddlePaymentIssue(body)
 
         break
       }
@@ -509,7 +832,15 @@ export class WebhookController {
           return
         }
 
+        const dunning = await this.userService.getOpenSubscriptionDunning(
+          subscriber.id,
+        )
         const updateParams: Record<string, any> = {}
+        const shouldNotifyRecovered =
+          !!dunning ||
+          subscriber.dashboardBlockReason ===
+            DashboardBlockReason.payment_failed ||
+          subscriber.isAccountBillingSuspended
 
         if (nextBillDate) {
           updateParams.nextBillDate = nextBillDate
@@ -529,6 +860,14 @@ export class WebhookController {
         if (Object.keys(updateParams).length > 0) {
           await this.userService.update(subscriber.id, updateParams)
           await this.projectService.clearProjectsRedisCache(subscriber.id)
+        }
+
+        if (shouldNotifyRecovered) {
+          await this.userService.resolveOpenSubscriptionDunnings(
+            subscriber.id,
+            SubscriptionDunningStatus.recovered,
+          )
+          await this.notifyPaymentRecovered(subscriber, dunning)
         }
 
         break

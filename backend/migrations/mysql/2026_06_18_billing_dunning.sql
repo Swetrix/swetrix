@@ -1,0 +1,23 @@
+CREATE TABLE `subscription_dunning` (
+  `id` varchar(36) NOT NULL,
+  `userId` varchar(36) NOT NULL,
+  `subID` varchar(32) DEFAULT NULL,
+  `subscriptionPaymentId` varchar(80) DEFAULT NULL,
+  `status` enum('active','recovered','locked','cancelled') NOT NULL DEFAULT 'active',
+  `attempt` int NOT NULL DEFAULT '1',
+  `emailStage` enum('payment_failed','final_warning','locked') DEFAULT NULL,
+  `startedAt` timestamp NULL DEFAULT NULL,
+  `lastFailedAt` timestamp NULL DEFAULT NULL,
+  `nextRetryAt` timestamp NULL DEFAULT NULL,
+  `suspendsAt` timestamp NULL DEFAULT NULL,
+  `resolvedAt` timestamp NULL DEFAULT NULL,
+  `metadata` json DEFAULT NULL,
+  `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id`),
+  KEY `IDX_subscription_dunning_user_status` (`userId`,`status`),
+  KEY `IDX_subscription_dunning_sub_status` (`subID`,`status`),
+  KEY `IDX_subscription_dunning_payment` (`subscriptionPaymentId`),
+  KEY `IDX_subscription_dunning_suspends_status` (`suspendsAt`,`status`),
+  CONSTRAINT `FK_subscription_dunning_user` FOREIGN KEY (`userId`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
