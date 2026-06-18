@@ -1,6 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan, Not, Between } from 'typeorm'
+import {
+  And,
+  Between,
+  In,
+  IsNull,
+  LessThan,
+  LessThanOrEqual,
+  MoreThan,
+  Not,
+} from 'typeorm'
 import { ConfigService } from '@nestjs/config'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -119,9 +128,66 @@ const CHUNK_SIZE = 5000
 const REPORTS_USERS_CONCURRENCY = 3
 const REPORTS_PROJECTS_CONCURRENCY = 5
 const NO_EVENTS_REMINDER_DELAY_DAYS = 2
+const TRIAL_LIFECYCLE_EMAIL_URLS = {
+  dashboardUrl: 'https://swetrix.com/dashboard',
+  billingUrl: 'https://swetrix.com/user-settings?tab=billing',
+  setupGuideUrl: 'https://swetrix.com/docs',
+  dataImportDocsUrl: 'https://swetrix.com/docs/data-import',
+}
 const CAPTCHA_PASS_CONDITION =
   "type = 'captcha' AND if(indexOf(`meta.key`, 'captcha_event') = 0, 'pass', arrayElement(`meta.value`, indexOf(`meta.key`, 'captcha_event'))) = 'pass'"
 const TELEGRAM_MARKDOWN_URL_KEYS = new Set(['dashboard_url', 'errors_url'])
+
+enum TrialLifecycleEmailKey {
+  Welcome = 'welcome',
+  ValueCheckIn = 'value_check_in',
+  FeatureHighlight = 'feature_highlight',
+  EndsIn3Days = 'ends_in_3_days',
+  EndsTomorrow = 'ends_tomorrow',
+}
+
+interface TrialLifecycleEmailStep {
+  key: TrialLifecycleEmailKey
+  afterDays: number
+  nextAfterDays: number
+  template: LetterTemplate
+  cancelledTemplate?: LetterTemplate
+}
+
+const TRIAL_LIFECYCLE_EMAIL_STEPS: TrialLifecycleEmailStep[] = [
+  {
+    key: TrialLifecycleEmailKey.Welcome,
+    afterDays: 0,
+    nextAfterDays: 3,
+    template: LetterTemplate.TrialWelcome,
+  },
+  {
+    key: TrialLifecycleEmailKey.ValueCheckIn,
+    afterDays: 3,
+    nextAfterDays: 7,
+    template: LetterTemplate.TrialValueCheckIn,
+  },
+  {
+    key: TrialLifecycleEmailKey.FeatureHighlight,
+    afterDays: 7,
+    nextAfterDays: 11,
+    template: LetterTemplate.TrialFeatureHighlight,
+  },
+  {
+    key: TrialLifecycleEmailKey.EndsIn3Days,
+    afterDays: 11,
+    nextAfterDays: 13,
+    template: LetterTemplate.TrialEndsIn3Days,
+    cancelledTemplate: LetterTemplate.TrialEndsIn3DaysCancelled,
+  },
+  {
+    key: TrialLifecycleEmailKey.EndsTomorrow,
+    afterDays: 13,
+    nextAfterDays: TRIAL_DURATION,
+    template: LetterTemplate.TrialEndsTomorrow,
+    cancelledTemplate: LetterTemplate.TrialEndingCancelled,
+  },
+]
 
 const mapLimit = async <T, R>(
   items: T[],
@@ -1508,36 +1574,85 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_4_HOURS)
   async trialReminder() {
+    const now = dayjs.utc()
+    const promises = _map(TRIAL_LIFECYCLE_EMAIL_STEPS, (step) =>
+      this.sendTrialLifecycleEmails(step, now),
+    )
+
+    const results = await Promise.allSettled(promises)
+
+    results.forEach((result) => {
+      if (result.status === 'rejected') {
+        this.logger.error(
+          `[CRON WORKER](trialReminder) Error occured: ${result.reason}`,
+        )
+      }
+    })
+  }
+
+  private async sendTrialLifecycleEmails(
+    step: TrialLifecycleEmailStep,
+    now: dayjs.Dayjs,
+  ) {
+    const lowerDaysBeforeEnd = TRIAL_DURATION - step.nextAfterDays
+    const upperDaysBeforeEnd = TRIAL_DURATION - step.afterDays
+    const lower = now.add(lowerDaysBeforeEnd, 'day')
+    const upper = now.add(upperDaysBeforeEnd, 'day')
+
     const users = await this.userService.find({
       where: {
-        planCode: Not(PlanCode.none),
-        trialEndDate: Between(
-          new Date(),
-          new Date(new Date().getTime() + 48 * 60 * 60 * 1000),
+        planCode: Not(In([PlanCode.none, PlanCode.free, PlanCode.trial])),
+        trialEndDate: And(
+          MoreThan(lower.toDate()),
+          LessThanOrEqual(upper.toDate()),
         ),
-        trialReminderSent: false,
       },
-      select: ['id', 'email', 'cancellationEffectiveDate'],
+      select: [
+        'id',
+        'email',
+        'cancellationEffectiveDate',
+        'trialLifecycleEmailsSent',
+      ],
     })
 
     const promises = _map(users, async (user) => {
       const { id, email, cancellationEffectiveDate } = user
+      const sent = user.trialLifecycleEmailsSent || {}
+
+      if (sent[step.key]) {
+        return
+      }
 
       await this.userService.update(id, {
-        trialReminderSent: true,
+        trialLifecycleEmailsSent: {
+          ...sent,
+          [step.key]: now.toISOString(),
+        },
+        ...(step.key === TrialLifecycleEmailKey.EndsTomorrow
+          ? { trialReminderSent: true }
+          : {}),
       })
 
-      const template = cancellationEffectiveDate
-        ? LetterTemplate.TrialEndingCancelled
-        : LetterTemplate.TrialEndsTomorrow
+      const template =
+        cancellationEffectiveDate && step.cancelledTemplate
+          ? step.cancelledTemplate
+          : step.template
 
-      await this.mailerService.sendEmail(email, template, {
-        url: 'https://swetrix.com/user-settings?tab=billing',
-      })
+      await this.mailerService.sendEmail(
+        email,
+        template,
+        TRIAL_LIFECYCLE_EMAIL_URLS,
+      )
     })
 
-    await Promise.allSettled(promises).catch((reason) => {
-      this.logger.error(`[CRON WORKER](trialReminder) Error occured: ${reason}`)
+    const results = await Promise.allSettled(promises)
+
+    results.forEach((result) => {
+      if (result.status === 'rejected') {
+        this.logger.error(
+          `[CRON WORKER](trialReminder:${step.key}) Error occured: ${result.reason}`,
+        )
+      }
     })
   }
 
