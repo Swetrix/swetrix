@@ -299,13 +299,14 @@ export class GSCService {
       //
     }
 
+    const previous = await this.getStoredTokens(pid)
+
     const toStore: StoredTokens = {
       access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
+      refresh_token: tokens.refresh_token || previous.refresh_token,
       expiry_date: tokens.expiry_date,
       scope: tokens.scope,
-      // preserve previously selected property if any
-      ...(await this.getStoredTokens(pid)),
+      property_uri: previous.property_uri ?? null,
     }
 
     await this.setStoredTokens(pid, toStore)
