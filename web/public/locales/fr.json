@@ -163,14 +163,12 @@
   },
   "ariaLabels": {
     "actions": "Actions",
-    "contactSupport": "Contacter le support",
     "dateRange": "Période",
     "dnsRecord": "Enregistrement DNS",
     "emailSupport": "Envoyer un e-mail au support Swetrix",
     "emailSupportTitle": "Envoyez-nous un e-mail à {{email}}",
     "eventFilters": "Filtres de {{event}}",
     "eventTotal": "Total de {{event}}",
-    "fiveOutOfFiveStars": "5 étoiles sur 5",
     "footer": "Pied de page",
     "googleSearchConsoleCsv": "CSV Google Search Console",
     "hideEventDetails": "Masquer les détails de {{event}}",
@@ -469,19 +467,9 @@
   },
   "gaAlternative": {
     "hero": {
-      "teams": "{{amount}}+ équipes",
-      "ditched": "ont abandonné Google Analytics",
       "title": "L’alternative à Google Analytics sans cookies",
       "subtitle": "Obtenez les informations dont vous avez besoin — en temps réel, précises et faciles à comprendre, sans cookies, sans atteinte à la vie privée et sans tableaux de bord surchargés.",
       "cta": "Commencer un essai gratuit de {{days}} jours",
-      "features": {
-        "cookieless": "Suivi sans cookies",
-        "privacy": "Respect de la vie privée dès la conception",
-        "realtime": "Tableau de bord en temps réel",
-        "noSampling": "Sans échantillonnage",
-        "ownData": "Vos données vous appartiennent",
-        "openSource": "Open source et auto-hébergeable"
-      },
       "viewDemo": "Voir la démo en direct"
     },
     "comparison": {
@@ -592,7 +580,6 @@
   },
   "agencies": {
     "hero": {
-      "eyebrow": "Pour les agences",
       "title": "Des analyses auxquelles vos clients font confiance, des rapports gérés par votre agence",
       "subtitle": "Gérez tous les sites de vos clients depuis un seul espace de travail axé sur la confidentialité. Tableaux de bord personnalisés, une seule facture et la conformité RGPD dont vos clients européens ont besoin, sans la complexité de GA4.",
       "cta": "Commencez un essai gratuit de {{days}} jours",
@@ -642,10 +629,6 @@
           "title": "Rapports automatisés par e-mail",
           "description": "Programmez des rapports hebdomadaires ou mensuels pour que vos clients reçoivent leurs chiffres sans se connecter, ni vous courir après."
         }
-      },
-      "snippet": {
-        "filename": "client-report.html",
-        "comment": "Intégrez n'importe quel tableau de bord public, à l'image de votre marque."
       },
       "cta": "Commencer votre essai gratuit"
     },
@@ -888,13 +871,6 @@
         "desc": "Script léger, API simple et installation rapide. Fonctionnel en moins de 5 minutes."
       }
     }
-  },
-  "unsubscribe": {
-    "success": "Vous vous êtes désabonné des rapports d'analyse par e-mail"
-  },
-  "gsc": {
-    "failed": "Échec de la connexion",
-    "failedDesc": "Une erreur s’est produite lors de la connexion à votre Google Search Console. Veuillez réessayer ou contacter l’assistance."
   },
   "auth": {
     "recovery": {
@@ -1249,11 +1225,9 @@
     "page": "Page",
     "event": "Événement",
     "noProjectsForCriteria": "Aucun projet trouvé pour les critères sélectionnés",
-    "captcha": "CAPTCHA",
     "newProject": "Nouveau projet",
     "newFunnel": "Nouvel entonnoir",
     "reloadPage": "Recharger la page",
-    "newCaptchaProject": "Nouveau projet CAPTCHA",
     "verifyEmailTitle": "Veuillez vérifier votre adresse e-mail d'abord",
     "verifyEmailDesc": "Pour commencer à utiliser notre service et à créer vos projets, vous devez d'abord confirmer votre adresse e-mail.\n\nUn lien pour confirmer votre compte a été envoyé à l'adresse e-mail que vous avez fournie lors de l'inscription ; s'il ne vous est pas parvenu, vous pouvez demander à nouveau le lien dans les paramètres de votre compte.",
     "lowEventsTitle": "Vos événements sont presque épuisés !",
@@ -1263,7 +1237,6 @@
     "eventsXPercUsed": "Vous avez utilisé plus de {{amount}}% des événements disponibles ce mois-ci selon votre forfait.",
     "noProjects": "Aucun projet pour le moment",
     "createProject": "Vous n'avez pas encore créé de projet. Commencez par créer votre premier projet.",
-    "active": "Actif",
     "public": "Public",
     "shared": "Partagé",
     "disabled": "Désactivé",
@@ -1273,12 +1246,9 @@
     "unpin": "Désépingler le projet",
     "noData": "aucune donnée",
     "pageviews": "Pages vues",
-    "captchaEvents": "Événements CAPTCHA",
     "firstSeen": "Vu pour la première fois",
     "lastSeen": "Vue pour la dernière fois",
-    "atFile": "À {{filename}}, ligne {{lineno}}, colonne {{colno}}",
     "users": "Utilisateurs",
-    "createdAt": "Créé le",
     "inc": "Augmenté de",
     "dec": "Diminué de",
     "liveVisitors": "Visiteurs en temps réel",
@@ -1299,26 +1269,17 @@
     "replays": "Rediffusions",
     "xOccurrences": "Occurrences {{x}}",
     "errors": "Erreurs",
-    "xPageviews": "{{x}} pages vues",
-    "xCustomEvents": "{{x}} événements personnalisés",
-    "xErrors": "{{x}} erreurs",
-    "sales": "Ventes",
-    "xSales": "{{x}} ventes",
     "events": "Événements",
     "alerts": "Alertes",
     "alertsDesc": "Les alertes automatiques sont un outil puissant qui vous avertit lorsque certains événements se produisent sur votre site. Nous pouvons surveiller automatiquement votre projet pour détecter des pics de trafic et vous avertir via Telegram, Slack ou Discord.",
     "goals": "Objectifs",
-    "goalsDesc": "Les objectifs de conversion vous aident à suivre les actions importantes des utilisateurs sur votre site web. Définissez des objectifs de pages vues ou des objectifs d’événements personnalisés pour mesurer combien de visiteurs réalisent des actions spécifiques.",
     "experiments": "Expériences",
     "featureFlags": "Feature flags",
-    "featureFlagsDesc": "Les drapeaux de fonctionnalités vous permettent d’activer ou de désactiver des fonctionnalités pour des cohortes ou des individus. Testez l’impact avant de les déployer pour tout le monde.",
     "askAi": "Demander à l’IA",
     "revenue": "Revenus",
     "refunds": "Remboursements",
-    "revenueHint": "Suivez les ventes, les remboursements et les revenus provenant de vos prestataires de paiement.",
     "webAnalytics": "Analyse web",
     "productAnalytics": "Analyse produit",
-    "revenueAnalytics": "Analyse des revenus",
     "funnelsDesc": "Les entonnoirs vous aident à suivre comment les visiteurs naviguent à travers une séquence de pages et d'événements.\nUtilisez-les pour repérer les abandons lors de l'inscription, du paiement, de l'intégration ou de tout autre flux.\n<docs>En savoir plus dans la documentation</docs>.",
     "frontend": "Front-end",
     "backend": "Back-end",
@@ -1331,7 +1292,6 @@
     "tls": "Configuration TLS",
     "ttfb": "Temps jusqu'au premier octet (TTFB)",
     "domLoad": "Chargement du contenu DOM",
-    "pageLoad": "Temps de chargement de la page",
     "render": "Rendu du navigateur",
     "response": "Temps de réponse",
     "average": "Moyenne",
@@ -1433,9 +1393,7 @@
   "notificationChannels": {
     "heading": "Canaux de notification",
     "description": "Configurez des e-mails, Telegram, Discord, Slack, des webhooks personnalisés ou des notifications push de navigateur, puis attachez-les aux alertes.",
-    "details": "Lieu d'envoi",
     "add": "Ajouter un canal",
-    "empty": "Pas encore de canaux. Connectez-en un pour commencer à recevoir des alertes.",
     "emptyTitle": "Aucun canal connecté",
     "emptyDescription": "Connectez un canal ci-dessous pour commencer à recevoir des alertes lorsque votre trafic, vos erreurs ou vos événements franchissent un seuil.",
     "createTitle": "Connecter un canal",
@@ -3488,15 +3446,6 @@
     "title": "Commencez votre essai gratuit",
     "subtitle": "Essayez Swetrix gratuitement pendant {{days}} jours. Annulez à tout moment.",
     "successRedirect": "Votre paiement est terminé. Nous mettons à jour votre abonnement et vous redirigerons vers votre tableau de bord sous peu.",
-    "realTimeAnalytics": "Analyses en temps réel sans cookies",
-    "willRemind": "Nous vous enverrons un e-mail avant la fin de l'essai",
-    "freeTrialAnytime": "Essai gratuit de {{days}} jours. Annulez à tout moment.",
-    "dueEnd": "Échéance le {{date}}",
-    "dueToday": "Échéance aujourd'hui, après {{days}} jours gratuits",
-    "next": "Démarrer l'essai gratuit",
-    "selectPlan": "Choisissez un plan",
-    "customPlanTitle": "Besoin de plus de 20M d'événements ?",
-    "customPlanDesc": "Sélectionnez « Jusqu'à {{count}} événements par mois » et <contact>contactez-nous</contact> pour un devis personnalisé.",
     "trial": {
       "today": "Aujourd'hui",
       "step1Label": "Votre essai gratuit commence avec un accès complet",
@@ -3511,9 +3460,6 @@
   },
   "onboarding": {
     "welcome": "Bienvenue sur Swetrix",
-    "title": "Commencer",
-    "skipOnboarding": "Ignorer la configuration",
-    "finishOnboarding": "Terminer la configuration",
     "selectLanguage": {
       "title": "Choisissez votre langue",
       "subtitle": "Quelle langue souhaitez-vous utiliser ?"
@@ -3540,32 +3486,16 @@
         "tip": "Regardez les sessions se dérouler."
       }
     },
-    "selectPlan": {
-      "timeline": {
-        "today": "Aujourd'hui",
-        "todayDesc": "Commencez votre essai gratuit avec un accès complet",
-        "reminder": "Jour {{days}}",
-        "reminderDesc": "Nous vous enverrons un email avant la fin de l'essai",
-        "charge": "Jour {{days}}",
-        "chargeDesc": "Votre abonnement commencera à moins que vous ne l'annuliez avant"
-      }
-    },
     "createProject": {
-      "navTitle": "Créer un projet",
-      "navDesc": "Ajoutez un site web pour commencer à collecter des données d’analyse.",
       "title": "Configurez votre premier projet",
       "desc": "Créez un projet pour le site web que vous souhaitez suivre. Ajoutez un nom de projet pour continuer.",
       "placeholder": "Mon site web",
       "timezoneDesc": "Les graphiques, les plages de dates et les horodatages utiliseront ce fuseau horaire. Vous pourrez le modifier plus tard."
     },
     "installTracking": {
-      "navTitle": "Installer le script",
-      "navDesc": "Ajoutez le script Swetrix à votre site web.",
       "title": "Ajouter Swetrix à votre site web",
       "desc": "Ajoutez le script Swetrix à votre site, ou envoyez des événements depuis des applications web, mobiles ou de bureau via l'API. Pour les options de configuration avancées, consultez notre <url>documentation</url>.",
       "websiteInstallation": "Configuration du site web",
-      "pasteScript": "Collez ce script sur votre site web",
-      "weAlsoSupport": "Vous pouvez également installer Swetrix avec NPM pour des frameworks comme React et Vue, envoyer des événements via l'API Événements, ou utiliser des intégrations telles que WordPress et Google Tag Manager. <url>En savoir plus</url>.",
       "optional": "Cette étape est facultative. Vous pourrez configurer le suivi plus tard depuis les paramètres du projet.",
       "skipForNow": "Ignorer pour le moment",
       "ai": {
@@ -3610,7 +3540,6 @@
     "profileSettings": "Paramètres du profil",
     "dashboard": "Tableau de bord",
     "organisations": "Organisations",
-    "billing": "Facturation",
     "contact": "Contact",
     "main": "Swetrix - une alternative à Google Analytics sans cookies",
     "socialisation": "Comptes liés",
@@ -3622,9 +3551,6 @@
     "forSmbs": "Pour les petites entreprises",
     "forStartups": "Pour les startups",
     "pricing": "Tarifs",
-    "privacyPolicy": "Politique de confidentialité",
-    "cookiePolicy": "Politique relative aux cookies",
-    "termsAndConditions": "Conditions générales",
     "gaAlternative": "Alternative à Google Analytics sans cookies",
     "agencies": "Analyses axées sur la confidentialité pour les agences",
     "projectWithPassword": "Analyse du site web – mot de passe requis",

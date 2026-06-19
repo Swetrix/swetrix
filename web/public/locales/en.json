@@ -163,14 +163,12 @@
   },
   "ariaLabels": {
     "actions": "Actions",
-    "contactSupport": "Contact support",
     "dateRange": "Date range",
     "dnsRecord": "DNS record",
     "emailSupport": "Email Swetrix support",
     "emailSupportTitle": "Email us at {{email}}",
     "eventFilters": "{{event}} filters",
     "eventTotal": "{{event}} total",
-    "fiveOutOfFiveStars": "5 out of 5 stars",
     "footer": "Footer",
     "googleSearchConsoleCsv": "Google Search Console CSV",
     "hideEventDetails": "Hide {{event}} details",
@@ -469,19 +467,9 @@
   },
   "gaAlternative": {
     "hero": {
-      "teams": "{{amount}}+ teams",
-      "ditched": "ditched Google Analytics",
       "title": "The cookieless Google Analytics alternative",
       "subtitle": "Get the insights you need - real-time, accurate, and easy to understand, without cookies, invading privacy, or bloated dashboards.",
       "cta": "Start a {{days}}-day free trial",
-      "features": {
-        "cookieless": "Cookieless tracking",
-        "privacy": "Privacy-first by design",
-        "realtime": "Real-time dashboard",
-        "noSampling": "No sampling",
-        "ownData": "Own your data",
-        "openSource": "Open-source & self-hostable"
-      },
       "viewDemo": "View live demo"
     },
     "comparison": {
@@ -592,7 +580,6 @@
   },
   "agencies": {
     "hero": {
-      "eyebrow": "For agencies",
       "title": "Analytics your clients trust, reporting your agency owns",
       "subtitle": "Run every client site from one privacy-first workspace. Branded dashboards, one invoice, and the GDPR compliance your EU clients need - without the GA4 complexity.",
       "cta": "Start a {{days}}-day free trial",
@@ -642,10 +629,6 @@
           "title": "Automated email reports",
           "description": "Schedule weekly or monthly reports so clients get their numbers without logging in - or chasing you for them."
         }
-      },
-      "snippet": {
-        "filename": "client-report.html",
-        "comment": "Embed any public dashboard, wrapped in your own brand."
       },
       "cta": "Start your free trial"
     },
@@ -888,13 +871,6 @@
         "desc": "Lightweight script, simple API and quick setup. Get running in under 5 minutes."
       }
     }
-  },
-  "unsubscribe": {
-    "success": "You've unsubscribed from analytics email reports"
-  },
-  "gsc": {
-    "failed": "Connection failed",
-    "failedDesc": "An error has occurred while connecting to your Google Search Console, please try again or contact support."
   },
   "auth": {
     "recovery": {
@@ -1249,11 +1225,9 @@
     "page": "Page",
     "event": "Event",
     "noProjectsForCriteria": "No projects found for the selected criteria",
-    "captcha": "CAPTCHA",
     "newProject": "New project",
     "newFunnel": "New funnel",
     "reloadPage": "Reload page",
-    "newCaptchaProject": "New CAPTCHA project",
     "verifyEmailTitle": "Please, verify the email address first",
     "verifyEmailDesc": "To start using our service and creating your projects, you first need to confirm your email address.\n\nA link to confirm your account was sent to the email address you provided during registration, if it was not delivered - you can request the link again in your account settings.",
     "lowEventsTitle": "You are running out of events!",
@@ -1263,7 +1237,6 @@
     "eventsXPercUsed": "You have used more than {{amount}}% of the available events per your tier for this month.",
     "noProjects": "No projects yet",
     "createProject": "You haven't created any projects yet. Get started by creating your first project.",
-    "active": "Active",
     "public": "Public",
     "shared": "Shared",
     "disabled": "Disabled",
@@ -1273,12 +1246,9 @@
     "unpin": "Unpin project",
     "noData": "no data",
     "pageviews": "Pageviews",
-    "captchaEvents": "CAPTCHA events",
     "firstSeen": "First seen",
     "lastSeen": "Last seen",
-    "atFile": "At {{filename}}, line {{lineno}}, column {{colno}}",
     "users": "Users",
-    "createdAt": "Created at",
     "inc": "Increased by",
     "dec": "Descreased by",
     "liveVisitors": "Live visitors",
@@ -1299,26 +1269,17 @@
     "replays": "Replays",
     "xOccurrences": "{{x}} occurrences",
     "errors": "Errors",
-    "xPageviews": "{{x}} pageviews",
-    "xCustomEvents": "{{x}} custom events",
-    "xErrors": "{{x}} errors",
-    "sales": "Sales",
-    "xSales": "{{x}} sales",
     "events": "Events",
     "alerts": "Alerts",
     "alertsDesc": "Automated alerts is a powerful tool that notifies you when some events occur on your website.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram, Slack or Discord.",
     "goals": "Goals",
-    "goalsDesc": "Conversion goals help you track important user actions on your website.\nDefine pageview goals or custom event goals to measure how many visitors complete specific actions.",
     "experiments": "Experiments",
     "featureFlags": "Feature flags",
-    "featureFlagsDesc": "Feature flags allow you to toggle features for cohorts or individuals.\nTest the impact before rolling out to everyone.",
     "askAi": "Ask AI",
     "revenue": "Revenue",
     "refunds": "Refunds",
-    "revenueHint": "Track sales, refunds and revenue from your payment providers.",
     "webAnalytics": "Web analytics",
     "productAnalytics": "Product analytics",
-    "revenueAnalytics": "Revenue analytics",
     "funnelsDesc": "Funnels help you track how visitors move through a sequence of pages and events.\nUse them to spot drop-offs in sign-up, checkout, onboarding, or any other flow.\n<docs>Learn more in the docs</docs>.",
     "frontend": "Frontend",
     "backend": "Backend",
@@ -1331,7 +1292,6 @@
     "tls": "TLS Setup",
     "ttfb": "Time to first byte (TTFB)",
     "domLoad": "DOM Content Load",
-    "pageLoad": "Page load time",
     "render": "Browser render",
     "response": "Response Time",
     "average": "Average",
@@ -1433,9 +1393,7 @@
   "notificationChannels": {
     "heading": "Notification channels",
     "description": "Wire up email, Telegram, Discord, Slack, custom webhooks or browser push, then attach them to alerts.",
-    "details": "Where it sends",
     "add": "Add channel",
-    "empty": "No channels yet. Connect one to start receiving alerts.",
     "emptyTitle": "No channels connected",
     "emptyDescription": "Connect a channel below to start receiving alerts when your traffic, errors or events cross a threshold.",
     "createTitle": "Connect a channel",
@@ -3488,15 +3446,6 @@
     "title": "Start your free trial",
     "subtitle": "Try Swetrix free for {{days}} days. Cancel anytime.",
     "successRedirect": "Your checkout is complete. We're updating your subscription and will take you to your dashboard shortly.",
-    "realTimeAnalytics": "Real-time analytics without cookies",
-    "willRemind": "We'll email you before the trial ends",
-    "freeTrialAnytime": "{{days}}-day free trial. Cancel anytime.",
-    "dueEnd": "Due on {{date}}",
-    "dueToday": "Due today, after {{days}} free days",
-    "next": "Start free trial",
-    "selectPlan": "Choose a plan",
-    "customPlanTitle": "Need more than 20M events?",
-    "customPlanDesc": "Select \"Up to {{count}} monthly events\" and <contact>contact us</contact> for a custom quote.",
     "trial": {
       "today": "Today",
       "step1Label": "Your free trial starts with full access",
@@ -3511,9 +3460,6 @@
   },
   "onboarding": {
     "welcome": "Welcome to Swetrix",
-    "title": "Get started",
-    "skipOnboarding": "Skip setup",
-    "finishOnboarding": "Finish setup",
     "selectLanguage": {
       "title": "Choose your language",
       "subtitle": "Which language would you like to use?"
@@ -3540,32 +3486,16 @@
         "tip": "Watch sessions as they happen."
       }
     },
-    "selectPlan": {
-      "timeline": {
-        "today": "Today",
-        "todayDesc": "Start your free trial with full access",
-        "reminder": "Day {{days}}",
-        "reminderDesc": "We'll email you before the trial ends",
-        "charge": "Day {{days}}",
-        "chargeDesc": "Your subscription starts unless you cancel first"
-      }
-    },
     "createProject": {
-      "navTitle": "Create project",
-      "navDesc": "Add a website to start tracking analytics.",
       "title": "Set up your first project",
       "desc": "Create a project for the website you want to track. Add a project name to continue.",
       "placeholder": "My website",
       "timezoneDesc": "Charts, date ranges, and timestamps will use this timezone. You can change it later."
     },
     "installTracking": {
-      "navTitle": "Install script",
-      "navDesc": "Add the Swetrix script to your website.",
       "title": "Add Swetrix to your website",
       "desc": "Add the Swetrix script to your site, or send events from web, mobile, or desktop apps through the API. For advanced setup options, see our <url>documentation</url>.",
       "websiteInstallation": "Website setup",
-      "pasteScript": "Paste this script into your website",
-      "weAlsoSupport": "You can also install Swetrix with NPM for frameworks like React and Vue, send events through the Events API, or use integrations such as WordPress and Google Tag Manager. <url>Learn more</url>.",
       "optional": "This step is optional. You can set up tracking later from project settings.",
       "skipForNow": "Skip for now",
       "ai": {
@@ -3610,7 +3540,6 @@
     "profileSettings": "Profile settings",
     "dashboard": "Dashboard",
     "organisations": "Organisations",
-    "billing": "Billing",
     "contact": "Have something to ask?",
     "main": "Swetrix - Cookieless Google Analytics Alternative",
     "socialisation": "Socialisation",
@@ -3622,9 +3551,6 @@
     "forSmbs": "For small businesses",
     "forStartups": "For startups",
     "pricing": "Pricing",
-    "privacyPolicy": "Privacy Policy",
-    "cookiePolicy": "Cookie Policy",
-    "termsAndConditions": "Terms and Conditions",
     "gaAlternative": "Cookieless Google Analytics alternative",
     "agencies": "Privacy-first analytics for agencies",
     "projectWithPassword": "Website analytics - password required",
