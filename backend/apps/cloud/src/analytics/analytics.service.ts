@@ -6429,7 +6429,17 @@ export class AnalyticsService {
 
         SELECT
           type,
-          COALESCE(toString(product_name), toString(product_id), if(type = 'refund', 'Refund', 'Sale')) AS value,
+          COALESCE(
+            toString(product_name),
+            toString(product_id),
+            multiIf(
+              type = 'refund',
+              'Refund',
+              type = 'subscription',
+              'Subscription',
+              'Sale'
+            )
+          ) AS value,
           toTimeZone(created, {timezone:String}) AS created,
           pid,
           toString(session_id) AS psid,
@@ -6458,7 +6468,7 @@ export class AnalyticsService {
             pid = {pid:FixedString(12)}
             AND session_id IS NOT NULL
             AND toString(session_id) = {psid:String}
-            AND revenue.type IN ('sale', 'refund')
+            AND revenue.type IN ('sale', 'subscription', 'refund')
           GROUP BY pid, session_id, transaction_id
         )
       )
@@ -6508,7 +6518,11 @@ export class AnalyticsService {
 
     const querySessionRevenue = `
       SELECT
-        toFloat64(sum(CASE WHEN type = 'sale' THEN amount ELSE 0 END) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END)) AS revenue,
+        toFloat64(
+          sum(
+            CASE WHEN type IN ('sale', 'subscription') THEN amount ELSE 0 END
+          ) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END)
+        ) AS revenue,
         toFloat64(sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END)) AS refunds
       FROM (
         SELECT
@@ -6519,7 +6533,7 @@ export class AnalyticsService {
           pid = {pid:FixedString(12)}
           AND session_id IS NOT NULL
           AND toString(session_id) = {psid:String}
-          AND revenue.type IN ('sale', 'refund')
+          AND revenue.type IN ('sale', 'subscription', 'refund')
         GROUP BY pid, session_id, transaction_id
       )
     `
@@ -6768,7 +6782,9 @@ export class AnalyticsService {
         SELECT
           psidCasted,
           pid,
-          sum(CASE WHEN type = 'sale' THEN amount ELSE 0 END) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as revenue,
+          sum(
+            CASE WHEN type IN ('sale', 'subscription') THEN amount ELSE 0 END
+          ) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as revenue,
           sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refunds
         FROM (
           SELECT
@@ -6779,7 +6795,7 @@ export class AnalyticsService {
           FROM revenue
           WHERE pid = {pid:FixedString(12)} AND session_id IS NOT NULL
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-            AND revenue.type IN ('sale', 'refund')
+            AND revenue.type IN ('sale', 'subscription', 'refund')
           GROUP BY psidCasted, pid, transaction_id
         )
         GROUP BY psidCasted, pid
@@ -7034,7 +7050,9 @@ export class AnalyticsService {
         SELECT
           psidCasted,
           pid,
-          sum(CASE WHEN type = 'sale' THEN amount ELSE 0 END) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as revenue,
+          sum(
+            CASE WHEN type IN ('sale', 'subscription') THEN amount ELSE 0 END
+          ) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as revenue,
           sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refunds
         FROM (
           SELECT
@@ -7045,7 +7063,7 @@ export class AnalyticsService {
           FROM revenue
           WHERE pid = {pid:FixedString(12)} AND session_id IS NOT NULL
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-            AND revenue.type IN ('sale', 'refund')
+            AND revenue.type IN ('sale', 'subscription', 'refund')
           GROUP BY psidCasted, pid, transaction_id
         )
         GROUP BY psidCasted, pid
@@ -7549,7 +7567,6 @@ export class AnalyticsService {
         AND type IN ('pageview', 'custom_event', 'error')
     `
 
-    // Query for total revenue from profile (only sales, not refunds)
     const queryRevenue = `
       SELECT
         sum(amount) AS totalRevenue,
@@ -7561,7 +7578,7 @@ export class AnalyticsService {
         FROM revenue
         WHERE pid = {pid:FixedString(12)}
           AND profile_id = {profileId:String}
-          AND type = 'sale'
+          AND type IN ('sale', 'subscription')
           AND status = 'completed'
         GROUP BY transaction_id
       )
@@ -7791,7 +7808,17 @@ export class AnalyticsService {
 
         SELECT
           type,
-          COALESCE(toString(product_name), toString(product_id), if(type = 'refund', 'Refund', 'Sale')) AS value,
+          COALESCE(
+            toString(product_name),
+            toString(product_id),
+            multiIf(
+              type = 'refund',
+              'Refund',
+              type = 'subscription',
+              'Subscription',
+              'Sale'
+            )
+          ) AS value,
           toTimeZone(created, {timezone:String}) AS created,
           toString(session_id) AS psid,
           [
@@ -7820,7 +7847,7 @@ export class AnalyticsService {
             AND session_id IS NOT NULL
             AND toString(session_id) IN {psids:Array(String)}
             AND revenue.created BETWEEN {groupFrom:String} AND {groupTo:String}
-            AND revenue.type IN ('sale', 'refund')
+            AND revenue.type IN ('sale', 'subscription', 'refund')
           GROUP BY session_id, transaction_id
         )
       )

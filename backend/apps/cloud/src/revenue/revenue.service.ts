@@ -238,8 +238,12 @@ export class RevenueService {
     // Get current period stats
     const statsQuery = `
       SELECT
-        sum(CASE WHEN type = 'sale' THEN amount ELSE 0 END) as totalRevenue,
-        count(CASE WHEN type = 'sale' THEN 1 ELSE NULL END) as salesCount,
+        sum(
+          CASE WHEN type IN ('sale', 'subscription') THEN amount ELSE 0 END
+        ) as totalRevenue,
+        count(
+          CASE WHEN type IN ('sale', 'subscription') THEN 1 ELSE NULL END
+        ) as salesCount,
         count(CASE WHEN type = 'refund' THEN 1 ELSE NULL END) as refundsCount,
         sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refundsAmount,
         sum(CASE WHEN type = 'subscription' THEN amount ELSE 0 END) as subscriptionRevenue
@@ -349,8 +353,12 @@ export class RevenueService {
     const chartQuery = `
       SELECT
         ${selector},
-        sum(CASE WHEN type = 'sale' THEN amount ELSE 0 END) as revenue,
-        count(CASE WHEN type = 'sale' THEN 1 ELSE NULL END) as salesCount,
+        sum(
+          CASE WHEN type IN ('sale', 'subscription') THEN amount ELSE 0 END
+        ) as revenue,
+        count(
+          CASE WHEN type IN ('sale', 'subscription') THEN 1 ELSE NULL END
+        ) as salesCount,
         sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refundsAmount
       FROM (
         SELECT
