@@ -28,7 +28,6 @@ import {
   useSearchParams,
   useLocation,
 } from 'react-router'
-import { ExternalScripts } from 'remix-utils/external-scripts'
 
 import { getAuthenticatedUser } from '~/api/api.server'
 import { LocaleLinks } from '~/components/LocaleLinks'
@@ -442,6 +441,23 @@ export async function loader({ request, url: urlObject }: LoaderFunctionArgs) {
 
 export const handle = { i18n: 'common' }
 
+const PADDLE_V2_SCRIPT_URL = 'https://cdn.paddle.com/paddle/v2/paddle.js'
+
+const RouteScripts = () => {
+  const { pathname } = useLocation()
+
+  if (stripLangFromPath(pathname) !== '/pay') {
+    return null
+  }
+
+  return (
+    <>
+      <link rel='preload' href={PADDLE_V2_SCRIPT_URL} as='script' />
+      <script src={PADDLE_V2_SCRIPT_URL} defer async />
+    </>
+  )
+}
+
 const Body = () => {
   const { isAuthed, user, totalMonthlyEvents } = useLoaderData<typeof loader>()
   const { theme } = useTheme()
@@ -464,7 +480,7 @@ const Body = () => {
         </MotionConfig>
       </AuthProvider>
       <ScrollRestoration />
-      <ExternalScripts />
+      <RouteScripts />
       <Scripts />
     </body>
   )

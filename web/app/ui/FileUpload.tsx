@@ -97,6 +97,10 @@ export default function FileUpload({
     [handleFiles],
   )
 
+  const handleOpenFilePicker = useCallback(() => {
+    if (!isDisabled) inputRef.current?.click()
+  }, [isDisabled])
+
   return (
     <div className='flex flex-col gap-1'>
       {showHint ? (
@@ -110,11 +114,23 @@ export default function FileUpload({
           {hint}
         </Text>
       ) : null}
-      <label
-        htmlFor={inputId}
+      <input
+        ref={inputRef}
+        id={inputId}
+        type='file'
+        className='sr-only'
+        accept={accept}
+        multiple={multiple}
+        disabled={isDisabled}
+        tabIndex={-1}
+        aria-hidden='true'
+        onChange={handleChange}
+      />
+      <button
+        type='button'
         className={cn(
           'group relative flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed transition-[background-color,border-color,box-shadow] duration-200 ease-out',
-          'focus-within:ring-2 focus-within:ring-slate-900 focus-within:ring-offset-2 dark:focus-within:ring-slate-300 dark:focus-within:ring-offset-slate-950',
+          'focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-950',
           isMini ? 'flex-row gap-3 p-3 text-left' : 'flex-col p-6 text-center',
           isDisabled
             ? 'cursor-not-allowed border-gray-200 bg-gray-50/50 dark:border-slate-800 dark:bg-slate-900/40'
@@ -124,27 +140,18 @@ export default function FileUpload({
           className,
         )}
         aria-disabled={isDisabled || undefined}
+        aria-label={
+          typeof label === 'string' ? label : t('ariaLabels.uploadFile')
+        }
+        aria-describedby={showHint ? hintId : undefined}
+        tabIndex={isDisabled ? -1 : undefined}
+        onClick={handleOpenFilePicker}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <input
-          ref={inputRef}
-          id={inputId}
-          type='file'
-          className='sr-only'
-          accept={accept}
-          multiple={multiple}
-          disabled={isDisabled}
-          aria-label={
-            typeof label === 'string' ? label : t('ariaLabels.uploadFile')
-          }
-          aria-describedby={showHint ? hintId : undefined}
-          onChange={handleChange}
-        />
-
         {loading ? (
-          <div
+          <span
             className={cn(
               isMini
                 ? 'flex min-w-0 items-center gap-3'
@@ -159,24 +166,24 @@ export default function FileUpload({
             />
             {label && (
               <Text
-                as='p'
+                as='span'
                 size='sm'
                 colour='inherit'
-                className='min-w-0 text-gray-500 dark:text-gray-400'
+                className='block min-w-0 text-gray-500 dark:text-gray-400'
               >
                 {label}
               </Text>
             )}
-          </div>
+          </span>
         ) : (
-          <div
+          <span
             className={cn(
               isMini
                 ? 'flex min-w-0 items-center gap-3'
                 : 'space-y-2 text-center',
             )}
           >
-            <div
+            <span
               className={cn(
                 'flex shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition-colors duration-200 ease-out dark:bg-slate-800/80 dark:text-gray-400',
                 isMini ? 'size-8' : 'mx-auto size-10',
@@ -191,15 +198,21 @@ export default function FileUpload({
                 weight='duotone'
                 aria-hidden='true'
               />
-            </div>
+            </span>
             {label && (
-              <Text as='p' size='sm' weight='medium' colour='primary'>
+              <Text
+                as='span'
+                size='sm'
+                weight='medium'
+                colour='primary'
+                className='block min-w-0'
+              >
                 {label}
               </Text>
             )}
-          </div>
+          </span>
         )}
-      </label>
+      </button>
     </div>
   )
 }

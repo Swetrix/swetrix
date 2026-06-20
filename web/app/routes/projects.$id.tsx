@@ -324,7 +324,10 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: ProjectViewStyle },
 ]
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation('common')
   const { pathname } = location

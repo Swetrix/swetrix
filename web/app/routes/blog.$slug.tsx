@@ -17,7 +17,7 @@ import { getSlugFromFilename, getDateFromFilename } from '~/utils/blog'
 import { getPost } from '~/utils/getPosts.server'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation('common')
 

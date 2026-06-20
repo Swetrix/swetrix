@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
-import { ExternalScriptsHandle } from 'remix-utils/external-scripts'
 
 import { isSelfhosted } from '~/lib/constants'
 import { Text } from '~/ui/Text'
@@ -16,15 +15,6 @@ export const meta: MetaFunction = () => [
   ...getTitle('Payment'),
   { name: 'robots', content: 'noindex' },
 ]
-
-export const handle: ExternalScriptsHandle = {
-  scripts: [
-    {
-      src: 'https://cdn.paddle.com/paddle/v2/paddle.js',
-      preload: true, // use it to render a <link rel="preload"> for this script
-    },
-  ],
-}
 
 export async function loader() {
   if (isSelfhosted) {

@@ -52,15 +52,6 @@ In this step, go to the Swetrix API specification page by following this link : 
 ```
 Copy the verification token provided and navigate to the "verify email token" method by visiting this link : [Swagger Documentation - AuthController_Verify-mail](http://localhost:5005/api#/Auth/AuthController_verifyEmail). Once this step is done, the account will be successfully created.
 
-
-### 9. Generate some dummy data
-This step is not necessary, but for your convenience you can generate some dummy data. To do that run a script called `generate-dummy-data.js` which is located in the `meta/clickhouse` directory.
-```bash
-node meta/clickhouse/generate-dummy-data.js --help
-```
-
-This command will give you all the required information on how to generate the data.
-
 ## Finding a task
 You can find a list of all the tasks in our [roadmap](https://github.com/orgs/Swetrix/projects/2) (here's a [link](https://github.com/Swetrix/roadmap/issues) to the same page but as 'Issues' page).
 

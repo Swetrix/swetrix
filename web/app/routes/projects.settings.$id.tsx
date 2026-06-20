@@ -17,7 +17,7 @@ import {
   createHeadersWithCookies,
 } from '~/utils/session.server'
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation('common')
   const projectName = data?.project?.name || 'Project'
