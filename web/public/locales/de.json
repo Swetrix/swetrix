@@ -321,150 +321,6 @@
       "learnMore": "Erfahren Sie in der Dokumentation, wie Sie CAPTCHA integrieren."
     }
   },
-  "marketers": {
-    "slogan": "Entdecken Sie die ultimativen <span>Open-Source Web Analytics</span> maßgeschneidert für <span>Vermarkter</span>",
-    "description": "Swetrix ist eine umfassende Lösung, um Ihre Werbekampagnen voranzutreiben, Ihre Strategien zu optimieren und beispiellosen Erfolg zu erzielen - alles in einem Dienst.",
-    "whyUs": [
-      {
-        "name": "Einfache Integration und Konfiguration",
-        "desc": [
-          "<span>Schnellstart:</span> Swetrix bietet eine einfache <integrationLink>Integration</integrationLink> in Ihre bestehenden Systeme und eine schnelle Einrichtung, sodass die Vermarkter zügig mit der Analyse des Datenverkehrs beginnen können.",
-          "<span>Einfache Benutzeroberfläche:</span> Eine intuitive Benutzeroberfläche, die kein tiefes technisches Wissen erfordert, erlaubt es den Vermarkten den Service einfach zu navigieren und zu nutzen."
-        ]
-      },
-      {
-        "name": "Erweiterte Analysefunktionen",
-        "desc": [
-          "<span>Detaillierte Traffic-Analyse:</span> Swetrix bietet eine breite Palette von Kennzahlen zur Analyse des Nutzerverhaltens an, um Vermarktern dabei zu helfen, fundierte Entscheidungen zu treffen.",
-          "<span>Flexible Berichte:</span> Swetrix bietet die Möglichkeit, Berichte an die spezifischen Bedürfnisse der Vermarkter anzupassen um sich auf die wichtigsten Metriken zu konzentrieren."
-        ]
-      },
-      {
-        "name": "Einhaltung von Datenschutzrichtlinien und Vorschriften",
-        "desc": [
-          "<span>Einhaltung der DSGVO:</span> Swetrix ist DSGVO-konform, was eine sichere und legale Nutzung des Dienstes gewährleistet.",
-          "<span>Datensicherheit:</span> Ein hohes Datenschutzniveau, das für Vermarkter, die mit sensiblen Daten arbeiten, wichtig ist."
-        ]
-      },
-      {
-        "name": "Kundenbetreuung",
-        "desc": [
-          "<span>Qualitätssupport:</span> Swetrix bietet einen schnellen und effizienten Support, der Vermarktern bei der Lösung von Fragen und Problemen hilft.",
-          "<span>Lehrmaterial:</span> Zugang zu Lernressourcen und <discordUrl>Tipps</discordUrl>, um Ihnen dabei zu helfen, das Beste aus dem Dienst zu machen."
-        ]
-      },
-      {
-        "name": "Flexibilität und Skalierbarkeit",
-        "desc": [
-          "<span>Unterschiedliche Preispläne:</span> Swetrix bietet verschiedene Preispläne, die für alle Budgets und Bedürfnisse geeignet sind und es den Vermarktern ermöglichen, die beste Option zu wählen.",
-          "<span>Skalierbarkeit:</span> Die Fähigkeit, die Funktionalität des Services entsprechend dem Wachstum und den Bedürfnissen des Unternehmens zu erweitern."
-        ]
-      },
-      {
-        "name": "Vergleich mit der Konkurrenz",
-        "desc": [
-          "<span>Transparenz und Vertrauen:</span> Swetrix ist offen und transparent, was Vertrauen bei den Nutzern schafft.",
-          "<span>Einzigartige Features:</span> Swetrix bietet Dutzende von einzigartigen und nützlichen Features, und hier sind einige davon.."
-        ]
-      }
-    ]
-  },
-  "startups": {
-    "slogan": "Datenschutz-fokussierte <span>Web Analytics</span> zugeschnitten auf <span>Start-ups</span>",
-    "description": "Swetrix ist ein umfassendes Tool für die Verwaltung Ihrer Werbekampagnen, die Optimierung Ihrer Strategien und die Analyse Ihres Traffics - alles in einem Dienst, ohne die Privatsphäre der Nutzer zu beeinträchtigen.",
-    "whyUs": [
-      {
-        "name": "Einhaltung von Datenschutzrichtlinien und Vorschriften",
-        "desc": [
-          "<span>Datensicherheit:</span> Swetrix konzentriert sich auf den Schutz von Benutzerdaten durch die Nichtverwendung von Cookies, wodurch ein hohes Maß an Privatsphäre gewährleistet wird.",
-          "<span>DSGVO-Konformität:</span> Im Gegensatz zu Google Analytics ist Swetrix DSGVO-konform und somit eine sichere Wahl für Start-ups, denen die Einhaltung von Gesetzen wichtig ist."
-        ]
-      },
-      {
-        "name": "Schlichtheit und Benutzerfreundlichkeit",
-        "desc": [
-          "<span>Intuitive Bedienung:</span> Swetrix bietet eine einfache Benutzeroberfläche, die es auch für Anwender ohne technische Erfahrung leicht zu bedienen macht.",
-          "<span>Einfache Integration:</span> <integrationLink>Die Integration</integrationLink> mit Swetrix erfordert nur ein Minimum an Zeit und Aufwand, sodass Start-ups den Dienst schnell nutzen können."
-        ]
-      },
-      {
-        "name": "Fokus auf Kundenbedürfnisse",
-        "desc": [
-          "<span>Personalisierte Lösungen:</span> Swetrix bietet flexible Einstellungen und die Möglichkeit, sich an die individuellen Bedürfnisse jedes Start-ups anzupassen.",
-          "<span>Kundensupport:</span> Hochwertiger Kundensupport, der bei der schnellen Lösung von Problemen und Anpassungen hilft."
-        ]
-      },
-      {
-        "name": "Barrierefreiheit und Kosteneffizienz",
-        "desc": [
-          "<span>Wettbewerbsfähige Preise:</span> Swetrix bietet wettbewerbsfähige Preise, was besonders für Start-ups mit knappem Budget wichtig ist.",
-          "<span>Kostenlose Testphase:</span> Durch die Möglichkeit, den Dienst kostenlos zu testen, können Start-ups seine Vorteile ohne finanzielle Risiken bewerten."
-        ]
-      },
-      {
-        "name": "Funktionsumfang",
-        "desc": [
-          "<span>Erweiterte Traffic-Analyse:</span> Swetrix bietet detaillierte Traffic-Analysen mit einer Vielzahl von Metriken, die Start-ups helfen, ihre Nutzer besser zu verstehen.",
-          "<span>Berichte und Analysen:</span> Flexible Berichte und Analysen, die Ihnen helfen, fundierte Entscheidungen auf der Grundlage von Daten zu treffen."
-        ]
-      },
-      {
-        "name": "Vorteile im Vergleich zur Konkurrenz",
-        "desc": [
-          "<span>Transparenz:</span> Im Gegensatz zu einigen Konkurrenten ist Swetrix transparent in seiner Arbeitsweise, was Vertrauen bei den Nutzern schafft.",
-          "<span>Fokus auf Datenschutz:</span> Swetrix konzentriert sich auf den Schutz der Privatsphäre, was uns von anderen Lösungen auf dem Markt unterscheidet."
-        ]
-      }
-    ]
-  },
-  "smbs": {
-    "slogan": "Datenschutzorientierte und benutzerfreundliche <span>Webanalyse</span>, zugeschnitten auf <span>kleine Unternehmen</span>",
-    "description": "Swetrix ist ein All-in-one Webanalysedienst, der Ihnen als Unternehmer oder Kleinunternehmer dabei hilft, Ihre Kampagnen zu verfolgen, den Datenverkehr und die Leistung Ihrer Website zu analysieren, ohne die Privatsphäre der Benutzer zu gefährden.",
-    "whyUs": [
-      {
-        "name": "Einfachheit und Effizienz",
-        "desc": [
-          "<span>Einfache Integration und Konfiguration:</span> Swetrix <integrationLink>integriert sich nahtlos</integrationLink> in Ihre bestehenden Systeme, sodass Sie den Dienst schnell nutzen können, ohne dass eine komplexe technische Einrichtung erforderlich ist.",
-          "<span>Intuitive Benutzeroberfläche:</span> Eine übersichtliche und benutzerfreundliche Oberfläche, die es Managern ermöglicht, die benötigten Informationen schnell und ohne zusätzlichen Aufwand abzurufen."
-        ]
-      },
-      {
-        "name": "Verfügbarkeit der Informationen",
-        "desc": [
-          "<span>Echtzeit:</span> Swetrix stellt Daten in Echtzeit (innerhalb von Sekunden) bereit, sodass Manager schnell auf Änderungen im Kundenverhalten und im Datenverkehr reagieren können.",
-          "<span>Flexible Berichte:</span> Die Möglichkeit, Berichte an spezifische Geschäftsanforderungen anzupassen, um fundierte Entscheidungen zu treffen."
-        ]
-      },
-      {
-        "name": "Datenschutz und Sicherheit",
-        "desc": [
-          "<span>Datenschutz:</span> Swetrix bietet ein hohes Maß an Vertraulichkeit und Datenschutz, was für Führungskräfte, die die Informationen ihrer Kunden schützen möchten, von entscheidender Bedeutung ist.",
-          "<span>Einhaltung von Vorschriften:</span> Einhaltung der DSGVO und anderer regulatorischer Anforderungen, wodurch die Rechtssicherheit des Dienstes gewährleistet wird."
-        ]
-      },
-      {
-        "name": "Support und Unterstützung",
-        "desc": [
-          "<span>Hochwertiger Kundensupport:</span> Swetrix bietet schnellen und effizienten Support und hilft bei der Lösung von Problemen, mit denen Manager konfrontiert werden können.",
-          "<span>Lehrmaterialien: </span>Wir haben eine gut entwickelte Community auf <discordUrl>Discord</discordUrl> und auf <twitterUrl>Twitter</twitterUrl>, wo wir immer gerne helfen."
-        ]
-      },
-      {
-        "name": "Kostengünstig und flexibel",
-        "desc": [
-          "<span>Erschwingliche Preise:</span> Wettbewerbsfähige Preise, die es Managern kleiner Unternehmen ermöglichen, alle benötigten Tools ohne erhebliche finanzielle Aufwendungen zu erhalten.",
-          "<span>Flexible Pläne:</span> Die Möglichkeit, verschiedene Tarifpläne zu wählen, die der Größe und den Bedürfnissen des Unternehmens."
-        ]
-      },
-      {
-        "name": "Analyse und Optimierung",
-        "desc": [
-          "<span>Detaillierte Analysen:</span> Swetrix bietet erweiterte Traffic-Analysen, um Managern dabei zu helfen, das Kundenverhalten besser zu verstehen und Geschäftsprozesse zu optimieren.",
-          "<span>Marketingoptimierung:</span> Die Fähigkeit, die Wirksamkeit von Marketingkampagnen zu analysieren und Strategien anzupassen, um bessere Ergebnisse zu erzielen."
-        ]
-      }
-    ]
-  },
   "gaAlternative": {
     "hero": {
       "title": "Die Google-Analytics-Alternative ohne Cookies",
@@ -755,20 +611,6 @@
     "users": "Registrierte Nutzer",
     "websites": "Hinzugefügte Webseiten",
     "pageviews": "Events verfolgt",
-    "competitiveFeatures": {
-      "perf": "Leistungsüberwachung",
-      "gdpr": "DSGVO-konform",
-      "usfl": "Benutzerfluss",
-      "funnels": "Trichter",
-      "sessionAnalysis": "Sitzungsanalyse",
-      "alrt": "Eigene Alarme",
-      "pbld": "Öffentliche Dashboards",
-      "shad": "Dashboard-Freigabe",
-      "open": "Open-Source",
-      "ckfree": "Cookie-freie Analysen",
-      "api": "Entwickler-API",
-      "2fa": "Zwei-Faktor-Authentifizierung"
-    },
     "whySwitch": {
       "heading": "Warum Leute von Google Analytics zu Swetrix wechseln",
       "subheading": "Einfache, datenschutzfreundliche Analysen mit allem, was Sie brauchen – ohne die Komplexität, Cookie-Banner oder Daten, denen Sie nicht vertrauen können.",
@@ -3547,9 +3389,6 @@
     "passwordProtected": "Passwort erforderlich",
     "performance": "Endbenutzer Leistungsüberwachung um schnelle Webseiten zu liefern",
     "errors": "Endbenutzer Fehler bei der Verfolgung von Werkzeug, um fehlerfreie Erfahrungen zu liefern",
-    "forMarketers": "Für Vermarkter",
-    "forSmbs": "Für kleine Unternehmen",
-    "forStartups": "Für Start-ups",
     "pricing": "Preise",
     "gaAlternative": "Cookie-freie Alternative zu Google Analytics",
     "agencies": "Datenschutzfreundliche Analytics für Agenturen",
