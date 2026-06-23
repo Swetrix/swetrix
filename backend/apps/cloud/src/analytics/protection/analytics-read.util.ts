@@ -2,19 +2,6 @@ import _isString from 'lodash/isString'
 
 import { getIPFromHeaders } from '../../common/utils'
 
-// IPs of our OWN reverse proxies / SSR front-end (e.g. the web app egress IP).
-// Comma-separated, e.g. TRUSTED_PROXY_IPS=167.235.69.100,167.235.69.101.
-//
-// Why this matters: the web app's SSR loaders call this API on behalf of end
-// users, so without this every proxied request looks like it comes from the
-// single web-app IP — and a per-IP limit then lumps the whole dashboard (plus
-// any attack proxied through it) into ONE bucket and 429s everyone. When a
-// request arrives FROM a trusted proxy, the real visitor IP is in
-// X-Client-IP-Address (set by web/app/api/api.server.ts), so we key on that.
-//
-// Trusting the header ONLY from these IPs is what makes it safe: a direct
-// attacker hitting the API cannot spoof X-Client-IP-Address to dodge limits,
-// because their connection IP isn't in this set.
 const TRUSTED_PROXY_IPS = new Set(
   (process.env.TRUSTED_PROXY_IPS || '')
     .split(',')
@@ -36,16 +23,8 @@ export const getTrustworthyIp = (req: {
   headers: Record<string, unknown>
   ip?: string
 }): string => {
-  // The real TCP peer as nginx sees it (proxy.conf sets X-Real-IP = $remote_addr).
-  // If nginx realip is configured this is already the real visitor; if not, it's
-  // the proxy hop for proxied traffic.
   const connectionIp = firstHeaderValue(req.headers['x-real-ip'])
 
-  // Behind a trusted proxy: the real visitor IP is in X-Client-IP-Address (the
-  // app-level equivalent of nginx realip; works even when realip isn't set up).
-  // If it's missing, return '' — NEVER fall back to the proxy IP, or a per-IP
-  // limit would key on the shared proxy address and lump every user into one
-  // bucket. An empty result tells callers "real client unknown → don't limit".
   if (connectionIp && TRUSTED_PROXY_IPS.has(connectionIp)) {
     return firstHeaderValue(req.headers['x-client-ip-address'])
   }

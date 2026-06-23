@@ -11,32 +11,13 @@ import { checkRateLimit, getIPDetails } from '../../common/utils'
 import { AppLoggerService } from '../../logger/logger.service'
 import { getTrustworthyIp, getSinglePid } from './analytics-read.util'
 
-// Per-IP read rate limit. OPT-IN: unset env => disabled. This guard runs BEHIND
-// the SSR proxy, so a careless per-IP limit keys on the proxy's IP and lumps
-// every dashboard user into one bucket — which is exactly what 429'd everyone.
-// So it's off by default (the front-end nginx already rate-limits per real IP),
-// and even when on it only fires for PUBLIC projects with a resolved REAL client
-// IP (see getTrustworthyIp, which returns '' rather than a proxy IP). Turn on
-// only once the real client IP is confirmed to reach the API (realip /
-// TRUSTED_PROXY_IPS), e.g. ANALYTICS_READ_RATE_LIMIT=120.
-const READ_RATE_LIMIT = process.env.ANALYTICS_READ_RATE_LIMIT
-  ? Number(process.env.ANALYTICS_READ_RATE_LIMIT)
-  : null
-const READ_RATE_WINDOW = Number(process.env.ANALYTICS_READ_RATE_WINDOW) || 60 // seconds
+const READ_RATE_LIMIT = 300 // requests per rate window
+const AUTHED_READ_RATE_LIMIT = 3000 // requests per rate window
+const READ_RATE_WINDOW = 60 // seconds
 
 const BLOCK_DATACENTER_READS =
   process.env.ANALYTICS_BLOCK_DATACENTER_READS === 'true'
 
-/**
- * Guards the read (GET) surface of the analytics controller.
- *
- * Scope: PUBLIC projects only (e.g. /demo) — the unauthenticated, expensive-to-
- * serve endpoints an attacker can hit for free. Private dashboard reads (the
- * bulk of legitimate traffic) are returned untouched before any limiting, so
- * this guard can never throttle a logged-in user's own dashboard.
- *
- * Every check fails OPEN: a protection bug must never take analytics down.
- */
 @Injectable()
 export class AnalyticsReadGuard implements CanActivate {
   constructor(
@@ -47,18 +28,30 @@ export class AnalyticsReadGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()
 
-    // Only police read (GET) traffic. Ingestion has its own defenses.
+    // Only police read (GET) traffic
     if (req.method !== 'GET') {
       return true
     }
 
-    // API-key requests are metered separately, per plan — never touch them here.
+    // API-key requests are metered separately, per plan
     if (req.headers['x-api-key']) {
       return true
     }
 
-    // Resolve the project first. Anything that isn't a single PUBLIC project —
-    // including every private dashboard read — leaves the guard immediately.
+    // Logged-in requests - limiting by userId on a more generous limit
+    const uid = req.user?.sub || req.user?.id || null
+    if (uid) {
+      if (AUTHED_READ_RATE_LIMIT > 0) {
+        await checkRateLimit(
+          String(uid),
+          'analytics-read-user',
+          AUTHED_READ_RATE_LIMIT,
+          READ_RATE_WINDOW,
+        )
+      }
+      return true
+    }
+
     let isPublicProject = false
     try {
       const pid = getSinglePid(req.query || {})
@@ -80,7 +73,7 @@ export class AnalyticsReadGuard implements CanActivate {
 
     // --- Public-project protections only below this line ---
 
-    // Bot user-agents never legitimately view a public dashboard.
+    // Bot user-agents never legitimately view a public dashboard
     const userAgent = String(req.headers['user-agent'] || '')
     if (userAgent && isbot(userAgent)) {
       throw new ForbiddenException(
@@ -89,7 +82,7 @@ export class AnalyticsReadGuard implements CanActivate {
     }
 
     // The real visitor IP, or '' when only a proxy IP is visible (so we never
-    // rate-limit or geo-check the shared proxy address).
+    // rate-limit or geo-check the shared proxy address)
     const ip = getTrustworthyIp(req)
 
     if (BLOCK_DATACENTER_READS && ip) {

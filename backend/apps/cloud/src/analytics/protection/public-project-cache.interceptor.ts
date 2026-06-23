@@ -17,7 +17,7 @@ const CACHE_TTL = Number(process.env.PUBLIC_PROJECT_CACHE_TTL) || 10 // seconds
 const CACHE_PREFIX = 'arc' // analytics read cache
 
 const CACHEABLE_ROUTES = new Set([
-  '', // getData — dashboard overview
+  '', // getData - dashboard overview
   'chart',
   'birdseye',
   'performance',
