@@ -1,3 +1,5 @@
+import { getClientIP } from '~/api/api.server'
+
 const SWETRIX_API_BASE_URL = 'https://api.swetrix.com/log'
 const PROXY_BASE_PATH = '/_internal_data_inngest_proxy'
 const SWETRIX_LOG_PREFIX = '/log'
@@ -47,6 +49,16 @@ export const proxySwetrixAnalyticsRequest = async (request: Request) => {
 
   headers.delete('host')
   headers.delete('content-length')
+
+  // Forward the real visitor IP, same as serverFetch does for dashboard loaders.
+  // Without this the API sees every first-party beacon as the web app's egress
+  // IP and lumps them into one rate-limit bucket. getClientIP reads the
+  // front-end nginx's X-Real-IP, so a browser can't spoof it; set() overwrites
+  // any client-supplied X-Client-IP-Address.
+  const clientIP = getClientIP(request)
+  if (clientIP) {
+    headers.set('X-Client-IP-Address', clientIP)
+  }
 
   if (!bodyText) {
     return jsonError(400, 'Missing request body')
