@@ -14,6 +14,7 @@ import {
   Query,
   Param,
   UseGuards,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
   Get,
@@ -54,6 +55,8 @@ import { GetUserFlowDto } from './dto/getUserFlow.dto'
 import { GetFunnelsDto } from './dto/getFunnels.dto'
 import { GetFunnelSessionsDto } from './dto/get-funnel-sessions.dto'
 import { AppLoggerService } from '../logger/logger.service'
+import { AnalyticsReadGuard } from './protection/analytics-read.guard'
+import { PublicProjectCacheInterceptor } from './protection/public-project-cache.interceptor'
 import {
   redis,
   REDIS_USERS_COUNT_KEY,
@@ -234,7 +237,8 @@ const getPageFromReferrer = (referrer?: string | string[] | null) => {
 }
 
 @ApiTags('Analytics')
-@UseGuards(OptionalJwtAccessTokenGuard, AuthenticationGuard)
+@UseGuards(OptionalJwtAccessTokenGuard, AuthenticationGuard, AnalyticsReadGuard)
+@UseInterceptors(PublicProjectCacheInterceptor)
 @UsePipes(
   new ValidationPipe({
     transform: true,

@@ -5,6 +5,8 @@ import { BullModule } from '@nestjs/bullmq'
 import { AnalyticsService } from './analytics.service'
 import { AnalyticsController } from './analytics.controller'
 import { BotDetectionService } from './bot-detection.service'
+import { AnalyticsReadGuard } from './protection/analytics-read.guard'
+import { PublicProjectCacheInterceptor } from './protection/public-project-cache.interceptor'
 import { HeartbeatGateway } from './heartbeat.gateway'
 import { SaltService } from './salt.service'
 import { Salt } from './entities/salt.entity'
@@ -38,6 +40,8 @@ import { SessionReplayExportProcessor } from './session-replay-export.processor'
     SessionReplayExportService,
     SessionReplayExportProcessor,
     HeartbeatGateway,
+    AnalyticsReadGuard,
+    PublicProjectCacheInterceptor,
   ],
   exports: [AnalyticsService, BotDetectionService, SaltService],
   controllers: [AnalyticsController],
