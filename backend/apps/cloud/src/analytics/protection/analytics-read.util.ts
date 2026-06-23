@@ -41,13 +41,13 @@ export const getTrustworthyIp = (req: {
   // the proxy hop for proxied traffic.
   const connectionIp = firstHeaderValue(req.headers['x-real-ip'])
 
-  // Behind a trusted proxy: prefer the forwarded real visitor IP. This is the
-  // app-level equivalent of nginx realip and works even when realip isn't set up.
+  // Behind a trusted proxy: the real visitor IP is in X-Client-IP-Address (the
+  // app-level equivalent of nginx realip; works even when realip isn't set up).
+  // If it's missing, return '' — NEVER fall back to the proxy IP, or a per-IP
+  // limit would key on the shared proxy address and lump every user into one
+  // bucket. An empty result tells callers "real client unknown → don't limit".
   if (connectionIp && TRUSTED_PROXY_IPS.has(connectionIp)) {
-    const forwarded = firstHeaderValue(req.headers['x-client-ip-address'])
-    if (forwarded) {
-      return forwarded
-    }
+    return firstHeaderValue(req.headers['x-client-ip-address'])
   }
 
   if (connectionIp) {
