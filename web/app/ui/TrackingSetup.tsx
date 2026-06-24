@@ -581,23 +581,16 @@ const AiInstallTab = ({ projectId }: { projectId: string }) => {
 
 interface TrackingSetupProps {
   projectId: string
-  showAiInstallPrompt?: boolean
 }
 
-const TrackingSetup = ({
-  projectId,
-  showAiInstallPrompt,
-}: TrackingSetupProps) => {
+const TrackingSetup = ({ projectId }: TrackingSetupProps) => {
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState<TrackingTab>('script')
-  const tabs = showAiInstallPrompt
-    ? TRACKING_TABS
-    : TRACKING_TABS.filter((tab) => tab.id !== 'ai')
 
   return (
     <div>
       <div className='mb-4 flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-slate-900'>
-        {tabs.map((tab) => {
+        {TRACKING_TABS.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
           return (
