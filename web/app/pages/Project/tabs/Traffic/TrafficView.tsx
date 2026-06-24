@@ -18,8 +18,6 @@ import React, {
   Suspense,
   useCallback,
   use,
-  Component,
-  type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, useIsPresent } from 'motion/react'
@@ -66,6 +64,7 @@ import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
+import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
 import WaitingForAnEvent from '~/pages/Project/View/components/WaitingForAnEvent'
 import {
   Customs,
@@ -100,7 +99,6 @@ import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import LoadingBar from '~/ui/LoadingBar'
-import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
@@ -136,59 +134,6 @@ interface DeferredTrafficData {
   trafficCompareData: ServerTrafficLogResponse | null
   overallCompareStats: Record<string, ServerOverallObject> | null
   customEventsData: { chart?: { events?: Record<string, unknown> } } | null
-}
-
-interface TrafficErrorBoundaryState {
-  hasError: boolean
-  error: Error | null
-}
-
-class TrafficErrorBoundary extends Component<
-  { children: ReactNode },
-  TrafficErrorBoundaryState
-> {
-  constructor(props: { children: ReactNode }) {
-    super(props)
-    this.state = { hasError: false, error: null }
-  }
-
-  static getDerivedStateFromError(error: Error): TrafficErrorBoundaryState {
-    return { hasError: true, error }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className='flex min-h-[300px] flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50 p-8 dark:border-red-800/50 dark:bg-red-900/20'>
-          <Text
-            as='p'
-            size='lg'
-            weight='semibold'
-            className='text-center text-red-600 dark:text-red-400'
-          >
-            Failed to load traffic data
-          </Text>
-          <Text
-            as='p'
-            size='sm'
-            className='mt-2 text-center text-red-500 dark:text-red-300'
-          >
-            {this.state.error?.message ||
-              'An unexpected error occurred. Please try again.'}
-          </Text>
-          <button
-            type='button'
-            onClick={() => window.location.reload()}
-            className='mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-hidden'
-          >
-            Reload page
-          </button>
-        </div>
-      )
-    }
-
-    return this.props.children
-  }
 }
 
 function TrafficDataResolver({
@@ -272,7 +217,7 @@ function HasImportedIndicator() {
 
 function TrafficViewWrapper(props: TrafficViewProps) {
   return (
-    <TrafficErrorBoundary>
+    <TabErrorBoundary titleKey='dashboard.failedToLoadTraffic'>
       <Suspense fallback={<LoaderView />}>
         <TrafficDataResolver>
           {(deferredData) => (
@@ -280,7 +225,7 @@ function TrafficViewWrapper(props: TrafficViewProps) {
           )}
         </TrafficDataResolver>
       </Suspense>
-    </TrafficErrorBoundary>
+    </TabErrorBoundary>
   )
 }
 

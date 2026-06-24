@@ -21,6 +21,7 @@ import FunnelsList from '~/pages/Project/tabs/Funnels/FunnelsList'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
+import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
 import {
   useViewProjectContext,
   useRefreshTriggers,
@@ -257,7 +258,7 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
   }, [funnelsRefreshTrigger, revalidator])
 
   return (
-    <>
+    <TabErrorBoundary titleKey='dashboard.failedToLoadFunnels'>
       <DashboardHeader
         showLiveVisitors
         hideTimeBucket
@@ -377,7 +378,7 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
             : undefined
         }
       />
-    </>
+    </TabErrorBoundary>
   )
 }
 

@@ -69,6 +69,7 @@ import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
+import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
 import { Panel, MetadataPanel } from '~/pages/Project/View/Panels'
 import { ERROR_FILTERS_MAPPING } from '~/pages/Project/View/utils/filters'
 import {
@@ -568,11 +569,13 @@ function ErrorsDataResolver({
 
 function ErrorsViewWrapper() {
   return (
-    <Suspense fallback={<LoaderView />}>
-      <ErrorsDataResolver>
-        {(deferredData) => <ErrorsViewInner deferredData={deferredData} />}
-      </ErrorsDataResolver>
-    </Suspense>
+    <TabErrorBoundary titleKey='dashboard.failedToLoadErrors'>
+      <Suspense fallback={<LoaderView />}>
+        <ErrorsDataResolver>
+          {(deferredData) => <ErrorsViewInner deferredData={deferredData} />}
+        </ErrorsDataResolver>
+      </Suspense>
+    </TabErrorBoundary>
   )
 }
 

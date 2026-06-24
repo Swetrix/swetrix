@@ -1,6 +1,5 @@
 import _isEmpty from 'lodash/isEmpty'
 import {
-  Component,
   lazy,
   Suspense,
   use,
@@ -9,7 +8,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData, useRevalidator, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
@@ -26,6 +24,7 @@ import {
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
+import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
 import {
   useRefreshTriggers,
   useViewProjectContext,
@@ -46,49 +45,6 @@ import { Replays } from './Replays'
 const SessionReplayModal = lazy(() => import('../Sessions/SessionReplayModal'))
 
 const REPLAYS_TAKE = 30
-
-interface ReplaysErrorBoundaryState {
-  hasError: boolean
-  error: Error | null
-}
-
-class ReplaysErrorBoundary extends Component<
-  { children: ReactNode },
-  ReplaysErrorBoundaryState
-> {
-  constructor(props: { children: ReactNode }) {
-    super(props)
-    this.state = { hasError: false, error: null }
-  }
-
-  static getDerivedStateFromError(error: Error): ReplaysErrorBoundaryState {
-    return { hasError: true, error }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <StatusPage
-          type='error'
-          title='Failed to load replays'
-          description={
-            this.state.error?.message || 'An unexpected error occurred'
-          }
-          actions={[
-            {
-              label: 'Reload page',
-              onClick: () => window.location.reload(),
-              primary: true,
-            },
-            { label: 'Support', to: routes.contact },
-          ]}
-        />
-      )
-    }
-
-    return this.props.children
-  }
-}
 
 interface ReplaysViewProps {
   tnMapping: Record<string, string>
@@ -125,7 +81,7 @@ const getReplayMetadata = (
 
 function ReplaysViewWrapper(props: ReplaysViewProps) {
   return (
-    <ReplaysErrorBoundary>
+    <TabErrorBoundary titleKey='dashboard.failedToLoadReplays'>
       <Suspense fallback={<LoaderView />}>
         <ReplaysDataResolver>
           {(deferredData) => (
@@ -133,7 +89,7 @@ function ReplaysViewWrapper(props: ReplaysViewProps) {
           )}
         </ReplaysDataResolver>
       </Suspense>
-    </ReplaysErrorBoundary>
+    </TabErrorBoundary>
   )
 }
 

@@ -38,6 +38,7 @@ import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { MainChart } from '~/pages/Project/View/components/MainChart'
 import Filters from '~/pages/Project/View/components/Filters'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
+import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
 import {
   Panel,
   PanelContainer,
@@ -1179,15 +1180,17 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
 
 const SEOView = ({ projectId, tnMapping }: SEOViewProps) => {
   return (
-    <React.Suspense
-      fallback={
-        <div className='flex min-h-[400px] items-center justify-center'>
-          <Loader />
-        </div>
-      }
-    >
-      <SEOViewInner projectId={projectId} tnMapping={tnMapping} />
-    </React.Suspense>
+    <TabErrorBoundary titleKey='dashboard.failedToLoadSeo'>
+      <React.Suspense
+        fallback={
+          <div className='flex min-h-[400px] items-center justify-center'>
+            <Loader />
+          </div>
+        }
+      >
+        <SEOViewInner projectId={projectId} tnMapping={tnMapping} />
+      </React.Suspense>
+    </TabErrorBoundary>
   )
 }
 

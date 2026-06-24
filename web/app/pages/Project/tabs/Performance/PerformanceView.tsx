@@ -43,6 +43,7 @@ import Filters from '~/pages/Project/View/components/Filters'
 import { MapLoader } from '~/pages/Project/View/components/MapLoader'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
+import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
 import { Panel } from '~/pages/Project/View/Panels'
 import {
   useViewProjectContext,
@@ -119,13 +120,15 @@ function PerfDataResolver({
 
 function PerformanceViewWrapper(props: PerformanceViewProps) {
   return (
-    <Suspense fallback={<LoaderView />}>
-      <PerfDataResolver>
-        {(deferredData) => (
-          <PerformanceViewInner {...props} deferredData={deferredData} />
-        )}
-      </PerfDataResolver>
-    </Suspense>
+    <TabErrorBoundary titleKey='dashboard.failedToLoadPerformance'>
+      <Suspense fallback={<LoaderView />}>
+        <PerfDataResolver>
+          {(deferredData) => (
+            <PerformanceViewInner {...props} deferredData={deferredData} />
+          )}
+        </PerfDataResolver>
+      </Suspense>
+    </TabErrorBoundary>
   )
 }
 

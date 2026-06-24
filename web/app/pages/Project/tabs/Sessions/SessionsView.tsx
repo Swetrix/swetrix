@@ -1,14 +1,5 @@
 import _isEmpty from 'lodash/isEmpty'
-import {
-  Component,
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  Suspense,
-  use,
-} from 'react'
-import type { ReactNode } from 'react'
+import { useState, useEffect, useMemo, useRef, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams, useLoaderData, useRevalidator } from 'react-router'
 
@@ -25,6 +16,7 @@ import { Sessions } from '~/pages/Project/tabs/Sessions/Sessions'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
+import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
 import {
   useViewProjectContext,
   useRefreshTriggers,
@@ -38,49 +30,6 @@ import LoadingBar from '~/ui/LoadingBar'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
 import { LoaderView } from '../../View/components/LoaderView'
-
-interface SessionsErrorBoundaryState {
-  hasError: boolean
-  error: Error | null
-}
-
-class SessionsErrorBoundary extends Component<
-  { children: ReactNode },
-  SessionsErrorBoundaryState
-> {
-  constructor(props: { children: ReactNode }) {
-    super(props)
-    this.state = { hasError: false, error: null }
-  }
-
-  static getDerivedStateFromError(error: Error): SessionsErrorBoundaryState {
-    return { hasError: true, error }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <StatusPage
-          type='error'
-          title='Failed to load sessions'
-          description={
-            this.state.error?.message || 'An unexpected error occurred'
-          }
-          actions={[
-            {
-              label: 'Reload page',
-              onClick: () => window.location.reload(),
-              primary: true,
-            },
-            { label: 'Support', to: routes.contact },
-          ]}
-        />
-      )
-    }
-
-    return this.props.children
-  }
-}
 
 const SESSIONS_TAKE = 30
 
@@ -138,7 +87,7 @@ function SessionsDataResolver({
 
 function SessionsViewWrapper(props: SessionsViewProps) {
   return (
-    <SessionsErrorBoundary>
+    <TabErrorBoundary titleKey='dashboard.failedToLoadSessions'>
       <Suspense fallback={<LoaderView />}>
         <SessionsDataResolver>
           {(deferredData) => (
@@ -146,7 +95,7 @@ function SessionsViewWrapper(props: SessionsViewProps) {
           )}
         </SessionsDataResolver>
       </Suspense>
-    </SessionsErrorBoundary>
+    </TabErrorBoundary>
   )
 }
 
