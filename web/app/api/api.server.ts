@@ -2743,6 +2743,38 @@ export async function getFiltersServer(
   })
 }
 
+export interface DataDeletionPreview {
+  // count of matching rows, keyed by event type (pageview, custom_event, ...)
+  counts: Record<string, number>
+  total: number
+  // gap-filled, uniform buckets for the preview sparkline
+  timeline: { x: string[]; counts: number[] }
+}
+
+export async function getDataDeletionPreviewServer(
+  request: Request,
+  pid: string,
+  options: {
+    filters?: AnalyticsFilter[]
+    from?: string
+    to?: string
+  },
+): Promise<ServerFetchResult<DataDeletionPreview>> {
+  return serverFetch<DataDeletionPreview>(
+    request,
+    'log/data-deletion/preview',
+    {
+      method: 'POST',
+      body: {
+        pid,
+        filters: JSON.stringify(options.filters || []),
+        from: options.from,
+        to: options.to,
+      },
+    },
+  )
+}
+
 export async function getErrorsFiltersServer(
   request: Request,
   pid: string,

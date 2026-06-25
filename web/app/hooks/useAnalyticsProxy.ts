@@ -34,6 +34,8 @@ import type {
   RevenueStatus,
   RevenueDataResponse,
   OverallObject,
+  AnalyticsFilter,
+  DataDeletionPreview,
   AnalyticsParams as ServerAnalyticsParams,
 } from '~/api/api.server'
 
@@ -796,6 +798,33 @@ export function useFiltersProxy() {
   )
 
   return { fetchFilters, fetchErrorsFilters, fetchVersionFilters }
+}
+
+export function useDataDeletionPreviewProxy() {
+  const fetchPreview = useCallback(
+    async (
+      projectId: string,
+      options: {
+        filters?: AnalyticsFilter[]
+        from?: string
+        to?: string
+      },
+    ): Promise<DataDeletionPreview | null> => {
+      const result = await postAnalytics<DataDeletionPreview>({
+        action: 'getDataDeletionPreview',
+        projectId,
+        params: {
+          filters: options.filters,
+          from: options.from,
+          to: options.to,
+        },
+      })
+      return result.data
+    },
+    [],
+  )
+
+  return { fetchPreview }
 }
 
 export function useCustomEventsMetadataProxy() {

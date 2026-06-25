@@ -22,6 +22,7 @@ import {
   Patch,
   Delete,
   Headers,
+  HttpCode,
   BadRequestException,
   InternalServerErrorException,
   UnprocessableEntityException,
@@ -68,6 +69,7 @@ import { clickhouse } from '../common/integrations/clickhouse'
 import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
+import { DataDeletionDto } from './dto/data-deletion.dto'
 import { GetVersionFiltersDto } from './dto/get-version-filters.dto'
 import {
   IFunnel,
@@ -2877,6 +2879,48 @@ export class AnalyticsController {
     )
 
     return this.analyticsService.deleteSessionReplay(pid, psid, replayId)
+  }
+
+  @Post('data-deletion/preview')
+  @HttpCode(200)
+  @Auth()
+  async getDataDeletionPreview(
+    @Body() body: DataDeletionDto,
+    @CurrentUserId() uid: string,
+  ) {
+    await this.analyticsService.checkManageAccess(body.pid, uid)
+
+    return this.analyticsService.getDataDeletionPreview(
+      body.pid,
+      body.filters || '[]',
+      body.from || null,
+      body.to || null,
+    )
+  }
+
+  @Post('data-deletion')
+  @HttpCode(200)
+  @Auth()
+  async deleteData(
+    @Body() body: DataDeletionDto,
+    @CurrentUserId() uid: string,
+  ) {
+    await this.analyticsService.checkManageAccess(body.pid, uid)
+
+    this.logger.log(
+      { uid, pid: body.pid, types: body.types },
+      'POST /log/data-deletion',
+    )
+
+    await this.analyticsService.deleteData(
+      body.pid,
+      body.filters || '[]',
+      body.from || null,
+      body.to || null,
+      body.types || ['pageview', 'custom_event'],
+    )
+
+    return { deleted: true }
   }
 
   @Post('session-replay/export')

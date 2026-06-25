@@ -27,6 +27,7 @@ import {
   getProfileSessionsServer,
   getProjectServer,
   getFiltersServer,
+  getDataDeletionPreviewServer,
   getErrorsFiltersServer,
   getVersionFiltersServer,
   getCustomEventsMetadataServer,
@@ -82,6 +83,7 @@ import {
   type RevenueStatus,
   type RevenueDataResponse,
   type OverallObject,
+  type DataDeletionPreview,
 } from '~/api/api.server'
 import { getProjectPasswordCookie } from '~/utils/session.server'
 
@@ -122,6 +124,7 @@ interface ProxyRequest {
     | 'getProfileSessions'
     | 'getProject'
     | 'getFilters'
+    | 'getDataDeletionPreview'
     | 'getErrorsFilters'
     | 'getVersionFilters'
     | 'getCustomEventsMetadata'
@@ -699,6 +702,22 @@ export async function action({ request }: ActionFunctionArgs) {
           password || undefined,
         )
         return data<ProxyResponse<string[]>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getDataDeletionPreview': {
+        const result = await getDataDeletionPreviewServer(request, projectId, {
+          filters: params.filters || [],
+          from: formatDateForBackend(params.from),
+          to: formatDateForBackend(params.to),
+        })
+        return data<ProxyResponse<DataDeletionPreview>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

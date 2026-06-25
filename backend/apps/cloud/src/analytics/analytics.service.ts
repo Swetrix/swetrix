@@ -140,6 +140,29 @@ const isValidLocale = (lc: string): boolean => {
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
 const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
+
+// Event types that can be targeted by the data-deletion tool.
+const DELETABLE_EVENT_TYPES = [
+  'pageview',
+  'custom_event',
+  'error',
+  'performance',
+  'captcha',
+]
+// Sentinel bounds used when no explicit date range is given, so that
+// session-scoped filters (entry/exit page, referrer) still resolve.
+const DELETION_MIN_DATE = '2000-01-01 00:00:00'
+const DELETION_MAX_DATE = '2100-01-01 00:00:00'
+const DELETION_TIMELINE_BUCKETS = 40
+const DELETION_TIMELINE_MAX_POINTS = 60
+
+export interface DataDeletionPreview {
+  // count of matching rows, keyed by event type
+  counts: Record<string, number>
+  total: number
+  // gap-filled, uniform buckets for the preview sparkline
+  timeline: { x: string[]; counts: number[] }
+}
 const SESSION_REPLAY_RETENTION_VALUES = [30, 90, 365, 1825] as const
 const MAX_SESSION_REPLAY_EVENTS_PER_CHUNK = 1000
 const MAX_SESSION_REPLAY_EVENT_BYTES = 5 * 1024 * 1024
@@ -1617,6 +1640,210 @@ export class AnalyticsService {
       this.postProcessParsedFilters(parsed),
       customEVFilterApplied,
     ]
+  }
+
+  // Counts the rows a data-deletion request would remove and returns a uniform
+  // timeline for the preview sparkline. Mirrors the WHERE clause of deleteData
+  // exactly, so the preview is an honest dry run of the destructive query.
+  async getDataDeletionPreview(
+    pid: string,
+    filters: string,
+    from: string | null,
+    to: string | null,
+  ): Promise<DataDeletionPreview> {
+    // The preview always counts every deletable type so the UI can show a
+    // per-type breakdown; which types actually get deleted is chosen at delete
+    // time and applied in deleteData.
+    const [filtersQuery, filtersParams] = this.getFiltersQuery(
+      filters,
+      DataType.ANALYTICS,
+    )
+
+    from = from ? dayjs.utc(from).format('YYYY-MM-DD HH:mm:ss') : null
+    to = to ? dayjs.utc(to).format('YYYY-MM-DD HH:mm:ss') : null
+
+    const hasRange = Boolean(from && to)
+    const params: Record<string, unknown> = {
+      pid,
+      types: DELETABLE_EVENT_TYPES,
+      groupFrom: from || DELETION_MIN_DATE,
+      groupTo: to || DELETION_MAX_DATE,
+      ...filtersParams,
+    }
+
+    let dateCondition = ''
+    if (hasRange) {
+      params.from = from
+      params.to = to
+      dateCondition = 'AND created BETWEEN {from:String} AND {to:String}'
+    }
+
+    const whereClause = `pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateCondition} ${filtersQuery}`
+
+    const { data: countRows } = await clickhouse
+      .query({
+        query: `
+          SELECT type, count() AS c, min(created) AS mn, max(created) AS mx
+          FROM events
+          WHERE ${whereClause}
+          GROUP BY type
+        `,
+        query_params: params,
+      })
+      .then((resultSet) =>
+        resultSet.json<{ type: string; c: string; mn: string; mx: string }>(),
+      )
+
+    const counts: Record<string, number> = {}
+    let total = 0
+    let minCreated: string | null = null
+    let maxCreated: string | null = null
+
+    for (const row of countRows) {
+      const count = Number(row.c) || 0
+      if (count === 0) {
+        continue
+      }
+      counts[row.type] = count
+      total += count
+      if (!minCreated || row.mn < minCreated) {
+        minCreated = row.mn
+      }
+      if (!maxCreated || row.mx > maxCreated) {
+        maxCreated = row.mx
+      }
+    }
+
+    if (total === 0) {
+      return { counts: {}, total: 0, timeline: { x: [], counts: [] } }
+    }
+
+    const timeline = await this.buildDeletionTimeline(
+      whereClause,
+      params,
+      hasRange ? from : minCreated,
+      hasRange ? to : maxCreated,
+    )
+
+    return { counts, total, timeline }
+  }
+
+  private async buildDeletionTimeline(
+    whereClause: string,
+    baseParams: Record<string, unknown>,
+    windowFrom: string,
+    windowTo: string,
+  ): Promise<{ x: string[]; counts: number[] }> {
+    const fromMs = dayjs.utc(windowFrom).valueOf()
+    const toMs = dayjs.utc(windowTo).valueOf()
+    const spanSeconds = Math.max(1, Math.round((toMs - fromMs) / 1000))
+    const bucketSeconds = Math.max(
+      1,
+      Math.ceil(spanSeconds / DELETION_TIMELINE_BUCKETS),
+    )
+
+    const { data: rows } = await clickhouse
+      .query({
+        query: `
+          SELECT
+            toStartOfInterval(created, INTERVAL {bucketSeconds:UInt32} SECOND) AS t,
+            count() AS c
+          FROM events
+          WHERE ${whereClause}
+          GROUP BY t
+          ORDER BY t
+        `,
+        query_params: { ...baseParams, bucketSeconds },
+      })
+      .then((resultSet) => resultSet.json<{ t: string; c: string }>())
+
+    const bucketed = new Map<string, number>()
+    for (const row of rows) {
+      bucketed.set(row.t, Number(row.c) || 0)
+    }
+
+    // toStartOfInterval aligns buckets to multiples of the interval since the
+    // unix epoch, so align our JS walk the same way and fill empty buckets.
+    const bucketMs = bucketSeconds * 1000
+    const startMs = Math.floor(fromMs / bucketMs) * bucketMs
+    const x: string[] = []
+    const counts: number[] = []
+
+    for (
+      let ms = startMs;
+      ms <= toMs && x.length < DELETION_TIMELINE_MAX_POINTS;
+      ms += bucketMs
+    ) {
+      const key = dayjs.utc(ms).format('YYYY-MM-DD HH:mm:ss')
+      x.push(key)
+      counts.push(bucketed.get(key) ?? 0)
+    }
+
+    return { x, counts }
+  }
+
+  // Permanently removes matching analytics rows. The WHERE clause is identical
+  // to getDataDeletionPreview's, so what the user previews is what gets deleted.
+  async deleteData(
+    pid: string,
+    filters: string,
+    from: string | null,
+    to: string | null,
+    types: string[],
+  ): Promise<void> {
+    const safeTypes = _filter(types, (type) =>
+      _includes(DELETABLE_EVENT_TYPES, type),
+    )
+
+    if (_isEmpty(safeTypes)) {
+      throw new BadRequestException('No event types selected for deletion')
+    }
+
+    const [filtersQuery, filtersParams] = this.getFiltersQuery(
+      filters,
+      DataType.ANALYTICS,
+    )
+
+    from = from ? dayjs.utc(from).format('YYYY-MM-DD HH:mm:ss') : null
+    to = to ? dayjs.utc(to).format('YYYY-MM-DD HH:mm:ss') : null
+
+    const hasRange = Boolean(from && to)
+    const params: Record<string, unknown> = {
+      pid,
+      types: safeTypes,
+      groupFrom: from || DELETION_MIN_DATE,
+      groupTo: to || DELETION_MAX_DATE,
+      ...filtersParams,
+    }
+
+    let dateCondition = ''
+    if (hasRange) {
+      params.from = from
+      params.to = to
+      dateCondition = 'AND created BETWEEN {from:String} AND {to:String}'
+    }
+
+    const commands: Promise<unknown>[] = [
+      clickhouse.command({
+        query: `ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateCondition} ${filtersQuery}`,
+        query_params: params,
+      }),
+    ]
+
+    // error_statuses carries no traffic columns, so it can only be cleared when
+    // no field filters are applied (a full reset or a plain date-range reset).
+    if (_includes(safeTypes, 'error') && _isEmpty(filtersQuery)) {
+      commands.push(
+        clickhouse.command({
+          query: `ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} ${
+            hasRange ? 'AND created BETWEEN {from:String} AND {to:String}' : ''
+          }`,
+          query_params: hasRange ? { pid, from, to } : { pid },
+        }),
+      )
+    }
+
+    await Promise.all(commands)
   }
 
   derivePsidFromInputs(

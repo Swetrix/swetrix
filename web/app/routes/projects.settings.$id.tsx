@@ -237,57 +237,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
       )
     }
 
-    case 'reset-project': {
-      const result = await serverFetch(request, `project/reset/${id}`, {
-        method: 'DELETE',
-      })
+    case 'delete-data': {
+      // Unified analytics-data deletion: optional filters (dashboard format,
+      // JSON-encoded), optional date range, and the event types to remove.
+      const filters = formData.get('filters')?.toString() || '[]'
+      const from = formData.get('from')?.toString() || undefined
+      const to = formData.get('to')?.toString() || undefined
+      const typesRaw = formData.get('types')?.toString()
 
-      if (result.error) {
-        return data<ProjectSettingsActionData>(
-          { intent, error: result.error as string },
-          { status: 400 },
-        )
+      let types: string[] | undefined
+      try {
+        types = typesRaw ? (JSON.parse(typesRaw) as string[]) : undefined
+      } catch {
+        types = undefined
       }
 
-      return data<ProjectSettingsActionData>(
-        { intent, success: true },
-        { headers: createHeadersWithCookies(result.cookies) },
-      )
-    }
-
-    case 'delete-partially': {
-      const from = formData.get('from')?.toString()
-      const to = formData.get('to')?.toString()
-
-      const result = await serverFetch(request, `project/partially/${id}`, {
-        method: 'DELETE',
-        body: { from, to },
+      const result = await serverFetch(request, 'log/data-deletion', {
+        method: 'POST',
+        body: { pid: id, filters, from, to, types },
       })
-
-      if (result.error) {
-        return data<ProjectSettingsActionData>(
-          { intent, error: result.error as string },
-          { status: 400 },
-        )
-      }
-
-      return data<ProjectSettingsActionData>(
-        { intent, success: true },
-        { headers: createHeadersWithCookies(result.cookies) },
-      )
-    }
-
-    case 'reset-filters': {
-      const type = formData.get('type')?.toString()
-      const filters = formData.get('value')?.toString()
-
-      const result = await serverFetch(
-        request,
-        `project/reset-filters/${id}?type=${encodeURIComponent(type || '')}&filters=${encodeURIComponent(filters || '')}`,
-        {
-          method: 'DELETE',
-        },
-      )
 
       if (result.error) {
         return data<ProjectSettingsActionData>(
