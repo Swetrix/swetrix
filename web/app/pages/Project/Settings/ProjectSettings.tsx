@@ -1543,7 +1543,7 @@ const ProjectSettings = () => {
                   setShowReset={setShowReset}
                   setShowDelete={setShowDelete}
                   isDeleting={isDeleting}
-                  setResetting={false}
+                  isResetting={false}
                 />
               </form>
             ) : null}

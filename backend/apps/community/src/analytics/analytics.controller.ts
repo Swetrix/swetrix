@@ -1153,6 +1153,11 @@ export class AnalyticsController {
   ) {
     await this.analyticsService.checkManageAccess(body.pid, uid)
 
+    this.logger.log(
+      { uid, pid: body.pid, types: body.types },
+      'POST /log/data-deletion',
+    )
+
     await this.analyticsService.deleteData(
       body.pid,
       body.filters || '[]',

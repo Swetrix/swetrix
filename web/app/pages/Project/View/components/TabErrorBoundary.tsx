@@ -1,7 +1,8 @@
-import { Component, type ReactNode } from 'react'
+import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import StatusPage from '~/ui/StatusPage'
+import { trackError } from '~/utils/analytics'
 import routes from '~/utils/routes'
 
 const TabErrorFallback = ({ titleKey }: { titleKey?: string }) => {
@@ -28,10 +29,14 @@ interface TabErrorBoundaryProps {
   children: ReactNode
   /** Translation key for the title, e.g. `dashboard.failedToLoadTraffic`. Falls back to a generic title. */
   titleKey?: string
+  resetKey?: unknown
 }
 
 interface TabErrorBoundaryState {
   hasError: boolean
+  resetKey: unknown
+  titleKey?: string
+  children: ReactNode
 }
 
 /**
@@ -45,11 +50,46 @@ class TabErrorBoundary extends Component<
 > {
   constructor(props: TabErrorBoundaryProps) {
     super(props)
-    this.state = { hasError: false }
+    this.state = {
+      hasError: false,
+      resetKey: props.resetKey,
+      titleKey: props.titleKey,
+      children: props.children,
+    }
   }
 
-  static getDerivedStateFromError(): TabErrorBoundaryState {
+  static getDerivedStateFromError(): Partial<TabErrorBoundaryState> {
     return { hasError: true }
+  }
+
+  static getDerivedStateFromProps(
+    props: TabErrorBoundaryProps,
+    state: TabErrorBoundaryState,
+  ): Partial<TabErrorBoundaryState> | null {
+    if (
+      props.resetKey === state.resetKey &&
+      props.titleKey === state.titleKey &&
+      props.children === state.children
+    ) {
+      return null
+    }
+
+    return {
+      hasError: false,
+      resetKey: props.resetKey,
+      titleKey: props.titleKey,
+      children: props.children,
+    }
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    trackError({
+      name: `TabErrorBoundary: ${error.message}`,
+      message: error.message,
+      lineno: 0,
+      colno: 0,
+      stackTrace: [error.stack, info.componentStack].filter(Boolean).join('\n'),
+    })
   }
 
   render() {

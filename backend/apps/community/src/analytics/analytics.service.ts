@@ -101,6 +101,7 @@ import {
 } from './interfaces'
 import { ErrorDto } from './dto/error.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
+import { DATA_DELETION_EVENT_TYPES } from './dto/data-deletion.dto'
 import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
 import { UAParser } from '@ua-parser-js/pro-business'
@@ -125,13 +126,7 @@ const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
 
 // Event types that can be targeted by the data-deletion tool.
-const DELETABLE_EVENT_TYPES = [
-  'pageview',
-  'custom_event',
-  'error',
-  'performance',
-  'captcha',
-]
+const DELETABLE_EVENT_TYPES = [...DATA_DELETION_EVENT_TYPES]
 // Sentinel bounds used when no explicit date range is given, so that
 // session-scoped filters (entry/exit page, referrer) still resolve.
 const DELETION_MIN_DATE = '2000-01-01 00:00:00'

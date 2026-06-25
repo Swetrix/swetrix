@@ -115,6 +115,7 @@ import {
 } from './interfaces'
 import { ErrorDto } from './dto/error.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
+import { DATA_DELETION_EVENT_TYPES } from './dto/data-deletion.dto'
 import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
 import { UAParser } from '@ua-parser-js/pro-business'
@@ -142,13 +143,7 @@ const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
 
 // Event types that can be targeted by the data-deletion tool.
-const DELETABLE_EVENT_TYPES = [
-  'pageview',
-  'custom_event',
-  'error',
-  'performance',
-  'captcha',
-]
+const DELETABLE_EVENT_TYPES = [...DATA_DELETION_EVENT_TYPES]
 // Sentinel bounds used when no explicit date range is given, so that
 // session-scoped filters (entry/exit page, referrer) still resolve.
 const DELETION_MIN_DATE = '2000-01-01 00:00:00'
@@ -1659,26 +1654,21 @@ export class AnalyticsService {
       DataType.ANALYTICS,
     )
 
-    from = from ? dayjs.utc(from).format('YYYY-MM-DD HH:mm:ss') : null
-    to = to ? dayjs.utc(to).format('YYYY-MM-DD HH:mm:ss') : null
+    const dateRange = this.getDataDeletionDateRange(from, to)
+    from = dateRange.from
+    to = dateRange.to
 
-    const hasRange = Boolean(from && to)
     const params: Record<string, unknown> = {
       pid,
       types: DELETABLE_EVENT_TYPES,
       groupFrom: from || DELETION_MIN_DATE,
       groupTo: to || DELETION_MAX_DATE,
       ...filtersParams,
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
     }
 
-    let dateCondition = ''
-    if (hasRange) {
-      params.from = from
-      params.to = to
-      dateCondition = 'AND created BETWEEN {from:String} AND {to:String}'
-    }
-
-    const whereClause = `pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateCondition} ${filtersQuery}`
+    const whereClause = `pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateRange.condition} ${filtersQuery}`
 
     const { data: countRows } = await clickhouse
       .query({
@@ -1718,14 +1708,42 @@ export class AnalyticsService {
       return { counts: {}, total: 0, timeline: { x: [], counts: [] } }
     }
 
+    const timelineFrom = from || minCreated
+    const timelineTo = to || maxCreated
+
+    if (!timelineFrom || !timelineTo) {
+      return { counts, total, timeline: { x: [], counts: [] } }
+    }
+
     const timeline = await this.buildDeletionTimeline(
       whereClause,
       params,
-      hasRange ? from : minCreated,
-      hasRange ? to : maxCreated,
+      timelineFrom,
+      timelineTo,
     )
 
     return { counts, total, timeline }
+  }
+
+  private getDataDeletionDateRange(from: string | null, to: string | null) {
+    const normalizedFrom = from
+      ? dayjs.utc(from).format('YYYY-MM-DD HH:mm:ss')
+      : null
+    const normalizedTo = to ? dayjs.utc(to).format('YYYY-MM-DD HH:mm:ss') : null
+    const conditions: string[] = []
+
+    if (normalizedFrom) {
+      conditions.push('created >= {from:String}')
+    }
+    if (normalizedTo) {
+      conditions.push('created <= {to:String}')
+    }
+
+    return {
+      from: normalizedFrom,
+      to: normalizedTo,
+      condition: conditions.length ? `AND ${conditions.join(' AND ')}` : '',
+    }
   }
 
   private async buildDeletionTimeline(
@@ -1804,29 +1822,25 @@ export class AnalyticsService {
       DataType.ANALYTICS,
     )
 
-    from = from ? dayjs.utc(from).format('YYYY-MM-DD HH:mm:ss') : null
-    to = to ? dayjs.utc(to).format('YYYY-MM-DD HH:mm:ss') : null
+    const dateRange = this.getDataDeletionDateRange(from, to)
+    from = dateRange.from
+    to = dateRange.to
 
-    const hasRange = Boolean(from && to)
     const params: Record<string, unknown> = {
       pid,
       types: safeTypes,
       groupFrom: from || DELETION_MIN_DATE,
       groupTo: to || DELETION_MAX_DATE,
       ...filtersParams,
-    }
-
-    let dateCondition = ''
-    if (hasRange) {
-      params.from = from
-      params.to = to
-      dateCondition = 'AND created BETWEEN {from:String} AND {to:String}'
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
     }
 
     const commands: Promise<unknown>[] = [
       clickhouse.command({
-        query: `ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateCondition} ${filtersQuery}`,
+        query: `ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateRange.condition} ${filtersQuery}`,
         query_params: params,
+        clickhouse_settings: { mutations_sync: '2' },
       }),
     ]
 
@@ -1835,10 +1849,13 @@ export class AnalyticsService {
     if (_includes(safeTypes, 'error') && _isEmpty(filtersQuery)) {
       commands.push(
         clickhouse.command({
-          query: `ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} ${
-            hasRange ? 'AND created BETWEEN {from:String} AND {to:String}' : ''
-          }`,
-          query_params: hasRange ? { pid, from, to } : { pid },
+          query: `ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} ${dateRange.condition}`,
+          query_params: {
+            pid,
+            ...(from ? { from } : {}),
+            ...(to ? { to } : {}),
+          },
+          clickhouse_settings: { mutations_sync: '2' },
         }),
       )
     }

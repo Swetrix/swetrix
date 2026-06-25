@@ -1,12 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger'
 import {
+  IsDateString,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsArray,
+  Length,
   Matches,
 } from 'class-validator'
 import { PID_REGEX } from '../../common/constants'
+
+export const DATA_DELETION_EVENT_TYPES = [
+  'pageview',
+  'custom_event',
+  'error',
+  'performance',
+  'captcha',
+] as const
+
+export type DataDeletionEventType = (typeof DATA_DELETION_EVENT_TYPES)[number]
 
 export class DataDeletionDto {
   @ApiProperty({
@@ -30,29 +43,32 @@ export class DataDeletionDto {
 
   @ApiProperty({
     required: false,
-    description:
-      'Start of the date range (inclusive). ISO string or YYYY-MM-DD.',
+    description: 'Start of the date range (inclusive). YYYY-MM-DD.',
   })
   @IsOptional()
-  @IsString()
+  @IsDateString()
+  @Length(10, 10)
   from?: string
 
   @ApiProperty({
     required: false,
-    description: 'End of the date range (inclusive). ISO string or YYYY-MM-DD.',
+    description: 'End of the date range (inclusive). YYYY-MM-DD.',
   })
   @IsOptional()
-  @IsString()
+  @IsDateString()
+  @Length(10, 10)
   to?: string
 
   @ApiProperty({
     required: false,
     type: [String],
+    enum: DATA_DELETION_EVENT_TYPES,
     description:
       "Event types to delete. Any of: 'pageview', 'custom_event', 'error', 'performance', 'captcha'.",
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  types?: string[]
+  @IsIn(DATA_DELETION_EVENT_TYPES as unknown as string[], { each: true })
+  types?: DataDeletionEventType[]
 }
