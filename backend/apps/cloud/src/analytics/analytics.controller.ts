@@ -69,7 +69,10 @@ import { clickhouse } from '../common/integrations/clickhouse'
 import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
-import { DataDeletionDto } from './dto/data-deletion.dto'
+import {
+  DataDeletionDto,
+  DataDeletionPreviewDto,
+} from './dto/data-deletion.dto'
 import { GetVersionFiltersDto } from './dto/get-version-filters.dto'
 import {
   IFunnel,
@@ -2885,7 +2888,7 @@ export class AnalyticsController {
   @HttpCode(200)
   @Auth()
   async getDataDeletionPreview(
-    @Body() body: DataDeletionDto,
+    @Body() body: DataDeletionPreviewDto,
     @CurrentUserId() uid: string,
   ) {
     await this.analyticsService.checkManageAccess(body.pid, uid)
@@ -2917,7 +2920,7 @@ export class AnalyticsController {
       body.filters || '[]',
       body.from || null,
       body.to || null,
-      body.types || ['pageview', 'custom_event'],
+      body.types,
     )
 
     return { deleted: true }

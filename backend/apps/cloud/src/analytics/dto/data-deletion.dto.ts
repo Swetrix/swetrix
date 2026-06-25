@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger'
 import {
+  ArrayNotEmpty,
   IsIn,
   IsNotEmpty,
+  IsArray,
   IsOptional,
   IsString,
-  IsArray,
   Matches,
 } from 'class-validator'
 import { PID_REGEX } from '../../common/constants'
@@ -19,7 +20,7 @@ export const DATA_DELETION_EVENT_TYPES = [
 
 export type DataDeletionEventType = (typeof DATA_DELETION_EVENT_TYPES)[number]
 
-export class DataDeletionDto {
+export class DataDeletionPreviewDto {
   @ApiProperty({
     example: 'aUn1quEid-3',
     required: true,
@@ -55,17 +56,19 @@ export class DataDeletionDto {
   @IsOptional()
   @IsString()
   to?: string
+}
 
+export class DataDeletionDto extends DataDeletionPreviewDto {
   @ApiProperty({
-    required: false,
+    required: true,
     type: [String],
     enum: DATA_DELETION_EVENT_TYPES,
     description:
       "Event types to delete. Any of: 'pageview', 'custom_event', 'error', 'performance', 'captcha'.",
   })
-  @IsOptional()
   @IsArray()
+  @ArrayNotEmpty()
   @IsString({ each: true })
   @IsIn(DATA_DELETION_EVENT_TYPES as unknown as string[], { each: true })
-  types?: DataDeletionEventType[]
+  types: DataDeletionEventType[]
 }

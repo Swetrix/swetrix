@@ -35,8 +35,6 @@ interface TabErrorBoundaryProps {
 interface TabErrorBoundaryState {
   hasError: boolean
   resetKey: unknown
-  titleKey?: string
-  children: ReactNode
 }
 
 /**
@@ -53,8 +51,6 @@ class TabErrorBoundary extends Component<
     this.state = {
       hasError: false,
       resetKey: props.resetKey,
-      titleKey: props.titleKey,
-      children: props.children,
     }
   }
 
@@ -66,19 +62,13 @@ class TabErrorBoundary extends Component<
     props: TabErrorBoundaryProps,
     state: TabErrorBoundaryState,
   ): Partial<TabErrorBoundaryState> | null {
-    if (
-      props.resetKey === state.resetKey &&
-      props.titleKey === state.titleKey &&
-      props.children === state.children
-    ) {
+    if (props.resetKey === state.resetKey) {
       return null
     }
 
     return {
       hasError: false,
       resetKey: props.resetKey,
-      titleKey: props.titleKey,
-      children: props.children,
     }
   }
 
