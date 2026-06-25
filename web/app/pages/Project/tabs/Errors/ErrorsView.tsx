@@ -569,7 +569,7 @@ function ErrorsDataResolver({
 
 function ErrorsViewWrapper() {
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadErrors'>
+    <TabErrorBoundary titleKey='dashboard.failedToLoadErrors' resetKey='errors'>
       <Suspense fallback={<LoaderView />}>
         <ErrorsDataResolver>
           {(deferredData) => <ErrorsViewInner deferredData={deferredData} />}

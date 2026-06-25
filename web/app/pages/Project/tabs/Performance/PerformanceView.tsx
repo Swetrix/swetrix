@@ -120,7 +120,10 @@ function PerfDataResolver({
 
 function PerformanceViewWrapper(props: PerformanceViewProps) {
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadPerformance'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadPerformance'
+      resetKey='performance'
+    >
       <Suspense fallback={<LoaderView />}>
         <PerfDataResolver>
           {(deferredData) => (

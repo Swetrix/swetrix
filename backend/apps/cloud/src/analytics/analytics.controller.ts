@@ -2892,6 +2892,8 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
   ) {
     await this.analyticsService.checkManageAccess(body.pid, uid)
+    await checkRateLimit(uid, 'data-deletion-preview-user', 30, 60)
+    await checkRateLimit(body.pid, 'data-deletion-preview-project', 60, 60)
 
     return this.analyticsService.getDataDeletionPreview(
       body.pid,
@@ -2909,6 +2911,8 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
   ) {
     await this.analyticsService.checkManageAccess(body.pid, uid)
+    await checkRateLimit(uid, 'data-deletion-user', 5, 60)
+    await checkRateLimit(body.pid, 'data-deletion-project', 10, 60)
 
     this.logger.log(
       { uid, pid: body.pid, types: body.types },

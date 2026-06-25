@@ -258,7 +258,10 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
   }, [funnelsRefreshTrigger, revalidator])
 
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadFunnels'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadFunnels'
+      resetKey='funnels'
+    >
       <DashboardHeader
         showLiveVisitors
         hideTimeBucket

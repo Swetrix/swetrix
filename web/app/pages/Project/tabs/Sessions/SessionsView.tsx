@@ -87,7 +87,10 @@ function SessionsDataResolver({
 
 function SessionsViewWrapper(props: SessionsViewProps) {
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadSessions'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadSessions'
+      resetKey='sessions'
+    >
       <Suspense fallback={<LoaderView />}>
         <SessionsDataResolver>
           {(deferredData) => (

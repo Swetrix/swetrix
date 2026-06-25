@@ -217,7 +217,10 @@ function HasImportedIndicator() {
 
 function TrafficViewWrapper(props: TrafficViewProps) {
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadTraffic'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadTraffic'
+      resetKey='traffic'
+    >
       <Suspense fallback={<LoaderView />}>
         <TrafficDataResolver>
           {(deferredData) => (

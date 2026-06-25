@@ -81,7 +81,10 @@ const getReplayMetadata = (
 
 function ReplaysViewWrapper(props: ReplaysViewProps) {
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadReplays'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadReplays'
+      resetKey='replays'
+    >
       <Suspense fallback={<LoaderView />}>
         <ReplaysDataResolver>
           {(deferredData) => (

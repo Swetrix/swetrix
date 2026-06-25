@@ -29,7 +29,7 @@ interface TabErrorBoundaryProps {
   children: ReactNode
   /** Translation key for the title, e.g. `dashboard.failedToLoadTraffic`. Falls back to a generic title. */
   titleKey?: string
-  resetKey?: unknown
+  resetKey: unknown
 }
 
 interface TabErrorBoundaryState {
