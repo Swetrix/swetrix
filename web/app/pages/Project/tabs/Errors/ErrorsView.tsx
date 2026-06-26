@@ -568,8 +568,15 @@ function ErrorsDataResolver({
 }
 
 function ErrorsViewWrapper() {
+  const [searchParams] = useSearchParams()
+  const { errorsRefreshTrigger } = useRefreshTriggers()
+  const resetKey = `errors:${searchParams.toString()}:${errorsRefreshTrigger}`
+
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadErrors' resetKey='errors'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadErrors'
+      resetKey={resetKey}
+    >
       <Suspense fallback={<LoaderView />}>
         <ErrorsDataResolver>
           {(deferredData) => <ErrorsViewInner deferredData={deferredData} />}

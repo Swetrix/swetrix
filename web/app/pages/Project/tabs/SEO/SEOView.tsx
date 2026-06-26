@@ -1179,8 +1179,12 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
 }
 
 const SEOView = ({ projectId, tnMapping }: SEOViewProps) => {
+  const [searchParams] = useSearchParams()
+  const { seoRefreshTrigger } = useRefreshTriggers()
+  const resetKey = `seo:${projectId}:${searchParams.toString()}:${seoRefreshTrigger}`
+
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadSeo' resetKey='seo'>
+    <TabErrorBoundary titleKey='dashboard.failedToLoadSeo' resetKey={resetKey}>
       <React.Suspense
         fallback={
           <div className='flex min-h-[400px] items-center justify-center'>
