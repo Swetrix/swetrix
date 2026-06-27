@@ -216,8 +216,15 @@ function HasImportedIndicator() {
 }
 
 function TrafficViewWrapper(props: TrafficViewProps) {
+  const [searchParams] = useSearchParams()
+  const { trafficRefreshTrigger } = useRefreshTriggers()
+  const resetKey = `traffic:${searchParams.toString()}:${trafficRefreshTrigger}`
+
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadTraffic'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadTraffic'
+      resetKey={resetKey}
+    >
       <Suspense fallback={<LoaderView />}>
         <TrafficDataResolver>
           {(deferredData) => (

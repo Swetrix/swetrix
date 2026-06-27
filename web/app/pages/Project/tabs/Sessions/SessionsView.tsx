@@ -86,8 +86,15 @@ function SessionsDataResolver({
 }
 
 function SessionsViewWrapper(props: SessionsViewProps) {
+  const [searchParams] = useSearchParams()
+  const { sessionsRefreshTrigger } = useRefreshTriggers()
+  const resetKey = `sessions:${searchParams.toString()}:${sessionsRefreshTrigger}`
+
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadSessions'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadSessions'
+      resetKey={resetKey}
+    >
       <Suspense fallback={<LoaderView />}>
         <SessionsDataResolver>
           {(deferredData) => (

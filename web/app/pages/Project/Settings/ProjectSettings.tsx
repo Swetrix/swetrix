@@ -1,6 +1,3 @@
-import cx from 'clsx'
-import _filter from 'lodash/filter'
-import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 import _join from 'lodash/join'
@@ -8,7 +5,6 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
-import _toUpper from 'lodash/toUpper'
 import { Link } from '~/ui/Link'
 import {
   SlidersHorizontalIcon,
@@ -37,32 +33,24 @@ import {
 } from 'react-router'
 import { toast } from 'sonner'
 
-import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
-import { isSelfhosted, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
+import { isSelfhosted, isBrowser } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
 import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
 import Button from '~/ui/Button'
-import DatePicker from '~/ui/Datepicker'
-import Dropdown from '~/ui/Dropdown'
 import GoogleGSVG from '~/ui/icons/GoogleG'
 import GoogleSearchConsoleSVG from '~/ui/icons/GoogleSearchConsole'
 import HoldToConfirmButton from '~/ui/HoldToConfirmButton'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
-import MultiSelect from '~/ui/MultiSelect'
 import Select from '~/ui/Select'
 import { TabHeader } from '~/ui/TabHeader'
 import { Text } from '~/ui/Text'
-// Select is used inside tab components
-import countries from '~/utils/isoCountries'
 import routes from '~/utils/routes'
 import { isValidHttpUrl } from '~/utils/url'
-
-import CCRow from '../View/components/CCRow'
 
 import Annotations from './Annotations'
 import Emails from './Emails'
@@ -76,6 +64,7 @@ import Shields from './tabs/Shields'
 import ProjectAlerts from './Alerts/ProjectAlertsView'
 import NotificationChannels from '~/components/NotificationChannels/NotificationChannels'
 import BotProtectionReport from './components/BotProtectionReport'
+import DeleteDataModal from './components/DeleteDataModal'
 import DataImportTab from './components/DataImportTab'
 import ProxyDomainsTab from './components/ProxyDomainsTab'
 import SettingsSidebar, { SettingsTabConfig } from './SettingsSidebar'
@@ -86,241 +75,6 @@ const MAX_IPBLACKLIST_LENGTH = 300
 const AUTOSAVE_DEBOUNCE_MS = 700
 const CAPTCHA_CLIENT_DOCS_URL =
   'https://swetrix.com/docs/captcha/client-side-usage'
-
-const DELETE_DATA_MODAL_TABS = [
-  {
-    name: 'all',
-    title: 'project.settings.reseted.all',
-  },
-  {
-    name: 'partially',
-    title: 'project.settings.reseted.partially',
-  },
-  {
-    name: 'viaFilters',
-    title: 'project.settings.reseted.viaFilters',
-  },
-]
-
-interface ModalMessageProps {
-  dateRange: Date[]
-  setDateRange: (a: Date[]) => void
-  setTab: (i: string) => void
-  tab: string
-  pid: string
-  activeFilter: string[]
-  setActiveFilter: any
-  filterType: string
-  setFilterType: (a: string) => void
-  fetchFilters: (
-    projectId: string,
-    filterType: string,
-  ) => Promise<string[] | null>
-}
-
-const ModalMessage = ({
-  dateRange,
-  setDateRange,
-  setTab,
-  tab,
-  pid,
-  activeFilter,
-  setActiveFilter,
-  filterType,
-  setFilterType,
-  fetchFilters,
-}: ModalMessageProps) => {
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
-  const [filterList, setFilterList] = useState<string[]>([])
-  const [searchList, setSearchList] = useState<string[]>([])
-
-  const getFiltersList = async () => {
-    if (!_isEmpty(filterType)) {
-      const res = await fetchFilters(pid, filterType)
-      setFilterList(res || [])
-      setSearchList(res || [])
-      if (!_isEmpty(activeFilter)) {
-        setActiveFilter([])
-      }
-    }
-  }
-
-  useEffect(() => {
-    getFiltersList()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterType])
-
-  return (
-    <>
-      <Text
-        as='p'
-        size='sm'
-        className='mt-1 mb-4 text-gray-500 italic dark:text-gray-300'
-      >
-        {t('project.settings.resetHint')}
-      </Text>
-      <div className='mt-6'>
-        <nav className='-mb-px flex space-x-6'>
-          {_map(DELETE_DATA_MODAL_TABS, (tabDelete) => (
-            <button
-              key={tabDelete.name}
-              type='button'
-              onClick={() => setTab(tabDelete.name)}
-              className={cx(
-                'text-md border-b-2 px-1 pb-2 font-medium whitespace-nowrap',
-                {
-                  'border-indigo-500 text-indigo-600 dark:border-gray-50 dark:text-gray-50':
-                    tabDelete.name === tab,
-                  'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                    tab !== tabDelete.name,
-                },
-              )}
-            >
-              {t(tabDelete.title)}
-            </button>
-          ))}
-        </nav>
-      </div>
-      {tab === DELETE_DATA_MODAL_TABS[1].name ? (
-        <>
-          <Text
-            as='p'
-            size='sm'
-            className='mt-4 mb-2 text-gray-500 dark:text-gray-300'
-          >
-            {t('project.settings.reseted.partiallyDesc')}
-          </Text>
-          <Text
-            as='p'
-            size='sm'
-            className='mt-1 mb-2 text-gray-500 italic dark:text-gray-300'
-          >
-            {t('project.settings.reseted.partiallyHint')}
-          </Text>
-          <input
-            type='text'
-            aria-label={t('ariaLabels.dateRange')}
-            className='m-0 h-0 w-0 border-0 p-0 focus:border-transparent focus:text-transparent focus:shadow-none focus:ring-transparent'
-          />
-          <DatePicker
-            className='!mx-0 w-0'
-            onChange={(date) => setDateRange(date)}
-            options={{
-              altInputClass:
-                ' focus:ring-slate-900 dark:focus:ring-slate-300 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-slate-900 rounded-md',
-            }}
-            value={dateRange}
-          />
-        </>
-      ) : null}
-      {tab === DELETE_DATA_MODAL_TABS[0].name ? (
-        <Text
-          as='p'
-          size='sm'
-          className='mt-4 mb-4 text-gray-500 italic dark:text-gray-300'
-        >
-          {t('project.settings.reseted.allHint')}
-        </Text>
-      ) : null}
-      {tab === DELETE_DATA_MODAL_TABS[2].name ? (
-        <div className='min-h-[410px]'>
-          <Text
-            as='p'
-            size='sm'
-            className='mt-4 mb-4 text-gray-500 italic dark:text-gray-300'
-          >
-            {t('project.settings.reseted.viaFiltersHint')}
-          </Text>
-          <div>
-            <Dropdown
-              className='min-w-[160px]'
-              title={
-                !_isEmpty(filterType)
-                  ? t(`project.mapping.${filterType}`)
-                  : t('project.settings.reseted.selectFilters')
-              }
-              items={FILTERS_PANELS_ORDER}
-              labelExtractor={(item) => t(`project.mapping.${item}`)}
-              keyExtractor={(item) => item}
-              onSelect={(item) => setFilterType(item)}
-            />
-            <div className='h-2' />
-            {filterType && !_isEmpty(filterList) ? (
-              <MultiSelect
-                className='max-w-96'
-                items={searchList}
-                labelExtractor={(item) => {
-                  if (filterType === 'cc') {
-                    return <CCRow cc={item} language={language} />
-                  }
-
-                  return item
-                }}
-                itemExtractor={(item) => {
-                  if (filterType === 'cc') {
-                    return <CCRow cc={item} language={language} />
-                  }
-
-                  return item
-                }}
-                keyExtractor={(item) => item}
-                label={activeFilter}
-                onSearch={(search: string) => {
-                  if (search.length > 0) {
-                    if (filterType === 'cc') {
-                      setSearchList(
-                        _filter(filterList, (item) =>
-                          _includes(
-                            _toUpper(countries.getName(item, language)),
-                            _toUpper(search),
-                          ),
-                        ),
-                      )
-                      return
-                    }
-
-                    setSearchList(
-                      _filter(filterList, (item) =>
-                        _includes(_toUpper(item), _toUpper(search)),
-                      ),
-                    )
-                  } else {
-                    setSearchList(filterList)
-                  }
-                }}
-                placeholder={t('project.settings.reseted.filtersPlaceholder')}
-                onSelect={(item: string) =>
-                  setActiveFilter((oldItems: string[]) => {
-                    if (_includes(oldItems, item)) {
-                      return _filter(oldItems, (i) => i !== item)
-                    }
-                    return [...oldItems, item]
-                  })
-                }
-                onRemove={(item: string) =>
-                  setActiveFilter((oldItems: string[]) =>
-                    _filter(oldItems, (i) => i !== item),
-                  )
-                }
-              />
-            ) : (
-              <Text
-                as='p'
-                size='sm'
-                className='mt-4 mb-4 text-gray-500 italic dark:text-gray-300'
-              >
-                {t('project.settings.reseted.noFilters')}
-              </Text>
-            )}
-          </div>
-        </div>
-      ) : null}
-    </>
-  )
-}
 
 interface Form extends Partial<Omit<Project, 'brandKeywords'>> {
   origins: string | null
@@ -426,7 +180,6 @@ const ProjectSettings = () => {
   const fetcher = useFetcher<ProjectSettingsActionData>()
   const autosaveFetcher = useFetcher<ProjectSettingsActionData>()
   const gscFetcher = useFetcher<ProjectSettingsActionData>()
-  const { fetchFilters } = useFiltersProxy()
 
   const [project, setProject] = useState<Project>(initialProject)
   const [form, setForm] = useState<Form>(() =>
@@ -447,11 +200,8 @@ const ProjectSettings = () => {
   const [showDelete, setShowDelete] = useState(false)
   const [showReset, setShowReset] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [isResetting, setIsResetting] = useState(false)
   const [showTransfer, setShowTransfer] = useState(false)
   const [transferEmail, setTransferEmail] = useState('')
-  const [dateRange, setDateRange] = useState<Date[]>([])
-  const [tab, setTab] = useState(DELETE_DATA_MODAL_TABS[0].name)
   const [showProtected, setShowProtected] = useState(false)
   const lastSavedForm = useRef<Form>(getFormFromProject(initialProject))
   const lastHandledAutosaveData = useRef<ProjectSettingsActionData | null>(null)
@@ -698,10 +448,6 @@ const ProjectSettings = () => {
     )
   }, [captchaDifficulty, captchaDifficultyItems, captchaDifficultyMode])
 
-  // for reset data via filters
-  const [activeFilter, setActiveFilter] = useState<string[]>([])
-  const [filterType, setFilterType] = useState('')
-
   const botsProtectionLevels = useMemo(() => {
     return [
       {
@@ -890,13 +636,6 @@ const ProjectSettings = () => {
       } else if (intent === 'delete-project') {
         toast.success(t('project.settings.deleted'))
         navigate(routes.dashboard)
-      } else if (
-        intent === 'reset-project' ||
-        intent === 'delete-partially' ||
-        intent === 'reset-filters'
-      ) {
-        toast.success(t('project.settings.resetSuccess'))
-        setShowReset(false)
       } else if (intent === 'transfer-project') {
         toast.success(t('apiNotifications.transferRequestSent'))
         setShowTransfer(false)
@@ -918,15 +657,12 @@ const ProjectSettings = () => {
       }
 
       setIsDeleting(false)
-      setIsResetting(false)
     } else if (fetcher.data?.fieldErrors) {
       setErrors(fetcher.data.fieldErrors)
       setIsDeleting(false)
-      setIsResetting(false)
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
       setIsDeleting(false)
-      setIsResetting(false)
     }
   }, [fetcher.data, t, navigate, shouldHandleFetcherData])
 
@@ -938,37 +674,6 @@ const ProjectSettings = () => {
     setIsDeleting(true)
     const formData = new FormData()
     formData.set('intent', 'delete-project')
-    fetcher.submit(formData, { method: 'post' })
-  }
-
-  const onReset = (
-    resetTab: string,
-    dateRange?: Date[],
-    filterType?: string,
-    filterValue?: string[],
-  ) => {
-    if (fetcher.state === 'submitting') return
-
-    setIsResetting(true)
-    const formData = new FormData()
-
-    if (resetTab === 'all') {
-      formData.set('intent', 'reset-project')
-    } else if (resetTab === 'partially' && dateRange) {
-      formData.set('intent', 'delete-partially')
-      formData.set('from', dateRange[0]?.toISOString() || '')
-      formData.set('to', dateRange[1]?.toISOString() || '')
-    } else if (
-      resetTab === 'viaFilters' &&
-      filterType &&
-      filterValue &&
-      filterValue.length > 0
-    ) {
-      formData.set('intent', 'reset-filters')
-      formData.set('type', filterType)
-      formData.set('value', JSON.stringify(filterValue))
-    }
-
     fetcher.submit(formData, { method: 'post' })
   }
 
@@ -988,29 +693,6 @@ const ProjectSettings = () => {
     const formData = new FormData()
     formData.set('intent', 'regenerate-captcha-key')
     fetcher.submit(formData, { method: 'post' })
-  }
-
-  const handleReset = () => {
-    if (fetcher.state === 'submitting') return
-
-    if (tab === DELETE_DATA_MODAL_TABS[1].name) {
-      if (_isEmpty(dateRange) || !dateRange[0] || !dateRange[1]) {
-        toast.error(t('project.settings.noDateRange'))
-        return
-      }
-      setShowReset(false)
-      onReset('partially', dateRange)
-    } else if (tab === DELETE_DATA_MODAL_TABS[2].name) {
-      if (_isEmpty(activeFilter) || _isEmpty(filterType)) {
-        toast.error(t('project.settings.noFilters'))
-        return
-      }
-      setShowReset(false)
-      onReset('viaFilters', undefined, filterType, activeFilter)
-    } else if (tab === DELETE_DATA_MODAL_TABS[0].name) {
-      setShowReset(false)
-      onReset('all')
-    }
   }
 
   const getValidationErrors = useCallback(
@@ -1861,7 +1543,7 @@ const ProjectSettings = () => {
                   setShowReset={setShowReset}
                   setShowDelete={setShowDelete}
                   isDeleting={isDeleting}
-                  setResetting={isResetting}
+                  isResetting={false}
                 />
               </form>
             ) : null}
@@ -1884,35 +1566,10 @@ const ProjectSettings = () => {
         type='error'
         isOpened={showDelete}
       />
-      <Modal
+      <DeleteDataModal
+        pid={id}
+        isOpen={showReset}
         onClose={() => setShowReset(false)}
-        customButtons={
-          <HoldToConfirmButton
-            onConfirm={handleReset}
-            className='w-full justify-center sm:w-auto'
-          >
-            {t('common.holdToReset')}
-          </HoldToConfirmButton>
-        }
-        size='large'
-        closeText={t('common.close')}
-        title={t('project.settings.qReset')}
-        message={
-          <ModalMessage
-            setDateRange={setDateRange}
-            dateRange={dateRange}
-            setTab={setTab}
-            tab={tab}
-            pid={id}
-            activeFilter={activeFilter}
-            setActiveFilter={setActiveFilter}
-            filterType={filterType}
-            setFilterType={setFilterType}
-            fetchFilters={fetchFilters}
-          />
-        }
-        type='error'
-        isOpened={showReset}
       />
       <Modal
         onClose={() => {

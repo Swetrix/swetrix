@@ -32,7 +32,7 @@ interface DangerZoneProps {
   setShowReset: (show: boolean) => void
   setShowDelete: (show: boolean) => void
   isDeleting: boolean
-  setResetting: boolean
+  isResetting: boolean
 }
 
 const DangerZone = ({
@@ -42,7 +42,7 @@ const DangerZone = ({
   setShowReset,
   setShowDelete,
   isDeleting,
-  setResetting,
+  isResetting,
 }: DangerZoneProps) => {
   const { t } = useTranslation('common')
 
@@ -89,8 +89,8 @@ const DangerZone = ({
               <Button
                 variant='danger-outline'
                 type='button'
-                onClick={() => !setResetting && setShowReset(true)}
-                loading={setResetting}
+                onClick={() => !isResetting && setShowReset(true)}
+                loading={isResetting}
               >
                 {t('project.settings.reset')}
               </Button>

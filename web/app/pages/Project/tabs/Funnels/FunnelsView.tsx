@@ -99,6 +99,7 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
   const funnelActionLoading = fetcher.state !== 'idle'
   const analyticsLoading = revalidator.state === 'loading'
   const hasFunnels = !_isEmpty(project?.funnels)
+  const resetKey = `funnels:${searchParams.toString()}:${funnelsRefreshTrigger}`
 
   const clearActiveFunnel = useCallback(() => {
     const nextSearchParams = new URLSearchParams(searchParams.toString())
@@ -258,7 +259,10 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
   }, [funnelsRefreshTrigger, revalidator])
 
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadFunnels'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadFunnels'
+      resetKey={resetKey}
+    >
       <DashboardHeader
         showLiveVisitors
         hideTimeBucket

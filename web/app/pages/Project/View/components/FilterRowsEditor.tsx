@@ -23,7 +23,7 @@ import {
   FILTERS_PANELS_ORDER,
   ERRORS_FILTERS_PANELS_ORDER,
 } from '~/lib/constants'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import { useOptionalCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import FilterValueInput, {
   filterCategoryIcons,
@@ -56,6 +56,9 @@ interface FilterRowsEditorProps {
   resetKey?: string
   prefetchOnOpen?: boolean
   showCurrentFilters?: boolean
+  // Explicit project id for use outside CurrentProjectProvider (e.g. Settings).
+  // Falls back to the surrounding provider's project when omitted.
+  projectId?: string
 }
 
 const EMPTY_FILTERS: FilterType[] = []
@@ -293,8 +296,10 @@ const FilterRowsEditor = ({
   resetKey,
   prefetchOnOpen,
   showCurrentFilters,
+  projectId,
 }: FilterRowsEditorProps) => {
-  const { id } = useCurrentProject()
+  const currentProject = useOptionalCurrentProject()
+  const id = projectId ?? currentProject?.id ?? ''
   const { theme } = useTheme()
   const {
     t,

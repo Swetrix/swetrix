@@ -362,3 +362,8 @@ export const useCurrentProject = () => {
 
   return context
 }
+
+// Non-throwing variant for components that may render outside the provider
+// (e.g. reused inside the project Settings page). Returns undefined when there
+// is no surrounding CurrentProjectProvider.
+export const useOptionalCurrentProject = () => useContext(CurrentProjectContext)

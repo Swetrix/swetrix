@@ -80,8 +80,15 @@ const getReplayMetadata = (
 })
 
 function ReplaysViewWrapper(props: ReplaysViewProps) {
+  const [searchParams] = useSearchParams()
+  const { replaysRefreshTrigger } = useRefreshTriggers()
+  const resetKey = `replays:${searchParams.toString()}:${replaysRefreshTrigger}`
+
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadReplays'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadReplays'
+      resetKey={resetKey}
+    >
       <Suspense fallback={<LoaderView />}>
         <ReplaysDataResolver>
           {(deferredData) => (

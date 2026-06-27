@@ -119,8 +119,15 @@ function PerfDataResolver({
 }
 
 function PerformanceViewWrapper(props: PerformanceViewProps) {
+  const [searchParams] = useSearchParams()
+  const { performanceRefreshTrigger } = useRefreshTriggers()
+  const resetKey = `performance:${searchParams.toString()}:${performanceRefreshTrigger}`
+
   return (
-    <TabErrorBoundary titleKey='dashboard.failedToLoadPerformance'>
+    <TabErrorBoundary
+      titleKey='dashboard.failedToLoadPerformance'
+      resetKey={resetKey}
+    >
       <Suspense fallback={<LoaderView />}>
         <PerfDataResolver>
           {(deferredData) => (
