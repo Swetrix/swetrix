@@ -1548,42 +1548,46 @@ export class AnalyticsService {
       1,
       Math.ceil(spanSeconds / DELETION_TIMELINE_BUCKETS),
     )
+    const bucketMs = bucketSeconds * 1000
+
+    // Anchor buckets to the epoch-aligned start of the window, then bucket on
+    // absolute unix time. Matching by integer index (rather than a formatted
+    // timestamp string) keeps this correct no matter how `created`'s timezone
+    // is rendered in the query result.
+    const originMs = Math.floor(fromMs / bucketMs) * bucketMs
+    const originSeconds = Math.floor(originMs / 1000)
+
+    const x: string[] = []
+    for (
+      let ms = originMs;
+      ms <= toMs && x.length < DELETION_TIMELINE_MAX_POINTS;
+      ms += bucketMs
+    ) {
+      x.push(dayjs.utc(ms).format('YYYY-MM-DD HH:mm:ss'))
+    }
+
+    const counts = new Array<number>(x.length).fill(0)
 
     const { data: rows } = await clickhouse
       .query({
         query: `
           SELECT
-            toStartOfInterval(created, INTERVAL {bucketSeconds:UInt32} SECOND) AS t,
+            intDiv(toInt64(toUnixTimestamp(created)) - {originSeconds:Int64}, {bucketSeconds:UInt32}) AS bucketIndex,
             count() AS c
           FROM events
           WHERE ${whereClause}
-          GROUP BY t
-          ORDER BY t
+          GROUP BY bucketIndex
+          ORDER BY bucketIndex
         `,
-        query_params: { ...baseParams, bucketSeconds },
+        query_params: { ...baseParams, originSeconds, bucketSeconds },
       })
-      .then((resultSet) => resultSet.json<{ t: string; c: string }>())
+      .then((resultSet) => resultSet.json<{ bucketIndex: string; c: string }>())
 
-    const bucketed = new Map<string, number>()
     for (const row of rows) {
-      bucketed.set(row.t, Number(row.c) || 0)
-    }
-
-    // toStartOfInterval aligns buckets to multiples of the interval since the
-    // unix epoch, so align our JS walk the same way and fill empty buckets.
-    const bucketMs = bucketSeconds * 1000
-    const startMs = Math.floor(fromMs / bucketMs) * bucketMs
-    const x: string[] = []
-    const counts: number[] = []
-
-    for (
-      let ms = startMs;
-      ms <= toMs && x.length < DELETION_TIMELINE_MAX_POINTS;
-      ms += bucketMs
-    ) {
-      const key = dayjs.utc(ms).format('YYYY-MM-DD HH:mm:ss')
-      x.push(key)
-      counts.push(bucketed.get(key) ?? 0)
+      const index = Number(row.bucketIndex)
+      if (index >= 0 && index < counts.length) {
+        counts[index] = Number(row.c) || 0
+      }
     }
 
     return { x, counts }
