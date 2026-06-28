@@ -20,15 +20,18 @@ const ForgotPassword = () => {
   const { t } = useTranslation('common')
   const navigation = useNavigation()
   const actionData = useActionData<ForgotPasswordActionData>()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const isSubmitting = navigation.state === 'submitting'
 
   useEffect(() => {
     if (searchParams.get('password_reset_sent') === 'true') {
       toast.success(t('auth.forgot.sent'))
+      const nextSearchParams = new URLSearchParams(searchParams)
+      nextSearchParams.delete('password_reset_sent')
+      setSearchParams(nextSearchParams, { replace: true })
     }
-  }, [searchParams, t])
+  }, [searchParams, setSearchParams, t])
 
   useEffect(() => {
     if (actionData?.error) {

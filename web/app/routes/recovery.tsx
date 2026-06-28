@@ -11,6 +11,7 @@ import { SitemapFunction } from 'remix-sitemap'
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
 import { getOgImageUrl } from '~/lib/constants'
 import ForgotPassword from '~/pages/Auth/ForgotPassword'
+import routes from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { isValidEmail } from '~/utils/validator'
 
@@ -82,7 +83,7 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  return redirect('/?password_reset_sent=true')
+  return redirect(`${routes.reset_password}?password_reset_sent=true`)
 }
 
 export default function Index() {

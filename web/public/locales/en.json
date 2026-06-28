@@ -721,7 +721,7 @@
       "updated": "Your password has been updated"
     },
     "forgot": {
-      "sent": "A password reset e-mail has been sent to the specified address",
+      "sent": "If an account exists for that email address, you'll receive password reset instructions shortly.",
       "reset": "Reset password"
     },
     "signin": {
