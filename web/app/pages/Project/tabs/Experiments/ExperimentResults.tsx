@@ -1237,36 +1237,6 @@ const ExperimentResults = ({
             {completeExperimentButton}
           </div>
         ) : null}
-        {results.hasWinner && results.winnerKey ? (
-          <div className='flex w-full items-center gap-3 rounded-md border border-green-300 bg-green-50 px-3 py-2 dark:border-green-700 dark:bg-green-900/20'>
-            <TrophyIcon
-              className='size-5 text-green-600 dark:text-green-400'
-              weight='duotone'
-            />
-            <div>
-              <Text
-                as='p'
-                weight='semibold'
-                size='sm'
-                className='text-green-800 dark:text-green-200'
-              >
-                {t('experiments.winnerFound')}
-              </Text>
-              <Text
-                as='p'
-                size='xs'
-                className='text-green-700 dark:text-green-200'
-              >
-                {t('experiments.winnerDescription', {
-                  variant:
-                    results.variants.find((v) => v.key === results.winnerKey)
-                      ?.name || results.winnerKey,
-                })}
-              </Text>
-            </div>
-          </div>
-        ) : null}
-
         <div className='flex flex-col gap-3 lg:flex-row'>
           <div className='w-full lg:w-[65%]'>
             <WinProbabilityChart
