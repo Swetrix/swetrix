@@ -144,6 +144,12 @@ const MAX_FILTER_VALUES = 100
 
 // Event types that can be targeted by the data-deletion tool.
 const DELETABLE_EVENT_TYPES = [...DATA_DELETION_EVENT_TYPES]
+// The subset that actually lives in the `events` table. Session replays are
+// stored separately (session_replay_chunks + object storage), so they are
+// counted and deleted on their own path.
+const EVENT_TABLE_DELETION_TYPES = DELETABLE_EVENT_TYPES.filter(
+  (type) => type !== 'session_replay',
+)
 // Sentinel bounds used when no explicit date range is given, so that
 // session-scoped filters (entry/exit page, referrer) still resolve.
 const DELETION_MIN_DATE = '2000-01-01 00:00:00'
@@ -1660,7 +1666,7 @@ export class AnalyticsService {
 
     const params: Record<string, unknown> = {
       pid,
-      types: DELETABLE_EVENT_TYPES,
+      types: EVENT_TABLE_DELETION_TYPES,
       groupFrom: from || DELETION_MIN_DATE,
       groupTo: to || DELETION_MAX_DATE,
       ...filtersParams,
@@ -1704,6 +1710,21 @@ export class AnalyticsService {
       }
     }
 
+    // Session replays aren't rows in the `events` table, so count them
+    // separately using the same date range + (filter-resolved) sessions.
+    const replayCount = await this.countMatchingSessionReplays(
+      pid,
+      filtersQuery,
+      filtersParams,
+      from,
+      to,
+      dateRange.condition,
+    )
+    if (replayCount > 0) {
+      counts.session_replay = replayCount
+      total += replayCount
+    }
+
     if (total === 0) {
       return { counts: {}, total: 0, timeline: { x: [], counts: [] } }
     }
@@ -1723,6 +1744,114 @@ export class AnalyticsService {
     )
 
     return { counts, total, timeline }
+  }
+
+  // session_replay_chunks carries no traffic columns, so when field filters are
+  // present the matching sessions are resolved from the `events` table by psid.
+  // The clause is shared by the preview count and the actual deletion so that
+  // what the user previews is exactly what gets removed.
+  private buildSessionReplayDeletionWhere(
+    filtersQuery: string,
+    dateCondition: string,
+  ): string {
+    const psidFilter = _isEmpty(filtersQuery)
+      ? ''
+      : `AND psid IN (SELECT DISTINCT psid FROM events WHERE pid = {pid:FixedString(12)} ${dateCondition} ${filtersQuery})`
+
+    return `pid = {pid:FixedString(12)} ${dateCondition} ${psidFilter}`
+  }
+
+  private buildSessionReplayDeletionParams(
+    pid: string,
+    filtersParams: Record<string, unknown>,
+    from: string | null,
+    to: string | null,
+  ): Record<string, unknown> {
+    return {
+      pid,
+      groupFrom: from || DELETION_MIN_DATE,
+      groupTo: to || DELETION_MAX_DATE,
+      ...filtersParams,
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
+    }
+  }
+
+  private async countMatchingSessionReplays(
+    pid: string,
+    filtersQuery: string,
+    filtersParams: Record<string, unknown>,
+    from: string | null,
+    to: string | null,
+    dateCondition: string,
+  ): Promise<number> {
+    if (!this.sessionReplayStorage.isConfigured()) {
+      return 0
+    }
+
+    const where = this.buildSessionReplayDeletionWhere(
+      filtersQuery,
+      dateCondition,
+    )
+
+    const { data } = await clickhouse
+      .query({
+        query: `SELECT count(DISTINCT replayId) AS c FROM session_replay_chunks WHERE ${where}`,
+        query_params: this.buildSessionReplayDeletionParams(
+          pid,
+          filtersParams,
+          from,
+          to,
+        ),
+      })
+      .then((resultSet) => resultSet.json<{ c: string }>())
+
+    return Number(data[0]?.c) || 0
+  }
+
+  // Removes every replay matching the deletion query: first the object-storage
+  // payloads, then the chunk rows. Mirrors deleteSessionReplay's two-step delete.
+  private async deleteMatchingSessionReplays(
+    pid: string,
+    filtersQuery: string,
+    filtersParams: Record<string, unknown>,
+    from: string | null,
+    to: string | null,
+    dateCondition: string,
+  ): Promise<void> {
+    if (!this.sessionReplayStorage.isConfigured()) {
+      return
+    }
+
+    const where = this.buildSessionReplayDeletionWhere(
+      filtersQuery,
+      dateCondition,
+    )
+    const params = this.buildSessionReplayDeletionParams(
+      pid,
+      filtersParams,
+      from,
+      to,
+    )
+
+    const { data: chunks } = await clickhouse
+      .query({
+        query: `SELECT DISTINCT objectKey FROM session_replay_chunks WHERE ${where}`,
+        query_params: params,
+      })
+      .then((resultSet) => resultSet.json<{ objectKey: string }>())
+
+    const objectKeys = chunks.map((chunk) => chunk.objectKey).filter(Boolean)
+
+    await mapLimit(objectKeys, SESSION_REPLAY_CHUNK_FETCH_CONCURRENCY, (key) =>
+      this.sessionReplayStorage.deleteObject(key),
+    )
+
+    await clickhouse.command({
+      query: `ALTER TABLE session_replay_chunks DELETE WHERE ${where}`,
+      query_params: params,
+      clickhouse_settings: { mutations_sync: '2' },
+    })
   }
 
   private getDataDeletionDateRange(from: string | null, to: string | null) {
@@ -1817,6 +1946,10 @@ export class AnalyticsService {
       throw new BadRequestException('No event types selected for deletion')
     }
 
+    const eventTableTypes = _filter(safeTypes, (type) =>
+      _includes(EVENT_TABLE_DELETION_TYPES, type),
+    )
+
     const [filtersQuery, filtersParams] = this.getFiltersQuery(
       filters,
       DataType.ANALYTICS,
@@ -1828,7 +1961,7 @@ export class AnalyticsService {
 
     const params: Record<string, unknown> = {
       pid,
-      types: safeTypes,
+      types: eventTableTypes,
       groupFrom: from || DELETION_MIN_DATE,
       groupTo: to || DELETION_MAX_DATE,
       ...filtersParams,
@@ -1836,31 +1969,48 @@ export class AnalyticsService {
       ...(to ? { to } : {}),
     }
 
-    const commands: Promise<unknown>[] = [
-      clickhouse.command({
-        query: `ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateRange.condition} ${filtersQuery}`,
-        query_params: params,
-        clickhouse_settings: { mutations_sync: '2' },
-      }),
-    ]
+    const commands: Promise<unknown>[] = []
 
-    // error_statuses carries no traffic columns, so it can only be cleared when
-    // no field filters are applied (a full reset or a plain date-range reset).
-    if (_includes(safeTypes, 'error') && _isEmpty(filtersQuery)) {
+    if (!_isEmpty(eventTableTypes)) {
       commands.push(
         clickhouse.command({
-          query: `ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} ${dateRange.condition}`,
-          query_params: {
-            pid,
-            ...(from ? { from } : {}),
-            ...(to ? { to } : {}),
-          },
+          query: `ALTER TABLE events DELETE WHERE pid = {pid:FixedString(12)} AND type IN ({types:Array(String)}) ${dateRange.condition} ${filtersQuery}`,
+          query_params: params,
           clickhouse_settings: { mutations_sync: '2' },
         }),
       )
+
+      // error_statuses carries no traffic columns, so it can only be cleared
+      // when no field filters are applied (a full or plain date-range reset).
+      if (_includes(safeTypes, 'error') && _isEmpty(filtersQuery)) {
+        commands.push(
+          clickhouse.command({
+            query: `ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} ${dateRange.condition}`,
+            query_params: {
+              pid,
+              ...(from ? { from } : {}),
+              ...(to ? { to } : {}),
+            },
+            clickhouse_settings: { mutations_sync: '2' },
+          }),
+        )
+      }
     }
 
     await Promise.all(commands)
+
+    // Session replays live in their own table + object storage, so they are
+    // removed on a dedicated path after the events-table mutations settle.
+    if (_includes(safeTypes, 'session_replay')) {
+      await this.deleteMatchingSessionReplays(
+        pid,
+        filtersQuery,
+        filtersParams,
+        from,
+        to,
+        dateRange.condition,
+      )
+    }
   }
 
   derivePsidFromInputs(

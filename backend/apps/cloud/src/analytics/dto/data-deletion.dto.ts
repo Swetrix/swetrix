@@ -16,6 +16,9 @@ export const DATA_DELETION_EVENT_TYPES = [
   'error',
   'performance',
   'captcha',
+  // Session replays live in a separate table (session_replay_chunks) + object
+  // storage rather than the `events` table; deletion is handled specially.
+  'session_replay',
 ] as const
 
 export type DataDeletionEventType = (typeof DATA_DELETION_EVENT_TYPES)[number]
@@ -64,7 +67,7 @@ export class DataDeletionDto extends DataDeletionPreviewDto {
     type: [String],
     enum: DATA_DELETION_EVENT_TYPES,
     description:
-      "Event types to delete. Any of: 'pageview', 'custom_event', 'error', 'performance', 'captcha'.",
+      "Event types to delete. Any of: 'pageview', 'custom_event', 'error', 'performance', 'captcha', 'session_replay'.",
   })
   @IsArray()
   @ArrayNotEmpty()

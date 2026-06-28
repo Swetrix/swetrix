@@ -1,3 +1,12 @@
+import {
+  CheckIcon,
+  CursorClickIcon,
+  EyeIcon,
+  GaugeIcon,
+  MonitorPlayIcon,
+  ShieldCheckIcon,
+  WarningIcon,
+} from '@phosphor-icons/react'
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -6,10 +15,12 @@ import { toast } from 'sonner'
 
 import type { DataDeletionPreview } from '~/api/api.server'
 import { useDataDeletionPreviewProxy } from '~/hooks/useAnalyticsProxy'
+import { isSelfhosted } from '~/lib/constants'
 import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
 import DatePicker from '~/ui/Datepicker'
 import HoldToConfirmButton from '~/ui/HoldToConfirmButton'
 import Modal from '~/ui/Modal'
+import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
 import FilterRowsEditor from '../../View/components/FilterRowsEditor'
@@ -27,19 +38,49 @@ const PERIODS: { key: PeriodKey; labelKey: string }[] = [
   { key: 'custom', labelKey: 'project.settings.deleteData.periods.custom' },
 ]
 
-// Order mirrors how prominent each type is for a typical cleanup.
-const EVENT_TYPES: { key: string; labelKey: string }[] = [
-  { key: 'pageview', labelKey: 'project.settings.deleteData.types.pageview' },
+interface EventType {
+  key: string
+  labelKey: string
+  Icon: React.ElementType
+}
+
+// Order mirrors how prominent each type is for a typical cleanup. Session
+// replays are cloud-only — self-hosted has no replay storage.
+const EVENT_TYPES: EventType[] = [
+  {
+    key: 'pageview',
+    labelKey: 'project.settings.deleteData.types.pageview',
+    Icon: EyeIcon,
+  },
   {
     key: 'custom_event',
     labelKey: 'project.settings.deleteData.types.custom_event',
+    Icon: CursorClickIcon,
   },
-  { key: 'error', labelKey: 'project.settings.deleteData.types.error' },
+  {
+    key: 'error',
+    labelKey: 'project.settings.deleteData.types.error',
+    Icon: WarningIcon,
+  },
   {
     key: 'performance',
     labelKey: 'project.settings.deleteData.types.performance',
+    Icon: GaugeIcon,
   },
-  { key: 'captcha', labelKey: 'project.settings.deleteData.types.captcha' },
+  {
+    key: 'captcha',
+    labelKey: 'project.settings.deleteData.types.captcha',
+    Icon: ShieldCheckIcon,
+  },
+  ...(isSelfhosted
+    ? []
+    : [
+        {
+          key: 'session_replay',
+          labelKey: 'project.settings.deleteData.types.session_replay',
+          Icon: MonitorPlayIcon,
+        },
+      ]),
 ]
 
 const DEFAULT_TYPES = ['pageview', 'custom_event']
@@ -74,6 +115,20 @@ const computeRange = (period: PeriodKey, customRange: Date[]): DateRange => {
   }
 }
 
+// Small uppercase section heading, matching the rest of the settings UI.
+const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+  <Text
+    as='p'
+    size='xs'
+    weight='medium'
+    colour='muted'
+    tracking='wide'
+    className='uppercase'
+  >
+    {children}
+  </Text>
+)
+
 // Lightweight, dependency-free sparkline of the matching events over time.
 // Bars read as "the data you're about to delete", so they're tinted red.
 const MatchingTimeline = ({
@@ -91,7 +146,7 @@ const MatchingTimeline = ({
   return (
     <div
       className={cn(
-        'flex h-16 items-end gap-px border-b border-gray-200 transition-opacity duration-200 dark:border-slate-800',
+        'flex h-14 items-end gap-px transition-opacity duration-200',
         loading && counts.length ? 'opacity-40' : 'opacity-100',
       )}
     >
@@ -111,7 +166,7 @@ const MatchingTimeline = ({
               title={label || undefined}
             >
               <div
-                className='absolute inset-x-0 bottom-0 rounded-sm bg-red-400/80 transition-[height] duration-200 ease-out dark:bg-red-500/70'
+                className='absolute inset-x-0 bottom-0 rounded-sm bg-red-400/80 transition-[height] duration-200 ease-out dark:bg-red-500/60'
                 style={{
                   height: count > 0 ? `max(2px, ${ratio * 100}%)` : '0px',
                 }}
@@ -123,6 +178,92 @@ const MatchingTimeline = ({
     </div>
   )
 }
+
+// A single togglable row in the breakdown: check indicator, icon, label and a
+// right-aligned count. Replaces the old pill/badge cluster.
+const TypeRow = ({
+  Icon,
+  label,
+  count,
+  selected,
+  disabled,
+  loading,
+  onToggle,
+  language,
+}: {
+  Icon: React.ElementType
+  label: string
+  count: number
+  selected: boolean
+  disabled: boolean
+  loading: boolean
+  onToggle: () => void
+  language: string
+}) => (
+  <button
+    type='button'
+    aria-pressed={selected}
+    disabled={disabled}
+    onClick={onToggle}
+    className={cn(
+      'group flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors',
+      disabled
+        ? 'cursor-not-allowed'
+        : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-900/50',
+    )}
+  >
+    <span
+      aria-hidden
+      className={cn(
+        'flex size-4 shrink-0 items-center justify-center rounded-[5px] ring-1 transition-colors ring-inset',
+        disabled
+          ? 'bg-gray-100 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800'
+          : selected
+            ? 'bg-slate-900 ring-slate-900 dark:bg-slate-100 dark:ring-slate-100'
+            : 'bg-white ring-gray-300 group-hover:ring-gray-400 dark:bg-slate-950 dark:ring-slate-700/80 dark:group-hover:ring-slate-600',
+      )}
+    >
+      {selected && !disabled ? (
+        <CheckIcon
+          weight='bold'
+          className='size-3 text-white dark:text-slate-900'
+        />
+      ) : null}
+    </span>
+    <Icon
+      weight='regular'
+      className={cn(
+        'size-4 shrink-0',
+        disabled
+          ? 'text-gray-300 dark:text-slate-700'
+          : 'text-gray-400 dark:text-slate-500',
+      )}
+    />
+    <span
+      className={cn(
+        'flex-1 truncate text-sm',
+        disabled
+          ? 'text-gray-400 dark:text-slate-600'
+          : 'font-medium text-gray-700 dark:text-gray-200',
+      )}
+    >
+      {label}
+    </span>
+    <span
+      className={cn(
+        'text-sm tabular-nums transition-opacity duration-200',
+        loading && 'opacity-40',
+        disabled
+          ? 'text-gray-300 dark:text-slate-700'
+          : selected
+            ? 'font-semibold text-gray-900 dark:text-gray-50'
+            : 'text-gray-400 line-through dark:text-slate-600',
+      )}
+    >
+      {count.toLocaleString(language)}
+    </span>
+  </button>
+)
 
 interface DeleteDataModalProps {
   pid: string
@@ -225,7 +366,7 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
 
   const countFor = (type: string) => preview?.counts?.[type] ?? 0
 
-  // Until the user touches a chip, default to every type that actually matches.
+  // Until the user touches a row, default to every type that actually matches.
   const autoTypes = useMemo(() => {
     const matching = EVENT_TYPES.filter((type) => countFor(type.key) > 0).map(
       (type) => type.key,
@@ -278,18 +419,30 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
     fetcher.submit(formData, { method: 'post' })
   }
 
-  const rangeSummary = useMemo(() => {
+  const rangeCaption = useMemo(() => {
     if (period === 'all') {
-      return t('project.settings.deleteData.summaryAllTime')
+      return t('project.settings.deleteData.allTime')
     }
     if (range.from && range.to) {
-      return t('project.settings.deleteData.summaryRange', {
-        from: dayjs(range.from).format('MMM D, YYYY'),
-        to: dayjs(range.to).format('MMM D, YYYY'),
-      })
+      return `${dayjs(range.from).format('MMM D, YYYY')} – ${dayjs(range.to).format('MMM D, YYYY')}`
     }
     return ''
   }, [period, range.from, range.to, t])
+
+  const showBreakdown =
+    range.ready && !previewError && Boolean(preview) && hasAnyMatch
+
+  // What to show when there's nothing to break down (loading / empty / error).
+  const statusMessage = previewError
+    ? { text: t('project.settings.deleteData.previewError'), tone: 'error' }
+    : !range.ready
+      ? {
+          text: t('project.settings.deleteData.customRangePrompt'),
+          tone: 'mut',
+        }
+      : !preview
+        ? { text: t('project.settings.deleteData.calculating'), tone: 'mut' }
+        : { text: t('project.settings.deleteData.noMatch'), tone: 'mut' }
 
   return (
     <Modal
@@ -314,17 +467,17 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
         </HoldToConfirmButton>
       }
       message={
-        <div className='space-y-5'>
+        <div className='space-y-6'>
           <p className='text-sm text-gray-500 dark:text-gray-400'>
             {t('project.settings.deleteData.intro')}
           </p>
 
           {/* Date range */}
-          <div className='space-y-2'>
-            <p className='text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400'>
+          <div className='space-y-2.5'>
+            <SectionLabel>
               {t('project.settings.deleteData.dateRange')}
-            </p>
-            <div className='inline-flex flex-wrap gap-1 rounded-lg bg-gray-100 p-1 dark:bg-slate-900'>
+            </SectionLabel>
+            <div className='flex flex-wrap gap-1 rounded-lg bg-gray-100 p-1 dark:bg-slate-900'>
               {PERIODS.map(({ key, labelKey }) => (
                 <button
                   key={key}
@@ -353,10 +506,10 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
           </div>
 
           {/* Filters */}
-          <div className='space-y-2'>
-            <p className='text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400'>
+          <div className='space-y-2.5'>
+            <SectionLabel>
               {t('project.settings.deleteData.matching')}
-            </p>
+            </SectionLabel>
             <FilterRowsEditor
               active={isOpen}
               projectId={pid}
@@ -364,86 +517,80 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
               tnMapping={EMPTY_TN_MAPPING}
               onChange={setFilters}
             />
-            <p className='text-xs text-gray-400 dark:text-gray-500'>
+            <Text as='p' size='xs' colour='muted' className='leading-relaxed'>
               {t('project.settings.deleteData.filtersHint')}
-            </p>
+            </Text>
           </div>
 
           {/* Preview */}
-          <div className='rounded-lg border border-gray-200 bg-gray-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/40'>
-            <MatchingTimeline
-              timeline={preview?.timeline}
-              loading={previewLoading}
-              language={language}
-            />
-
-            <div className='mt-3 flex items-baseline gap-2'>
-              {previewError ? (
-                <span className='text-sm text-red-600 dark:text-red-400'>
-                  {t('project.settings.deleteData.previewError')}
-                </span>
-              ) : !range.ready ? (
-                <span className='text-sm text-gray-500 dark:text-gray-400'>
-                  {t('project.settings.deleteData.customRangePrompt')}
-                </span>
-              ) : preview && !hasAnyMatch ? (
-                <span className='text-sm text-gray-500 dark:text-gray-400'>
-                  {t('project.settings.deleteData.noMatch')}
-                </span>
-              ) : !preview ? (
-                <span className='text-sm text-gray-400 dark:text-gray-500'>
-                  {t('project.settings.deleteData.calculating')}
-                </span>
-              ) : (
+          <div className='space-y-2.5'>
+            <SectionLabel>
+              {t('project.settings.deleteData.breakdownTitle')}
+            </SectionLabel>
+            <div className='overflow-hidden rounded-xl border border-gray-200 dark:border-slate-800'>
+              {showBreakdown ? (
                 <>
-                  <span
-                    className={cn(
-                      'text-2xl font-bold text-red-600 tabular-nums transition-opacity dark:text-red-400',
-                      previewLoading && !preview ? 'opacity-40' : 'opacity-100',
-                    )}
-                  >
-                    {selectedTotal.toLocaleString(language)}
-                  </span>
-                  <span className='text-sm text-gray-500 dark:text-gray-400'>
-                    {t('project.settings.deleteData.willDelete')}
-                    {rangeSummary ? ` · ${rangeSummary}` : ''}
-                  </span>
-                </>
-              )}
-            </div>
+                  <div className='space-y-1.5 px-3.5 pt-3.5 pb-3'>
+                    <MatchingTimeline
+                      timeline={preview?.timeline}
+                      loading={previewLoading}
+                      language={language}
+                    />
+                    {rangeCaption ? (
+                      <Text as='p' size='xs' colour='muted'>
+                        {rangeCaption}
+                      </Text>
+                    ) : null}
+                  </div>
 
-            {/* Per-type breakdown / toggles */}
-            {preview && hasAnyMatch ? (
-              <div className='mt-3 flex flex-wrap gap-1.5'>
-                {EVENT_TYPES.map((type) => {
-                  const count = countFor(type.key)
-                  const isSelected = selectedTypes.has(type.key)
-                  const isEmpty = count === 0
+                  <div className='divide-y divide-gray-100 border-t border-gray-200 dark:divide-slate-800/60 dark:border-slate-800'>
+                    {EVENT_TYPES.map((type) => {
+                      const count = countFor(type.key)
+                      return (
+                        <TypeRow
+                          key={type.key}
+                          Icon={type.Icon}
+                          label={t(type.labelKey)}
+                          count={count}
+                          selected={selectedTypes.has(type.key)}
+                          disabled={count === 0}
+                          loading={previewLoading}
+                          onToggle={() => toggleType(type.key)}
+                          language={language}
+                        />
+                      )
+                    })}
+                  </div>
 
-                  return (
-                    <button
-                      key={type.key}
-                      type='button'
-                      onClick={() => toggleType(type.key)}
-                      disabled={isEmpty}
+                  <div className='flex items-center justify-between border-t border-gray-200 bg-gray-50/70 px-3.5 py-3 dark:border-slate-800 dark:bg-slate-900/40'>
+                    <Text size='sm' weight='medium' colour='secondary'>
+                      {t('project.settings.deleteData.total')}
+                    </Text>
+                    <span
                       className={cn(
-                        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors active:scale-[0.97]',
-                        isEmpty
-                          ? 'cursor-not-allowed border-gray-200 text-gray-300 dark:border-slate-800 dark:text-slate-600'
-                          : isSelected
-                            ? 'border-red-300 bg-red-50 text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300'
-                            : 'border-gray-200 text-gray-500 hover:border-gray-300 dark:border-slate-700 dark:text-gray-400 dark:hover:border-slate-600',
+                        'text-lg font-bold text-red-600 tabular-nums transition-opacity duration-200 dark:text-red-400',
+                        previewLoading && 'opacity-40',
                       )}
                     >
-                      {t(type.labelKey)}
-                      <span className='tabular-nums opacity-70'>
-                        {count.toLocaleString(language)}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            ) : null}
+                      {selectedTotal.toLocaleString(language)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className='flex min-h-28 items-center justify-center px-4 py-8 text-center'>
+                  <span
+                    className={cn(
+                      'text-sm',
+                      statusMessage.tone === 'error'
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-gray-500 dark:text-gray-400',
+                    )}
+                  >
+                    {statusMessage.text}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       }

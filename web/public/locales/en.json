@@ -2632,8 +2632,12 @@
           "custom_event": "Custom events",
           "error": "Errors",
           "performance": "Performance",
-          "captcha": "CAPTCHA"
+          "captcha": "CAPTCHA",
+          "session_replay": "Session replays"
         },
+        "breakdownTitle": "What will be deleted",
+        "total": "Total to delete",
+        "allTime": "All time",
         "willDelete": "will be permanently deleted",
         "holdToDeleteCount": "Hold to delete {{total}}",
         "summaryAllTime": "across all time",
