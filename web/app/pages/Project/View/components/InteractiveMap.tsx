@@ -33,6 +33,7 @@ import {
   nFormatter,
 } from '~/utils/generic'
 import { loadCountriesGeoData, loadRegionsGeoData } from '~/utils/geoData'
+import countries from '~/utils/isoCountries'
 
 import { useViewProjectContext } from '../ViewProject'
 
@@ -55,7 +56,10 @@ const InteractiveMapCore = ({
   onFullscreenToggle,
   isFullscreen = false,
 }: InteractiveMapProps) => {
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const { activeTab, dataLoading } = useViewProjectContext()
   const { theme } = useTheme()
 
@@ -158,7 +162,7 @@ const InteractiveMapCore = ({
 
   useEffect(() => {
     setGeoJsonKey((v) => v + 1)
-  }, [data, regionData, mapView])
+  }, [data, regionData, mapView, language])
 
   useEffect(() => {
     return () => {
@@ -399,9 +403,6 @@ const InteractiveMapCore = ({
             const result = findDataForFeature(feature)
             const props: any = feature.properties || {}
             const isCountryView = mapView === 'countries'
-
-            const name =
-              props['name'] || props['ADMIN'] || result?.key || 'Unknown'
             const count = result?.data?.count ?? 0
             const percentage = total > 0 ? _round((count / total) * 100, 2) : 0
 
@@ -410,6 +411,15 @@ const InteractiveMapCore = ({
               : (props?.iso_3166_2 || '').split('-')[0]
             const cc =
               (result?.data?.cc as string | undefined) || ccFromProps || ''
+            const fallbackName =
+              props['name'] ||
+              props['ADMIN'] ||
+              result?.key ||
+              t('common.unknown')
+            const name =
+              isCountryView && cc
+                ? countries.getName(cc, language) || fallbackName
+                : fallbackName
 
             setTooltipContent({
               name,
@@ -468,6 +478,8 @@ const InteractiveMapCore = ({
       repositionTooltip,
       isErrorsTab,
       isPerformanceTab,
+      language,
+      t,
     ],
   )
 
