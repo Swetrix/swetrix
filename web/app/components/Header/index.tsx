@@ -67,6 +67,7 @@ import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 import { cn } from '~/utils/generic'
 import { BannerManager } from './banners'
+import { SOLUTION_VISUALS } from './solutionIllustrations'
 
 const CONTACT_US_URL = `https://swetrix.com${routes.contact}`
 
@@ -141,47 +142,112 @@ interface SolutionItem {
   className: string
 }
 
-const SolutionTile = ({ item }: { item: SolutionItem }) => (
-  <div className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'>
-    <item.icon
-      className={cn(
-        'mt-1 h-5 w-5 text-gray-600 dark:text-gray-300',
-        item.className,
-      )}
-      aria-hidden='true'
-      weight='duotone'
-    />
-    <div>
-      {_startsWith(item.link, '/') ? (
-        <Link
-          to={item.link}
-          className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-        >
-          {item.name}
-          <span className='absolute inset-0' />
-        </Link>
-      ) : (
-        <a
-          href={item.link}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-        >
-          {item.name}
-          <span className='absolute inset-0' />
-        </a>
-      )}
+type FooterItem = Pick<SolutionItem, 'name' | 'link' | 'icon' | 'className'>
 
+const SolutionCard = ({ item }: { item: SolutionItem }) => {
+  const visual = SOLUTION_VISUALS[item.link]
+  const isInternal = _startsWith(item.link, '/')
+
+  const className =
+    'group/card relative flex flex-col rounded-xl p-2 ring-1 ring-transparent transition-[box-shadow,background-color] duration-200 ease-out hover:bg-gray-50 hover:ring-gray-200/80 motion-reduce:transition-none dark:hover:bg-slate-800/40 dark:hover:ring-slate-700/60'
+
+  const inner = (
+    <>
+      <div
+        className={cn(
+          'relative h-28 overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-200/70 dark:bg-slate-800 dark:ring-slate-700/60',
+          'grayscale transition-[filter] duration-500 ease-out group-hover/card:grayscale-0',
+          'motion-reduce:transition-none',
+        )}
+      >
+        {visual ? (
+          <>
+            <img
+              src={visual.bg}
+              alt=''
+              loading='lazy'
+              className='absolute inset-0 size-full object-cover'
+            />
+            <visual.Mockup />
+          </>
+        ) : null}
+      </div>
+      <h3 className='flex items-start gap-1.5 px-1 pt-3 text-[13px] leading-5 font-semibold text-gray-900 dark:text-gray-50'>
+        <item.icon
+          className={cn(
+            'mt-0.5 size-4 shrink-0 text-gray-400 transition-colors duration-300 dark:text-gray-500',
+            visual?.accentIcon,
+          )}
+          aria-hidden='true'
+          weight='duotone'
+        />
+        {item.name}
+      </h3>
       <Text
         as='p'
         size='xs'
-        className='mt-1 text-gray-600 dark:text-neutral-100'
+        className='px-1 pt-1 text-gray-600 dark:text-gray-400'
       >
         {item.description}
       </Text>
-    </div>
-  </div>
-)
+    </>
+  )
+
+  return isInternal ? (
+    <Link to={item.link} className={className}>
+      {inner}
+    </Link>
+  ) : (
+    <a
+      href={item.link}
+      target='_blank'
+      rel='noopener noreferrer'
+      className={className}
+    >
+      {inner}
+    </a>
+  )
+}
+
+const FooterLink = ({
+  item,
+  emphasis,
+}: {
+  item: FooterItem
+  emphasis?: boolean
+}) => {
+  const content = (
+    <>
+      <item.icon
+        className={cn('size-4 shrink-0', item.className)}
+        aria-hidden='true'
+        weight='duotone'
+      />
+      <span>{item.name}</span>
+    </>
+  )
+  const className = cn(
+    'inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[13px] font-medium transition-colors',
+    emphasis
+      ? 'text-gray-900 hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-800/60'
+      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800/60 dark:hover:text-gray-100',
+  )
+
+  return _startsWith(item.link, '/') ? (
+    <Link to={item.link} className={className}>
+      {content}
+    </Link>
+  ) : (
+    <a
+      href={item.link}
+      target='_blank'
+      rel='noopener noreferrer'
+      className={className}
+    >
+      {content}
+    </a>
+  )
+}
 
 const SolutionsMenu = ({ inverted }: { inverted?: boolean }) => {
   const { t } = useTranslation('common')
@@ -241,60 +307,24 @@ const SolutionsMenu = ({ inverted }: { inverted?: boolean }) => {
         leaveFrom='opacity-100 translate-y-0'
         leaveTo='opacity-0 translate-y-1'
       >
-        <div className='absolute z-40 mt-4 flex w-screen max-w-max backdrop-blur-md'>
-          <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-50/50 p-1.5 dark:divide-slate-700/60 dark:border-slate-700/60 dark:bg-slate-950/50'>
-            <div className='grid w-full grid-cols-2 gap-1 p-4'>
+        <div className='absolute left-0 z-40 mt-3 w-[min(50rem,calc(100vw-1.5rem))] xl:w-[56rem]'>
+          <div className='overflow-hidden rounded-2xl bg-white/95 ring-1 ring-gray-200/80 backdrop-blur-md dark:bg-slate-950/95 dark:ring-slate-700/60'>
+            <div className='grid grid-cols-2 gap-2 p-3 lg:grid-cols-4'>
               {_map(solutions, (item) => (
-                <SolutionTile key={item.name} item={item} />
+                <SolutionCard key={item.name} item={item} />
               ))}
             </div>
-            <div className='grid w-full grid-cols-2 gap-1 p-4'>
-              {_map(moreSolutions, (item) => (
-                <SolutionTile key={item.name} item={item} />
-              ))}
-            </div>
-            <div className='grid grid-cols-2 gap-1 px-4 py-2'>
-              {_map(ctas, (item) => {
-                if (_startsWith(item.link, '/')) {
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.link}
-                      className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
-                    >
-                      <item.icon
-                        className={cn(
-                          'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
-                          item.className,
-                        )}
-                        aria-hidden='true'
-                        weight='duotone'
-                      />
-                      {item.name}
-                    </Link>
-                  )
-                }
-
-                return (
-                  <a
-                    key={item.name}
-                    href={item.link}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
-                  >
-                    <item.icon
-                      className={cn(
-                        'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
-                        item.className,
-                      )}
-                      aria-hidden='true'
-                      weight='duotone'
-                    />
-                    {item.name}
-                  </a>
-                )
-              })}
+            <div className='flex flex-col gap-3 border-t border-gray-200/80 bg-gray-50/70 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-700/60 dark:bg-slate-900/40'>
+              <div className='flex flex-wrap items-center gap-x-3 gap-y-1'>
+                {_map(moreSolutions, (item) => (
+                  <FooterLink key={item.name} item={item} />
+                ))}
+              </div>
+              <div className='flex flex-wrap items-center gap-x-3 gap-y-1'>
+                {_map(ctas, (item) => (
+                  <FooterLink key={item.name} item={item} emphasis />
+                ))}
+              </div>
             </div>
           </div>
         </div>
