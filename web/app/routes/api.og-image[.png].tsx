@@ -11,6 +11,14 @@ const MAX_TITLE_LENGTH = 65
 const MAX_DESCRIPTION_LENGTH = 200
 const MAX_PROJECT_NAME_LENGTH = 40
 
+const WIDTH = 1800
+const HEIGHT = 945
+
+const INK = '#0f172a'
+const MUTED = '#475569'
+const PAPER = '#f1f5f9'
+const INDIGO = '#4f46e5'
+
 const logoBuffer = readFileSync(
   join(process.cwd(), 'public', 'assets', 'logo', 'dark.svg'),
 )
@@ -22,6 +30,34 @@ const persistentImages = [
       logoBuffer.byteOffset,
       logoBuffer.byteOffset + logoBuffer.byteLength,
     ),
+  },
+]
+
+const FONT_DIR = join(process.cwd(), 'public', 'fonts')
+const fonts = [
+  {
+    name: 'Geist',
+    weight: 400 as const,
+    style: 'normal' as const,
+    data: readFileSync(join(FONT_DIR, 'geist-v1-latin-regular.woff2')),
+  },
+  {
+    name: 'Geist',
+    weight: 500 as const,
+    style: 'normal' as const,
+    data: readFileSync(join(FONT_DIR, 'geist-v1-latin-500.woff2')),
+  },
+  {
+    name: 'Geist',
+    weight: 600 as const,
+    style: 'normal' as const,
+    data: readFileSync(join(FONT_DIR, 'geist-v1-latin-600.woff2')),
+  },
+  {
+    name: 'Geist',
+    weight: 700 as const,
+    style: 'normal' as const,
+    data: readFileSync(join(FONT_DIR, 'geist-v1-latin-700.woff2')),
   },
 ]
 
@@ -41,58 +77,83 @@ function formatNumber(num: number): string {
   return String(num)
 }
 
-function GridBackground() {
+function growthPaths() {
+  const N = 46
+  const left = -60
+  const span = WIDTH + 120
+  const bottom = HEIGHT + 28
+  const rise = 545
+  const pts: string[] = []
+  for (let i = 0; i <= N; i++) {
+    const t = i / N
+    const trend = 0.08 + Math.pow(t, 1.85) * 0.86
+    const noise = Math.sin(i * 12.9898) * 43758.5453
+    const jitter = (noise - Math.floor(noise) - 0.5) * 0.05 * (0.3 + t)
+    const v = Math.max(0, Math.min(1, trend + jitter))
+    const x = left + t * span
+    const y = bottom - v * rise
+    pts.push(`${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
+  }
+  const line = pts.join(' ')
+  const area = `${line} L${(left + span).toFixed(1)},${HEIGHT} L${left.toFixed(1)},${HEIGHT} Z`
+  return { line, area }
+}
+
+const GROWTH = growthPaths()
+
+function PaperTexture() {
   return (
-    <>
-      <div
-        tw='absolute'
-        style={{
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage:
-            'linear-gradient(115deg, #f1f5f9 28%, #a855f7 70%, #4f46e5 100%)',
-          opacity: 0.5,
-        }}
+    <svg
+      width={WIDTH}
+      height={HEIGHT}
+      style={{ position: 'absolute', top: 0, left: 0 }}
+    >
+      <defs>
+        <pattern id='dots' width='46' height='46' patternUnits='userSpaceOnUse'>
+          <circle cx='2' cy='2' r='2.2' fill='rgba(15, 23, 42, 0.07)' />
+        </pattern>
+        <linearGradient id='dot-fade' x1='0' y1='0' x2='0' y2='1'>
+          <stop offset='0%' stopColor='white' stopOpacity='1' />
+          <stop offset='58%' stopColor='white' stopOpacity='1' />
+          <stop offset='100%' stopColor='white' stopOpacity='0' />
+        </linearGradient>
+        <mask id='dot-mask'>
+          <rect width={WIDTH} height={HEIGHT} fill='url(#dot-fade)' />
+        </mask>
+      </defs>
+      <rect
+        width={WIDTH}
+        height={HEIGHT}
+        fill='url(#dots)'
+        mask='url(#dot-mask)'
       />
-      <svg
-        width='1800'
-        height='945'
-        viewBox='0 0 1800 945'
-        style={{ position: 'absolute', top: 0, left: 0 }}
-      >
-        <defs>
-          <pattern
-            id='grid-pattern'
-            width='36'
-            height='36'
-            patternUnits='userSpaceOnUse'
-          >
-            <path
-              d='M 36 0 L 0 0 L 0 36'
-              fill='none'
-              stroke='rgba(15, 23, 42, 0.1)'
-              strokeWidth='1'
-            />
-          </pattern>
-          <linearGradient id='grid-fade' x1='0%' y1='0%' x2='100%' y2='0%'>
-            <stop offset='0%' stopColor='white' stopOpacity='0' />
-            <stop offset='50%' stopColor='white' stopOpacity='0' />
-            <stop offset='100%' stopColor='white' stopOpacity='1' />
-          </linearGradient>
-          <mask id='grid-mask'>
-            <rect width='1800' height='945' fill='url(#grid-fade)' />
-          </mask>
-        </defs>
-        <rect
-          width='1800'
-          height='945'
-          fill='url(#grid-pattern)'
-          mask='url(#grid-mask)'
-        />
-      </svg>
-    </>
+    </svg>
+  )
+}
+
+function RisingChart() {
+  return (
+    <svg
+      width={WIDTH}
+      height={HEIGHT}
+      style={{ position: 'absolute', top: 0, left: 0 }}
+    >
+      <defs>
+        <linearGradient id='area-fill' x1='0' y1='0' x2='0' y2='1'>
+          <stop offset='0%' stopColor={INDIGO} stopOpacity='0.16' />
+          <stop offset='100%' stopColor={INDIGO} stopOpacity='0' />
+        </linearGradient>
+      </defs>
+      <path d={GROWTH.area} fill='url(#area-fill)' />
+      <path
+        d={GROWTH.line}
+        fill='none'
+        stroke={INDIGO}
+        strokeWidth='7'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+      />
+    </svg>
   )
 }
 
@@ -100,11 +161,31 @@ function SwetrixLogo() {
   return (
     <div tw='flex items-center' style={{ gap: '18px' }}>
       <img src='swetrix-logo' alt='' width={52} height={60} />
-      <div style={{ fontSize: 48, fontWeight: 600, color: '#0f172a' }}>
-        Swetrix
-      </div>
+      <div style={{ fontSize: 48, fontWeight: 600, color: INK }}>Swetrix</div>
     </div>
   )
+}
+
+function Footer() {
+  return (
+    <div
+      tw='flex'
+      style={{
+        fontSize: 30,
+        fontWeight: 700,
+        color: INK,
+        letterSpacing: '-0.01em',
+      }}
+    >
+      swetrix.com
+    </div>
+  )
+}
+
+function titleSize(length: number): number {
+  if (length > 52) return 74
+  if (length > 34) return 90
+  return 106
 }
 
 interface OgImageProps {
@@ -114,48 +195,55 @@ interface OgImageProps {
 }
 
 function OgImage({ title, description, label }: OgImageProps) {
-  const titleFontSize = title.length > 30 ? 90 : 104
-
   return (
-    <div tw='flex w-full h-full' style={{ backgroundColor: '#f1f5f9' }}>
-      <GridBackground />
+    <div
+      tw='relative flex w-full h-full'
+      style={{ backgroundColor: PAPER, fontFamily: 'Geist' }}
+    >
+      <PaperTexture />
+      <RisingChart />
       <div
-        tw='flex flex-col justify-between w-full h-full'
-        style={{ padding: '108px 96px' }}
+        tw='relative flex flex-col justify-between w-full h-full'
+        style={{ padding: '84px 96px 54px' }}
       >
-        <SwetrixLogo />
-        <div tw='flex flex-col' style={{ maxWidth: '1425px', gap: '9px' }}>
-          {label ? (
-            <div style={{ fontSize: 36, fontWeight: 600, color: '#4f46e5' }}>
-              {label}
-            </div>
-          ) : null}
+        <div tw='flex flex-col'>
+          <SwetrixLogo />
           <div
-            style={{
-              fontSize: titleFontSize,
-              fontWeight: 600,
-              lineHeight: 1.1,
-              letterSpacing: '-0.025em',
-              color: '#0f172a',
-              paddingBottom: description ? '0' : '8rem',
-            }}
+            tw='flex flex-col'
+            style={{ marginTop: 64, maxWidth: 1480, gap: 22 }}
           >
-            {title}
-          </div>
-          {description ? (
+            {label ? (
+              <div style={{ fontSize: 34, fontWeight: 600, color: INDIGO }}>
+                {label}
+              </div>
+            ) : null}
             <div
               style={{
-                fontSize: 39,
-                fontWeight: 400,
-                lineHeight: 1.45,
-                color: '#1e293b',
-                marginTop: '3rem',
+                fontSize: titleSize(title.length),
+                fontWeight: 600,
+                lineHeight: 1.08,
+                letterSpacing: '-0.03em',
+                color: INK,
               }}
             >
-              {description}
+              {title}
             </div>
-          ) : null}
+            {description ? (
+              <div
+                style={{
+                  fontSize: 34,
+                  fontWeight: 400,
+                  lineHeight: 1.45,
+                  color: MUTED,
+                  maxWidth: 1240,
+                }}
+              >
+                {description}
+              </div>
+            ) : null}
+          </div>
         </div>
+        <Footer />
       </div>
     </div>
   )
@@ -167,40 +255,51 @@ interface ProjectOgImageProps {
 }
 
 function ProjectOgImage({ projectName, visitors }: ProjectOgImageProps) {
-  const titleFontSize = projectName.length > 30 ? 90 : 104
-
   return (
-    <div tw='flex w-full h-full' style={{ backgroundColor: '#f1f5f9' }}>
-      <GridBackground />
+    <div
+      tw='relative flex w-full h-full'
+      style={{ backgroundColor: PAPER, fontFamily: 'Geist' }}
+    >
+      <PaperTexture />
+      <RisingChart />
       <div
-        tw='flex flex-col justify-between w-full h-full'
-        style={{ padding: '108px 96px' }}
+        tw='relative flex flex-col justify-between w-full h-full'
+        style={{ padding: '84px 96px 54px' }}
       >
-        <SwetrixLogo />
-        <div tw='flex flex-col' style={{ maxWidth: '1425px', gap: '9px' }}>
+        <div tw='flex flex-col'>
+          <SwetrixLogo />
           <div
-            style={{
-              fontSize: titleFontSize,
-              fontWeight: 600,
-              lineHeight: 1.1,
-              letterSpacing: '-0.025em',
-              color: '#0f172a',
-            }}
+            tw='flex flex-col'
+            style={{ marginTop: 64, maxWidth: 1480, gap: 22 }}
           >
-            {projectName}
-          </div>
-          <div
-            style={{
-              fontSize: 39,
-              fontWeight: 400,
-              lineHeight: 1.45,
-              color: '#1e293b',
-              marginTop: '3rem',
-            }}
-          >
-            {formatNumber(visitors)} visitors in the last month
+            <div
+              style={{
+                fontSize: titleSize(projectName.length),
+                fontWeight: 600,
+                lineHeight: 1.08,
+                letterSpacing: '-0.03em',
+                color: INK,
+              }}
+            >
+              {projectName}
+            </div>
+            <div
+              tw='flex items-center'
+              style={{
+                fontSize: 36,
+                fontWeight: 500,
+                color: MUTED,
+                gap: 14,
+              }}
+            >
+              <div style={{ fontSize: 40, fontWeight: 700, color: INDIGO }}>
+                {formatNumber(visitors)}
+              </div>
+              visitors in the last month
+            </div>
           </div>
         </div>
+        <Footer />
       </div>
     </div>
   )
@@ -260,10 +359,12 @@ async function fetchProjectData(
 
 function renderImage(element: React.JSX.Element, cacheSeconds = 1_210_000) {
   return new ImageResponse(element, {
-    width: 1800,
-    height: 945,
+    width: WIDTH,
+    height: HEIGHT,
     format: 'png',
     persistentImages,
+    fonts,
+    loadDefaultFonts: true,
     headers: {
       'Cache-Control': `public, immutable, no-transform, s-maxage=${cacheSeconds}, max-age=${cacheSeconds}`,
     },
