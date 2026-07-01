@@ -37,7 +37,9 @@ ENV OIDC_CLIENT_ID='' \
 # Install video tooling and configure timezone
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg tzdata && \
-    cp /usr/share/zoneinfo/$TZ /etc/localtime && \
+    test -f "/usr/share/zoneinfo/$TZ" && \
+    ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && \
+    echo "$TZ" > /etc/timezone && \
     rm -rf /var/lib/apt/lists/*
 
 # Use non-root numeric user
