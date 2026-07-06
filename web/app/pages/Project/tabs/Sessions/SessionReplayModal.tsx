@@ -38,7 +38,7 @@ import {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Replayer, ReplayerEvents } from 'dom-player'
+import { Replayer } from 'dom-player'
 import type { eventWithTime } from 'dom-player'
 import './replayPlayer.css'
 import { toast } from 'sonner'
@@ -90,6 +90,9 @@ const SCREENSHOT_ASSET_WAIT_MS = 1000
 const EXPORT_POLL_INTERVAL_MS = 2000
 const PLAYER_READY_FALLBACK_MS = 8000
 const INACTIVE_SKIP_THRESHOLD_MS = 10_000
+// ReplayerEvents.FullsnapshotRebuilded — the enum lives in @rrweb/types,
+// which @rrweb/replay doesn't re-export at runtime.
+const FULLSNAPSHOT_REBUILDED_EVENT = 'fullsnapshot-rebuilded'
 
 type ReplayEvent = Omit<eventWithTime, 'data'> & {
   data?: Record<string, any>
@@ -1307,7 +1310,7 @@ const SessionReplayModal = ({
         inactivePeriodThreshold: INACTIVE_SKIP_THRESHOLD_MS,
         insertStyleRules: ['html, body { background-color: #fff; }'],
       })
-      instance.on(ReplayerEvents.FullsnapshotRebuilded, markPlayerReady)
+      instance.on(FULLSNAPSHOT_REBUILDED_EVENT, markPlayerReady)
       replayer.current = instance
       const metadata = instance.getMetaData()
       const fallbackDuration =
@@ -1335,7 +1338,7 @@ const SessionReplayModal = ({
     return () => {
       if (readyFallback) window.clearTimeout(readyFallback)
       if (readyRaf) window.cancelAnimationFrame(readyRaf)
-      instance?.off(ReplayerEvents.FullsnapshotRebuilded, markPlayerReady)
+      instance?.off(FULLSNAPSHOT_REBUILDED_EVENT, markPlayerReady)
       instance?.pause()
       if (replayer.current === instance) replayer.current = null
       root.innerHTML = ''

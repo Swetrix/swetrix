@@ -1,0 +1,26 @@
+diff --git a/node_modules/@rrweb/replay/dist/replay.cjs b/node_modules/@rrweb/replay/dist/replay.cjs
+index 40e271c..4024f32 100644
+--- a/node_modules/@rrweb/replay/dist/replay.cjs
++++ b/node_modules/@rrweb/replay/dist/replay.cjs
+@@ -3978,7 +3978,7 @@ function assertRebuildTargetAllowed(options) {
+   if (!win) {
+     return;
+   }
+-  if (sandboxedRebuildDocuments.has(options.doc) && isSupportedSandboxedIframe(win.frameElement)) {
++  if (isSupportedSandboxedIframe(win.frameElement)) {
+     return;
+   }
+   throw new Error(REBUILD_TARGET_ERROR);
+diff --git a/node_modules/@rrweb/replay/dist/replay.js b/node_modules/@rrweb/replay/dist/replay.js
+index 55c2390..829c463 100644
+--- a/node_modules/@rrweb/replay/dist/replay.js
++++ b/node_modules/@rrweb/replay/dist/replay.js
+@@ -3976,7 +3976,7 @@ function assertRebuildTargetAllowed(options) {
+   if (!win) {
+     return;
+   }
+-  if (sandboxedRebuildDocuments.has(options.doc) && isSupportedSandboxedIframe(win.frameElement)) {
++  if (isSupportedSandboxedIframe(win.frameElement)) {
+     return;
+   }
+   throw new Error(REBUILD_TARGET_ERROR);

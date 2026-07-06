@@ -1888,6 +1888,7 @@
     "usersAffected": "users affected",
     "recentErrors": "Recent Errors",
     "affectedSessionsList": "Affected Sessions",
+    "showAllXSessions": "Show all {{x}} sessions",
     "noAffectedSessions": "No affected sessions found",
     "viewSession": "View session",
     "topPages": "Top pages",

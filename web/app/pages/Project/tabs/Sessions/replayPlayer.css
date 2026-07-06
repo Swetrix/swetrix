@@ -1,7 +1,7 @@
 /*
- * Vendored from rrweb/dist/style.css.
+ * Vendored from @rrweb/replay/dist/style.css.
  * Inlined locally so the stylesheet URL doesn't contain "rrweb", which privacy
- * adblock lists block. Keep in sync with the installed rrweb version.
+ * adblock lists block. Keep in sync with the installed @rrweb/replay version.
  */
 .replayer-wrapper {
   position: relative;

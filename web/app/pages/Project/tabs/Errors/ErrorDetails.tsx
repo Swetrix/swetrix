@@ -30,6 +30,7 @@ import { Badge } from '~/ui/Badge'
 import Flag from '~/ui/Flag'
 import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import { getRelativeDateIfPossible } from '~/utils/date'
 import { cn } from '~/utils/generic'
@@ -148,9 +149,10 @@ const ToolbarButton = ({
 
 interface SessionRowProps {
   session: ErrorAffectedSession
+  onClick?: () => void
 }
 
-const SessionRow = ({ session }: SessionRowProps) => {
+const SessionRow = ({ session, onClick }: SessionRowProps) => {
   const {
     t,
     i18n: { language },
@@ -171,6 +173,7 @@ const SessionRow = ({ session }: SessionRowProps) => {
   return (
     <Link
       to={sessionUrl}
+      onClick={onClick}
       className='group flex items-center justify-between gap-3 rounded-md px-2.5 py-2 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800/40'
     >
       <div className='flex min-w-0 flex-1 items-center gap-3'>
@@ -233,9 +236,12 @@ export const ErrorDetails = ({
   const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null)
   const [sessionsTotal, setSessionsTotal] = useState(0)
   const [sessionsSkip, setSessionsSkip] = useState(0)
+  const [isSessionsModalOpened, setIsSessionsModalOpened] = useState(false)
+  const sessionsModalListRef = useRef<HTMLDivElement | null>(null)
   const isMountedRef = useRef(true)
 
-  const SESSIONS_TAKE = 5
+  const SESSIONS_PREVIEW_COUNT = 5
+  const SESSIONS_MODAL_TAKE = 25
 
   useEffect(() => {
     isMountedRef.current = true
@@ -325,7 +331,7 @@ export const ErrorDetails = ({
           period,
           from,
           to,
-          take: SESSIONS_TAKE,
+          take: reset ? SESSIONS_PREVIEW_COUNT : SESSIONS_MODAL_TAKE,
           skip,
         })
 
@@ -338,7 +344,7 @@ export const ErrorDetails = ({
             setSessions((prev) => [...prev, ...result.sessions])
           }
           setSessionsTotal(result.total)
-          setSessionsSkip(skip + SESSIONS_TAKE)
+          setSessionsSkip(skip + result.sessions.length)
         }
       } catch (reason) {
         console.error('[ErrorDetails] Failed to load sessions:', reason)
@@ -364,6 +370,7 @@ export const ErrorDetails = ({
   useEffect(() => {
     setSessions([])
     setSessionsSkip(0)
+    setIsSessionsModalOpened(false)
     loadSessions(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [details.eid, period, from, to])
@@ -597,23 +604,65 @@ export const ErrorDetails = ({
               </Text>
             </div>
           ) : (
-            <div className='flex flex-col gap-3 p-2'>
-              <div className='flex flex-col gap-0.5'>
-                {_map(sessions, (session) => (
+            <>
+              <div className='flex flex-col gap-0.5 p-2'>
+                {_map(sessions.slice(0, SESSIONS_PREVIEW_COUNT), (session) => (
                   <SessionRow key={session.psid} session={session} />
                 ))}
               </div>
-              <InfiniteScrollTrigger
-                hasMore={canLoadMoreSessions}
-                isLoading={!!sessionsLoading}
-                onLoadMore={() => loadSessions()}
-                disabled={!!sessionsLoading}
-                className='mx-2 mb-1'
-              />
-            </div>
+              {sessionsTotal > SESSIONS_PREVIEW_COUNT ? (
+                <button
+                  type='button'
+                  onClick={() => setIsSessionsModalOpened(true)}
+                  className='flex w-full items-center justify-center gap-1.5 border-t border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100/60 hover:text-gray-900 dark:border-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800/40 dark:hover:text-slate-200'
+                >
+                  {t('project.showAllXSessions', {
+                    x: sessionsTotal.toLocaleString(),
+                  })}
+                </button>
+              ) : null}
+            </>
           )}
         </SectionCard>
       </div>
+
+      <Modal
+        isOpened={isSessionsModalOpened}
+        onClose={() => setIsSessionsModalOpened(false)}
+        size='medium'
+        title={
+          <span className='inline-flex items-center gap-2'>
+            <UsersIcon className='size-4 text-gray-500 dark:text-slate-400' />
+            {t('project.affectedSessionsList')}
+            <Text size='xs' colour='muted' className='font-mono font-normal'>
+              {sessionsTotal.toLocaleString()}
+            </Text>
+          </span>
+        }
+        message={
+          <div
+            ref={sessionsModalListRef}
+            className='max-h-[65vh] overflow-y-auto'
+          >
+            <div className='flex flex-col gap-0.5'>
+              {_map(sessions, (session) => (
+                <SessionRow
+                  key={session.psid}
+                  session={session}
+                  onClick={() => setIsSessionsModalOpened(false)}
+                />
+              ))}
+            </div>
+            <InfiniteScrollTrigger
+              hasMore={canLoadMoreSessions}
+              isLoading={!!sessionsLoading}
+              onLoadMore={() => loadSessions()}
+              disabled={!!sessionsLoading}
+              root={sessionsModalListRef}
+            />
+          </div>
+        }
+      />
     </div>
   )
 }
