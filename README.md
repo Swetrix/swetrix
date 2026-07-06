@@ -79,11 +79,11 @@ Swetrix and Plausible are both privacy-first and open source; the main differenc
 | Custom events                    | ✅                     | ✅                      | ✅                   |
 | Performance monitoring           | ✅                     | ❌                      | ❌                   |
 | Error tracking                   | ✅                     | ❌                      | ❌                   |
+| User profiles / identified users | ✅                     | ❌                      | ❌                   |
+| Feature flags & A/B experiments  | ✅                     | ❌                      | ❌                   |
 | Session replays                  | ✅ Cloud               | ❌                      | ❌                   |
-| Feature flags & A/B experiments  | ✅ Cloud               | ❌                      | ❌                   |
 | Revenue / MRR analytics          | ✅ Cloud               | ⚠️ ecommerce setup      | ❌                   |
 | Ask AI / chat with your data     | ✅ Cloud               | ❌                      | ❌                   |
-| User profiles / identified users | ✅ Cloud               | ❌                      | ❌                   |
 
 ## 🚀 Get started
 
