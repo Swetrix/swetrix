@@ -711,6 +711,7 @@ export const BROWSER_LOGO_MAP = {
   'Oculus Browser': '/assets/facebook.svg',
   Instagram: '/assets/instagram.svg',
   LinkedIn: '/assets/linkedin.svg',
+  Twitter: '/assets/twitter.svg',
 }
 
 export const OS_LOGO_MAP = {
