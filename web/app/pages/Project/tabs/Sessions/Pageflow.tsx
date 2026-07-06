@@ -13,6 +13,7 @@ import {
   FileTextIcon,
   CursorClickIcon,
   ArrowCounterClockwiseIcon,
+  ArrowsClockwiseIcon,
   TagIcon,
   ClockIcon,
   ClockCounterClockwiseIcon,
@@ -37,6 +38,7 @@ export type PageflowEventType =
   | 'event'
   | 'error'
   | 'sale'
+  | 'subscription'
   | 'refund'
 
 export interface PageflowEvent {
@@ -80,6 +82,7 @@ export const PAGEFLOW_ICON_BY_TYPE: Record<
   event: CursorClickIcon,
   error: WarningIcon,
   sale: CurrencyDollarIcon,
+  subscription: ArrowsClockwiseIcon,
   refund: ArrowCounterClockwiseIcon,
 }
 
@@ -88,6 +91,7 @@ export const PAGEFLOW_ICON_COLOR_BY_TYPE: Record<PageflowEventType, string> = {
   event: 'text-green-500',
   error: 'text-red-500',
   sale: 'text-emerald-500',
+  subscription: 'text-teal-500',
   refund: 'text-orange-500',
 }
 
@@ -156,12 +160,12 @@ const TypeIcon = ({
   type: PageflowEventType
   className?: string
 }) => {
-  const Icon = PAGEFLOW_ICON_BY_TYPE[type]
+  const Icon = PAGEFLOW_ICON_BY_TYPE[type] ?? CursorClickIcon
   return (
     <Icon
       className={cn(
         'h-4 w-4 shrink-0',
-        PAGEFLOW_ICON_COLOR_BY_TYPE[type],
+        PAGEFLOW_ICON_COLOR_BY_TYPE[type] ?? 'text-gray-400',
         className,
       )}
       weight='duotone'
@@ -298,7 +302,8 @@ const PageflowItem = ({
 
   const [isExpanded, setIsExpanded] = useState(false)
   const hasMetadata = !!metadata && metadata.length > 0
-  const isMonetary = type === 'sale' || type === 'refund'
+  const isMonetary =
+    type === 'sale' || type === 'subscription' || type === 'refund'
   const hasDuration = timeDuration !== null && timeDuration > 0
   const showSubRow = hasDuration || hasMetadata
 
@@ -318,7 +323,7 @@ const PageflowItem = ({
                 <Text
                   size='sm'
                   weight='semibold'
-                  colour={type === 'sale' ? 'success' : 'warning'}
+                  colour={type === 'refund' ? 'warning' : 'success'}
                   className='leading-4 tabular-nums'
                 >
                   {type === 'refund' ? '−' : '+'}

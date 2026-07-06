@@ -209,7 +209,7 @@ export interface IOverallPerformance {
 }
 
 export interface IPageflow {
-  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
+  type: 'pageview' | 'event' | 'error' | 'sale' | 'subscription' | 'refund'
   value: string
   created: string
   psid?: string

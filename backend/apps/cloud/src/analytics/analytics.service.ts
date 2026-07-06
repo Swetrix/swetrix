@@ -6736,9 +6736,11 @@ export class AnalyticsService {
           }))
         : undefined
 
-      // For sale and refund events, extract amount and currency from metadata
+      // For monetary events, extract amount and currency from metadata
       if (
-        (page.type === 'sale' || page.type === 'refund') &&
+        (page.type === 'sale' ||
+          page.type === 'subscription' ||
+          page.type === 'refund') &&
         processedMetadata
       ) {
         const amountEntry = processedMetadata.find((m) => m.key === 'amount')

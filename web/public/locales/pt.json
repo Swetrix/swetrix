@@ -1942,6 +1942,7 @@
         "event": "Evento",
         "error": "Erro",
         "sale": "Venda",
+        "subscription": "Assinatura",
         "refund": "Reembolso"
       },
       "timeline": {

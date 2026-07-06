@@ -1942,6 +1942,7 @@
         "event": "Подія",
         "error": "Помилка",
         "sale": "Продаж",
+        "subscription": "Підписка",
         "refund": "Повернення"
       },
       "timeline": {

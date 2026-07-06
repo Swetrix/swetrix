@@ -57,7 +57,7 @@ const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
 type OnlineStatus = 'online' | 'recently_active' | 'offline'
 
 interface PageflowItem {
-  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
+  type: 'pageview' | 'event' | 'error' | 'sale' | 'subscription' | 'refund'
   value: string
   created: string
   metadata?: { key: string; value: string }[]
@@ -160,7 +160,8 @@ const getSessionDuration = (session: ProfileSession) => {
   }
 
   const interactionPages = (session.pages || []).filter(
-    ({ type }) => type !== 'sale' && type !== 'refund',
+    ({ type }) =>
+      type !== 'sale' && type !== 'subscription' && type !== 'refund',
   )
   if (interactionPages.length < 2) {
     return 0

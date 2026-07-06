@@ -34,7 +34,7 @@ import { LoaderView } from '../../View/components/LoaderView'
 const SESSIONS_TAKE = 30
 
 interface PageflowItem {
-  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
+  type: 'pageview' | 'event' | 'error' | 'sale' | 'subscription' | 'refund'
   value: string
   created: string
   metadata?: { key: string; value: string }[]

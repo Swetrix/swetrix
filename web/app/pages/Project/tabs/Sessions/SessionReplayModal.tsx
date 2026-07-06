@@ -165,6 +165,7 @@ const PAGEFLOW_EVENT_LABEL_DEFAULTS: Record<PageflowEventType, string> = {
   event: 'Event',
   error: 'Error',
   sale: 'Sale',
+  subscription: 'Subscription',
   refund: 'Refund',
 }
 
@@ -497,7 +498,11 @@ const getPageflowEventLabel = (type: PageflowEventType, t: TFunction) =>
   )
 
 const getPageflowEventDetail = (event: PageflowEvent, t: TFunction) => {
-  if (event.type === 'sale' || event.type === 'refund') {
+  if (
+    event.type === 'sale' ||
+    event.type === 'subscription' ||
+    event.type === 'refund'
+  ) {
     const sign = event.type === 'refund' ? '-' : '+'
     const amount = `${sign}${formatPageflowAmount(
       event.amount || 0,
@@ -929,7 +934,7 @@ const PlayerIconButton = ({
 )
 
 const PageflowMarkerTooltip = ({ marker }: { marker: PageflowMarker }) => {
-  const Icon = PAGEFLOW_ICON_BY_TYPE[marker.type]
+  const Icon = PAGEFLOW_ICON_BY_TYPE[marker.type] ?? CursorClickIcon
 
   return (
     <div className='min-w-0'>
@@ -937,7 +942,7 @@ const PageflowMarkerTooltip = ({ marker }: { marker: PageflowMarker }) => {
         <Icon
           className={cn(
             'size-4 shrink-0',
-            PAGEFLOW_ICON_COLOR_BY_TYPE[marker.type],
+            PAGEFLOW_ICON_COLOR_BY_TYPE[marker.type] ?? 'text-gray-400',
           )}
           weight='duotone'
           aria-hidden

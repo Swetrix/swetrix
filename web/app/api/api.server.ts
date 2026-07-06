@@ -1174,7 +1174,7 @@ export async function getGoalSessionsServer(
 }
 
 interface PageflowItem {
-  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
+  type: 'pageview' | 'event' | 'error' | 'sale' | 'subscription' | 'refund'
   value: string
   created: string
   metadata?: { key: string; value: string }[]
