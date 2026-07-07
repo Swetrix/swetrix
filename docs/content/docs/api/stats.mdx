@@ -261,7 +261,8 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
     ],
     "visits": [0, 2, 9, 12, 4, 7, 4, 0],
     "uniques": [0, 2, 9, 10, 4, 7, 4, 0],
-    "sdur": [0, 54, 2, 126, 8, 8, 2]
+    "sdur": [0, 54, 2, 126, 8, 8, 2],
+    "concurrency": [0, 1, 3, 4, 2, 2, 1, 0]
   },
   "customs": {
     "sale": 16,
@@ -273,6 +274,10 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
   "appliedFilters": []
 }
 ```
+
+:::info
+`chart.concurrency` is the number of live (concurrent) visitors over time, reconstructed from session activity. For the `minute` time bucket it's the exact number of visitors active during that minute; for larger buckets it's the peak concurrency within the bucket. When `filters` are applied, this array is zero-filled, as concurrency cannot be segmented by dimensions.
+:::
 
 #### Parameters
 
@@ -1259,7 +1264,7 @@ The parameters are similar to the [`/log` endpoint](#get-v1log).
 
 ### GET /v1/log/chart
 
-Returns data for the main chart (visits, uniques, sessions duration, etc.) grouped by time bucket. This is useful when you only need the chart data without other aggregations.
+Returns data for the main chart (visits, uniques, sessions duration, concurrent live visitors, etc.) grouped by time bucket. This is useful when you only need the chart data without other aggregations.
 
 ```bash
 curl 'https://api.swetrix.com/v1/log/chart?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d'\
