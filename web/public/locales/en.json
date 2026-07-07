@@ -2196,6 +2196,7 @@
     "customEvMetadata": "Custom events metadata",
     "pageviewMetadata": "Pageview metadata",
     "conflictMetric": "The metric you selected conflicts with an already selected one",
+    "liveVisitorsFilterConflict": "Live visitors can't be shown while dashboard filters are applied",
     "prev": "Previous",
     "next": "Next",
     "results": "Results",

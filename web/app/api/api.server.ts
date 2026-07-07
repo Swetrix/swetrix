@@ -740,6 +740,7 @@ export interface TrafficLogResponse {
     uniques: number[]
     sdur: number[]
     bounces?: number[]
+    concurrency?: number[]
   }
   customs: Record<string, number>
   properties: Record<string, number>
