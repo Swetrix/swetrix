@@ -14,6 +14,7 @@ import {
   FileTextIcon,
   GlobeIcon,
   MonitorIcon,
+  MegaphoneIcon,
   SignInIcon,
   UserListIcon,
   WarningIcon,
@@ -914,6 +915,17 @@ export const ProfileDetails = ({
                   </>
                 }
               />
+              {details.acquisition?.adCampaign ? (
+                <InfoRow
+                  label={t('project.acquiredVia')}
+                  value={
+                    <>
+                      <MegaphoneIcon className='h-4 w-4' />
+                      {details.acquisition.adCampaign.campaignName}
+                    </>
+                  }
+                />
+              ) : null}
               <InfoRow
                 label={t('project.avgDuration')}
                 value={

@@ -11,6 +11,7 @@ import {
   linkBySSOHashServer,
   processSSOTokenServer,
   processGSCTokenServer,
+  processAdsTokenServer,
   processGA4ImportTokenServer,
   authMeServer,
   linkSSOWithPasswordServer,
@@ -34,6 +35,7 @@ interface ProxyRequest {
     | 'linkBySSOHash'
     | 'processSSOToken'
     | 'processGSCToken'
+    | 'processAdsToken'
     | 'processGA4ImportToken'
     | 'authMe'
     | 'linkSSOWithPassword'
@@ -216,6 +218,28 @@ export async function action({ request }: ActionFunctionArgs) {
           )
         }
         const result = await processGSCTokenServer(
+          request,
+          body.code,
+          body.state,
+        )
+        return data<ProxyResponse<{ pid: string }>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'processAdsToken': {
+        if (!body.code || !body.state) {
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'code and state are required' },
+            { status: 400 },
+          )
+        }
+        const result = await processAdsTokenServer(
           request,
           body.code,
           body.state,

@@ -338,6 +338,12 @@ If a profile ID is found, the transaction is linked to that visitor's profile in
   `getProfileId()` and `getSessionId()`.
 </Callout>
 
+## Ad campaign ROI
+
+If you run Google Ads, connect the [Google Ads integration](/integrations/google-ads) to combine campaign spend with your revenue data. The [Ads dashboard](/analytics-dashboard/ads) then shows attributed revenue, ROAS, and CPA per campaign.
+
+For this to work, pass the **session ID** with your transactions (`sessionId` on the API, or `swetrix_session_id` in Stripe/Paddle metadata as shown above) — that's the link Swetrix uses to trace a purchase back to the browsing session, and from there to the ad campaign that started it.
+
 ## Managing your connection
 
 You can disconnect or change your connected provider at any time from **Project Settings &gt; Revenue**. Disconnecting removes the API key (or disables API ingestion) but keeps previously recorded revenue data in your dashboard.

@@ -72,6 +72,24 @@ export interface GscProperty {
   permissionLevel?: string
 }
 
+export interface AdsStatus {
+  connected: boolean
+  available?: boolean
+  email?: string | null
+  customerId?: string | null
+  currency?: string | null
+  lastSyncAt?: string | null
+  syncError?: string | null
+}
+
+export interface AdsAccount {
+  customerId: string
+  name: string
+  currency: string | null
+  isManager: boolean
+  loginCustomerId: string | null
+}
+
 export interface ProjectSettingsActionData {
   success?: boolean
   intent?: string
@@ -93,6 +111,9 @@ export interface ProjectSettingsActionData {
   gscAuthUrl?: string
   gscStatus?: GscStatus
   gscProperties?: GscProperty[]
+  adsAuthUrl?: string
+  adsStatus?: AdsStatus
+  adsAccounts?: AdsAccount[]
   dataImports?: DataImport[]
   dataImport?: unknown
   ga4AuthUrl?: string
@@ -774,6 +795,139 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const result = await serverFetch(
         request,
         `v1/project/gsc/${id}/disconnect`,
+        {
+          method: 'DELETE',
+        },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    // Google Ads
+    case 'ads-connect': {
+      const result = await serverFetch<{ url: string }>(
+        request,
+        `v1/project/ads/${id}/connect`,
+        {
+          method: 'POST',
+        },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, adsAuthUrl: result.data?.url },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'ads-status': {
+      const result = await serverFetch<AdsStatus>(
+        request,
+        `v1/project/ads/${id}/status`,
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, adsStatus: result.data as AdsStatus },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'ads-accounts': {
+      const result = await serverFetch<AdsAccount[]>(
+        request,
+        `v1/project/ads/${id}/accounts`,
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, adsAccounts: result.data as AdsAccount[] },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'ads-set-account': {
+      const customerId = formData.get('customerId')?.toString()
+
+      if (!customerId) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: 'customerId is required' },
+          { status: 400 },
+        )
+      }
+
+      const result = await serverFetch(
+        request,
+        `v1/project/ads/${id}/account`,
+        {
+          method: 'POST',
+          body: { customerId },
+        },
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'ads-sync': {
+      const result = await serverFetch(request, `v1/project/ads/${id}/sync`, {
+        method: 'POST',
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'ads-disconnect': {
+      const result = await serverFetch(
+        request,
+        `v1/project/ads/${id}/disconnect`,
         {
           method: 'DELETE',
         },

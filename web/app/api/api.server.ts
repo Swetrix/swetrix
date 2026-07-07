@@ -2835,6 +2835,189 @@ export async function processGSCTokenServer(
 }
 
 // ============================================================================
+// MARK: Google Ads API
+// ============================================================================
+
+export async function processAdsTokenServer(
+  request: Request,
+  code: string,
+  state: string,
+): Promise<ServerFetchResult<{ pid: string }>> {
+  return serverFetch<{ pid: string }>(request, 'v1/project/ads/process-token', {
+    method: 'POST',
+    body: { code, state },
+  })
+}
+
+interface AdsStats {
+  cost: number
+  clicks: number
+  impressions: number
+  conversions: number
+  ctr: number
+  cpc: number
+  sessions: number
+  revenue: number
+  purchases: number
+  roas: number | null
+  cpa: number | null
+  previous: {
+    cost: number
+    clicks: number
+    sessions: number
+    revenue: number
+  }
+}
+
+export interface AdsChart {
+  x: string[]
+  cost: number[]
+  clicks: number[]
+  sessions: number[]
+}
+
+export interface AdsCampaign {
+  campaignId: string
+  campaignName: string
+  campaignStatus: string
+  cost: number
+  clicks: number
+  impressions: number
+  ctr: number
+  cpc: number
+  conversions: number
+  conversionsValue: number
+  sessions: number
+  revenue: number
+  purchases: number
+  roas: number | null
+  cpa: number | null
+}
+
+export interface AdsDashboardResponse {
+  notConnected?: boolean
+  currency?: string
+  stats?: AdsStats
+  chart?: AdsChart
+}
+
+export interface AdsCampaignMapEntry {
+  campaignId: string
+  name: string
+  cost: number
+  clicks: number
+  cpc: number
+}
+
+const buildAdsQueryParams = (
+  pid: string,
+  params: {
+    period?: string
+    from?: string
+    to?: string
+    timezone?: string
+    timeBucket?: string
+  },
+) => {
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period || '7d')
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+  if (params.timeBucket) queryParams.append('timeBucket', params.timeBucket)
+  return queryParams
+}
+
+export async function getAdsDashboardServer(
+  request: Request,
+  pid: string,
+  params: {
+    period?: string
+    from?: string
+    to?: string
+    timezone?: string
+    timeBucket?: string
+    password?: string
+  } = {},
+): Promise<ServerFetchResult<AdsDashboardResponse>> {
+  const queryParams = buildAdsQueryParams(pid, params)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<AdsDashboardResponse>(
+    request,
+    `log/ads?${queryParams.toString()}`,
+    {
+      headers,
+      timeoutMs: 60000,
+    },
+  )
+}
+
+export async function getAdsCampaignsServer(
+  request: Request,
+  pid: string,
+  params: {
+    period?: string
+    from?: string
+    to?: string
+    timezone?: string
+    password?: string
+  } = {},
+): Promise<ServerFetchResult<{ campaigns: AdsCampaign[] }>> {
+  const queryParams = buildAdsQueryParams(pid, params)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<{ campaigns: AdsCampaign[] }>(
+    request,
+    `log/ads/campaigns?${queryParams.toString()}`,
+    {
+      headers,
+      timeoutMs: 60000,
+    },
+  )
+}
+
+export async function getAdsCampaignMapServer(
+  request: Request,
+  pid: string,
+  params: {
+    period?: string
+    from?: string
+    to?: string
+    timezone?: string
+    password?: string
+  } = {},
+): Promise<
+  ServerFetchResult<{
+    map: Record<string, AdsCampaignMapEntry>
+    currency: string
+  }>
+> {
+  const queryParams = buildAdsQueryParams(pid, params)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<{
+    map: Record<string, AdsCampaignMapEntry>
+    currency: string
+  }>(request, `log/ads/campaign-map?${queryParams.toString()}`, {
+    headers,
+  })
+}
+
+// ============================================================================
 // MARK: Google Analytics 4 Import API
 // ============================================================================
 

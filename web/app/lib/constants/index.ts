@@ -576,6 +576,7 @@ const PRODUCTION_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
   seo: 'seo',
+  ads: 'ads',
   profiles: 'profiles',
   funnels: 'funnels',
   sessions: 'sessions',

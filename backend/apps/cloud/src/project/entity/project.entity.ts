@@ -171,6 +171,39 @@ export class Project {
   @Column('varchar', { nullable: true, default: null, length: 256 })
   gscAccountEmail: string | null
 
+  // Google Ads integration
+  @Column('varchar', { nullable: true, default: null, length: 32 })
+  googleAdsCustomerId: string | null
+
+  // Manager (MCC) account id used as login-customer-id header, if any
+  @Column('varchar', { nullable: true, default: null, length: 32 })
+  googleAdsLoginCustomerId: string | null
+
+  @Column('text', { nullable: true, default: null })
+  googleAdsAccessTokenEnc: string | null
+
+  @Column('text', { nullable: true, default: null })
+  googleAdsRefreshTokenEnc: string | null
+
+  @Column('bigint', { nullable: true, default: null })
+  googleAdsTokenExpiry: string | null
+
+  @Column('varchar', { nullable: true, default: null, length: 512 })
+  googleAdsScope: string | null
+
+  @Column('varchar', { nullable: true, default: null, length: 256 })
+  googleAdsAccountEmail: string | null
+
+  // Currency of the connected Google Ads account (customer.currency_code)
+  @Column('varchar', { nullable: true, default: null, length: 3 })
+  googleAdsCurrency: string | null
+
+  @Column('datetime', { nullable: true, default: null })
+  googleAdsLastSyncAt: Date | null
+
+  @Column('varchar', { nullable: true, default: null, length: 512 })
+  googleAdsSyncError: string | null
+
   // Revenue / Payment provider integration
   @Column('text', { nullable: true, default: null })
   paddleApiKeyEnc: string | null

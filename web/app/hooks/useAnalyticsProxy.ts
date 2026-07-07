@@ -31,6 +31,9 @@ import type {
   ProjectDataCustomEventsResponse,
   UserFlowResponse,
   GSCDashboardResponse,
+  AdsDashboardResponse,
+  AdsCampaign,
+  AdsCampaignMapEntry,
   RevenueStatus,
   RevenueDataResponse,
   OverallObject,
@@ -1091,6 +1094,106 @@ export function useGSCDashboardProxy() {
   }, [])
 
   return { fetchDashboard, data, error, isLoading, resetData }
+}
+
+export function useAdsDashboardProxy() {
+  const [data, setData] = useState<AdsDashboardResponse | null>(null)
+  const [campaigns, setCampaigns] = useState<AdsCampaign[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const requestIdRef = useRef(0)
+
+  const fetchDashboard = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams = {}) => {
+      const requestId = requestIdRef.current + 1
+      requestIdRef.current = requestId
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const [dashboardResult, campaignsResult] = await Promise.all([
+          postAnalytics<AdsDashboardResponse>({
+            action: 'getAdsDashboard',
+            projectId,
+            params,
+          }),
+          postAnalytics<{ campaigns: AdsCampaign[] }>({
+            action: 'getAdsCampaigns',
+            projectId,
+            params,
+          }),
+        ])
+
+        if (requestId !== requestIdRef.current) {
+          return dashboardResult.data
+        }
+
+        if (dashboardResult.data) {
+          setData(dashboardResult.data)
+        }
+        if (campaignsResult.data) {
+          setCampaigns(campaignsResult.data.campaigns)
+        }
+        setError(dashboardResult.error || campaignsResult.error)
+        return dashboardResult.data
+      } catch (err) {
+        if (requestId === requestIdRef.current) {
+          setError(err instanceof Error ? err.message : 'Unknown error')
+        }
+        return null
+      } finally {
+        if (requestId === requestIdRef.current) {
+          setIsLoading(false)
+        }
+      }
+    },
+    [],
+  )
+
+  const resetData = useCallback(() => {
+    requestIdRef.current += 1
+    setData(null)
+    setCampaigns(null)
+    setError(null)
+    setIsLoading(false)
+  }, [])
+
+  return { fetchDashboard, data, campaigns, error, isLoading, resetData }
+}
+
+export function useAdsCampaignMapProxy() {
+  const [map, setMap] = useState<Record<string, AdsCampaignMapEntry> | null>(
+    null,
+  )
+  const [currency, setCurrency] = useState<string>('USD')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchCampaignMap = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams = {}) => {
+      setIsLoading(true)
+
+      try {
+        const result = await postAnalytics<{
+          map: Record<string, AdsCampaignMapEntry>
+          currency: string
+        }>({
+          action: 'getAdsCampaignMap',
+          projectId,
+          params,
+        })
+        setMap(result.data?.map || null)
+        setCurrency(result.data?.currency || 'USD')
+        return result.data?.map || null
+      } catch {
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
+  return { fetchCampaignMap, map, currency, isLoading }
 }
 
 export function useRevenueProxy() {

@@ -1,0 +1,91 @@
+---
+id: google-ads
+title: Google Ads
+sidebar_label: Google Ads
+---
+
+Swetrix integrates with Google Ads, powering the dedicated [Ads dashboard](/analytics-dashboard/ads) within your project. It pulls your campaign metrics — spend, clicks, impressions, and conversions — and combines them with your Swetrix analytics, so you can see not just what a campaign cost, but what it actually brought in.
+
+## Why connect Google Ads?
+
+By connecting Google Ads, you unlock a full Ads analytics tab in your project dashboard:
+
+- **Campaign performance:** Track spend, clicks, impressions, CTR, and CPC per campaign over time.
+- **Real outcomes, not just ad metrics:** See how many Swetrix sessions each campaign drove on your site.
+- **Ad ROI:** Combined with [Revenue Tracking](/analytics-dashboard/revenue-tracking), Swetrix computes attributed revenue, ROAS (return on ad spend), and CPA (cost per acquisition) per campaign.
+- **Context everywhere:** Sessions and profiles acquired via a campaign are badged in their detail views, and the Traffic tab's campaign panel shows spend and CPC next to matched campaigns.
+- **Read-only and private:** Swetrix only requests read-only access to your reporting data. We never modify your campaigns.
+
+<Callout type="info" title="Availability">
+
+The Google Ads integration is currently available on Swetrix Cloud only. Community Edition support may come later.
+
+</Callout>
+
+## How to Set Up
+
+<Callout type="info" title="Prerequisites">
+
+You need a Google Ads account with at least one campaign. Manager (MCC) accounts are supported — you'll be able to pick any client account your Google login can access.
+
+</Callout>
+
+1.  **Navigate to Project Settings:**
+    Open your project dashboard and click on the **Settings** tab in the navigation menu.
+
+2.  **Go to Integrations:**
+    Select the **Integrations** tab from the sidebar menu.
+
+3.  **Connect Google Account:**
+    Locate the **Google Ads** card and click the **Connect** button. You will be redirected to Google to authorize Swetrix to access your Google Ads data.
+
+    _Note: We only request read-only access to your campaign reporting data._
+
+4.  **Select Your Ads Account:**
+    Once authenticated, you will be redirected back to the settings page and see your linked Google email address.
+
+    Select the **Google Ads account** Swetrix should pull campaign metrics from. Accounts managed through an MCC are listed too.
+
+5.  **Wait for the initial import:**
+    After selecting an account, Swetrix automatically imports the last 90 days of campaign data. This usually completes within a minute. From then on, metrics sync automatically several times a day.
+
+## Set up campaign attribution
+
+Google Ads reports what happened *inside* Google (spend, clicks, impressions). To link that to what happened *on your site* (sessions, conversions, revenue), Swetrix matches campaigns against the `utm_campaign` parameter of incoming traffic.
+
+Set the **Final URL suffix** in your Google Ads account so every ad click carries the right tags:
+
+```
+utm_source=google&utm_medium=cpc&utm_campaign={campaignid}
+```
+
+In Google Ads, go to **Admin > Account settings > Tracking > Final URL suffix** and paste the value above. Google replaces `{campaignid}` with the numeric campaign ID on every click, which Swetrix matches automatically.
+
+<Callout type="info">
+
+If you prefer human-readable campaign values, you can hand-write `utm_campaign` per campaign instead — Swetrix matches `utm_campaign` against the campaign **ID or name** (case-insensitive). The `{campaignid}` suffix is recommended because it keeps working when campaigns are renamed.
+
+Without any `utm_campaign`, Google's auto-tagging (`gclid`) still lets Swetrix attribute traffic to `google / cpc` — but not to a specific campaign.
+
+</Callout>
+
+## Viewing Ads Data
+
+Once connected, your campaign data appears in the dedicated **Ads** tab of your project dashboard.
+
+1.  Open your project.
+2.  Click the **Ads** tab in the project navigation.
+
+You will see spend, clicks, CPC, sessions, attributed revenue, ROAS and CPA, a trend chart, and a per-campaign breakdown.
+
+- [Learn more about the Ads dashboard](/analytics-dashboard/ads)
+
+## Measuring revenue per campaign
+
+To get ROAS and CPA, connect [Revenue Tracking](/analytics-dashboard/revenue-tracking) and pass the Swetrix session ID with your transactions (`swetrix_session_id` metadata for Stripe/Paddle, or `sessionId` on the revenue API). Swetrix then links each purchase to the session that made it — and to the campaign that session came from.
+
+## Managing your connection
+
+You can disconnect Google Ads at any time from **Project Settings > Integrations**. Disconnecting removes the stored tokens but keeps previously synced campaign data in your dashboard.
+
+If you revoke Swetrix's access from your Google account, syncing pauses and the settings page will prompt you to reconnect.

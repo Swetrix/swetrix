@@ -35,12 +35,14 @@ import type {
   OverallObject as ServerOverallObject,
 } from '~/api/api.server'
 import {
+  useAdsCampaignMapProxy,
   useCustomEventsMetadataProxy,
   usePropertyMetadataProxy,
   useRevenueProxy,
 } from '~/hooks/useAnalyticsProxy'
 import { useAnnotations } from '~/hooks/useAnnotations'
 import { TRAFFIC_PANELS_ORDER, isSelfhosted } from '~/lib/constants'
+import { formatCurrencyAmount } from '~/lib/pricing/format'
 import { CountryEntry, Entry } from '~/lib/models/Entry'
 import { OverallObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
@@ -254,6 +256,11 @@ const TrafficViewInner = ({
     useCustomEventsMetadataProxy()
   const { fetchMetadata: fetchPropertyMetadata } = usePropertyMetadataProxy()
   const { fetchRevenueStatus, fetchRevenueData } = useRevenueProxy()
+  const {
+    fetchCampaignMap,
+    map: adsCampaignMap,
+    currency: adsCurrency,
+  } = useAdsCampaignMapProxy()
   const { trafficRefreshTrigger } = useRefreshTriggers()
   const {
     timezone,
@@ -479,6 +486,28 @@ const TrafficViewInner = ({
 
     loadRevenueStatus()
   }, [id, fetchRevenueStatus])
+
+  // Fetch ad campaign spend map for the utm_campaign panel rows. Only runs
+  // when the campaign sub-tab is open; unconnected projects get an empty map.
+  useEffect(() => {
+    if (!id || isSelfhosted || panelsActiveTabs.source !== 'ca') {
+      return
+    }
+
+    fetchCampaignMap(id, {
+      period,
+      from: searchParams.get('from') || undefined,
+      to: searchParams.get('to') || undefined,
+      timezone,
+    })
+  }, [
+    id,
+    panelsActiveTabs.source,
+    period,
+    timezone,
+    fetchCampaignMap,
+    searchParams,
+  ])
 
   // Version data mapping for browser/OS versions
   const createVersionDataMapping = useMemo(() => {
@@ -1348,11 +1377,41 @@ const TrafficViewInner = ({
                       )
                     }
                     return ({ name: entryName }: any) => {
+                      let decoded = entryName
                       try {
-                        return decodeURIComponent(entryName)
+                        decoded = decodeURIComponent(entryName)
                       } catch {
-                        return entryName
+                        //
                       }
+
+                      const adInfo =
+                        activeTab === 'ca' && adsCampaignMap
+                          ? adsCampaignMap[String(decoded).toLowerCase().trim()]
+                          : undefined
+
+                      if (!adInfo) {
+                        return decoded
+                      }
+
+                      return (
+                        <span className='flex min-w-0 items-center gap-2'>
+                          <span className='truncate'>{decoded}</span>
+                          <span className='shrink-0 font-mono text-xs text-gray-500 tabular-nums dark:text-gray-400'>
+                            {formatCurrencyAmount(
+                              adInfo.cost,
+                              adsCurrency,
+                              language,
+                            )}
+                            {' · '}
+                            {formatCurrencyAmount(
+                              adInfo.cpc,
+                              adsCurrency,
+                              language,
+                            )}{' '}
+                            CPC
+                          </span>
+                        </span>
+                      )
                     }
                   }
 

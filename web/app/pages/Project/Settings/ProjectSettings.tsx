@@ -38,7 +38,10 @@ import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { isSelfhosted, isBrowser } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
-import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
+import type {
+  ProjectSettingsActionData,
+  AdsAccount,
+} from '~/routes/projects.settings.$id'
 import Button from '~/ui/Button'
 import GoogleGSVG from '~/ui/icons/GoogleG'
 import GoogleSearchConsoleSVG from '~/ui/icons/GoogleSearchConsole'
@@ -180,6 +183,7 @@ const ProjectSettings = () => {
   const fetcher = useFetcher<ProjectSettingsActionData>()
   const autosaveFetcher = useFetcher<ProjectSettingsActionData>()
   const gscFetcher = useFetcher<ProjectSettingsActionData>()
+  const adsFetcher = useFetcher<ProjectSettingsActionData>()
 
   const [project, setProject] = useState<Project>(initialProject)
   const [form, setForm] = useState<Form>(() =>
@@ -208,6 +212,8 @@ const ProjectSettings = () => {
   const shouldHandleFetcherData =
     useDeduplicateFetcherResponse<ProjectSettingsActionData>()
   const shouldHandleGscData =
+    useDeduplicateFetcherResponse<ProjectSettingsActionData>()
+  const shouldHandleAdsData =
     useDeduplicateFetcherResponse<ProjectSettingsActionData>()
   const activeAutosave = useRef<{
     updates: Partial<Form>
@@ -397,6 +403,14 @@ const ProjectSettings = () => {
   const [gscEmail, setGscEmail] = useState<string | null>(null)
   const [gscAvailable, setGscAvailable] = useState<boolean>(true)
 
+  // Google Ads integration state
+  const [adsConnected, setAdsConnected] = useState<boolean | null>(null)
+  const [adsAccounts, setAdsAccounts] = useState<AdsAccount[]>([])
+  const [adsEmail, setAdsEmail] = useState<string | null>(null)
+  const [adsAvailable, setAdsAvailable] = useState<boolean>(true)
+  const [adsCustomerId, setAdsCustomerId] = useState<string | null>(null)
+  const [adsSyncError, setAdsSyncError] = useState<string | null>(null)
+
   // CAPTCHA state
   const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(
     () => initialProject.captchaSecretKey || null,
@@ -508,6 +522,10 @@ const ProjectSettings = () => {
   const pendingGscPropertyUri = useRef<string | null>(null)
   const gscInitialized = useRef(false)
 
+  const [adsAccountsPending, setAdsAccountsPending] = useState(false)
+  const pendingAdsCustomerId = useRef<string | null>(null)
+  const adsInitialized = useRef(false)
+
   // Handle GSC fetcher responses
   useEffect(() => {
     if (gscFetcher.state !== 'idle' || !gscFetcher.data) return
@@ -607,6 +625,108 @@ const ProjectSettings = () => {
     if (gscInitialized.current) return
     gscInitialized.current = true
     gscFetcher.submit({ intent: 'gsc-status' }, { method: 'post' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Handle Google Ads fetcher responses
+  useEffect(() => {
+    if (adsFetcher.state !== 'idle' || !adsFetcher.data) return
+    if (!shouldHandleAdsData(adsFetcher.data)) return
+
+    const {
+      intent,
+      adsStatus,
+      adsAccounts: accounts,
+      adsAuthUrl,
+      error: adsError,
+    } = adsFetcher.data
+
+    if (adsFetcher.data.success) {
+      if (intent === 'ads-status' && adsStatus) {
+        setAdsConnected(adsStatus.connected)
+        setAdsEmail(adsStatus.email || null)
+        setAdsAvailable(adsStatus.available !== false)
+        setAdsCustomerId(adsStatus.customerId || null)
+        setAdsSyncError(adsStatus.syncError || null)
+        if (adsStatus.connected) {
+          setAdsAccountsPending(true)
+        } else {
+          setAdsAccounts([])
+        }
+      } else if (intent === 'ads-accounts' && accounts) {
+        setAdsAccounts(accounts)
+        setAdsAccountsPending(false)
+      } else if (intent === 'ads-connect' && adsAuthUrl) {
+        const safeUrl = (() => {
+          try {
+            const parsed = new URL(adsAuthUrl)
+            if (parsed.protocol !== 'https:') return null
+            if (parsed.username || parsed.password) return null
+            if (parsed.hostname !== 'accounts.google.com') return null
+            return parsed.toString()
+          } catch {
+            return null
+          }
+        })()
+
+        if (!safeUrl) {
+          toast.error(t('apiNotifications.somethingWentWrong'))
+          return
+        }
+
+        window.location.href = safeUrl
+      } else if (intent === 'ads-disconnect') {
+        setAdsConnected(false)
+        setAdsAccounts([])
+        setAdsEmail(null)
+        setAdsCustomerId(null)
+        setAdsSyncError(null)
+        pendingAdsCustomerId.current = null
+        toast.success(t('project.settings.ads.disconnected'))
+      } else if (intent === 'ads-set-account') {
+        const customerId = pendingAdsCustomerId.current
+        if (customerId) {
+          setAdsCustomerId(customerId)
+          pendingAdsCustomerId.current = null
+        }
+        setAdsSyncError(null)
+        toast.success(t('project.settings.ads.accountConnected'))
+      } else if (intent === 'ads-sync') {
+        setAdsSyncError(null)
+        toast.success(t('project.settings.ads.syncTriggered'))
+      }
+    } else if (adsError) {
+      toast.error(
+        typeof adsError === 'string'
+          ? adsError
+          : t('apiNotifications.somethingWentWrong'),
+      )
+      setAdsAccountsPending(false)
+
+      if (intent === 'ads-status') {
+        setAdsConnected(false)
+        setAdsEmail(null)
+        setAdsAccounts([])
+      } else if (intent === 'ads-set-account') {
+        pendingAdsCustomerId.current = null
+      }
+    }
+  }, [adsFetcher.state, adsFetcher.data, t, shouldHandleAdsData])
+
+  // Fetch Google Ads accounts after status confirms connected
+  useEffect(() => {
+    if (adsAccountsPending && adsFetcher.state === 'idle') {
+      setAdsAccountsPending(false)
+      adsFetcher.submit({ intent: 'ads-accounts' }, { method: 'post' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adsAccountsPending, adsFetcher.state])
+
+  // Initial Google Ads status fetch
+  useEffect(() => {
+    if (adsInitialized.current) return
+    adsInitialized.current = true
+    adsFetcher.submit({ intent: 'ads-status' }, { method: 'post' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -1343,6 +1463,153 @@ const ProjectSettings = () => {
                       />
                     </Text>
                   </>
+                )}
+
+                <hr className='-mx-4 mt-6 mb-4 border-gray-200 dark:border-slate-800' />
+
+                <Text
+                  as='h3'
+                  size='lg'
+                  weight='medium'
+                  className='mb-2 flex items-center gap-2'
+                >
+                  <GoogleGSVG className='size-6' />
+                  Google Ads
+                </Text>
+                {adsConnected === null ? (
+                  <Loader />
+                ) : !adsAvailable ? (
+                  <div className='rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100'>
+                    <Trans
+                      t={t}
+                      i18nKey='project.settings.ads.notConfigured'
+                      components={{
+                        code: (
+                          <code className='rounded bg-amber-100 px-1 py-0.5 font-mono text-xs dark:bg-amber-900/60' />
+                        ),
+                      }}
+                    />
+                  </div>
+                ) : !adsConnected ? (
+                  <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
+                    <Text
+                      as='p'
+                      size='sm'
+                      className='text-gray-800 dark:text-gray-200'
+                    >
+                      {t('project.settings.ads.connect')}
+                    </Text>
+                    <Button
+                      className='flex items-center gap-2'
+                      type='button'
+                      onClick={() => {
+                        adsFetcher.submit(
+                          { intent: 'ads-connect' },
+                          { method: 'post' },
+                        )
+                      }}
+                      loading={
+                        adsFetcher.state !== 'idle'
+                          ? adsFetcher.formData?.get('intent') === 'ads-connect'
+                          : undefined
+                      }
+                    >
+                      <GoogleGSVG className='size-4' />
+                      {t('common.connect')}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className='flex flex-col gap-3'>
+                    <Input
+                      className='lg:w-1/2'
+                      label={t('project.settings.ads.linkedGoogleAccount')}
+                      value={adsEmail || ''}
+                      disabled
+                    />
+
+                    {adsSyncError ? (
+                      <div className='rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100'>
+                        {t('project.settings.ads.syncError')}
+                      </div>
+                    ) : null}
+
+                    <Button
+                      variant='danger-outline'
+                      type='button'
+                      className='max-w-max'
+                      onClick={() => {
+                        adsFetcher.submit(
+                          { intent: 'ads-disconnect' },
+                          { method: 'post' },
+                        )
+                      }}
+                      loading={
+                        adsFetcher.state !== 'idle'
+                          ? adsFetcher.formData?.get('intent') ===
+                            'ads-disconnect'
+                          : undefined
+                      }
+                    >
+                      {t('common.disconnect')}
+                    </Button>
+
+                    <Select
+                      fieldLabelClassName='mt-4 max-w-max'
+                      className='lg:w-1/2'
+                      hintClassName='lg:w-2/3'
+                      label={t('project.settings.ads.adsAccount')}
+                      hint={t('project.settings.ads.adsAccountHint')}
+                      items={_map(adsAccounts, (account) => ({
+                        key: account.customerId,
+                        label: `${account.name} (${account.customerId})`,
+                      }))}
+                      keyExtractor={(item) => item.key}
+                      labelExtractor={(item) => item.label}
+                      onSelect={(item: { key: string; label: string }) => {
+                        pendingAdsCustomerId.current = item.key
+                        adsFetcher.submit(
+                          {
+                            intent: 'ads-set-account',
+                            customerId: item.key,
+                          },
+                          { method: 'post' },
+                        )
+                      }}
+                      title={
+                        adsCustomerId || t('project.settings.ads.selectAccount')
+                      }
+                      selectedItem={
+                        adsCustomerId
+                          ? {
+                              key: adsCustomerId,
+                              label:
+                                _map(
+                                  adsAccounts.filter(
+                                    (account) =>
+                                      account.customerId === adsCustomerId,
+                                  ),
+                                  (account) =>
+                                    `${account.name} (${account.customerId})`,
+                                )[0] || adsCustomerId,
+                            }
+                          : undefined
+                      }
+                    />
+
+                    {adsCustomerId ? (
+                      <div className='rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-100'>
+                        <Trans
+                          t={t}
+                          i18nKey='project.settings.ads.trackingTemplate'
+                          components={{
+                            code: (
+                              <code className='rounded bg-blue-100 px-1 py-0.5 font-mono text-xs dark:bg-blue-900/60' />
+                            ),
+                          }}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
                 )}
               </div>
             ) : null}

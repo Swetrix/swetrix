@@ -23,6 +23,7 @@ import {
   MonitorPlayIcon,
   ToggleRightIcon,
   MagnifyingGlassIcon,
+  MegaphoneIcon,
 } from '@phosphor-icons/react'
 import React, {
   useState,
@@ -132,6 +133,7 @@ const ProfilesView = lazy(() => import('../tabs/Profiles/ProfilesView'))
 const ReplaysView = lazy(() => import('../tabs/Replays/ReplaysView'))
 const SessionsView = lazy(() => import('../tabs/Sessions/SessionsView'))
 const SEOView = lazy(() => import('../tabs/SEO/SEOView'))
+const AdsView = lazy(() => import('../tabs/Ads/AdsView'))
 const TrafficView = lazy(() => import('../tabs/Traffic/TrafficView'))
 
 interface ViewProjectContextType {
@@ -205,6 +207,7 @@ interface RefreshTriggersContextType {
   profilesRefreshTrigger: number
   replaysRefreshTrigger: number
   seoRefreshTrigger: number
+  adsRefreshTrigger: number
 }
 
 const defaultViewProjectContext: ViewProjectContextType = {
@@ -274,6 +277,7 @@ const defaultRefreshTriggersContext: RefreshTriggersContextType = {
   profilesRefreshTrigger: 0,
   replaysRefreshTrigger: 0,
   seoRefreshTrigger: 0,
+  adsRefreshTrigger: 0,
 }
 
 export const ViewProjectContext = createContext<ViewProjectContextType>(
@@ -365,6 +369,7 @@ const ViewProjectContent = () => {
   const [profilesRefreshTrigger, setProfilesRefreshTrigger] = useState(0)
   const [replaysRefreshTrigger, setReplaysRefreshTrigger] = useState(0)
   const [seoRefreshTrigger, setSeoRefreshTrigger] = useState(0)
+  const [adsRefreshTrigger, setAdsRefreshTrigger] = useState(0)
   const [activeChartMetrics] = useState<
     Record<keyof typeof CHART_METRICS_MAPPING, boolean>
   >({
@@ -830,6 +835,11 @@ const ViewProjectContent = () => {
         : [
             ...baseTabs,
             {
+              id: PROJECT_TABS.ads,
+              label: t('dashboard.ads'),
+              icon: MegaphoneIcon,
+            },
+            {
               id: PROJECT_TABS.ai,
               label: t('dashboard.askAi'),
               icon: SparkleIcon,
@@ -976,6 +986,11 @@ const ViewProjectContent = () => {
 
         if (activeTab === PROJECT_TABS.seo) {
           setSeoRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
+        if (activeTab === PROJECT_TABS.ads) {
+          setAdsRefreshTrigger((prev) => prev + 1)
           return
         }
       }
@@ -1322,6 +1337,7 @@ const ViewProjectContent = () => {
       profilesRefreshTrigger,
       replaysRefreshTrigger,
       seoRefreshTrigger,
+      adsRefreshTrigger,
     }),
     [
       captchaRefreshTrigger,
@@ -1336,6 +1352,7 @@ const ViewProjectContent = () => {
       profilesRefreshTrigger,
       replaysRefreshTrigger,
       seoRefreshTrigger,
+      adsRefreshTrigger,
     ],
   )
 
@@ -1612,6 +1629,9 @@ const ViewProjectContent = () => {
                               ) : null}
                               {activeTab === PROJECT_TABS.seo ? (
                                 <SEOView projectId={id} tnMapping={tnMapping} />
+                              ) : null}
+                              {activeTab === PROJECT_TABS.ads ? (
+                                <AdsView projectId={id} tnMapping={tnMapping} />
                               ) : null}
                               {activeTab === PROJECT_TABS.funnels ? (
                                 <FunnelsView tnMapping={tnMapping} />

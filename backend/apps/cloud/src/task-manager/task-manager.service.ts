@@ -72,6 +72,9 @@ import { SlackService } from '../integrations/slack/slack.service'
 import { RevenueService } from '../revenue/revenue.service'
 import { PaddleAdapter } from '../revenue/adapters/paddle.adapter'
 import { StripeAdapter } from '../revenue/adapters/stripe.adapter'
+import { AdsService } from '../ads/ads.service'
+import { GoogleAdsAdapter } from '../ads/adapters/google-ads.adapter'
+import { ADS_SYNC_ERROR_TOKEN_REVOKED } from '../ads/interfaces/ads.interface'
 import { ProxyDomainService } from '../project/proxy-domain.service'
 import { ChannelDispatcherService } from '../notification-channel/dispatchers/channel-dispatcher.service'
 import {
@@ -437,6 +440,8 @@ export class TaskManagerService {
     private readonly revenueService: RevenueService,
     private readonly paddleAdapter: PaddleAdapter,
     private readonly stripeAdapter: StripeAdapter,
+    private readonly adsService: AdsService,
+    private readonly googleAdsAdapter: GoogleAdsAdapter,
     private readonly proxyDomainService: ProxyDomainService,
     private readonly channelDispatcher: ChannelDispatcherService,
     private readonly templateRenderer: TemplateRendererService,
@@ -1480,6 +1485,75 @@ export class TaskManagerService {
       this.logger.error(
         `[CRON WORKER](syncRevenueData) Error occured: ${reason}`,
       )
+    })
+  }
+
+  // Sync Google Ads campaign metrics every 6 hours. The data is daily-grain,
+  // so more frequent syncs only burn developer-token quota (Basic access is
+  // capped at 15k operations/day across all connected projects).
+  @Cron(CronExpression.EVERY_6_HOURS)
+  async syncAdsData() {
+    if (!this.adsService.isConfigured()) {
+      return
+    }
+
+    const projects = await this.projectService.find({
+      where: {
+        googleAdsRefreshTokenEnc: Not(IsNull()),
+        googleAdsCustomerId: Not(IsNull()),
+        googleAdsSyncError: IsNull(),
+        admin: {
+          planCode: Not(PlanCode.none),
+          dashboardBlockReason: IsNull(),
+        },
+      },
+      select: [
+        'id',
+        'googleAdsCustomerId',
+        'googleAdsLoginCustomerId',
+        'googleAdsCurrency',
+        'revenueCurrency',
+      ],
+    })
+
+    if (_isEmpty(projects)) {
+      return
+    }
+
+    const promises = _map(projects, async (project) => {
+      try {
+        await this.googleAdsAdapter.syncCampaignMetrics({
+          id: project.id,
+          googleAdsCustomerId: project.googleAdsCustomerId,
+          googleAdsLoginCustomerId: project.googleAdsLoginCustomerId,
+          googleAdsCurrency: project.googleAdsCurrency,
+          revenueCurrency: project.revenueCurrency,
+        })
+
+        await this.adsService.updateLastSyncAt(project.id)
+      } catch (error) {
+        const message = String(error?.message || error)
+
+        // A revoked grant won't recover on retry - flag the project so it is
+        // excluded from future syncs and the UI can prompt a reconnect
+        if (
+          message.includes('invalid_grant') ||
+          message.includes('(401)') ||
+          message.includes('unauthorized_client')
+        ) {
+          await this.adsService
+            .markSyncError(project.id, ADS_SYNC_ERROR_TOKEN_REVOKED)
+            .catch(() => {})
+        }
+
+        this.logger.error(
+          `[CRON WORKER](syncAdsData) Error syncing project ${project.id}: ${error}`,
+        )
+      }
+    })
+
+    await Promise.allSettled(promises).catch((reason) => {
+      this.logger.error(`[CRON WORKER](syncAdsData) Error occured: ${reason}`)
     })
   }
 

@@ -200,7 +200,8 @@
     "progress": "Progress: {{value}}%",
     "showEventDetails": "Show {{event}} details",
     "template": "Template",
-    "uploadFile": "Upload file"
+    "uploadFile": "Upload file",
+    "openAdsGuide": "Open ads analytics guide"
   },
   "performance": {
     "slogan": "Real user <span>performance monitoring</span> for faster websites.",
@@ -1146,7 +1147,9 @@
     "response": "Response Time",
     "average": "Average",
     "median": "Median",
-    "xPercentile": "{{x}}th percentile"
+    "xPercentile": "{{x}}th percentile",
+    "ads": "Ads",
+    "failedToLoadAds": "Failed to load ads data"
   },
   "alert": {
     "create": "Create an alert",
@@ -2264,6 +2267,19 @@
         "websitePropertyHint": "Choose the Google Search Console property Swetrix should use for search query data. If your domain is not listed, add and verify it in Google Search Console first.",
         "linkedGoogleAccount": "Connected Google account"
       },
+      "ads": {
+        "connect": "Connect Google Ads to see campaign spend, clicks and ROI next to your analytics.",
+        "disconnected": "Google Ads has been disconnected from this project.",
+        "notConfigured": "Google Ads is not configured on this server. To enable it, set <code>GOOGLE_ADS_CLIENT_ID</code>, <code>GOOGLE_ADS_CLIENT_SECRET</code> and <code>GOOGLE_ADS_DEVELOPER_TOKEN</code> in your API container environment, then restart it.",
+        "linkedGoogleAccount": "Connected Google account",
+        "adsAccount": "Google Ads account",
+        "adsAccountHint": "Choose the Google Ads account Swetrix should pull campaign metrics from. After selecting an account, the last 90 days of campaign data are imported automatically.",
+        "selectAccount": "Select an account",
+        "accountConnected": "Google Ads account saved, importing campaign data...",
+        "syncTriggered": "Campaign data sync started",
+        "syncError": "We could no longer access your Google Ads account, so syncing was paused. Please reconnect your Google account to resume.",
+        "trackingTemplate": "To attribute sessions and revenue to your campaigns, set the \"Final URL suffix\" in your Google Ads account settings to: <code>utm_source=google&utm_medium=cpc&utm_campaign={campaignid}</code>"
+      },
       "tabs": {
         "general": "General",
         "generalDesc": "Configure your project name and basic settings.",
@@ -2882,7 +2898,26 @@
         "hours": "{{count}}h",
         "days": "{{count}}d"
       }
-    }
+    },
+    "ads": {
+      "title": "Ads",
+      "connectAds": "Connect Google Ads",
+      "connectAdsDesc": "See campaign spend, clicks and conversions next to your analytics, and measure the revenue each campaign actually brings in. <docs>Learn more</docs>.",
+      "connectButton": "Connect in settings",
+      "spend": "Spend",
+      "clicks": "Ad clicks",
+      "impressions": "Impressions",
+      "ctr": "CTR",
+      "cpc": "CPC",
+      "cpa": "CPA",
+      "roas": "ROAS",
+      "conversions": "Conversions",
+      "adSessions": "Ad sessions",
+      "attributedRevenue": "Attributed revenue",
+      "campaigns": "Campaigns",
+      "attributionNote": "Sessions and revenue are attributed to campaigns via the utm_campaign parameter, matched against your campaign ID or name. Revenue attribution requires passing the Swetrix session ID to your payment provider."
+    },
+    "acquiredVia": "Acquired via"
   },
   "billing": {
     "update": "Payment details",
