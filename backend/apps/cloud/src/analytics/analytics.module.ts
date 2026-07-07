@@ -21,6 +21,14 @@ import {
   SESSION_REPLAY_EXPORT_QUEUE,
 } from './session-replay-export.service'
 import { SessionReplayExportProcessor } from './session-replay-export.processor'
+import { AnalyticsV2Service } from './v2/analytics-v2.service'
+import { TrafficV2Controller } from './v2/controllers/traffic-v2.controller'
+import { PerformanceV2Controller } from './v2/controllers/performance-v2.controller'
+import { CaptchaV2Controller } from './v2/controllers/captcha-v2.controller'
+import { ErrorsV2Controller } from './v2/controllers/errors-v2.controller'
+import { SessionsV2Controller } from './v2/controllers/sessions-v2.controller'
+import { ProfilesV2Controller } from './v2/controllers/profiles-v2.controller'
+import { ProjectV2Controller } from './v2/controllers/project-v2.controller'
 
 @Module({
   imports: [
@@ -34,6 +42,7 @@ import { SessionReplayExportProcessor } from './session-replay-export.processor'
   ],
   providers: [
     AnalyticsService,
+    AnalyticsV2Service,
     BotDetectionService,
     SaltService,
     SessionReplayS3Service,
@@ -44,6 +53,15 @@ import { SessionReplayExportProcessor } from './session-replay-export.processor'
     PublicProjectCacheInterceptor,
   ],
   exports: [AnalyticsService, BotDetectionService, SaltService],
-  controllers: [AnalyticsController],
+  controllers: [
+    AnalyticsController,
+    TrafficV2Controller,
+    PerformanceV2Controller,
+    CaptchaV2Controller,
+    ErrorsV2Controller,
+    SessionsV2Controller,
+    ProfilesV2Controller,
+    ProjectV2Controller,
+  ],
 })
 export class AnalyticsModule {}

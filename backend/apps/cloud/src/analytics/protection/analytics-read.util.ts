@@ -1,5 +1,6 @@
 import _isString from 'lodash/isString'
 
+import { PID_REGEX } from '../../common/constants'
 import { getIPFromHeaders } from '../../common/utils'
 
 const TRUSTED_PROXY_IPS = new Set(
@@ -36,7 +37,17 @@ export const getTrustworthyIp = (req: {
   return getIPFromHeaders(req.headers) || req.ip || ''
 }
 
-export const getSinglePid = (query: Record<string, unknown>): string | null => {
+export const getSinglePid = (
+  query: Record<string, unknown>,
+  params?: Record<string, unknown>,
+): string | null => {
+  // v2 routes carry the pid as a path param (/v2/projects/:pid/...)
+  const paramPid = params?.pid
+
+  if (_isString(paramPid) && PID_REGEX.test(paramPid)) {
+    return paramPid
+  }
+
   const { pid, pids } = query
 
   if (_isString(pid) && pid) {
