@@ -145,6 +145,10 @@ export const trackViews = () => {
         ref,
       } as IPageViewPayload
 
+      if (pg?.includes('/demo')) {
+        return false
+      }
+
       result.pg = getNewPath(pg)
 
       if (checkIgnore(ref, REFS_TO_IGNORE)) {
