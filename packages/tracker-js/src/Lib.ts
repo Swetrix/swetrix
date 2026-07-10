@@ -63,7 +63,7 @@ export interface LibOptions {
    */
   respectDNT?: boolean
 
-  /** Set a custom URL of the API server (for selfhosted variants of Swetrix). */
+  /** Set a custom URL of the API server; the default value is "https://api.swetrix.com/log"  */
   apiURL?: string
 
   /**
