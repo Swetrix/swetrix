@@ -56,7 +56,6 @@ import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
 import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import { TrafficChart } from '~/pages/Project/tabs/Traffic/TrafficChart'
-import UserFlow from '~/pages/Project/tabs/Traffic/UserFlow'
 import { getChartPointWindow } from '~/pages/Project/View/utils/chartPoint'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
@@ -431,7 +430,7 @@ const TrafficViewInner = ({
   // Panel active tabs
   const [panelsActiveTabs, setPanelsActiveTabs] = useState<{
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
-    page: 'pg' | 'host' | 'userFlow' | 'entryPage' | 'exitPage'
+    page: 'pg' | 'host' | 'entryPage' | 'exitPage'
     device: 'br' | 'os' | 'dv'
     network: 'isp' | 'og' | 'ut' | 'ctp'
     source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co'
@@ -1259,7 +1258,6 @@ const TrafficViewInner = ({
                     { id: 'pg', label: t('project.mapping.pg') },
                     { id: 'entryPage', label: t('project.entryPages') },
                     { id: 'exitPage', label: t('project.exitPages') },
-                    { id: 'userFlow', label: t('project.mapping.userFlow') },
                     {
                       id: 'host',
                       label: t('project.mapping.host'),
@@ -1311,16 +1309,6 @@ const TrafficViewInner = ({
                       onTabChange={(tab) => setPanelTab('page', tab)}
                       activeTabId={panelsActiveTabs.page}
                       data={panelsData.data[panelsActiveTabs.page]}
-                      customRenderer={
-                        panelsActiveTabs.page === 'userFlow'
-                          ? () => (
-                              <UserFlow
-                                isReversed={false}
-                                setReversed={() => {}}
-                              />
-                            )
-                          : undefined
-                      }
                     />
                   )
                 }

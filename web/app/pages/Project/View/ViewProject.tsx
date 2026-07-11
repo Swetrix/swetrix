@@ -19,6 +19,7 @@ import {
   SparkleIcon,
   FlaskIcon,
   IdentificationCardIcon,
+  PathIcon,
   UserListIcon,
   MonitorPlayIcon,
   ToggleRightIcon,
@@ -125,6 +126,7 @@ const FeatureFlagsView = lazy(
 )
 const FunnelsView = lazy(() => import('../tabs/Funnels/FunnelsView'))
 const GoalsView = lazy(() => import('../tabs/Goals/GoalsView'))
+const JourneysView = lazy(() => import('../tabs/Journeys/JourneysView'))
 const PerformanceView = lazy(
   () => import('../tabs/Performance/PerformanceView'),
 )
@@ -202,6 +204,7 @@ interface RefreshTriggersContextType {
   performanceRefreshTrigger: number
   trafficRefreshTrigger: number
   funnelsRefreshTrigger: number
+  journeysRefreshTrigger: number
   profilesRefreshTrigger: number
   replaysRefreshTrigger: number
   seoRefreshTrigger: number
@@ -271,6 +274,7 @@ const defaultRefreshTriggersContext: RefreshTriggersContextType = {
   performanceRefreshTrigger: 0,
   trafficRefreshTrigger: 0,
   funnelsRefreshTrigger: 0,
+  journeysRefreshTrigger: 0,
   profilesRefreshTrigger: 0,
   replaysRefreshTrigger: 0,
   seoRefreshTrigger: 0,
@@ -362,6 +366,7 @@ const ViewProjectContent = () => {
   const [performanceRefreshTrigger, setPerformanceRefreshTrigger] = useState(0)
   const [trafficRefreshTrigger, setTrafficRefreshTrigger] = useState(0)
   const [funnelsRefreshTrigger, setFunnelsRefreshTrigger] = useState(0)
+  const [journeysRefreshTrigger, setJourneysRefreshTrigger] = useState(0)
   const [profilesRefreshTrigger, setProfilesRefreshTrigger] = useState(0)
   const [replaysRefreshTrigger, setReplaysRefreshTrigger] = useState(0)
   const [seoRefreshTrigger, setSeoRefreshTrigger] = useState(0)
@@ -788,6 +793,11 @@ const ViewProjectContent = () => {
         icon: WarningIcon,
       },
       {
+        id: PROJECT_TABS.journeys,
+        label: t('dashboard.journeys'),
+        icon: PathIcon,
+      },
+      {
         id: PROJECT_TABS.funnels,
         label: t('dashboard.funnels'),
         icon: FunnelIcon,
@@ -921,6 +931,11 @@ const ViewProjectContent = () => {
       if (!authLoading && !dataLoading) {
         if (activeTab === PROJECT_TABS.funnels) {
           setFunnelsRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
+        if (activeTab === PROJECT_TABS.journeys) {
+          setJourneysRefreshTrigger((prev) => prev + 1)
           return
         }
 
@@ -1319,6 +1334,7 @@ const ViewProjectContent = () => {
       performanceRefreshTrigger,
       trafficRefreshTrigger,
       funnelsRefreshTrigger,
+      journeysRefreshTrigger,
       profilesRefreshTrigger,
       replaysRefreshTrigger,
       seoRefreshTrigger,
@@ -1333,6 +1349,7 @@ const ViewProjectContent = () => {
       performanceRefreshTrigger,
       trafficRefreshTrigger,
       funnelsRefreshTrigger,
+      journeysRefreshTrigger,
       profilesRefreshTrigger,
       replaysRefreshTrigger,
       seoRefreshTrigger,
@@ -1615,6 +1632,9 @@ const ViewProjectContent = () => {
                               ) : null}
                               {activeTab === PROJECT_TABS.funnels ? (
                                 <FunnelsView tnMapping={tnMapping} />
+                              ) : null}
+                              {activeTab === PROJECT_TABS.journeys ? (
+                                <JourneysView tnMapping={tnMapping} />
                               ) : null}
                               {activeTab === PROJECT_TABS.profiles ? (
                                 <ProfilesView tnMapping={tnMapping} />

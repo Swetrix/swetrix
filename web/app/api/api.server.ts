@@ -1144,6 +1144,56 @@ export async function getFunnelSessionsServer(
   )
 }
 
+export interface JourneySessionsResponse {
+  sessions: Session[]
+  take: number
+  skip: number
+}
+
+export async function getJourneySessionsServer(
+  request: Request,
+  pid: string,
+  params: {
+    period: string
+    from?: string
+    to?: string
+    timezone?: string
+    step: number
+    page: string
+    take?: number
+    skip?: number
+    password?: string
+    filters?: AnalyticsFilter[]
+  },
+): Promise<ServerFetchResult<JourneySessionsResponse>> {
+  const step = Math.min(10, Math.max(1, Math.floor(Number(params.step) || 1)))
+  const take = Math.min(150, Math.max(1, Math.floor(Number(params.take) || 30)))
+  const skip = Math.max(0, Math.floor(Number(params.skip) || 0))
+
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period)
+  queryParams.append('step', String(step))
+  queryParams.append('page', params.page)
+  queryParams.append('take', String(take))
+  queryParams.append('skip', String(skip))
+  queryParams.append('filters', JSON.stringify(params.filters || []))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<JourneySessionsResponse>(
+    request,
+    `log/journey-sessions?${queryParams.toString()}`,
+    { headers },
+  )
+}
+
 export async function getGoalSessionsServer(
   request: Request,
   goalId: string,
@@ -2662,49 +2712,46 @@ export async function processSSOTokenServer(
 }
 
 // ============================================================================
-// MARK: User Flow API
+// MARK: Journeys API
 // ============================================================================
 
-interface UserFlowNode {
-  id: string
-  name: string
-  count: number
-}
-
-interface UserFlowLink {
-  source: string
-  target: string
+export interface Journey {
+  path: string[]
   value: number
 }
 
-interface UserFlowData {
-  nodes: UserFlowNode[]
-  links: UserFlowLink[]
+export interface JourneysResponse {
+  journeys: Journey[]
+  totalSessions: number
+  appliedFilters?: AnalyticsFilter[]
 }
 
-export interface UserFlowResponse {
-  ascending: UserFlowData
-  descending: UserFlowData
-}
-
-export async function getUserFlowServer(
+export async function getJourneysServer(
   request: Request,
   pid: string,
   params: {
-    timeBucket?: string
     period?: string
     filters?: AnalyticsFilter[]
     from?: string
     to?: string
     timezone?: string
+    steps?: number
+    journeys?: number
     password?: string
   } = {},
-): Promise<ServerFetchResult<UserFlowResponse>> {
+): Promise<ServerFetchResult<JourneysResponse>> {
+  const steps = Math.min(10, Math.max(2, Math.floor(Number(params.steps) || 3)))
+  const journeys = Math.min(
+    100,
+    Math.max(5, Math.floor(Number(params.journeys) || 20)),
+  )
+
   const queryParams = new URLSearchParams()
   queryParams.append('pid', pid)
-  queryParams.append('timeBucket', params.timeBucket || 'hour')
   queryParams.append('period', params.period || '3d')
   queryParams.append('filters', JSON.stringify(params.filters || []))
+  queryParams.append('steps', String(steps))
+  queryParams.append('journeys', String(journeys))
   if (params.from) queryParams.append('from', params.from)
   if (params.to) queryParams.append('to', params.to)
   if (params.timezone) queryParams.append('timezone', params.timezone)
@@ -2714,9 +2761,9 @@ export async function getUserFlowServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<UserFlowResponse>(
+  return serverFetch<JourneysResponse>(
     request,
-    `log/user-flow?${queryParams.toString()}`,
+    `log/journeys?${queryParams.toString()}`,
     {
       headers,
     },

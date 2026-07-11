@@ -1257,6 +1257,70 @@ curl 'https://api.swetrix.com/v1/log/user-flow?pid=YOUR_PROJECT_ID&period=7d'\
 
 The parameters are similar to the [`/log` endpoint](#get-v1log).
 
+### GET /v1/log/journeys
+
+Returns the most popular journeys — the ordered sequences of pages visitors viewed within a session. This is the data behind the Journeys tab of the dashboard.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/journeys?pid=YOUR_PROJECT_ID&period=7d&steps=3&journeys=20'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+Each journey in the response is a `path` (an array of page paths) together with `value` — the number of sessions that followed it. The response also includes `totalSessions`, the total number of sessions in the period.
+
+#### Parameters
+
+In addition to the parameters of the [`/log` endpoint](#get-v1log):
+
+<hr />
+
+**steps** (optional, default: `3`)
+
+How many pages deep each journey goes (2 - 10).
+
+<hr />
+
+**journeys** (optional, default: `20`)
+
+How many of the most popular journeys to return (5 - 100).
+
+### GET /v1/log/journey-sessions
+
+Returns the sessions that viewed a given page at a given journey step.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/journey-sessions?pid=YOUR_PROJECT_ID&period=7d&step=2&page=%2Fpricing'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+In addition to the parameters of the [`/log` endpoint](#get-v1log):
+
+<hr />
+
+**step** (required)
+
+The journey step the page was visited at (1-indexed).
+
+<hr />
+
+**page** (required)
+
+The page path visited at the given step.
+
+<hr />
+
+**take** (optional, default: `30`, max: `150`)
+
+The number of sessions to return per page.
+
+<hr />
+
+**skip** (optional, default: `0`)
+
+The number of sessions to skip (for pagination).
+
 ### GET /v1/log/chart
 
 Returns data for the main chart (visits, uniques, sessions duration, etc.) grouped by time bucket. This is useful when you only need the chart data without other aggregations.

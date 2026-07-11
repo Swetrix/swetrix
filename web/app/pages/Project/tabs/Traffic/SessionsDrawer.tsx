@@ -12,6 +12,7 @@ import { useLocation } from 'react-router'
 import type {
   SessionsResponse,
   FunnelSessionsResponse,
+  JourneySessionsResponse,
   GoalSessionsResponse,
   ErrorSessionsResponse,
   ErrorAffectedSession,
@@ -43,6 +44,7 @@ const SESSIONS_TAKE = 30
 type SessionsPageResult =
   | SessionsResponse
   | FunnelSessionsResponse
+  | JourneySessionsResponse
   | GoalSessionsResponse
   | ErrorSessionsResponse
 
@@ -199,6 +201,8 @@ interface SessionsDrawerProps {
   dropoff?: boolean
   showDropoffToggle?: boolean
   onDropoffChange?: (checked: boolean) => void
+  journeyStep?: number
+  journeyPage?: string
   goalId?: string
   errorId?: string
   sessionEvent?: SessionEventType
@@ -222,6 +226,8 @@ export const SessionsDrawer = ({
   dropoff,
   showDropoffToggle,
   onDropoffChange,
+  journeyStep,
+  journeyPage,
   goalId,
   errorId,
   sessionEvent,
@@ -231,6 +237,7 @@ export const SessionsDrawer = ({
   const { t } = useTranslation('common')
   const stableFilters = useMemo(() => filters ?? [], [filters])
   const isFunnelMode = !!(funnelId && funnelStep)
+  const isJourneyMode = !!(journeyStep && journeyPage)
   const isGoalMode = !!goalId
   const isErrorMode = !!errorId
   const [sessions, setSessions] = useState<DrawerSession[]>([])
@@ -267,6 +274,23 @@ export const SessionsDrawer = ({
               step: funnelStep,
               filters: stableFilters,
               dropoff,
+              take: SESSIONS_TAKE,
+              skip: currentSkip,
+            },
+            signal,
+          )
+        } else if (isJourneyMode) {
+          result = await fetchSessionsPage(
+            'getJourneySessions',
+            projectId,
+            {
+              period,
+              from,
+              to,
+              timezone,
+              step: journeyStep,
+              page: journeyPage,
+              filters: stableFilters,
               take: SESSIONS_TAKE,
               skip: currentSkip,
             },
@@ -361,11 +385,14 @@ export const SessionsDrawer = ({
       to,
       timezone,
       isFunnelMode,
+      isJourneyMode,
       isGoalMode,
       isErrorMode,
       funnelId,
       funnelStep,
       dropoff,
+      journeyStep,
+      journeyPage,
       goalId,
       errorId,
       sessionEvent,
