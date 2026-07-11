@@ -65,6 +65,7 @@ const ICON_COLORS: Record<string, string> = {
   traffic: 'text-blue-500',
   performance: 'text-amber-500',
   seo: 'text-green-500',
+  journeys: 'text-cyan-500',
   funnels: 'text-teal-500',
   // Product Analytics
   profiles: 'text-fuchsia-500',
@@ -423,6 +424,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         PROJECT_TABS.traffic,
         PROJECT_TABS.seo,
         PROJECT_TABS.performance,
+        PROJECT_TABS.journeys,
         PROJECT_TABS.funnels,
       ]
         .filter(Boolean)

@@ -29,7 +29,7 @@ import type {
   BotProtectionStats,
   BotProtectionPeriod,
   ProjectDataCustomEventsResponse,
-  UserFlowResponse,
+  JourneysResponse,
   GSCDashboardResponse,
   RevenueStatus,
   RevenueDataResponse,
@@ -1008,19 +1008,25 @@ export function useProjectDataCustomEventsProxy() {
   return { fetchCustomEvents }
 }
 
-export function useUserFlowProxy() {
-  const [data, setData] = useState<UserFlowResponse | null>(null)
+export function useJourneysProxy() {
+  const [data, setData] = useState<JourneysResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchUserFlow = useCallback(
-    async (projectId: string, params: ClientAnalyticsParams = {}) => {
+  const fetchJourneys = useCallback(
+    async (
+      projectId: string,
+      params: ClientAnalyticsParams & {
+        steps?: number
+        journeys?: number
+      } = {},
+    ) => {
       setIsLoading(true)
       setError(null)
 
       try {
-        const result = await postAnalytics<UserFlowResponse>({
-          action: 'getUserFlow',
+        const result = await postAnalytics<JourneysResponse>({
+          action: 'getJourneys',
           projectId,
           params,
         })
@@ -1037,7 +1043,7 @@ export function useUserFlowProxy() {
     [],
   )
 
-  return { fetchUserFlow, data, error, isLoading }
+  return { fetchJourneys, data, error, isLoading }
 }
 
 export function useGSCDashboardProxy() {

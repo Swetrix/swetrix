@@ -97,6 +97,8 @@ import {
   IUserFlowNode,
   IUserFlowLink,
   IUserFlow,
+  IJourney,
+  IJourneys,
   IBuildUserFlow,
   IExtractChartData,
   IGenerateXAxis,
@@ -1227,6 +1229,77 @@ export class AnalyticsService {
     return {
       ascending: this.buildUserFlow(ascendingLinks),
       descending: this.buildUserFlow(descendingLinks),
+    }
+  }
+
+  async getJourneys(
+    params: Record<string, unknown>,
+    filtersQuery: string,
+    steps: number,
+    journeys: number,
+  ): Promise<IJourneys> {
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
+
+    const query = `
+      WITH session_paths AS (
+        SELECT
+          psid,
+          arraySlice(
+            arrayCompact(arrayMap(x -> x.2, arraySort(groupArray((created, pg))))),
+            1,
+            {steps:UInt32}
+          ) AS path
+        FROM events
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND type = 'pageview'
+          AND psid != 0
+          AND pg IS NOT NULL
+          ${sessionFiltersQuery}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psid
+      )
+      SELECT
+        path,
+        count() AS value,
+        sum(count()) OVER () AS totalSessions
+      FROM session_paths
+      GROUP BY path
+      ORDER BY value DESC
+      LIMIT {journeys:UInt32}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { ...params, steps, journeys },
+      })
+      .then((res) =>
+        res.json<{ path: string[]; value: string; totalSessions: string }>(),
+      )
+
+    if (_isEmpty(data)) {
+      return { journeys: [], totalSessions: 0 }
+    }
+
+    const journeyList: IJourney[] = _map(data, (row) => ({
+      path: row.path,
+      value: Number(row.value),
+    }))
+
+    return {
+      journeys: journeyList,
+      totalSessions: Number(data[0].totalSessions),
     }
   }
 
@@ -3486,6 +3559,160 @@ export class AnalyticsService {
           ...pageParams,
           timezone: safeTimezone,
           step,
+          take,
+          skip,
+        },
+      })
+      .then((resultSet) => resultSet.json())
+
+    return data
+  }
+
+  async getJourneySessionsList(
+    params: any,
+    safeTimezone: string,
+    step: number,
+    page: string,
+    take = 30,
+    skip = 0,
+    filtersQuery = '',
+  ): Promise<object | void> {
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
+
+    const query = `
+      WITH journey_qualified AS (
+        SELECT psid
+        FROM (
+          SELECT
+            psid,
+            arrayCompact(arrayMap(x -> x.2, arraySort(groupArray((created, pg))))) AS path
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type = 'pageview'
+            AND psid != 0
+            AND pg IS NOT NULL
+            ${sessionFiltersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          GROUP BY psid
+        )
+        WHERE arrayElement(path, {step:UInt32}) = {page:String}
+      ),
+      distinct_sessions AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          min(toTimeZone(created, {timezone:String})) AS sessionStart,
+          max(toTimeZone(created, {timezone:String})) AS lastActivity
+        FROM events
+        WHERE pid = {pid:FixedString(12)}
+          AND type IN ('pageview', 'custom_event')
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM journey_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      pageview_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM journey_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      event_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM journey_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      error_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'error' AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM journey_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      session_duration_agg AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
+          argMax(profileId, lastSeen) as profileId
+        FROM sessions
+        WHERE pid = {pid:FixedString(12)}
+          AND psid IN (SELECT psid FROM journey_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      first_session_per_profile AS (
+        SELECT
+          profileId,
+          argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+        GROUP BY profileId
+      )
+      SELECT
+        dsf.psidCasted AS psid,
+        dsf.cc,
+        dsf.os,
+        dsf.br,
+        COALESCE(pc.count, 0) AS pageviews,
+        COALESCE(ec.count, 0) AS customEvents,
+        COALESCE(errc.count, 0) AS errors,
+        dsf.sessionStart,
+        dsf.lastActivity,
+        if(dateDiff('second', dsf.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        sda.avg_duration AS sdur,
+        sda.profileId AS profileId,
+        if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
+        if(fsp.firstPsid = dsf.psidCasted, 1, 0) AS isFirstSession
+      FROM distinct_sessions dsf
+      LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
+      LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
+      LEFT JOIN error_counts errc ON dsf.psidCasted = errc.psidCasted AND dsf.pid = errc.pid
+      LEFT JOIN session_duration_agg sda ON dsf.psidCasted = sda.psidCasted AND dsf.pid = sda.pid
+      LEFT JOIN first_session_per_profile fsp ON sda.profileId = fsp.profileId
+      WHERE dsf.psidCasted IS NOT NULL
+      ORDER BY dsf.sessionStart DESC
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          ...params,
+          timezone: safeTimezone,
+          step,
+          page,
           take,
           skip,
         },

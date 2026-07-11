@@ -37,7 +37,8 @@ import {
   getLiveVisitorsInfoServer,
   getBotProtectionStatsServer,
   getProjectDataCustomEventsServer,
-  getUserFlowServer,
+  getJourneysServer,
+  getJourneySessionsServer,
   getGSCKeywordsServer,
   getGSCDashboardServer,
   getGSCDetailsServer,
@@ -76,7 +77,8 @@ import {
   type BotProtectionStats,
   type BotProtectionPeriod,
   type ProjectDataCustomEventsResponse,
-  type UserFlowResponse,
+  type JourneysResponse,
+  type JourneySessionsResponse,
   type GSCKeywordsResponse,
   type GSCDashboardResponse,
   type GSCDetailsResponse,
@@ -134,7 +136,8 @@ interface ProxyRequest {
     | 'getLiveVisitorsInfo'
     | 'getBotProtectionStats'
     | 'getProjectDataCustomEvents'
-    | 'getUserFlow'
+    | 'getJourneys'
+    | 'getJourneySessions'
     | 'getGSCKeywords'
     | 'getGSCDashboard'
     | 'getGSCDetails'
@@ -175,6 +178,8 @@ interface ProxyRequest {
     query?: string
     funnelId?: string
     step?: number
+    steps?: number
+    journeys?: number
     dropoff?: boolean
     goalId?: string
     sessionEvent?: 'traffic' | 'performance' | 'error'
@@ -946,17 +951,41 @@ export async function action({ request }: ActionFunctionArgs) {
         })
       }
 
-      case 'getUserFlow': {
-        const result = await getUserFlowServer(request, projectId, {
-          timeBucket: params.timeBucket,
+      case 'getJourneys': {
+        const result = await getJourneysServer(request, projectId, {
           period: params.period,
           filters: params.filters,
           from: formatDateForBackend(params.from),
           to: formatDateForBackend(params.to),
           timezone: params.timezone,
+          steps: params.steps,
+          journeys: params.journeys,
           password: password || undefined,
         })
-        return data<ProxyResponse<UserFlowResponse>>({
+        return data<ProxyResponse<JourneysResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getJourneySessions': {
+        const result = await getJourneySessionsServer(request, projectId, {
+          period: analyticsParams.period,
+          from: analyticsParams.from,
+          to: analyticsParams.to,
+          timezone: analyticsParams.timezone,
+          step: params.step ?? 1,
+          page: params.page ?? '',
+          take: params.take,
+          skip: params.skip,
+          password: analyticsParams.password,
+          filters: params.filters || [],
+        })
+        return data<ProxyResponse<JourneySessionsResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

@@ -2342,7 +2342,6 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   ut: t('project.mapping.ut'),
   ctp: t('project.mapping.ctp'),
   ev: t('project.event'),
-  userFlow: t('project.mapping.userFlow'),
   'tag:key': t('project.metamapping.tag.key'),
   'tag:value': t('project.metamapping.tag.value'),
   'ev:key': t('project.metamapping.ev.key'),
