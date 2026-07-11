@@ -2715,7 +2715,7 @@ export async function processSSOTokenServer(
 // MARK: Journeys API
 // ============================================================================
 
-export interface Journey {
+interface Journey {
   path: string[]
   value: number
 }
