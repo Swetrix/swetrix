@@ -139,6 +139,9 @@ const isValidLocale = (lc: string): boolean => {
 
 // 2 minutes
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
+// The concurrency sweep materializes one row per minute of the requested window,
+// so cap how far back it can be reconstructed to keep the query bounded
+const MAX_CONCURRENCY_WINDOW_MINUTES = 366 * 24 * 60
 const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
 
@@ -5516,6 +5519,7 @@ export class AnalyticsService {
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
     mode: ChartRenderMode,
+    includeConcurrency = false,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -5542,6 +5546,7 @@ export class AnalyticsService {
           safeTimezone,
           customEVFilterApplied,
           mode,
+          includeConcurrency,
         )
 
         // @ts-ignore
@@ -5694,7 +5699,7 @@ export class AnalyticsService {
               FROM session_intervals
               UNION ALL
               SELECT fromMinute + toIntervalMinute(number) AS m, toInt32(0) AS delta
-              FROM numbers(toUInt64(dateDiff('minute', fromMinute, toMinute)) + 1)
+              FROM numbers(least(toUInt64(dateDiff('minute', fromMinute, toMinute)) + 1, ${MAX_CONCURRENCY_WINDOW_MINUTES}))
             )
             GROUP BY m
           )
@@ -5733,6 +5738,7 @@ export class AnalyticsService {
     safeTimezone: string,
     customEVFilterApplied: boolean,
     mode: ChartRenderMode,
+    includeConcurrency = false,
   ): Promise<object | void> {
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
@@ -5743,9 +5749,17 @@ export class AnalyticsService {
       customEVFilterApplied,
     )
 
-    // The sessions table has no dimension columns, so concurrency cannot respect
-    // dashboard filters — return zeros instead of misleading unfiltered data
-    const shouldComputeConcurrency = !customEVFilterApplied && !filtersQuery
+    // Concurrency is only computed when explicitly requested (the live visitors
+    // metric is off by default) and within a bounded window — the sweep-line
+    // query materializes a row per minute. The sessions table also has no
+    // dimension columns, so concurrency cannot respect dashboard filters —
+    // return zeros instead of misleading unfiltered data
+    const shouldComputeConcurrency =
+      includeConcurrency &&
+      !customEVFilterApplied &&
+      !filtersQuery &&
+      dayjs.utc(to).diff(dayjs.utc(from), 'minute') <=
+        MAX_CONCURRENCY_WINDOW_MINUTES
 
     const [{ data }, concurrency] = await Promise.all([
       clickhouse

@@ -276,7 +276,7 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
 ```
 
 :::info
-`chart.concurrency` is the number of live (concurrent) visitors over time, reconstructed from session activity. For the `minute` time bucket it's the exact number of visitors active during that minute; for larger buckets it's the peak concurrency within the bucket. When `filters` are applied, this array is zero-filled, as concurrency cannot be segmented by dimensions.
+`chart.concurrency` is the number of live (concurrent) visitors over time, reconstructed from session activity. It is only computed when the request sets `includeConcurrency=true`; otherwise the array is zero-filled. For the `minute` time bucket it's the exact number of visitors active during that minute; for larger buckets it's the peak concurrency within the bucket. When `filters` are applied (or the requested time range is longer than a year), this array is zero-filled, as concurrency cannot be segmented by dimensions.
 :::
 
 #### Parameters
@@ -346,6 +346,12 @@ The `meta` is an array of objects like:
   },
 }
 ```
+
+<hr />
+
+**includeConcurrency**
+
+Set to `true` to include the `chart.concurrency` (live visitors over time) series in the response. Reconstructing concurrency from session intervals is relatively expensive, so it's skipped unless explicitly requested.
 
 <hr />
 

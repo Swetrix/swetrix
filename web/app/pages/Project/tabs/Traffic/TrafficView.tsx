@@ -411,11 +411,10 @@ const TrafficViewInner = ({
   const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
   // Chart metrics state
-  const [activeChartMetrics, setActiveChartMetrics] = useState({
+  const [activeChartMetricsState, setActiveChartMetrics] = useState({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.sessionDuration]: false,
-    [CHART_METRICS_MAPPING.liveVisitors]: false,
     [CHART_METRICS_MAPPING.bounce]: false,
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
@@ -423,6 +422,17 @@ const TrafficViewInner = ({
     [CHART_METRICS_MAPPING.customEvents]: false,
     [CHART_METRICS_MAPPING.revenue]: false,
   })
+
+  // Live visitors is URL-driven (like custom events) so the route loader knows
+  // to request concurrency data from the API — it is only computed on demand
+  const activeChartMetrics = useMemo(
+    () => ({
+      ...activeChartMetricsState,
+      [CHART_METRICS_MAPPING.liveVisitors]:
+        searchParams.get('liveVisitors') === 'true',
+    }),
+    [activeChartMetricsState, searchParams],
+  )
   // Get custom events from URL params (SSR-friendly)
   const activeChartMetricsCustomEvents = useMemo(() => {
     const param = searchParams.get('customEvents')
@@ -673,25 +683,32 @@ const TrafficViewInner = ({
         return
       }
 
+      if (pairID === CHART_METRICS_MAPPING.liveVisitors) {
+        const newParams = new URLSearchParams(searchParams.toString())
+        if (newParams.get('liveVisitors') === 'true') {
+          newParams.delete('liveVisitors')
+        } else {
+          newParams.set('liveVisitors', 'true')
+        }
+        setSearchParams(newParams)
+        return
+      }
+
       setActiveChartMetrics((prev) => ({
         ...prev,
         [pairID]: !prev[pairID as keyof typeof prev],
       }))
     },
-    [isConflicted, t],
+    [isConflicted, t, searchParams, setSearchParams],
   )
 
   // Live visitors cannot be filtered — turn it off if a filter gets applied
   // while it's active (the toggle itself is disabled in that state)
   useEffect(() => {
-    if (
-      !_isEmpty(filters) &&
-      activeChartMetrics[CHART_METRICS_MAPPING.liveVisitors]
-    ) {
-      setActiveChartMetrics((prev) => ({
-        ...prev,
-        [CHART_METRICS_MAPPING.liveVisitors]: false,
-      }))
+    if (!_isEmpty(filters) && searchParams.get('liveVisitors') === 'true') {
+      const newParams = new URLSearchParams(searchParams.toString())
+      newParams.delete('liveVisitors')
+      setSearchParams(newParams)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters])

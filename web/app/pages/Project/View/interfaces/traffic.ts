@@ -60,6 +60,7 @@ export interface TrafficLogResponse {
     uniques: number[]
     sdur: number[]
     bounces?: number[]
+    concurrency?: number[]
   }
   customs: Customs
   properties: Properties

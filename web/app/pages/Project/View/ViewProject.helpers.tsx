@@ -784,8 +784,10 @@ const getSettings = (
         trendlineTotal: '#eba14b',
         sessionDuration: '#c945ed',
         sessionDurationCompare: 'rgba(201, 69, 237, 0.4)',
-        liveVisitors: '#16A34A',
-        liveVisitorsCompare: 'rgba(22, 163, 74, 0.4)',
+        // Distinct from every CUSTOM_EVENTS_CHART_COLORS entry so the legend
+        // stays unambiguous when both series are shown
+        liveVisitors: '#10B981',
+        liveVisitorsCompare: 'rgba(16, 185, 129, 0.4)',
         revenue: '#ea580c', // orange-600 for net revenue
         refundsAmount: 'rgba(234, 88, 12, 0.25)', // light orange fill for refunds overlay
         ...customEventsColors,
