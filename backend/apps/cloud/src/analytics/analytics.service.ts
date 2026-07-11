@@ -1253,6 +1253,10 @@ export class AnalyticsService {
         )`
       : ''
 
+    // Single-page sessions (bounces) produce no transitions to draw, so they
+    // are excluded. On top of the overall top-{journeys} ranking, the top 3
+    // paths at every depth are kept so that long journeys remain visible even
+    // when short paths dominate the ranking.
     const query = `
       WITH session_paths AS (
         SELECT
@@ -1271,15 +1275,29 @@ export class AnalyticsService {
           ${sessionFiltersQuery}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psid
+        HAVING length(path) >= 2
       )
       SELECT
         path,
-        count() AS value,
-        sum(count()) OVER () AS totalSessions
-      FROM session_paths
-      GROUP BY path
+        value,
+        totalSessions
+      FROM (
+        SELECT
+          path,
+          value,
+          sum(value) OVER () AS totalSessions,
+          row_number() OVER (ORDER BY value DESC) AS overallRank,
+          row_number() OVER (PARTITION BY length(path) ORDER BY value DESC) AS depthRank
+        FROM (
+          SELECT
+            path,
+            count() AS value
+          FROM session_paths
+          GROUP BY path
+        )
+      )
+      WHERE overallRank <= {journeys:UInt32} OR depthRank <= 3
       ORDER BY value DESC
-      LIMIT {journeys:UInt32}
     `
 
     const { data } = await clickhouse
@@ -3609,6 +3627,7 @@ export class AnalyticsService {
           GROUP BY psid
         )
         WHERE arrayElement(path, {step:UInt32}) = {page:String}
+          AND length(path) >= 2
       ),
       distinct_sessions AS (
         SELECT
