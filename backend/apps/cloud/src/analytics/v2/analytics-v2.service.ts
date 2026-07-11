@@ -8,6 +8,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 
 import { clickhouse } from '../../common/integrations/clickhouse'
+import { AppLoggerService } from '../../logger/logger.service'
 import { IFunnel, PerfMeasure } from '../interfaces'
 import {
   AnalyticsService,
@@ -123,7 +124,10 @@ const DEFAULT_BREAKDOWN_LIMIT = 30
 
 @Injectable()
 export class AnalyticsV2Service {
-  constructor(private readonly analyticsService: AnalyticsService) {}
+  constructor(
+    private readonly analyticsService: AnalyticsService,
+    private readonly logger: AppLoggerService,
+  ) {}
 
   async assertReadAccess(
     pid: string,
@@ -760,7 +764,9 @@ export class AnalyticsV2Service {
         : Object.keys(PERFORMANCE_TIMESERIES_METRICS)
 
       for (const name of metricNames) {
-        const v1Key = PERFORMANCE_TIMESERIES_METRICS[name]
+        const v1Key = Object.hasOwn(PERFORMANCE_TIMESERIES_METRICS, name)
+          ? PERFORMANCE_TIMESERIES_METRICS[name]
+          : undefined
 
         if (!v1Key) {
           throw new UnprocessableEntityException(
@@ -922,7 +928,9 @@ export class AnalyticsV2Service {
     const series: Record<string, (number | null)[] | undefined> = {}
 
     for (const name of metricNames) {
-      const v1Key = CAPTCHA_TIMESERIES_METRICS[name]
+      const v1Key = Object.hasOwn(CAPTCHA_TIMESERIES_METRICS, name)
+        ? CAPTCHA_TIMESERIES_METRICS[name]
+        : undefined
 
       if (!v1Key) {
         throw new UnprocessableEntityException(
@@ -1126,7 +1134,7 @@ export class AnalyticsV2Service {
     const series: Record<string, (number | null)[] | undefined> = {}
 
     for (const name of metricNames) {
-      if (!availableSeries[name]) {
+      if (!Object.hasOwn(availableSeries, name) || !availableSeries[name]) {
         throw new UnprocessableEntityException(
           `The '${name}' metric is not supported on the errors timeseries. Supported metrics: ${Object.keys(availableSeries).join(', ')}`,
         )
@@ -1485,16 +1493,28 @@ export class AnalyticsV2Service {
     const appliedFilters = parseV2Filters(dto.filters)
     const v1FiltersJson = toV1FiltersJson(appliedFilters, 'traffic')
 
-    const period =
-      dto.from && dto.to ? undefined : dto.period || V2_DEFAULT_PERIOD
+    if (Boolean(dto.from) !== Boolean(dto.to)) {
+      throw new BadRequestException(
+        "The 'from' and 'to' parameters must be provided together",
+      )
+    }
+
+    const hasCustomRange = Boolean(dto.from && dto.to)
+    const from = hasCustomRange ? dto.from : undefined
+    const to = hasCustomRange ? dto.to : undefined
+    const period = hasCustomRange
+      ? undefined
+      : dto.period && dto.period !== 'custom'
+        ? dto.period
+        : V2_DEFAULT_PERIOD
 
     const { result } = await this.analyticsService.getCustomEventMetadata({
       pid,
       period,
       timeBucket:
-        dto.timeBucket || getLowestPossibleTimeBucket(period, dto.from, dto.to),
-      from: dto.from,
-      to: dto.to,
+        dto.timeBucket || getLowestPossibleTimeBucket(period, from, to),
+      from,
+      to,
       filters: v1FiltersJson,
       timezone: dto.timezone,
       event: dto.event,
@@ -1516,16 +1536,28 @@ export class AnalyticsV2Service {
     const appliedFilters = parseV2Filters(dto.filters)
     const v1FiltersJson = toV1FiltersJson(appliedFilters, 'traffic')
 
-    const period =
-      dto.from && dto.to ? undefined : dto.period || V2_DEFAULT_PERIOD
+    if (Boolean(dto.from) !== Boolean(dto.to)) {
+      throw new BadRequestException(
+        "The 'from' and 'to' parameters must be provided together",
+      )
+    }
+
+    const hasCustomRange = Boolean(dto.from && dto.to)
+    const from = hasCustomRange ? dto.from : undefined
+    const to = hasCustomRange ? dto.to : undefined
+    const period = hasCustomRange
+      ? undefined
+      : dto.period && dto.period !== 'custom'
+        ? dto.period
+        : V2_DEFAULT_PERIOD
 
     const { result } = await this.analyticsService.getPagePropertyMeta({
       pid,
       period,
       timeBucket:
-        dto.timeBucket || getLowestPossibleTimeBucket(period, dto.from, dto.to),
-      from: dto.from,
-      to: dto.to,
+        dto.timeBucket || getLowestPossibleTimeBucket(period, from, to),
+      from,
+      to,
       filters: v1FiltersJson,
       timezone: dto.timezone,
       property: dto.property,
@@ -1556,6 +1588,10 @@ export class AnalyticsV2Service {
         .map((event) => event.trim())
         .filter(Boolean)
     }
+
+    // A '__proto__' series key would mutate the response object's prototype
+    // instead of adding a series
+    events = events.filter((event) => event && event !== '__proto__')
 
     if (events.length === 0) {
       throw new UnprocessableEntityException(
@@ -1613,11 +1649,7 @@ export class AnalyticsV2Service {
     pid: string,
     dto: V2BaseQueryDto & { steps?: string; funnelId?: string },
   ): Promise<V2Envelope<unknown>> {
-    const steps = await this.analyticsService.getPagesArray(
-      dto.steps,
-      dto.funnelId,
-      pid,
-    )
+    const steps = await this.resolveFunnelSteps(pid, dto)
 
     const { params, filters, timeframe } = await this.resolveFunnelContext(
       pid,
@@ -1662,11 +1694,9 @@ export class AnalyticsV2Service {
             filters.filtersQuery,
           )
         } catch (reason) {
-          // Step details are best-effort (v1 parity)
-          console.error(
-            '[AnalyticsV2Service] getFunnelStepDetails failed:',
-            reason,
-          )
+          // Step details are best-effort (v1 parity); dev-only logging as
+          // the raw error may embed funnel query params
+          this.logger.log(reason, 'AnalyticsV2Service -> getFunnelStepDetails')
         }
       })(),
       (async () => {
@@ -1707,11 +1737,7 @@ export class AnalyticsV2Service {
       offset?: number
     },
   ): Promise<V2Envelope<Record<string, unknown>[]>> {
-    const steps = await this.analyticsService.getPagesArray(
-      dto.steps,
-      dto.funnelId,
-      pid,
-    )
+    const steps = await this.resolveFunnelSteps(pid, dto)
 
     if (dto.step < 1 || dto.step > steps.length) {
       throw new BadRequestException(
@@ -1745,6 +1771,19 @@ export class AnalyticsV2Service {
       limit,
       offset,
     })
+  }
+
+  private async resolveFunnelSteps(
+    pid: string,
+    dto: { steps?: string; funnelId?: string },
+  ): Promise<string[]> {
+    if (dto.steps && dto.funnelId) {
+      throw new BadRequestException(
+        "The 'steps' and 'funnelId' parameters are mutually exclusive",
+      )
+    }
+
+    return this.analyticsService.getPagesArray(dto.steps, dto.funnelId, pid)
   }
 
   /**
@@ -1915,8 +1954,10 @@ export class AnalyticsV2Service {
       return envelope(values, { pid, dimension: dimensionApi, type })
     }
 
+    // Entry/exit page values come from the session-scoped virtual-column
+    // path in getFilters; getErrorsFilters cannot resolve them
     const values =
-      type === 'errors'
+      type === 'errors' && !dimension.virtual
         ? await this.analyticsService.getErrorsFilters(pid, dimension.column)
         : await this.analyticsService.getFilters(pid, dimension.column)
 

@@ -2,7 +2,7 @@ import { PerfMeasure } from '../../interfaces'
 
 export type V2DataType = 'traffic' | 'performance' | 'captcha' | 'errors'
 
-export interface V2DimensionExtraField {
+interface V2DimensionExtraField {
   /** Public API name of the sibling field, e.g. 'country' */
   api: string
   /** ClickHouse column of the sibling field, e.g. 'cc' */

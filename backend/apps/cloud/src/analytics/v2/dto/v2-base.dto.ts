@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import {
   IsEnum,
-  IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -113,7 +112,7 @@ export class V2TimeseriesDto extends V2BaseQueryDto {
   mode?: ChartRenderMode
 }
 
-export const V2_MAX_BREAKDOWN_LIMIT = 100
+const V2_MAX_BREAKDOWN_LIMIT = 100
 
 export class V2BreakdownDto extends V2BaseQueryDto {
   @ApiProperty({
@@ -195,36 +194,4 @@ export class V2ListQueryDto extends V2BaseQueryDto {
   @IsInt()
   @Min(0)
   offset?: number
-}
-
-export class V2PaginationDto {
-  @ApiProperty({ required: false, default: 30, maximum: 150 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(150)
-  limit?: number
-
-  @ApiProperty({ required: false, default: 0 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(0)
-  offset?: number
-}
-
-export class V2MeasureDto {
-  @ApiProperty({
-    required: false,
-    enum: ['median', 'average', 'p75', 'p95', 'quantiles'],
-    default: 'median',
-    description:
-      "Aggregate function for performance metrics. 'quantiles' is only valid on the performance timeseries endpoint.",
-  })
-  @IsOptional()
-  @IsIn(['median', 'average', 'p75', 'p95', 'quantiles'], {
-    message: 'The provided measure is incorrect',
-  })
-  measure?: string
 }

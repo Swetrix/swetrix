@@ -11,7 +11,6 @@ export {
   V2_KEYED_FILTER_DIMENSIONS,
   captchaExtraWhere,
 } from './dimensions'
-export { V2_METRICS, MEASURES_MAP_V2 } from './metrics'
 
 export const V2_TO_V1_DATATYPE: Record<V2DataType, DataType> = {
   traffic: DataType.ANALYTICS,

@@ -6,14 +6,14 @@ import {
   V2DataType,
 } from '../registry'
 
-export const V2_FILTER_OPERATORS = [
+const V2_FILTER_OPERATORS = [
   'is',
   'is_not',
   'contains',
   'contains_not',
 ] as const
 
-export type V2FilterOperator = (typeof V2_FILTER_OPERATORS)[number]
+type V2FilterOperator = (typeof V2_FILTER_OPERATORS)[number]
 
 export interface V2Filter {
   dimension: string
@@ -47,7 +47,9 @@ const resolveColumn = (
 ): string | null => {
   const { dimension, key } = filter
 
-  const keyedFamily = V2_KEYED_FILTER_DIMENSIONS[dimension]
+  const keyedFamily = Object.hasOwn(V2_KEYED_FILTER_DIMENSIONS, dimension)
+    ? V2_KEYED_FILTER_DIMENSIONS[dimension]
+    : undefined
 
   if (keyedFamily) {
     if (!keyedFamily.types.includes(type)) {
@@ -135,6 +137,15 @@ export const parseV2Filters = (filters: string | undefined): V2Filter[] => {
     if (key !== undefined && (typeof key !== 'string' || !key)) {
       throw new UnprocessableEntityException(
         `Filter at index ${index} has an invalid 'key'; it must be a non-empty string`,
+      )
+    }
+
+    if (
+      key !== undefined &&
+      !Object.hasOwn(V2_KEYED_FILTER_DIMENSIONS, dimension)
+    ) {
+      throw new UnprocessableEntityException(
+        `Filter at index ${index} has a 'key', but the '${dimension}' dimension does not support keys. Keyed dimensions: ${Object.keys(V2_KEYED_FILTER_DIMENSIONS).join(', ')}`,
       )
     }
 

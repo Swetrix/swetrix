@@ -57,40 +57,40 @@ Every endpoint returns the same envelope:
 
 `metrics` is a comma-separated list of metric names, validated per data type. Each endpoint has sensible defaults. Discover all metrics for a data type via the [dimensions endpoint](#get-v2projectspiddimensions).
 
-| Data type | Metrics |
-| --- | --- |
-| traffic | `visitors` (unique sessions), `pageviews`, `users` (unique profiles; breakdown/summary only), `session_duration` (timeseries/summary only), `bounce_rate` (timeseries/summary only) |
-| performance | `load_time`, `ttfb`, `dns`, `tls`, `connection`, `response`, `render`, `dom_load` — all in seconds, aggregated by `measure` |
-| errors | `occurrences`, `affected_users` |
-| captcha | `events` (breakdown), `generated`, `passed`, `failed`, `validation_failed`, `replayed` (timeseries/summary) |
+| Data type   | Metrics                                                                                                                                                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| traffic     | `visitors` (unique sessions), `pageviews`, `users` (unique profiles; breakdown/summary only), `session_duration` (timeseries/summary only), `bounce_rate` (timeseries/summary only) |
+| performance | `load_time`, `ttfb`, `dns`, `tls`, `connection`, `response`, `render`, `dom_load` — all in seconds, aggregated by `measure`                                                         |
+| errors      | `occurrences`, `affected_users`                                                                                                                                                     |
+| captcha     | `events` (breakdown), `generated`, `passed`, `failed`, `validation_failed`, `replayed` (timeseries/summary)                                                                         |
 
 ### Dimensions
 
 Dimensions use human-readable names (mapped internally onto the v1 short codes):
 
-| Dimension | v1 code | Notes |
-| --- | --- | --- |
-| `country` | `cc` | ISO 3166-1 alpha-2 |
-| `region` | `rg` | rows include `country`, `region_code` |
-| `city` | `ct` | rows include `country` |
-| `page` | `pg` | |
-| `host` | `host` | |
-| `locale` | `lc` | |
-| `browser` | `br` | |
-| `browser_version` | `brv` | rows include `browser` |
-| `os` | `os` | |
-| `os_version` | `osv` | rows include `os` |
-| `device` | `dv` | |
-| `referrer` | `ref` | |
-| `referrer_name` | `refn` | filter-only (canonical root domain) |
-| `utm_source` / `utm_medium` / `utm_campaign` / `utm_term` / `utm_content` | `so` / `me` / `ca` / `te` / `co` | |
-| `isp` / `organization` / `user_type` / `connection_type` | `isp` / `og` / `ut` / `ctp` | |
-| `entry_page` / `exit_page` | — | session-scoped virtual dimensions |
-| `event` | `ev` | filter-only; use `/traffic/custom-events` for breakdowns |
-| `event_metadata` | `ev:key:<key>` | filter-only, takes a `key` |
-| `page_property` | `tag:key:<key>` | filter-only, takes a `key` |
-| `error_name` / `error_message` / `error_filename` | — | errors, filter-only |
-| `captcha_event` / `captcha_difficulty` / `captcha_reason` / `solve_time` | — | captcha only |
+| Dimension                                                                 | v1 code                          | Notes                                                    |
+| ------------------------------------------------------------------------- | -------------------------------- | -------------------------------------------------------- |
+| `country`                                                                 | `cc`                             | ISO 3166-1 alpha-2                                       |
+| `region`                                                                  | `rg`                             | rows include `country`, `region_code`                    |
+| `city`                                                                    | `ct`                             | rows include `country`                                   |
+| `page`                                                                    | `pg`                             |                                                          |
+| `host`                                                                    | `host`                           |                                                          |
+| `locale`                                                                  | `lc`                             |                                                          |
+| `browser`                                                                 | `br`                             |                                                          |
+| `browser_version`                                                         | `brv`                            | rows include `browser`                                   |
+| `os`                                                                      | `os`                             |                                                          |
+| `os_version`                                                              | `osv`                            | rows include `os`                                        |
+| `device`                                                                  | `dv`                             |                                                          |
+| `referrer`                                                                | `ref`                            |                                                          |
+| `referrer_name`                                                           | `refn`                           | filter-only (canonical root domain)                      |
+| `utm_source` / `utm_medium` / `utm_campaign` / `utm_term` / `utm_content` | `so` / `me` / `ca` / `te` / `co` |                                                          |
+| `isp` / `organization` / `user_type` / `connection_type`                  | `isp` / `og` / `ut` / `ctp`      |                                                          |
+| `entry_page` / `exit_page`                                                | —                                | session-scoped virtual dimensions                        |
+| `event`                                                                   | `ev`                             | filter-only; use `/traffic/custom-events` for breakdowns |
+| `event_metadata`                                                          | `ev:key:<key>`                   | filter-only, takes a `key`                               |
+| `page_property`                                                           | `tag:key:<key>`                  | filter-only, takes a `key`                               |
+| `error_name` / `error_message` / `error_filename`                         | —                                | errors, filter-only                                      |
+| `captcha_event` / `captcha_difficulty` / `captcha_reason` / `solve_time`  | —                                | captcha only                                             |
 
 Which dimensions apply to which data type is discoverable via [`GET /v2/projects/:pid/dimensions`](#get-v2projectspiddimensions).
 
@@ -134,9 +134,27 @@ curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/summary?period
 ```json title="Response"
 {
   "data": {
-    "current": { "visitors": 1043, "pageviews": 2911, "users": 402, "bounce_rate": 43.1, "session_duration": 74 },
-    "previous": { "visitors": 980, "pageviews": 2700, "users": 371, "bounce_rate": 45, "session_duration": 69 },
-    "change": { "visitors": 63, "pageviews": 211, "users": 31, "bounce_rate": -1.9, "session_duration": 5 }
+    "current": {
+      "visitors": 1043,
+      "pageviews": 2911,
+      "users": 402,
+      "bounce_rate": 43.1,
+      "session_duration": 74
+    },
+    "previous": {
+      "visitors": 980,
+      "pageviews": 2700,
+      "users": 371,
+      "bounce_rate": 45,
+      "session_duration": 69
+    },
+    "change": {
+      "visitors": 63,
+      "pageviews": 211,
+      "users": 31,
+      "bounce_rate": -1.9,
+      "session_duration": 5
+    }
   },
   "meta": { "pid": "YOUR_PROJECT_ID", "period": "7d", "timezone": "Etc/GMT", "appliedFilters": [] }
 }
@@ -156,8 +174,18 @@ curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/timeseries?per
 ```json title="Response"
 {
   "data": [
-    { "timestamp": "2026-07-01T00:00:00+03:00", "visitors": 120, "pageviews": 340, "bounce_rate": 41.2 },
-    { "timestamp": "2026-07-02T00:00:00+03:00", "visitors": 98, "pageviews": 275, "bounce_rate": 44 }
+    {
+      "timestamp": "2026-07-01T00:00:00+03:00",
+      "visitors": 120,
+      "pageviews": 340,
+      "bounce_rate": 41.2
+    },
+    {
+      "timestamp": "2026-07-02T00:00:00+03:00",
+      "visitors": 98,
+      "pageviews": 275,
+      "bounce_rate": 44
+    }
   ],
   "meta": {
     "pid": "YOUR_PROJECT_ID",
@@ -186,7 +214,13 @@ curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/breakdown?dime
 ```json title="Response"
 {
   "data": [
-    { "value": "Kyiv City", "country": "UA", "region_code": "30", "visitors": 512, "pageviews": 1204 },
+    {
+      "value": "Kyiv City",
+      "country": "UA",
+      "region_code": "30",
+      "visitors": 512,
+      "pageviews": 1204
+    },
     { "value": "Bavaria", "country": "DE", "region_code": "BY", "visitors": 301, "pageviews": 700 }
   ],
   "meta": {
@@ -377,7 +411,13 @@ Paginated sessions that reached a funnel `step` (1-indexed). `dropoff=true` retu
   "data": {
     "count": 2,
     "visitors": [
-      { "device": "desktop", "browser": "Firefox", "os": "Windows", "country": "GB", "psid": "9165978030580383830" }
+      {
+        "device": "desktop",
+        "browser": "Firefox",
+        "os": "Windows",
+        "country": "GB",
+        "psid": "9165978030580383830"
+      }
     ]
   },
   "meta": { "pid": "YOUR_PROJECT_ID", "windowMinutes": 5 }
@@ -393,8 +433,18 @@ Machine-readable list of the dimensions and metrics available for a data type (`
 ```json title="Response (data, truncated)"
 {
   "dimensions": [
-    { "name": "country", "description": "Country (ISO 3166-1 alpha-2 code)", "filterOnly": false, "extraFields": [] },
-    { "name": "region", "description": "Region / subdivision", "filterOnly": false, "extraFields": ["country", "region_code"] }
+    {
+      "name": "country",
+      "description": "Country (ISO 3166-1 alpha-2 code)",
+      "filterOnly": false,
+      "extraFields": []
+    },
+    {
+      "name": "region",
+      "description": "Region / subdivision",
+      "filterOnly": false,
+      "extraFields": ["country", "region_code"]
+    }
   ],
   "metrics": [
     { "name": "visitors", "description": "Unique sessions", "format": "integer", "default": true }
@@ -408,25 +458,25 @@ Distinct recorded values for a dimension — for filter autocompletion (`?type=t
 
 ## Migrating from v1
 
-| v1 | v2 |
-| --- | --- |
-| `GET /v1/log` (params panels) | `GET /v2/projects/:pid/traffic/breakdown?dimension=...` per panel |
-| `GET /v1/log` / `/log/chart` (chart) | `GET /v2/projects/:pid/traffic/timeseries` |
-| `GET /v1/log` (customs / properties) | `/traffic/custom-events`, `/traffic/page-properties` |
-| `GET /v1/log/birdseye` | `GET /v2/projects/:pid/traffic/summary` (one project per request) |
-| `GET /v1/log/performance` | `/performance/breakdown` + `/performance/timeseries` |
-| `GET /v1/log/performance/birdseye` | `/performance/summary` |
-| `GET /v1/log/captcha` | `/captcha/summary` + `/captcha/timeseries` + `/captcha/breakdown` |
-| `GET /v1/log/meta` | `/traffic/custom-events/metadata` |
-| `GET /v1/log/property` | `/traffic/page-properties/metadata` |
-| `GET /v1/log/custom-events` | `/traffic/custom-events/timeseries` |
-| `GET /v1/log/user-flow` | `/traffic/user-flow` |
-| `GET /v1/log/sessions` / `/log/session` | `/sessions` / `/sessions/:psid` |
-| `GET /v1/log/profiles` / `/log/profile` / `/log/profile/sessions` | `/profiles` / `/profiles/:profileId` / `/profiles/:profileId/sessions` |
+| v1                                                                                      | v2                                                                        |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `GET /v1/log` (params panels)                                                           | `GET /v2/projects/:pid/traffic/breakdown?dimension=...` per panel         |
+| `GET /v1/log` / `/log/chart` (chart)                                                    | `GET /v2/projects/:pid/traffic/timeseries`                                |
+| `GET /v1/log` (customs / properties)                                                    | `/traffic/custom-events`, `/traffic/page-properties`                      |
+| `GET /v1/log/birdseye`                                                                  | `GET /v2/projects/:pid/traffic/summary` (one project per request)         |
+| `GET /v1/log/performance`                                                               | `/performance/breakdown` + `/performance/timeseries`                      |
+| `GET /v1/log/performance/birdseye`                                                      | `/performance/summary`                                                    |
+| `GET /v1/log/captcha`                                                                   | `/captcha/summary` + `/captcha/timeseries` + `/captcha/breakdown`         |
+| `GET /v1/log/meta`                                                                      | `/traffic/custom-events/metadata`                                         |
+| `GET /v1/log/property`                                                                  | `/traffic/page-properties/metadata`                                       |
+| `GET /v1/log/custom-events`                                                             | `/traffic/custom-events/timeseries`                                       |
+| `GET /v1/log/user-flow`                                                                 | `/traffic/user-flow`                                                      |
+| `GET /v1/log/sessions` / `/log/session`                                                 | `/sessions` / `/sessions/:psid`                                           |
+| `GET /v1/log/profiles` / `/log/profile` / `/log/profile/sessions`                       | `/profiles` / `/profiles/:profileId` / `/profiles/:profileId/sessions`    |
 | `GET /v1/log/errors` / `/log/get-error` / `/log/error-overview` / `/log/error-sessions` | `/errors` / `/errors/:eid` / `/errors/overview` / `/errors/:eid/sessions` |
-| `GET /v1/log/funnel` / `/log/funnel-sessions` | `/funnel` / `/funnel/sessions` |
-| `GET /v1/log/live-visitors` + `/log/hb` | `/live-visitors` (merged) |
-| `GET /v1/log/filters` / `/log/errors-filters` / `/log/filters/versions` | `/dimensions/:dimension/values` |
+| `GET /v1/log/funnel` / `/log/funnel-sessions`                                           | `/funnel` / `/funnel/sessions`                                            |
+| `GET /v1/log/live-visitors` + `/log/hb`                                                 | `/live-visitors` (merged)                                                 |
+| `GET /v1/log/filters` / `/log/errors-filters` / `/log/filters/versions`                 | `/dimensions/:dimension/values`                                           |
 
 Key differences:
 

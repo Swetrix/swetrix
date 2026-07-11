@@ -13,6 +13,7 @@ import {
 } from 'class-validator'
 
 import { TimeBucketType } from '../../dto/getData.dto'
+import { V2_MAX_ENTITY_LIMIT } from './entities.dto'
 import { V2BaseQueryDto, V2ProjectParamsDto } from './v2-base.dto'
 
 export class V2FunnelQueryDto extends V2BaseQueryDto {
@@ -57,12 +58,12 @@ export class V2FunnelSessionsQueryDto extends V2FunnelQueryDto {
   @IsBoolean()
   dropoff?: boolean
 
-  @ApiProperty({ required: false, default: 30, maximum: 150 })
+  @ApiProperty({ required: false, default: 30, maximum: V2_MAX_ENTITY_LIMIT })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(150)
+  @Max(V2_MAX_ENTITY_LIMIT)
   limit?: number
 
   @ApiProperty({ required: false, default: 0 })

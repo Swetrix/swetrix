@@ -5,7 +5,7 @@ import { V2MetricDef } from './types'
  * purpose — the v2 registry is self-contained and these four entries are the
  * public API contract for the `measure` parameter.
  */
-export const MEASURES_MAP_V2: Record<string, string> = {
+const MEASURES_MAP_V2: Record<string, string> = {
   average: 'avg',
   median: 'median',
   p95: 'quantileExact(0.95)',
