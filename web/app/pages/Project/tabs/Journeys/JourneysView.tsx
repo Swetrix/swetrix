@@ -364,7 +364,12 @@ const JourneysView = ({ tnMapping }: JourneysViewProps) => {
         <>
           {sliders}
           {sankeyData ? (
-            <div style={{ height: chartHeight }}>
+            // nivo hardcodes z-index 10 on its tooltip wrapper, while the sticky
+            // sidebar and dashboard header sit at z-20 — lift just the tooltip above them
+            <div
+              style={{ height: chartHeight }}
+              className="[&_div[style*='z-index']]:z-30!"
+            >
               <ResponsiveSankey
                 data={sankeyData}
                 margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
