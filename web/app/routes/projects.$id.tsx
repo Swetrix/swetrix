@@ -608,6 +608,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   // Segment custom metrics (JSON-encoded ProjectViewCustomEvent[])
   const metricsParam = url.searchParams.get('metrics') || undefined
 
+  // Live visitors chart metric — concurrency data is only requested when enabled
+  const liveVisitorsEnabled = url.searchParams.get('liveVisitors') === 'true'
+
   const analyticsParams = {
     timeBucket,
     period,
@@ -617,6 +620,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     timezone,
     password: password || undefined,
     metrics: metricsParam,
+    includeConcurrency: liveVisitorsEnabled || undefined,
   }
 
   // Initialize deferred data promises

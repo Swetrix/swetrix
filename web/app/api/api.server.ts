@@ -740,6 +740,7 @@ export interface TrafficLogResponse {
     uniques: number[]
     sdur: number[]
     bounces?: number[]
+    concurrency?: number[]
   }
   customs: Record<string, number>
   properties: Record<string, number>
@@ -782,6 +783,8 @@ export interface AnalyticsParams {
   mode?: 'periodical' | 'cumulative'
   password?: string
   metrics?: string
+  // Concurrency (live visitors) data is only computed by the API when requested
+  includeConcurrency?: boolean
 }
 
 function serializeFiltersForUrl(filters: AnalyticsFilter[]): string {
@@ -803,6 +806,9 @@ export async function getProjectDataServer(
   if (params.timezone) queryParams.append('timezone', params.timezone)
   if (params.mode) queryParams.append('mode', params.mode)
   if (params.metrics) queryParams.append('metrics', params.metrics)
+  if (params.includeConcurrency) {
+    queryParams.append('includeConcurrency', 'true')
+  }
 
   const headers: Record<string, string> = {}
   if (params.password) {

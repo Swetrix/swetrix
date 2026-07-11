@@ -410,7 +410,7 @@ const TrafficViewInner = ({
   const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
   // Chart metrics state
-  const [activeChartMetrics, setActiveChartMetrics] = useState({
+  const [activeChartMetricsState, setActiveChartMetrics] = useState({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.sessionDuration]: false,
@@ -421,6 +421,17 @@ const TrafficViewInner = ({
     [CHART_METRICS_MAPPING.customEvents]: false,
     [CHART_METRICS_MAPPING.revenue]: false,
   })
+
+  // Live visitors is URL-driven (like custom events) so the route loader knows
+  // to request concurrency data from the API — it is only computed on demand
+  const activeChartMetrics = useMemo(
+    () => ({
+      ...activeChartMetricsState,
+      [CHART_METRICS_MAPPING.liveVisitors]:
+        searchParams.get('liveVisitors') === 'true',
+    }),
+    [activeChartMetricsState, searchParams],
+  )
   // Get custom events from URL params (SSR-friendly)
   const activeChartMetricsCustomEvents = useMemo(() => {
     const param = searchParams.get('customEvents')
@@ -553,6 +564,15 @@ const TrafficViewInner = ({
           ],
         },
         {
+          id: CHART_METRICS_MAPPING.liveVisitors,
+          label: t('dashboard.liveVisitors'),
+          active: activeChartMetrics[CHART_METRICS_MAPPING.liveVisitors],
+          // Concurrency is reconstructed from session intervals which carry no
+          // dimension data, so it cannot respect dashboard filters
+          disabled: !_isEmpty(filters),
+          disabledTooltip: t('project.liveVisitorsFilterConflict'),
+        },
+        {
           id: CHART_METRICS_MAPPING.viewsPerUnique,
           label: t('dashboard.viewsPerUnique'),
           active: activeChartMetrics[CHART_METRICS_MAPPING.viewsPerUnique],
@@ -573,7 +593,7 @@ const TrafficViewInner = ({
           active: activeChartMetrics[CHART_METRICS_MAPPING.customEvents],
         },
       ].filter(Boolean),
-    [t, activeChartMetrics, isRevenueConnected],
+    [t, activeChartMetrics, isRevenueConnected, filters],
   )
 
   const chartMetricsCustomEvents = useMemo(() => {
@@ -607,6 +627,7 @@ const TrafficViewInner = ({
       trendlineUnique: t('project.trendlineUnique'),
       occurrences: t('project.occurrences'),
       sessionDuration: t('dashboard.sessionDuration'),
+      liveVisitors: t('dashboard.liveVisitors'),
       revenue: t('dashboard.revenue'),
       refundsAmount: t('dashboard.refunds'),
       ...dataNamesCustomEvents,
@@ -661,13 +682,35 @@ const TrafficViewInner = ({
         return
       }
 
+      if (pairID === CHART_METRICS_MAPPING.liveVisitors) {
+        const newParams = new URLSearchParams(searchParams.toString())
+        if (newParams.get('liveVisitors') === 'true') {
+          newParams.delete('liveVisitors')
+        } else {
+          newParams.set('liveVisitors', 'true')
+        }
+        setSearchParams(newParams)
+        return
+      }
+
       setActiveChartMetrics((prev) => ({
         ...prev,
         [pairID]: !prev[pairID as keyof typeof prev],
       }))
     },
-    [isConflicted, t],
+    [isConflicted, t, searchParams, setSearchParams],
   )
+
+  // Live visitors cannot be filtered — turn it off if a filter gets applied
+  // while it's active (the toggle itself is disabled in that state)
+  useEffect(() => {
+    if (!_isEmpty(filters) && searchParams.get('liveVisitors') === 'true') {
+      const newParams = new URLSearchParams(searchParams.toString())
+      newParams.delete('liveVisitors')
+      setSearchParams(newParams)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
 
   const switchCustomEventChart = useCallback(
     (eventId: string) => {
@@ -972,19 +1015,30 @@ const TrafficViewInner = ({
                   )
                 }
 
-                return (
+                const checkbox = (
                   <Checkbox
                     classes={{
                       label: 'p-2',
                     }}
                     label={label}
-                    disabled={conflicted}
+                    disabled={conflicted || pair.disabled}
                     checked={active}
                     onChange={() => {
                       switchTrafficChartMetric(pairID, conflicts)
                     }}
                   />
                 )
+
+                if (pair.disabled && pair.disabledTooltip) {
+                  return (
+                    <Tooltip
+                      text={pair.disabledTooltip}
+                      tooltipNode={checkbox}
+                    />
+                  )
+                }
+
+                return checkbox
               }}
               buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-950 dark:focus:ring-slate-300'
               selectItemClassName='p-0'
@@ -995,6 +1049,10 @@ const TrafficViewInner = ({
                 const { id: pairID, conflicts } = pair
                 e?.stopPropagation()
                 e?.preventDefault()
+
+                if (pair.disabled) {
+                  return
+                }
 
                 if (pairID !== CHART_METRICS_MAPPING.customEvents) {
                   switchTrafficChartMetric(pairID, conflicts)

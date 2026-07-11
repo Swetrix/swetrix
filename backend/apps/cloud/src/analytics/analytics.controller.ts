@@ -280,6 +280,7 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
       metrics,
+      includeConcurrency,
     } = data
 
     await this.analyticsService.checkProjectAccess(
@@ -387,6 +388,7 @@ export class AnalyticsController {
         customEVFilterApplied,
         appliedFilters,
         mode,
+        includeConcurrency === 'true',
       )
     }
 
@@ -801,6 +803,7 @@ export class AnalyticsController {
       filters,
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
+      includeConcurrency,
     } = data
 
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
@@ -843,6 +846,7 @@ export class AnalyticsController {
       safeTimezone,
       customEVFilterApplied,
       mode,
+      includeConcurrency === 'true',
     )
 
     return { ...result, appliedFilters }

@@ -141,6 +141,9 @@ const isValidLocale = (lc: string): boolean => {
 
 // 2 minutes
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
+// The concurrency sweep materializes one row per minute of the requested window,
+// so cap how far back it can be reconstructed to keep the query bounded
+const MAX_CONCURRENCY_WINDOW_MINUTES = 366 * 24 * 60
 const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
 
@@ -5743,6 +5746,7 @@ export class AnalyticsService {
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
     mode: ChartRenderMode,
+    includeConcurrency = false,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -5769,6 +5773,7 @@ export class AnalyticsService {
           safeTimezone,
           customEVFilterApplied,
           mode,
+          includeConcurrency,
         )
 
         // @ts-ignore
@@ -5873,6 +5878,84 @@ export class AnalyticsService {
     }
   }
 
+  // Reconstructs the number of concurrent (live) visitors for each display bucket
+  // from the sessions table intervals [firstSeen, lastSeen] using a sweep-line:
+  // +1 at each session's start minute, -1 right after its end minute, a zero-delta
+  // "spine" row for every minute in the requested window, then a running sum gives
+  // exact per-minute concurrency. Buckets larger than a minute report the peak
+  // concurrency within the bucket.
+  generateConcurrencyAggregationQuery(timeBucket: TimeBucketType): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+
+    return `
+      WITH
+        parseDateTimeBestEffort({groupFrom:String}) AS fromTs,
+        parseDateTimeBestEffort({groupTo:String}) AS toTs,
+        toStartOfMinute(fromTs) AS fromMinute,
+        toStartOfMinute(toTs) AS toMinute,
+        session_intervals AS (
+          SELECT
+            greatest(min(firstSeen), fromTs) AS sessionStart,
+            least(max(lastSeen), toTs) AS sessionEnd
+          FROM sessions
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND firstSeen <= toTs
+            AND lastSeen >= fromTs
+          GROUP BY psid
+        )
+      SELECT
+        ${selector},
+        toInt32(max(concurrency)) AS concurrency
+      FROM (
+        SELECT
+          ${timeBucketFunc}(toTimeZone(m, {timezone:String})) AS tz_created,
+          concurrency
+        FROM (
+          SELECT
+            m,
+            sum(minute_delta) OVER (ORDER BY m ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS concurrency
+          FROM (
+            SELECT m, sum(delta) AS minute_delta
+            FROM (
+              SELECT toStartOfMinute(sessionStart) AS m, toInt32(1) AS delta
+              FROM session_intervals
+              UNION ALL
+              SELECT toStartOfMinute(sessionEnd) + INTERVAL 1 MINUTE AS m, toInt32(-1) AS delta
+              FROM session_intervals
+              UNION ALL
+              SELECT fromMinute + toIntervalMinute(number) AS m, toInt32(0) AS delta
+              FROM numbers(least(toUInt64(dateDiff('minute', fromMinute, toMinute)) + 1, ${MAX_CONCURRENCY_WINDOW_MINUTES}))
+            )
+            GROUP BY m
+          )
+        )
+        WHERE m BETWEEN fromMinute AND toMinute
+      )
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+  }
+
+  async getConcurrencyChartData(
+    timeBucket: TimeBucketType,
+    paramsData: any,
+    safeTimezone: string,
+    xShifted: string[],
+  ): Promise<number[]> {
+    const query = this.generateConcurrencyAggregationQuery(timeBucket)
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { ...paramsData.params, timezone: safeTimezone },
+      })
+      .then((resultSet) => resultSet.json<any>())
+
+    return this.extractCountsForSessionChart(data, xShifted, 'concurrency')
+  }
+
   async groupChartByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -5882,6 +5965,7 @@ export class AnalyticsService {
     safeTimezone: string,
     customEVFilterApplied: boolean,
     mode: ChartRenderMode,
+    includeConcurrency = false,
   ): Promise<object | void> {
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
@@ -5892,14 +5976,36 @@ export class AnalyticsService {
       customEVFilterApplied,
     )
 
-    const { data } = await clickhouse
-      .query({
-        query,
-        query_params: { ...paramsData.params, timezone: safeTimezone },
-      })
-      .then((resultSet) =>
-        resultSet.json<TrafficCHResponse | TrafficCEFilterCHResponse>(),
-      )
+    // Concurrency is only computed when explicitly requested (the live visitors
+    // metric is off by default) and within a bounded window — the sweep-line
+    // query materializes a row per minute. The sessions table also has no
+    // dimension columns, so concurrency cannot respect dashboard filters —
+    // return zeros instead of misleading unfiltered data
+    const shouldComputeConcurrency =
+      includeConcurrency &&
+      !customEVFilterApplied &&
+      !filtersQuery &&
+      dayjs.utc(to).diff(dayjs.utc(from), 'minute') <=
+        MAX_CONCURRENCY_WINDOW_MINUTES
+
+    const [{ data }, concurrency] = await Promise.all([
+      clickhouse
+        .query({
+          query,
+          query_params: { ...paramsData.params, timezone: safeTimezone },
+        })
+        .then((resultSet) =>
+          resultSet.json<TrafficCHResponse | TrafficCEFilterCHResponse>(),
+        ),
+      shouldComputeConcurrency
+        ? this.getConcurrencyChartData(
+            timeBucket,
+            paramsData,
+            safeTimezone,
+            xShifted,
+          )
+        : Promise.resolve(Array(xShifted.length).fill(0)),
+    ])
 
     const { visits, uniques, sdur, bounces } =
       this.extractAnalyticsChartDataForScope(
@@ -5916,6 +6022,7 @@ export class AnalyticsService {
         uniques,
         sdur,
         bounces,
+        concurrency,
       },
     })
   }
