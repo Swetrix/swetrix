@@ -2676,7 +2676,7 @@
     },
     "page": "Page",
     "journeys": {
-      "noData": "Journeys are not available yet due to lack of data, or you disabled this feature in the tracking script parameters.",
+      "noData": "Journeys are not available yet due to lack of data, or you've disabled this feature in the tracking script parameters.",
       "stepX": "Step {{x}}",
       "xSteps": "{{x}} steps",
       "xJourneys": "{{x}} journeys",

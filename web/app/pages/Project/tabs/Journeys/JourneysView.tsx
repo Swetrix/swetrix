@@ -1,7 +1,7 @@
 import { ResponsiveSankey } from '@nivo/sankey'
 import { PathIcon } from '@phosphor-icons/react'
 import _isEmpty from 'lodash/isEmpty'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
@@ -85,7 +85,6 @@ const JourneysView = ({ tnMapping }: JourneysViewProps) => {
     page: string
     sessions: number
   } | null>(null)
-  const loadingRef = useRef(false)
 
   const { fetchJourneys } = useJourneysProxy()
 
@@ -109,11 +108,6 @@ const JourneysView = ({ tnMapping }: JourneysViewProps) => {
     let cancelled = false
 
     const load = async () => {
-      if (loadingRef.current) {
-        return
-      }
-
-      loadingRef.current = true
       setIsLoading(true)
 
       try {
@@ -139,8 +133,6 @@ const JourneysView = ({ tnMapping }: JourneysViewProps) => {
           )
         }
       } finally {
-        loadingRef.current = false
-
         if (!cancelled) {
           setIsLoading(false)
         }
