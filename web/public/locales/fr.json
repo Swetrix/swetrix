@@ -599,7 +599,7 @@
     },
     "integrations": {
       "title": "Fonctionne avec les outils que vous utilisez déjà",
-      "description": "Swetrix s’intègre à tout. Notre script léger ne représente que quelques kilo-octets dans votre code source. Vous pouvez l’ajouter à n’importe quel CMS, framework ou technologie que vous utilisez déjà.",
+      "description": "Il n'y a rien à migrer et aucun SDK à apprendre. Swetrix est un simple script léger, de quelques kilo-octets seulement, qui s'intègre directement dans n'importe quel CMS, framework ou stack personnalisé.",
       "andMore": "+{{count}} de plus"
     },
     "logoCloud": {
@@ -638,7 +638,7 @@
     "easyToUse": "Facile à utiliser",
     "privacyFirst": "La confidentialité avant tout",
     "featuresAlt": {
-      "heading": "Les fonctionnalités dont vous avez besoin, aucune formation requise",
+      "heading": "Connaissez votre trafic. Comprenez votre produit.",
       "webHeading": "Analyses web",
       "webDescription": "Comprenez le trafic, les campagnes, les événements et les performances depuis un seul tableau de bord axé sur la confidentialité.",
       "productHeading": "Analyses de produit",
