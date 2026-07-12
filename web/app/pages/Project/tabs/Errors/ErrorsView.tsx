@@ -58,11 +58,7 @@ import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
 import { MetadataPanel, Panel } from '~/pages/Project/View/Panels'
 import { ERROR_FILTERS_MAPPING } from '~/pages/Project/View/utils/filters'
 import { BreakdownSubTab } from '~/pages/Project/View/v2/BreakdownPanel'
-import {
-  ChartSkeleton,
-  PanelSkeleton,
-  RefetchIndicator,
-} from '~/pages/Project/View/v2/loading'
+import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
   typeNameMapping,
@@ -1117,15 +1113,7 @@ const ErrorsViewInner = () => {
 
         <Filters className='mb-3' tnMapping={tnMapping} />
 
-        {detailsLoading ? (
-          <div className='space-y-3'>
-            <ChartSkeleton className='h-80 md:h-80' />
-            <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
-              <PanelSkeleton />
-              <PanelSkeleton />
-            </div>
-          </div>
-        ) : null}
+        {detailsLoading ? <Loader /> : null}
 
         {activeError?.details ? (
           <div className='relative'>
@@ -1260,26 +1248,7 @@ const ErrorsViewInner = () => {
             />
           }
         />
-        <div className='flex flex-col gap-2 lg:flex-row'>
-          <div className='w-full rounded-lg border border-gray-200 bg-white p-4 lg:w-[65%] dark:border-slate-800/60 dark:bg-slate-900/25'>
-            <div
-              aria-busy
-              className='h-[220px] animate-pulse rounded-md bg-gray-200 dark:bg-slate-800'
-            />
-          </div>
-          <div className='grid w-full grid-cols-2 gap-2 lg:w-[35%]'>
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                aria-busy
-                className='h-26 animate-pulse rounded-lg bg-gray-200 dark:bg-slate-800'
-              />
-            ))}
-          </div>
-        </div>
-        <div className='mt-4'>
-          <PanelSkeleton />
-        </div>
+        <Loader />
       </div>
     )
   }

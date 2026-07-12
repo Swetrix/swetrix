@@ -1,8 +1,8 @@
 import cx from 'clsx'
 
-// Subtle per-panel loading primitives for the v2 per-dimension dashboard.
-// First load -> skeleton; refetch -> thin indeterminate bar + dimmed body
-// (data stays visible via react-query's keepPreviousData).
+// Subtle refetch indicator for the v2 per-dimension dashboard. On refetch we
+// keep the previous data visible (react-query keepPreviousData) and only show
+// a thin progress bar — no skeleton placeholders.
 
 /** Thin indeterminate progress bar pinned to the top edge of a card */
 export const RefetchIndicator = ({ className }: { className?: string }) => (
@@ -28,54 +28,5 @@ export const RefetchIndicator = ({ className }: { className?: string }) => (
         animationDelay: '1s',
       }}
     />
-  </div>
-)
-
-// Deterministic widths so SSR and client render identically
-const SKELETON_ROW_WIDTHS = [
-  '72%',
-  '58%',
-  '80%',
-  '46%',
-  '64%',
-  '38%',
-  '54%',
-  '30%',
-]
-
-/** Pulse rows shaped like panel entries; rendered inside PanelContainer */
-export const PanelSkeleton = ({ rows = 8 }: { rows?: number }) => (
-  <div className='flex h-full flex-col justify-start gap-3 pt-2' aria-busy>
-    {SKELETON_ROW_WIDTHS.slice(0, rows).map((width, i) => (
-      <div key={i} className='flex animate-pulse items-center justify-between'>
-        <div
-          className='h-5 rounded-sm bg-gray-200 dark:bg-slate-800'
-          style={{ width }}
-        />
-        <div className='h-5 w-10 rounded-sm bg-gray-200 dark:bg-slate-800' />
-      </div>
-    ))}
-  </div>
-)
-
-/** Pulse block sized like the main chart */
-export const ChartSkeleton = ({ className }: { className?: string }) => (
-  <div
-    aria-busy
-    className={cx(
-      'h-80 animate-pulse rounded-lg bg-gray-200 md:h-[420px] dark:bg-slate-800',
-      className,
-    )}
-  />
-)
-
-export const MetricCardsSkeleton = ({ cards = 4 }: { cards?: number }) => (
-  <div className='mb-4 flex flex-wrap justify-center gap-5 lg:justify-start'>
-    {Array.from({ length: cards }).map((_, i) => (
-      <div key={i} className='flex animate-pulse flex-col'>
-        <div className='mb-2 h-4 w-24 rounded-sm bg-gray-200 dark:bg-slate-800' />
-        <div className='h-8 w-16 rounded-sm bg-gray-200 dark:bg-slate-800' />
-      </div>
-    ))}
   </div>
 )

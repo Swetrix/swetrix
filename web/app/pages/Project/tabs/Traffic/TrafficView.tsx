@@ -80,10 +80,6 @@ import {
   pivotTrafficTimeseries,
   summaryToOverall,
 } from '~/pages/Project/View/v2/adapters'
-import {
-  ChartSkeleton,
-  MetricCardsSkeleton,
-} from '~/pages/Project/View/v2/loading'
 import { TrafficMap } from '~/pages/Project/View/v2/TrafficMap'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
@@ -99,6 +95,7 @@ import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
+import Loader from '~/ui/Loader'
 import Dropdown from '~/ui/Dropdown'
 import Tooltip from '~/ui/Tooltip'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
@@ -1015,10 +1012,7 @@ const TrafficViewInner = ({
     return (
       <>
         <DashboardHeader rightContent={headerRightContent} />
-        <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
-          <MetricCardsSkeleton />
-          <ChartSkeleton className='mt-4 h-80 md:h-80' />
-        </div>
+        <Loader />
       </>
     )
   }
@@ -1139,9 +1133,7 @@ const TrafficViewInner = ({
               <HasImportedIndicator />
             </Suspense>
           </div>
-          {summaryQuery.isLoading ? (
-            <MetricCardsSkeleton />
-          ) : !_isEmpty(overall) ? (
+          {!_isEmpty(overall) ? (
             <motion.div
               initial='hidden'
               animate='visible'
@@ -1182,9 +1174,7 @@ const TrafficViewInner = ({
                 : null}
             </motion.div>
           ) : null}
-          {timeseriesQuery.isLoading ? (
-            <ChartSkeleton className='mt-5 h-80 md:mt-0 md:h-80' />
-          ) : !checkIfAllMetricsAreDisabled && !_isEmpty(chartData.x) ? (
+          {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData.x) ? (
             <div
               onContextMenu={(e) => handleChartContextMenu(e, chartData.x)}
               className='relative'

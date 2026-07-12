@@ -23,6 +23,7 @@ import { Entry } from '~/lib/models/Entry'
 import { MetricCard } from '~/pages/Project/tabs/Traffic/MetricCards'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import Loader from '~/ui/Loader'
 import { nFormatter } from '~/utils/generic'
 
 import CCRow from '../../View/components/CCRow'
@@ -30,7 +31,6 @@ import DashboardHeader from '../../View/components/DashboardHeader'
 import Filters from '../../View/components/Filters'
 import ProjectViewHeaderActions from '../../View/components/ProjectViewHeaderActions'
 import { BreakdownPanel, BreakdownSubTab } from '../../View/v2/BreakdownPanel'
-import { ChartSkeleton, MetricCardsSkeleton } from '../../View/v2/loading'
 import { useViewProjectContext } from '../../View/ViewProject'
 import { getDeviceRowMapper } from '../../View/ViewProject.helpers'
 
@@ -307,10 +307,7 @@ const CaptchaView = (_props: CaptchaViewProps) => {
           showLiveVisitors={false}
           rightContent={headerRightContent}
         />
-        <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
-          <MetricCardsSkeleton />
-          <ChartSkeleton className='mt-4 h-80 md:h-80' />
-        </div>
+        <Loader />
       </>
     )
   }

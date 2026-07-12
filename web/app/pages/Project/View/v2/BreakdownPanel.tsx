@@ -14,7 +14,6 @@ import { getItem, setItem } from '~/utils/localstorage'
 
 import { Panel, PanelContainer } from '../Panels'
 import { groupVersionRows, mapBreakdownRows } from './adapters'
-import { PanelSkeleton } from './loading'
 
 export interface BreakdownSubTab {
   /** Sub-tab id — the v2 dimension name, or a sentinel like 'map' / 'userFlow' */
@@ -182,6 +181,8 @@ export const BreakdownPanel = ({
   }
 
   if (query.isLoading || (!hasBeenInView && !query.data)) {
+    // Empty body while the panel first loads — content fills in when ready
+    // (no skeleton). The panel frame + header stay put, so no layout shift.
     return (
       <div ref={ref}>
         <PanelContainer
@@ -191,9 +192,7 @@ export const BreakdownPanel = ({
           tabs={containerTabs}
           onTabChange={onSubTabChange}
           activeTabId={activeSubTabId}
-        >
-          <PanelSkeleton />
-        </PanelContainer>
+        />
       </div>
     )
   }

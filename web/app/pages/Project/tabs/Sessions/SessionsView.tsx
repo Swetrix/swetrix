@@ -19,13 +19,11 @@ import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
-import {
-  PanelSkeleton,
-  RefetchIndicator,
-} from '~/pages/Project/View/v2/loading'
+import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
+import Loader from '~/ui/Loader'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
 
@@ -209,7 +207,7 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
         {!_isEmpty(sessions) ? (
           <Filters className='mb-3' tnMapping={tnMapping} />
         ) : null}
-        {sessionsLoading && _isEmpty(sessions) ? <PanelSkeleton /> : null}
+        {sessionsLoading && _isEmpty(sessions) ? <Loader /> : null}
         {!listQuery.isFetching &&
         listQuery.data &&
         _isEmpty(sessions) &&

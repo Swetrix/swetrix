@@ -15,12 +15,10 @@ import { useTranslation } from 'react-i18next'
 
 import type { AnalyticsFunnel, Funnel } from '~/lib/models/Project'
 import { FunnelChart } from '~/pages/Project/tabs/Funnels/FunnelChart'
-import {
-  ChartSkeleton,
-  RefetchIndicator,
-} from '~/pages/Project/View/v2/loading'
+import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
 import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
+import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import { nLocaleFormatter } from '~/utils/generic'
 
@@ -273,7 +271,7 @@ const FunnelCard = ({
           className='border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-slate-700'
         >
           {funnelDataLoading ? (
-            <ChartSkeleton className='h-80 md:h-80' />
+            <Loader />
           ) : (
             <FunnelExpandedChart
               funnelData={funnelData}
