@@ -308,10 +308,10 @@ const mapErrorColumn = (type: string): string => ERROR_COLUMN_MAP[type] || type
 const captchaMetaValue = (key: string, fallback: string) =>
   `if(indexOf(\`meta.key\`, '${key}') = 0, '${fallback}', arrayElement(\`meta.value\`, indexOf(\`meta.key\`, '${key}')))`
 
-const CAPTCHA_EVENT_SQL = captchaMetaValue('captcha_event', 'pass')
-const CAPTCHA_DIFFICULTY_SQL = captchaMetaValue('captcha_difficulty', '0')
-const CAPTCHA_REASON_SQL = captchaMetaValue('captcha_reason', '')
-const CAPTCHA_SOLVE_MS_SQL = `toUInt32OrZero(${captchaMetaValue('solve_ms', '0')})`
+export const CAPTCHA_EVENT_SQL = captchaMetaValue('captcha_event', 'pass')
+export const CAPTCHA_DIFFICULTY_SQL = captchaMetaValue('captcha_difficulty', '0')
+export const CAPTCHA_REASON_SQL = captchaMetaValue('captcha_reason', '')
+export const CAPTCHA_SOLVE_MS_SQL = `toUInt32OrZero(${captchaMetaValue('solve_ms', '0')})`
 const CAPTCHA_SOLVE_TIME_SQL = `multiIf(${CAPTCHA_SOLVE_MS_SQL} = 0, 'unknown', ${CAPTCHA_SOLVE_MS_SQL} < 1000, '<1s', ${CAPTCHA_SOLVE_MS_SQL} < 3000, '1-3s', ${CAPTCHA_SOLVE_MS_SQL} < 10000, '3-10s', ${CAPTCHA_SOLVE_MS_SQL} < 30000, '10-30s', '30s+')`
 
 const CAPTCHA_META_COLUMN_MAP: Record<string, string> = {
@@ -321,7 +321,7 @@ const CAPTCHA_META_COLUMN_MAP: Record<string, string> = {
   solve_time: CAPTCHA_SOLVE_TIME_SQL,
 }
 
-const getCaptchaColumnExpression = (col: string): string =>
+export const getCaptchaColumnExpression = (col: string): string =>
   CAPTCHA_META_COLUMN_MAP[col] || col
 
 const generateParamsQuery = (
