@@ -10,34 +10,32 @@ import {
   ArrowRightIcon,
   CaretDownIcon,
 } from '@phosphor-icons/react'
-import {
-  Suspense,
-  use,
-  useEffect,
-  useMemo,
-  useRef,
-  type ReactNode,
-} from 'react'
+import { useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { FunnelDataResponse } from '~/api/api.server'
-import type { Funnel } from '~/lib/models/Project'
+import type { AnalyticsFunnel, Funnel } from '~/lib/models/Project'
 import { FunnelChart } from '~/pages/Project/tabs/Funnels/FunnelChart'
+import {
+  ChartSkeleton,
+  RefetchIndicator,
+} from '~/pages/Project/View/v2/loading'
 import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
-import Spin from '~/ui/icons/Spin'
 import { Text } from '~/ui/Text'
 import { nLocaleFormatter } from '~/utils/generic'
+
+export interface FunnelData {
+  funnel: AnalyticsFunnel[]
+  totalPageviews: number
+}
 
 interface FunnelsListProps {
   funnels?: Funnel[]
   activeFunnelId: string | null
-  funnelDataPromise?: Promise<FunnelDataResponse | null>
+  funnelData: FunnelData | null
+  funnelDataLoading: boolean
+  funnelDataRefetching: boolean
   onToggleFunnel: (id: string) => void
-  onFunnelDataResolved: (
-    funnelId: string,
-    funnelData: FunnelDataResponse | null,
-  ) => void
   onBarClick: (stepIndex: number) => void
   openFunnelSettings: (funnel?: Funnel) => void
   deleteFunnel: (id: string) => void
@@ -48,12 +46,10 @@ interface FunnelsListProps {
 interface FunnelCardProps {
   funnel: Funnel
   isExpanded: boolean
-  funnelDataPromise?: Promise<FunnelDataResponse | null>
+  funnelData: FunnelData | null
+  funnelDataLoading: boolean
+  funnelDataRefetching: boolean
   onToggleFunnel: (id: string) => void
-  onFunnelDataResolved: (
-    funnelId: string,
-    funnelData: FunnelDataResponse | null,
-  ) => void
   onBarClick: (stepIndex: number) => void
   openFunnelSettings: (funnel: Funnel) => void
   deleteFunnel: (id: string) => void
@@ -67,7 +63,7 @@ interface AddFunnelProps {
 
 const STEPS_MAX_HEIGHT = 42
 
-const getFunnelSummary = (funnelData?: FunnelDataResponse | null) => {
+const getFunnelSummary = (funnelData?: FunnelData | null) => {
   if (!funnelData || _isEmpty(funnelData.funnel)) {
     return null
   }
@@ -86,35 +82,6 @@ const getFunnelSummary = (funnelData?: FunnelDataResponse | null) => {
     conversionRate,
   }
 }
-
-const FunnelDataResolver = ({
-  funnelId,
-  funnelDataPromise,
-  onFunnelDataResolved,
-  children,
-}: {
-  funnelId: string
-  funnelDataPromise?: Promise<FunnelDataResponse | null>
-  onFunnelDataResolved: (
-    funnelId: string,
-    funnelData: FunnelDataResponse | null,
-  ) => void
-  children: (funnelData: FunnelDataResponse | null) => ReactNode
-}) => {
-  const funnelData = funnelDataPromise ? use(funnelDataPromise) : null
-
-  useEffect(() => {
-    onFunnelDataResolved(funnelId, funnelData)
-  }, [funnelData, funnelId, onFunnelDataResolved])
-
-  return <>{children(funnelData)}</>
-}
-
-const FunnelChartLoading = () => (
-  <div className='flex h-[260px] items-center justify-center'>
-    <Spin className='size-8' />
-  </div>
-)
 
 const FunnelSteps = ({ steps }: { steps: string[] }) => {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -165,7 +132,7 @@ const FunnelExpandedChart = ({
   funnelData,
   onBarClick,
 }: {
-  funnelData: FunnelDataResponse | null
+  funnelData: FunnelData | null
   onBarClick: (stepIndex: number) => void
 }) => {
   const { t } = useTranslation('common')
@@ -220,9 +187,10 @@ const FunnelExpandedChart = ({
 const FunnelCard = ({
   funnel,
   isExpanded,
-  funnelDataPromise,
+  funnelData,
+  funnelDataLoading,
+  funnelDataRefetching,
   onToggleFunnel,
-  onFunnelDataResolved,
   onBarClick,
   openFunnelSettings,
   deleteFunnel,
@@ -233,6 +201,7 @@ const FunnelCard = ({
 
   return (
     <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-900/25'>
+      {isExpanded && funnelDataRefetching ? <RefetchIndicator /> : null}
       <div className='flex transition-colors hover:bg-gray-200/70 dark:hover:bg-slate-900/60'>
         <button
           type='button'
@@ -303,23 +272,13 @@ const FunnelCard = ({
           id={`funnel-${funnel.id}-details`}
           className='border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-slate-700'
         >
-          {funnelDataPromise ? (
-            <Suspense fallback={<FunnelChartLoading />}>
-              <FunnelDataResolver
-                funnelId={funnel.id}
-                funnelDataPromise={funnelDataPromise}
-                onFunnelDataResolved={onFunnelDataResolved}
-              >
-                {(funnelData) => (
-                  <FunnelExpandedChart
-                    funnelData={funnelData}
-                    onBarClick={onBarClick}
-                  />
-                )}
-              </FunnelDataResolver>
-            </Suspense>
+          {funnelDataLoading ? (
+            <ChartSkeleton className='h-80 md:h-80' />
           ) : (
-            <FunnelChartLoading />
+            <FunnelExpandedChart
+              funnelData={funnelData}
+              onBarClick={onBarClick}
+            />
           )}
         </div>
       ) : null}
@@ -360,9 +319,10 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
 const FunnelsList = ({
   funnels,
   activeFunnelId,
-  funnelDataPromise,
+  funnelData,
+  funnelDataLoading,
+  funnelDataRefetching,
   onToggleFunnel,
-  onFunnelDataResolved,
   onBarClick,
   openFunnelSettings,
   deleteFunnel,
@@ -378,9 +338,10 @@ const FunnelsList = ({
           key={funnel.id}
           funnel={funnel}
           isExpanded={activeFunnelId === funnel.id}
-          funnelDataPromise={funnelDataPromise}
+          funnelData={funnelData}
+          funnelDataLoading={funnelDataLoading}
+          funnelDataRefetching={funnelDataRefetching}
           onToggleFunnel={onToggleFunnel}
-          onFunnelDataResolved={onFunnelDataResolved}
           onBarClick={onBarClick}
           deleteFunnel={deleteFunnel}
           openFunnelSettings={openFunnelSettings}

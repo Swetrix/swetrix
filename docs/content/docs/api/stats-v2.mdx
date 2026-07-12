@@ -268,6 +268,10 @@ curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/custom-events/
 
 Aggregated metadata key/value counts for one custom event (v1 `/log/meta` equivalent). Requires `event`; returns `data: [{ "key": "Affiliate", "value": "Yes", "count": 1 }, ...]`.
 
+### GET /v2/projects/:pid/traffic/custom-metrics
+
+Sum / average of numeric custom event metadata values for the selected period and the previous one (powers dashboard "custom metric" cards). `metrics` is a JSON array of metric definitions (`{ "customEventName", "metaKey", "metaValueType": "integer" | "float" }`). Returns `data: [{ "key": "<metaKey>", "current": { "sum", "avg" }, "previous": { "sum", "avg" } }, ...]`.
+
 ### GET /v2/projects/:pid/traffic/page-properties
 
 Counts of pageview metadata (page property) keys: `data: [{ "property": "author", "count": 30 }, ...]`. Cannot be combined with custom-event filters (`422`).

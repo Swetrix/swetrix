@@ -9,6 +9,7 @@ import utc from 'dayjs/plugin/utc'
 
 import { clickhouse } from '../../common/integrations/clickhouse'
 import { AppLoggerService } from '../../logger/logger.service'
+import { MAX_METRICS_IN_VIEW } from '../../project/dto/create-project-view.dto'
 import { IFunnel, PerfMeasure } from '../interfaces'
 import {
   AnalyticsService,
@@ -623,6 +624,57 @@ export class AnalyticsV2Service {
       limit,
       offset,
     })
+  }
+
+  async getTrafficCustomMetrics(
+    pid: string,
+    dto: V2BaseQueryDto & { metrics: string },
+  ): Promise<V2Envelope<unknown[]>> {
+    const dataType: V2DataType = 'traffic'
+    const filters = this.prepareFilters(dto.filters, dataType)
+    const timeframe = await this.resolveTimeframe({
+      pid,
+      dataType,
+      period: dto.period,
+      from: dto.from,
+      to: dto.to,
+      timezone: dto.timezone,
+    })
+
+    const parsedMetrics = this.analyticsService.parseMetrics(dto.metrics)
+
+    if (parsedMetrics.length > MAX_METRICS_IN_VIEW) {
+      throw new UnprocessableEntityException(
+        `The maximum number of metrics within one request is ${MAX_METRICS_IN_VIEW}`,
+      )
+    }
+
+    if (!parsedMetrics.length) {
+      return envelope([], this.baseMeta(pid, timeframe, filters.appliedFilters))
+    }
+
+    const meta = await this.analyticsService.getMetaResults(
+      pid,
+      parsedMetrics,
+      filters.filtersQuery,
+      {
+        params: {
+          pid,
+          groupFrom: timeframe.groupFromUTC,
+          groupTo: timeframe.groupToUTC,
+          ...filters.filtersParams,
+        },
+      },
+      timeframe.safeTimezone,
+      timeframe.period ?? undefined,
+      dto.from,
+      dto.to,
+    )
+
+    return envelope(
+      meta ?? [],
+      this.baseMeta(pid, timeframe, filters.appliedFilters),
+    )
   }
 
   async getTrafficPageProperties(

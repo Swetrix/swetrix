@@ -32,6 +32,7 @@ import {
   DevicesIcon,
   TagIcon,
   TelevisionIcon,
+  WarningIcon,
   WatchIcon,
 } from '@phosphor-icons/react'
 import {
@@ -55,36 +56,38 @@ import countries from '~/utils/isoCountries'
 
 const ITEM_HEIGHT = 36
 
-// Icon mapping for filter categories
+// Icon mapping for filter categories (keyed by v2 dimension names)
 export const filterCategoryIcons: Record<string, ReactNode> = {
-  cc: <MapPinIcon className='size-4' />,
-  rg: <MapTrifoldIcon className='size-4' />,
-  ct: <BuildingIcon className='size-4' />,
-  pg: <FileTextIcon className='size-4' />,
-  entryPage: <SignInIcon className='size-4' />,
-  exitPage: <SignOutIcon className='size-4' />,
+  country: <MapPinIcon className='size-4' />,
+  region: <MapTrifoldIcon className='size-4' />,
+  city: <BuildingIcon className='size-4' />,
+  page: <FileTextIcon className='size-4' />,
+  entry_page: <SignInIcon className='size-4' />,
+  exit_page: <SignOutIcon className='size-4' />,
   host: <HardDrivesIcon className='size-4' />,
-  br: <CompassIcon className='size-4' />,
-  brv: <CompassIcon className='size-4' />,
+  browser: <CompassIcon className='size-4' />,
+  browser_version: <CompassIcon className='size-4' />,
   os: <MonitorPlayIcon className='size-4' />,
-  osv: <MonitorPlayIcon className='size-4' />,
-  ref: <LinkIcon className='size-4' />,
-  so: <ShareIcon className='size-4' />,
-  me: <RadioIcon className='size-4' />,
-  ca: <MegaphoneIcon className='size-4' />,
-  te: <TagIcon className='size-4' />,
-  co: <FileIcon className='size-4' />,
-  lc: <TranslateIcon className='size-4' />,
-  dv: <DevicesIcon className='size-4' />,
+  os_version: <MonitorPlayIcon className='size-4' />,
+  referrer: <LinkIcon className='size-4' />,
+  referrer_name: <LinkIcon className='size-4' />,
+  utm_source: <ShareIcon className='size-4' />,
+  utm_medium: <RadioIcon className='size-4' />,
+  utm_campaign: <MegaphoneIcon className='size-4' />,
+  utm_term: <TagIcon className='size-4' />,
+  utm_content: <FileIcon className='size-4' />,
+  locale: <TranslateIcon className='size-4' />,
+  device: <DevicesIcon className='size-4' />,
   isp: <GlobeIcon className='size-4' />,
-  og: <BuildingIcon className='size-4' />,
-  ut: <CpuIcon className='size-4' />,
-  ctp: <LinkIcon className='size-4' />,
-  ev: <RadioIcon className='size-4' />,
-  'ev:key': <TagIcon className='size-4' />,
-  'ev:value': <TagIcon className='size-4' />,
-  'tag:key': <TagIcon className='size-4' />,
-  'tag:value': <TagIcon className='size-4' />,
+  organization: <BuildingIcon className='size-4' />,
+  user_type: <CpuIcon className='size-4' />,
+  connection_type: <LinkIcon className='size-4' />,
+  event: <RadioIcon className='size-4' />,
+  event_metadata: <TagIcon className='size-4' />,
+  page_property: <TagIcon className='size-4' />,
+  error_name: <WarningIcon className='size-4' />,
+  error_message: <WarningIcon className='size-4' />,
+  error_filename: <FileIcon className='size-4' />,
 }
 
 const deviceIconMapping: Record<string, ReactNode> = {
@@ -161,11 +164,11 @@ const FilterValueInput = ({
 
   const getLabelForItem = useCallback(
     (item: string) => {
-      if (column === 'cc') {
+      if (column === 'country') {
         return countries.getName(item, language) || item
       }
       // Handle combined version values (e.g., "Chrome|||120.5" -> "Chrome 120.5")
-      if (column === 'brv' || column === 'osv') {
+      if (column === 'browser_version' || column === 'os_version') {
         const parsed = parseVersionValue(item)
         if (parsed) {
           return `${parsed.parent} ${parsed.version}`
@@ -178,7 +181,7 @@ const FilterValueInput = ({
 
   const getIconForItem = useCallback(
     (item: string): ReactNode => {
-      if (column === 'cc') {
+      if (column === 'country') {
         return (
           <Flag
             className='shrink-0 rounded-xs'
@@ -190,7 +193,7 @@ const FilterValueInput = ({
         )
       }
 
-      if (column === 'br') {
+      if (column === 'browser') {
         // @ts-expect-error - dynamic key access
         const logoUrl = BROWSER_LOGO_MAP[item]
         if (logoUrl) {
@@ -200,7 +203,7 @@ const FilterValueInput = ({
       }
 
       // For browser versions, show browser icon
-      if (column === 'brv') {
+      if (column === 'browser_version') {
         const parsed = parseVersionValue(item)
         if (parsed) {
           // @ts-expect-error - dynamic key access
@@ -233,7 +236,7 @@ const FilterValueInput = ({
       }
 
       // For OS versions, show OS icon
-      if (column === 'osv') {
+      if (column === 'os_version') {
         const parsed = parseVersionValue(item)
         if (parsed) {
           // @ts-expect-error - dynamic key access
@@ -256,7 +259,7 @@ const FilterValueInput = ({
         return <GlobeIcon className='size-4 shrink-0' />
       }
 
-      if (column === 'dv') {
+      if (column === 'device') {
         const icon = deviceIconMapping[item]
         if (icon) {
           return <span className='shrink-0'>{icon}</span>
@@ -264,7 +267,7 @@ const FilterValueInput = ({
         return <QuestionMarkIcon className='size-4 shrink-0' />
       }
 
-      if (column === 'lc') {
+      if (column === 'locale') {
         const countryCode = item.split('-').pop()
         if (countryCode && countries.getName(countryCode, language)) {
           return (
@@ -279,10 +282,10 @@ const FilterValueInput = ({
         }
       }
 
-      const baseColumn = column.startsWith('ev:key:')
-        ? 'ev:key'
-        : column.startsWith('tag:key:')
-          ? 'tag:key'
+      const baseColumn = column.startsWith('event_metadata:')
+        ? 'event_metadata'
+        : column.startsWith('page_property:')
+          ? 'page_property'
           : column
       const categoryIcon =
         filterCategoryIcons[column] || filterCategoryIcons[baseColumn]
@@ -344,7 +347,7 @@ const FilterValueInput = ({
       e.preventDefault()
       if (inputValue.trim()) {
         // For country codes, try to find the alpha2 code
-        if (column === 'cc') {
+        if (column === 'country') {
           const alpha2 = countries.getAlpha2Code(inputValue, language)
           if (alpha2) {
             onChange(alpha2)
@@ -424,7 +427,7 @@ const FilterValueInput = ({
                 <button
                   type='button'
                   onClick={() => {
-                    if (column === 'cc') {
+                    if (column === 'country') {
                       const alpha2 = countries.getAlpha2Code(
                         inputValue,
                         language,

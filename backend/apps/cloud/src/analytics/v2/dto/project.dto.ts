@@ -107,6 +107,16 @@ export class V2DimensionValuesQueryDto {
   type?: 'traffic' | 'errors'
 }
 
+export class V2CustomMetricsQueryDto extends V2BaseQueryDto {
+  @ApiProperty({
+    description:
+      'JSON array of custom metric definitions (project view custom events)',
+  })
+  @IsNotEmpty()
+  @IsString()
+  metrics: string
+}
+
 export class V2EventMetadataQueryDto extends V2BaseQueryDto {
   @ApiProperty({ description: 'Custom event name to return metadata for' })
   @IsNotEmpty()

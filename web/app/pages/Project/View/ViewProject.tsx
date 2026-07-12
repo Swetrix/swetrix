@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import { AnimatePresence, motion } from 'motion/react'
@@ -94,12 +95,9 @@ import ProjectSidebar, {
   MobileSidebarTrigger,
 } from './components/ProjectSidebar'
 import SearchFilters from './components/SearchFilters'
-import {
-  Filter,
-  ProjectView,
-  ProjectViewCustomEvent,
-} from './interfaces/traffic'
-import { parseFilters } from './utils/filters'
+import { ProjectView, ProjectViewCustomEvent } from './interfaces/traffic'
+import { V2Filter } from '~/api/v2/types'
+import { parseFiltersFromUrl } from '~/utils/analyticsUrl'
 import {
   getProjectViewCreateType,
   getProjectViewFilterOptions,
@@ -107,7 +105,6 @@ import {
 import {
   getFormatDate,
   typeNameMapping,
-  CHART_METRICS_MAPPING,
   SHORTCUTS_TABS_LISTENERS,
   SHORTCUTS_TABS_MAP,
   SHORTCUTS_GENERAL_LISTENERS,
@@ -146,7 +143,7 @@ interface ViewProjectContextType {
   size: ReturnType<typeof useSize>[1]
   dataLoading: boolean
   activeTab: keyof typeof PROJECT_TABS
-  filters: Filter[]
+  filters: V2Filter[]
   projectViews: ProjectView[]
   projectViewsLoading: boolean | null
   loadProjectViews: (forced?: boolean) => void
@@ -171,11 +168,11 @@ interface ViewProjectContextType {
   onMainChartZoom: (domain: [Date, Date] | null) => void
   shouldEnableZoom: boolean
 
-  getFilterLink: (column: string, value: string | null) => LinkProps['to']
+  getFilterLink: (dimension: string, value: string | null) => LinkProps['to']
   getVersionFilterLink: (
     parent: string | null,
     version: string | null,
-    panelType: 'br' | 'os',
+    panelType: 'browser' | 'os',
   ) => string
 
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
@@ -193,16 +190,9 @@ interface ViewProjectContextType {
 }
 
 interface RefreshTriggersContextType {
-  captchaRefreshTrigger: number
   goalsRefreshTrigger: number
   experimentsRefreshTrigger: number
   featureFlagsRefreshTrigger: number
-  sessionsRefreshTrigger: number
-  errorsRefreshTrigger: number
-  performanceRefreshTrigger: number
-  trafficRefreshTrigger: number
-  funnelsRefreshTrigger: number
-  profilesRefreshTrigger: number
   replaysRefreshTrigger: number
   seoRefreshTrigger: number
 }
@@ -262,24 +252,17 @@ const defaultViewProjectContext: ViewProjectContextType = {
 }
 
 const defaultRefreshTriggersContext: RefreshTriggersContextType = {
-  captchaRefreshTrigger: 0,
   goalsRefreshTrigger: 0,
   experimentsRefreshTrigger: 0,
   featureFlagsRefreshTrigger: 0,
-  sessionsRefreshTrigger: 0,
-  errorsRefreshTrigger: 0,
-  performanceRefreshTrigger: 0,
-  trafficRefreshTrigger: 0,
-  funnelsRefreshTrigger: 0,
-  profilesRefreshTrigger: 0,
   replaysRefreshTrigger: 0,
   seoRefreshTrigger: 0,
 }
 
-export const ViewProjectContext = createContext<ViewProjectContextType>(
+const ViewProjectContext = createContext<ViewProjectContextType>(
   defaultViewProjectContext,
 )
-export const RefreshTriggersContext = createContext<RefreshTriggersContextType>(
+const RefreshTriggersContext = createContext<RefreshTriggersContextType>(
   defaultRefreshTriggersContext,
 )
 
@@ -335,6 +318,7 @@ const ViewProjectContent = () => {
   }, [isMapFullscreen])
 
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -352,32 +336,12 @@ const ViewProjectContent = () => {
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
 
   const [dataLoading] = useState(false)
-  const [captchaRefreshTrigger, setCaptchaRefreshTrigger] = useState(0)
   const [goalsRefreshTrigger, setGoalsRefreshTrigger] = useState(0)
   const [experimentsRefreshTrigger, setExperimentsRefreshTrigger] = useState(0)
   const [featureFlagsRefreshTrigger, setFeatureFlagsRefreshTrigger] =
     useState(0)
-  const [sessionsRefreshTrigger, setSessionsRefreshTrigger] = useState(0)
-  const [errorsRefreshTrigger, setErrorsRefreshTrigger] = useState(0)
-  const [performanceRefreshTrigger, setPerformanceRefreshTrigger] = useState(0)
-  const [trafficRefreshTrigger, setTrafficRefreshTrigger] = useState(0)
-  const [funnelsRefreshTrigger, setFunnelsRefreshTrigger] = useState(0)
-  const [profilesRefreshTrigger, setProfilesRefreshTrigger] = useState(0)
   const [replaysRefreshTrigger, setReplaysRefreshTrigger] = useState(0)
   const [seoRefreshTrigger, setSeoRefreshTrigger] = useState(0)
-  const [activeChartMetrics] = useState<
-    Record<keyof typeof CHART_METRICS_MAPPING, boolean>
-  >({
-    [CHART_METRICS_MAPPING.unique]: true,
-    [CHART_METRICS_MAPPING.views]: false,
-    [CHART_METRICS_MAPPING.sessionDuration]: false,
-    [CHART_METRICS_MAPPING.bounce]: false,
-    [CHART_METRICS_MAPPING.viewsPerUnique]: false,
-    [CHART_METRICS_MAPPING.trendlines]: false,
-    [CHART_METRICS_MAPPING.cumulativeMode]: false,
-    [CHART_METRICS_MAPPING.customEvents]: false,
-    [CHART_METRICS_MAPPING.revenue]: false,
-  } as Record<keyof typeof CHART_METRICS_MAPPING, boolean>)
   const customMetrics = useMemo<ProjectViewCustomEvent[]>(() => {
     const raw = searchParams.get('metrics')
     if (!raw) return []
@@ -387,8 +351,8 @@ const ViewProjectContent = () => {
       return []
     }
   }, [searchParams])
-  const filters = useMemo<Filter[]>(() => {
-    return parseFilters(searchParams)
+  const filters = useMemo<V2Filter[]>(() => {
+    return parseFiltersFromUrl(searchParams)
   }, [searchParams])
 
   const tnMapping = typeNameMapping(t)
@@ -535,10 +499,6 @@ const ViewProjectContent = () => {
 
   const viewsLoadFetcher = useFetcher<ProjectViewActionData>()
 
-  const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode]
-    ? 'cumulative'
-    : 'periodical'
-
   const loadProjectViews = useCallback(
     (forced?: boolean) => {
       if (!forced && projectViewsLoading !== null) {
@@ -576,18 +536,16 @@ const ViewProjectContent = () => {
   }, [viewsLoadFetcher.state, viewsLoadFetcher.data])
 
   const getVersionFilterLink = useCallback(
-    (parent: string | null, version: string | null, panelType: 'br' | 'os') => {
+    (
+      parent: string | null,
+      version: string | null,
+      panelType: 'browser' | 'os',
+    ) => {
       const filterParams = new URLSearchParams(searchParams.toString())
 
-      if (panelType === 'br') {
-        // Apply both browser and browser version filters together
-        filterParams.set('br', parent ?? 'null')
-        filterParams.set('brv', version ?? 'null')
-      } else if (panelType === 'os') {
-        // Apply both OS and OS version filters together
-        filterParams.set('os', parent ?? 'null')
-        filterParams.set('osv', version ?? 'null')
-      }
+      // Apply both the parent (browser/os) and version filters together
+      filterParams.set(panelType, parent ?? 'null')
+      filterParams.set(`${panelType}_version`, version ?? 'null')
 
       return `?${filterParams.toString()}`
     },
@@ -916,71 +874,60 @@ const ViewProjectContent = () => {
     [dataLoading, searchParams, setSearchParams],
   )
 
+  // Tabs fully served by the v2 per-dimension API: refresh = invalidate queries
+  const V2_TABS = useMemo(
+    () =>
+      new Set<keyof typeof PROJECT_TABS>([
+        PROJECT_TABS.traffic,
+        PROJECT_TABS.performance,
+        PROJECT_TABS.sessions,
+        PROJECT_TABS.errors,
+        PROJECT_TABS.funnels,
+        PROJECT_TABS.profiles,
+        PROJECT_TABS.captcha,
+      ]),
+    [],
+  )
+
   const refreshStats = useCallback(
     async (_isManual = true) => {
-      if (!authLoading && !dataLoading) {
-        if (activeTab === PROJECT_TABS.funnels) {
-          setFunnelsRefreshTrigger((prev) => prev + 1)
-          return
-        }
+      if (authLoading || dataLoading) {
+        return
+      }
 
-        if (activeTab === PROJECT_TABS.profiles) {
-          setProfilesRefreshTrigger((prev) => prev + 1)
-          return
-        }
+      if (V2_TABS.has(activeTab)) {
+        await queryClient.invalidateQueries({ queryKey: ['v2', id] })
+        return
+      }
 
-        if (activeTab === PROJECT_TABS.captcha) {
-          setCaptchaRefreshTrigger((prev) => prev + 1)
-          return
-        }
+      if (activeTab === PROJECT_TABS.goals) {
+        setGoalsRefreshTrigger((prev) => prev + 1)
+        return
+      }
 
-        if (activeTab === PROJECT_TABS.goals) {
-          setGoalsRefreshTrigger((prev) => prev + 1)
-          return
-        }
+      if (activeTab === PROJECT_TABS.experiments) {
+        setExperimentsRefreshTrigger((prev) => prev + 1)
+        return
+      }
 
-        if (activeTab === PROJECT_TABS.experiments) {
-          setExperimentsRefreshTrigger((prev) => prev + 1)
-          return
-        }
+      if (activeTab === PROJECT_TABS.featureFlags) {
+        setFeatureFlagsRefreshTrigger((prev) => prev + 1)
+        return
+      }
 
-        if (activeTab === PROJECT_TABS.featureFlags) {
-          setFeatureFlagsRefreshTrigger((prev) => prev + 1)
-          return
-        }
+      if (activeTab === PROJECT_TABS.replays) {
+        setReplaysRefreshTrigger((prev) => prev + 1)
+        return
+      }
 
-        if (activeTab === PROJECT_TABS.sessions) {
-          setSessionsRefreshTrigger((prev) => prev + 1)
-          return
-        }
-
-        if (activeTab === PROJECT_TABS.replays) {
-          setReplaysRefreshTrigger((prev) => prev + 1)
-          return
-        }
-
-        if (activeTab === PROJECT_TABS.errors) {
-          setErrorsRefreshTrigger((prev) => prev + 1)
-          return
-        }
-
-        if (activeTab === PROJECT_TABS.performance) {
-          setPerformanceRefreshTrigger((prev) => prev + 1)
-          return
-        }
-
-        if (activeTab === PROJECT_TABS.traffic) {
-          setTrafficRefreshTrigger((prev) => prev + 1)
-          return
-        }
-
-        if (activeTab === PROJECT_TABS.seo) {
-          setSeoRefreshTrigger((prev) => prev + 1)
-          return
-        }
+      if (activeTab === PROJECT_TABS.seo) {
+        // The SEO tab mixes GSC data (trigger-driven) with v2 referral data
+        await queryClient.invalidateQueries({ queryKey: ['v2', id] })
+        setSeoRefreshTrigger((prev) => prev + 1)
+        return
       }
     },
-    [authLoading, dataLoading, activeTab],
+    [authLoading, dataLoading, activeTab, queryClient, id, V2_TABS],
   )
 
   useEffect(() => {
@@ -1070,32 +1017,35 @@ const ViewProjectContent = () => {
     return daysDiff > 1
   }, [period, dateRange, isTouchDevice])
 
+  // `dimension` is a v2 dimension name, optionally keyed (`event_metadata:plan`)
   const getFilterLink = useCallback(
-    (column: string, value: string | null): LinkProps['to'] => {
-      const isFilterActive =
-        filters.findIndex(
-          (filter) => filter.column === column && filter.filter === value,
-        ) >= 0
+    (dimension: string, value: string | null): LinkProps['to'] => {
+      const urlValue = value ?? 'null'
+      const variants = [
+        dimension,
+        `!${dimension}`,
+        `~${dimension}`,
+        `^${dimension}`,
+      ]
+      const isFilterActive = variants.some((key) =>
+        searchParams.getAll(key).includes(urlValue),
+      )
 
       const newSearchParams = new URLSearchParams(searchParams.toString())
-      let searchString = ''
 
       if (isFilterActive) {
-        newSearchParams.delete(column, value ?? 'null')
-        newSearchParams.delete(`!${column}`, value ?? 'null')
-        newSearchParams.delete(`~${column}`, value ?? 'null')
-        newSearchParams.delete(`^${column}`, value ?? 'null')
-        searchString = newSearchParams.toString()
+        for (const key of variants) {
+          newSearchParams.delete(key, urlValue)
+        }
       } else {
-        newSearchParams.append(column, value ?? 'null')
-        searchString = newSearchParams.toString()
+        newSearchParams.append(dimension, urlValue)
       }
 
       return {
-        search: searchString,
+        search: newSearchParams.toString(),
       }
     },
-    [filters, searchParams],
+    [searchParams],
   )
 
   const setChartTypeOnClick = useCallback((type: keyof typeof chartTypes) => {
@@ -1310,30 +1260,16 @@ const ViewProjectContent = () => {
 
   const refreshTriggersValue = useMemo(
     () => ({
-      captchaRefreshTrigger,
       goalsRefreshTrigger,
       experimentsRefreshTrigger,
       featureFlagsRefreshTrigger,
-      sessionsRefreshTrigger,
-      errorsRefreshTrigger,
-      performanceRefreshTrigger,
-      trafficRefreshTrigger,
-      funnelsRefreshTrigger,
-      profilesRefreshTrigger,
       replaysRefreshTrigger,
       seoRefreshTrigger,
     }),
     [
-      captchaRefreshTrigger,
       goalsRefreshTrigger,
       experimentsRefreshTrigger,
       featureFlagsRefreshTrigger,
-      sessionsRefreshTrigger,
-      errorsRefreshTrigger,
-      performanceRefreshTrigger,
-      trafficRefreshTrigger,
-      funnelsRefreshTrigger,
-      profilesRefreshTrigger,
       replaysRefreshTrigger,
       seoRefreshTrigger,
     ],
@@ -1604,7 +1540,6 @@ const ViewProjectContent = () => {
                                   customMetrics={customMetrics}
                                   onRemoveCustomMetric={onRemoveCustomMetric}
                                   resetCustomMetrics={resetCustomMetrics}
-                                  mode={mode}
                                 />
                               ) : null}
                               {activeTab === PROJECT_TABS.performance ? (

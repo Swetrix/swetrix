@@ -1,7 +1,5 @@
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import _replace from 'lodash/replace'
-import _startsWith from 'lodash/startsWith'
 import _truncate from 'lodash/truncate'
 import { FunnelIcon, XIcon } from '@phosphor-icons/react'
 import { AnimatePresence, motion } from 'motion/react'
@@ -10,35 +8,91 @@ import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useSearchParams } from 'react-router'
 
+import { V2Filter, V2FilterOperator } from '~/api/v2/types'
+import {
+  filterToUrlKey,
+  filterToUrlValue,
+  isFilterUrlKey,
+  parseFilterKey,
+} from '~/utils/analyticsUrl'
 import { getLocaleDisplayName, cn } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
-import { isFilterValid } from '../utils/filters'
 import { splitProjectViewFiltersByTab } from '../utils/projectViewSegments'
 import { useViewProjectContext } from '../ViewProject'
 
+const OPERATOR_CYCLE: Record<V2FilterOperator, V2FilterOperator> = {
+  is: 'is_not',
+  is_not: 'contains',
+  contains: 'contains_not',
+  contains_not: 'is',
+}
+
+const TOGGLE_TITLE_KEY: Record<V2FilterOperator, string> = {
+  is: 'toggleFilterToIsNot',
+  is_not: 'toggleFilterToContains',
+  contains: 'toggleFilterToNotContains',
+  contains_not: 'toggleFilterToIs',
+}
+
+const operatorLabel = (
+  t: (key: string) => string,
+  operator: V2FilterOperator,
+) => {
+  if (operator === 'contains') {
+    return t('project.contains.is')
+  }
+
+  if (operator === 'contains_not') {
+    return t('project.contains.not')
+  }
+
+  return t(`common.${operator === 'is_not' ? 'isNot' : 'is'}`)
+}
+
+/**
+ * Returns true if a URL search param entry represents the given filter. Legacy
+ * v1 keys (cc, pg, ...) parse to the same shape, so old shared links can be
+ * removed / toggled too.
+ */
+const isFilterUrlEntry = (
+  filter: V2Filter,
+  rawKey: string,
+  rawValue: string,
+) => {
+  const parsed = parseFilterKey(rawKey)
+
+  if (
+    !parsed ||
+    parsed.dimension !== filter.dimension ||
+    parsed.key !== filter.key ||
+    parsed.operator !== filter.operator
+  ) {
+    return false
+  }
+
+  const normalisedValue =
+    rawValue === '' || rawValue === 'null' ? null : rawValue
+
+  return normalisedValue === (filter.value ?? null)
+}
+
 interface FilterProps {
-  column: string
-  filter: string
-  isExclusive: boolean
+  filter: V2Filter
   tnMapping: Record<string, string>
   canChangeExclusive?: boolean
   removable?: boolean
   onChangeExclusive?: (e: MouseEvent) => void
   onRemoveFilter?: (e: MouseEvent) => void
-  isContains?: boolean
 }
 
 const Filter = ({
-  column,
   filter,
-  isExclusive,
   tnMapping,
   canChangeExclusive,
   removable,
   onChangeExclusive,
   onRemoveFilter,
-  isContains,
 }: FilterProps) => {
   const { dataLoading } = useViewProjectContext()
   const [searchParams] = useSearchParams()
@@ -47,108 +101,90 @@ const Filter = ({
     i18n: { language },
   } = useTranslation('common')
 
-  let displayColumn = tnMapping[column]
-  let displayFilter = filter
+  const { dimension, operator, key } = filter
+  const value = Array.isArray(filter.value)
+    ? filter.value.map((item) => item ?? 'null').join(', ')
+    : filter.value
 
-  if (column === 'cc') {
-    displayFilter = countries.getName(filter, language) as string
+  let displayColumn = tnMapping[dimension] || dimension
+  let displayFilter: string = value ?? 'null'
+
+  if (dimension === 'country' && value) {
+    displayFilter = countries.getName(value, language) || value
   }
 
-  if (column === 'pg') {
-    displayFilter = filter || t('common.notSet')
+  if (dimension === 'page') {
+    displayFilter = value || t('common.notSet')
   }
 
-  if (column === 'lc') {
-    displayFilter = getLocaleDisplayName(displayFilter, language)
+  if (dimension === 'locale' && value) {
+    displayFilter = getLocaleDisplayName(value, language)
   }
 
   // Normalise "null" filter values to human-friendly labels
-  if (
-    (displayFilter as unknown as string)?.toString().toLowerCase() === 'null'
-  ) {
-    if (column === 'ref') {
+  if (value === null || value.toLowerCase() === 'null') {
+    if (dimension === 'referrer') {
       displayFilter = t('project.directNone')
-    } else if (column === 'host') {
+    } else if (dimension === 'host') {
       displayFilter = t('project.unknownHost')
     } else {
       displayFilter = t('common.notSet')
     }
   }
 
-  if (_startsWith(column, 'ev:key:')) {
-    const key = _replace(column, /^ev:key:/, '')
-    displayColumn = t('project.metamapping.ev.dynamicKey', {
-      key,
-    })
-  }
-
-  if (_startsWith(column, 'tag:key:')) {
-    const key = _replace(column, /^tag:key:/, '')
-    displayColumn = t('project.metamapping.tag.dynamicKey', {
-      key,
-    })
+  if (key) {
+    displayColumn = t(
+      `project.metamapping.${dimension === 'page_property' ? 'tag' : 'ev'}.dynamicKey`,
+      {
+        key,
+      },
+    )
   }
 
   const truncatedFilter = _truncate(displayFilter)
 
   const createRemoveFilterPath = () => {
-    const newSearchParams = new URLSearchParams(searchParams.toString())
-    const paramKeyInUrl = isContains
-      ? isExclusive
-        ? `^${column}`
-        : `~${column}`
-      : isExclusive
-        ? `!${column}`
-        : column
-    newSearchParams.delete(paramKeyInUrl, filter)
+    const newSearchParams = new URLSearchParams()
+
+    for (const [rawKey, rawValue] of searchParams.entries()) {
+      if (isFilterUrlEntry(filter, rawKey, rawValue)) {
+        continue
+      }
+
+      newSearchParams.append(rawKey, rawValue)
+    }
+
     return { search: newSearchParams.toString() }
   }
 
   const createToggleExclusivePath = () => {
-    const newSearchParams = new URLSearchParams(searchParams.toString())
+    const newSearchParams = new URLSearchParams()
 
-    const getKey = (contains: boolean, exclusive: boolean) =>
-      contains
-        ? exclusive
-          ? `^${column}`
-          : `~${column}`
-        : exclusive
-          ? `!${column}`
-          : column
+    for (const [rawKey, rawValue] of searchParams.entries()) {
+      if (isFilterUrlEntry(filter, rawKey, rawValue)) {
+        continue
+      }
 
-    const c = Boolean(isContains)
-    const e = Boolean(isExclusive)
-
-    const oldParamKey = getKey(c, e)
-
-    let nextContains = c
-    let nextExclusive = e
-
-    if (!c && !e) {
-      // is -> is not
-      nextContains = false
-      nextExclusive = true
-    } else if (!c && e) {
-      // is not -> contains
-      nextContains = true
-      nextExclusive = false
-    } else if (c && !e) {
-      // contains -> not contains
-      nextContains = true
-      nextExclusive = true
-    } else {
-      // not contains -> is
-      nextContains = false
-      nextExclusive = false
+      newSearchParams.append(rawKey, rawValue)
     }
 
-    const newParamKey = getKey(nextContains, nextExclusive)
+    const nextFilter: V2Filter = {
+      ...filter,
+      operator: OPERATOR_CYCLE[operator],
+    }
 
-    newSearchParams.delete(oldParamKey, filter)
-    newSearchParams.append(newParamKey, filter)
+    newSearchParams.append(
+      filterToUrlKey(nextFilter),
+      filterToUrlValue(nextFilter),
+    )
 
     return { search: newSearchParams.toString() }
   }
+
+  const toggleLabel = t(`project.${TOGGLE_TITLE_KEY[operator]}`, {
+    column: displayColumn,
+    filter: truncatedFilter,
+  })
 
   return (
     <span
@@ -167,10 +203,10 @@ const Filter = ({
           to={createToggleExclusivePath()}
           className={cn('cursor-pointer hover:underline', {
             'cursor-wait': dataLoading,
-            'text-green-600 dark:text-green-400': !isExclusive && !isContains,
-            'text-red-600 dark:text-red-400': isExclusive && !isContains,
-            'text-yellow-600 dark:text-yellow-400': !isExclusive && isContains,
-            'text-orange-600 dark:text-orange-400': isExclusive && isContains,
+            'text-green-600 dark:text-green-400': operator === 'is',
+            'text-red-600 dark:text-red-400': operator === 'is_not',
+            'text-yellow-600 dark:text-yellow-400': operator === 'contains',
+            'text-orange-600 dark:text-orange-400': operator === 'contains_not',
           })}
           onClick={(e: MouseEvent) => {
             if (dataLoading) {
@@ -179,49 +215,13 @@ const Filter = ({
             }
             onChangeExclusive?.(e)
           }}
-          title={(() => {
-            const c = Boolean(isContains)
-            const e = Boolean(isExclusive)
-            const nextKey =
-              !c && !e
-                ? 'toggleFilterToIsNot'
-                : !c && e
-                  ? 'toggleFilterToContains'
-                  : c && !e
-                    ? 'toggleFilterToNotContains'
-                    : 'toggleFilterToIs'
-            return t(`project.${nextKey}`, {
-              column: displayColumn,
-              filter: truncatedFilter,
-            })
-          })()}
-          aria-label={(() => {
-            const c = Boolean(isContains)
-            const e = Boolean(isExclusive)
-            const nextKey =
-              !c && !e
-                ? 'toggleFilterToIsNot'
-                : !c && e
-                  ? 'toggleFilterToContains'
-                  : c && !e
-                    ? 'toggleFilterToNotContains'
-                    : 'toggleFilterToIs'
-            return t(`project.${nextKey}`, {
-              column: displayColumn,
-              filter: truncatedFilter,
-            })
-          })()}
+          title={toggleLabel}
+          aria-label={toggleLabel}
         >
-          {isContains
-            ? t(`project.contains.${isExclusive ? 'not' : 'is'}`)
-            : t(`common.${isExclusive ? 'isNot' : 'is'}`)}
+          {operatorLabel(t, operator)}
         </Link>
       ) : (
-        <span>
-          {isContains
-            ? t(`project.contains.${isExclusive ? 'not' : 'is'}`)
-            : t(`common.${isExclusive ? 'isNot' : 'is'}`)}
-        </span>
+        <span>{operatorLabel(t, operator)}</span>
       )}
       &nbsp;
       <span className='font-semibold text-gray-800 dark:text-gray-50'>
@@ -269,6 +269,9 @@ interface FiltersProps {
   className?: string
 }
 
+const getFilterKey = (filter: V2Filter) =>
+  `${filterToUrlKey(filter)}-${filterToUrlValue(filter)}`
+
 const Filters = ({ tnMapping, className }: FiltersProps) => {
   const { activeTab, dataLoading, filters } = useViewProjectContext()
   const { t } = useTranslation('common')
@@ -284,12 +287,7 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
     const entries = Array.from(searchParams.entries())
 
     for (const [key] of entries) {
-      let processedKey = key
-      if (key.startsWith('!') || key.startsWith('~') || key.startsWith('^')) {
-        processedKey = key.substring(1)
-      }
-
-      if (!isFilterValid(processedKey, true)) {
+      if (!isFilterUrlKey(key)) {
         continue
       }
 
@@ -314,47 +312,37 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
         <FunnelIcon className='size-5 shrink-0 text-gray-500 dark:text-gray-400' />
         <div className='flex flex-wrap'>
           <AnimatePresence mode='popLayout' initial={false}>
-            {_map(supported, (props) => {
-              const { column, filter, isExclusive, isContains } = props
-              const key = `${column}-${filter}-${isExclusive}-${isContains}`
-
-              return (
-                <motion.span
-                  key={key}
-                  layout
-                  initial={{ opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.92 }}
-                  transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
-                  className='inline-flex'
-                >
-                  <Filter
-                    tnMapping={tnMapping}
-                    canChangeExclusive
-                    removable
-                    {...props}
-                  />
-                </motion.span>
-              )
-            })}
-            {_map(unsupported, (props) => {
-              const { column, filter, isExclusive, isContains } = props
-              const key = `unsupported-${column}-${filter}-${isExclusive}-${isContains}`
-
-              return (
-                <motion.span
-                  key={key}
-                  layout
-                  initial={{ opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 0.6, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.92 }}
-                  transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
-                  className='inline-flex'
-                >
-                  <Filter tnMapping={tnMapping} removable {...props} />
-                </motion.span>
-              )
-            })}
+            {_map(supported, (filter) => (
+              <motion.span
+                key={getFilterKey(filter)}
+                layout
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                className='inline-flex'
+              >
+                <Filter
+                  tnMapping={tnMapping}
+                  canChangeExclusive
+                  removable
+                  filter={filter}
+                />
+              </motion.span>
+            ))}
+            {_map(unsupported, (filter) => (
+              <motion.span
+                key={`unsupported-${getFilterKey(filter)}`}
+                layout
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 0.6, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                className='inline-flex'
+              >
+                <Filter tnMapping={tnMapping} removable filter={filter} />
+              </motion.span>
+            ))}
           </AnimatePresence>
         </div>
         {unsupported.length > 0 ? (

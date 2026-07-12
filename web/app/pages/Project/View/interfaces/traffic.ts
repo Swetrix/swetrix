@@ -1,6 +1,7 @@
 import { TimeBucket } from '~/lib/constants'
 
-export interface Filter {
+// Legacy (v1) filter shape — still used by saved project views (server-side format)
+interface Filter {
   column: string
   filter: string
   isExclusive: boolean
@@ -35,18 +36,18 @@ interface Param {
   count: number
 }
 
-export type Params = Record<string, Param[]>
+type Params = Record<string, Param[]>
 
 export type Customs = Record<string, number>
 
-export type Properties = Record<string, number>
+type Properties = Record<string, number>
 
 interface Metric {
   sum: number
   avg: number
 }
 
-export interface TrafficMeta {
+interface TrafficMeta {
   key: string
   current: Metric
   previous: Metric

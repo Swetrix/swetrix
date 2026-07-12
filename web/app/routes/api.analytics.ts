@@ -5,39 +5,24 @@ import {
 } from 'react-router'
 
 import {
-  getSessionsServer,
   getSessionReplaysServer,
   getSessionReplayServer,
   deleteSessionReplayServer,
-  getFunnelSessionsServer,
   getGoalSessionsServer,
-  getErrorsServer,
   getFeatureFlagStatsServer,
   getFeatureFlagProfilesServer,
   getGoalStatsServer,
   getGoalChartServer,
-  getCaptchaDataServer,
   getExperimentResultsServer,
   getExperimentServer,
   getGoalServer,
   getProjectGoalsServer,
   getProjectFeatureFlagsServer,
-  getProfilesServer,
-  getProfileServer,
-  getProfileSessionsServer,
   getProjectServer,
   getFiltersServer,
   getDataDeletionPreviewServer,
-  getErrorsFiltersServer,
-  getVersionFiltersServer,
-  getCustomEventsMetadataServer,
-  getPropertyMetadataServer,
-  getErrorSessionsServer,
   getLiveVisitorsServer,
-  getLiveVisitorsInfoServer,
   getBotProtectionStatsServer,
-  getProjectDataCustomEventsServer,
-  getUserFlowServer,
   getGSCKeywordsServer,
   getGSCDashboardServer,
   getGSCDetailsServer,
@@ -46,37 +31,23 @@ import {
   getOverallStatsServer,
   type AnalyticsParams,
   type AnalyticsFilter,
-  type SessionsResponse,
   type SessionReplaysResponse,
   type SessionReplayResponse,
   type DeleteSessionReplayResponse,
-  type FunnelSessionsResponse,
   type GoalSessionsResponse,
-  type ErrorsResponse,
   type FeatureFlagStats,
   type FeatureFlagProfilesResponse,
   type GoalStats,
   type GoalChartData,
-  type CaptchaDataResponse,
   type ExperimentResults,
   type Experiment,
   type Goal,
   type GoalsResponse,
   type FeatureFlagsResponse,
-  type ProfilesResponse,
-  type ProfileDetailsResponse,
-  type ProfileSessionsResponse,
   type Project,
-  type VersionFilter,
-  type CustomEventsMetadataResponse,
-  type PropertyMetadataResponse,
-  type ErrorSessionsResponse,
   type LiveStats,
-  type LiveVisitorInfo,
   type BotProtectionStats,
   type BotProtectionPeriod,
-  type ProjectDataCustomEventsResponse,
-  type UserFlowResponse,
   type GSCKeywordsResponse,
   type GSCDashboardResponse,
   type GSCDetailsResponse,
@@ -104,60 +75,38 @@ function formatDateForBackend(dateStr: string | undefined): string | undefined {
 
 interface ProxyRequest {
   action:
-    | 'getSessions'
     | 'getSessionReplays'
     | 'getSessionReplay'
     | 'deleteSessionReplay'
-    | 'getErrors'
     | 'getFeatureFlagStats'
     | 'getFeatureFlagProfiles'
     | 'getGoalStats'
     | 'getGoalChart'
-    | 'getCaptchaData'
     | 'getExperimentResults'
     | 'getExperiment'
     | 'getGoal'
     | 'getProjectGoals'
     | 'getProjectFeatureFlags'
-    | 'getProfiles'
-    | 'getProfile'
-    | 'getProfileSessions'
     | 'getProject'
     | 'getFilters'
     | 'getDataDeletionPreview'
-    | 'getErrorsFilters'
-    | 'getVersionFilters'
-    | 'getCustomEventsMetadata'
-    | 'getPropertyMetadata'
-    | 'getErrorSessions'
     | 'getLiveVisitors'
-    | 'getLiveVisitorsInfo'
     | 'getBotProtectionStats'
-    | 'getProjectDataCustomEvents'
-    | 'getUserFlow'
     | 'getGSCKeywords'
     | 'getGSCDashboard'
     | 'getGSCDetails'
     | 'getRevenueStatus'
     | 'getRevenueData'
     | 'getOverallStats'
-    | 'getFunnelSessions'
     | 'getGoalSessions'
   projectId: string
   pids?: string[]
   flagId?: string
   goalId?: string
   experimentId?: string
-  profileId?: string
   psid?: string
   replayId?: string
-  errorId?: string
   filterType?: string
-  filterColumn?: 'br' | 'os'
-  dataType?: 'traffic' | 'errors'
-  event?: string
-  property?: string
-  customEvents?: string[]
   params: {
     timeBucket?: string
     period?: string
@@ -167,15 +116,10 @@ interface ProxyRequest {
     filters?: AnalyticsFilter[]
     take?: number
     skip?: number
-    options?: Record<string, unknown>
     resultFilter?: string
     search?: string
-    profileType?: 'all' | 'anonymous' | 'identified'
     page?: string
     query?: string
-    funnelId?: string
-    step?: number
-    dropoff?: boolean
     goalId?: string
     sessionEvent?: 'traffic' | 'performance' | 'error'
   }
@@ -213,22 +157,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     switch (action) {
-      case 'getSessions': {
-        const result = await getSessionsServer(
-          request,
-          projectId,
-          analyticsParams,
-        )
-        return data<ProxyResponse<SessionsResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
       case 'getSessionReplays': {
         const result = await getSessionReplaysServer(
           request,
@@ -304,30 +232,6 @@ export async function action({ request }: ActionFunctionArgs) {
         })
       }
 
-      case 'getFunnelSessions': {
-        const result = await getFunnelSessionsServer(request, projectId, {
-          period: analyticsParams.period,
-          from: analyticsParams.from,
-          to: analyticsParams.to,
-          timezone: analyticsParams.timezone,
-          funnelId: params.funnelId,
-          step: params.step ?? 1,
-          take: params.take,
-          skip: params.skip,
-          password: analyticsParams.password,
-          filters: params.filters || [],
-          dropoff: params.dropoff,
-        })
-        return data<ProxyResponse<FunnelSessionsResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
       case 'getGoalSessions': {
         const goalId = body.goalId || params.goalId
         if (!goalId) {
@@ -346,19 +250,6 @@ export async function action({ request }: ActionFunctionArgs) {
           skip: params.skip,
         })
         return data<ProxyResponse<GoalSessionsResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getErrors': {
-        const errorsParams = { ...analyticsParams, options: params.options }
-        const result = await getErrorsServer(request, projectId, errorsParams)
-        return data<ProxyResponse<ErrorsResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)
@@ -474,27 +365,6 @@ export async function action({ request }: ActionFunctionArgs) {
         })
       }
 
-      case 'getCaptchaData': {
-        const result = await getCaptchaDataServer(
-          request,
-          projectId,
-          params.timeBucket || 'hour',
-          params.period || '3d',
-          params.filters || [],
-          formatDateForBackend(params.from) || '',
-          formatDateForBackend(params.to) || '',
-          password || undefined,
-        )
-        return data<ProxyResponse<CaptchaDataResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
       case 'getExperimentResults': {
         if (!body.experimentId) {
           return data<ProxyResponse<null>>(
@@ -594,84 +464,6 @@ export async function action({ request }: ActionFunctionArgs) {
         })
       }
 
-      case 'getProfiles': {
-        const result = await getProfilesServer(
-          request,
-          projectId,
-          params.period || '7d',
-          params.filters || [],
-          formatDateForBackend(params.from) || '',
-          formatDateForBackend(params.to) || '',
-          params.take || 30,
-          params.skip || 0,
-          params.timezone || '',
-          params.profileType || 'all',
-          password || undefined,
-        )
-        return data<ProxyResponse<ProfilesResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getProfile': {
-        if (!body.profileId) {
-          return data<ProxyResponse<null>>(
-            { data: null, error: 'profileId is required' },
-            { status: 400 },
-          )
-        }
-        const result = await getProfileServer(
-          request,
-          projectId,
-          body.profileId,
-          params.timezone || '',
-          password || undefined,
-        )
-        return data<ProxyResponse<ProfileDetailsResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getProfileSessions': {
-        if (!body.profileId) {
-          return data<ProxyResponse<null>>(
-            { data: null, error: 'profileId is required' },
-            { status: 400 },
-          )
-        }
-        const result = await getProfileSessionsServer(
-          request,
-          projectId,
-          body.profileId,
-          params.period || 'all',
-          params.filters || [],
-          formatDateForBackend(params.from) || '',
-          formatDateForBackend(params.to) || '',
-          params.take || 30,
-          params.skip || 0,
-          params.timezone || '',
-          password || undefined,
-        )
-        return data<ProxyResponse<ProfileSessionsResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
       case 'getProject': {
         const result = await getProjectServer(
           request,
@@ -727,147 +519,6 @@ export async function action({ request }: ActionFunctionArgs) {
         })
       }
 
-      case 'getErrorsFilters': {
-        if (!body.filterType) {
-          return data<ProxyResponse<null>>(
-            { data: null, error: 'filterType is required' },
-            { status: 400 },
-          )
-        }
-        const result = await getErrorsFiltersServer(
-          request,
-          projectId,
-          body.filterType,
-          password || undefined,
-        )
-        return data<ProxyResponse<string[]>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getVersionFilters': {
-        if (!body.filterColumn || !body.dataType) {
-          return data<ProxyResponse<null>>(
-            { data: null, error: 'filterColumn and dataType are required' },
-            { status: 400 },
-          )
-        }
-        const result = await getVersionFiltersServer(
-          request,
-          projectId,
-          body.dataType,
-          body.filterColumn,
-          password || undefined,
-        )
-        return data<ProxyResponse<VersionFilter[]>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getCustomEventsMetadata': {
-        if (!body.event) {
-          return data<ProxyResponse<null>>(
-            { data: null, error: 'event is required' },
-            { status: 400 },
-          )
-        }
-        const result = await getCustomEventsMetadataServer(
-          request,
-          projectId,
-          body.event,
-          {
-            timeBucket: params.timeBucket,
-            period: params.period,
-            from: formatDateForBackend(params.from),
-            to: formatDateForBackend(params.to),
-            timezone: params.timezone,
-            password: password || undefined,
-          },
-        )
-        return data<ProxyResponse<CustomEventsMetadataResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getPropertyMetadata': {
-        if (!body.property) {
-          return data<ProxyResponse<null>>(
-            { data: null, error: 'property is required' },
-            { status: 400 },
-          )
-        }
-        const result = await getPropertyMetadataServer(
-          request,
-          projectId,
-          body.property,
-          {
-            timeBucket: params.timeBucket,
-            period: params.period,
-            from: formatDateForBackend(params.from),
-            to: formatDateForBackend(params.to),
-            filters: params.filters,
-            timezone: params.timezone,
-            password: password || undefined,
-          },
-        )
-        return data<ProxyResponse<PropertyMetadataResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getErrorSessions': {
-        if (!body.errorId) {
-          return data<ProxyResponse<null>>(
-            { data: null, error: 'errorId is required' },
-            { status: 400 },
-          )
-        }
-        const result = await getErrorSessionsServer(
-          request,
-          projectId,
-          body.errorId,
-          {
-            timeBucket: params.timeBucket,
-            period: params.period,
-            from: formatDateForBackend(params.from),
-            to: formatDateForBackend(params.to),
-            filters: params.filters,
-            timezone: params.timezone,
-            take: params.take,
-            skip: params.skip,
-            password: password || undefined,
-          },
-        )
-        return data<ProxyResponse<ErrorSessionsResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
       case 'getLiveVisitors': {
         const pids = body.pids || [projectId]
         const result = await getLiveVisitorsServer(
@@ -876,22 +527,6 @@ export async function action({ request }: ActionFunctionArgs) {
           password || undefined,
         )
         return data<ProxyResponse<LiveStats>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getLiveVisitorsInfo': {
-        const result = await getLiveVisitorsInfoServer(
-          request,
-          projectId,
-          password || undefined,
-        )
-        return data<ProxyResponse<LiveVisitorInfo[]>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)
@@ -912,51 +547,6 @@ export async function action({ request }: ActionFunctionArgs) {
           password || undefined,
         )
         return data<ProxyResponse<BotProtectionStats>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getProjectDataCustomEvents': {
-        const result = await getProjectDataCustomEventsServer(
-          request,
-          projectId,
-          {
-            timeBucket: params.timeBucket,
-            period: params.period,
-            filters: params.filters,
-            from: formatDateForBackend(params.from),
-            to: formatDateForBackend(params.to),
-            timezone: params.timezone,
-            customEvents: body.customEvents,
-            password: password || undefined,
-          },
-        )
-        return data<ProxyResponse<ProjectDataCustomEventsResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getUserFlow': {
-        const result = await getUserFlowServer(request, projectId, {
-          timeBucket: params.timeBucket,
-          period: params.period,
-          filters: params.filters,
-          from: formatDateForBackend(params.from),
-          to: formatDateForBackend(params.to),
-          timezone: params.timezone,
-          password: password || undefined,
-        })
-        return data<ProxyResponse<UserFlowResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

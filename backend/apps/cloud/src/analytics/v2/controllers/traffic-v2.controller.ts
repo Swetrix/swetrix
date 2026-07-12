@@ -27,6 +27,7 @@ import { PublicProjectCacheInterceptor } from '../../protection/public-project-c
 import { AnalyticsV2Service } from '../analytics-v2.service'
 import {
   V2CustomEventsTimeseriesDto,
+  V2CustomMetricsQueryDto,
   V2EventMetadataQueryDto,
   V2PropertyMetadataQueryDto,
 } from '../dto/project.dto'
@@ -155,6 +156,34 @@ export class TrafficV2Controller {
     )
 
     return this.analyticsV2Service.getTrafficCustomEvents(pid, query)
+  }
+
+  @Get('custom-metrics')
+  @Auth(true, true)
+  @CacheableAnalytics()
+  @ApiOperation({
+    summary: 'Custom metrics',
+    description:
+      'Sum / average of numeric custom event metadata values for the selected period and the previous one (project view custom metrics).',
+  })
+  async getCustomMetrics(
+    @Param() { pid }: V2ProjectParamsDto,
+    @Query() query: V2CustomMetricsQueryDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    this.logger.log(
+      `pid: ${pid}`,
+      'GET /v2/projects/:pid/traffic/custom-metrics',
+    )
+
+    await this.analyticsV2Service.assertReadAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    return this.analyticsV2Service.getTrafficCustomMetrics(pid, query)
   }
 
   @Get('custom-events/timeseries')

@@ -1,54 +1,35 @@
-import {
-  ERRORS_FILTERS_PANELS_ORDER,
-  FILTERS_PANELS_ORDER,
-  PROJECT_TABS,
-} from '~/lib/constants'
-
-import { Filter } from '../interfaces/traffic'
+import { V2Filter } from '~/api/v2/types'
+import { PROJECT_TABS } from '~/lib/constants'
+import { VALID_DIMENSIONS_BY_TYPE } from '~/lib/v2Dimensions'
 
 type ProjectTab = keyof typeof PROJECT_TABS
 
-const TRAFFIC_FILTER_OPTIONS = FILTERS_PANELS_ORDER.includes('ev')
-  ? FILTERS_PANELS_ORDER
-  : FILTERS_PANELS_ORDER.flatMap((column) =>
-      column === 'exitPage' ? [column, 'ev'] : [column],
-    )
+// Dimensions that carry a key (event_metadata:plan) are never offered in the
+// filter editors directly — they're only created from panel clicks — but they
+// are supported when applying segments / rendering chips.
+const KEYED_FILTER_DIMENSIONS = ['event_metadata', 'page_property']
 
-const TRAFFIC_FILTER_COLUMNS = [
-  ...TRAFFIC_FILTER_OPTIONS,
-  'refn',
-  'ev:key',
-  'tag:key',
-  'tag:value',
-]
+// referrer_name shares a display label with referrer, so offering both in the
+// column dropdown would be confusing.
+const HIDDEN_FILTER_OPTIONS = [...KEYED_FILTER_DIMENSIONS, 'referrer_name']
 
-const PERFORMANCE_FILTER_COLUMNS = [
-  'pg',
-  'host',
-  'cc',
-  'rg',
-  'ct',
-  'dv',
-  'br',
-  'brv',
-  'isp',
-  'og',
-  'ut',
-  'ctp',
-]
+const TRAFFIC_FILTER_OPTIONS = VALID_DIMENSIONS_BY_TYPE.traffic.filter(
+  (dimension) => !HIDDEN_FILTER_OPTIONS.includes(dimension),
+)
 
-const ERRORS_FILTER_COLUMNS = [
-  'host',
-  ...ERRORS_FILTERS_PANELS_ORDER,
-  'entryPage',
-  'exitPage',
-  'tag:key',
-  'tag:value',
-]
+const TRAFFIC_FILTER_COLUMNS = VALID_DIMENSIONS_BY_TYPE.traffic
 
-const CAPTCHA_FILTER_COLUMNS = ['cc', 'br', 'os', 'dv']
+const PERFORMANCE_FILTER_COLUMNS = VALID_DIMENSIONS_BY_TYPE.performance
 
-const SEO_FILTER_COLUMNS = ['pg', 'keywords', 'cc', 'dv']
+const ERRORS_FILTER_OPTIONS = VALID_DIMENSIONS_BY_TYPE.errors.filter(
+  (dimension) => !HIDDEN_FILTER_OPTIONS.includes(dimension),
+)
+
+const ERRORS_FILTER_COLUMNS = VALID_DIMENSIONS_BY_TYPE.errors
+
+const CAPTCHA_FILTER_COLUMNS = VALID_DIMENSIONS_BY_TYPE.captcha
+
+const SEO_FILTER_COLUMNS = ['page', 'keywords', 'country', 'device']
 
 const ANALYTICS_TABS = new Set<ProjectTab>([
   PROJECT_TABS.traffic,
@@ -63,23 +44,26 @@ const ANALYTICS_TABS = new Set<ProjectTab>([
 const FILTER_OPTIONS_BY_TAB: Partial<Record<ProjectTab, string[]>> = {
   [PROJECT_TABS.traffic]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.performance]: PERFORMANCE_FILTER_COLUMNS,
-  [PROJECT_TABS.seo]: ['pg', 'cc', 'dv'],
+  [PROJECT_TABS.seo]: ['page', 'country', 'device'],
   [PROJECT_TABS.sessions]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.replays]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.profiles]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.funnels]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.goals]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.experiments]: TRAFFIC_FILTER_OPTIONS,
-  [PROJECT_TABS.errors]: ['host', ...ERRORS_FILTERS_PANELS_ORDER],
+  [PROJECT_TABS.errors]: ERRORS_FILTER_OPTIONS,
   [PROJECT_TABS.captcha]: CAPTCHA_FILTER_COLUMNS,
 }
 
-const supportsDynamicFilter = (column: string, tab: ProjectTab) => {
-  if (column.startsWith('ev:key:')) {
+const supportsKeyedFilter = (
+  filter: Pick<V2Filter, 'dimension' | 'key'>,
+  tab: ProjectTab,
+) => {
+  if (filter.dimension === 'event_metadata') {
     return ANALYTICS_TABS.has(tab)
   }
 
-  if (column.startsWith('tag:key:')) {
+  if (filter.dimension === 'page_property') {
     return ANALYTICS_TABS.has(tab) || tab === PROJECT_TABS.errors
   }
 
@@ -111,22 +95,22 @@ const getSupportedColumns = (tab: ProjectTab) => {
 }
 
 const isProjectTabFilterSupported = (
-  filter: Pick<Filter, 'column'>,
+  filter: Pick<V2Filter, 'dimension' | 'key'>,
   tab: ProjectTab,
 ) => {
-  if (supportsDynamicFilter(filter.column, tab)) {
-    return true
+  if (filter.key) {
+    return supportsKeyedFilter(filter, tab)
   }
 
-  return getSupportedColumns(tab).includes(filter.column)
+  return getSupportedColumns(tab).includes(filter.dimension)
 }
 
 export const splitProjectViewFiltersByTab = (
-  filters: Filter[] = [],
+  filters: V2Filter[] = [],
   tab: ProjectTab,
 ) => {
-  const supported: Filter[] = []
-  const unsupported: Filter[] = []
+  const supported: V2Filter[] = []
+  const unsupported: V2Filter[] = []
 
   filters.forEach((filter) => {
     if (isProjectTabFilterSupported(filter, tab)) {

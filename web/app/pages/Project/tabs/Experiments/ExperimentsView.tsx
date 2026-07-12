@@ -45,6 +45,7 @@ import Modal from '~/ui/Modal'
 import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
+import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 import routes from '~/utils/routes'
 
 import ExperimentResults from './ExperimentResults'
@@ -845,6 +846,8 @@ const ExperimentsView = ({
   const { id } = useCurrentProject()
   const { experimentsRefreshTrigger } = useRefreshTriggers()
   const { filters, timeBucket } = useViewProjectContext()
+  // experiments endpoints are still v1 — convert filters at the boundary
+  const legacyFilters = useMemo(() => filters.map(v2FilterToLegacy), [filters])
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const listFetcher = useFetcher<ProjectViewActionData>()
@@ -1305,7 +1308,7 @@ const ExperimentsView = ({
                   from={from}
                   to={to}
                   timezone={timezone}
-                  filters={filters}
+                  filters={legacyFilters}
                 />
               ))}
             </ul>

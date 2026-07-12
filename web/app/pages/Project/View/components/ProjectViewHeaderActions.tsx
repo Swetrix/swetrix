@@ -10,14 +10,16 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
+import { V2Filter } from '~/api/v2/types'
 import { PROJECT_TABS } from '~/lib/constants'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { ProjectViewActionData } from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
 import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
+import { legacyFilterToV2 } from '~/utils/analyticsUrl'
 
-import { Filter, ProjectView } from '../interfaces/traffic'
+import { ProjectView } from '../interfaces/traffic'
 import {
   splitProjectViewFiltersByTab,
   supportsProjectViewSegments,
@@ -57,13 +59,13 @@ const isAddViewItem = (item: ProjectViewMenuItem): item is AddViewItem =>
 const isEmptyViewItem = (item: ProjectViewMenuItem): item is EmptyViewItem =>
   'notClickable' in item
 
-const getFilterSearchParamKey = (filter: Filter) => {
-  if (filter.isContains) {
-    return filter.isExclusive ? `^${filter.column}` : `~${filter.column}`
-  }
-
-  return filter.isExclusive ? `!${filter.column}` : filter.column
-}
+// Saved project views keep the legacy filter shape server-side; convert to
+// the v2 shape at this boundary (unmappable legacy filters are dropped).
+const projectViewFiltersToV2 = (view: ProjectView): V2Filter[] =>
+  (view.filters || []).flatMap((filter) => {
+    const converted = legacyFilterToV2(filter)
+    return converted ? [converted] : []
+  })
 
 const iconButtonClassName =
   'rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-900 dark:hover:text-slate-200'
@@ -137,11 +139,20 @@ const ProjectViewHeaderActions = ({
     }
   }, [deleteFetcher.state, deleteFetcher.data, loadProjectViews, t])
 
-  const getFilterColumnLabel = (column: string) => {
+  const getFilterColumnLabel = (filter: V2Filter) => {
+    if (filter.key) {
+      return t(
+        `project.metamapping.${filter.dimension === 'page_property' ? 'tag' : 'ev'}.dynamicKey`,
+        {
+          key: filter.key,
+        },
+      )
+    }
+
     return (
-      tnMapping[column] ||
-      t(`project.mapping.${column}`, {
-        defaultValue: column,
+      tnMapping[filter.dimension] ||
+      t(`project.mapping.${filter.dimension}`, {
+        defaultValue: filter.dimension,
       })
     )
   }
@@ -167,7 +178,7 @@ const ProjectViewHeaderActions = ({
             }
 
             const { supported, unsupported } = splitProjectViewFiltersByTab(
-              item.filters || [],
+              projectViewFiltersToV2(item),
               activeTab,
             )
             const hasTrafficMetrics = (item.customEvents?.length || 0) > 0
@@ -177,7 +188,7 @@ const ProjectViewHeaderActions = ({
               supported.length > 0 ||
               (activeTab === PROJECT_TABS.traffic && hasTrafficMetrics)
             const unsupportedTitle = unsupported
-              .map(({ column }) => getFilterColumnLabel(column))
+              .map(getFilterColumnLabel)
               .join(', ')
 
             return (
@@ -274,7 +285,7 @@ const ProjectViewHeaderActions = ({
             }
 
             const { supported } = splitProjectViewFiltersByTab(
-              item.filters || [],
+              projectViewFiltersToV2(item),
               activeTab,
             )
             const hasSupportedFilters = supported.length > 0
@@ -288,28 +299,12 @@ const ProjectViewHeaderActions = ({
             }
 
             let newParams = new URLSearchParams(searchParams)
-            const supportedFilterKeys = new Set(
-              supported.map(getFilterSearchParamKey),
-            )
-
-            filters.forEach((filter) => {
-              const key = getFilterSearchParamKey(filter)
-
-              if (!supportedFilterKeys.has(key)) {
-                newParams.delete(key)
-              }
-            })
 
             newParams.delete('metrics')
 
-            if (hasSupportedFilters) {
-              newParams = getFiltersUrlParams(
-                filters,
-                supported,
-                true,
-                newParams,
-              )
-            }
+            // override=true replaces every filter param (including legacy
+            // aliases) with the segment's filters
+            newParams = getFiltersUrlParams(filters, supported, true, newParams)
 
             if (hasTrafficMetrics) {
               newParams.set('metrics', JSON.stringify(item.customEvents))

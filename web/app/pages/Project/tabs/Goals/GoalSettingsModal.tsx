@@ -23,7 +23,8 @@ import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
-import type { Filter as FilterType } from '../../View/interfaces/traffic'
+import type { V2Filter, V2FilterOperator } from '~/api/v2/types'
+import { legacyFilterToV2, v2FilterToLegacy } from '~/utils/analyticsUrl'
 import FilterRowsEditor from '../../View/components/FilterRowsEditor'
 
 const GOAL_TYPES = [
@@ -46,136 +47,153 @@ const CONDITION_RELATIONS: { value: GoalConditionRelation; label: string }[] = [
   { value: 'OR', label: 'OR' },
 ]
 
+// v2 dimension names; the bare keyed dimensions (page_property /
+// event_metadata) mean "has this metadata key" — the value is the key itself.
 const GOAL_CONDITION_FILTER_OPTIONS = [
-  'pg',
-  'ev',
+  'page',
+  'event',
   'host',
-  'cc',
-  'dv',
-  'br',
+  'country',
+  'device',
+  'browser',
   'os',
-  'ref',
-  'so',
-  'me',
-  'ca',
-  'te',
-  'co',
-  'tag:key',
-  'ev:key',
+  'referrer',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'page_property',
+  'event_metadata',
 ]
 
 const createConditionId = () =>
   globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)
 
-const filterToConditionOperator = ({
-  isExclusive,
-  isContains,
-}: FilterType): GoalCondition['operator'] => {
-  if (isContains && isExclusive) return 'not_contains'
-  if (isContains) return 'contains'
-  if (isExclusive) return 'not_equals'
+const filterToConditionOperator = (
+  operator: V2FilterOperator,
+): GoalCondition['operator'] => {
+  if (operator === 'contains_not') return 'not_contains'
+  if (operator === 'contains') return 'contains'
+  if (operator === 'is_not') return 'not_equals'
   return 'equals'
 }
 
-const conditionOperatorToFilterFlags = (
+const conditionOperatorToV2Operator = (
   operator: GoalCondition['operator'],
-) => ({
-  isExclusive: operator === 'not_equals' || operator === 'not_contains',
-  isContains: operator === 'contains' || operator === 'not_contains',
-})
+): V2FilterOperator => {
+  if (operator === 'not_contains') return 'contains_not'
+  if (operator === 'contains') return 'contains'
+  if (operator === 'not_equals') return 'is_not'
+  return 'is'
+}
 
-const getMetadataConditionPrefix = (eventType: GoalCondition['eventType']) =>
-  eventType === 'custom_event' ? 'ev:key' : 'tag:key'
+const getMetadataConditionDimension = (eventType: GoalCondition['eventType']) =>
+  eventType === 'custom_event' ? 'event_metadata' : 'page_property'
 
-const filterToCondition = (filter: FilterType): GoalCondition | null => {
-  if (!filter.column || !filter.filter) return null
+const filterToCondition = (filter: V2Filter): GoalCondition | null => {
+  const value = typeof filter.value === 'string' ? filter.value : ''
 
-  if (filter.column === 'ev') {
+  if (!filter.dimension || !value) return null
+
+  if (filter.dimension === 'event') {
     return {
       id: createConditionId(),
       eventType: 'custom_event',
       field: 'event_name',
-      operator: filterToConditionOperator(filter),
-      value: filter.filter,
-    }
-  }
-
-  if (filter.column === 'ev:key' || filter.column === 'tag:key') {
-    return {
-      id: createConditionId(),
-      eventType: filter.column === 'ev:key' ? 'custom_event' : 'pageview',
-      field: 'metadata',
-      operator: filter.isExclusive ? 'not_exists' : 'exists',
-      metadataKey: filter.filter,
+      operator: filterToConditionOperator(filter.operator),
+      value,
     }
   }
 
   if (
-    filter.column.startsWith('ev:key:') ||
-    filter.column.startsWith('tag:key:')
+    filter.dimension === 'event_metadata' ||
+    filter.dimension === 'page_property'
   ) {
+    const eventType =
+      filter.dimension === 'event_metadata' ? 'custom_event' : 'pageview'
+
+    if (!filter.key) {
+      // bare keyed dimension = "has this metadata key"; value is the key
+      return {
+        id: createConditionId(),
+        eventType,
+        field: 'metadata',
+        operator: filter.operator === 'is_not' ? 'not_exists' : 'exists',
+        metadataKey: value,
+      }
+    }
+
     return {
       id: createConditionId(),
-      eventType: filter.column.startsWith('ev:key:')
-        ? 'custom_event'
-        : 'pageview',
+      eventType,
       field: 'metadata',
-      operator: filterToConditionOperator(filter),
-      metadataKey: filter.column
-        .replace(/^ev:key:/, '')
-        .replace(/^tag:key:/, ''),
-      value: filter.filter,
+      operator: filterToConditionOperator(filter.operator),
+      metadataKey: filter.key,
+      value,
     }
   }
 
+  // goal conditions keep the legacy v1 column codes in `field`
+  const { column } = v2FilterToLegacy(filter)
+
   return {
     id: createConditionId(),
-    eventType: filter.column === 'pg' ? 'pageview' : 'any',
-    field: filter.column,
-    operator: filterToConditionOperator(filter),
-    value: filter.filter,
+    eventType: filter.dimension === 'page' ? 'pageview' : 'any',
+    field: column,
+    operator: filterToConditionOperator(filter.operator),
+    value,
   }
 }
 
-const conditionToFilter = (condition: GoalCondition): FilterType | null => {
+const conditionToFilter = (condition: GoalCondition): V2Filter | null => {
   if (condition.field === 'metadata') {
     if (!condition.metadataKey) return null
 
-    const prefix = getMetadataConditionPrefix(condition.eventType)
+    const dimension = getMetadataConditionDimension(condition.eventType)
 
     if (
       condition.operator === 'exists' ||
       condition.operator === 'not_exists'
     ) {
       return {
-        column: prefix,
-        filter: condition.metadataKey,
-        isExclusive: condition.operator === 'not_exists',
-        isContains: false,
+        dimension,
+        operator: condition.operator === 'not_exists' ? 'is_not' : 'is',
+        value: condition.metadataKey,
       }
     }
 
     if (!condition.value) return null
-    const flags = conditionOperatorToFilterFlags(condition.operator)
 
     return {
-      column: `${prefix}:${condition.metadataKey}`,
-      filter: condition.value,
-      ...flags,
+      dimension,
+      key: condition.metadataKey,
+      operator: conditionOperatorToV2Operator(condition.operator),
+      value: condition.value,
     }
   }
 
   if (!condition.value) return null
-  const flags = conditionOperatorToFilterFlags(condition.operator)
 
-  return {
-    column:
-      condition.field === 'event' || condition.field === 'event_name'
-        ? 'ev'
-        : condition.field,
-    filter: condition.value,
-    ...flags,
+  if (condition.field === 'event' || condition.field === 'event_name') {
+    return {
+      dimension: 'event',
+      operator: conditionOperatorToV2Operator(condition.operator),
+      value: condition.value,
+    }
   }
+
+  const operator = conditionOperatorToV2Operator(condition.operator)
+
+  // `field` holds a legacy v1 column code; unknown fields stay unmapped
+  const converted = legacyFilterToV2({
+    column: condition.field,
+    filter: condition.value,
+    isExclusive: operator === 'is_not' || operator === 'contains_not',
+    isContains: operator === 'contains' || operator === 'contains_not',
+  })
+
+  return converted
 }
 
 interface GoalSettingsModalProps {
@@ -215,9 +233,9 @@ const GoalSettingsModal = ({
   const [conditionsRelation, setConditionsRelation] =
     useState<GoalConditionRelation>('AND')
   const [conditionInitialFilters, setConditionInitialFilters] = useState<
-    FilterType[]
+    V2Filter[]
   >([])
-  const [conditionFilters, setConditionFilters] = useState<FilterType[]>([])
+  const [conditionFilters, setConditionFilters] = useState<V2Filter[]>([])
   const [unmappedConditions, setUnmappedConditions] = useState<GoalCondition[]>(
     [],
   )
@@ -225,7 +243,7 @@ const GoalSettingsModal = ({
 
   const isSaving = fetcher.state === 'submitting'
 
-  const resetConditionFilters = useCallback((filters: FilterType[] = []) => {
+  const resetConditionFilters = useCallback((filters: V2Filter[] = []) => {
     setConditionInitialFilters(filters)
     setConditionFilters(filters)
     setUnmappedConditions([])
@@ -260,7 +278,7 @@ const GoalSettingsModal = ({
         goal.conditions?.conditions?.length ? 'conditions' : 'simple',
       )
       setConditionsRelation(goal.conditions?.relation || 'AND')
-      const mappedFilters: FilterType[] = []
+      const mappedFilters: V2Filter[] = []
       const nextUnmappedConditions: GoalCondition[] = []
       const loadedConditions = goal.conditions?.conditions || []
 

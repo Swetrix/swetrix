@@ -1,38 +1,27 @@
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
-import _keys from 'lodash/keys'
-import _map from 'lodash/map'
 import { EyeIcon, PercentIcon } from '@phosphor-icons/react'
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-  lazy,
-  Suspense,
-  use,
-} from 'react'
+import React, { useState, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import {
-  useNavigate,
-  useSearchParams,
-  useLoaderData,
-  useRevalidator,
-} from 'react-router'
+import { useSearchParams } from 'react-router'
 
-import type {
-  PerformanceDataResponse,
-  PerformanceOverallObject,
-} from '~/api/api.server'
+import {
+  useCompareSummaryQuery,
+  useCompareTimeseriesQuery,
+  useSummaryQuery,
+  useTimeseriesQuery,
+} from '~/hooks/v2/useV2Queries'
 import { useAnnotations } from '~/hooks/useAnnotations'
-import { PERFORMANCE_PANELS_ORDER } from '~/lib/constants'
-import { CountryEntry } from '~/lib/models/Entry'
-import { OverallPerformanceObject } from '~/lib/models/Project'
+import { Entry } from '~/lib/models/Entry'
 import AnnotationModal from '~/modals/AnnotationModal'
 import { PerformanceChart } from '~/pages/Project/tabs/Performance/PerformanceChart'
+import { PerformanceMap } from '~/pages/Project/tabs/Performance/PerformanceMap'
+import {
+  perfSummaryToOverall,
+  pivotPerformanceTimeseries,
+} from '~/pages/Project/tabs/Performance/perfAdapters'
 import { PerformanceMetricCards } from '~/pages/Project/tabs/Traffic/MetricCards'
 import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
@@ -40,15 +29,18 @@ import CCRow from '~/pages/Project/View/components/CCRow'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
-import { MapLoader } from '~/pages/Project/View/components/MapLoader'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
-import { Panel } from '~/pages/Project/View/Panels'
 import {
-  useViewProjectContext,
-  useRefreshTriggers,
-} from '~/pages/Project/View/ViewProject'
+  BreakdownPanel,
+  BreakdownSubTab,
+} from '~/pages/Project/View/v2/BreakdownPanel'
+import {
+  ChartSkeleton,
+  MetricCardsSkeleton,
+} from '~/pages/Project/View/v2/loading'
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
   panelIconMapping,
   CHART_METRICS_MAPPING_PERF,
@@ -60,96 +52,31 @@ import {
 import { getChartPointWindow } from '~/pages/Project/View/utils/chartPoint'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
-import LoadingBar from '~/ui/LoadingBar'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
-import { LoaderView } from '../../View/components/LoaderView'
 import { ChartTypeSwitcher } from '../../View/components/ChartTypeSwitcher'
 import WaitingForAnEvent from '../../View/components/WaitingForAnEvent'
-
-const InteractiveMap = lazy(
-  () => import('~/pages/Project/View/components/InteractiveMap'),
-)
 
 interface PerformanceViewProps {
   tnMapping: Record<string, string>
 }
 
-interface DeferredPerfData {
-  perfData: PerformanceDataResponse | null
-  perfOverallStats: Record<string, PerformanceOverallObject> | null
-  perfCompareData: PerformanceDataResponse | null
-  perfOverallCompareStats: Record<string, PerformanceOverallObject> | null
-}
-
-function PerfDataResolver({
-  children,
-}: {
-  children: (data: DeferredPerfData) => React.ReactNode
-}) {
-  const {
-    perfData: perfDataPromise,
-    perfOverallStats: perfOverallStatsPromise,
-    perfCompareData: perfCompareDataPromise,
-    perfOverallCompareStats: perfOverallCompareStatsPromise,
-  } = useLoaderData<ProjectLoaderData>()
-
-  const perfData = perfDataPromise ? use(perfDataPromise) : null
-  const perfOverallStats = perfOverallStatsPromise
-    ? use(perfOverallStatsPromise)
-    : null
-  const perfCompareData = perfCompareDataPromise
-    ? use(perfCompareDataPromise)
-    : null
-  const perfOverallCompareStats = perfOverallCompareStatsPromise
-    ? use(perfOverallCompareStatsPromise)
-    : null
-
-  return (
-    <>
-      {children({
-        perfData,
-        perfOverallStats,
-        perfCompareData,
-        perfOverallCompareStats,
-      })}
-    </>
-  )
-}
-
 function PerformanceViewWrapper(props: PerformanceViewProps) {
   const [searchParams] = useSearchParams()
-  const { performanceRefreshTrigger } = useRefreshTriggers()
-  const resetKey = `performance:${searchParams.toString()}:${performanceRefreshTrigger}`
+  const resetKey = `performance:${searchParams.toString()}`
 
   return (
     <TabErrorBoundary
       titleKey='dashboard.failedToLoadPerformance'
       resetKey={resetKey}
     >
-      <Suspense fallback={<LoaderView />}>
-        <PerfDataResolver>
-          {(deferredData) => (
-            <PerformanceViewInner {...props} deferredData={deferredData} />
-          )}
-        </PerfDataResolver>
-      </Suspense>
+      <PerformanceViewInner {...props} />
     </TabErrorBoundary>
   )
 }
 
-interface PerformanceViewInnerProps extends PerformanceViewProps {
-  deferredData: DeferredPerfData
-}
-
-const PerformanceViewInner = ({
-  tnMapping,
-  deferredData,
-}: PerformanceViewInnerProps) => {
+const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
-  const revalidator = useRevalidator()
-  const { performanceRefreshTrigger } = useRefreshTriggers()
   const {
     timezone,
     filters,
@@ -163,10 +90,8 @@ const PerformanceViewInner = ({
     onMainChartZoom,
     shouldEnableZoom,
     // Filter functions from context
-    getFilterLink,
     getVersionFilterLink,
     isMapFullscreen,
-    setIsMapFullscreen,
     fullscreenMapRef,
   } = useViewProjectContext()
 
@@ -191,67 +116,16 @@ const PerformanceViewInner = ({
     i18n: { language },
   } = useTranslation('common')
   const { theme } = useTheme()
-  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // State for data - initialized from loader, can be overridden by client-side fetches
-  const [dataLoading, setDataLoading] = useState(false)
-  const [panelsData, setPanelsData] = useState<any>(() => {
-    if (deferredData.perfData?.params) {
-      return {
-        types: _keys(deferredData.perfData.params),
-        data: deferredData.perfData.params,
-      }
-    }
-    return { data: {} }
-  })
-  const [chartData, setChartData] = useState<any>(
-    () => deferredData.perfData?.chart || {},
-  )
-  const [overall, setOverall] = useState<Partial<OverallPerformanceObject>>(
-    () => {
-      if (deferredData.perfOverallStats && id) {
-        return deferredData.perfOverallStats[id] || {}
-      }
-      return {}
-    },
-  )
   const [sessionsDrawer, setSessionsDrawer] = useState<{
     from: string
     to: string
     label: string
   } | null>(null)
 
-  // Track if we've ever shown actual content to prevent NoEvents flash during exit animation
+  // Track if we've ever shown actual content to prevent NoEvents flash
   const hasShownContentRef = useRef(false)
-
-  const isPanelsDataEmptyRaw = _isEmpty(panelsData.data)
-
-  // Track when we've shown content to prevent NoEvents flash during exit animation
-  if (!isPanelsDataEmptyRaw) {
-    hasShownContentRef.current = true
-  }
-
-  // Don't show NoEvents if we've previously shown content (prevents flash during tab switch)
-  const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
-
-  // Sync state when loader provides new data (e.g., after URL changes)
-  useEffect(() => {
-    if (revalidator.state === 'idle' && deferredData.perfData) {
-      const { chart, params } = deferredData.perfData
-      setChartData(chart || {})
-      setPanelsData({
-        types: _keys(params),
-        data: params,
-      })
-      if (deferredData.perfOverallStats && id) {
-        setOverall(deferredData.perfOverallStats[id] || {})
-      }
-      setDataLoading(false)
-    } else if (revalidator.state === 'loading') {
-      setDataLoading(true)
-    }
-  }, [revalidator.state, deferredData, id])
 
   // Get chart metrics and measure from URL params (SSR-friendly)
   const activeChartMetrics =
@@ -272,12 +146,75 @@ const PerformanceViewInner = ({
     setSearchParams(newParams)
   }
 
-  const overallCompare: Partial<OverallPerformanceObject> = useMemo(() => {
-    if (deferredData.perfOverallCompareStats && id) {
-      return deferredData.perfOverallCompareStats[id] || {}
-    }
-    return {}
-  }, [deferredData.perfOverallCompareStats, id])
+  // The 'quantiles' allocation is a timeseries-only measure driven by the
+  // metric dropdown; everywhere else we fall back to the regular measure.
+  const effectiveMeasure =
+    activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles
+      ? CHART_MEASURES_MAPPING_PERF.quantiles
+      : activeMeasure
+  const panelsMeasure =
+    effectiveMeasure === CHART_MEASURES_MAPPING_PERF.quantiles
+      ? CHART_MEASURES_MAPPING_PERF.median
+      : activeMeasure
+
+  // --- v2 queries ---
+
+  const summaryQuery = useSummaryQuery('performance', {
+    measure: activeMeasure,
+  })
+  const compareSummaryQuery = useCompareSummaryQuery('performance', {
+    measure: activeMeasure,
+  })
+  const timeseriesQuery = useTimeseriesQuery('performance', {
+    measure: effectiveMeasure,
+  })
+  const compareTimeseriesQuery = useCompareTimeseriesQuery('performance', {
+    measure: effectiveMeasure,
+  })
+
+  const overall = useMemo(
+    () => perfSummaryToOverall(summaryQuery.data?.data),
+    [summaryQuery.data],
+  )
+  const overallCompare = useMemo(
+    () => perfSummaryToOverall(compareSummaryQuery.data?.data),
+    [compareSummaryQuery.data],
+  )
+
+  const chartData = useMemo(
+    () =>
+      pivotPerformanceTimeseries(timeseriesQuery.data?.data, effectiveMeasure),
+    [timeseriesQuery.data, effectiveMeasure],
+  )
+  const chartDataCompare = useMemo(
+    () =>
+      compareTimeseriesQuery.data
+        ? pivotPerformanceTimeseries(
+            compareTimeseriesQuery.data.data,
+            effectiveMeasure,
+          )
+        : undefined,
+    [compareTimeseriesQuery.data, effectiveMeasure],
+  )
+
+  const summaryLoaded = Boolean(summaryQuery.data)
+
+  const isPanelsDataEmptyRaw =
+    summaryLoaded &&
+    !overall.current?.frontend &&
+    !overall.current?.network &&
+    !overall.current?.backend
+
+  if (summaryLoaded && !isPanelsDataEmptyRaw) {
+    hasShownContentRef.current = true
+  }
+
+  // Don't show NoEvents if we've previously shown content (prevents flash during tab switch)
+  const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
+
+  const isInitialLoading =
+    (summaryQuery.isLoading || timeseriesQuery.isLoading) &&
+    !hasShownContentRef.current
 
   const handleDataPointClick = useCallback(
     (d: { x: Date; index: number; xValue?: string }) => {
@@ -294,14 +231,9 @@ const PerformanceViewInner = ({
     [timeBucket, timeFormat, timezone],
   )
 
-  const chartDataCompare: any = useMemo(
-    () => deferredData.perfCompareData?.chart || {},
-    [deferredData.perfCompareData],
-  )
-
   // Filter annotations to only those within the chart's visible x-axis range
   const filteredAnnotations = useMemo(() => {
-    const xAxis = (chartData as { x?: string[] })?.x
+    const xAxis = chartData?.x
     if (!annotations?.length || !xAxis?.length) return annotations || []
 
     const rangeStart = dayjs(xAxis[0]).startOf('day')
@@ -315,19 +247,6 @@ const PerformanceViewInner = ({
       )
     })
   }, [annotations, chartData])
-
-  // Panel active tabs
-  const [activeTabs, setActiveTabs] = useState<{
-    location: 'cc' | 'rg' | 'ct' | 'map'
-    page: 'pg' | 'host'
-    device: 'br' | 'os' | 'dv'
-    network: 'isp' | 'og' | 'ut' | 'ctp'
-  }>({
-    location: 'cc',
-    page: 'pg',
-    device: 'br',
-    network: 'isp',
-  })
 
   const chartMetrics = useMemo(
     () => [
@@ -411,47 +330,178 @@ const PerformanceViewInner = ({
     [t],
   )
 
-  // Version data mapping for browser/OS versions
-  const createVersionDataMapping = useMemo(() => {
-    const browserDataSource = panelsData.data?.brv
+  // --- Panels ---
 
-    const browserVersions: {
-      [key: string]: { name: string; count: number }[]
-    } = {}
+  const locationSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [
+      { id: 'country', label: t('project.mapping.cc'), dimension: 'country' },
+      { id: 'region', label: t('project.mapping.rg'), dimension: 'region' },
+      { id: 'city', label: t('project.mapping.ct'), dimension: 'city' },
+      {
+        id: 'map',
+        label: t('project.mapping.map'),
+        render: () => (
+          <PerformanceMap isFullscreen={false} measure={panelsMeasure} />
+        ),
+      },
+    ],
+    [t, panelsMeasure],
+  )
 
-    if (browserDataSource) {
-      browserDataSource.forEach((entry: any) => {
-        const { br, name, count } = entry
-        if (!browserVersions[br]) {
-          browserVersions[br] = []
-        }
-        browserVersions[br].push({ name, count })
-      })
-    }
+  const pagesSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [
+      { id: 'page', label: t('project.mapping.pg'), dimension: 'page' },
+      { id: 'host', label: t('project.mapping.host'), dimension: 'host' },
+    ],
+    [t],
+  )
 
-    return { browserVersions }
-  }, [panelsData.data?.brv])
+  const devicesSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [
+      {
+        id: 'browser',
+        label: t('project.mapping.br'),
+        dimension: 'browser',
+        versionsDimension: 'browser_version' as const,
+        versionsParentField: 'browser' as const,
+      },
+      { id: 'device', label: t('project.mapping.dv'), dimension: 'device' },
+    ],
+    [t],
+  )
 
-  // Handle refresh trigger
-  useEffect(() => {
-    if (performanceRefreshTrigger > 0) {
-      revalidator.revalidate()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [performanceRefreshTrigger])
+  const networkSubTabs = useMemo<(BreakdownSubTab | BreakdownSubTab[])[]>(
+    () => [
+      [
+        { id: 'isp', label: t('project.mapping.isp'), dimension: 'isp' },
+        {
+          id: 'organization',
+          label: t('project.mapping.og'),
+          dimension: 'organization',
+        },
+        {
+          id: 'user_type',
+          label: t('project.mapping.ut'),
+          dimension: 'user_type',
+        },
+        {
+          id: 'connection_type',
+          label: t('project.mapping.ctp'),
+          dimension: 'connection_type',
+        },
+      ],
+    ],
+    [t],
+  )
+
+  const locationRowMapper = useCallback(
+    (entry: Entry) => {
+      const { name: entryName, cc } = entry
+
+      if (cc !== undefined) {
+        return (
+          <CCRow cc={cc} name={entryName || undefined} language={language} />
+        )
+      }
+
+      return <CCRow cc={entryName} language={language} />
+    },
+    [language],
+  )
+
+  const pagesRowMapper = useCallback(
+    (entry: Entry, subTabId: string) => {
+      const { name: entryName } = entry
+
+      if (!entryName) {
+        return (
+          <span className='italic'>
+            {subTabId === 'host'
+              ? t('project.unknownHost')
+              : t('common.notSet')}
+          </span>
+        )
+      }
+
+      let decodedUri = entryName
+
+      try {
+        decodedUri = decodeURIComponent(entryName)
+      } catch {
+        // do nothing
+      }
+
+      if (subTabId === 'page' && project?.websiteUrl) {
+        return (
+          <PageLinkRow pagePath={decodedUri} websiteUrl={project.websiteUrl} />
+        )
+      }
+
+      return decodedUri
+    },
+    [t, project?.websiteUrl],
+  )
+
+  const devicesRowMapper = useCallback(
+    (entry: Entry, subTabId: string) => {
+      const v1Tab = subTabId === 'browser' ? 'br' : 'dv'
+      const mapper = getDeviceRowMapper(v1Tab, theme, t) as
+        | ((entry: Entry) => React.ReactNode)
+        | undefined
+      return mapper ? mapper(entry) : entry.name
+    },
+    [theme, t],
+  )
+
+  const networkRowMapper = useCallback(
+    (entry: Entry, subTabId: string) => {
+      const { name: entryName } = entry
+      if (!entryName) {
+        return <span className='italic'>{t('common.notSet')}</span>
+      }
+      if (subTabId === 'user_type') {
+        return getUsageTypeLabel(entryName, t)
+      }
+      if (subTabId === 'connection_type') {
+        return getConnectionTypeLabel(entryName, t)
+      }
+      return entryName
+    },
+    [t],
+  )
+
+  // Panel values are load times in seconds -> render as '1.2s' / '350ms'.
+  // Panel's valueMapper is typed as number -> number but has always accepted
+  // display strings at runtime (v1 did the same via @ts-expect-error).
+  const loadTimeValueMapper = useCallback(
+    (value: number) =>
+      getStringFromTime(getTimeFromSeconds(value), true) as unknown as number,
+    [],
+  )
 
   // Show waiting state if project has no traffic data yet
   if (!project?.isDataExists) {
     return <WaitingForAnEvent />
   }
 
-  // Show no events if data is empty
+  const headerRightContent = <ProjectViewHeaderActions tnMapping={tnMapping} />
+
+  if (isInitialLoading) {
+    return (
+      <>
+        <DashboardHeader rightContent={headerRightContent} />
+        <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+          <MetricCardsSkeleton cards={3} />
+          <ChartSkeleton className='mt-4 h-80 md:h-80' />
+        </div>
+      </>
+    )
+  }
+
   if (isPanelsDataEmpty) {
     return (
       <>
-        <DashboardHeader
-          rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
-        />
+        <DashboardHeader rightContent={headerRightContent} />
         <NoEvents filters={filters} />
       </>
     )
@@ -459,48 +509,15 @@ const PerformanceViewInner = ({
 
   // Fullscreen map view - takes over the entire content area
   if (isMapFullscreen && fullscreenMapRef.current) {
-    const countryData = panelsData.data?.cc || []
-    const regionData = panelsData.data?.rg || []
-    const total = countryData.reduce(
-      (acc: number, curr: any) => acc + curr.count,
-      0,
-    )
-
     return createPortal(
-      <Suspense
-        fallback={
-          <div className='flex h-full flex-1 items-center justify-center'>
-            <div className='flex flex-col items-center gap-2'>
-              <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent' />
-              <span className='text-sm text-neutral-600 dark:text-neutral-300'>
-                Loading map...
-              </span>
-            </div>
-          </div>
-        }
-      >
-        <InteractiveMap
-          data={countryData}
-          regionData={regionData}
-          total={total}
-          onClick={(type, key) => {
-            const link = getFilterLink(type, key)
-            navigate(link)
-          }}
-          onFullscreenToggle={setIsMapFullscreen}
-          isFullscreen={true}
-        />
-      </Suspense>,
+      <PerformanceMap isFullscreen measure={panelsMeasure} />,
       fullscreenMapRef.current,
     )
   }
 
   return (
     <>
-      <DashboardHeader
-        rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
-      />
-      {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
+      <DashboardHeader rightContent={headerRightContent} />
       <div className={cx({ hidden: isPanelsDataEmpty })}>
         {!isPanelsDataEmpty ? (
           <Filters className='mb-3' tnMapping={tnMapping} />
@@ -556,15 +573,19 @@ const PerformanceViewInner = ({
             />
           </div>
 
-          {!_isEmpty(overall) ? (
+          {summaryQuery.isLoading ? (
+            <MetricCardsSkeleton cards={3} />
+          ) : !_isEmpty(overall) ? (
             <PerformanceMetricCards
               overall={overall}
               overallCompare={overallCompare}
             />
           ) : null}
-          {activeChartMetrics && !_isEmpty(chartData) ? (
+          {timeseriesQuery.isLoading ? (
+            <ChartSkeleton className='mt-5 h-80 md:mt-0 md:h-80' />
+          ) : activeChartMetrics && !_isEmpty(chartData.x) ? (
             <div
-              onContextMenu={(e) => handleChartContextMenu(e, chartData?.x)}
+              onContextMenu={(e) => handleChartContextMenu(e, chartData.x)}
               className='relative'
             >
               <PerformanceChart
@@ -586,254 +607,66 @@ const PerformanceViewInner = ({
           ) : null}
         </div>
         <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
-          {!_isEmpty(panelsData.types)
-            ? _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
-                if (type === 'location') {
-                  const locationTabs = [
-                    { id: 'cc', label: t('project.mapping.cc') },
-                    { id: 'rg', label: t('project.mapping.rg') },
-                    { id: 'ct', label: t('project.mapping.ct') },
-                    { id: 'map', label: 'Map' },
-                  ]
-
-                  const rowMapper = (entry: CountryEntry) => {
-                    const { name: entryName, cc } = entry
-
-                    if (cc !== undefined) {
-                      return (
-                        <CCRow
-                          cc={cc}
-                          name={entryName || undefined}
-                          language={language}
-                        />
-                      )
-                    }
-
-                    return <CCRow cc={entryName} language={language} />
-                  }
-
-                  return (
-                    <Panel
-                      key={activeTabs.location}
-                      icon={panelIconMapping.cc}
-                      id={activeTabs.location}
-                      getFilterLink={getFilterLink}
-                      name={t('project.location')}
-                      tabs={locationTabs}
-                      onTabChange={(tab) =>
-                        setActiveTabs({
-                          ...activeTabs,
-                          location: tab as 'cc' | 'rg' | 'ct' | 'map',
-                        })
-                      }
-                      activeTabId={activeTabs.location}
-                      data={panelsData.data[activeTabs.location]}
-                      rowMapper={rowMapper}
-                      // @ts-expect-error
-                      valueMapper={(value) =>
-                        getStringFromTime(getTimeFromSeconds(value), true)
-                      }
-                      customRenderer={
-                        activeTabs.location === 'map'
-                          ? () => {
-                              const countryData = panelsData.data?.cc || []
-                              const regionData = panelsData.data?.rg || []
-                              const total = countryData.reduce(
-                                (acc: number, curr: any) => acc + curr.count,
-                                0,
-                              )
-
-                              return (
-                                <Suspense fallback={<MapLoader />}>
-                                  <InteractiveMap
-                                    data={countryData}
-                                    regionData={regionData}
-                                    total={total}
-                                    onClick={(type, key) => {
-                                      const link = getFilterLink(type, key)
-                                      navigate(link)
-                                    }}
-                                    onFullscreenToggle={setIsMapFullscreen}
-                                    isFullscreen={false}
-                                  />
-                                </Suspense>
-                              )
-                            }
-                          : undefined
-                      }
-                      valuesHeaderName={t('project.loadTime')}
-                      highlightColour='orange'
-                    />
-                  )
-                }
-
-                if (type === 'devices') {
-                  const deviceTabs = [
-                    { id: 'br', label: t('project.mapping.br') },
-                    { id: 'dv', label: t('project.mapping.dv') },
-                  ]
-
-                  return (
-                    <Panel
-                      key={activeTabs.device}
-                      icon={panelIconMapping.os}
-                      id={activeTabs.device}
-                      getFilterLink={getFilterLink}
-                      name={t('project.devices')}
-                      tabs={deviceTabs}
-                      onTabChange={(tab) =>
-                        setActiveTabs({
-                          ...activeTabs,
-                          device: tab as 'br' | 'dv',
-                        })
-                      }
-                      activeTabId={activeTabs.device}
-                      data={panelsData.data[activeTabs.device]}
-                      rowMapper={getDeviceRowMapper(
-                        activeTabs.device,
-                        theme,
-                        t,
-                      )}
-                      capitalize={activeTabs.device === 'dv'}
-                      versionData={
-                        activeTabs.device === 'br'
-                          ? createVersionDataMapping.browserVersions
-                          : undefined
-                      }
-                      getVersionFilterLink={(parent, version) =>
-                        getVersionFilterLink(parent, version, 'br')
-                      }
-                      // @ts-expect-error
-                      valueMapper={(value) =>
-                        getStringFromTime(getTimeFromSeconds(value), true)
-                      }
-                      valuesHeaderName={t('project.loadTime')}
-                      highlightColour='orange'
-                    />
-                  )
-                }
-
-                if (type === 'network') {
-                  const networkTabs = [
-                    [
-                      { id: 'isp', label: t('project.mapping.isp') },
-                      { id: 'og', label: t('project.mapping.og') },
-                      { id: 'ut', label: t('project.mapping.ut') },
-                      { id: 'ctp', label: t('project.mapping.ctp') },
-                    ],
-                  ]
-
-                  const activeNetworkTab = activeTabs.network
-
-                  return (
-                    <Panel
-                      key={activeNetworkTab}
-                      icon={panelIconMapping.isp}
-                      id={activeNetworkTab}
-                      getFilterLink={getFilterLink}
-                      name={t('project.network')}
-                      tabs={networkTabs}
-                      onTabChange={(tab) =>
-                        setActiveTabs({
-                          ...activeTabs,
-                          network: tab as 'isp' | 'og' | 'ut' | 'ctp',
-                        })
-                      }
-                      activeTabId={activeNetworkTab}
-                      data={panelsData.data[activeNetworkTab]}
-                      rowMapper={({ name: entryName }) => {
-                        if (!entryName) {
-                          return (
-                            <span className='italic'>{t('common.notSet')}</span>
-                          )
-                        }
-                        if (activeNetworkTab === 'ut') {
-                          return getUsageTypeLabel(entryName, t)
-                        }
-                        if (activeNetworkTab === 'ctp') {
-                          return getConnectionTypeLabel(entryName, t)
-                        }
-                        return entryName
-                      }}
-                      // @ts-expect-error
-                      valueMapper={(value) =>
-                        getStringFromTime(getTimeFromSeconds(value), true)
-                      }
-                      valuesHeaderName={t('project.loadTime')}
-                      highlightColour='orange'
-                    />
-                  )
-                }
-
-                if (type === 'pg') {
-                  const pageTabs = [
-                    { id: 'pg', label: t('project.mapping.pg') },
-                    {
-                      id: 'host',
-                      label: t('project.mapping.host'),
-                    },
-                  ]
-
-                  return (
-                    <Panel
-                      key={activeTabs.page}
-                      icon={panelIconMapping.pg}
-                      id={activeTabs.page}
-                      getFilterLink={getFilterLink}
-                      rowMapper={({ name: entryName }) => {
-                        if (!entryName) {
-                          return (
-                            <span className='italic'>
-                              {activeTabs.page === 'pg'
-                                ? t('common.notSet')
-                                : t('project.unknownHost')}
-                            </span>
-                          )
-                        }
-
-                        let decodedUri = entryName as string
-
-                        try {
-                          decodedUri = decodeURIComponent(entryName)
-                        } catch {
-                          // do nothing
-                        }
-
-                        // For page paths (pg tab), show with clickable link
-                        if (activeTabs.page === 'pg' && project?.websiteUrl) {
-                          return (
-                            <PageLinkRow
-                              pagePath={decodedUri}
-                              websiteUrl={project.websiteUrl}
-                            />
-                          )
-                        }
-
-                        return decodedUri
-                      }}
-                      name={t('project.pages')}
-                      tabs={pageTabs}
-                      onTabChange={(tab) =>
-                        setActiveTabs({
-                          ...activeTabs,
-                          page: tab as 'pg' | 'host',
-                        })
-                      }
-                      activeTabId={activeTabs.page}
-                      data={panelsData.data[activeTabs.page]}
-                      // @ts-expect-error
-                      valueMapper={(value) =>
-                        getStringFromTime(getTimeFromSeconds(value), true)
-                      }
-                      valuesHeaderName={t('project.loadTime')}
-                      highlightColour='orange'
-                    />
-                  )
-                }
-
-                return null
-              })
-            : null}
+          <BreakdownPanel
+            dataType='performance'
+            highlightColour='orange'
+            panelId='location'
+            name={t('project.location')}
+            icon={panelIconMapping.country}
+            subTabs={locationSubTabs}
+            primaryMetric='load_time'
+            metrics={['load_time']}
+            measure={panelsMeasure}
+            rowMapper={locationRowMapper}
+            valueMapper={loadTimeValueMapper}
+            valuesHeaderName={t('project.loadTime')}
+          />
+          <BreakdownPanel
+            dataType='performance'
+            highlightColour='orange'
+            panelId='pages'
+            name={t('project.pages')}
+            icon={panelIconMapping.page}
+            subTabs={pagesSubTabs}
+            primaryMetric='load_time'
+            metrics={['load_time']}
+            measure={panelsMeasure}
+            rowMapper={pagesRowMapper}
+            valueMapper={loadTimeValueMapper}
+            valuesHeaderName={t('project.loadTime')}
+          />
+          <BreakdownPanel
+            dataType='performance'
+            highlightColour='orange'
+            panelId='devices'
+            name={t('project.devices')}
+            icon={panelIconMapping.os}
+            subTabs={devicesSubTabs}
+            primaryMetric='load_time'
+            metrics={['load_time']}
+            measure={panelsMeasure}
+            rowMapper={devicesRowMapper}
+            valueMapper={loadTimeValueMapper}
+            capitalize={['device']}
+            getVersionFilterLink={(parent, version) =>
+              getVersionFilterLink(parent, version, 'browser')
+            }
+            valuesHeaderName={t('project.loadTime')}
+          />
+          <BreakdownPanel
+            dataType='performance'
+            highlightColour='orange'
+            panelId='network'
+            name={t('project.network')}
+            icon={panelIconMapping.isp}
+            subTabs={networkSubTabs}
+            primaryMetric='load_time'
+            metrics={['load_time']}
+            measure={panelsMeasure}
+            rowMapper={networkRowMapper}
+            valueMapper={loadTimeValueMapper}
+            valuesHeaderName={t('project.loadTime')}
+          />
         </div>
         <AnnotationModal
           isOpened={isAnnotationModalOpen}

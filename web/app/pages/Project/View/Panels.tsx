@@ -47,10 +47,8 @@ import { createPortal } from 'react-dom'
 import { Link } from '~/ui/Link'
 import { LinkProps, useNavigate } from 'react-router'
 
-import { useProjectDataCustomEventsProxy } from '~/hooks/useAnalyticsProxy'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Button from '~/ui/Button'
 import Dropdown from '~/ui/Dropdown'
 import Input from '~/ui/Input'
@@ -69,18 +67,27 @@ import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
 import { MainChart } from './components/MainChart'
-import { Customs, Filter } from './interfaces/traffic'
+import { V2Filter } from '~/api/v2/types'
+import { Customs } from './interfaces/traffic'
+import { RefetchIndicator } from './v2/loading'
 import { useViewProjectContext } from './ViewProject'
+import { useCustomEventsTimeseriesQuery } from '~/hooks/v2/useV2Queries'
 import {
-  getFormatDate,
   getSettingsCustomEventsStacked,
   typeNameMapping,
 } from './ViewProject.helpers'
+import { pivotCustomEventsTimeseries } from './v2/adapters'
 
 const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 const CUSTOM_EVENTS_TOP_LIMITS = [1, 3, 5, 10] as const
-const UTM_TRACKING_PANEL_IDS = new Set(['so', 'me', 'ca', 'te', 'co'])
+const UTM_TRACKING_PANEL_IDS = new Set([
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+])
 const PANEL_HEADER_ACTIONS_CLASS =
   'panel-header-actions flex min-w-0 max-w-full items-center gap-2.5 overflow-x-auto overflow-y-hidden pb-0.5 scrollbar-thin'
 const PANEL_EMPTY_STATE_DOCS = {
@@ -214,6 +221,8 @@ interface PanelContainerProps {
   activeTabId?: string
   onDetailsClick?: () => void
   dropdownPlaceholder?: string
+  /** Background refetch in progress — show a subtle top bar, keep stale data */
+  isRefetching?: boolean
 }
 
 const PanelContainer = ({
@@ -229,6 +238,7 @@ const PanelContainer = ({
   activeTabId,
   onDetailsClick,
   dropdownPlaceholder,
+  isRefetching,
 }: PanelContainerProps) => {
   const { t } = useTranslation('common')
   const underlineId = useId()
@@ -236,7 +246,7 @@ const PanelContainer = ({
   return (
     <div
       className={cx(
-        'isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-900/25',
+        'relative isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-900/25',
         hideHeader ? 'pt-3' : 'pt-5',
         {
           'col-span-full sm:col-span-2':
@@ -244,6 +254,7 @@ const PanelContainer = ({
         },
       )}
     >
+      {isRefetching ? <RefetchIndicator /> : null}
       {!hideHeader ? (
         <div className='mb-2 flex items-center justify-between gap-4'>
           <Text
@@ -334,10 +345,11 @@ const PanelContainer = ({
         </div>
       ) : null}
       <div
-        className={
+        className={cx(
           contentClassName ??
-          'relative flex h-[19.6rem] flex-col overflow-hidden'
-        }
+            'relative flex h-[19.6rem] flex-col overflow-hidden',
+          isRefetching && 'opacity-75 transition-opacity duration-200',
+        )}
       >
         {children}
       </div>
@@ -362,7 +374,7 @@ const PanelContainer = ({
 interface CustomEventsProps {
   customs?: Customs
   chartData: any
-  filters: Filter[]
+  filters: V2Filter[]
   getCustomEventMetadata: (event: string) => Promise<any>
   getFilterLink: (column: string, value: string | null) => LinkProps['to']
 }
@@ -612,10 +624,7 @@ const CustomEvents = ({
   getFilterLink,
 }: CustomEventsProps) => {
   const { t } = useTranslation('common')
-  const { id } = useCurrentProject()
-  const { timeBucket, timezone, period, dateRange, timeFormat, rotateXAxis } =
-    useViewProjectContext()
-  const { fetchCustomEvents } = useProjectDataCustomEventsProxy()
+  const { timeBucket, timeFormat, rotateXAxis } = useViewProjectContext()
 
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [activeEvents, setActiveEvents] = useState<any>({})
@@ -624,11 +633,6 @@ const CustomEvents = ({
   const [eventsData, setEventsData] = useState<any>(customs)
   const [triggerEventWhenFiltersChange, setTriggerEventWhenFiltersChange] =
     useState<string | null>(null)
-  const [stackedChartLoading, setStackedChartLoading] = useState(false)
-  const [stackedChart, setStackedChart] = useState<{
-    x: string[]
-    events: Record<string, Array<number | string>>
-  } | null>(null)
   const [chartTopLimit, setChartTopLimit] =
     useState<(typeof CUSTOM_EVENTS_TOP_LIMITS)[number]>(5)
 
@@ -677,68 +681,18 @@ const CustomEvents = ({
     })
   }, [customs])
 
-  useEffect(() => {
-    let cancelled = false
-
-    const loadStackedChart = async () => {
-      if (!id || _isEmpty(topEventsForChart)) {
-        setStackedChart(null)
-        return
-      }
-
-      setStackedChartLoading(true)
-
-      try {
-        const isCustomPeriod = period === 'custom' && dateRange
-        const from = isCustomPeriod ? getFormatDate(dateRange![0]) : ''
-        const to = isCustomPeriod ? getFormatDate(dateRange![1]) : ''
-        const periodValue = isCustomPeriod ? '' : period
-
-        const data = await fetchCustomEvents(id, topEventsForChart, {
-          timeBucket,
-          period: periodValue,
-          filters,
-          from,
-          to,
-          timezone,
-        })
-
-        if (cancelled) {
-          return
-        }
-
-        setStackedChart((data?.chart as unknown as typeof stackedChart) || null)
-      } catch (reason) {
-        console.error(
-          '[ERROR](CustomEvents) Failed to load stacked custom events chart',
-          reason,
-        )
-        if (!cancelled) {
-          setStackedChart(null)
-        }
-      } finally {
-        if (!cancelled) {
-          setStackedChartLoading(false)
-        }
-      }
+  const stackedChartQuery = useCustomEventsTimeseriesQuery(topEventsForChart)
+  const stackedChartLoading = stackedChartQuery.isLoading
+  const stackedChart = useMemo(() => {
+    if (_isEmpty(topEventsForChart) || !stackedChartQuery.data) {
+      return null
     }
 
-    loadStackedChart()
-
-    return () => {
-      cancelled = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    id,
-    timeBucket,
-    period,
-    dateRange,
-    timezone,
-    filters,
-    topEventsForChart,
-    fetchCustomEvents,
-  ])
+    return pivotCustomEventsTimeseries(
+      stackedChartQuery.data.data,
+      topEventsForChart,
+    )
+  }, [stackedChartQuery.data, topEventsForChart])
 
   useEffect(() => {
     setEventsMetadata({})
@@ -846,7 +800,7 @@ const CustomEvents = ({
   }
 
   const _getFilterLink = (column: string | null, value: string | null) => {
-    return getFilterLink('ev' + (column ? `:key:${column}` : ''), value)
+    return getFilterLink(column ? `event_metadata:${column}` : 'event', value)
   }
 
   const CustomEventsTable = () => (
@@ -1152,10 +1106,10 @@ interface MetadataKeyPanelProps {
   ) => Promise<{ result: Array<{ key: string; value: string; count: number }> }>
   getFilterLink: (column: string, value: string | null) => LinkProps['to']
   chartData: any
-  filters: Filter[]
+  filters: V2Filter[]
   activeKey: string
   onKeyChange: (key: string) => void
-  filterPrefix: 'ev:key' | 'tag:key'
+  filterPrefix: 'event_metadata' | 'page_property'
   // For 'property' mode: dropdown shows property keys, values are for that key
   // For 'customEvent' mode: dropdown shows event names, values show ALL metadata for that event (grouped by key)
   mode: 'property' | 'customEvent'
@@ -1654,7 +1608,7 @@ interface CombinedMetadataPanelProps {
   }
   getFilterLink: (column: string, value: string | null) => LinkProps['to']
   chartData: any
-  filters: Filter[]
+  filters: V2Filter[]
 }
 
 const CombinedMetadataPanel = ({
@@ -1686,8 +1640,8 @@ const CombinedMetadataPanel = ({
   }, [activeMode, hasProperty, hasCustomEvent])
 
   const activeSection = activeMode === 'property' ? property : customEvent
-  const activeFilterPrefix: 'ev:key' | 'tag:key' =
-    activeMode === 'property' ? 'tag:key' : 'ev:key'
+  const activeFilterPrefix: 'event_metadata' | 'page_property' =
+    activeMode === 'property' ? 'page_property' : 'event_metadata'
 
   const dropdownItems = useMemo(
     () => activeSection.metadataKeys.map((key) => ({ id: key, label: key })),
@@ -1872,6 +1826,13 @@ interface PanelProps {
   rowTooltipRenderer?: (entry: Entry) => React.ReactNode
   /** When true with rowTooltipRenderer, tooltip is fixed to the cursor (chart-style) instead of Radix anchor positioning. */
   rowTooltipFollowCursor?: boolean
+  /** Background refetch in progress — subtle top bar, stale data stays visible */
+  isRefetching?: boolean
+  /** Total number of dimension values on the server (may exceed loaded rows) */
+  serverTotal?: number
+  /** Loads the next page of entries into the details table */
+  onLoadMore?: () => void
+  loadingMore?: boolean
 }
 
 interface DetailsTableProps extends Pick<
@@ -1886,6 +1847,9 @@ interface DetailsTableProps extends Pick<
   | 'valueMapper'
   | 'getFilterLink'
   | 'activeTab'
+  | 'serverTotal'
+  | 'onLoadMore'
+  | 'loadingMore'
 > {
   total: number
   closeDetails: () => void
@@ -1915,6 +1879,9 @@ const DetailsTable = ({
   hidePercentageInDetails,
   detailsExtraColumns,
   activeTab = PROJECT_TABS.traffic,
+  serverTotal,
+  onLoadMore,
+  loadingMore,
 }: DetailsTableProps) => {
   const {
     t,
@@ -1932,7 +1899,7 @@ const DetailsTable = ({
 
   const getNameLabel = useCallback(
     (entry: Entry): string => {
-      if (activeTabId === 'cc') {
+      if (activeTabId === 'country') {
         const code = entry.cc || entry.name
         try {
           const countryName = code ? countries.getName(code, language) : ''
@@ -1942,7 +1909,7 @@ const DetailsTable = ({
         }
       }
 
-      if (activeTabId === 'lc') {
+      if (activeTabId === 'locale') {
         try {
           return (
             getLocaleDisplayName(entry?.name, language) || entry?.name || ''
@@ -2240,6 +2207,26 @@ const DetailsTable = ({
           </div>
         </div>
       </div>
+      {onLoadMore ? (
+        <div className='mt-2 flex items-center justify-center gap-3'>
+          <Button
+            variant='secondary'
+            size='sm'
+            type='button'
+            onClick={onLoadMore}
+            disabled={loadingMore}
+            className='gap-1.5'
+          >
+            {loadingMore ? <Spin className='m-0!' /> : null}
+            {t('project.loadMore')}
+          </Button>
+          {serverTotal ? (
+            <Text size='sm' colour='muted'>
+              {data.length} / {nFormatter(serverTotal, 1)}
+            </Text>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -2272,6 +2259,10 @@ const Panel = ({
   selectedRow,
   rowTooltipRenderer,
   rowTooltipFollowCursor = false,
+  isRefetching,
+  serverTotal,
+  onLoadMore,
+  loadingMore,
 }: PanelProps) => {
   const ctx = useViewProjectContext()
   const dataLoading = dataLoadingProp ?? ctx.dataLoading
@@ -2332,6 +2323,7 @@ const Panel = ({
       tabs={tabs}
       onTabChange={onTabChange}
       activeTabId={activeTabId}
+      isRefetching={isRefetching}
     >
       {customRenderer ? (
         customRenderer()
@@ -2722,6 +2714,9 @@ const Panel = ({
             hidePercentageInDetails={hidePercentageInDetails}
             detailsExtraColumns={detailsExtraColumns}
             activeTab={activeTab}
+            serverTotal={serverTotal}
+            onLoadMore={onLoadMore}
+            loadingMore={loadingMore}
           />
         }
         size='large'

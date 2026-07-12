@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'
@@ -5,39 +6,29 @@ import _isEmpty from 'lodash/isEmpty'
 import { FunnelIcon, PlusIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import {
-  useSearchParams,
-  useFetcher,
-  useLoaderData,
-  useRevalidator,
-} from 'react-router'
+import { useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import type { FunnelDataResponse } from '~/api/api.server'
+import { useFunnelQuery } from '~/hooks/v2/useV2Queries'
 import { DOCS_URL, FUNNELS_PERIOD_PAIRS } from '~/lib/constants'
-import type { Funnel } from '~/lib/models/Project'
+import type { AnalyticsFunnel, Funnel } from '~/lib/models/Project'
 import NewFunnel from '~/modals/NewFunnel'
-import FunnelsList from '~/pages/Project/tabs/Funnels/FunnelsList'
+import FunnelsList, {
+  type FunnelData,
+} from '~/pages/Project/tabs/Funnels/FunnelsList'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
-import {
-  useViewProjectContext,
-  useRefreshTriggers,
-} from '~/pages/Project/View/ViewProject'
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useAuth } from '~/providers/AuthProvider'
 import {
   useCurrentProject,
   useProjectPassword,
 } from '~/providers/CurrentProjectProvider'
-import type {
-  ProjectLoaderData,
-  ProjectViewActionData,
-} from '~/routes/projects.$id'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import { Link } from '~/ui/Link'
-import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
@@ -50,26 +41,21 @@ interface FunnelsViewProps {
 const FUNNELS_DOCS_URL = `${DOCS_URL}/analytics-dashboard/funnels`
 
 const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
-  const { funnelData: funnelDataPromise } = useLoaderData<ProjectLoaderData>()
   const { id, projectPath, project, mergeProject, allowedToManage } =
     useCurrentProject()
   const projectPassword = useProjectPassword(id)
-  const revalidator = useRevalidator()
   const { isAuthenticated } = useAuth()
-  const { funnelsRefreshTrigger } = useRefreshTriggers()
   const { periodPairs, period, timezone, timeFormat, filters } =
     useViewProjectContext()
   const { t } = useTranslation('common')
   const [searchParams, setSearchParams] = useSearchParams()
+  const queryClient = useQueryClient()
   const fetcher = useFetcher<ProjectViewActionData>()
   const lastHandledData = useRef<ProjectViewActionData | null>(null)
   const deletedFunnelId = useRef<string | null>(null)
-  const lastRefreshTrigger = useRef(funnelsRefreshTrigger)
 
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>()
-  const [funnelAnalytics, setFunnelAnalytics] =
-    useState<FunnelDataResponse | null>(null)
   const [sessionsDrawer, setSessionsDrawer] = useState<{
     stepIndex: number
     label: string
@@ -96,15 +82,43 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
     return _find(project.funnels, (funnel) => funnel.id === funnelId) || null
   }, [searchParams, project])
 
+  const funnelQuery = useFunnelQuery(activeFunnel?.id ?? null)
+
+  // keepPreviousData keeps data visible on period/filter refetch, but a stale
+  // chart of ANOTHER funnel should not flash while switching between funnels
+  const displayedFunnelIdRef = useRef<string | null>(null)
+  if (funnelQuery.data && !funnelQuery.isPlaceholderData) {
+    displayedFunnelIdRef.current = activeFunnel?.id ?? null
+  }
+  const isStaleFunnelData =
+    funnelQuery.isPlaceholderData &&
+    displayedFunnelIdRef.current !== (activeFunnel?.id ?? null)
+
+  const funnelAnalytics = useMemo<FunnelData | null>(() => {
+    const data = funnelQuery.data?.data
+
+    if (!data) {
+      return null
+    }
+
+    return {
+      funnel: (data.steps || []) as AnalyticsFunnel[],
+      totalPageviews: Number(data.totalPageviews || 0),
+    }
+  }, [funnelQuery.data])
+
+  const displayedFunnelAnalytics = isStaleFunnelData ? null : funnelAnalytics
+  const funnelDataLoading = funnelQuery.isLoading || isStaleFunnelData
+  const funnelDataRefetching =
+    funnelQuery.isFetching && !funnelDataLoading && Boolean(funnelQuery.data)
+
   const funnelActionLoading = fetcher.state !== 'idle'
-  const analyticsLoading = revalidator.state === 'loading'
   const hasFunnels = !_isEmpty(project?.funnels)
-  const resetKey = `funnels:${searchParams.toString()}:${funnelsRefreshTrigger}`
+  const resetKey = `funnels:${searchParams.toString()}`
 
   const clearActiveFunnel = useCallback(() => {
     const nextSearchParams = new URLSearchParams(searchParams.toString())
     nextSearchParams.delete('funnelId')
-    setFunnelAnalytics(null)
     setSessionsDrawer(null)
     setSearchParams(nextSearchParams)
   }, [searchParams, setSearchParams])
@@ -119,7 +133,6 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
         nextSearchParams.set('funnelId', funnelId)
       }
 
-      setFunnelAnalytics(null)
       setSessionsDrawer(null)
       setSearchParams(nextSearchParams)
     },
@@ -136,17 +149,7 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
     setFunnelToEdit(undefined)
   }, [])
 
-  const handleFunnelDataResolved = useCallback(
-    (funnelId: string, funnelData: FunnelDataResponse | null) => {
-      if (activeFunnel?.id === funnelId) {
-        setFunnelAnalytics(funnelData)
-      }
-    },
-    [activeFunnel?.id],
-  )
-
   useEffect(() => {
-    setFunnelAnalytics(null)
     setSessionsDrawer(null)
   }, [activeFunnel?.id])
 
@@ -173,10 +176,11 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
           { method: 'POST', action: projectPath },
         )
 
-        const updatedFunnelId = (fetcher.data.data as { id?: string })?.id
-        if (updatedFunnelId && activeFunnel?.id === updatedFunnelId) {
-          revalidator.revalidate()
-        }
+        // Steps may have changed - drop cached funnel analytics
+        queryClient.invalidateQueries({ queryKey: ['v2', id, 'funnel'] })
+        queryClient.invalidateQueries({
+          queryKey: ['v2', id, 'funnel-sessions'],
+        })
       } else if (intent === 'delete-funnel') {
         toast.success(t('apiNotifications.funnelDeleted'))
         fetcher.submit(
@@ -205,9 +209,9 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
     projectPath,
     fetcher,
     activeFunnel?.id,
-    revalidator,
     clearActiveFunnel,
     mergeProject,
+    queryClient,
   ])
 
   const onFunnelCreate = (name: string, steps: string[]) => {
@@ -240,23 +244,16 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
 
   const handleBarClick = useCallback(
     (stepIndex: number) => {
-      if (!funnelAnalytics?.funnel?.[stepIndex]) return
+      if (!displayedFunnelAnalytics?.funnel?.[stepIndex]) return
 
-      const step = funnelAnalytics.funnel[stepIndex]
+      const step = displayedFunnelAnalytics.funnel[stepIndex]
       setSessionsDrawer({
         stepIndex,
         label: step.value,
       })
     },
-    [funnelAnalytics],
+    [displayedFunnelAnalytics],
   )
-
-  useEffect(() => {
-    if (funnelsRefreshTrigger > lastRefreshTrigger.current) {
-      lastRefreshTrigger.current = funnelsRefreshTrigger
-      revalidator.revalidate()
-    }
-  }, [funnelsRefreshTrigger, revalidator])
 
   return (
     <TabErrorBoundary
@@ -270,17 +267,15 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
         rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
       />
       <Filters className='mb-3' tnMapping={tnMapping} />
-      {activeFunnel && analyticsLoading && funnelAnalytics ? (
-        <LoadingBar />
-      ) : null}
 
       {hasFunnels ? (
         <FunnelsList
           funnels={project?.funnels}
           activeFunnelId={activeFunnel?.id || null}
-          funnelDataPromise={funnelDataPromise}
+          funnelData={displayedFunnelAnalytics}
+          funnelDataLoading={funnelDataLoading}
+          funnelDataRefetching={funnelDataRefetching}
           onToggleFunnel={handleToggleFunnel}
-          onFunnelDataResolved={handleFunnelDataResolved}
           onBarClick={handleBarClick}
           openFunnelSettings={openFunnelSettings}
           deleteFunnel={onFunnelDelete}
@@ -367,7 +362,8 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
         dropoff={Boolean(sessionsDrawer?.dropoff)}
         showDropoffToggle={
           !!sessionsDrawer &&
-          sessionsDrawer.stepIndex < (funnelAnalytics?.funnel?.length || 0) - 1
+          sessionsDrawer.stepIndex <
+            (displayedFunnelAnalytics?.funnel?.length || 0) - 1
         }
         onDropoffChange={(dropoff) =>
           setSessionsDrawer((current) =>
@@ -377,8 +373,10 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
         totalCount={
           sessionsDrawer
             ? sessionsDrawer.dropoff
-              ? funnelAnalytics?.funnel?.[sessionsDrawer.stepIndex + 1]?.dropoff
-              : funnelAnalytics?.funnel?.[sessionsDrawer.stepIndex]?.events
+              ? displayedFunnelAnalytics?.funnel?.[sessionsDrawer.stepIndex + 1]
+                  ?.dropoff
+              : displayedFunnelAnalytics?.funnel?.[sessionsDrawer.stepIndex]
+                  ?.events
             : undefined
         }
       />

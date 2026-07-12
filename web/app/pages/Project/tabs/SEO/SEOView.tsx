@@ -14,19 +14,14 @@ import {
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _round from 'lodash/round'
-import React, {
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-  use,
-  useState,
-} from 'react'
+import React, { useEffect, useCallback, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
-import { useLoaderData, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 
 import { useGSCDashboardProxy } from '~/hooks/useAnalyticsProxy'
+import { useBreakdownQuery } from '~/hooks/v2/useV2Queries'
+import { mapBreakdownRows } from '~/pages/Project/View/v2/adapters'
 import { useAnnotations } from '~/hooks/useAnnotations'
 import { DOCS_URL } from '~/lib/constants'
 import type { TimeBucket } from '~/lib/constants'
@@ -58,7 +53,6 @@ import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
@@ -234,18 +228,16 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     }))
   }, [])
 
-  const { trafficData: trafficDataPromise } = useLoaderData<ProjectLoaderData>()
+  const referrerQuery = useBreakdownQuery('traffic', {
+    dimension: 'referrer',
+    limit: 100,
+    sort: 'visitors:desc',
+  })
 
-  const trafficData = trafficDataPromise ? use(trafficDataPromise) : null
-
-  const refEntries: Entry[] = useMemo(() => {
-    const refParams = trafficData?.params?.ref
-    if (!refParams) return []
-    return refParams.map((r: { name: string; count: number }) => ({
-      name: r.name,
-      count: r.count,
-    }))
-  }, [trafficData])
+  const refEntries: Entry[] = useMemo(
+    () => mapBreakdownRows(referrerQuery.data?.data),
+    [referrerQuery.data],
+  )
 
   const searchEngineEntries = useMemo(
     () => getSearchEngineReferrals(refEntries),
@@ -966,7 +958,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         <CompactReferralPanel
           title={t('project.seo.searchEngines')}
           data={searchEngineEntries}
-          icon={panelIconMapping.ref}
+          icon={panelIconMapping.referrer}
           rowMapper={refRowMapper}
         />
         <CompactReferralPanel
@@ -1040,7 +1032,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         <Panel
           name={t('project.seo.topPages')}
           data={topPagesAsEntries}
-          icon={panelIconMapping.pg}
+          icon={panelIconMapping.page}
           id='pg'
           activeTabId='pg'
           disableRowClick={false}
@@ -1123,7 +1115,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         <Panel
           name={t('project.devices')}
           data={topDevicesAsEntries}
-          icon={panelIconMapping.dv}
+          icon={panelIconMapping.device}
           id='device'
           activeTabId='dv'
           disableRowClick

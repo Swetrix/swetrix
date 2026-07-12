@@ -1,7 +1,8 @@
 import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
-import type { Filter } from '~/pages/Project/View/interfaces/traffic'
+import type { V2Filter } from '~/api/v2/types'
+import { v2FilterToLegacy, type LegacyFilter } from '~/utils/analyticsUrl'
 
 dayjs.extend(isoWeek)
 dayjs.extend(quarterOfYear)
@@ -125,17 +126,18 @@ export const aggregateDateSeries = (
   })
 }
 
-export const getGSCCompatibleFilters = (filters: Filter[]): Filter[] => {
+// The GSC endpoints still consume the legacy v1 filter shape
+export const getGSCCompatibleFilters = (
+  filters: V2Filter[],
+): LegacyFilter[] => {
   return filters.flatMap((filter) => {
     if (
-      filter.column === 'pg' ||
-      filter.column === 'keywords' ||
-      filter.column === 'cc' ||
-      filter.column === 'country' ||
-      filter.column === 'dv' ||
-      filter.column === 'device'
+      filter.dimension === 'page' ||
+      filter.dimension === 'keywords' ||
+      filter.dimension === 'country' ||
+      filter.dimension === 'device'
     ) {
-      return [filter]
+      return [v2FilterToLegacy(filter)]
     }
 
     return []

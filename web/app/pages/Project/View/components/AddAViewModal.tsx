@@ -8,20 +8,29 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { V2Filter } from '~/api/v2/types'
 import { ProjectViewActionData } from '~/routes/projects.$id'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
+import { legacyFilterToV2, v2FilterToLegacy } from '~/utils/analyticsUrl'
 
 import {
-  Filter as FilterType,
   ProjectView,
   ProjectViewCustomEvent,
   ProjectViewCustomEventMetaValueType,
 } from '../interfaces/traffic'
 
 import FilterRowsEditor from './FilterRowsEditor'
+
+// Saved project views keep the legacy filter shape server-side; convert to
+// the v2 shape at this boundary (unmappable legacy filters are dropped).
+const projectViewFiltersToV2 = (view?: ProjectView): V2Filter[] =>
+  (view?.filters || []).flatMap((filter) => {
+    const converted = legacyFilterToV2(filter)
+    return converted ? [converted] : []
+  })
 
 interface AddAViewModalProps {
   onSubmit: () => void
@@ -212,13 +221,17 @@ const AddAViewModal = ({
   const { t } = useTranslation('common')
   const fetcher = useFetcher<ProjectViewActionData>()
   const [name, setName] = useState(defaultView?.name || '')
-  const [activeFilters, setActiveFilters] = useState<FilterType[]>(
-    defaultView?.filters || [],
+  const [activeFilters, setActiveFilters] = useState<V2Filter[]>(() =>
+    projectViewFiltersToV2(defaultView),
   )
   const [customEvents, setCustomEvents] = useState<
     Partial<ProjectViewCustomEvent>[]
   >(defaultView?.customEvents || [])
   const [errors, setErrors] = useState<AddAViewModalErrors>({})
+  const initialFilters = useMemo(
+    () => projectViewFiltersToV2(defaultView),
+    [defaultView],
+  )
 
   useEffect(() => {
     if (!defaultView) {
@@ -227,7 +240,7 @@ const AddAViewModal = ({
 
     if (defaultView.filters) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing form state with defaultView prop
-      setActiveFilters(defaultView.filters)
+      setActiveFilters(projectViewFiltersToV2(defaultView))
     }
 
     if (defaultView.customEvents) {
@@ -332,7 +345,10 @@ const AddAViewModal = ({
     const metricsToSubmit = supportsCustomMetrics
       ? customEvents
       : defaultView?.customEvents || []
-    formData.append('filters', JSON.stringify(activeFilters))
+    formData.append(
+      'filters',
+      JSON.stringify(activeFilters.map(v2FilterToLegacy)),
+    )
     formData.append('customEvents', JSON.stringify(metricsToSubmit))
     formData.append('name', name)
 
@@ -389,7 +405,7 @@ const AddAViewModal = ({
             <FilterRowsEditor
               active={showModal}
               tnMapping={tnMapping}
-              initialFilters={defaultView?.filters}
+              initialFilters={initialFilters}
               type={filterDataType}
               filterOptions={filterOptions}
               onChange={setActiveFilters}

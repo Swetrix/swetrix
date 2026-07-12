@@ -23,8 +23,10 @@ import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
+import type { V2Filter } from '~/api/v2/types'
+import { v2FilterToLegacy } from '~/utils/analyticsUrl'
+
 import FilterRowsEditor from '../../View/components/FilterRowsEditor'
-import type { Filter } from '../../View/interfaces/traffic'
 
 const EMPTY_TN_MAPPING: Record<string, string> = {}
 
@@ -277,7 +279,7 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
     i18n: { language },
   } = useTranslation('common')
 
-  const [filters, setFilters] = useState<Filter[]>([])
+  const [filters, setFilters] = useState<V2Filter[]>([])
   const [period, setPeriod] = useState<PeriodKey>('all')
   const [customRange, setCustomRange] = useState<Date[]>([])
   // null = follow the auto default (every type that has matching rows)
@@ -319,7 +321,8 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
 
     const handle = setTimeout(() => {
       fetchPreview(pid, {
-        filters,
+        // the deletion preview endpoint is still v1 — convert at the boundary
+        filters: filters.map(v2FilterToLegacy),
         from: range.from ?? undefined,
         to: range.to ?? undefined,
       })
@@ -411,7 +414,7 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
 
     const formData = new FormData()
     formData.set('intent', 'delete-data')
-    formData.set('filters', JSON.stringify(filters))
+    formData.set('filters', JSON.stringify(filters.map(v2FilterToLegacy)))
     formData.set('types', JSON.stringify([...selectedTypes]))
     if (range.from) formData.set('from', range.from)
     if (range.to) formData.set('to', range.to)

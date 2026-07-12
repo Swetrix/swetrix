@@ -81,6 +81,7 @@ import ProgressRing from '~/ui/ProgressRing'
 import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
+import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 import { escapeHtml, nFormatter } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 import routes from '~/utils/routes'
@@ -953,7 +954,8 @@ const GoalsViewInner = ({
         from,
         to,
         timezone,
-        filters,
+        // goals endpoints are still v1 — convert filters at the boundary
+        filters: filters.map(v2FilterToLegacy),
       })
       if (isMountedRef.current) {
         setGoalStats((prev) => ({ ...prev, [goalId]: stats }))
@@ -982,7 +984,8 @@ const GoalsViewInner = ({
         to,
         timeBucket,
         timezone,
-        filters,
+        // goals endpoints are still v1 — convert filters at the boundary
+        filters: filters.map(v2FilterToLegacy),
       })
       if (isMountedRef.current && result) {
         setGoalChartData((prev) => ({ ...prev, [goalId]: result.chart }))

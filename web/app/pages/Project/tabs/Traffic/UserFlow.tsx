@@ -1,20 +1,14 @@
 import { ResponsiveSankey } from '@nivo/sankey'
 import { ArrowClockwiseIcon, TreeStructureIcon } from '@phosphor-icons/react'
 import _isEmpty from 'lodash/isEmpty'
-import { useEffect, useState, memo, useMemo } from 'react'
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 
-import { useUserFlowProxy } from '~/hooks/useAnalyticsProxy'
-import type { UserFlowResponse } from '~/api/api.server'
+import { useUserFlowQuery } from '~/hooks/v2/useV2Queries'
 import { PanelEmptyState } from '~/pages/Project/View/Panels'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
-
-import { useCurrentProject } from '../../../../providers/CurrentProjectProvider'
-import { useViewProjectContext } from '../../View/ViewProject'
-import { getFormatDate } from '../../View/ViewProject.helpers'
 
 interface UserFlowProps {
   isReversed?: boolean
@@ -22,58 +16,11 @@ interface UserFlowProps {
 }
 
 const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
-  const { dateRange, period, timeBucket, timezone, filters } =
-    useViewProjectContext()
-  const { id } = useCurrentProject()
   const { t } = useTranslation('common')
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [userFlow, setUserFlow] = useState<UserFlowResponse | null>(null)
-  const { fetchUserFlow: fetchUserFlowProxy } = useUserFlowProxy()
+  const { data, isLoading } = useUserFlowQuery()
+  const userFlow = data?.data
 
-  const [from, to] = useMemo(() => {
-    if (!dateRange) {
-      return [undefined, undefined]
-    }
-
-    return [getFormatDate(dateRange[0]), getFormatDate(dateRange[1])]
-  }, [dateRange])
-
-  const fetchUserFlow = async () => {
-    if (isLoading) {
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      const result = await fetchUserFlowProxy(id, {
-        timeBucket,
-        period,
-        filters,
-        from,
-        to,
-        timezone,
-      })
-      if (result) {
-        setUserFlow(result as UserFlowResponse)
-      }
-    } catch (error: any) {
-      toast.error(
-        typeof error === 'string'
-          ? error
-          : t('apiNotifications.somethingWentWrong'),
-      )
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchUserFlow()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, period, timeBucket, from, to, timezone, id])
-
-  if (isLoading || isLoading === null) {
+  if (isLoading) {
     return <Loader />
   }
 

@@ -9,14 +9,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 
-import type {
-  SessionsResponse,
-  FunnelSessionsResponse,
-  GoalSessionsResponse,
-  ErrorSessionsResponse,
-  ErrorAffectedSession,
-  SessionEventType,
-} from '~/api/api.server'
+import * as v2api from '~/api/v2/endpoints'
+import type { V2Filter } from '~/api/v2/types'
 import type { Session as SessionType } from '~/lib/models/Project'
 import {
   Drawer,
@@ -40,28 +34,45 @@ import { BrowserIcon, OSIcon } from '../SharedIcons'
 
 const SESSIONS_TAKE = 30
 
-type SessionsPageResult =
-  | SessionsResponse
-  | FunnelSessionsResponse
-  | GoalSessionsResponse
-  | ErrorSessionsResponse
+type SessionEventType = 'traffic' | 'performance' | 'error'
+
+interface ErrorAffectedSession {
+  psid: string
+  profileId?: string | null
+  country: string | null
+  os: string | null
+  browser: string | null
+  firstErrorAt: string
+  lastErrorAt: string
+  errorCount: number
+}
 
 type DrawerSession = SessionType | ErrorAffectedSession
 
-async function fetchSessionsPage(
-  action: string,
+/**
+ * Goal sessions have no v2 endpoint yet, so they still go through the v1
+ * analytics proxy. The response uses v1 short keys - map them to the v2
+ * readable keys the shared <Session /> renderer expects.
+ */
+const mapV1SessionKeys = (session: Record<string, any>): SessionType =>
+  ({
+    ...session,
+    country: session.country ?? session.cc ?? null,
+    browser: session.browser ?? session.br ?? null,
+    duration: session.duration ?? session.sdur,
+  }) as SessionType
+
+async function fetchGoalSessionsPage(
   projectId: string,
   params: Record<string, unknown>,
   signal?: AbortSignal,
-  rootParams?: Record<string, unknown>,
-): Promise<SessionsPageResult | null> {
+): Promise<SessionType[]> {
   const response = await fetch('/api/analytics', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      action,
+      action: 'getGoalSessions',
       projectId,
-      ...rootParams,
       params,
     }),
     signal,
@@ -72,7 +83,7 @@ async function fetchSessionsPage(
   }
 
   const result = (await response.json()) as {
-    data: SessionsPageResult | null
+    data: { sessions?: Record<string, any>[] } | null
     error: string | null
   }
 
@@ -80,18 +91,7 @@ async function fetchSessionsPage(
     throw new Error(result.error)
   }
 
-  return result.data
-}
-
-const mapErrorSession = (session: ErrorAffectedSession): ErrorAffectedSession =>
-  session
-
-const getResultSessions = (result: SessionsPageResult): DrawerSession[] => {
-  if ('total' in result) {
-    return result.sessions.map(mapErrorSession)
-  }
-
-  return result.sessions
+  return (result.data?.sessions || []).map(mapV1SessionKeys)
 }
 
 const isErrorAffectedSession = (
@@ -137,9 +137,9 @@ const ErrorSession = ({ session }: { session: ErrorAffectedSession }) => {
               <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
                 <div className='flex items-center gap-1.5'>
                   <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
-                    {session.cc ? (
+                    {session.country ? (
                       <Flag
-                        country={session.cc}
+                        country={session.country}
                         size={14}
                         className='rounded-[2px]'
                         aria-hidden='true'
@@ -156,7 +156,10 @@ const ErrorSession = ({ session }: { session: ErrorAffectedSession }) => {
                     />
                   </div>
                   <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
-                    <BrowserIcon browser={session.br} className='size-3.5' />
+                    <BrowserIcon
+                      browser={session.browser}
+                      className='size-3.5'
+                    />
                   </div>
                 </div>
                 <div className='h-3 w-px bg-gray-200 dark:bg-slate-700' />
@@ -192,7 +195,7 @@ interface SessionsDrawerProps {
   projectId: string
   timezone: string
   timeFormat: '12-hour' | '24-hour'
-  filters?: any[]
+  filters?: V2Filter[]
   period?: string
   funnelId?: string
   funnelStep?: number
@@ -236,7 +239,6 @@ export const SessionsDrawer = ({
   const [sessions, setSessions] = useState<DrawerSession[]>([])
   const [skip, setSkip] = useState(0)
   const [hasMore, setHasMore] = useState(true)
-  const [resultTotalCount, setResultTotalCount] = useState<number | null>(null)
   const [initialLoading, setInitialLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -251,30 +253,45 @@ export const SessionsDrawer = ({
       append: boolean,
       signal?: AbortSignal,
     ): Promise<boolean> => {
-      let result: SessionsPageResult | null = null
+      let newSessions: DrawerSession[] = []
+
+      // v2 accepts ISO datetimes for from/to; fall back to the period
+      // otherwise (backend defaults 'custom' without a range)
+      const commonParams = {
+        ...(from && to ? { from, to } : { period }),
+        timezone,
+        filters: stableFilters,
+      }
 
       try {
         if (isFunnelMode) {
-          result = await fetchSessionsPage(
-            'getFunnelSessions',
+          const result = await v2api.getFunnelSessions(
             projectId,
             {
-              period,
-              from,
-              to,
-              timezone,
+              ...commonParams,
               funnelId,
-              step: funnelStep,
-              filters: stableFilters,
+              step: funnelStep!,
               dropoff,
-              take: SESSIONS_TAKE,
-              skip: currentSkip,
+              limit: SESSIONS_TAKE,
+              offset: currentSkip,
             },
             signal,
           )
+          newSessions = result.data as unknown as SessionType[]
+        } else if (isErrorMode) {
+          const result = await v2api.getErrorSessions(
+            projectId,
+            errorId!,
+            {
+              ...commonParams,
+              limit: SESSIONS_TAKE,
+              offset: currentSkip,
+            },
+            signal,
+          )
+          newSessions = result.data as unknown as ErrorAffectedSession[]
         } else if (isGoalMode) {
-          result = await fetchSessionsPage(
-            'getGoalSessions',
+          newSessions = await fetchGoalSessionsPage(
             projectId,
             {
               period,
@@ -287,38 +304,18 @@ export const SessionsDrawer = ({
             },
             signal,
           )
-        } else if (isErrorMode) {
-          result = await fetchSessionsPage(
-            'getErrorSessions',
-            projectId,
-            {
-              period,
-              from,
-              to,
-              timezone,
-              filters: stableFilters,
-              take: SESSIONS_TAKE,
-              skip: currentSkip,
-            },
-            signal,
-            { errorId },
-          )
         } else {
-          result = await fetchSessionsPage(
-            'getSessions',
+          const result = await v2api.getSessionsList(
             projectId,
             {
-              period,
-              from,
-              to,
-              timezone,
-              filters: stableFilters,
-              sessionEvent,
-              take: SESSIONS_TAKE,
-              skip: currentSkip,
+              ...commonParams,
+              event_type: sessionEvent,
+              limit: SESSIONS_TAKE,
+              offset: currentSkip,
             },
             signal,
           )
+          newSessions = result.data as unknown as SessionType[]
         }
       } catch (e) {
         if (signal?.aborted) return false
@@ -334,23 +331,13 @@ export const SessionsDrawer = ({
 
       setError(null)
 
-      if (result) {
-        const newSessions = getResultSessions(result)
-        const nextTotalCount = 'total' in result ? result.total : null
-
-        if (append) {
-          setSessions((prev) => [...prev, ...newSessions])
-        } else {
-          setSessions(newSessions)
-        }
-
-        setResultTotalCount(nextTotalCount)
-        setHasMore(
-          nextTotalCount != null
-            ? currentSkip + newSessions.length < nextTotalCount
-            : newSessions.length >= SESSIONS_TAKE,
-        )
+      if (append) {
+        setSessions((prev) => [...prev, ...newSessions])
+      } else {
+        setSessions(newSessions)
       }
+
+      setHasMore(newSessions.length >= SESSIONS_TAKE)
 
       return true
     },
@@ -385,7 +372,6 @@ export const SessionsDrawer = ({
     setSessions([])
     setSkip(0)
     setHasMore(true)
-    setResultTotalCount(null)
     setError(null)
 
     const timer = setTimeout(() => {
@@ -401,8 +387,6 @@ export const SessionsDrawer = ({
       controller.abort()
     }
   }, [isOpen, period, from, to, loadSessions])
-
-  const displayTotalCount = totalCount ?? resultTotalCount
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || !hasMore) return
@@ -472,7 +456,7 @@ export const SessionsDrawer = ({
             </div>
             <div className='ml-3 flex shrink-0 items-center gap-2'>
               {!initialLoading &&
-              (displayTotalCount != null || sessions.length > 0) ? (
+              (totalCount != null || sessions.length > 0) ? (
                 <Text
                   as='span'
                   size='xs'
@@ -481,8 +465,8 @@ export const SessionsDrawer = ({
                   className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 dark:bg-slate-800'
                 >
                   <UsersIcon className='size-3.5' />
-                  {displayTotalCount != null ? (
-                    displayTotalCount
+                  {totalCount != null ? (
+                    totalCount
                   ) : (
                     <>
                       {sessions.length}

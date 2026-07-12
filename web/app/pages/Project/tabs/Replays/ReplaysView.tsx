@@ -36,6 +36,7 @@ import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import StatusPage from '~/ui/StatusPage'
+import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 import routes from '~/utils/routes'
 
 import { LoaderView } from '../../View/components/LoaderView'
@@ -186,7 +187,8 @@ const ReplaysViewInner = ({
       from,
       to,
       timezone,
-      filters,
+      // the replays endpoint is still v1 — convert filters at the boundary
+      filters: filters.map(v2FilterToLegacy),
       take,
       skip,
     }
