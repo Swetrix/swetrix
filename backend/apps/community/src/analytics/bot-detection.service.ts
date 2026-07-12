@@ -7,6 +7,7 @@ import { parse as parseDomain } from 'tldts'
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectService } from '../project/project.service'
 import { getIPDetails } from '../common/utils'
+import { isIpInRange } from '../common/ip-range'
 
 type BotReason =
   | 'user_agent'
@@ -215,6 +216,18 @@ export class BotDetectionService {
       BotsProtectionLevel.BASIC
 
     if (level === BotsProtectionLevel.OFF) return NEGATIVE
+
+    // Whitelisted IPs (e.g. customer backends doing server-side tracking)
+    // bypass the entire detection chain.
+    const ipWhitelist = (project.ipWhitelist || []).filter(Boolean)
+
+    if (
+      input.ip &&
+      ipWhitelist.length > 0 &&
+      isIpInRange(input.ip, ipWhitelist)
+    ) {
+      return NEGATIVE
+    }
 
     const ua = (input.userAgent || '').trim()
 

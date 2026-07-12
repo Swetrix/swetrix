@@ -124,6 +124,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const password = formData.get('password')?.toString()
       const origins = formData.get('origins')?.toString()
       const ipBlacklist = formData.get('ipBlacklist')?.toString()
+      const ipWhitelist = formData.get('ipWhitelist')?.toString()
       const botsProtectionLevel = formData
         .get('botsProtectionLevel')
         ?.toString()
@@ -177,6 +178,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (ipBlacklist !== undefined)
         updateData.ipBlacklist = ipBlacklist
           ? ipBlacklist.split(',').map((ip) => ip.trim())
+          : null
+      if (ipWhitelist !== undefined)
+        updateData.ipWhitelist = ipWhitelist
+          ? ipWhitelist.split(',').map((ip) => ip.trim())
           : null
       if (botsProtectionLevel !== undefined)
         updateData.botsProtectionLevel = botsProtectionLevel

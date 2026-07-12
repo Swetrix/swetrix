@@ -47,6 +47,11 @@ export class Project {
   @Column('simple-array', { nullable: true, default: null })
   ipBlacklist: string[]
 
+  // IPs (or CIDR ranges) that bot detection (Shields) never flags
+  @ApiProperty()
+  @Column('simple-array', { nullable: true, default: null })
+  ipWhitelist: string[]
+
   @ApiProperty()
   @Column('simple-array', { nullable: true, default: null })
   countryBlacklist: string[]

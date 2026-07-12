@@ -386,6 +386,12 @@ export class ProjectService {
         : _join(updProject.ipBlacklist, ',')
     }
 
+    if (!_isNull(updProject.ipWhitelist)) {
+      updProject.ipWhitelist = _isString(updProject.ipWhitelist)
+        ? updProject.ipWhitelist
+        : _join(updProject.ipWhitelist, ',')
+    }
+
     if (!_isNull(updProject.countryBlacklist)) {
       updProject.countryBlacklist = _isString(updProject.countryBlacklist)
         ? updProject.countryBlacklist
@@ -421,6 +427,10 @@ export class ProjectService {
     updProject.ipBlacklist = _isEmpty(updProject.ipBlacklist)
       ? []
       : _split(updProject.ipBlacklist, ',')
+
+    updProject.ipWhitelist = _isEmpty(updProject.ipWhitelist)
+      ? []
+      : _split(updProject.ipWhitelist, ',')
 
     updProject.countryBlacklist = _isEmpty(updProject.countryBlacklist)
       ? []

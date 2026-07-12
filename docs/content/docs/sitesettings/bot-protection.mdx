@@ -139,7 +139,18 @@ Every detection method has trade-offs:
 - **`referrer_spam`** — the matomo list is community-curated and very strict; false positives are rare but possible if someone legitimately migrates onto a domain that used to be a spam farm.
 - **`datacenter_ip`** — the highest false-positive rate of the bunch. VPN users, server-side rendering hits, and cloud-based RSS readers can all be caught. Only enable Strict if datacenter traffic is materially polluting your dashboard.
 
-If you suspect a false positive, switch to **Basic** to isolate the cause: the only checks that run there are user-agent and headless-browser, and both are deterministic.
+If you suspect a false positive, switch to **Basic** to isolate the cause: the only checks that run there are user-agent and headless-browser, and both are deterministic. If the false positives come from a fixed set of IP addresses — your own backend, an office network, a monitoring service you want counted — add them to the [Trusted IP addresses](#trusted-ip-addresses) list instead of lowering the protection level.
+
+## Trusted IP addresses
+
+The **Trusted IP addresses** field on the Shields tab lets you exempt specific IPs (or CIDR ranges) from bot detection entirely. Requests from a trusted IP skip the whole detection chain — none of the six checks run, no block is recorded, and the event is processed as regular traffic.
+
+The most common reason to use it is **server-side event tracking on Strict mode**: events sent from your own backend (via `@swetrix/node` or the [Events API](/events-api)) originate from a hosting provider's network, so the `datacenter_ip` check would classify them as bot traffic and silently drop them. Add your servers' egress IPs to the trusted list and they'll pass.
+
+- Separate multiple values with commas.
+- IPv4, IPv6, and CIDR ranges are supported, for example `172.126.10.16`, `192.168.0.1/32`, or `::1`.
+- Trusted IPs bypass bot detection only. The **Blocked IP addresses** list, origin checks, and country blocks still apply.
+- Available on both cloud and self-hosted (community) editions.
 
 ## When bots are detected
 
@@ -165,11 +176,15 @@ No. Bot detection runs **before** the event is recorded, so you only pay for rea
 
 ### Can I add my own UA rules or IP ranges?
 
-Not yet. The current detection logic is fixed. The existing **Blocked IP addresses** and **Blocked countries** settings in the Shields tab let you block specific IPs and countries, which works for most allowlist/denylist use cases.
+Custom user-agent rules aren't supported, but IP-based rules are: use **Blocked IP addresses** to deny specific IPs or ranges, and [Trusted IP addresses](#trusted-ip-addresses) to exempt IPs or ranges from bot detection entirely.
 
 ### My GoogleBot / SEO crawler stats disappeared after I enabled Basic. Is that a bug?
 
-That's by design — search-engine crawlers are detected by their user agent and excluded. If you specifically want to count crawler hits, switch to **Off**. We're considering a per-project allowlist for legitimate crawlers in a future release.
+That's by design — search-engine crawlers are detected by their user agent and excluded. If you specifically want to count crawler hits, switch to **Off**, or add the crawler's published IP ranges to [Trusted IP addresses](#trusted-ip-addresses) to exempt just that crawler.
+
+### My server-side events stopped showing up after I enabled Strict. Why?
+
+Events sent from a backend originate from a datacenter IP, so Strict mode's `datacenter_ip` check drops them. Add your servers' egress IPs to [Trusted IP addresses](#trusted-ip-addresses) and they'll be tracked again.
 
 ### Why does my report only show one or two reasons?
 

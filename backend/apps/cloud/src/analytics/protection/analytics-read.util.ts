@@ -1,13 +1,6 @@
 import _isString from 'lodash/isString'
 
-import { getIPFromHeaders } from '../../common/utils'
-
-const TRUSTED_PROXY_IPS = new Set(
-  (process.env.TRUSTED_PROXY_IPS || '')
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean),
-)
+import { getIPFromHeaders, TRUSTED_PROXY_IPS } from '../../common/utils'
 
 const firstHeaderValue = (value: unknown): string => {
   if (_isString(value) && value) {

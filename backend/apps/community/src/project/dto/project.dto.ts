@@ -54,6 +54,14 @@ export class ProjectDTO {
   ipBlacklist: string[] | null
 
   @ApiProperty({
+    example: '::1,127.0.0.1,192.168.0.1/32',
+    required: false,
+    description:
+      'Array of IP addresses (or CIDR ranges) that are never flagged by bot protection. Useful for server-side event tracking.',
+  })
+  ipWhitelist: string[] | null
+
+  @ApiProperty({
     example: ['RU', 'BY', 'KP'],
     required: false,
     description:
