@@ -68,4 +68,12 @@ export class GetDataDto {
   })
   @IsOptional()
   metrics?: string
+
+  @ApiProperty({
+    description:
+      "Set to 'true' to include the live visitors (concurrency) series in the chart response",
+    required: false,
+  })
+  @IsOptional()
+  includeConcurrency?: string
 }

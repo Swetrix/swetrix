@@ -17,6 +17,7 @@ import type {
   LiveStats,
   BotProtectionStats,
   BotProtectionPeriod,
+  JourneysResponse,
   GSCDashboardResponse,
   RevenueStatus,
   RevenueDataResponse,
@@ -617,6 +618,44 @@ export function useBotProtectionStatsProxy() {
   )
 
   return { fetchBotProtectionStats }
+}
+
+export function useJourneysProxy() {
+  const [data, setData] = useState<JourneysResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchJourneys = useCallback(
+    async (
+      projectId: string,
+      params: ClientAnalyticsParams & {
+        steps?: number
+        journeys?: number
+      } = {},
+    ) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const result = await postAnalytics<JourneysResponse>({
+          action: 'getJourneys',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
+  return { fetchJourneys, data, error, isLoading }
 }
 
 export function useGSCDashboardProxy() {

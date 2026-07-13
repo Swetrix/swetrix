@@ -490,7 +490,7 @@ export const localisePath = (pathname: string, lang: string): string => {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 46
+export const I18N_CACHE_BREAKER = 47
 
 export const roles: Role[] = ['admin', 'viewer']
 
@@ -509,6 +509,7 @@ const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
   seo: 'seo',
+  journeys: 'journeys',
   funnels: 'funnels',
   profiles: 'profiles',
   sessions: 'sessions',
@@ -525,6 +526,7 @@ const PRODUCTION_PROJECT_TABS = {
   performance: 'performance',
   seo: 'seo',
   profiles: 'profiles',
+  journeys: 'journeys',
   funnels: 'funnels',
   sessions: 'sessions',
   replays: 'replays',

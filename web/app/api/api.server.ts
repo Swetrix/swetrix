@@ -762,6 +762,8 @@ export interface AnalyticsParams {
   mode?: 'periodical' | 'cumulative'
   password?: string
   metrics?: string
+  // Concurrency (live visitors) data is only computed by the API when requested
+  includeConcurrency?: boolean
 }
 
 function serializeFiltersForUrl(filters: AnalyticsFilter[]): string {
@@ -880,6 +882,56 @@ export interface GoalSessionsResponse {
   sessions: Session[]
   take: number
   skip: number
+}
+
+export interface JourneySessionsResponse {
+  sessions: Session[]
+  take: number
+  skip: number
+}
+
+export async function getJourneySessionsServer(
+  request: Request,
+  pid: string,
+  params: {
+    period: string
+    from?: string
+    to?: string
+    timezone?: string
+    step: number
+    page: string
+    take?: number
+    skip?: number
+    password?: string
+    filters?: AnalyticsFilter[]
+  },
+): Promise<ServerFetchResult<JourneySessionsResponse>> {
+  const step = Math.min(10, Math.max(1, Math.floor(Number(params.step) || 1)))
+  const take = Math.min(150, Math.max(1, Math.floor(Number(params.take) || 30)))
+  const skip = Math.max(0, Math.floor(Number(params.skip) || 0))
+
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period)
+  queryParams.append('step', String(step))
+  queryParams.append('page', params.page)
+  queryParams.append('take', String(take))
+  queryParams.append('skip', String(skip))
+  queryParams.append('filters', JSON.stringify(params.filters || []))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<JourneySessionsResponse>(
+    request,
+    `log/journey-sessions?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 export async function getGoalSessionsServer(
@@ -1649,6 +1701,65 @@ export async function processSSOTokenServer(
     body: { token, hash },
     skipAuth: true,
   })
+}
+
+// ============================================================================
+// MARK: Journeys API
+// ============================================================================
+
+interface Journey {
+  path: string[]
+  value: number
+}
+
+export interface JourneysResponse {
+  journeys: Journey[]
+  totalSessions: number
+  appliedFilters?: AnalyticsFilter[]
+}
+
+export async function getJourneysServer(
+  request: Request,
+  pid: string,
+  params: {
+    period?: string
+    filters?: AnalyticsFilter[]
+    from?: string
+    to?: string
+    timezone?: string
+    steps?: number
+    journeys?: number
+    password?: string
+  } = {},
+): Promise<ServerFetchResult<JourneysResponse>> {
+  const steps = Math.min(10, Math.max(2, Math.floor(Number(params.steps) || 3)))
+  const journeys = Math.min(
+    100,
+    Math.max(5, Math.floor(Number(params.journeys) || 20)),
+  )
+
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period || '3d')
+  queryParams.append('filters', JSON.stringify(params.filters || []))
+  queryParams.append('steps', String(steps))
+  queryParams.append('journeys', String(journeys))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<JourneysResponse>(
+    request,
+    `log/journeys?${queryParams.toString()}`,
+    {
+      headers,
+    },
+  )
 }
 
 // ============================================================================

@@ -599,7 +599,7 @@
     },
     "integrations": {
       "title": "Funciona com as ferramentas que você já usa",
-      "description": "O Swetrix se integra com tudo. Nosso script leve tem apenas alguns kilobytes no seu código-fonte. Você pode adicioná-lo a qualquer CMS, framework ou tecnologia que já esteja usando.",
+      "description": "Não há nada para migrar e nenhum SDK para aprender. O Swetrix é um único script leve, de apenas alguns kilobytes, que se integra diretamente a qualquer CMS, framework ou stack personalizada.",
       "andMore": "+{{count}} mais"
     },
     "logoCloud": {
@@ -638,7 +638,7 @@
     "easyToUse": "Fácil de usar",
     "privacyFirst": "Prioridade na privacidade",
     "featuresAlt": {
-      "heading": "Recursos de que você precisa, sem necessidade de treinamento",
+      "heading": "Conheça seu tráfego. Entenda seu produto.",
       "webHeading": "Web analytics",
       "webDescription": "Entenda o tráfego, campanhas, eventos e desempenho a partir de um único dashboard com foco na privacidade.",
       "productHeading": "Analytics de produto",
@@ -1077,6 +1077,7 @@
     "failedToLoadPerformance": "Não foi possível carregar os dados de desempenho",
     "failedToLoadSeo": "Não foi possível carregar os dados de SEO",
     "failedToLoadFunnels": "Não foi possível carregar os funis",
+    "failedToLoadJourneys": "Não foi possível carregar as jornadas",
     "failedToLoadErrors": "Não foi possível carregar os erros",
     "verifyEmailTitle": "Por favor, verifique o endereço de e-mail primeiro",
     "verifyEmailDesc": "Para começar a usar nosso serviço e criar seus projetos, primeiro você precisa confirmar seu endereço de e-mail.\n\nUm link para confirmar sua conta foi enviado para o endereço de e-mail que você forneceu durante o registro. Se não foi entregue, você pode solicitar o link novamente nas configurações da sua conta.",
@@ -1115,6 +1116,7 @@
     "performance": "Desempenho",
     "profiles": "Perfis",
     "funnels": "Funis",
+    "journeys": "Jornadas",
     "sessions": "Sessões",
     "replays": "Replays",
     "xOccurrences": "{{x}} ocorrências",
@@ -1888,6 +1890,7 @@
     "usersAffected": "usuários afetados",
     "recentErrors": "Erros Recentes",
     "affectedSessionsList": "Sessões Afetadas",
+    "showAllXSessions": "Mostrar todas as {{x}} sessões",
     "noAffectedSessions": "Nenhuma sessão afetada encontrada",
     "viewSession": "Ver sessão",
     "topPages": "Principais páginas",
@@ -2083,7 +2086,6 @@
       "ca": "Campanha UTM",
       "te": "Termo UTM",
       "co": "Conteúdo UTM",
-      "userFlow": "Fluxo de usuários",
       "entryPage": "Página de entrada",
       "exitPage": "Página de saída",
       "keywords": "Palavras-chave",
@@ -2195,6 +2197,7 @@
     "customEvMetadata": "Metadados de eventos personalizados",
     "pageviewMetadata": "Metadados de visualização de página",
     "conflictMetric": "A métrica que você selecionou está em conflito com uma já selecionada",
+    "liveVisitorsFilterConflict": "Visitantes ao vivo não podem ser exibidos enquanto os filtros do dashboard estiverem aplicados",
     "prev": "Anterior",
     "next": "Próximo",
     "results": "Resultados",
@@ -2673,10 +2676,17 @@
       "reportFrequency": "Frequência do relatório"
     },
     "page": "Página",
-    "reverse": "Inverter",
-    "userFlow": {
-      "title": "Fluxo de usuários",
-      "noData": "O fluxo de usuários ainda não está disponível por falta de dados, ou você desativou este recurso nos parâmetros do script de rastreamento"
+    "journeys": {
+      "noData": "As jornadas ainda não estão disponíveis devido à falta de dados, ou você desativou esse recurso nos parâmetros do script de rastreamento.",
+      "stepX": "Passo {{x}}",
+      "xSteps": "{{x}} passos",
+      "xJourneys": "{{x}} jornadas",
+      "xSessions": "{{x}} sessões",
+      "percentOfSessions": "{{x}}% de todas as sessões",
+      "percentContinued": "{{x}}% continuaram por aqui",
+      "clickToInspect": "Clique para inspecionar as sessões",
+      "stepsSliderLabel": "Quantas páginas de profundidade cada jornada atinge",
+      "journeysSliderLabel": "Quantas das jornadas mais populares mostrar"
     },
     "compareDateRangeError": "Este período não pode ser comparado, por favor, selecione outro período",
     "previousPeriod": "Período anterior",

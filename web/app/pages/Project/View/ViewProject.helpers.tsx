@@ -251,6 +251,7 @@ const CHART_METRICS_MAPPING = {
   viewsPerUnique: 'viewsPerUnique',
   trendlines: 'trendlines',
   sessionDuration: 'sessionDuration',
+  liveVisitors: 'liveVisitors',
   customEvents: 'customEvents',
   cumulativeMode: 'cumulativeMode',
   revenue: 'revenue',
@@ -289,6 +290,7 @@ const getColumns = (
     unique,
     trendlines,
     sessionDuration,
+    liveVisitors,
     occurrences,
     avgResponseTime,
   } = activeChartMetrics
@@ -360,6 +362,14 @@ const getColumns = (
 
     if (compareChart?.sdur) {
       columns.push(['sessionDurationCompare', ...compareChart.sdur])
+    }
+  }
+
+  if (liveVisitors && chart.concurrency) {
+    columns.push(['liveVisitors', ...chart.concurrency])
+
+    if (compareChart?.concurrency) {
+      columns.push(['liveVisitorsCompare', ...compareChart.concurrency])
     }
   }
 
@@ -665,6 +675,11 @@ const getSettings = (
       ...chart.occurrences.filter((n) => n !== undefined && n !== null),
     )
   }
+  if (activeChartMetrics.liveVisitors && chart.concurrency) {
+    allYValues.push(
+      ...chart.concurrency.filter((n) => n !== undefined && n !== null),
+    )
+  }
 
   const optimalTicks =
     allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
@@ -719,6 +734,7 @@ const getSettings = (
       total: [regionObj],
       bounce: [regionObj],
       viewsPerUnique: [regionObj],
+      liveVisitors: [regionObj],
     }
   }
 
@@ -750,6 +766,8 @@ const getSettings = (
         sessionDuration: chartType === chartTypes.line ? spline() : bar(),
         sessionDurationCompare:
           chartType === chartTypes.line ? spline() : bar(),
+        liveVisitors: chartType === chartTypes.line ? spline() : bar(),
+        liveVisitorsCompare: chartType === chartTypes.line ? spline() : bar(),
         // Revenue is always bars (stacked with refunds)
         revenue: bar(),
         refundsAmount: bar(),
@@ -766,6 +784,10 @@ const getSettings = (
         trendlineTotal: '#eba14b',
         sessionDuration: '#c945ed',
         sessionDurationCompare: 'rgba(201, 69, 237, 0.4)',
+        // Distinct from every CUSTOM_EVENTS_CHART_COLORS entry so the legend
+        // stays unambiguous when both series are shown
+        liveVisitors: '#10B981',
+        liveVisitorsCompare: 'rgba(16, 185, 129, 0.4)',
         revenue: '#ea580c', // orange-600 for net revenue
         refundsAmount: 'rgba(234, 88, 12, 0.25)', // light orange fill for refunds overlay
         ...customEventsColors,
@@ -854,6 +876,7 @@ const getSettings = (
           unique: 'uniques',
           total: 'visits',
           sessionDuration: 'sdur',
+          liveVisitors: 'concurrency',
         }
 
         if (_isEmpty(compareChart)) {
@@ -960,7 +983,8 @@ const getSettings = (
             el.id !== 'uniqueCompare' &&
             el.id !== 'totalCompare' &&
             el.id !== 'bounceCompare' &&
-            el.id !== 'sessionDurationCompare',
+            el.id !== 'sessionDurationCompare' &&
+            el.id !== 'liveVisitorsCompare',
         )
 
         // Build current period section
@@ -1049,6 +1073,7 @@ const getSettings = (
         'totalCompare',
         'bounceCompare',
         'sessionDurationCompare',
+        'liveVisitorsCompare',
         'refundsAmount',
       ],
     },

@@ -103,6 +103,16 @@ export interface IUserFlow {
   descending: IBuildUserFlow
 }
 
+export interface IJourney {
+  path: string[]
+  value: number
+}
+
+export interface IJourneys {
+  journeys: IJourney[]
+  totalSessions: number
+}
+
 export interface IExtractChartData {
   visits: number[]
   uniques: number[]

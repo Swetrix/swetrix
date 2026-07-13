@@ -53,6 +53,8 @@ import { GetDataDto, ChartRenderMode, TimeBucketType } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDto } from './dto/getUserFlow.dto'
+import { GetJourneysDto } from './dto/get-journeys.dto'
+import { GetJourneySessionsDto } from './dto/get-journey-sessions.dto'
 import { GetFunnelsDto } from './dto/getFunnels.dto'
 import { GetFunnelSessionsDto } from './dto/get-funnel-sessions.dto'
 import { AppLoggerService } from '../logger/logger.service'
@@ -278,6 +280,7 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
       metrics,
+      includeConcurrency,
     } = data
 
     await this.analyticsService.checkProjectAccess(
@@ -385,6 +388,7 @@ export class AnalyticsController {
         customEVFilterApplied,
         appliedFilters,
         mode,
+        includeConcurrency === 'true',
       )
     }
 
@@ -799,6 +803,7 @@ export class AnalyticsController {
       filters,
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
+      includeConcurrency,
     } = data
 
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
@@ -841,6 +846,7 @@ export class AnalyticsController {
       safeTimezone,
       customEVFilterApplied,
       mode,
+      includeConcurrency === 'true',
     )
 
     return { ...result, appliedFilters }
@@ -1067,6 +1073,147 @@ export class AnalyticsController {
     const flow = await this.analyticsService.getUserFlow(params, filtersQuery)
 
     return { ...flow, appliedFilters }
+  }
+
+  @Get('journeys')
+  @Auth(true, true)
+  async getJourneys(
+    @Query() data: GetJourneysDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, filters } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const steps = this.analyticsService.getSafeNumber(data.steps, 3)
+    const journeys = this.analyticsService.getSafeNumber(data.journeys, 20)
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, steps: ${steps}, journeys: ${journeys}`,
+      'GET /analytics/journeys',
+    )
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'pageview',
+      )
+
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS, true)
+
+    const params = { pid, groupFrom, groupTo, ...filtersParams }
+
+    const flow = await this.analyticsService.getJourneys(
+      params,
+      filtersQuery,
+      steps,
+      journeys,
+    )
+
+    return { ...flow, appliedFilters }
+  }
+
+  @Get('journey-sessions')
+  @Auth(true, true)
+  async getJourneySessions(
+    @Query() data: GetJourneySessionsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      step,
+      page,
+      filters,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 150',
+      )
+    }
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, step: ${step}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/journey-sessions',
+    )
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'pageview',
+      )
+
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters || '[]',
+      DataType.ANALYTICS,
+    )
+    const params = { pid, groupFrom, groupTo, ...filtersParams }
+
+    const sessions = await this.analyticsService.getJourneySessionsList(
+      params,
+      safeTimezone,
+      step,
+      page,
+      take,
+      skip,
+      filtersQuery,
+    )
+
+    return { sessions, take, skip }
   }
 
   @Get('keywords')

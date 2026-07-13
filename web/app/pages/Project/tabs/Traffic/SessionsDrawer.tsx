@@ -27,6 +27,7 @@ import { Link } from '~/ui/Link'
 import { Text } from '~/ui/Text'
 import Flag from '~/ui/Flag'
 import { useTheme } from '~/providers/ThemeProvider'
+import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 import { getRelativeDateIfPossible } from '~/utils/date'
 
 import { Session } from '../Sessions/Sessions'
@@ -50,8 +51,8 @@ interface ErrorAffectedSession {
 type DrawerSession = SessionType | ErrorAffectedSession
 
 /**
- * Goal sessions have no v2 endpoint yet, so they still go through the v1
- * analytics proxy. The response uses v1 short keys - map them to the v2
+ * Goal and journey sessions have no v2 endpoint yet, so they still go through
+ * the v1 analytics proxy. The response uses v1 short keys - map them to the v2
  * readable keys the shared <Session /> renderer expects.
  */
 const mapV1SessionKeys = (session: Record<string, any>): SessionType =>
@@ -62,7 +63,8 @@ const mapV1SessionKeys = (session: Record<string, any>): SessionType =>
     duration: session.duration ?? session.sdur,
   }) as SessionType
 
-async function fetchGoalSessionsPage(
+async function fetchProxySessionsPage(
+  action: 'getGoalSessions' | 'getJourneySessions',
   projectId: string,
   params: Record<string, unknown>,
   signal?: AbortSignal,
@@ -71,7 +73,7 @@ async function fetchGoalSessionsPage(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      action: 'getGoalSessions',
+      action,
       projectId,
       params,
     }),
@@ -202,6 +204,8 @@ interface SessionsDrawerProps {
   dropoff?: boolean
   showDropoffToggle?: boolean
   onDropoffChange?: (checked: boolean) => void
+  journeyStep?: number
+  journeyPage?: string
   goalId?: string
   errorId?: string
   sessionEvent?: SessionEventType
@@ -225,6 +229,8 @@ export const SessionsDrawer = ({
   dropoff,
   showDropoffToggle,
   onDropoffChange,
+  journeyStep,
+  journeyPage,
   goalId,
   errorId,
   sessionEvent,
@@ -234,6 +240,7 @@ export const SessionsDrawer = ({
   const { t } = useTranslation('common')
   const stableFilters = useMemo(() => filters ?? [], [filters])
   const isFunnelMode = !!(funnelId && funnelStep)
+  const isJourneyMode = !!(journeyStep && journeyPage)
   const isGoalMode = !!goalId
   const isErrorMode = !!errorId
   const [sessions, setSessions] = useState<DrawerSession[]>([])
@@ -290,8 +297,27 @@ export const SessionsDrawer = ({
             signal,
           )
           newSessions = result.data as unknown as ErrorAffectedSession[]
+        } else if (isJourneyMode) {
+          newSessions = await fetchProxySessionsPage(
+            'getJourneySessions',
+            projectId,
+            {
+              period,
+              from,
+              to,
+              timezone,
+              step: journeyStep,
+              page: journeyPage,
+              // the journey-sessions endpoint is still v1 — convert at the boundary
+              filters: stableFilters.map(v2FilterToLegacy),
+              take: SESSIONS_TAKE,
+              skip: currentSkip,
+            },
+            signal,
+          )
         } else if (isGoalMode) {
-          newSessions = await fetchGoalSessionsPage(
+          newSessions = await fetchProxySessionsPage(
+            'getGoalSessions',
             projectId,
             {
               period,
@@ -348,11 +374,14 @@ export const SessionsDrawer = ({
       to,
       timezone,
       isFunnelMode,
+      isJourneyMode,
       isGoalMode,
       isErrorMode,
       funnelId,
       funnelStep,
       dropoff,
+      journeyStep,
+      journeyPage,
       goalId,
       errorId,
       sessionEvent,

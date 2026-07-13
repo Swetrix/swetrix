@@ -599,7 +599,7 @@
     },
     "integrations": {
       "title": "Works with the tools you already use",
-      "description": "Swetrix integrates with everything. Our lightweight script is just a few kilobytes in your source code. You can add it to any CMS, framework or technology you're already using.",
+      "description": "There's nothing to migrate and no SDK to learn. Swetrix is a single lightweight script, just a few kilobytes, that drops straight into any CMS, framework or custom stack.",
       "andMore": "+{{count}} more"
     },
     "logoCloud": {
@@ -638,7 +638,7 @@
     "easyToUse": "Easy to use",
     "privacyFirst": "Privacy-first",
     "featuresAlt": {
-      "heading": "Features you need, no training required",
+      "heading": "Know your traffic. Understand your product.",
       "webHeading": "Web analytics",
       "webDescription": "Understand traffic, campaigns, events and performance from one privacy-first dashboard.",
       "productHeading": "Product analytics",
@@ -1077,6 +1077,7 @@
     "failedToLoadPerformance": "Couldn't load performance data",
     "failedToLoadSeo": "Couldn't load SEO data",
     "failedToLoadFunnels": "Couldn't load funnels",
+    "failedToLoadJourneys": "Couldn't load journeys",
     "failedToLoadErrors": "Couldn't load errors",
     "verifyEmailTitle": "Please, verify the email address first",
     "verifyEmailDesc": "To start using our service and creating your projects, you first need to confirm your email address.\n\nA link to confirm your account was sent to the email address you provided during registration, if it was not delivered - you can request the link again in your account settings.",
@@ -1115,6 +1116,7 @@
     "performance": "Performance",
     "profiles": "Profiles",
     "funnels": "Funnels",
+    "journeys": "Journeys",
     "sessions": "Sessions",
     "replays": "Replays",
     "xOccurrences": "{{x}} occurrences",
@@ -2085,7 +2087,6 @@
       "ca": "UTM Campaign",
       "te": "UTM Term",
       "co": "UTM Content",
-      "userFlow": "User flow",
       "entryPage": "Entry page",
       "exitPage": "Exit page",
       "keywords": "Keywords",
@@ -2200,6 +2201,7 @@
     "customEvMetadata": "Custom events metadata",
     "pageviewMetadata": "Pageview metadata",
     "conflictMetric": "The metric you selected conflicts with an already selected one",
+    "liveVisitorsFilterConflict": "Live visitors can't be shown while dashboard filters are applied",
     "prev": "Previous",
     "next": "Next",
     "results": "Results",
@@ -2678,10 +2680,17 @@
       "reportFrequency": "Report frequency"
     },
     "page": "Page",
-    "reverse": "Reverse",
-    "userFlow": {
-      "title": "User flow",
-      "noData": "User flow is not available yet due to lack of data, or you disabled this feature in the tracking script parameters"
+    "journeys": {
+      "noData": "Journeys are not available yet due to lack of data, or you've disabled this feature in the tracking script parameters.",
+      "stepX": "Step {{x}}",
+      "xSteps": "{{x}} steps",
+      "xJourneys": "{{x}} journeys",
+      "xSessions": "{{x}} sessions",
+      "percentOfSessions": "{{x}}% of all sessions",
+      "percentContinued": "{{x}}% continued this way",
+      "clickToInspect": "Click to inspect sessions",
+      "stepsSliderLabel": "How many pages deep each journey goes",
+      "journeysSliderLabel": "How many of the most popular journeys to show"
     },
     "compareDateRangeError": "This date range cannot be compared, please select a other date range",
     "previousPeriod": "Previous period",

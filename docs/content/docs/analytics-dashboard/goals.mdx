@@ -18,6 +18,28 @@ Swetrix supports simple goals and multi-condition goals:
 2.  **Simple Custom Event**: Triggered when a specific custom event is sent from your website.
 3.  **Multi-condition**: Triggered when a session matches several pageview, custom event, campaign, referrer, device, browser, country, or metadata conditions.
 
+## Sending custom events
+
+Pageview goals work out of the box, but to track a custom event goal you first need to send that event from your website using the [`track()`](/swetrix-js-reference#track) function of our tracking script.
+
+For example, to track clicks on a signup button:
+
+```html
+<button onclick="swetrix.track({ ev: 'Signup click' })">Sign up</button>
+```
+
+Or, if you use the npm package:
+
+```javascript
+import { track } from "swetrix";
+
+track({ ev: "Signup click" });
+```
+
+The event name can be anything you like (up to 256 characters, spaces are fine) — just make sure it does not contain any personally identifiable information. Once the event is sent, it will show up in the **Custom events** panel of your traffic dashboard, and you can reference it by name when creating a goal.
+
+You can also attach extra context to an event via the `meta` parameter (e.g. `{ location: 'footer' }`) and filter on it later with the goal's metadata filters. See the [tracking script reference](/swetrix-js-reference#track) for all available options, or the [Events API](/events-api) if you want to send events from a backend without the tracking script.
+
 ## Creating a Goal
 
 To create a new goal:

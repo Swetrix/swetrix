@@ -286,7 +286,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     <Text
       size='4xl'
       weight='bold'
-      className={cx('whitespace-nowrap', classes?.value)}
+      className={cx('text-3xl whitespace-nowrap sm:text-4xl', classes?.value)}
     >
       {valueMapper ? valueMapper(value, 'main') : value}
     </Text>
