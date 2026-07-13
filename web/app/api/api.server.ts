@@ -10,6 +10,7 @@ import {
   isPersistentSession,
 } from '~/utils/session.server'
 import { API_URL } from '~/lib/constants'
+import type { V2Filter } from '~/api/v2/types'
 
 // ============================================================================
 // MARK: API utils
@@ -725,13 +726,6 @@ export async function getGeneralStats(request: Request): Promise<Stats | null> {
 // MARK: Analytics Data API (Deferred Loading)
 // ============================================================================
 
-export interface AnalyticsFilter {
-  column: string
-  filter: string
-  isExclusive: boolean
-  isContains?: boolean
-}
-
 interface OverallPeriodStats {
   all: number
   unique?: number
@@ -755,7 +749,7 @@ export interface OverallObject {
 export interface AnalyticsParams {
   timeBucket: string
   period: string
-  filters: AnalyticsFilter[]
+  filters: V2Filter[]
   from?: string
   to?: string
   timezone: string
@@ -766,7 +760,7 @@ export interface AnalyticsParams {
   includeConcurrency?: boolean
 }
 
-function serializeFiltersForUrl(filters: AnalyticsFilter[]): string {
+function serializeFiltersForUrl(filters: V2Filter[]): string {
   return JSON.stringify(filters)
 }
 
@@ -843,7 +837,6 @@ export interface SessionReplaysResponse {
   replays: SessionReplayListItem[]
   take: number
   skip: number
-  appliedFilters: AnalyticsFilter[]
 }
 
 export async function getSessionReplaysServer(
@@ -903,7 +896,7 @@ export async function getJourneySessionsServer(
     take?: number
     skip?: number
     password?: string
-    filters?: AnalyticsFilter[]
+    filters?: V2Filter[]
   },
 ): Promise<ServerFetchResult<JourneySessionsResponse>> {
   const step = Math.min(10, Math.max(1, Math.floor(Number(params.step) || 1)))
@@ -1317,7 +1310,7 @@ export async function getGoalStatsServer(
   from = '',
   to = '',
   timezone?: string,
-  filters: AnalyticsFilter[] = [],
+  filters: V2Filter[] = [],
 ): Promise<ServerFetchResult<GoalStats>> {
   const params = new URLSearchParams({ period })
   if (from) params.append('from', from)
@@ -1345,7 +1338,7 @@ export async function getGoalChartServer(
   to = '',
   timeBucket = 'day',
   timezone?: string,
-  filters: AnalyticsFilter[] = [],
+  filters: V2Filter[] = [],
 ): Promise<ServerFetchResult<{ chart: GoalChartData }>> {
   const params = new URLSearchParams({ period, timeBucket })
   if (from) params.append('from', from)
@@ -1457,7 +1450,7 @@ export async function getExperimentResultsServer(
   from = '',
   to = '',
   timezone?: string,
-  filters: AnalyticsFilter[] = [],
+  filters: V2Filter[] = [],
 ): Promise<ServerFetchResult<ExperimentResults>> {
   const params = new URLSearchParams({ period, timeBucket })
   if (from) params.append('from', from)
@@ -1715,7 +1708,6 @@ interface Journey {
 export interface JourneysResponse {
   journeys: Journey[]
   totalSessions: number
-  appliedFilters?: AnalyticsFilter[]
 }
 
 export async function getJourneysServer(
@@ -1723,7 +1715,7 @@ export async function getJourneysServer(
   pid: string,
   params: {
     period?: string
-    filters?: AnalyticsFilter[]
+    filters?: V2Filter[]
     from?: string
     to?: string
     timezone?: string
@@ -1794,7 +1786,7 @@ export async function getDataDeletionPreviewServer(
   request: Request,
   pid: string,
   options: {
-    filters?: AnalyticsFilter[]
+    filters?: V2Filter[]
     from?: string
     to?: string
   },
@@ -2002,7 +1994,7 @@ export async function getGSCDashboardServer(
     timezone?: string
     password?: string
     timeBucket?: string
-    filters?: AnalyticsFilter[]
+    filters?: V2Filter[]
   } = {},
 ): Promise<ServerFetchResult<GSCDashboardResponse>> {
   const queryParams = new URLSearchParams()

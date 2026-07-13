@@ -23,10 +23,10 @@ import { useFetcher, useLocation, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import type {
-  AnalyticsFilter,
   ExperimentResults as ExperimentResultsSummary,
   ExperimentVariantResult,
 } from '~/api/api.server'
+import type { V2Filter } from '~/api/v2/types'
 import { DOCS_URL } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import {
@@ -45,7 +45,6 @@ import Modal from '~/ui/Modal'
 import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
-import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 import routes from '~/utils/routes'
 
 import ExperimentResults from './ExperimentResults'
@@ -118,7 +117,7 @@ interface ExperimentRowProps {
   from: string
   to: string
   timezone?: string
-  filters: AnalyticsFilter[]
+  filters: V2Filter[]
 }
 
 const normaliseProbability = (value: number) => {
@@ -167,7 +166,7 @@ const ExperimentWinningRail = ({
   from: string
   to: string
   timezone?: string
-  filters: AnalyticsFilter[]
+  filters: V2Filter[]
 }) => {
   const { t } = useTranslation()
   const {
@@ -846,8 +845,6 @@ const ExperimentsView = ({
   const { id } = useCurrentProject()
   const { experimentsRefreshTrigger } = useRefreshTriggers()
   const { filters, timeBucket } = useViewProjectContext()
-  // experiments endpoints are still v1 — convert filters at the boundary
-  const legacyFilters = useMemo(() => filters.map(v2FilterToLegacy), [filters])
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const listFetcher = useFetcher<ProjectViewActionData>()
@@ -1308,7 +1305,7 @@ const ExperimentsView = ({
                   from={from}
                   to={to}
                   timezone={timezone}
-                  filters={legacyFilters}
+                  filters={filters}
                 />
               ))}
             </ul>

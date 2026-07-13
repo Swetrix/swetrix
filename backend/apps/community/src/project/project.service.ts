@@ -32,8 +32,7 @@ import {
   ORIGINS_REGEX,
   getRedisProjectKey,
   redisProjectCacheTimeout,
-  ALL_COLUMNS,
-  TRAFFIC_METAKEY_COLUMNS,
+  V2_VIEW_FILTER_DIMENSIONS,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
@@ -454,11 +453,8 @@ export class ProjectService {
       return []
     }
 
-    return _filter(
-      filters,
-      ({ column }) =>
-        _includes(ALL_COLUMNS, column as string) ||
-        _includes(TRAFFIC_METAKEY_COLUMNS, column as string),
+    return _filter(filters, ({ dimension }) =>
+      _includes(V2_VIEW_FILTER_DIMENSIONS, dimension),
     )
   }
 

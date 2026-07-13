@@ -20,7 +20,7 @@ import {
   type FeatureFlagsResponse,
   type GoalsResponse,
 } from '~/api/api.server'
-import { parseFiltersFromUrl, v2FilterToLegacy } from '~/utils/analyticsUrl'
+import { parseFiltersFromUrl } from '~/utils/analyticsUrl'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import {
   DEFAULT_TIMEZONE,
@@ -498,8 +498,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const from = formatDateForBackend(url.searchParams.get('from') || '')
   const to = formatDateForBackend(url.searchParams.get('to') || '')
   const timezone = url.searchParams.get('timezone') || userTimezone
-  // v1 endpoints still consume the legacy filter shape
-  const filters = parseFiltersFromUrl(url.searchParams).map(v2FilterToLegacy)
+  const filters = parseFiltersFromUrl(url.searchParams)
 
   // Ensure the time bucket is valid for the selected period and date range
   const timeBucket = getValidTimeBucket(period, urlTimeBucket, from, to)
@@ -589,7 +588,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
     'get-project-views',
     'get-annotations',
     'get-funnels',
-    'get-funnel-data',
     'get-project-goals',
     'get-goal',
     'get-goal-stats',
@@ -2184,45 +2182,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const result = await serverFetch(
         request,
         `project/funnels/${projectId}`,
-        {
-          method: 'GET',
-          headers: password ? { 'x-password': password } : undefined,
-        },
-      )
-
-      if (result.error) {
-        return data<ProjectViewActionData>(
-          { intent, error: result.error as string },
-          { status: 400 },
-        )
-      }
-
-      return data<ProjectViewActionData>(
-        { intent, success: true, data: result.data },
-        { headers: createHeadersWithCookies(result.cookies) },
-      )
-    }
-
-    case 'get-funnel-data': {
-      const period = formData.get('period')?.toString() || ''
-      const fromDate = formData.get('from')?.toString() || ''
-      const toDate = formData.get('to')?.toString() || ''
-      const tz = formData.get('timezone')?.toString() || ''
-      const funnelId = formData.get('funnelId')?.toString() || ''
-      const filters = formData.get('filters')?.toString() || '[]'
-      const password = getPassword()
-
-      const params = new URLSearchParams({ pid: projectId || '' })
-      if (period) params.append('period', period)
-      if (fromDate) params.append('from', fromDate)
-      if (toDate) params.append('to', toDate)
-      if (tz) params.append('timezone', tz)
-      if (funnelId) params.append('funnelId', funnelId)
-      params.append('filters', filters)
-
-      const result = await serverFetch(
-        request,
-        `log/funnel?${params.toString()}`,
         {
           method: 'GET',
           headers: password ? { 'x-password': password } : undefined,

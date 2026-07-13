@@ -529,31 +529,37 @@ export class GSCService {
         throw new BadRequestException('Invalid filters parameter')
       }
 
-      const {
-        column,
-        filter: value,
-        isExclusive,
-        isContains,
-      } = filter as {
+      const raw = filter as {
+        dimension?: unknown
+        operator?: unknown
+        value?: unknown
         column?: unknown
         filter?: unknown
         isExclusive?: unknown
         isContains?: unknown
       }
 
-      if (typeof column !== 'string' || typeof value !== 'string') {
-        throw new BadRequestException('Invalid filters parameter')
+      // Accept both the v2 shape ({ dimension, operator, value }) and the
+      // legacy v1 shape ({ column, filter, isExclusive, isContains }).
+      const isV2 = typeof raw.dimension === 'string'
+      const filterDimension = isV2 ? raw.dimension : raw.column
+      const value = isV2 ? raw.value : raw.filter
+
+      // GSC only supports single-value string filters; skip null/array values
+      // and dimensions it doesn't understand.
+      if (typeof filterDimension !== 'string' || typeof value !== 'string') {
+        continue
       }
       if (value.length > MAX_FILTER_EXPRESSION_LENGTH) continue
 
       let dimension: string | undefined
       let expression = value
 
-      if (column === 'pg') {
+      if (filterDimension === 'page' || filterDimension === 'pg') {
         dimension = 'page'
-      } else if (column === 'keywords') {
+      } else if (filterDimension === 'keywords') {
         dimension = 'query'
-      } else if (column === 'country' || column === 'cc') {
+      } else if (filterDimension === 'country' || filterDimension === 'cc') {
         dimension = 'country'
         if (expression.length === 2) {
           const alpha3 = countries.alpha2ToAlpha3(expression.toUpperCase())
@@ -562,7 +568,7 @@ export class GSCService {
         } else {
           expression = expression.toLowerCase()
         }
-      } else if (column === 'device' || column === 'dv') {
+      } else if (filterDimension === 'device' || filterDimension === 'dv') {
         dimension = 'device'
         expression = expression.toUpperCase()
       } else {
@@ -570,9 +576,17 @@ export class GSCService {
       }
 
       let operator = 'equals'
-      if (isExclusive) {
-        operator = isContains ? 'notContains' : 'notEquals'
-      } else if (isContains) {
+      if (isV2) {
+        if (raw.operator === 'is_not') {
+          operator = 'notEquals'
+        } else if (raw.operator === 'contains') {
+          operator = 'contains'
+        } else if (raw.operator === 'contains_not') {
+          operator = 'notContains'
+        }
+      } else if (raw.isExclusive) {
+        operator = raw.isContains ? 'notContains' : 'notEquals'
+      } else if (raw.isContains) {
         operator = 'contains'
       }
 

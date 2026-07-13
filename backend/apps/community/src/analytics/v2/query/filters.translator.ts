@@ -202,3 +202,50 @@ export const toV1FiltersJson = (
 
   return JSON.stringify(v1Filters)
 }
+
+/**
+ * Normalise a `filters` query param that may be in EITHER the v2 shape
+ * ({ dimension, operator, value, key? }) or the legacy v1 shape
+ * ({ column, filter, isExclusive, isContains }) into the v1 filters JSON string
+ * consumed by AnalyticsService.getFiltersQuery.
+ *
+ * Used by endpoints that are also part of the public v1 API, so existing API
+ * clients sending v1 filters keep working while the dashboard sends v2.
+ */
+export const normalizeFiltersToV1Json = (
+  filters: string | undefined,
+  type: V2DataType,
+  options: { lenient?: boolean } = {},
+): string => {
+  if (!filters || filters === '""') {
+    return ''
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(filters)
+  } catch {
+    // Leave malformed input to getFiltersQuery, which logs and ignores it.
+    return filters
+  }
+
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    return ''
+  }
+
+  // Legacy v1 clients key filters by `column`; pass those straight through.
+  // v2 clients (and the dashboard) send `dimension` and are translated.
+  const isLegacyV1 = parsed.every(
+    (filter) =>
+      filter &&
+      typeof filter === 'object' &&
+      'column' in filter &&
+      !('dimension' in filter),
+  )
+
+  if (isLegacyV1) {
+    return filters
+  }
+
+  return toV1FiltersJson(parseV2Filters(filters), type, options)
+}

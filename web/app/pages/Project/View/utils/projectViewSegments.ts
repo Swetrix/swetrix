@@ -7,10 +7,14 @@ import { ProjectView } from '../interfaces/traffic'
 
 type ProjectTab = keyof typeof PROJECT_TABS
 
-// Saved project views keep the legacy filter shape server-side; convert to
-// the v2 shape at this boundary (unmappable legacy filters are dropped).
+// New project views persist the v2 filter shape; views saved before the v2
+// migration still hold the legacy shape, so normalise both here (unmappable
+// legacy filters are dropped).
 export const projectViewFiltersToV2 = (view?: ProjectView): V2Filter[] =>
   (view?.filters || []).flatMap((filter) => {
+    if ('dimension' in filter) {
+      return [filter]
+    }
     const converted = legacyFilterToV2(filter)
     return converted ? [converted] : []
   })

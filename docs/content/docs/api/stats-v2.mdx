@@ -57,12 +57,12 @@ Every endpoint returns the same envelope:
 
 `metrics` is a comma-separated list of metric names, validated per data type. Each endpoint has sensible defaults. Discover all metrics for a data type via the [dimensions endpoint](#get-v2projectspiddimensions).
 
-| Data type   | Metrics                                                                                                                                                                             |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Data type   | Metrics                                                                                                                                                                                                                                                        |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | traffic     | `visitors` (unique sessions), `pageviews`, `users` (unique profiles; breakdown/summary only), `session_duration` (timeseries/summary only), `bounce_rate` (timeseries/summary only), `concurrency` (live visitors over time; timeseries only, ignores filters) |
-| performance | `load_time`, `ttfb`, `dns`, `tls`, `connection`, `response`, `render`, `dom_load` — all in seconds, aggregated by `measure`                                                         |
-| errors      | `occurrences`, `affected_users`                                                                                                                                                     |
-| captcha     | `events` (breakdown), `generated`, `passed`, `failed`, `validation_failed`, `replayed` (timeseries/summary)                                                                         |
+| performance | `load_time`, `ttfb`, `dns`, `tls`, `connection`, `response`, `render`, `dom_load` — all in seconds, aggregated by `measure`                                                                                                                                    |
+| errors      | `occurrences`, `affected_users`                                                                                                                                                                                                                                |
+| captcha     | `events` (breakdown), `generated`, `passed`, `failed`, `validation_failed`, `replayed` (timeseries/summary)                                                                                                                                                    |
 
 ### Dimensions
 

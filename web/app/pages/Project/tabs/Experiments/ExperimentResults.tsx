@@ -59,7 +59,6 @@ import { Badge } from '~/ui/Badge'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
-import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 import { nFormatter } from '~/utils/generic'
 
 import ExperimentSettingsModal from './ExperimentSettingsModal'
@@ -768,8 +767,7 @@ const ExperimentResults = ({
             from,
             to,
             timezone,
-            // experiments endpoints are still v1 — convert at the boundary
-            filters: filters.map(v2FilterToLegacy),
+            filters,
           }),
         ])
 

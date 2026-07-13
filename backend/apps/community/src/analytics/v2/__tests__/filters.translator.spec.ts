@@ -1,6 +1,10 @@
 import { UnprocessableEntityException } from '@nestjs/common'
 
-import { parseV2Filters, toV1FiltersJson } from '../query/filters.translator'
+import {
+  normalizeFiltersToV1Json,
+  parseV2Filters,
+  toV1FiltersJson,
+} from '../query/filters.translator'
 
 describe('parseV2Filters', () => {
   it('returns [] for empty input', () => {
@@ -171,5 +175,38 @@ describe('toV1FiltersJson', () => {
       'refn',
       'ev',
     ])
+  })
+})
+
+describe('normalizeFiltersToV1Json', () => {
+  it('returns "" for empty input', () => {
+    expect(normalizeFiltersToV1Json(undefined, 'traffic')).toBe('')
+    expect(normalizeFiltersToV1Json('', 'traffic')).toBe('')
+    expect(normalizeFiltersToV1Json('""', 'traffic')).toBe('')
+    expect(normalizeFiltersToV1Json('[]', 'traffic')).toBe('')
+  })
+
+  it('passes legacy v1 filters through untouched (public API back-compat)', () => {
+    const v1 = JSON.stringify([
+      { column: 'cc', filter: 'US', isExclusive: false, isContains: false },
+    ])
+
+    expect(normalizeFiltersToV1Json(v1, 'traffic')).toBe(v1)
+  })
+
+  it('translates v2 filters into the v1 shape', () => {
+    const v2 = JSON.stringify([
+      { dimension: 'country', operator: 'is_not', value: 'US' },
+    ])
+
+    const v1 = JSON.parse(normalizeFiltersToV1Json(v2, 'traffic'))
+
+    expect(v1).toEqual([
+      { column: 'cc', filter: 'US', isExclusive: true, isContains: false },
+    ])
+  })
+
+  it('returns malformed input unchanged for getFiltersQuery to handle', () => {
+    expect(normalizeFiltersToV1Json('not json', 'traffic')).toBe('not json')
   })
 })

@@ -22,10 +22,10 @@ import type {
   RevenueStatus,
   RevenueDataResponse,
   OverallObject,
-  AnalyticsFilter,
   DataDeletionPreview,
   AnalyticsParams as ServerAnalyticsParams,
 } from '~/api/api.server'
+import type { V2Filter } from '~/api/v2/types'
 
 type ClientAnalyticsParams = Partial<
   Omit<ServerAnalyticsParams, 'password'>
@@ -549,7 +549,7 @@ export function useDataDeletionPreviewProxy() {
     async (
       projectId: string,
       options: {
-        filters?: AnalyticsFilter[]
+        filters?: V2Filter[]
         from?: string
         to?: string
       },

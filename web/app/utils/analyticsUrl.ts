@@ -179,22 +179,3 @@ export const legacyFilterToV2 = (legacy: LegacyFilter): V2Filter | null => {
     ...(key ? { key } : {}),
   }
 }
-
-export const v2FilterToLegacy = (filter: V2Filter): LegacyFilter => {
-  const column = filter.key
-    ? filter.dimension === 'event_metadata'
-      ? `ev:key:${filter.key}`
-      : `tag:key:${filter.key}`
-    : (Object.entries(V1_TO_V2_DIMENSION).find(
-        ([, v2]) => v2 === filter.dimension,
-      )?.[0] ?? filter.dimension)
-
-  return {
-    column,
-    filter: filterToUrlValue(filter),
-    isExclusive:
-      filter.operator === 'is_not' || filter.operator === 'contains_not',
-    isContains:
-      filter.operator === 'contains' || filter.operator === 'contains_not',
-  }
-}

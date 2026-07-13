@@ -35,6 +35,7 @@ import {
   DataType,
   getLowestPossibleTimeBucket,
 } from './analytics.service'
+import { normalizeFiltersToV1Json } from './v2/query/filters.translator'
 import { VALID_PERIODS } from './decorators/validate-period.decorator'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
@@ -984,7 +985,11 @@ export class AnalyticsController {
     )
 
     const [filtersQuery, filtersParams, parsedFilters] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS, true)
+      this.analyticsService.getFiltersQuery(
+        normalizeFiltersToV1Json(filters, 'traffic'),
+        DataType.ANALYTICS,
+        true,
+      )
 
     const params = { pid, groupFrom, groupTo, ...filtersParams }
 
@@ -1058,7 +1063,7 @@ export class AnalyticsController {
     )
 
     const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
-      filters || '[]',
+      normalizeFiltersToV1Json(filters, 'traffic'),
       DataType.ANALYTICS,
     )
     const params = { pid, groupFrom, groupTo, ...filtersParams }
@@ -1281,7 +1286,7 @@ export class AnalyticsController {
 
     return this.analyticsService.getDataDeletionPreview(
       body.pid,
-      body.filters || '[]',
+      normalizeFiltersToV1Json(body.filters, 'traffic'),
       body.from || null,
       body.to || null,
     )
@@ -1303,7 +1308,7 @@ export class AnalyticsController {
 
     await this.analyticsService.deleteData(
       body.pid,
-      body.filters || '[]',
+      normalizeFiltersToV1Json(body.filters, 'traffic'),
       body.from || null,
       body.to || null,
       body.types || ['pageview', 'custom_event'],

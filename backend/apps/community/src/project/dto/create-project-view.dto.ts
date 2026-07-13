@@ -12,7 +12,6 @@ import {
 import { ApiProperty } from '@nestjs/swagger'
 import { ProjectViewType } from '../entity/project-view.entity'
 import { ProjectViewCustomEventMetaValueType } from '../entity/project-view-custom-event.entity'
-import { TRAFFIC_COLUMNS } from '../../common/constants'
 
 export class ProjectViewCustomEventDto {
   @ApiProperty()
@@ -47,11 +46,14 @@ export class ProjectViewCustomEventDto {
   metaValueType: ProjectViewCustomEventMetaValueType
 }
 
+// Saved-view filters are persisted as opaque JSON. New views store the v2
+// filter shape; older views may still hold the legacy { column, filter,
+// isExclusive } shape, which the web normalises on read.
 export interface Filter {
-  column: keyof typeof TRAFFIC_COLUMNS
-  filter: string
-  isExclusive: boolean
-  isContains?: boolean
+  dimension: string
+  operator: 'is' | 'is_not' | 'contains' | 'contains_not'
+  value: string | null | (string | null)[]
+  key?: string
 }
 
 export const MAX_METRICS_IN_VIEW = 3

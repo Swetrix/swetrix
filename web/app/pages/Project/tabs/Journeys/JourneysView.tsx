@@ -20,7 +20,6 @@ import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
-import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 
 import { SessionsDrawer } from '../Traffic/SessionsDrawer'
 import { getFormatDate } from '../../View/ViewProject.helpers'
@@ -114,8 +113,7 @@ const JourneysView = ({ tnMapping }: JourneysViewProps) => {
       try {
         const result = await fetchJourneys(id, {
           period,
-          // the journeys endpoint is still v1 — convert filters at the boundary
-          filters: filters.map(v2FilterToLegacy),
+          filters,
           from,
           to,
           timezone,

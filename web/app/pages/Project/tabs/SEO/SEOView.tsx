@@ -69,7 +69,6 @@ import {
   SEO_METRICS,
   type SEOMetricKey,
   aggregateDateSeries,
-  getGSCCompatibleFilters,
   hasOrganicPositionData,
 } from './seo-utils'
 import type { QuadrantData } from './seo-chart-options'
@@ -254,7 +253,6 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   )
 
   const noopFilterLink = useCallback(() => '#', [])
-  const gscFilters = useMemo(() => getGSCCompatibleFilters(filters), [filters])
   const gscLoading = isLoading || isCompareLoading
   const gscError = error || compareError
 
@@ -275,7 +273,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
       to,
       timezone,
       timeBucket: seoTimeBucket,
-      filters: gscFilters,
+      filters,
     }
 
     const currentPromise = fetchDashboard(projectId, params)
@@ -309,7 +307,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     compareTo,
     timezone,
     seoTimeBucket,
-    gscFilters,
+    filters,
     isActiveCompare,
   ])
 

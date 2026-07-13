@@ -24,7 +24,6 @@ import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
 import type { V2Filter } from '~/api/v2/types'
-import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 
 import FilterRowsEditor from '../../View/components/FilterRowsEditor'
 
@@ -321,8 +320,7 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
 
     const handle = setTimeout(() => {
       fetchPreview(pid, {
-        // the deletion preview endpoint is still v1 — convert at the boundary
-        filters: filters.map(v2FilterToLegacy),
+        filters,
         from: range.from ?? undefined,
         to: range.to ?? undefined,
       })
@@ -414,7 +412,7 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
 
     const formData = new FormData()
     formData.set('intent', 'delete-data')
-    formData.set('filters', JSON.stringify(filters.map(v2FilterToLegacy)))
+    formData.set('filters', JSON.stringify(filters))
     formData.set('types', JSON.stringify([...selectedTypes]))
     if (range.from) formData.set('from', range.from)
     if (range.to) formData.set('to', range.to)

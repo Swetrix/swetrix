@@ -32,7 +32,6 @@ import {
   getRevenueDataServer,
   getOverallStatsServer,
   type AnalyticsParams,
-  type AnalyticsFilter,
   type SessionReplaysResponse,
   type SessionReplayResponse,
   type DeleteSessionReplayResponse,
@@ -60,6 +59,7 @@ import {
   type OverallObject,
   type DataDeletionPreview,
 } from '~/api/api.server'
+import type { V2Filter } from '~/api/v2/types'
 import { getProjectPasswordCookie } from '~/utils/session.server'
 
 function formatDateForBackend(dateStr: string | undefined): string | undefined {
@@ -119,7 +119,7 @@ interface ProxyRequest {
     from?: string
     to?: string
     timezone?: string
-    filters?: AnalyticsFilter[]
+    filters?: V2Filter[]
     take?: number
     skip?: number
     resultFilter?: string

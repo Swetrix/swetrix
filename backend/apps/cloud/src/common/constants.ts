@@ -106,6 +106,41 @@ const TRAFFIC_COLUMNS = [
 const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev', 'entryPage', 'exitPage']
+
+// v2 dimension names allowed in a saved-view filter. Mirrors the traffic
+// dimensions in analytics/v2/registry/dimensions.ts — duplicated here because
+// project.service cannot import the registry without creating an
+// analytics.service <-> project.service import cycle.
+const V2_VIEW_FILTER_DIMENSIONS = [
+  'country',
+  'region',
+  'city',
+  'page',
+  'host',
+  'locale',
+  'browser',
+  'browser_version',
+  'os',
+  'os_version',
+  'device',
+  'referrer',
+  'referrer_name',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'isp',
+  'organization',
+  'user_type',
+  'connection_type',
+  'entry_page',
+  'exit_page',
+  'event',
+  'event_metadata',
+  'page_property',
+]
+
 const CAPTCHA_COLUMNS = [
   'cc',
   'br',
@@ -228,6 +263,7 @@ export {
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
   TRAFFIC_METAKEY_COLUMNS,
+  V2_VIEW_FILTER_DIMENSIONS,
   CAPTCHA_COLUMNS,
   ERROR_COLUMNS,
   PERFORMANCE_COLUMNS,

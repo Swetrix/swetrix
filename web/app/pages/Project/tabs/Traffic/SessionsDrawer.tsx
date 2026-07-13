@@ -27,7 +27,6 @@ import { Link } from '~/ui/Link'
 import { Text } from '~/ui/Text'
 import Flag from '~/ui/Flag'
 import { useTheme } from '~/providers/ThemeProvider'
-import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 import { getRelativeDateIfPossible } from '~/utils/date'
 
 import { Session } from '../Sessions/Sessions'
@@ -308,8 +307,7 @@ export const SessionsDrawer = ({
               timezone,
               step: journeyStep,
               page: journeyPage,
-              // the journey-sessions endpoint is still v1 — convert at the boundary
-              filters: stableFilters.map(v2FilterToLegacy),
+              filters: stableFilters,
               take: SESSIONS_TAKE,
               skip: currentSkip,
             },

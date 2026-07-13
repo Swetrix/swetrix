@@ -14,7 +14,6 @@ import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
-import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 
 import {
   ProjectView,
@@ -338,10 +337,7 @@ const AddAViewModal = ({
     const metricsToSubmit = supportsCustomMetrics
       ? customEvents
       : defaultView?.customEvents || []
-    formData.append(
-      'filters',
-      JSON.stringify(activeFilters.map(v2FilterToLegacy)),
-    )
+    formData.append('filters', JSON.stringify(activeFilters))
     formData.append('customEvents', JSON.stringify(metricsToSubmit))
     formData.append('name', name)
 

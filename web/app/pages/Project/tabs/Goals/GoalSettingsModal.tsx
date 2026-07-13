@@ -24,7 +24,7 @@ import Loader from '~/ui/Loader'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 import type { V2Filter, V2FilterOperator } from '~/api/v2/types'
-import { legacyFilterToV2, v2FilterToLegacy } from '~/utils/analyticsUrl'
+import { ALL_VALID_DIMENSIONS, V1_TO_V2_DIMENSION } from '~/lib/v2Dimensions'
 import FilterRowsEditor from '../../View/components/FilterRowsEditor'
 
 const GOAL_TYPES = [
@@ -134,13 +134,11 @@ const filterToCondition = (filter: V2Filter): GoalCondition | null => {
     }
   }
 
-  // goal conditions keep the legacy v1 column codes in `field`
-  const { column } = v2FilterToLegacy(filter)
-
+  // goal conditions store the v2 dimension name directly in `field`
   return {
     id: createConditionId(),
     eventType: filter.dimension === 'page' ? 'pageview' : 'any',
-    field: column,
+    field: filter.dimension,
     operator: filterToConditionOperator(filter.operator),
     value,
   }
@@ -185,15 +183,18 @@ const conditionToFilter = (condition: GoalCondition): V2Filter | null => {
 
   const operator = conditionOperatorToV2Operator(condition.operator)
 
-  // `field` holds a legacy v1 column code; unknown fields stay unmapped
-  const converted = legacyFilterToV2({
-    column: condition.field,
-    filter: condition.value,
-    isExclusive: operator === 'is_not' || operator === 'contains_not',
-    isContains: operator === 'contains' || operator === 'contains_not',
-  })
+  // `field` holds a v2 dimension name for goals saved after the v2 migration,
+  // or a legacy v1 short code for older goals — normalise both to the v2 name.
+  const dimension = V1_TO_V2_DIMENSION[condition.field] ?? condition.field
+  if (!ALL_VALID_DIMENSIONS.includes(dimension)) {
+    return null
+  }
 
-  return converted
+  return {
+    dimension,
+    operator,
+    value: condition.value,
+  }
 }
 
 interface GoalSettingsModalProps {

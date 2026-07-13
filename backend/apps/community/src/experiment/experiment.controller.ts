@@ -36,6 +36,7 @@ import {
   DataType,
   getLowestPossibleTimeBucket,
 } from '../analytics/analytics.service'
+import { normalizeFiltersToV1Json } from '../analytics/v2/query/filters.translator'
 import { TimeBucketType } from '../analytics/dto/getData.dto'
 import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -674,7 +675,10 @@ export class ExperimentController {
     }
 
     const [filtersQuery, filtersParams, appliedFilters] =
-      this.analyticsService.getFiltersQuery(filters || '[]', DataType.ANALYTICS)
+      this.analyticsService.getFiltersQuery(
+        normalizeFiltersToV1Json(filters, 'traffic'),
+        DataType.ANALYTICS,
+      )
     const isSegmented =
       Array.isArray(appliedFilters) && appliedFilters.length > 0
 
