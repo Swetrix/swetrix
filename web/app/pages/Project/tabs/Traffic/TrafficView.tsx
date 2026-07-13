@@ -235,6 +235,7 @@ const TrafficViewInner = ({
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.sessionDuration]: false,
     [CHART_METRICS_MAPPING.bounce]: false,
+    [CHART_METRICS_MAPPING.liveVisitors]: false,
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
     [CHART_METRICS_MAPPING.cumulativeMode]: false,
@@ -259,6 +260,9 @@ const TrafficViewInner = ({
     }
     if (activeChartMetrics[CHART_METRICS_MAPPING.bounce]) {
       metrics.push('bounce_rate')
+    }
+    if (activeChartMetrics[CHART_METRICS_MAPPING.liveVisitors]) {
+      metrics.push('concurrency')
     }
     return metrics
   }, [activeChartMetrics])
@@ -448,6 +452,15 @@ const TrafficViewInner = ({
           ],
         },
         {
+          id: CHART_METRICS_MAPPING.liveVisitors,
+          label: t('dashboard.liveVisitors'),
+          active: activeChartMetrics[CHART_METRICS_MAPPING.liveVisitors],
+          // Concurrency is reconstructed from session intervals which carry no
+          // dimension data, so it cannot respect dashboard filters
+          disabled: !_isEmpty(filters),
+          disabledTooltip: t('project.liveVisitorsFilterConflict'),
+        },
+        {
           id: CHART_METRICS_MAPPING.viewsPerUnique,
           label: t('dashboard.viewsPerUnique'),
           active: activeChartMetrics[CHART_METRICS_MAPPING.viewsPerUnique],
@@ -468,7 +481,7 @@ const TrafficViewInner = ({
           active: activeChartMetrics[CHART_METRICS_MAPPING.customEvents],
         },
       ].filter(Boolean),
-    [t, activeChartMetrics, isRevenueConnected],
+    [t, activeChartMetrics, isRevenueConnected, filters],
   )
 
   const chartMetricsCustomEvents = useMemo(() => {
@@ -495,6 +508,7 @@ const TrafficViewInner = ({
       trendlineUnique: t('project.trendlineUnique'),
       occurrences: t('project.occurrences'),
       sessionDuration: t('dashboard.sessionDuration'),
+      liveVisitors: t('dashboard.liveVisitors'),
       revenue: t('dashboard.revenue'),
       refundsAmount: t('dashboard.refunds'),
       ..._keys(customs).reduce(
@@ -558,6 +572,22 @@ const TrafficViewInner = ({
     },
     [isConflicted, t],
   )
+
+  // Live visitors cannot be filtered — concurrency is reconstructed from
+  // session intervals which carry no dimension data, so turn it off if a filter
+  // gets applied while it's active (the toggle is disabled in that state)
+  useEffect(() => {
+    if (
+      !_isEmpty(filters) &&
+      activeChartMetrics[CHART_METRICS_MAPPING.liveVisitors]
+    ) {
+      setActiveChartMetrics((prev) => ({
+        ...prev,
+        [CHART_METRICS_MAPPING.liveVisitors]: false,
+      }))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
 
   const switchCustomEventChart = useCallback(
     (eventId: string) => {
@@ -1094,19 +1124,30 @@ const TrafficViewInner = ({
                   )
                 }
 
-                return (
+                const checkbox = (
                   <Checkbox
                     classes={{
                       label: 'p-2',
                     }}
                     label={label}
-                    disabled={conflicted}
+                    disabled={conflicted || pair.disabled}
                     checked={active}
                     onChange={() => {
                       switchTrafficChartMetric(pairID, conflicts)
                     }}
                   />
                 )
+
+                if (pair.disabled && pair.disabledTooltip) {
+                  return (
+                    <Tooltip
+                      text={pair.disabledTooltip}
+                      tooltipNode={checkbox}
+                    />
+                  )
+                }
+
+                return checkbox
               }}
               buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-950 dark:focus:ring-slate-300'
               selectItemClassName='p-0'
@@ -1117,6 +1158,10 @@ const TrafficViewInner = ({
                 const { id: pairID, conflicts } = pair
                 e?.stopPropagation()
                 e?.preventDefault()
+
+                if (pair.disabled) {
+                  return
+                }
 
                 if (pairID !== CHART_METRICS_MAPPING.customEvents) {
                   switchTrafficChartMetric(pairID, conflicts)

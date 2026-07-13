@@ -67,6 +67,17 @@ export const V2_METRICS: V2MetricDef[] = [
     description:
       'Percentage of single-pageview sessions (timeseries and summary only)',
   },
+  {
+    api: 'concurrency',
+    types: ['traffic'],
+    // Reconstructed from session intervals, which carry no dimension columns,
+    // so it is a timeseries-only series that cannot respect filters
+    sqlExpr: () => null,
+    requiresSessionsJoin: true,
+    format: 'integer',
+    description:
+      'Concurrent live visitors over time (timeseries only; ignores filters)',
+  },
   // --- performance (values in seconds; `measure` selects the aggregate) ---
   {
     api: 'load_time',

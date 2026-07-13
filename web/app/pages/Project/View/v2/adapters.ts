@@ -109,13 +109,15 @@ export interface TrafficChartData {
   uniques: number[]
   sdur: number[]
   bounces: number[]
+  concurrency: number[]
   [key: string]: number[] | string[]
 }
 
 /**
  * Traffic timeseries rows -> the columnar chart shape getColumns()/getSettings()
  * consume. `bounces` is reconstructed as a count because getColumns computes
- * the percentage from bounces/uniques.
+ * the percentage from bounces/uniques. `concurrency` (live visitors over time)
+ * is only non-zero when the `concurrency` metric was requested.
  */
 export const pivotTrafficTimeseries = (
   rows: TimeseriesRow[] | undefined,
@@ -125,6 +127,7 @@ export const pivotTrafficTimeseries = (
   const uniques: number[] = []
   const sdur: number[] = []
   const bounces: number[] = []
+  const concurrency: number[] = []
 
   for (const row of rows || []) {
     const rowUniques = Number(row.visitors ?? 0)
@@ -133,9 +136,10 @@ export const pivotTrafficTimeseries = (
     visits.push(Number(row.pageviews ?? 0))
     sdur.push(Number(row.session_duration ?? 0))
     bounces.push((Number(row.bounce_rate ?? 0) * rowUniques) / 100)
+    concurrency.push(Number(row.concurrency ?? 0))
   }
 
-  return { x, visits, uniques, sdur, bounces }
+  return { x, visits, uniques, sdur, bounces, concurrency }
 }
 
 /** Custom events timeseries rows -> { x, events } for the stacked chart */

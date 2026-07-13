@@ -76,6 +76,7 @@ const TRAFFIC_TIMESERIES_METRICS = [
   'pageviews',
   'session_duration',
   'bounce_rate',
+  'concurrency',
 ]
 
 /** Performance metrics computable per time bucket (v2 name -> v1 chart key) */
@@ -482,6 +483,12 @@ export class AnalyticsV2Service {
 
     const mode = dto.mode || ChartRenderMode.PERIODICAL
 
+    // Concurrency (live visitors over time) runs an extra ClickHouse query, so
+    // it is only reconstructed when the metric is explicitly requested
+    const includeConcurrency = metrics.some(
+      (metric) => metric.api === 'concurrency',
+    )
+
     const result = (await this.analyticsService.groupChartByTimeBucket(
       timeframe.timeBucket,
       timeframe.groupFrom,
@@ -498,6 +505,7 @@ export class AnalyticsV2Service {
       timeframe.safeTimezone,
       filters.customEVFilterApplied,
       mode,
+      includeConcurrency,
     )) as {
       chart: {
         x: string[]
@@ -505,6 +513,7 @@ export class AnalyticsV2Service {
         uniques: number[]
         sdur: number[]
         bounces?: number[]
+        concurrency?: number[]
       }
     }
 
@@ -515,6 +524,7 @@ export class AnalyticsV2Service {
       pageviews: chart.visits,
       session_duration: chart.sdur,
       bounce_rate: computeBounceRateSeries(chart.bounces, chart.uniques),
+      concurrency: chart.concurrency,
     }
 
     const series: Record<string, (number | null)[] | undefined> = {}
