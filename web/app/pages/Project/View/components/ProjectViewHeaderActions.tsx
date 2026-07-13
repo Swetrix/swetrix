@@ -17,10 +17,10 @@ import { ProjectViewActionData } from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
 import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
-import { legacyFilterToV2 } from '~/utils/analyticsUrl'
 
 import { ProjectView } from '../interfaces/traffic'
 import {
+  projectViewFiltersToV2,
   splitProjectViewFiltersByTab,
   supportsProjectViewSegments,
 } from '../utils/projectViewSegments'
@@ -58,14 +58,6 @@ const isAddViewItem = (item: ProjectViewMenuItem): item is AddViewItem =>
 
 const isEmptyViewItem = (item: ProjectViewMenuItem): item is EmptyViewItem =>
   'notClickable' in item
-
-// Saved project views keep the legacy filter shape server-side; convert to
-// the v2 shape at this boundary (unmappable legacy filters are dropped).
-const projectViewFiltersToV2 = (view: ProjectView): V2Filter[] =>
-  (view.filters || []).flatMap((filter) => {
-    const converted = legacyFilterToV2(filter)
-    return converted ? [converted] : []
-  })
 
 const iconButtonClassName =
   'rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-900 dark:hover:text-slate-200'

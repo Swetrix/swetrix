@@ -79,7 +79,13 @@ export class V2ErrorsQueryDto extends V2EntityListDto {
     description: 'Include resolved error groups in the list',
   })
   @IsOptional()
-  @Transform(({ value }) => value === true || value === 'true')
+  @Transform(({ value }) => {
+    if (value === true || value === 'true') return true
+    if (value === false || value === 'false') return false
+    // Leave anything else untouched so @IsBoolean() rejects it instead of
+    // silently coercing invalid input to false.
+    return value
+  })
   @IsBoolean()
   show_resolved?: boolean
 }

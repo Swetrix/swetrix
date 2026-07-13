@@ -176,11 +176,10 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
           { method: 'POST', action: projectPath },
         )
 
-        // Steps may have changed - drop cached funnel analytics
+        // Steps may have changed - drop cached funnel analytics.
+        // (funnel-sessions isn't cached in react-query; SessionsDrawer loads
+        // it imperatively, so there's nothing to invalidate for that key.)
         queryClient.invalidateQueries({ queryKey: ['v2', id, 'funnel'] })
-        queryClient.invalidateQueries({
-          queryKey: ['v2', id, 'funnel-sessions'],
-        })
       } else if (intent === 'delete-funnel') {
         toast.success(t('apiNotifications.funnelDeleted'))
         fetcher.submit(

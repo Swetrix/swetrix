@@ -349,6 +349,27 @@ const GoalSettingsModal = ({
     e.preventDefault()
     processedRef.current = null
 
+    // Map each edited filter to a goal condition. `filterToCondition` returns
+    // null for filters the GoalCondition model can't represent (e.g. a "not
+    // set" / null value) — surface that instead of silently dropping the
+    // user's condition.
+    const mappedConditions: GoalCondition[] = []
+    let hasUnmappableCondition = false
+
+    conditionFilters.forEach((filter) => {
+      const condition = filterToCondition(filter)
+      if (condition) {
+        mappedConditions.push(condition)
+      } else {
+        hasUnmappableCondition = true
+      }
+    })
+
+    if (definitionMode === 'conditions' && hasUnmappableCondition) {
+      toast.error(t('goals.conditionValueRequired'))
+      return
+    }
+
     const formData = new FormData()
     formData.set('intent', isNew ? 'create-goal' : 'update-goal')
     formData.set('name', name)
@@ -362,9 +383,6 @@ const GoalSettingsModal = ({
       ),
     )
 
-    const mappedConditions = conditionFilters
-      .map(filterToCondition)
-      .filter((condition): condition is GoalCondition => Boolean(condition))
     const goalConditions: GoalConditions | null =
       definitionMode === 'conditions' &&
       (mappedConditions.length > 0 || unmappedConditions.length > 0)

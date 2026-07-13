@@ -14,23 +14,16 @@ import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
-import { legacyFilterToV2, v2FilterToLegacy } from '~/utils/analyticsUrl'
+import { v2FilterToLegacy } from '~/utils/analyticsUrl'
 
 import {
   ProjectView,
   ProjectViewCustomEvent,
   ProjectViewCustomEventMetaValueType,
 } from '../interfaces/traffic'
+import { projectViewFiltersToV2 } from '../utils/projectViewSegments'
 
 import FilterRowsEditor from './FilterRowsEditor'
-
-// Saved project views keep the legacy filter shape server-side; convert to
-// the v2 shape at this boundary (unmappable legacy filters are dropped).
-const projectViewFiltersToV2 = (view?: ProjectView): V2Filter[] =>
-  (view?.filters || []).flatMap((filter) => {
-    const converted = legacyFilterToV2(filter)
-    return converted ? [converted] : []
-  })
 
 interface AddAViewModalProps {
   onSubmit: () => void

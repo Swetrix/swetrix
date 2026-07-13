@@ -1,8 +1,19 @@
 import { V2Filter } from '~/api/v2/types'
 import { PROJECT_TABS } from '~/lib/constants'
 import { VALID_DIMENSIONS_BY_TYPE } from '~/lib/v2Dimensions'
+import { legacyFilterToV2 } from '~/utils/analyticsUrl'
+
+import { ProjectView } from '../interfaces/traffic'
 
 type ProjectTab = keyof typeof PROJECT_TABS
+
+// Saved project views keep the legacy filter shape server-side; convert to
+// the v2 shape at this boundary (unmappable legacy filters are dropped).
+export const projectViewFiltersToV2 = (view?: ProjectView): V2Filter[] =>
+  (view?.filters || []).flatMap((filter) => {
+    const converted = legacyFilterToV2(filter)
+    return converted ? [converted] : []
+  })
 
 // Dimensions that carry a key (event_metadata:plan) are never offered in the
 // filter editors directly — they're only created from panel clicks — but they

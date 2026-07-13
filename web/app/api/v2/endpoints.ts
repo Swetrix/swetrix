@@ -166,14 +166,23 @@ export const getErrorDetails = (
   params: Common & { timeBucket?: string },
   signal?: AbortSignal,
 ) =>
-  fetchV2<Record<string, any>>(`projects/${pid}/errors/${eid}`, params, signal)
+  fetchV2<Record<string, any>>(
+    `projects/${pid}/errors/${encodeURIComponent(eid)}`,
+    params,
+    signal,
+  )
 
 export const getErrorSessions = (
   pid: string,
   eid: string,
   params: Common & { limit?: number; offset?: number },
   signal?: AbortSignal,
-) => fetchV2<any[]>(`projects/${pid}/errors/${eid}/sessions`, params, signal)
+) =>
+  fetchV2<any[]>(
+    `projects/${pid}/errors/${encodeURIComponent(eid)}/sessions`,
+    params,
+    signal,
+  )
 
 export const getSessionsList = (
   pid: string,
@@ -192,7 +201,7 @@ export const getSessionDetails = (
   signal?: AbortSignal,
 ) =>
   fetchV2<Record<string, any>>(
-    `projects/${pid}/sessions/${psid}`,
+    `projects/${pid}/sessions/${encodeURIComponent(psid)}`,
     params,
     signal,
   )
@@ -261,7 +270,7 @@ export const getDimensionValues = (
   signal?: AbortSignal,
 ) =>
   fetchV2<DimensionValues>(
-    `projects/${pid}/dimensions/${dimension}/values`,
+    `projects/${pid}/dimensions/${encodeURIComponent(dimension)}/values`,
     params,
     signal,
   )
