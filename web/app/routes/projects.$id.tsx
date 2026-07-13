@@ -45,7 +45,19 @@ import {
 
 const GOAL_CONDITION_RELATIONS = new Set(['AND', 'OR'])
 const GOAL_CONDITION_COMMON_FIELDS = [
+  // v2 dimension names written by the goal settings modal after the v2 migration
   'host',
+  'country',
+  'device',
+  'browser',
+  'os',
+  'referrer',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  // legacy v1 short codes (older goals / preserved unmapped conditions)
   'ref',
   'so',
   'me',
@@ -55,7 +67,6 @@ const GOAL_CONDITION_COMMON_FIELDS = [
   'cc',
   'dv',
   'br',
-  'os',
 ]
 const GOAL_CONDITION_EVENT_TYPES: Record<string, Set<string>> = {
   any: new Set([

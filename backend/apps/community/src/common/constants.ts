@@ -163,6 +163,10 @@ const V2_VIEW_FILTER_DIMENSIONS = [
   'entry_page',
   'exit_page',
   'event',
+  // errors-only filter dimensions (error-tab segments persist these)
+  'error_name',
+  'error_message',
+  'error_filename',
   'event_metadata',
   'page_property',
 ]

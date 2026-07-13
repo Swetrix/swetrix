@@ -7,6 +7,7 @@ import {
   listDimensions,
   parseMetricsParam,
   V2_DIMENSIONS,
+  V2_KEYED_FILTER_DIMENSIONS,
 } from '../registry'
 
 // Keep the registry in lockstep with the v1 filter column allowlists
@@ -17,6 +18,7 @@ const {
   PERFORMANCE_COLUMNS,
   ERROR_COLUMNS,
   CAPTCHA_COLUMNS,
+  V2_VIEW_FILTER_DIMENSIONS,
   // eslint-disable-next-line @typescript-eslint/no-require-imports
 } = require('../../../common/constants')
 
@@ -48,6 +50,22 @@ describe('registry <-> v1 column allowlist lockstep', () => {
     for (const column of CAPTCHA_COLUMNS) {
       expect(columnsFor('captcha')).toContain(column)
     }
+  })
+})
+
+describe('V2_VIEW_FILTER_DIMENSIONS <-> registry parity', () => {
+  // Saved-view filters (project.service.filterUnsupportedColumns) span traffic,
+  // performance and errors data — every such dimension the UI can offer must be
+  // preserved, and no captcha-only or stale name may leak into the allowlist.
+  const expected = [
+    ...V2_DIMENSIONS.filter((dimension) =>
+      dimension.types.some((type) => type !== 'captcha'),
+    ).map((dimension) => dimension.api),
+    ...Object.keys(V2_KEYED_FILTER_DIMENSIONS),
+  ]
+
+  it('matches every non-captcha registry dimension exactly', () => {
+    expect([...V2_VIEW_FILTER_DIMENSIONS].sort()).toEqual([...expected].sort())
   })
 })
 
