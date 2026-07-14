@@ -50,6 +50,15 @@ export const getSinglePid = (
 
   const { pid, pids } = query
 
+  // v1 treats a request carrying BOTH ?pid and ?pids as invalid (getPIDsArray
+  // rejects it). Mirror that here so the publicness/cache decision is never
+  // judged against one project while the handler queries another. Returning
+  // null makes callers fall back to their safe default (skip caching / skip
+  // the public-project rate limit).
+  if (pid !== undefined && pids !== undefined) {
+    return null
+  }
+
   if (_isString(pid) && pid) {
     return pid
   }
