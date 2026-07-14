@@ -416,7 +416,9 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
 
       try {
         decodedUri = decodeURIComponent(entryName)
-      } catch {}
+      } catch {
+        // ignore
+      }
 
       if (subTabId === 'page' && project?.websiteUrl) {
         return (

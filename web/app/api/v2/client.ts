@@ -60,7 +60,9 @@ export async function fetchV2<T>(
   let body: any = null
   try {
     body = await response.json()
-  } catch {}
+  } catch {
+    // ignore
+  }
 
   if (!response.ok) {
     const message =
