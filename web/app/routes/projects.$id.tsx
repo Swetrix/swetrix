@@ -45,7 +45,6 @@ import {
 
 const GOAL_CONDITION_RELATIONS = new Set(['AND', 'OR'])
 const GOAL_CONDITION_COMMON_FIELDS = [
-  // v2 dimension names written by the goal settings modal after the v2 migration
   'host',
   'country',
   'device',
@@ -57,7 +56,6 @@ const GOAL_CONDITION_COMMON_FIELDS = [
   'utm_campaign',
   'utm_term',
   'utm_content',
-  // legacy v1 short codes (older goals / preserved unmapped conditions)
   'ref',
   'so',
   'me',
@@ -371,19 +369,12 @@ export interface ProjectLoaderData {
   project: Project | null
   isPasswordRequired: boolean
   error?: string
-  // Session replays (v1 - no v2 equivalent yet)
   replaysData?: Promise<SessionReplaysResponse | null>
-  // Feature Flags data
   featureFlagsData?: Promise<FeatureFlagsResponse | null>
-  // Goals data
   goalsData?: Promise<GoalsResponse | null>
-  // Data import
   hasImportedData?: Promise<boolean>
 }
 
-// Tabs whose data still comes from this loader (v1 endpoints). All other tabs
-// fetch client-side via the v2 API, so URL param changes (period, filters,
-// timeBucket, ...) must not re-run the loader for them.
 const LOADER_BACKED_TABS = new Set<string>([
   PROJECT_TABS.replays,
   PROJECT_TABS.featureFlags,
@@ -396,8 +387,6 @@ export function shouldRevalidate({
   formAction,
   defaultShouldRevalidate,
 }: ShouldRevalidateFunctionArgs) {
-  // Route actions (goal/funnel/view CRUD, password submission) may change
-  // loader data
   if (formAction) {
     return defaultShouldRevalidate
   }
@@ -424,7 +413,6 @@ export function shouldRevalidate({
     return defaultShouldRevalidate
   }
 
-  // The traffic tab's "has imported data" indicator depends on the period
   if (
     nextTab === PROJECT_TABS.traffic &&
     (nextUrl.searchParams.get('period') !==
@@ -499,8 +487,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     }
   }
 
-  // Parse URL params (most analytics are fetched client-side via the v2 API;
-  // the loader only feeds the tabs still on v1: replays, feature flags, goals)
   const tab =
     (url.searchParams.get('tab') as keyof typeof PROJECT_TABS) ||
     PROJECT_TABS.traffic

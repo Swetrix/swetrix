@@ -14,17 +14,10 @@ const InteractiveMap = lazy(
 const MAP_CLICK_TYPE_TO_DIMENSION = { cc: 'country', rg: 'region' } as const
 
 interface ErrorsMapProps {
-  /** Static per-error data (details view); when set, no queries are fired */
   staticCountryData?: Entry[]
   staticRegionData?: Entry[]
 }
 
-/**
- * Error occurrences location map. Project-wide it feeds itself via country +
- * region breakdown queries (deduped with the location panel's queries through
- * the react-query cache); on the error-details view it renders the per-error
- * `params` payload passed in statically.
- */
 export const ErrorsMap = ({
   staticCountryData,
   staticRegionData,

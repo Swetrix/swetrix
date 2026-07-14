@@ -6,14 +6,8 @@ import {
   getProjectPasswordCookie,
 } from '~/utils/session.server'
 
-// Proxies GET /api/v2/projects/<pid>/... to the backend /v2/projects/<pid>/...
-// analytics API. Keeps auth tokens (httpOnly cookies -> Bearer, with refresh)
-// and the per-project password cookie (-> x-password) server-side.
 const V2_PATH_REGEX = /^projects\/([a-zA-Z0-9-]{1,64})(\/|$)/
 
-// A dot / dot-dot path segment, literal or percent-encoded (%2e). `fetch`'s URL
-// parser normalises these, so `..` could escape the /v2/ prefix and reach other
-// backend routes — reject them before building the upstream request.
 const hasTraversalSegment = (path: string): boolean =>
   path.split('/').some((segment) => {
     const normalized = segment.replace(/%2e/gi, '.')

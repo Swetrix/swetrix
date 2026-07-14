@@ -121,7 +121,6 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
     label: string
   } | null>(null)
 
-  // Track if we've ever shown actual content to prevent NoEvents flash
   const hasShownContentRef = useRef(false)
 
   // Get chart metrics and measure from URL params (SSR-friendly)
@@ -143,8 +142,6 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
     setSearchParams(newParams)
   }
 
-  // The 'quantiles' allocation is a timeseries-only measure driven by the
-  // metric dropdown; everywhere else we fall back to the regular measure.
   const effectiveMeasure =
     activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles
       ? CHART_MEASURES_MAPPING_PERF.quantiles
@@ -153,8 +150,6 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
     effectiveMeasure === CHART_MEASURES_MAPPING_PERF.quantiles
       ? CHART_MEASURES_MAPPING_PERF.median
       : activeMeasure
-
-  // --- v2 queries ---
 
   const summaryQuery = useSummaryQuery('performance', {
     measure: activeMeasure,
@@ -206,7 +201,6 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
     hasShownContentRef.current = true
   }
 
-  // Don't show NoEvents if we've previously shown content (prevents flash during tab switch)
   const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
   const isInitialLoading =
@@ -327,8 +321,6 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
     [t],
   )
 
-  // --- Panels ---
-
   const locationSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
       { id: 'country', label: t('project.mapping.cc'), dimension: 'country' },
@@ -424,9 +416,7 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
 
       try {
         decodedUri = decodeURIComponent(entryName)
-      } catch {
-        // do nothing
-      }
+      } catch {}
 
       if (subTabId === 'page' && project?.websiteUrl) {
         return (
@@ -467,9 +457,6 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
     [t],
   )
 
-  // Panel values are load times in seconds -> render as '1.2s' / '350ms'.
-  // Panel's valueMapper is typed as number -> number but has always accepted
-  // display strings at runtime (v1 did the same via @ts-expect-error).
   const loadTimeValueMapper = useCallback(
     (value: number) =>
       getStringFromTime(getTimeFromSeconds(value), true) as unknown as number,

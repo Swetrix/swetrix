@@ -1,10 +1,5 @@
 import cx from 'clsx'
 
-// Subtle refetch indicator for the v2 per-dimension dashboard. On refetch we
-// keep the previous data visible (react-query keepPreviousData) and only show
-// a thin progress bar — no skeleton placeholders.
-
-/** Thin indeterminate progress bar pinned to the top edge of a card */
 export const RefetchIndicator = ({ className }: { className?: string }) => (
   <div
     aria-hidden

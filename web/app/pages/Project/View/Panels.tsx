@@ -221,7 +221,6 @@ interface PanelContainerProps {
   activeTabId?: string
   onDetailsClick?: () => void
   dropdownPlaceholder?: string
-  /** Background refetch in progress — show a subtle top bar, keep stale data */
   isRefetching?: boolean
 }
 
@@ -1826,11 +1825,8 @@ interface PanelProps {
   rowTooltipRenderer?: (entry: Entry) => React.ReactNode
   /** When true with rowTooltipRenderer, tooltip is fixed to the cursor (chart-style) instead of Radix anchor positioning. */
   rowTooltipFollowCursor?: boolean
-  /** Background refetch in progress — subtle top bar, stale data stays visible */
   isRefetching?: boolean
-  /** Total number of dimension values on the server (may exceed loaded rows) */
   serverTotal?: number
-  /** Loads the next page of entries into the details table */
   onLoadMore?: () => void
   loadingMore?: boolean
 }

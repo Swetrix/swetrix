@@ -16,38 +16,27 @@ import { Panel, PanelContainer } from '../Panels'
 import { groupVersionRows, mapBreakdownRows } from './adapters'
 
 export interface BreakdownSubTab {
-  /** Sub-tab id — the v2 dimension name, or a sentinel like 'map' / 'userFlow' */
   id: string
   label: string
-  /** v2 dimension to query; omit for sentinel tabs rendered via `render` */
   dimension?: string
-  /** Custom body for sentinel tabs (map, user flow) — data-independent */
   render?: () => React.ReactNode
-  /** Lazily fetch a version drill-down breakdown for this sub-tab */
   versionsDimension?: 'browser_version' | 'os_version'
   versionsParentField?: 'browser' | 'os'
 }
 
 interface BreakdownPanelProps {
   dataType: V2DataType
-  /** Stable panel identity for sub-tab persistence (e.g. 'location', 'pages') */
   panelId: string
   name: string
   icon: React.ReactNode
-  /** Nested arrays render as a dropdown tab group (PanelContainer semantics) */
   subTabs: (BreakdownSubTab | BreakdownSubTab[])[]
-  /** Metric used for row counts / sorting (visitors, load_time, occurrences, events) */
   primaryMetric?: string
   metrics?: string[]
-  /** Performance measure (median / average / p75 / p95) */
   measure?: string
   rowMapper?: (entry: Entry, subTabId: string) => React.ReactNode
   valueMapper?: (value: number, subTabId: string) => number
-  /** Post-process fetched entries (e.g. group referrers by domain) */
   transformEntries?: (entries: Entry[], subTabId: string) => Entry[]
-  /** Sub-tab ids whose entries render capitalized */
   capitalize?: string[]
-  /** Override filter link building (defaults to context getFilterLink) */
   getFilterLink?: (
     dimension: string,
     value: string | null,
@@ -66,11 +55,6 @@ interface BreakdownPanelProps {
 const subTabStorageKey = (dataType: string, panelId: string) =>
   `v2PanelTab:${dataType}:${panelId}`
 
-/**
- * One dashboard breakdown card: owns its own v2 breakdown query (gated on
- * viewport visibility), sub-tab switching, lazy version drill-down and
- * paginated details, and renders the existing Panel visuals.
- */
 export const BreakdownPanel = ({
   dataType,
   panelId,
@@ -153,7 +137,6 @@ export const BreakdownPanel = ({
 
   const total = query.data?.pages[0]?.meta.total
 
-  // A single sub-tab is just the dimension itself — no tab bar needed
   const containerTabs =
     flatSubTabs.length > 1
       ? subTabs.map((tab) =>
@@ -181,8 +164,6 @@ export const BreakdownPanel = ({
   }
 
   if (query.isLoading || (!hasBeenInView && !query.data)) {
-    // Empty body while the panel first loads — content fills in when ready
-    // (no skeleton). The panel frame + header stay put, so no layout shift.
     return (
       <div ref={ref}>
         <PanelContainer

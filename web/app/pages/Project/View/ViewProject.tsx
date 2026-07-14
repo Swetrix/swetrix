@@ -548,7 +548,6 @@ const ViewProjectContent = () => {
     ) => {
       const filterParams = new URLSearchParams(searchParams.toString())
 
-      // Apply both the parent (browser/os) and version filters together
       filterParams.set(panelType, parent ?? 'null')
       filterParams.set(`${panelType}_version`, version ?? 'null')
 
@@ -884,7 +883,6 @@ const ViewProjectContent = () => {
     [dataLoading, searchParams, setSearchParams],
   )
 
-  // Tabs fully served by the v2 per-dimension API: refresh = invalidate queries
   const V2_TABS = useMemo(
     () =>
       new Set<keyof typeof PROJECT_TABS>([
@@ -936,7 +934,6 @@ const ViewProjectContent = () => {
       }
 
       if (activeTab === PROJECT_TABS.seo) {
-        // The SEO tab mixes GSC data (trigger-driven) with v2 referral data
         await queryClient.invalidateQueries({ queryKey: ['v2', id] })
         setSeoRefreshTrigger((prev) => prev + 1)
         return
@@ -1032,7 +1029,6 @@ const ViewProjectContent = () => {
     return daysDiff > 1
   }, [period, dateRange, isTouchDevice])
 
-  // `dimension` is a v2 dimension name, optionally keyed (`event_metadata:plan`)
   const getFilterLink = useCallback(
     (dimension: string, value: string | null): LinkProps['to'] => {
       const urlValue = value ?? 'null'

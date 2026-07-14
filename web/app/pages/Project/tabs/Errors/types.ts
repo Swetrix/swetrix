@@ -1,9 +1,3 @@
-// Local response shapes for the v2 errors endpoints
-// (GET /v2/projects/:pid/errors, /errors/overview, /errors/:eid, /errors/:eid/sessions).
-// The overview and details charts are already columnar ({ x, occurrences,
-// affectedUsers }) with labels shifted to the requested timezone, so no
-// pivoting is needed before handing them to ErrorChart.
-
 interface ErrorsChartData {
   x: string[]
   occurrences: number[]
@@ -54,13 +48,11 @@ interface ErrorMetadataRow {
 export interface ErrorDetailsData {
   details: ErrorDetailsInfo
   metadata: ErrorMetadataRow[]
-  /** Per-dimension breakdowns scoped to the error group, keyed by v1 names (cc, rg, br, ...) */
   params: Record<string, { name: string | null; count: number }[]>
   chart: ErrorsChartData
   timeBucket: string
 }
 
-/** Rows of GET /errors/:eid/sessions — entity keys renamed to v2 names */
 export interface ErrorSessionItem {
   psid: string
   profileId: string | null

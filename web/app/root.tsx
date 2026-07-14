@@ -489,7 +489,6 @@ const Body = () => {
           initialUser={user}
           initialTotalMonthlyEvents={totalMonthlyEvents}
         >
-          {/* Drops transform-based motion (keeps opacity) for prefers-reduced-motion users */}
           <MotionConfig reducedMotion='user'>
             <AppWrapper />
           </MotionConfig>

@@ -33,10 +33,6 @@ export const findDimension = (
     (dimension) => dimension.api === api && dimension.types.includes(type),
   )
 
-/**
- * Resolve a dimension usable as ?dimension= (i.e. for breakdowns).
- * Throws a descriptive 422 for unknown or filter-only dimensions.
- */
 export const getBreakdownDimension = (
   api: string,
   type: V2DataType,
@@ -80,10 +76,6 @@ export const getMetric = (api: string, type: V2DataType): V2MetricDef => {
 export const getDefaultMetrics = (type: V2DataType): V2MetricDef[] =>
   listMetrics(type).filter((metric) => metric.isDefault)
 
-/**
- * Parse a `metrics` CSV query param into validated metric definitions.
- * Returns the per-type defaults when the param is empty.
- */
 export const parseMetricsParam = (
   metrics: string | undefined,
   type: V2DataType,

@@ -294,8 +294,6 @@ const ProjectViewHeaderActions = ({
 
             newParams.delete('metrics')
 
-            // override=true replaces every filter param (including legacy
-            // aliases) with the segment's filters
             newParams = getFiltersUrlParams(filters, supported, true, newParams)
 
             if (hasTrafficMetrics) {

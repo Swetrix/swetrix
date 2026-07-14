@@ -48,10 +48,6 @@ const mapPeriod = (period: V1SummaryPeriod): TrafficSummaryPeriod => ({
   session_duration: toNullableNumber(period.sdur),
 })
 
-/**
- * Reshape a single project's v1 birdseye payload (getAnalyticsSummary) into
- * the v2 summary format with human-readable metric names.
- */
 export const mapTrafficSummary = (
   v1Summary: V1TrafficSummary,
 ): TrafficSummaryData => ({

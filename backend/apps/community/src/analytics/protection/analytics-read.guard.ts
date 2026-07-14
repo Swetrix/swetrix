@@ -11,9 +11,9 @@ import { checkRateLimit, getIPDetails } from '../../common/utils'
 import { AppLoggerService } from '../../logger/logger.service'
 import { getTrustworthyIp, getSinglePid } from './analytics-read.util'
 
-const READ_RATE_LIMIT = 300 // requests per rate window
-const AUTHED_READ_RATE_LIMIT = 3000 // requests per rate window
-const READ_RATE_WINDOW = 60 // seconds
+const READ_RATE_LIMIT = 300
+const AUTHED_READ_RATE_LIMIT = 3000
+const READ_RATE_WINDOW = 60
 
 const BLOCK_DATACENTER_READS =
   process.env.ANALYTICS_BLOCK_DATACENTER_READS === 'true'
@@ -28,17 +28,14 @@ export class AnalyticsReadGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest()
 
-    // Only police read (GET) traffic
     if (req.method !== 'GET') {
       return true
     }
 
-    // API-key requests are metered separately, per plan
     if (req.headers['x-api-key']) {
       return true
     }
 
-    // Logged-in requests - limiting by userId on a more generous limit
     const uid = req.user?.sub || req.user?.id || null
     if (uid) {
       if (AUTHED_READ_RATE_LIMIT > 0) {
@@ -71,9 +68,6 @@ export class AnalyticsReadGuard implements CanActivate {
       return true
     }
 
-    // --- Public-project protections only below this line ---
-
-    // Bot user-agents never legitimately view a public dashboard
     const userAgent = String(req.headers['user-agent'] || '')
     if (userAgent && isbot(userAgent)) {
       throw new ForbiddenException(
@@ -81,8 +75,6 @@ export class AnalyticsReadGuard implements CanActivate {
       )
     }
 
-    // The real visitor IP, or '' when only a proxy IP is visible (so we never
-    // rate-limit or geo-check the shared proxy address)
     const ip = getTrustworthyIp(req)
 
     if (BLOCK_DATACENTER_READS && ip) {
@@ -96,11 +88,9 @@ export class AnalyticsReadGuard implements CanActivate {
         if (reason instanceof ForbiddenException) {
           throw reason
         }
-        // GeoIP lookup failed — ignore, fail open.
       }
     }
 
-    // Opt-in per-IP limit, public projects only, real client IP only.
     if (READ_RATE_LIMIT && ip) {
       await checkRateLimit(
         ip,

@@ -12,11 +12,6 @@ import { VALID_DIMENSIONS_BY_TYPE } from '~/lib/v2Dimensions'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 
-/**
- * Stable, normalized common params (time range + timezone + filters valid for
- * the given data type) derived from the project view context. Embedded in
- * every query key, so any change refetches exactly the affected queries.
- */
 export const useV2CommonParams = (dataType: V2DataType) => {
   const { id: pid } = useCurrentProject()
   const { period, timezone, filters } = useViewProjectContext()
@@ -43,7 +38,6 @@ export const useV2CommonParams = (dataType: V2DataType) => {
   }, [pid, dataType, period, from, to, timezone, filters])
 }
 
-/** Compare range (from/to) when compare mode is active, null otherwise */
 const useCompareParams = () => {
   const { isActiveCompare } = useViewProjectContext()
   const [searchParams] = useSearchParams()
@@ -81,7 +75,6 @@ export const useSummaryQuery = <T extends V2DataType>(
   })
 }
 
-/** Summary over the compare range; disabled when compare mode is off */
 export const useCompareSummaryQuery = <T extends V2DataType>(
   dataType: T,
   opts: { measure?: string; enabled?: boolean } = {},
@@ -161,7 +154,6 @@ interface BreakdownOpts {
   offset?: number
   sort?: string
   measure?: string
-  /** Extra filters merged on top of the shared ones (e.g. version drill-down) */
   extraFilters?: V2Filter[]
   enabled?: boolean
 }
@@ -194,7 +186,6 @@ export const useBreakdownQuery = (
 
 const DETAILS_PAGE_SIZE = 100
 
-/** Infinite offset-paged breakdown for the details modal */
 export const useBreakdownDetailsQuery = (
   dataType: V2DataType,
   opts: Omit<BreakdownOpts, 'limit' | 'offset'>,
@@ -261,7 +252,6 @@ export const useCustomEventsTimeseriesQuery = (
   })
 }
 
-/** Project-view custom metrics (sum/avg of numeric event metadata) cards */
 export const useCustomMetricsQuery = (
   customMetrics: unknown[],
   opts: { enabled?: boolean } = {},

@@ -47,8 +47,6 @@ const CONDITION_RELATIONS: { value: GoalConditionRelation; label: string }[] = [
   { value: 'OR', label: 'OR' },
 ]
 
-// v2 dimension names; the bare keyed dimensions (page_property /
-// event_metadata) mean "has this metadata key" — the value is the key itself.
 const GOAL_CONDITION_FILTER_OPTIONS = [
   'page',
   'event',
@@ -114,7 +112,6 @@ const filterToCondition = (filter: V2Filter): GoalCondition | null => {
       filter.dimension === 'event_metadata' ? 'custom_event' : 'pageview'
 
     if (!filter.key) {
-      // bare keyed dimension = "has this metadata key"; value is the key
       return {
         id: createConditionId(),
         eventType,
@@ -134,7 +131,6 @@ const filterToCondition = (filter: V2Filter): GoalCondition | null => {
     }
   }
 
-  // goal conditions store the v2 dimension name directly in `field`
   return {
     id: createConditionId(),
     eventType: filter.dimension === 'page' ? 'pageview' : 'any',
@@ -183,8 +179,6 @@ const conditionToFilter = (condition: GoalCondition): V2Filter | null => {
 
   const operator = conditionOperatorToV2Operator(condition.operator)
 
-  // `field` holds a v2 dimension name for goals saved after the v2 migration,
-  // or a legacy v1 short code for older goals — normalise both to the v2 name.
   const dimension = V1_TO_V2_DIMENSION[condition.field] ?? condition.field
   if (!ALL_VALID_DIMENSIONS.includes(dimension)) {
     return null
@@ -350,10 +344,6 @@ const GoalSettingsModal = ({
     e.preventDefault()
     processedRef.current = null
 
-    // Map each edited filter to a goal condition. `filterToCondition` returns
-    // null for filters the GoalCondition model can't represent (e.g. a "not
-    // set" / null value) — surface that instead of silently dropping the
-    // user's condition.
     const mappedConditions: GoalCondition[] = []
     let hasUnmappableCondition = false
 

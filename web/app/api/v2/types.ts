@@ -6,7 +6,6 @@ export interface V2Filter {
   dimension: string
   operator: V2FilterOperator
   value: string | null | (string | null)[]
-  /** Required for event_metadata / page_property filters */
   key?: string
 }
 
@@ -17,18 +16,15 @@ interface V2Meta {
   to?: string
   timezone?: string
   appliedFilters?: V2Filter[]
-  /** Breakdown / list endpoints */
   total?: number
   limit?: number
   offset?: number
   sort?: string
   dimension?: string
   metrics?: string[]
-  /** Timeseries endpoints */
   timeBucket?: string
   allowedTimeBuckets?: string[] | null
   mode?: string
-  /** Live visitors */
   windowMinutes?: number
   [key: string]: unknown
 }
@@ -46,13 +42,11 @@ export type V2CommonParams = {
   filters?: V2Filter[]
 }
 
-/** { value: 'US', country?: ..., visitors: 119, pageviews: 267, ... } */
 export interface BreakdownRow {
   value: string | null
   [metricOrExtraField: string]: unknown
 }
 
-/** { timestamp: '2026-07-01T00:00:00Z', visitors: 120, ... } */
 export interface TimeseriesRow {
   timestamp: string
   [metric: string]: number | string

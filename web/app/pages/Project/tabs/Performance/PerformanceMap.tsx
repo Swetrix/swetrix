@@ -12,11 +12,6 @@ const InteractiveMap = lazy(
 
 const MAP_CLICK_TYPE_TO_DIMENSION = { cc: 'country', rg: 'region' } as const
 
-/**
- * Interactive location map fed by its own country + region performance
- * breakdown queries (deduped with the location panel's queries via the
- * react-query cache).
- */
 export const PerformanceMap = ({
   isFullscreen,
   measure,

@@ -66,9 +66,6 @@ const OPERATORS: { value: V2FilterOperator; labelKey: string }[] = [
   { value: 'contains_not', labelKey: 'project.contains.not' },
 ]
 
-// A row's `column` is a v2 dimension name, optionally with a metadata key
-// (`event_metadata:plan`). A bare keyed dimension (`event_metadata`) means
-// "has this metadata key" — its value is the key itself.
 const parseRowColumn = (
   column: string,
 ): { dimension: string; key?: string } => {
@@ -328,8 +325,6 @@ const FilterRowsEditor = ({
     async (column: string) => {
       const { dimension, key } = parseRowColumn(column)
 
-      // No autocomplete for keyed columns with a fixed key
-      // (event_metadata:plan) or dimensions the API doesn't know about.
       if (key || !VALID_DIMENSIONS_BY_TYPE[type].includes(dimension)) {
         setFilterValuesCache((prev) =>
           prev[column] ? prev : { ...prev, [column]: [] },

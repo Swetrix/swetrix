@@ -294,8 +294,6 @@ const getErrorTrendsChartSettings = (
   }
 }
 
-// Sub-tab ids (v2 dimension names) -> keys of the per-error `params` payload
-// (still v1-keyed in the details response)
 const PER_ERROR_SUBTAB_TO_V1: Record<string, string> = {
   country: 'cc',
   region: 'rg',
@@ -325,11 +323,6 @@ interface PerErrorPanelsProps {
   isRefetching: boolean
 }
 
-/**
- * Breakdown panels scoped to ONE error group. The v2 error-details response
- * still ships the per-error `params` payload (eid is not a filterable
- * dimension), so these are fed statically instead of via BreakdownPanel.
- */
 const PerErrorPanels = ({
   params,
   locationSubTabs,
@@ -704,8 +697,6 @@ const ErrorsViewInner = () => {
 
   const activeEID = useMemo(() => searchParams.get('eid'), [searchParams])
 
-  // --- v2 queries ---
-
   const errorsListQuery = useErrorsListQuery({
     showResolved,
     enabled: !activeEID,
@@ -782,8 +773,6 @@ const ErrorsViewInner = () => {
     ]
   }, [t, errorOptions])
 
-  // The overview chart is bucketed by the backend-resolved time bucket, which
-  // may differ from the currently selected one
   const overviewTimeBucket = overview?.timeBucket || timeBucket
 
   const handleOverviewDataPointClick = useCallback(
@@ -878,8 +867,6 @@ const ErrorsViewInner = () => {
     }),
     [t],
   )
-
-  // --- Breakdown panels (error details view) ---
 
   const locationSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
@@ -997,9 +984,7 @@ const ErrorsViewInner = () => {
 
       try {
         decodedUri = decodeURIComponent(entryName)
-      } catch {
-        // do nothing
-      }
+      } catch {}
 
       if (subTabId === 'page' && project?.websiteUrl) {
         return (
@@ -1233,7 +1218,6 @@ const ErrorsViewInner = () => {
     />
   ) : null
 
-  // List view - Initial loading state
   if (isInitialLoading) {
     return (
       <div>

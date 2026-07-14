@@ -1,7 +1,3 @@
-/**
- * Key renames applied to v1 entity payloads (sessions, profiles, session
- * details) so v2 responses use human-readable field names.
- */
 const KEY_RENAMES: Record<string, string> = {
   cc: 'country',
   rg: 'region',

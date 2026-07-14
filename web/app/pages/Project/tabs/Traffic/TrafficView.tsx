@@ -184,7 +184,6 @@ const TrafficViewInner = ({
   const [searchParams, setSearchParams] = useSearchParams()
   const { pid, common } = useV2CommonParams('traffic')
 
-  // Track if we've ever shown actual content to prevent NoEvents flash
   const hasShownContentRef = useRef(false)
 
   const {
@@ -229,7 +228,6 @@ const TrafficViewInner = ({
     [timeBucket, timeFormat, timezone],
   )
 
-  // Chart metrics state
   const [activeChartMetrics, setActiveChartMetrics] = useState({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
@@ -247,8 +245,6 @@ const TrafficViewInner = ({
     const param = searchParams.get('customEvents')
     return param ? param.split(',').filter(Boolean) : []
   }, [searchParams])
-
-  // --- v2 queries ---
 
   const summaryQuery = useSummaryQuery('traffic')
   const compareSummaryQuery = useCompareSummaryQuery('traffic')
@@ -343,7 +339,6 @@ const TrafficViewInner = ({
     [customEventsTimeseriesQuery.data, activeChartMetricsCustomEvents],
   )
 
-  // Revenue state (still fetched via the v1 proxy — no v2 equivalent)
   const [isRevenueConnected, setIsRevenueConnected] = useState(false)
   const [revenueOverlay, setRevenueOverlay] = useState<{
     revenue: number[]
@@ -573,9 +568,6 @@ const TrafficViewInner = ({
     [isConflicted, t],
   )
 
-  // Live visitors cannot be filtered — concurrency is reconstructed from
-  // session intervals which carry no dimension data, so turn it off if a filter
-  // gets applied while it's active (the toggle is disabled in that state)
   useEffect(() => {
     if (
       !_isEmpty(filters) &&
@@ -612,7 +604,6 @@ const TrafficViewInner = ({
     [searchParams, setSearchParams],
   )
 
-  // Load revenue data when the revenue metric is enabled
   const loadRevenueData = useCallback(async () => {
     if (
       !project ||
@@ -707,8 +698,6 @@ const TrafficViewInner = ({
     () => filters.some((f) => f.dimension === 'referrer_name'),
     [filters],
   )
-
-  // --- Panels ---
 
   const locationSubTabs = useMemo<BreakdownSubTab[]>(
     () => [
@@ -881,9 +870,7 @@ const TrafficViewInner = ({
 
       try {
         decodedUri = decodeURIComponent(entryName)
-      } catch {
-        // do nothing
-      }
+      } catch {}
 
       if (subTabId === 'page' && project?.websiteUrl) {
         return (
@@ -950,7 +937,6 @@ const TrafficViewInner = ({
   const sourcesGetFilterLink = useCallback(
     (dimension: string, value: string | null, subTabId: string) => {
       if (subTabId === 'referrer') {
-        // If grouped by name/domain (no referrer_name filter active) -> filter by referrer_name
         return getFilterLink(
           hasRefNameFilter || value === null ? 'referrer' : 'referrer_name',
           value,

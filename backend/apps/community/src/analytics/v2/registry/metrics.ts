@@ -1,10 +1,5 @@
 import { V2MetricDef } from './types'
 
-/**
- * Local copy of the v1 MEASURES_MAP (analytics.service.ts). Duplicated on
- * purpose — the v2 registry is self-contained and these four entries are the
- * public API contract for the `measure` parameter.
- */
 const MEASURES_MAP_V2: Record<string, string> = {
   average: 'avg',
   median: 'median',
@@ -22,12 +17,9 @@ const perfExpr =
   }
 
 export const V2_METRICS: V2MetricDef[] = [
-  // --- traffic ---
   {
     api: 'visitors',
     types: ['traffic'],
-    // v1 semantics preserved: with a custom-event filter applied the base
-    // event set is custom_event rows and "visitors" degrades to count(*)
     sqlExpr: ({ customEVFilterApplied }) =>
       customEVFilterApplied ? 'count(*)' : 'count(DISTINCT psid)',
     isDefault: true,
@@ -70,15 +62,12 @@ export const V2_METRICS: V2MetricDef[] = [
   {
     api: 'concurrency',
     types: ['traffic'],
-    // Reconstructed from session intervals, which carry no dimension columns,
-    // so it is a timeseries-only series that cannot respect filters
     sqlExpr: () => null,
     requiresSessionsJoin: true,
     format: 'integer',
     description:
       'Concurrent live visitors over time (timeseries only; ignores filters)',
   },
-  // --- performance (values in seconds; `measure` selects the aggregate) ---
   {
     api: 'load_time',
     types: ['performance'],
@@ -136,7 +125,6 @@ export const V2_METRICS: V2MetricDef[] = [
     format: 'seconds',
     description: 'DOM content load time',
   },
-  // --- errors ---
   {
     api: 'occurrences',
     types: ['errors'],
@@ -152,7 +140,6 @@ export const V2_METRICS: V2MetricDef[] = [
     format: 'integer',
     description: 'Distinct users affected',
   },
-  // --- captcha ---
   {
     api: 'events',
     types: ['captcha'],
@@ -161,8 +148,6 @@ export const V2_METRICS: V2MetricDef[] = [
     format: 'integer',
     description: 'Captcha events matching the dimension scope',
   },
-  // Timeseries/summary-only captcha counters (computed by the captcha
-  // aggregation query, not the generic breakdown builder)
   {
     api: 'generated',
     types: ['captcha'],

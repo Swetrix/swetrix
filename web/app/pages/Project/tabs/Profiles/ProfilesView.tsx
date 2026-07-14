@@ -57,8 +57,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       (page) => page.data,
     ) as unknown as Profile[]
 
-    // Deduplicate by profileId: offset-based pages may overlap when new
-    // profiles arrive between page loads
     const seen = new Set<string>()
     return rows.filter((profile) => {
       if (seen.has(profile.profileId)) {
@@ -77,7 +75,6 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     [profileSessionsQuery.data],
   )
 
-  // Track if we've shown content in the current data set to prevent NoProfiles flash
   const hasShownContentRef = useRef(false)
 
   if (profilesQuery.data) {

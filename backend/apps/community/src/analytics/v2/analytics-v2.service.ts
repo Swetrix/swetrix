@@ -70,7 +70,6 @@ const ALL_TIME_EVENT_TYPES: Record<V2DataType, readonly EventsAllTimeType[]> = {
   errors: ['error'],
 }
 
-/** Traffic metrics computable per time bucket by the v1 chart query */
 const TRAFFIC_TIMESERIES_METRICS = [
   'visitors',
   'pageviews',
@@ -79,7 +78,6 @@ const TRAFFIC_TIMESERIES_METRICS = [
   'concurrency',
 ]
 
-/** Performance metrics computable per time bucket (v2 name -> v1 chart key) */
 const PERFORMANCE_TIMESERIES_METRICS: Record<string, string> = {
   dns: 'dns',
   tls: 'tls',
@@ -90,7 +88,6 @@ const PERFORMANCE_TIMESERIES_METRICS: Record<string, string> = {
   ttfb: 'ttfb',
 }
 
-/** Captcha counters computable per time bucket (v2 name -> v1 chart key) */
 const CAPTCHA_TIMESERIES_METRICS: Record<string, string> = {
   generated: 'generated',
   passed: 'passed',
@@ -106,10 +103,8 @@ export interface ResolvedTimeframe {
   timeBucket: TimeBucketType | null
   allowedTimeBuckets: TimeBucketType[] | null
   safeTimezone: string
-  /** Timezone-shifted bounds (YYYY-MM-DD HH:mm:ss) */
   groupFrom: string
   groupTo: string
-  /** UTC bounds used as ClickHouse query params */
   groupFromUTC: string
   groupToUTC: string
 }
@@ -139,11 +134,6 @@ export class AnalyticsV2Service {
     await this.analyticsService.checkProjectAccess(pid, uid, password)
   }
 
-  /**
-   * Resolve period/from/to/timeBucket/timezone into concrete query bounds.
-   * Centralizes the v1 `period=all` dance (first-event lookup -> diff ->
-   * allowed time buckets) in a single place.
-   */
   async resolveTimeframe(opts: {
     pid: string
     dataType: V2DataType
@@ -152,7 +142,6 @@ export class AnalyticsV2Service {
     to?: string
     timeBucket?: TimeBucketType
     timezone?: string
-    /** Override the event types used for the period=all first-event lookup */
     allTimeEventTypes?: readonly EventsAllTimeType[]
   }): Promise<ResolvedTimeframe> {
     const { pid, dataType, from, to, timezone } = opts
@@ -290,13 +279,10 @@ export class AnalyticsV2Service {
     measure?: PerfMeasure,
   ): Promise<V2Envelope<Record<string, unknown>[]>> {
     const dimension = getBreakdownDimension(dto.dimension, dataType)
-    // Session-scoped virtual dimensions (entry/exit page) only support
-    // 'visitors', so the per-type defaults don't apply to them
     const metrics =
       dimension.virtual && !dto.metrics
         ? [getMetric('visitors', dataType)]
         : parseMetricsParam(dto.metrics, dataType)
-    // v1 parity: performance and error queries ignore custom-event filters
     const filters = this.prepareFilters(
       dto.filters,
       dataType,
@@ -483,8 +469,6 @@ export class AnalyticsV2Service {
 
     const mode = dto.mode || ChartRenderMode.PERIODICAL
 
-    // Concurrency (live visitors over time) runs an extra ClickHouse query, so
-    // it is only reconstructed when the metric is explicitly requested
     const includeConcurrency = metrics.some(
       (metric) => metric.api === 'concurrency',
     )
@@ -751,8 +735,6 @@ export class AnalyticsV2Service {
       allTimeEventTypes: ['pageview'],
     })
 
-    // v1 parity: the user-flow query compares `created` against the
-    // timezone-shifted bounds directly
     const flow = await this.analyticsService.getUserFlow(
       {
         pid,
@@ -857,7 +839,6 @@ export class AnalyticsV2Service {
 
     this.analyticsService.checkIfPerfMeasureIsValid(measure)
 
-    // v1 parity: quantiles is a timeseries-only measure; birdseye maps it to median
     if (measure === 'quantiles') {
       measure = 'median'
     }
@@ -1038,7 +1019,6 @@ export class AnalyticsV2Service {
       { params: baseParams },
     )
 
-    // Previous period of the same length (v1 parity; skipped for period=all)
     let previousPromise: Promise<object | null> = Promise.resolve(null)
 
     if (timeframe.period !== 'all') {
@@ -1141,8 +1121,6 @@ export class AnalyticsV2Service {
 
     const mode = dto.mode || ChartRenderMode.PERIODICAL
 
-    // v1 parity: error occurrences are bucketed in UTC, labels are shifted
-    // to the requested timezone afterwards
     const { x, format } = this.analyticsService.generateUTCXAxis(
       timeframe.timeBucket,
       timeframe.groupFromUTC,
@@ -1220,8 +1198,6 @@ export class AnalyticsV2Service {
     const dataType: V2DataType = 'errors'
     const filters = this.prepareFilters(dto.filters, dataType, true)
 
-    // Session-scoped stats inside the overview run against traffic data;
-    // error-specific filters are dropped for that part (v1 parity)
     const sessionV1FiltersJson = toV1FiltersJson(
       filters.appliedFilters,
       'traffic',
@@ -1650,8 +1626,6 @@ export class AnalyticsV2Service {
         .filter(Boolean)
     }
 
-    // A '__proto__' series key would mutate the response object's prototype
-    // instead of adding a series
     events = events.filter((event) => event && event !== '__proto__')
 
     if (events.length === 0) {
@@ -1755,8 +1729,6 @@ export class AnalyticsV2Service {
             filters.filtersQuery,
           )
         } catch (reason) {
-          // Step details are best-effort (v1 parity); dev-only logging as
-          // the raw error may embed funnel query params
           this.logger.log(reason, 'AnalyticsV2Service -> getFunnelStepDetails')
         }
       })(),
@@ -1847,11 +1819,6 @@ export class AnalyticsV2Service {
     return this.analyticsService.getPagesArray(dto.steps, dto.funnelId, pid)
   }
 
-  /**
-   * Funnel time bounds mirror v1 exactly: no time bucket, timezone-shifted
-   * bounds as ClickHouse params, and a period=all diff based on the max of
-   * pageview / custom_event first-seen.
-   */
   private async resolveFunnelContext(
     pid: string,
     dto: V2BaseQueryDto,
@@ -2004,7 +1971,6 @@ export class AnalyticsV2Service {
       )
     }
 
-    // Browser / OS versions return { name, version } pairs
     if (dimension.column === 'brv' || dimension.column === 'osv') {
       const values = await this.analyticsService.getVersionFilters(
         pid,
@@ -2015,8 +1981,6 @@ export class AnalyticsV2Service {
       return envelope(values, { pid, dimension: dimensionApi, type })
     }
 
-    // Entry/exit page values come from the session-scoped virtual-column
-    // path in getFilters; getErrorsFilters cannot resolve them
     const values =
       type === 'errors' && !dimension.virtual
         ? await this.analyticsService.getErrorsFilters(pid, dimension.column)
@@ -2025,7 +1989,6 @@ export class AnalyticsV2Service {
     return envelope(values, { pid, dimension: dimensionApi, type })
   }
 
-  /** Validate a metric name exists for the data type (helper for controllers) */
   validateMetric(api: string, dataType: V2DataType): V2MetricDef {
     return getMetric(api, dataType)
   }

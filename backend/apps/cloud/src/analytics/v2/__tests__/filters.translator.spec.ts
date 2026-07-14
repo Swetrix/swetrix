@@ -132,7 +132,6 @@ describe('toV1FiltersJson', () => {
       ]),
     )
 
-    // error_name is not a traffic dimension
     expect(() => toV1FiltersJson(filters, 'traffic')).toThrow(
       UnprocessableEntityException,
     )

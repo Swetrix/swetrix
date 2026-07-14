@@ -88,7 +88,6 @@ const CaptchaView = (_props: CaptchaViewProps) => {
     i18n: { language },
   } = useTranslation('common')
 
-  // Track if we've ever shown actual content to prevent NoCaptchaEvents flash
   const hasShownContentRef = useRef(false)
 
   const summaryQuery = useSummaryQuery('captcha')
@@ -97,8 +96,6 @@ const CaptchaView = (_props: CaptchaViewProps) => {
 
   const summary = summaryQuery.data?.data
   const summaryData = summary?.current ?? null
-  // Custom compare range when compare mode is active; otherwise the previous
-  // period returned alongside the summary (null for period=all)
   const summaryCompareData =
     compareSummaryQuery.data?.data.current ?? summary?.previous ?? null
 

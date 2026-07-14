@@ -84,8 +84,6 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
 
   const funnelQuery = useFunnelQuery(activeFunnel?.id ?? null)
 
-  // keepPreviousData keeps data visible on period/filter refetch, but a stale
-  // chart of ANOTHER funnel should not flash while switching between funnels
   const displayedFunnelIdRef = useRef<string | null>(null)
   if (funnelQuery.data && !funnelQuery.isPlaceholderData) {
     displayedFunnelIdRef.current = activeFunnel?.id ?? null
@@ -176,9 +174,6 @@ const FunnelsView = ({ tnMapping }: FunnelsViewProps) => {
           { method: 'POST', action: projectPath },
         )
 
-        // Steps may have changed - drop cached funnel analytics.
-        // (funnel-sessions isn't cached in react-query; SessionsDrawer loads
-        // it imperatively, so there's nothing to invalidate for that key.)
         queryClient.invalidateQueries({ queryKey: ['v2', id, 'funnel'] })
       } else if (intent === 'delete-funnel') {
         toast.success(t('apiNotifications.funnelDeleted'))

@@ -18,7 +18,6 @@ export interface BreakdownQueryOptions {
   dataType: V2DataType
   dimension: V2DimensionDef
   metrics: V2MetricDef[]
-  /** 'FROM events WHERE ...' fragment, incl. filters and time range params */
   subQuery: string
   ctx: V2MetricCtx
   sort: BreakdownSort
@@ -52,11 +51,6 @@ export const parseSortParam = (
   return { field, direction }
 }
 
-/**
- * Multi-metric generalization of v1's generateParamsQuery: one dimension,
- * N metric aggregates, ORDER BY + LIMIT/OFFSET pagination and a windowed
- * total. Expects `v2_limit` and `v2_offset` in the query params.
- */
 export const buildBreakdownQuery = (opts: BreakdownQueryOptions): string => {
   const { dataType, dimension, metrics, subQuery, ctx, sort } = opts
 

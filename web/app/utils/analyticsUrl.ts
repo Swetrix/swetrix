@@ -6,18 +6,6 @@ import {
   V1_TO_V2_DIMENSION,
 } from '~/lib/v2Dimensions'
 
-// Filters live in the URL as `<prefix><dimension>=<value>` search params:
-//   country=US        -> { dimension: 'country', operator: 'is', value: 'US' }
-//   !country=US       -> is_not
-//   ~page=/blog       -> contains
-//   ^page=/blog       -> contains_not
-// Keyed dimensions carry their key after a colon:
-//   event_metadata:plan=free
-// The literal value `null` (or an empty value) means "unknown" and maps to
-// v2 `value: null` — same convention v1 links used.
-// v1 short codes (`cc`, `pg`, `ev:key:plan`, ...) are accepted on parse only,
-// so old shared links keep working.
-
 const OPERATOR_BY_PREFIX: Record<string, V2FilterOperator> = {
   '!': 'is_not',
   '~': 'contains',
@@ -37,7 +25,6 @@ interface ParsedFilterKey {
   operator: V2FilterOperator
 }
 
-/** Parses a URL search param key into { dimension, key?, operator }, or null */
 export const parseFilterKey = (rawKey: string): ParsedFilterKey | null => {
   let operator: V2FilterOperator = 'is'
   let key = rawKey
@@ -48,7 +35,6 @@ export const parseFilterKey = (rawKey: string): ParsedFilterKey | null => {
     key = key.substring(1)
   }
 
-  // legacy keyed filters: ev:key:<k> / tag:key:<k>
   for (const [prefix, dimension] of Object.entries(V1_KEYED_PREFIX_TO_V2)) {
     if (key.startsWith(prefix)) {
       const metaKey = key.substring(prefix.length)
@@ -57,7 +43,6 @@ export const parseFilterKey = (rawKey: string): ParsedFilterKey | null => {
     }
   }
 
-  // keyed filters: event_metadata:<k> / page_property:<k>
   for (const dimension of KEYED_DIMENSIONS) {
     if (key.startsWith(`${dimension}:`)) {
       const metaKey = key.substring(dimension.length + 1)
@@ -66,7 +51,6 @@ export const parseFilterKey = (rawKey: string): ParsedFilterKey | null => {
     }
   }
 
-  // legacy v1 short codes
   const aliased = V1_TO_V2_DIMENSION[key]
   if (aliased) {
     return { dimension: aliased, operator }
@@ -76,8 +60,6 @@ export const parseFilterKey = (rawKey: string): ParsedFilterKey | null => {
     return { dimension: key, operator }
   }
 
-  // Not a v2 dimension, but a valid filter on tabs with their own data source
-  // (GSC keywords on the SEO tab). Never sent to the v2 API.
   if (key === 'keywords') {
     return { dimension: key, operator }
   }
@@ -85,7 +67,6 @@ export const parseFilterKey = (rawKey: string): ParsedFilterKey | null => {
   return null
 }
 
-/** Builds the canonical URL search param key for a filter */
 export const filterToUrlKey = (
   filter: Pick<V2Filter, 'dimension' | 'operator' | 'key'>,
 ): string => {
@@ -103,7 +84,6 @@ export const filterToUrlValue = (filter: V2Filter): string => {
   return filter.value ?? 'null'
 }
 
-/** Parses all filters from URL search params into the v2 filter shape */
 export const parseFiltersFromUrl = (
   searchParams: URLSearchParams,
 ): V2Filter[] => {
@@ -127,14 +107,9 @@ export const parseFiltersFromUrl = (
   return filters
 }
 
-/**
- * Returns true if the given URL search param key is a filter (used to strip
- * or toggle filters without touching unrelated params like `period`).
- */
 export const isFilterUrlKey = (rawKey: string): boolean =>
   parseFilterKey(rawKey) !== null
 
-/** Legacy saved-view filter shape (kept server-side; converted at the edges) */
 export interface LegacyFilter {
   column: string
   filter: string

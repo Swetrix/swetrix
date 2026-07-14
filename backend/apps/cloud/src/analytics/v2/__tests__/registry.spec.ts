@@ -9,9 +9,6 @@ import {
   V2_DIMENSIONS,
 } from '../registry'
 
-// Keep the registry in lockstep with the v1 filter column allowlists
-// (common/constants.ts). If a column is added there, the registry must learn
-// about it too.
 const {
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
@@ -67,7 +64,6 @@ describe('dimension lookups', () => {
     expect(() => getBreakdownDimension('event', 'traffic')).toThrow(
       UnprocessableEntityException,
     )
-    // valid dimension, wrong data type
     expect(() => getBreakdownDimension('referrer', 'performance')).toThrow(
       UnprocessableEntityException,
     )

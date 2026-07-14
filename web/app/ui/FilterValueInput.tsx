@@ -56,7 +56,6 @@ import countries from '~/utils/isoCountries'
 
 const ITEM_HEIGHT = 36
 
-// Icon mapping for filter categories (keyed by v2 dimension names)
 export const filterCategoryIcons: Record<string, ReactNode> = {
   country: <MapPinIcon className='size-4' />,
   region: <MapTrifoldIcon className='size-4' />,

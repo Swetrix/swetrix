@@ -14,12 +14,12 @@ import { redis } from '../../common/constants'
 import { getSinglePid, getAnalyticsRoute } from './analytics-read.util'
 import { CACHEABLE_ANALYTICS_KEY } from './cacheable-analytics.decorator'
 
-const CACHE_TTL = Number(process.env.PUBLIC_PROJECT_CACHE_TTL) || 10 // seconds
+const CACHE_TTL = Number(process.env.PUBLIC_PROJECT_CACHE_TTL) || 10
 
-const CACHE_PREFIX = 'arc' // analytics read cache
+const CACHE_PREFIX = 'arc'
 
 const CACHEABLE_ROUTES = new Set([
-  '', // getData - dashboard overview
+  '',
   'chart',
   'birdseye',
   'performance',
@@ -38,9 +38,6 @@ const CACHEABLE_ROUTES = new Set([
   'gsc-details',
 ])
 
-/**
- * Caches read responses for PUBLIC projects in Redis for a short window.
- */
 @Injectable()
 export class PublicProjectCacheInterceptor implements NestInterceptor {
   constructor(
@@ -59,8 +56,6 @@ export class PublicProjectCacheInterceptor implements NestInterceptor {
       return next.handle()
     }
 
-    // v2 handlers opt in via @CacheableAnalytics(); v1 routes are matched
-    // against the static route set
     const isCacheableV2 = this.reflector.get<boolean>(
       CACHEABLE_ANALYTICS_KEY,
       context.getHandler(),

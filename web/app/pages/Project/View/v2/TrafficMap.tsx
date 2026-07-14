@@ -13,10 +13,6 @@ const InteractiveMap = lazy(
 
 const MAP_CLICK_TYPE_TO_DIMENSION = { cc: 'country', rg: 'region' } as const
 
-/**
- * Interactive location map fed by its own country + region breakdown queries
- * (deduped with the location panel's queries via react-query cache).
- */
 export const TrafficMap = ({ isFullscreen }: { isFullscreen: boolean }) => {
   const navigate = useNavigate()
   const { getFilterLink, setIsMapFullscreen } = useViewProjectContext()

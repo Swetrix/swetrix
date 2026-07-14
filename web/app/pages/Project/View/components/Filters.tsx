@@ -50,11 +50,6 @@ const operatorLabel = (
   return t(`common.${operator === 'is_not' ? 'isNot' : 'is'}`)
 }
 
-/**
- * Returns true if a URL search param entry represents the given filter. Legacy
- * v1 keys (cc, pg, ...) parse to the same shape, so old shared links can be
- * removed / toggled too.
- */
 const isFilterUrlEntry = (
   filter: V2Filter,
   rawKey: string,

@@ -19,7 +19,6 @@ export interface V2Filter {
   dimension: string
   operator: V2FilterOperator
   value: string | null | (string | null)[]
-  /** meta.key for event_metadata / page_property filters */
   key?: string
 }
 
@@ -62,8 +61,6 @@ const resolveColumn = (
       )
     }
 
-    // With a key: filter values of that meta key. Without: filter the
-    // meta keys themselves.
     return key ? `${keyedFamily.v1Prefix}${key}` : keyedFamily.v1KeyColumn
   }
 
@@ -82,10 +79,6 @@ const resolveColumn = (
   return def.column
 }
 
-/**
- * Parse and validate a v2 `filters` query param.
- * v2 filter shape: { dimension, operator: is|is_not|contains|contains_not, value, key? }
- */
 export const parseV2Filters = (filters: string | undefined): V2Filter[] => {
   if (!filters || filters === '""') {
     return []
@@ -163,12 +156,6 @@ export const parseV2Filters = (filters: string | undefined): V2Filter[] => {
   })
 }
 
-/**
- * Translate parsed v2 filters into the exact v1 filters JSON string consumed
- * by AnalyticsService.getFiltersQuery — all v1 special-case SQL (refn domain
- * expansion, entry/exit page psid subqueries, meta-array filters,
- * customEVFilterApplied detection) is inherited unchanged.
- */
 export const toV1FiltersJson = (
   filters: V2Filter[],
   type: V2DataType,
@@ -183,9 +170,6 @@ export const toV1FiltersJson = (
   for (const filter of filters) {
     const column = resolveColumn(filter, type, Boolean(options.lenient))
 
-    // Lenient mode drops filters that don't apply to the data type instead
-    // of rejecting the request (used when one endpoint queries several
-    // data types with the same filter set)
     if (column === null) {
       continue
     }
@@ -203,15 +187,6 @@ export const toV1FiltersJson = (
   return JSON.stringify(v1Filters)
 }
 
-/**
- * Normalise a `filters` query param that may be in EITHER the v2 shape
- * ({ dimension, operator, value, key? }) or the legacy v1 shape
- * ({ column, filter, isExclusive, isContains }) into the v1 filters JSON string
- * consumed by AnalyticsService.getFiltersQuery.
- *
- * Used by endpoints that are also part of the public v1 API, so existing API
- * clients sending v1 filters keep working while the dashboard sends v2.
- */
 export const normalizeFiltersToV1Json = (
   filters: string | undefined,
   type: V2DataType,
@@ -225,7 +200,6 @@ export const normalizeFiltersToV1Json = (
   try {
     parsed = JSON.parse(filters)
   } catch {
-    // Leave malformed input to getFiltersQuery, which logs and ignores it.
     return filters
   }
 
@@ -233,8 +207,6 @@ export const normalizeFiltersToV1Json = (
     return ''
   }
 
-  // Legacy v1 clients key filters by `column`; pass those straight through.
-  // v2 clients (and the dashboard) send `dimension` and are translated.
   const isLegacyV1 = parsed.every(
     (filter) =>
       filter &&

@@ -80,8 +80,6 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
       (page) => page.data,
     ) as unknown as SessionType[]
 
-    // Deduplicate by psid: offset-based pages may overlap when new sessions
-    // arrive between page loads
     const seen = new Set<string>()
     return rows.filter((session) => {
       if (seen.has(session.psid)) {
@@ -92,14 +90,12 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
     })
   }, [listQuery.data])
 
-  // Track if we've shown content in the current data set to prevent NoSessions flash
   const hasShownContentRef = useRef(false)
 
   if (listQuery.data) {
     hasShownContentRef.current = !_isEmpty(sessions)
   }
 
-  // Session detail - derived from the v2 details query
   const activeSession = useMemo(() => {
     const data = detailsQuery.data?.data as SessionDetailsData | undefined
     if (!data) {

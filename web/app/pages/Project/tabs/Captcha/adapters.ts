@@ -1,11 +1,5 @@
 import { TimeseriesRow } from '~/api/v2/types'
 
-/**
- * v2 ISO timestamp -> the 'YYYY-MM-DD HH:mm:ss' wall-time string the chart
- * pipeline expects. The timestamp is already in the requested timezone, so we
- * take its literal date-time part instead of letting Date/dayjs re-shift it
- * into the browser timezone.
- */
 const toChartX = (timestamp: string): string =>
   timestamp.slice(0, 19).replace('T', ' ')
 
@@ -18,7 +12,6 @@ export interface CaptchaChartData {
   replayed: number[]
 }
 
-/** Captcha timeseries rows -> the columnar shape getSettingsCaptcha consumes */
 export const pivotCaptchaTimeseries = (
   rows: TimeseriesRow[] | undefined,
 ): CaptchaChartData => {

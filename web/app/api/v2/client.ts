@@ -28,7 +28,6 @@ const serializeParams = (params: V2QueryParams): string => {
         continue
       }
 
-      // filters (objects) -> JSON; plain values (metrics, events) -> CSV
       if (typeof value[0] === 'object') {
         searchParams.set(key, JSON.stringify(value))
       } else {
@@ -49,12 +48,6 @@ const serializeParams = (params: V2QueryParams): string => {
   return qs ? `?${qs}` : ''
 }
 
-/**
- * Fetches a v2 analytics API endpoint through the /api/v2 proxy route
- * (which attaches auth and project-password headers server-side).
- *
- * `path` is relative to /v2/, e.g. `projects/<pid>/traffic/breakdown`.
- */
 export async function fetchV2<T>(
   path: string,
   params: V2QueryParams = {},
@@ -67,9 +60,7 @@ export async function fetchV2<T>(
   let body: any = null
   try {
     body = await response.json()
-  } catch {
-    // non-JSON error response
-  }
+  } catch {}
 
   if (!response.ok) {
     const message =

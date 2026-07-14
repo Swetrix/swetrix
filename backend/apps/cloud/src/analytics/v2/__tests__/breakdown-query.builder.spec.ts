@@ -95,7 +95,6 @@ describe('buildBreakdownQuery', () => {
     expect(query).toContain('cc AS country')
     expect(query).toContain('rgc AS region_code')
     expect(query).toContain('GROUP BY value, country, region_code')
-    // region is in the v1 EXCLUDE_NULL_FOR list
     expect(query).toContain('AND rg IS NOT NULL')
   })
 
@@ -126,7 +125,6 @@ describe('buildBreakdownQuery', () => {
       }),
     )
 
-    // solve_time resolves to a multiIf bucket expression, not a plain column
     expect(query).toContain('multiIf(')
     expect(query).toContain("= 'pass'")
 
@@ -141,7 +139,6 @@ describe('buildBreakdownQuery', () => {
       }),
     )
 
-    // country/browser/os/device only count passed captchas (v1 parity)
     expect(countryQuery).toContain("= 'pass'")
   })
 

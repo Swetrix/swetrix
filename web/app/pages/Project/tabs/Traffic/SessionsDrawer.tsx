@@ -49,11 +49,6 @@ interface ErrorAffectedSession {
 
 type DrawerSession = SessionType | ErrorAffectedSession
 
-/**
- * Goal and journey sessions have no v2 endpoint yet, so they still go through
- * the v1 analytics proxy. The response uses v1 short keys - map them to the v2
- * readable keys the shared <Session /> renderer expects.
- */
 const mapV1SessionKeys = (session: Record<string, any>): SessionType =>
   ({
     ...session,
@@ -261,8 +256,6 @@ export const SessionsDrawer = ({
     ): Promise<boolean> => {
       let newSessions: DrawerSession[] = []
 
-      // v2 accepts ISO datetimes for from/to; fall back to the period
-      // otherwise (backend defaults 'custom' without a range)
       const commonParams = {
         ...(from && to ? { from, to } : { period }),
         timezone,

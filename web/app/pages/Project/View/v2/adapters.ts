@@ -8,11 +8,6 @@ import {
 import { Entry } from '~/lib/models/Entry'
 import { OverallObject } from '~/lib/models/Project'
 
-// Adapters that pivot v2 API responses into the shapes the existing UI
-// components (Panel, DetailsTable, InteractiveMap, billboard chart pipeline)
-// already consume, so those components stay untouched.
-
-/** Breakdown rows -> Panel entries ({ value, <metric> } -> { name, count }) */
 export const mapBreakdownRows = (
   rows: BreakdownRow[] | undefined,
   primaryMetric = 'visitors',
@@ -27,10 +22,6 @@ export const mapBreakdownRows = (
   }))
 }
 
-/**
- * Version breakdown rows (browser_version / os_version, which carry their
- * parent as an extra field) -> { parent: Entry[] } map for Panel drill-down.
- */
 export const groupVersionRows = (
   rows: BreakdownRow[] | undefined,
   parentField: 'browser' | 'os',
@@ -55,19 +46,16 @@ export const groupVersionRows = (
   return grouped
 }
 
-/** Metadata rows -> the { result } shape KVTableContainer consumes */
 export const metadataToResult = (rows: MetadataRow[] | undefined) => ({
   result: rows || [],
 })
 
-/** True when a custom-event filter is applied (metric cards collapse to Events) */
 export const hasCustomEventFilter = (filters: V2Filter[]): boolean =>
   filters.some(
     (filter) =>
       filter.dimension === 'event' || filter.dimension === 'event_metadata',
   )
 
-/** v2 traffic summary -> the OverallObject shape MetricCards consumes */
 export const summaryToOverall = (
   summary: TrafficSummaryData | undefined,
   customEVFilterApplied = false,
@@ -94,12 +82,6 @@ export const summaryToOverall = (
   }
 }
 
-/**
- * v2 ISO timestamp -> the 'YYYY-MM-DD HH:mm:ss' wall-time string the chart
- * pipeline expects. The timestamp is already in the requested timezone, so we
- * take its literal date-time part instead of letting Date/dayjs re-shift it
- * into the browser timezone.
- */
 const toChartX = (timestamp: string): string =>
   timestamp.slice(0, 19).replace('T', ' ')
 
@@ -113,12 +95,6 @@ export interface TrafficChartData {
   [key: string]: number[] | string[]
 }
 
-/**
- * Traffic timeseries rows -> the columnar chart shape getColumns()/getSettings()
- * consume. `bounces` is reconstructed as a count because getColumns computes
- * the percentage from bounces/uniques. `concurrency` (live visitors over time)
- * is only non-zero when the `concurrency` metric was requested.
- */
 export const pivotTrafficTimeseries = (
   rows: TimeseriesRow[] | undefined,
 ): TrafficChartData => {
@@ -142,7 +118,6 @@ export const pivotTrafficTimeseries = (
   return { x, visits, uniques, sdur, bounces, concurrency }
 }
 
-/** Custom events timeseries rows -> { x, events } for the stacked chart */
 export const pivotCustomEventsTimeseries = (
   rows: TimeseriesRow[] | undefined,
   events: string[],

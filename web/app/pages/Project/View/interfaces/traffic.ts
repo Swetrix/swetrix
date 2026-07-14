@@ -1,8 +1,6 @@
 import { TimeBucket } from '~/lib/constants'
 import { V2Filter } from '~/api/v2/types'
 
-// Legacy (v1) filter shape — views saved before the v2 migration still persist
-// this; newer views persist the v2 shape (see ProjectView.filters).
 interface Filter {
   column: string
   filter: string

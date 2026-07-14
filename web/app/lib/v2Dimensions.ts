@@ -1,8 +1,5 @@
 import { V2DataType } from '~/api/v2/types'
 
-// Frontend mirror of backend/apps/*/src/analytics/v2/registry/dimensions.ts.
-// v1 short codes are kept only as URL aliases so old shared links keep working.
-
 export const V1_TO_V2_DIMENSION: Record<string, string> = {
   cc: 'country',
   rg: 'region',
@@ -31,7 +28,6 @@ export const V1_TO_V2_DIMENSION: Record<string, string> = {
   ev: 'event',
 }
 
-/** Keyed filter families: URL key `event_metadata:<key>` (legacy `ev:key:<key>`) */
 export const KEYED_DIMENSIONS = ['event_metadata', 'page_property'] as const
 
 export const V1_KEYED_PREFIX_TO_V2: Record<string, string> = {
@@ -126,7 +122,6 @@ export const VALID_DIMENSIONS_BY_TYPE: Record<V2DataType, string[]> = {
   captcha: CAPTCHA_DIMENSIONS,
 }
 
-/** Every dimension name that may appear as a URL filter key */
 export const ALL_VALID_DIMENSIONS = Array.from(
   new Set([
     ...TRAFFIC_DIMENSIONS,

@@ -183,8 +183,6 @@ export const V2_DIMENSIONS: V2DimensionDef[] = [
     description:
       'Custom event name (filter-only; use /traffic/custom-events for a breakdown)',
   },
-  // Errors-only, filter-only dimensions. Columns are the v1 public filter
-  // names — getFiltersQuery maps them to error_name/error_message/error_filename.
   {
     api: 'error_name',
     column: 'name',
@@ -206,8 +204,6 @@ export const V2_DIMENSIONS: V2DimensionDef[] = [
     filterOnly: true,
     description: 'Source file the error originated from',
   },
-  // Captcha meta dimensions. Per-dimension WHERE guards mirror v1
-  // generateParamsQuery captcha handling.
   {
     api: 'captcha_event',
     column: 'captcha_event',
@@ -237,7 +233,6 @@ export const V2_DIMENSIONS: V2DimensionDef[] = [
   },
 ]
 
-// Captcha country/browser/os/device breakdowns only count passed captchas (v1 parity)
 const CAPTCHA_PASS_GUARD = `AND ${CAPTCHA_EVENT_SQL} = 'pass'`
 
 export const captchaExtraWhere = (dim: V2DimensionDef): string | undefined => {
@@ -252,10 +247,6 @@ export const captchaExtraWhere = (dim: V2DimensionDef): string | undefined => {
   return undefined
 }
 
-/**
- * Filter-only dimension families that carry a `key` (meta.key) and translate
- * to v1's `ev:key:<key>` / `tag:key:<key>` filter columns.
- */
 export const V2_KEYED_FILTER_DIMENSIONS: Record<
   string,
   { v1Prefix: string; v1KeyColumn: string; types: V2DimensionDef['types'] }

@@ -83,12 +83,7 @@ const clampPagination = (take?: number, skip?: number) => {
   return { take: safeTake, skip: safeSkip }
 }
 
-// Maps a goal condition `field` to its ClickHouse column. New goals store v2
-// dimension names (page, country, utm_source, ...); the legacy v1 short codes
-// (pg, cc, so, ...) are kept so conditions saved before the v2 migration still
-// resolve.
 const GOAL_CONDITION_COLUMNS: Record<string, string> = {
-  // v2 dimension names
   page: 'pg',
   event: 'event_name',
   host: 'host',
@@ -102,7 +97,6 @@ const GOAL_CONDITION_COLUMNS: Record<string, string> = {
   utm_campaign: 'ca',
   utm_term: 'te',
   utm_content: 'co',
-  // legacy v1 short codes (existing goals)
   pg: 'pg',
   event_name: 'event_name',
   ref: 'ref',

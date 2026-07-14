@@ -59,8 +59,6 @@ export class PublicProjectCacheInterceptor implements NestInterceptor {
       return next.handle()
     }
 
-    // v2 handlers opt in via @CacheableAnalytics(); v1 routes are matched
-    // against the static route set
     const isCacheableV2 = this.reflector.get<boolean>(
       CACHEABLE_ANALYTICS_KEY,
       context.getHandler(),

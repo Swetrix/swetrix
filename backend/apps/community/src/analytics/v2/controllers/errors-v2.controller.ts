@@ -37,8 +37,6 @@ import {
   V2TimeseriesDto,
 } from '../dto/v2-base.dto'
 
-// NOTE: static routes (overview, timeseries, breakdown) MUST be declared
-// before the :eid routes — NestJS matches routes in declaration order.
 @ApiTags('Analytics v2')
 @ApiBearerAuth()
 @ApiSecurity('apiKey')

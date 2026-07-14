@@ -10,9 +10,6 @@ import {
   V2_KEYED_FILTER_DIMENSIONS,
 } from '../registry'
 
-// Keep the registry in lockstep with the v1 filter column allowlists
-// (common/constants.ts). If a column is added there, the registry must learn
-// about it too.
 const {
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
@@ -54,9 +51,6 @@ describe('registry <-> v1 column allowlist lockstep', () => {
 })
 
 describe('V2_VIEW_FILTER_DIMENSIONS <-> registry parity', () => {
-  // Saved-view filters (project.service.filterUnsupportedColumns) span traffic,
-  // performance and errors data — every such dimension the UI can offer must be
-  // preserved, and no captcha-only or stale name may leak into the allowlist.
   const expected = [
     ...V2_DIMENSIONS.filter((dimension) =>
       dimension.types.some((type) => type !== 'captcha'),
@@ -85,7 +79,6 @@ describe('dimension lookups', () => {
     expect(() => getBreakdownDimension('event', 'traffic')).toThrow(
       UnprocessableEntityException,
     )
-    // valid dimension, wrong data type
     expect(() => getBreakdownDimension('referrer', 'performance')).toThrow(
       UnprocessableEntityException,
     )

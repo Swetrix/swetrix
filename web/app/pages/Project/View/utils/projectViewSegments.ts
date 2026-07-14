@@ -7,9 +7,6 @@ import { ProjectView } from '../interfaces/traffic'
 
 type ProjectTab = keyof typeof PROJECT_TABS
 
-// New project views persist the v2 filter shape; views saved before the v2
-// migration still hold the legacy shape, so normalise both here (unmappable
-// legacy filters are dropped).
 export const projectViewFiltersToV2 = (view?: ProjectView): V2Filter[] =>
   (view?.filters || []).flatMap((filter) => {
     if ('dimension' in filter) {
@@ -19,13 +16,8 @@ export const projectViewFiltersToV2 = (view?: ProjectView): V2Filter[] =>
     return converted ? [converted] : []
   })
 
-// Dimensions that carry a key (event_metadata:plan) are never offered in the
-// filter editors directly — they're only created from panel clicks — but they
-// are supported when applying segments / rendering chips.
 const KEYED_FILTER_DIMENSIONS = ['event_metadata', 'page_property']
 
-// referrer_name shares a display label with referrer, so offering both in the
-// column dropdown would be confusing.
 const HIDDEN_FILTER_OPTIONS = [...KEYED_FILTER_DIMENSIONS, 'referrer_name']
 
 const TRAFFIC_FILTER_OPTIONS = VALID_DIMENSIONS_BY_TYPE.traffic.filter(

@@ -597,14 +597,10 @@ export class GSCService {
         isContains?: unknown
       }
 
-      // Accept both the v2 shape ({ dimension, operator, value }) and the
-      // legacy v1 shape ({ column, filter, isExclusive, isContains }).
       const isV2 = typeof raw.dimension === 'string'
       const filterDimension = isV2 ? raw.dimension : raw.column
       const value = isV2 ? raw.value : raw.filter
 
-      // GSC only supports single-value string filters; skip null/array values
-      // and dimensions it doesn't understand.
       if (typeof filterDimension !== 'string' || typeof value !== 'string') {
         continue
       }

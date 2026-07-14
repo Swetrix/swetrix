@@ -82,8 +82,6 @@ export class V2ErrorsQueryDto extends V2EntityListDto {
   @Transform(({ value }) => {
     if (value === true || value === 'true') return true
     if (value === false || value === 'false') return false
-    // Leave anything else untouched so @IsBoolean() rejects it instead of
-    // silently coercing invalid input to false.
     return value
   })
   @IsBoolean()

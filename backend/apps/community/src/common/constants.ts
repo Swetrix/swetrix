@@ -133,10 +133,6 @@ const ERROR_COLUMNS = [
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev', 'entryPage', 'exitPage']
 
-// v2 dimension names allowed in a saved-view filter. Mirrors the traffic
-// dimensions in analytics/v2/registry/dimensions.ts — duplicated here because
-// project.service cannot import the registry without creating an
-// analytics.service <-> project.service import cycle.
 const V2_VIEW_FILTER_DIMENSIONS = [
   'country',
   'region',
@@ -163,7 +159,6 @@ const V2_VIEW_FILTER_DIMENSIONS = [
   'entry_page',
   'exit_page',
   'event',
-  // errors-only filter dimensions (error-tab segments persist these)
   'error_name',
   'error_message',
   'error_filename',
