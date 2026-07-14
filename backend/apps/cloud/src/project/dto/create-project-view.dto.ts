@@ -61,7 +61,7 @@ export const MAX_METRICS_IN_VIEW = 3
 
 // Mirrors MAX_FILTERS in analytics.service — the cap applied when filters run
 // against ClickHouse, so a saved view can never hold more than a query accepts.
-export const MAX_FILTERS_IN_VIEW = 100
+const MAX_FILTERS_IN_VIEW = 100
 
 export class CreateProjectViewDto {
   @ApiProperty()
