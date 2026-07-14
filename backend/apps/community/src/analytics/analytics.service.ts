@@ -80,12 +80,8 @@ import {
   TrafficCHResponse,
   IGetGroupFromTo,
   GetFiltersQuery,
-  IUserFlowNode,
-  IUserFlowLink,
-  IUserFlow,
   IJourney,
   IJourneys,
-  IBuildUserFlow,
   IExtractChartData,
   IGenerateXAxis,
   IAggregatedMetadata,
@@ -944,100 +940,6 @@ export class AnalyticsService {
       // UTC time
       groupFromUTC,
       groupToUTC,
-    }
-  }
-
-  removeCyclicDependencies(links: IUserFlowLink[]): IUserFlowLink[] {
-    const visited = new Set<string>()
-
-    return links.filter((link) => {
-      const key = `${link.source}_${link.target}`
-      if (visited.has(key)) {
-        return false
-      }
-      visited.add(key)
-      return true
-    })
-  }
-
-  buildUserFlow(links: IUserFlowLink[]): IBuildUserFlow {
-    const nodes: IUserFlowNode[] = Array.from(
-      new Set(
-        links
-          .map((link: IUserFlowLink) => link.source)
-          .concat(links.map((link: IUserFlowLink) => link.target)),
-      ),
-    ).map((node: any) => ({ id: node }))
-
-    return { nodes, links }
-  }
-
-  async getUserFlow(
-    params: Record<string, unknown>,
-    filtersQuery: string,
-  ): Promise<IUserFlow> {
-    const query = `
-      WITH page_sequences AS (
-        SELECT
-          psid,
-          pg,
-          created,
-          lagInFrame(pg) OVER (PARTITION BY psid ORDER BY created) AS prev_page
-        FROM events
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND type = 'pageview'
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-          AND pg IS NOT NULL
-          ${filtersQuery}
-      )
-      SELECT
-        prev_page AS source,
-        pg AS target,
-        count() AS value
-      FROM page_sequences
-      WHERE prev_page IS NOT NULL
-        AND prev_page != pg
-      GROUP BY
-        source,
-        target
-      ORDER BY value DESC
-    `
-
-    const { data } = await clickhouse
-      .query({
-        query,
-        query_params: params,
-      })
-      .then((res) => res.json<IUserFlowLink>())
-
-    if (_isEmpty(data)) {
-      const empty = { nodes: [], links: [] }
-      return {
-        ascending: empty,
-        descending: empty,
-      }
-    }
-
-    const ascendingLinks: IUserFlowLink[] = []
-    const descendingLinks: IUserFlowLink[] = []
-
-    this.removeCyclicDependencies(data).forEach((row: any) => {
-      const link: IUserFlowLink = {
-        source: row.source,
-        target: row.target,
-        value: row.value,
-      }
-      if (link.source < link.target) {
-        ascendingLinks.push(link)
-      } else {
-        descendingLinks.push(link)
-      }
-    })
-
-    return {
-      ascending: this.buildUserFlow(ascendingLinks),
-      descending: this.buildUserFlow(descendingLinks),
     }
   }
 

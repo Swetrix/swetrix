@@ -48,7 +48,6 @@ import { DataDeletionDto } from './dto/data-deletion.dto'
 import { GetVersionFiltersDto } from './dto/get-version-filters.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
-import { GetUserFlowDto } from './dto/getUserFlow.dto'
 import { GetJourneysDto } from './dto/get-journeys.dto'
 import { GetJourneySessionsDto } from './dto/get-journey-sessions.dto'
 import { GetFunnelsDto } from './dto/getFunnels.dto'
@@ -58,13 +57,7 @@ import { clickhouse } from '../common/integrations/clickhouse'
 import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetBotStatsDto } from './dto/get-bot-stats.dto'
-import {
-  IFunnel,
-  IGetFunnel,
-  IPageProperty,
-  IUserFlow,
-  PerfMeasure,
-} from './interfaces'
+import { IFunnel, IGetFunnel, IPageProperty, PerfMeasure } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
 import { GetProfilesDto } from './dto/get-profiles.dto'
@@ -887,57 +880,6 @@ export class AnalyticsController {
     )
 
     return { chart, appliedFilters: parsedFilters }
-  }
-
-  @Get('user-flow')
-  @Auth(true, true)
-  async getUserFlow(
-    @Query() data: GetUserFlowDto,
-    @CurrentUserId() uid: string,
-    @Headers() headers: { 'x-password'?: string },
-  ): Promise<IUserFlow | { appliedFilters: any[] }> {
-    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, filters } = data
-
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
-
-    this.logger.log(
-      `pid: ${pid}, period: ${period}`,
-      'GET /analytics/user-flow',
-    )
-
-    let diff
-
-    if (period === 'all') {
-      const res = await this.analyticsService.calculateTimeBucketForAllTime(
-        pid,
-        'pageview',
-      )
-
-      diff = res.diff
-    }
-
-    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      null,
-      period,
-      safeTimezone,
-      diff,
-    )
-
-    const [filtersQuery, filtersParams, parsedFilters] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS, true)
-
-    const params = { pid, groupFrom, groupTo, ...filtersParams }
-
-    const flow = await this.analyticsService.getUserFlow(params, filtersQuery)
-
-    return { ...flow, appliedFilters: parsedFilters }
   }
 
   @Get('journeys')

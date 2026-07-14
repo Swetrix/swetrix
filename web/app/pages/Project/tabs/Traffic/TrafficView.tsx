@@ -52,7 +52,6 @@ import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
 import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import { TrafficChart } from '~/pages/Project/tabs/Traffic/TrafficChart'
-import UserFlow from '~/pages/Project/tabs/Traffic/UserFlow'
 import { getChartPointWindow } from '~/pages/Project/View/utils/chartPoint'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
@@ -726,11 +725,6 @@ const TrafficViewInner = ({
         id: 'exit_page',
         label: t('project.exitPages'),
         dimension: 'exit_page',
-      },
-      {
-        id: 'userFlow',
-        label: t('project.mapping.userFlow'),
-        render: () => <UserFlow isReversed={false} setReversed={() => {}} />,
       },
       { id: 'host', label: t('project.mapping.host'), dimension: 'host' },
     ],

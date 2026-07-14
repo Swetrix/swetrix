@@ -282,10 +282,6 @@ Counts of pageview metadata (page property) keys: `data: [{ "property": "author"
 
 Aggregated value counts for one page property (v1 `/log/property` equivalent). Requires `property`.
 
-### GET /v2/projects/:pid/traffic/user-flow
-
-Page-to-page navigation flows: `data: { "ascending": { "nodes": [...], "links": [...] }, "descending": { ... } }`.
-
 ## Performance endpoints
 
 ### GET /v2/projects/:pid/performance/summary
@@ -476,7 +472,6 @@ Distinct recorded values for a dimension — for filter autocompletion (`?type=t
 | `GET /v1/log/meta`                                                                      | `/traffic/custom-events/metadata`                                         |
 | `GET /v1/log/property`                                                                  | `/traffic/page-properties/metadata`                                       |
 | `GET /v1/log/custom-events`                                                             | `/traffic/custom-events/timeseries`                                       |
-| `GET /v1/log/user-flow`                                                                 | `/traffic/user-flow`                                                      |
 | `GET /v1/log/sessions` / `/log/session`                                                 | `/sessions` / `/sessions/:psid`                                           |
 | `GET /v1/log/profiles` / `/log/profile` / `/log/profile/sessions`                       | `/profiles` / `/profiles/:profileId` / `/profiles/:profileId/sessions`    |
 | `GET /v1/log/errors` / `/log/get-error` / `/log/error-overview` / `/log/error-sessions` | `/errors` / `/errors/:eid` / `/errors/overview` / `/errors/:eid/sessions` |

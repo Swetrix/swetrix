@@ -31,7 +31,6 @@ const CACHEABLE_ROUTES = new Set([
   'error-overview',
   'funnel',
   'funnel-sessions',
-  'user-flow',
   'custom-events',
   'keywords',
   'gsc-dashboard',

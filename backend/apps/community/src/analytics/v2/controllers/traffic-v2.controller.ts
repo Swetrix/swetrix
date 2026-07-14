@@ -296,29 +296,4 @@ export class TrafficV2Controller {
 
     return this.analyticsV2Service.getTrafficPageProperties(pid, query)
   }
-
-  @Get('user-flow')
-  @Auth(true, true)
-  @CacheableAnalytics()
-  @ApiOperation({
-    summary: 'User flow',
-    description:
-      'Page-to-page navigation flows (sankey nodes and links) for the selected period.',
-  })
-  async getUserFlow(
-    @Param() { pid }: V2ProjectParamsDto,
-    @Query() query: V2SummaryDto,
-    @CurrentUserId() uid: string,
-    @Headers() headers: { 'x-password'?: string },
-  ) {
-    this.logger.log(`pid: ${pid}`, 'GET /v2/projects/:pid/traffic/user-flow')
-
-    await this.analyticsV2Service.assertReadAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
-
-    return this.analyticsV2Service.getTrafficUserFlow(pid, query)
-  }
 }

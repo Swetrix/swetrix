@@ -12,7 +12,6 @@ import {
   PerformanceSummaryData,
   TimeseriesRow,
   TrafficSummaryData,
-  UserFlowData,
   V2CommonParams,
   V2DataType,
 } from './types'
@@ -136,12 +135,6 @@ export const getPagePropertiesMetadata = (
     params,
     signal,
   )
-
-export const getUserFlow = (
-  pid: string,
-  params: Common,
-  signal?: AbortSignal,
-) => fetchV2<UserFlowData>(`projects/${pid}/traffic/user-flow`, params, signal)
 
 export const getErrorsList = (
   pid: string,

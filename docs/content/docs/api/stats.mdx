@@ -1257,19 +1257,6 @@ The number of sessions to return per page.
 
 The number of sessions to skip (for pagination).
 
-### GET /v1/log/user-flow
-
-Returns the user flow diagram data, showing how users navigate through your website.
-
-```bash
-curl 'https://api.swetrix.com/v1/log/user-flow?pid=YOUR_PROJECT_ID&period=7d'\
-  -H "X-Api-Key: ${SWETRIX_API_KEY}"
-```
-
-#### Parameters
-
-The parameters are similar to the [`/log` endpoint](#get-v1log).
-
 ### GET /v1/log/journeys
 
 Returns the most popular journeys — the ordered sequences of pages visitors viewed within a session. This is the data behind the Journeys tab of the dashboard.

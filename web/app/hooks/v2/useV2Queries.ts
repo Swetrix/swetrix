@@ -282,17 +282,6 @@ export const usePagePropertiesQuery = (
   })
 }
 
-export const useUserFlowQuery = (opts: { enabled?: boolean } = {}) => {
-  const { pid, common } = useV2CommonParams('traffic')
-
-  return useQuery({
-    queryKey: ['v2', pid, 'traffic', 'user-flow', common],
-    queryFn: ({ signal }) => v2.getUserFlow(pid, common, signal),
-    placeholderData: keepPreviousData,
-    enabled: opts.enabled,
-  })
-}
-
 const LIST_PAGE_SIZE = 30
 
 const listNextPageParam = (pageSize: number) => {

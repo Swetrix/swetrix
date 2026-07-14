@@ -2372,7 +2372,6 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   error_name: t('project.mapping.error_name'),
   error_message: t('project.mapping.error_message'),
   error_filename: t('project.mapping.error_filename'),
-  userFlow: t('project.mapping.userFlow'),
   searchEngine: t('project.mapping.searchEngine'),
   aiReferral: t('project.mapping.aiReferral'),
   captcha_event: t('project.event'),

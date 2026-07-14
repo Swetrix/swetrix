@@ -115,26 +115,6 @@ export interface MetadataRow {
   count: number
 }
 
-interface UserFlowNode {
-  id: string
-}
-
-interface UserFlowLink {
-  source: string
-  target: string
-  value: number
-}
-
-interface UserFlowGraph {
-  nodes: UserFlowNode[]
-  links: UserFlowLink[]
-}
-
-export interface UserFlowData {
-  ascending: UserFlowGraph
-  descending: UserFlowGraph
-}
-
 export interface ErrorListItem {
   eid: string
   name: string

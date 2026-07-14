@@ -720,35 +720,6 @@ export class AnalyticsV2Service {
     })
   }
 
-  async getTrafficUserFlow(
-    pid: string,
-    dto: V2BaseQueryDto,
-  ): Promise<V2Envelope<unknown>> {
-    const dataType: V2DataType = 'traffic'
-    const filters = this.prepareFilters(dto.filters, dataType, true)
-    const timeframe = await this.resolveTimeframe({
-      pid,
-      dataType,
-      period: dto.period,
-      from: dto.from,
-      to: dto.to,
-      timezone: dto.timezone,
-      allTimeEventTypes: ['pageview'],
-    })
-
-    const flow = await this.analyticsService.getUserFlow(
-      {
-        pid,
-        groupFrom: timeframe.groupFrom,
-        groupTo: timeframe.groupTo,
-        ...filters.filtersParams,
-      },
-      filters.filtersQuery,
-    )
-
-    return envelope(flow, this.baseMeta(pid, timeframe, filters.appliedFilters))
-  }
-
   async getPerformanceTimeseries(
     pid: string,
     dto: V2TimeseriesDto & { measure?: string },
