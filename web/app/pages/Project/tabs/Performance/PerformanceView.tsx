@@ -547,18 +547,20 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
             />
           </div>
 
+          {/* Always rendered: the cards read zero until the summary lands and
+              then roll up to it, so the row holds its height instead of
+              appearing late and shoving the chart and panels down. */}
+          <PerformanceMetricCards
+            overall={overall}
+            overallCompare={overallCompare}
+          />
           {isChartLoading ? (
-            <div className='flex h-80 items-center justify-center'>
+            // Same box as PerformanceChart below (incl. its mobile mt-5) so the
+            // chart drops straight into the spinner's place.
+            <div className='mt-5 flex h-80 items-center justify-center md:mt-0'>
               <Loader className='pt-0!' />
             </div>
-          ) : null}
-          {!_isEmpty(overall) ? (
-            <PerformanceMetricCards
-              overall={overall}
-              overallCompare={overallCompare}
-            />
-          ) : null}
-          {activeChartMetrics && !_isEmpty(chartData.x) ? (
+          ) : activeChartMetrics && !_isEmpty(chartData.x) ? (
             <div
               onContextMenu={(e) => handleChartContextMenu(e, chartData.x)}
               className='relative'

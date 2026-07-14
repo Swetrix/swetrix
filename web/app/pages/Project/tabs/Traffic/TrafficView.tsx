@@ -312,6 +312,13 @@ const TrafficViewInner = ({
     () => summaryToOverall(summaryQuery.data?.data, customEVFilterApplied),
     [summaryQuery.data, customEVFilterApplied],
   )
+  // The cards render before the summary arrives, and which cards they are
+  // depends on the filter (known from the URL) rather than on the response —
+  // without this the row would show five cards and then collapse to one.
+  const overallForCards = useMemo(
+    () => ({ ...overall, customEVFilterApplied }),
+    [overall, customEVFilterApplied],
+  )
   const overallCompare = useMemo(
     () =>
       summaryToOverall(compareSummaryQuery.data?.data, customEVFilterApplied),
@@ -1151,53 +1158,55 @@ const TrafficViewInner = ({
               <HasImportedIndicator />
             </Suspense>
           </div>
+          {/* Always rendered: the cards read zero until the summary lands and
+              then roll up to it, so the row holds its height instead of
+              appearing late and shoving the chart and panels down. */}
+          <motion.div
+            initial='hidden'
+            animate='visible'
+            variants={metricCardsContainerVariants}
+            className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'
+          >
+            <MetricCards
+              overall={overallForCards}
+              overallCompare={overallCompare}
+              activePeriodCompare={activePeriodCompare}
+            />
+            {!_isEmpty(customMetricsQuery.data?.data)
+              ? _map(
+                  customMetricsQuery.data?.data,
+                  ({ key, current, previous }) => (
+                    <React.Fragment key={key}>
+                      <MetricCard
+                        label={t('project.metrics.xAvg', { x: key })}
+                        value={current.avg}
+                        change={current.avg - previous.avg}
+                        goodChangeDirection='down'
+                        valueMapper={(value, type) =>
+                          `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                        }
+                      />
+                      <MetricCard
+                        label={t('project.metrics.xTotal', { x: key })}
+                        value={current.sum}
+                        change={current.sum - previous.sum}
+                        goodChangeDirection='down'
+                        valueMapper={(value, type) =>
+                          `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                        }
+                      />
+                    </React.Fragment>
+                  ),
+                )
+              : null}
+          </motion.div>
           {isChartLoading ? (
-            <div className='flex h-80 items-center justify-center'>
+            // Same box as TrafficChart below (incl. its mobile mt-5) so the
+            // chart drops straight into the spinner's place.
+            <div className='mt-5 flex h-80 items-center justify-center md:mt-0'>
               <Loader className='pt-0!' />
             </div>
-          ) : null}
-          {!_isEmpty(overall) ? (
-            <motion.div
-              initial='hidden'
-              animate='visible'
-              variants={metricCardsContainerVariants}
-              className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'
-            >
-              <MetricCards
-                overall={overall}
-                overallCompare={overallCompare}
-                activePeriodCompare={activePeriodCompare}
-              />
-              {!_isEmpty(customMetricsQuery.data?.data)
-                ? _map(
-                    customMetricsQuery.data?.data,
-                    ({ key, current, previous }) => (
-                      <React.Fragment key={key}>
-                        <MetricCard
-                          label={t('project.metrics.xAvg', { x: key })}
-                          value={current.avg}
-                          change={current.avg - previous.avg}
-                          goodChangeDirection='down'
-                          valueMapper={(value, type) =>
-                            `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
-                          }
-                        />
-                        <MetricCard
-                          label={t('project.metrics.xTotal', { x: key })}
-                          value={current.sum}
-                          change={current.sum - previous.sum}
-                          goodChangeDirection='down'
-                          valueMapper={(value, type) =>
-                            `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
-                          }
-                        />
-                      </React.Fragment>
-                    ),
-                  )
-                : null}
-            </motion.div>
-          ) : null}
-          {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData.x) ? (
+          ) : !checkIfAllMetricsAreDisabled && !_isEmpty(chartData.x) ? (
             <div
               onContextMenu={(e) => handleChartContextMenu(e, chartData.x)}
               className='relative'

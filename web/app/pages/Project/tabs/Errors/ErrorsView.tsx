@@ -84,6 +84,7 @@ import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { getRelativeDateIfPossible } from '~/utils/date'
+import { CompactNumberFlow, PercentFlow } from '~/ui/NumberFlow'
 import { getLocaleDisplayName, nFormatter } from '~/utils/generic'
 
 const calculateOptimalTicks = (
@@ -460,7 +461,7 @@ const PerErrorPanels = ({
 
 interface StatCardProps {
   icon: React.ReactNode
-  value: string | number
+  value: React.ReactNode
   label: string
 }
 
@@ -1122,12 +1123,20 @@ const ErrorsViewInner = () => {
                     {
                       key: 'occurrences',
                       label: t('project.occurrences'),
-                      value: nFormatter(activeError.details.count || 0, 1),
+                      value: (
+                        <CompactNumberFlow
+                          value={activeError.details.count || 0}
+                        />
+                      ),
                     },
                     {
                       key: 'users',
                       label: t('dashboard.users'),
-                      value: nFormatter(activeError.details.users || 0, 1),
+                      value: (
+                        <CompactNumberFlow
+                          value={activeError.details.users || 0}
+                        />
+                      ),
                     },
                     {
                       key: 'firstSeen',
@@ -1137,6 +1146,9 @@ const ErrorsViewInner = () => {
                           activeError.details.first_seen,
                           language,
                         ) || '-',
+                      // A relative date is a sentence, not a figure — at the
+                      // numeric card size it dwarfs the rest of the row.
+                      valueClassName: 'text-xl sm:text-2xl',
                     },
                     {
                       key: 'lastSeen',
@@ -1146,6 +1158,7 @@ const ErrorsViewInner = () => {
                           activeError.details.last_seen,
                           language,
                         ) || '-',
+                      valueClassName: 'text-xl sm:text-2xl',
                     },
                   ]}
                 />
@@ -1274,22 +1287,34 @@ const ErrorsViewInner = () => {
             <div className='grid w-full grid-cols-2 gap-2 lg:w-[35%]'>
               <StatCard
                 icon={<WarningIcon className='text-red-600' />}
-                value={nFormatter(overview?.stats?.totalErrors || 0, 1)}
+                value={
+                  <CompactNumberFlow
+                    value={overview?.stats?.totalErrors || 0}
+                  />
+                }
                 label={t('project.totalErrors')}
               />
               <StatCard
                 icon={<PercentIcon className='text-orange-600' />}
-                value={`${overview?.stats?.errorRate || 0}%`}
+                value={<PercentFlow value={overview?.stats?.errorRate || 0} />}
                 label={t('project.errorRate')}
               />
               <StatCard
                 icon={<UsersIcon className='text-blue-600' />}
-                value={nFormatter(overview?.stats?.affectedUsers || 0, 1)}
+                value={
+                  <CompactNumberFlow
+                    value={overview?.stats?.affectedUsers || 0}
+                  />
+                }
                 label={t('project.affectedUsers')}
               />
               <StatCard
                 icon={<MonitorIcon className='text-purple-600' />}
-                value={nFormatter(overview?.stats?.affectedSessions || 0, 1)}
+                value={
+                  <CompactNumberFlow
+                    value={overview?.stats?.affectedSessions || 0}
+                  />
+                }
                 label={t('project.affectedSessions')}
               />
             </div>

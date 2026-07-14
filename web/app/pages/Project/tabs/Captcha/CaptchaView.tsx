@@ -24,6 +24,7 @@ import { MetricCard } from '~/pages/Project/tabs/Traffic/MetricCards'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
+import { CompactNumberFlow, DurationFlow, PercentFlow } from '~/ui/NumberFlow'
 import { nFormatter } from '~/utils/generic'
 
 import CCRow from '../../View/components/CCRow'
@@ -222,7 +223,11 @@ const CaptchaView = (_props: CaptchaViewProps) => {
   )
 
   const formatNumber = (value: number, type: 'main' | 'badge') =>
-    `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+    type === 'badge' ? (
+      `${value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+    ) : (
+      <CompactNumberFlow value={value} />
+    )
   const isFiniteNumber = (value: unknown): value is number =>
     typeof value === 'number' && Number.isFinite(value)
   const formatPercent = (
@@ -233,62 +238,85 @@ const CaptchaView = (_props: CaptchaViewProps) => {
       return 'N/A'
     }
 
-    return `${type === 'badge' && value > 0 ? '+' : ''}${value.toFixed(1)}%`
+    return type === 'badge' ? (
+      `${value > 0 ? '+' : ''}${value.toFixed(1)}%`
+    ) : (
+      <PercentFlow value={value} />
+    )
   }
-  const formatSeconds = (value?: number) =>
-    value ? `${Number(value).toFixed(2)}s` : 'N/A'
   const formatSecondsChange = (value: number) =>
     `${value > 0 ? '+' : value < 0 ? '-' : ''}${Math.abs(Number(value || 0)).toFixed(2)}s`
 
-  const summaryCards = summaryData
-    ? [
-        {
-          label: t('project.captchaAnalytics.generated'),
-          value: summaryData.generated || 0,
-          change: summaryCompareData
-            ? (summaryData.generated || 0) - (summaryCompareData.generated || 0)
-            : undefined,
-          goodChangeDirection: 'down' as const,
-          valueMapper: formatNumber,
-        },
-        {
-          label: t('project.captchaAnalytics.passed'),
-          value: summaryData.passed || 0,
-          change: summaryCompareData
-            ? (summaryData.passed || 0) - (summaryCompareData.passed || 0)
-            : undefined,
-          goodChangeDirection: 'down' as const,
-          valueMapper: formatNumber,
-        },
-        {
-          label: t('project.captchaAnalytics.passRate'),
-          value: summaryData.passRate as number,
-          change:
-            summaryCompareData &&
-            isFiniteNumber(summaryData.passRate) &&
-            isFiniteNumber(summaryCompareData.passRate)
-              ? summaryData.passRate - summaryCompareData.passRate
-              : undefined,
-          goodChangeDirection: 'down' as const,
-          valueMapper: formatPercent,
-        },
-        {
-          label: t('project.captchaAnalytics.medianSolve'),
-          value: summaryData.solveP50 || 0,
-          change:
-            summaryCompareData &&
-            (summaryData.solveP50 || 0) > 0 &&
-            (summaryCompareData.solveP50 || 0) > 0
-              ? (summaryData.solveP50 || 0) - (summaryCompareData.solveP50 || 0)
-              : undefined,
-          goodChangeDirection: 'up' as const,
-          valueMapper: (value: number, type: 'main' | 'badge') =>
-            type === 'badge'
-              ? formatSecondsChange(value)
-              : formatSeconds(value),
-        },
-      ]
-    : []
+  // Built even before the summary lands: the cards read zero and roll up to the
+  // real values, so the row holds its height rather than appearing late.
+  const summaryCards = [
+    {
+      label: t('project.captchaAnalytics.generated'),
+      value: summaryData?.generated || 0,
+      change:
+        summaryData && summaryCompareData
+          ? (summaryData.generated || 0) - (summaryCompareData.generated || 0)
+          : undefined,
+      goodChangeDirection: 'down' as const,
+      valueMapper: formatNumber,
+    },
+    {
+      label: t('project.captchaAnalytics.passed'),
+      value: summaryData?.passed || 0,
+      change:
+        summaryData && summaryCompareData
+          ? (summaryData.passed || 0) - (summaryCompareData.passed || 0)
+          : undefined,
+      goodChangeDirection: 'down' as const,
+      valueMapper: formatNumber,
+    },
+    {
+      label: t('project.captchaAnalytics.passRate'),
+      value: summaryData?.passRate as number,
+      change:
+        summaryData &&
+        summaryCompareData &&
+        isFiniteNumber(summaryData.passRate) &&
+        isFiniteNumber(summaryCompareData.passRate)
+          ? summaryData.passRate - summaryCompareData.passRate
+          : undefined,
+      goodChangeDirection: 'down' as const,
+      valueMapper: formatPercent,
+    },
+    {
+      label: t('project.captchaAnalytics.medianSolve'),
+      value: summaryData?.solveP50 || 0,
+      change:
+        summaryData &&
+        summaryCompareData &&
+        (summaryData.solveP50 || 0) > 0 &&
+        (summaryCompareData.solveP50 || 0) > 0
+          ? (summaryData.solveP50 || 0) - (summaryCompareData.solveP50 || 0)
+          : undefined,
+      goodChangeDirection: 'up' as const,
+      valueMapper: (value: number, type: 'main' | 'badge') =>
+        type === 'badge' ? (
+          formatSecondsChange(value)
+        ) : (
+          <DurationFlow value={value} showMs />
+        ),
+    },
+  ]
+
+  const summaryCardsRow = (
+    <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+      {summaryCards.map((card) => (
+        <MetricCard
+          key={card.label}
+          label={card.label}
+          value={card.value}
+          change={card.change}
+          goodChangeDirection={card.goodChangeDirection}
+          valueMapper={card.valueMapper}
+        />
+      ))}
+    </div>
+  )
 
   // Show waiting state if project has no captcha data yet
   if (!_isEmpty(project) && !project?.isCaptchaDataExists) {
@@ -318,11 +346,15 @@ const CaptchaView = (_props: CaptchaViewProps) => {
       <div>
         <Filters className='mb-3' tnMapping={tnMapping} />
         {isChartLoading ? (
-          <div className='flex h-80 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
-            <Loader className='pt-0!' />
+          // Mirrors CaptchaChart's own container so the box keeps its size once
+          // the chart takes over from the spinner.
+          <div className='overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+            {summaryCardsRow}
+            <div className='mt-5 flex h-80 items-center justify-center md:mt-0'>
+              <Loader className='pt-0!' />
+            </div>
           </div>
-        ) : null}
-        {!_isEmpty(chartData.x) ? (
+        ) : !_isEmpty(chartData.x) ? (
           <CaptchaChart
             chart={chartData}
             timeBucket={timeBucket}
@@ -331,20 +363,7 @@ const CaptchaView = (_props: CaptchaViewProps) => {
             chartType={chartTypes.line}
             dataNames={dataNames}
           >
-            {summaryCards.length ? (
-              <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
-                {summaryCards.map((card) => (
-                  <MetricCard
-                    key={card.label}
-                    label={card.label}
-                    value={card.value}
-                    change={card.change}
-                    goodChangeDirection={card.goodChangeDirection}
-                    valueMapper={card.valueMapper}
-                  />
-                ))}
-              </div>
-            ) : null}
+            {summaryCardsRow}
           </CaptchaChart>
         ) : null}
         <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>

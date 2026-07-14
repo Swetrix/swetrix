@@ -50,6 +50,7 @@ import {
   getDeviceRowMapper,
 } from '~/pages/Project/View/ViewProject.helpers'
 import { MetricCard } from '~/pages/Project/tabs/Traffic/MetricCards'
+import { CompactNumberFlow, PercentFlow } from '~/ui/NumberFlow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
@@ -863,7 +864,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             }
             goodChangeDirection='down'
             valueMapper={(value, type) =>
-              `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+              type === 'badge' ? (
+                `${value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+              ) : (
+                <CompactNumberFlow value={value} />
+              )
             }
           />
           <MetricCard
@@ -877,7 +882,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             }
             goodChangeDirection='down'
             valueMapper={(value, type) =>
-              `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+              type === 'badge' ? (
+                `${value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+              ) : (
+                <CompactNumberFlow value={value} />
+              )
             }
           />
           <MetricCard
@@ -891,7 +900,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             type='percent'
             goodChangeDirection='down'
             valueMapper={(value, type) =>
-              `${type === 'badge' && value > 0 ? '+' : ''}${value}%`
+              type === 'badge' ? (
+                `${value > 0 ? '+' : ''}${value}%`
+              ) : (
+                <PercentFlow value={value} />
+              )
             }
           />
           <MetricCard
@@ -907,7 +920,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             }
             goodChangeDirection='up'
             valueMapper={(value, type) =>
-              `${type === 'badge' && value > 0 ? '+' : ''}${value}`
+              type === 'badge' ? (
+                `${value > 0 ? '+' : ''}${value}`
+              ) : (
+                <CompactNumberFlow value={value} />
+              )
             }
           />
         </div>
