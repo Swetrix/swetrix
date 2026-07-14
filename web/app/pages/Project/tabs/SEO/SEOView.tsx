@@ -38,6 +38,7 @@ import {
   Panel,
   PanelContainer,
   PanelEmptyState,
+  PanelLoadingState,
 } from '~/pages/Project/View/Panels'
 import {
   useViewProjectContext,
@@ -255,6 +256,10 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   const noopFilterLink = useCallback(() => '#', [])
   const gscLoading = isLoading || isCompareLoading
   const gscError = error || compareError
+
+  // No cached response to fall back on — panels show spinners rather than
+  // claiming they have no data.
+  const isSEOLoading = gscLoading && !data
 
   const [isManualRefreshing, setIsManualRefreshing] = useState(false)
 
@@ -700,27 +705,6 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [t],
   )
 
-  if (gscLoading && !data) {
-    return (
-      <>
-        <DashboardHeader
-          showSearchButton={false}
-          showRefreshButton={false}
-          rightContent={
-            <ProjectViewHeaderActions
-              tnMapping={tnMapping}
-              extraActions={manualRefreshButton}
-            />
-          }
-          timeBucketSelectorItems={seoPeriodPairs}
-        />
-        <div className='flex min-h-[400px] items-center justify-center'>
-          <Loader />
-        </div>
-      </>
-    )
-  }
-
   if (gscError && !data) {
     return (
       <>
@@ -927,6 +911,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             }
           />
         </div>
+        {isSEOLoading ? (
+          <div className='flex h-80 items-center justify-center'>
+            <Loader className='pt-0!' />
+          </div>
+        ) : null}
         {anyMetricActive && !_isEmpty(aggregatedSeries) ? (
           <div
             onContextMenu={(event) =>
@@ -958,12 +947,14 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           data={searchEngineEntries}
           icon={panelIconMapping.referrer}
           rowMapper={refRowMapper}
+          isLoading={isSEOLoading}
         />
         <CompactReferralPanel
           title={t('project.seo.aiReferrals')}
           data={aiReferralEntries}
           icon={<RobotIcon className='h-5 w-5' />}
           rowMapper={refRowMapper}
+          isLoading={isSEOLoading}
         />
         <div className='overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <div className='mb-1 flex items-center gap-1 text-gray-900 dark:text-gray-50'>
@@ -972,7 +963,9 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
               {t('project.seo.brandedTraffic')}
             </Text>
           </div>
-          {isBrandedTrafficSkipped ? (
+          {isSEOLoading ? (
+            <PanelLoadingState />
+          ) : isBrandedTrafficSkipped ? (
             <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
           ) : brandedTraffic.branded + brandedTraffic.nonBranded > 0 ? (
             <BillboardChart
@@ -992,6 +985,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           icon={<ChartBarIcon className='size-5' />}
           type='impressionsByPosition'
           contentClassName='relative flex min-h-[21rem] flex-col overflow-hidden'
+          isLoading={isSEOLoading}
         >
           {isPositionAnalyticsSkipped ? (
             <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
@@ -1011,6 +1005,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           icon={<TrendUpIcon className='size-5' />}
           type='organicPositions'
           contentClassName='relative flex min-h-[21rem] flex-col overflow-hidden'
+          isLoading={isSEOLoading}
         >
           {isPositionAnalyticsSkipped ? (
             <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
@@ -1039,6 +1034,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
           dataLoading={gscLoading}
+          isLoading={isSEOLoading}
           rowTooltipRenderer={seoGscRowTooltip}
           rowTooltipFollowCursor
         />
@@ -1054,6 +1050,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
           dataLoading={gscLoading}
+          isLoading={isSEOLoading}
           rowTooltipRenderer={seoGscRowTooltip}
           rowTooltipFollowCursor
         />
@@ -1083,7 +1080,11 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           }
           contentClassName=''
         >
-          {quadrantData ? (
+          {isSEOLoading ? (
+            <div className='flex h-[400px] items-center justify-center'>
+              <Loader className='pt-0!' />
+            </div>
+          ) : quadrantData ? (
             <BillboardChart
               options={quadrantChartOptions}
               className='h-[400px] [&_.bb-circle]:fill-indigo-500/60 [&_.bb-circle]:stroke-indigo-600 [&_.bb-circle]:stroke-1 dark:[&_.bb-circle]:fill-indigo-400/60 dark:[&_.bb-circle]:stroke-indigo-300'
@@ -1109,6 +1110,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
           dataLoading={gscLoading}
+          isLoading={isSEOLoading}
         />
         <Panel
           name={t('project.devices')}
@@ -1124,6 +1126,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
           dataLoading={gscLoading}
+          isLoading={isSEOLoading}
         />
       </div>
 

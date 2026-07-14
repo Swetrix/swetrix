@@ -367,9 +367,9 @@ const TrafficViewInner = ({
 
   const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
-  const isInitialLoading =
-    (summaryQuery.isLoading || customEventsQuery.isLoading) &&
-    !hasShownContentRef.current
+  // Queries keep previous data across period/filter changes, so `isLoading` only
+  // ever means "nothing cached to show yet" — exactly when a spinner is wanted.
+  const isChartLoading = summaryQuery.isLoading || timeseriesQuery.isLoading
 
   const isMountedRef = useRef(true)
 
@@ -1020,15 +1020,6 @@ const TrafficViewInner = ({
     <ProjectViewHeaderActions tnMapping={tnMapping} exportTypes={exportTypes} />
   )
 
-  if (isInitialLoading) {
-    return (
-      <>
-        <DashboardHeader rightContent={headerRightContent} />
-        <Loader />
-      </>
-    )
-  }
-
   if (isPanelsDataEmpty) {
     return (
       <>
@@ -1160,6 +1151,11 @@ const TrafficViewInner = ({
               <HasImportedIndicator />
             </Suspense>
           </div>
+          {isChartLoading ? (
+            <div className='flex h-80 items-center justify-center'>
+              <Loader className='pt-0!' />
+            </div>
+          ) : null}
           {!_isEmpty(overall) ? (
             <motion.div
               initial='hidden'

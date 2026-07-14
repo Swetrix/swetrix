@@ -1100,7 +1100,9 @@ const ErrorsViewInner = () => {
 
         <Filters className='mb-3' tnMapping={tnMapping} />
 
-        {detailsLoading ? <Loader /> : null}
+        {detailsLoading ? (
+          <Loader className='min-h-including-header items-start' />
+        ) : null}
 
         {activeError?.details ? (
           <div className='relative'>
@@ -1234,7 +1236,7 @@ const ErrorsViewInner = () => {
             />
           }
         />
-        <Loader />
+        <Loader className='min-h-including-header items-start' />
       </div>
     )
   }

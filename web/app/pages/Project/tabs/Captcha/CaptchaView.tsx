@@ -129,9 +129,9 @@ const CaptchaView = (_props: CaptchaViewProps) => {
 
   const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
-  const isInitialLoading =
-    (summaryQuery.isLoading || timeseriesQuery.isLoading) &&
-    !hasShownContentRef.current
+  // Queries keep previous data across period/filter changes, so `isLoading` only
+  // ever means "nothing cached to show yet" — exactly when a spinner is wanted.
+  const isChartLoading = summaryQuery.isLoading || timeseriesQuery.isLoading
 
   const panels = useMemo(
     () =>
@@ -297,18 +297,6 @@ const CaptchaView = (_props: CaptchaViewProps) => {
 
   const headerRightContent = <ProjectViewHeaderActions tnMapping={tnMapping} />
 
-  if (isInitialLoading) {
-    return (
-      <>
-        <DashboardHeader
-          showLiveVisitors={false}
-          rightContent={headerRightContent}
-        />
-        <Loader />
-      </>
-    )
-  }
-
   if (isPanelsDataEmpty) {
     return (
       <>
@@ -329,6 +317,11 @@ const CaptchaView = (_props: CaptchaViewProps) => {
       />
       <div>
         <Filters className='mb-3' tnMapping={tnMapping} />
+        {isChartLoading ? (
+          <div className='flex h-80 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+            <Loader className='pt-0!' />
+          </div>
+        ) : null}
         {!_isEmpty(chartData.x) ? (
           <CaptchaChart
             chart={chartData}

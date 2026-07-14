@@ -54,6 +54,7 @@ import Dropdown from '~/ui/Dropdown'
 import Input from '~/ui/Input'
 import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
+import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import {
@@ -159,6 +160,14 @@ const PanelEmptyState = ({
   </div>
 )
 
+// Mirrors PanelEmptyState's box model so a panel is the same height whether it
+// is loading, empty or full.
+const PanelLoadingState = () => (
+  <div className='flex h-full flex-1 items-center justify-center px-4 py-8'>
+    <Loader className='pt-0!' />
+  </div>
+)
+
 const PanelDocsEmptyState = ({
   variant,
 }: {
@@ -220,8 +229,12 @@ interface PanelContainerProps {
   onTabChange?: (tab: string) => void
   activeTabId?: string
   onDetailsClick?: () => void
+  /** Renders the details button in a disabled state, keeping the panel height stable while there is nothing to drill into. */
+  detailsDisabled?: boolean
   dropdownPlaceholder?: string
   isRefetching?: boolean
+  /** Replaces the panel body with a centered spinner, keeping the panel at its usual height. */
+  isLoading?: boolean
 }
 
 const PanelContainer = ({
@@ -236,8 +249,10 @@ const PanelContainer = ({
   onTabChange,
   activeTabId,
   onDetailsClick,
+  detailsDisabled,
   dropdownPlaceholder,
   isRefetching,
+  isLoading,
 }: PanelContainerProps) => {
   const { t } = useTranslation('common')
   const underlineId = useId()
@@ -350,7 +365,7 @@ const PanelContainer = ({
           isRefetching && 'opacity-75 transition-opacity duration-200',
         )}
       >
-        {children}
+        {isLoading ? <PanelLoadingState /> : children}
       </div>
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
@@ -359,6 +374,7 @@ const PanelContainer = ({
             className='gap-1.5 px-3 py-2'
             type='button'
             onClick={onDetailsClick}
+            disabled={detailsDisabled}
             aria-label={t('common.details')}
           >
             <ScanIcon className='size-4' />
@@ -1355,14 +1371,9 @@ const MetadataKeyBody = ({
   const hasExistingData =
     mode === 'customEvent' ? !_isEmpty(rawMetadata) : !_isEmpty(valuesData)
 
-  const hasOverflowData =
-    mode === 'customEvent'
-      ? _size(rawMetadata) > ENTRIES_PER_PANEL
-      : _size(valuesData) > ENTRIES_PER_PANEL
-
   useEffect(() => {
-    onShowDetailsChange?.(hasOverflowData)
-  }, [hasOverflowData, onShowDetailsChange])
+    onShowDetailsChange?.(hasExistingData)
+  }, [hasExistingData, onShowDetailsChange])
 
   useEffect(() => {
     if (detailsTrigger && detailsTrigger > 0) {
@@ -1387,11 +1398,7 @@ const MetadataKeyBody = ({
 
     // Only show loader on initial load when there's no existing data
     if (loading && !hasExistingData) {
-      return (
-        <div className='flex items-center justify-center py-8'>
-          <Spin />
-        </div>
-      )
+      return <PanelLoadingState />
     }
 
     if (
@@ -1742,20 +1749,19 @@ const CombinedMetadataPanel = ({
           detailsTrigger={detailsTrigger}
         />
       </div>
-      {canShowDetails ? (
-        <div className='mt-2 flex items-center justify-center'>
-          <Button
-            variant='icon'
-            className='gap-1.5 px-3 py-2'
-            type='button'
-            onClick={() => setDetailsTrigger((n) => n + 1)}
-            aria-label={t('common.details')}
-          >
-            <ScanIcon className='size-4' />
-            <span>{t('common.details')}</span>
-          </Button>
-        </div>
-      ) : null}
+      <div className='mt-2 flex items-center justify-center'>
+        <Button
+          variant='icon'
+          className='gap-1.5 px-3 py-2'
+          type='button'
+          onClick={() => setDetailsTrigger((n) => n + 1)}
+          disabled={!canShowDetails}
+          aria-label={t('common.details')}
+        >
+          <ScanIcon className='size-4' />
+          <span>{t('common.details')}</span>
+        </Button>
+      </div>
     </div>
   )
 }
@@ -1826,6 +1832,8 @@ interface PanelProps {
   /** When true with rowTooltipRenderer, tooltip is fixed to the cursor (chart-style) instead of Radix anchor positioning. */
   rowTooltipFollowCursor?: boolean
   isRefetching?: boolean
+  /** Shows a centered spinner in place of the rows while the first page is being fetched. */
+  isLoading?: boolean
   serverTotal?: number
   onLoadMore?: () => void
   loadingMore?: boolean
@@ -2256,6 +2264,7 @@ const Panel = ({
   rowTooltipRenderer,
   rowTooltipFollowCursor = false,
   isRefetching,
+  isLoading,
   serverTotal,
   onLoadMore,
   loadingMore,
@@ -2308,11 +2317,11 @@ const Panel = ({
 
   return (
     <PanelContainer
-      onDetailsClick={
-        _size(data) > ENTRIES_PER_PANEL
-          ? () => setDetailsOpened(true)
-          : undefined
-      }
+      // A custom body (a map, an error state) has no rows to drill into, so it
+      // gets no details button at all. Row panels always keep theirs — disabled
+      // rather than absent — so the panel is the same height while loading.
+      onDetailsClick={customRenderer ? undefined : () => setDetailsOpened(true)}
+      detailsDisabled={isLoading || _isEmpty(data)}
       name={name}
       icon={icon}
       type={id}
@@ -2320,6 +2329,7 @@ const Panel = ({
       onTabChange={onTabChange}
       activeTabId={activeTabId}
       isRefetching={isRefetching}
+      isLoading={isLoading}
     >
       {customRenderer ? (
         customRenderer()
@@ -2964,6 +2974,7 @@ const MetadataPanelMemo = memo(MetadataPanel) as typeof MetadataPanel
 export {
   PanelContainer,
   PanelEmptyState,
+  PanelLoadingState,
   PanelMemo as Panel,
   CustomEventsMemo as CustomEvents,
   CombinedMetadataPanelMemo as CombinedMetadataPanel,

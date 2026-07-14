@@ -203,9 +203,9 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
 
   const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
-  const isInitialLoading =
-    (summaryQuery.isLoading || timeseriesQuery.isLoading) &&
-    !hasShownContentRef.current
+  // Queries keep previous data across period/filter changes, so `isLoading` only
+  // ever means "nothing cached to show yet" — exactly when a spinner is wanted.
+  const isChartLoading = summaryQuery.isLoading || timeseriesQuery.isLoading
 
   const handleDataPointClick = useCallback(
     (d: { x: Date; index: number; xValue?: string }) => {
@@ -472,15 +472,6 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
 
   const headerRightContent = <ProjectViewHeaderActions tnMapping={tnMapping} />
 
-  if (isInitialLoading) {
-    return (
-      <>
-        <DashboardHeader rightContent={headerRightContent} />
-        <Loader />
-      </>
-    )
-  }
-
   if (isPanelsDataEmpty) {
     return (
       <>
@@ -556,6 +547,11 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
             />
           </div>
 
+          {isChartLoading ? (
+            <div className='flex h-80 items-center justify-center'>
+              <Loader className='pt-0!' />
+            </div>
+          ) : null}
           {!_isEmpty(overall) ? (
             <PerformanceMetricCards
               overall={overall}

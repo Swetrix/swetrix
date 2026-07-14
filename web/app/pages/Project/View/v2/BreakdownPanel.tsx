@@ -163,53 +163,29 @@ export const BreakdownPanel = ({
     )
   }
 
-  if (query.isLoading || (!hasBeenInView && !query.data)) {
-    return (
-      <div ref={ref}>
-        <PanelContainer
-          name={name}
-          icon={icon}
-          type={activeSubTabId}
-          tabs={containerTabs}
-          onTabChange={onSubTabChange}
-          activeTabId={activeSubTabId}
-        />
-      </div>
-    )
-  }
+  // Panels below the fold only start fetching once scrolled into view, which
+  // leaves the query pending rather than loading — both mean "no rows yet".
+  const isLoading = query.isLoading || (!hasBeenInView && !query.data)
 
-  if (query.isError) {
-    return (
-      <div ref={ref}>
-        <PanelContainer
-          name={name}
-          icon={icon}
-          type={activeSubTabId}
-          tabs={containerTabs}
-          onTabChange={onSubTabChange}
-          activeTabId={activeSubTabId}
-        >
-          <div className='flex h-full flex-1 flex-col items-center justify-center px-4 py-8 text-center'>
-            <div className='mb-3 flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-900'>
-              <WarningOctagonIcon className='size-5 text-gray-400 dark:text-slate-500' />
-            </div>
-            <Text as='p' size='sm' colour='secondary'>
-              {t('apiNotifications.somethingWentWrong')}
-            </Text>
-            <Button
-              className='mt-3 gap-1.5'
-              onClick={() => query.refetch()}
-              variant='secondary'
-              size='sm'
-            >
-              <ArrowsClockwiseIcon className='size-4' />
-              {t('project.refreshStats')}
-            </Button>
-          </div>
-        </PanelContainer>
+  const renderError = () => (
+    <div className='flex h-full flex-1 flex-col items-center justify-center px-4 py-8 text-center'>
+      <div className='mb-3 flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-900'>
+        <WarningOctagonIcon className='size-5 text-gray-400 dark:text-slate-500' />
       </div>
-    )
-  }
+      <Text as='p' size='sm' colour='secondary'>
+        {t('apiNotifications.somethingWentWrong')}
+      </Text>
+      <Button
+        className='mt-3 gap-1.5'
+        onClick={() => query.refetch()}
+        variant='secondary'
+        size='sm'
+      >
+        <ArrowsClockwiseIcon className='size-4' />
+        {t('project.refreshStats')}
+      </Button>
+    </div>
+  )
 
   return (
     <div ref={ref}>
@@ -220,6 +196,8 @@ export const BreakdownPanel = ({
         name={name}
         data={entries}
         serverTotal={total}
+        isLoading={isLoading}
+        customRenderer={query.isError ? renderError : undefined}
         tabs={containerTabs}
         onTabChange={onSubTabChange}
         activeTabId={activeSubTabId}

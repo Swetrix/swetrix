@@ -1543,7 +1543,15 @@ const ViewProjectContent = () => {
                               ease: [0.23, 1, 0.32, 1],
                             }}
                           >
-                            <Suspense fallback={<Loader />}>
+                            {/* Reserve roughly a screenful while the tab chunk
+                                downloads, otherwise the page is briefly short
+                                enough to pull the footer into view and then
+                                jumps once the tab renders. */}
+                            <Suspense
+                              fallback={
+                                <Loader className='min-h-including-header items-start' />
+                              }
+                            >
                               {activeTab === PROJECT_TABS.ai ? (
                                 <AskAIView projectId={id} />
                               ) : null}
