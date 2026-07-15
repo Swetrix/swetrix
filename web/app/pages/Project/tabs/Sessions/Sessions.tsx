@@ -104,9 +104,9 @@ export const Session = ({
 
   let sessionDurationString = ''
   if (!session.isLive) {
-    if (session.sdur != null && session.sdur > 0) {
+    if (session.duration != null && session.duration > 0) {
       sessionDurationString = getStringFromTime(
-        getTimeFromSeconds(session.sdur),
+        getTimeFromSeconds(session.duration),
       )
     } else {
       const diffSeconds = dayjs
@@ -283,15 +283,15 @@ export const Session = ({
                   <div className='flex items-center gap-1.5'>
                     <Tooltip
                       text={
-                        session.cc
-                          ? countries.getName(session.cc, language) ||
-                            session.cc
+                        session.country
+                          ? countries.getName(session.country, language) ||
+                            session.country
                           : t('project.unknownCountry')
                       }
                       tooltipNode={
                         <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
                           <Flag
-                            country={session.cc}
+                            country={session.country}
                             size={14}
                             className='rounded-[2px]'
                             aria-hidden='true'
@@ -312,11 +312,11 @@ export const Session = ({
                       }
                     />
                     <Tooltip
-                      text={session.br || t('project.unknown')}
+                      text={session.browser || t('project.unknown')}
                       tooltipNode={
                         <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
                           <BrowserIcon
-                            browser={session.br}
+                            browser={session.browser}
                             className='size-3.5'
                           />
                         </div>

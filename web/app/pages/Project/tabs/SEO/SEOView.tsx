@@ -1,5 +1,5 @@
 import {
-  ArrowClockwiseIcon,
+  ArrowsClockwiseIcon,
   EyeIcon,
   InfoIcon,
   LinkIcon,
@@ -14,40 +14,46 @@ import {
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _round from 'lodash/round'
-import React, {
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-  use,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
-import { useLoaderData, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 
-import { useGSCDashboardProxy } from '~/hooks/useAnalyticsProxy'
 import { useAnnotations } from '~/hooks/useAnnotations'
+import { useInViewOnce } from '~/hooks/useInViewOnce'
+import {
+  useBreakdownQuery,
+  useCompareSummaryQuery,
+  useCompareTimeseriesQuery,
+  useSeoBrandedTrafficQuery,
+  useSeoPositionsQuery,
+  useSeoStatusQuery,
+  useSummaryQuery,
+  useTimeseriesQuery,
+} from '~/hooks/v2/useV2Queries'
 import { DOCS_URL } from '~/lib/constants'
 import type { TimeBucket } from '~/lib/constants'
 import type { Entry } from '~/lib/models/Entry'
-import BillboardChart from '~/ui/BillboardChart'
 import AnnotationModal from '~/modals/AnnotationModal'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { MainChart } from '~/pages/Project/View/components/MainChart'
 import Filters from '~/pages/Project/View/components/Filters'
+import { MainChart } from '~/pages/Project/View/components/MainChart'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
+import CCRow from '~/pages/Project/View/components/CCRow'
 import {
-  Panel,
   PanelContainer,
   PanelEmptyState,
+  PanelLoadingState,
 } from '~/pages/Project/View/Panels'
 import {
-  useViewProjectContext,
-  useRefreshTriggers,
-} from '~/pages/Project/View/ViewProject'
+  BreakdownPanel,
+  type BreakdownSubTab,
+} from '~/pages/Project/View/v2/BreakdownPanel'
+import { mapBreakdownRows } from '~/pages/Project/View/v2/adapters'
+import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
   noRegionPeriods,
   panelIconMapping,
@@ -55,18 +61,17 @@ import {
 } from '~/pages/Project/View/ViewProject.helpers'
 import { MetricCard } from '~/pages/Project/tabs/Traffic/MetricCards'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
-import CCRow from '~/pages/Project/View/components/CCRow'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import type { ProjectLoaderData } from '~/routes/projects.$id'
+import BillboardChart from '~/ui/BillboardChart'
+import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
-import LoadingBar from '~/ui/LoadingBar'
+import { CompactNumberFlow, PercentFlow } from '~/ui/NumberFlow'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
-import countries from '~/utils/isoCountries'
 import { getSearchEngineReferrals, getAIReferrals } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
@@ -74,9 +79,8 @@ import CompactReferralPanel from './CompactReferralPanel'
 import {
   SEO_METRICS,
   type SEOMetricKey,
-  aggregateDateSeries,
-  getGSCCompatibleFilters,
   hasOrganicPositionData,
+  seoTimeseriesToDateSeries,
 } from './seo-utils'
 import type { QuadrantData } from './seo-chart-options'
 import {
@@ -94,7 +98,16 @@ interface SEOViewProps {
 
 const SEO_DOCS_URL = `${DOCS_URL}/analytics-dashboard/seo`
 
-const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
+// Every metric the seo endpoints expose. Panels ask for all four so impressions,
+// CTR and position are available for the extra columns and row tooltips.
+const SEO_BREAKDOWN_METRICS = ['clicks', 'impressions', 'ctr', 'position']
+
+// Search Console orders rows by clicks descending and offers no sort control.
+const SEO_SORT = 'clicks:desc'
+
+const QUADRANT_QUERY_LIMIT = 50
+
+const SEOViewInner = ({ tnMapping }: SEOViewProps) => {
   const {
     t,
     i18n: { language },
@@ -103,7 +116,6 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
   const { id, allowedToManage } = useCurrentProject()
   const {
     period,
-    timezone,
     timeFormat,
     timeBucket,
     periodPairs,
@@ -111,15 +123,6 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     getFilterLink,
     isActiveCompare,
   } = useViewProjectContext()
-  const { seoRefreshTrigger } = useRefreshTriggers()
-  const { fetchDashboard, data, error, isLoading } = useGSCDashboardProxy()
-  const {
-    fetchDashboard: fetchCompareDashboard,
-    data: compareData,
-    error: compareError,
-    isLoading: isCompareLoading,
-    resetData: resetCompareData,
-  } = useGSCDashboardProxy()
   const [searchParams, setSearchParams] = useSearchParams()
   const {
     annotations,
@@ -201,6 +204,70 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     urlTimeBucket,
   ])
 
+  const statusQuery = useSeoStatusQuery()
+  const status = statusQuery.data?.data
+  const isConnected = Boolean(status?.connected && status?.property)
+
+  // The expensive rollups and the quadrant only fetch once scrolled to, so an
+  // SEO page load costs Search Console nothing it does not display. The panels
+  // below gate their spinner on isPending rather than isLoading: a query that
+  // is disabled (not yet scrolled to) or paused (offline) is pending but not
+  // fetching, and isLoading would call that "no data" instead of "not yet".
+  const { ref: brandedRef, hasBeenInView: brandedInView } = useInViewOnce()
+  const { ref: positionsRef, hasBeenInView: positionsInView } = useInViewOnce()
+  const { ref: quadrantRef, hasBeenInView: quadrantInView } = useInViewOnce()
+
+  const summaryQuery = useSummaryQuery('seo', { enabled: isConnected })
+  const compareSummaryQuery = useCompareSummaryQuery('seo', {
+    enabled: isConnected,
+  })
+  const timeseriesQuery = useTimeseriesQuery('seo', {
+    timeBucket: seoTimeBucket,
+    enabled: isConnected,
+  })
+  const compareTimeseriesQuery = useCompareTimeseriesQuery('seo', {
+    timeBucket: seoTimeBucket,
+    enabled: isConnected,
+  })
+  const brandedQuery = useSeoBrandedTrafficQuery({
+    enabled: isConnected && brandedInView,
+  })
+  const positionsQuery = useSeoPositionsQuery({
+    enabled: isConnected && positionsInView,
+  })
+  const quadrantQuery = useBreakdownQuery('seo', {
+    dimension: 'query',
+    metrics: SEO_BREAKDOWN_METRICS,
+    limit: QUADRANT_QUERY_LIMIT,
+    sort: SEO_SORT,
+    enabled: isConnected && quadrantInView,
+  })
+
+  const referrerQuery = useBreakdownQuery('traffic', {
+    dimension: 'referrer',
+    limit: 100,
+    sort: 'visitors:desc',
+  })
+
+  const refEntries: Entry[] = useMemo(
+    () => mapBreakdownRows(referrerQuery.data?.data),
+    [referrerQuery.data],
+  )
+
+  const searchEngineEntries = useMemo(
+    () => getSearchEngineReferrals(refEntries),
+    [refEntries],
+  )
+  const aiReferralEntries = useMemo(
+    () => getAIReferrals(refEntries),
+    [refEntries],
+  )
+
+  const refRowMapper = useCallback(
+    ({ name: entryName }: any) => <RefRow rowName={entryName} />,
+    [],
+  )
+
   const metricItems = useMemo(
     () => [
       {
@@ -234,143 +301,28 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     }))
   }, [])
 
-  const { trafficData: trafficDataPromise } = useLoaderData<ProjectLoaderData>()
+  const summary = summaryQuery.data?.data.current
+  const comparisonSummary = isActiveCompare
+    ? compareSummaryQuery.data?.data.current
+    : summaryQuery.data?.data.previous
 
-  const trafficData = trafficDataPromise ? use(trafficDataPromise) : null
-
-  const refEntries: Entry[] = useMemo(() => {
-    const refParams = trafficData?.params?.ref
-    if (!refParams) return []
-    return refParams.map((r: { name: string; count: number }) => ({
-      name: r.name,
-      count: r.count,
-    }))
-  }, [trafficData])
-
-  const searchEngineEntries = useMemo(
-    () => getSearchEngineReferrals(refEntries),
-    [refEntries],
-  )
-  const aiReferralEntries = useMemo(
-    () => getAIReferrals(refEntries),
-    [refEntries],
+  const series = useMemo(
+    () => seoTimeseriesToDateSeries(timeseriesQuery.data?.data, seoTimeBucket),
+    [timeseriesQuery.data, seoTimeBucket],
   )
 
-  const refRowMapper = useCallback(
-    ({ name: entryName }: any) => <RefRow rowName={entryName} />,
-    [],
-  )
-
-  const noopFilterLink = useCallback(() => '#', [])
-  const gscFilters = useMemo(() => getGSCCompatibleFilters(filters), [filters])
-  const gscLoading = isLoading || isCompareLoading
-  const gscError = error || compareError
-
-  const [isManualRefreshing, setIsManualRefreshing] = useState(false)
-
-  const prevTrigger = useRef(seoRefreshTrigger)
-
-  const from = searchParams.get('from') || undefined
-  const to = searchParams.get('to') || undefined
-  const compareEnabled = searchParams.get('compare') === 'true'
-  const compareFrom = searchParams.get('compareFrom') || undefined
-  const compareTo = searchParams.get('compareTo') || undefined
-
-  const loadData = useCallback(async () => {
-    const params = {
-      period,
-      from,
-      to,
-      timezone,
-      timeBucket: seoTimeBucket,
-      filters: gscFilters,
-    }
-
-    const currentPromise = fetchDashboard(projectId, params)
-
-    if (isActiveCompare && compareEnabled && compareFrom && compareTo) {
-      resetCompareData()
-      await Promise.all([
-        currentPromise,
-        fetchCompareDashboard(projectId, {
-          ...params,
-          period: 'custom',
-          from: compareFrom,
-          to: compareTo,
-        }),
-      ])
-      return
-    }
-
-    resetCompareData()
-    await currentPromise
-  }, [
-    fetchDashboard,
-    fetchCompareDashboard,
-    resetCompareData,
-    projectId,
-    period,
-    from,
-    to,
-    compareEnabled,
-    compareFrom,
-    compareTo,
-    timezone,
-    seoTimeBucket,
-    gscFilters,
-    isActiveCompare,
-  ])
-
-  useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  useEffect(() => {
-    if (seoRefreshTrigger !== prevTrigger.current) {
-      prevTrigger.current = seoRefreshTrigger
-      loadData()
-    }
-  }, [seoRefreshTrigger, loadData])
-
-  const handleManualRefresh = useCallback(async () => {
-    if (isManualRefreshing) return
-    setIsManualRefreshing(true)
-    try {
-      await loadData()
-    } finally {
-      setIsManualRefreshing(false)
-    }
-  }, [isManualRefreshing, loadData])
-
-  const manualRefreshButton = useMemo(
-    () => (
-      <button
-        type='button'
-        title={t('project.refreshStats')}
-        onClick={handleManualRefresh}
-        className='relative rounded-md border border-transparent p-2 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
-      >
-        <ArrowClockwiseIcon
-          className={`h-5 w-5 text-gray-700 dark:text-gray-50 ${isManualRefreshing ? 'animate-spin' : ''}`}
-        />
-      </button>
-    ),
-    [t, handleManualRefresh, isManualRefreshing],
-  )
-
-  const aggregatedSeries = useMemo(
-    () => aggregateDateSeries(data?.dateSeries || [], seoTimeBucket),
-    [data?.dateSeries, seoTimeBucket],
-  )
-
-  const aggregatedCompareSeries = useMemo(
-    () => aggregateDateSeries(compareData?.dateSeries || [], seoTimeBucket),
-    [compareData?.dateSeries, seoTimeBucket],
+  const compareSeries = useMemo(
+    () =>
+      seoTimeseriesToDateSeries(
+        compareTimeseriesQuery.data?.data,
+        seoTimeBucket,
+      ),
+    [compareTimeseriesQuery.data, seoTimeBucket],
   )
 
   const chartXAxisData = useMemo(
-    () => aggregatedSeries.map((entry) => entry.date),
-    [aggregatedSeries],
+    () => series.map((entry) => entry.date),
+    [series],
   )
 
   const filteredAnnotations = useMemo(() => {
@@ -390,81 +342,12 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     })
   }, [annotations, chartXAxisData])
 
-  const topPagesAsEntries: Entry[] = useMemo(
-    () =>
-      (data?.topPages || []).map(
-        (p) =>
-          ({
-            name: p.page,
-            count: p.clicks,
-            impressions: p.impressions,
-            ctr: p.ctr,
-            position: p.position,
-          }) as Entry & { impressions: number; ctr: number; position: number },
-      ),
-    [data?.topPages],
+  const isBrandedTrafficSkipped = brandedQuery.data?.meta.skipped === true
+
+  const brandedTraffic = useMemo(
+    () => brandedQuery.data?.data ?? { branded: 0, nonBranded: 0 },
+    [brandedQuery.data],
   )
-
-  const topQueriesAsEntries: (Entry & {
-    impressions: number
-    ctr: number
-    position: number
-  })[] = useMemo(
-    () =>
-      (data?.topQueries || []).map(
-        (q) =>
-          ({
-            name: q.name,
-            count: q.count,
-            impressions: q.impressions,
-            ctr: q.ctr,
-            position: q.position,
-          }) as Entry & { impressions: number; ctr: number; position: number },
-      ),
-    [data?.topQueries],
-  )
-
-  const topCountriesAsEntries: Entry[] = useMemo(
-    () =>
-      (data?.topCountries || []).map((c) => {
-        const alpha2 =
-          countries.alpha3ToAlpha2(c.country.toUpperCase())?.toLowerCase() ||
-          c.country
-        return {
-          name: alpha2,
-          count: c.clicks,
-          impressions: c.impressions,
-          ctr: c.ctr,
-          position: c.position,
-        } as Entry & { impressions: number; ctr: number; position: number }
-      }),
-    [data?.topCountries],
-  )
-
-  const topDevicesAsEntries: Entry[] = useMemo(
-    () =>
-      (data?.topDevices || []).map(
-        (d) =>
-          ({
-            name: d.device,
-            count: d.clicks,
-            impressions: d.impressions,
-            ctr: d.ctr,
-            position: d.position,
-          }) as Entry & { impressions: number; ctr: number; position: number },
-      ),
-    [data?.topDevices],
-  )
-
-  const isBrandedTrafficSkipped = data?.brandedTraffic?.skipped === true
-
-  const brandedTraffic = useMemo(() => {
-    if (!data?.brandedTraffic || data.brandedTraffic.skipped) {
-      return { branded: 0, nonBranded: 0 }
-    }
-
-    return data.brandedTraffic
-  }, [data?.brandedTraffic])
 
   const donutChartOptions = useMemo(
     () =>
@@ -477,20 +360,17 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [brandedTraffic, t, theme],
   )
 
+  const isPositionAnalyticsSkipped = positionsQuery.data?.meta.skipped === true
+
   const impressionsByPosition = useMemo(
-    () => data?.impressionsByPosition || [],
-    [data?.impressionsByPosition],
+    () => positionsQuery.data?.data?.impressionsByPosition ?? [],
+    [positionsQuery.data],
   )
 
   const organicPositions = useMemo(
-    () => data?.organicPositions || [],
-    [data?.organicPositions],
+    () => positionsQuery.data?.data?.organicPositions ?? [],
+    [positionsQuery.data],
   )
-
-  const isPositionAnalyticsSkipped =
-    data?.positionAnalyticsSkipped === true ||
-    data?.impressionsByPosition === null ||
-    data?.organicPositions === null
 
   const hasImpressionsByPositionData = useMemo(
     () => impressionsByPosition.some((bucket) => bucket.impressions > 0),
@@ -518,59 +398,63 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [language],
   )
 
-  const deviceRowMapper = useMemo(
-    () => getDeviceRowMapper('dv', theme, t),
+  const deviceRowMapper = useCallback(
+    (entry: Entry) => {
+      const mapper = getDeviceRowMapper('dv', theme, t) as
+        | ((entry: Entry) => React.ReactNode)
+        | undefined
+      return mapper ? mapper(entry) : entry.name
+    },
     [theme, t],
   )
 
   const anyMetricActive = Object.values(activeMetrics).some(Boolean)
 
   const quadrantData: QuadrantData | null = useMemo(() => {
-    if (!topQueriesAsEntries.length) return null
-    const positions = topQueriesAsEntries.map((q) => q.position)
-    const ctrs = topQueriesAsEntries.map((q) => q.ctr)
-    const impressions = topQueriesAsEntries.map((q) => q.impressions)
-    const names = topQueriesAsEntries.map((q) => q.name ?? '')
+    const entries = mapBreakdownRows(
+      quadrantQuery.data?.data,
+      'clicks',
+      SEO_BREAKDOWN_METRICS,
+    ) as (Entry & { impressions: number; ctr: number; position: number })[]
+
+    if (!entries.length) return null
+
+    const positions = entries.map((q) => q.position)
+    const ctrs = entries.map((q) => q.ctr)
+    const impressions = entries.map((q) => q.impressions)
+    const names = entries.map((q) => q.name ?? '')
 
     const maxImp = Math.max(...impressions) || 1
     const minImp = Math.min(...impressions) || 0
 
     return { positions, ctrs, impressions, names, maxImp, minImp }
-  }, [topQueriesAsEntries])
+  }, [quadrantQuery.data])
 
   const quadrantChartOptions = useMemo(() => {
     if (!quadrantData) return {}
-    const avgCtr = data?.summary?.ctr ?? 5
-    const avgPos = data?.summary?.position ?? 10
+    const avgCtr = summary?.ctr ?? 5
+    const avgPos = summary?.position ?? 10
     return buildQuadrantChartOptions(quadrantData, avgCtr, avgPos, theme, t)
-  }, [quadrantData, data?.summary, theme, t])
-
-  const comparisonSummary =
-    isActiveCompare && compareEnabled
-      ? compareData?.summary
-      : data?.previousSummary
+  }, [quadrantData, summary, theme, t])
 
   const chartOptions = useMemo(
     () =>
       buildMainChartOptions(
-        aggregatedSeries,
+        series,
         activeMetrics,
         seoTimeBucket,
         t,
         !noRegionPeriods.includes(period),
         filteredAnnotations,
-        isActiveCompare && compareEnabled && aggregatedCompareSeries.length
-          ? aggregatedCompareSeries
-          : undefined,
+        isActiveCompare && compareSeries.length ? compareSeries : undefined,
       ),
     [
-      aggregatedSeries,
+      series,
       activeMetrics,
       seoTimeBucket,
       t,
       isActiveCompare,
-      compareEnabled,
-      aggregatedCompareSeries,
+      compareSeries,
       period,
       filteredAnnotations,
     ],
@@ -710,20 +594,42 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     [t],
   )
 
-  if (gscLoading && !data) {
+  const pagesSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [{ id: 'page', label: t('project.seo.page'), dimension: 'page' }],
+    [t],
+  )
+
+  const queriesSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [{ id: 'query', label: t('project.seo.query'), dimension: 'query' }],
+    [t],
+  )
+
+  const countriesSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [
+      { id: 'country', label: t('project.mapping.cc'), dimension: 'country' },
+    ],
+    [t],
+  )
+
+  const devicesSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [
+      { id: 'device', label: t('project.mapping.dv'), dimension: 'device' },
+    ],
+    [t],
+  )
+
+  const header = (
+    <DashboardHeader
+      showSearchButton={false}
+      rightContent={<ProjectViewHeaderActions tnMapping={tnMapping} />}
+      timeBucketSelectorItems={seoPeriodPairs}
+    />
+  )
+
+  if (statusQuery.isLoading) {
     return (
       <>
-        <DashboardHeader
-          showSearchButton={false}
-          showRefreshButton={false}
-          rightContent={
-            <ProjectViewHeaderActions
-              tnMapping={tnMapping}
-              extraActions={manualRefreshButton}
-            />
-          }
-          timeBucketSelectorItems={seoPeriodPairs}
-        />
+        {header}
         <div className='flex min-h-[400px] items-center justify-center'>
           <Loader />
         </div>
@@ -731,46 +637,32 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     )
   }
 
-  if (gscError && !data) {
+  if (statusQuery.isError) {
     return (
       <>
-        <DashboardHeader
-          showSearchButton={false}
-          showRefreshButton={false}
-          rightContent={
-            <ProjectViewHeaderActions
-              tnMapping={tnMapping}
-              extraActions={manualRefreshButton}
-            />
-          }
-          timeBucketSelectorItems={seoPeriodPairs}
-        />
+        {header}
         <div className='mx-auto flex min-h-[400px] max-w-xl flex-col items-center justify-center px-4 text-center'>
           <Text as='h3' size='lg' weight='medium'>
             {t('apiNotifications.somethingWentWrong')}
           </Text>
-          <Text as='p' size='sm' colour='secondary' className='mt-2'>
-            {gscError}
-          </Text>
+          <Button
+            className='mt-3 gap-1.5'
+            onClick={() => statusQuery.refetch()}
+            variant='secondary'
+            size='sm'
+          >
+            <ArrowsClockwiseIcon className='size-4' />
+            {t('project.refreshStats')}
+          </Button>
         </div>
       </>
     )
   }
 
-  if (data?.notConnected) {
+  if (!isConnected) {
     return (
       <>
-        <DashboardHeader
-          showSearchButton={false}
-          showRefreshButton={false}
-          rightContent={
-            <ProjectViewHeaderActions
-              tnMapping={tnMapping}
-              extraActions={manualRefreshButton}
-            />
-          }
-          timeBucketSelectorItems={seoPeriodPairs}
-        />
+        {header}
         <div className='mx-auto w-full max-w-2xl py-16 text-center'>
           <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900'>
             <PlugIcon
@@ -803,7 +695,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
               }}
             />
           </Text>
-          {data?.noProperty ? (
+          {status?.connected && !status?.property ? (
             <Text
               as='p'
               size='sm'
@@ -824,25 +716,21 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
     )
   }
 
+  const isHeroLoading = summaryQuery.isPending || timeseriesQuery.isPending
+  const isHeroError = summaryQuery.isError || timeseriesQuery.isError
+  const isHeroRefetching =
+    (summaryQuery.isFetching && !summaryQuery.isPending) ||
+    (timeseriesQuery.isFetching && !timeseriesQuery.isPending)
+
   return (
     <>
-      <DashboardHeader
-        showSearchButton={false}
-        showRefreshButton={false}
-        rightContent={
-          <ProjectViewHeaderActions
-            tnMapping={tnMapping}
-            extraActions={manualRefreshButton}
-          />
-        }
-        timeBucketSelectorItems={seoPeriodPairs}
-      />
+      {header}
       {filters.length > 0 ? (
         <Filters className='mb-3' tnMapping={tnMapping} />
       ) : null}
-      {gscLoading && data ? <LoadingBar /> : null}
 
       <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+        {isHeroRefetching ? <RefetchIndicator /> : null}
         <div className='mb-3 flex w-full items-center justify-end gap-1 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
           <Dropdown
             header={t('project.metricVis')}
@@ -881,63 +769,100 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
           <MetricCard
             label={t('project.seo.clicks')}
-            value={data?.summary?.clicks ?? 0}
+            value={summary?.clicks ?? 0}
             change={
               comparisonSummary
-                ? (data?.summary?.clicks ?? 0) - comparisonSummary.clicks
+                ? (summary?.clicks ?? 0) - comparisonSummary.clicks
                 : undefined
             }
             goodChangeDirection='down'
             valueMapper={(value, type) =>
-              `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+              type === 'badge' ? (
+                `${value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+              ) : (
+                <CompactNumberFlow value={value} />
+              )
             }
           />
           <MetricCard
             label={t('project.seo.impressions')}
-            value={data?.summary?.impressions ?? 0}
+            value={summary?.impressions ?? 0}
             change={
               comparisonSummary
-                ? (data?.summary?.impressions ?? 0) -
-                  comparisonSummary.impressions
+                ? (summary?.impressions ?? 0) - comparisonSummary.impressions
                 : undefined
             }
             goodChangeDirection='down'
             valueMapper={(value, type) =>
-              `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+              type === 'badge' ? (
+                `${value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+              ) : (
+                <CompactNumberFlow value={value} />
+              )
             }
           />
           <MetricCard
             label={t('project.seo.avgCTR')}
-            value={_round(data?.summary?.ctr ?? 0, 2)}
+            value={_round(summary?.ctr ?? 0, 2)}
             change={
               comparisonSummary
-                ? _round((data?.summary?.ctr ?? 0) - comparisonSummary.ctr, 2)
+                ? _round((summary?.ctr ?? 0) - comparisonSummary.ctr, 2)
                 : undefined
             }
             type='percent'
             goodChangeDirection='down'
             valueMapper={(value, type) =>
-              `${type === 'badge' && value > 0 ? '+' : ''}${value}%`
+              type === 'badge' ? (
+                `${value > 0 ? '+' : ''}${value}%`
+              ) : (
+                <PercentFlow value={value} />
+              )
             }
           />
           <MetricCard
             label={t('project.seo.avgPosition')}
-            value={_round(data?.summary?.position ?? 0, 1)}
+            value={_round(summary?.position ?? 0, 1)}
             change={
               comparisonSummary
                 ? _round(
-                    (data?.summary?.position ?? 0) - comparisonSummary.position,
+                    (summary?.position ?? 0) - comparisonSummary.position,
                     1,
                   )
                 : undefined
             }
             goodChangeDirection='up'
             valueMapper={(value, type) =>
-              `${type === 'badge' && value > 0 ? '+' : ''}${value}`
+              type === 'badge' ? (
+                `${value > 0 ? '+' : ''}${value}`
+              ) : (
+                <CompactNumberFlow value={value} />
+              )
             }
           />
         </div>
-        {anyMetricActive && !_isEmpty(aggregatedSeries) ? (
+        {isHeroError ? (
+          <div className='flex h-80 flex-col items-center justify-center text-center'>
+            <Text as='p' size='sm' colour='secondary'>
+              {t('apiNotifications.somethingWentWrong')}
+            </Text>
+            <Button
+              className='mt-3 gap-1.5'
+              onClick={() => {
+                summaryQuery.refetch()
+                timeseriesQuery.refetch()
+              }}
+              variant='secondary'
+              size='sm'
+            >
+              <ArrowsClockwiseIcon className='size-4' />
+              {t('project.refreshStats')}
+            </Button>
+          </div>
+        ) : isHeroLoading ? (
+          <div className='flex h-80 items-center justify-center'>
+            <Loader className='pt-0!' />
+          </div>
+        ) : anyMetricActive && !_isEmpty(series) ? (
           <div
             onContextMenu={(event) =>
               handleChartContextMenu(event, chartXAxisData)
@@ -949,8 +874,8 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
               options={chartOptions}
               className='h-80 [&_svg]:overflow-visible!'
               deps={[
-                aggregatedSeries,
-                aggregatedCompareSeries,
+                series,
+                compareSeries,
                 activeMetrics,
                 seoTimeBucket,
                 timeFormat,
@@ -966,23 +891,39 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         <CompactReferralPanel
           title={t('project.seo.searchEngines')}
           data={searchEngineEntries}
-          icon={panelIconMapping.ref}
+          icon={panelIconMapping.referrer}
           rowMapper={refRowMapper}
+          isLoading={referrerQuery.isLoading}
+          isRefetching={referrerQuery.isFetching && !referrerQuery.isLoading}
         />
         <CompactReferralPanel
           title={t('project.seo.aiReferrals')}
           data={aiReferralEntries}
           icon={<RobotIcon className='h-5 w-5' />}
           rowMapper={refRowMapper}
+          isLoading={referrerQuery.isLoading}
+          isRefetching={referrerQuery.isFetching && !referrerQuery.isLoading}
         />
-        <div className='overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
+        <div
+          ref={brandedRef}
+          className='relative overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'
+        >
+          {brandedQuery.isFetching && !brandedQuery.isPending ? (
+            <RefetchIndicator />
+          ) : null}
           <div className='mb-1 flex items-center gap-1 text-gray-900 dark:text-gray-50'>
             <MagnifyingGlassIcon className='size-5' />
             <Text size='sm' weight='semibold'>
               {t('project.seo.brandedTraffic')}
             </Text>
           </div>
-          {isBrandedTrafficSkipped ? (
+          {brandedQuery.isPending ? (
+            <PanelLoadingState />
+          ) : brandedQuery.isError ? (
+            <PanelEmptyState
+              message={t('apiNotifications.somethingWentWrong')}
+            />
+          ) : isBrandedTrafficSkipped ? (
             <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
           ) : brandedTraffic.branded + brandedTraffic.nonBranded > 0 ? (
             <BillboardChart
@@ -996,14 +937,23 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
         </div>
       </div>
 
-      <div className='mt-3 grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]'>
+      <div
+        ref={positionsRef}
+        className='mt-3 grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]'
+      >
         <PanelContainer
           name={t('project.seo.impressionsByPosition')}
           icon={<ChartBarIcon className='size-5' />}
           type='impressionsByPosition'
           contentClassName='relative flex min-h-[21rem] flex-col overflow-hidden'
+          isLoading={positionsQuery.isPending}
+          isRefetching={positionsQuery.isFetching && !positionsQuery.isPending}
         >
-          {isPositionAnalyticsSkipped ? (
+          {positionsQuery.isError ? (
+            <PanelEmptyState
+              message={t('apiNotifications.somethingWentWrong')}
+            />
+          ) : isPositionAnalyticsSkipped ? (
             <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
           ) : hasImpressionsByPositionData ? (
             <BillboardChart
@@ -1021,8 +971,14 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
           icon={<TrendUpIcon className='size-5' />}
           type='organicPositions'
           contentClassName='relative flex min-h-[21rem] flex-col overflow-hidden'
+          isLoading={positionsQuery.isPending}
+          isRefetching={positionsQuery.isFetching && !positionsQuery.isPending}
         >
-          {isPositionAnalyticsSkipped ? (
+          {positionsQuery.isError ? (
+            <PanelEmptyState
+              message={t('apiNotifications.somethingWentWrong')}
+            />
+          ) : isPositionAnalyticsSkipped ? (
             <PanelEmptyState message={t('project.seo.analyticsSkipped')} />
           ) : hasOrganicPositions ? (
             <BillboardChart
@@ -1037,39 +993,41 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
       </div>
 
       <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
-        <Panel
+        <BreakdownPanel
+          dataType='seo'
+          panelId='pages'
           name={t('project.seo.topPages')}
-          data={topPagesAsEntries}
-          icon={panelIconMapping.pg}
-          id='pg'
-          activeTabId='pg'
-          disableRowClick={false}
+          icon={panelIconMapping.page}
+          subTabs={pagesSubTabs}
+          primaryMetric='clicks'
+          metrics={SEO_BREAKDOWN_METRICS}
+          sort={SEO_SORT}
           getFilterLink={getFilterLink}
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={gscLoading}
           rowTooltipRenderer={seoGscRowTooltip}
           rowTooltipFollowCursor
         />
-        <Panel
+        <BreakdownPanel
+          dataType='seo'
+          panelId='queries'
           name={t('project.seo.topQueries')}
-          data={topQueriesAsEntries}
           icon={<MagnifyingGlassIcon className='h-5 w-5' />}
-          id='keywords'
-          activeTabId='keywords'
-          disableRowClick={false}
+          subTabs={queriesSubTabs}
+          primaryMetric='clicks'
+          metrics={SEO_BREAKDOWN_METRICS}
+          sort={SEO_SORT}
           getFilterLink={getFilterLink}
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={gscLoading}
           rowTooltipRenderer={seoGscRowTooltip}
           rowTooltipFollowCursor
         />
       </div>
 
-      <div className='mt-3'>
+      <div className='mt-3' ref={quadrantRef}>
         <PanelContainer
           name={t('project.seo.quadrant')}
           icon={<TargetIcon className='size-5' />}
@@ -1092,8 +1050,17 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
             />
           }
           contentClassName=''
+          isRefetching={quadrantQuery.isFetching && !quadrantQuery.isPending}
         >
-          {quadrantData ? (
+          {quadrantQuery.isPending ? (
+            <div className='flex h-[400px] items-center justify-center'>
+              <Loader className='pt-0!' />
+            </div>
+          ) : quadrantQuery.isError ? (
+            <PanelEmptyState
+              message={t('apiNotifications.somethingWentWrong')}
+            />
+          ) : quadrantData ? (
             <BillboardChart
               options={quadrantChartOptions}
               className='h-[400px] [&_.bb-circle]:fill-indigo-500/60 [&_.bb-circle]:stroke-indigo-600 [&_.bb-circle]:stroke-1 dark:[&_.bb-circle]:fill-indigo-400/60 dark:[&_.bb-circle]:stroke-indigo-300'
@@ -1106,34 +1073,36 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
       </div>
 
       <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
-        <Panel
+        <BreakdownPanel
+          dataType='seo'
+          panelId='location'
           name={t('project.location')}
-          data={topCountriesAsEntries}
           icon={<MapPinIcon className='h-5 w-5' />}
-          id='country'
-          activeTabId='cc'
-          disableRowClick
-          getFilterLink={noopFilterLink}
+          subTabs={countriesSubTabs}
+          primaryMetric='clicks'
+          metrics={SEO_BREAKDOWN_METRICS}
+          sort={SEO_SORT}
+          getFilterLink={getFilterLink}
           rowMapper={countryRowMapper}
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={gscLoading}
         />
-        <Panel
+        <BreakdownPanel
+          dataType='seo'
+          panelId='devices'
           name={t('project.devices')}
-          data={topDevicesAsEntries}
-          icon={panelIconMapping.dv}
-          id='device'
-          activeTabId='dv'
-          disableRowClick
-          getFilterLink={noopFilterLink}
+          icon={panelIconMapping.device}
+          subTabs={devicesSubTabs}
+          primaryMetric='clicks'
+          metrics={SEO_BREAKDOWN_METRICS}
+          sort={SEO_SORT}
+          getFilterLink={getFilterLink}
           rowMapper={deviceRowMapper}
-          capitalize
+          capitalize={['device']}
           valuesHeaderName={t('project.seo.clicks')}
           detailsExtraColumns={detailsExtraColumns}
           hidePercentageInDetails
-          dataLoading={gscLoading}
         />
       </div>
 
@@ -1180,8 +1149,7 @@ const SEOViewInner = ({ projectId, tnMapping }: SEOViewProps) => {
 
 const SEOView = ({ projectId, tnMapping }: SEOViewProps) => {
   const [searchParams] = useSearchParams()
-  const { seoRefreshTrigger } = useRefreshTriggers()
-  const resetKey = `seo:${projectId}:${searchParams.toString()}:${seoRefreshTrigger}`
+  const resetKey = `seo:${projectId}:${searchParams.toString()}`
 
   return (
     <TabErrorBoundary titleKey='dashboard.failedToLoadSeo' resetKey={resetKey}>

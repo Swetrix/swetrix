@@ -225,58 +225,6 @@ export const PERIOD_PAIRS_COMPARE = {
   DISABLE: 'disable',
 } as const
 
-// the order of panels in the project view
-export const TRAFFIC_PANELS_ORDER = [
-  'location',
-  'pg',
-  'devices',
-  'traffic-sources',
-  'network',
-]
-export const PERFORMANCE_PANELS_ORDER = ['location', 'pg', 'devices', 'network']
-export const ERROR_PANELS_ORDER = ['location', 'pg', 'devices', 'network']
-export const FILTERS_PANELS_ORDER = [
-  'pg',
-  'entryPage',
-  'exitPage',
-  'host',
-  'cc',
-  'rg',
-  'ct',
-  'lc',
-  'dv',
-  'br',
-  'brv',
-  'os',
-  'osv',
-  'ref',
-  'so',
-  'me',
-  'ca',
-  'te',
-  'co',
-  'isp',
-  'og',
-  'ut',
-  'ctp',
-]
-export const ERRORS_FILTERS_PANELS_ORDER = [
-  'cc',
-  'rg',
-  'ct',
-  'pg',
-  'br',
-  'brv',
-  'os',
-  'osv',
-  'lc',
-  'dv',
-  'isp',
-  'og',
-  'ut',
-  'ctp',
-]
-
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
 export const MAX_MONTHS_IN_PAST = 24
 

@@ -65,11 +65,11 @@ interface PageflowItem {
   currency?: string
 }
 
-interface ProfileSession {
+export interface ProfileSession {
   psid: string
-  cc: string | null
+  country: string | null
   os: string | null
-  br: string | null
+  browser: string | null
   pageviews: number
   customEvents: number
   errors: number
@@ -79,7 +79,7 @@ interface ProfileSession {
   sessionStart?: string
   lastActivity?: string
   isLive?: 1 | 0 | boolean
-  sdur?: number
+  duration?: number | null
   pages?: PageflowItem[]
 }
 
@@ -155,8 +155,8 @@ const formatVersionLabel = (name: string | null, version: string | null) => {
 }
 
 const getSessionDuration = (session: ProfileSession) => {
-  if (session.sdur != null) {
-    return session.sdur
+  if (session.duration != null) {
+    return session.duration
   }
 
   const interactionPages = (session.pages || []).filter(
@@ -431,13 +431,15 @@ const ProfileSessionFlow = ({
           },
         ]
       : []),
-    ...(session.br
+    ...(session.browser
       ? [
           {
             key: 'browser',
-            label: session.br,
-            tooltip: session.br,
-            icon: <BrowserIcon browser={session.br} className='size-3.5' />,
+            label: session.browser,
+            tooltip: session.browser,
+            icon: (
+              <BrowserIcon browser={session.browser} className='size-3.5' />
+            ),
           },
         ]
       : []),
@@ -620,14 +622,17 @@ export const ProfileDetails = ({
   const statusTooltip = details.lastSeen
     ? t('project.lastSeenAgo', { time: lastSeenAgo })
     : t('project.unknown')
-  const countryName = details.cc
-    ? countries.getName(details.cc, language) || details.cc
+  const countryName = details.country
+    ? countries.getName(details.country, language) || details.country
     : null
   const locationSummary =
-    [countryName, details.rg, details.ct].filter(Boolean).join(', ') ||
+    [countryName, details.region, details.city].filter(Boolean).join(', ') ||
     t('project.unknown')
-  const osTooltipLabel = formatVersionLabel(details.os, details.osv)
-  const browserTooltipLabel = formatVersionLabel(details.br, details.brv)
+  const osTooltipLabel = formatVersionLabel(details.os, details.os_version)
+  const browserTooltipLabel = formatVersionLabel(
+    details.browser,
+    details.browser_version,
+  )
   const profilePlatformParts: PlatformPart[] = [
     ...(details.os
       ? [
@@ -639,13 +644,13 @@ export const ProfileDetails = ({
           },
         ]
       : []),
-    ...(details.br
+    ...(details.browser
       ? [
           {
             key: 'browser',
-            label: details.br,
-            tooltip: browserTooltipLabel || details.br,
-            icon: <BrowserIcon browser={details.br} className='size-4' />,
+            label: details.browser,
+            tooltip: browserTooltipLabel || details.browser,
+            icon: <BrowserIcon browser={details.browser} className='size-4' />,
           },
         ]
       : []),
@@ -803,10 +808,10 @@ export const ProfileDetails = ({
                       colour='primary'
                       className='flex h-6 items-center justify-center'
                     >
-                      {details.cc ? (
+                      {details.country ? (
                         <Flag
                           className='rounded-xs'
-                          country={details.cc}
+                          country={details.country}
                           size={16}
                           alt=''
                           aria-hidden='true'
@@ -983,16 +988,18 @@ export const ProfileDetails = ({
               <InfoRow
                 label={t('project.mapping.lc')}
                 value={
-                  details.lc ? getLocaleDisplayName(details.lc, language) : '-'
+                  details.locale
+                    ? getLocaleDisplayName(details.locale, language)
+                    : '-'
                 }
               />
               <InfoRow
                 label={t('project.mapping.dv')}
                 value={
-                  details.dv ? (
+                  details.device ? (
                     <>
-                      <DeviceIcon device={details.dv} />
-                      {_capitalize(details.dv)}
+                      <DeviceIcon device={details.device} />
+                      {_capitalize(details.device)}
                     </>
                   ) : (
                     '-'

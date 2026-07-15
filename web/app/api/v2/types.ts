@@ -1,0 +1,201 @@
+export type V2DataType =
+  | 'traffic'
+  | 'performance'
+  | 'errors'
+  | 'captcha'
+  | 'seo'
+
+export type V2FilterOperator = 'is' | 'is_not' | 'contains' | 'contains_not'
+
+export interface V2Filter {
+  dimension: string
+  operator: V2FilterOperator
+  value: string | null | (string | null)[]
+  key?: string
+}
+
+interface V2Meta {
+  pid: string
+  period?: string | null
+  from?: string
+  to?: string
+  timezone?: string
+  appliedFilters?: V2Filter[]
+  total?: number
+  limit?: number
+  offset?: number
+  sort?: string
+  dimension?: string
+  metrics?: string[]
+  timeBucket?: string
+  allowedTimeBuckets?: string[] | null
+  mode?: string
+  windowMinutes?: number
+  [key: string]: unknown
+}
+
+export interface V2Envelope<T> {
+  data: T
+  meta: V2Meta
+}
+
+export type V2CommonParams = {
+  period?: string
+  from?: string
+  to?: string
+  timezone?: string
+  filters?: V2Filter[]
+}
+
+export interface BreakdownRow {
+  value: string | null
+  [metricOrExtraField: string]: unknown
+}
+
+export interface TimeseriesRow {
+  timestamp: string
+  [metric: string]: number | string
+}
+
+interface TrafficSummaryStats {
+  visitors: number
+  pageviews: number
+  users: number
+  bounce_rate: number
+  session_duration: number
+}
+
+export interface TrafficSummaryData {
+  current: TrafficSummaryStats
+  previous: TrafficSummaryStats
+  change: TrafficSummaryStats
+}
+
+interface PerformanceSummaryStats {
+  frontend: number
+  network: number
+  backend: number
+}
+
+export interface PerformanceSummaryData {
+  current: PerformanceSummaryStats
+  previous: PerformanceSummaryStats
+  change: PerformanceSummaryStats
+}
+
+interface CaptchaSummaryStats {
+  generated: number
+  passed: number
+  passRate: number | null
+  solveP50: number | null
+  solveP75: number | null
+  solveP95: number | null
+  difficulty: { value: string; count: number }[]
+  solveTime: { value: string; count: number }[]
+}
+
+export interface CaptchaSummaryData {
+  current: CaptchaSummaryStats
+  previous: CaptchaSummaryStats | null
+}
+
+interface SeoMetricValues {
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+export interface SeoSummaryData {
+  current: SeoMetricValues
+  previous: SeoMetricValues
+  change: SeoMetricValues
+}
+
+export interface SeoStatusData {
+  connected: boolean
+  property: string | null
+}
+
+export interface SeoBrandedTrafficData {
+  branded: number
+  nonBranded: number
+}
+
+type SeoImpressionPositionBucketKey =
+  | 'pos1To3'
+  | 'pos4To10'
+  | 'pos11To20'
+  | 'pos21Plus'
+
+type SeoOrganicPositionBucketKey =
+  | 'pos1To3'
+  | 'pos4To10'
+  | 'pos11To20'
+  | 'pos21To50'
+  | 'pos51Plus'
+
+interface SeoImpressionsByPositionEntry {
+  key: SeoImpressionPositionBucketKey
+  label: string
+  impressions: number
+  percentage: number
+}
+
+type SeoOrganicPositionEntry = { date: string } & Record<
+  SeoOrganicPositionBucketKey,
+  number
+>
+
+export interface SeoPositionsData {
+  impressionsByPosition: SeoImpressionsByPositionEntry[]
+  organicPositions: SeoOrganicPositionEntry[]
+}
+
+export interface CustomEventRow {
+  event: string
+  count: number
+}
+
+export interface MetricSums {
+  sum: number
+  avg: number
+}
+
+export interface PagePropertyRow {
+  property: string
+  count: number
+}
+
+export interface MetadataRow {
+  key: string
+  value: string
+  count: number
+}
+
+export interface ErrorListItem {
+  eid: string
+  name: string
+  message: string | null
+  filename: string | null
+  count: number
+  last_seen: string
+  users: number
+  sessions: number
+  status: 'active' | 'regressed' | 'resolved'
+}
+
+export interface LiveVisitor {
+  psid: string
+  device: string | null
+  browser: string | null
+  os: string | null
+  country: string | null
+}
+
+export interface LiveVisitorsData {
+  count: number
+  visitors: LiveVisitor[]
+}
+
+export type DimensionValues = string[] | { name: string; version: string }[]

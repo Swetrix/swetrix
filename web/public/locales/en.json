@@ -1343,7 +1343,8 @@
     "noMetadataFilters": "No metadata filters added. Click 'Add filter' to filter by event metadata.",
     "conversions": "Conversions",
     "noData": "No conversion data yet",
-    "noChartData": "No chart data available for the selected period"
+    "noChartData": "No chart data available for the selected period",
+    "conditionValueRequired": "Goal conditions need a specific value. Remove or set a value for filters marked as \"not set\"."
   },
   "featureFlags": {
     "title": "Feature flags",
@@ -2094,6 +2095,9 @@
       "og": "Organisation",
       "ut": "Usage type",
       "ctp": "Connection type",
+      "error_name": "Error name",
+      "error_message": "Error message",
+      "error_filename": "Filename",
       "searchEngine": "Search engine",
       "aiReferral": "AI referral",
       "captcha_event": "Challenge status",

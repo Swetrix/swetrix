@@ -196,8 +196,8 @@ export const SessionDetailView = ({
   const sessionDuration = useMemo(() => {
     if (!activeSession?.details) return 0
 
-    if (activeSession.details.sdur && activeSession.details.sdur > 0) {
-      return activeSession.details.sdur
+    if (activeSession.details.duration && activeSession.details.duration > 0) {
+      return activeSession.details.duration
     }
 
     if (!_isEmpty(activeSession.pages)) {
@@ -249,14 +249,17 @@ export const SessionDetailView = ({
     return <Loader />
   }
 
-  const countryName = details.cc
-    ? countries.getName(details.cc, language) || details.cc
+  const countryName = details.country
+    ? countries.getName(details.country, language) || details.country
     : null
   const locationSummary =
-    [countryName, details.rg, details.ct].filter(Boolean).join(', ') ||
+    [countryName, details.region, details.city].filter(Boolean).join(', ') ||
     t('project.unknown')
-  const osTooltipLabel = formatVersionLabel(details.os, details.osv)
-  const browserTooltipLabel = formatVersionLabel(details.br, details.brv)
+  const osTooltipLabel = formatVersionLabel(details.os, details.os_version)
+  const browserTooltipLabel = formatVersionLabel(
+    details.browser,
+    details.browser_version,
+  )
   const platformParts: PlatformPart[] = [
     ...(details.os
       ? [
@@ -268,13 +271,13 @@ export const SessionDetailView = ({
           },
         ]
       : []),
-    ...(details.br
+    ...(details.browser
       ? [
           {
             key: 'browser',
-            label: details.br,
-            tooltip: browserTooltipLabel || details.br,
-            icon: <BrowserIcon browser={details.br} className='size-4' />,
+            label: details.browser,
+            tooltip: browserTooltipLabel || details.browser,
+            icon: <BrowserIcon browser={details.browser} className='size-4' />,
           },
         ]
       : []),
@@ -346,11 +349,11 @@ export const SessionDetailView = ({
       ? t('project.online')
       : t('project.endOfSession')
   const campaignRows = [
-    { label: t('project.mapping.so'), value: details.so },
-    { label: t('project.mapping.me'), value: details.me },
-    { label: t('project.mapping.ca'), value: details.ca },
-    { label: t('project.mapping.te'), value: details.te },
-    { label: t('project.mapping.co'), value: details.co },
+    { label: t('project.mapping.so'), value: details.utm_source },
+    { label: t('project.mapping.me'), value: details.utm_medium },
+    { label: t('project.mapping.ca'), value: details.utm_campaign },
+    { label: t('project.mapping.te'), value: details.utm_term },
+    { label: t('project.mapping.co'), value: details.utm_content },
   ].filter(({ value }) => value)
   const durationText = details.isLive
     ? sessionOnlineFor || t('dashboard.live')
@@ -473,7 +476,7 @@ export const SessionDetailView = ({
             pages={activeSession?.pages || []}
             timeFormat={timeFormat}
             zoomedTimeRange={zoomedTimeRange}
-            sdur={activeSession?.details?.sdur}
+            sdur={activeSession?.details?.duration}
             isLive={activeSession?.details?.isLive}
             websiteUrl={websiteUrl}
           />
@@ -532,10 +535,10 @@ export const SessionDetailView = ({
                     colour='primary'
                     className='flex h-6 items-center justify-center'
                   >
-                    {details.cc ? (
+                    {details.country ? (
                       <Flag
                         className='rounded-xs'
-                        country={details.cc}
+                        country={details.country}
                         size={16}
                         alt=''
                         aria-hidden='true'
@@ -690,11 +693,11 @@ export const SessionDetailView = ({
               <InfoRow
                 label={t('project.mapping.ref')}
                 value={
-                  details.ref ? (
+                  details.referrer ? (
                     <Tooltip
                       text={
                         <Text size='xs' colour='inherit'>
-                          {details.ref}
+                          {details.referrer}
                         </Text>
                       }
                       tooltipNode={
@@ -703,7 +706,9 @@ export const SessionDetailView = ({
                           <span
                             className='truncate'
                             title={
-                              _size(details.ref) > 34 ? details.ref : undefined
+                              _size(details.referrer) > 34
+                                ? details.referrer
+                                : undefined
                             }
                           >
                             <Text
@@ -713,7 +718,7 @@ export const SessionDetailView = ({
                               colour='inherit'
                               truncate
                             >
-                              {_truncate(details.ref, { length: 34 })}
+                              {_truncate(details.referrer, { length: 34 })}
                             </Text>
                           </span>
                         </div>
@@ -727,7 +732,9 @@ export const SessionDetailView = ({
               <InfoRow
                 label={t('project.mapping.lc')}
                 value={
-                  details.lc ? getLocaleDisplayName(details.lc, language) : '-'
+                  details.locale
+                    ? getLocaleDisplayName(details.locale, language)
+                    : '-'
                 }
               />
             </div>

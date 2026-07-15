@@ -32,6 +32,7 @@
     "@rrweb/replay": "2.1.0",
     "@swetrix/node": "^3.2.0",
     "@takumi-rs/image-response": "^1.8.7",
+    "@tanstack/react-query": "^5.101.2",
     "@tanstack/react-virtual": "^3.14.3",
     "@ua-parser-js/pro-business": "^2.0.10",
     "billboard.js": "^3.18.0",

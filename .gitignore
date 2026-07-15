@@ -78,3 +78,4 @@ DESIGN.md
 DESIGN.json
 
 next-env.d.ts
+**/tsconfig.tsbuildinfo

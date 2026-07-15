@@ -4,7 +4,8 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { Entry } from '~/lib/models/Entry'
-import { PanelEmptyState } from '~/pages/Project/View/Panels'
+import { PanelEmptyState, PanelLoadingState } from '~/pages/Project/View/Panels'
+import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
 import { Text } from '~/ui/Text'
 import { nFormatter } from '~/utils/generic'
 
@@ -16,6 +17,8 @@ interface CompactReferralPanelProps {
   data: Entry[]
   icon: React.ReactNode
   rowMapper: (entry: any) => React.ReactNode
+  isLoading?: boolean
+  isRefetching?: boolean
 }
 
 const CompactReferralPanel = ({
@@ -23,6 +26,8 @@ const CompactReferralPanel = ({
   data,
   icon,
   rowMapper,
+  isLoading,
+  isRefetching,
 }: CompactReferralPanelProps) => {
   const { t } = useTranslation('common')
   const total = useMemo(() => data.reduce((sum, e) => sum + e.count, 0), [data])
@@ -53,16 +58,21 @@ const CompactReferralPanel = ({
   const col1 = allRows.slice(0, COMPACT_ENTRIES_PER_COL)
   const col2 = allRows.slice(COMPACT_ENTRIES_PER_COL)
 
-  if (_isEmpty(data)) {
+  if (isLoading || _isEmpty(data)) {
     return (
-      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
+      <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
+        {isRefetching ? <RefetchIndicator /> : null}
         <div className='flex items-center gap-1 text-gray-900 dark:text-gray-50'>
           {icon}
           <Text size='sm' weight='semibold'>
             {title}
           </Text>
         </div>
-        <PanelEmptyState message={t('project.noParamData')} />
+        {isLoading ? (
+          <PanelLoadingState />
+        ) : (
+          <PanelEmptyState message={t('project.noParamData')} />
+        )}
       </div>
     )
   }
@@ -110,7 +120,8 @@ const CompactReferralPanel = ({
   }
 
   return (
-    <div className='overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
+    <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'>
+      {isRefetching ? <RefetchIndicator /> : null}
       <div className='mb-2 flex items-center justify-between'>
         <div className='flex items-center gap-1 text-gray-900 dark:text-gray-50'>
           {icon}

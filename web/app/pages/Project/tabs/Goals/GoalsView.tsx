@@ -77,6 +77,7 @@ import Spin from '~/ui/icons/Spin'
 import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
+import { DurationFlow } from '~/ui/NumberFlow'
 import ProgressRing from '~/ui/ProgressRing'
 import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
@@ -682,7 +683,11 @@ const GoalRow = ({
                           weight='bold'
                           className='leading-none whitespace-nowrap'
                         >
-                          {formatDuration(metric?.median)}
+                          {hasTiming ? (
+                            <DurationFlow value={metric!.median!} />
+                          ) : (
+                            formatDuration(metric?.median)
+                          )}
                         </Text>
                         <div className='mt-1 flex items-center gap-1.5'>
                           <Text as='p' size='sm' weight='semibold'>

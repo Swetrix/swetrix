@@ -1,6 +1,7 @@
 import { TimeBucket } from '~/lib/constants'
+import { V2Filter } from '~/api/v2/types'
 
-export interface Filter {
+interface Filter {
   column: string
   filter: string
   isExclusive: boolean
@@ -26,7 +27,7 @@ export interface ProjectViewCustomEvent {
 export interface ProjectView {
   id: string
   name: string
-  filters?: Filter[]
+  filters?: (Filter | V2Filter)[]
   customEvents?: ProjectViewCustomEvent[]
 }
 
@@ -35,18 +36,18 @@ interface Param {
   count: number
 }
 
-export type Params = Record<string, Param[]>
+type Params = Record<string, Param[]>
 
 export type Customs = Record<string, number>
 
-export type Properties = Record<string, number>
+type Properties = Record<string, number>
 
 interface Metric {
   sum: number
   avg: number
 }
 
-export interface TrafficMeta {
+interface TrafficMeta {
   key: string
   current: Metric
   previous: Metric

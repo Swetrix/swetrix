@@ -16,7 +16,7 @@ import {
 } from 'react-router'
 import { toast } from 'sonner'
 
-import { useLiveVisitorsProxy } from '~/hooks/useAnalyticsProxy'
+import { getLiveVisitors } from '~/api/v2/endpoints'
 import {
   LIVE_VISITORS_UPDATE_INTERVAL,
   LS_PROJECTS_PROTECTED_KEY,
@@ -275,7 +275,6 @@ const useLiveVisitors = (project: Project | null) => {
   const projectId = project?.id
   const isLocked = project?.isLocked
   const [liveVisitors, setLiveVisitors] = useState(0)
-  const { fetchLiveVisitors } = useLiveVisitorsProxy()
 
   const updateLiveVisitors = useCallback(async () => {
     if (!projectId || isLocked) {
@@ -283,14 +282,12 @@ const useLiveVisitors = (project: Project | null) => {
     }
 
     try {
-      const result = await fetchLiveVisitors([projectId])
-      if (result) {
-        setLiveVisitors(result[projectId] || 0)
-      }
+      const { data } = await getLiveVisitors(projectId)
+      setLiveVisitors(data.count || 0)
     } catch (reason) {
       console.error('Failed to update live visitors:', reason)
     }
-  }, [projectId, isLocked, fetchLiveVisitors])
+  }, [projectId, isLocked])
 
   useEffect(() => {
     if (!projectId || isLocked) {

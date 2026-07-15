@@ -4,8 +4,3 @@ export interface Entry {
   cc?: string
   rgc?: string
 }
-
-export interface CountryEntry extends Entry {
-  cc: string
-  rgc?: string
-}

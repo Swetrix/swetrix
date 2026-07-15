@@ -3,35 +3,42 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
 
+import { V2Filter } from '~/api/v2/types'
 import Modal from '~/ui/Modal'
-
-import { Filter as FilterType } from '../interfaces/traffic'
-import { isFilterValid } from '../utils/filters'
+import {
+  filterToUrlKey,
+  filterToUrlValue,
+  isFilterUrlKey,
+} from '~/utils/analyticsUrl'
 
 import FilterRowsEditor from './FilterRowsEditor'
 
 export const getFiltersUrlParams = (
-  filters: FilterType[],
-  newFilters: FilterType[],
+  filters: V2Filter[],
+  newFilters: V2Filter[],
   override: boolean,
   searchParams: URLSearchParams,
 ) => {
   const currentUrlParams = new URLSearchParams(searchParams.toString())
-  const resultingFilters: FilterType[] = []
+  const resultingFilters: V2Filter[] = []
 
   if (override) {
     resultingFilters.push(...newFilters)
   } else {
-    const finalUniqueFiltersMap = new Map<string, FilterType>()
+    const finalUniqueFiltersMap = new Map<string, V2Filter>()
 
     newFilters.forEach((filter) => {
-      const mapKey = `${filter.isExclusive ? '!' : ''}${filter.isContains ? '~' : ''}${filter.column}=${filter.filter}`
-      finalUniqueFiltersMap.set(mapKey, filter)
+      finalUniqueFiltersMap.set(
+        `${filterToUrlKey(filter)}=${filterToUrlValue(filter)}`,
+        filter,
+      )
     })
 
     filters.forEach((filter) => {
-      const mapKey = `${filter.isExclusive ? '!' : ''}${filter.isContains ? '~' : ''}${filter.column}=${filter.filter}`
-      finalUniqueFiltersMap.set(mapKey, filter)
+      finalUniqueFiltersMap.set(
+        `${filterToUrlKey(filter)}=${filterToUrlValue(filter)}`,
+        filter,
+      )
     })
 
     resultingFilters.push(...Array.from(finalUniqueFiltersMap.values()))
@@ -40,21 +47,13 @@ export const getFiltersUrlParams = (
   const newUrlParams = new URLSearchParams()
 
   for (const [key, value] of currentUrlParams.entries()) {
-    let processedKey = key
-    if (key.startsWith('!') || key.startsWith('~') || key.startsWith('^')) {
-      processedKey = key.substring(1)
-    }
-    if (!isFilterValid(processedKey, true)) {
+    if (!isFilterUrlKey(key)) {
       newUrlParams.append(key, value)
     }
   }
 
   resultingFilters.forEach((filter) => {
-    let filterKey = filter.isExclusive ? `!${filter.column}` : filter.column
-    if (filter.isContains) {
-      filterKey = filter.isExclusive ? `^${filter.column}` : `~${filter.column}`
-    }
-    newUrlParams.append(filterKey, filter.filter)
+    newUrlParams.append(filterToUrlKey(filter), filterToUrlValue(filter))
   })
 
   return newUrlParams
@@ -64,7 +63,7 @@ interface SearchFiltersProps {
   showModal: boolean
   setShowModal: (show: boolean) => void
   tnMapping: Record<string, string>
-  filters: FilterType[]
+  filters: V2Filter[]
   type: 'traffic' | 'errors'
   filterOptions?: string[]
 }
@@ -78,7 +77,7 @@ const SearchFilters = ({
   filterOptions,
 }: SearchFiltersProps) => {
   const { t } = useTranslation('common')
-  const [draftFilters, setDraftFilters] = useState<FilterType[]>([])
+  const [draftFilters, setDraftFilters] = useState<V2Filter[]>([])
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 

@@ -152,15 +152,15 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                   <div className='flex items-center gap-1.5'>
                     <Tooltip
                       text={
-                        profile.cc
-                          ? countries.getName(profile.cc, language) ||
-                            profile.cc
+                        profile.country
+                          ? countries.getName(profile.country, language) ||
+                            profile.country
                           : t('project.unknownCountry')
                       }
                       tooltipNode={
                         <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
                           <Flag
-                            country={profile.cc}
+                            country={profile.country}
                             size={14}
                             className='rounded-[2px]'
                             aria-hidden='true'
@@ -181,11 +181,11 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                       }
                     />
                     <Tooltip
-                      text={profile.br || t('project.unknown')}
+                      text={profile.browser || t('project.unknown')}
                       tooltipNode={
                         <div className='flex h-[22px] w-[22px] items-center justify-center rounded bg-gray-100/80 ring-1 ring-gray-200/50 dark:bg-slate-800/80 dark:ring-slate-700/50'>
                           <BrowserIcon
-                            browser={profile.br}
+                            browser={profile.browser}
                             className='size-3.5'
                           />
                         </div>
