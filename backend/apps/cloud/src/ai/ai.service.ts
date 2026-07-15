@@ -29,7 +29,7 @@ import { PlanFeatureCode } from '../user/entities/user.entity'
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
-const PRIMARY_MODEL = 'anthropic/claude-haiku-4.5'
+const PRIMARY_MODEL = 'openai/gpt-5.6-luna'
 const TITLE_MODEL = 'google/gemini-3.1-flash-lite-preview'
 
 const ALLOWED_FILTER_COLUMNS = new Set([
@@ -382,6 +382,11 @@ export class AiService {
       messages,
       tools: this.buildTools(project, timezone),
       stopWhen: stepCountIs(15),
+      // Kept low deliberately: reasoning tokens bill at the output rate and
+      // delay the first streamed token, and this loop can run 15 steps.
+      providerOptions: {
+        openai: { reasoningEffort: 'low' },
+      },
     })
 
     return result
