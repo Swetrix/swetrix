@@ -73,7 +73,7 @@ export class CreateProjectViewDto {
 
   @ApiProperty({
     description:
-      'An array of properties to filter [{ column, filter, isExclusive, isContains }]',
+      'An array of properties to filter [{ dimension, operator, value, key? }]',
     required: false,
     isArray: true,
   })

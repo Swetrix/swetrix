@@ -216,6 +216,12 @@ export const useBreakdownDetailsQuery = (
       ),
     initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {
+      // An empty page cannot advance the offset, so honouring `total` here
+      // would hand back the offset we just fetched and loop forever.
+      if (lastPage.data.length === 0) {
+        return undefined
+      }
+
       const loaded = pages.reduce((acc, page) => acc + page.data.length, 0)
       const total = lastPage.meta.total
 

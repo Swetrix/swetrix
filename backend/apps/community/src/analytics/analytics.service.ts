@@ -125,6 +125,12 @@ const LIVE_SESSION_THRESHOLD_SECONDS = 120
 const MAX_CONCURRENCY_WINDOW_MINUTES = 366 * 24 * 60
 const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
+// Journeys keep only the first {steps} distinct pages of a session, but the
+// dedupe happens after aggregation, so the cap has to sit far above {steps}:
+// a session that reloads one page N times still needs its later, different
+// pages to survive. 1000 raw pageviews is orders of magnitude beyond any real
+// session while keeping a bot's session array bounded.
+const MAX_JOURNEY_PAGEVIEWS_PER_SESSION = 1000
 
 // Event types that can be targeted by the data-deletion tool.
 const DELETABLE_EVENT_TYPES = [...DATA_DELETION_EVENT_TYPES]
@@ -970,7 +976,12 @@ export class AnalyticsService {
         SELECT
           psid,
           arraySlice(
-            arrayCompact(arrayMap(x -> x.2, arraySort(groupArray((created, pg))))),
+            arrayCompact(
+              arrayMap(
+                x -> x.2,
+                groupArraySorted({maxPageviews:UInt32})((created, pg))
+              )
+            ),
             1,
             {steps:UInt32}
           ) AS path
@@ -1011,7 +1022,12 @@ export class AnalyticsService {
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { ...params, steps, journeys },
+        query_params: {
+          ...params,
+          steps,
+          journeys,
+          maxPageviews: MAX_JOURNEY_PAGEVIEWS_PER_SESSION,
+        },
       })
       .then((res) =>
         res.json<{ path: string[]; value: string; totalSessions: string }>(),

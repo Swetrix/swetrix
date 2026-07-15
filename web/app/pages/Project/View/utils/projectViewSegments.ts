@@ -36,7 +36,7 @@ const ERRORS_FILTER_COLUMNS = VALID_DIMENSIONS_BY_TYPE.errors
 
 const CAPTCHA_FILTER_COLUMNS = VALID_DIMENSIONS_BY_TYPE.captcha
 
-const SEO_FILTER_COLUMNS = ['page', 'keywords', 'country', 'device']
+const SEO_FILTER_COLUMNS = VALID_DIMENSIONS_BY_TYPE.seo
 
 const ANALYTICS_TABS = new Set<ProjectTab>([
   PROJECT_TABS.traffic,
@@ -51,7 +51,7 @@ const ANALYTICS_TABS = new Set<ProjectTab>([
 const FILTER_OPTIONS_BY_TAB: Partial<Record<ProjectTab, string[]>> = {
   [PROJECT_TABS.traffic]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.performance]: PERFORMANCE_FILTER_COLUMNS,
-  [PROJECT_TABS.seo]: ['page', 'country', 'device'],
+  [PROJECT_TABS.seo]: SEO_FILTER_COLUMNS,
   [PROJECT_TABS.sessions]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.replays]: TRAFFIC_FILTER_OPTIONS,
   [PROJECT_TABS.profiles]: TRAFFIC_FILTER_OPTIONS,
