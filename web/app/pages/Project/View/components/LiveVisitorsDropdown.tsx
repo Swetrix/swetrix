@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 import { Link } from '~/ui/Link'
 
-import type { LiveVisitorInfo } from '~/api/api.server'
-import { useLiveVisitorsProxy } from '~/hooks/useAnalyticsProxy'
+import { getLiveVisitors as getLiveVisitorsV2 } from '~/api/v2/endpoints'
+import type { LiveVisitor } from '~/api/v2/types'
 import {
   FLOW_TIMING,
   FLOW_VALUE_CLASS,
@@ -29,8 +29,7 @@ const LiveVisitorsDropdown = () => {
   const location = useLocation()
   const [isDropdownVisible, setIsDropdownVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [liveInfo, setLiveInfo] = useState<LiveVisitorInfo[]>([])
-  const { fetchLiveVisitorsInfo } = useLiveVisitorsProxy()
+  const [liveInfo, setLiveInfo] = useState<LiveVisitor[]>([])
   const flowLiveVisitors = useFlowValue(liveVisitors)
 
   // The translation interpolates the amount into the sentence, so split it
@@ -45,11 +44,11 @@ const LiveVisitorsDropdown = () => {
 
     try {
       // Getting live sessions list and updating live visitors count to make sure it matches the list length
-      const [info] = await Promise.all([
-        fetchLiveVisitorsInfo(id),
+      const [{ data }] = await Promise.all([
+        getLiveVisitorsV2(id),
         updateLiveVisitors(),
       ])
-      setLiveInfo(info || [])
+      setLiveInfo(data.visitors || [])
     } catch (reason) {
       console.error('[LiveVisitorsDropdown] getLiveVisitors:', reason)
     }
@@ -138,7 +137,7 @@ const LiveVisitorsDropdown = () => {
                 </Text>
               ) : (
                 <div className='flex w-full min-w-0 flex-col gap-1.5 py-1.5'>
-                  {_map(liveInfo, ({ psid, dv, br, os, cc }) => {
+                  {_map(liveInfo, ({ psid, device, browser, os, country }) => {
                     const params = new URLSearchParams(location.search)
                     params.set('psid', psid)
                     params.set('tab', PROJECT_TABS.sessions)
@@ -152,15 +151,17 @@ const LiveVisitorsDropdown = () => {
                         <div className='flex w-5 shrink-0 items-center'>
                           <Flag
                             className='rounded-xs'
-                            country={cc}
+                            country={country}
                             size={18}
                             alt=''
                             aria-hidden='true'
                           />
                         </div>
                         <div className='min-w-0 truncate'>{os}</div>
-                        <div className='min-w-0 truncate'>{br}</div>
-                        <div className='min-w-0 truncate capitalize'>{dv}</div>
+                        <div className='min-w-0 truncate'>{browser}</div>
+                        <div className='min-w-0 truncate capitalize'>
+                          {device}
+                        </div>
                       </Link>
                     )
                   })}

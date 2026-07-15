@@ -3,6 +3,8 @@ title: Statistics API reference
 slug: /statistics-api
 ---
 
+A newer, per-dimension [Statistics API v2](/statistics-api-v2) is available — it offers human-readable dimension and metric names, server-side pagination and a consistent response format. This v1 API keeps working as documented below.
+
 Swetrix provides the ability to retrieve aggregated data not only through the UI, but also programmatically using API queries.
 
 The statistics API provides several GET endpoints. These endpoints require some query parameters and return standard HTTP responses and a JSON-encoded body. API requests without a valid API key will fail (except for the publicly available API endpoints).
@@ -1254,19 +1256,6 @@ The number of sessions to return per page.
 **skip** (optional, default: `0`)
 
 The number of sessions to skip (for pagination).
-
-### GET /v1/log/user-flow
-
-Returns the user flow diagram data, showing how users navigate through your website.
-
-```bash
-curl 'https://api.swetrix.com/v1/log/user-flow?pid=YOUR_PROJECT_ID&period=7d'\
-  -H "X-Api-Key: ${SWETRIX_API_KEY}"
-```
-
-#### Parameters
-
-The parameters are similar to the [`/log` endpoint](#get-v1log).
 
 ### GET /v1/log/journeys
 

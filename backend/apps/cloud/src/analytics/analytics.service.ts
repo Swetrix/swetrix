@@ -94,12 +94,8 @@ import {
   TrafficCHResponse,
   IGetGroupFromTo,
   GetFiltersQuery,
-  IUserFlowNode,
-  IUserFlowLink,
-  IUserFlow,
   IJourney,
   IJourneys,
-  IBuildUserFlow,
   IExtractChartData,
   IGenerateXAxis,
   IAggregatedMetadata,
@@ -146,6 +142,12 @@ const LIVE_SESSION_THRESHOLD_SECONDS = 120
 const MAX_CONCURRENCY_WINDOW_MINUTES = 366 * 24 * 60
 const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
+// Journeys keep only the first {steps} distinct pages of a session, but the
+// dedupe happens after aggregation, so the cap has to sit far above {steps}:
+// a session that reloads one page N times still needs its later, different
+// pages to survive. 1000 raw pageviews is orders of magnitude beyond any real
+// session while keeping a bot's session array bounded.
+const MAX_JOURNEY_PAGEVIEWS_PER_SESSION = 1000
 
 // Event types that can be targeted by the data-deletion tool.
 const DELETABLE_EVENT_TYPES = [...DATA_DELETION_EVENT_TYPES]
@@ -534,10 +536,13 @@ const mapErrorColumn = (type: string): string => ERROR_COLUMN_MAP[type] || type
 const captchaMetaValue = (key: string, fallback: string) =>
   `if(indexOf(\`meta.key\`, '${key}') = 0, '${fallback}', arrayElement(\`meta.value\`, indexOf(\`meta.key\`, '${key}')))`
 
-const CAPTCHA_EVENT_SQL = captchaMetaValue('captcha_event', 'pass')
-const CAPTCHA_DIFFICULTY_SQL = captchaMetaValue('captcha_difficulty', '0')
-const CAPTCHA_REASON_SQL = captchaMetaValue('captcha_reason', '')
-const CAPTCHA_SOLVE_MS_SQL = `toUInt32OrZero(${captchaMetaValue('solve_ms', '0')})`
+export const CAPTCHA_EVENT_SQL = captchaMetaValue('captcha_event', 'pass')
+export const CAPTCHA_DIFFICULTY_SQL = captchaMetaValue(
+  'captcha_difficulty',
+  '0',
+)
+export const CAPTCHA_REASON_SQL = captchaMetaValue('captcha_reason', '')
+export const CAPTCHA_SOLVE_MS_SQL = `toUInt32OrZero(${captchaMetaValue('solve_ms', '0')})`
 const CAPTCHA_SOLVE_TIME_SQL = `multiIf(${CAPTCHA_SOLVE_MS_SQL} = 0, 'unknown', ${CAPTCHA_SOLVE_MS_SQL} < 1000, '<1s', ${CAPTCHA_SOLVE_MS_SQL} < 3000, '1-3s', ${CAPTCHA_SOLVE_MS_SQL} < 10000, '3-10s', ${CAPTCHA_SOLVE_MS_SQL} < 30000, '10-30s', '30s+')`
 
 const CAPTCHA_META_COLUMN_MAP: Record<string, string> = {
@@ -547,7 +552,7 @@ const CAPTCHA_META_COLUMN_MAP: Record<string, string> = {
   solve_time: CAPTCHA_SOLVE_TIME_SQL,
 }
 
-const getCaptchaColumnExpression = (col: string): string =>
+export const getCaptchaColumnExpression = (col: string): string =>
   CAPTCHA_META_COLUMN_MAP[col] || col
 
 const generateParamsQuery = (
@@ -1141,100 +1146,6 @@ export class AnalyticsService {
     }
   }
 
-  removeCyclicDependencies(links: IUserFlowLink[]): IUserFlowLink[] {
-    const visited = new Set<string>()
-
-    return links.filter((link) => {
-      const key = `${link.source}_${link.target}`
-      if (visited.has(key)) {
-        return false
-      }
-      visited.add(key)
-      return true
-    })
-  }
-
-  buildUserFlow(links: IUserFlowLink[]): IBuildUserFlow {
-    const nodes: IUserFlowNode[] = Array.from(
-      new Set(
-        links
-          .map((link: IUserFlowLink) => link.source)
-          .concat(links.map((link: IUserFlowLink) => link.target)),
-      ),
-    ).map((node: any) => ({ id: node }))
-
-    return { nodes, links }
-  }
-
-  async getUserFlow(
-    params: Record<string, unknown>,
-    filtersQuery: string,
-  ): Promise<IUserFlow> {
-    const query = `
-      WITH page_sequences AS (
-        SELECT
-          psid,
-          pg,
-          created,
-          lagInFrame(pg) OVER (PARTITION BY psid ORDER BY created) AS prev_page
-        FROM events
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND type = 'pageview'
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-          AND pg IS NOT NULL
-          ${filtersQuery}
-      )
-      SELECT
-        prev_page AS source,
-        pg AS target,
-        count() AS value
-      FROM page_sequences
-      WHERE prev_page IS NOT NULL
-        AND prev_page != pg
-      GROUP BY
-        source,
-        target
-      ORDER BY value DESC
-    `
-
-    const { data } = await clickhouse
-      .query({
-        query,
-        query_params: params,
-      })
-      .then((res) => res.json<IUserFlowLink>())
-
-    if (_isEmpty(data)) {
-      const empty = { nodes: [], links: [] }
-      return {
-        ascending: empty,
-        descending: empty,
-      }
-    }
-
-    const ascendingLinks: IUserFlowLink[] = []
-    const descendingLinks: IUserFlowLink[] = []
-
-    this.removeCyclicDependencies(data).forEach((row: any) => {
-      const link: IUserFlowLink = {
-        source: row.source,
-        target: row.target,
-        value: row.value,
-      }
-      if (link.source < link.target) {
-        ascendingLinks.push(link)
-      } else {
-        descendingLinks.push(link)
-      }
-    })
-
-    return {
-      ascending: this.buildUserFlow(ascendingLinks),
-      descending: this.buildUserFlow(descendingLinks),
-    }
-  }
-
   async getJourneys(
     params: Record<string, unknown>,
     filtersQuery: string,
@@ -1262,7 +1173,12 @@ export class AnalyticsService {
         SELECT
           psid,
           arraySlice(
-            arrayCompact(arrayMap(x -> x.2, arraySort(groupArray((created, pg))))),
+            arrayCompact(
+              arrayMap(
+                x -> x.2,
+                groupArraySorted({maxPageviews:UInt32})((created, pg))
+              )
+            ),
             1,
             {steps:UInt32}
           ) AS path
@@ -1303,7 +1219,12 @@ export class AnalyticsService {
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { ...params, steps, journeys },
+        query_params: {
+          ...params,
+          steps,
+          journeys,
+          maxPageviews: MAX_JOURNEY_PAGEVIEWS_PER_SESSION,
+        },
       })
       .then((res) =>
         res.json<{ path: string[]; value: string; totalSessions: string }>(),

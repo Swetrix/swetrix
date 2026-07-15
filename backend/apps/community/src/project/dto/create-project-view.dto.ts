@@ -1,5 +1,6 @@
 import {
   ArrayMaxSize,
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -12,7 +13,6 @@ import {
 import { ApiProperty } from '@nestjs/swagger'
 import { ProjectViewType } from '../entity/project-view.entity'
 import { ProjectViewCustomEventMetaValueType } from '../entity/project-view-custom-event.entity'
-import { TRAFFIC_COLUMNS } from '../../common/constants'
 
 export class ProjectViewCustomEventDto {
   @ApiProperty()
@@ -48,13 +48,15 @@ export class ProjectViewCustomEventDto {
 }
 
 export interface Filter {
-  column: keyof typeof TRAFFIC_COLUMNS
-  filter: string
-  isExclusive: boolean
-  isContains?: boolean
+  dimension: string
+  operator: 'is' | 'is_not' | 'contains' | 'contains_not'
+  value: string | null | (string | null)[]
+  key?: string
 }
 
 export const MAX_METRICS_IN_VIEW = 3
+
+const MAX_FILTERS_IN_VIEW = 100
 
 export class CreateProjectViewDto {
   @ApiProperty()
@@ -71,11 +73,13 @@ export class CreateProjectViewDto {
 
   @ApiProperty({
     description:
-      'An array of properties to filter [{ column, filter, isExclusive, isContains }]',
+      'An array of properties to filter [{ dimension, operator, value, key? }]',
     required: false,
     isArray: true,
   })
   @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_FILTERS_IN_VIEW)
   filters?: Filter[]
 
   @ApiProperty({

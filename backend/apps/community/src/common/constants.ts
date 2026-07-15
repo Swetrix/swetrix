@@ -133,6 +133,39 @@ const ERROR_COLUMNS = [
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev', 'entryPage', 'exitPage']
 
+const V2_VIEW_FILTER_DIMENSIONS = [
+  'country',
+  'region',
+  'city',
+  'page',
+  'host',
+  'locale',
+  'browser',
+  'browser_version',
+  'os',
+  'os_version',
+  'device',
+  'referrer',
+  'referrer_name',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'isp',
+  'organization',
+  'user_type',
+  'connection_type',
+  'entry_page',
+  'exit_page',
+  'event',
+  'error_name',
+  'error_message',
+  'error_filename',
+  'event_metadata',
+  'page_property',
+]
+
 const PERFORMANCE_COLUMNS = [
   'cc',
   'rg',
@@ -170,6 +203,7 @@ export {
   ERROR_COLUMNS,
   PID_REGEX,
   ALL_COLUMNS,
+  V2_VIEW_FILTER_DIMENSIONS,
   SELFHOSTED_GEOIP_DB_PATH,
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
   OIDC_ENABLED,

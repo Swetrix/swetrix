@@ -78,29 +78,9 @@ export interface GetFiltersQuery extends Array<string | object | boolean> {
   3: boolean
 }
 
-export interface IUserFlowNode {
-  id: string
-}
-
-export interface IUserFlowLink {
-  source: string
-  target: string
-  value: number
-}
-
 export interface IGenerateXAxis {
   x: string[]
   xShifted: string[]
-}
-
-export interface IBuildUserFlow {
-  nodes: IUserFlowNode[]
-  links: IUserFlowLink[]
-}
-
-export interface IUserFlow {
-  ascending: IBuildUserFlow
-  descending: IBuildUserFlow
 }
 
 export interface IJourney {

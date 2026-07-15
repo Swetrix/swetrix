@@ -33,6 +33,7 @@ import {
   DataType,
   getLowestPossibleTimeBucket,
 } from '../analytics/analytics.service'
+import { normalizeFiltersToV1Json } from '../analytics/v2/query/filters.translator'
 import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import {
@@ -84,10 +85,20 @@ const clampPagination = (take?: number, skip?: number) => {
 
 const GOAL_CONDITION_COLUMNS: Record<string, string> = {
   page: 'pg',
-  pg: 'pg',
   event: 'event_name',
-  event_name: 'event_name',
   host: 'host',
+  country: 'cc',
+  device: 'dv',
+  browser: 'br',
+  os: 'os',
+  referrer: 'ref',
+  utm_source: 'so',
+  utm_medium: 'me',
+  utm_campaign: 'ca',
+  utm_term: 'te',
+  utm_content: 'co',
+  pg: 'pg',
+  event_name: 'event_name',
   ref: 'ref',
   so: 'so',
   me: 'me',
@@ -97,7 +108,6 @@ const GOAL_CONDITION_COLUMNS: Record<string, string> = {
   cc: 'cc',
   dv: 'dv',
   br: 'br',
-  os: 'os',
 }
 
 type GoalBreakdownKey =
@@ -875,7 +885,7 @@ export class GoalController {
     )
 
     const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
-      filters || '[]',
+      normalizeFiltersToV1Json(filters, 'traffic'),
       DataType.ANALYTICS,
     )
     const { query: conversionsSubquery, params: goalParams } =
@@ -1190,7 +1200,7 @@ export class GoalController {
     const [selector, groupBy] = this.getGroupSubquery(resolvedTimeBucket)
 
     const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
-      filters || '[]',
+      normalizeFiltersToV1Json(filters, 'traffic'),
       DataType.ANALYTICS,
     )
     const { query: conversionsSubquery, params: goalParams } =

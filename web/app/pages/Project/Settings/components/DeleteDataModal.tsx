@@ -23,8 +23,9 @@ import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import { cn } from '~/utils/generic'
 
+import type { V2Filter } from '~/api/v2/types'
+
 import FilterRowsEditor from '../../View/components/FilterRowsEditor'
-import type { Filter } from '../../View/interfaces/traffic'
 
 const EMPTY_TN_MAPPING: Record<string, string> = {}
 
@@ -277,7 +278,7 @@ const DeleteDataModal = ({ pid, isOpen, onClose }: DeleteDataModalProps) => {
     i18n: { language },
   } = useTranslation('common')
 
-  const [filters, setFilters] = useState<Filter[]>([])
+  const [filters, setFilters] = useState<V2Filter[]>([])
   const [period, setPeriod] = useState<PeriodKey>('all')
   const [customRange, setCustomRange] = useState<Date[]>([])
   // null = follow the auto default (every type that has matching rows)
