@@ -51,6 +51,7 @@ import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import Button from '~/ui/Button'
 import Dropdown from '~/ui/Dropdown'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import Input from '~/ui/Input'
 import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
@@ -1834,7 +1835,7 @@ export interface PanelProps {
   isRefetching?: boolean
   /** Shows a centered spinner in place of the rows while the first page is being fetched. */
   isLoading?: boolean
-  serverTotal?: number
+  /** Defined only while further pages remain; the details table autoloads them on scroll. */
   onLoadMore?: () => void
   loadingMore?: boolean
 }
@@ -1851,7 +1852,6 @@ interface DetailsTableProps extends Pick<
   | 'valueMapper'
   | 'getFilterLink'
   | 'activeTab'
-  | 'serverTotal'
   | 'onLoadMore'
   | 'loadingMore'
 > {
@@ -1883,7 +1883,6 @@ const DetailsTable = ({
   hidePercentageInDetails,
   detailsExtraColumns,
   activeTab = PROJECT_TABS.traffic,
-  serverTotal,
   onLoadMore,
   loadingMore,
 }: DetailsTableProps) => {
@@ -2003,13 +2002,15 @@ const DetailsTable = ({
     })
   }
 
+  // Keyed on the dimension, not on `data` — appending a page gives `data` a new
+  // identity, and resetting on that would undo the user's sort mid-scroll.
   useEffect(() => {
     setSort({
       label: 'quantity',
       sortByAscend: false,
       sortByDescend: false,
     })
-  }, [data])
+  }, [activeTabId])
 
   const numericColsCount =
     1 + (detailsExtraColumns?.length || 0) + (!hidePercentageInDetails ? 1 : 0)
@@ -2209,28 +2210,17 @@ const DetailsTable = ({
               )
             })}
           </div>
-        </div>
-      </div>
-      {onLoadMore ? (
-        <div className='mt-2 flex items-center justify-center gap-3'>
-          <Button
-            variant='secondary'
-            size='sm'
-            type='button'
-            onClick={onLoadMore}
-            disabled={loadingMore}
-            className='gap-1.5'
-          >
-            {loadingMore ? <Spin className='m-0!' /> : null}
-            {t('project.loadMore')}
-          </Button>
-          {serverTotal ? (
-            <Text size='sm' colour='muted'>
-              {data.length} / {nFormatter(serverTotal, 1)}
-            </Text>
+
+          {onLoadMore ? (
+            <InfiniteScrollTrigger
+              hasMore
+              isLoading={Boolean(loadingMore)}
+              onLoadMore={onLoadMore}
+              root={parentRef}
+            />
           ) : null}
         </div>
-      ) : null}
+      </div>
     </div>
   )
 }
@@ -2265,7 +2255,6 @@ const Panel = ({
   rowTooltipFollowCursor = false,
   isRefetching,
   isLoading,
-  serverTotal,
   onLoadMore,
   loadingMore,
 }: PanelProps) => {
@@ -2720,7 +2709,6 @@ const Panel = ({
             hidePercentageInDetails={hidePercentageInDetails}
             detailsExtraColumns={detailsExtraColumns}
             activeTab={activeTab}
-            serverTotal={serverTotal}
             onLoadMore={onLoadMore}
             loadingMore={loadingMore}
           />

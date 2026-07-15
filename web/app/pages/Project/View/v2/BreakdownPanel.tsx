@@ -150,8 +150,6 @@ export const BreakdownPanel = ({
     )
   }, [activeSubTab, versionsQuery.data, primaryMetric])
 
-  const total = query.data?.pages[0]?.meta.total
-
   const containerTabs =
     flatSubTabs.length > 1
       ? subTabs.map((tab) =>
@@ -210,7 +208,6 @@ export const BreakdownPanel = ({
         id={activeSubTab.dimension || activeSubTabId}
         name={name}
         data={entries}
-        serverTotal={total}
         isLoading={isLoading}
         customRenderer={query.isError ? renderError : undefined}
         tabs={containerTabs}
