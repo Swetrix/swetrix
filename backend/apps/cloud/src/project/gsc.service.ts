@@ -39,11 +39,17 @@ const ENCRYPTION_KEY = deriveKey('gsc-token')
 
 const MAX_ROW_LIMIT = 25000
 const MAX_BRANDED_PAGES = 10
-const MAX_FILTER_EXPRESSION_LENGTH = 500
-const MAX_FILTERS = 20
-const MAX_BRANDED_TRAFFIC_RANGE_DAYS = 31
-const MAX_POSITION_ANALYTICS_RANGE_DAYS = 31
-const OPTIONAL_ANALYTICS_TIMEOUT_MS = 12000
+export const MAX_FILTER_EXPRESSION_LENGTH = 500
+export const MAX_FILTERS = 20
+export const MAX_BRANDED_TRAFFIC_RANGE_DAYS = 31
+export const MAX_POSITION_ANALYTICS_RANGE_DAYS = 31
+export const OPTIONAL_ANALYTICS_TIMEOUT_MS = 12000
+
+/**
+ * Search Console keeps roughly 16 months of history, so an 'all' period is
+ * resolved against a fixed window rather than the project's first event.
+ */
+export const GSC_ALL_TIME_DAYS = 480
 
 const IMPRESSION_POSITION_BUCKETS = [
   { key: 'pos1To3', label: '1-3' },
@@ -67,13 +73,8 @@ type OrganicPositionSeriesEntry = { date: string } & Record<
   OrganicPositionBucketKey,
   number
 >
-type BrandedTrafficAnalytics = { branded: number; nonBranded: number }
-type SkippedBrandedAnalytics = {
-  skipped: true
-  branded: null
-  nonBranded: null
-}
-type PositionAnalytics = {
+export type BrandedTrafficAnalytics = { branded: number; nonBranded: number }
+export type PositionAnalytics = {
   impressionsByPosition: {
     key: ImpressionPositionBucketKey
     label: string
@@ -81,23 +82,6 @@ type PositionAnalytics = {
     percentage: number
   }[]
   organicPositions: OrganicPositionSeriesEntry[]
-}
-type SkippedPositionAnalytics = {
-  skipped: true
-  impressionsByPosition: null
-  organicPositions: null
-}
-
-const SKIPPED_BRANDED_ANALYTICS: SkippedBrandedAnalytics = {
-  skipped: true,
-  branded: null,
-  nonBranded: null,
-}
-
-const SKIPPED_POSITION_ANALYTICS: SkippedPositionAnalytics = {
-  skipped: true,
-  impressionsByPosition: null,
-  organicPositions: null,
 }
 
 const initialImpressionPositionBuckets = (): Record<
@@ -140,32 +124,6 @@ const getOrganicPositionBucketKey = (
   return 'pos51Plus'
 }
 
-const resolveOptionalAnalytics = async <T>(
-  load: (signal: AbortSignal) => Promise<T>,
-  fallback: T,
-): Promise<T> => {
-  const controller = new AbortController()
-  let timeout: ReturnType<typeof setTimeout> | undefined
-
-  try {
-    return await Promise.race([
-      load(controller.signal),
-      new Promise<T>((resolve) => {
-        timeout = setTimeout(() => {
-          controller.abort()
-          resolve(fallback)
-        }, OPTIONAL_ANALYTICS_TIMEOUT_MS)
-      }),
-    ])
-  } catch {
-    return fallback
-  } finally {
-    if (timeout) {
-      clearTimeout(timeout)
-    }
-  }
-}
-
 type GSCRow = {
   keys: string[]
   clicks?: number
@@ -174,7 +132,7 @@ type GSCRow = {
   position?: number
 }
 
-type GSCContext = {
+export type GSCContext = {
   sc: ReturnType<typeof searchconsole>
   siteUrl: string
 }
@@ -398,6 +356,23 @@ export class GSCService {
     return { connected, email: project?.gscAccountEmail || null }
   }
 
+  /**
+   * Whether the project can currently be queried: an account must be connected
+   * and one of its properties linked. Unlike getStatus this needs no account
+   * email, so it is safe to expose to anyone with project read access.
+   */
+  async getConnectionState(
+    pid: string,
+  ): Promise<{ connected: boolean; property: string | null }> {
+    const tokens = await this.getStoredTokens(pid)
+    const connected = !_isEmpty(tokens?.refresh_token || tokens?.access_token)
+
+    return {
+      connected,
+      property: connected ? tokens.property_uri || null : null,
+    }
+  }
+
   private async getAuthedClientForPid(pid: string) {
     const tokens = await this.getStoredTokens(pid)
     if (_isEmpty(tokens)) {
@@ -426,7 +401,7 @@ export class GSCService {
     return oauth2Client
   }
 
-  private async getGSCContext(pid: string): Promise<GSCContext> {
+  async getGSCContext(pid: string): Promise<GSCContext> {
     const tokens = await this.getStoredTokens(pid)
     if (_isEmpty(tokens) || _isEmpty(tokens.property_uri)) {
       throw new BadRequestException(
@@ -1183,99 +1158,6 @@ export class GSCService {
       throw new InternalServerErrorException(
         'Failed to fetch position analytics from Search Console',
       )
-    }
-  }
-
-  async getDashboard(
-    pid: string,
-    from: string,
-    to: string,
-    timeBucket?: string,
-    filtersStr?: string,
-  ) {
-    const connected = await this.isConnected(pid)
-    if (!connected) {
-      return { notConnected: true }
-    }
-
-    const tokens = await this.getStoredTokens(pid)
-    if (_isEmpty(tokens.property_uri)) {
-      return { notConnected: true, noProperty: true }
-    }
-
-    let ctx: GSCContext
-    try {
-      ctx = await this.getGSCContext(pid)
-    } catch {
-      return { notConnected: true }
-    }
-
-    const fromDate = dayjs(from)
-    const toDate = dayjs(to)
-    const durationMs = toDate.diff(fromDate)
-    const rangeDays =
-      Math.abs(toDate.startOf('day').diff(fromDate.startOf('day'), 'day')) + 1
-    const shouldLoadBrandedTraffic = rangeDays <= MAX_BRANDED_TRAFFIC_RANGE_DAYS
-    const shouldLoadPositionAnalytics =
-      rangeDays <= MAX_POSITION_ANALYTICS_RANGE_DAYS
-    const prevTo = fromDate
-      .subtract(1, 'millisecond')
-      .format('YYYY-MM-DD HH:mm:ss')
-    const prevFrom = fromDate
-      .subtract(durationMs, 'millisecond')
-      .format('YYYY-MM-DD HH:mm:ss')
-
-    const [
-      summary,
-      previousSummary,
-      dateSeries,
-      topPages,
-      topQueries,
-      topCountries,
-      topDevices,
-      brandedTraffic,
-      positionAnalytics,
-    ] = await Promise.all([
-      this.getSummary(pid, from, to, filtersStr, ctx),
-      this.getSummary(pid, prevFrom, prevTo, filtersStr, ctx).catch(() => null),
-      this.getDateSeries(pid, from, to, timeBucket, filtersStr, ctx),
-      this.getTopPages(pid, from, to, 50, 0, filtersStr, undefined, ctx),
-      this.getKeywords(pid, from, to, 50, 0, filtersStr, undefined, ctx),
-      this.getTopCountries(pid, from, to, 50, 0, filtersStr, ctx),
-      this.getTopDevices(pid, from, to, 50, 0, filtersStr, ctx),
-      shouldLoadBrandedTraffic
-        ? resolveOptionalAnalytics<
-            BrandedTrafficAnalytics | SkippedBrandedAnalytics
-          >(
-            (signal) =>
-              this.getBrandedTraffic(pid, from, to, filtersStr, ctx, signal),
-            SKIPPED_BRANDED_ANALYTICS,
-          )
-        : Promise.resolve(SKIPPED_BRANDED_ANALYTICS),
-      shouldLoadPositionAnalytics
-        ? resolveOptionalAnalytics<
-            PositionAnalytics | SkippedPositionAnalytics
-          >(
-            (signal) =>
-              this.getPositionAnalytics(pid, from, to, filtersStr, ctx, signal),
-            SKIPPED_POSITION_ANALYTICS,
-          )
-        : Promise.resolve(SKIPPED_POSITION_ANALYTICS),
-    ])
-
-    return {
-      notConnected: false,
-      summary,
-      previousSummary,
-      dateSeries,
-      topPages,
-      topQueries,
-      topCountries,
-      topDevices,
-      brandedTraffic,
-      positionAnalyticsSkipped: 'skipped' in positionAnalytics,
-      impressionsByPosition: positionAnalytics.impressionsByPosition,
-      organicPositions: positionAnalytics.organicPositions,
     }
   }
 }

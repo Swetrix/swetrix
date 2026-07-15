@@ -63,6 +63,7 @@ Every endpoint returns the same envelope:
 | performance | `load_time`, `ttfb`, `dns`, `tls`, `connection`, `response`, `render`, `dom_load` — all in seconds, aggregated by `measure`                                                                                                                                    |
 | errors      | `occurrences`, `affected_users`                                                                                                                                                                                                                                |
 | captcha     | `events` (breakdown), `generated`, `passed`, `failed`, `validation_failed`, `replayed` (timeseries/summary)                                                                                                                                                    |
+| seo         | `clicks`, `impressions`, `ctr` (percentage), `position` (average search position) — all four returned by default                                                                                                                                               |
 
 ### Dimensions
 
@@ -91,6 +92,7 @@ Dimensions use human-readable names (mapped internally onto the v1 short codes):
 | `page_property`                                                           | `tag:key:<key>`                  | filter-only, takes a `key`                               |
 | `error_name` / `error_message` / `error_filename`                         | —                                | errors, filter-only                                      |
 | `captcha_event` / `captcha_difficulty` / `captcha_reason` / `solve_time`  | —                                | captcha only                                             |
+| `query`                                                                   | `keywords`                       | seo only — the search query                              |
 
 Which dimensions apply to which data type is discoverable via [`GET /v2/projects/:pid/dimensions`](#get-v2projectspiddimensions).
 
@@ -115,6 +117,8 @@ Unknown dimensions or operators are rejected with a `422` and a message listing 
 ### Pagination and sorting
 
 Breakdown and list endpoints accept `limit` (default 30) and `offset`. Breakdown responses include `meta.total` — the total number of dimension values — for pagination. Breakdowns also accept `sort=field:direction` where `field` is `value` or any selected metric and `direction` is `asc` or `desc` (default: first selected metric, descending).
+
+The `seo` data type is the exception on both counts: Google Search Console reports no row total and offers no sort control, so `/seo/breakdown` omits `meta.total` and always orders by clicks descending. Page through it until you get fewer rows than you asked for.
 
 ### Measure (performance)
 
@@ -323,6 +327,203 @@ Captcha counters per time bucket. Metrics: `generated`, `passed`, `failed`, `val
 
 Captcha events grouped by `country`, `browser`, `os`, `device` (passed captchas only), or `captcha_event`, `captcha_difficulty`, `captcha_reason`, `solve_time`.
 
+## SEO endpoints
+
+SEO data comes from [Google Search Console](/integrations/google-search-console) rather than from your Swetrix events, so these endpoints behave a little differently from the rest of v2. The differences are all forced by the upstream API and are called out below.
+
+Search Console must be connected to the project and one of its properties linked. Until both are true, every `seo` endpoint except `/seo/status` returns `409 Conflict`:
+
+```json title="Response (409)"
+{
+  "statusCode": 409,
+  "message": "Google Search Console is not connected for this project"
+}
+```
+
+Two further caveats worth knowing before you build against these:
+
+- **Data lags.** Search Console is typically 2–3 days behind, so recent days may be empty or incomplete.
+- **Retention is ~16 months.** `period=all` resolves to the last 480 days rather than your project's full history.
+
+### GET /v2/projects/:pid/seo/status
+
+Whether the project can serve SEO data at all. Poll this before the others to tell "not connected" apart from "no data".
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/seo/status' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": { "connected": true, "property": "sc-domain:example.com" },
+  "meta": { "pid": "YOUR_PROJECT_ID" }
+}
+```
+
+`connected` reports whether a Google account is linked; `property` is the Search Console property being queried, and is `null` when an account is connected but no property has been picked yet. Both must be set for the data endpoints to answer.
+
+### GET /v2/projects/:pid/seo/summary
+
+Clicks, impressions, CTR and average position for the selected period, the previous period of the same length, and the change between them.
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/seo/summary?period=7d' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": {
+    "current": { "clicks": 412, "impressions": 18320, "ctr": 2.25, "position": 12.4 },
+    "previous": { "clicks": 388, "impressions": 17010, "ctr": 2.28, "position": 13.1 },
+    "change": { "clicks": 24, "impressions": 1310, "ctr": -0.03, "position": -0.7 }
+  },
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "metrics": ["clicks", "impressions", "ctr", "position"],
+    "period": "7d",
+    "timezone": "Etc/GMT",
+    "appliedFilters": []
+  }
+}
+```
+
+`change` is the absolute difference, as everywhere else in v2. Note that a _falling_ `position` is an improvement.
+
+### GET /v2/projects/:pid/seo/timeseries
+
+SEO metrics grouped by time bucket, as rows with ISO 8601 timestamps.
+
+Parameters: `period`/`from`+`to`, `timezone`, `timeBucket`, `metrics`, `filters`.
+
+Search Console reports nothing below hourly granularity, so `timeBucket` here accepts only `hour`, `day` (default), `month` and `year` — `minute` is rejected with a `422`. Hourly and daily rows come straight from Search Console; `month` and `year` are rolled up by Swetrix, summing clicks and impressions, recomputing CTR from those totals, and averaging position weighted by impressions (none of the three are additive).
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/seo/timeseries?period=7d&metrics=clicks,impressions&timezone=Europe/Kyiv' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": [
+    { "timestamp": "2026-07-01T00:00:00+03:00", "clicks": 61, "impressions": 2604 },
+    { "timestamp": "2026-07-02T00:00:00+03:00", "clicks": 58, "impressions": 2511 }
+  ],
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "metrics": ["clicks", "impressions"],
+    "timeBucket": "day",
+    "allowedTimeBuckets": ["hour", "day", "month", "year"],
+    "period": "7d",
+    "timezone": "Europe/Kyiv",
+    "appliedFilters": []
+  }
+}
+```
+
+### GET /v2/projects/:pid/seo/breakdown
+
+SEO metrics grouped by **one dimension** — `query`, `page`, `country` or `device`.
+
+Parameters: `dimension` (required), `metrics` (default: all four), `limit` (max 100), `offset`, plus the usual time range and `filters`.
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/seo/breakdown?dimension=query&period=4w&limit=2' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": [
+    { "value": "swetrix", "clicks": 184, "impressions": 2103, "ctr": 8.75, "position": 1.4 },
+    {
+      "value": "google analytics alternative",
+      "clicks": 96,
+      "impressions": 8801,
+      "ctr": 1.09,
+      "position": 9.2
+    }
+  ],
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "dimension": "query",
+    "metrics": ["clicks", "impressions", "ctr", "position"],
+    "limit": 2,
+    "offset": 0,
+    "sort": "clicks:desc",
+    "period": "4w",
+    "timezone": "Etc/GMT",
+    "appliedFilters": []
+  }
+}
+```
+
+Notes:
+
+- **No `meta.total` and no `sort`.** Search Console neither counts matching rows nor lets you order them, so rows always come back by clicks descending. `sort` is accepted only as `clicks:desc`, so you can be explicit; anything else is a `422` rather than a silently ignored parameter. Page with `limit`/`offset` until a page comes back short.
+- **`country` is alpha-2.** Search Console reports alpha-3 (`usa`); Swetrix normalises to the alpha-2 (`US`) that `country` means everywhere else in v2.
+- Combine `dimension` with a filter to drill in — the queries a given page ranks for are `?dimension=query&filters=[{"dimension":"page","operator":"is","value":"https://example.com/blog"}]`, and the pages ranking for a query are the mirror image.
+
+### GET /v2/projects/:pid/seo/branded-traffic
+
+Clicks split by whether the search query contained one of the project's brand keywords (configured in project settings; Swetrix falls back to the project name and domain).
+
+```json title="Response (data)"
+{ "branded": 260, "nonBranded": 152 }
+```
+
+Returns `data: null` with `meta.skipped: true` when the rollup was not run — see [skipped rollups](#skipped-rollups).
+
+### GET /v2/projects/:pid/seo/positions
+
+Impressions bucketed by search position, plus the daily count of ranking queries per position bucket.
+
+```json title="Response (data, truncated)"
+{
+  "impressionsByPosition": [
+    { "key": "pos1To3", "label": "1-3", "impressions": 4120, "percentage": 22.5 },
+    { "key": "pos4To10", "label": "4-10", "impressions": 7330, "percentage": 40 }
+  ],
+  "organicPositions": [
+    {
+      "date": "2026-07-01",
+      "pos1To3": 12,
+      "pos4To10": 40,
+      "pos11To20": 61,
+      "pos21To50": 88,
+      "pos51Plus": 24
+    }
+  ]
+}
+```
+
+`impressionsByPosition` buckets are `pos1To3`, `pos4To10`, `pos11To20`, `pos21Plus`; `organicPositions` splits the tail further into `pos21To50` and `pos51Plus`. Returns `data: null` with `meta.skipped: true` when the rollup was not run.
+
+### Skipped rollups
+
+`/seo/branded-traffic` and `/seo/positions` have to page through every query in the range, which is slow and expensive against Search Console's quota. Rather than let them hang, Swetrix skips them and says so in `meta`:
+
+```json title="Response"
+{
+  "data": null,
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "skipped": true,
+    "skippedReason": "range_too_large",
+    "maxRangeDays": 31,
+    "period": "3M",
+    "timezone": "Etc/GMT",
+    "appliedFilters": []
+  }
+}
+```
+
+- `skippedReason: "range_too_large"` — the range exceeds `meta.maxRangeDays` (31). Narrow the range.
+- `skippedReason: "timeout"` — Search Console did not answer within `meta.timeoutMs`. Retry, or narrow the range.
+
+On a successful run `meta.skipped` is `false` and `data` is populated. A skip is not an error — an actual upstream failure still returns a `5xx`.
+
 ## Error endpoints
 
 ### GET /v2/projects/:pid/errors
@@ -430,7 +631,7 @@ Paginated sessions that reached a funnel `step` (1-indexed). `dropoff=true` retu
 
 ### GET /v2/projects/:pid/dimensions
 
-Machine-readable list of the dimensions and metrics available for a data type (`?type=traffic|performance|captcha|errors`) — build dashboard UIs against this instead of hardcoding.
+Machine-readable list of the dimensions and metrics available for a data type (`?type=traffic|performance|captcha|errors|seo`) — build dashboard UIs against this instead of hardcoding.
 
 ```json title="Response (data, truncated)"
 {
@@ -478,6 +679,7 @@ Distinct recorded values for a dimension — for filter autocompletion (`?type=t
 | `GET /v1/log/funnel` / `/log/funnel-sessions`                                           | `/funnel` / `/funnel/sessions`                                            |
 | `GET /v1/log/live-visitors` + `/log/hb`                                                 | `/live-visitors` (merged)                                                 |
 | `GET /v1/log/filters` / `/log/errors-filters` / `/log/filters/versions`                 | `/dimensions/:dimension/values`                                           |
+| `GET /v1/log/keywords`                                                                  | `/seo/breakdown?dimension=query`                                          |
 
 Key differences:
 
@@ -487,4 +689,6 @@ Key differences:
 4. **Everything is wrapped** in `{ data, meta }` and breakdowns/lists are paginated server-side.
 5. `take`/`skip` are now `limit`/`offset`.
 
-Still v1-only: GSC/keywords endpoints, bot statistics, session replays, `generalStats`, multi-project `birdseye` (`pids` array), and all data ingestion endpoints.
+`GET /v1/log/keywords` still works, but it only ever returned the top queries. The `seo` endpoints cover the whole Search Console integration, so prefer them for new code.
+
+Still v1-only: bot statistics, session replays, `generalStats`, multi-project `birdseye` (`pids` array), and all data ingestion endpoints.

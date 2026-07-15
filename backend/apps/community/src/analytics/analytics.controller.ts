@@ -42,7 +42,7 @@ import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { PageviewsDto } from './dto/pageviews.dto'
 import { EventsDto } from './dto/events.dto'
-import { GetDataDto, ChartRenderMode, TimeBucketType } from './dto/getData.dto'
+import { GetDataDto, ChartRenderMode } from './dto/getData.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
 import { DataDeletionDto } from './dto/data-deletion.dto'
 import { GetVersionFiltersDto } from './dto/get-version-filters.dto'
@@ -79,7 +79,7 @@ import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 import { LiveVisitorsDto } from './dto/live-visitors.dto'
 import { NoscriptDto } from './dto/noscript.dto'
 import { GetKeywordsDto } from './dto/get-keywords.dto'
-import { GSCService } from '../project/gsc.service'
+import { GSC_ALL_TIME_DAYS, GSCService } from '../project/gsc.service'
 import { ExperimentService } from '../experiment/experiment.service'
 import { getExperimentVariant } from '../feature-flag/evaluation'
 
@@ -93,9 +93,6 @@ const DEFAULT_MEASURE = 'median'
 const BOT_RESPONSE = { message: 'Bot traffic detected, request is ignored' }
 
 const ONLINE_VISITORS_WINDOW_MINUTES = 5 // minutes
-
-// Maximum range for "all time" GSC queries (~16 months, GSC's data retention)
-const GSC_ALL_TIME_DAYS = 480
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
@@ -2863,134 +2860,5 @@ export class AnalyticsController {
 
     const keywords = await this.gscService.getKeywords(pid, groupFrom, groupTo)
     return { keywords }
-  }
-
-  @Get('gsc-dashboard')
-  @Auth(true, true)
-  async getGSCDashboard(
-    @Query() data: GetKeywordsDto,
-    @CurrentUserId() uid: string,
-    @Headers() headers: { 'x-password'?: string },
-  ) {
-    const {
-      pid,
-      period,
-      from,
-      to,
-      timezone = DEFAULT_TIMEZONE,
-      timeBucket,
-      filters,
-    } = data
-
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
-
-    const defaultTimeBucket = ['1h', 'today', 'yesterday', '1d'].includes(
-      period,
-    )
-      ? TimeBucketType.HOUR
-      : TimeBucketType.DAY
-    const finalTimeBucket = (timeBucket || defaultTimeBucket) as TimeBucketType
-    let groupTimeBucket: TimeBucketType | null = finalTimeBucket
-    if (period === 'all' || period === 'custom') {
-      groupTimeBucket = null
-    }
-
-    this.logger.log(
-      `pid: ${pid}, period: ${period}, timeBucket: ${finalTimeBucket}, filters: ${filters}`,
-      'GET /analytics/gsc-dashboard',
-    )
-
-    const diff = period === 'all' ? GSC_ALL_TIME_DAYS : undefined
-
-    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      groupTimeBucket,
-      period,
-      safeTimezone,
-      diff,
-    )
-
-    return this.gscService.getDashboard(
-      pid,
-      groupFrom,
-      groupTo,
-      finalTimeBucket,
-      filters,
-    )
-  }
-
-  @Get('gsc-details')
-  @Auth(true, true)
-  async getGSCDetails(
-    @Query() data: GetKeywordsDto,
-    @CurrentUserId() uid: string,
-    @Headers() headers: { 'x-password'?: string },
-  ) {
-    const {
-      pid,
-      period,
-      from,
-      to,
-      timezone = DEFAULT_TIMEZONE,
-      page,
-      query,
-    } = data
-
-    this.logger.log(
-      `pid: ${pid}, period: ${period}, page: ${page}, query: ${query}`,
-      'GET /analytics/gsc-details',
-    )
-
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
-
-    const diff = period === 'all' ? GSC_ALL_TIME_DAYS : undefined
-
-    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      null,
-      period,
-      safeTimezone,
-      diff,
-    )
-
-    if (page) {
-      const keywords = await this.gscService.getKeywords(
-        pid,
-        groupFrom,
-        groupTo,
-        50,
-        0,
-        undefined,
-        page,
-      )
-      return { type: 'queries', data: keywords }
-    }
-
-    if (query) {
-      const pages = await this.gscService.getTopPages(
-        pid,
-        groupFrom,
-        groupTo,
-        50,
-        0,
-        undefined,
-        query,
-      )
-      return { type: 'pages', data: pages }
-    }
-
-    return { type: 'none', data: [] }
   }
 }

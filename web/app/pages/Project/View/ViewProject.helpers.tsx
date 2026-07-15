@@ -2346,7 +2346,7 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   region: t('project.mapping.rg'),
   city: t('project.mapping.ct'),
   page: t('project.mapping.pg'),
-  keywords: t('project.seo.topQueries'),
+  query: t('project.seo.query'),
   entry_page: t('project.entryPages'),
   exit_page: t('project.exitPages'),
   locale: t('project.mapping.lc'),

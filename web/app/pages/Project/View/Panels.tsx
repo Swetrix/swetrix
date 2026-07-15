@@ -1785,7 +1785,7 @@ const FilterWrapper = ({ children, as, to, ...props }: FilterWrapperProps) => {
   return <div {...props}>{children}</div>
 }
 
-interface PanelProps {
+export interface PanelProps {
   name: string
   data: Entry[]
   rowMapper?: (row: any) => React.ReactNode

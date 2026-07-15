@@ -33,6 +33,7 @@ import {
   V2FunnelSessionsQueryDto,
 } from '../dto/project.dto'
 import { V2ProjectParamsDto } from '../dto/v2-base.dto'
+import { SeoV2Service } from '../seo-v2.service'
 
 @ApiTags('Analytics v2')
 @ApiBearerAuth()
@@ -44,6 +45,7 @@ import { V2ProjectParamsDto } from '../dto/v2-base.dto'
 export class ProjectV2Controller {
   constructor(
     private readonly analyticsV2Service: AnalyticsV2Service,
+    private readonly seoV2Service: SeoV2Service,
     private readonly logger: AppLoggerService,
   ) {}
 
@@ -143,6 +145,12 @@ export class ProjectV2Controller {
       uid,
       headers['x-password'],
     )
+
+    // SEO is served by the Search Console API rather than ClickHouse, so it
+    // keeps its own registry outside the sqlExpr-based one.
+    if (query.type === 'seo') {
+      return this.seoV2Service.getDimensions()
+    }
 
     return this.analyticsV2Service.getDimensions(query.type || 'traffic')
   }

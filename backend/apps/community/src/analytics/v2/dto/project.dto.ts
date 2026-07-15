@@ -77,15 +77,15 @@ export class V2FunnelSessionsQueryDto extends V2FunnelQueryDto {
 export class V2DimensionsQueryDto {
   @ApiProperty({
     required: false,
-    enum: ['traffic', 'performance', 'captcha', 'errors'],
+    enum: ['traffic', 'performance', 'captcha', 'errors', 'seo'],
     default: 'traffic',
     description: 'Data type to list dimensions and metrics for',
   })
   @IsOptional()
-  @IsIn(['traffic', 'performance', 'captcha', 'errors'], {
+  @IsIn(['traffic', 'performance', 'captcha', 'errors', 'seo'], {
     message: 'The provided type is incorrect',
   })
-  type?: 'traffic' | 'performance' | 'captcha' | 'errors'
+  type?: 'traffic' | 'performance' | 'captcha' | 'errors' | 'seo'
 }
 
 export class V2DimensionValuesParamsDto extends V2ProjectParamsDto {

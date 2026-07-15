@@ -26,6 +26,9 @@ export const V1_TO_V2_DIMENSION: Record<string, string> = {
   entryPage: 'entry_page',
   exitPage: 'exit_page',
   ev: 'event',
+  // The SEO tab's keyword filter predates v2, which names the dimension after
+  // Search Console's own 'query'.
+  keywords: 'query',
 }
 
 export const KEYED_DIMENSIONS = ['event_metadata', 'page_property'] as const
@@ -115,11 +118,14 @@ const CAPTCHA_DIMENSIONS = [
   'solve_time',
 ]
 
+const SEO_DIMENSIONS = ['query', 'page', 'country', 'device']
+
 export const VALID_DIMENSIONS_BY_TYPE: Record<V2DataType, string[]> = {
   traffic: TRAFFIC_DIMENSIONS,
   performance: PERFORMANCE_DIMENSIONS,
   errors: ERROR_DIMENSIONS,
   captcha: CAPTCHA_DIMENSIONS,
+  seo: SEO_DIMENSIONS,
 }
 
 export const ALL_VALID_DIMENSIONS = Array.from(
@@ -128,5 +134,6 @@ export const ALL_VALID_DIMENSIONS = Array.from(
     ...PERFORMANCE_DIMENSIONS,
     ...ERROR_DIMENSIONS,
     ...CAPTCHA_DIMENSIONS,
+    ...SEO_DIMENSIONS,
   ]),
 )

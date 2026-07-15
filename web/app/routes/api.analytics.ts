@@ -26,8 +26,6 @@ import {
   getJourneysServer,
   getJourneySessionsServer,
   getGSCKeywordsServer,
-  getGSCDashboardServer,
-  getGSCDetailsServer,
   getRevenueStatusServer,
   getRevenueDataServer,
   getOverallStatsServer,
@@ -52,8 +50,6 @@ import {
   type JourneysResponse,
   type JourneySessionsResponse,
   type GSCKeywordsResponse,
-  type GSCDashboardResponse,
-  type GSCDetailsResponse,
   type RevenueStatus,
   type RevenueDataResponse,
   type OverallObject,
@@ -99,8 +95,6 @@ interface ProxyRequest {
     | 'getJourneys'
     | 'getJourneySessions'
     | 'getGSCKeywords'
-    | 'getGSCDashboard'
-    | 'getGSCDetails'
     | 'getRevenueStatus'
     | 'getRevenueData'
     | 'getOverallStats'
@@ -618,46 +612,6 @@ export async function action({ request }: ActionFunctionArgs) {
           password: password || undefined,
         })
         return data<ProxyResponse<GSCKeywordsResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getGSCDashboard': {
-        const result = await getGSCDashboardServer(request, projectId, {
-          period: params.period,
-          from: formatDateForBackend(params.from),
-          to: formatDateForBackend(params.to),
-          timezone: params.timezone,
-          password: password || undefined,
-          timeBucket: params.timeBucket,
-          filters: params.filters,
-        })
-        return data<ProxyResponse<GSCDashboardResponse>>({
-          data: result.data,
-          error: result.error
-            ? Array.isArray(result.error)
-              ? result.error.join(', ')
-              : result.error
-            : null,
-        })
-      }
-
-      case 'getGSCDetails': {
-        const result = await getGSCDetailsServer(request, projectId, {
-          period: params.period,
-          from: formatDateForBackend(params.from),
-          to: formatDateForBackend(params.to),
-          timezone: params.timezone,
-          password: password || undefined,
-          page: params.page,
-          query: params.query,
-        })
-        return data<ProxyResponse<GSCDetailsResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

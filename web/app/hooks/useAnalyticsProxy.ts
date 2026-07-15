@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import type {
   SessionReplaysResponse,
@@ -18,7 +18,6 @@ import type {
   BotProtectionStats,
   BotProtectionPeriod,
   JourneysResponse,
-  GSCDashboardResponse,
   RevenueStatus,
   RevenueDataResponse,
   OverallObject,
@@ -656,59 +655,6 @@ export function useJourneysProxy() {
   )
 
   return { fetchJourneys, data, error, isLoading }
-}
-
-export function useGSCDashboardProxy() {
-  const [data, setData] = useState<GSCDashboardResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const requestIdRef = useRef(0)
-
-  const fetchDashboard = useCallback(
-    async (projectId: string, params: ClientAnalyticsParams = {}) => {
-      const requestId = requestIdRef.current + 1
-      requestIdRef.current = requestId
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const result = await postAnalytics<GSCDashboardResponse>({
-          action: 'getGSCDashboard',
-          projectId,
-          params,
-        })
-
-        if (requestId !== requestIdRef.current) {
-          return result.data
-        }
-
-        if (result.data) {
-          setData(result.data)
-        }
-        setError(result.error)
-        return result.data
-      } catch (err) {
-        if (requestId === requestIdRef.current) {
-          setError(err instanceof Error ? err.message : 'Unknown error')
-        }
-        return null
-      } finally {
-        if (requestId === requestIdRef.current) {
-          setIsLoading(false)
-        }
-      }
-    },
-    [],
-  )
-
-  const resetData = useCallback(() => {
-    requestIdRef.current += 1
-    setData(null)
-    setError(null)
-    setIsLoading(false)
-  }, [])
-
-  return { fetchDashboard, data, error, isLoading, resetData }
 }
 
 export function useRevenueProxy() {

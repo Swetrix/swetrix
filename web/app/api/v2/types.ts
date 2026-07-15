@@ -1,4 +1,9 @@
-export type V2DataType = 'traffic' | 'performance' | 'errors' | 'captcha'
+export type V2DataType =
+  | 'traffic'
+  | 'performance'
+  | 'errors'
+  | 'captcha'
+  | 'seo'
 
 export type V2FilterOperator = 'is' | 'is_not' | 'contains' | 'contains_not'
 
@@ -92,6 +97,59 @@ interface CaptchaSummaryStats {
 export interface CaptchaSummaryData {
   current: CaptchaSummaryStats
   previous: CaptchaSummaryStats | null
+}
+
+interface SeoMetricValues {
+  clicks: number
+  impressions: number
+  ctr: number
+  position: number
+}
+
+export interface SeoSummaryData {
+  current: SeoMetricValues
+  previous: SeoMetricValues
+  change: SeoMetricValues
+}
+
+export interface SeoStatusData {
+  connected: boolean
+  property: string | null
+}
+
+export interface SeoBrandedTrafficData {
+  branded: number
+  nonBranded: number
+}
+
+type SeoImpressionPositionBucketKey =
+  | 'pos1To3'
+  | 'pos4To10'
+  | 'pos11To20'
+  | 'pos21Plus'
+
+type SeoOrganicPositionBucketKey =
+  | 'pos1To3'
+  | 'pos4To10'
+  | 'pos11To20'
+  | 'pos21To50'
+  | 'pos51Plus'
+
+interface SeoImpressionsByPositionEntry {
+  key: SeoImpressionPositionBucketKey
+  label: string
+  impressions: number
+  percentage: number
+}
+
+type SeoOrganicPositionEntry = { date: string } & Record<
+  SeoOrganicPositionBucketKey,
+  number
+>
+
+export interface SeoPositionsData {
+  impressionsByPosition: SeoImpressionsByPositionEntry[]
+  organicPositions: SeoOrganicPositionEntry[]
 }
 
 export interface CustomEventRow {

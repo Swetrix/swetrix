@@ -11,6 +11,9 @@ import { OverallObject } from '~/lib/models/Project'
 export const mapBreakdownRows = (
   rows: BreakdownRow[] | undefined,
   primaryMetric = 'visitors',
+  // Metrics beyond the primary one are copied onto the entry so panels can show
+  // them in extra columns or row tooltips (the SEO panels lean on this).
+  extraMetrics?: string[],
 ): Entry[] => {
   if (!rows) return []
 
@@ -19,6 +22,11 @@ export const mapBreakdownRows = (
     count: Number(row[primaryMetric] ?? 0),
     ...(typeof row.country === 'string' ? { cc: row.country } : {}),
     ...(typeof row.region_code === 'string' ? { rgc: row.region_code } : {}),
+    ...Object.fromEntries(
+      (extraMetrics ?? [])
+        .filter((metric) => metric !== primaryMetric)
+        .map((metric) => [metric, Number(row[metric] ?? 0)]),
+    ),
   }))
 }
 

@@ -98,6 +98,9 @@ interface TimeseriesOpts {
   mode?: 'periodical' | 'cumulative'
   measure?: string
   enabled?: boolean
+  // Overrides the bucket from the URL, for tabs whose data source supports a
+  // narrower set of buckets than the project view offers.
+  timeBucket?: string
 }
 
 export const useTimeseriesQuery = (
@@ -108,7 +111,7 @@ export const useTimeseriesQuery = (
   const { timeBucket } = useViewProjectContext()
   const params = {
     ...common,
-    timeBucket: timeBucket || undefined,
+    timeBucket: opts.timeBucket || timeBucket || undefined,
     metrics: opts.metrics,
     mode: opts.mode,
     measure: opts.measure,
@@ -132,7 +135,7 @@ export const useCompareTimeseriesQuery = (
   const params = compare
     ? {
         ...compareOverride(common, compare),
-        timeBucket: timeBucket || undefined,
+        timeBucket: opts.timeBucket || timeBucket || undefined,
         metrics: opts.metrics,
         mode: opts.mode,
         measure: opts.measure,
@@ -213,10 +216,54 @@ export const useBreakdownDetailsQuery = (
       ),
     initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {
-      const total = lastPage.meta.total ?? 0
       const loaded = pages.reduce((acc, page) => acc + page.data.length, 0)
+      const total = lastPage.meta.total
+
+      // Search Console reports no row count, so fall back to treating a full
+      // page as a hint that another one may follow.
+      if (total === undefined || total === null) {
+        return lastPage.data.length === DETAILS_PAGE_SIZE ? loaded : undefined
+      }
+
       return loaded < total ? loaded : undefined
     },
+    placeholderData: keepPreviousData,
+    enabled: opts.enabled,
+  })
+}
+
+export const useSeoStatusQuery = () => {
+  const { id: pid } = useCurrentProject()
+
+  return useQuery({
+    queryKey: ['v2', pid, 'seo', 'status'],
+    queryFn: ({ signal }) => v2.getSeoStatus(pid, signal),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export const useSeoBrandedTrafficQuery = (opts: { enabled?: boolean } = {}) => {
+  const { pid, common } = useV2CommonParams('seo')
+
+  return useQuery({
+    queryKey: ['v2', pid, 'seo', 'branded-traffic', common],
+    queryFn: ({ signal }) => v2.getSeoBrandedTraffic(pid, common, signal),
+    placeholderData: keepPreviousData,
+    enabled: opts.enabled,
+  })
+}
+
+/**
+ * Impressions-by-position and organic positions come out of a single Search
+ * Console rollup, so both panels share one query rather than paying for it
+ * twice.
+ */
+export const useSeoPositionsQuery = (opts: { enabled?: boolean } = {}) => {
+  const { pid, common } = useV2CommonParams('seo')
+
+  return useQuery({
+    queryKey: ['v2', pid, 'seo', 'positions', common],
+    queryFn: ({ signal }) => v2.getSeoPositions(pid, common, signal),
     placeholderData: keepPreviousData,
     enabled: opts.enabled,
   })

@@ -10,6 +10,10 @@ import {
   MetricSums,
   PagePropertyRow,
   PerformanceSummaryData,
+  SeoBrandedTrafficData,
+  SeoPositionsData,
+  SeoStatusData,
+  SeoSummaryData,
   TimeseriesRow,
   TrafficSummaryData,
   V2CommonParams,
@@ -24,7 +28,9 @@ type SummaryData<T extends V2DataType> = T extends 'traffic'
     ? PerformanceSummaryData
     : T extends 'captcha'
       ? CaptchaSummaryData
-      : Record<string, unknown>
+      : T extends 'seo'
+        ? SeoSummaryData
+        : Record<string, unknown>
 
 export const getSummary = <T extends V2DataType>(
   pid: string,
@@ -66,6 +72,33 @@ export const getBreakdown = (
 ) =>
   fetchV2<BreakdownRow[]>(
     `projects/${pid}/${dataType}/breakdown`,
+    params,
+    signal,
+  )
+
+export const getSeoStatus = (pid: string, signal?: AbortSignal) =>
+  fetchV2<SeoStatusData>(`projects/${pid}/seo/status`, {}, signal)
+
+// Both of the below return `data: null` with `meta.skipped` when the range is
+// too wide or Search Console did not answer within the deadline.
+export const getSeoBrandedTraffic = (
+  pid: string,
+  params: Common,
+  signal?: AbortSignal,
+) =>
+  fetchV2<SeoBrandedTrafficData | null>(
+    `projects/${pid}/seo/branded-traffic`,
+    params,
+    signal,
+  )
+
+export const getSeoPositions = (
+  pid: string,
+  params: Common,
+  signal?: AbortSignal,
+) =>
+  fetchV2<SeoPositionsData | null>(
+    `projects/${pid}/seo/positions`,
     params,
     signal,
   )

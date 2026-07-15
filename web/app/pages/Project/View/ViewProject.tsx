@@ -197,7 +197,6 @@ interface RefreshTriggersContextType {
   featureFlagsRefreshTrigger: number
   journeysRefreshTrigger: number
   replaysRefreshTrigger: number
-  seoRefreshTrigger: number
 }
 
 const defaultViewProjectContext: ViewProjectContextType = {
@@ -260,7 +259,6 @@ const defaultRefreshTriggersContext: RefreshTriggersContextType = {
   featureFlagsRefreshTrigger: 0,
   journeysRefreshTrigger: 0,
   replaysRefreshTrigger: 0,
-  seoRefreshTrigger: 0,
 }
 
 const ViewProjectContext = createContext<ViewProjectContextType>(
@@ -346,7 +344,6 @@ const ViewProjectContent = () => {
     useState(0)
   const [journeysRefreshTrigger, setJourneysRefreshTrigger] = useState(0)
   const [replaysRefreshTrigger, setReplaysRefreshTrigger] = useState(0)
-  const [seoRefreshTrigger, setSeoRefreshTrigger] = useState(0)
   const customMetrics = useMemo<ProjectViewCustomEvent[]>(() => {
     const raw = searchParams.get('metrics')
     if (!raw) return []
@@ -893,6 +890,7 @@ const ViewProjectContent = () => {
         PROJECT_TABS.funnels,
         PROJECT_TABS.profiles,
         PROJECT_TABS.captcha,
+        PROJECT_TABS.seo,
       ]),
     [],
   )
@@ -930,12 +928,6 @@ const ViewProjectContent = () => {
 
       if (activeTab === PROJECT_TABS.replays) {
         setReplaysRefreshTrigger((prev) => prev + 1)
-        return
-      }
-
-      if (activeTab === PROJECT_TABS.seo) {
-        await queryClient.invalidateQueries({ queryKey: ['v2', id] })
-        setSeoRefreshTrigger((prev) => prev + 1)
         return
       }
     },
@@ -1276,7 +1268,6 @@ const ViewProjectContent = () => {
       featureFlagsRefreshTrigger,
       journeysRefreshTrigger,
       replaysRefreshTrigger,
-      seoRefreshTrigger,
     }),
     [
       goalsRefreshTrigger,
@@ -1284,7 +1275,6 @@ const ViewProjectContent = () => {
       featureFlagsRefreshTrigger,
       journeysRefreshTrigger,
       replaysRefreshTrigger,
-      seoRefreshTrigger,
     ],
   )
 

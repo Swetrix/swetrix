@@ -12,7 +12,7 @@ import Button from '~/ui/Button'
 import { Text } from '~/ui/Text'
 import { getItem, setItem } from '~/utils/localstorage'
 
-import { Panel, PanelContainer } from '../Panels'
+import { Panel, PanelContainer, type PanelProps } from '../Panels'
 import { groupVersionRows, mapBreakdownRows } from './adapters'
 
 export interface BreakdownSubTab {
@@ -33,6 +33,7 @@ interface BreakdownPanelProps {
   primaryMetric?: string
   metrics?: string[]
   measure?: string
+  sort?: string
   rowMapper?: (entry: Entry, subTabId: string) => React.ReactNode
   valueMapper?: (value: number, subTabId: string) => number
   transformEntries?: (entries: Entry[], subTabId: string) => Entry[]
@@ -50,6 +51,11 @@ interface BreakdownPanelProps {
   valuesHeaderName?: string
   highlightColour?: 'blue' | 'red' | 'orange'
   onActiveSubTabChange?: (subTabId: string) => void
+  detailsExtraColumns?: PanelProps['detailsExtraColumns']
+  rowTooltipRenderer?: PanelProps['rowTooltipRenderer']
+  rowTooltipFollowCursor?: boolean
+  hidePercentageInDetails?: boolean
+  disableRowClick?: boolean
 }
 
 const subTabStorageKey = (dataType: string, panelId: string) =>
@@ -64,6 +70,7 @@ export const BreakdownPanel = ({
   primaryMetric = 'visitors',
   metrics,
   measure,
+  sort,
   rowMapper,
   valueMapper,
   transformEntries,
@@ -73,6 +80,11 @@ export const BreakdownPanel = ({
   valuesHeaderName,
   highlightColour,
   onActiveSubTabChange,
+  detailsExtraColumns,
+  rowTooltipRenderer,
+  rowTooltipFollowCursor,
+  hidePercentageInDetails,
+  disableRowClick,
 }: BreakdownPanelProps) => {
   const { t } = useTranslation('common')
   const { getFilterLink: getFilterLinkContext } = useViewProjectContext()
@@ -99,11 +111,13 @@ export const BreakdownPanel = ({
 
   const isSentinel = !activeSubTab.dimension
 
+  const resolvedSort = sort ?? `${primaryMetric}:desc`
+
   const query = useBreakdownDetailsQuery(dataType, {
     dimension: activeSubTab.dimension || '',
     metrics,
     measure,
-    sort: `${primaryMetric}:desc`,
+    sort: resolvedSort,
     enabled: hasBeenInView && !isSentinel,
   })
 
@@ -111,7 +125,7 @@ export const BreakdownPanel = ({
     dimension: activeSubTab.versionsDimension || '',
     metrics,
     measure,
-    sort: `${primaryMetric}:desc`,
+    sort: resolvedSort,
     enabled: hasBeenInView && Boolean(activeSubTab.versionsDimension),
   })
 
@@ -119,9 +133,10 @@ export const BreakdownPanel = ({
     const mapped = mapBreakdownRows(
       query.data?.pages.flatMap((page) => page.data),
       primaryMetric,
+      metrics,
     )
     return transformEntries ? transformEntries(mapped, activeSubTabId) : mapped
-  }, [query.data, primaryMetric, transformEntries, activeSubTabId])
+  }, [query.data, primaryMetric, metrics, transformEntries, activeSubTabId])
 
   const versionData = useMemo(() => {
     if (!activeSubTab.versionsDimension || !versionsQuery.data) {
@@ -224,6 +239,11 @@ export const BreakdownPanel = ({
         }
         valuesHeaderName={valuesHeaderName}
         highlightColour={highlightColour}
+        detailsExtraColumns={detailsExtraColumns}
+        rowTooltipRenderer={rowTooltipRenderer}
+        rowTooltipFollowCursor={rowTooltipFollowCursor}
+        hidePercentageInDetails={hidePercentageInDetails}
+        disableRowClick={disableRowClick}
         dataLoading={query.isFetching && !query.isFetchingNextPage}
         isRefetching={
           query.isFetching && !query.isLoading && !query.isFetchingNextPage

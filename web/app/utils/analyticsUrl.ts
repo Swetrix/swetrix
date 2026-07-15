@@ -60,10 +60,6 @@ export const parseFilterKey = (rawKey: string): ParsedFilterKey | null => {
     return { dimension: key, operator }
   }
 
-  if (key === 'keywords') {
-    return { dimension: key, operator }
-  }
-
   return null
 }
 
