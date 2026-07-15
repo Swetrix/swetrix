@@ -436,13 +436,20 @@ export const getIPFromHeaders = (headers: unknown) => {
 
   const realIp = normalise(getHeader(headers, 'x-real-ip'))
 
-  if (realIp && !TRUSTED_PROXY_IPS.has(realIp)) {
+  // Without X-Real-IP nothing identifies the connection peer, so
+  // X-Forwarded-For is entirely client-supplied and cannot be trusted.
+  // Callers fall back to the socket address instead.
+  if (!realIp) {
+    return null
+  }
+
+  if (!TRUSTED_PROXY_IPS.has(realIp)) {
     return realIp
   }
 
-  // The connection is one of our own relays (or X-Real-IP is absent, e.g.
-  // local development). Recover the visitor from X-Forwarded-For, walking
-  // from the right past our own hops so a client-supplied prefix never wins.
+  // The connection is one of our own relays. Recover the visitor from
+  // X-Forwarded-For, walking from the right past our own hops so a
+  // client-supplied prefix never wins.
   const forwardedFor = String(getHeader(headers, 'x-forwarded-for') ?? '')
   const hops = forwardedFor.split(',')
 

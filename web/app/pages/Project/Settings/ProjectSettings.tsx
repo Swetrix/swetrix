@@ -71,7 +71,7 @@ import SettingsSidebar, { SettingsTabConfig } from './SettingsSidebar'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
-const MAX_IPBLACKLIST_LENGTH = 300
+const MAX_IP_LIST_LENGTH = 300
 const AUTOSAVE_DEBOUNCE_MS = 700
 const CAPTCHA_CLIENT_DOCS_URL =
   'https://swetrix.com/docs/captcha/client-side-usage'
@@ -728,15 +728,15 @@ const ProjectSettings = () => {
         })
       }
 
-      if (_size(data.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
+      if (_size(data.ipBlacklist) > MAX_IP_LIST_LENGTH) {
         allErrors.ipBlacklist = t('project.settings.oxCharsError', {
-          amount: MAX_IPBLACKLIST_LENGTH,
+          amount: MAX_IP_LIST_LENGTH,
         })
       }
 
-      if (_size(data.ipWhitelist) > MAX_IPBLACKLIST_LENGTH) {
+      if (_size(data.ipWhitelist) > MAX_IP_LIST_LENGTH) {
         allErrors.ipWhitelist = t('project.settings.oxCharsError', {
-          amount: MAX_IPBLACKLIST_LENGTH,
+          amount: MAX_IP_LIST_LENGTH,
         })
       }
 

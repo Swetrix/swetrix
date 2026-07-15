@@ -181,7 +181,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
           : null
       if (ipWhitelist !== undefined)
         updateData.ipWhitelist = ipWhitelist
-          ? ipWhitelist.split(',').map((ip) => ip.trim())
+          ? ipWhitelist
+              .split(',')
+              .map((ip) => ip.trim())
+              .filter(Boolean)
           : null
       if (botsProtectionLevel !== undefined)
         updateData.botsProtectionLevel = botsProtectionLevel

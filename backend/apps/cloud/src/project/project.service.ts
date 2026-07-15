@@ -793,6 +793,15 @@ export class ProjectService {
   validateIPWhitelist(
     projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
   ) {
+    if (!projectDTO.ipWhitelist) {
+      return
+    }
+
+    if (!Array.isArray(projectDTO.ipWhitelist))
+      throw new UnprocessableEntityException(
+        'The list of whitelisted IP addresses must be an array.',
+      )
+
     if (_size(_join(projectDTO.ipWhitelist, ',')) > 300)
       throw new UnprocessableEntityException(
         'The list of whitelisted IP addresses must be less than 300 characters.',
