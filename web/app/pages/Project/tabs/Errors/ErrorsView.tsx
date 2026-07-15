@@ -1106,8 +1106,7 @@ const ErrorsViewInner = () => {
         ) : null}
 
         {activeError?.details ? (
-          <div className='relative'>
-            {detailsRefetching ? <RefetchIndicator /> : null}
+          <div>
             <ErrorDetails
               details={activeError.details}
               chart={
@@ -1119,6 +1118,7 @@ const ErrorsViewInner = () => {
                   chartType={chartTypes.line}
                   dataNames={dataNames}
                   onDataPointClick={handleActiveErrorDataPointClick}
+                  isRefetching={detailsRefetching}
                   stats={[
                     {
                       key: 'occurrences',

@@ -52,6 +52,7 @@ import {
   type BreakdownSubTab,
 } from '~/pages/Project/View/v2/BreakdownPanel'
 import { mapBreakdownRows } from '~/pages/Project/View/v2/adapters'
+import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
   noRegionPeriods,
@@ -717,6 +718,9 @@ const SEOViewInner = ({ tnMapping }: SEOViewProps) => {
 
   const isHeroLoading = summaryQuery.isPending || timeseriesQuery.isPending
   const isHeroError = summaryQuery.isError || timeseriesQuery.isError
+  const isHeroRefetching =
+    (summaryQuery.isFetching && !summaryQuery.isPending) ||
+    (timeseriesQuery.isFetching && !timeseriesQuery.isPending)
 
   return (
     <>
@@ -726,6 +730,7 @@ const SEOViewInner = ({ tnMapping }: SEOViewProps) => {
       ) : null}
 
       <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+        {isHeroRefetching ? <RefetchIndicator /> : null}
         <div className='mb-3 flex w-full items-center justify-end gap-1 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
           <Dropdown
             header={t('project.metricVis')}
@@ -889,6 +894,7 @@ const SEOViewInner = ({ tnMapping }: SEOViewProps) => {
           icon={panelIconMapping.referrer}
           rowMapper={refRowMapper}
           isLoading={referrerQuery.isLoading}
+          isRefetching={referrerQuery.isFetching && !referrerQuery.isLoading}
         />
         <CompactReferralPanel
           title={t('project.seo.aiReferrals')}
@@ -896,11 +902,15 @@ const SEOViewInner = ({ tnMapping }: SEOViewProps) => {
           icon={<RobotIcon className='h-5 w-5' />}
           rowMapper={refRowMapper}
           isLoading={referrerQuery.isLoading}
+          isRefetching={referrerQuery.isFetching && !referrerQuery.isLoading}
         />
         <div
           ref={brandedRef}
-          className='overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'
+          className='relative overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/25'
         >
+          {brandedQuery.isFetching && !brandedQuery.isPending ? (
+            <RefetchIndicator />
+          ) : null}
           <div className='mb-1 flex items-center gap-1 text-gray-900 dark:text-gray-50'>
             <MagnifyingGlassIcon className='size-5' />
             <Text size='sm' weight='semibold'>
@@ -1040,6 +1050,7 @@ const SEOViewInner = ({ tnMapping }: SEOViewProps) => {
             />
           }
           contentClassName=''
+          isRefetching={quadrantQuery.isFetching && !quadrantQuery.isPending}
         >
           {quadrantQuery.isPending ? (
             <div className='flex h-[400px] items-center justify-center'>
