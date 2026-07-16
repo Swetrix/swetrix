@@ -1705,11 +1705,18 @@ export class AnalyticsV2Service {
         }
       })(),
       (async () => {
-        timeToConvert = await this.analyticsService.getFunnelTimeToConvert(
-          steps,
-          params,
-          filters.filtersQuery,
-        )
+        try {
+          timeToConvert = await this.analyticsService.getFunnelTimeToConvert(
+            steps,
+            params,
+            filters.filtersQuery,
+          )
+        } catch (reason) {
+          this.logger.log(
+            reason,
+            'AnalyticsV2Service -> getFunnelTimeToConvert',
+          )
+        }
       })(),
     ])
 

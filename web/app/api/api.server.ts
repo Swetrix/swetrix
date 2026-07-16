@@ -1703,11 +1703,43 @@ export async function processSSOTokenServer(
 interface Journey {
   path: string[]
   value: number
+  // of `value`, how many sessions continued past the last drawn step
+  continuedPast: number
+}
+
+export interface JourneyLengthBucket {
+  len: number
+  sessions: number
+  truncated: number
+}
+
+export interface JourneyNodeDetails {
+  step: number
+  page: string
+  total: number
+  sources: Record<string, number>
+  countries: Record<string, number>
+}
+
+export interface JourneyLinkDetails {
+  step: number
+  source: string
+  // next page, or '__exit__' when the journey ended at the source node
+  target: string
+  total: number
+  sources: Record<string, number>
+  countries: Record<string, number>
 }
 
 export interface JourneysResponse {
   journeys: Journey[]
+  // multi-page sessions only (single-page bounces produce no transitions)
   totalSessions: number
+  // distinct paths before the top-N ranking was applied
+  totalPaths: number
+  lengthHistogram: JourneyLengthBucket[]
+  nodeDetails: JourneyNodeDetails[]
+  linkDetails: JourneyLinkDetails[]
 }
 
 export async function getJourneysServer(
