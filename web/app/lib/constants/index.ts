@@ -662,6 +662,7 @@ export const BROWSER_LOGO_MAP = {
   Instagram: '/assets/instagram.svg',
   LinkedIn: '/assets/linkedin.svg',
   Twitter: '/assets/twitter.svg',
+  TikTok: '/assets/tiktok.svg',
 }
 
 export const OS_LOGO_MAP = {
