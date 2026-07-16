@@ -604,6 +604,19 @@ const KVTableContainer = ({
   })
 }
 
+const groupMetadataByKey = (metadata: AggregatedMetadata[]) =>
+  _reduce(
+    metadata,
+    (acc, { key, value, count }) => {
+      if (!acc[key]) {
+        acc[key] = []
+      }
+      acc[key].push({ value, count })
+      return acc
+    },
+    {} as Record<string, { value: string; count: number }[]>,
+  )
+
 function sortAsc<T>(obj: T, sortByKeys?: boolean): T {
   if (sortByKeys) {
     // @ts-expect-error
@@ -651,6 +664,18 @@ const CustomEvents = ({
     useState<string | null>(null)
   const [chartTopLimit, setChartTopLimit] =
     useState<(typeof CUSTOM_EVENTS_TOP_LIMITS)[number]>(5)
+
+  // Inline (panel-row) metadata expansion — kept separate from the modal's
+  // activeEvents/eventsMetadata state, which is reset whenever the modal closes.
+  const [expandedEvents, setExpandedEvents] = useState<Record<string, boolean>>(
+    {},
+  )
+  const [inlineMetadata, setInlineMetadata] = useState<
+    Record<string, AggregatedMetadata[]>
+  >({})
+  const [inlineLoading, setInlineLoading] = useState<Record<string, boolean>>(
+    {},
+  )
 
   const keys = _keys(eventsData)
   const keysToDisplay = useMemo(
@@ -731,6 +756,48 @@ const CustomEvents = ({
     setTriggerEventWhenFiltersChange(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, triggerEventWhenFiltersChange])
+
+  const loadInlineMetadata = useCallback(
+    async (ev: string) => {
+      setInlineLoading((prev) => ({ ...prev, [ev]: true }))
+
+      try {
+        const { result } = await getCustomEventMetadata(ev)
+        setInlineMetadata((prev) => ({ ...prev, [ev]: result }))
+      } catch (reason) {
+        console.error(
+          `[ERROR](loadInlineMetadata) Failed to get metadata for event ${ev}`,
+          reason,
+        )
+        setInlineMetadata((prev) => ({ ...prev, [ev]: [] }))
+      }
+
+      setInlineLoading((prev) => ({ ...prev, [ev]: false }))
+    },
+    [getCustomEventMetadata],
+  )
+
+  const toggleInlineMetadata = (ev: string) => {
+    const willExpand = !expandedEvents[ev]
+
+    setExpandedEvents((prev) => ({ ...prev, [ev]: willExpand }))
+
+    if (willExpand && !inlineMetadata[ev]) {
+      loadInlineMetadata(ev)
+    }
+  }
+
+  // Metadata counts are filter-scoped, so cached expansions go stale whenever
+  // the dashboard filters change — refetch the ones that are open.
+  useEffect(() => {
+    setInlineMetadata({})
+    Object.keys(expandedEvents)
+      .filter((ev) => expandedEvents[ev])
+      .forEach((ev) => {
+        loadInlineMetadata(ev)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
 
   // is "e" is not set, then details loading is forced and all checks are skipped
   const toggleDetails =
@@ -978,42 +1045,165 @@ const CustomEvents = ({
                 totalCustomEvents === 0
                   ? 0
                   : _round((eventsData[ev] / totalCustomEvents) * 100, 0)
+              const isExpanded = !!expandedEvents[ev]
+              const isMetaLoading = !!inlineLoading[ev]
+              const groupedMetadata = groupMetadataByKey(
+                inlineMetadata[ev] || [],
+              )
 
               return (
-                <button
-                  type='button'
-                  key={`${ev}-${item.value}`}
-                  className='group relative flex w-full cursor-pointer items-center rounded-sm px-1 py-1.5 text-left hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
-                  onClick={() => {
-                    navigate(link)
-                  }}
-                >
+                <div key={`${ev}-${item.value}`}>
                   <div
-                    className='panel-bar absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                    style={panelBarStyle(
-                      getPercentage(eventsData[ev], maxValue),
-                    )}
-                  />
+                    role='presentation'
+                    className='group relative flex w-full items-center rounded-sm px-1 py-1.5 text-left hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
+                  >
+                    <div
+                      className='panel-bar absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                      style={panelBarStyle(
+                        getPercentage(eventsData[ev], maxValue),
+                      )}
+                    />
 
-                  <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
-                    <Text size='sm' truncate>
-                      {ev}
-                    </Text>
-                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
-                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                    <button
+                      type='button'
+                      onClick={() => toggleInlineMetadata(ev)}
+                      className='relative z-10 mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-700/80'
+                      aria-expanded={isExpanded}
+                      aria-label={t(
+                        isExpanded
+                          ? 'ariaLabels.hideEventDetails'
+                          : 'ariaLabels.showEventDetails',
+                        { event: ev },
+                      )}
+                    >
+                      {isMetaLoading ? (
+                        <Spin className='m-0! size-4!' />
+                      ) : (
+                        <CaretRightIcon
+                          className={cx(
+                            'size-4 text-gray-500 transition-transform dark:text-gray-400',
+                            {
+                              'rotate-90': isExpanded,
+                            },
+                          )}
+                        />
+                      )}
+                    </button>
+
+                    <Link
+                      to={link}
+                      className='relative z-10 flex min-w-0 flex-1 cursor-pointer items-center'
+                    >
+                      <Text size='sm' truncate>
+                        {ev}
+                      </Text>
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
+                      <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                    </Link>
+                    <div className='relative z-10 flex min-w-fit items-center justify-end pl-4 text-right'>
+                      <Text size='sm' weight='medium'>
+                        {eventsData[ev]}
+                      </Text>
+                      <Text size='sm' colour='muted' className='mx-2'>
+                        |
+                      </Text>
+                      <Text size='sm' colour='muted'>
+                        {perc}%
+                      </Text>
+                    </div>
                   </div>
-                  <div className='relative z-10 flex w-2/6 items-center justify-end text-right'>
-                    <Text size='sm' weight='medium'>
-                      {eventsData[ev]}
-                    </Text>
-                    <Text size='sm' colour='muted' className='mx-2'>
-                      |
-                    </Text>
-                    <Text size='sm' colour='muted'>
-                      {perc}%
-                    </Text>
-                  </div>
-                </button>
+
+                  {isExpanded && !isMetaLoading ? (
+                    <div className='mt-0.5 mb-1.5 ml-[11px] border-l border-gray-200 pl-3 dark:border-slate-800'>
+                      {_isEmpty(groupedMetadata) ? (
+                        <Text
+                          as='p'
+                          size='sm'
+                          colour='muted'
+                          className='px-1 py-1'
+                        >
+                          {t('project.noData')}
+                        </Text>
+                      ) : (
+                        _map(groupedMetadata, (metaValues, metaKey) => {
+                          const maxMetaCount = Math.max(
+                            ...metaValues.map((v) => v.count),
+                          )
+
+                          return (
+                            <div key={metaKey} className='py-0.5'>
+                              <Text
+                                as='p'
+                                size='xs'
+                                weight='medium'
+                                colour='muted'
+                                className='px-1 pt-1 pb-0.5'
+                              >
+                                {metaKey}
+                              </Text>
+                              <div className='space-y-0.5'>
+                                {_map(
+                                  _orderBy(metaValues, 'count', 'desc'),
+                                  ({ value, count }) => {
+                                    const metaLink = _getFilterLink(
+                                      metaKey,
+                                      value,
+                                    )
+                                    const metaShare =
+                                      eventsData[ev] > 0
+                                        ? _round(
+                                            (count / eventsData[ev]) * 100,
+                                            0,
+                                          )
+                                        : 0
+
+                                    return (
+                                      <Link
+                                        key={value}
+                                        to={metaLink}
+                                        className='group/meta relative flex w-full cursor-pointer items-center rounded-sm px-1 py-1 hover:bg-gray-50 dark:hover:bg-slate-900/60'
+                                      >
+                                        <div
+                                          className='panel-bar absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                                          style={panelBarStyle(
+                                            getPercentage(count, maxMetaCount),
+                                          )}
+                                        />
+                                        <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                                          <Text
+                                            size='sm'
+                                            truncate
+                                            className='text-gray-700 dark:text-gray-200'
+                                          >
+                                            {value}
+                                          </Text>
+                                          <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover/meta:block dark:text-gray-300' />
+                                          <div className='ml-2 h-4 w-4 group-hover/meta:hidden' />
+                                        </div>
+                                        <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                                          <span className='mr-2 hidden text-xs text-gray-500 group-hover/meta:inline dark:text-gray-400'>
+                                            ({metaShare}%)
+                                          </span>
+                                          <Text
+                                            size='sm'
+                                            weight='medium'
+                                            className='text-gray-700 dark:text-gray-200'
+                                          >
+                                            {count}
+                                          </Text>
+                                        </div>
+                                      </Link>
+                                    )
+                                  },
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  ) : null}
+                </div>
               )
             },
           )}
