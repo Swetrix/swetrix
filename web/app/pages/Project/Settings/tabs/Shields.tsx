@@ -21,12 +21,14 @@ interface ShieldsProps {
   form: {
     origins: string | null
     ipBlacklist: string | null
+    ipWhitelist: string | null
     botsProtectionLevel?: string
     countryBlacklist?: string[]
   }
   errors: {
     origins?: string
     ipBlacklist?: string
+    ipWhitelist?: string
   }
   beenSubmitted: boolean
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -185,6 +187,17 @@ const Shields = ({
           )}
         />
       </div>
+      <Input
+        name='ipWhitelist'
+        label={t('project.settings.ipWhitelist')}
+        hint={t('project.settings.ipWhitelistHint')}
+        placeholder={t('project.settings.ipWhitelistPlaceholder')}
+        value={form.ipWhitelist || ''}
+        className='mt-4'
+        onChange={handleInput}
+        onBlur={handleBlur}
+        error={beenSubmitted ? errors.ipWhitelist : null}
+      />
     </>
   )
 }

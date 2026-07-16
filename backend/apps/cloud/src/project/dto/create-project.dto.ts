@@ -52,6 +52,11 @@ export class CreateProjectDTO extends ProjectOrganisationDto {
   @ApiProperty({
     required: false,
   })
+  ipWhitelist?: string[]
+
+  @ApiProperty({
+    required: false,
+  })
   countryBlacklist?: string[]
 
   @ApiProperty({

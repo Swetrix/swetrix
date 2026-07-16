@@ -42,6 +42,7 @@ If you have special needs for more requests, please [contact us](https://swetrix
 | `password`            | `string`                    | Required only if `isPasswordProtected` is set to `true`. That is the password unauthorised people will have to enter to access your project's dashboard.                                                                  |
 | `origins`             | `Array<string>`             | Domains allowed to send analytics using this Project ID. Traffic from all other domains is blocked. Supports wildcards, for example: `['cornell.edu', 'app.example.com', '*.gov.uk']`. An empty array allows all domains. |
 | `ipBlacklist`         | `Array<string>`             | IP addresses or CIDR ranges whose traffic should be ignored for this project. Useful for excluding your own visits. For example: `['172.126.10.16', '192.168.0.1/32', '::1']`.                                            |
+| `ipWhitelist`         | `Array<string>`             | IP addresses or CIDR ranges that are never flagged by [bot protection](/bot-protection#trusted-ip-addresses). Useful for server-side event tracking. For example: `['172.126.10.16', '192.168.0.1/32', '::1']`.           |
 | `botsProtectionLevel` | `off`, `basic`, or `strict` | Choose how aggressively bot and automated traffic should be filtered. `off` tracks all traffic, `basic` filters common bots, and `strict` adds stronger automated-traffic checks. `basic` by default.                     |
 | `organisationId`      | `string`                    | Organisation you want to add this project to. You must be an owner or admin of the organisation to add a project to it.                                                                                                   |
 
@@ -199,6 +200,7 @@ curl -i -X POST https://api.swetrix.com/v1/project \
   "origins": [],
   "isPasswordProtected": true,
   "ipBlacklist": null,
+  "ipWhitelist": null,
   "captchaSecretKey": null,
   "active": true,
   "public": false,
@@ -231,6 +233,7 @@ curl -i -X PUT https://api.swetrix.com/v1/project/WvZCYTrOPzSK \
   "name": "PASSWORD PROTECTED",
   "origins": ["example.com", "example.co.uk"],
   "ipBlacklist": null,
+  "ipWhitelist": null,
   "active": true,
   "public": true,
   "isTransferring": false,

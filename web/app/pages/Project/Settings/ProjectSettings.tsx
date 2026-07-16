@@ -71,7 +71,7 @@ import SettingsSidebar, { SettingsTabConfig } from './SettingsSidebar'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
-const MAX_IPBLACKLIST_LENGTH = 300
+const MAX_IP_LIST_LENGTH = 300
 const AUTOSAVE_DEBOUNCE_MS = 700
 const CAPTCHA_CLIENT_DOCS_URL =
   'https://swetrix.com/docs/captcha/client-side-usage'
@@ -79,6 +79,7 @@ const CAPTCHA_CLIENT_DOCS_URL =
 interface Form extends Partial<Omit<Project, 'brandKeywords'>> {
   origins: string | null
   ipBlacklist: string | null
+  ipWhitelist: string | null
   countryBlacklist: string[]
   websiteUrl?: string | null
   brandKeywords?: string
@@ -90,6 +91,7 @@ const PROJECT_TEXT_AUTOSAVE_TOASTS = {
   name: 'project.settings.autosave.name',
   origins: 'project.settings.autosave.origins',
   ipBlacklist: 'project.settings.autosave.ipBlacklist',
+  ipWhitelist: 'project.settings.autosave.ipWhitelist',
   websiteUrl: 'project.settings.autosave.websiteUrl',
   brandKeywords: 'project.settings.autosave.brandKeywords',
 } as const
@@ -112,6 +114,9 @@ const getFormFromProject = (project: Project): Form => ({
   ipBlacklist: _isString(project.ipBlacklist)
     ? project.ipBlacklist
     : _join(project.ipBlacklist, ', '),
+  ipWhitelist: _isString(project.ipWhitelist)
+    ? project.ipWhitelist
+    : _join(project.ipWhitelist, ', '),
   countryBlacklist: project.countryBlacklist || [],
   active: project.active !== false,
   botsProtectionLevel:
@@ -190,6 +195,7 @@ const ProjectSettings = () => {
     name?: string
     origins?: string
     ipBlacklist?: string
+    ipWhitelist?: string
     password?: string
     websiteUrl?: string
     transferEmail?: string
@@ -701,6 +707,7 @@ const ProjectSettings = () => {
         name?: string
         origins?: string
         ipBlacklist?: string
+        ipWhitelist?: string
         password?: string
         websiteUrl?: string
       } = {}
@@ -721,9 +728,15 @@ const ProjectSettings = () => {
         })
       }
 
-      if (_size(data.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
+      if (_size(data.ipBlacklist) > MAX_IP_LIST_LENGTH) {
         allErrors.ipBlacklist = t('project.settings.oxCharsError', {
-          amount: MAX_IPBLACKLIST_LENGTH,
+          amount: MAX_IP_LIST_LENGTH,
+        })
+      }
+
+      if (_size(data.ipWhitelist) > MAX_IP_LIST_LENGTH) {
+        allErrors.ipWhitelist = t('project.settings.oxCharsError', {
+          amount: MAX_IP_LIST_LENGTH,
         })
       }
 

@@ -413,6 +413,17 @@ const getHeader = (headers: any, name: string): string | null | undefined => {
   return headers?.[name] ?? headers?.[name.toLowerCase()]
 }
 
+// Egress IPs of our own relays (the web app's server-side fetches, the
+// managed proxy edge). Requests arriving from these carry the real visitor
+// IP in X-Forwarded-For; for every other connection the only trustworthy
+// source is X-Real-IP, which nginx derives from the TCP connection itself.
+export const TRUSTED_PROXY_IPS: ReadonlySet<string> = new Set(
+  (process.env.TRUSTED_PROXY_IPS || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean),
+)
+
 export const getIPFromHeaders = (headers: unknown) => {
   const customHeader = process.env.CLIENT_IP_HEADER
 
@@ -423,7 +434,33 @@ export const getIPFromHeaders = (headers: unknown) => {
     }
   }
 
-  return normalise(getHeader(headers, 'x-forwarded-for'))
+  const realIp = normalise(getHeader(headers, 'x-real-ip'))
+
+  // Without X-Real-IP nothing identifies the connection peer, so
+  // X-Forwarded-For is entirely client-supplied and cannot be trusted.
+  // Callers fall back to the socket address instead.
+  if (!realIp) {
+    return null
+  }
+
+  if (!TRUSTED_PROXY_IPS.has(realIp)) {
+    return realIp
+  }
+
+  // The connection is one of our own relays. Recover the visitor from
+  // X-Forwarded-For, walking from the right past our own hops so a
+  // client-supplied prefix never wins.
+  const forwardedFor = String(getHeader(headers, 'x-forwarded-for') ?? '')
+  const hops = forwardedFor.split(',')
+
+  for (let i = hops.length - 1; i >= 0; --i) {
+    const candidate = normalise(hops[i])
+    if (candidate && !TRUSTED_PROXY_IPS.has(candidate)) {
+      return candidate
+    }
+  }
+
+  return realIp
 }
 
 export const sumArrays = (source: number[], target: number[]) => {

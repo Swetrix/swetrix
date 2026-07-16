@@ -27,6 +27,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     name String CODEC(ZSTD(3)),
     origins Nullable(String) CODEC(ZSTD(3)),
     ipBlacklist Nullable(String) CODEC(ZSTD(3)),
+    ipWhitelist Nullable(String) CODEC(ZSTD(3)),
     countryBlacklist Nullable(String) CODEC(ZSTD(3)),
     active Int8,
     public Int8,

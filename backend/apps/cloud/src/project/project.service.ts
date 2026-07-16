@@ -195,6 +195,7 @@ export class ProjectService {
           'project.active',
           'project.public',
           'project.ipBlacklist',
+          'project.ipWhitelist',
           'project.countryBlacklist',
           'project.botsProtectionLevel',
           'project.captchaSecretKey',
@@ -789,6 +790,29 @@ export class ProjectService {
     })
   }
 
+  validateIPWhitelist(
+    projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
+  ) {
+    if (!projectDTO.ipWhitelist) {
+      return
+    }
+
+    if (!Array.isArray(projectDTO.ipWhitelist))
+      throw new UnprocessableEntityException(
+        'The list of whitelisted IP addresses must be an array.',
+      )
+
+    if (_size(_join(projectDTO.ipWhitelist, ',')) > 300)
+      throw new UnprocessableEntityException(
+        'The list of whitelisted IP addresses must be less than 300 characters.',
+      )
+    _map(projectDTO.ipWhitelist, (ip) => {
+      if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
+        throw new ConflictException(`IP address ${ip} is not correct`)
+      }
+    })
+  }
+
   validateCountryBlacklist(
     projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
   ) {
@@ -831,6 +855,7 @@ export class ProjectService {
 
     this.validateOrigins(projectDTO)
     this.validateIPBlacklist(projectDTO)
+    this.validateIPWhitelist(projectDTO)
     this.validateCountryBlacklist(projectDTO)
   }
 

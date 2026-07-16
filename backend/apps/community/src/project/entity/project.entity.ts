@@ -11,6 +11,8 @@ export class Project {
   name: string
   origins: string[]
   ipBlacklist: string[]
+  // IPs (or CIDR ranges) that bot detection (Shields) never flags
+  ipWhitelist: string[]
   countryBlacklist: string[]
   active: boolean
   public: boolean

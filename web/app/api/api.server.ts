@@ -1480,6 +1480,7 @@ export interface Project {
   name: string
   origins: string[] | null
   ipBlacklist: string[] | null
+  ipWhitelist: string[] | null
   active: boolean
   public: boolean
   isPasswordProtected: boolean
