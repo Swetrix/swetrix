@@ -1343,7 +1343,8 @@
     "noMetadataFilters": "Aucun filtre de métadonnées ajouté. Cliquez sur « Ajouter un filtre » pour filtrer par métadonnées d’événement.",
     "conversions": "Conversions",
     "noData": "Aucune donnée de conversion pour le moment",
-    "noChartData": "Aucune donnée de graphique disponible pour la période sélectionnée"
+    "noChartData": "Aucune donnée de graphique disponible pour la période sélectionnée",
+    "conditionValueRequired": "Les conditions d'objectif nécessitent une valeur spécifique. Supprimez ou définissez une valeur pour les filtres marqués comme \"non défini\"."
   },
   "featureFlags": {
     "title": "Feature flags",
@@ -2094,6 +2095,9 @@
       "og": "Organisation",
       "ut": "Type d'utilisation",
       "ctp": "Type de connexion",
+      "error_name": "Nom de l'erreur",
+      "error_message": "Message d'erreur",
+      "error_filename": "Nom du fichier",
       "searchEngine": "Moteur de recherche",
       "aiReferral": "Référent IA",
       "captcha_event": "Statut du défi",
@@ -2678,6 +2682,8 @@
     "page": "Page",
     "journeys": {
       "noData": "Les parcours ne sont pas encore disponibles par manque de données, ou vous avez désactivé cette fonctionnalité dans les paramètres du script de suivi.",
+      "learnMore": "<url>En savoir plus sur les parcours</url> dans notre documentation.",
+      "learnMoreAriaLabel": "Ouvrir la documentation des parcours",
       "stepX": "Étape {{x}}",
       "xSteps": "{{x}} étapes",
       "xJourneys": "{{x}} parcours",
@@ -2686,7 +2692,23 @@
       "percentContinued": "{{x}}% ont continué ainsi",
       "clickToInspect": "Cliquez pour inspecter les sessions",
       "stepsSliderLabel": "Profondeur de pages de chaque parcours",
-      "journeysSliderLabel": "Nombre de parcours les plus populaires à afficher"
+      "journeysSliderLabel": "Nombre de parcours les plus populaires à afficher",
+      "depthLabel": "Profondeur : {{x}} pages",
+      "topPathsLabel": "Top {{x}} des chemins",
+      "otherPaths": "Autres chemins",
+      "exited": "Sorties",
+      "afterStepX": "Après l'étape {{x}}",
+      "ofMultiPageSessions": "Des sessions multi-pages",
+      "continuedThisWay": "Ont continué par ici",
+      "exitedHere": "Sorties ici",
+      "continuedFurther": "Ont continué plus loin",
+      "coverage": "Affichage de {{paths}} chemins sur {{totalPaths}}, couvrant {{covered}} des {{total}} sessions multi-pages ({{percent}} %)",
+      "viewToggle": "Vue des parcours",
+      "chartView": "Vue graphique",
+      "tableView": "Vue tableau",
+      "tablePath": "Chemin",
+      "tableSessions": "Sessions",
+      "tableEndedHere": "Terminé ici"
     },
     "compareDateRangeError": "Cette plage de dates ne peut pas être comparée, veuillez sélectionner une autre plage de dates",
     "previousPeriod": "Période précédente",

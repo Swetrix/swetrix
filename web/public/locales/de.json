@@ -1343,7 +1343,8 @@
     "noMetadataFilters": "Keine Metadatenfilter hinzugefügt. Klicken Sie auf „Filter hinzufügen“, um nach Ereignis-Metadaten zu filtern.",
     "conversions": "Conversions",
     "noData": "Noch keine Conversion-Daten",
-    "noChartData": "Keine Diagrammdaten für den ausgewählten Zeitraum verfügbar"
+    "noChartData": "Keine Diagrammdaten für den ausgewählten Zeitraum verfügbar",
+    "conditionValueRequired": "Zielbedingungen erfordern einen bestimmten Wert. Entfernen oder setzen Sie einen Wert für Filter, die als \"nicht festgelegt\" markiert sind."
   },
   "featureFlags": {
     "title": "Feature Flags",
@@ -2094,6 +2095,9 @@
       "og": "Organisation",
       "ut": "Nutzungsart",
       "ctp": "Verbindungstyp",
+      "error_name": "Fehlername",
+      "error_message": "Fehlermeldung",
+      "error_filename": "Dateiname",
       "searchEngine": "Suchmaschine",
       "aiReferral": "KI-Verweis",
       "captcha_event": "Challenge-Status",
@@ -2678,6 +2682,8 @@
     "page": "Seite",
     "journeys": {
       "noData": "Journeys sind aufgrund fehlender Daten noch nicht verfügbar, oder Sie haben diese Funktion in den Parametern des Tracking-Skripts deaktiviert.",
+      "learnMore": "<url>Erfahren Sie mehr über Journeys</url> in unserer Dokumentation.",
+      "learnMoreAriaLabel": "Journeys-Dokumentation öffnen",
       "stepX": "Schritt {{x}}",
       "xSteps": "{{x}} Schritte",
       "xJourneys": "{{x}} Journeys",
@@ -2686,7 +2692,23 @@
       "percentContinued": "{{x}}% setzten diesen Weg fort",
       "clickToInspect": "Klicken, um Sitzungen zu untersuchen",
       "stepsSliderLabel": "Wie viele Seiten tief jede Journey geht",
-      "journeysSliderLabel": "Wie viele der beliebtesten Journeys angezeigt werden sollen"
+      "journeysSliderLabel": "Wie viele der beliebtesten Journeys angezeigt werden sollen",
+      "depthLabel": "Tiefe: {{x}} Seiten",
+      "topPathsLabel": "Top {{x}} Pfade",
+      "otherPaths": "Andere Pfade",
+      "exited": "Ausgestiegen",
+      "afterStepX": "Nach Schritt {{x}}",
+      "ofMultiPageSessions": "Von mehrseitigen Sitzungen",
+      "continuedThisWay": "So fortgesetzt",
+      "exitedHere": "Hier ausgestiegen",
+      "continuedFurther": "Weiter fortgesetzt",
+      "coverage": "Zeigt {{paths}} von {{totalPaths}} Pfaden, deckt {{covered}} von {{total}} mehrseitigen Sitzungen ab ({{percent}}%)",
+      "viewToggle": "Journeys-Ansicht",
+      "chartView": "Diagrammansicht",
+      "tableView": "Tabellenansicht",
+      "tablePath": "Pfad",
+      "tableSessions": "Sitzungen",
+      "tableEndedHere": "Hier beendet"
     },
     "compareDateRangeError": "Dieser Zeitraum kann nicht verglichen werden, bitte wählen Sie einen anderen Zeitraum",
     "previousPeriod": "Vorherige Periode",

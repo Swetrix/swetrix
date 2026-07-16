@@ -1343,7 +1343,8 @@
     "noMetadataFilters": "Nie dodano filtrów metadanych. Kliknij „Dodaj filtr”, aby filtrować według metadanych zdarzenia.",
     "conversions": "Konwersje",
     "noData": "Brak danych o konwersjach",
-    "noChartData": "Brak danych na wykresie dla wybranego okresu"
+    "noChartData": "Brak danych na wykresie dla wybranego okresu",
+    "conditionValueRequired": "Warunki celu wymagają określonej wartości. Usuń lub ustaw wartość dla filtrów oznaczonych jako \"nieustawione\"."
   },
   "featureFlags": {
     "title": "Feature flags",
@@ -2094,6 +2095,9 @@
       "og": "Organizacja",
       "ut": "Typ użycia",
       "ctp": "Typ połączenia",
+      "error_name": "Nazwa błędu",
+      "error_message": "Komunikat błędu",
+      "error_filename": "Nazwa pliku",
       "searchEngine": "Wyszukiwarka",
       "aiReferral": "Odesłanie z AI",
       "captcha_event": "Status wyzwania",
@@ -2678,6 +2682,8 @@
     "page": "Strona",
     "journeys": {
       "noData": "Ścieżki nie są jeszcze dostępne z powodu braku danych lub ta funkcja została wyłączona w parametrach skryptu śledzącego.",
+      "learnMore": "<url>Dowiedz się więcej o ścieżkach</url> w naszej dokumentacji.",
+      "learnMoreAriaLabel": "Otwórz dokumentację ścieżek",
       "stepX": "Krok {{x}}",
       "xSteps": "{{x}} kroków",
       "xJourneys": "{{x}} ścieżek",
@@ -2686,7 +2692,23 @@
       "percentContinued": "{{x}}% kontynuowało w ten sposób",
       "clickToInspect": "Kliknij, aby przeanalizować sesje",
       "stepsSliderLabel": "Na ile stron w głąb sięga każda ścieżka",
-      "journeysSliderLabel": "Ile najpopularniejszych ścieżek pokazać"
+      "journeysSliderLabel": "Ile najpopularniejszych ścieżek pokazać",
+      "depthLabel": "Głębokość: {{x}} stron",
+      "topPathsLabel": "Top {{x}} ścieżek",
+      "otherPaths": "Pozostałe ścieżki",
+      "exited": "Wyjścia",
+      "afterStepX": "Po kroku {{x}}",
+      "ofMultiPageSessions": "Z sesji wielostronicowych",
+      "continuedThisWay": "Kontynuowano w ten sposób",
+      "exitedHere": "Opuszczono tutaj",
+      "continuedFurther": "Kontynuowano dalej",
+      "coverage": "Wyświetlanie {{paths}} z {{totalPaths}} ścieżek, obejmujących {{covered}} z {{total}} sesji wielostronicowych ({{percent}}%)",
+      "viewToggle": "Widok ścieżek",
+      "chartView": "Widok wykresu",
+      "tableView": "Widok tabeli",
+      "tablePath": "Ścieżka",
+      "tableSessions": "Sesje",
+      "tableEndedHere": "Zakończono tutaj"
     },
     "compareDateRangeError": "Tego zakresu dat nie można porównać, proszę wybrać inny zakres dat",
     "previousPeriod": "Poprzedni okres",
