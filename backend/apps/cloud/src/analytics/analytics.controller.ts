@@ -536,11 +536,15 @@ export class AnalyticsController {
         }
       })(),
       (async () => {
-        timeToConvert = await this.analyticsService.getFunnelTimeToConvert(
-          pagesArr,
-          params,
-          filtersQuery,
-        )
+        try {
+          timeToConvert = await this.analyticsService.getFunnelTimeToConvert(
+            pagesArr,
+            params,
+            filtersQuery,
+          )
+        } catch (e) {
+          this.logger.error(e, 'GET /analytics/funnel - getFunnelTimeToConvert')
+        }
       })(),
     ]
 
@@ -1068,14 +1072,31 @@ export class AnalyticsController {
 
     const params = { pid, groupFrom, groupTo, ...filtersParams }
 
-    const flow = await this.analyticsService.getJourneys(
-      params,
-      filtersQuery,
-      steps,
-      journeys,
-    )
+    let nodeDetails = []
+    let linkDetails = []
 
-    return { ...flow, appliedFilters }
+    const [flow] = await Promise.all([
+      this.analyticsService.getJourneys(params, filtersQuery, steps, journeys),
+      (async () => {
+        try {
+          const details = await this.analyticsService.getJourneyNodeDetails(
+            params,
+            filtersQuery,
+            steps,
+            journeys,
+          )
+          nodeDetails = details.nodes
+          linkDetails = details.links
+        } catch (e) {
+          this.logger.error(
+            e,
+            'GET /analytics/journeys - getJourneyNodeDetails',
+          )
+        }
+      })(),
+    ])
+
+    return { ...flow, nodeDetails, linkDetails, appliedFilters }
   }
 
   @Get('journey-sessions')

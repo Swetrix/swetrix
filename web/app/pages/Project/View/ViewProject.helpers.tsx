@@ -1827,8 +1827,14 @@ const getSettingsFunnels = (
         const prevStep = index > 0 ? funnel[index - 1] : null
         const prevStepTitle = escapeHtml(values[index - 1] ?? '')
 
-        const topSourcesEntries = Object.entries(step.topSources || {})
-        const topCountriesEntries = Object.entries(step.topCountries || {})
+        // the v2 stats API ships per-step breakdowns; topSources/topCountries
+        // are the legacy v1 fields kept as a fallback
+        const topSourcesEntries = Object.entries(
+          step.breakdowns?.sources || step.topSources || {},
+        )
+        const topCountriesEntries = Object.entries(
+          step.breakdowns?.countries || step.topCountries || {},
+        )
 
         const primary = 'text-gray-900 dark:text-gray-50'
         const secondary = 'text-gray-700 dark:text-gray-200'

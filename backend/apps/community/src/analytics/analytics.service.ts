@@ -82,6 +82,8 @@ import {
   GetFiltersQuery,
   IJourney,
   IJourneys,
+  IJourneyNodeDetails,
+  IJourneyLinkDetails,
   IExtractChartData,
   IGenerateXAxis,
   IAggregatedMetadata,
@@ -131,6 +133,10 @@ const MAX_FILTER_VALUES = 100
 // pages to survive. 1000 raw pageviews is orders of magnitude beyond any real
 // session while keeping a bot's session array bounded.
 const MAX_JOURNEY_PAGEVIEWS_PER_SESSION = 1000
+
+// Synthetic link target marking sessions whose journey ended at the source
+// node; must match the frontend's Sankey exit node identifier.
+const JOURNEY_EXIT_TARGET = '__exit__'
 
 // Event types that can be targeted by the data-deletion tool.
 const DELETABLE_EVENT_TYPES = [...DATA_DELETION_EVENT_TYPES]
@@ -971,20 +977,22 @@ export class AnalyticsService {
     // are excluded. On top of the overall top-{journeys} ranking, the top 3
     // paths at every depth are kept so that long journeys remain visible even
     // when short paths dominate the ranking.
-    const query = `
-      WITH session_paths AS (
+    //
+    // fullLength (the compacted path length before arraySlice) is kept so
+    // that sessions which ENDED at the last drawn step can be distinguished
+    // from sessions which CONTINUED past it (truncated by the steps limit).
+    const sessionPathsCTE = `
+      session_paths AS (
         SELECT
           psid,
-          arraySlice(
-            arrayCompact(
-              arrayMap(
-                x -> x.2,
-                groupArraySorted({maxPageviews:UInt32})((created, pg))
-              )
-            ),
-            1,
-            {steps:UInt32}
-          ) AS path
+          arrayCompact(
+            arrayMap(
+              x -> x.2,
+              groupArraySorted({maxPageviews:UInt32})((created, pg))
+            )
+          ) AS fullPath,
+          arraySlice(fullPath, 1, {steps:UInt32}) AS path,
+          length(fullPath) AS fullLength
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
@@ -994,29 +1002,257 @@ export class AnalyticsService {
           ${sessionFiltersQuery}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psid
-        HAVING length(path) >= 2
+        HAVING fullLength >= 2
       )
+    `
+
+    const query = `
+      WITH ${sessionPathsCTE}
       SELECT
         path,
         value,
-        totalSessions
+        continuedPast,
+        totalSessions,
+        totalPaths
       FROM (
         SELECT
           path,
           value,
+          continuedPast,
           sum(value) OVER () AS totalSessions,
-          row_number() OVER (ORDER BY value DESC) AS overallRank,
-          row_number() OVER (PARTITION BY length(path) ORDER BY value DESC) AS depthRank
+          count() OVER () AS totalPaths,
+          row_number() OVER (ORDER BY value DESC, path ASC) AS overallRank,
+          row_number() OVER (PARTITION BY length(path) ORDER BY value DESC, path ASC) AS depthRank
         FROM (
           SELECT
             path,
-            count() AS value
+            count() AS value,
+            countIf(fullLength > {steps:UInt32}) AS continuedPast
           FROM session_paths
           GROUP BY path
         )
       )
       WHERE overallRank <= {journeys:UInt32} OR depthRank <= 3
       ORDER BY value DESC
+    `
+
+    // How many sessions have a (sliced) path of each length. Lets the client
+    // compute, per step, how many sessions reached that step at all -- the
+    // basis for the "Other paths" and "Exited" nodes and the coverage line.
+    const histogramQuery = `
+      WITH ${sessionPathsCTE}
+      SELECT
+        length(path) AS len,
+        count() AS sessions,
+        countIf(fullLength > {steps:UInt32}) AS truncated
+      FROM session_paths
+      GROUP BY len
+      ORDER BY len
+    `
+
+    const queryParams = {
+      ...params,
+      steps,
+      journeys,
+      maxPageviews: MAX_JOURNEY_PAGEVIEWS_PER_SESSION,
+    }
+
+    const [{ data }, { data: histogramData }] = await Promise.all([
+      clickhouse.query({ query, query_params: queryParams }).then((res) =>
+        res.json<{
+          path: string[]
+          value: string
+          continuedPast: string
+          totalSessions: string
+          totalPaths: string
+        }>(),
+      ),
+      clickhouse
+        .query({ query: histogramQuery, query_params: queryParams })
+        .then((res) =>
+          res.json<{ len: string; sessions: string; truncated: string }>(),
+        ),
+    ])
+
+    if (_isEmpty(data)) {
+      return {
+        journeys: [],
+        totalSessions: 0,
+        totalPaths: 0,
+        lengthHistogram: [],
+      }
+    }
+
+    const journeyList: IJourney[] = _map(data, (row) => ({
+      path: row.path,
+      value: Number(row.value),
+      continuedPast: Number(row.continuedPast),
+    }))
+
+    return {
+      journeys: journeyList,
+      totalSessions: Number(data[0].totalSessions),
+      totalPaths: Number(data[0].totalPaths),
+      lengthHistogram: _map(histogramData, (row) => ({
+        len: Number(row.len),
+        sessions: Number(row.sessions),
+        truncated: Number(row.truncated),
+      })),
+    }
+  }
+
+  // Top sources & countries for every node AND link drawn in the journeys
+  // Sankey. Computed over the TRUE population (every session whose path
+  // passes through the node / makes the transition), matching what the
+  // journey sessions drawer shows -- not just the sessions on top-N drawn
+  // paths. Links with target '__exit__' describe sessions whose journey
+  // ended at the source node.
+  async getJourneyNodeDetails(
+    params: Record<string, unknown>,
+    filtersQuery: string,
+    steps: number,
+    journeys: number,
+  ): Promise<{
+    nodes: IJourneyNodeDetails[]
+    links: IJourneyLinkDetails[]
+  }> {
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
+
+    const query = `
+      WITH session_paths AS (
+        SELECT
+          psid,
+          arrayCompact(
+            arrayMap(
+              x -> x.2,
+              groupArraySorted({maxPageviews:UInt32})((created, pg))
+            )
+          ) AS fullPath,
+          arraySlice(fullPath, 1, {steps:UInt32}) AS path,
+          length(fullPath) AS fullLength
+        FROM events
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND type = 'pageview'
+          AND psid != 0
+          AND pg IS NOT NULL
+          ${sessionFiltersQuery}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psid
+        HAVING fullLength >= 2
+      ),
+      ranked_paths AS (
+        SELECT path
+        FROM (
+          SELECT
+            path,
+            count() AS value,
+            row_number() OVER (ORDER BY value DESC, path ASC) AS overallRank,
+            row_number() OVER (PARTITION BY length(path) ORDER BY value DESC, path ASC) AS depthRank
+          FROM session_paths
+          GROUP BY path
+        )
+        WHERE overallRank <= {journeys:UInt32} OR depthRank <= 3
+      ),
+      drawn_nodes AS (
+        SELECT DISTINCT idx - 1 AS step, path[idx] AS page
+        FROM ranked_paths
+        ARRAY JOIN arrayEnumerate(path) AS idx
+      ),
+      node_sessions AS (
+        SELECT sp.psid AS psid, idx - 1 AS step, sp.path[idx] AS page
+        FROM session_paths sp
+        ARRAY JOIN arrayEnumerate(sp.path) AS idx
+        WHERE (idx - 1, sp.path[idx]) IN (SELECT step, page FROM drawn_nodes)
+      ),
+      drawn_links AS (
+        SELECT DISTINCT
+          idx - 1 AS step,
+          path[idx] AS source,
+          if(idx < length(path), path[idx + 1], '${JOURNEY_EXIT_TARGET}') AS target
+        FROM ranked_paths
+        ARRAY JOIN arrayEnumerate(path) AS idx
+      ),
+      link_sessions AS (
+        SELECT
+          sp.psid AS psid,
+          idx - 1 AS step,
+          sp.path[idx] AS source,
+          if(idx < length(sp.path), sp.path[idx + 1], '${JOURNEY_EXIT_TARGET}') AS target
+        FROM session_paths sp
+        ARRAY JOIN arrayEnumerate(sp.path) AS idx
+        WHERE (idx < length(sp.path) OR sp.fullLength = length(sp.path))
+          AND (
+            idx - 1,
+            sp.path[idx],
+            if(idx < length(sp.path), sp.path[idx + 1], '${JOURNEY_EXIT_TARGET}')
+          ) IN (SELECT step, source, target FROM drawn_links)
+      ),
+      session_info AS (
+        SELECT
+          psid,
+          argMin(cc, created) AS cc,
+          argMin(if(so IS NOT NULL AND so != '', so, if(domain(ref) != '', domain(ref), 'Direct / None')), created) AS source
+        FROM events
+        WHERE pid = {pid:FixedString(12)}
+          AND type = 'pageview'
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psid
+      )
+      SELECT step, page, target, type, val, cnt FROM (
+        SELECT ns.step AS step, ns.page AS page, '' AS target, 'countries' AS type, si.cc AS val, count() AS cnt
+        FROM node_sessions ns
+        INNER JOIN session_info si ON ns.psid = si.psid
+        WHERE si.cc != ''
+        GROUP BY ns.step, ns.page, si.cc
+
+        UNION ALL
+
+        SELECT ns.step AS step, ns.page AS page, '' AS target, 'sources' AS type, si.source AS val, count() AS cnt
+        FROM node_sessions ns
+        INNER JOIN session_info si ON ns.psid = si.psid
+        GROUP BY ns.step, ns.page, si.source
+
+        UNION ALL
+
+        SELECT ns.step AS step, ns.page AS page, '' AS target, 'total' AS type, '' AS val, count() AS cnt
+        FROM node_sessions ns
+        GROUP BY ns.step, ns.page
+
+        UNION ALL
+
+        SELECT ls.step AS step, ls.source AS page, ls.target AS target, 'countries' AS type, si.cc AS val, count() AS cnt
+        FROM link_sessions ls
+        INNER JOIN session_info si ON ls.psid = si.psid
+        WHERE si.cc != ''
+        GROUP BY ls.step, ls.source, ls.target, si.cc
+
+        UNION ALL
+
+        SELECT ls.step AS step, ls.source AS page, ls.target AS target, 'sources' AS type, si.source AS val, count() AS cnt
+        FROM link_sessions ls
+        INNER JOIN session_info si ON ls.psid = si.psid
+        GROUP BY ls.step, ls.source, ls.target, si.source
+
+        UNION ALL
+
+        SELECT ls.step AS step, ls.source AS page, ls.target AS target, 'total' AS type, '' AS val, count() AS cnt
+        FROM link_sessions ls
+        GROUP BY ls.step, ls.source, ls.target
+      )
+      ORDER BY step, page, target, type, cnt DESC, val ASC
+      LIMIT 5 BY step, page, target, type
     `
 
     const { data } = await clickhouse
@@ -1030,21 +1266,63 @@ export class AnalyticsService {
         },
       })
       .then((res) =>
-        res.json<{ path: string[]; value: string; totalSessions: string }>(),
+        res.json<{
+          step: string
+          page: string
+          target: string
+          type: 'countries' | 'sources' | 'total'
+          val: string
+          cnt: string
+        }>(),
       )
 
-    if (_isEmpty(data)) {
-      return { journeys: [], totalSessions: 0 }
+    const nodeMap = new Map<string, IJourneyNodeDetails>()
+    const linkMap = new Map<string, IJourneyLinkDetails>()
+
+    for (const row of data) {
+      const step = Number(row.step)
+
+      let entry: IJourneyNodeDetails | IJourneyLinkDetails
+
+      if (row.target === '') {
+        const key = `${step}:${row.page}`
+        let node = nodeMap.get(key)
+
+        if (!node) {
+          node = { step, page: row.page, total: 0, sources: {}, countries: {} }
+          nodeMap.set(key, node)
+        }
+
+        entry = node
+      } else {
+        const key = `${step}:${row.page}→${row.target}`
+        let link = linkMap.get(key)
+
+        if (!link) {
+          link = {
+            step,
+            source: row.page,
+            target: row.target,
+            total: 0,
+            sources: {},
+            countries: {},
+          }
+          linkMap.set(key, link)
+        }
+
+        entry = link
+      }
+
+      if (row.type === 'total') {
+        entry.total = Number(row.cnt)
+      } else {
+        entry[row.type][row.val] = Number(row.cnt)
+      }
     }
 
-    const journeyList: IJourney[] = _map(data, (row) => ({
-      path: row.path,
-      value: Number(row.value),
-    }))
-
     return {
-      journeys: journeyList,
-      totalSessions: Number(data[0].totalSessions),
+      nodes: Array.from(nodeMap.values()),
+      links: Array.from(linkMap.values()),
     }
   }
 
@@ -2581,19 +2859,19 @@ export class AnalyticsService {
       funnel_sessions AS (
         SELECT
           psid,
-          argMin(firstStepAt, conversionAt) AS firstStepAt,
-          min(conversionAt) AS conversionAt
+          argMin(firstStepAt, rawConversionAt) AS firstStepAt,
+          min(rawConversionAt) AS conversionAt
         FROM (
           SELECT
             psid,
             firstStepAt,
-            step${finalStep}At AS conversionAt
+            step${finalStep}At AS rawConversionAt
           FROM funnel_step_${finalStep}
         )
         GROUP BY psid
       ),
       session_starts AS (
-        SELECT fs.psid, s.firstSeen AS sessionStart
+        SELECT fs.psid AS ssPsid, s.firstSeen AS sessionStart
         FROM funnel_sessions fs
         INNER JOIN (
           SELECT psid, firstSeen, lastSeen
@@ -2604,9 +2882,9 @@ export class AnalyticsService {
           AND s.lastSeen >= fs.conversionAt
       ),
       first_pages AS (
-        SELECT fs.psid, min(e.created) AS firstPageAt
+        SELECT fs.psid AS fpPsid, min(e.created) AS firstPageAt
         FROM funnel_sessions fs
-        INNER JOIN session_starts ss ON fs.psid = ss.psid
+        INNER JOIN session_starts ss ON fs.psid = ss.ssPsid
         INNER JOIN events e ON e.psid = fs.psid
         WHERE e.pid = {pid:FixedString(12)}
           AND e.type = 'pageview'
@@ -2626,8 +2904,8 @@ export class AnalyticsService {
         quantileExactOrNull(0.5)(if(firstStepAt > toDateTime(0) AND firstStepAt <= conversionAt, dateDiff('second', firstStepAt, conversionAt), NULL)) AS medianFirstStep,
         quantileExactOrNull(0.75)(if(firstStepAt > toDateTime(0) AND firstStepAt <= conversionAt, dateDiff('second', firstStepAt, conversionAt), NULL)) AS p75FirstStep
       FROM funnel_sessions fs
-      LEFT JOIN session_starts ss ON fs.psid = ss.psid
-      LEFT JOIN first_pages fp ON fs.psid = fp.psid
+      LEFT JOIN session_starts ss ON fs.psid = ss.ssPsid
+      LEFT JOIN first_pages fp ON fs.psid = fp.fpPsid
     `
 
     const { data } = await clickhouse
