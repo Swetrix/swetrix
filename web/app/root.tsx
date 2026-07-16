@@ -552,7 +552,7 @@ export default function App() {
           href={isSelfhosted ? '/favicon-ce.ico' : '/favicon.ico'}
         />
         {isDevelopment ? (
-          <script src='https://unpkg.com/react-scan@0.4.3/dist/auto.global.js' />
+          <script src='https://unpkg.com/react-scan/dist/auto.global.js' />
         ) : null}
         <Meta />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
