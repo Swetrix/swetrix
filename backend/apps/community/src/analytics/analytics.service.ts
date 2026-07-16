@@ -1021,8 +1021,8 @@ export class AnalyticsService {
           continuedPast,
           sum(value) OVER () AS totalSessions,
           count() OVER () AS totalPaths,
-          row_number() OVER (ORDER BY value DESC) AS overallRank,
-          row_number() OVER (PARTITION BY length(path) ORDER BY value DESC) AS depthRank
+          row_number() OVER (ORDER BY value DESC, path ASC) AS overallRank,
+          row_number() OVER (PARTITION BY length(path) ORDER BY value DESC, path ASC) AS depthRank
         FROM (
           SELECT
             path,
@@ -1157,8 +1157,8 @@ export class AnalyticsService {
           SELECT
             path,
             count() AS value,
-            row_number() OVER (ORDER BY value DESC) AS overallRank,
-            row_number() OVER (PARTITION BY length(path) ORDER BY value DESC) AS depthRank
+            row_number() OVER (ORDER BY value DESC, path ASC) AS overallRank,
+            row_number() OVER (PARTITION BY length(path) ORDER BY value DESC, path ASC) AS depthRank
           FROM session_paths
           GROUP BY path
         )

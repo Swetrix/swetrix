@@ -2702,8 +2702,6 @@
       "continuedThisWay": "Continued this way",
       "exitedHere": "Exited here",
       "continuedFurther": "Continued further",
-      "hiddenPathsCount_one": "Sessions on {{count}} less common path, not drawn separately",
-      "hiddenPathsCount_other": "Sessions on {{count}} less common paths, not drawn separately",
       "coverage": "Showing {{paths}} of {{totalPaths}} paths, covering {{covered}} of {{total}} multi-page sessions ({{percent}}%)",
       "viewToggle": "Journeys view",
       "chartView": "Chart view",

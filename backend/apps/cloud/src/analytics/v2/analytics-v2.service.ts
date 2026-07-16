@@ -1712,7 +1712,7 @@ export class AnalyticsV2Service {
             filters.filtersQuery,
           )
         } catch (reason) {
-          this.logger.log(
+          this.logger.error(
             reason,
             'AnalyticsV2Service -> getFunnelTimeToConvert',
           )

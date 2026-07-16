@@ -306,6 +306,26 @@ const JourneysView = ({ tnMapping }: JourneysViewProps) => {
     setSearchParams(next, { replace: true, preventScrollReset: true })
   }
 
+  // the URL can change without remounting the component (back/forward
+  // navigation, shared links), so the controls have to follow it
+  useEffect(() => {
+    const stepsValue = Number(searchParams.get('steps'))
+    setSteps(
+      Number.isFinite(stepsValue) && stepsValue
+        ? clampSteps(stepsValue)
+        : DEFAULT_STEPS,
+    )
+
+    const journeysValue = Number(searchParams.get('journeys'))
+    setJourneysCount(
+      Number.isFinite(journeysValue) && journeysValue
+        ? clampJourneys(journeysValue)
+        : DEFAULT_JOURNEYS,
+    )
+
+    setView(searchParams.get('view') === 'table' ? 'table' : 'chart')
+  }, [searchParams])
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedParams({ steps, journeys: journeysCount })
@@ -701,11 +721,6 @@ const JourneysView = ({ tnMapping }: JourneysViewProps) => {
     }
 
     if (node.kind === 'other') {
-      const hiddenPaths = Math.max(
-        (coverage?.totalPaths || 0) - (coverage?.drawnPaths || 0),
-        0,
-      )
-
       return (
         <div className={tooltipContainerClassName}>
           <div className='flex items-center justify-between gap-6'>
@@ -721,9 +736,6 @@ const JourneysView = ({ tnMapping }: JourneysViewProps) => {
               {node.sessions.toLocaleString()}
             </span>
           </div>
-          <p className={`mt-1 ${tooltipLabelClassName}`}>
-            {t('project.journeys.hiddenPathsCount', { count: hiddenPaths })}
-          </p>
           {node.continuedPast > 0 ? (
             <div className={tooltipRowClassName}>
               <span className={tooltipLabelClassName}>
