@@ -1707,12 +1707,6 @@ interface Journey {
   continuedPast: number
 }
 
-export interface JourneyLengthBucket {
-  len: number
-  sessions: number
-  truncated: number
-}
-
 export interface JourneyNodeDetails {
   step: number
   page: string
@@ -1737,7 +1731,8 @@ export interface JourneysResponse {
   totalSessions: number
   // distinct paths before the top-N ranking was applied
   totalPaths: number
-  lengthHistogram: JourneyLengthBucket[]
+  // how many sessions have a (sliced) path of each length
+  lengthHistogram: { len: number; sessions: number; truncated: number }[]
   nodeDetails: JourneyNodeDetails[]
   linkDetails: JourneyLinkDetails[]
 }

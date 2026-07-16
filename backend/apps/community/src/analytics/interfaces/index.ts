@@ -83,19 +83,14 @@ export interface IJourney {
   continuedPast: number
 }
 
-export interface IJourneyLengthBucket {
-  len: number
-  sessions: number
-  truncated: number
-}
-
 export interface IJourneys {
   journeys: IJourney[]
   // multi-page sessions only (single-page bounces produce no transitions)
   totalSessions: number
   // distinct paths before the top-N ranking was applied
   totalPaths: number
-  lengthHistogram: IJourneyLengthBucket[]
+  // how many sessions have a (sliced) path of each length
+  lengthHistogram: { len: number; sessions: number; truncated: number }[]
 }
 
 export interface IJourneyNodeDetails {
