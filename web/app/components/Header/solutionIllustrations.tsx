@@ -4,7 +4,7 @@ import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 const Card = ({ children }: { children: ReactNode }) => (
-  <div className='absolute inset-x-4 top-4 -bottom-2 overflow-hidden rounded-t-lg bg-white p-2.5 ring-1 ring-black/[0.06] dark:bg-slate-900 dark:ring-white/[0.08]'>
+  <div className='absolute inset-x-4 top-4 -bottom-2 overflow-hidden rounded-t-lg bg-white p-2.5 ring-1 ring-black/[0.06] grayscale transition-[filter] duration-500 ease-out group-hover/card:grayscale-0 motion-reduce:transition-none dark:bg-slate-900 dark:ring-white/[0.08]'>
     {children}
   </div>
 )
@@ -132,32 +132,23 @@ const CaptchaMockup = () => (
 export interface SolutionVisual {
   bg: string
   Mockup: () => ReactElement
-  accentIcon: string
 }
 
 export const SOLUTION_VISUALS: Record<string, SolutionVisual> = {
   [routes.main]: {
     bg: '/assets/solutions/analytics.webp',
     Mockup: AnalyticsMockup,
-    accentIcon:
-      'group-hover/card:text-indigo-500 dark:group-hover/card:text-indigo-400',
   },
   [routes.performance]: {
     bg: '/assets/solutions/performance.webp',
     Mockup: PerformanceMockup,
-    accentIcon:
-      'group-hover/card:text-amber-500 dark:group-hover/card:text-amber-400',
   },
   [routes.errorTracking]: {
     bg: '/assets/solutions/errors.webp',
     Mockup: ErrorsMockup,
-    accentIcon:
-      'group-hover/card:text-red-500 dark:group-hover/card:text-red-400',
   },
   [routes.captchaLanding]: {
     bg: '/assets/solutions/captcha.webp',
     Mockup: CaptchaMockup,
-    accentIcon:
-      'group-hover/card:text-emerald-500 dark:group-hover/card:text-emerald-400',
   },
 }
