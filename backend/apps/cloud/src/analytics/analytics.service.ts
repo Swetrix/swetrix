@@ -8043,11 +8043,14 @@ export class AnalyticsService {
       )
     `
 
-    // First-touch acquisition source/campaign of the profile
+    // First-touch acquisition source/campaign of the profile.
+    // The aggregate aliases must not shadow the so/ca source columns — the
+    // ClickHouse 24.8+ analyzer would resolve the WHERE references to the
+    // aggregates and fail with ILLEGAL_AGGREGATION.
     const queryAcquisition = `
       SELECT
-        argMin(so, created) AS so,
-        argMin(ca, created) AS ca
+        argMin(so, created) AS acquisitionSource,
+        argMin(ca, created) AS acquisitionCampaign
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND profileId = {profileId:String}
@@ -8105,8 +8108,8 @@ export class AnalyticsService {
     const revenue = (revenueResult.data[0] || {}) as Record<string, any>
     const acquisition = (acquisitionResult.data[0] || {}) as Record<string, any>
 
-    const acquisitionCampaign = acquisition.ca
-      ? await this.findAdCampaignByUtm(pid, acquisition.ca)
+    const acquisitionCampaign = acquisition.acquisitionCampaign
+      ? await this.findAdCampaignByUtm(pid, acquisition.acquisitionCampaign)
       : null
 
     return {
@@ -8122,8 +8125,8 @@ export class AnalyticsService {
       totalRevenue: revenue.totalRevenue || 0,
       revenueCurrency: revenue.revenueCurrency || null,
       acquisition: {
-        so: acquisition.so || null,
-        ca: acquisition.ca || null,
+        so: acquisition.acquisitionSource || null,
+        ca: acquisition.acquisitionCampaign || null,
         adCampaign: acquisitionCampaign,
       },
       ...details,
