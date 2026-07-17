@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto'
 import _isEmpty from 'lodash/isEmpty'
 import _round from 'lodash/round'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import {
   Injectable,
   BadRequestException,
@@ -22,6 +23,8 @@ import {
   PAID_UTM_MEDIUMS,
   normalizeCampaignKey,
 } from './interfaces/ads.interface'
+
+dayjs.extend(utc)
 
 export interface AdsCampaignRow {
   campaignId: string
@@ -668,14 +671,16 @@ export class AdsService {
     groupFrom: string,
     groupTo: string,
   ): Promise<AdsStats> {
-    const periodDays = dayjs(groupTo).diff(dayjs(groupFrom), 'day') || 1
+    const periodDays = dayjs.utc(groupTo).diff(dayjs.utc(groupFrom), 'day') || 1
 
     // End the previous window just before the current one starts - ad_metrics
     // is daily-grain, so sharing the boundary would count that whole day twice
-    const previousTo = dayjs(groupFrom)
+    const previousTo = dayjs
+      .utc(groupFrom)
       .subtract(1, 'second')
       .format('YYYY-MM-DD HH:mm:ss')
-    const previousFrom = dayjs(previousTo)
+    const previousFrom = dayjs
+      .utc(previousTo)
       .subtract(periodDays, 'day')
       .format('YYYY-MM-DD HH:mm:ss')
 
