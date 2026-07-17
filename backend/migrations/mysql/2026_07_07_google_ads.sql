@@ -9,3 +9,6 @@ ALTER TABLE project
   ADD COLUMN `googleAdsCurrency` varchar(3) DEFAULT NULL AFTER `googleAdsAccountEmail`,
   ADD COLUMN `googleAdsLastSyncAt` datetime DEFAULT NULL AFTER `googleAdsCurrency`,
   ADD COLUMN `googleAdsSyncError` varchar(512) DEFAULT NULL AFTER `googleAdsLastSyncAt`;
+
+ALTER TABLE project
+  ADD KEY `idx_project_google_ads_sync` (`googleAdsCustomerId`, `googleAdsSyncError`);

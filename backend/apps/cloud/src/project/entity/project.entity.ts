@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany } from 'typeorm'
+import {
+  Entity,
+  Column,
+  Index,
+  PrimaryColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { Alert } from '../../alert/entity/alert.entity'
@@ -26,6 +33,13 @@ enum CaptchaDifficultyMode {
 }
 
 // In case of modifying some properties here add them to the GDPR data export email template
+// Supports the syncAdsData cron lookup (customerId IS NOT NULL, syncError IS
+// NULL) without scanning the whole table; the TEXT token column is not
+// indexable and is implied by a selected account anyway
+@Index('idx_project_google_ads_sync', [
+  'googleAdsCustomerId',
+  'googleAdsSyncError',
+])
 @Entity()
 export class Project {
   @ApiProperty()

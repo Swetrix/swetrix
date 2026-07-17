@@ -1,4 +1,10 @@
-import { Controller, Get, Query, NotFoundException } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Query,
+  Headers,
+  NotFoundException,
+} from '@nestjs/common'
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger'
 import _isEmpty from 'lodash/isEmpty'
 
@@ -36,14 +42,18 @@ export class AdsAnalyticsController {
     private readonly logger: AppLoggerService,
   ) {}
 
-  private async getViewableProject(pid: string, userId: string) {
+  private async getViewableProject(
+    pid: string,
+    userId: string,
+    password?: string,
+  ) {
     const project = await this.projectService.getFullProject(pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
     }
 
-    this.projectService.allowedToView(project, userId)
+    this.projectService.allowedToView(project, userId, password)
 
     return project
   }
@@ -73,6 +83,7 @@ export class AdsAnalyticsController {
   async getAdsData(
     @CurrentUserId() userId: string,
     @Query() dto: GetAdsDto,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<
     | { notConnected: true }
     | {
@@ -84,7 +95,11 @@ export class AdsAnalyticsController {
   > {
     this.logger.log({ userId, ...dto }, 'GET /log/ads')
 
-    const project = await this.getViewableProject(dto.pid, userId)
+    const project = await this.getViewableProject(
+      dto.pid,
+      userId,
+      headers['x-password'],
+    )
 
     if (!project.googleAdsCustomerId) {
       return { notConnected: true }
@@ -127,10 +142,15 @@ export class AdsAnalyticsController {
   async getCampaigns(
     @CurrentUserId() userId: string,
     @Query() dto: GetAdsDto,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<{ campaigns: AdsCampaignRow[] }> {
     this.logger.log({ userId, ...dto }, 'GET /log/ads/campaigns')
 
-    const project = await this.getViewableProject(dto.pid, userId)
+    const project = await this.getViewableProject(
+      dto.pid,
+      userId,
+      headers['x-password'],
+    )
 
     if (!project.googleAdsCustomerId) {
       return { campaigns: [] }
@@ -154,6 +174,7 @@ export class AdsAnalyticsController {
   async getCampaignMap(
     @CurrentUserId() userId: string,
     @Query() dto: GetAdsDto,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<{
     map: Record<
       string,
@@ -169,7 +190,11 @@ export class AdsAnalyticsController {
   }> {
     this.logger.log({ userId, ...dto }, 'GET /log/ads/campaign-map')
 
-    const project = await this.getViewableProject(dto.pid, userId)
+    const project = await this.getViewableProject(
+      dto.pid,
+      userId,
+      headers['x-password'],
+    )
     const currency = project.revenueCurrency || 'USD'
 
     if (!project.googleAdsCustomerId) {

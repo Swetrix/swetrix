@@ -1520,7 +1520,9 @@ export class TaskManagerService {
       return
     }
 
-    const promises = _map(projects, async (project) => {
+    // Bounded concurrency: syncing every project at once would blow through
+    // the shared Google Ads developer-token quota
+    await mapLimit(projects, 5, async (project) => {
       try {
         await this.googleAdsAdapter.syncCampaignMetrics({
           id: project.id,
@@ -1550,10 +1552,6 @@ export class TaskManagerService {
           `[CRON WORKER](syncAdsData) Error syncing project ${project.id}: ${error}`,
         )
       }
-    })
-
-    await Promise.allSettled(promises).catch((reason) => {
-      this.logger.error(`[CRON WORKER](syncAdsData) Error occured: ${reason}`)
     })
   }
 

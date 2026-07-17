@@ -730,11 +730,16 @@ export function useAdsCampaignMapProxy() {
     null,
   )
   const [currency, setCurrency] = useState<string>('USD')
+  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const requestIdRef = useRef(0)
 
   const fetchCampaignMap = useCallback(
     async (projectId: string, params: ClientAnalyticsParams = {}) => {
+      const requestId = requestIdRef.current + 1
+      requestIdRef.current = requestId
       setIsLoading(true)
+      setError(null)
 
       try {
         const result = await postAnalytics<{
@@ -745,19 +750,30 @@ export function useAdsCampaignMapProxy() {
           projectId,
           params,
         })
+
+        if (requestId !== requestIdRef.current) {
+          return result.data?.map || null
+        }
+
         setMap(result.data?.map || null)
         setCurrency(result.data?.currency || 'USD')
+        setError(result.error)
         return result.data?.map || null
-      } catch {
+      } catch (err) {
+        if (requestId === requestIdRef.current) {
+          setError(err instanceof Error ? err.message : 'Unknown error')
+        }
         return null
       } finally {
-        setIsLoading(false)
+        if (requestId === requestIdRef.current) {
+          setIsLoading(false)
+        }
       }
     },
     [],
   )
 
-  return { fetchCampaignMap, map, currency, isLoading }
+  return { fetchCampaignMap, map, currency, error, isLoading }
 }
 
 export function useRevenueProxy() {

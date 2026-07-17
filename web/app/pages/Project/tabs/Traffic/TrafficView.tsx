@@ -434,6 +434,11 @@ const TrafficViewInner = ({
 
   // Fetch ad campaign spend map for the utm_campaign panel rows. Only runs
   // when the campaign sub-tab is open; unconnected projects get an empty map.
+  // Depend on the derived from/to (not the searchParams object) so unrelated
+  // URL changes don't refetch.
+  const campaignMapFrom = searchParams.get('from') || undefined
+  const campaignMapTo = searchParams.get('to') || undefined
+
   useEffect(() => {
     if (!id || isSelfhosted || activeSourcesSubTab !== 'utm_campaign') {
       return
@@ -441,8 +446,8 @@ const TrafficViewInner = ({
 
     fetchCampaignMap(id, {
       period,
-      from: searchParams.get('from') || undefined,
-      to: searchParams.get('to') || undefined,
+      from: campaignMapFrom,
+      to: campaignMapTo,
       timezone,
     })
   }, [
@@ -451,9 +456,9 @@ const TrafficViewInner = ({
     period,
     timezone,
     fetchCampaignMap,
-    searchParams,
+    campaignMapFrom,
+    campaignMapTo,
   ])
-
 
   const chartMetrics = useMemo(
     () =>

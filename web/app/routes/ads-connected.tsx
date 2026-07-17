@@ -48,15 +48,22 @@ export async function loader({
     },
   )
 
-  // If auth fails (401/403), fall back to client-side which has localStorage tokens
+  // If auth fails (401/403), the backend rejected the request before touching
+  // the authorization code, so the client (which has localStorage tokens) can
+  // safely retry the exchange
   if (result.status === 401 || result.status === 403) {
     return { useClientFallback: true }
   }
 
   if (result.error || !result.data) {
-    // For other errors, also try client-side as a fallback
-    // This handles cases where server-side cookies aren't synced with localStorage
-    return { useClientFallback: true }
+    // Any other failure may have happened after the code was redeemed -
+    // retrying client-side would just fail with invalid_grant, so surface
+    // the error instead
+    const error = Array.isArray(result.error)
+      ? result.error.join(', ')
+      : result.error
+
+    return { error: error || 'Unknown error' }
   }
 
   const { pid } = result.data
@@ -88,8 +95,15 @@ function AdsHashHandler() {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const { processAdsToken } = useAuthProxy()
-  const [{ state, code }] = useState(() => {
-    if (typeof window === 'undefined') return { state: null, code: null }
+  // The callback params may live in the URL hash, which only exists in the
+  // browser - parse after mount so SSR and hydration both render the loading
+  // state instead of a premature "invalid parameters" error
+  const [params, setParams] = useState<{
+    state: string | null
+    code: string | null
+  } | null>(null)
+
+  useEffect(() => {
     // Fix Google's hash URL redirect (sometimes Google uses # instead of ?)
     const _location = _replace(
       window.location.href,
@@ -97,14 +111,16 @@ function AdsHashHandler() {
       `${routes.ads_connected}?`,
     )
     const { searchParams } = new URL(_location)
-    return {
+    setParams({
       state: searchParams.get('state'),
       code: searchParams.get('code'),
-    }
-  })
+    })
+  }, [])
 
   useEffect(() => {
-    if (!state || !code) return
+    if (!params?.state || !params?.code) return
+
+    const { state, code } = params
 
     // Prevent duplicate processing in React StrictMode or on refresh
     const processedKey = `ads_processed:${state}`
@@ -127,9 +143,9 @@ function AdsHashHandler() {
           `[ERROR] Error while processing Google Ads integration: ${reason}`,
         )
       })
-  }, [navigate, state, code, processAdsToken])
+  }, [navigate, params, processAdsToken])
 
-  if (!state || !code) {
+  if (params && (!params.state || !params.code)) {
     return (
       <StatusPage
         type='error'

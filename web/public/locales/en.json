@@ -2274,7 +2274,7 @@
         "linkedGoogleAccount": "Connected Google account"
       },
       "ads": {
-        "connect": "Connect Google Ads to see campaign spend, clicks and ROI next to your analytics.",
+        "connect": "Connect Google Ads to see campaign spend and clicks next to your analytics. Pair it with revenue tracking and session IDs to measure ROI per campaign.",
         "disconnected": "Google Ads has been disconnected from this project.",
         "notConfigured": "Google Ads is not configured on this server. To enable it, set <code>GOOGLE_ADS_CLIENT_ID</code>, <code>GOOGLE_ADS_CLIENT_SECRET</code> and <code>GOOGLE_ADS_DEVELOPER_TOKEN</code> in your API container environment, then restart it.",
         "linkedGoogleAccount": "Connected Google account",
@@ -2950,7 +2950,7 @@
       "adSessions": "Ad sessions",
       "attributedRevenue": "Attributed revenue",
       "campaigns": "Campaigns",
-      "attributionNote": "Sessions and revenue are attributed to campaigns via the utm_campaign parameter, matched against your campaign ID or name. Revenue attribution requires passing the Swetrix session ID to your payment provider."
+      "attributionNote": "Sessions and revenue are attributed to campaigns via the utm_campaign parameter, matched against your campaign ID or name. Revenue attribution requires a session ID on your transactions — send sessionId in the Revenue API request body, or pass the Swetrix session ID to your payment provider's metadata."
     },
     "acquiredVia": "Acquired via"
   },

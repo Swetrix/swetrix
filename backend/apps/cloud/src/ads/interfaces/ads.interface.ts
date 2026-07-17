@@ -60,14 +60,3 @@ export interface AdMetricRow {
   conversionsValue: number
   syncedAt: Date
 }
-
-export interface AdsCampaignSummary {
-  campaignId: string
-  campaignName: string
-  campaignStatus: string
-  cost: number
-  clicks: number
-  impressions: number
-  conversions: number
-  conversionsValue: number
-}

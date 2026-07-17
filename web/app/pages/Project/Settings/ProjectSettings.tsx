@@ -175,6 +175,20 @@ const buildProjectAutosaveFormData = (updates: Partial<Form>) => {
   return formData
 }
 
+// Only redirect to Google OAuth URLs we can positively validate - the URL
+// comes back through our API and must never become an open redirect
+const getSafeGoogleAuthUrl = (url: string): string | null => {
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'https:') return null
+    if (parsed.username || parsed.password) return null
+    if (parsed.hostname !== 'accounts.google.com') return null
+    return parsed.toString()
+  } catch {
+    return null
+  }
+}
+
 const ProjectSettings = () => {
   const { user } = useAuth()
 
@@ -560,17 +574,7 @@ const ProjectSettings = () => {
         setGscProperties(properties)
         setGscPropertiesPending(false)
       } else if (intent === 'gsc-connect' && gscAuthUrl) {
-        const safeUrl = (() => {
-          try {
-            const parsed = new URL(gscAuthUrl)
-            if (parsed.protocol !== 'https:') return null
-            if (parsed.username || parsed.password) return null
-            if (parsed.hostname !== 'accounts.google.com') return null
-            return parsed.toString()
-          } catch {
-            return null
-          }
-        })()
+        const safeUrl = getSafeGoogleAuthUrl(gscAuthUrl)
 
         if (!safeUrl) {
           toast.error(t('apiNotifications.somethingWentWrong'))
@@ -663,17 +667,7 @@ const ProjectSettings = () => {
         setAdsAccounts(accounts)
         setAdsAccountsPending(false)
       } else if (intent === 'ads-connect' && adsAuthUrl) {
-        const safeUrl = (() => {
-          try {
-            const parsed = new URL(adsAuthUrl)
-            if (parsed.protocol !== 'https:') return null
-            if (parsed.username || parsed.password) return null
-            if (parsed.hostname !== 'accounts.google.com') return null
-            return parsed.toString()
-          } catch {
-            return null
-          }
-        })()
+        const safeUrl = getSafeGoogleAuthUrl(adsAuthUrl)
 
         if (!safeUrl) {
           toast.error(t('apiNotifications.somethingWentWrong'))
@@ -728,9 +722,10 @@ const ProjectSettings = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adsAccountsPending, adsFetcher.state])
 
-  // Initial Google Ads status fetch
+  // Initial Google Ads status fetch (Cloud only - the self-hosted API has no
+  // Google Ads endpoints)
   useEffect(() => {
-    if (adsInitialized.current) return
+    if (isSelfhosted || adsInitialized.current) return
     adsInitialized.current = true
     adsFetcher.submit({ intent: 'ads-status' }, { method: 'post' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1478,151 +1473,158 @@ const ProjectSettings = () => {
                   </>
                 )}
 
-                <hr className='-mx-4 mt-6 mb-4 border-gray-200 dark:border-slate-800' />
+                {/* Google Ads is a Cloud-only integration - the self-hosted API has no ads endpoints */}
+                {isSelfhosted ? null : (
+                  <>
+                    <hr className='-mx-4 mt-6 mb-4 border-gray-200 dark:border-slate-800' />
 
-                <Text
-                  as='h3'
-                  size='lg'
-                  weight='medium'
-                  className='mb-2 flex items-center gap-2'
-                >
-                  <GoogleGSVG className='size-6' />
-                  Google Ads
-                </Text>
-                {adsConnected === null ? (
-                  <Loader />
-                ) : !adsAvailable ? (
-                  <div className='rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100'>
-                    <Trans
-                      t={t}
-                      i18nKey='project.settings.ads.notConfigured'
-                      components={{
-                        code: (
-                          <code className='rounded bg-amber-100 px-1 py-0.5 font-mono text-xs dark:bg-amber-900/60' />
-                        ),
-                      }}
-                    />
-                  </div>
-                ) : !adsConnected ? (
-                  <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
                     <Text
-                      as='p'
-                      size='sm'
-                      className='text-gray-800 dark:text-gray-200'
+                      as='h3'
+                      size='lg'
+                      weight='medium'
+                      className='mb-2 flex items-center gap-2'
                     >
-                      {t('project.settings.ads.connect')}
+                      <GoogleGSVG className='size-6' />
+                      Google Ads
                     </Text>
-                    <Button
-                      className='flex items-center gap-2'
-                      type='button'
-                      onClick={() => {
-                        adsFetcher.submit(
-                          { intent: 'ads-connect' },
-                          { method: 'post' },
-                        )
-                      }}
-                      loading={
-                        adsFetcher.state !== 'idle'
-                          ? adsFetcher.formData?.get('intent') === 'ads-connect'
-                          : undefined
-                      }
-                    >
-                      <GoogleGSVG className='size-4' />
-                      {t('common.connect')}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className='flex flex-col gap-3'>
-                    <Input
-                      className='lg:w-1/2'
-                      label={t('project.settings.ads.linkedGoogleAccount')}
-                      value={adsEmail || ''}
-                      disabled
-                    />
-
-                    {adsSyncError ? (
+                    {adsConnected === null ? (
+                      <Loader />
+                    ) : !adsAvailable ? (
                       <div className='rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100'>
-                        {t('project.settings.ads.syncError')}
-                      </div>
-                    ) : null}
-
-                    <Button
-                      variant='danger-outline'
-                      type='button'
-                      className='max-w-max'
-                      onClick={() => {
-                        adsFetcher.submit(
-                          { intent: 'ads-disconnect' },
-                          { method: 'post' },
-                        )
-                      }}
-                      loading={
-                        adsFetcher.state !== 'idle'
-                          ? adsFetcher.formData?.get('intent') ===
-                            'ads-disconnect'
-                          : undefined
-                      }
-                    >
-                      {t('common.disconnect')}
-                    </Button>
-
-                    <Select
-                      fieldLabelClassName='mt-4 max-w-max'
-                      className='lg:w-1/2'
-                      hintClassName='lg:w-2/3'
-                      label={t('project.settings.ads.adsAccount')}
-                      hint={t('project.settings.ads.adsAccountHint')}
-                      items={_map(adsAccounts, (account) => ({
-                        key: account.customerId,
-                        label: `${account.name} (${account.customerId})`,
-                      }))}
-                      keyExtractor={(item) => item.key}
-                      labelExtractor={(item) => item.label}
-                      onSelect={(item: { key: string; label: string }) => {
-                        pendingAdsCustomerId.current = item.key
-                        adsFetcher.submit(
-                          {
-                            intent: 'ads-set-account',
-                            customerId: item.key,
-                          },
-                          { method: 'post' },
-                        )
-                      }}
-                      title={
-                        adsCustomerId || t('project.settings.ads.selectAccount')
-                      }
-                      selectedItem={
-                        adsCustomerId
-                          ? {
-                              key: adsCustomerId,
-                              label:
-                                _map(
-                                  adsAccounts.filter(
-                                    (account) =>
-                                      account.customerId === adsCustomerId,
-                                  ),
-                                  (account) =>
-                                    `${account.name} (${account.customerId})`,
-                                )[0] || adsCustomerId,
-                            }
-                          : undefined
-                      }
-                    />
-
-                    {adsCustomerId ? (
-                      <div className='rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-100'>
                         <Trans
                           t={t}
-                          i18nKey='project.settings.ads.trackingTemplate'
+                          i18nKey='project.settings.ads.notConfigured'
                           components={{
                             code: (
-                              <code className='rounded bg-blue-100 px-1 py-0.5 font-mono text-xs dark:bg-blue-900/60' />
+                              <code className='rounded bg-amber-100 px-1 py-0.5 font-mono text-xs dark:bg-amber-900/60' />
                             ),
                           }}
                         />
                       </div>
-                    ) : null}
-                  </div>
+                    ) : !adsConnected ? (
+                      <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
+                        <Text
+                          as='p'
+                          size='sm'
+                          className='text-gray-800 dark:text-gray-200'
+                        >
+                          {t('project.settings.ads.connect')}
+                        </Text>
+                        <Button
+                          className='flex items-center gap-2'
+                          type='button'
+                          onClick={() => {
+                            adsFetcher.submit(
+                              { intent: 'ads-connect' },
+                              { method: 'post' },
+                            )
+                          }}
+                          loading={
+                            adsFetcher.state !== 'idle'
+                              ? adsFetcher.formData?.get('intent') ===
+                                'ads-connect'
+                              : undefined
+                          }
+                        >
+                          <GoogleGSVG className='size-4' />
+                          {t('common.connect')}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className='flex flex-col gap-3'>
+                        <Input
+                          className='lg:w-1/2'
+                          label={t('project.settings.ads.linkedGoogleAccount')}
+                          value={adsEmail || ''}
+                          disabled
+                        />
+
+                        {adsSyncError ? (
+                          <div className='rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100'>
+                            {t('project.settings.ads.syncError')}
+                          </div>
+                        ) : null}
+
+                        <Button
+                          variant='danger-outline'
+                          type='button'
+                          className='max-w-max'
+                          onClick={() => {
+                            adsFetcher.submit(
+                              { intent: 'ads-disconnect' },
+                              { method: 'post' },
+                            )
+                          }}
+                          loading={
+                            adsFetcher.state !== 'idle'
+                              ? adsFetcher.formData?.get('intent') ===
+                                'ads-disconnect'
+                              : undefined
+                          }
+                        >
+                          {t('common.disconnect')}
+                        </Button>
+
+                        <Select
+                          fieldLabelClassName='mt-4 max-w-max'
+                          className='lg:w-1/2'
+                          hintClassName='lg:w-2/3'
+                          label={t('project.settings.ads.adsAccount')}
+                          hint={t('project.settings.ads.adsAccountHint')}
+                          items={_map(adsAccounts, (account) => ({
+                            key: account.customerId,
+                            label: `${account.name} (${account.customerId})`,
+                          }))}
+                          keyExtractor={(item) => item.key}
+                          labelExtractor={(item) => item.label}
+                          onSelect={(item: { key: string; label: string }) => {
+                            pendingAdsCustomerId.current = item.key
+                            adsFetcher.submit(
+                              {
+                                intent: 'ads-set-account',
+                                customerId: item.key,
+                              },
+                              { method: 'post' },
+                            )
+                          }}
+                          title={
+                            adsCustomerId ||
+                            t('project.settings.ads.selectAccount')
+                          }
+                          selectedItem={
+                            adsCustomerId
+                              ? {
+                                  key: adsCustomerId,
+                                  label:
+                                    _map(
+                                      adsAccounts.filter(
+                                        (account) =>
+                                          account.customerId === adsCustomerId,
+                                      ),
+                                      (account) =>
+                                        `${account.name} (${account.customerId})`,
+                                    )[0] || adsCustomerId,
+                                }
+                              : undefined
+                          }
+                        />
+
+                        {adsCustomerId ? (
+                          <div className='rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-100'>
+                            <Trans
+                              t={t}
+                              i18nKey='project.settings.ads.trackingTemplate'
+                              components={{
+                                code: (
+                                  <code className='rounded bg-blue-100 px-1 py-0.5 font-mono text-xs dark:bg-blue-900/60' />
+                                ),
+                              }}
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ) : null}

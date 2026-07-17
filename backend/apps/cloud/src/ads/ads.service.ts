@@ -199,6 +199,9 @@ export class AdsService {
         headers: {
           Authorization: `Bearer ${tokens.access_token}`,
         },
+        // The email is nice-to-have; never let a slow Google response hang
+        // the OAuth callback
+        signal: AbortSignal.timeout(15_000),
       })
       const data = await res.json()
       accountEmail = data?.email || null
@@ -505,6 +508,7 @@ export class AdsService {
       FROM events
       WHERE
         pid = {pid:FixedString(12)}
+        AND type = 'pageview'
         AND psid IS NOT NULL
         AND ca IS NOT NULL
         AND ${PAID_TRAFFIC_GUARD}
@@ -547,6 +551,7 @@ export class AdsService {
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
+          AND type = 'pageview'
           AND psid IS NOT NULL
           AND ca IS NOT NULL
           AND ${PAID_TRAFFIC_GUARD}
@@ -664,13 +669,19 @@ export class AdsService {
     groupTo: string,
   ): Promise<AdsStats> {
     const periodDays = dayjs(groupTo).diff(dayjs(groupFrom), 'day') || 1
-    const previousFrom = dayjs(groupFrom)
+
+    // End the previous window just before the current one starts - ad_metrics
+    // is daily-grain, so sharing the boundary would count that whole day twice
+    const previousTo = dayjs(groupFrom)
+      .subtract(1, 'second')
+      .format('YYYY-MM-DD HH:mm:ss')
+    const previousFrom = dayjs(previousTo)
       .subtract(periodDays, 'day')
       .format('YYYY-MM-DD HH:mm:ss')
 
     const [current, previous] = await Promise.all([
       this.getCampaignRows(pid, groupFrom, groupTo),
-      this.getCampaignRows(pid, previousFrom, groupFrom),
+      this.getCampaignRows(pid, previousFrom, previousTo),
     ])
 
     const totals = (campaignRows: AdsCampaignRow[]) =>
@@ -766,6 +777,7 @@ export class AdsService {
       FROM events
       WHERE
         pid = {pid:FixedString(12)}
+        AND type = 'pageview'
         AND psid IS NOT NULL
         AND ca IS NOT NULL
         AND ${PAID_TRAFFIC_GUARD}
@@ -885,55 +897,5 @@ export class AdsService {
     }
 
     return map
-  }
-
-  /*
-    Distinct campaigns known for the project (any provider), used to badge
-    sessions/profiles whose utm_campaign matches a synced ad campaign
-  */
-  async findCampaignByUtmValue(
-    pid: string,
-    utmCampaign: string,
-  ): Promise<{
-    provider: string
-    campaignId: string
-    campaignName: string
-  } | null> {
-    const query = `
-      SELECT DISTINCT
-        provider,
-        campaign_id,
-        campaign_name
-      FROM ad_metrics
-      WHERE pid = {pid:FixedString(12)}
-    `
-
-    const { data } = await clickhouse
-      .query({ query, query_params: { pid } })
-      .then((resultSet) =>
-        resultSet.json<{
-          provider: string
-          campaign_id: string
-          campaign_name: string
-        }>(),
-      )
-
-    const key = normalizeCampaignKey(utmCampaign)
-
-    const match = data.find(
-      (row) =>
-        row.campaign_id.toLowerCase() === key ||
-        row.campaign_name.toLowerCase().trim() === key,
-    )
-
-    if (!match) {
-      return null
-    }
-
-    return {
-      provider: match.provider,
-      campaignId: match.campaign_id,
-      campaignName: match.campaign_name,
-    }
   }
 }

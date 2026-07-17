@@ -2029,6 +2029,7 @@ export async function getAdsCampaignMapServer(
     currency: string
   }>(request, `log/ads/campaign-map?${queryParams.toString()}`, {
     headers,
+    timeoutMs: 60000,
   })
 }
 

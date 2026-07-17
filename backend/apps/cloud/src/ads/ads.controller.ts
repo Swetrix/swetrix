@@ -101,10 +101,6 @@ export class AdsController {
     const project = await this.projectService.getRedisProject(pid)
     this.projectService.allowedToManage(project, uid)
 
-    if (!body?.customerId) {
-      throw new BadRequestException('customerId is required')
-    }
-
     const accessToken = await this.adsService.getAuthedAccessToken(pid)
     const accounts =
       await this.googleAdsAdapter.listAccessibleAccounts(accessToken)

@@ -19,6 +19,10 @@ dayjs.extend(utc)
 
 const API_BASE = `https://googleads.googleapis.com/${GOOGLE_ADS_API_VERSION}`
 
+const FETCH_TIMEOUT_MS = 30_000
+const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504])
+const MAX_FETCH_ATTEMPTS = 3
+
 interface GoogleAdsSearchResult {
   campaign?: {
     id?: string
@@ -83,6 +87,46 @@ export class GoogleAdsAdapter {
     return token
   }
 
+  /*
+    fetch() with a per-attempt timeout (Google Ads calls run on request paths,
+    so they must never hang) and a small backoff retry on transient failures.
+    Non-retryable error statuses are returned as-is for the caller to parse.
+  */
+  private async fetchWithRetry(
+    url: string,
+    init: RequestInit,
+  ): Promise<Response> {
+    let lastError: unknown
+
+    for (let attempt = 1; attempt <= MAX_FETCH_ATTEMPTS; attempt++) {
+      if (attempt > 1) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, 500 * 2 ** (attempt - 2))
+        })
+      }
+
+      try {
+        const res = await fetch(url, {
+          ...init,
+          signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        })
+
+        if (
+          RETRYABLE_STATUS_CODES.has(res.status) &&
+          attempt < MAX_FETCH_ATTEMPTS
+        ) {
+          continue
+        }
+
+        return res
+      } catch (error) {
+        lastError = error
+      }
+    }
+
+    throw lastError
+  }
+
   private async search(
     accessToken: string,
     customerId: string,
@@ -93,7 +137,7 @@ export class GoogleAdsAdapter {
     let pageToken: string | undefined
 
     do {
-      const res = await fetch(
+      const res = await this.fetchWithRetry(
         `${API_BASE}/customers/${customerId}/googleAds:search`,
         {
           method: 'POST',
@@ -131,12 +175,15 @@ export class GoogleAdsAdapter {
     cancelled accounts) are skipped.
   */
   async listAccessibleAccounts(accessToken: string): Promise<AdsAccount[]> {
-    const res = await fetch(`${API_BASE}/customers:listAccessibleCustomers`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'developer-token': this.getDeveloperToken(),
+    const res = await this.fetchWithRetry(
+      `${API_BASE}/customers:listAccessibleCustomers`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'developer-token': this.getDeveloperToken(),
+        },
       },
-    })
+    )
 
     if (!res.ok) {
       const text = await res.text().catch(() => '')
@@ -239,8 +286,27 @@ export class GoogleAdsAdapter {
       project.googleAdsLoginCustomerId,
     )
 
-    const originalCurrency = (project.googleAdsCurrency || 'USD').toUpperCase()
     const targetCurrency = (project.revenueCurrency || 'USD').toUpperCase()
+
+    // When the ads account currency is unknown, assuming USD would silently
+    // misconvert non-USD accounts - store the amounts unconverted instead
+    const originalCurrency = project.googleAdsCurrency
+      ? project.googleAdsCurrency.toUpperCase()
+      : targetCurrency
+
+    if (!project.googleAdsCurrency) {
+      this.logger.warn(
+        { projectId: project.id },
+        'Google Ads account currency is unknown; storing campaign metrics without currency conversion',
+      )
+    }
+
+    // Conversion is linear, so resolve the rate once instead of per row
+    const conversionRate = await this.currencyService.convert(
+      1,
+      originalCurrency,
+      targetCurrency,
+    )
     const syncedAt = new Date()
 
     const rows: AdMetricRow[] = []
@@ -254,16 +320,9 @@ export class GoogleAdsAdapter {
       }
 
       const originalCost = Number(result.metrics?.costMicros || 0) / 1e6
-      const cost = await this.currencyService.convert(
-        originalCost,
-        originalCurrency,
-        targetCurrency,
-      )
-      const conversionsValue = await this.currencyService.convert(
-        Number(result.metrics?.conversionsValue || 0),
-        originalCurrency,
-        targetCurrency,
-      )
+      const cost = originalCost * conversionRate
+      const conversionsValue =
+        Number(result.metrics?.conversionsValue || 0) * conversionRate
 
       rows.push({
         pid: project.id,
