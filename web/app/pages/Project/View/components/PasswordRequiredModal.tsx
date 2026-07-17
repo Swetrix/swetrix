@@ -100,6 +100,7 @@ const PasswordRequiredModal = ({
           <Input
             name='password'
             type='password'
+            autoComplete='current-password'
             label={t('auth.common.password')}
             value={password}
             placeholder={t('auth.common.password')}

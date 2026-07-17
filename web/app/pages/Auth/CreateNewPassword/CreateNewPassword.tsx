@@ -43,6 +43,7 @@ const CreateNewPassword = () => {
               <Input
                 name='password'
                 type='password'
+                autoComplete='new-password'
                 label={t('auth.recovery.newPassword')}
                 hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
                 error={actionData?.fieldErrors?.password}
@@ -51,6 +52,7 @@ const CreateNewPassword = () => {
               <Input
                 name='repeat'
                 type='password'
+                autoComplete='new-password'
                 label={t('auth.common.repeat')}
                 error={actionData?.fieldErrors?.repeat}
                 disabled={isSubmitting}

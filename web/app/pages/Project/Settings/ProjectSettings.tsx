@@ -1432,6 +1432,7 @@ const ProjectSettings = () => {
                       }
                       name='captchaSecretKey'
                       type='password'
+                      autoComplete='off'
                       className='mt-4 lg:w-1/2'
                       value={captchaSecretKey}
                       readOnly
@@ -1608,6 +1609,7 @@ const ProjectSettings = () => {
             <Input
               name='password'
               type='password'
+              autoComplete='new-password'
               label={t('project.settings.password')}
               value={form?.password || ''}
               className='mt-4 px-4 sm:px-0'

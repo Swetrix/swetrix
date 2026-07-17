@@ -1,6 +1,11 @@
 import {
   CheckCircleIcon,
   ClockIcon,
+  CursorClickIcon,
+  EyeIcon,
+  PulseIcon,
+  UsersIcon,
+  WarningIcon,
   WarningOctagonIcon,
   XCircleIcon,
 } from '@phosphor-icons/react'
@@ -12,22 +17,25 @@ import _size from 'lodash/size'
 import _split from 'lodash/split'
 import _toNumber from 'lodash/toNumber'
 import _values from 'lodash/values'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import { getDimensionValues } from '~/api/v2/endpoints'
 import { useDeduplicateFetcherResponse } from '~/hooks/useDeduplicateFetcherResponse'
 import { QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import type { NotificationChannel } from '~/lib/models/NotificationChannel'
 import { useAuth } from '~/providers/AuthProvider'
+import { useTheme } from '~/providers/ThemeProvider'
 import type { NotificationChannelActionData } from '~/routes/notification-channel'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import FeedbackButton from '~/ui/FeedbackButton'
+import FilterValueInput from '~/ui/FilterValueInput'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Alert from '~/ui/Alert'
@@ -44,6 +52,14 @@ import {
 
 import AlertTemplateEditor from './AlertTemplateEditor'
 import { BackButton } from '../../View/components/BackButton'
+
+const QUERY_METRIC_ICONS: Record<string, React.ReactNode> = {
+  [QUERY_METRIC.PAGE_VIEWS]: <EyeIcon className='size-4' />,
+  [QUERY_METRIC.UNIQUE_PAGE_VIEWS]: <UsersIcon className='size-4' />,
+  [QUERY_METRIC.ONLINE_USERS]: <PulseIcon className='size-4' />,
+  [QUERY_METRIC.CUSTOM_EVENTS]: <CursorClickIcon className='size-4' />,
+  [QUERY_METRIC.ERRORS]: <WarningIcon className='size-4' />,
+}
 
 interface ProjectAlertsSettingsProps {
   alertId?: string | null
@@ -65,8 +81,12 @@ const ProjectAlertsSettings = ({
   backLink,
 }: ProjectAlertsSettingsProps) => {
   const { isLoading: authLoading } = useAuth()
+  const { theme } = useTheme()
 
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const fetcher = useFetcher<ProjectViewActionData>()
   const channelsFetcher = useFetcher<NotificationChannelActionData>()
   const shouldHandleFetcherData =
@@ -97,6 +117,35 @@ const ProjectAlertsSettings = ({
   const [availableChannels, setAvailableChannels] = useState<
     NotificationChannel[]
   >([])
+  const [customEvents, setCustomEvents] = useState<string[]>([])
+  const [customEventsLoading, setCustomEventsLoading] = useState(false)
+  const customEventsFetchedRef = useRef(false)
+
+  useEffect(() => {
+    if (
+      form.queryMetric !== QUERY_METRIC.CUSTOM_EVENTS ||
+      customEventsFetchedRef.current
+    ) {
+      return
+    }
+
+    customEventsFetchedRef.current = true
+    setCustomEventsLoading(true)
+    getDimensionValues(projectId, 'event', { type: 'traffic' })
+      .then(({ data }) => {
+        setCustomEvents(
+          (data || []).filter(
+            (item): item is string => typeof item === 'string',
+          ),
+        )
+      })
+      .catch((reason) => {
+        console.error('Failed to fetch custom events:', reason)
+      })
+      .finally(() => {
+        setCustomEventsLoading(false)
+      })
+  }, [form.queryMetric, projectId])
 
   useEffect(() => {
     const fd = new FormData()
@@ -546,40 +595,79 @@ const ProjectAlertsSettings = ({
             <Select
               id='queryMetric'
               label={t('alert.metric')}
-              items={_values(queryMetricTMapping)}
+              items={_values(QUERY_METRIC)}
+              labelExtractor={(item) => queryMetricTMapping[item]}
+              iconExtractor={(item) => (
+                <span className='text-gray-500 dark:text-gray-400'>
+                  {QUERY_METRIC_ICONS[item]}
+                </span>
+              )}
               title={
-                form.queryMetric ? queryMetricTMapping[form.queryMetric] : ''
+                form.queryMetric ? (
+                  <span className='flex items-center gap-2'>
+                    <span className='text-gray-500 dark:text-gray-400'>
+                      {QUERY_METRIC_ICONS[form.queryMetric]}
+                    </span>
+                    {queryMetricTMapping[form.queryMetric]}
+                  </span>
+                ) : (
+                  ''
+                )
               }
               onSelect={(item) => {
-                const key = _findKey(
-                  queryMetricTMapping,
-                  (predicate) => predicate === item,
-                )
-
-                // @ts-expect-error
                 setForm((prevForm) => ({
                   ...prevForm,
-                  queryMetric: key,
+                  queryMetric: item,
                 }))
               }}
               capitalise
-              selectedItem={
-                form.queryMetric
-                  ? queryMetricTMapping[form.queryMetric]
-                  : undefined
-              }
+              selectedItem={form.queryMetric}
             />
           </div>
           {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
-            <Input
-              name='queryCustomEvent'
-              label={t('alert.customEvent')}
-              value={form.queryCustomEvent || ''}
-              placeholder={t('alert.customEvent')}
-              className='mt-4'
-              onChange={handleInput}
-              error={beenSubmitted ? errors.queryCustomEvent : null}
-            />
+            <div className='mt-4 flex flex-col gap-1'>
+              <Text
+                as='span'
+                className='flex leading-tight'
+                size='sm'
+                weight='medium'
+                colour='primary'
+              >
+                {t('alert.customEvent')}
+              </Text>
+              <input
+                type='hidden'
+                name='queryCustomEvent'
+                value={form.queryCustomEvent || ''}
+              />
+              <FilterValueInput
+                items={customEvents}
+                value={form.queryCustomEvent || ''}
+                onChange={(value) =>
+                  setForm((prevForm) => ({
+                    ...prevForm,
+                    queryCustomEvent: value,
+                  }))
+                }
+                placeholder={t('project.filterSearchOrType')}
+                column='event'
+                language={language}
+                isLoading={customEventsLoading}
+                theme={theme}
+                commitOnType
+              />
+              {beenSubmitted && errors.queryCustomEvent ? (
+                <Text
+                  as='span'
+                  className='block'
+                  size='sm'
+                  colour='error'
+                  role='alert'
+                >
+                  {errors.queryCustomEvent}
+                </Text>
+              ) : null}
+            </div>
           ) : null}
           {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
             <Checkbox

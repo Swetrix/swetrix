@@ -370,6 +370,7 @@ const Signin = () => {
                 <Input
                   label={t('auth.linkAccount.enterPassword')}
                   type='password'
+                  autoComplete='current-password'
                   value={linkingPassword}
                   onChange={(e) => setLinkingPassword(e.target.value)}
                   disabled={isLinkingLoading}
@@ -384,6 +385,8 @@ const Signin = () => {
                     <Input
                       label={t('auth.linkAccount.enter2FA')}
                       value={linking2FACode}
+                      autoComplete='one-time-code'
+                      inputMode='numeric'
                       placeholder={t('auth.signin.6digitCode')}
                       onChange={(e) => setLinking2FACode(e.target.value)}
                       disabled={isLinkingLoading}
@@ -442,6 +445,8 @@ const Signin = () => {
                 <Input
                   label={t('profileSettings.enter2faToDisable')}
                   value={twoFACode}
+                  autoComplete='one-time-code'
+                  inputMode='numeric'
                   placeholder={t('auth.signin.6digitCode')}
                   onChange={handle2FAInput}
                   disabled={is2FALoading}
@@ -548,6 +553,7 @@ const Signin = () => {
                 <Input
                   name='email'
                   type='email'
+                  autoComplete='email'
                   label={t('auth.common.email')}
                   error={getFieldError('email')}
                   placeholder='name@company.com'
@@ -557,6 +563,7 @@ const Signin = () => {
                 <Input
                   name='password'
                   type='password'
+                  autoComplete='current-password'
                   label={t('auth.common.password')}
                   labelCorner={
                     <Link

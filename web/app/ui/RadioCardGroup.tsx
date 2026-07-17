@@ -20,7 +20,7 @@ interface RadioCardGroupProps<T extends string> {
   options: RadioCardOption<T>[]
   value: T | null
   onChange: (value: T) => void
-  error?: string | boolean | null
+  error?: string | null
   disabled?: boolean
   className?: string
   /** When true, options stack with shared borders. Otherwise each card stands alone. */
@@ -167,7 +167,7 @@ export function RadioCardGroup<T extends string>({
           )
         })}
       </RadioGroup>
-      {isError && typeof error === 'string' ? (
+      {isError ? (
         <Text as='span' className='block' size='sm' colour='error' role='alert'>
           {error}
         </Text>

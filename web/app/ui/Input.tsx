@@ -5,7 +5,6 @@ import {
   Label,
 } from '@headlessui/react'
 import cx from 'clsx'
-import _isEmpty from 'lodash/isEmpty'
 import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react'
 import React, { memo, useState } from 'react'
 import { Text } from './Text'
@@ -16,7 +15,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   hint?: React.ReactNode
   leadingIcon?: React.ReactNode
   className?: string
-  error?: string | null | boolean
+  error?: string | null
   disabled?: boolean
   readOnly?: boolean
   classes?: {
@@ -43,7 +42,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
-    const isError = !_isEmpty(error)
+    const isError = Boolean(error)
     const type = rest.type || 'text'
     const isPassword = type === 'password'
     const hasLeadingIcon = Boolean(leadingIcon)
@@ -75,6 +74,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         invalid={isError}
         aria-invalid={isError || undefined}
         {...restWithoutType}
+        autoComplete={
+          rest.autoComplete ?? (isPassword ? 'current-password' : undefined)
+        }
         type={isPassword && showPassword ? 'text' : type}
       />
     )
@@ -158,15 +160,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ) : null}
         {inputWithAdornments}
         {isError ? (
-          <Text
-            as='span'
-            className='block'
-            size='sm'
-            colour='error'
-            role='alert'
-          >
-            {error}
-          </Text>
+          <Description as='div' role='alert'>
+            <Text as='span' className='block' size='sm' colour='error'>
+              {error}
+            </Text>
+          </Description>
         ) : null}
       </Field>
     )

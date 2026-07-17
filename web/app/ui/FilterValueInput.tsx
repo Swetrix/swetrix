@@ -126,6 +126,9 @@ interface FilterValueInputProps {
   isLoading?: boolean
   theme: string
   className?: string
+  // Commit the raw typed text on every keystroke instead of only on
+  // Enter / item selection. Used in forms where the value must never be lost.
+  commitOnType?: boolean
 }
 
 const FilterValueInput = ({
@@ -139,6 +142,7 @@ const FilterValueInput = ({
   isLoading,
   theme,
   className,
+  commitOnType,
 }: FilterValueInputProps) => {
   const { t } = useTranslation('common')
   const [inputValue, setInputValue] = useState('')
@@ -325,6 +329,9 @@ const FilterValueInput = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
     setInputValue(newValue)
+    if (commitOnType) {
+      onChange(newValue)
+    }
   }
 
   const handleSelectItem = (item: string) => {
