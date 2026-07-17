@@ -9,22 +9,17 @@ import {
   UsersIcon,
   CaretRightIcon,
 } from '@phosphor-icons/react'
-import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
 import { useLocation } from 'react-router'
 
-import type {
-  ErrorAffectedSession,
-  ErrorDetailsResponse,
-} from '~/api/api.server'
-import { useErrorSessionsProxy } from '~/hooks/useAnalyticsProxy'
+import { useErrorSessionsQuery } from '~/hooks/v2/useV2Queries'
 import {
   BROWSER_LOGO_MAP,
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
 } from '~/lib/constants'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import { Badge } from '~/ui/Badge'
 import Flag from '~/ui/Flag'
@@ -35,16 +30,13 @@ import { Text } from '~/ui/Text'
 import { getRelativeDateIfPossible } from '~/utils/date'
 import { cn } from '~/utils/generic'
 
+import type { ErrorDetailsInfo, ErrorSessionItem } from './types'
+
 const STACK_PREVIEW_LINES_COUNT = 5
 
 interface ErrorDetailsProps {
-  details: ErrorDetailsResponse['details']
+  details: ErrorDetailsInfo
   chart?: React.ReactNode
-  period?: string
-  from?: string
-  to?: string
-  timeBucket?: string
-  projectPassword?: string
 }
 
 const BrowserIcon = ({ browser }: { browser: string | null }) => {
@@ -148,7 +140,7 @@ const ToolbarButton = ({
 )
 
 interface SessionRowProps {
-  session: ErrorAffectedSession
+  session: ErrorSessionItem
   onClick?: () => void
 }
 
@@ -178,10 +170,10 @@ const SessionRow = ({ session, onClick }: SessionRowProps) => {
     >
       <div className='flex min-w-0 flex-1 items-center gap-3'>
         <div className='flex shrink-0 items-center gap-1.5'>
-          {session.cc ? (
+          {session.country ? (
             <Flag
               className='rounded-xs'
-              country={session.cc}
+              country={session.country}
               size={16}
               alt=''
               aria-hidden='true'
@@ -189,7 +181,7 @@ const SessionRow = ({ session, onClick }: SessionRowProps) => {
           ) : (
             <span className='inline-block size-4 rounded-xs bg-gray-200 dark:bg-slate-800' />
           )}
-          <BrowserIcon browser={session.br} />
+          <BrowserIcon browser={session.browser} />
           <OSIcon os={session.os} theme={theme} />
         </div>
         <div className='flex min-w-0 flex-col'>
@@ -215,40 +207,29 @@ const SessionRow = ({ session, onClick }: SessionRowProps) => {
   )
 }
 
-export const ErrorDetails = ({
-  details,
-  chart,
-  period = '7d',
-  from = '',
-  to = '',
-  timeBucket = 'hour',
-}: ErrorDetailsProps) => {
+export const ErrorDetails = ({ details, chart }: ErrorDetailsProps) => {
   const { t } = useTranslation('common')
-  const { id } = useCurrentProject()
-  const { fetchErrorSessions } = useErrorSessionsProxy()
 
   const [isStackTraceExpanded, setIsStackTraceExpanded] = useState(false)
   const [isCopiedStack, setIsCopiedStack] = useState(false)
   const [isCopiedEid, setIsCopiedEid] = useState(false)
   const [isCopiedFile, setIsCopiedFile] = useState(false)
 
-  const [sessions, setSessions] = useState<ErrorAffectedSession[]>([])
-  const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null)
-  const [sessionsTotal, setSessionsTotal] = useState(0)
-  const [sessionsSkip, setSessionsSkip] = useState(0)
   const [isSessionsModalOpened, setIsSessionsModalOpened] = useState(false)
   const sessionsModalListRef = useRef<HTMLDivElement | null>(null)
-  const isMountedRef = useRef(true)
 
   const SESSIONS_PREVIEW_COUNT = 5
-  const SESSIONS_MODAL_TAKE = 25
 
-  useEffect(() => {
-    isMountedRef.current = true
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [])
+  const sessionsQuery = useErrorSessionsQuery(details.eid)
+  const sessions = useMemo(
+    () =>
+      (sessionsQuery.data?.pages.flatMap((page) => page.data) ||
+        []) as ErrorSessionItem[],
+    [sessionsQuery.data],
+  )
+  const sessionsLoading = sessionsQuery.isLoading
+  const canLoadMoreSessions = Boolean(sessionsQuery.hasNextPage)
+  const sessionsCountLabel = `${sessions.length.toLocaleString()}${canLoadMoreSessions ? '+' : ''}`
 
   const status: { label: string; colour: 'red' | 'yellow' | 'slate' } =
     useMemo(() => {
@@ -265,7 +246,6 @@ export const ErrorDetails = ({
     () => (details.stackTrace ? details.stackTrace.split('\n') : []),
     [details.stackTrace],
   )
-  const canLoadMoreSessions = sessions.length < sessionsTotal
   const fileLocation = useMemo(() => {
     if (!details.filename) return ''
 
@@ -279,6 +259,7 @@ export const ErrorDetails = ({
     setIsCopiedStack(false)
     setIsCopiedEid(false)
     setIsCopiedFile(false)
+    setIsSessionsModalOpened(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [details.eid])
 
@@ -317,63 +298,6 @@ export const ErrorDetails = ({
       console.error('Failed to copy file location:', err)
     }
   }
-
-  const loadSessions = useCallback(
-    async (reset = false) => {
-      if (sessionsLoading) return
-
-      setSessionsLoading(true)
-      const skip = reset ? 0 : sessionsSkip
-
-      try {
-        const result = await fetchErrorSessions(id, details.eid, {
-          timeBucket,
-          period,
-          from,
-          to,
-          take: reset ? SESSIONS_PREVIEW_COUNT : SESSIONS_MODAL_TAKE,
-          skip,
-        })
-
-        if (!isMountedRef.current) return
-
-        if (result) {
-          if (reset) {
-            setSessions(result.sessions)
-          } else {
-            setSessions((prev) => [...prev, ...result.sessions])
-          }
-          setSessionsTotal(result.total)
-          setSessionsSkip(skip + result.sessions.length)
-        }
-      } catch (reason) {
-        console.error('[ErrorDetails] Failed to load sessions:', reason)
-      } finally {
-        if (isMountedRef.current) {
-          setSessionsLoading(false)
-        }
-      }
-    },
-    [
-      id,
-      details.eid,
-      timeBucket,
-      period,
-      from,
-      to,
-      sessionsLoading,
-      sessionsSkip,
-      fetchErrorSessions,
-    ],
-  )
-
-  useEffect(() => {
-    setSessions([])
-    setSessionsSkip(0)
-    setIsSessionsModalOpened(false)
-    loadSessions(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [details.eid, period, from, to])
 
   const formatStackTraceLine = (line: string) => {
     const atMatch = line.match(/(\s*at\s+)([^(]+)(\s*\(([^)]+)\))?/)
@@ -586,11 +510,7 @@ export const ErrorDetails = ({
             </span>
           }
           meta={
-            sessionsTotal > 0
-              ? sessionsTotal.toLocaleString()
-              : sessionsLoading && sessions.length === 0
-                ? '…'
-                : '0'
+            sessionsLoading && sessions.length === 0 ? '…' : sessionsCountLabel
           }
         >
           {sessionsLoading && sessions.length === 0 ? (
@@ -610,14 +530,15 @@ export const ErrorDetails = ({
                   <SessionRow key={session.psid} session={session} />
                 ))}
               </div>
-              {sessionsTotal > SESSIONS_PREVIEW_COUNT ? (
+              {sessions.length > SESSIONS_PREVIEW_COUNT ||
+              canLoadMoreSessions ? (
                 <button
                   type='button'
                   onClick={() => setIsSessionsModalOpened(true)}
                   className='flex w-full items-center justify-center gap-1.5 border-t border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100/60 hover:text-gray-900 dark:border-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800/40 dark:hover:text-slate-200'
                 >
                   {t('project.showAllXSessions', {
-                    x: sessionsTotal.toLocaleString(),
+                    x: sessionsCountLabel,
                   })}
                 </button>
               ) : null}
@@ -635,7 +556,7 @@ export const ErrorDetails = ({
             <UsersIcon className='size-4 text-gray-500 dark:text-slate-400' />
             {t('project.affectedSessionsList')}
             <Text size='xs' colour='muted' className='font-mono font-normal'>
-              {sessionsTotal.toLocaleString()}
+              {sessionsCountLabel}
             </Text>
           </span>
         }
@@ -655,9 +576,9 @@ export const ErrorDetails = ({
             </div>
             <InfiniteScrollTrigger
               hasMore={canLoadMoreSessions}
-              isLoading={!!sessionsLoading}
-              onLoadMore={() => loadSessions()}
-              disabled={!!sessionsLoading}
+              isLoading={sessionsQuery.isFetchingNextPage}
+              onLoadMore={() => sessionsQuery.fetchNextPage()}
+              disabled={sessionsQuery.isFetching}
               root={sessionsModalListRef}
             />
           </div>

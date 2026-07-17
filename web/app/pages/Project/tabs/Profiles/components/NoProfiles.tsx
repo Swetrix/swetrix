@@ -3,13 +3,13 @@ import { UserIcon, FunnelIcon } from '@phosphor-icons/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { V2Filter } from '~/api/v2/types'
 import Filters from '~/pages/Project/View/components/Filters'
-import { Filter } from '~/pages/Project/View/interfaces/traffic'
 import { typeNameMapping } from '~/pages/Project/View/ViewProject.helpers'
 import { Text } from '~/ui/Text'
 
 interface NoProfilesProps {
-  filters: Filter[]
+  filters: V2Filter[]
 }
 
 const NoProfiles = ({ filters }: NoProfilesProps) => {

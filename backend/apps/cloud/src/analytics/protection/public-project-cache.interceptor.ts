@@ -4,6 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
 import { Observable, of } from 'rxjs'
 import { tap } from 'rxjs/operators'
 
@@ -11,6 +12,7 @@ import { ProjectService } from '../../project/project.service'
 import { AppLoggerService } from '../../logger/logger.service'
 import { redis } from '../../common/constants'
 import { getSinglePid, getAnalyticsRoute } from './analytics-read.util'
+import { CACHEABLE_ANALYTICS_KEY } from './cacheable-analytics.decorator'
 
 const CACHE_TTL = Number(process.env.PUBLIC_PROJECT_CACHE_TTL) || 10 // seconds
 
@@ -29,11 +31,8 @@ const CACHEABLE_ROUTES = new Set([
   'error-overview',
   'funnel',
   'funnel-sessions',
-  'user-flow',
   'custom-events',
   'keywords',
-  'gsc-dashboard',
-  'gsc-details',
 ])
 
 /**
@@ -44,6 +43,7 @@ export class PublicProjectCacheInterceptor implements NestInterceptor {
   constructor(
     private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService,
+    private readonly reflector: Reflector,
   ) {}
 
   async intercept(
@@ -56,12 +56,19 @@ export class PublicProjectCacheInterceptor implements NestInterceptor {
       return next.handle()
     }
 
-    const route = getAnalyticsRoute(req.path || '')
-    if (!CACHEABLE_ROUTES.has(route)) {
-      return next.handle()
+    const isCacheableV2 = this.reflector.get<boolean>(
+      CACHEABLE_ANALYTICS_KEY,
+      context.getHandler(),
+    )
+
+    if (!isCacheableV2) {
+      const route = getAnalyticsRoute(req.path || '')
+      if (!CACHEABLE_ROUTES.has(route)) {
+        return next.handle()
+      }
     }
 
-    const pid = getSinglePid(req.query || {})
+    const pid = getSinglePid(req.query || {}, req.params || {})
     if (!pid) {
       return next.handle()
     }

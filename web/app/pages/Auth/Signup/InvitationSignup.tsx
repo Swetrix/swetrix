@@ -137,6 +137,7 @@ const InvitationSignup = () => {
           <Input
             name='password'
             type='password'
+            autoComplete='new-password'
             label={t('auth.common.password')}
             hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
             error={getFieldError('password')}

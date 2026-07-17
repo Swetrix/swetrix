@@ -1097,6 +1097,23 @@ export class ProjectController {
       }
     }
 
+    if (projectDTO.ipWhitelist !== undefined) {
+      if (!projectDTO.ipWhitelist) {
+        project.ipWhitelist = []
+      } else {
+        if (!Array.isArray(projectDTO.ipWhitelist)) {
+          throw new BadRequestException('ipWhitelist must be an array')
+        }
+
+        const MAX_IP_WHITELIST_ITEMS = 1000
+        if (projectDTO.ipWhitelist.length > MAX_IP_WHITELIST_ITEMS) {
+          throw new BadRequestException('ipWhitelist is too large')
+        }
+
+        project.ipWhitelist = _map(projectDTO.ipWhitelist, _trim) as string[]
+      }
+    }
+
     if (projectDTO.countryBlacklist !== undefined) {
       if (projectDTO.countryBlacklist) {
         if (!Array.isArray(projectDTO.countryBlacklist)) {

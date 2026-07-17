@@ -106,6 +106,40 @@ const TRAFFIC_COLUMNS = [
 const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev', 'entryPage', 'exitPage']
+
+const V2_VIEW_FILTER_DIMENSIONS = [
+  'country',
+  'region',
+  'city',
+  'page',
+  'host',
+  'locale',
+  'browser',
+  'browser_version',
+  'os',
+  'os_version',
+  'device',
+  'referrer',
+  'referrer_name',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'isp',
+  'organization',
+  'user_type',
+  'connection_type',
+  'entry_page',
+  'exit_page',
+  'event',
+  'error_name',
+  'error_message',
+  'error_filename',
+  'event_metadata',
+  'page_property',
+]
+
 const CAPTCHA_COLUMNS = [
   'cc',
   'br',
@@ -228,6 +262,7 @@ export {
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
   TRAFFIC_METAKEY_COLUMNS,
+  V2_VIEW_FILTER_DIMENSIONS,
   CAPTCHA_COLUMNS,
   ERROR_COLUMNS,
   PERFORMANCE_COLUMNS,

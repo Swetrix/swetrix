@@ -5,7 +5,7 @@ import {
   CopyIcon,
   MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import type { MetaFunction } from 'react-router'
 import { redirect, useFetcher, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
@@ -96,6 +96,34 @@ const MAP_MARKER_STYLE = `
 .dark .leaflet-control-zoom a:hover { background-color: rgb(15 23 42) !important; color: rgb(255 255 255) !important; }
 `
 
+function FlyToLocation({
+  latitude,
+  longitude,
+  useMap,
+}: LocationMapProps & { useMap: typeof import('react-leaflet').useMap }) {
+  const map = useMap()
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches
+
+    if (prefersReducedMotion) {
+      map.setView([latitude, longitude], 11, { animate: false })
+    } else {
+      map.flyTo([latitude, longitude], 11)
+    }
+  }, [map, latitude, longitude])
+
+  return null
+}
+
 function LocationMap({ latitude, longitude }: LocationMapProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -137,7 +165,7 @@ function LocationMap({ latitude, longitude }: LocationMapProps) {
     )
   }
 
-  const { MapContainer, TileLayer, Marker } = modules.rl
+  const { MapContainer, TileLayer, Marker, useMap } = modules.rl
 
   const tileUrl = isDark
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
@@ -170,13 +198,18 @@ function LocationMap({ latitude, longitude }: LocationMapProps) {
           url={tileUrl}
         />
         <Marker position={[latitude, longitude]} icon={icon} />
+        <FlyToLocation
+          latitude={latitude}
+          longitude={longitude}
+          useMap={useMap}
+        />
       </MapContainer>
 
       <a
         href={gmapsUrl}
         target='_blank'
         rel='noopener noreferrer'
-        className='absolute right-3 bottom-3 inline-flex items-center gap-1.5 rounded-md bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:text-gray-900 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:text-white'
+        className='absolute right-3 bottom-3 z-[1000] inline-flex items-center gap-1.5 rounded-md bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:text-gray-900 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:text-white'
       >
         Open in Google Maps
         <ArrowSquareOutIcon className='size-3' weight='bold' />

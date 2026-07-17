@@ -54,7 +54,7 @@ export class AnalyticsReadGuard implements CanActivate {
 
     let isPublicProject = false
     try {
-      const pid = getSinglePid(req.query || {})
+      const pid = getSinglePid(req.query || {}, req.params || {})
       if (pid) {
         const project = await this.projectService.getRedisProject(pid)
         isPublicProject = Boolean(project?.public)

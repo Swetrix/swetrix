@@ -3,15 +3,15 @@ import _isEmpty from 'lodash/isEmpty'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { V2Filter } from '~/api/v2/types'
 import { Text } from '~/ui/Text'
 
 import Filters from '../../View/components/Filters'
-import { Filter } from '../../View/interfaces/traffic'
 
 import { captchaTypeNameMapping } from './CaptchaView'
 
 interface NoCaptchaEventsProps {
-  filters: Filter[]
+  filters: V2Filter[]
 }
 
 const NoCaptchaEvents = ({ filters }: NoCaptchaEventsProps) => {

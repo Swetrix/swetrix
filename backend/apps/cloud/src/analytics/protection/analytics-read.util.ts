@@ -1,13 +1,7 @@
 import _isString from 'lodash/isString'
 
-import { getIPFromHeaders } from '../../common/utils'
-
-const TRUSTED_PROXY_IPS = new Set(
-  (process.env.TRUSTED_PROXY_IPS || '')
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean),
-)
+import { PID_REGEX } from '../../common/constants'
+import { getIPFromHeaders, TRUSTED_PROXY_IPS } from '../../common/utils'
 
 const firstHeaderValue = (value: unknown): string => {
   if (_isString(value) && value) {
@@ -36,8 +30,21 @@ export const getTrustworthyIp = (req: {
   return getIPFromHeaders(req.headers) || req.ip || ''
 }
 
-export const getSinglePid = (query: Record<string, unknown>): string | null => {
+export const getSinglePid = (
+  query: Record<string, unknown>,
+  params?: Record<string, unknown>,
+): string | null => {
+  const paramPid = params?.pid
+
+  if (_isString(paramPid) && PID_REGEX.test(paramPid)) {
+    return paramPid
+  }
+
   const { pid, pids } = query
+
+  if (pid !== undefined && pids !== undefined) {
+    return null
+  }
 
   if (_isString(pid) && pid) {
     return pid

@@ -58,6 +58,7 @@ const ForgotPassword = () => {
               <Input
                 name='email'
                 type='email'
+                autoComplete='email'
                 label={t('auth.common.email')}
                 error={actionData?.fieldErrors?.email}
                 placeholder='name@company.com'

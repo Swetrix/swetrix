@@ -304,6 +304,7 @@ const Signup = () => {
             <Input
               name='email'
               type='email'
+              autoComplete='email'
               label={t('auth.common.email')}
               error={getFieldError('email')}
               placeholder='name@company.com'
@@ -314,6 +315,7 @@ const Signup = () => {
               <Input
                 name='password'
                 type='password'
+                autoComplete='new-password'
                 label={t('auth.common.password')}
                 hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
                 error={getFieldError('password')}

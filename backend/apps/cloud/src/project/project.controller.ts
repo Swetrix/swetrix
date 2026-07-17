@@ -1808,6 +1808,17 @@ export class ProjectController {
           : null
     }
 
+    if (projectDTO.ipWhitelist !== undefined) {
+      project.ipWhitelist =
+        Array.isArray(projectDTO.ipWhitelist) &&
+        projectDTO.ipWhitelist.length > 0
+          ? (_map(
+              projectDTO.ipWhitelist.slice(0, BLACKLIST_ITEMS_MAXIMUM),
+              _trim,
+            ) as string[])
+          : null
+    }
+
     if (projectDTO.countryBlacklist !== undefined) {
       project.countryBlacklist =
         projectDTO.countryBlacklist &&

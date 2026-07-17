@@ -63,7 +63,7 @@ export interface LibOptions {
    */
   respectDNT?: boolean
 
-  /** Set a custom URL of the API server (for selfhosted variants of Swetrix). */
+  /** Set a custom URL of the API server; the default value is "https://api.swetrix.com/log"  */
   apiURL?: string
 
   /**
@@ -1553,12 +1553,17 @@ export class Lib {
 
   private async sendRequest(path: string, body: object): Promise<void> {
     const host = this.options?.apiURL || DEFAULT_API_HOST
+    const payload = JSON.stringify(body)
     await fetch(`${host}/${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
+      // Lets the request survive page unloads (e.g. tracking an outbound
+      // link click). Browsers reject keepalive bodies over ~64 KB, so
+      // oversized payloads fall back to a regular request.
+      keepalive: payload.length < 60_000,
+      body: payload,
     })
   }
 }

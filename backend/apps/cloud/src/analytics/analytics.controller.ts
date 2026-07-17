@@ -43,16 +43,18 @@ import {
   DataType,
   getLowestPossibleTimeBucket,
 } from './analytics.service'
+import { normalizeFiltersToV1Json } from './v2/query/filters.translator'
 import { VALID_PERIODS } from './decorators/validate-period.decorator'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { PageviewsDto } from './dto/pageviews.dto'
 import { EventsDto } from './dto/events.dto'
-import { GetDataDto, ChartRenderMode, TimeBucketType } from './dto/getData.dto'
+import { GetDataDto, ChartRenderMode } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
-import { GetUserFlowDto } from './dto/getUserFlow.dto'
+import { GetJourneysDto } from './dto/get-journeys.dto'
+import { GetJourneySessionsDto } from './dto/get-journey-sessions.dto'
 import { GetFunnelsDto } from './dto/getFunnels.dto'
 import { GetFunnelSessionsDto } from './dto/get-funnel-sessions.dto'
 import { AppLoggerService } from '../logger/logger.service'
@@ -74,13 +76,7 @@ import {
   DataDeletionPreviewDto,
 } from './dto/data-deletion.dto'
 import { GetVersionFiltersDto } from './dto/get-version-filters.dto'
-import {
-  IFunnel,
-  IGetFunnel,
-  IPageProperty,
-  IUserFlow,
-  PerfMeasure,
-} from './interfaces'
+import { IFunnel, IGetFunnel, IPageProperty, PerfMeasure } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
 import {
@@ -113,7 +109,7 @@ import { LiveVisitorsDto } from './dto/live-visitors.dto'
 import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 import { GetKeywordsDto } from './dto/get-keywords.dto'
 import { GetBotStatsDto } from './dto/get-bot-stats.dto'
-import { GSCService } from '../project/gsc.service'
+import { GSC_ALL_TIME_DAYS, GSCService } from '../project/gsc.service'
 import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
 import { ExperimentService } from '../experiment/experiment.service'
 import {
@@ -132,9 +128,6 @@ const DEFAULT_MEASURE = 'median'
 const BOT_RESPONSE = { message: 'Bot traffic detected, request is ignored' }
 
 const ONLINE_VISITORS_WINDOW_MINUTES = 5 // minutes
-
-// Maximum range for "all time" GSC queries (~16 months, GSC's data retention)
-const GSC_ALL_TIME_DAYS = 480
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
@@ -278,6 +271,7 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
       metrics,
+      includeConcurrency,
     } = data
 
     await this.analyticsService.checkProjectAccess(
@@ -385,6 +379,7 @@ export class AnalyticsController {
         customEVFilterApplied,
         appliedFilters,
         mode,
+        includeConcurrency === 'true',
       )
     }
 
@@ -541,11 +536,15 @@ export class AnalyticsController {
         }
       })(),
       (async () => {
-        timeToConvert = await this.analyticsService.getFunnelTimeToConvert(
-          pagesArr,
-          params,
-          filtersQuery,
-        )
+        try {
+          timeToConvert = await this.analyticsService.getFunnelTimeToConvert(
+            pagesArr,
+            params,
+            filtersQuery,
+          )
+        } catch (e) {
+          this.logger.error(e, 'GET /analytics/funnel - getFunnelTimeToConvert')
+        }
       })(),
     ]
 
@@ -799,6 +798,7 @@ export class AnalyticsController {
       filters,
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
+      includeConcurrency,
     } = data
 
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
@@ -841,6 +841,7 @@ export class AnalyticsController {
       safeTimezone,
       customEVFilterApplied,
       mode,
+      includeConcurrency === 'true',
     )
 
     return { ...result, appliedFilters }
@@ -1016,13 +1017,13 @@ export class AnalyticsController {
     return this.getData(data, uid, {}, true)
   }
 
-  @Get('user-flow')
+  @Get('journeys')
   @Auth(true, true)
-  async getUserFlow(
-    @Query() data: GetUserFlowDto,
+  async getJourneys(
+    @Query() data: GetJourneysDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<IUserFlow | { appliedFilters: any[] }> {
+  ) {
     const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, filters } = data
 
     await this.analyticsService.checkProjectAccess(
@@ -1033,9 +1034,12 @@ export class AnalyticsController {
 
     await this.analyticsService.checkBillingAccess(pid)
 
+    const steps = this.analyticsService.getSafeNumber(data.steps, 3)
+    const journeys = this.analyticsService.getSafeNumber(data.journeys, 20)
+
     this.logger.log(
-      `pid: ${pid}, period: ${period}`,
-      'GET /analytics/user-flow',
+      `pid: ${pid}, period: ${period}, steps: ${steps}, journeys: ${journeys}`,
+      'GET /analytics/journeys',
     )
 
     let diff
@@ -1060,13 +1064,119 @@ export class AnalyticsController {
     )
 
     const [filtersQuery, filtersParams, appliedFilters] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS, true)
+      this.analyticsService.getFiltersQuery(
+        normalizeFiltersToV1Json(filters, 'traffic'),
+        DataType.ANALYTICS,
+        true,
+      )
 
     const params = { pid, groupFrom, groupTo, ...filtersParams }
 
-    const flow = await this.analyticsService.getUserFlow(params, filtersQuery)
+    let nodeDetails = []
+    let linkDetails = []
 
-    return { ...flow, appliedFilters }
+    const [flow] = await Promise.all([
+      this.analyticsService.getJourneys(params, filtersQuery, steps, journeys),
+      (async () => {
+        try {
+          const details = await this.analyticsService.getJourneyNodeDetails(
+            params,
+            filtersQuery,
+            steps,
+            journeys,
+          )
+          nodeDetails = details.nodes
+          linkDetails = details.links
+        } catch (e) {
+          this.logger.error(
+            e,
+            'GET /analytics/journeys - getJourneyNodeDetails',
+          )
+        }
+      })(),
+    ])
+
+    return { ...flow, nodeDetails, linkDetails, appliedFilters }
+  }
+
+  @Get('journey-sessions')
+  @Auth(true, true)
+  async getJourneySessions(
+    @Query() data: GetJourneySessionsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      step,
+      page,
+      filters,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 150',
+      )
+    }
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, step: ${step}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/journey-sessions',
+    )
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'pageview',
+      )
+
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      normalizeFiltersToV1Json(filters, 'traffic'),
+      DataType.ANALYTICS,
+    )
+    const params = { pid, groupFrom, groupTo, ...filtersParams }
+
+    const sessions = await this.analyticsService.getJourneySessionsList(
+      params,
+      safeTimezone,
+      step,
+      page,
+      take,
+      skip,
+      filtersQuery,
+    )
+
+    return { sessions, take, skip }
   }
 
   @Get('keywords')
@@ -1102,139 +1212,6 @@ export class AnalyticsController {
 
     const keywords = await this.gscService.getKeywords(pid, groupFrom, groupTo)
     return { keywords }
-  }
-
-  @Get('gsc-dashboard')
-  @Auth(true, true)
-  async getGSCDashboard(
-    @Query() data: GetKeywordsDto,
-    @CurrentUserId() uid: string,
-    @Headers() headers: { 'x-password'?: string },
-  ) {
-    const {
-      pid,
-      period,
-      from,
-      to,
-      timezone = DEFAULT_TIMEZONE,
-      timeBucket,
-      filters,
-    } = data
-
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
-
-    await this.analyticsService.checkBillingAccess(pid)
-
-    const defaultTimeBucket = ['1h', 'today', 'yesterday', '1d'].includes(
-      period,
-    )
-      ? TimeBucketType.HOUR
-      : TimeBucketType.DAY
-    const finalTimeBucket = (timeBucket || defaultTimeBucket) as TimeBucketType
-    let groupTimeBucket: TimeBucketType | null = finalTimeBucket
-    if (period === 'all' || period === 'custom') {
-      groupTimeBucket = null
-    }
-
-    this.logger.log(
-      `pid: ${pid}, period: ${period}, timeBucket: ${finalTimeBucket}, filters: ${filters}`,
-      'GET /analytics/gsc-dashboard',
-    )
-
-    const diff = period === 'all' ? GSC_ALL_TIME_DAYS : undefined
-
-    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      groupTimeBucket,
-      period,
-      safeTimezone,
-      diff,
-    )
-
-    return this.gscService.getDashboard(
-      pid,
-      groupFrom,
-      groupTo,
-      finalTimeBucket,
-      filters,
-    )
-  }
-
-  @Get('gsc-details')
-  @Auth(true, true)
-  async getGSCDetails(
-    @Query() data: GetKeywordsDto,
-    @CurrentUserId() uid: string,
-    @Headers() headers: { 'x-password'?: string },
-  ) {
-    const {
-      pid,
-      period,
-      from,
-      to,
-      timezone = DEFAULT_TIMEZONE,
-      page,
-      query,
-    } = data
-
-    this.logger.log(
-      `pid: ${pid}, period: ${period}, page: ${page}, query: ${query}`,
-      'GET /analytics/gsc-details',
-    )
-
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
-
-    await this.analyticsService.checkBillingAccess(pid)
-
-    const diff = period === 'all' ? GSC_ALL_TIME_DAYS : undefined
-
-    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      null,
-      period,
-      safeTimezone,
-      diff,
-    )
-
-    if (page) {
-      const keywords = await this.gscService.getKeywords(
-        pid,
-        groupFrom,
-        groupTo,
-        50,
-        0,
-        undefined,
-        page,
-      )
-      return { type: 'queries', data: keywords }
-    }
-
-    if (query) {
-      const pages = await this.gscService.getTopPages(
-        pid,
-        groupFrom,
-        groupTo,
-        50,
-        0,
-        undefined,
-        query,
-      )
-      return { type: 'pages', data: pages }
-    }
-
-    return { type: 'none', data: [] }
   }
 
   @Get('birdseye')
@@ -2431,7 +2408,10 @@ export class AnalyticsController {
     )
 
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+      this.analyticsService.getFiltersQuery(
+        normalizeFiltersToV1Json(filters, 'traffic'),
+        DataType.ANALYTICS,
+      )
 
     let timeBucket
     let diff
@@ -2897,7 +2877,7 @@ export class AnalyticsController {
 
     return this.analyticsService.getDataDeletionPreview(
       body.pid,
-      body.filters || '[]',
+      normalizeFiltersToV1Json(body.filters, 'traffic'),
       body.from || null,
       body.to || null,
     )
@@ -2921,7 +2901,7 @@ export class AnalyticsController {
 
     await this.analyticsService.deleteData(
       body.pid,
-      body.filters || '[]',
+      normalizeFiltersToV1Json(body.filters, 'traffic'),
       body.from || null,
       body.to || null,
       body.types,

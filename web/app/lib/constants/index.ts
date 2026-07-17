@@ -225,58 +225,6 @@ export const PERIOD_PAIRS_COMPARE = {
   DISABLE: 'disable',
 } as const
 
-// the order of panels in the project view
-export const TRAFFIC_PANELS_ORDER = [
-  'location',
-  'pg',
-  'devices',
-  'traffic-sources',
-  'network',
-]
-export const PERFORMANCE_PANELS_ORDER = ['location', 'pg', 'devices', 'network']
-export const ERROR_PANELS_ORDER = ['location', 'pg', 'devices', 'network']
-export const FILTERS_PANELS_ORDER = [
-  'pg',
-  'entryPage',
-  'exitPage',
-  'host',
-  'cc',
-  'rg',
-  'ct',
-  'lc',
-  'dv',
-  'br',
-  'brv',
-  'os',
-  'osv',
-  'ref',
-  'so',
-  'me',
-  'ca',
-  'te',
-  'co',
-  'isp',
-  'og',
-  'ut',
-  'ctp',
-]
-export const ERRORS_FILTERS_PANELS_ORDER = [
-  'cc',
-  'rg',
-  'ct',
-  'pg',
-  'br',
-  'brv',
-  'os',
-  'osv',
-  'lc',
-  'dv',
-  'isp',
-  'og',
-  'ut',
-  'ctp',
-]
-
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
 export const MAX_MONTHS_IN_PAST = 24
 
@@ -542,7 +490,7 @@ export const localisePath = (pathname: string, lang: string): string => {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 46
+export const I18N_CACHE_BREAKER = 47
 
 export const roles: Role[] = ['admin', 'viewer']
 
@@ -561,6 +509,7 @@ const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
   seo: 'seo',
+  journeys: 'journeys',
   funnels: 'funnels',
   profiles: 'profiles',
   sessions: 'sessions',
@@ -578,6 +527,7 @@ const PRODUCTION_PROJECT_TABS = {
   seo: 'seo',
   ads: 'ads',
   profiles: 'profiles',
+  journeys: 'journeys',
   funnels: 'funnels',
   sessions: 'sessions',
   replays: 'replays',
@@ -713,6 +663,7 @@ export const BROWSER_LOGO_MAP = {
   Instagram: '/assets/instagram.svg',
   LinkedIn: '/assets/linkedin.svg',
   Twitter: '/assets/twitter.svg',
+  TikTok: '/assets/tiktok.svg',
 }
 
 export const OS_LOGO_MAP = {

@@ -46,6 +46,7 @@ async function bootstrap() {
       .setTitle('Swetrix API')
       .setVersion(process.env.npm_package_version)
       .addBearerAuth()
+      .addApiKey({ type: 'apiKey', name: 'X-Api-Key', in: 'header' }, 'apiKey')
       .build()
     const document = SwaggerModule.createDocument(app, config)
     SwaggerModule.setup('api', app, document)

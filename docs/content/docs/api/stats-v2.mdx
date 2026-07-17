@@ -1,0 +1,694 @@
+---
+title: Statistics API v2 reference
+slug: /statistics-api-v2
+---
+
+The v2 statistics API is a redesigned, per-dimension read API for your analytics data. Instead of one monolithic response, each endpoint returns exactly one kind of data — a summary, a timeseries, or a breakdown by a single dimension — so you can fetch only what you need and compose your own dashboards.
+
+The v1 API ([Statistics API reference](/statistics-api)) keeps working; v2 is additive.
+
+## Authentication
+
+Each request must be authenticated with an API key using the `X-Api-Key` HTTP header. You can obtain an API key in your Swetrix [account settings](https://swetrix.com/user-settings). Public projects can be queried without a key.
+
+Rate limits are the same as for v1 and depend on your plan (Standard: 300 requests/hour, Plus: 6000 requests/hour, Enterprise: custom).
+
+## Concepts
+
+### Base URL and project scoping
+
+All v2 endpoints are scoped to a project by path:
+
+```
+https://api.swetrix.com/v2/projects/{pid}/...
+```
+
+### Response envelope
+
+Every endpoint returns the same envelope:
+
+```json
+{
+  "data": "<the payload>",
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "period": "7d",
+    "from": "2026-07-01T00:00:00+03:00",
+    "to": "2026-07-07T23:59:59+03:00",
+    "timezone": "Europe/Kyiv",
+    "appliedFilters": []
+  }
+}
+```
+
+`meta` echoes the resolved request parameters (the exact time bounds used, the applied filters, pagination, etc.), so you never have to guess how the API interpreted your query.
+
+### Periods and custom ranges
+
+- `period` — one of `1h`, `today`, `yesterday`, `1d`, `7d` (default), `4w`, `3M`, `12M`, `24M`, `all`.
+- `from` + `to` — ISO 8601 dates (`2026-06-01`) or datetimes, always provided together. Mutually exclusive with `period`.
+- `timezone` — any IANA timezone (default `Etc/GMT`). Applied to time bucketing and date boundaries.
+
+### Time buckets
+
+`timeBucket` is one of `minute`, `hour`, `day`, `month`, `year`. On v2 timeseries endpoints it is **optional** — when omitted, the API picks the finest bucket allowed for the requested range. For `period=all`, `meta.allowedTimeBuckets` lists the buckets you may request.
+
+### Metrics
+
+`metrics` is a comma-separated list of metric names, validated per data type. Each endpoint has sensible defaults. Discover all metrics for a data type via the [dimensions endpoint](#get-v2projectspiddimensions).
+
+| Data type   | Metrics                                                                                                                                                                                                                                                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| traffic     | `visitors` (unique sessions), `pageviews`, `users` (unique profiles; breakdown/summary only), `session_duration` (timeseries/summary only), `bounce_rate` (timeseries/summary only), `concurrency` (live visitors over time; timeseries only, zero-filled when filters are applied) |
+| performance | `load_time`, `ttfb`, `dns`, `tls`, `connection`, `response`, `render`, `dom_load` — all in seconds, aggregated by `measure`                                                                                                                                                         |
+| errors      | `occurrences`, `affected_users`                                                                                                                                                                                                                                                     |
+| captcha     | `events` (breakdown), `generated`, `passed`, `failed`, `validation_failed`, `replayed` (timeseries/summary)                                                                                                                                                                         |
+| seo         | `clicks`, `impressions`, `ctr` (percentage), `position` (average search position) — all four returned by default                                                                                                                                                                    |
+
+### Dimensions
+
+Dimensions use human-readable names (mapped internally onto the v1 short codes):
+
+| Dimension                                                                 | v1 code                          | Notes                                                    |
+| ------------------------------------------------------------------------- | -------------------------------- | -------------------------------------------------------- |
+| `country`                                                                 | `cc`                             | ISO 3166-1 alpha-2                                       |
+| `region`                                                                  | `rg`                             | rows include `country`, `region_code`                    |
+| `city`                                                                    | `ct`                             | rows include `country`                                   |
+| `page`                                                                    | `pg`                             |                                                          |
+| `host`                                                                    | `host`                           |                                                          |
+| `locale`                                                                  | `lc`                             |                                                          |
+| `browser`                                                                 | `br`                             |                                                          |
+| `browser_version`                                                         | `brv`                            | rows include `browser`                                   |
+| `os`                                                                      | `os`                             |                                                          |
+| `os_version`                                                              | `osv`                            | rows include `os`                                        |
+| `device`                                                                  | `dv`                             |                                                          |
+| `referrer`                                                                | `ref`                            |                                                          |
+| `referrer_name`                                                           | `refn`                           | filter-only (canonical root domain)                      |
+| `utm_source` / `utm_medium` / `utm_campaign` / `utm_term` / `utm_content` | `so` / `me` / `ca` / `te` / `co` |                                                          |
+| `isp` / `organization` / `user_type` / `connection_type`                  | `isp` / `og` / `ut` / `ctp`      |                                                          |
+| `entry_page` / `exit_page`                                                | —                                | session-scoped virtual dimensions                        |
+| `event`                                                                   | `ev`                             | filter-only; use `/traffic/custom-events` for breakdowns |
+| `event_metadata`                                                          | `ev:key:<key>`                   | filter-only, takes a `key`                               |
+| `page_property`                                                           | `tag:key:<key>`                  | filter-only, takes a `key`                               |
+| `error_name` / `error_message` / `error_filename`                         | —                                | errors, filter-only                                      |
+| `captcha_event` / `captcha_difficulty` / `captcha_reason` / `solve_time`  | —                                | captcha only                                             |
+| `query`                                                                   | `keywords`                       | seo only — the search query                              |
+
+Which dimensions apply to which data type is discoverable via [`GET /v2/projects/:pid/dimensions`](#get-v2projectspiddimensions).
+
+### Filters
+
+`filters` is a JSON array of filter objects with explicit operators:
+
+```json
+[
+  { "dimension": "country", "operator": "is", "value": ["US", "DE"] },
+  { "dimension": "page", "operator": "contains", "value": "/blog" },
+  { "dimension": "event_metadata", "key": "plan", "operator": "is_not", "value": "free" }
+]
+```
+
+- **operator** — `is`, `is_not`, `contains`, `contains_not`.
+- **value** — a string, `null` (matches unknown/unset values), or an array (values are OR-ed).
+- **key** — required for `event_metadata` and `page_property` filters; selects the metadata key.
+
+Unknown dimensions or operators are rejected with a `422` and a message listing the supported values.
+
+### Pagination and sorting
+
+Breakdown and list endpoints accept `limit` (default 30) and `offset`. Breakdown responses include `meta.total` — the total number of dimension values — for pagination. Breakdowns also accept `sort=field:direction` where `field` is `value` or any selected metric and `direction` is `asc` or `desc` (default: first selected metric, descending).
+
+The `seo` data type is the exception on both counts: Google Search Console reports no row total and offers no sort control, so `/seo/breakdown` omits `meta.total` and always orders by clicks descending. Page through it until you get fewer rows than you asked for.
+
+### Measure (performance)
+
+Performance endpoints accept `measure`: `median` (default), `average`, `p75`, `p95`. The special `quantiles` measure is only meaningful on `/performance/timeseries`, where it returns `p50`/`p75`/`p95` of the total load time.
+
+## Traffic endpoints
+
+### GET /v2/projects/:pid/traffic/summary
+
+Key traffic metrics for the selected period, the previous period of the same length, and the change between them (the v2 equivalent of v1 `birdseye`, one project per request).
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/summary?period=7d' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": {
+    "current": {
+      "visitors": 1043,
+      "pageviews": 2911,
+      "users": 402,
+      "bounce_rate": 43.1,
+      "session_duration": 74
+    },
+    "previous": {
+      "visitors": 980,
+      "pageviews": 2700,
+      "users": 371,
+      "bounce_rate": 45,
+      "session_duration": 69
+    },
+    "change": {
+      "visitors": 63,
+      "pageviews": 211,
+      "users": 31,
+      "bounce_rate": -1.9,
+      "session_duration": 5
+    }
+  },
+  "meta": { "pid": "YOUR_PROJECT_ID", "period": "7d", "timezone": "Etc/GMT", "appliedFilters": [] }
+}
+```
+
+### GET /v2/projects/:pid/traffic/timeseries
+
+Traffic metrics grouped by time bucket, returned as self-describing rows with ISO 8601 timestamps (no index-aligned arrays).
+
+Parameters: `period`/`from`+`to`, `timezone`, `timeBucket` (optional), `metrics` (default `visitors,pageviews`; also `session_duration`, `bounce_rate`, `concurrency`), `mode` (`periodical` default, or `cumulative`), `filters`.
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/timeseries?period=7d&metrics=visitors,pageviews,bounce_rate&timezone=Europe/Kyiv' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": [
+    {
+      "timestamp": "2026-07-01T00:00:00+03:00",
+      "visitors": 120,
+      "pageviews": 340,
+      "bounce_rate": 41.2
+    },
+    {
+      "timestamp": "2026-07-02T00:00:00+03:00",
+      "visitors": 98,
+      "pageviews": 275,
+      "bounce_rate": 44
+    }
+  ],
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "period": "7d",
+    "timezone": "Europe/Kyiv",
+    "timeBucket": "day",
+    "allowedTimeBuckets": null,
+    "metrics": ["visitors", "pageviews", "bounce_rate"],
+    "mode": "periodical",
+    "appliedFilters": []
+  }
+}
+```
+
+The `concurrency` metric returns the number of concurrent live visitors over time (the "live visitors" series in the dashboard's traffic chart), reconstructed from session activity. It is only computed when explicitly requested. Because it is derived from session intervals — which carry no dimension data — it cannot be segmented: when `filters` are applied, or the requested range exceeds one year, the series is zero-filled. For the `minute` time bucket it is the exact number of visitors active during that minute; for larger buckets it is the peak concurrency within the bucket.
+
+### GET /v2/projects/:pid/traffic/breakdown
+
+Traffic metrics grouped by **one dimension** — the building block for custom dashboards. Paginated, sortable, multi-metric.
+
+Parameters: `dimension` (required), `metrics` (default `visitors,pageviews`), `limit` (max 100), `offset`, `sort`, plus the usual time range and `filters`.
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/breakdown?dimension=region&metrics=visitors,pageviews&period=4w&limit=2&sort=visitors:desc' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": [
+    {
+      "value": "Kyiv City",
+      "country": "UA",
+      "region_code": "30",
+      "visitors": 512,
+      "pageviews": 1204
+    },
+    { "value": "Bavaria", "country": "DE", "region_code": "BY", "visitors": 301, "pageviews": 700 }
+  ],
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "dimension": "region",
+    "metrics": ["visitors", "pageviews"],
+    "total": 34,
+    "limit": 2,
+    "offset": 0,
+    "sort": "visitors:desc",
+    "period": "4w",
+    "timezone": "Etc/GMT",
+    "appliedFilters": []
+  }
+}
+```
+
+Notes:
+
+- `entry_page` and `exit_page` are session-scoped: they only support the `visitors` metric and cannot be combined with custom-event filters (the API returns a `422` explaining why, instead of silently returning empty data like v1).
+- `session_duration` and `bounce_rate` are not computable per dimension value; request them on the timeseries or summary endpoints.
+- When a custom-event filter (`event`, `event_metadata`) is applied, the base event set becomes custom events and `visitors` counts matched events (v1 semantics preserved).
+
+### GET /v2/projects/:pid/traffic/custom-events
+
+Counts of custom events in the selected period: `data: [{ "event": "signup", "count": 10 }, ...]` with `meta.total`, `limit`, `offset`.
+
+### GET /v2/projects/:pid/traffic/custom-events/timeseries
+
+Occurrence counts for specific custom events over time. `events` is a comma-separated list (or JSON array) of event names.
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/custom-events/timeseries?events=signup,purchase&period=7d' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response (data)"
+[
+  { "timestamp": "2026-07-01T00:00:00Z", "signup": 4, "purchase": 1 },
+  { "timestamp": "2026-07-02T00:00:00Z", "signup": 7, "purchase": 3 }
+]
+```
+
+### GET /v2/projects/:pid/traffic/custom-events/metadata
+
+Aggregated metadata key/value counts for one custom event (v1 `/log/meta` equivalent). Requires `event`; returns `data: [{ "key": "Affiliate", "value": "Yes", "count": 1 }, ...]`.
+
+### GET /v2/projects/:pid/traffic/custom-metrics
+
+Sum / average of numeric custom event metadata values for the selected period and the previous one (powers dashboard "custom metric" cards). `metrics` is a JSON array of metric definitions (`{ "customEventName", "metaKey", "metaValueType": "integer" | "float" }`). Returns `data: [{ "key": "<metaKey>", "current": { "sum", "avg" }, "previous": { "sum", "avg" } }, ...]`.
+
+### GET /v2/projects/:pid/traffic/page-properties
+
+Counts of pageview metadata (page property) keys: `data: [{ "property": "author", "count": 30 }, ...]`. Cannot be combined with custom-event filters (`422`).
+
+### GET /v2/projects/:pid/traffic/page-properties/metadata
+
+Aggregated value counts for one page property (v1 `/log/property` equivalent). Requires `property`.
+
+## Performance endpoints
+
+### GET /v2/projects/:pid/performance/summary
+
+Aggregated `frontend` (render + DOM load), `network` (DNS + TLS + connection + response) and `backend` (TTFB) timings in seconds for the current and previous period, plus the change. Accepts `measure`.
+
+```json title="Response (data)"
+{
+  "current": { "frontend": 1.32, "network": 0.42, "backend": 0.14 },
+  "previous": { "frontend": 1.11, "network": 0.16, "backend": 0.11 },
+  "change": { "frontend": 0.21, "network": 0.26, "backend": 0.03 }
+}
+```
+
+### GET /v2/projects/:pid/performance/timeseries
+
+Performance timings per time bucket (seconds). Default metrics: all of `dns`, `tls`, `connection`, `response`, `render`, `dom_load`, `ttfb`. With `measure=quantiles`, rows contain `p50`/`p75`/`p95` of the total load time instead.
+
+### GET /v2/projects/:pid/performance/breakdown
+
+Performance timings grouped by one dimension. Default metric: `load_time`. Accepts `measure`, `metrics`, `limit`/`offset`/`sort`.
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/performance/breakdown?dimension=country&metrics=load_time,ttfb&measure=p95&period=7d' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+## Captcha endpoints
+
+### GET /v2/projects/:pid/captcha/summary
+
+`data: { "current": { generated, passed, passRate, solveP50, solveP75, solveP95, difficulty: [...], solveTime: [...] }, "previous": { ... } }`. `previous` is `null` for `period=all`.
+
+### GET /v2/projects/:pid/captcha/timeseries
+
+Captcha counters per time bucket. Metrics: `generated`, `passed`, `failed`, `validation_failed`, `replayed` (all by default).
+
+### GET /v2/projects/:pid/captcha/breakdown
+
+Captcha events grouped by `country`, `browser`, `os`, `device` (passed captchas only), or `captcha_event`, `captcha_difficulty`, `captcha_reason`, `solve_time`.
+
+## SEO endpoints
+
+SEO data comes from [Google Search Console](/integrations/google-search-console) rather than from your Swetrix events, so these endpoints behave a little differently from the rest of v2. The differences are all forced by the upstream API and are called out below.
+
+Search Console must be connected to the project and one of its properties linked. Until both are true, every `seo` endpoint except `/seo/status` returns `409 Conflict`:
+
+```json title="Response (409)"
+{
+  "statusCode": 409,
+  "message": "Google Search Console is not connected for this project"
+}
+```
+
+Two further caveats worth knowing before you build against these:
+
+- **Data lags.** Search Console is typically 2–3 days behind, so recent days may be empty or incomplete.
+- **Retention is ~16 months.** `period=all` resolves to the last 480 days rather than your project's full history.
+
+### GET /v2/projects/:pid/seo/status
+
+Whether the project can serve SEO data at all. Poll this before the others to tell "not connected" apart from "no data".
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/seo/status' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": { "connected": true, "property": "sc-domain:example.com" },
+  "meta": { "pid": "YOUR_PROJECT_ID" }
+}
+```
+
+`connected` reports whether a Google account is linked; `property` is the Search Console property being queried, and is `null` when an account is connected but no property has been picked yet. Both must be set for the data endpoints to answer.
+
+### GET /v2/projects/:pid/seo/summary
+
+Clicks, impressions, CTR and average position for the selected period, the previous period of the same length, and the change between them.
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/seo/summary?period=7d' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": {
+    "current": { "clicks": 412, "impressions": 18320, "ctr": 2.25, "position": 12.4 },
+    "previous": { "clicks": 388, "impressions": 17010, "ctr": 2.28, "position": 13.1 },
+    "change": { "clicks": 24, "impressions": 1310, "ctr": -0.03, "position": -0.7 }
+  },
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "metrics": ["clicks", "impressions", "ctr", "position"],
+    "period": "7d",
+    "timezone": "Etc/GMT",
+    "appliedFilters": []
+  }
+}
+```
+
+`change` is the absolute difference, as everywhere else in v2. Note that a _falling_ `position` is an improvement.
+
+### GET /v2/projects/:pid/seo/timeseries
+
+SEO metrics grouped by time bucket, as rows with ISO 8601 timestamps.
+
+Parameters: `period`/`from`+`to`, `timezone`, `timeBucket`, `metrics`, `filters`.
+
+Search Console reports nothing below hourly granularity, so `timeBucket` here accepts only `hour`, `day` (default), `month` and `year` — `minute` is rejected with a `422`. Hourly and daily rows come straight from Search Console; `month` and `year` are rolled up by Swetrix, summing clicks and impressions, recomputing CTR from those totals, and averaging position weighted by impressions (none of the three are additive).
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/seo/timeseries?period=7d&metrics=clicks,impressions&timezone=Europe/Kyiv' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": [
+    { "timestamp": "2026-07-01T00:00:00+03:00", "clicks": 61, "impressions": 2604 },
+    { "timestamp": "2026-07-02T00:00:00+03:00", "clicks": 58, "impressions": 2511 }
+  ],
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "metrics": ["clicks", "impressions"],
+    "timeBucket": "day",
+    "allowedTimeBuckets": ["hour", "day", "month", "year"],
+    "period": "7d",
+    "timezone": "Europe/Kyiv",
+    "appliedFilters": []
+  }
+}
+```
+
+### GET /v2/projects/:pid/seo/breakdown
+
+SEO metrics grouped by **one dimension** — `query`, `page`, `country` or `device`.
+
+Parameters: `dimension` (required), `metrics` (default: all four), `limit` (max 100), `offset`, plus the usual time range and `filters`.
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/seo/breakdown?dimension=query&period=4w&limit=2' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "data": [
+    { "value": "swetrix", "clicks": 184, "impressions": 2103, "ctr": 8.75, "position": 1.4 },
+    {
+      "value": "google analytics alternative",
+      "clicks": 96,
+      "impressions": 8801,
+      "ctr": 1.09,
+      "position": 9.2
+    }
+  ],
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "dimension": "query",
+    "metrics": ["clicks", "impressions", "ctr", "position"],
+    "limit": 2,
+    "offset": 0,
+    "sort": "clicks:desc",
+    "period": "4w",
+    "timezone": "Etc/GMT",
+    "appliedFilters": []
+  }
+}
+```
+
+Notes:
+
+- **No `meta.total` and no `sort`.** Search Console neither counts matching rows nor lets you order them, so rows always come back by clicks descending. `sort` is accepted only as `clicks:desc`, so you can be explicit; anything else is a `422` rather than a silently ignored parameter. Page with `limit`/`offset` until a page comes back short.
+- **`country` is alpha-2.** Search Console reports alpha-3 (`usa`); Swetrix normalises to the alpha-2 (`US`) that `country` means everywhere else in v2.
+- Combine `dimension` with a filter to drill in — the queries a given page ranks for are `?dimension=query&filters=[{"dimension":"page","operator":"is","value":"https://example.com/blog"}]`, and the pages ranking for a query are the mirror image.
+
+### GET /v2/projects/:pid/seo/branded-traffic
+
+Clicks split by whether the search query contained one of the project's brand keywords (configured in project settings; Swetrix falls back to the project name and domain).
+
+```json title="Response (data)"
+{ "branded": 260, "nonBranded": 152 }
+```
+
+Returns `data: null` with `meta.skipped: true` when the rollup was not run — see [skipped rollups](#skipped-rollups).
+
+### GET /v2/projects/:pid/seo/positions
+
+Impressions bucketed by search position, plus the daily count of ranking queries per position bucket.
+
+```json title="Response (data, truncated)"
+{
+  "impressionsByPosition": [
+    { "key": "pos1To3", "label": "1-3", "impressions": 4120, "percentage": 22.5 },
+    { "key": "pos4To10", "label": "4-10", "impressions": 7330, "percentage": 40 }
+  ],
+  "organicPositions": [
+    {
+      "date": "2026-07-01",
+      "pos1To3": 12,
+      "pos4To10": 40,
+      "pos11To20": 61,
+      "pos21To50": 88,
+      "pos51Plus": 24
+    }
+  ]
+}
+```
+
+`impressionsByPosition` buckets are `pos1To3`, `pos4To10`, `pos11To20`, `pos21Plus`; `organicPositions` splits the tail further into `pos21To50` and `pos51Plus`. Returns `data: null` with `meta.skipped: true` when the rollup was not run.
+
+### Skipped rollups
+
+`/seo/branded-traffic` and `/seo/positions` have to page through every query in the range, which is slow and expensive against Search Console's quota. Rather than let them hang, Swetrix skips them and says so in `meta`:
+
+```json title="Response"
+{
+  "data": null,
+  "meta": {
+    "pid": "YOUR_PROJECT_ID",
+    "skipped": true,
+    "skippedReason": "range_too_large",
+    "maxRangeDays": 31,
+    "period": "3M",
+    "timezone": "Etc/GMT",
+    "appliedFilters": []
+  }
+}
+```
+
+- `skippedReason: "range_too_large"` — the range exceeds `meta.maxRangeDays` (31). Narrow the range.
+- `skippedReason: "timeout"` — Search Console did not answer within `meta.timeoutMs`. Retry, or narrow the range.
+
+On a successful run `meta.skipped` is `false` and `data` is populated. A skip is not an error — an actual upstream failure still returns a `5xx`.
+
+## Error endpoints
+
+### GET /v2/projects/:pid/errors
+
+Paginated error groups: `data: [{ "eid", "name", "message", "filename", "count", "last_seen", "users", "sessions", "status" }, ...]`. `show_resolved=true` includes resolved groups.
+
+### GET /v2/projects/:pid/errors/overview
+
+Aggregated error statistics (occurrences, affected users/sessions and chart) for the period.
+
+### GET /v2/projects/:pid/errors/timeseries
+
+`occurrences` and `affected_users` per time bucket.
+
+### GET /v2/projects/:pid/errors/breakdown
+
+Error occurrences grouped by one dimension (`page`, `browser`, `os`, `country`, ...). Metrics: `occurrences` (default), `affected_users`.
+
+### GET /v2/projects/:pid/errors/:eid
+
+Details for one error group (metadata, occurrence chart, affected counts). Accepts the usual time range parameters and `timeBucket`.
+
+### GET /v2/projects/:pid/errors/:eid/sessions
+
+Paginated sessions affected by the error (`limit` max 50, default 10).
+
+## Session endpoints
+
+### GET /v2/projects/:pid/sessions
+
+Paginated sessions. `event_type` scopes the list to sessions with `traffic` (default), `performance`, or `error` events. Session rows use readable keys (`country`, `browser`, `os`, `duration`, ...):
+
+```json title="Response (data)"
+[
+  {
+    "psid": "14287087333426119778",
+    "country": "IS",
+    "os": "Windows",
+    "browser": "Firefox",
+    "pageviews": 4,
+    "sessionStart": "2026-07-05T16:09:06Z",
+    "lastActivity": "2026-07-05T17:22:02Z",
+    "isLive": 1,
+    "duration": 520
+  }
+]
+```
+
+### GET /v2/projects/:pid/sessions/:psid
+
+Details for one session: the page/event flow (`pages`), renamed session attributes (`details`), and an activity chart.
+
+## Profile endpoints
+
+### GET /v2/projects/:pid/profiles
+
+Paginated profiles. `profile_type` is `all` (default), `anonymous`, or `identified`.
+
+### GET /v2/projects/:pid/profiles/:profileId
+
+Profile details with `topPages` and `activityCalendar`.
+
+### GET /v2/projects/:pid/profiles/:profileId/sessions
+
+Paginated sessions for one profile.
+
+## Funnels
+
+### GET /v2/projects/:pid/funnel
+
+Funnel analysis. Provide `funnelId` (a saved funnel) **or** `steps` (a JSON array of pages / event names). Returns `data: { "steps": [...], "totalPageviews", "timeToConvert" }` where each step includes events, drop-off and per-step `breakdowns` (countries, devices, browsers, sources, campaigns, pages, profileTypes).
+
+```bash
+curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/funnel?steps=["/","/pricing","/signup"]&period=7d' \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### GET /v2/projects/:pid/funnel/sessions
+
+Paginated sessions that reached a funnel `step` (1-indexed). `dropoff=true` returns sessions that stopped at that step.
+
+## Live visitors
+
+### GET /v2/projects/:pid/live-visitors
+
+```json title="Response"
+{
+  "data": {
+    "count": 2,
+    "visitors": [
+      {
+        "device": "desktop",
+        "browser": "Firefox",
+        "os": "Windows",
+        "country": "GB",
+        "psid": "9165978030580383830"
+      }
+    ]
+  },
+  "meta": { "pid": "YOUR_PROJECT_ID", "windowMinutes": 5 }
+}
+```
+
+## Discovery
+
+### GET /v2/projects/:pid/dimensions
+
+Machine-readable list of the dimensions and metrics available for a data type (`?type=traffic|performance|captcha|errors|seo`) — build dashboard UIs against this instead of hardcoding.
+
+```json title="Response (data, truncated)"
+{
+  "dimensions": [
+    {
+      "name": "country",
+      "description": "Country (ISO 3166-1 alpha-2 code)",
+      "filterOnly": false,
+      "extraFields": []
+    },
+    {
+      "name": "region",
+      "description": "Region / subdivision",
+      "filterOnly": false,
+      "extraFields": ["country", "region_code"]
+    }
+  ],
+  "metrics": [
+    { "name": "visitors", "description": "Unique sessions", "format": "integer", "default": true }
+  ]
+}
+```
+
+### GET /v2/projects/:pid/dimensions/:dimension/values
+
+Distinct recorded values for a dimension — for filter autocompletion (`?type=traffic|errors`). `browser_version` and `os_version` return `{ "name", "version" }` pairs; everything else returns an array of strings.
+
+## Migrating from v1
+
+| v1                                                                                      | v2                                                                        |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `GET /v1/log` (params panels)                                                           | `GET /v2/projects/:pid/traffic/breakdown?dimension=...` per panel         |
+| `GET /v1/log` / `/log/chart` (chart)                                                    | `GET /v2/projects/:pid/traffic/timeseries`                                |
+| `GET /v1/log` (customs / properties)                                                    | `/traffic/custom-events`, `/traffic/page-properties`                      |
+| `GET /v1/log/birdseye`                                                                  | `GET /v2/projects/:pid/traffic/summary` (one project per request)         |
+| `GET /v1/log/performance`                                                               | `/performance/breakdown` + `/performance/timeseries`                      |
+| `GET /v1/log/performance/birdseye`                                                      | `/performance/summary`                                                    |
+| `GET /v1/log/captcha`                                                                   | `/captcha/summary` + `/captcha/timeseries` + `/captcha/breakdown`         |
+| `GET /v1/log/meta`                                                                      | `/traffic/custom-events/metadata`                                         |
+| `GET /v1/log/property`                                                                  | `/traffic/page-properties/metadata`                                       |
+| `GET /v1/log/custom-events`                                                             | `/traffic/custom-events/timeseries`                                       |
+| `GET /v1/log/sessions` / `/log/session`                                                 | `/sessions` / `/sessions/:psid`                                           |
+| `GET /v1/log/profiles` / `/log/profile` / `/log/profile/sessions`                       | `/profiles` / `/profiles/:profileId` / `/profiles/:profileId/sessions`    |
+| `GET /v1/log/errors` / `/log/get-error` / `/log/error-overview` / `/log/error-sessions` | `/errors` / `/errors/:eid` / `/errors/overview` / `/errors/:eid/sessions` |
+| `GET /v1/log/funnel` / `/log/funnel-sessions`                                           | `/funnel` / `/funnel/sessions`                                            |
+| `GET /v1/log/live-visitors` + `/log/hb`                                                 | `/live-visitors` (merged)                                                 |
+| `GET /v1/log/filters` / `/log/errors-filters` / `/log/filters/versions`                 | `/dimensions/:dimension/values`                                           |
+| `GET /v1/log/keywords`                                                                  | `/seo/breakdown?dimension=query`                                          |
+
+Key differences:
+
+1. **Filters** use `{ dimension, operator, value, key? }` with `is` / `is_not` / `contains` / `contains_not` instead of `{ column, filter, isExclusive, isContains }`.
+2. **Names** are human-readable: `country` instead of `cc`, `visitors` instead of `uniques`, `pageviews` instead of `visits`, `session_duration` instead of `sdur`.
+3. **Timeseries** return rows of objects with ISO 8601 timestamps instead of parallel arrays.
+4. **Everything is wrapped** in `{ data, meta }` and breakdowns/lists are paginated server-side.
+5. `take`/`skip` are now `limit`/`offset`.
+
+`GET /v1/log/keywords` still works, but it only ever returned the top queries. The `seo` endpoints cover the whole Search Console integration, so prefer them for new code.
+
+Still v1-only: bot statistics, session replays, `generalStats`, multi-project `birdseye` (`pids` array), and all data ingestion endpoints.

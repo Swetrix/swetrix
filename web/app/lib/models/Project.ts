@@ -73,18 +73,6 @@ export interface Annotation {
   created: string
 }
 
-export interface SwetrixError {
-  eid: string
-  name: string
-  message: string
-  filename: string
-  count: number
-  last_seen: string
-  status: 'active' | 'regressed' | 'fixed' | 'resolved'
-  users: number
-  sessions: number
-}
-
 type SessionReplayPrivacy = 'total' | 'normal' | 'none'
 
 export interface SessionReplayMetadata {
@@ -99,17 +87,16 @@ export interface SessionReplayMetadata {
 
 export interface Session {
   psid: string
-  cc: string | null
+  country: string | null
   os: string | null
-  br: string | null
+  browser: string | null
   pageviews: number
   customEvents: number
   errors: number
   revenue?: number
   refunds?: number
-  created: string
   isLive: 1 | 0
-  sdur?: number
+  duration?: number | null
 
   sessionStart: string
   lastActivity: string
@@ -123,24 +110,24 @@ export interface Session {
 }
 
 export interface SessionDetails {
-  cc: string | null
+  country: string | null
   os: string | null
-  osv: string | null
-  br: string | null
-  brv: string | null
-  lc: string | null
-  ref: string | null
-  so: string | null
-  me: string | null
-  ca: string | null
-  te: string | null
-  co: string | null
-  rg: string | null
-  ct: string | null
-  dv: string | null
+  os_version: string | null
+  browser: string | null
+  browser_version: string | null
+  locale: string | null
+  referrer: string | null
+  utm_source: string | null
+  utm_medium: string | null
+  utm_campaign: string | null
+  utm_term: string | null
+  utm_content: string | null
+  region: string | null
+  city: string | null
+  device: string | null
   profileId: string | null
 
-  sdur?: number
+  duration?: number
   isLive?: boolean
   revenue?: number
   refunds?: number
@@ -162,19 +149,19 @@ export interface Profile {
   errorsCount: number
   firstSeen: string
   lastSeen: string
-  cc: string | null
+  country: string | null
   os: string | null
-  br: string | null
-  dv: string | null
+  browser: string | null
+  device: string | null
 }
 
 export interface ProfileDetails extends Profile {
   avgDuration: number
-  rg: string | null
-  ct: string | null
-  lc: string | null
-  osv: string | null
-  brv: string | null
+  region: string | null
+  city: string | null
+  locale: string | null
+  os_version: string | null
+  browser_version: string | null
   topPages: { page: string; count: number }[]
   activityCalendar: { date: string; pageviews: number; events: number }[]
   totalRevenue?: number
@@ -258,6 +245,7 @@ export interface Project {
   name: string
   origins: string[] | string | null
   ipBlacklist: string[] | null | string
+  ipWhitelist: string[] | null | string
   countryBlacklist: string[] | null
   active: boolean
   public: boolean

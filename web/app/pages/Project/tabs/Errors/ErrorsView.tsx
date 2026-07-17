@@ -1,9 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query'
 import type { ChartOptions } from 'billboard.js'
 import { area, bar } from 'billboard.js'
 import cx from 'clsx'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
-import _debounce from 'lodash/debounce'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
@@ -15,39 +15,20 @@ import {
   WarningIcon,
   UserIcon,
 } from '@phosphor-icons/react'
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-  lazy,
-  Suspense,
-  use,
-} from 'react'
-import { useIsPresent } from 'motion/react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
-import {
-  useLocation,
-  useSearchParams,
-  useNavigate,
-  useFetcher,
-  useLoaderData,
-  useRevalidator,
-  type LinkProps,
-} from 'react-router'
+import { useLocation, useSearchParams, useFetcher } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
-import { MapLoader } from '~/pages/Project/View/components/MapLoader'
 import { toast } from 'sonner'
 
-import type {
-  ErrorsResponse,
-  ErrorDetailsResponse,
-  ErrorOverviewResponse,
-} from '~/api/api.server'
-import { useErrorsProxy } from '~/hooks/useAnalyticsProxy'
+import type { ErrorListItem } from '~/api/v2/types'
+import {
+  useErrorDetailsQuery,
+  useErrorsListQuery,
+  useErrorsOverviewQuery,
+} from '~/hooks/v2/useV2Queries'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -55,14 +36,18 @@ import {
   tbsFormatMapperTooltip,
   tbsFormatMapperTooltip24h,
   chartTypes,
-  ERROR_PANELS_ORDER,
 } from '~/lib/constants'
-import { CountryEntry, Entry } from '~/lib/models/Entry'
-import { SwetrixError } from '~/lib/models/Project'
+import { Entry } from '~/lib/models/Entry'
 import { ErrorChart } from '~/pages/Project/tabs/Errors/ErrorChart'
 import { ErrorDetails } from '~/pages/Project/tabs/Errors/ErrorDetails'
+import { ErrorsMap } from '~/pages/Project/tabs/Errors/ErrorsMap'
 import NoErrorDetails from '~/pages/Project/tabs/Errors/NoErrorDetails'
+import type {
+  ErrorDetailsData,
+  ErrorsOverviewData,
+} from '~/pages/Project/tabs/Errors/types'
 import WaitingForAnError from '~/pages/Project/tabs/Errors/WaitingForAnError'
+import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import { SessionsDrawer } from '~/pages/Project/tabs/Traffic/SessionsDrawer'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
@@ -70,14 +55,12 @@ import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import ProjectViewHeaderActions from '~/pages/Project/View/components/ProjectViewHeaderActions'
 import TabErrorBoundary from '~/pages/Project/View/components/TabErrorBoundary'
-import { Panel, MetadataPanel } from '~/pages/Project/View/Panels'
+import { MetadataPanel, Panel } from '~/pages/Project/View/Panels'
 import { ERROR_FILTERS_MAPPING } from '~/pages/Project/View/utils/filters'
+import { BreakdownSubTab } from '~/pages/Project/View/v2/BreakdownPanel'
+import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
-  useViewProjectContext,
-  useRefreshTriggers,
-} from '~/pages/Project/View/ViewProject'
-import {
-  getFormatDate,
   typeNameMapping,
   panelIconMapping,
   getDeviceRowMapper,
@@ -89,31 +72,20 @@ import {
   getChartPointWindow,
   type ChartDataPointClick,
 } from '~/pages/Project/View/utils/chartPoint'
-import {
-  useCurrentProject,
-  useProjectPassword,
-} from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import type {
-  ProjectViewActionData,
-  ProjectLoaderData,
-} from '~/routes/projects.$id'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import { Badge } from '~/ui/Badge'
 import BillboardChart from '~/ui/BillboardChart'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import Loader from '~/ui/Loader'
-import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { getRelativeDateIfPossible } from '~/utils/date'
+import { CompactNumberFlow, PercentFlow } from '~/ui/NumberFlow'
 import { getLocaleDisplayName, nFormatter } from '~/utils/generic'
-import { LoaderView } from '../../View/components/LoaderView'
-
-const InteractiveMap = lazy(
-  () => import('~/pages/Project/View/components/InteractiveMap'),
-)
 
 const calculateOptimalTicks = (
   data: number[],
@@ -323,9 +295,173 @@ const getErrorTrendsChartSettings = (
   }
 }
 
+const PER_ERROR_SUBTAB_TO_V1: Record<string, string> = {
+  country: 'cc',
+  region: 'rg',
+  city: 'ct',
+  locale: 'lc',
+  page: 'pg',
+  host: 'host',
+  browser: 'br',
+  os: 'os',
+  device: 'dv',
+  isp: 'isp',
+  organization: 'og',
+  user_type: 'ut',
+  connection_type: 'ctp',
+}
+
+interface PerErrorPanelsProps {
+  params: ErrorDetailsData['params']
+  locationSubTabs: BreakdownSubTab[]
+  pagesSubTabs: BreakdownSubTab[]
+  devicesSubTabs: BreakdownSubTab[]
+  networkSubTabs: BreakdownSubTab[]
+  locationRowMapper: (entry: Entry, subTabId: string) => React.ReactNode
+  pagesRowMapper: (entry: Entry, subTabId: string) => React.ReactNode
+  devicesRowMapper: (entry: Entry, subTabId: string) => React.ReactNode
+  networkRowMapper: (entry: Entry, subTabId: string) => React.ReactNode
+  isRefetching: boolean
+}
+
+const PerErrorPanels = ({
+  params,
+  locationSubTabs,
+  pagesSubTabs,
+  devicesSubTabs,
+  networkSubTabs,
+  locationRowMapper,
+  pagesRowMapper,
+  devicesRowMapper,
+  networkRowMapper,
+  isRefetching,
+}: PerErrorPanelsProps) => {
+  const { t } = useTranslation('common')
+  const { getFilterLink, getVersionFilterLink } = useViewProjectContext()
+
+  const [activeTabs, setActiveTabs] = useState({
+    location: 'country',
+    pages: 'page',
+    devices: 'browser',
+    network: 'isp',
+  })
+
+  const setPanelTab = (panel: keyof typeof activeTabs, tab: string) =>
+    setActiveTabs((prev) => ({ ...prev, [panel]: tab }))
+
+  const toEntries = (subTabId: string): Entry[] =>
+    (params?.[PER_ERROR_SUBTAB_TO_V1[subTabId]] || []) as Entry[]
+
+  const versionData = useMemo(() => {
+    const browserVersions: Record<string, Entry[]> = {}
+    const osVersions: Record<string, Entry[]> = {}
+
+    for (const entry of (params?.brv || []) as any[]) {
+      const { br, name, count } = entry
+      if (!br) continue
+      ;(browserVersions[br] ||= []).push({ name, count })
+    }
+    for (const entry of (params?.osv || []) as any[]) {
+      const { os, name, count } = entry
+      if (!os) continue
+      ;(osVersions[os] ||= []).push({ name, count })
+    }
+
+    return { browserVersions, osVersions }
+  }, [params])
+
+  const panels: {
+    panelKey: keyof typeof activeTabs
+    name: string
+    icon: React.ReactNode
+    subTabs: BreakdownSubTab[]
+    rowMapper: (entry: Entry, subTabId: string) => React.ReactNode
+  }[] = [
+    {
+      panelKey: 'location',
+      name: t('project.location'),
+      icon: panelIconMapping.country,
+      subTabs: locationSubTabs,
+      rowMapper: locationRowMapper,
+    },
+    {
+      panelKey: 'pages',
+      name: t('project.pages'),
+      icon: panelIconMapping.page,
+      subTabs: pagesSubTabs,
+      rowMapper: pagesRowMapper,
+    },
+    {
+      panelKey: 'devices',
+      name: t('project.devices'),
+      icon: panelIconMapping.os,
+      subTabs: devicesSubTabs,
+      rowMapper: devicesRowMapper,
+    },
+    {
+      panelKey: 'network',
+      name: t('project.network'),
+      icon: panelIconMapping.isp,
+      subTabs: networkSubTabs,
+      rowMapper: networkRowMapper,
+    },
+  ]
+
+  return (
+    <>
+      {panels.map(({ panelKey, name, icon, subTabs, rowMapper }) => {
+        const activeTabId = activeTabs[panelKey]
+
+        return (
+          <Panel
+            key={`${panelKey}-${activeTabId}`}
+            id={activeTabId}
+            name={name}
+            icon={icon}
+            tabs={subTabs.map(({ id, label }) => ({ id, label }))}
+            onTabChange={(tab) => setPanelTab(panelKey, tab)}
+            activeTabId={activeTabId}
+            data={toEntries(activeTabId)}
+            rowMapper={(entry) => rowMapper(entry, activeTabId)}
+            getFilterLink={getFilterLink}
+            highlightColour='red'
+            valuesHeaderName={t('project.occurrences')}
+            isRefetching={isRefetching}
+            customRenderer={
+              activeTabId === 'map'
+                ? () => (
+                    <ErrorsMap
+                      staticCountryData={toEntries('country')}
+                      staticRegionData={toEntries('region')}
+                    />
+                  )
+                : undefined
+            }
+            capitalize={activeTabId === 'device'}
+            versionData={
+              activeTabId === 'browser'
+                ? versionData.browserVersions
+                : activeTabId === 'os'
+                  ? versionData.osVersions
+                  : undefined
+            }
+            getVersionFilterLink={(parent, version) =>
+              getVersionFilterLink(
+                parent,
+                version,
+                activeTabId === 'browser' ? 'browser' : 'os',
+              )
+            }
+          />
+        )
+      })}
+    </>
+  )
+}
+
 interface StatCardProps {
   icon: React.ReactNode
-  value: string | number
+  value: React.ReactNode
   label: string
 }
 
@@ -346,7 +482,7 @@ const StatCard = ({ icon, value, label }: StatCardProps) => (
 )
 
 interface ErrorItemProps {
-  error: SwetrixError
+  error: ErrorListItem
 }
 
 const ErrorItem = ({ error }: ErrorItemProps) => {
@@ -517,86 +653,24 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
   )
 }
 
-const ERRORS_TAKE = 30
-
-interface DeferredErrorsData {
-  errorsData: ErrorsResponse | null
-  errorDetails: ErrorDetailsResponse | null
-  errorOverview: ErrorOverviewResponse | null
-}
-
-function ErrorsDataResolver({
-  children,
-}: {
-  children: (data: DeferredErrorsData) => React.ReactNode
-}) {
-  const isPresent = useIsPresent()
-  const previousDataRef = useRef<DeferredErrorsData | null>(null)
-  const {
-    errorsData: errorsDataPromise,
-    errorDetails: errorDetailsPromise,
-    errorOverview: errorOverviewPromise,
-  } = useLoaderData<ProjectLoaderData>()
-  const shouldUsePreviousData = !isPresent && !!previousDataRef.current
-
-  const errorsData = shouldUsePreviousData
-    ? previousDataRef.current!.errorsData
-    : errorsDataPromise
-      ? use(errorsDataPromise)
-      : null
-  const errorDetails = shouldUsePreviousData
-    ? previousDataRef.current!.errorDetails
-    : errorDetailsPromise
-      ? use(errorDetailsPromise)
-      : null
-  const errorOverview = shouldUsePreviousData
-    ? previousDataRef.current!.errorOverview
-    : errorOverviewPromise
-      ? use(errorOverviewPromise)
-      : null
-
-  const deferredData = useMemo(
-    () => ({ errorsData, errorDetails, errorOverview }),
-    [errorsData, errorDetails, errorOverview],
-  )
-
-  if (isPresent) {
-    previousDataRef.current = deferredData
-  }
-
-  return <>{children(deferredData)}</>
-}
-
 function ErrorsViewWrapper() {
   const [searchParams] = useSearchParams()
-  const { errorsRefreshTrigger } = useRefreshTriggers()
-  const resetKey = `errors:${searchParams.toString()}:${errorsRefreshTrigger}`
+  const resetKey = `errors:${searchParams.toString()}`
 
   return (
     <TabErrorBoundary
       titleKey='dashboard.failedToLoadErrors'
       resetKey={resetKey}
     >
-      <Suspense fallback={<LoaderView />}>
-        <ErrorsDataResolver>
-          {(deferredData) => <ErrorsViewInner deferredData={deferredData} />}
-        </ErrorsDataResolver>
-      </Suspense>
+      <ErrorsViewInner />
     </TabErrorBoundary>
   )
 }
 
-interface ErrorsViewInnerProps {
-  deferredData: DeferredErrorsData
-}
-
-const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
+const ErrorsViewInner = () => {
   const { id, projectPath, allowedToManage, project } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
-  const revalidator = useRevalidator()
-  const errorsProxy = useErrorsProxy()
-  const { errorsRefreshTrigger } = useRefreshTriggers()
-  const { timeBucket, timeFormat, period, dateRange, timezone, filters, size } =
+  const queryClient = useQueryClient()
+  const { timeBucket, timeFormat, timezone, filters, size } =
     useViewProjectContext()
   const {
     t,
@@ -604,48 +678,17 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   } = useTranslation('common')
   const { theme } = useTheme()
   const [searchParams] = useSearchParams()
-  const isEmbedded = searchParams.get('embedded') === 'true'
-  const navigate = useNavigate()
   const errorStatusFetcher = useFetcher<ProjectViewActionData>()
   const lastHandledStatusData = useRef<ProjectViewActionData | null>(null)
-  const pendingStatusUpdate = useRef<'resolved' | 'active' | null>(null)
 
-  const from = dateRange ? getFormatDate(dateRange[0]) : ''
-  const to = dateRange ? getFormatDate(dateRange[1]) : ''
   const tnMapping = typeNameMapping(t)
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
-
-  // Initialize state from deferred data
-  const initialDataProcessed = useRef(false)
-  const errorsProxyRequestRef = useRef<{
-    mode: 'append' | 'replace'
-    limit?: number
-  } | null>(null)
-  const preserveErrorsRevalidationRef = useRef(false)
-  const preserveErrorsRevalidationStartedRef = useRef(false)
 
   const [errorOptions, setErrorOptions] = useState<Record<string, boolean>>({
     [ERROR_FILTERS_MAPPING.showResolved]: false,
   })
+  const showResolved = errorOptions[ERROR_FILTERS_MAPPING.showResolved]
 
-  // Overview from loader
-  const overview = deferredData.errorOverview
-  const overviewLoading = revalidator.state === 'loading'
-
-  const isMountedRef = useRef(true)
-
-  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(() =>
-    deferredData.errorsData ? false : null,
-  )
-  const [errors, setErrors] = useState<SwetrixError[]>(
-    () => deferredData.errorsData?.errors || [],
-  )
-  const [errorsSkip, setErrorsSkip] = useState(
-    () => deferredData.errorsData?.errors?.length || 0,
-  )
-  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(
-    () => (deferredData.errorsData?.errors?.length || 0) >= ERRORS_TAKE,
-  )
   const [sessionsDrawer, setSessionsDrawer] = useState<{
     from: string
     to: string
@@ -655,35 +698,23 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
 
   const activeEID = useMemo(() => searchParams.get('eid'), [searchParams])
 
-  // Error details from loader
-  const activeError = useMemo(() => {
-    if (deferredData.errorDetails) {
-      return {
-        details: deferredData.errorDetails.details,
-        chart: deferredData.errorDetails.chart,
-        params: deferredData.errorDetails.params,
-        metadata: deferredData.errorDetails.metadata,
-        timeBucket: deferredData.errorDetails.timeBucket,
-      }
-    }
-    return null
-  }, [deferredData.errorDetails])
-
-  const errorLoading = activeEID ? revalidator.state === 'loading' : false
-
-  const errorStatusUpdating = errorStatusFetcher.state !== 'idle'
-
-  const [errorsActiveTabs, setErrorsActiveTabs] = useState<{
-    location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
-    page: 'pg' | 'host'
-    device: 'br' | 'os' | 'dv'
-    network: 'isp' | 'og' | 'ut' | 'ctp'
-  }>({
-    location: 'cc',
-    page: 'pg',
-    device: 'br',
-    network: 'isp',
+  const errorsListQuery = useErrorsListQuery({
+    showResolved,
+    enabled: !activeEID,
   })
+  const overviewQuery = useErrorsOverviewQuery({ enabled: !activeEID })
+  const detailsQuery = useErrorDetailsQuery(activeEID)
+
+  const errors = useMemo(
+    () =>
+      (errorsListQuery.data?.pages.flatMap((page) => page.data) ||
+        []) as ErrorListItem[],
+    [errorsListQuery.data],
+  )
+  const overview = overviewQuery.data?.data as ErrorsOverviewData | undefined
+  const activeError = activeEID
+    ? (detailsQuery.data?.data as ErrorDetailsData | undefined)
+    : undefined
 
   const pureSearchParams = useMemo(() => {
     const newSearchParams = new URLSearchParams(searchParams.toString())
@@ -691,142 +722,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     return newSearchParams.toString()
   }, [searchParams])
 
-  useEffect(() => {
-    isMountedRef.current = true
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [])
-
-  // Process deferred data on mount
-  useEffect(() => {
-    if (initialDataProcessed.current) return
-    initialDataProcessed.current = true
-
-    if (deferredData.errorsData) {
-      const errorsList = deferredData.errorsData.errors || []
-      setErrors(errorsList)
-      setErrorsSkip(ERRORS_TAKE)
-      setCanLoadMoreErrors(errorsList.length >= ERRORS_TAKE)
-    } else {
-      setErrors([])
-      setCanLoadMoreErrors(false)
-    }
-    setErrorsLoading(false)
-  }, [deferredData])
-
-  // Sync state when revalidation completes with new data
-  useEffect(() => {
-    if (!initialDataProcessed.current) return
-    if (revalidator.state === 'idle') {
-      if (preserveErrorsRevalidationRef.current) {
-        if (preserveErrorsRevalidationStartedRef.current) {
-          preserveErrorsRevalidationRef.current = false
-          preserveErrorsRevalidationStartedRef.current = false
-          setErrorsLoading(false)
-        }
-        return
-      }
-
-      if (deferredData.errorsData) {
-        const errorsList = deferredData.errorsData.errors || []
-        setErrors(errorsList)
-        setErrorsSkip(ERRORS_TAKE)
-        setCanLoadMoreErrors(errorsList.length >= ERRORS_TAKE)
-      } else {
-        setErrors([])
-        setCanLoadMoreErrors(false)
-      }
-      setErrorsLoading(false)
-    } else if (revalidator.state === 'loading') {
-      if (preserveErrorsRevalidationRef.current) {
-        preserveErrorsRevalidationStartedRef.current = true
-      }
-      setErrorsLoading(true)
-    }
-  }, [revalidator.state, deferredData])
-
-  // Load more errors via proxy
-  const loadMoreErrors = useCallback(() => {
-    if (errorsLoading || errorsProxy.isLoading) return
-
-    errorsProxyRequestRef.current = { mode: 'append' }
-    errorsProxy.fetchErrors(id, {
-      timeBucket,
-      period: period === 'custom' ? '' : period,
-      from: from || undefined,
-      to: to || undefined,
-      timezone: timezone || '',
-      filters,
-      take: ERRORS_TAKE,
-      skip: errorsSkip,
-      options: errorOptions,
-    })
-  }, [
-    id,
-    timeBucket,
-    period,
-    from,
-    to,
-    timezone,
-    filters,
-    errorsSkip,
-    errorOptions,
-    errorsLoading,
-    errorsProxy,
-  ])
-
-  // Handle proxy response for pagination
-  useEffect(() => {
-    if (revalidator.state === 'loading') return
-
-    if (errorsProxy.data && !errorsProxy.isLoading) {
-      const proxyRequest = errorsProxyRequestRef.current
-      if (!proxyRequest) {
-        return
-      }
-
-      const newErrors = errorsProxy.data.errors || []
-      if (proxyRequest.mode === 'replace') {
-        const visibleErrors = newErrors.slice(0, proxyRequest.limit)
-        setErrors(visibleErrors)
-        setErrorsSkip(visibleErrors.length)
-        setCanLoadMoreErrors(newErrors.length > (proxyRequest.limit || 0))
-      } else {
-        setErrors((prev) => [...prev, ...newErrors])
-        setErrorsSkip((prev) => prev + newErrors.length)
-        setCanLoadMoreErrors(newErrors.length >= ERRORS_TAKE)
-      }
-      setErrorsLoading(false)
-      errorsProxyRequestRef.current = null
-    }
-    if (errorsProxy.error) {
-      toast.error(errorsProxy.error)
-      setErrorsLoading(false)
-      errorsProxyRequestRef.current = null
-    }
-  }, [
-    errorsProxy.data,
-    errorsProxy.error,
-    errorsProxy.isLoading,
-    revalidator.state,
-  ])
-
-  const updateStatusInErrors = useCallback(
-    (status: 'active' | 'resolved') => {
-      if (!activeError?.details?.eid) return
-
-      setErrors((prevErrors) => {
-        return prevErrors.map((error) => {
-          if (error.eid === activeError.details.eid) {
-            return { ...error, status }
-          }
-          return error
-        })
-      })
-    },
-    [activeError?.details?.eid],
-  )
+  const errorStatusUpdating = errorStatusFetcher.state !== 'idle'
 
   // Handle error status update response
   useEffect(() => {
@@ -837,25 +733,18 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     const { intent, success, error } = errorStatusFetcher.data
 
     if (intent === 'update-error-status') {
-      if (success && pendingStatusUpdate.current) {
-        updateStatusInErrors(pendingStatusUpdate.current)
-        if (activeEID) {
-          revalidator.revalidate()
-        }
+      if (success) {
+        queryClient.invalidateQueries({ queryKey: ['v2'] })
         toast.success(t('apiNotifications.errorStatusUpdated'))
-        pendingStatusUpdate.current = null
       } else if (error) {
         toast.error(error)
-        pendingStatusUpdate.current = null
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [errorStatusFetcher.state, errorStatusFetcher.data, t, activeEID])
+  }, [errorStatusFetcher.state, errorStatusFetcher.data, t, queryClient])
 
   const markErrorAsResolved = () => {
     if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) return
 
-    pendingStatusUpdate.current = 'resolved'
     errorStatusFetcher.submit(
       { intent: 'update-error-status', eid: activeEID, status: 'resolved' },
       { method: 'POST', action: projectPath },
@@ -865,21 +754,15 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   const markErrorAsActive = () => {
     if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) return
 
-    pendingStatusUpdate.current = 'active'
     errorStatusFetcher.submit(
       { intent: 'update-error-status', eid: activeEID, status: 'active' },
       { method: 'POST', action: projectPath },
     )
   }
 
-  const switchActiveErrorFilter = useMemo(
-    () =>
-      _debounce((pairID: string) => {
-        setErrorOptions((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
-        setErrorsSkip(0)
-      }, 0),
-    [],
-  )
+  const switchActiveErrorFilter = useCallback((pairID: string) => {
+    setErrorOptions((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
+  }, [])
 
   const errorFilters = useMemo(() => {
     return [
@@ -891,19 +774,21 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     ]
   }, [t, errorOptions])
 
+  const overviewTimeBucket = overview?.timeBucket || timeBucket
+
   const handleOverviewDataPointClick = useCallback(
     (d: { x: Date; index: number; xValue?: string }) => {
       setSessionsDrawer(
         getChartPointWindow({
           x: d.x,
           xValue: d.xValue,
-          timeBucket,
+          timeBucket: overviewTimeBucket,
           timezone,
           timeFormat,
         }),
       )
     },
-    [timeBucket, timeFormat, timezone],
+    [overviewTimeBucket, timeFormat, timezone],
   )
 
   const handleActiveErrorDataPointClick = useCallback(
@@ -930,41 +815,12 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     ],
   )
 
-  useEffect(() => {
-    if (errorsRefreshTrigger > 0) {
-      if (!activeEID) {
-        if (errorsProxy.isLoading) {
-          return
-        }
-
-        const limit = Math.max(errors.length, ERRORS_TAKE)
-        errorsProxyRequestRef.current = { mode: 'replace', limit }
-        preserveErrorsRevalidationRef.current = true
-        setErrorsLoading(true)
-        errorsProxy.fetchErrors(id, {
-          timeBucket,
-          period: period === 'custom' ? '' : period,
-          from: from || undefined,
-          to: to || undefined,
-          timezone: timezone || '',
-          filters,
-          take: limit + 1,
-          skip: 0,
-          options: errorOptions,
-        })
-      }
-
-      revalidator.revalidate()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [errorsRefreshTrigger])
-
   const chartOptions = useMemo(() => {
     if (!overview?.chart || !overview.chart.x || overview.chart.x.length === 0)
       return null
     return getErrorTrendsChartSettings(
       overview.chart,
-      timeBucket,
+      overviewTimeBucket,
       timeFormat,
       chartTypes.line,
       {
@@ -974,9 +830,16 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
       handleOverviewDataPointClick,
       t('project.exploreSessions'),
     )
-  }, [overview?.chart, timeBucket, timeFormat, handleOverviewDataPointClick, t])
+  }, [
+    overview?.chart,
+    overviewTimeBucket,
+    timeFormat,
+    handleOverviewDataPointClick,
+    t,
+  ])
 
-  const hasErrorsRaw = !_isEmpty(errors) || overview?.stats?.totalErrors
+  const hasErrorsRaw =
+    !_isEmpty(errors) || Boolean(overview?.stats?.totalErrors)
 
   // Track if we've ever shown actual content to prevent NoEvents flash during exit animation
   const hasShownContentRef = useRef(false)
@@ -988,81 +851,181 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   // Don't show NoEvents if we've previously shown content (prevents flash during tab switch)
   const hasErrors = hasErrorsRaw || hasShownContentRef.current
 
-  const getFilterLink = useCallback(
-    (column: string, value: string | null): LinkProps['to'] => {
-      const isFilterActive =
-        filters.findIndex(
-          (filter) => filter.column === column && filter.filter === value,
-        ) >= 0
-      const newSearchParams = new URLSearchParams(searchParams.toString())
+  const isInitialLoading =
+    (overviewQuery.isLoading || errorsListQuery.isLoading) &&
+    !hasShownContentRef.current
 
-      if (isFilterActive) {
-        newSearchParams.delete(column)
-      } else {
-        if (value === null) {
-          newSearchParams.set(column, 'null')
-        } else {
-          newSearchParams.set(column, value)
-        }
-      }
-
-      return { search: newSearchParams.toString() }
-    },
-    [filters, searchParams],
-  )
-
-  const getVersionFilterLink = useCallback(
-    (parent: string | null, version: string | null, panelType: 'br' | 'os') => {
-      const filterParams = new URLSearchParams(searchParams.toString())
-
-      if (panelType === 'br') {
-        filterParams.set('br', parent ?? 'null')
-        filterParams.set('brv', version ?? 'null')
-      } else if (panelType === 'os') {
-        filterParams.set('os', parent ?? 'null')
-        filterParams.set('osv', version ?? 'null')
-      }
-
-      return `?${filterParams.toString()}`
-    },
-    [searchParams],
-  )
-
-  const createVersionDataMapping = useMemo(() => {
-    const browserDataSource = activeError?.params?.brv
-    const osDataSource = activeError?.params?.osv
-
-    const browserVersions: { [key: string]: Entry[] } = {}
-    const osVersions: { [key: string]: Entry[] } = {}
-
-    if (browserDataSource) {
-      browserDataSource.forEach((entry: any) => {
-        const { br, name, count } = entry
-        if (!browserVersions[br]) {
-          browserVersions[br] = []
-        }
-        browserVersions[br].push({ name, count })
-      })
-    }
-
-    if (osDataSource) {
-      osDataSource.forEach((entry: any) => {
-        const { os, name, count } = entry
-        if (!osVersions[os]) {
-          osVersions[os] = []
-        }
-        osVersions[os].push({ name, count })
-      })
-    }
-
-    return { browserVersions, osVersions }
-  }, [activeError?.params?.brv, activeError?.params?.osv])
+  const isRefetching =
+    (overviewQuery.isFetching && !overviewQuery.isLoading) ||
+    (errorsListQuery.isFetching &&
+      !errorsListQuery.isLoading &&
+      !errorsListQuery.isFetchingNextPage)
 
   const dataNames = useMemo(
     () => ({
       occurrences: t('project.totalErrors'),
       affectedUsers: t('project.affectedUsers'),
     }),
+    [t],
+  )
+
+  const locationSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [
+      { id: 'country', label: t('project.mapping.cc'), dimension: 'country' },
+      { id: 'region', label: t('project.mapping.rg'), dimension: 'region' },
+      { id: 'city', label: t('project.mapping.ct'), dimension: 'city' },
+      { id: 'locale', label: t('project.mapping.lc'), dimension: 'locale' },
+      {
+        id: 'map',
+        label: t('project.mapping.map'),
+        render: () => <ErrorsMap />,
+      },
+    ],
+    [t],
+  )
+
+  const pagesSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [
+      { id: 'page', label: t('project.mapping.pg'), dimension: 'page' },
+      { id: 'host', label: t('project.mapping.host'), dimension: 'host' },
+    ],
+    [t],
+  )
+
+  const devicesSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [
+      {
+        id: 'browser',
+        label: t('project.mapping.br'),
+        dimension: 'browser',
+        versionsDimension: 'browser_version' as const,
+        versionsParentField: 'browser' as const,
+      },
+      {
+        id: 'os',
+        label: t('project.mapping.os'),
+        dimension: 'os',
+        versionsDimension: 'os_version' as const,
+        versionsParentField: 'os' as const,
+      },
+      { id: 'device', label: t('project.mapping.dv'), dimension: 'device' },
+    ],
+    [t],
+  )
+
+  const networkSubTabs = useMemo<BreakdownSubTab[]>(
+    () => [
+      { id: 'isp', label: t('project.mapping.isp'), dimension: 'isp' },
+      {
+        id: 'organization',
+        label: t('project.mapping.og'),
+        dimension: 'organization',
+      },
+      {
+        id: 'user_type',
+        label: t('project.mapping.ut'),
+        dimension: 'user_type',
+      },
+      {
+        id: 'connection_type',
+        label: t('project.mapping.ctp'),
+        dimension: 'connection_type',
+      },
+    ],
+    [t],
+  )
+
+  const locationRowMapper = useCallback(
+    (entry: Entry, subTabId: string) => {
+      const { name: entryName, cc } = entry
+
+      if (subTabId === 'locale') {
+        if (entryName === null) {
+          return <CCRow cc={null} language={language} />
+        }
+
+        const entryNameArray = entryName.split('-')
+        const displayName = getLocaleDisplayName(entryName, language)
+
+        return (
+          <CCRow
+            cc={entryNameArray[entryNameArray.length - 1]}
+            name={displayName}
+            language={language}
+          />
+        )
+      }
+
+      if (cc !== undefined) {
+        return (
+          <CCRow cc={cc} name={entryName || undefined} language={language} />
+        )
+      }
+
+      return <CCRow cc={entryName} language={language} />
+    },
+    [language],
+  )
+
+  const pagesRowMapper = useCallback(
+    (entry: Entry, subTabId: string) => {
+      const { name: entryName } = entry
+
+      if (!entryName) {
+        return (
+          <span className='italic'>
+            {subTabId === 'host'
+              ? t('project.unknownHost')
+              : t('common.notSet')}
+          </span>
+        )
+      }
+
+      let decodedUri = entryName
+
+      try {
+        decodedUri = decodeURIComponent(entryName)
+      } catch {
+        // ignore
+      }
+
+      if (subTabId === 'page' && project?.websiteUrl) {
+        return (
+          <PageLinkRow pagePath={decodedUri} websiteUrl={project.websiteUrl} />
+        )
+      }
+
+      return decodedUri
+    },
+    [t, project?.websiteUrl],
+  )
+
+  const devicesRowMapper = useCallback(
+    (entry: Entry, subTabId: string) => {
+      const v1Tab =
+        subTabId === 'browser' ? 'br' : subTabId === 'os' ? 'os' : 'dv'
+      const mapper = getDeviceRowMapper(v1Tab, theme, t) as
+        | ((entry: Entry) => React.ReactNode)
+        | undefined
+      return mapper ? mapper(entry) : entry.name
+    },
+    [theme, t],
+  )
+
+  const networkRowMapper = useCallback(
+    (entry: Entry, subTabId: string) => {
+      const { name: entryName } = entry
+      if (!entryName) {
+        return <span className='italic'>{t('common.notSet')}</span>
+      }
+      if (subTabId === 'user_type') {
+        return getUsageTypeLabel(entryName, t)
+      }
+      if (subTabId === 'connection_type') {
+        return getConnectionTypeLabel(entryName, t)
+      }
+      return entryName
+    },
     [t],
   )
 
@@ -1084,6 +1047,9 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   }
 
   if (activeEID) {
+    const detailsLoading = detailsQuery.isLoading
+    const detailsRefetching = detailsQuery.isFetching && !detailsQuery.isLoading
+
     const resolveButton =
       allowedToManage &&
       activeError &&
@@ -1096,7 +1062,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
             'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
             {
               'cursor-not-allowed opacity-50':
-                errorLoading && !errorStatusUpdating,
+                detailsRefetching && !errorStatusUpdating,
               'animate-pulse cursor-not-allowed': errorStatusUpdating,
             },
           )}
@@ -1114,7 +1080,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
             'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
             {
               'cursor-not-allowed opacity-50':
-                errorLoading && !errorStatusUpdating,
+                detailsRefetching && !errorStatusUpdating,
               'animate-pulse cursor-not-allowed': errorStatusUpdating,
             },
           )}
@@ -1125,9 +1091,6 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
 
     return (
       <div>
-        {errorLoading && activeError ? <LoadingBar /> : null}
-        {errorsLoading && !_isEmpty(errors) ? <LoadingBar /> : null}
-
         <DashboardHeader
           backLink={`?${pureSearchParams}`}
           showLiveVisitors={false}
@@ -1138,313 +1101,93 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
 
         <Filters className='mb-3' tnMapping={tnMapping} />
 
-        {activeError?.details ? (
-          <ErrorDetails
-            details={activeError.details}
-            period={period}
-            from={dateRange ? getFormatDate(dateRange[0]) : undefined}
-            to={dateRange ? getFormatDate(dateRange[1]) : undefined}
-            timeBucket={timeBucket}
-            projectPassword={projectPassword}
-            chart={
-              <ErrorChart
-                chart={activeError?.chart}
-                timeBucket={activeError?.timeBucket}
-                timeFormat={timeFormat}
-                rotateXAxis={rotateXAxis}
-                chartType={chartTypes.line}
-                dataNames={dataNames}
-                onDataPointClick={handleActiveErrorDataPointClick}
-                stats={[
-                  {
-                    key: 'occurrences',
-                    label: t('project.occurrences'),
-                    value: nFormatter(activeError.details.count || 0, 1),
-                  },
-                  {
-                    key: 'users',
-                    label: t('dashboard.users'),
-                    value: nFormatter(activeError.details.users || 0, 1),
-                  },
-                  {
-                    key: 'firstSeen',
-                    label: t('dashboard.firstSeen'),
-                    value:
-                      getRelativeDateIfPossible(
-                        activeError.details.first_seen,
-                        language,
-                      ) || '-',
-                  },
-                  {
-                    key: 'lastSeen',
-                    label: t('dashboard.lastSeen'),
-                    value:
-                      getRelativeDateIfPossible(
-                        activeError.details.last_seen,
-                        language,
-                      ) || '-',
-                  },
-                ]}
-              />
-            }
-          />
+        {detailsLoading ? (
+          <Loader className='min-h-including-header items-start' />
         ) : null}
 
-        <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
-          {!_isEmpty(activeError?.params)
-            ? _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
-                if (type === 'location') {
-                  const locationTabs = [
-                    { id: 'cc', label: t('project.mapping.cc') },
-                    { id: 'rg', label: t('project.mapping.rg') },
-                    { id: 'ct', label: t('project.mapping.ct') },
-                    { id: 'lc', label: t('project.mapping.lc') },
-                    { id: 'map', label: 'Map' },
-                  ]
-
-                  const rowMapper = (entry: CountryEntry) => {
-                    const { name: entryName, cc } = entry
-
-                    if (errorsActiveTabs.location === 'lc') {
-                      if (entryName === null) {
-                        return <CCRow cc={null} language={language} />
-                      }
-                      const entryNameArray = entryName.split('-')
-                      const displayName = getLocaleDisplayName(
-                        entryName,
-                        language,
-                      )
-
-                      return (
-                        <CCRow
-                          cc={entryNameArray[entryNameArray.length - 1]}
-                          name={displayName}
-                          language={language}
+        {activeError?.details ? (
+          <div>
+            <ErrorDetails
+              details={activeError.details}
+              chart={
+                <ErrorChart
+                  chart={activeError.chart}
+                  timeBucket={activeError.timeBucket}
+                  timeFormat={timeFormat}
+                  rotateXAxis={rotateXAxis}
+                  chartType={chartTypes.line}
+                  dataNames={dataNames}
+                  onDataPointClick={handleActiveErrorDataPointClick}
+                  isRefetching={detailsRefetching}
+                  stats={[
+                    {
+                      key: 'occurrences',
+                      label: t('project.occurrences'),
+                      value: (
+                        <CompactNumberFlow
+                          value={activeError.details.count || 0}
                         />
-                      )
-                    }
-
-                    if (cc !== undefined) {
-                      return (
-                        <CCRow
-                          cc={cc}
-                          name={entryName || undefined}
-                          language={language}
+                      ),
+                    },
+                    {
+                      key: 'users',
+                      label: t('dashboard.users'),
+                      value: (
+                        <CompactNumberFlow
+                          value={activeError.details.users || 0}
                         />
-                      )
-                    }
+                      ),
+                    },
+                    {
+                      key: 'firstSeen',
+                      label: t('dashboard.firstSeen'),
+                      value:
+                        getRelativeDateIfPossible(
+                          activeError.details.first_seen,
+                          language,
+                        ) || '-',
+                      // A relative date is a sentence, not a figure — at the
+                      // numeric card size it dwarfs the rest of the row.
+                      valueClassName: 'text-xl sm:text-2xl',
+                    },
+                    {
+                      key: 'lastSeen',
+                      label: t('dashboard.lastSeen'),
+                      value:
+                        getRelativeDateIfPossible(
+                          activeError.details.last_seen,
+                          language,
+                        ) || '-',
+                      valueClassName: 'text-xl sm:text-2xl',
+                    },
+                  ]}
+                />
+              }
+            />
+          </div>
+        ) : null}
 
-                    return <CCRow cc={entryName} language={language} />
-                  }
+        {activeError?.details ? (
+          <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
+            <PerErrorPanels
+              params={activeError.params}
+              locationSubTabs={locationSubTabs}
+              pagesSubTabs={pagesSubTabs}
+              devicesSubTabs={devicesSubTabs}
+              networkSubTabs={networkSubTabs}
+              locationRowMapper={locationRowMapper}
+              pagesRowMapper={pagesRowMapper}
+              devicesRowMapper={devicesRowMapper}
+              networkRowMapper={networkRowMapper}
+              isRefetching={detailsRefetching}
+            />
+            {activeError?.metadata ? (
+              <MetadataPanel metadata={activeError.metadata} />
+            ) : null}
+          </div>
+        ) : null}
 
-                  return (
-                    <Panel
-                      key={errorsActiveTabs.location}
-                      icon={panelIconMapping.cc}
-                      id={errorsActiveTabs.location}
-                      getFilterLink={getFilterLink}
-                      name={t('project.location')}
-                      tabs={locationTabs}
-                      onTabChange={(tab) =>
-                        setErrorsActiveTabs({
-                          ...errorsActiveTabs,
-                          location: tab as 'cc' | 'rg' | 'ct' | 'lc' | 'map',
-                        })
-                      }
-                      activeTabId={errorsActiveTabs.location}
-                      data={
-                        activeError?.params?.[errorsActiveTabs.location] || []
-                      }
-                      rowMapper={rowMapper}
-                      customRenderer={
-                        errorsActiveTabs.location === 'map'
-                          ? () => {
-                              const countryData = activeError?.params?.cc || []
-                              const regionData = activeError?.params?.rg || []
-                              const total = countryData.reduce(
-                                (acc, curr) => acc + curr.count,
-                                0,
-                              )
-
-                              return (
-                                <Suspense fallback={<MapLoader />}>
-                                  <InteractiveMap
-                                    data={countryData}
-                                    regionData={regionData}
-                                    total={total}
-                                    onClick={(type, key) => {
-                                      const link = getFilterLink(type, key)
-                                      navigate(link)
-                                    }}
-                                  />
-                                </Suspense>
-                              )
-                            }
-                          : undefined
-                      }
-                      valuesHeaderName={t('project.occurrences')}
-                      highlightColour='red'
-                    />
-                  )
-                }
-
-                if (type === 'devices') {
-                  const deviceTabs = [
-                    { id: 'br', label: t('project.mapping.br') },
-                    { id: 'os', label: t('project.mapping.os') },
-                    { id: 'dv', label: t('project.mapping.dv') },
-                  ]
-
-                  return (
-                    <Panel
-                      key={errorsActiveTabs.device}
-                      icon={panelIconMapping.os}
-                      id={errorsActiveTabs.device}
-                      getFilterLink={getFilterLink}
-                      name={t('project.devices')}
-                      tabs={deviceTabs}
-                      onTabChange={(tab) =>
-                        setErrorsActiveTabs({
-                          ...errorsActiveTabs,
-                          device: tab as 'br' | 'os' | 'dv',
-                        })
-                      }
-                      activeTabId={errorsActiveTabs.device}
-                      data={
-                        activeError?.params?.[errorsActiveTabs.device] || []
-                      }
-                      rowMapper={getDeviceRowMapper(
-                        errorsActiveTabs.device,
-                        theme,
-                        t,
-                      )}
-                      capitalize={errorsActiveTabs.device === 'dv'}
-                      versionData={
-                        errorsActiveTabs.device === 'br'
-                          ? createVersionDataMapping.browserVersions
-                          : errorsActiveTabs.device === 'os'
-                            ? createVersionDataMapping.osVersions
-                            : undefined
-                      }
-                      getVersionFilterLink={(parent, version) =>
-                        getVersionFilterLink(
-                          parent,
-                          version,
-                          errorsActiveTabs.device === 'br' ? 'br' : 'os',
-                        )
-                      }
-                      valuesHeaderName={t('project.occurrences')}
-                      highlightColour='red'
-                    />
-                  )
-                }
-
-                if (type === 'network') {
-                  const networkTabs = [
-                    { id: 'isp', label: t('project.mapping.isp') },
-                    { id: 'og', label: t('project.mapping.og') },
-                    { id: 'ut', label: t('project.mapping.ut') },
-                    { id: 'ctp', label: t('project.mapping.ctp') },
-                  ]
-
-                  const activeNetworkTab = errorsActiveTabs.network
-
-                  return (
-                    <Panel
-                      key={activeNetworkTab}
-                      icon={panelIconMapping.isp}
-                      id={activeNetworkTab}
-                      getFilterLink={getFilterLink}
-                      name={t('project.network')}
-                      tabs={networkTabs}
-                      onTabChange={(tab) =>
-                        setErrorsActiveTabs({
-                          ...errorsActiveTabs,
-                          network: tab as 'isp' | 'og' | 'ut' | 'ctp',
-                        })
-                      }
-                      activeTabId={activeNetworkTab}
-                      data={activeError?.params?.[activeNetworkTab] || []}
-                      rowMapper={({ name: entryName }) => {
-                        if (!entryName) {
-                          return (
-                            <span className='italic'>{t('common.notSet')}</span>
-                          )
-                        }
-                        if (activeNetworkTab === 'ut') {
-                          return getUsageTypeLabel(entryName, t)
-                        }
-                        if (activeNetworkTab === 'ctp') {
-                          return getConnectionTypeLabel(entryName, t)
-                        }
-                        return entryName
-                      }}
-                      valuesHeaderName={t('project.occurrences')}
-                      highlightColour='red'
-                    />
-                  )
-                }
-
-                if (type === 'pg') {
-                  const pageTabs = [
-                    { id: 'pg', label: t('project.mapping.pg') },
-                    { id: 'host', label: t('project.mapping.host') },
-                  ]
-
-                  return (
-                    <Panel
-                      key={errorsActiveTabs.page}
-                      icon={panelIconMapping.pg}
-                      id={errorsActiveTabs.page}
-                      getFilterLink={getFilterLink}
-                      rowMapper={({ name: entryName }) => {
-                        if (!entryName) {
-                          return (
-                            <span className='italic'>
-                              {errorsActiveTabs.page === 'pg'
-                                ? t('common.notSet')
-                                : t('project.unknownHost')}
-                            </span>
-                          )
-                        }
-
-                        let decodedUri = entryName as string
-
-                        try {
-                          decodedUri = decodeURIComponent(entryName)
-                        } catch {
-                          // do nothing
-                        }
-
-                        return decodedUri
-                      }}
-                      name={t('project.pages')}
-                      tabs={pageTabs}
-                      onTabChange={(tab) =>
-                        setErrorsActiveTabs({
-                          ...errorsActiveTabs,
-                          page: tab as 'pg' | 'host',
-                        })
-                      }
-                      activeTabId={errorsActiveTabs.page}
-                      data={activeError?.params?.[errorsActiveTabs.page] || []}
-                      valuesHeaderName={t('project.occurrences')}
-                      highlightColour='red'
-                    />
-                  )
-                }
-
-                return null
-              })
-            : null}
-          {activeError?.metadata ? (
-            <MetadataPanel metadata={activeError.metadata} />
-          ) : null}
-        </div>
-
-        {_isEmpty(activeError) && errorLoading ? <Loader /> : null}
-
-        {!errorLoading && _isEmpty(activeError) ? <NoErrorDetails /> : null}
+        {!detailsLoading && !activeError?.details ? <NoErrorDetails /> : null}
         <SessionsDrawer
           isOpen={!!sessionsDrawer}
           onClose={() => setSessionsDrawer(null)}
@@ -1459,24 +1202,6 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
           errorId={sessionsDrawer?.errorId}
           title={t('project.affectedSessions')}
         />
-      </div>
-    )
-  }
-
-  // List view - Initial loading state
-  if (
-    (overviewLoading === null || overviewLoading) &&
-    !overview &&
-    _isEmpty(errors)
-  ) {
-    return (
-      <div
-        className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
-          'min-h-including-header': !isEmbedded,
-          'min-h-screen': isEmbedded,
-        })}
-      >
-        <Loader />
       </div>
     )
   }
@@ -1510,6 +1235,25 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     />
   ) : null
 
+  if (isInitialLoading) {
+    return (
+      <div>
+        <DashboardHeader
+          showLiveVisitors
+          showSearchButton={false}
+          hideTimeBucket
+          rightContent={
+            <ProjectViewHeaderActions
+              tnMapping={tnMapping}
+              extraActions={filtersDropdown}
+            />
+          }
+        />
+        <Loader className='min-h-including-header items-start' />
+      </div>
+    )
+  }
+
   return (
     <div>
       <DashboardHeader
@@ -1524,13 +1268,9 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
         }
       />
 
-      {(overviewLoading || errorsLoading) && (overview || !_isEmpty(errors)) ? (
-        <LoadingBar />
-      ) : null}
-
       {hasErrors ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
 
-      {!hasErrors && errorsLoading === false && overviewLoading === false ? (
+      {!hasErrors && !overviewQuery.isLoading && !errorsListQuery.isLoading ? (
         <NoEvents filters={filters} />
       ) : null}
 
@@ -1538,7 +1278,8 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
         <>
           <div className='flex flex-col gap-2 lg:flex-row'>
             {chartOptions && overview?.chart ? (
-              <div className='w-full rounded-lg border border-gray-200 bg-white p-4 lg:w-[65%] dark:border-slate-800/60 dark:bg-slate-900/25'>
+              <div className='relative w-full overflow-hidden rounded-lg border border-gray-200 bg-white p-4 lg:w-[65%] dark:border-slate-800/60 dark:bg-slate-900/25'>
+                {isRefetching ? <RefetchIndicator /> : null}
                 <BillboardChart options={chartOptions} className='h-[220px]' />
               </div>
             ) : null}
@@ -1546,28 +1287,41 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
             <div className='grid w-full grid-cols-2 gap-2 lg:w-[35%]'>
               <StatCard
                 icon={<WarningIcon className='text-red-600' />}
-                value={nFormatter(overview?.stats?.totalErrors || 0, 1)}
+                value={
+                  <CompactNumberFlow
+                    value={overview?.stats?.totalErrors || 0}
+                  />
+                }
                 label={t('project.totalErrors')}
               />
               <StatCard
                 icon={<PercentIcon className='text-orange-600' />}
-                value={`${overview?.stats?.errorRate || 0}%`}
+                value={<PercentFlow value={overview?.stats?.errorRate || 0} />}
                 label={t('project.errorRate')}
               />
               <StatCard
                 icon={<UsersIcon className='text-blue-600' />}
-                value={nFormatter(overview?.stats?.affectedUsers || 0, 1)}
+                value={
+                  <CompactNumberFlow
+                    value={overview?.stats?.affectedUsers || 0}
+                  />
+                }
                 label={t('project.affectedUsers')}
               />
               <StatCard
                 icon={<MonitorIcon className='text-purple-600' />}
-                value={nFormatter(overview?.stats?.affectedSessions || 0, 1)}
+                value={
+                  <CompactNumberFlow
+                    value={overview?.stats?.affectedSessions || 0}
+                  />
+                }
                 label={t('project.affectedSessions')}
               />
             </div>
           </div>
 
-          <div className='mt-4'>
+          <div className='relative mt-4'>
+            {isRefetching ? <RefetchIndicator /> : null}
             <Text as='h3' weight='semibold' className='mb-3'>
               {t('project.recentErrors')}
             </Text>
@@ -1588,10 +1342,10 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
             </ClientOnly>
 
             <InfiniteScrollTrigger
-              hasMore={canLoadMoreErrors}
-              isLoading={!!errorsLoading}
-              onLoadMore={loadMoreErrors}
-              disabled={!!errorsLoading}
+              hasMore={Boolean(errorsListQuery.hasNextPage)}
+              isLoading={errorsListQuery.isFetchingNextPage}
+              onLoadMore={() => errorsListQuery.fetchNextPage()}
+              disabled={errorsListQuery.isFetching}
             />
           </div>
         </>

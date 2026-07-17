@@ -14,6 +14,27 @@ In the top right corner of your dashboard (and on the main Traffic overview), yo
 - **What it counts**: This number represents the count of unique visitors who have initiated a session or viewed a page within the last **5 minutes**.
 - **Updates**: The counter updates in real-time as new visitors arrive or existing ones leave (time out).
 
+## Live Visitors Over Time
+
+The live counter tells you what's happening right now, but you can also chart concurrency historically. Unlike unique visitors (which only count when a session starts), this metric shows how many people were using your site _at the same time_ — so you can spot peak load, quiet hours, and how long people actually stay around.
+
+To enable it:
+
+1.  Open the **Traffic** dashboard.
+2.  Click the **Metrics visualisation** (eye) icon above the chart.
+3.  Check **Live visitors**.
+
+How to read the chart:
+
+- **Minute granularity** (e.g. the "Today" period): each point is the exact number of visitors who were active during that minute.
+- **Hour, day or month granularity**: each point is the **peak** number of concurrent visitors within that bucket. A value of 69 on Tuesday means that at some moment on Tuesday, 69 people were on your site at once.
+
+A visitor counts as active from their first pageview until their last recorded activity (pageviews, custom events, or the tracking script's periodic heartbeats), so the chart also works for single-page apps where people stay on one page for a long time.
+
+:::info
+Live visitors can't be combined with dashboard filters (country, page, browser, etc.), as concurrency is reconstructed from session activity that carries no dimension data. The metric toggle is disabled while filters are applied. The chart is also limited to time ranges of up to a year — for longer ranges it shows zeros.
+:::
+
 ## Live Visitors in Browser Title
 
 You can configure Swetrix to display the live visitor count directly in your browser tab's title. This is useful for keeping an eye on traffic without having the dashboard tab active.

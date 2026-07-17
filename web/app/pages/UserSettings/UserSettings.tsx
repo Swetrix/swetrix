@@ -1564,6 +1564,7 @@ const UserSettings = () => {
                         <Input
                           name='email'
                           type='email'
+                          autoComplete='email'
                           label={t('profileSettings.newEmail')}
                           value={form.email}
                           placeholder={t('auth.common.email')}
@@ -1597,6 +1598,7 @@ const UserSettings = () => {
                           label={t('profileSettings.apiKey')}
                           name='apiKey'
                           type='password'
+                          autoComplete='off'
                           value={user.apiKey}
                           readOnly
                         />
@@ -1852,6 +1854,7 @@ const UserSettings = () => {
                     <Input
                       name='currentPassword'
                       type='password'
+                      autoComplete='current-password'
                       label={t('profileSettings.currentPassword')}
                       value={form.currentPassword}
                       placeholder={t('auth.common.password')}
@@ -1863,6 +1866,7 @@ const UserSettings = () => {
                     <Input
                       name='password'
                       type='password'
+                      autoComplete='new-password'
                       label={t('profileSettings.newPassword')}
                       value={form.password}
                       placeholder={t('auth.common.password')}
@@ -1873,6 +1877,7 @@ const UserSettings = () => {
                     <Input
                       name='repeat'
                       type='password'
+                      autoComplete='new-password'
                       label={t('profileSettings.repeatPassword')}
                       value={form.repeat}
                       placeholder={t('auth.common.repeat')}
@@ -2830,6 +2835,7 @@ const UserSettings = () => {
               <Input
                 name='deletePassword'
                 type='password'
+                autoComplete='current-password'
                 label={t('profileSettings.enterPasswordToDelete')}
                 value={deletionPassword}
                 placeholder={t('auth.common.password')}

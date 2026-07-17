@@ -3,6 +3,8 @@ title: Statistics API reference
 slug: /statistics-api
 ---
 
+A newer, per-dimension [Statistics API v2](/statistics-api-v2) is available — it offers human-readable dimension and metric names, server-side pagination and a consistent response format. This v1 API keeps working as documented below.
+
 Swetrix provides the ability to retrieve aggregated data not only through the UI, but also programmatically using API queries.
 
 The statistics API provides several GET endpoints. These endpoints require some query parameters and return standard HTTP responses and a JSON-encoded body. API requests without a valid API key will fail (except for the publicly available API endpoints).
@@ -261,7 +263,8 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
     ],
     "visits": [0, 2, 9, 12, 4, 7, 4, 0],
     "uniques": [0, 2, 9, 10, 4, 7, 4, 0],
-    "sdur": [0, 54, 2, 126, 8, 8, 2]
+    "sdur": [0, 54, 2, 126, 8, 8, 2],
+    "concurrency": [0, 1, 3, 4, 2, 2, 1, 0]
   },
   "customs": {
     "sale": 16,
@@ -273,6 +276,10 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
   "appliedFilters": []
 }
 ```
+
+:::info
+`chart.concurrency` is the number of live (concurrent) visitors over time, reconstructed from session activity. It is only computed when the request sets `includeConcurrency=true`; otherwise the array is zero-filled. For the `minute` time bucket it's the exact number of visitors active during that minute; for larger buckets it's the peak concurrency within the bucket. When `filters` are applied (or the requested time range is longer than a year), this array is zero-filled, as concurrency cannot be segmented by dimensions.
+:::
 
 #### Parameters
 
@@ -341,6 +348,12 @@ The `meta` is an array of objects like:
   },
 }
 ```
+
+<hr />
+
+**includeConcurrency**
+
+Set to `true` to include the `chart.concurrency` (live visitors over time) series in the response. Reconstructing concurrency from session intervals is relatively expensive, so it's skipped unless explicitly requested.
 
 <hr />
 
@@ -1244,22 +1257,73 @@ The number of sessions to return per page.
 
 The number of sessions to skip (for pagination).
 
-### GET /v1/log/user-flow
+### GET /v1/log/journeys
 
-Returns the user flow diagram data, showing how users navigate through your website.
+Returns the most popular journeys — the ordered sequences of pages visitors viewed within a session. This is the data behind the Journeys tab of the dashboard.
 
 ```bash
-curl 'https://api.swetrix.com/v1/log/user-flow?pid=YOUR_PROJECT_ID&period=7d'\
+curl 'https://api.swetrix.com/v1/log/journeys?pid=YOUR_PROJECT_ID&period=7d&steps=3&journeys=20'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+Each journey in the response is a `path` (an array of page paths) together with `value` — the number of sessions that followed it. The response also includes `totalSessions`, the total number of sessions in the period.
+
+#### Parameters
+
+In addition to the parameters of the [`/log` endpoint](#get-v1log):
+
+<hr />
+
+**steps** (optional, default: `3`)
+
+How many pages deep each journey goes (2 - 10).
+
+<hr />
+
+**journeys** (optional, default: `20`)
+
+How many of the most popular journeys to return (5 - 100).
+
+### GET /v1/log/journey-sessions
+
+Returns the sessions that viewed a given page at a given journey step.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/journey-sessions?pid=YOUR_PROJECT_ID&period=7d&step=2&page=%2Fpricing'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
 #### Parameters
 
-The parameters are similar to the [`/log` endpoint](#get-v1log).
+In addition to the parameters of the [`/log` endpoint](#get-v1log):
+
+<hr />
+
+**step** (required)
+
+The journey step the page was visited at (1-indexed).
+
+<hr />
+
+**page** (required)
+
+The page path visited at the given step.
+
+<hr />
+
+**take** (optional, default: `30`, max: `150`)
+
+The number of sessions to return per page.
+
+<hr />
+
+**skip** (optional, default: `0`)
+
+The number of sessions to skip (for pagination).
 
 ### GET /v1/log/chart
 
-Returns data for the main chart (visits, uniques, sessions duration, etc.) grouped by time bucket. This is useful when you only need the chart data without other aggregations.
+Returns data for the main chart (visits, uniques, sessions duration, concurrent live visitors, etc.) grouped by time bucket. This is useful when you only need the chart data without other aggregations.
 
 ```bash
 curl 'https://api.swetrix.com/v1/log/chart?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d'\

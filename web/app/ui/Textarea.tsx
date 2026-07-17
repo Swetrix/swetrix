@@ -4,7 +4,6 @@ import {
   Label,
   Textarea as HeadlessTextarea,
 } from '@headlessui/react'
-import _isEmpty from 'lodash/isEmpty'
 import React, { forwardRef, memo } from 'react'
 
 import { cn } from '~/utils/generic'
@@ -19,7 +18,7 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
     container?: string
     textarea?: string
   }
-  error?: string | boolean
+  error?: string | null
 }
 
 const Textarea = memo(
@@ -41,7 +40,7 @@ const Textarea = memo(
       },
       ref,
     ) => {
-      const isError = !_isEmpty(error)
+      const isError = Boolean(error)
 
       return (
         <Field
@@ -101,15 +100,11 @@ const Textarea = memo(
             {...rest}
           />
           {isError ? (
-            <Text
-              as='span'
-              className='block'
-              size='sm'
-              colour='error'
-              role='alert'
-            >
-              {error}
-            </Text>
+            <Description as='div' role='alert'>
+              <Text as='span' className='block' size='sm' colour='error'>
+                {error}
+              </Text>
+            </Description>
           ) : null}
         </Field>
       )

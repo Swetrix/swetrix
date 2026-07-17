@@ -284,6 +284,7 @@ const Revenue = ({ projectId }: Props) => {
         <Input
           name={`${provider}ApiKey`}
           type='password'
+          autoComplete='off'
           label={t('project.settings.revenue.providerApiKey', {
             provider: config.label,
           })}

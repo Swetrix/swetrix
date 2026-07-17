@@ -8,9 +8,9 @@ import _isEmpty from 'lodash/isEmpty'
 import { memo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
+import { V2Filter } from '~/api/v2/types'
 import { DOCS_URL } from '~/lib/constants'
 import Filters from '~/pages/Project/View/components/Filters'
-import { Filter } from '~/pages/Project/View/interfaces/traffic'
 import { typeNameMapping } from '~/pages/Project/View/ViewProject.helpers'
 import { Text } from '~/ui/Text'
 
@@ -22,7 +22,7 @@ const setupStepKeys = [
 ] as const
 
 interface NoReplaysProps {
-  filters: Filter[]
+  filters: V2Filter[]
   hasReplayData: boolean
 }
 

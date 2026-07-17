@@ -8,6 +8,7 @@ import type { ChartDataPointClick } from '~/pages/Project/View/utils/chartPoint'
 import { MetricCard } from '~/pages/Project/tabs/Traffic/MetricCards'
 
 import { MainChart } from '../../View/components/MainChart'
+import { RefetchIndicator } from '../../View/v2/loading'
 import { getSettingsError } from '../../View/ViewProject.helpers'
 
 interface ErrorChartStat {
@@ -32,6 +33,7 @@ interface ErrorChartProps {
   annotations?: Annotation[]
   stats?: ErrorChartStat[]
   onDataPointClick?: ChartDataPointClick
+  isRefetching?: boolean
 }
 
 export const ErrorChart = ({
@@ -45,6 +47,7 @@ export const ErrorChart = ({
   annotations,
   stats,
   onDataPointClick,
+  isRefetching,
 }: ErrorChartProps) => {
   const { t } = useTranslation('common')
 
@@ -117,7 +120,8 @@ export const ErrorChart = ({
   if (!options && !hasStats) return null
 
   return (
-    <div className='overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+    <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+      {isRefetching ? <RefetchIndicator /> : null}
       {hasStats ? (
         <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
           {stats!.map((stat) => (

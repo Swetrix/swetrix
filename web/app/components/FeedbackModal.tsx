@@ -234,7 +234,7 @@ const FeedbackModal = ({ isOpened, onClose }: FeedbackModalProps) => {
             maxLength={MAX_MESSAGE_LENGTH}
             placeholder={t('feedback.placeholder')}
             aria-label={t('feedback.inputLabel')}
-            error={error || false}
+            error={error}
             disabled={isSubmitting}
             classes={{ textarea: 'min-h-32 resize-none' }}
             onChange={(event) => {

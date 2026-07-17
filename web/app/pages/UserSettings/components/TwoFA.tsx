@@ -152,6 +152,8 @@ const TwoFA = () => {
             <Input
               label={t('profileSettings.enter2faToDisable')}
               value={twoFACode}
+              autoComplete='one-time-code'
+              inputMode='numeric'
               placeholder={t('profileSettings.yourOneTimeCode')}
               className='sm:col-span-3'
               onChange={handle2FAInput}
@@ -219,6 +221,8 @@ const TwoFA = () => {
           <Input
             label={t('profileSettings.enter2faToEnable')}
             value={twoFACode}
+            autoComplete='one-time-code'
+            inputMode='numeric'
             placeholder={t('profileSettings.yourOneTimeCode')}
             className='sm:col-span-3'
             onChange={handle2FAInput}

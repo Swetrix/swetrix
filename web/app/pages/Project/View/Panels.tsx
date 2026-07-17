@@ -47,15 +47,15 @@ import { createPortal } from 'react-dom'
 import { Link } from '~/ui/Link'
 import { LinkProps, useNavigate } from 'react-router'
 
-import { useProjectDataCustomEventsProxy } from '~/hooks/useAnalyticsProxy'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Button from '~/ui/Button'
 import Dropdown from '~/ui/Dropdown'
+import InfiniteScrollTrigger from '~/ui/InfiniteScrollTrigger'
 import Input from '~/ui/Input'
 import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
+import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import {
@@ -69,18 +69,27 @@ import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
 import { MainChart } from './components/MainChart'
-import { Customs, Filter } from './interfaces/traffic'
+import { V2Filter } from '~/api/v2/types'
+import { Customs } from './interfaces/traffic'
+import { RefetchIndicator } from './v2/loading'
 import { useViewProjectContext } from './ViewProject'
+import { useCustomEventsTimeseriesQuery } from '~/hooks/v2/useV2Queries'
 import {
-  getFormatDate,
   getSettingsCustomEventsStacked,
   typeNameMapping,
 } from './ViewProject.helpers'
+import { pivotCustomEventsTimeseries } from './v2/adapters'
 
 const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 const CUSTOM_EVENTS_TOP_LIMITS = [1, 3, 5, 10] as const
-const UTM_TRACKING_PANEL_IDS = new Set(['so', 'me', 'ca', 'te', 'co'])
+const UTM_TRACKING_PANEL_IDS = new Set([
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+])
 const PANEL_HEADER_ACTIONS_CLASS =
   'panel-header-actions flex min-w-0 max-w-full items-center gap-2.5 overflow-x-auto overflow-y-hidden pb-0.5 scrollbar-thin'
 const PANEL_EMPTY_STATE_DOCS = {
@@ -152,6 +161,14 @@ const PanelEmptyState = ({
   </div>
 )
 
+// Mirrors PanelEmptyState's box model so a panel is the same height whether it
+// is loading, empty or full.
+const PanelLoadingState = () => (
+  <div className='flex h-full flex-1 items-center justify-center px-4 py-8'>
+    <Loader className='pt-0!' />
+  </div>
+)
+
 const PanelDocsEmptyState = ({
   variant,
 }: {
@@ -213,7 +230,12 @@ interface PanelContainerProps {
   onTabChange?: (tab: string) => void
   activeTabId?: string
   onDetailsClick?: () => void
+  /** Renders the details button in a disabled state, keeping the panel height stable while there is nothing to drill into. */
+  detailsDisabled?: boolean
   dropdownPlaceholder?: string
+  isRefetching?: boolean
+  /** Replaces the panel body with a centered spinner, keeping the panel at its usual height. */
+  isLoading?: boolean
 }
 
 const PanelContainer = ({
@@ -228,7 +250,10 @@ const PanelContainer = ({
   onTabChange,
   activeTabId,
   onDetailsClick,
+  detailsDisabled,
   dropdownPlaceholder,
+  isRefetching,
+  isLoading,
 }: PanelContainerProps) => {
   const { t } = useTranslation('common')
   const underlineId = useId()
@@ -236,7 +261,7 @@ const PanelContainer = ({
   return (
     <div
       className={cx(
-        'isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-900/25',
+        'relative isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-900/25',
         hideHeader ? 'pt-3' : 'pt-5',
         {
           'col-span-full sm:col-span-2':
@@ -244,6 +269,7 @@ const PanelContainer = ({
         },
       )}
     >
+      {isRefetching ? <RefetchIndicator /> : null}
       {!hideHeader ? (
         <div className='mb-2 flex items-center justify-between gap-4'>
           <Text
@@ -334,12 +360,13 @@ const PanelContainer = ({
         </div>
       ) : null}
       <div
-        className={
+        className={cx(
           contentClassName ??
-          'relative flex h-[19.6rem] flex-col overflow-hidden'
-        }
+            'relative flex h-[19.6rem] flex-col overflow-hidden',
+          isRefetching && 'opacity-75 transition-opacity duration-200',
+        )}
       >
-        {children}
+        {isLoading ? <PanelLoadingState /> : children}
       </div>
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
@@ -348,6 +375,7 @@ const PanelContainer = ({
             className='gap-1.5 px-3 py-2'
             type='button'
             onClick={onDetailsClick}
+            disabled={detailsDisabled}
             aria-label={t('common.details')}
           >
             <ScanIcon className='size-4' />
@@ -362,7 +390,7 @@ const PanelContainer = ({
 interface CustomEventsProps {
   customs?: Customs
   chartData: any
-  filters: Filter[]
+  filters: V2Filter[]
   getCustomEventMetadata: (event: string) => Promise<any>
   getFilterLink: (column: string, value: string | null) => LinkProps['to']
 }
@@ -576,6 +604,19 @@ const KVTableContainer = ({
   })
 }
 
+const groupMetadataByKey = (metadata: AggregatedMetadata[]) =>
+  _reduce(
+    metadata,
+    (acc, { key, value, count }) => {
+      if (!acc[key]) {
+        acc[key] = []
+      }
+      acc[key].push({ value, count })
+      return acc
+    },
+    {} as Record<string, { value: string; count: number }[]>,
+  )
+
 function sortAsc<T>(obj: T, sortByKeys?: boolean): T {
   if (sortByKeys) {
     // @ts-expect-error
@@ -612,10 +653,7 @@ const CustomEvents = ({
   getFilterLink,
 }: CustomEventsProps) => {
   const { t } = useTranslation('common')
-  const { id } = useCurrentProject()
-  const { timeBucket, timezone, period, dateRange, timeFormat, rotateXAxis } =
-    useViewProjectContext()
-  const { fetchCustomEvents } = useProjectDataCustomEventsProxy()
+  const { timeBucket, timeFormat, rotateXAxis } = useViewProjectContext()
 
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [activeEvents, setActiveEvents] = useState<any>({})
@@ -624,13 +662,20 @@ const CustomEvents = ({
   const [eventsData, setEventsData] = useState<any>(customs)
   const [triggerEventWhenFiltersChange, setTriggerEventWhenFiltersChange] =
     useState<string | null>(null)
-  const [stackedChartLoading, setStackedChartLoading] = useState(false)
-  const [stackedChart, setStackedChart] = useState<{
-    x: string[]
-    events: Record<string, Array<number | string>>
-  } | null>(null)
   const [chartTopLimit, setChartTopLimit] =
     useState<(typeof CUSTOM_EVENTS_TOP_LIMITS)[number]>(5)
+
+  // Inline (panel-row) metadata expansion — kept separate from the modal's
+  // activeEvents/eventsMetadata state, which is reset whenever the modal closes.
+  const [expandedEvents, setExpandedEvents] = useState<Record<string, boolean>>(
+    {},
+  )
+  const [inlineMetadata, setInlineMetadata] = useState<
+    Record<string, AggregatedMetadata[]>
+  >({})
+  const [inlineLoading, setInlineLoading] = useState<Record<string, boolean>>(
+    {},
+  )
 
   const keys = _keys(eventsData)
   const keysToDisplay = useMemo(
@@ -677,68 +722,18 @@ const CustomEvents = ({
     })
   }, [customs])
 
-  useEffect(() => {
-    let cancelled = false
-
-    const loadStackedChart = async () => {
-      if (!id || _isEmpty(topEventsForChart)) {
-        setStackedChart(null)
-        return
-      }
-
-      setStackedChartLoading(true)
-
-      try {
-        const isCustomPeriod = period === 'custom' && dateRange
-        const from = isCustomPeriod ? getFormatDate(dateRange![0]) : ''
-        const to = isCustomPeriod ? getFormatDate(dateRange![1]) : ''
-        const periodValue = isCustomPeriod ? '' : period
-
-        const data = await fetchCustomEvents(id, topEventsForChart, {
-          timeBucket,
-          period: periodValue,
-          filters,
-          from,
-          to,
-          timezone,
-        })
-
-        if (cancelled) {
-          return
-        }
-
-        setStackedChart((data?.chart as unknown as typeof stackedChart) || null)
-      } catch (reason) {
-        console.error(
-          '[ERROR](CustomEvents) Failed to load stacked custom events chart',
-          reason,
-        )
-        if (!cancelled) {
-          setStackedChart(null)
-        }
-      } finally {
-        if (!cancelled) {
-          setStackedChartLoading(false)
-        }
-      }
+  const stackedChartQuery = useCustomEventsTimeseriesQuery(topEventsForChart)
+  const stackedChartLoading = stackedChartQuery.isLoading
+  const stackedChart = useMemo(() => {
+    if (_isEmpty(topEventsForChart) || !stackedChartQuery.data) {
+      return null
     }
 
-    loadStackedChart()
-
-    return () => {
-      cancelled = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    id,
-    timeBucket,
-    period,
-    dateRange,
-    timezone,
-    filters,
-    topEventsForChart,
-    fetchCustomEvents,
-  ])
+    return pivotCustomEventsTimeseries(
+      stackedChartQuery.data.data,
+      topEventsForChart,
+    )
+  }, [stackedChartQuery.data, topEventsForChart])
 
   useEffect(() => {
     setEventsMetadata({})
@@ -761,6 +756,48 @@ const CustomEvents = ({
     setTriggerEventWhenFiltersChange(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, triggerEventWhenFiltersChange])
+
+  const loadInlineMetadata = useCallback(
+    async (ev: string) => {
+      setInlineLoading((prev) => ({ ...prev, [ev]: true }))
+
+      try {
+        const { result } = await getCustomEventMetadata(ev)
+        setInlineMetadata((prev) => ({ ...prev, [ev]: result }))
+      } catch (reason) {
+        console.error(
+          `[ERROR](loadInlineMetadata) Failed to get metadata for event ${ev}`,
+          reason,
+        )
+        setInlineMetadata((prev) => ({ ...prev, [ev]: [] }))
+      }
+
+      setInlineLoading((prev) => ({ ...prev, [ev]: false }))
+    },
+    [getCustomEventMetadata],
+  )
+
+  const toggleInlineMetadata = (ev: string) => {
+    const willExpand = !expandedEvents[ev]
+
+    setExpandedEvents((prev) => ({ ...prev, [ev]: willExpand }))
+
+    if (willExpand && !inlineMetadata[ev]) {
+      loadInlineMetadata(ev)
+    }
+  }
+
+  // Metadata counts are filter-scoped, so cached expansions go stale whenever
+  // the dashboard filters change — refetch the ones that are open.
+  useEffect(() => {
+    setInlineMetadata({})
+    Object.keys(expandedEvents)
+      .filter((ev) => expandedEvents[ev])
+      .forEach((ev) => {
+        loadInlineMetadata(ev)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
 
   // is "e" is not set, then details loading is forced and all checks are skipped
   const toggleDetails =
@@ -846,7 +883,7 @@ const CustomEvents = ({
   }
 
   const _getFilterLink = (column: string | null, value: string | null) => {
-    return getFilterLink('ev' + (column ? `:key:${column}` : ''), value)
+    return getFilterLink(column ? `event_metadata:${column}` : 'event', value)
   }
 
   const CustomEventsTable = () => (
@@ -1008,42 +1045,165 @@ const CustomEvents = ({
                 totalCustomEvents === 0
                   ? 0
                   : _round((eventsData[ev] / totalCustomEvents) * 100, 0)
+              const isExpanded = !!expandedEvents[ev]
+              const isMetaLoading = !!inlineLoading[ev]
+              const groupedMetadata = groupMetadataByKey(
+                inlineMetadata[ev] || [],
+              )
 
               return (
-                <button
-                  type='button'
-                  key={`${ev}-${item.value}`}
-                  className='group relative flex w-full cursor-pointer items-center rounded-sm px-1 py-1.5 text-left hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
-                  onClick={() => {
-                    navigate(link)
-                  }}
-                >
+                <div key={`${ev}-${item.value}`}>
                   <div
-                    className='panel-bar absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                    style={panelBarStyle(
-                      getPercentage(eventsData[ev], maxValue),
-                    )}
-                  />
+                    role='presentation'
+                    className='group relative flex w-full items-center rounded-sm px-1 py-1.5 text-left hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
+                  >
+                    <div
+                      className='panel-bar absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                      style={panelBarStyle(
+                        getPercentage(eventsData[ev], maxValue),
+                      )}
+                    />
 
-                  <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
-                    <Text size='sm' truncate>
-                      {ev}
-                    </Text>
-                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
-                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                    <button
+                      type='button'
+                      onClick={() => toggleInlineMetadata(ev)}
+                      className='relative z-10 mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-700/80'
+                      aria-expanded={isExpanded}
+                      aria-label={t(
+                        isExpanded
+                          ? 'ariaLabels.hideEventDetails'
+                          : 'ariaLabels.showEventDetails',
+                        { event: ev },
+                      )}
+                    >
+                      {isMetaLoading ? (
+                        <Spin className='m-0! size-4!' />
+                      ) : (
+                        <CaretRightIcon
+                          className={cx(
+                            'size-4 text-gray-500 transition-transform dark:text-gray-400',
+                            {
+                              'rotate-90': isExpanded,
+                            },
+                          )}
+                        />
+                      )}
+                    </button>
+
+                    <Link
+                      to={link}
+                      className='relative z-10 flex min-w-0 flex-1 cursor-pointer items-center'
+                    >
+                      <Text size='sm' truncate>
+                        {ev}
+                      </Text>
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
+                      <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                    </Link>
+                    <div className='relative z-10 flex min-w-fit items-center justify-end pl-4 text-right'>
+                      <Text size='sm' weight='medium'>
+                        {eventsData[ev]}
+                      </Text>
+                      <Text size='sm' colour='muted' className='mx-2'>
+                        |
+                      </Text>
+                      <Text size='sm' colour='muted'>
+                        {perc}%
+                      </Text>
+                    </div>
                   </div>
-                  <div className='relative z-10 flex w-2/6 items-center justify-end text-right'>
-                    <Text size='sm' weight='medium'>
-                      {eventsData[ev]}
-                    </Text>
-                    <Text size='sm' colour='muted' className='mx-2'>
-                      |
-                    </Text>
-                    <Text size='sm' colour='muted'>
-                      {perc}%
-                    </Text>
-                  </div>
-                </button>
+
+                  {isExpanded && !isMetaLoading ? (
+                    <div className='mt-0.5 mb-1.5 ml-[11px] border-l border-gray-200 pl-3 dark:border-slate-800'>
+                      {_isEmpty(groupedMetadata) ? (
+                        <Text
+                          as='p'
+                          size='sm'
+                          colour='muted'
+                          className='px-1 py-1'
+                        >
+                          {t('project.noData')}
+                        </Text>
+                      ) : (
+                        _map(groupedMetadata, (metaValues, metaKey) => {
+                          const maxMetaCount = Math.max(
+                            ...metaValues.map((v) => v.count),
+                          )
+
+                          return (
+                            <div key={metaKey} className='py-0.5'>
+                              <Text
+                                as='p'
+                                size='xs'
+                                weight='medium'
+                                colour='muted'
+                                className='px-1 pt-1 pb-0.5'
+                              >
+                                {metaKey}
+                              </Text>
+                              <div className='space-y-0.5'>
+                                {_map(
+                                  _orderBy(metaValues, 'count', 'desc'),
+                                  ({ value, count }) => {
+                                    const metaLink = _getFilterLink(
+                                      metaKey,
+                                      value,
+                                    )
+                                    const metaShare =
+                                      eventsData[ev] > 0
+                                        ? _round(
+                                            (count / eventsData[ev]) * 100,
+                                            0,
+                                          )
+                                        : 0
+
+                                    return (
+                                      <Link
+                                        key={value}
+                                        to={metaLink}
+                                        className='group/meta relative flex w-full cursor-pointer items-center rounded-sm px-1 py-1 hover:bg-gray-50 dark:hover:bg-slate-900/60'
+                                      >
+                                        <div
+                                          className='panel-bar absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                                          style={panelBarStyle(
+                                            getPercentage(count, maxMetaCount),
+                                          )}
+                                        />
+                                        <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                                          <Text
+                                            size='sm'
+                                            truncate
+                                            className='text-gray-700 dark:text-gray-200'
+                                          >
+                                            {value}
+                                          </Text>
+                                          <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover/meta:block dark:text-gray-300' />
+                                          <div className='ml-2 h-4 w-4 group-hover/meta:hidden' />
+                                        </div>
+                                        <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                                          <span className='mr-2 hidden text-xs text-gray-500 group-hover/meta:inline dark:text-gray-400'>
+                                            ({metaShare}%)
+                                          </span>
+                                          <Text
+                                            size='sm'
+                                            weight='medium'
+                                            className='text-gray-700 dark:text-gray-200'
+                                          >
+                                            {count}
+                                          </Text>
+                                        </div>
+                                      </Link>
+                                    )
+                                  },
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  ) : null}
+                </div>
               )
             },
           )}
@@ -1152,10 +1312,10 @@ interface MetadataKeyPanelProps {
   ) => Promise<{ result: Array<{ key: string; value: string; count: number }> }>
   getFilterLink: (column: string, value: string | null) => LinkProps['to']
   chartData: any
-  filters: Filter[]
+  filters: V2Filter[]
   activeKey: string
   onKeyChange: (key: string) => void
-  filterPrefix: 'ev:key' | 'tag:key'
+  filterPrefix: 'event_metadata' | 'page_property'
   // For 'property' mode: dropdown shows property keys, values are for that key
   // For 'customEvent' mode: dropdown shows event names, values show ALL metadata for that event (grouped by key)
   mode: 'property' | 'customEvent'
@@ -1402,14 +1562,9 @@ const MetadataKeyBody = ({
   const hasExistingData =
     mode === 'customEvent' ? !_isEmpty(rawMetadata) : !_isEmpty(valuesData)
 
-  const hasOverflowData =
-    mode === 'customEvent'
-      ? _size(rawMetadata) > ENTRIES_PER_PANEL
-      : _size(valuesData) > ENTRIES_PER_PANEL
-
   useEffect(() => {
-    onShowDetailsChange?.(hasOverflowData)
-  }, [hasOverflowData, onShowDetailsChange])
+    onShowDetailsChange?.(hasExistingData)
+  }, [hasExistingData, onShowDetailsChange])
 
   useEffect(() => {
     if (detailsTrigger && detailsTrigger > 0) {
@@ -1434,11 +1589,7 @@ const MetadataKeyBody = ({
 
     // Only show loader on initial load when there's no existing data
     if (loading && !hasExistingData) {
-      return (
-        <div className='flex items-center justify-center py-8'>
-          <Spin />
-        </div>
-      )
+      return <PanelLoadingState />
     }
 
     if (
@@ -1654,7 +1805,7 @@ interface CombinedMetadataPanelProps {
   }
   getFilterLink: (column: string, value: string | null) => LinkProps['to']
   chartData: any
-  filters: Filter[]
+  filters: V2Filter[]
 }
 
 const CombinedMetadataPanel = ({
@@ -1686,8 +1837,8 @@ const CombinedMetadataPanel = ({
   }, [activeMode, hasProperty, hasCustomEvent])
 
   const activeSection = activeMode === 'property' ? property : customEvent
-  const activeFilterPrefix: 'ev:key' | 'tag:key' =
-    activeMode === 'property' ? 'tag:key' : 'ev:key'
+  const activeFilterPrefix: 'event_metadata' | 'page_property' =
+    activeMode === 'property' ? 'page_property' : 'event_metadata'
 
   const dropdownItems = useMemo(
     () => activeSection.metadataKeys.map((key) => ({ id: key, label: key })),
@@ -1789,20 +1940,19 @@ const CombinedMetadataPanel = ({
           detailsTrigger={detailsTrigger}
         />
       </div>
-      {canShowDetails ? (
-        <div className='mt-2 flex items-center justify-center'>
-          <Button
-            variant='icon'
-            className='gap-1.5 px-3 py-2'
-            type='button'
-            onClick={() => setDetailsTrigger((n) => n + 1)}
-            aria-label={t('common.details')}
-          >
-            <ScanIcon className='size-4' />
-            <span>{t('common.details')}</span>
-          </Button>
-        </div>
-      ) : null}
+      <div className='mt-2 flex items-center justify-center'>
+        <Button
+          variant='icon'
+          className='gap-1.5 px-3 py-2'
+          type='button'
+          onClick={() => setDetailsTrigger((n) => n + 1)}
+          disabled={!canShowDetails}
+          aria-label={t('common.details')}
+        >
+          <ScanIcon className='size-4' />
+          <span>{t('common.details')}</span>
+        </Button>
+      </div>
     </div>
   )
 }
@@ -1826,7 +1976,7 @@ const FilterWrapper = ({ children, as, to, ...props }: FilterWrapperProps) => {
   return <div {...props}>{children}</div>
 }
 
-interface PanelProps {
+export interface PanelProps {
   name: string
   data: Entry[]
   rowMapper?: (row: any) => React.ReactNode
@@ -1872,6 +2022,12 @@ interface PanelProps {
   rowTooltipRenderer?: (entry: Entry) => React.ReactNode
   /** When true with rowTooltipRenderer, tooltip is fixed to the cursor (chart-style) instead of Radix anchor positioning. */
   rowTooltipFollowCursor?: boolean
+  isRefetching?: boolean
+  /** Shows a centered spinner in place of the rows while the first page is being fetched. */
+  isLoading?: boolean
+  /** Defined only while further pages remain; the details table autoloads them on scroll. */
+  onLoadMore?: () => void
+  loadingMore?: boolean
 }
 
 interface DetailsTableProps extends Pick<
@@ -1886,6 +2042,8 @@ interface DetailsTableProps extends Pick<
   | 'valueMapper'
   | 'getFilterLink'
   | 'activeTab'
+  | 'onLoadMore'
+  | 'loadingMore'
 > {
   total: number
   closeDetails: () => void
@@ -1915,6 +2073,8 @@ const DetailsTable = ({
   hidePercentageInDetails,
   detailsExtraColumns,
   activeTab = PROJECT_TABS.traffic,
+  onLoadMore,
+  loadingMore,
 }: DetailsTableProps) => {
   const {
     t,
@@ -1932,7 +2092,7 @@ const DetailsTable = ({
 
   const getNameLabel = useCallback(
     (entry: Entry): string => {
-      if (activeTabId === 'cc') {
+      if (activeTabId === 'country') {
         const code = entry.cc || entry.name
         try {
           const countryName = code ? countries.getName(code, language) : ''
@@ -1942,7 +2102,7 @@ const DetailsTable = ({
         }
       }
 
-      if (activeTabId === 'lc') {
+      if (activeTabId === 'locale') {
         try {
           return (
             getLocaleDisplayName(entry?.name, language) || entry?.name || ''
@@ -2032,13 +2192,15 @@ const DetailsTable = ({
     })
   }
 
+  // Keyed on the dimension, not on `data` — appending a page gives `data` a new
+  // identity, and resetting on that would undo the user's sort mid-scroll.
   useEffect(() => {
     setSort({
       label: 'quantity',
       sortByAscend: false,
       sortByDescend: false,
     })
-  }, [data])
+  }, [activeTabId])
 
   const numericColsCount =
     1 + (detailsExtraColumns?.length || 0) + (!hidePercentageInDetails ? 1 : 0)
@@ -2238,6 +2400,15 @@ const DetailsTable = ({
               )
             })}
           </div>
+
+          {onLoadMore ? (
+            <InfiniteScrollTrigger
+              hasMore
+              isLoading={Boolean(loadingMore)}
+              onLoadMore={onLoadMore}
+              root={parentRef}
+            />
+          ) : null}
         </div>
       </div>
     </div>
@@ -2272,6 +2443,10 @@ const Panel = ({
   selectedRow,
   rowTooltipRenderer,
   rowTooltipFollowCursor = false,
+  isRefetching,
+  isLoading,
+  onLoadMore,
+  loadingMore,
 }: PanelProps) => {
   const ctx = useViewProjectContext()
   const dataLoading = dataLoadingProp ?? ctx.dataLoading
@@ -2321,17 +2496,19 @@ const Panel = ({
 
   return (
     <PanelContainer
-      onDetailsClick={
-        _size(data) > ENTRIES_PER_PANEL
-          ? () => setDetailsOpened(true)
-          : undefined
-      }
+      // A custom body (a map, an error state) has no rows to drill into, so it
+      // gets no details button at all. Row panels always keep theirs — disabled
+      // rather than absent — so the panel is the same height while loading.
+      onDetailsClick={customRenderer ? undefined : () => setDetailsOpened(true)}
+      detailsDisabled={isLoading || _isEmpty(data)}
       name={name}
       icon={icon}
       type={id}
       tabs={tabs}
       onTabChange={onTabChange}
       activeTabId={activeTabId}
+      isRefetching={isRefetching}
+      isLoading={isLoading}
     >
       {customRenderer ? (
         customRenderer()
@@ -2722,6 +2899,8 @@ const Panel = ({
             hidePercentageInDetails={hidePercentageInDetails}
             detailsExtraColumns={detailsExtraColumns}
             activeTab={activeTab}
+            onLoadMore={onLoadMore}
+            loadingMore={loadingMore}
           />
         }
         size='large'
@@ -2973,6 +3152,7 @@ const MetadataPanelMemo = memo(MetadataPanel) as typeof MetadataPanel
 export {
   PanelContainer,
   PanelEmptyState,
+  PanelLoadingState,
   PanelMemo as Panel,
   CustomEventsMemo as CustomEvents,
   CombinedMetadataPanelMemo as CombinedMetadataPanel,

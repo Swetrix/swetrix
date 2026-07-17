@@ -1,10 +1,4 @@
-import dayjs from 'dayjs'
-import isoWeek from 'dayjs/plugin/isoWeek'
-import quarterOfYear from 'dayjs/plugin/quarterOfYear'
-import type { Filter } from '~/pages/Project/View/interfaces/traffic'
-
-dayjs.extend(isoWeek)
-dayjs.extend(quarterOfYear)
+import { TimeseriesRow } from '~/api/v2/types'
 
 export const SEO_METRICS = {
   clicks: 'clicks',
@@ -55,92 +49,25 @@ export interface DateSeriesEntry {
   position: number
 }
 
-const getBucketKey = (date: string, bucket: string): string => {
-  const d = dayjs(date)
-  switch (bucket) {
-    case 'hour':
-    case 'day':
-      return date
-    case 'week':
-      return d.startOf('isoWeek').format('YYYY-MM-DD')
-    case 'month':
-      return d.startOf('month').format('YYYY-MM-DD')
-    case 'quarter':
-      return d.startOf('quarter').format('YYYY-MM-DD')
-    case 'year':
-      return d.startOf('year').format('YYYY-MM-DD')
-    default:
-      return date
-  }
-}
-
-export const aggregateDateSeries = (
-  series: DateSeriesEntry[],
-  bucket: string,
-): DateSeriesEntry[] => {
-  if (!series.length || bucket === 'day' || bucket === 'hour') return series
-
-  const buckets = new Map<
-    string,
-    {
-      clicks: number
-      impressions: number
-      weightedPosition: number
-    }
-  >()
-  const orderedKeys: string[] = []
-
-  for (const entry of series) {
-    const key = getBucketKey(entry.date, bucket)
-    const existing = buckets.get(key)
-    if (existing) {
-      existing.clicks += entry.clicks
-      existing.impressions += entry.impressions
-      existing.weightedPosition += entry.position * entry.impressions
-    } else {
-      orderedKeys.push(key)
-      buckets.set(key, {
-        clicks: entry.clicks,
-        impressions: entry.impressions,
-        weightedPosition: entry.position * entry.impressions,
-      })
-    }
-  }
-
-  return orderedKeys.map((key) => {
-    const b = buckets.get(key)!
-    return {
-      date: key,
-      clicks: b.clicks,
-      impressions: b.impressions,
-      ctr:
-        b.impressions > 0
-          ? Number(((b.clicks / b.impressions) * 100).toFixed(2))
-          : 0,
-      position:
-        b.impressions > 0
-          ? Number((b.weightedPosition / b.impressions).toFixed(1))
-          : 0,
-    }
-  })
-}
-
-export const getGSCCompatibleFilters = (filters: Filter[]): Filter[] => {
-  return filters.flatMap((filter) => {
-    if (
-      filter.column === 'pg' ||
-      filter.column === 'keywords' ||
-      filter.column === 'cc' ||
-      filter.column === 'country' ||
-      filter.column === 'dv' ||
-      filter.column === 'device'
-    ) {
-      return [filter]
-    }
-
-    return []
-  })
-}
+/**
+ * The v2 SEO timeseries is already bucketed server-side; this only reshapes its
+ * ISO timestamps into the plain date strings the chart builders plot on the x
+ * axis.
+ */
+export const seoTimeseriesToDateSeries = (
+  rows: TimeseriesRow[] | undefined,
+  timeBucket: string,
+): DateSeriesEntry[] =>
+  (rows ?? []).map((row) => ({
+    date:
+      timeBucket === 'hour'
+        ? row.timestamp.slice(0, 19).replace('T', ' ')
+        : row.timestamp.slice(0, 10),
+    clicks: Number(row.clicks ?? 0),
+    impressions: Number(row.impressions ?? 0),
+    ctr: Number(row.ctr ?? 0),
+    position: Number(row.position ?? 0),
+  }))
 
 export const hasOrganicPositionData = (
   series: OrganicPositionEntry[],

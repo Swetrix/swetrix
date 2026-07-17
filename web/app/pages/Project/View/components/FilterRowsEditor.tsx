@@ -18,11 +18,9 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
-import {
-  FILTERS_PANELS_ORDER,
-  ERRORS_FILTERS_PANELS_ORDER,
-} from '~/lib/constants'
+import { getDimensionValues } from '~/api/v2/endpoints'
+import { V2Filter, V2FilterOperator } from '~/api/v2/types'
+import { KEYED_DIMENSIONS, VALID_DIMENSIONS_BY_TYPE } from '~/lib/v2Dimensions'
 import { useOptionalCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import FilterValueInput, {
@@ -31,28 +29,26 @@ import FilterValueInput, {
   parseVersionValue,
 } from '~/ui/FilterValueInput'
 import { Text } from '~/ui/Text'
+import { filterToUrlValue } from '~/utils/analyticsUrl'
 import countries from '~/utils/isoCountries'
 
-import { Filter as FilterType } from '../interfaces/traffic'
 import { cn } from '~/utils/generic'
-
-type FilterOperator = 'is' | 'isNot' | 'contains' | 'notContains'
 
 interface FilterRow {
   id: string
   column: string
-  operator: FilterOperator
+  operator: V2FilterOperator
   value: string
 }
 
 interface FilterRowsEditorProps {
   active: boolean
   tnMapping: Record<string, string>
-  initialFilters?: FilterType[]
-  currentFilters?: FilterType[]
+  initialFilters?: V2Filter[]
+  currentFilters?: V2Filter[]
   type: 'traffic' | 'errors'
   filterOptions?: string[]
-  onChange: (filters: FilterType[]) => void
+  onChange: (filters: V2Filter[]) => void
   resetKey?: string
   prefetchOnOpen?: boolean
   showCurrentFilters?: boolean
@@ -61,27 +57,39 @@ interface FilterRowsEditorProps {
   projectId?: string
 }
 
-const EMPTY_FILTERS: FilterType[] = []
+const EMPTY_FILTERS: V2Filter[] = []
 
-const OPERATORS: { value: FilterOperator; labelKey: string }[] = [
+const OPERATORS: { value: V2FilterOperator; labelKey: string }[] = [
   { value: 'is', labelKey: 'common.is' },
-  { value: 'isNot', labelKey: 'common.isNot' },
+  { value: 'is_not', labelKey: 'common.isNot' },
   { value: 'contains', labelKey: 'project.contains.is' },
-  { value: 'notContains', labelKey: 'project.contains.not' },
+  { value: 'contains_not', labelKey: 'project.contains.not' },
 ]
 
-const getMetadataColumnBase = (column: string) => {
-  if (column === 'ev:key' || column.startsWith('ev:key:')) return 'ev:key'
-  if (column === 'tag:key' || column.startsWith('tag:key:')) return 'tag:key'
-  if (column === 'ev:value') return 'ev:value'
-  if (column === 'tag:value') return 'tag:value'
-  return column
+const parseRowColumn = (
+  column: string,
+): { dimension: string; key?: string } => {
+  for (const dimension of KEYED_DIMENSIONS) {
+    if (column.startsWith(`${dimension}:`)) {
+      return { dimension, key: column.substring(dimension.length + 1) }
+    }
+  }
+
+  return { dimension: column }
 }
 
+const getMetadataColumnBase = (column: string) =>
+  parseRowColumn(column).dimension
+
+const isKeyedColumn = (column: string) =>
+  (KEYED_DIMENSIONS as readonly string[]).includes(
+    getMetadataColumnBase(column),
+  )
+
 const getOperatorsForColumn = (column: string) => {
-  if (column.startsWith('ev:key') || column.startsWith('tag:key')) {
+  if (isKeyedColumn(column)) {
     return OPERATORS.filter(
-      (operator) => operator.value === 'is' || operator.value === 'isNot',
+      (operator) => operator.value === 'is' || operator.value === 'is_not',
     )
   }
 
@@ -90,8 +98,8 @@ const getOperatorsForColumn = (column: string) => {
 
 const normalizeFilterOperator = (
   column: string,
-  operator: FilterOperator,
-): FilterOperator => {
+  operator: V2FilterOperator,
+): V2FilterOperator => {
   const operatorOptions = getOperatorsForColumn(column)
 
   return operatorOptions.some((option) => option.value === operator)
@@ -112,32 +120,10 @@ const createFilterRow = ({
 
 const createEmptyFilterRow = (): FilterRow => createFilterRow()
 
-const operatorToFilter = (
-  operator: FilterOperator,
-): { isExclusive: boolean; isContains: boolean } => {
-  switch (operator) {
-    case 'is':
-      return { isExclusive: false, isContains: false }
-    case 'isNot':
-      return { isExclusive: true, isContains: false }
-    case 'contains':
-      return { isExclusive: false, isContains: true }
-    case 'notContains':
-      return { isExclusive: true, isContains: true }
-  }
-}
+const filterToRowColumn = (filter: V2Filter): string =>
+  filter.key ? `${filter.dimension}:${filter.key}` : filter.dimension
 
-const filterToOperator = ({
-  isExclusive,
-  isContains,
-}: FilterType): FilterOperator => {
-  if (isContains && isExclusive) return 'notContains'
-  if (isContains) return 'contains'
-  if (isExclusive) return 'isNot'
-  return 'is'
-}
-
-const filtersToRows = (filters: FilterType[] = []): FilterRow[] => {
+const filtersToRows = (filters: V2Filter[] = []): FilterRow[] => {
   const usedIndexes = new Set<number>()
 
   return filters.flatMap((filter, index) => {
@@ -145,15 +131,15 @@ const filtersToRows = (filters: FilterType[] = []): FilterRow[] => {
       return []
     }
 
-    if (filter.column === 'br' || filter.column === 'os') {
-      const versionColumn = filter.column === 'br' ? 'brv' : 'osv'
-      const operator = filterToOperator(filter)
+    if (filter.dimension === 'browser' || filter.dimension === 'os') {
+      const versionDimension =
+        filter.dimension === 'browser' ? 'browser_version' : 'os_version'
       const versionIndex = filters.findIndex(
         (candidate, candidateIndex) =>
           candidateIndex !== index &&
           !usedIndexes.has(candidateIndex) &&
-          candidate.column === versionColumn &&
-          filterToOperator(candidate) === operator,
+          candidate.dimension === versionDimension &&
+          candidate.operator === filter.operator,
       )
 
       if (versionIndex !== -1) {
@@ -162,11 +148,11 @@ const filtersToRows = (filters: FilterType[] = []): FilterRow[] => {
 
         return [
           createFilterRow({
-            column: versionColumn,
-            operator,
+            column: versionDimension,
+            operator: filter.operator,
             value: createVersionValue(
-              filter.filter,
-              filters[versionIndex].filter,
+              filterToUrlValue(filter),
+              filterToUrlValue(filters[versionIndex]),
             ),
           }),
         ]
@@ -177,9 +163,9 @@ const filtersToRows = (filters: FilterType[] = []): FilterRow[] => {
 
     return [
       createFilterRow({
-        column: filter.column,
-        operator: filterToOperator(filter),
-        value: filter.filter,
+        column: filterToRowColumn(filter),
+        operator: filter.operator,
+        value: filterToUrlValue(filter),
       }),
     ]
   })
@@ -206,79 +192,55 @@ const InlineButton = ({
   </button>
 )
 
-const filterRowsToFilters = (filterRows: FilterRow[], language: string) => {
-  const validFilters: FilterType[] = []
+const filterRowsToFilters = (
+  filterRows: FilterRow[],
+  language: string,
+): V2Filter[] => {
+  const validFilters: V2Filter[] = []
 
   filterRows
     .filter((row) => row.column && row.value)
     .forEach((row) => {
-      const { isExclusive, isContains } = operatorToFilter(row.operator)
-
-      if (row.column === 'brv') {
+      if (row.column === 'browser_version' || row.column === 'os_version') {
+        const parentDimension =
+          row.column === 'browser_version' ? 'browser' : 'os'
         const parsed = parseVersionValue(row.value)
         if (parsed) {
           validFilters.push({
-            column: 'br',
-            filter: parsed.parent,
-            isExclusive,
-            isContains,
+            dimension: parentDimension,
+            operator: row.operator,
+            value: parsed.parent,
           })
           validFilters.push({
-            column: 'brv',
-            filter: parsed.version,
-            isExclusive,
-            isContains,
+            dimension: row.column,
+            operator: row.operator,
+            value: parsed.version,
           })
         } else {
           validFilters.push({
-            column: 'brv',
-            filter: row.value,
-            isExclusive,
-            isContains,
-          })
-        }
-        return
-      }
-
-      if (row.column === 'osv') {
-        const parsed = parseVersionValue(row.value)
-        if (parsed) {
-          validFilters.push({
-            column: 'os',
-            filter: parsed.parent,
-            isExclusive,
-            isContains,
-          })
-          validFilters.push({
-            column: 'osv',
-            filter: parsed.version,
-            isExclusive,
-            isContains,
-          })
-        } else {
-          validFilters.push({
-            column: 'osv',
-            filter: row.value,
-            isExclusive,
-            isContains,
+            dimension: row.column,
+            operator: row.operator,
+            value: row.value,
           })
         }
         return
       }
 
       let processedValue = row.value
-      if (row.column === 'cc') {
+      if (row.column === 'country') {
         const alpha2 = countries.getAlpha2Code(row.value, language)
         if (alpha2) {
           processedValue = alpha2
         }
       }
 
+      const { dimension, key } = parseRowColumn(row.column)
+
       validFilters.push({
-        column: row.column,
-        filter: processedValue,
-        isExclusive,
-        isContains,
+        dimension,
+        operator: row.operator,
+        value: processedValue === 'null' ? null : processedValue,
+        ...(key ? { key } : {}),
       })
     })
 
@@ -311,14 +273,17 @@ const FilterRowsEditor = ({
   >({})
   const [loadingColumns, setLoadingColumns] = useState<Set<string>>(new Set())
   const inFlightRef = useRef<Set<string>>(new Set())
-  const { fetchFilters, fetchErrorsFilters, fetchVersionFilters } =
-    useFiltersProxy()
 
-  const panelOptions = filterOptions?.length
-    ? filterOptions
-    : type === 'traffic'
-      ? FILTERS_PANELS_ORDER
-      : ERRORS_FILTERS_PANELS_ORDER
+  const panelOptions = useMemo(
+    () =>
+      filterOptions?.length
+        ? filterOptions
+        : VALID_DIMENSIONS_BY_TYPE[type].filter(
+            (dimension) =>
+              !(KEYED_DIMENSIONS as readonly string[]).includes(dimension),
+          ),
+    [filterOptions, type],
+  )
 
   const filters = useMemo(
     () => filterRowsToFilters(filterRows, language),
@@ -327,16 +292,15 @@ const FilterRowsEditor = ({
 
   const getColumnLabel = useCallback(
     (column: string) => {
-      if (column.startsWith('ev:key:')) {
-        return t('project.metamapping.ev.dynamicKey', {
-          key: column.replace(/^ev:key:/, ''),
-        })
-      }
+      const { dimension, key } = parseRowColumn(column)
 
-      if (column.startsWith('tag:key:')) {
-        return t('project.metamapping.tag.dynamicKey', {
-          key: column.replace(/^tag:key:/, ''),
-        })
+      if (key) {
+        return t(
+          `project.metamapping.${dimension === 'page_property' ? 'tag' : 'ev'}.dynamicKey`,
+          {
+            key,
+          },
+        )
       }
 
       return tnMapping[column] || t(`project.mapping.${column}`)
@@ -359,11 +323,9 @@ const FilterRowsEditor = ({
 
   const fetchFilterValues = useCallback(
     async (column: string) => {
-      if (
-        (getMetadataColumnBase(column) !== column || column.includes(':')) &&
-        !column.startsWith('ev:') &&
-        !column.startsWith('tag:')
-      ) {
+      const { dimension, key } = parseRowColumn(column)
+
+      if (key || !VALID_DIMENSIONS_BY_TYPE[type].includes(dimension)) {
         setFilterValuesCache((prev) =>
           prev[column] ? prev : { ...prev, [column]: [] },
         )
@@ -381,25 +343,12 @@ const FilterRowsEditor = ({
       inFlightRef.current.add(column)
       setLoadingColumns((prev) => new Set(prev).add(column))
       try {
-        let result: string[] = []
-
-        if (column === 'brv') {
-          const dataType = type === 'errors' ? 'errors' : 'traffic'
-          const pairs = await fetchVersionFilters(id, dataType, 'br')
-          if (pairs) {
-            result = pairs.map((p) => createVersionValue(p.name, p.version))
-          }
-        } else if (column === 'osv') {
-          const dataType = type === 'errors' ? 'errors' : 'traffic'
-          const pairs = await fetchVersionFilters(id, dataType, 'os')
-          if (pairs) {
-            result = pairs.map((p) => createVersionValue(p.name, p.version))
-          }
-        } else if (type === 'errors') {
-          result = (await fetchErrorsFilters(id, column)) || []
-        } else {
-          result = (await fetchFilters(id, column)) || []
-        }
+        const { data } = await getDimensionValues(id, dimension, { type })
+        const result = (data || []).map((item) =>
+          typeof item === 'string'
+            ? item
+            : createVersionValue(item.name, item.version),
+        )
         setFilterValuesCache((prev) => ({ ...prev, [column]: result }))
       } catch (error) {
         console.error('Failed to fetch filter values:', error)
@@ -413,15 +362,7 @@ const FilterRowsEditor = ({
         })
       }
     },
-    [
-      id,
-      type,
-      filterValuesCache,
-      loadingColumns,
-      fetchFilters,
-      fetchErrorsFilters,
-      fetchVersionFilters,
-    ],
+    [id, type, filterValuesCache, loadingColumns],
   )
 
   useEffect(() => {
@@ -711,47 +652,47 @@ const FilterRowsEditor = ({
             {t('project.currentFilters')}
           </Text>
           <div className='flex flex-wrap gap-2'>
-            {currentFilters.map(
-              ({ column, filter, isExclusive, isContains }) => {
-                let displayFilter = filter
-                if (column === 'cc') {
-                  displayFilter = countries.getName(filter, language) || filter
-                }
-                const operatorLabel = isContains
-                  ? isExclusive
-                    ? t('project.contains.not')
-                    : t('project.contains.is')
-                  : isExclusive
-                    ? t('common.isNot')
-                    : t('common.is')
+            {currentFilters.map((filter) => {
+              const { dimension, operator } = filter
+              const value = filterToUrlValue(filter)
 
-                return (
-                  <span
-                    key={`${column}-${filter}-${isExclusive}-${isContains}`}
-                    className='inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-gray-300'
-                  >
-                    <span className='text-gray-500 dark:text-gray-400'>
-                      {getColumnLabel(column)}
-                    </span>
-                    <span
-                      className={cx({
-                        'text-green-600 dark:text-green-400':
-                          !isExclusive && !isContains,
-                        'text-red-600 dark:text-red-400':
-                          isExclusive && !isContains,
-                        'text-yellow-600 dark:text-yellow-400':
-                          !isExclusive && isContains,
-                        'text-orange-600 dark:text-orange-400':
-                          isExclusive && isContains,
-                      })}
-                    >
-                      {operatorLabel}
-                    </span>
-                    <span className='font-semibold'>{displayFilter}</span>
+              let displayFilter = value
+              if (dimension === 'country') {
+                displayFilter = countries.getName(value, language) || value
+              }
+              const operatorLabel =
+                operator === 'contains'
+                  ? t('project.contains.is')
+                  : operator === 'contains_not'
+                    ? t('project.contains.not')
+                    : operator === 'is_not'
+                      ? t('common.isNot')
+                      : t('common.is')
+
+              return (
+                <span
+                  key={`${filterToRowColumn(filter)}-${value}-${operator}`}
+                  className='inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-gray-300'
+                >
+                  <span className='text-gray-500 dark:text-gray-400'>
+                    {getColumnLabel(filterToRowColumn(filter))}
                   </span>
-                )
-              },
-            )}
+                  <span
+                    className={cx({
+                      'text-green-600 dark:text-green-400': operator === 'is',
+                      'text-red-600 dark:text-red-400': operator === 'is_not',
+                      'text-yellow-600 dark:text-yellow-400':
+                        operator === 'contains',
+                      'text-orange-600 dark:text-orange-400':
+                        operator === 'contains_not',
+                    })}
+                  >
+                    {operatorLabel}
+                  </span>
+                  <span className='font-semibold'>{displayFilter}</span>
+                </span>
+              )
+            })}
           </div>
         </div>
       ) : null}

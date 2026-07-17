@@ -149,17 +149,11 @@ const SolutionCard = ({ item }: { item: SolutionItem }) => {
   const isInternal = _startsWith(item.link, '/')
 
   const className =
-    'group/card relative flex flex-col rounded-xl p-2 ring-1 ring-transparent transition-[box-shadow,background-color] duration-200 ease-out hover:bg-gray-50 hover:ring-gray-200/80 motion-reduce:transition-none dark:hover:bg-slate-800/40 dark:hover:ring-slate-700/60'
+    'group/card relative flex flex-col rounded-xl p-2 ring-1 ring-transparent transition-[box-shadow,background-color,filter] duration-300 ease-out hover:bg-gray-50 hover:ring-gray-200/80 group-has-[a:hover]/solutions:not-hover:grayscale motion-reduce:transition-none dark:hover:bg-slate-800/40 dark:hover:ring-slate-700/60'
 
   const inner = (
     <>
-      <div
-        className={cn(
-          'relative h-28 overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-200/70 dark:bg-slate-800 dark:ring-slate-700/60',
-          'grayscale transition-[filter] duration-500 ease-out group-hover/card:grayscale-0',
-          'motion-reduce:transition-none',
-        )}
-      >
+      <div className='relative h-28 overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-200/70 dark:bg-slate-800 dark:ring-slate-700/60'>
         {visual ? (
           <>
             <img
@@ -174,10 +168,7 @@ const SolutionCard = ({ item }: { item: SolutionItem }) => {
       </div>
       <h3 className='flex items-start gap-1.5 px-1 pt-3 text-[13px] leading-5 font-semibold text-gray-900 dark:text-gray-50'>
         <item.icon
-          className={cn(
-            'mt-0.5 size-4 shrink-0 text-gray-400 transition-colors duration-300 dark:text-gray-500',
-            visual?.accentIcon,
-          )}
+          className={cn('mt-0.5 size-4 shrink-0', item.className)}
           aria-hidden='true'
           weight='duotone'
         />
@@ -309,7 +300,7 @@ const SolutionsMenu = ({ inverted }: { inverted?: boolean }) => {
       >
         <div className='absolute left-0 z-40 mt-3 w-[min(50rem,calc(100vw-1.5rem))] xl:w-[56rem]'>
           <div className='overflow-hidden rounded-2xl bg-white/95 ring-1 ring-gray-200/80 backdrop-blur-md dark:bg-slate-950/95 dark:ring-slate-700/60'>
-            <div className='grid grid-cols-2 gap-2 p-3 lg:grid-cols-4'>
+            <div className='group/solutions grid grid-cols-2 gap-2 p-3 lg:grid-cols-4'>
               {_map(solutions, (item) => (
                 <SolutionCard key={item.name} item={item} />
               ))}

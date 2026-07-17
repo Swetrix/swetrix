@@ -1,192 +1,21 @@
-import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
 import _round from 'lodash/round'
 import { motion, type Variants } from 'motion/react'
-import React, { memo, useEffect, useState } from 'react'
+import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import {
-  FLOW_TIMING,
-  FLOW_VALUE_CLASS,
-  useFlowValue,
-} from '~/hooks/useFlowValue'
 import { OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
 import { Badge } from '~/ui/Badge'
+import { CompactNumberFlow, DurationFlow, PercentFlow } from '~/ui/NumberFlow'
 import { Text } from '~/ui/Text'
 import {
   nFormatter,
-  nFormatterSeparated,
   getStringFromTime,
   getTimeFromSeconds,
 } from '~/utils/generic'
-
-const useIsHydrated = () => {
-  const [isHydrated, setIsHydrated] = useState(false)
-
-  useEffect(() => {
-    setIsHydrated(true)
-  }, [])
-
-  return isHydrated
-}
-
-const StaticCompactNumber = ({ value }: { value: number }) => {
-  const [num, symbol] = nFormatterSeparated(value, 1) as [number, string | null]
-
-  return (
-    <>
-      {num}
-      {symbol}
-    </>
-  )
-}
-
-const AnimatedCompactNumber = ({ value }: { value: number }) => {
-  const flowValue = useFlowValue(value)
-  const [num, symbol] = nFormatterSeparated(flowValue, 1) as [
-    number,
-    string | null,
-  ]
-
-  return (
-    <NumberFlow
-      className={FLOW_VALUE_CLASS}
-      {...FLOW_TIMING}
-      value={num}
-      suffix={symbol ?? undefined}
-      format={{ maximumFractionDigits: 1 }}
-      willChange
-    />
-  )
-}
-
-const CompactNumberFlow = ({ value }: { value: number }) => {
-  const isHydrated = useIsHydrated()
-
-  return isHydrated ? (
-    <AnimatedCompactNumber value={value} />
-  ) : (
-    <StaticCompactNumber value={value} />
-  )
-}
-
-const AnimatedPercent = ({ value }: { value: number }) => {
-  const flowValue = useFlowValue(value)
-
-  return (
-    <NumberFlow
-      className={FLOW_VALUE_CLASS}
-      {...FLOW_TIMING}
-      value={flowValue}
-      suffix='%'
-      format={{ maximumFractionDigits: 1 }}
-      willChange
-    />
-  )
-}
-
-const PercentFlow = ({ value }: { value: number }) => {
-  const isHydrated = useIsHydrated()
-  const sanitizedValue = Number.isFinite(value) ? _round(value, 1) : 0
-
-  return isHydrated ? (
-    <AnimatedPercent value={sanitizedValue} />
-  ) : (
-    <>{sanitizedValue}%</>
-  )
-}
-
-const StaticDuration = ({
-  value,
-  showMs,
-}: {
-  value?: number
-  showMs?: boolean
-}) => (
-  <>
-    {getStringFromTime(
-      getTimeFromSeconds(Number.isFinite(value) ? value : 0),
-      showMs,
-    )}
-  </>
-)
-
-const AnimatedDuration = ({
-  value,
-  showMs,
-}: {
-  value?: number
-  showMs?: boolean
-}) => {
-  const flowValue = useFlowValue(value)
-  const time = getTimeFromSeconds(flowValue)
-  const s = showMs ? _round(time.s + time.ms / 1000, 2) : time.s
-
-  // Decide which units to render from the target value so the NumberFlow
-  // elements mount once and roll from zero, instead of remounting mid-flight
-  const target = getTimeFromSeconds(Number.isFinite(value) ? value : 0)
-  const targetS = showMs ? _round(target.s + target.ms / 1000, 2) : target.s
-  const showH = target.h > 0
-  const showM = target.m > 0
-  const showS = targetS > 0 || (!showH && !showM)
-
-  return (
-    <NumberFlowGroup>
-      <>
-        {target.negative ? '-' : null}
-        {showH ? (
-          <NumberFlow
-            className={FLOW_VALUE_CLASS}
-            {...FLOW_TIMING}
-            value={time.h}
-            suffix='h'
-            willChange
-          />
-        ) : null}
-        {showH && (showM || showS) ? ' ' : null}
-        {showM ? (
-          <NumberFlow
-            className={FLOW_VALUE_CLASS}
-            {...FLOW_TIMING}
-            value={time.m}
-            suffix='m'
-            willChange
-          />
-        ) : null}
-        {showM && showS ? ' ' : null}
-        {showS ? (
-          <NumberFlow
-            className={FLOW_VALUE_CLASS}
-            {...FLOW_TIMING}
-            value={s}
-            suffix='s'
-            format={{ maximumFractionDigits: 2 }}
-            willChange
-          />
-        ) : null}
-      </>
-    </NumberFlowGroup>
-  )
-}
-
-const DurationFlow = ({
-  value,
-  showMs,
-}: {
-  value?: number
-  showMs?: boolean
-}) => {
-  const isHydrated = useIsHydrated()
-
-  return isHydrated ? (
-    <AnimatedDuration value={value} showMs={showMs} />
-  ) : (
-    <StaticDuration value={value} showMs={showMs} />
-  )
-}
 
 // Entrance animation: parent containers set initial='hidden' animate='visible'
 // to stagger the cards in. Standalone usage (no motion parent) stays static.
@@ -286,13 +115,15 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     <Text
       size='4xl'
       weight='bold'
-      className={cx('whitespace-nowrap', classes?.value)}
+      className={cx('text-3xl whitespace-nowrap sm:text-4xl', classes?.value)}
     >
       {valueMapper ? valueMapper(value, 'main') : value}
     </Text>
     <div
       className={cx(
-        'flex items-center whitespace-nowrap',
+        // min-h matches the change badge, so a card is the same height before
+        // its badge arrives with the data as it is after.
+        'flex min-h-6 items-center whitespace-nowrap',
         {
           'space-x-2': _isNumber(change),
         },

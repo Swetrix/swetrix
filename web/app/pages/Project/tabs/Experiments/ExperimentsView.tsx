@@ -23,10 +23,10 @@ import { useFetcher, useLocation, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import type {
-  AnalyticsFilter,
   ExperimentResults as ExperimentResultsSummary,
   ExperimentVariantResult,
 } from '~/api/api.server'
+import type { V2Filter } from '~/api/v2/types'
 import { DOCS_URL } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import {
@@ -117,7 +117,7 @@ interface ExperimentRowProps {
   from: string
   to: string
   timezone?: string
-  filters: AnalyticsFilter[]
+  filters: V2Filter[]
 }
 
 const normaliseProbability = (value: number) => {
@@ -166,7 +166,7 @@ const ExperimentWinningRail = ({
   from: string
   to: string
   timezone?: string
-  filters: AnalyticsFilter[]
+  filters: V2Filter[]
 }) => {
   const { t } = useTranslation()
   const {

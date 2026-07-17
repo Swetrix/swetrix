@@ -80,10 +80,10 @@ import {
   TrafficCHResponse,
   IGetGroupFromTo,
   GetFiltersQuery,
-  IUserFlowNode,
-  IUserFlowLink,
-  IUserFlow,
-  IBuildUserFlow,
+  IJourney,
+  IJourneys,
+  IJourneyNodeDetails,
+  IJourneyLinkDetails,
   IExtractChartData,
   IGenerateXAxis,
   IAggregatedMetadata,
@@ -122,8 +122,21 @@ const isValidLocale = (lc: string): boolean => {
 
 // 2 minutes
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
+// The concurrency sweep materializes one row per minute of the requested window,
+// so cap how far back it can be reconstructed to keep the query bounded
+const MAX_CONCURRENCY_WINDOW_MINUTES = 366 * 24 * 60
 const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
+// Journeys keep only the first {steps} distinct pages of a session, but the
+// dedupe happens after aggregation, so the cap has to sit far above {steps}:
+// a session that reloads one page N times still needs its later, different
+// pages to survive. 1000 raw pageviews is orders of magnitude beyond any real
+// session while keeping a bot's session array bounded.
+const MAX_JOURNEY_PAGEVIEWS_PER_SESSION = 1000
+
+// Synthetic link target marking sessions whose journey ended at the source
+// node; must match the frontend's Sankey exit node identifier.
+const JOURNEY_EXIT_TARGET = '__exit__'
 
 // Event types that can be targeted by the data-deletion tool.
 const DELETABLE_EVENT_TYPES = [...DATA_DELETION_EVENT_TYPES]
@@ -308,10 +321,13 @@ const mapErrorColumn = (type: string): string => ERROR_COLUMN_MAP[type] || type
 const captchaMetaValue = (key: string, fallback: string) =>
   `if(indexOf(\`meta.key\`, '${key}') = 0, '${fallback}', arrayElement(\`meta.value\`, indexOf(\`meta.key\`, '${key}')))`
 
-const CAPTCHA_EVENT_SQL = captchaMetaValue('captcha_event', 'pass')
-const CAPTCHA_DIFFICULTY_SQL = captchaMetaValue('captcha_difficulty', '0')
-const CAPTCHA_REASON_SQL = captchaMetaValue('captcha_reason', '')
-const CAPTCHA_SOLVE_MS_SQL = `toUInt32OrZero(${captchaMetaValue('solve_ms', '0')})`
+export const CAPTCHA_EVENT_SQL = captchaMetaValue('captcha_event', 'pass')
+export const CAPTCHA_DIFFICULTY_SQL = captchaMetaValue(
+  'captcha_difficulty',
+  '0',
+)
+export const CAPTCHA_REASON_SQL = captchaMetaValue('captcha_reason', '')
+export const CAPTCHA_SOLVE_MS_SQL = `toUInt32OrZero(${captchaMetaValue('solve_ms', '0')})`
 const CAPTCHA_SOLVE_TIME_SQL = `multiIf(${CAPTCHA_SOLVE_MS_SQL} = 0, 'unknown', ${CAPTCHA_SOLVE_MS_SQL} < 1000, '<1s', ${CAPTCHA_SOLVE_MS_SQL} < 3000, '1-3s', ${CAPTCHA_SOLVE_MS_SQL} < 10000, '3-10s', ${CAPTCHA_SOLVE_MS_SQL} < 30000, '10-30s', '30s+')`
 
 const CAPTCHA_META_COLUMN_MAP: Record<string, string> = {
@@ -321,7 +337,7 @@ const CAPTCHA_META_COLUMN_MAP: Record<string, string> = {
   solve_time: CAPTCHA_SOLVE_TIME_SQL,
 }
 
-const getCaptchaColumnExpression = (col: string): string =>
+export const getCaptchaColumnExpression = (col: string): string =>
   CAPTCHA_META_COLUMN_MAP[col] || col
 
 const generateParamsQuery = (
@@ -939,97 +955,374 @@ export class AnalyticsService {
     }
   }
 
-  removeCyclicDependencies(links: IUserFlowLink[]): IUserFlowLink[] {
-    const visited = new Set<string>()
-
-    return links.filter((link) => {
-      const key = `${link.source}_${link.target}`
-      if (visited.has(key)) {
-        return false
-      }
-      visited.add(key)
-      return true
-    })
-  }
-
-  buildUserFlow(links: IUserFlowLink[]): IBuildUserFlow {
-    const nodes: IUserFlowNode[] = Array.from(
-      new Set(
-        links
-          .map((link: IUserFlowLink) => link.source)
-          .concat(links.map((link: IUserFlowLink) => link.target)),
-      ),
-    ).map((node: any) => ({ id: node }))
-
-    return { nodes, links }
-  }
-
-  async getUserFlow(
+  async getJourneys(
     params: Record<string, unknown>,
     filtersQuery: string,
-  ): Promise<IUserFlow> {
-    const query = `
-      WITH page_sequences AS (
+    steps: number,
+    journeys: number,
+  ): Promise<IJourneys> {
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
+
+    // Single-page sessions (bounces) produce no transitions to draw, so they
+    // are excluded. On top of the overall top-{journeys} ranking, the top 3
+    // paths at every depth are kept so that long journeys remain visible even
+    // when short paths dominate the ranking.
+    //
+    // fullLength (the compacted path length before arraySlice) is kept so
+    // that sessions which ENDED at the last drawn step can be distinguished
+    // from sessions which CONTINUED past it (truncated by the steps limit).
+    const sessionPathsCTE = `
+      session_paths AS (
         SELECT
           psid,
-          pg,
-          created,
-          lagInFrame(pg) OVER (PARTITION BY psid ORDER BY created) AS prev_page
+          arrayCompact(
+            arrayMap(
+              x -> x.2,
+              groupArraySorted({maxPageviews:UInt32})((created, pg))
+            )
+          ) AS fullPath,
+          arraySlice(fullPath, 1, {steps:UInt32}) AS path,
+          length(fullPath) AS fullLength
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
           AND type = 'pageview'
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid != 0
           AND pg IS NOT NULL
-          ${filtersQuery}
+          ${sessionFiltersQuery}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psid
+        HAVING fullLength >= 2
       )
+    `
+
+    const query = `
+      WITH ${sessionPathsCTE}
       SELECT
-        prev_page AS source,
-        pg AS target,
-        count() AS value
-      FROM page_sequences
-      WHERE prev_page IS NOT NULL
-        AND prev_page != pg
-      GROUP BY
-        source,
-        target
+        path,
+        value,
+        continuedPast,
+        totalSessions,
+        totalPaths
+      FROM (
+        SELECT
+          path,
+          value,
+          continuedPast,
+          sum(value) OVER () AS totalSessions,
+          count() OVER () AS totalPaths,
+          row_number() OVER (ORDER BY value DESC, path ASC) AS overallRank,
+          row_number() OVER (PARTITION BY length(path) ORDER BY value DESC, path ASC) AS depthRank
+        FROM (
+          SELECT
+            path,
+            count() AS value,
+            countIf(fullLength > {steps:UInt32}) AS continuedPast
+          FROM session_paths
+          GROUP BY path
+        )
+      )
+      WHERE overallRank <= {journeys:UInt32} OR depthRank <= 3
       ORDER BY value DESC
+    `
+
+    // How many sessions have a (sliced) path of each length. Lets the client
+    // compute, per step, how many sessions reached that step at all -- the
+    // basis for the "Other paths" and "Exited" nodes and the coverage line.
+    const histogramQuery = `
+      WITH ${sessionPathsCTE}
+      SELECT
+        length(path) AS len,
+        count() AS sessions,
+        countIf(fullLength > {steps:UInt32}) AS truncated
+      FROM session_paths
+      GROUP BY len
+      ORDER BY len
+    `
+
+    const queryParams = {
+      ...params,
+      steps,
+      journeys,
+      maxPageviews: MAX_JOURNEY_PAGEVIEWS_PER_SESSION,
+    }
+
+    const [{ data }, { data: histogramData }] = await Promise.all([
+      clickhouse.query({ query, query_params: queryParams }).then((res) =>
+        res.json<{
+          path: string[]
+          value: string
+          continuedPast: string
+          totalSessions: string
+          totalPaths: string
+        }>(),
+      ),
+      clickhouse
+        .query({ query: histogramQuery, query_params: queryParams })
+        .then((res) =>
+          res.json<{ len: string; sessions: string; truncated: string }>(),
+        ),
+    ])
+
+    if (_isEmpty(data)) {
+      return {
+        journeys: [],
+        totalSessions: 0,
+        totalPaths: 0,
+        lengthHistogram: [],
+      }
+    }
+
+    const journeyList: IJourney[] = _map(data, (row) => ({
+      path: row.path,
+      value: Number(row.value),
+      continuedPast: Number(row.continuedPast),
+    }))
+
+    return {
+      journeys: journeyList,
+      totalSessions: Number(data[0].totalSessions),
+      totalPaths: Number(data[0].totalPaths),
+      lengthHistogram: _map(histogramData, (row) => ({
+        len: Number(row.len),
+        sessions: Number(row.sessions),
+        truncated: Number(row.truncated),
+      })),
+    }
+  }
+
+  // Top sources & countries for every node AND link drawn in the journeys
+  // Sankey. Computed over the TRUE population (every session whose path
+  // passes through the node / makes the transition), matching what the
+  // journey sessions drawer shows -- not just the sessions on top-N drawn
+  // paths. Links with target '__exit__' describe sessions whose journey
+  // ended at the source node.
+  async getJourneyNodeDetails(
+    params: Record<string, unknown>,
+    filtersQuery: string,
+    steps: number,
+    journeys: number,
+  ): Promise<{
+    nodes: IJourneyNodeDetails[]
+    links: IJourneyLinkDetails[]
+  }> {
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
+
+    const query = `
+      WITH session_paths AS (
+        SELECT
+          psid,
+          arrayCompact(
+            arrayMap(
+              x -> x.2,
+              groupArraySorted({maxPageviews:UInt32})((created, pg))
+            )
+          ) AS fullPath,
+          arraySlice(fullPath, 1, {steps:UInt32}) AS path,
+          length(fullPath) AS fullLength
+        FROM events
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND type = 'pageview'
+          AND psid != 0
+          AND pg IS NOT NULL
+          ${sessionFiltersQuery}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psid
+        HAVING fullLength >= 2
+      ),
+      ranked_paths AS (
+        SELECT path
+        FROM (
+          SELECT
+            path,
+            count() AS value,
+            row_number() OVER (ORDER BY value DESC, path ASC) AS overallRank,
+            row_number() OVER (PARTITION BY length(path) ORDER BY value DESC, path ASC) AS depthRank
+          FROM session_paths
+          GROUP BY path
+        )
+        WHERE overallRank <= {journeys:UInt32} OR depthRank <= 3
+      ),
+      drawn_nodes AS (
+        SELECT DISTINCT idx - 1 AS step, path[idx] AS page
+        FROM ranked_paths
+        ARRAY JOIN arrayEnumerate(path) AS idx
+      ),
+      node_sessions AS (
+        SELECT sp.psid AS psid, idx - 1 AS step, sp.path[idx] AS page
+        FROM session_paths sp
+        ARRAY JOIN arrayEnumerate(sp.path) AS idx
+        WHERE (idx - 1, sp.path[idx]) IN (SELECT step, page FROM drawn_nodes)
+      ),
+      drawn_links AS (
+        SELECT DISTINCT
+          idx - 1 AS step,
+          path[idx] AS source,
+          if(idx < length(path), path[idx + 1], '${JOURNEY_EXIT_TARGET}') AS target
+        FROM ranked_paths
+        ARRAY JOIN arrayEnumerate(path) AS idx
+      ),
+      link_sessions AS (
+        SELECT
+          sp.psid AS psid,
+          idx - 1 AS step,
+          sp.path[idx] AS source,
+          if(idx < length(sp.path), sp.path[idx + 1], '${JOURNEY_EXIT_TARGET}') AS target
+        FROM session_paths sp
+        ARRAY JOIN arrayEnumerate(sp.path) AS idx
+        WHERE (idx < length(sp.path) OR sp.fullLength = length(sp.path))
+          AND (
+            idx - 1,
+            sp.path[idx],
+            if(idx < length(sp.path), sp.path[idx + 1], '${JOURNEY_EXIT_TARGET}')
+          ) IN (SELECT step, source, target FROM drawn_links)
+      ),
+      session_info AS (
+        SELECT
+          psid,
+          argMin(cc, created) AS cc,
+          argMin(if(so IS NOT NULL AND so != '', so, if(domain(ref) != '', domain(ref), 'Direct / None')), created) AS source
+        FROM events
+        WHERE pid = {pid:FixedString(12)}
+          AND type = 'pageview'
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psid
+      )
+      SELECT step, page, target, type, val, cnt FROM (
+        SELECT ns.step AS step, ns.page AS page, '' AS target, 'countries' AS type, si.cc AS val, count() AS cnt
+        FROM node_sessions ns
+        INNER JOIN session_info si ON ns.psid = si.psid
+        WHERE si.cc != ''
+        GROUP BY ns.step, ns.page, si.cc
+
+        UNION ALL
+
+        SELECT ns.step AS step, ns.page AS page, '' AS target, 'sources' AS type, si.source AS val, count() AS cnt
+        FROM node_sessions ns
+        INNER JOIN session_info si ON ns.psid = si.psid
+        GROUP BY ns.step, ns.page, si.source
+
+        UNION ALL
+
+        SELECT ns.step AS step, ns.page AS page, '' AS target, 'total' AS type, '' AS val, count() AS cnt
+        FROM node_sessions ns
+        GROUP BY ns.step, ns.page
+
+        UNION ALL
+
+        SELECT ls.step AS step, ls.source AS page, ls.target AS target, 'countries' AS type, si.cc AS val, count() AS cnt
+        FROM link_sessions ls
+        INNER JOIN session_info si ON ls.psid = si.psid
+        WHERE si.cc != ''
+        GROUP BY ls.step, ls.source, ls.target, si.cc
+
+        UNION ALL
+
+        SELECT ls.step AS step, ls.source AS page, ls.target AS target, 'sources' AS type, si.source AS val, count() AS cnt
+        FROM link_sessions ls
+        INNER JOIN session_info si ON ls.psid = si.psid
+        GROUP BY ls.step, ls.source, ls.target, si.source
+
+        UNION ALL
+
+        SELECT ls.step AS step, ls.source AS page, ls.target AS target, 'total' AS type, '' AS val, count() AS cnt
+        FROM link_sessions ls
+        GROUP BY ls.step, ls.source, ls.target
+      )
+      ORDER BY step, page, target, type, cnt DESC, val ASC
+      LIMIT 5 BY step, page, target, type
     `
 
     const { data } = await clickhouse
       .query({
         query,
-        query_params: params,
+        query_params: {
+          ...params,
+          steps,
+          journeys,
+          maxPageviews: MAX_JOURNEY_PAGEVIEWS_PER_SESSION,
+        },
       })
-      .then((res) => res.json<IUserFlowLink>())
+      .then((res) =>
+        res.json<{
+          step: string
+          page: string
+          target: string
+          type: 'countries' | 'sources' | 'total'
+          val: string
+          cnt: string
+        }>(),
+      )
 
-    if (_isEmpty(data)) {
-      const empty = { nodes: [], links: [] }
-      return {
-        ascending: empty,
-        descending: empty,
+    const nodeMap = new Map<string, IJourneyNodeDetails>()
+    const linkMap = new Map<string, IJourneyLinkDetails>()
+
+    for (const row of data) {
+      const step = Number(row.step)
+
+      let entry: IJourneyNodeDetails | IJourneyLinkDetails
+
+      if (row.target === '') {
+        const key = `${step}:${row.page}`
+        let node = nodeMap.get(key)
+
+        if (!node) {
+          node = { step, page: row.page, total: 0, sources: {}, countries: {} }
+          nodeMap.set(key, node)
+        }
+
+        entry = node
+      } else {
+        const key = `${step}:${row.page}→${row.target}`
+        let link = linkMap.get(key)
+
+        if (!link) {
+          link = {
+            step,
+            source: row.page,
+            target: row.target,
+            total: 0,
+            sources: {},
+            countries: {},
+          }
+          linkMap.set(key, link)
+        }
+
+        entry = link
+      }
+
+      if (row.type === 'total') {
+        entry.total = Number(row.cnt)
+      } else {
+        entry[row.type][row.val] = Number(row.cnt)
       }
     }
 
-    const ascendingLinks: IUserFlowLink[] = []
-    const descendingLinks: IUserFlowLink[] = []
-
-    this.removeCyclicDependencies(data).forEach((row: any) => {
-      const link: IUserFlowLink = {
-        source: row.source,
-        target: row.target,
-        value: row.value,
-      }
-      if (link.source < link.target) {
-        ascendingLinks.push(link)
-      } else {
-        descendingLinks.push(link)
-      }
-    })
-
     return {
-      ascending: this.buildUserFlow(ascendingLinks),
-      descending: this.buildUserFlow(descendingLinks),
+      nodes: Array.from(nodeMap.values()),
+      links: Array.from(linkMap.values()),
     }
   }
 
@@ -2316,6 +2609,161 @@ export class AnalyticsService {
     return data
   }
 
+  async getJourneySessionsList(
+    params: any,
+    safeTimezone: string,
+    step: number,
+    page: string,
+    take = 30,
+    skip = 0,
+    filtersQuery = '',
+  ): Promise<object | void> {
+    const sessionFiltersQuery = filtersQuery
+      ? `AND psid IN (
+          SELECT DISTINCT psid
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type IN ('pageview', 'custom_event')
+            AND psid != 0
+            ${filtersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )`
+      : ''
+
+    const query = `
+      WITH journey_qualified AS (
+        SELECT psid
+        FROM (
+          SELECT
+            psid,
+            arrayCompact(arrayMap(x -> x.2, arraySort(groupArray((created, pg))))) AS path
+          FROM events
+          WHERE pid = {pid:FixedString(12)}
+            AND type = 'pageview'
+            AND psid != 0
+            AND pg IS NOT NULL
+            ${sessionFiltersQuery}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          GROUP BY psid
+        )
+        WHERE arrayElement(path, {step:UInt32}) = {page:String}
+          AND length(path) >= 2
+      ),
+      distinct_sessions AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          min(toTimeZone(created, {timezone:String})) AS sessionStart,
+          max(toTimeZone(created, {timezone:String})) AS lastActivity
+        FROM events
+        WHERE pid = {pid:FixedString(12)}
+          AND type IN ('pageview', 'custom_event')
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM journey_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      pageview_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'pageview' AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM journey_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      event_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'custom_event' AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM journey_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      error_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM events
+        WHERE pid = {pid:FixedString(12)} AND type = 'error' AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND psid IN (SELECT psid FROM journey_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      session_duration_agg AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
+          argMax(profileId, lastSeen) as profileId
+        FROM sessions
+        WHERE pid = {pid:FixedString(12)}
+          AND psid IN (SELECT psid FROM journey_qualified)
+        GROUP BY psidCasted, pid
+      ),
+      first_session_per_profile AS (
+        SELECT
+          profileId,
+          argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+        GROUP BY profileId
+      )
+      SELECT
+        dsf.psidCasted AS psid,
+        dsf.cc,
+        dsf.os,
+        dsf.br,
+        COALESCE(pc.count, 0) AS pageviews,
+        COALESCE(ec.count, 0) AS customEvents,
+        COALESCE(errc.count, 0) AS errors,
+        dsf.sessionStart,
+        dsf.lastActivity,
+        if(dateDiff('second', toTimeZone(dsf.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        sda.avg_duration AS sdur,
+        sda.profileId AS profileId,
+        if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
+        if(fsp.firstPsid = dsf.psidCasted, 1, 0) AS isFirstSession
+      FROM distinct_sessions dsf
+      LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
+      LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
+      LEFT JOIN error_counts errc ON dsf.psidCasted = errc.psidCasted AND dsf.pid = errc.pid
+      LEFT JOIN session_duration_agg sda ON dsf.psidCasted = sda.psidCasted AND dsf.pid = sda.pid
+      LEFT JOIN first_session_per_profile fsp ON sda.profileId = fsp.profileId
+      WHERE dsf.psidCasted IS NOT NULL
+      ORDER BY dsf.sessionStart DESC
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          ...params,
+          timezone: safeTimezone,
+          step,
+          page,
+          take,
+          skip,
+        },
+      })
+      .then((resultSet) => resultSet.json())
+
+    return data
+  }
+
   async getFunnelTimeToConvert(
     pages: string[],
     params: any,
@@ -2411,19 +2859,19 @@ export class AnalyticsService {
       funnel_sessions AS (
         SELECT
           psid,
-          argMin(firstStepAt, conversionAt) AS firstStepAt,
-          min(conversionAt) AS conversionAt
+          argMin(firstStepAt, rawConversionAt) AS firstStepAt,
+          min(rawConversionAt) AS conversionAt
         FROM (
           SELECT
             psid,
             firstStepAt,
-            step${finalStep}At AS conversionAt
+            step${finalStep}At AS rawConversionAt
           FROM funnel_step_${finalStep}
         )
         GROUP BY psid
       ),
       session_starts AS (
-        SELECT fs.psid, s.firstSeen AS sessionStart
+        SELECT fs.psid AS ssPsid, s.firstSeen AS sessionStart
         FROM funnel_sessions fs
         INNER JOIN (
           SELECT psid, firstSeen, lastSeen
@@ -2434,9 +2882,9 @@ export class AnalyticsService {
           AND s.lastSeen >= fs.conversionAt
       ),
       first_pages AS (
-        SELECT fs.psid, min(e.created) AS firstPageAt
+        SELECT fs.psid AS fpPsid, min(e.created) AS firstPageAt
         FROM funnel_sessions fs
-        INNER JOIN session_starts ss ON fs.psid = ss.psid
+        INNER JOIN session_starts ss ON fs.psid = ss.ssPsid
         INNER JOIN events e ON e.psid = fs.psid
         WHERE e.pid = {pid:FixedString(12)}
           AND e.type = 'pageview'
@@ -2456,8 +2904,8 @@ export class AnalyticsService {
         quantileExactOrNull(0.5)(if(firstStepAt > toDateTime(0) AND firstStepAt <= conversionAt, dateDiff('second', firstStepAt, conversionAt), NULL)) AS medianFirstStep,
         quantileExactOrNull(0.75)(if(firstStepAt > toDateTime(0) AND firstStepAt <= conversionAt, dateDiff('second', firstStepAt, conversionAt), NULL)) AS p75FirstStep
       FROM funnel_sessions fs
-      LEFT JOIN session_starts ss ON fs.psid = ss.psid
-      LEFT JOIN first_pages fp ON fs.psid = fp.psid
+      LEFT JOIN session_starts ss ON fs.psid = ss.ssPsid
+      LEFT JOIN first_pages fp ON fs.psid = fp.fpPsid
     `
 
     const { data } = await clickhouse
@@ -4064,6 +4512,7 @@ export class AnalyticsService {
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
     mode: ChartRenderMode,
+    includeConcurrency = false,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -4090,6 +4539,7 @@ export class AnalyticsService {
           safeTimezone,
           customEVFilterApplied,
           mode,
+          includeConcurrency,
         )
 
         // @ts-ignore
@@ -4194,6 +4644,84 @@ export class AnalyticsService {
     }
   }
 
+  // Reconstructs the number of concurrent (live) visitors for each display bucket
+  // from the sessions table intervals [firstSeen, lastSeen] using a sweep-line:
+  // +1 at each session's start minute, -1 right after its end minute, a zero-delta
+  // "spine" row for every minute in the requested window, then a running sum gives
+  // exact per-minute concurrency. Buckets larger than a minute report the peak
+  // concurrency within the bucket.
+  generateConcurrencyAggregationQuery(timeBucket: TimeBucketType): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+
+    return `
+      WITH
+        parseDateTimeBestEffort({groupFrom:String}) AS fromTs,
+        parseDateTimeBestEffort({groupTo:String}) AS toTs,
+        toStartOfMinute(fromTs) AS fromMinute,
+        toStartOfMinute(toTs) AS toMinute,
+        session_intervals AS (
+          SELECT
+            greatest(min(firstSeen), fromTs) AS sessionStart,
+            least(max(lastSeen), toTs) AS sessionEnd
+          FROM sessions
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND firstSeen <= toTs
+            AND lastSeen >= fromTs
+          GROUP BY psid
+        )
+      SELECT
+        ${selector},
+        toInt32(max(concurrency)) AS concurrency
+      FROM (
+        SELECT
+          ${timeBucketFunc}(toTimeZone(m, {timezone:String})) AS tz_created,
+          concurrency
+        FROM (
+          SELECT
+            m,
+            sum(minute_delta) OVER (ORDER BY m ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS concurrency
+          FROM (
+            SELECT m, sum(delta) AS minute_delta
+            FROM (
+              SELECT toStartOfMinute(sessionStart) AS m, toInt32(1) AS delta
+              FROM session_intervals
+              UNION ALL
+              SELECT toStartOfMinute(sessionEnd) + INTERVAL 1 MINUTE AS m, toInt32(-1) AS delta
+              FROM session_intervals
+              UNION ALL
+              SELECT fromMinute + toIntervalMinute(number) AS m, toInt32(0) AS delta
+              FROM numbers(least(toUInt64(dateDiff('minute', fromMinute, toMinute)) + 1, ${MAX_CONCURRENCY_WINDOW_MINUTES}))
+            )
+            GROUP BY m
+          )
+        )
+        WHERE m BETWEEN fromMinute AND toMinute
+      )
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+  }
+
+  async getConcurrencyChartData(
+    timeBucket: TimeBucketType,
+    paramsData: any,
+    safeTimezone: string,
+    xShifted: string[],
+  ): Promise<number[]> {
+    const query = this.generateConcurrencyAggregationQuery(timeBucket)
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { ...paramsData.params, timezone: safeTimezone },
+      })
+      .then((resultSet) => resultSet.json<any>())
+
+    return this.extractCountsForSessionChart(data, xShifted, 'concurrency')
+  }
+
   async groupChartByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -4203,6 +4731,7 @@ export class AnalyticsService {
     safeTimezone: string,
     customEVFilterApplied: boolean,
     mode: ChartRenderMode,
+    includeConcurrency = false,
   ): Promise<object | void> {
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
@@ -4213,14 +4742,36 @@ export class AnalyticsService {
       customEVFilterApplied,
     )
 
-    const { data } = await clickhouse
-      .query({
-        query,
-        query_params: { ...paramsData.params, timezone: safeTimezone },
-      })
-      .then((resultSet) =>
-        resultSet.json<TrafficCHResponse | TrafficCEFilterCHResponse>(),
-      )
+    // Concurrency is only computed when explicitly requested (the live visitors
+    // metric is off by default) and within a bounded window — the sweep-line
+    // query materializes a row per minute. The sessions table also has no
+    // dimension columns, so concurrency cannot respect dashboard filters —
+    // return zeros instead of misleading unfiltered data
+    const shouldComputeConcurrency =
+      includeConcurrency &&
+      !customEVFilterApplied &&
+      !filtersQuery &&
+      dayjs.utc(to).diff(dayjs.utc(from), 'minute') <=
+        MAX_CONCURRENCY_WINDOW_MINUTES
+
+    const [{ data }, concurrency] = await Promise.all([
+      clickhouse
+        .query({
+          query,
+          query_params: { ...paramsData.params, timezone: safeTimezone },
+        })
+        .then((resultSet) =>
+          resultSet.json<TrafficCHResponse | TrafficCEFilterCHResponse>(),
+        ),
+      shouldComputeConcurrency
+        ? this.getConcurrencyChartData(
+            timeBucket,
+            paramsData,
+            safeTimezone,
+            xShifted,
+          )
+        : Promise.resolve(Array(xShifted.length).fill(0)),
+    ])
 
     const { visits, uniques, sdur, bounces } =
       this.extractAnalyticsChartDataForScope(
@@ -4237,6 +4788,7 @@ export class AnalyticsService {
         uniques,
         sdur,
         bounces,
+        concurrency,
       },
     })
   }

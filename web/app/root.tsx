@@ -4,6 +4,7 @@ import {
   CaretUpIcon,
   WifiSlashIcon,
 } from '@phosphor-icons/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import BillboardCss from 'billboard.js/dist/billboard.min.css?url'
 import cx from 'clsx'
 import _replace from 'lodash/replace'
@@ -461,6 +462,19 @@ const RouteScripts = () => {
 const Body = () => {
   const { isAuthed, user, totalMonthlyEvents } = useLoaderData<typeof loader>()
   const { theme } = useTheme()
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60_000,
+            gcTime: 5 * 60_000,
+            retry: 1,
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+  )
 
   return (
     <body
@@ -469,16 +483,17 @@ const Body = () => {
         'bg-slate-950': theme === 'dark',
       })}
     >
-      <AuthProvider
-        initialIsAuthenticated={isAuthed}
-        initialUser={user}
-        initialTotalMonthlyEvents={totalMonthlyEvents}
-      >
-        {/* Drops transform-based motion (keeps opacity) for prefers-reduced-motion users */}
-        <MotionConfig reducedMotion='user'>
-          <AppWrapper />
-        </MotionConfig>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider
+          initialIsAuthenticated={isAuthed}
+          initialUser={user}
+          initialTotalMonthlyEvents={totalMonthlyEvents}
+        >
+          <MotionConfig reducedMotion='user'>
+            <AppWrapper />
+          </MotionConfig>
+        </AuthProvider>
+      </QueryClientProvider>
       <ScrollRestoration />
       <RouteScripts />
       <Scripts />
@@ -537,7 +552,7 @@ export default function App() {
           href={isSelfhosted ? '/favicon-ce.ico' : '/favicon.ico'}
         />
         {isDevelopment ? (
-          <script src='https://unpkg.com/react-scan@0.4.3/dist/auto.global.js' />
+          <script src='https://unpkg.com/react-scan/dist/auto.global.js' />
         ) : null}
         <Meta />
         <meta name='viewport' content='width=device-width,initial-scale=1' />

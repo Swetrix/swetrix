@@ -251,6 +251,7 @@ const CHART_METRICS_MAPPING = {
   viewsPerUnique: 'viewsPerUnique',
   trendlines: 'trendlines',
   sessionDuration: 'sessionDuration',
+  liveVisitors: 'liveVisitors',
   customEvents: 'customEvents',
   cumulativeMode: 'cumulativeMode',
   revenue: 'revenue',
@@ -289,6 +290,7 @@ const getColumns = (
     unique,
     trendlines,
     sessionDuration,
+    liveVisitors,
     occurrences,
     avgResponseTime,
   } = activeChartMetrics
@@ -360,6 +362,14 @@ const getColumns = (
 
     if (compareChart?.sdur) {
       columns.push(['sessionDurationCompare', ...compareChart.sdur])
+    }
+  }
+
+  if (liveVisitors && chart.concurrency) {
+    columns.push(['liveVisitors', ...chart.concurrency])
+
+    if (compareChart?.concurrency) {
+      columns.push(['liveVisitorsCompare', ...compareChart.concurrency])
     }
   }
 
@@ -665,6 +675,11 @@ const getSettings = (
       ...chart.occurrences.filter((n) => n !== undefined && n !== null),
     )
   }
+  if (activeChartMetrics.liveVisitors && chart.concurrency) {
+    allYValues.push(
+      ...chart.concurrency.filter((n) => n !== undefined && n !== null),
+    )
+  }
 
   const optimalTicks =
     allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
@@ -719,6 +734,7 @@ const getSettings = (
       total: [regionObj],
       bounce: [regionObj],
       viewsPerUnique: [regionObj],
+      liveVisitors: [regionObj],
     }
   }
 
@@ -750,6 +766,8 @@ const getSettings = (
         sessionDuration: chartType === chartTypes.line ? spline() : bar(),
         sessionDurationCompare:
           chartType === chartTypes.line ? spline() : bar(),
+        liveVisitors: chartType === chartTypes.line ? spline() : bar(),
+        liveVisitorsCompare: chartType === chartTypes.line ? spline() : bar(),
         // Revenue is always bars (stacked with refunds)
         revenue: bar(),
         refundsAmount: bar(),
@@ -766,6 +784,10 @@ const getSettings = (
         trendlineTotal: '#eba14b',
         sessionDuration: '#c945ed',
         sessionDurationCompare: 'rgba(201, 69, 237, 0.4)',
+        // Distinct from every CUSTOM_EVENTS_CHART_COLORS entry so the legend
+        // stays unambiguous when both series are shown
+        liveVisitors: '#10B981',
+        liveVisitorsCompare: 'rgba(16, 185, 129, 0.4)',
         revenue: '#ea580c', // orange-600 for net revenue
         refundsAmount: 'rgba(234, 88, 12, 0.25)', // light orange fill for refunds overlay
         ...customEventsColors,
@@ -854,6 +876,7 @@ const getSettings = (
           unique: 'uniques',
           total: 'visits',
           sessionDuration: 'sdur',
+          liveVisitors: 'concurrency',
         }
 
         if (_isEmpty(compareChart)) {
@@ -960,7 +983,8 @@ const getSettings = (
             el.id !== 'uniqueCompare' &&
             el.id !== 'totalCompare' &&
             el.id !== 'bounceCompare' &&
-            el.id !== 'sessionDurationCompare',
+            el.id !== 'sessionDurationCompare' &&
+            el.id !== 'liveVisitorsCompare',
         )
 
         // Build current period section
@@ -1049,6 +1073,7 @@ const getSettings = (
         'totalCompare',
         'bounceCompare',
         'sessionDurationCompare',
+        'liveVisitorsCompare',
         'refundsAmount',
       ],
     },
@@ -1802,8 +1827,14 @@ const getSettingsFunnels = (
         const prevStep = index > 0 ? funnel[index - 1] : null
         const prevStepTitle = escapeHtml(values[index - 1] ?? '')
 
-        const topSourcesEntries = Object.entries(step.topSources || {})
-        const topCountriesEntries = Object.entries(step.topCountries || {})
+        // the v2 stats API ships per-step breakdowns; topSources/topCountries
+        // are the legacy v1 fields kept as a fallback
+        const topSourcesEntries = Object.entries(
+          step.breakdowns?.sources || step.topSources || {},
+        )
+        const topCountriesEntries = Object.entries(
+          step.breakdowns?.countries || step.topCountries || {},
+        )
 
         const primary = 'text-gray-900 dark:text-gray-50'
         const secondary = 'text-gray-700 dark:text-gray-200'
@@ -2316,37 +2347,37 @@ const getSettingsPerf = (
 }
 
 const typeNameMapping = (t: typeof i18next.t) => ({
-  cc: t('project.mapping.cc'),
+  country: t('project.mapping.cc'),
   host: t('project.mapping.host'),
-  rg: t('project.mapping.rg'),
-  ct: t('project.mapping.ct'),
-  pg: t('project.mapping.pg'),
-  keywords: t('project.seo.topQueries'),
-  entryPage: t('project.entryPages'),
-  exitPage: t('project.exitPages'),
-  lc: t('project.mapping.lc'),
-  ref: t('project.mapping.ref'),
-  refn: t('project.mapping.ref'),
-  dv: t('project.mapping.dv'),
-  br: t('project.mapping.br'),
-  brv: t('project.mapping.brv'),
+  region: t('project.mapping.rg'),
+  city: t('project.mapping.ct'),
+  page: t('project.mapping.pg'),
+  query: t('project.seo.query'),
+  entry_page: t('project.entryPages'),
+  exit_page: t('project.exitPages'),
+  locale: t('project.mapping.lc'),
+  referrer: t('project.mapping.ref'),
+  referrer_name: t('project.mapping.ref'),
+  device: t('project.mapping.dv'),
+  browser: t('project.mapping.br'),
+  browser_version: t('project.mapping.brv'),
   os: t('project.mapping.os'),
-  osv: t('project.mapping.osv'),
-  so: t('project.mapping.so'),
-  me: t('project.mapping.me'),
-  ca: t('project.mapping.ca'),
-  te: t('project.mapping.te'),
-  co: t('project.mapping.co'),
+  os_version: t('project.mapping.osv'),
+  utm_source: t('project.mapping.so'),
+  utm_medium: t('project.mapping.me'),
+  utm_campaign: t('project.mapping.ca'),
+  utm_term: t('project.mapping.te'),
+  utm_content: t('project.mapping.co'),
   isp: t('project.mapping.isp'),
-  og: t('project.mapping.og'),
-  ut: t('project.mapping.ut'),
-  ctp: t('project.mapping.ctp'),
-  ev: t('project.event'),
-  userFlow: t('project.mapping.userFlow'),
-  'tag:key': t('project.metamapping.tag.key'),
-  'tag:value': t('project.metamapping.tag.value'),
-  'ev:key': t('project.metamapping.ev.key'),
-  'ev:value': t('project.metamapping.ev.value'),
+  organization: t('project.mapping.og'),
+  user_type: t('project.mapping.ut'),
+  connection_type: t('project.mapping.ctp'),
+  event: t('project.event'),
+  event_metadata: t('project.metamapping.ev.key'),
+  page_property: t('project.metamapping.tag.key'),
+  error_name: t('project.mapping.error_name'),
+  error_message: t('project.mapping.error_message'),
+  error_filename: t('project.mapping.error_filename'),
   searchEngine: t('project.mapping.searchEngine'),
   aiReferral: t('project.mapping.aiReferral'),
   captcha_event: t('project.event'),
@@ -2355,7 +2386,6 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   solve_time: t('project.mapping.solve_time'),
   // Combined panel types
   location: t('project.location'),
-  browser: t('project.browser'),
   devices: t('project.devices'),
   network: t('project.network'),
   map: t('project.map'),
@@ -2363,14 +2393,14 @@ const typeNameMapping = (t: typeof i18next.t) => ({
 
 const iconClassName = 'w-5 h-5'
 const panelIconMapping = {
-  cc: <MapPinIcon className={iconClassName} />,
-  pg: <FileTextIcon className={iconClassName} />,
-  lc: <TranslateIcon className={iconClassName} />,
-  ref: <ArrowCircleRightIcon className={iconClassName} />,
-  dv: <DevicesIcon className={iconClassName} />,
-  br: <CompassIcon className={iconClassName} />,
+  country: <MapPinIcon className={iconClassName} />,
+  page: <FileTextIcon className={iconClassName} />,
+  locale: <TranslateIcon className={iconClassName} />,
+  referrer: <ArrowCircleRightIcon className={iconClassName} />,
+  device: <DevicesIcon className={iconClassName} />,
+  browser: <CompassIcon className={iconClassName} />,
   os: <MonitorPlayIcon className={iconClassName} />,
-  so: <ShareIcon className={iconClassName} />,
+  utm_source: <ShareIcon className={iconClassName} />,
   isp: <GlobeIcon className={iconClassName} />,
 }
 

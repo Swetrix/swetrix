@@ -70,29 +70,45 @@ export interface GetFiltersQuery extends Array<string | object | boolean> {
   3: boolean
 }
 
-export interface IUserFlowNode {
-  id: string
-}
-
-export interface IUserFlowLink {
-  source: string
-  target: string
-  value: number
-}
-
 export interface IGenerateXAxis {
   x: string[]
   xShifted: string[]
 }
 
-export interface IBuildUserFlow {
-  nodes: IUserFlowNode[]
-  links: IUserFlowLink[]
+export interface IJourney {
+  path: string[]
+  value: number
+  // of `value`, how many sessions continued past the last drawn step
+  // (i.e. were truncated by the steps limit rather than ending there)
+  continuedPast: number
 }
 
-export interface IUserFlow {
-  ascending: IBuildUserFlow
-  descending: IBuildUserFlow
+export interface IJourneys {
+  journeys: IJourney[]
+  // multi-page sessions only (single-page bounces produce no transitions)
+  totalSessions: number
+  // distinct paths before the top-N ranking was applied
+  totalPaths: number
+  // how many sessions have a (sliced) path of each length
+  lengthHistogram: { len: number; sessions: number; truncated: number }[]
+}
+
+export interface IJourneyNodeDetails {
+  step: number
+  page: string
+  total: number
+  sources: Record<string, number>
+  countries: Record<string, number>
+}
+
+export interface IJourneyLinkDetails {
+  step: number
+  source: string
+  // next page, or '__exit__' when the journey ended at the source node
+  target: string
+  total: number
+  sources: Record<string, number>
+  countries: Record<string, number>
 }
 
 export interface IExtractChartData {
