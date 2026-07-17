@@ -557,6 +557,60 @@ export class Swetrix {
     }
   }
 
+  /**
+   * Identify a visitor with your own user ID (e.g. after they log in),
+   * implements https://docs.swetrix.com/events-api#post-logidentify.
+   *
+   * The visitor's current anonymous profile (derived from their IP and user
+   * agent) gets linked to the identified profile server-side, so their
+   * pre-login activity is attributed to it.
+   *
+   * Note: unlike the browser tracker, this does NOT set a default profileId
+   * for subsequent calls - a Swetrix instance is shared across all visitors
+   * of your server. Keep passing `profileId` per track / trackPageView call.
+   *
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @param profileId A unique, stable identifier of the user, e.g. an internal
+   * user ID. Don't use emails or other mutable / personally identifiable
+   * values. The ID is hashed server-side and never stored in raw form.
+   * @returns A promise that resolves to the identified (usr_-prefixed) profile
+   * ID events are stored under, or null on error.
+   */
+  public async identify(ip: string, userAgent: string, profileId: string): Promise<string | null> {
+    if (!this.canTrack()) {
+      return null
+    }
+
+    if (typeof profileId !== 'string' || !profileId.trim()) {
+      this.debug('identify() expects a non-empty string profileId', true)
+      return null
+    }
+
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/identify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Client-IP-Address': ip,
+          'User-Agent': userAgent,
+        },
+        body: JSON.stringify({ pid: this.projectID, profileId: profileId.trim() }),
+      })
+
+      if (!response.ok) {
+        return null
+      }
+
+      const data = (await response.json()) as { profileId: string | null }
+      return data.profileId
+    } catch (error) {
+      this.debug(`Error identifying profile: ${error}`, true)
+      return null
+    }
+  }
+
   private async fetchFlagsAndExperiments(
     ip: string,
     userAgent: string,

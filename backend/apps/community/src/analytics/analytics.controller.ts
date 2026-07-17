@@ -63,6 +63,7 @@ import { GetSessionDto } from './dto/get-session.dto'
 import { GetProfilesDto } from './dto/get-profiles.dto'
 import { GetProfileDto, GetProfileSessionsDto } from './dto/get-profile.dto'
 import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
+import { IdentifyDto } from './dto/identify.dto'
 import { ErrorDto } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDto } from './dto/get-error.dto'
@@ -2786,6 +2787,74 @@ export class AnalyticsController {
     )
 
     return { sessions, appliedFilters, take, skip }
+  }
+
+  /**
+   * Links the visitor's current anonymous profile to an identified profile
+   * derived from the user ID supplied by the site (e.g. after log in). Events
+   * previously recorded for the anonymous profile get attributed to the
+   * identified profile at query time; the tracker stamps all subsequent
+   * events with the supplied profileId directly.
+   */
+  @Post('identify')
+  @Public()
+  async identify(
+    @Body() dto: IdentifyDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ profileId: string }> {
+    const { 'user-agent': userAgent, origin } = headers
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    this.analyticsService.validateUserSuppliedProfileId(dto.profileId)
+
+    await this.analyticsService.validate(dto, origin, ip)
+
+    const userProfileId = await this.analyticsService.generateProfileId(
+      dto.pid,
+      userAgent,
+      ip,
+      dto.profileId,
+    )
+
+    const anonProfileId = await this.analyticsService.generateProfileId(
+      dto.pid,
+      userAgent,
+      ip,
+    )
+
+    const linked = await this.analyticsService.linkProfiles(
+      dto.pid,
+      anonProfileId,
+      userProfileId,
+    )
+
+    // Flip the visitor's current session (if any) to the identified profile.
+    // Skipped when the anonymous profile is already linked to a different
+    // identified profile (e.g. a second account on a shared device) - the
+    // session stays with the current identity until new events re-stamp it.
+    if (linked) {
+      const { exists, psid } = await this.analyticsService.getSessionId(
+        dto.pid,
+        userAgent,
+        ip,
+      )
+
+      if (exists) {
+        await this.analyticsService.recordSessionActivity(
+          psid,
+          dto.pid,
+          userProfileId,
+        )
+      }
+    }
+
+    this.logger.log(
+      `pid: ${dto.pid}, profileId: ${userProfileId}`,
+      'POST /analytics/identify',
+    )
+
+    return { profileId: userProfileId }
   }
 
   @Post('profile-id')

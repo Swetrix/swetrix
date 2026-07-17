@@ -2417,6 +2417,204 @@ export class AnalyticsService {
     return profileId.startsWith(AnalyticsService.PROFILE_PREFIX_USER)
   }
 
+  // Values that are almost certainly instrumentation bugs rather than real user
+  // IDs (e.g. stringified nulls). Identifying with them would fuse unrelated
+  // visitors into a single profile.
+  private static readonly ILLEGAL_USER_PROFILE_IDS = new Set([
+    '',
+    'null',
+    'undefined',
+    'nan',
+    'none',
+    'nil',
+    'true',
+    'false',
+    '0',
+    'anonymous',
+    'anon',
+    'guest',
+    'user',
+    'id',
+    'distinct_id',
+    'distinctid',
+    'profileid',
+    'profile_id',
+    'not_authenticated',
+    'email',
+    '[object object]',
+  ])
+
+  validateUserSuppliedProfileId(userSupplied: string): void {
+    const normalised = userSupplied.trim().toLowerCase()
+
+    if (AnalyticsService.ILLEGAL_USER_PROFILE_IDS.has(normalised)) {
+      throw new BadRequestException(
+        `"${userSupplied}" is not a valid profileId. Pass a unique, stable identifier of the user (e.g. an internal user ID), see https://docs.swetrix.com/visitor-identification`,
+      )
+    }
+  }
+
+  private getProfileAliasKey(pid: string, anonProfileId: string): string {
+    return `pfa:${pid}:${anonProfileId}`
+  }
+
+  /**
+   * Looks up the identified (usr_) profile an anonymous (anon_) profile has
+   * been linked to. First identification wins, so the mapping is resolved
+   * with argMin(created).
+   */
+  async getUserProfileForAnon(
+    pid: string,
+    anonProfileId: string,
+  ): Promise<string | null> {
+    const cacheKey = this.getProfileAliasKey(pid, anonProfileId)
+
+    const cached = await redis.get(cacheKey)
+
+    if (cached) {
+      return cached
+    }
+
+    const query = `
+      SELECT argMin(userProfileId, created) AS userProfileId
+      FROM profile_aliases
+      WHERE pid = {pid:FixedString(12)}
+        AND anonProfileId = {anonProfileId:String}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, anonProfileId },
+      })
+      .then((resultSet) => resultSet.json<{ userProfileId: string | null }>())
+
+    const userProfileId = data[0]?.userProfileId || null
+
+    if (userProfileId) {
+      await redis.set(cacheKey, userProfileId, 'EX', 3600)
+    }
+
+    return userProfileId
+  }
+
+  /**
+   * Links an anonymous (anon_) profile to an identified (usr_) profile.
+   * The link is created only once per anonymous profile - if it is already
+   * linked to a different user, the existing link is kept (first
+   * identification wins; e.g. a second person logging in on a shared device
+   * must not steal the anonymous history of the first).
+   *
+   * @returns whether the anonymous profile is linked to the supplied user
+   * profile after the call
+   */
+  async linkProfiles(
+    pid: string,
+    anonProfileId: string,
+    userProfileId: string,
+  ): Promise<boolean> {
+    const existing = await this.getUserProfileForAnon(pid, anonProfileId)
+
+    if (existing) {
+      return existing === userProfileId
+    }
+
+    try {
+      await clickhouse.insert({
+        table: 'profile_aliases',
+        format: 'JSONEachRow',
+        values: [
+          {
+            pid,
+            anonProfileId,
+            userProfileId,
+            created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+          },
+        ],
+        clickhouse_settings: { async_insert: 1 },
+      })
+
+      await redis.set(
+        this.getProfileAliasKey(pid, anonProfileId),
+        userProfileId,
+        'EX',
+        3600,
+      )
+    } catch (error) {
+      this.logger.error(`[linkProfiles] Failed to link profiles: ${error}`)
+      return false
+    }
+
+    return true
+  }
+
+  /**
+   * Resolves the full identity of a profile: the canonical profile ID to
+   * display and every profile ID whose events belong to it.
+   *
+   * For an identified (usr_) profile this is the profile itself plus all
+   * anonymous profiles linked to it. For a linked anonymous profile the
+   * identity is canonicalised to the identified profile. For an unlinked
+   * anonymous profile it is just the profile itself.
+   */
+  async resolveProfileIdentity(
+    pid: string,
+    profileId: string,
+  ): Promise<{ canonicalId: string; profileIds: string[] }> {
+    if (!this.isUserSuppliedProfile(profileId)) {
+      const userProfileId = await this.getUserProfileForAnon(pid, profileId)
+
+      if (!userProfileId) {
+        return { canonicalId: profileId, profileIds: [profileId] }
+      }
+
+      profileId = userProfileId
+    }
+
+    const query = `
+      SELECT anonProfileId
+      FROM (
+        SELECT
+          anonProfileId,
+          argMin(userProfileId, created) AS userProfileId
+        FROM profile_aliases
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY anonProfileId
+      )
+      WHERE userProfileId = {userProfileId:String}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, userProfileId: profileId },
+      })
+      .then((resultSet) => resultSet.json<{ anonProfileId: string }>())
+
+    return {
+      canonicalId: profileId,
+      profileIds: [profileId, ..._map(data, 'anonProfileId')],
+    }
+  }
+
+  /**
+   * CTE mapping anonymous profile IDs to the identified profiles they are
+   * linked to. LEFT JOIN it on profileId and coalesce(nullIf(pam.userProfileId, ''),
+   * profileId) to attribute pre-identification events to the identified
+   * profile. Requires a {pid:FixedString(12)} query param.
+   */
+  private buildProfileAliasMapCTE(): string {
+    return `
+      profile_alias_map AS (
+        SELECT
+          anonProfileId,
+          argMin(userProfileId, created) AS userProfileId
+        FROM profile_aliases
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY anonProfileId
+      )`
+  }
+
   private getSessionFirstSeenKey(pid: string, psid: string): string {
     return `ses:fs:${pid}:${psid}`
   }
@@ -3651,7 +3849,15 @@ export class AnalyticsService {
     )
 
     const query = `
-      WITH funnel_qualified AS (
+      WITH profile_alias_map AS (
+        SELECT
+          anonProfileId,
+          argMin(userProfileId, created) AS userProfileId
+        FROM profile_aliases
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY anonProfileId
+      ),
+      funnel_qualified AS (
         SELECT psid
         FROM (
           SELECT
@@ -3728,20 +3934,22 @@ export class AnalyticsService {
           CAST(psid, 'String') AS psidCasted,
           pid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
-          argMax(profileId, lastSeen) as profileId
-        FROM sessions
+          argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as profileId
+        FROM sessions AS s
+        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
         WHERE pid = {pid:FixedString(12)}
           AND psid IN (SELECT psid FROM funnel_qualified)
         GROUP BY psidCasted, pid
       ),
       first_session_per_profile AS (
         SELECT
-          profileId,
+          coalesce(nullIf(pam.userProfileId, ''), s.profileId) AS profileId,
           argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
-        FROM sessions FINAL
+        FROM sessions AS s FINAL
+        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
         WHERE pid = {pid:FixedString(12)}
-          AND profileId IS NOT NULL
-          AND profileId != ''
+          AND s.profileId IS NOT NULL
+          AND s.profileId != ''
         GROUP BY profileId
       )
       SELECT
@@ -3810,7 +4018,15 @@ export class AnalyticsService {
       : ''
 
     const query = `
-      WITH journey_qualified AS (
+      WITH profile_alias_map AS (
+        SELECT
+          anonProfileId,
+          argMin(userProfileId, created) AS userProfileId
+        FROM profile_aliases
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY anonProfileId
+      ),
+      journey_qualified AS (
         SELECT psid
         FROM (
           SELECT
@@ -3883,20 +4099,22 @@ export class AnalyticsService {
           CAST(psid, 'String') AS psidCasted,
           pid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
-          argMax(profileId, lastSeen) as profileId
-        FROM sessions
+          argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as profileId
+        FROM sessions AS s
+        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
         WHERE pid = {pid:FixedString(12)}
           AND psid IN (SELECT psid FROM journey_qualified)
         GROUP BY psidCasted, pid
       ),
       first_session_per_profile AS (
         SELECT
-          profileId,
+          coalesce(nullIf(pam.userProfileId, ''), s.profileId) AS profileId,
           argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
-        FROM sessions FINAL
+        FROM sessions AS s FINAL
+        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
         WHERE pid = {pid:FixedString(12)}
-          AND profileId IS NOT NULL
-          AND profileId != ''
+          AND s.profileId IS NOT NULL
+          AND s.profileId != ''
         GROUP BY profileId
       )
       SELECT
@@ -7650,6 +7868,19 @@ export class AnalyticsService {
 
     const replay = await this.getSessionReplaySummary(pid, psid)
 
+    // If the session's profile was linked to an identified profile
+    // (via the identify API), display the identified profile
+    if (details?.profileId && !this.isUserSuppliedProfile(details.profileId)) {
+      const userProfileId = await this.getUserProfileForAnon(
+        pid,
+        details.profileId,
+      )
+
+      if (userProfileId) {
+        details.profileId = userProfileId
+      }
+    }
+
     return {
       pages: this.processPageflow(pages),
       details: {
@@ -7684,7 +7915,15 @@ export class AnalyticsService {
     )
 
     const query = `
-      WITH distinct_sessions_filtered AS (
+      WITH profile_alias_map AS (
+        SELECT
+          anonProfileId,
+          argMin(userProfileId, created) AS userProfileId
+        FROM profile_aliases
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY anonProfileId
+      ),
+      distinct_sessions_filtered AS (
         SELECT
           psidCasted,
           pid,
@@ -7757,8 +7996,9 @@ export class AnalyticsService {
           toString(psid) AS psidCasted,
           pid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
-          argMax(profileId, lastSeen) as profileId
-        FROM sessions
+          argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as profileId
+        FROM sessions AS s
+        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
         WHERE pid = {pid:FixedString(12)}
         GROUP BY psidCasted, pid
       ),
@@ -7778,12 +8018,13 @@ export class AnalyticsService {
       ),
       first_session_per_profile AS (
         SELECT
-          profileId,
+          coalesce(nullIf(pam.userProfileId, ''), s.profileId) AS profileId,
           argMin(toString(psid), firstSeen) AS firstPsid
-        FROM sessions FINAL
+        FROM sessions AS s FINAL
+        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
         WHERE pid = {pid:FixedString(12)}
-          AND profileId IS NOT NULL
-          AND profileId != ''
+          AND s.profileId IS NOT NULL
+          AND s.profileId != ''
         GROUP BY profileId
       ),
       sessions_enriched AS (
@@ -7930,7 +8171,15 @@ export class AnalyticsService {
       )`
 
     const query = `
-      WITH ${filteredSessionsCTE},
+      WITH profile_alias_map AS (
+        SELECT
+          anonProfileId,
+          argMin(userProfileId, created) AS userProfileId
+        FROM profile_aliases
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY anonProfileId
+      ),
+      ${filteredSessionsCTE},
       replay_summary AS (
         SELECT
           psidCasted,
@@ -8025,8 +8274,9 @@ export class AnalyticsService {
           toString(psid) AS psidCasted,
           pid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
-          argMax(profileId, lastSeen) as profileId
-        FROM sessions
+          argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as profileId
+        FROM sessions AS s
+        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
         WHERE pid = {pid:FixedString(12)}
         GROUP BY psidCasted, pid
       ),
@@ -8065,12 +8315,13 @@ export class AnalyticsService {
       ),
       first_session_per_profile AS (
         SELECT
-          profileId,
+          coalesce(nullIf(pam.userProfileId, ''), s.profileId) AS profileId,
           argMin(toString(psid), firstSeen) AS firstPsid
-        FROM sessions FINAL
+        FROM sessions AS s FINAL
+        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
         WHERE pid = {pid:FixedString(12)}
-          AND profileId IS NOT NULL
-          AND profileId != ''
+          AND s.profileId IS NOT NULL
+          AND s.profileId != ''
         GROUP BY profileId
       )
       SELECT
@@ -8308,12 +8559,11 @@ export class AnalyticsService {
 
   private buildProfilesListDataCTE(
     filtersQuery: string,
-    profileTypeFilter: string,
     customEVFilterApplied: boolean,
   ): string {
     const scopedProfileFilter = customEVFilterApplied
       ? `
-            AND profileId IN (
+            AND events.profileId IN (
               SELECT DISTINCT profileId
               FROM events
               WHERE pid = {pid:FixedString(12)}
@@ -8321,16 +8571,17 @@ export class AnalyticsService {
                 AND created BETWEEN {groupFrom:String} AND {groupTo:String}
                 AND profileId IS NOT NULL
                 AND profileId != ''
-                ${profileTypeFilter}
                 ${filtersQuery}
             )
         `
       : filtersQuery
 
+    // Events recorded for an anonymous profile before the visitor was
+    // identified get attributed to the identified profile via profile_alias_map
     return `
         all_profile_data AS (
           SELECT
-            profileId,
+            coalesce(nullIf(pam.userProfileId, ''), events.profileId) AS profileId,
             psid,
             cc,
             os,
@@ -8341,12 +8592,12 @@ export class AnalyticsService {
             if(type = 'custom_event', 1, 0) AS isEvent,
             if(type = 'error', 1, 0) AS isError
           FROM events
+          LEFT JOIN profile_alias_map pam ON events.profileId = pam.anonProfileId
           WHERE pid = {pid:FixedString(12)}
             AND type IN ('pageview', 'custom_event', 'error')
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-            AND profileId IS NOT NULL
-            AND profileId != ''
-            ${profileTypeFilter}
+            AND events.profileId IS NOT NULL
+            AND events.profileId != ''
             ${scopedProfileFilter}
         )`
   }
@@ -8361,21 +8612,23 @@ export class AnalyticsService {
     profileType: 'all' | 'anonymous' | 'identified' = 'all',
     customEVFilterApplied = false,
   ): Promise<object[]> {
+    // The profile type filter is applied to the alias-resolved profileId, so
+    // anonymous history linked to an identified profile counts as identified
     let profileTypeFilter = ''
     if (profileType === 'anonymous') {
-      profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_ANON}%'`
+      profileTypeFilter = `WHERE profileId LIKE '${AnalyticsService.PROFILE_PREFIX_ANON}%'`
     } else if (profileType === 'identified') {
-      profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_USER}%'`
+      profileTypeFilter = `WHERE profileId LIKE '${AnalyticsService.PROFILE_PREFIX_USER}%'`
     }
 
     const allProfileDataCTE = this.buildProfilesListDataCTE(
       filtersQuery,
-      profileTypeFilter,
       customEVFilterApplied,
     )
 
     const query = `
-      WITH ${allProfileDataCTE},
+      WITH ${this.buildProfileAliasMapCTE()},
+      ${allProfileDataCTE},
       profile_aggregated AS (
         SELECT
           profileId,
@@ -8390,6 +8643,7 @@ export class AnalyticsService {
           any(br) AS br_agg,
           any(dv) AS dv_agg
         FROM all_profile_data
+        ${profileTypeFilter}
         GROUP BY profileId
       )
       SELECT
@@ -8430,6 +8684,11 @@ export class AnalyticsService {
     profileId: string,
     _safeTimezone: string,
   ): Promise<any> {
+    const { canonicalId, profileIds } = await this.resolveProfileIdentity(
+      pid,
+      profileId,
+    )
+
     // Query session count from sessions table
     const querySessionCount = `
       SELECT
@@ -8438,7 +8697,7 @@ export class AnalyticsService {
         max(sessions.lastSeen) AS lastSeen
       FROM sessions FINAL
       WHERE pid = {pid:FixedString(12)}
-        AND profileId = {profileId:String}
+        AND profileId IN {profileIds:Array(String)}
     `
 
     // Prefer pageview timings, but fall back to sessions for event/error-only profiles.
@@ -8453,7 +8712,7 @@ export class AnalyticsService {
           FROM events
           WHERE pid = {pid:FixedString(12)}
             AND type = 'pageview'
-            AND profileId = {profileId:String}
+            AND profileId IN {profileIds:Array(String)}
             AND psid IS NOT NULL
           GROUP BY psid
           HAVING session_duration > 0
@@ -8468,7 +8727,7 @@ export class AnalyticsService {
             dateDiff('second', min(firstSeen), max(lastSeen)) AS session_duration
           FROM sessions FINAL
           WHERE pid = {pid:FixedString(12)}
-            AND profileId = {profileId:String}
+            AND profileId IN {profileIds:Array(String)}
           GROUP BY psid
           HAVING session_duration > 0
         )
@@ -8483,7 +8742,7 @@ export class AnalyticsService {
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND type = 'pageview'
-        AND profileId = {profileId:String}
+        AND profileId IN {profileIds:Array(String)}
     `
 
     const queryEvents = `
@@ -8491,7 +8750,7 @@ export class AnalyticsService {
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND type = 'custom_event'
-        AND profileId = {profileId:String}
+        AND profileId IN {profileIds:Array(String)}
     `
 
     const queryErrors = `
@@ -8499,7 +8758,7 @@ export class AnalyticsService {
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND type = 'error'
-        AND profileId = {profileId:String}
+        AND profileId IN {profileIds:Array(String)}
     `
 
     const queryDetails = `
@@ -8515,7 +8774,7 @@ export class AnalyticsService {
         any(lc) AS lc
       FROM events
       WHERE pid = {pid:FixedString(12)}
-        AND profileId = {profileId:String}
+        AND profileId IN {profileIds:Array(String)}
         AND type IN ('pageview', 'custom_event', 'error')
     `
 
@@ -8529,14 +8788,14 @@ export class AnalyticsService {
           argMax(currency, synced_at) AS currency
         FROM revenue
         WHERE pid = {pid:FixedString(12)}
-          AND profile_id = {profileId:String}
+          AND profile_id IN {profileIds:Array(String)}
           AND type IN ('sale', 'subscription')
           AND status = 'completed'
         GROUP BY transaction_id
       )
     `
 
-    const params = { pid, profileId }
+    const params = { pid, profileIds }
 
     const [
       sessionCountResult,
@@ -8582,8 +8841,8 @@ export class AnalyticsService {
     const revenue = (revenueResult.data[0] || {}) as Record<string, any>
 
     return {
-      profileId,
-      isIdentified: this.isUserSuppliedProfile(profileId),
+      profileId: canonicalId,
+      isIdentified: this.isUserSuppliedProfile(canonicalId),
       sessionsCount: sessionCount.sessionsCount || 0,
       pageviewsCount: pageviews.pageviewsCount || 0,
       eventsCount: events.eventsCount || 0,
@@ -8602,6 +8861,8 @@ export class AnalyticsService {
     profileId: string,
     limit = 10,
   ): Promise<{ page: string; count: number }[]> {
+    const { profileIds } = await this.resolveProfileIdentity(pid, profileId)
+
     const query = `
       SELECT
         pg AS page,
@@ -8609,7 +8870,7 @@ export class AnalyticsService {
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND type = 'pageview'
-        AND profileId = {profileId:String}
+        AND profileId IN {profileIds:Array(String)}
       GROUP BY pg
       ORDER BY count DESC
       LIMIT {limit:UInt32}
@@ -8618,7 +8879,7 @@ export class AnalyticsService {
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { pid, profileId, limit: Number(limit) },
+        query_params: { pid, profileIds, limit: Number(limit) },
       })
       .then((resultSet) => resultSet.json())
 
@@ -8630,6 +8891,8 @@ export class AnalyticsService {
     profileId: string,
     months = 4,
   ): Promise<{ date: string; pageviews: number; events: number }[]> {
+    const { profileIds } = await this.resolveProfileIdentity(pid, profileId)
+
     const startDate = dayjs
       .utc()
       .subtract(months, 'month')
@@ -8644,7 +8907,7 @@ export class AnalyticsService {
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND type IN ('pageview', 'custom_event')
-        AND profileId = {profileId:String}
+        AND profileId IN {profileIds:Array(String)}
         AND created >= {startDate:Date}
       GROUP BY date
       ORDER BY date ASC
@@ -8653,7 +8916,7 @@ export class AnalyticsService {
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { pid, profileId, startDate },
+        query_params: { pid, profileIds, startDate },
       })
       .then((resultSet) => resultSet.json())
 
@@ -8671,7 +8934,7 @@ export class AnalyticsService {
             FROM events
             WHERE pid = {pid:FixedString(12)}
               AND type = 'custom_event'
-              AND profileId = {profileId:String}
+              AND profileId IN {profileIds:Array(String)}
               AND psid IS NOT NULL
               AND created BETWEEN {groupFrom:String} AND {groupTo:String}
               ${filtersQuery}
@@ -8684,7 +8947,6 @@ export class AnalyticsService {
         SELECT
           CAST(psid, 'String') AS psidCasted,
           pid,
-          profileId,
           cc,
           os,
           br,
@@ -8692,7 +8954,7 @@ export class AnalyticsService {
         FROM events
         WHERE pid = {pid:FixedString(12)}
           AND type IN ('pageview', 'custom_event', 'error')
-          AND profileId = {profileId:String}
+          AND profileId IN {profileIds:Array(String)}
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${scopedSessionFilter}
@@ -8703,7 +8965,7 @@ export class AnalyticsService {
     pid: string,
     psids: string[],
     safeTimezone: string,
-    profileId: string,
+    profileIds: string[],
     groupFrom: string,
     groupTo: string,
   ): Promise<Map<string, any[]>> {
@@ -8750,7 +9012,7 @@ export class AnalyticsService {
           WHERE
             pid = {pid:FixedString(12)}
             AND type IN ('pageview', 'custom_event', 'error')
-            AND profileId = {profileId:String}
+            AND profileId IN {profileIds:Array(String)}
             AND psid IS NOT NULL
             AND toString(psid) IN {psids:Array(String)}
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -8795,7 +9057,7 @@ export class AnalyticsService {
           FROM revenue
           WHERE
             pid = {pid:FixedString(12)}
-            AND profile_id = {profileId:String}
+            AND profile_id IN {profileIds:Array(String)}
             AND session_id IS NOT NULL
             AND toString(session_id) IN {psids:Array(String)}
             AND revenue.created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -8821,7 +9083,7 @@ export class AnalyticsService {
           pid,
           psids,
           timezone: safeTimezone,
-          profileId,
+          profileIds,
           groupFrom,
           groupTo,
         },
@@ -8856,6 +9118,8 @@ export class AnalyticsService {
     skip = 0,
     customEVFilterApplied = false,
   ): Promise<object[]> {
+    const { profileIds } = await this.resolveProfileIdentity(pid, profileId)
+
     const allProfileEventsCTE = this.buildProfileSessionsEventsCTE(
       filtersQuery,
       customEVFilterApplied,
@@ -8867,14 +9131,13 @@ export class AnalyticsService {
         SELECT
           psidCasted,
           pid,
-          profileId,
           any(cc) AS cc_agg,
           any(os) AS os_agg,
           any(br) AS br_agg,
           min(created_tz) AS sessionStart,
           max(created_tz) AS lastActivity
         FROM all_profile_events
-        GROUP BY psidCasted, pid, profileId
+        GROUP BY psidCasted, pid
       ),
       pageview_counts AS (
         SELECT
@@ -8884,7 +9147,7 @@ export class AnalyticsService {
         FROM events
         WHERE pid = {pid:FixedString(12)}
           AND type = 'pageview'
-          AND profileId = {profileId:String}
+          AND profileId IN {profileIds:Array(String)}
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
@@ -8897,7 +9160,7 @@ export class AnalyticsService {
         FROM events
         WHERE pid = {pid:FixedString(12)}
           AND type = 'custom_event'
-          AND profileId = {profileId:String}
+          AND profileId IN {profileIds:Array(String)}
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
@@ -8910,7 +9173,7 @@ export class AnalyticsService {
         FROM events
         WHERE pid = {pid:FixedString(12)}
           AND type = 'error'
-          AND profileId = {profileId:String}
+          AND profileId IN {profileIds:Array(String)}
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
@@ -8922,7 +9185,7 @@ export class AnalyticsService {
           dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration
         FROM sessions
         WHERE pid = {pid:FixedString(12)}
-          AND profileId = {profileId:String}
+          AND profileId IN {profileIds:Array(String)}
         GROUP BY psidCasted, pid
       )
       SELECT
@@ -8953,7 +9216,7 @@ export class AnalyticsService {
         query,
         query_params: {
           pid,
-          profileId,
+          profileIds,
           ...paramsData.params,
           timezone: safeTimezone,
           take,
@@ -8967,7 +9230,7 @@ export class AnalyticsService {
       pid,
       sessions.map((session) => String(session.psid)).filter(Boolean),
       safeTimezone,
-      profileId,
+      profileIds,
       paramsData.params.groupFrom,
       paramsData.params.groupTo,
     )

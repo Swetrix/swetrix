@@ -104,6 +104,13 @@ All of the values are numbers in milliseconds.
 | ----- | -------- | -------- | ---------------------------------------------- |
 | `pid` | `string` | `true`   | A project ID to record the heartbeat event for |
 
+### Identify event structure
+
+| Name        | Type     | Required | Description                                                                                                                                                                  |
+| ----------- | -------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pid`       | `string` | `true`   | A project ID to identify the visitor for                                                                                                                                     |
+| `profileId` | `string` | `true`   | A unique, stable identifier of the user (e.g. an internal user ID), max 256 characters. It's hashed together with the project ID server-side; the raw value is never stored. |
+
 ### Revenue event structure
 
 <Callout type="info">
@@ -217,6 +224,32 @@ socket.on("error", (err) => {
 ```json title="Response (201 Created)"
 {}
 ```
+
+### POST /log/identify
+
+This endpoint identifies the visitor with your own user ID (e.g. after they log in). It links the visitor's current anonymous profile — derived from the request's IP address and User-Agent — to the identified profile derived from the supplied `profileId`, so the activity recorded before identification is attributed to the identified profile in the dashboard.
+
+After calling it, keep sending the same `profileId` field with your pageview / custom event payloads so subsequent events are stamped with the identified profile directly. The [tracking script](/swetrix-js-reference#identify) does both automatically via `swetrix.identify()`.
+
+Notes:
+
+- An anonymous profile is linked to the **first** identified profile that claims it — repeated calls with the same `profileId` are idempotent, and calls with a different `profileId` won't re-link the anonymous history (but are otherwise harmless).
+- Since anonymous profiles rotate monthly, the linking covers the visitor's recent anonymous activity — up to about a month back on that device and network.
+- Values like `null`, `undefined`, `guest` or an empty string are rejected with a `400` error, as they would fuse unrelated visitors into a single profile.
+
+```bash title="Request"
+curl -i -X POST https://api.swetrix.com/log/identify \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0" \
+  -H "X-Client-IP-Address: 192.0.2.1" \
+  -H "Content-Type: application/json" \
+  -d '{"pid":"YOUR_PROJECT_ID","profileId":"user-12345"}'
+```
+
+```json title="Response (201 Created)"
+{ "profileId": "usr_8214637194021987452" }
+```
+
+The returned `profileId` is the identified profile ID your events are stored under — the same value you'd use for [revenue attribution](/analytics-dashboard/revenue-tracking#user-attribution).
 
 ### POST /log/error
 

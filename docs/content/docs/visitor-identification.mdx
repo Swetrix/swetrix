@@ -130,32 +130,67 @@ have an account, or even just have a stable client-side identifier you
 generate yourself — you can tell Swetrix about it and get **per‑user
 accuracy that doesn't depend on IP or User‑Agent at all.**
 
-Pass the `profileId` to any of the tracking methods. The script
-forwards it to the server, where it's salted and hashed with your
+The recommended way is `identify()`:
+
+```javascript
+swetrix.init("YOUR_PROJECT_ID");
+swetrix.trackViews();
+
+// After the user logs in (or on page load if they're already logged in)
+swetrix.identify("user-12345");
+
+// On logout
+swetrix.reset();
+```
+
+Your user ID is forwarded to the server, where it's hashed with your
 project ID before being stored — so we still never see your raw user
 ID, and the ID stored in ClickHouse can't be reversed back to your
 database.
 
-```javascript
-// Set it once globally on init — every pageview, custom event, error,
-// feature flag, and experiment call inherits it automatically.
-swetrix.init("YOUR_PROJECT_ID", {
-  profileId: "user-12345",
-});
-
-swetrix.trackViews();
-
-// Or override per-call if you need to.
-swetrix.track({
-  ev: "Sign up",
-  profileId: "user-12345",
-});
-```
-
-`profileId` is supported on `init()`, `track()`, `pageview()`,
+Alternatively, you can pass `profileId` to individual tracking methods —
+it's supported on `init()`, `track()`, `pageview()`,
 `getFeatureFlags()` / `getFeatureFlag()`, and `getExperiments()` /
 `getExperiment()`. See the [script reference](/swetrix-js-reference)
-for the full list.
+for the full list. The difference: a plain `profileId` only stamps the
+events it's passed with, while `identify()` additionally links the
+visitor's anonymous history, as described below.
+
+### How identify() links anonymous history
+
+A visitor usually browses your site anonymously before they sign in —
+so by the time you know who they are, Swetrix has already recorded
+their pageviews under an anonymous `anon_…` fingerprint. Without extra
+care, identifying them would simply start a second, separate profile
+and the pre-login activity would stay orphaned.
+
+`identify()` solves this: when called, the server links the visitor's
+current anonymous profile to the identified one, and the dashboard
+attributes the anonymous activity — sessions, pageviews, events,
+errors — to the identified profile. Even the session during which the
+user signed in stays intact: the pageviews before and after login show
+up as one session under the identified profile.
+
+The rules, in short:
+
+- **First identification wins.** An anonymous profile can only ever be
+  linked to one identified profile. If a second person logs into a
+  different account on a shared device, their events are tracked under
+  their own identity going forward, but the shared anonymous history
+  stays with the first account. This mirrors how PostHog and other
+  analytics tools guard against runaway profile merging.
+- **About a month of history.** Anonymous fingerprints rotate monthly
+  (see above), so the linking covers the visitor's recent anonymous
+  activity on that device and network. Each month they return
+  logged-in, the new anonymous fingerprint is linked too.
+- **Cross-device works.** Call `identify()` with the same ID on any
+  device or browser, and all of that activity is unified under one
+  profile in the dashboard.
+- **Nothing is stored client-side.** Swetrix remains cookieless — call
+  `identify()` on every page load while the user is logged in
+  (repeated calls are deduplicated), and call `reset()` on logout so
+  the next person on a shared device isn't tracked under the previous
+  user's identity.
 
 ### What you can use as a profile ID
 
@@ -212,8 +247,9 @@ swetrix.trackViews();
 
 // Upgrade to accurate per-user tracking once the user signs in
 // (or once the user grants consent in your banner, if applicable).
+// This also links their pre-login anonymous activity to the profile.
 afterLogin((user) => {
-  swetrix.init("YOUR_PROJECT_ID", { profileId: user.id });
+  swetrix.identify(user.id);
 });
 ```
 
@@ -236,6 +272,7 @@ chosen.
 | Accuracy on a typical consumer site   | High — collisions are rare             | Per-user accurate (for signed-in users) |
 | Accuracy behind a school / office NAT | Lower — devices may collide            | Per-user accurate                       |
 | Cross-device tracking                 | No                                     | Yes (same `profileId` on each)          |
+| Pre-login activity linked             | —                                      | Yes (via `identify()`)                  |
 | Works without JavaScript              | Yes (via the noscript pixel)           | No (needs the JS tracker)               |
 
 Pick the default for marketing sites, blogs, docs, and anywhere you
