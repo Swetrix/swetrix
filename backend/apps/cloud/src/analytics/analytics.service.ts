@@ -2458,6 +2458,11 @@ export class AnalyticsService {
     return `pfa:${pid}:${anonProfileId}`
   }
 
+  // Sentinel cached for anonymous profiles with no alias, so unlinked (the
+  // overwhelmingly common case) lookups don't hit ClickHouse every time.
+  // Cannot collide with a real value - those always start with usr_.
+  private static readonly PROFILE_ALIAS_NONE = '-'
+
   /**
    * Looks up the identified (usr_) profile an anonymous (anon_) profile has
    * been linked to. First identification wins, so the mapping is resolved
@@ -2472,7 +2477,7 @@ export class AnalyticsService {
     const cached = await redis.get(cacheKey)
 
     if (cached) {
-      return cached
+      return cached === AnalyticsService.PROFILE_ALIAS_NONE ? null : cached
     }
 
     const query = `
@@ -2493,6 +2498,11 @@ export class AnalyticsService {
 
     if (userProfileId) {
       await redis.set(cacheKey, userProfileId, 'EX', 3600)
+    } else {
+      // Short TTL: a link created concurrently on another node (linkProfiles
+      // uses async_insert, so the row may not be SELECTable yet) must become
+      // visible shortly after this sentinel expires.
+      await redis.set(cacheKey, AnalyticsService.PROFILE_ALIAS_NONE, 'EX', 60)
     }
 
     return userProfileId

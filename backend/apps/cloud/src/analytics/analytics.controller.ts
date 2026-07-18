@@ -3311,9 +3311,26 @@ export class AnalyticsController {
     @Body() dto: IdentifyDto,
     @Headers() headers,
     @Ip() reqIP,
-  ): Promise<{ profileId: string }> {
+  ): Promise<{ profileId: string } | typeof BOT_RESPONSE> {
     const { 'user-agent': userAgent, origin } = headers
     const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'identify', 120, 60)
+    await checkRateLimit(dto.pid, 'identify', 2000, 60)
+
+    const botResult = await this.analyticsService.checkBot(
+      dto.pid,
+      userAgent,
+      headers,
+      ip,
+      headers.referer || headers.referrer,
+      null,
+      'identify',
+    )
+
+    if (botResult.isBot) {
+      return BOT_RESPONSE
+    }
 
     this.analyticsService.validateUserSuppliedProfileId(dto.profileId)
 
