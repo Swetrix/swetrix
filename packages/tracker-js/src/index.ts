@@ -279,6 +279,47 @@ export function clearExperimentsCache(): void {
 }
 
 /**
+ * Identify the current visitor with your own user ID (e.g. after they log in).
+ *
+ * The visitor's current anonymous profile gets linked to the identified profile
+ * server-side, so their pre-login activity is attributed to it. All events sent
+ * after this call are associated with the identified profile.
+ *
+ * Swetrix stores nothing in the browser, so call identify() on every page load
+ * while the user is logged in. Call reset() when they log out.
+ *
+ * @param profileId A unique, stable identifier of the user, e.g. an internal
+ * user ID. Don't use emails or other mutable / personally identifiable values.
+ * The ID is hashed server-side and never stored in raw form.
+ *
+ * @example
+ * ```typescript
+ * // After the user logs in (or on page load if they're already logged in)
+ * swetrix.identify('user-12345')
+ *
+ * // On logout
+ * swetrix.reset()
+ * ```
+ */
+export async function identify(profileId: string): Promise<void> {
+  if (!LIB_INSTANCE) return
+
+  await LIB_INSTANCE.identify(profileId)
+}
+
+/**
+ * Resets the visitor's identity set via identify() (e.g. after they log out),
+ * so subsequent events are tracked anonymously again. Important on shared
+ * devices - otherwise the next visitor would be tracked under the previous
+ * user's identity.
+ */
+export function reset(): void {
+  if (!LIB_INSTANCE) return
+
+  LIB_INSTANCE.reset()
+}
+
+/**
  * Gets the anonymous profile ID for the current visitor.
  * If profileId was set via init options, returns that.
  * Otherwise, requests server to generate one from IP/UA hash.

@@ -29,14 +29,14 @@ swetrix.init("YOUR_PROJECT_ID", {
 });
 ```
 
-| Name                 | Description                                                                                                                                                                                                                                                              | Default value                   |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
-| devMode              | When set to `true`, localhost events will be sent to server.                                                                                                                                                                                                             | `false`                         |
-| disabled             | When set to true, the tracking library won't send any data to server.<br />Useful for development purposes when this value is set based on '.env' var.                                                                                                                   | `false`                         |
-| respectDNT           | By setting this flag to true, we will not collect ANY kind of data about the user with the DNT setting. <br />This setting is not true by default because our service anonymises all incoming data and does not pass it on to any third parties under any circumstances. | `false`                         |
-| apiURL               | If you use Swetrix Cloud, you don't need to change this parameter. If you're self-hosting Swetrix CE, you should put the URL of your API instance here, like `[BASE_URL]/backend/v1/log`.                                                                                | `'https://api.swetrix.com/log'` |
-| profileId            | Optional profile ID for long-term user tracking (MAU/DAU). If set, it will be used for all pageviews and events unless overridden per-call. This allows you to track users across sessions and devices.                                                                  | `undefined`                     |
-| preloadSessionReplay | Set to `true` to preload the session replay recorder after `init()`, or pass `{ rrwebUrl: "https://example.com/rrweb.min.js" }` to load it from a custom URL. Recording only starts after you call `startSessionReplay()`.                                               | `undefined`                     |
+| Name                 | Description                                                                                                                                                                                                                                                                                                          | Default value                   |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| devMode              | When set to `true`, localhost events will be sent to server.                                                                                                                                                                                                                                                         | `false`                         |
+| disabled             | When set to true, the tracking library won't send any data to server.<br />Useful for development purposes when this value is set based on '.env' var.                                                                                                                                                               | `false`                         |
+| respectDNT           | By setting this flag to true, we will not collect ANY kind of data about the user with the DNT setting. <br />This setting is not true by default because our service anonymises all incoming data and does not pass it on to any third parties under any circumstances.                                             | `false`                         |
+| apiURL               | If you use Swetrix Cloud, you don't need to change this parameter. If you're self-hosting Swetrix CE, you should put the URL of your API instance here, like `[BASE_URL]/backend/v1/log`.                                                                                                                            | `'https://api.swetrix.com/log'` |
+| profileId            | Optional profile ID for long-term user tracking (MAU/DAU). If set, it will be used for all pageviews and events unless overridden per-call. This allows you to track users across sessions and devices. To also link the visitor's previous anonymous activity to this profile, use [identify()](#identify) instead. | `undefined`                     |
+| preloadSessionReplay | Set to `true` to preload the session replay recorder after `init()`, or pass `{ rrwebUrl: "https://example.com/rrweb.min.js" }` to load it from a custom URL. Recording only starts after you call `startSessionReplay()`.                                                                                           | `undefined`                     |
 
 ## track()
 
@@ -161,6 +161,49 @@ swetrix.pageview({
   },
 });
 ```
+
+## identify()
+
+Identify the current visitor with your own user ID (e.g. after they log in).
+
+Calling this function does two things:
+
+1. **Links the anonymous history** — the visitor's current anonymous profile is linked to the identified profile server-side, so the activity they had before logging in (recent sessions, pageviews, events) is attributed to the identified profile in the dashboard.
+2. **Stamps all future events** — every pageview, custom event, error, feature flag and experiment call sent after `identify()` is associated with the identified profile, exactly as if you had passed `profileId` to `init()`.
+
+```javascript
+swetrix.init("YOUR_PROJECT_ID");
+swetrix.trackViews();
+
+// After the user logs in (or on page load if they're already logged in)
+swetrix.identify("user-12345");
+```
+
+Swetrix stores nothing in the browser (no cookies, no `localStorage`), so the identification only lasts for the current page life. Call `identify()` on every page load while the user is logged in — repeated calls with the same ID are deduplicated and cost you nothing extra.
+
+<Callout type="warn">
+  Use a unique, **stable** identifier — your application's internal user ID is the best choice.
+  Don't use email addresses (they're personal data and can change) or values like `null`,
+  `undefined` or `"guest"` (the API rejects those, as they would fuse unrelated visitors into a
+  single profile). The ID you pass is hashed together with your project ID server-side and is never
+  stored in its raw form.
+</Callout>
+
+A few things to know about how linking works:
+
+- An anonymous profile is linked to the **first** identified profile that claims it. If a second person logs in with a different account on the same device and network, their identity is stamped on their own events going forward, but the shared anonymous history stays with the first account.
+- Anonymous profiles rotate monthly (see [visitor identification](/visitor-identification)), so `identify()` links the visitor's recent anonymous activity — up to about a month back on that device and network.
+- Identification works across devices: call `identify()` with the same ID on any device and all of that activity is unified under one profile.
+
+## reset()
+
+Resets the visitor's identity set via `identify()` (e.g. after they log out), so subsequent events are tracked anonymously again.
+
+```javascript
+swetrix.reset();
+```
+
+Always call this on logout if your users may share devices — otherwise the next visitor's events would be tracked under the previous user's identity.
 
 ## trackErrors()
 
@@ -449,7 +492,7 @@ swetrix.clearExperimentsCache();
 
 ## getProfileId()
 
-Gets the anonymous profile ID for the current visitor. If `profileId` was set via `init`, returns that. Otherwise, requests server to generate one from IP/UA hash.
+Gets the profile ID for the current visitor. If the visitor was identified via [identify()](#identify), returns the identified (`usr_`-prefixed) profile ID events are stored under. If `profileId` was set via `init`, returns that. Otherwise, requests server to generate an anonymous one from IP/UA hash.
 
 This ID is commonly used for [revenue attribution](/analytics-dashboard/revenue-tracking#user-attribution) — pass it to your payment provider (`swetrix_profile_id` in Stripe metadata or Paddle `customData`) or include it in the request body when posting to [`/log/revenue`](/events-api#post-logrevenue) to link transactions to specific visitors.
 

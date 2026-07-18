@@ -13,7 +13,7 @@ The **Profiles** tab lists all unique visitors to your website within the select
 
 For each profile, you can see:
 
-- **Profile ID**: A unique identifier for the user. If the user is identified (e.g., logged in), this might display their name or email if you have set up User Identification.
+- **Profile ID**: A unique identifier for the user. Anonymous visitors get an `anon_…` ID derived from a monthly-rotating fingerprint; visitors identified via [`swetrix.identify()`](/swetrix-js-reference#identify) get a stable `usr_…` ID derived from the user ID your application supplied (hashed — the raw value is never stored).
 - **Status**:
   - **Online**: User is currently active (green indicator).
   - **Recently Active**: User was active in the last 30 minutes (yellow indicator).
@@ -38,6 +38,16 @@ You can filter the profiles list to find specific users or segments:
     - **Custom Events**
 
 This is particularly useful for finding users who experienced specific bugs (e.g., filter by "Browser: Safari" if you suspect a Safari-specific issue).
+
+### Identified users and anonymous history
+
+When your application calls [`swetrix.identify()`](/swetrix-js-reference#identify) after a user logs in, Swetrix links the visitor's current anonymous profile to the identified one. From then on:
+
+- The anonymous profile disappears from the list — its sessions, pageviews, events and errors are attributed to the identified profile instead.
+- The session during which the user logged in is shown as a single, identified session (including the pageviews from before the login).
+- The **Identified** filter includes the linked anonymous history as well.
+
+See [visitor identification](/visitor-identification) for how the linking works and its limits.
 
 ## Profile Details
 

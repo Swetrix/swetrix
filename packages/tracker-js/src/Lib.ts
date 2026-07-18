@@ -356,6 +356,10 @@ export class Lib {
   private rrwebLoader: Promise<void> | null = null
   private sessionReplayActions: SessionReplayActions | null = null
   private sessionReplayInitPromise: Promise<SessionReplayActions> | null = null
+  // The server-side (usr_-prefixed) profile ID returned by the identify API
+  private identifiedProfileId: string | null = null
+  // The last profile ID sent to the identify API (to avoid duplicate requests)
+  private lastIdentifySent: string | null = null
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
@@ -647,6 +651,80 @@ export class Lib {
   }
 
   /**
+   * Identify the current visitor with your own user ID (e.g. after they log in).
+   *
+   * The visitor's current anonymous profile gets linked to the identified
+   * profile server-side, so their pre-login activity is attributed to it. All
+   * events sent after this call are associated with the identified profile.
+   *
+   * Swetrix stores nothing in the browser, so call identify() on every page
+   * load while the user is logged in. Call reset() when they log out.
+   *
+   * @param profileId A unique, stable identifier of the user, e.g. an internal
+   * user ID. Don't use emails or other mutable / personally identifiable
+   * values. The ID is hashed server-side and never stored in raw form.
+   */
+  async identify(profileId: string): Promise<void> {
+    if (typeof profileId !== 'string' || !profileId.trim()) {
+      console.error('[Swetrix] identify() expects a non-empty string profileId')
+      return
+    }
+
+    const trimmed = profileId.trim()
+
+    this.options = {
+      ...this.options,
+      profileId: trimmed,
+    }
+
+    if (!this.canTrack() || this.lastIdentifySent === trimmed) {
+      return
+    }
+
+    this.lastIdentifySent = trimmed
+
+    // The profile changed, so cached flags / experiments may no longer apply
+    this.clearFeatureFlagsCache()
+
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/identify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pid: this.projectID, profileId: trimmed }),
+      })
+
+      if (!response.ok) {
+        return
+      }
+
+      const data = (await response.json()) as { profileId: string | null }
+      this.identifiedProfileId = data.profileId || null
+    } catch {
+      // Keep the profileId set locally even if the identify request failed -
+      // events will still be attributed to the identified profile
+    }
+  }
+
+  /**
+   * Resets the visitor's identity set via identify() (e.g. after they log
+   * out), so subsequent events are tracked anonymously again. Important on
+   * shared devices - otherwise the next visitor would be tracked under the
+   * previous user's identity.
+   */
+  reset(): void {
+    if (this.options) {
+      delete this.options.profileId
+    }
+
+    this.identifiedProfileId = null
+    this.lastIdentifySent = null
+    this.clearFeatureFlagsCache()
+  }
+
+  /**
    * Fetches variant assignments for running A/B test experiments returned by feature flag evaluation.
    * Results are cached for 5 minutes by default (shared cache with feature flags).
    *
@@ -747,6 +825,12 @@ export class Lib {
    * ```
    */
   async getProfileId(): Promise<string | null> {
+    // If the visitor was identified, return the server-side (usr_-prefixed)
+    // profile ID, which is what events are stored under
+    if (this.identifiedProfileId) {
+      return this.identifiedProfileId
+    }
+
     // If profileId is already set in options, return it
     if (this.options?.profileId) {
       return this.options.profileId

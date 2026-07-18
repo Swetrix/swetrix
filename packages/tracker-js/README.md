@@ -260,6 +260,20 @@ await startSessionReplay({
 })
 ```
 
+### `identify(profileId)` / `reset()`
+
+Identify the current visitor with your own user ID (e.g. after they log in). Their current anonymous profile gets linked to the identified profile server-side, so pre-login activity is attributed to it, and all subsequent events are tracked under the identified profile.
+
+```javascript
+// After the user logs in (or on page load if they're already logged in)
+identify('user-12345')
+
+// On logout
+reset()
+```
+
+Use a unique, stable identifier (e.g. an internal user ID) — not an email or other mutable / personally identifiable value. The ID is hashed server-side and never stored in raw form. Swetrix stores nothing in the browser, so call `identify()` on every page load while the user is logged in.
+
 ### Session & Profile IDs
 
 ```javascript
