@@ -24,7 +24,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   const pid = match[1]
-  const password = getProjectPasswordCookie(request, pid)
+  // Prefer the header: cookies are not sent in cross-site iframe embeds
+  const password =
+    request.headers.get('x-password') || getProjectPasswordCookie(request, pid)
   const { search } = new URL(request.url)
 
   const result = await serverFetch(request, `v2/${path}${search}`, {

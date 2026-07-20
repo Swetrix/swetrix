@@ -48,7 +48,10 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const password = getProjectPasswordCookie(request, body.projectId)
+  // Prefer the header: cookies are not sent in cross-site iframe embeds
+  const password =
+    request.headers.get('x-password') ||
+    getProjectPasswordCookie(request, body.projectId)
   const headers: Record<string, string> = {}
   if (password) headers['x-password'] = password
 
@@ -92,7 +95,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     )
   }
 
-  const password = getProjectPasswordCookie(request, projectId)
+  const password =
+    request.headers.get('x-password') ||
+    getProjectPasswordCookie(request, projectId)
   const headers: Record<string, string> = {}
   if (password) headers['x-password'] = password
 

@@ -98,6 +98,7 @@ function buildCookieHeader(
     secure?: boolean
     httpOnly?: boolean
     domain?: string
+    partitioned?: boolean
   } = {},
 ): string {
   const {
@@ -107,6 +108,7 @@ function buildCookieHeader(
     secure = isSecureCookie(),
     httpOnly = true,
     domain = getCookieDomain(),
+    partitioned = false,
   } = options
 
   let cookie = `${name}=${encodeURIComponent(value)}; Path=${path}; SameSite=${sameSite}`
@@ -127,6 +129,12 @@ function buildCookieHeader(
 
   if (domain) {
     cookie += `; Domain=${domain}`
+  }
+
+  // CHIPS: partitioned cookies are allowed in cross-site iframes (keyed by the
+  // embedding top-level site). Only valid alongside Secure.
+  if (partitioned && secure) {
+    cookie += '; Partitioned'
   }
 
   return cookie
@@ -216,12 +224,18 @@ export function createProjectPasswordCookie(
   projectId: string,
   password: string,
 ): string {
+  // SameSite=None + Partitioned so the cookie keeps working when the dashboard
+  // is embedded in a cross-site iframe. SameSite=None requires Secure, so fall
+  // back to Lax on non-HTTPS (dev / self-hosted) environments.
+  const secure = isSecureCookie()
+
   return buildCookieHeader(
     `${PROJECT_PASSWORD_COOKIE_PREFIX}${projectId}`,
     password,
     {
       maxAge: PROJECT_PASSWORD_MAX_AGE,
-      sameSite: 'Lax',
+      sameSite: secure ? 'None' : 'Lax',
+      partitioned: secure,
     },
   )
 }

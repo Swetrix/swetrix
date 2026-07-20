@@ -138,7 +138,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const { action, projectId, pids, params } = body
 
-  const password = getProjectPasswordCookie(request, projectId)
+  // Prefer the header: cookies are not sent in cross-site iframe embeds
+  const password =
+    request.headers.get('x-password') ||
+    getProjectPasswordCookie(request, projectId)
 
   const analyticsParams: AnalyticsParams & {
     take?: number

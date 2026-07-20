@@ -25,6 +25,7 @@ import type {
   AnalyticsParams as ServerAnalyticsParams,
 } from '~/api/api.server'
 import type { V2Filter } from '~/api/v2/types'
+import { getProjectPassword } from '~/pages/Project/View/utils/cache'
 
 type ClientAnalyticsParams = Partial<
   Omit<ServerAnalyticsParams, 'password'>
@@ -41,10 +42,28 @@ interface ProxyResponse<T> {
   error: string | null
 }
 
-async function postAnalytics<T>(payload: unknown): Promise<ProxyResponse<T>> {
+// Pass the project password as a header: the swx_pp_* cookie is not sent by
+// browsers when the dashboard is embedded in a cross-site iframe.
+const withPasswordHeader = (
+  projectId: string | undefined,
+  headers: Record<string, string> = {},
+): Record<string, string> => {
+  const password = projectId ? getProjectPassword(projectId) : null
+  if (password) {
+    headers['x-password'] = password
+  }
+  return headers
+}
+
+async function postAnalytics<T>(payload: {
+  projectId?: string
+  [key: string]: unknown
+}): Promise<ProxyResponse<T>> {
   const response = await fetch('/api/analytics', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: withPasswordHeader(payload.projectId, {
+      'Content-Type': 'application/json',
+    }),
     body: JSON.stringify(payload),
   })
 
@@ -197,7 +216,9 @@ export function useSessionReplayExportProxy() {
     ) => {
       const response = await fetch('/api/session-replay-export', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: withPasswordHeader(projectId, {
+          'Content-Type': 'application/json',
+        }),
         signal,
         body: JSON.stringify({ projectId, psid, replayId }),
       })
@@ -212,6 +233,7 @@ export function useSessionReplayExportProxy() {
       const query = new URLSearchParams({ projectId, exportId })
       const response = await fetch(`/api/session-replay-export?${query}`, {
         signal,
+        headers: withPasswordHeader(projectId),
       })
 
       return parseExportProxyResponse(response)
