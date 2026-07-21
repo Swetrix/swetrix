@@ -5928,7 +5928,7 @@ export class AnalyticsService {
 
     const querySessionDetails = `
       SELECT
-        dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, profileId
+        dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, isp, og, ut, ctp, profileId
       FROM events
       WHERE
         pid = {pid:FixedString(12)}
@@ -6019,7 +6019,7 @@ export class AnalyticsService {
     if (!details) {
       const querySessionDetailsFromCustomEV = `
         SELECT
-          dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, profileId
+          dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, isp, og, ut, ctp, profileId
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
@@ -7341,7 +7341,11 @@ export class AnalyticsService {
         argMax(br, created) AS br,
         argMax(brv, created) AS brv,
         argMax(dv, created) AS dv,
-        argMax(lc, created) AS lc
+        argMax(lc, created) AS lc,
+        argMax(isp, created) AS isp,
+        argMax(og, created) AS og,
+        argMax(ut, created) AS ut,
+        argMax(ctp, created) AS ctp
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND profileId = {profileId:String}

@@ -26,6 +26,10 @@ import {
 } from '~/lib/models/Project'
 import { BackButton } from '~/pages/Project/View/components/BackButton'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import {
+  getUsageTypeLabel,
+  getConnectionTypeLabel,
+} from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
@@ -354,6 +358,33 @@ export const SessionDetailView = ({
     { label: t('project.mapping.ca'), value: details.utm_campaign },
     { label: t('project.mapping.te'), value: details.utm_term },
     { label: t('project.mapping.co'), value: details.utm_content },
+  ].filter(({ value }) => value)
+  const networkRows: {
+    key: string
+    label: string
+    value: string | null
+    valueClassName?: string
+  }[] = [
+    { key: 'isp', label: t('project.mapping.isp'), value: details.isp },
+    { key: 'og', label: t('project.mapping.og'), value: details.organization },
+    {
+      key: 'ut',
+      label: t('project.mapping.ut'),
+      value: details.user_type ? getUsageTypeLabel(details.user_type, t) : null,
+      // Hosting means the visitor came from a data centre rather than a real
+      // consumer connection — a useful hint when triaging suspicious sessions.
+      valueClassName:
+        details.user_type === 'hosting'
+          ? 'text-amber-600 dark:text-amber-500'
+          : undefined,
+    },
+    {
+      key: 'ctp',
+      label: t('project.mapping.ctp'),
+      value: details.connection_type
+        ? getConnectionTypeLabel(details.connection_type, t)
+        : null,
+    },
   ].filter(({ value }) => value)
   const durationText = details.isLive
     ? sessionOnlineFor || t('dashboard.live')
@@ -739,6 +770,21 @@ export const SessionDetailView = ({
               />
             </div>
           </PanelSection>
+
+          {networkRows.length > 0 ? (
+            <PanelSection title={t('project.network')}>
+              <div>
+                {networkRows.map(({ key, label, value, valueClassName }) => (
+                  <InfoRow
+                    key={key}
+                    label={label}
+                    value={value}
+                    valueClassName={valueClassName}
+                  />
+                ))}
+              </div>
+            </PanelSection>
+          ) : null}
 
           {campaignRows.length > 0 ? (
             <PanelSection title={t('project.campaigns')}>

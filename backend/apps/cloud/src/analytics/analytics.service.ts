@@ -7436,7 +7436,7 @@ export class AnalyticsService {
 
     const querySessionDetails = `
       SELECT
-        dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, profileId
+        dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, isp, og, ut, ctp, profileId
       FROM events
       WHERE
         pid = {pid:FixedString(12)}
@@ -7575,7 +7575,7 @@ export class AnalyticsService {
     if (!details) {
       const querySessionDetailsFromCustomEV = `
         SELECT
-          dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, profileId
+          dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, isp, og, ut, ctp, profileId
         FROM events
         WHERE
           pid = {pid:FixedString(12)}
@@ -8512,7 +8512,11 @@ export class AnalyticsService {
         any(br) AS br,
         any(brv) AS brv,
         any(dv) AS dv,
-        any(lc) AS lc
+        any(lc) AS lc,
+        any(isp) AS isp,
+        any(og) AS og,
+        any(ut) AS ut,
+        any(ctp) AS ctp
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND profileId = {profileId:String}

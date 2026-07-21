@@ -51,13 +51,27 @@ interface Weighted<T> {
   value: T
 }
 
+// Mirrors the network intelligence traits the IP database returns: `usageType`
+// is lowercase snake_case and `connectionType` is title case, which is what
+// project.usageTypeMapping / project.connectionTypeMapping expect once the
+// frontend has lowercased and underscored them.
+interface NetworkProfile {
+  isp: string
+  organization: string
+  usageType: string
+  connectionType: string
+}
+
 interface Geo {
   cc: string
   country: string
   region: string
   rgc: string
   city: string
-  isp: string
+  // Sessions get `mobile` when they are generated with a phone client, so the
+  // carrier, usage type and connection type stay consistent with the device.
+  fixedLine: NetworkProfile
+  mobile: NetworkProfile
   locale: string
   utcOffset: number
   weight: number
@@ -111,6 +125,7 @@ interface SessionContext {
   identified: boolean
   start: Dayjs
   geo: Geo
+  network: NetworkProfile
   source: TrafficSource
   client: ClientProfile
   pages: string[]
@@ -158,7 +173,18 @@ const GEO_POOL: Geo[] = [
     region: 'California',
     rgc: 'CA',
     city: 'San Francisco',
-    isp: 'Cloudflare WARP',
+    fixedLine: {
+      isp: 'Cloudflare WARP',
+      organization: 'Cloudflare, Inc.',
+      usageType: 'consumer_privacy_network',
+      connectionType: 'Corporate',
+    },
+    mobile: {
+      isp: 'T-Mobile USA',
+      organization: 'T-Mobile USA, Inc.',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'en-US',
     utcOffset: -7,
     weight: 18,
@@ -169,7 +195,18 @@ const GEO_POOL: Geo[] = [
     region: 'New York',
     rgc: 'NY',
     city: 'New York',
-    isp: 'Verizon Business',
+    fixedLine: {
+      isp: 'Verizon Business',
+      organization: 'Verizon Communications Inc.',
+      usageType: 'business',
+      connectionType: 'Corporate',
+    },
+    mobile: {
+      isp: 'Verizon Wireless',
+      organization: 'Cellco Partnership d/b/a Verizon Wireless',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'en-US',
     utcOffset: -4,
     weight: 14,
@@ -180,7 +217,18 @@ const GEO_POOL: Geo[] = [
     region: 'England',
     rgc: 'ENG',
     city: 'London',
-    isp: 'BT',
+    fixedLine: {
+      isp: 'BT',
+      organization: 'British Telecommunications PLC',
+      usageType: 'residential',
+      connectionType: 'Cable/DSL',
+    },
+    mobile: {
+      isp: 'EE',
+      organization: 'EE Limited',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'en-GB',
     utcOffset: 1,
     weight: 12,
@@ -191,7 +239,18 @@ const GEO_POOL: Geo[] = [
     region: 'Berlin',
     rgc: 'BE',
     city: 'Berlin',
-    isp: 'Deutsche Telekom',
+    fixedLine: {
+      isp: 'Deutsche Telekom',
+      organization: 'Deutsche Telekom AG',
+      usageType: 'residential',
+      connectionType: 'Cable/DSL',
+    },
+    mobile: {
+      isp: 'Vodafone DE',
+      organization: 'Vodafone GmbH',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'de-DE',
     utcOffset: 2,
     weight: 9,
@@ -202,7 +261,18 @@ const GEO_POOL: Geo[] = [
     region: 'North Holland',
     rgc: 'NH',
     city: 'Amsterdam',
-    isp: 'KPN',
+    fixedLine: {
+      isp: 'KPN',
+      organization: 'KPN B.V.',
+      usageType: 'residential',
+      connectionType: 'Fiber',
+    },
+    mobile: {
+      isp: 'Odido',
+      organization: 'Odido Netherlands B.V.',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'nl-NL',
     utcOffset: 2,
     weight: 7,
@@ -213,7 +283,18 @@ const GEO_POOL: Geo[] = [
     region: 'Ontario',
     rgc: 'ON',
     city: 'Toronto',
-    isp: 'Rogers',
+    fixedLine: {
+      isp: 'Rogers',
+      organization: 'Rogers Communications Canada Inc.',
+      usageType: 'residential',
+      connectionType: 'Cable/DSL',
+    },
+    mobile: {
+      isp: 'Bell Mobility',
+      organization: 'Bell Mobility Inc.',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'en-CA',
     utcOffset: -4,
     weight: 7,
@@ -224,7 +305,18 @@ const GEO_POOL: Geo[] = [
     region: 'Ile-de-France',
     rgc: 'IDF',
     city: 'Paris',
-    isp: 'Orange',
+    fixedLine: {
+      isp: 'Orange',
+      organization: 'Orange S.A.',
+      usageType: 'residential',
+      connectionType: 'Fiber',
+    },
+    mobile: {
+      isp: 'Free Mobile',
+      organization: 'Free Mobile SAS',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'fr-FR',
     utcOffset: 2,
     weight: 6,
@@ -235,7 +327,18 @@ const GEO_POOL: Geo[] = [
     region: 'Karnataka',
     rgc: 'KA',
     city: 'Bengaluru',
-    isp: 'Airtel Broadband',
+    fixedLine: {
+      isp: 'Airtel Broadband',
+      organization: 'Bharti Airtel Limited',
+      usageType: 'residential',
+      connectionType: 'Cable/DSL',
+    },
+    mobile: {
+      isp: 'Jio',
+      organization: 'Reliance Jio Infocomm Limited',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'en-IN',
     utcOffset: 5.5,
     weight: 6,
@@ -246,7 +349,18 @@ const GEO_POOL: Geo[] = [
     region: 'Tokyo',
     rgc: '13',
     city: 'Tokyo',
-    isp: 'NTT Communications',
+    fixedLine: {
+      isp: 'NTT Communications',
+      organization: 'NTT Communications Corporation',
+      usageType: 'business',
+      connectionType: 'Corporate',
+    },
+    mobile: {
+      isp: 'NTT Docomo',
+      organization: 'NTT Docomo, Inc.',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'ja-JP',
     utcOffset: 9,
     weight: 5,
@@ -257,7 +371,18 @@ const GEO_POOL: Geo[] = [
     region: 'New South Wales',
     rgc: 'NSW',
     city: 'Sydney',
-    isp: 'Telstra',
+    fixedLine: {
+      isp: 'Telstra',
+      organization: 'Telstra Limited',
+      usageType: 'residential',
+      connectionType: 'Cable/DSL',
+    },
+    mobile: {
+      isp: 'Telstra Mobile',
+      organization: 'Telstra Limited',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'en-AU',
     utcOffset: 10,
     weight: 4,
@@ -268,7 +393,18 @@ const GEO_POOL: Geo[] = [
     region: 'Sao Paulo',
     rgc: 'SP',
     city: 'Sao Paulo',
-    isp: 'Vivo',
+    fixedLine: {
+      isp: 'Vivo',
+      organization: 'Telefonica Brasil S.A.',
+      usageType: 'residential',
+      connectionType: 'Fiber',
+    },
+    mobile: {
+      isp: 'Vivo Movel',
+      organization: 'Telefonica Brasil S.A.',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'pt-BR',
     utcOffset: -3,
     weight: 4,
@@ -279,7 +415,18 @@ const GEO_POOL: Geo[] = [
     region: 'Masovian',
     rgc: '14',
     city: 'Warsaw',
-    isp: 'Orange Polska',
+    fixedLine: {
+      isp: 'Orange Polska',
+      organization: 'Orange Polska Spolka Akcyjna',
+      usageType: 'residential',
+      connectionType: 'Cable/DSL',
+    },
+    mobile: {
+      isp: 'Play',
+      organization: 'P4 Sp. z o.o.',
+      usageType: 'cellular',
+      connectionType: 'Cellular',
+    },
     locale: 'pl-PL',
     utcOffset: 2,
     weight: 3,
@@ -1419,6 +1566,9 @@ export class DemoDataService implements OnModuleInit {
       identified,
       start,
       geo,
+      // Tablets sit in the mobile client pool but are usually on Wi-Fi, so only
+      // phones get the carrier profile.
+      network: client.dv === 'mobile' ? geo.mobile : geo.fixedLine,
       source,
       client,
       pages: journey.pages,
@@ -1712,10 +1862,10 @@ export class DemoDataService implements OnModuleInit {
         rg: session.geo.region,
         rgc: session.geo.rgc,
         ct: session.geo.city,
-        isp: session.geo.isp,
-        og: session.source.name,
-        ut: session.source.me,
-        ctp: session.source.ca,
+        isp: session.network.isp,
+        og: session.network.organization,
+        ut: session.network.usageType,
+        ctp: session.network.connectionType,
         dns,
         tls,
         conn,
@@ -1970,7 +2120,10 @@ export class DemoDataService implements OnModuleInit {
       rg: session.geo.region,
       rgc: session.geo.rgc,
       ct: session.geo.city,
-      isp: session.geo.isp,
+      isp: session.network.isp,
+      og: session.network.organization,
+      ut: session.network.usageType,
+      ctp: session.network.connectionType,
       created: this.format(created),
     }
   }
@@ -2101,10 +2254,10 @@ export class DemoDataService implements OnModuleInit {
       rg: session.geo.region,
       rgc: session.geo.rgc,
       ct: session.geo.city,
-      isp: session.geo.isp,
-      og: session.source.name,
-      ut: session.source.me,
-      ctp: session.source.ca,
+      isp: session.network.isp,
+      og: session.network.organization,
+      ut: session.network.usageType,
+      ctp: session.network.connectionType,
       meta: {
         returning: String(session.returning),
         identified: String(session.identified),
