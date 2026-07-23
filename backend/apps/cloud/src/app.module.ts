@@ -36,6 +36,7 @@ import { ToolsModule } from './tools/tools.module'
 import { PendingInvitationModule } from './pending-invitation/pending-invitation.module'
 import { DataImportModule } from './data-import/data-import.module'
 import { NotificationChannelModule } from './notification-channel/notification-channel.module'
+import { AdminModule } from './admin/admin.module'
 
 const modules = [
   SentryModule.forRoot(),
@@ -103,6 +104,7 @@ const modules = [
   PendingInvitationModule,
   DataImportModule,
   NotificationChannelModule,
+  AdminModule,
 ]
 
 @Module({

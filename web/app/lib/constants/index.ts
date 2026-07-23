@@ -437,6 +437,7 @@ export const localisedLanguages = whitelist.filter(
 // Blog and blog-style content (rendered through routes/$.tsx) stays unlocalised,
 // as do API routes and other internal endpoints.
 const UNLOCALISED_PATH_PATTERNS: RegExp[] = [
+  /^\/admin(\/|$)/,
   /^\/blog(\/|$)/,
   /^\/glossary(\/|$)/,
   /^\/api(\/|$)/,
