@@ -409,7 +409,15 @@ export const UsersTab = ({
               <tr
                 key={user.id}
                 onClick={() => onUserSelect(user.id)}
-                className='cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-slate-900/60'
+                onKeyDown={(e) => {
+                  if (e.target !== e.currentTarget) return
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onUserSelect(user.id)
+                  }
+                }}
+                tabIndex={0}
+                className='cursor-pointer transition-colors hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:-outline-offset-2 dark:hover:bg-slate-900/60 dark:focus-visible:bg-slate-900/60'
               >
                 <Td>
                   <div className='flex items-center gap-2'>
