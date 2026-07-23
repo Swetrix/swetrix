@@ -68,6 +68,7 @@ import {
 } from './bot-detection.service'
 import { AppLoggerService } from '../logger/logger.service'
 import { clickhouse } from '../common/integrations/clickhouse'
+import { normalizeCampaignKey } from '../ads/interfaces/ads.interface'
 import { getDomainsForRefName } from './utils/referrers.map'
 import {
   calculateRelativePercentage,
@@ -7650,6 +7651,10 @@ export class AnalyticsService {
 
     const replay = await this.getSessionReplaySummary(pid, psid)
 
+    const adCampaign = details?.ca
+      ? await this.findAdCampaignByUtm(pid, details.ca)
+      : null
+
     return {
       pages: this.processPageflow(pages),
       details: {
@@ -7658,11 +7663,65 @@ export class AnalyticsService {
         isLive,
         revenue: revenueTotals.revenue || 0,
         refunds: revenueTotals.refunds || 0,
+        adCampaign,
       },
       psid,
       chart: chartData,
       timeBucket,
       replay,
+    }
+  }
+
+  /*
+    Matches a utm_campaign value against ad campaigns synced into the
+    ad_metrics table (by campaign id or name), so sessions/profiles arriving
+    via paid campaigns can be badged in the UI.
+  */
+  private async findAdCampaignByUtm(
+    pid: string,
+    utmCampaign: string,
+  ): Promise<{
+    provider: string
+    campaignId: string
+    campaignName: string
+  } | null> {
+    try {
+      const { data } = await clickhouse
+        .query({
+          query: `
+            SELECT DISTINCT provider, campaign_id, campaign_name
+            FROM ad_metrics
+            WHERE pid = {pid:FixedString(12)}
+          `,
+          query_params: { pid },
+        })
+        .then((resultSet) =>
+          resultSet.json<{
+            provider: string
+            campaign_id: string
+            campaign_name: string
+          }>(),
+        )
+
+      const key = normalizeCampaignKey(utmCampaign)
+
+      const match = data.find(
+        (row) =>
+          row.campaign_id.toLowerCase() === key ||
+          row.campaign_name.toLowerCase().trim() === key,
+      )
+
+      if (!match) {
+        return null
+      }
+
+      return {
+        provider: match.provider,
+        campaignId: match.campaign_id,
+        campaignName: match.campaign_name,
+      }
+    } catch {
+      return null
     }
   }
 
@@ -8540,6 +8599,21 @@ export class AnalyticsService {
       )
     `
 
+    // First-touch acquisition source/campaign of the profile.
+    // The aggregate aliases must not shadow the so/ca source columns — the
+    // ClickHouse 24.8+ analyzer would resolve the WHERE references to the
+    // aggregates and fail with ILLEGAL_AGGREGATION.
+    const queryAcquisition = `
+      SELECT
+        argMin(so, created) AS acquisitionSource,
+        argMin(ca, created) AS acquisitionCampaign
+      FROM events
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND type IN ('pageview', 'custom_event', 'error')
+        AND (so IS NOT NULL OR ca IS NOT NULL)
+    `
+
     const params = { pid, profileId }
 
     const [
@@ -8550,6 +8624,7 @@ export class AnalyticsService {
       errorsResult,
       detailsResult,
       revenueResult,
+      acquisitionResult,
     ] = await Promise.all([
       clickhouse
         .query({ query: querySessionCount, query_params: params })
@@ -8572,6 +8647,9 @@ export class AnalyticsService {
       clickhouse
         .query({ query: queryRevenue, query_params: params })
         .then((resultSet) => resultSet.json()),
+      clickhouse
+        .query({ query: queryAcquisition, query_params: params })
+        .then((resultSet) => resultSet.json()),
     ])
 
     const sessionCount = (sessionCountResult.data[0] || {}) as Record<
@@ -8584,6 +8662,11 @@ export class AnalyticsService {
     const errors = (errorsResult.data[0] || {}) as Record<string, any>
     const details = (detailsResult.data[0] || {}) as Record<string, any>
     const revenue = (revenueResult.data[0] || {}) as Record<string, any>
+    const acquisition = (acquisitionResult.data[0] || {}) as Record<string, any>
+
+    const acquisitionCampaign = acquisition.acquisitionCampaign
+      ? await this.findAdCampaignByUtm(pid, acquisition.acquisitionCampaign)
+      : null
 
     return {
       profileId,
@@ -8597,6 +8680,11 @@ export class AnalyticsService {
       avgDuration: avgDuration.avgDuration || 0,
       totalRevenue: revenue.totalRevenue || 0,
       revenueCurrency: revenue.revenueCurrency || null,
+      acquisition: {
+        so: acquisition.acquisitionSource || null,
+        ca: acquisition.acquisitionCampaign || null,
+        adCampaign: acquisitionCampaign,
+      },
       ...details,
     }
   }

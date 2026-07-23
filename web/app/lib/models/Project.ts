@@ -135,6 +135,13 @@ export interface SessionDetails {
   isLive?: boolean
   revenue?: number
   refunds?: number
+  adCampaign?: AdCampaignRef | null
+}
+
+interface AdCampaignRef {
+  provider: string
+  campaignId: string
+  campaignName: string
 }
 
 export interface Profile {
@@ -167,6 +174,11 @@ export interface ProfileDetails extends Profile {
   activityCalendar: { date: string; pageviews: number; events: number }[]
   totalRevenue?: number
   revenueCurrency?: string
+  acquisition?: {
+    so: string | null
+    ca: string | null
+    adCampaign: AdCampaignRef | null
+  }
 }
 
 export interface AnalyticsFunnel {

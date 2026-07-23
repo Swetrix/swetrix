@@ -31,6 +31,7 @@ import { AppController } from './app.controller'
 import { isPrimaryNode, isPrimaryClusterNode } from './common/utils'
 import { OrganisationModule } from './organisation/organisation.module'
 import { RevenueModule } from './revenue/revenue.module'
+import { AdsModule } from './ads/ads.module'
 import { BullModule } from '@nestjs/bullmq'
 import { ToolsModule } from './tools/tools.module'
 import { PendingInvitationModule } from './pending-invitation/pending-invitation.module'
@@ -99,6 +100,7 @@ const modules = [
   HealthModule,
   OrganisationModule,
   RevenueModule,
+  AdsModule,
   ToolsModule,
   PendingInvitationModule,
   DataImportModule,

@@ -25,7 +25,10 @@ import { useSearchParams, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
 
 import * as v2api from '~/api/v2/endpoints'
-import { useRevenueProxy } from '~/hooks/useAnalyticsProxy'
+import {
+  useAdsCampaignMapProxy,
+  useRevenueProxy,
+} from '~/hooks/useAnalyticsProxy'
 import { useAnnotations } from '~/hooks/useAnnotations'
 import {
   useCompareSummaryQuery,
@@ -39,6 +42,7 @@ import {
   useV2CommonParams,
 } from '~/hooks/v2/useV2Queries'
 import { isSelfhosted } from '~/lib/constants'
+import { formatCurrencyAmount } from '~/lib/pricing/format'
 import { Entry } from '~/lib/models/Entry'
 import AnnotationModal from '~/modals/AnnotationModal'
 import CustomEventsSubmenu from '~/pages/Project/tabs/Traffic/CustomEventsSubmenu'
@@ -99,6 +103,7 @@ import Loader from '~/ui/Loader'
 import Dropdown from '~/ui/Dropdown'
 import Tooltip from '~/ui/Tooltip'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
+import { getItem } from '~/utils/localstorage'
 import { groupRefEntries } from '~/utils/referrers'
 import { ChartTypeSwitcher } from '../../View/components/ChartTypeSwitcher'
 
@@ -157,6 +162,16 @@ const TrafficViewInner = ({
 }: TrafficViewProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
   const { fetchRevenueStatus, fetchRevenueData } = useRevenueProxy()
+  const {
+    fetchCampaignMap,
+    map: adsCampaignMap,
+    currency: adsCurrency,
+  } = useAdsCampaignMapProxy()
+  // Mirrors the sources BreakdownPanel's persisted sub-tab so the campaign
+  // spend map is only fetched while the utm_campaign sub-tab is open.
+  const [activeSourcesSubTab, setActiveSourcesSubTab] = useState<string>(
+    () => getItem('v2PanelTab:traffic:traffic-sources') || 'referrer',
+  )
   const {
     timezone,
     period,
@@ -416,6 +431,34 @@ const TrafficViewInner = ({
 
     loadRevenueStatus()
   }, [id, fetchRevenueStatus])
+
+  // Fetch ad campaign spend map for the utm_campaign panel rows. Only runs
+  // when the campaign sub-tab is open; unconnected projects get an empty map.
+  // Depend on the derived from/to (not the searchParams object) so unrelated
+  // URL changes don't refetch.
+  const campaignMapFrom = searchParams.get('from') || undefined
+  const campaignMapTo = searchParams.get('to') || undefined
+
+  useEffect(() => {
+    if (!id || isSelfhosted || activeSourcesSubTab !== 'utm_campaign') {
+      return
+    }
+
+    fetchCampaignMap(id, {
+      period,
+      from: campaignMapFrom,
+      to: campaignMapTo,
+      timezone,
+    })
+  }, [
+    id,
+    activeSourcesSubTab,
+    period,
+    timezone,
+    fetchCampaignMap,
+    campaignMapFrom,
+    campaignMapTo,
+  ])
 
   const chartMetrics = useMemo(
     () =>
@@ -922,17 +965,42 @@ const TrafficViewInner = ({
     [t],
   )
 
-  const sourcesRowMapper = useCallback((entry: Entry, subTabId: string) => {
-    const { name: entryName } = entry
-    if (subTabId === 'referrer') {
-      return <RefRow rowName={entryName} />
-    }
-    try {
-      return decodeURIComponent(entryName as string)
-    } catch {
-      return entryName
-    }
-  }, [])
+  const sourcesRowMapper = useCallback(
+    (entry: Entry, subTabId: string) => {
+      const { name: entryName } = entry
+      if (subTabId === 'referrer') {
+        return <RefRow rowName={entryName} />
+      }
+
+      let decoded = entryName
+      try {
+        decoded = decodeURIComponent(entryName as string)
+      } catch {
+        //
+      }
+
+      const adInfo =
+        subTabId === 'utm_campaign' && adsCampaignMap
+          ? adsCampaignMap[String(decoded).toLowerCase().trim()]
+          : undefined
+
+      if (!adInfo) {
+        return decoded
+      }
+
+      return (
+        <span className='flex min-w-0 items-center gap-2'>
+          <span className='truncate'>{decoded}</span>
+          <span className='shrink-0 font-mono text-xs text-gray-500 tabular-nums dark:text-gray-400'>
+            {formatCurrencyAmount(adInfo.cost, adsCurrency, language)}
+            {' · '}
+            {formatCurrencyAmount(adInfo.cpc, adsCurrency, language)} CPC
+          </span>
+        </span>
+      )
+    },
+    [adsCampaignMap, adsCurrency, language],
+  )
 
   const sourcesTransformEntries = useCallback(
     (entries: Entry[], subTabId: string) => {
@@ -1283,6 +1351,7 @@ const TrafficViewInner = ({
             rowMapper={sourcesRowMapper}
             transformEntries={sourcesTransformEntries}
             getFilterLink={sourcesGetFilterLink}
+            onActiveSubTabChange={setActiveSourcesSubTab}
           />
           <BreakdownPanel
             dataType='traffic'
