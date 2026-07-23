@@ -5,6 +5,12 @@ slug: /adblockers/guides/netlify
 
 You can use [Netlify redirects](https://docs.netlify.com/routing/redirects/) to proxy Swetrix analytics traffic via your domain.
 
+<Callout type="info">
+  Swetrix reads the visitor's IP address from the `X-Forwarded-For` header, which Netlify sets
+  automatically when proxying requests — so geolocation, unique visitor counting and [bot
+  protection](/bot-protection) keep working as normal.
+</Callout>
+
 ## Setup Netlify rewrites rules
 
 First, you need to add the following rules to the `_redirects` file. If you don't already have it, you will need to [create it](https://docs.netlify.com/routing/redirects/rewrites-proxies/) first.

@@ -5,6 +5,14 @@ slug: /adblockers/guides/nextjs
 
 You can use [Next.js](https://nextjs.org/) to proxy Swetrix analytics traffic via your domain.
 
+<Callout type="info">
+  Swetrix reads the visitor's IP address from the `X-Forwarded-For` header, which Vercel and other
+  Next.js hosting platforms set automatically when proxying requests — so geolocation, unique
+  visitor counting and [bot protection](/bot-protection) keep working as normal. If you self-host
+  Next.js behind your own web server, make sure it forwards `X-Forwarded-For` (see the [Nginx
+  guide](/adblockers/guides/nginx)).
+</Callout>
+
 ## Setup Next.js rewrites rules
 
 First, you need to add the following rules to the `next.config.js` file. If you don't already have it, you will need to [create it](https://nextjs.org/docs/pages/api-reference/next-config-js/rewrites) in your project's root directory first.

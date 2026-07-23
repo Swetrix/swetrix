@@ -12,7 +12,7 @@ We already provide several [integrations](/integrations) and a [script](/swetrix
 ### Unique visitors tracking
 
 <Callout type="warn">
-For the unique (and live) visitor functionality to work properly, each request must have the `User-Agent` and `X-Client-IP-Address` HTTP headers set. If you don't set these headers, the API will still work, but the unique visitor count will be incorrect.
+For the unique (and live) visitor functionality to work properly, each request must have the `User-Agent` header set, and — when sent from a backend server or proxy — the `X-Forwarded-For` header with the visitor's IP address. If you don't set these headers, the API will still work, but the unique visitor count will be incorrect.
 
 </Callout>
 
@@ -25,9 +25,29 @@ The API relies on the client's IP address and user agent to create a temporary s
 This header is used to determine the visitor's browser, operating system and device type. It's also used to determine whether or not the visitor is a bot.
 We also use this header to create a temporary session for the visitor.
 
-#### X-Client-IP-Address
+#### X-Forwarded-For
 
-This header is used to determine the visitor's IP address. You must pass the visitor's IP address using this header, otherwise the API will use the IP address of the server making the request (i.e. your server's IP address), resulting in incorrect unique and live visitor data.
+Used to explicitly set the IP address of the visitor. If not set, the remote IP of the sender is used automatically. Depending on your use-case:
+
+1. If sending the event directly from your visitor's device, this header does not need to be set.
+2. If sending the event from a backend server or a proxy, make sure to set this header to the visitor's real IP address.
+
+<Callout type="warn">
+  If you forward a server, hosting provider or CDN IP address instead of the actual visitor IP,
+  unique and live visitor counts will be incorrect and geolocation will reflect your server's
+  location. On projects with [bot protection](/bot-protection) set to **Strict**, such events are
+  dropped entirely as datacenter traffic — the API still responds with a success status, but the
+  event is not recorded. You can confirm drops in the **Blocked traffic** report under Project
+  settings → Shields.
+</Callout>
+
+The IP address is never stored in raw form — it's used to calculate the temporary visitor session described above and to fill the geolocation reports (country, region, city).
+
+If the header contains a comma-separated list (as it does when the request passed through a chain of proxies), the first valid IP address from the list is used. Both IPv4 and IPv6 addresses are supported. More information about the header format can be found on [MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For).
+
+#### X-Client-IP-Address (legacy)
+
+Older Swetrix integrations used the custom `X-Client-IP-Address` header for the same purpose. It's still honoured and takes precedence over `X-Forwarded-For`, so existing setups keep working — but it's not recommended for new integrations; use the standard `X-Forwarded-For` header instead.
 
 #### Content-Type
 
@@ -136,7 +156,7 @@ This endpoint records pageview events.
 ```bash title="Request"
 curl -i -X POST https://api.swetrix.com/log \
   -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0" \
-  -H "X-Client-IP-Address: 192.0.2.1" \
+  -H "X-Forwarded-For: 192.0.2.1" \
   -H "Content-Type: application/json" \
   -d '{"pid":"YOUR_PROJECT_ID","lc":"en-US","pg":"/"}'
 ```
@@ -152,7 +172,7 @@ This endpoint records custom events.
 ```bash title="Request"
 curl -i -X POST https://api.swetrix.com/log/custom \
   -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0" \
-  -H "X-Client-IP-Address: 192.0.2.1" \
+  -H "X-Forwarded-For: 192.0.2.1" \
   -H "Content-Type: application/json" \
   -d '{"pid":"YOUR_PROJECT_ID","lc":"en-US","pg":"/"}'
 ```
@@ -169,7 +189,7 @@ It's recommended to send heartbeat events every 30 seconds. We also extend the s
 ```bash title="Request"
 curl -i -X POST https://api.swetrix.com/log/hb \
   -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0" \
-  -H "X-Client-IP-Address: 192.0.2.1" \
+  -H "X-Forwarded-For: 192.0.2.1" \
   -H "Content-Type: application/json" \
   -d '{"pid":"YOUR_PROJECT_ID"}'
 ```
@@ -225,7 +245,7 @@ This endpoint records error events. These error events are later aggregated in t
 ```bash title="Request"
 curl -i -X POST https://api.swetrix.com/log/error \
   -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0" \
-  -H "X-Client-IP-Address: 192.0.2.1" \
+  -H "X-Forwarded-For: 192.0.2.1" \
   -H "Content-Type: application/json" \
   -d '{"pid":"YOUR_PROJECT_ID","lc":"en-US","pg":"/","name":"ParseError","message":"Malformed input","lineno":12,"colno":510,"filename":"https://example.com/assets/convert.js"}'
 ```
@@ -312,7 +332,7 @@ fetch("https://api.swetrix.com/log", {
   method: "POST",
   headers: {
     "User-Agent": "FORWARD_CLIENT_USER_AGENT_HERE",
-    "X-Client-IP-Address": "FORWARD_CLIENT_IP_ADDRESS_HERE",
+    "X-Forwarded-For": "FORWARD_CLIENT_IP_ADDRESS_HERE",
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
@@ -352,7 +372,7 @@ func main() {
   }
 
   req.Header.Set("User-Agent", "FORWARD_CLIENT_USER_AGENT_HERE")
-  req.Header.Set("X-Client-IP-Address", "FORWARD_CLIENT_IP_ADDRESS_HERE")
+  req.Header.Set("X-Forwarded-For", "FORWARD_CLIENT_IP_ADDRESS_HERE")
   req.Header.Set("Content-Type", "application/json")
 
   client := &http.Client{}
@@ -378,7 +398,7 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
 
 $headers = [
   'User-Agent: FORWARD_CLIENT_USER_AGENT_HERE',
-  'X-Client-IP-Address: FORWARD_CLIENT_IP_ADDRESS_HERE',
+  'X-Forwarded-For: FORWARD_CLIENT_IP_ADDRESS_HERE',
   'Content-Type: application/json',
 ];
 

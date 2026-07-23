@@ -415,7 +415,7 @@ public class SwetrixService
             Content = JsonContent.Create(payload),
         };
         request.Headers.Add("User-Agent", userAgent);
-        request.Headers.Add("X-Client-IP-Address", ip);
+        request.Headers.Add("X-Forwarded-For", ip);
 
         await _httpClient.SendAsync(request);
     }
@@ -435,7 +435,7 @@ public class SwetrixService
             Content = JsonContent.Create(payload),
         };
         request.Headers.Add("User-Agent", userAgent);
-        request.Headers.Add("X-Client-IP-Address", ip);
+        request.Headers.Add("X-Forwarded-For", ip);
 
         await _httpClient.SendAsync(request);
     }
@@ -456,7 +456,7 @@ public class SwetrixService
             Content = JsonContent.Create(payload),
         };
         request.Headers.Add("User-Agent", userAgent);
-        request.Headers.Add("X-Client-IP-Address", ip);
+        request.Headers.Add("X-Forwarded-For", ip);
 
         await _httpClient.SendAsync(request);
     }

@@ -425,6 +425,8 @@ export const TRUSTED_PROXY_IPS: ReadonlySet<string> = new Set(
 )
 
 export const getIPFromHeaders = (headers: unknown) => {
+  // Legacy header; must keep precedence over X-Forwarded-For so pre-2026
+  // server-side tracking setups keep working.
   const customHeader = process.env.CLIENT_IP_HEADER
 
   if (customHeader) {
@@ -434,23 +436,20 @@ export const getIPFromHeaders = (headers: unknown) => {
     }
   }
 
+  const forwardedFor = String(getHeader(headers, 'x-forwarded-for') ?? '')
   const realIp = normalise(getHeader(headers, 'x-real-ip'))
 
-  // Without X-Real-IP nothing identifies the connection peer, so
-  // X-Forwarded-For is entirely client-supplied and cannot be trusted.
-  // Callers fall back to the socket address instead.
   if (!realIp) {
-    return null
+    return normalise(forwardedFor)
   }
 
   if (!TRUSTED_PROXY_IPS.has(realIp)) {
-    return realIp
+    return normalise(forwardedFor) ?? realIp
   }
 
   // The connection is one of our own relays. Recover the visitor from
   // X-Forwarded-For, walking from the right past our own hops so a
   // client-supplied prefix never wins.
-  const forwardedFor = String(getHeader(headers, 'x-forwarded-for') ?? '')
   const hops = forwardedFor.split(',')
 
   for (let i = hops.length - 1; i >= 0; --i) {

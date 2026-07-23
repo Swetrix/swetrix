@@ -73,7 +73,7 @@ class SwetrixClient:
             json=payload,
             headers={
                 "User-Agent": user_agent or "",
-                "X-Client-IP-Address": ip,
+                "X-Forwarded-For": ip,
                 "Content-Type": "application/json",
             },
         )
@@ -104,7 +104,7 @@ class SwetrixClient:
             json=payload,
             headers={
                 "User-Agent": user_agent or "",
-                "X-Client-IP-Address": ip,
+                "X-Forwarded-For": ip,
                 "Content-Type": "application/json",
             },
         )
@@ -141,7 +141,7 @@ class SwetrixClient:
             json=payload,
             headers={
                 "User-Agent": user_agent or "",
-                "X-Client-IP-Address": ip,
+                "X-Forwarded-For": ip,
                 "Content-Type": "application/json",
             },
         )
@@ -155,7 +155,7 @@ class SwetrixClient:
             json={"pid": self.project_id},
             headers={
                 "User-Agent": user_agent or "",
-                "X-Client-IP-Address": ip,
+                "X-Forwarded-For": ip,
                 "Content-Type": "application/json",
             },
         )
@@ -535,7 +535,7 @@ class SwetrixClient:
         await self._client.post(
             self.api_url,
             json=payload,
-            headers={"User-Agent": user_agent or "", "X-Client-IP-Address": ip, "Content-Type": "application/json"},
+            headers={"User-Agent": user_agent or "", "X-Forwarded-For": ip, "Content-Type": "application/json"},
         )
 
     async def track_event(self, ip: str, user_agent: str, *, ev: str, **kwargs):
@@ -545,7 +545,7 @@ class SwetrixClient:
         await self._client.post(
             f"{self.api_url}/custom",
             json=payload,
-            headers={"User-Agent": user_agent or "", "X-Client-IP-Address": ip, "Content-Type": "application/json"},
+            headers={"User-Agent": user_agent or "", "X-Forwarded-For": ip, "Content-Type": "application/json"},
         )
 
     async def track_error(self, ip: str, user_agent: str, *, name: str, **kwargs):
@@ -558,7 +558,7 @@ class SwetrixClient:
         await self._client.post(
             f"{self.api_url}/error",
             json=payload,
-            headers={"User-Agent": user_agent or "", "X-Client-IP-Address": ip, "Content-Type": "application/json"},
+            headers={"User-Agent": user_agent or "", "X-Forwarded-For": ip, "Content-Type": "application/json"},
         )
 
     async def close(self):

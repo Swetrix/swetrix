@@ -5,6 +5,14 @@ slug: /adblockers/guides/nginx
 
 If you are already using Nginx on your website, you can add Swetrix to your configuration to proxy it.
 
+<Callout type="warn">
+  The `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;` line in the configuration below
+  is **essential — do not remove it**. It forwards your visitor's real IP address to Swetrix.
+  Without it, all events arrive from your server's datacenter IP: geolocation data will show your
+  server's location instead of your visitors', and if your project's [bot protection
+  level](/bot-protection) is set to **Strict**, your traffic will be dropped as datacenter traffic.
+</Callout>
+
 ## Update your Nginx configuration
 
 ```
@@ -41,9 +49,9 @@ server {
   }
 
   location /log {
-    proxy_set_header Host                $swetrix_api_host;
-    proxy_set_header X-Client-IP-Address $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto   $scheme;
+    proxy_set_header Host              $swetrix_api_host;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
 
     proxy_ssl_server_name      on;
     proxy_buffering            on;
