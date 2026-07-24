@@ -127,6 +127,7 @@ const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
 // Paddle's vendor API is slow and rate limited; receipts do not change once
 // issued, so an hour-long cache is safe
 const PAYMENTS_CACHE_TTL_SECONDS = 3600
+const PAYMENTS_FETCH_TIMEOUT_MS = 15000
 
 export interface UserPayment {
   id: number
@@ -1093,15 +1094,27 @@ export class UserService {
     body.set('subscription_id', String(Number(user.subID)))
     body.set('is_paid', '1')
 
-    const res = await fetch(
-      'https://vendors.paddle.com/api/2.0/subscription/payments',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body,
-      },
-    )
-    const data = await res.json()
+    let res: Response
+    let data: any
+
+    try {
+      res = await fetch(
+        'https://vendors.paddle.com/api/2.0/subscription/payments',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body,
+          signal: AbortSignal.timeout(PAYMENTS_FETCH_TIMEOUT_MS),
+        },
+      )
+      data = await res.json()
+    } catch (reason) {
+      console.error(
+        '[ERROR] (getPayments) Paddle payments request failed:',
+        reason,
+      )
+      throw new ServiceUnavailableException('Failed to load payment history')
+    }
 
     if (!res.ok || !data?.success) {
       console.error(
