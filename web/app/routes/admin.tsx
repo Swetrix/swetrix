@@ -13,12 +13,18 @@ import AdminPage from '~/pages/Admin'
 import NotFound from '~/pages/NotFound'
 import type {
   AdminActionData,
+  AdminBilling,
+  AdminBotBlocks,
   AdminCharts,
   AdminDatabaseInfo,
+  AdminFeedbackList,
   AdminLoaderData,
+  AdminOrganisationDetails,
   AdminOrganisationsList,
   AdminOverview,
+  AdminProjectDetails,
   AdminProjectsList,
+  AdminRevenue,
   AdminTab,
   AdminTopProjects,
   AdminUserDetails,
@@ -49,9 +55,12 @@ export const sitemap: SitemapFunction = () => ({
 
 const TABS: AdminTab[] = [
   'overview',
+  'billing',
   'users',
   'projects',
   'organisations',
+  'feedback',
+  'bot-blocks',
   'database',
 ]
 
@@ -117,12 +126,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
         ? Number(searchParams.get('days'))
         : 30
 
-      const [overview, charts] = await Promise.all([
+      const [overview, charts, revenue] = await Promise.all([
         adminFetch<AdminOverview>('admin/overview'),
         adminFetch<AdminCharts>(`admin/charts?days=${chartDays}`),
+        // Paddle can be slow/unavailable - the page still renders without it
+        adminFetch<AdminRevenue>('admin/revenue').catch(() => null),
       ])
 
-      return { tab, overview, charts, chartDays }
+      return { tab, overview, charts, chartDays, revenue }
+    }
+
+    if (tab === 'billing') {
+      const billing = await adminFetch<AdminBilling>('admin/billing')
+
+      return { tab, billing }
+    }
+
+    if (tab === 'bot-blocks') {
+      const days = [7, 30, 90].includes(Number(searchParams.get('days')))
+        ? Number(searchParams.get('days'))
+        : 7
+
+      const botBlocks = await adminFetch<AdminBotBlocks>(
+        `admin/bot-blocks?days=${days}`,
+      )
+
+      return { tab, botBlocks }
     }
 
     if (tab === 'users') {
@@ -141,6 +170,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     if (tab === 'projects') {
+      const projectId = searchParams.get('project')
+
+      if (projectId) {
+        const projectDetails = await adminFetch<AdminProjectDetails>(
+          `admin/projects/${encodeURIComponent(projectId)}`,
+        ).catch(() => null)
+
+        return { tab, projectDetails }
+      }
+
       if (searchParams.get('view') === 'top') {
         const days = [1, 7, 30].includes(Number(searchParams.get('days')))
           ? Number(searchParams.get('days'))
@@ -161,11 +200,39 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     if (tab === 'organisations') {
-      const organisations = await adminFetch<AdminOrganisationsList>(
-        `admin/organisations?${listParams}`,
+      const organisationId = searchParams.get('org')
+
+      const [organisations, organisationDetails] = await Promise.all([
+        adminFetch<AdminOrganisationsList>(`admin/organisations?${listParams}`),
+        organisationId
+          ? adminFetch<AdminOrganisationDetails>(
+              `admin/organisations/${encodeURIComponent(organisationId)}`,
+            ).catch(() => null)
+          : Promise.resolve(null),
+      ])
+
+      return { tab, organisations, organisationDetails }
+    }
+
+    if (tab === 'feedback') {
+      const type = ['user', 'cancellation', 'deletion'].includes(
+        searchParams.get('type') || '',
+      )
+        ? searchParams.get('type')
+        : 'user'
+
+      const feedbackParams = new URLSearchParams({
+        type: type as string,
+        page,
+        search,
+        order,
+      }).toString()
+
+      const feedback = await adminFetch<AdminFeedbackList>(
+        `admin/feedback?${feedbackParams}`,
       )
 
-      return { tab, organisations }
+      return { tab, feedback }
     }
 
     const database = await adminFetch<AdminDatabaseInfo>('admin/database')

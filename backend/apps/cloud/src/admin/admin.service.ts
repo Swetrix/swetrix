@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, IsNull, Not, Repository } from 'typeorm'
+import { In, IsNull, MoreThanOrEqual, Not, Repository } from 'typeorm'
 
+import { redis } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { Organisation } from '../organisation/entity/organisation.entity'
 import {
@@ -9,6 +10,8 @@ import {
   OrganisationRole,
 } from '../organisation/entity/organisation-member.entity'
 import { Project } from '../project/entity/project.entity'
+import { CancellationFeedback } from '../user/entities/cancellation-feedback.entity'
+import { DeleteFeedback } from '../user/entities/delete-feedback.entity'
 import {
   ACCOUNT_PLANS,
   BillingFrequency,
@@ -18,6 +21,7 @@ import {
   PlanType,
   User,
 } from '../user/entities/user.entity'
+import { UserFeedback } from '../user/entities/user-feedback.entity'
 
 // Event types that count towards project activity (parity with the analytics views)
 const ACTIVITY_EVENT_TYPES = [
@@ -39,6 +43,9 @@ const FREE_PLAN_CODES = [PlanCode.none, PlanCode.free, PlanCode.trial]
 const USERS_PAGE_SIZE = 25
 const PROJECTS_PAGE_SIZE = 25
 const ORGANISATIONS_PAGE_SIZE = 25
+const FEEDBACK_PAGE_SIZE = 20
+
+export type FeedbackType = 'user' | 'cancellation' | 'deletion'
 
 interface CurrencyAmounts {
   USD: number
@@ -168,6 +175,42 @@ const PLUS_PLAN_PRICES: Partial<Record<PlanCode, PlanPricing>> = {
 
 type SupportedCurrency = keyof CurrencyAmounts
 
+const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
+
+// v2: stores raw payments instead of derived summaries
+const REVENUE_CACHE_KEY = 'admin:paddle-payments:v2'
+// Paddle's vendor API is rate limited; the numbers do not move fast anyway
+const REVENUE_CACHE_TTL_SECONDS = 3600
+
+// Rough, static FX rates used only to produce a single comparable USD number
+const APPROX_USD_RATES: Record<string, number> = {
+  USD: 1,
+  EUR: 1.08,
+  GBP: 1.27,
+}
+
+interface PaddlePayment {
+  id: number
+  subscription_id: number
+  amount: number
+  currency: string
+  payout_date: string
+  is_paid: number
+  is_one_off_charge: boolean | number
+  receipt_url?: string
+}
+
+const CHURN_RISK_MIN_PREV_EVENTS = 100
+const CHURN_RISK_MIN_DROP = 0.5
+
+export interface RevenueBucket {
+  byCurrency: Record<string, number>
+  approxUsd: number
+  payments: number
+  oneOffPayments: number
+  payers: number
+}
+
 interface MrrSubscription {
   planCode: PlanCode
   planType: PlanType | null
@@ -206,6 +249,12 @@ export class AdminService {
     private readonly organisationRepository: Repository<Organisation>,
     @InjectRepository(OrganisationMember)
     private readonly organisationMemberRepository: Repository<OrganisationMember>,
+    @InjectRepository(UserFeedback)
+    private readonly userFeedbackRepository: Repository<UserFeedback>,
+    @InjectRepository(DeleteFeedback)
+    private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
+    @InjectRepository(CancellationFeedback)
+    private readonly cancellationFeedbackRepository: Repository<CancellationFeedback>,
   ) {}
 
   // -------------------- MRR --------------------
@@ -288,6 +337,592 @@ export class AdminService {
     }
   }
 
+  // -------------------- Revenue (Paddle) --------------------
+
+  private async fetchPaddlePayments(
+    from: string,
+    to: string,
+    isPaid: 0 | 1,
+  ): Promise<PaddlePayment[]> {
+    const body = new URLSearchParams()
+    body.set('vendor_id', String(Number(PADDLE_VENDOR_ID)))
+    body.set('vendor_auth_code', PADDLE_API_KEY)
+    body.set('is_paid', String(isPaid))
+    body.set('from', from)
+    body.set('to', to)
+
+    const res = await fetch(
+      'https://vendors.paddle.com/api/2.0/subscription/payments',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+      },
+    )
+
+    const data = await res.json()
+
+    if (!res.ok || !data?.success) {
+      throw new Error(
+        `Paddle payments request failed: ${JSON.stringify(data?.error || data)}`,
+      )
+    }
+
+    return data.response || []
+  }
+
+  private summariseRevenue(payments: PaddlePayment[]): RevenueBucket {
+    const byCurrency: Record<string, number> = {}
+    const payerIds = new Set<number>()
+    let approxUsd = 0
+    let oneOffPayments = 0
+
+    for (const payment of payments) {
+      const amount = Number(payment.amount) || 0
+      const currency = payment.currency || 'USD'
+
+      byCurrency[currency] = (byCurrency[currency] || 0) + amount
+      approxUsd += amount * (APPROX_USD_RATES[currency] ?? 1)
+      payerIds.add(payment.subscription_id)
+
+      if (payment.is_one_off_charge) {
+        oneOffPayments += 1
+      }
+    }
+
+    for (const currency of Object.keys(byCurrency)) {
+      byCurrency[currency] = Math.round(byCurrency[currency] * 100) / 100
+    }
+
+    return {
+      byCurrency,
+      approxUsd: Math.round(approxUsd * 100) / 100,
+      payments: payments.length,
+      oneOffPayments,
+      payers: payerIds.size,
+    }
+  }
+
+  // Raw payments shared by the revenue summary and the billing payments feed.
+  // Cached in redis because the vendor API is slow and rate limited; the
+  // summaries are derived from this cache instead of being cached themselves.
+  private async getCachedPaddlePayments(): Promise<{
+    paid: PaddlePayment[]
+    upcoming: PaddlePayment[]
+    fetchedAt: string
+  } | null> {
+    const cached = await redis.get(REVENUE_CACHE_KEY).catch(() => null)
+
+    if (cached) {
+      try {
+        return JSON.parse(cached)
+      } catch {
+        // fall through to a fresh fetch
+      }
+    }
+
+    if (!PADDLE_VENDOR_ID || !PADDLE_API_KEY) {
+      return null
+    }
+
+    const toDateString = (date: Date) => date.toISOString().slice(0, 10)
+
+    const now = new Date()
+    const previousMonthStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1),
+    )
+    const upcomingUntil = new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000)
+
+    let result
+
+    try {
+      const [paid, upcoming] = await Promise.all([
+        this.fetchPaddlePayments(
+          toDateString(previousMonthStart),
+          toDateString(now),
+          1,
+        ),
+        this.fetchPaddlePayments(
+          toDateString(now),
+          toDateString(upcomingUntil),
+          0,
+        ),
+      ])
+
+      result = { paid, upcoming, fetchedAt: now.toISOString() }
+    } catch (error) {
+      console.error('[ERROR] (admin getCachedPaddlePayments):', error)
+      return null
+    }
+
+    await redis
+      .set(
+        REVENUE_CACHE_KEY,
+        JSON.stringify(result),
+        'EX',
+        REVENUE_CACHE_TTL_SECONDS,
+      )
+      .catch(() => null)
+
+    return result
+  }
+
+  // Real cash-in numbers from Paddle (includes one-off charges), unlike the
+  // list-price MRR estimate
+  async getRevenue() {
+    const payments = await this.getCachedPaddlePayments()
+
+    if (!payments) {
+      return { available: false as const }
+    }
+
+    const now = new Date()
+    const dayOfMonth = now.getUTCDate()
+    const currentMonthStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    )
+    const currentMonthEnd = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59),
+    )
+
+    const currentMonthPayments: PaddlePayment[] = []
+    const previousMonthPayments: PaddlePayment[] = []
+    const previousMonthToDatePayments: PaddlePayment[] = []
+
+    for (const payment of payments.paid) {
+      const payoutDate = new Date(payment.payout_date)
+
+      if (payoutDate >= currentMonthStart) {
+        currentMonthPayments.push(payment)
+      } else {
+        previousMonthPayments.push(payment)
+
+        // Same day-of-month window as the current month, so the MoM badge
+        // compares like for like instead of MTD vs a full month
+        if (payoutDate.getUTCDate() <= dayOfMonth) {
+          previousMonthToDatePayments.push(payment)
+        }
+      }
+    }
+
+    // "Scheduled" on the revenue card means the rest of this month only
+    const upcomingThisMonth = payments.upcoming.filter(
+      (payment) => new Date(payment.payout_date) <= currentMonthEnd,
+    )
+
+    return {
+      available: true as const,
+      currentMonth: this.summariseRevenue(currentMonthPayments),
+      previousMonth: this.summariseRevenue(previousMonthPayments),
+      previousMonthToDate: this.summariseRevenue(previousMonthToDatePayments),
+      upcoming: this.summariseRevenue(upcomingThisMonth),
+      fetchedAt: payments.fetchedAt,
+    }
+  }
+
+  // -------------------- Billing health --------------------
+
+  private formatBillingUser(user: User) {
+    const revenue = this.getMonthlyRevenue(user)
+
+    return {
+      id: user.id,
+      email: user.email,
+      planCode: user.planCode,
+      planType: getEffectivePlanType(user),
+      billingFrequency: user.billingFrequency,
+      created: user.created,
+      trialEndDate: user.trialEndDate,
+      nextBillDate: user.nextBillDate,
+      cancellationEffectiveDate: user.cancellationEffectiveDate,
+      dashboardBlockReason: user.dashboardBlockReason,
+      isAccountBillingSuspended: user.isAccountBillingSuspended,
+      // USD list-price estimate of what this account is worth per month
+      monthlyRevenueUsd: revenue
+        ? Math.round(revenue.usdAmount * 100) / 100
+        : null,
+    }
+  }
+
+  async getBilling() {
+    const now = new Date()
+    const in14d = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+
+    const [trialUsers, cancellingUsers, suspendedUsers, payingUsers, paddle] =
+      await Promise.all([
+        // Recently-expired trials are as interesting as expiring ones - they
+        // are the ones worth a personal follow-up email
+        this.userRepository
+          .createQueryBuilder('user')
+          .loadRelationCountAndMap('user.projectCount', 'user.projects')
+          .where('user.planCode = :trial', { trial: PlanCode.trial })
+          .andWhere('user.trialEndDate IS NOT NULL')
+          .andWhere('user.trialEndDate <= :in14d', { in14d })
+          .andWhere('user.trialEndDate >= :monthAgo', { monthAgo })
+          .orderBy('user.trialEndDate', 'ASC')
+          .take(100)
+          .getMany(),
+        this.userRepository.find({
+          where: { cancellationEffectiveDate: Not(IsNull()) },
+          order: { cancellationEffectiveDate: 'ASC' },
+          take: 100,
+        }),
+        this.userRepository
+          .createQueryBuilder('user')
+          .where(
+            '(user.isAccountBillingSuspended = true OR user.dashboardBlockReason IS NOT NULL)',
+          )
+          .orderBy('user.created', 'DESC')
+          .take(100)
+          .getMany(),
+        this.userRepository.find({
+          where: { planCode: Not(In(FREE_PLAN_CODES)) },
+        }),
+        this.getCachedPaddlePayments(),
+      ])
+
+    const [trialUsage, churnRisk, payments] = await Promise.all([
+      this.getMonthlyEventsForUsers(trialUsers.map((user) => user.id)),
+      this.getChurnRisk(payingUsers),
+      this.buildPaymentsFeed(paddle),
+    ])
+
+    return {
+      trialsEndingSoon: trialUsers.map(
+        (user: User & { projectCount?: number }) => ({
+          ...this.formatBillingUser(user),
+          projectCount: user.projectCount || 0,
+          monthlyEvents: trialUsage[user.id] || 0,
+        }),
+      ),
+      cancellationPipeline: cancellingUsers.map((user) =>
+        this.formatBillingUser(user),
+      ),
+      suspended: suspendedUsers.map((user) => this.formatBillingUser(user)),
+      churnRisk,
+      payments,
+    }
+  }
+
+  private async buildPaymentsFeed(
+    paddle: {
+      paid: PaddlePayment[]
+      upcoming: PaddlePayment[]
+      fetchedAt: string
+    } | null,
+  ) {
+    if (!paddle) {
+      return { available: false as const, recent: [], upcoming: [] }
+    }
+
+    const recent = [...paddle.paid]
+      .sort(
+        (a, b) =>
+          new Date(b.payout_date).getTime() - new Date(a.payout_date).getTime(),
+      )
+      .slice(0, 50)
+    const upcoming = [...paddle.upcoming]
+      .sort(
+        (a, b) =>
+          new Date(a.payout_date).getTime() - new Date(b.payout_date).getTime(),
+      )
+      .slice(0, 50)
+
+    // Paddle only knows subscription ids - map them back to accounts
+    const subIds = Array.from(
+      new Set(
+        [...recent, ...upcoming].map(({ subscription_id }) =>
+          String(subscription_id),
+        ),
+      ),
+    )
+    const users =
+      subIds.length > 0
+        ? await this.userRepository.find({
+            where: { subID: In(subIds) },
+            select: ['id', 'email', 'subID', 'planCode'],
+          })
+        : []
+    const usersBySubId = Object.fromEntries(
+      users.map((user) => [user.subID, user]),
+    )
+
+    const mapPayment = (payment: PaddlePayment) => {
+      const user = usersBySubId[String(payment.subscription_id)]
+
+      return {
+        id: payment.id,
+        date: payment.payout_date,
+        amount: Number(payment.amount) || 0,
+        currency: payment.currency,
+        isOneOff: Boolean(payment.is_one_off_charge),
+        receiptUrl: payment.receipt_url || null,
+        subscriptionId: payment.subscription_id,
+        user: user
+          ? { id: user.id, email: user.email, planCode: user.planCode }
+          : null,
+      }
+    }
+
+    return {
+      available: true as const,
+      recent: recent.map(mapPayment),
+      upcoming: upcoming.map(mapPayment),
+      fetchedAt: paddle.fetchedAt,
+    }
+  }
+
+  // Paying users whose usage collapsed vs the previous month - the churn
+  // early-warning list
+  private async getChurnRisk(payingUsers: User[]) {
+    if (payingUsers.length === 0) {
+      return { atRisk: [], analyzed: 0 }
+    }
+
+    const projects: { pid: string; userId: string }[] =
+      await this.projectRepository
+        .createQueryBuilder('project')
+        .select('project.id', 'pid')
+        .addSelect('admin.id', 'userId')
+        .leftJoin('project.admin', 'admin')
+        .where('admin.id IN (:...userIds)', {
+          userIds: payingUsers.map((user) => user.id),
+        })
+        .getRawMany()
+
+    if (projects.length === 0) {
+      return { atRisk: [], analyzed: payingUsers.length }
+    }
+
+    const query = `
+      SELECT
+        pid,
+        countIf(created >= now() - INTERVAL 30 DAY) AS current,
+        countIf(
+          created >= now() - INTERVAL 60 DAY
+          AND created < now() - INTERVAL 30 DAY
+        ) AS previous
+      FROM events
+      WHERE pid IN ({pids:Array(FixedString(12))})
+        AND type IN ({types:Array(String)})
+      GROUP BY pid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          pids: projects.map(({ pid }) => pid),
+          types: ACTIVITY_EVENT_TYPES,
+        },
+      })
+      .then((resultSet) =>
+        resultSet.json<{ pid: string; current: number; previous: number }>(),
+      )
+
+    const byPid: Record<string, { current: number; previous: number }> = {}
+
+    for (const { pid, current, previous } of data) {
+      byPid[pid] = { current: Number(current), previous: Number(previous) }
+    }
+
+    const byUser: Record<string, { current: number; previous: number }> = {}
+
+    for (const { pid, userId } of projects) {
+      const counts = byPid[pid]
+
+      if (!counts) {
+        continue
+      }
+
+      byUser[userId] = byUser[userId] || { current: 0, previous: 0 }
+      byUser[userId].current += counts.current
+      byUser[userId].previous += counts.previous
+    }
+
+    const atRisk = payingUsers
+      .map((user) => {
+        const usage = byUser[user.id] || { current: 0, previous: 0 }
+        const drop =
+          usage.previous > 0
+            ? (usage.previous - usage.current) / usage.previous
+            : 0
+
+        return { user, usage, drop }
+      })
+      .filter(
+        ({ usage, drop }) =>
+          usage.previous >= CHURN_RISK_MIN_PREV_EVENTS &&
+          drop >= CHURN_RISK_MIN_DROP,
+      )
+      .sort((a, b) => b.drop - a.drop)
+      .map(({ user, usage, drop }) => ({
+        ...this.formatBillingUser(user),
+        events30d: usage.current,
+        eventsPrev30d: usage.previous,
+        dropPercent: Math.round(drop * 100),
+      }))
+
+    return { atRisk, analyzed: payingUsers.length }
+  }
+
+  // -------------------- Bot blocks --------------------
+
+  async getBotBlocks(days: number) {
+    const [seriesRaw, byProjectRaw, totalsRaw] = await Promise.all([
+      clickhouse
+        .query({
+          query: `
+            SELECT toString(toDate(created)) AS date, reason, count() AS count
+            FROM bot_blocks
+            WHERE created >= now() - INTERVAL {days:UInt16} DAY
+            GROUP BY date, reason
+            ORDER BY date ASC
+          `,
+          query_params: { days },
+        })
+        .then((resultSet) =>
+          resultSet.json<{ date: string; reason: string; count: number }>(),
+        )
+        .then(({ data }) => data),
+      clickhouse
+        .query({
+          query: `
+            SELECT pid, reason, count() AS count
+            FROM bot_blocks
+            WHERE created >= now() - INTERVAL {days:UInt16} DAY
+            GROUP BY pid, reason
+          `,
+          query_params: { days },
+        })
+        .then((resultSet) =>
+          resultSet.json<{ pid: string; reason: string; count: number }>(),
+        )
+        .then(({ data }) => data),
+      clickhouse
+        .query({
+          query: `
+            SELECT
+              count() AS total,
+              countIf(created >= now() - INTERVAL 1 DAY) AS last24h
+            FROM bot_blocks
+            WHERE created >= now() - INTERVAL {days:UInt16} DAY
+          `,
+          query_params: { days },
+        })
+        .then((resultSet) =>
+          resultSet.json<{ total: number; last24h: number }>(),
+        )
+        .then(({ data }) => data[0]),
+    ])
+
+    // Aggregate per project and per reason
+    const byPid: Record<
+      string,
+      { total: number; reasons: Record<string, number> }
+    > = {}
+    const byReason: Record<string, number> = {}
+
+    for (const { pid, reason, count } of byProjectRaw) {
+      const numeric = Number(count)
+
+      byPid[pid] = byPid[pid] || { total: 0, reasons: {} }
+      byPid[pid].total += numeric
+      byPid[pid].reasons[reason] = (byPid[pid].reasons[reason] || 0) + numeric
+      byReason[reason] = (byReason[reason] || 0) + numeric
+    }
+
+    const topPids = Object.entries(byPid)
+      .sort(([, a], [, b]) => b.total - a.total)
+      .slice(0, 30)
+      .map(([pid]) => pid)
+
+    const [acceptedByPid, projects] = await Promise.all([
+      this.getAcceptedEventCounts(topPids, days),
+      topPids.length > 0
+        ? this.projectRepository.find({
+            where: { id: In(topPids) },
+            relations: ['admin'],
+          })
+        : Promise.resolve([]),
+    ])
+
+    const projectsByPid: Record<string, Project> = {}
+
+    for (const project of projects) {
+      projectsByPid[project.id] = project
+    }
+
+    const topProjects = topPids.map((pid) => {
+      const blocked = byPid[pid].total
+      const accepted = acceptedByPid[pid] || 0
+      const project = projectsByPid[pid]
+      const topReason = Object.entries(byPid[pid].reasons).sort(
+        ([, a], [, b]) => b - a,
+      )[0]
+
+      return {
+        id: pid,
+        name: project?.name || null,
+        botsProtectionLevel: project?.botsProtectionLevel || null,
+        admin: project?.admin
+          ? { id: project.admin.id, email: project.admin.email }
+          : null,
+        blocked,
+        accepted,
+        // blocked / all incoming traffic; ~100% means the shield is eating
+        // everything the customer sends
+        blockRatio: Math.round((blocked / (blocked + accepted)) * 100),
+        topReason: topReason ? topReason[0] : null,
+      }
+    })
+
+    return {
+      days,
+      totals: {
+        total: Number(totalsRaw?.total) || 0,
+        last24h: Number(totalsRaw?.last24h) || 0,
+      },
+      byReason: Object.entries(byReason)
+        .map(([reason, count]) => ({ reason, count }))
+        .sort((a, b) => b.count - a.count),
+      series: seriesRaw.map(({ date, reason, count }) => ({
+        date,
+        reason,
+        count: Number(count),
+      })),
+      topProjects,
+    }
+  }
+
+  private async getAcceptedEventCounts(
+    pids: string[],
+    days: number,
+  ): Promise<Record<string, number>> {
+    if (pids.length === 0) {
+      return {}
+    }
+
+    const { data } = await clickhouse
+      .query({
+        query: `
+          SELECT pid, count() AS count
+          FROM events
+          WHERE pid IN ({pids:Array(FixedString(12))})
+            AND created >= now() - INTERVAL {days:UInt16} DAY
+            AND type IN ({types:Array(String)})
+          GROUP BY pid
+        `,
+        query_params: { pids, days, types: ACTIVITY_EVENT_TYPES },
+      })
+      .then((resultSet) => resultSet.json<{ pid: string; count: number }>())
+
+    return Object.fromEntries(
+      data.map(({ pid, count }) => [pid, Number(count)]),
+    )
+  }
+
   // -------------------- Overview --------------------
 
   async getOverview() {
@@ -295,6 +930,7 @@ export class AdminService {
     const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
     const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const twoMonthsAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
 
     const [
       totalUsers,
@@ -310,6 +946,7 @@ export class AdminService {
       signups24h,
       signups7d,
       signups30d,
+      signupsPrev30d,
       mrr,
     ] = await Promise.all([
       this.userRepository.count(),
@@ -338,6 +975,7 @@ export class AdminService {
       this.countUsersCreatedSince(dayAgo),
       this.countUsersCreatedSince(weekAgo),
       this.countUsersCreatedSince(monthAgo),
+      this.countUsersCreatedBetween(twoMonthsAgo, monthAgo),
       this.calculateMrr(),
     ])
 
@@ -358,6 +996,7 @@ export class AdminService {
         signups24h,
         signups7d,
         signups30d,
+        signupsPrev30d,
       },
       projects: {
         total: totalProjects,
@@ -379,13 +1018,27 @@ export class AdminService {
       .getCount()
   }
 
+  private async countUsersCreatedBetween(
+    from: Date,
+    to: Date,
+  ): Promise<number> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .where('user.created >= :from AND user.created < :to', { from, to })
+      .getCount()
+  }
+
   private async getEventTotals() {
     const query = `
       SELECT
         count() AS total,
         countIf(created >= now() - INTERVAL 1 DAY) AS last24h,
         countIf(created >= now() - INTERVAL 7 DAY) AS last7d,
-        countIf(created >= now() - INTERVAL 30 DAY) AS last30d
+        countIf(created >= now() - INTERVAL 30 DAY) AS last30d,
+        countIf(
+          created >= now() - INTERVAL 60 DAY
+          AND created < now() - INTERVAL 30 DAY
+        ) AS prev30d
       FROM events
       WHERE type IN ({types:Array(String)})
     `
@@ -398,6 +1051,7 @@ export class AdminService {
           last24h: number
           last7d: number
           last30d: number
+          prev30d: number
         }>(),
       )
 
@@ -407,6 +1061,7 @@ export class AdminService {
         last24h: 0,
         last7d: 0,
         last30d: 0,
+        prev30d: 0,
       }
     )
   }
@@ -415,15 +1070,168 @@ export class AdminService {
 
   async getCharts(days: number) {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    const prevSince = new Date(Date.now() - 2 * days * 24 * 60 * 60 * 1000)
 
-    const [signups, projects, organisations, events] = await Promise.all([
+    const [
+      signups,
+      projects,
+      organisations,
+      events,
+      signupsTotals,
+      projectsTotals,
+      organisationsTotals,
+      eventsTotals,
+      funnel,
+    ] = await Promise.all([
       this.getMysqlCreationSeries('user', since),
       this.getMysqlCreationSeries('project', since),
       this.getMysqlCreationSeries('organisation', since),
       this.getEventsSeries(days),
+      this.getMysqlCreationTotals('user', since, prevSince),
+      this.getMysqlCreationTotals('project', since, prevSince),
+      this.getMysqlCreationTotals('organisation', since, prevSince),
+      this.getEventsTotalsForWindow(days),
+      this.getActivationFunnel(since),
     ])
 
-    return { signups, projects, organisations, events }
+    return {
+      signups,
+      projects,
+      organisations,
+      events,
+      // Current window vs the same-length window immediately before it, for
+      // the change badges above the charts
+      totals: {
+        signups: signupsTotals,
+        projects: projectsTotals,
+        organisations: organisationsTotals,
+        events: eventsTotals,
+      },
+      funnel,
+    }
+  }
+
+  // Cohort funnel over users who signed up in the window: how far did they
+  // get towards becoming paying customers (state as of now, not as of signup)
+  private async getActivationFunnel(since: Date) {
+    const cohort = await this.userRepository.find({
+      where: { created: MoreThanOrEqual(since) },
+      select: ['id', 'isActive', 'planCode'],
+    })
+
+    if (cohort.length === 0) {
+      return {
+        signups: 0,
+        verified: 0,
+        createdProject: 0,
+        sentData: 0,
+        paid: 0,
+      }
+    }
+
+    const projects: { pid: string; userId: string }[] =
+      await this.projectRepository
+        .createQueryBuilder('project')
+        .select('project.id', 'pid')
+        .addSelect('admin.id', 'userId')
+        .leftJoin('project.admin', 'admin')
+        .where('admin.id IN (:...userIds)', {
+          userIds: cohort.map((user) => user.id),
+        })
+        .getRawMany()
+
+    const usersWithProject = new Set(projects.map(({ userId }) => userId))
+
+    let usersWithData = new Set<string>()
+
+    if (projects.length > 0) {
+      const { data } = await clickhouse
+        .query({
+          query: `
+            SELECT DISTINCT pid
+            FROM events
+            WHERE pid IN ({pids:Array(FixedString(12))})
+              AND type IN ({types:Array(String)})
+          `,
+          query_params: {
+            pids: projects.map(({ pid }) => pid),
+            types: ACTIVITY_EVENT_TYPES,
+          },
+        })
+        .then((resultSet) => resultSet.json<{ pid: string }>())
+
+      const pidsWithData = new Set(data.map(({ pid }) => pid))
+
+      usersWithData = new Set(
+        projects
+          .filter(({ pid }) => pidsWithData.has(pid))
+          .map(({ userId }) => userId),
+      )
+    }
+
+    return {
+      signups: cohort.length,
+      verified: cohort.filter((user) => user.isActive).length,
+      createdProject: usersWithProject.size,
+      sentData: usersWithData.size,
+      paid: cohort.filter((user) => !FREE_PLAN_CODES.includes(user.planCode))
+        .length,
+    }
+  }
+
+  private async getMysqlCreationTotals(
+    table: 'user' | 'project' | 'organisation',
+    since: Date,
+    prevSince: Date,
+  ): Promise<{ current: number; previous: number }> {
+    // table name comes from a hardcoded whitelist, never from user input
+    const rows: { current: string; previous: string }[] =
+      await this.userRepository.query(
+        `
+          SELECT
+            COALESCE(SUM(created >= ?), 0) AS current,
+            COALESCE(SUM(created < ?), 0) AS previous
+          FROM \`${table}\`
+          WHERE created >= ?
+        `,
+        [since, since, prevSince],
+      )
+
+    return {
+      current: Number(rows[0]?.current) || 0,
+      previous: Number(rows[0]?.previous) || 0,
+    }
+  }
+
+  private async getEventsTotalsForWindow(
+    days: number,
+  ): Promise<{ current: number; previous: number }> {
+    const query = `
+      SELECT
+        countIf(created >= now() - INTERVAL {days:UInt16} DAY) AS current,
+        countIf(created < now() - INTERVAL {days:UInt16} DAY) AS previous
+      FROM events
+      WHERE created >= now() - INTERVAL {doubleDays:UInt16} DAY
+        AND type IN ({types:Array(String)})
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          days,
+          doubleDays: days * 2,
+          types: ACTIVITY_EVENT_TYPES,
+        },
+      })
+      .then((resultSet) =>
+        resultSet.json<{ current: number; previous: number }>(),
+      )
+
+    return {
+      current: Number(data[0]?.current) || 0,
+      previous: Number(data[0]?.previous) || 0,
+    }
   }
 
   private async getMysqlCreationSeries(
@@ -952,14 +1760,109 @@ export class AdminService {
     }
   }
 
+  async getProjectDetails(id: string) {
+    const project = await this.projectRepository.findOne({
+      where: { id },
+      relations: ['admin', 'organisation', 'share', 'share.user'],
+    })
+
+    if (!project) {
+      throw new NotFoundException()
+    }
+
+    const [eventCounts, series, typeBreakdown] = await Promise.all([
+      this.getEventCountsForProjects([id]),
+      this.getProjectEventsSeries(id, 30),
+      this.getProjectEventTypeBreakdown(id),
+    ])
+
+    return {
+      project: {
+        ...this.formatProject(project, eventCounts),
+        origins: project.origins,
+        ipBlacklist: project.ipBlacklist,
+      },
+      series,
+      typeBreakdown,
+      shares: (project.share || []).map((share) => ({
+        id: share.id,
+        role: share.role,
+        confirmed: share.confirmed,
+        created: share.created,
+        user: share.user
+          ? { id: share.user.id, email: share.user.email }
+          : null,
+      })),
+    }
+  }
+
+  private async getProjectEventsSeries(
+    pid: string,
+    days: number,
+  ): Promise<{ date: string; count: number }[]> {
+    const query = `
+      SELECT
+        toString(toDate(created)) AS date,
+        count() AS count
+      FROM events
+      WHERE pid = {pid:FixedString(12)}
+        AND created >= now() - INTERVAL {days:UInt16} DAY
+        AND type IN ({types:Array(String)})
+      GROUP BY date
+      ORDER BY date ASC
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, days, types: ACTIVITY_EVENT_TYPES },
+      })
+      .then((resultSet) => resultSet.json<{ date: string; count: number }>())
+
+    return data.map(({ date, count }) => ({ date, count: Number(count) }))
+  }
+
+  private async getProjectEventTypeBreakdown(
+    pid: string,
+  ): Promise<{ type: string; last30d: number; total: number }[]> {
+    const query = `
+      SELECT
+        type,
+        countIf(created >= now() - INTERVAL 30 DAY) AS last30d,
+        count() AS total
+      FROM events
+      WHERE pid = {pid:FixedString(12)}
+        AND type IN ({types:Array(String)})
+      GROUP BY type
+      ORDER BY total DESC
+    `
+
+    const { data } = await clickhouse
+      .query({ query, query_params: { pid, types: ACTIVITY_EVENT_TYPES } })
+      .then((resultSet) =>
+        resultSet.json<{ type: string; last30d: number; total: number }>(),
+      )
+
+    return data.map(({ type, last30d, total }) => ({
+      type,
+      last30d: Number(last30d),
+      total: Number(total),
+    }))
+  }
+
   // -------------------- Organisations --------------------
 
-  async getOrganisations(page: number, search: string) {
+  async getOrganisations(
+    page: number,
+    search: string,
+    sortBy: 'created' | 'name',
+    order: 'ASC' | 'DESC',
+  ) {
     let query = this.organisationRepository
       .createQueryBuilder('org')
       .loadRelationCountAndMap('org.memberCount', 'org.members')
       .loadRelationCountAndMap('org.projectCount', 'org.projects')
-      .orderBy('org.created', 'DESC')
+      .orderBy(`org.${sortBy}`, order)
       .skip(page * ORGANISATIONS_PAGE_SIZE)
       .take(ORGANISATIONS_PAGE_SIZE)
 
@@ -1011,6 +1914,245 @@ export class AdminService {
             : null,
         }),
       ),
+    }
+  }
+
+  async getOrganisationDetails(id: string) {
+    const organisation = await this.organisationRepository.findOne({
+      where: { id },
+      relations: ['members', 'members.user', 'projects', 'projects.admin'],
+    })
+
+    if (!organisation) {
+      throw new NotFoundException()
+    }
+
+    const eventCounts = await this.getEventCountsForProjects(
+      organisation.projects.map((project) => project.id),
+    )
+
+    return {
+      organisation: {
+        id: organisation.id,
+        name: organisation.name,
+        created: organisation.created,
+        memberCount: organisation.members.length,
+        projectCount: organisation.projects.length,
+      },
+      members: organisation.members.map((member) => ({
+        id: member.id,
+        role: member.role,
+        confirmed: member.confirmed,
+        created: member.created,
+        user: member.user
+          ? { id: member.user.id, email: member.user.email }
+          : null,
+      })),
+      projects: organisation.projects.map((project) => ({
+        id: project.id,
+        name: project.name,
+        active: project.active,
+        isArchived: project.isArchived,
+        created: project.created,
+        admin: project.admin
+          ? { id: project.admin.id, email: project.admin.email }
+          : null,
+        ...(eventCounts[project.id] || {
+          events24h: 0,
+          events30d: 0,
+          totalEvents: 0,
+        }),
+      })),
+    }
+  }
+
+  // -------------------- Feedback --------------------
+
+  async getFeedback(
+    type: FeedbackType,
+    page: number,
+    search: string,
+    order: 'ASC' | 'DESC',
+  ) {
+    const [counts, list] = await Promise.all([
+      this.getFeedbackCounts(),
+      type === 'user'
+        ? this.getUserFeedbackList(page, search, order)
+        : type === 'cancellation'
+          ? this.getCancellationFeedbackList(page, search, order)
+          : this.getDeleteFeedbackList(page, search, order),
+    ])
+
+    return { ...list, counts }
+  }
+
+  private async getFeedbackCounts() {
+    const [user, cancellation, deletion] = await Promise.all([
+      this.userFeedbackRepository.count(),
+      this.cancellationFeedbackRepository.count(),
+      this.deleteFeedbackRepository.count(),
+    ])
+
+    return { user, cancellation, deletion }
+  }
+
+  private async getUsersByIds(
+    ids: string[],
+  ): Promise<Record<string, { id: string; email: string; planCode: string }>> {
+    if (ids.length === 0) {
+      return {}
+    }
+
+    const users = await this.userRepository.find({
+      where: { id: In(ids) },
+      select: ['id', 'email', 'planCode'],
+    })
+
+    return Object.fromEntries(
+      users.map((user) => [
+        user.id,
+        { id: user.id, email: user.email, planCode: user.planCode },
+      ]),
+    )
+  }
+
+  private async getUserFeedbackList(
+    page: number,
+    search: string,
+    order: 'ASC' | 'DESC',
+  ) {
+    let query = this.userFeedbackRepository
+      .createQueryBuilder('fb')
+      .orderBy('fb.createdAt', order)
+      .skip(page * FEEDBACK_PAGE_SIZE)
+      .take(FEEDBACK_PAGE_SIZE)
+
+    if (search) {
+      // Emails live on the user table, so resolve matching authors first to
+      // make "who left it" searchable
+      const matchingUsers: { id: string }[] = await this.userRepository
+        .createQueryBuilder('user')
+        .select('user.id', 'id')
+        .where('LOWER(user.email) LIKE :search', {
+          search: `%${search.toLowerCase()}%`,
+        })
+        .getRawMany()
+
+      const ids = matchingUsers.map(({ id }) => id)
+
+      query = query.andWhere(
+        ids.length > 0
+          ? '(LOWER(fb.message) LIKE :search OR fb.userId IN (:...ids))'
+          : 'LOWER(fb.message) LIKE :search',
+        { search: `%${search.toLowerCase()}%`, ids },
+      )
+    }
+
+    const [items, total] = await query.getManyAndCount()
+
+    const usersById = await this.getUsersByIds(
+      Array.from(new Set(items.map((item) => item.userId))),
+    )
+
+    return {
+      total,
+      pageSize: FEEDBACK_PAGE_SIZE,
+      items: items.map((item) => ({
+        id: item.id,
+        message: item.message,
+        attachmentUrls: item.attachmentUrls || [],
+        createdAt: item.createdAt,
+        // null = the account was deleted since
+        user: usersById[item.userId] || null,
+        userId: item.userId,
+      })),
+    }
+  }
+
+  private async getCancellationFeedbackList(
+    page: number,
+    search: string,
+    order: 'ASC' | 'DESC',
+  ) {
+    let query = this.cancellationFeedbackRepository
+      .createQueryBuilder('fb')
+      .orderBy('fb.createdAt', order)
+      .skip(page * FEEDBACK_PAGE_SIZE)
+      .take(FEEDBACK_PAGE_SIZE)
+
+    if (search) {
+      query = query.andWhere(
+        '(LOWER(fb.feedback) LIKE :search OR LOWER(fb.email) LIKE :search OR LOWER(fb.planCode) LIKE :search)',
+        { search: `%${search.toLowerCase()}%` },
+      )
+    }
+
+    const [items, total] = await query.getManyAndCount()
+
+    // Link back to the account when it still exists
+    const emails = Array.from(
+      new Set(items.map((item) => item.email).filter(Boolean)),
+    )
+    const users =
+      emails.length > 0
+        ? await this.userRepository.find({
+            where: { email: In(emails) },
+            select: ['id', 'email', 'planCode'],
+          })
+        : []
+    const usersByEmail = Object.fromEntries(
+      users.map((user) => [user.email, user]),
+    )
+
+    return {
+      total,
+      pageSize: FEEDBACK_PAGE_SIZE,
+      items: items.map((item) => ({
+        id: item.id,
+        message: item.feedback,
+        email: item.email,
+        planCode: item.planCode,
+        createdAt: item.createdAt,
+        user: item.email
+          ? usersByEmail[item.email]
+            ? {
+                id: usersByEmail[item.email].id,
+                email: usersByEmail[item.email].email,
+                planCode: usersByEmail[item.email].planCode,
+              }
+            : null
+          : null,
+      })),
+    }
+  }
+
+  private async getDeleteFeedbackList(
+    page: number,
+    search: string,
+    order: 'ASC' | 'DESC',
+  ) {
+    let query = this.deleteFeedbackRepository
+      .createQueryBuilder('fb')
+      .orderBy('fb.createdAt', order)
+      .skip(page * FEEDBACK_PAGE_SIZE)
+      .take(FEEDBACK_PAGE_SIZE)
+
+    if (search) {
+      query = query.andWhere('LOWER(fb.feedback) LIKE :search', {
+        search: `%${search.toLowerCase()}%`,
+      })
+    }
+
+    const [items, total] = await query.getManyAndCount()
+
+    return {
+      total,
+      pageSize: FEEDBACK_PAGE_SIZE,
+      items: items.map((item) => ({
+        id: item.id,
+        message: item.feedback,
+        createdAt: item.createdAt,
+      })),
     }
   }
 

@@ -1,6 +1,6 @@
 import { ArrowLeftIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
-import { useFetcher } from 'react-router'
+import { Link, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import { Badge } from '~/ui/Badge'
@@ -10,7 +10,7 @@ import Pagination from '~/ui/Pagination'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
-import { nFormatter, nLocaleFormatter } from '~/utils/generic'
+import { cn, nFormatter, nLocaleFormatter } from '~/utils/generic'
 
 import {
   AdminTable,
@@ -19,12 +19,14 @@ import {
   formatDateTime,
   Td,
   UsageBar,
+  useAdminSort,
 } from './components'
 import type {
   AdminActionData,
   AdminUser,
   AdminUserDetails,
   AdminUsersList,
+  SortState,
 } from './types'
 
 const USER_FILTERS = [
@@ -37,9 +39,12 @@ const USER_FILTERS = [
   { key: 'blocked', label: 'Blocked / suspended' },
 ]
 
+export const adminLinkClassName =
+  'font-medium text-indigo-600 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300'
+
 const PlanCell = ({ user }: { user: AdminUser }) => (
   <div className='flex items-center gap-1.5'>
-    <span className='font-mono text-sm'>{user.planCode}</span>
+    <span className='text-sm'>{user.planCode}</span>
     {user.planType === 'plus' ? (
       <Badge colour='indigo' label='plus' size='sm' />
     ) : null}
@@ -190,6 +195,98 @@ const BillingControls = ({ user }: { user: AdminUser }) => {
   )
 }
 
+const formatLimitValue = (value: unknown): string => {
+  if (typeof value === 'number') {
+    return nLocaleFormatter(value)
+  }
+
+  if (value === null || value === undefined || value === '') {
+    return '—'
+  }
+
+  return String(value)
+}
+
+// Human-readable rendering of getEffectiveAccountLimits() output, with a raw
+// JSON escape hatch
+const EffectiveLimits = ({ limits }: { limits: Record<string, unknown> }) => {
+  const [view, setView] = useState<'parsed' | 'json'>('parsed')
+
+  const rows: { label: string; value: string }[] = [
+    { label: 'Plan type', value: formatLimitValue(limits.effectivePlanType) },
+    {
+      label: 'Websites',
+      value: `${formatLimitValue(limits.effectiveProjectLimit)} (${formatLimitValue(limits.includedWebsites)} included + ${formatLimitValue(limits.purchasedWebsiteAddons)} add-ons)`,
+    },
+    {
+      label: 'Session replays / month',
+      value: `${formatLimitValue(limits.sessionReplaysIncluded)}${
+        Number(limits.purchasedSessionReplayAddons) > 0
+          ? ` (incl. ${formatLimitValue(limits.purchasedSessionReplayAddons)} add-ons)`
+          : ''
+      }`,
+    },
+    {
+      label: 'Replay retention',
+      value: `${formatLimitValue(limits.sessionReplayRetentionDays)} days`,
+    },
+    {
+      label: 'API requests / hour',
+      value: formatLimitValue(limits.apiRateLimitPerHour),
+    },
+    { label: 'Team members', value: formatLimitValue(limits.teamMembers) },
+    { label: 'Organisations', value: formatLimitValue(limits.organisations) },
+  ]
+
+  return (
+    <div className='rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+      <div className='flex items-center justify-between gap-3'>
+        <Text as='h4' size='lg' weight='semibold'>
+          Effective limits
+        </Text>
+        <div className='flex rounded-md border border-gray-200 p-0.5 dark:border-slate-800/60'>
+          {(['parsed', 'json'] as const).map((key) => (
+            <button
+              key={key}
+              type='button'
+              onClick={() => setView(key)}
+              className={cn(
+                'rounded px-2.5 py-1 text-xs font-medium transition-colors',
+                view === key
+                  ? 'bg-gray-100 text-gray-900 dark:bg-slate-800 dark:text-gray-50'
+                  : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50',
+              )}
+            >
+              {key === 'parsed' ? 'Parsed' : 'JSON'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {view === 'parsed' ? (
+        <dl className='mt-3 grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3'>
+          {rows.map(({ label, value }) => (
+            <div key={label}>
+              <dt>
+                <Text as='span' size='xs' colour='secondary'>
+                  {label}
+                </Text>
+              </dt>
+              <dd className='text-sm text-gray-900 tabular-nums dark:text-gray-100'>
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <pre className='mt-3 overflow-x-auto rounded-md bg-gray-100 p-3 font-mono text-xs leading-relaxed text-gray-800 dark:bg-slate-900 dark:text-gray-200'>
+          {JSON.stringify(limits, null, 2)}
+        </pre>
+      )}
+    </div>
+  )
+}
+
 const UserDetails = ({
   details,
   onBack,
@@ -200,7 +297,7 @@ const UserDetails = ({
   const { user, effectiveLimits, projects, memberships } = details
 
   const infoRows: { label: string; value: React.ReactNode }[] = [
-    { label: 'ID', value: <span className='font-mono'>{user.id}</span> },
+    { label: 'ID', value: user.id },
     { label: 'Email', value: user.email },
     { label: 'Nickname', value: user.nickname || '—' },
     { label: 'Registered', value: formatDateTime(user.created) },
@@ -216,14 +313,6 @@ const UserDetails = ({
       label: 'Monthly events',
       value: `${nLocaleFormatter(user.monthlyEvents)}${user.monthlyUsageLimit ? ` / ${nLocaleFormatter(user.monthlyUsageLimit)}` : ''}`,
     },
-    {
-      label: 'Effective limits',
-      value: (
-        <span className='font-mono text-xs break-all whitespace-normal'>
-          {JSON.stringify(effectiveLimits)}
-        </span>
-      ),
-    },
   ]
 
   return (
@@ -232,7 +321,7 @@ const UserDetails = ({
         <button
           type='button'
           onClick={onBack}
-          className='inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50'
+          className='inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50'
         >
           <ArrowLeftIcon className='size-4' />
           Back to users
@@ -260,6 +349,8 @@ const UserDetails = ({
         ))}
       </dl>
 
+      <EffectiveLimits limits={effectiveLimits} />
+
       <BillingControls key={user.id} user={user} />
 
       <div>
@@ -270,27 +361,41 @@ const UserDetails = ({
           <EmptyState message='No projects' />
         ) : (
           <AdminTable
-            headers={[
-              'Name',
-              'Organisation',
-              '24h events',
-              '30d events',
-              'Total events',
-              'Created',
-              '',
+            columns={[
+              { key: 'name', label: 'Name' },
+              { key: 'organisation', label: 'Organisation' },
+              { key: 'events24h', label: '24h events' },
+              { key: 'events30d', label: '30d events' },
+              { key: 'totalEvents', label: 'Total events' },
+              { key: 'created', label: 'Created' },
+              { key: 'badges', label: '' },
             ]}
           >
             {projects.map((project) => (
               <tr key={project.id}>
                 <Td>
-                  <div>
-                    <span className='font-medium'>{project.name}</span>
-                    <span className='ml-2 font-mono text-xs text-gray-500 dark:text-gray-400'>
-                      {project.id}
-                    </span>
-                  </div>
+                  <Link
+                    to={`/admin?tab=projects&project=${project.id}`}
+                    className={adminLinkClassName}
+                  >
+                    {project.name}
+                  </Link>
+                  <span className='ml-2 text-xs text-gray-500 dark:text-gray-400'>
+                    {project.id}
+                  </span>
                 </Td>
-                <Td>{project.organisation?.name || '—'}</Td>
+                <Td>
+                  {project.organisation ? (
+                    <Link
+                      to={`/admin?tab=organisations&org=${project.organisation.id}`}
+                      className={adminLinkClassName}
+                    >
+                      {project.organisation.name}
+                    </Link>
+                  ) : (
+                    '—'
+                  )}
+                </Td>
                 <Td className='tabular-nums'>
                   {nLocaleFormatter(project.events24h)}
                 </Td>
@@ -319,10 +424,28 @@ const UserDetails = ({
         {memberships.length === 0 ? (
           <EmptyState message='No organisation memberships' />
         ) : (
-          <AdminTable headers={['Organisation', 'Role', 'Confirmed', 'Joined']}>
+          <AdminTable
+            columns={[
+              { key: 'organisation', label: 'Organisation' },
+              { key: 'role', label: 'Role' },
+              { key: 'confirmed', label: 'Confirmed' },
+              { key: 'created', label: 'Joined' },
+            ]}
+          >
             {memberships.map((membership) => (
               <tr key={membership.id}>
-                <Td>{membership.organisation?.name || '—'}</Td>
+                <Td>
+                  {membership.organisation ? (
+                    <Link
+                      to={`/admin?tab=organisations&org=${membership.organisation.id}`}
+                      className={adminLinkClassName}
+                    >
+                      {membership.organisation.name}
+                    </Link>
+                  ) : (
+                    '—'
+                  )}
+                </Td>
                 <Td>
                   <Badge colour='indigo' label={membership.role} size='sm' />
                 </Td>
@@ -343,9 +466,11 @@ interface UsersTabProps {
   page: number
   search: string
   filter: string
+  sort: SortState
   onPageChange: (page: number) => void
   onSearchChange: (search: string) => void
   onFilterChange: (filter: string) => void
+  onSortChange: (by: string, order: 'ASC' | 'DESC') => void
   onUserSelect: (id: string | null) => void
 }
 
@@ -355,11 +480,27 @@ export const UsersTab = ({
   page,
   search,
   filter,
+  sort,
   onPageChange,
   onSearchChange,
   onFilterChange,
+  onSortChange,
   onUserSelect,
 }: UsersTabProps) => {
+  const {
+    sort: activeSort,
+    onSort,
+    sortRows,
+  } = useAdminSort<AdminUser>(
+    ['email', 'planCode', 'created'],
+    sort,
+    onSortChange,
+    {
+      projectCount: (user) => user.projectCount,
+      monthlyEvents: (user) => user.monthlyEvents,
+    },
+  )
+
   if (userDetails) {
     return (
       <UserDetails details={userDetails} onBack={() => onUserSelect(null)} />
@@ -369,9 +510,11 @@ export const UsersTab = ({
   const selectedFilter =
     USER_FILTERS.find(({ key }) => key === filter) || USER_FILTERS[0]
 
+  const rows = sortRows(users.users)
+
   return (
     <div className='flex flex-col gap-4'>
-      <div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
+      <div className='flex flex-col gap-3 sm:flex-row sm:items-end'>
         <Input
           label='Search users'
           className='sm:max-w-xs sm:flex-1'
@@ -389,6 +532,7 @@ export const UsersTab = ({
           keyExtractor={(item) => item.key}
           selectedItem={selectedFilter}
           onSelect={(item) => onFilterChange(item.key)}
+          menuClassName='w-max min-w-full'
         />
       </div>
 
@@ -397,15 +541,17 @@ export const UsersTab = ({
       ) : (
         <>
           <AdminTable
-            headers={[
-              'Email',
-              'Plan',
-              'Projects',
-              'Monthly events',
-              'Registered',
+            columns={[
+              { key: 'email', label: 'Email', sortable: true },
+              { key: 'planCode', label: 'Plan', sortable: true },
+              { key: 'projectCount', label: 'Projects', sortable: true },
+              { key: 'monthlyEvents', label: 'Monthly events', sortable: true },
+              { key: 'created', label: 'Registered', sortable: true },
             ]}
+            sort={activeSort}
+            onSort={onSort}
           >
-            {users.users.map((user) => (
+            {rows.map((user) => (
               <tr
                 key={user.id}
                 onClick={() => onUserSelect(user.id)}
