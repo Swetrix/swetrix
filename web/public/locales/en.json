@@ -2021,8 +2021,8 @@
       "desc": "No events have been tracked yet. Follow the installation steps below to start collecting data. Still not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for setup help."
     },
     "waitingCaptcha": {
-      "title": "No CAPTCHA events yet",
-      "desc": "No CAPTCHA events have been tracked yet.\nSee the <guideurl>integration guide</guideurl> to add CAPTCHA to your app.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for setup help.",
+      "title": "CAPTCHA protection is not set up yet",
+      "desc": "This website is not protected from bots by Swetrix CAPTCHA yet.\nFollow the steps below or the <guideurl>integration guide</guideurl> to add it to your forms. Once CAPTCHA starts verifying your visitors, its activity will show up here.\n\nAlready set it up? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for setup help.",
       "setup": {
         "tabs": {
           "script": "Script",
