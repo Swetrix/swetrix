@@ -25,6 +25,8 @@ const USERS_FILTERS: UsersFilter[] = [
   'paid',
   'trial',
   'free',
+  'cancelling',
+  'suspended',
   'blocked',
 ]
 

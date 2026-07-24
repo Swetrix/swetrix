@@ -36,6 +36,8 @@ const USER_FILTERS = [
   { key: 'paid', label: 'Paying' },
   { key: 'trial', label: 'Trial' },
   { key: 'free', label: 'Free / none' },
+  { key: 'cancelling', label: 'Cancelling' },
+  { key: 'suspended', label: 'Billing suspended' },
   { key: 'blocked', label: 'Blocked / suspended' },
 ]
 

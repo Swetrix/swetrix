@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import { motion } from 'motion/react'
+import { Link } from 'react-router'
 
 import {
   MetricCard,
@@ -8,7 +9,7 @@ import {
 import { Badge } from '~/ui/Badge'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
-import { nFormatter, nLocaleFormatter } from '~/utils/generic'
+import { cn, nFormatter, nLocaleFormatter } from '~/utils/generic'
 
 import { AdminChart, ADMIN_CHART_COLORS } from './AdminChart'
 import { ChangeBadge, StatCard } from './components'
@@ -107,7 +108,8 @@ const FUNNEL_STAGES: {
 ]
 
 // Cohort funnel: everyone who signed up in the selected window and how far
-// they got (current state)
+// they got (current state). Layout per stage: label + drop-off note on the
+// left, bar in the middle, count and share on fixed-width no-wrap columns.
 const ActivationFunnel = ({
   funnel,
   chartDays,
@@ -122,55 +124,82 @@ const ActivationFunnel = ({
     <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
       Users who signed up in the last {chartDays} days, by how far they got
     </Text>
-    <div className='mt-4 flex flex-col gap-2.5'>
+    <div className='mt-4 flex flex-col'>
       {FUNNEL_STAGES.map(({ key, label }, index) => {
         const count = funnel[key]
         const pctOfSignups =
           funnel.signups > 0 ? (count / funnel.signups) * 100 : 0
         const prevCount =
           index === 0 ? null : funnel[FUNNEL_STAGES[index - 1].key]
-        const stepPct =
-          prevCount === null
-            ? null
-            : prevCount > 0
-              ? Math.round((count / prevCount) * 100)
-              : 0
+        const lost = prevCount === null ? 0 : prevCount - count
+        // "Paying now" is current state, not a strict subset of "sent data",
+        // so it can exceed the previous stage - don't render a negative loss
+        const lostPct =
+          prevCount && lost > 0 ? Math.round((lost / prevCount) * 100) : 0
 
         return (
-          <div key={key} className='flex items-center gap-3'>
-            <Text as='span' size='sm' className='w-36 shrink-0' truncate>
-              {label}
-            </Text>
-            <div className='h-5 flex-1 overflow-hidden rounded-sm bg-gray-100 dark:bg-slate-800/60'>
-              <div
-                className='h-full rounded-sm bg-indigo-500 transition-[width] duration-300'
-                style={{ width: `${pctOfSignups}%` }}
-              />
+          <div key={key}>
+            {index > 0 ? (
+              <div className='py-1 pl-3'>
+                <Text
+                  as='span'
+                  size='xs'
+                  className={cn(
+                    'tabular-nums',
+                    lost > 0
+                      ? 'text-red-500 dark:text-red-400'
+                      : 'text-gray-400 dark:text-gray-500',
+                  )}
+                >
+                  {lost > 0
+                    ? `↓ lost ${nLocaleFormatter(lost)} (${lostPct}%)`
+                    : '↓ everyone continued'}
+                </Text>
+              </div>
+            ) : null}
+            <div className='flex items-center gap-4'>
+              <Text
+                as='span'
+                size='sm'
+                weight='medium'
+                className='w-40 shrink-0 whitespace-nowrap'
+                truncate
+              >
+                {label}
+              </Text>
+              <div className='h-7 flex-1 overflow-hidden rounded-md bg-gray-100 dark:bg-slate-800/60'>
+                <div
+                  className='flex h-full items-center rounded-md bg-indigo-500 transition-[width] duration-300'
+                  style={{ width: `${Math.min(pctOfSignups, 100)}%` }}
+                >
+                  {pctOfSignups >= 20 ? (
+                    <span className='px-2.5 text-xs font-semibold whitespace-nowrap text-white tabular-nums'>
+                      {Math.round(pctOfSignups)}%
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              <div className='flex w-28 shrink-0 items-baseline justify-end gap-1.5 whitespace-nowrap'>
+                <Text
+                  as='span'
+                  size='base'
+                  weight='semibold'
+                  className='tabular-nums'
+                >
+                  {nLocaleFormatter(count)}
+                </Text>
+                {pctOfSignups < 20 ? (
+                  <Text
+                    as='span'
+                    size='xs'
+                    colour='secondary'
+                    className='tabular-nums'
+                  >
+                    ({Math.round(pctOfSignups)}%)
+                  </Text>
+                ) : null}
+              </div>
             </div>
-            <Text
-              as='span'
-              size='sm'
-              weight='semibold'
-              className='w-14 shrink-0 text-right tabular-nums'
-            >
-              {nLocaleFormatter(count)}
-            </Text>
-            <Text
-              as='span'
-              size='xs'
-              colour='secondary'
-              className='w-24 shrink-0 text-right tabular-nums'
-            >
-              {Math.round(pctOfSignups)}% of signups
-            </Text>
-            <Text
-              as='span'
-              size='xs'
-              colour='secondary'
-              className='hidden w-20 shrink-0 text-right tabular-nums sm:block'
-            >
-              {stepPct === null ? '' : `${stepPct}% of prev`}
-            </Text>
           </div>
         )
       })}
@@ -385,22 +414,38 @@ export const OverviewTab = ({
               {
                 label: 'Verified users',
                 value: nLocaleFormatter(overview.users.active),
+                to: '/admin?tab=users&filter=active',
               },
               {
                 label: 'Projects',
                 value: nLocaleFormatter(overview.projects.total),
+                to: '/admin?tab=projects',
               },
               {
                 label: 'Live projects',
                 value: nLocaleFormatter(overview.projects.live),
+                to: '/admin?tab=projects&filter=active',
               },
               {
                 label: 'Organisations',
                 value: nLocaleFormatter(overview.organisations.total),
+                to: '/admin?tab=organisations',
               },
               {
                 label: 'Events (7d)',
                 value: nFormatter(overview.events.last7d, 1),
+              },
+              {
+                label: 'Cancelling',
+                value: (
+                  <span className='inline-flex items-center gap-2'>
+                    {nLocaleFormatter(overview.users.cancelling)}
+                    {overview.users.cancelling > 0 ? (
+                      <Badge colour='yellow' label='review' />
+                    ) : null}
+                  </span>
+                ),
+                to: '/admin?tab=users&filter=cancelling',
               },
               {
                 label: 'Billing suspended',
@@ -412,26 +457,44 @@ export const OverviewTab = ({
                     ) : null}
                   </span>
                 ),
+                to: '/admin?tab=users&filter=suspended',
               },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <dt>
-                  <Text as='span' size='xs' colour='secondary'>
-                    {label}
-                  </Text>
-                </dt>
-                <dd>
-                  <Text
-                    as='span'
-                    size='base'
-                    weight='semibold'
-                    className='tabular-nums'
+            ].map(({ label, value, to }) => {
+              const content = (
+                <>
+                  <dt>
+                    <Text as='span' size='xs' colour='secondary'>
+                      {label}
+                    </Text>
+                  </dt>
+                  <dd>
+                    <Text
+                      as='span'
+                      size='base'
+                      weight='semibold'
+                      className='tabular-nums'
+                    >
+                      {value}
+                    </Text>
+                  </dd>
+                </>
+              )
+
+              if (to) {
+                return (
+                  <Link
+                    key={label}
+                    to={to}
+                    className='group -m-1.5 rounded-md p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800/60'
                   >
-                    {value}
-                  </Text>
-                </dd>
-              </div>
-            ))}
+                    {content}
+                    <span className='sr-only'>View {label}</span>
+                  </Link>
+                )
+              }
+
+              return <div key={label}>{content}</div>
+            })}
           </dl>
         </div>
       </div>

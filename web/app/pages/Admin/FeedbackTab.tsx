@@ -1,10 +1,16 @@
+import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import {
   ArrowSquareOutIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
   FileIcon,
   MagnifyingGlassIcon,
+  MagnifyingGlassPlusIcon,
+  XIcon,
 } from '@phosphor-icons/react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 
 import { Badge } from '~/ui/Badge'
@@ -51,21 +57,165 @@ const attachmentName = (url: string): string => {
   }
 }
 
+const ImageLightbox = ({
+  images,
+  index,
+  onClose,
+  onNavigate,
+}: {
+  images: string[]
+  index: number | null
+  onClose: () => void
+  onNavigate: (index: number) => void
+}) => {
+  const [isZoomed, setIsZoomed] = useState(false)
+
+  const isOpened = index !== null
+  const url = isOpened ? images[index] : null
+
+  useEffect(() => {
+    setIsZoomed(false)
+  }, [index])
+
+  useEffect(() => {
+    if (!isOpened) {
+      return undefined
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft' && index > 0) {
+        onNavigate(index - 1)
+      } else if (event.key === 'ArrowRight' && index < images.length - 1) {
+        onNavigate(index + 1)
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isOpened, index, images.length, onNavigate])
+
+  return (
+    <Dialog className='relative z-40' open={isOpened} onClose={onClose}>
+      <DialogBackdrop
+        transition
+        className='fixed inset-0 bg-black/85 backdrop-blur-[2px] transition-opacity duration-200 ease-out-quint data-closed:opacity-0 data-leave:duration-150'
+      />
+
+      <div className='fixed inset-0 z-10 flex flex-col'>
+        <DialogPanel
+          transition
+          className='flex min-h-0 flex-1 flex-col transition-[opacity,transform] duration-200 ease-out-quint data-closed:scale-[0.98] data-closed:opacity-0 data-leave:duration-150'
+        >
+          {index !== null && url ? (
+            <>
+              <div className='flex shrink-0 items-center justify-between gap-4 px-4 py-3'>
+                <span className='truncate text-sm text-gray-300'>
+                  {attachmentName(url)}
+                  {images.length > 1 ? (
+                    <span className='ml-2 text-gray-500 tabular-nums'>
+                      {index + 1} / {images.length}
+                    </span>
+                  ) : null}
+                </span>
+                <div className='flex shrink-0 items-center gap-1'>
+                  <a
+                    href={url}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label='Open original in a new tab'
+                    className='rounded-md p-2 text-gray-300 transition-colors hover:bg-white/10 hover:text-white'
+                  >
+                    <ArrowSquareOutIcon className='size-5' />
+                  </a>
+                  <button
+                    type='button'
+                    onClick={onClose}
+                    aria-label='Close'
+                    className='rounded-md p-2 text-gray-300 transition-colors hover:bg-white/10 hover:text-white'
+                  >
+                    <XIcon className='size-5' />
+                  </button>
+                </div>
+              </div>
+
+              <div
+                role='presentation'
+                className={cn(
+                  'min-h-0 flex-1 overflow-auto',
+                  !isZoomed && 'flex items-center justify-center p-4 pt-0',
+                )}
+                onClick={(event) => {
+                  if (event.target === event.currentTarget) {
+                    onClose()
+                  }
+                }}
+              >
+                <button
+                  type='button'
+                  aria-label={isZoomed ? 'Zoom out' : 'Zoom in'}
+                  onClick={() => setIsZoomed((prev) => !prev)}
+                  className='group contents'
+                >
+                  <img
+                    src={url}
+                    alt={attachmentName(url)}
+                    className={cn(
+                      'group-focus-visible:outline-2 group-focus-visible:outline-indigo-500',
+                      isZoomed
+                        ? 'mx-auto max-w-none cursor-zoom-out'
+                        : 'max-h-full max-w-full cursor-zoom-in object-contain',
+                    )}
+                  />
+                </button>
+              </div>
+
+              {index > 0 ? (
+                <button
+                  type='button'
+                  onClick={() => onNavigate(index - 1)}
+                  aria-label='Previous image'
+                  className='absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-black/50 p-2.5 text-gray-200 transition-colors hover:bg-black/70 hover:text-white'
+                >
+                  <CaretLeftIcon className='size-6' />
+                </button>
+              ) : null}
+              {index < images.length - 1 ? (
+                <button
+                  type='button'
+                  onClick={() => onNavigate(index + 1)}
+                  aria-label='Next image'
+                  className='absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-black/50 p-2.5 text-gray-200 transition-colors hover:bg-black/70 hover:text-white'
+                >
+                  <CaretRightIcon className='size-6' />
+                </button>
+              ) : null}
+            </>
+          ) : null}
+        </DialogPanel>
+      </div>
+    </Dialog>
+  )
+}
+
 const Attachments = ({ urls }: { urls: string[] }) => {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+
   if (urls.length === 0) {
     return null
   }
+
+  const imageUrls = urls.filter((url) => IMAGE_EXTENSIONS.test(url))
 
   return (
     <div className='mt-3 flex flex-wrap gap-2'>
       {urls.map((url) =>
         IMAGE_EXTENSIONS.test(url) ? (
-          <a
+          <button
             key={url}
-            href={url}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='group relative block overflow-hidden rounded-md ring-1 ring-gray-200 transition-shadow hover:ring-2 hover:ring-indigo-400 dark:ring-slate-700/80'
+            type='button'
+            onClick={() => setLightboxIndex(imageUrls.indexOf(url))}
+            aria-label={`View ${attachmentName(url)}`}
+            className='group relative block cursor-pointer overflow-hidden rounded-md ring-1 ring-gray-200 transition-shadow hover:ring-2 hover:ring-indigo-400 dark:ring-slate-700/80'
           >
             <img
               src={url}
@@ -74,9 +224,9 @@ const Attachments = ({ urls }: { urls: string[] }) => {
               className='h-24 w-auto max-w-48 object-cover'
             />
             <span className='absolute inset-0 hidden items-center justify-center bg-black/40 group-hover:flex'>
-              <ArrowSquareOutIcon className='size-5 text-white' />
+              <MagnifyingGlassPlusIcon className='size-5 text-white' />
             </span>
-          </a>
+          </button>
         ) : (
           <a
             key={url}
@@ -90,6 +240,12 @@ const Attachments = ({ urls }: { urls: string[] }) => {
           </a>
         ),
       )}
+      <ImageLightbox
+        images={imageUrls}
+        index={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        onNavigate={setLightboxIndex}
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type {
   ActionFunctionArgs,
+  LinksFunction,
   LoaderFunctionArgs,
   MetaFunction,
 } from 'react-router'
@@ -11,6 +12,10 @@ import { serverFetch } from '~/api/api.server'
 import { isSelfhosted } from '~/lib/constants'
 import AdminPage from '~/pages/Admin'
 import NotFound from '~/pages/NotFound'
+// The billboard.js theming (line widths, axis fonts, dark-mode grid colours)
+// lives in this stylesheet - without it the admin charts render with
+// billboard defaults
+import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
 import type {
   AdminActionData,
   AdminBilling,
@@ -32,6 +37,10 @@ import type {
 } from '~/pages/Admin/types'
 import { getDescription, getTitle } from '~/utils/seo'
 import { createHeadersWithCookies, hasAuthTokens } from '~/utils/session.server'
+
+export const links: LinksFunction = () => [
+  { rel: 'stylesheet', href: ProjectViewStyle },
+]
 
 export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks

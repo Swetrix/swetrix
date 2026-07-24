@@ -225,6 +225,8 @@ export type UsersFilter =
   | 'paid'
   | 'trial'
   | 'free'
+  | 'cancelling'
+  | 'suspended'
   | 'blocked'
 
 export type ProjectsFilter =
@@ -1310,6 +1312,10 @@ export class AdminService {
       query = query.andWhere('user.planCode IN (:...freePlans)', {
         freePlans: [PlanCode.free, PlanCode.none],
       })
+    } else if (filter === 'cancelling') {
+      query = query.andWhere('user.cancellationEffectiveDate IS NOT NULL')
+    } else if (filter === 'suspended') {
+      query = query.andWhere('user.isAccountBillingSuspended = true')
     } else if (filter === 'blocked') {
       query = query.andWhere(
         '(user.dashboardBlockReason IS NOT NULL OR user.isAccountBillingSuspended = true)',
