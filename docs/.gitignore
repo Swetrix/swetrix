@@ -1,4 +1,5 @@
 node_modules/
 .next/
+.static-archive/
 .source/
 out/
