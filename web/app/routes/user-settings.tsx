@@ -103,6 +103,15 @@ export interface UserSettingsActionData {
   data?: unknown
 }
 
+export interface UserPayment {
+  id: number
+  date: string
+  amount: number
+  currency: string
+  isOneOff: boolean
+  receiptUrl: string | null
+}
+
 export interface WebsiteAddonPreview {
   code: 'websites'
   quantity: number
@@ -818,6 +827,22 @@ export async function action({ request }: ActionFunctionArgs) {
 
     case 'get-metainfo': {
       const result = await serverFetch<Metainfo>(request, 'user/metainfo')
+
+      if (result.error) {
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'get-payments': {
+      const result = await serverFetch<UserPayment[]>(request, 'user/payments')
 
       if (result.error) {
         return data<UserSettingsActionData>(

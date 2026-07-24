@@ -63,7 +63,7 @@ import {
 } from './entities/subscription-dunning.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
-import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
+import { EMAIL_ACTION_ENCRYPTION_KEY, redis } from '../common/constants'
 import { ReportFrequency } from '../project/enums'
 import { OrganisationService } from '../organisation/organisation.service'
 
@@ -124,6 +124,19 @@ const CURRENCY_BY_COUNTRY = {
 }
 
 const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
+// Paddle's vendor API is slow and rate limited; receipts do not change once
+// issued, so an hour-long cache is safe
+const PAYMENTS_CACHE_TTL_SECONDS = 3600
+const PAYMENTS_FETCH_TIMEOUT_MS = 15000
+
+export interface UserPayment {
+  id: number
+  date: string
+  amount: number
+  currency: string
+  isOneOff: boolean
+  receiptUrl: string | null
+}
 const DEFAULT_CDN_URL = 'https://cdn.swetrix.com'
 const FEEDBACK_ATTACHMENT_UPLOAD_TIMEOUT_MS = 10_000
 const WEBSITE_ADDON_BUNDLE_SIZE = 50
@@ -1049,6 +1062,84 @@ export class UserService {
     }
 
     return data.response || {}
+  }
+
+  // Payments (receipts) for the currently authenticated user only: the
+  // subscription id is always read from the user's own DB record and is never
+  // accepted from the client
+  async getPayments(userId: string): Promise<UserPayment[]> {
+    const user = await this.findOne({
+      where: { id: userId },
+      select: ['id', 'subID'],
+    })
+
+    if (!user?.subID || !PADDLE_VENDOR_ID || !PADDLE_API_KEY) {
+      return []
+    }
+
+    const cacheKey = `user-payments:${user.id}`
+    const cached = await redis.get(cacheKey).catch(() => null)
+
+    if (cached) {
+      try {
+        return JSON.parse(cached)
+      } catch {
+        // fall through to a fresh fetch
+      }
+    }
+
+    const body = new URLSearchParams()
+    body.set('vendor_id', String(Number(PADDLE_VENDOR_ID)))
+    body.set('vendor_auth_code', PADDLE_API_KEY)
+    body.set('subscription_id', String(Number(user.subID)))
+    body.set('is_paid', '1')
+
+    let res: Response
+    let data: any
+
+    try {
+      res = await fetch(
+        'https://vendors.paddle.com/api/2.0/subscription/payments',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body,
+          signal: AbortSignal.timeout(PAYMENTS_FETCH_TIMEOUT_MS),
+        },
+      )
+      data = await res.json()
+    } catch (reason) {
+      console.error(
+        '[ERROR] (getPayments) Paddle payments request failed:',
+        reason,
+      )
+      throw new ServiceUnavailableException('Failed to load payment history')
+    }
+
+    if (!res.ok || !data?.success) {
+      console.error(
+        '[ERROR] (getPayments) Paddle payments request failed:',
+        JSON.stringify(data?.error || data),
+      )
+      throw new ServiceUnavailableException('Failed to load payment history')
+    }
+
+    const payments: UserPayment[] = (data.response || [])
+      .map((payment: Record<string, any>) => ({
+        id: Number(payment.id),
+        date: String(payment.payout_date || ''),
+        amount: Number(payment.amount) || 0,
+        currency: String(payment.currency || 'USD'),
+        isOneOff: Boolean(payment.is_one_off_charge),
+        receiptUrl: payment.receipt_url ? String(payment.receipt_url) : null,
+      }))
+      .sort((a: UserPayment, b: UserPayment) => b.date.localeCompare(a.date))
+
+    await redis
+      .set(cacheKey, JSON.stringify(payments), 'EX', PAYMENTS_CACHE_TTL_SECONDS)
+      .catch(() => null)
+
+    return payments
   }
 
   private buildWebsiteAddonChargeKey(

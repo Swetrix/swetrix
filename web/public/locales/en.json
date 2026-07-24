@@ -3086,7 +3086,20 @@
     "sessionReplayAddonNextRenewal": "the next renewal",
     "sessionReplayAddonPendingChange": "A scheduled session replay add-on change will take effect on {{date}}. Select a new quantity or update the current settings to replace it.",
     "sessionReplayAddonSave": "Update add-on",
-    "sessionReplayAddonComingSoon": "Self-serve session replay add-ons are coming soon."
+    "sessionReplayAddonComingSoon": "Self-serve session replay add-ons are coming soon.",
+    "invoicesTitle": "Invoices",
+    "invoicesDesc": "Receipts for every payment made on your account.",
+    "invoicesTableDate": "Date",
+    "invoicesTableDescription": "Description",
+    "invoicesTableAmount": "Amount",
+    "invoicesSubscriptionPayment": "Subscription payment",
+    "invoicesOneOffCharge": "One-off charge",
+    "invoicesViewReceipt": "View receipt",
+    "invoicesEmpty": "No invoices yet",
+    "invoicesEmptyDesc": "Once you are charged for your subscription, receipts will show up here.",
+    "invoicesLoadError": "We could not load your invoices. Please try again later.",
+    "invoicesRetry": "Try again",
+    "invoicesPaddleNote": "Payments are processed by Paddle, our merchant of record. Receipts open on paddle.com."
   },
   "modals": {
     "paidFeature": {

@@ -43,7 +43,7 @@ import { Markup } from 'telegraf'
 
 import { Public, CurrentUserId, Auth } from '../auth/decorators'
 import { TelegramService } from '../integrations/telegram/telegram.service'
-import { UserService } from './user.service'
+import { UserService, UserPayment } from './user.service'
 import { ProjectService, deleteProjectRedis } from '../project/project.service'
 import {
   User,
@@ -861,6 +861,12 @@ export class UserController {
       sessionReplays,
       last30Days: formatUsageInfo(rawLast30DaysInfo),
     }
+  }
+
+  @ApiBearerAuth()
+  @Get('payments')
+  async getPayments(@CurrentUserId() uid: string): Promise<UserPayment[]> {
+    return this.userService.getPayments(uid)
   }
 
   @ApiBearerAuth()
