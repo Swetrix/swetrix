@@ -19,6 +19,8 @@ import {
   CaretDownIcon,
   CreditCardIcon,
   ArrowRightIcon,
+  ArrowSquareOutIcon,
+  ReceiptIcon,
 } from '@phosphor-icons/react'
 import _round from 'lodash/round'
 import React, {
@@ -68,6 +70,7 @@ import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type {
   SessionReplayAddonPreview,
+  UserPayment,
   UserSettingsActionData,
   UserSettingsLoaderData,
   WebsiteAddonPreview,
@@ -281,6 +284,7 @@ const UserSettings = () => {
   const websiteAddonPreviewFetcher = useFetcher<UserSettingsActionData>()
   const sessionReplayAddonFetcher = useFetcher<UserSettingsActionData>()
   const sessionReplayAddonPreviewFetcher = useFetcher<UserSettingsActionData>()
+  const paymentsFetcher = useFetcher<UserSettingsActionData>()
 
   // Stable submit handle for the preview fetcher. Effects must depend on this,
   // not on the fetcher object (whose identity changes on every state transition
@@ -299,6 +303,13 @@ const UserSettings = () => {
   const sessionReplayAddonPreviewSubmit = useCallback(
     (...args: Parameters<typeof sessionReplayAddonPreviewFetcher.submit>) =>
       sessionReplayAddonPreviewFetcherRef.current.submit(...args),
+    [],
+  )
+  const paymentsFetcherRef = useRef(paymentsFetcher)
+  paymentsFetcherRef.current = paymentsFetcher
+  const paymentsSubmit = useCallback(
+    (...args: Parameters<typeof paymentsFetcher.submit>) =>
+      paymentsFetcherRef.current.submit(...args),
     [],
   )
 
@@ -930,6 +941,41 @@ const UserSettings = () => {
     selectedSessionReplayAddonBillingInterval,
     sessionReplayAddonPreviewSubmit,
   ])
+
+  // Lazily load the payment history the first time the billing tab is opened.
+  // Kept out of the route loader so a cold Paddle fetch never delays the page.
+  const hasRequestedPaymentsRef = useRef(false)
+  useEffect(() => {
+    if (
+      activeTab !== TAB_MAPPING.BILLING ||
+      isSelfhosted ||
+      !user?.id ||
+      hasRequestedPaymentsRef.current
+    ) {
+      return
+    }
+
+    hasRequestedPaymentsRef.current = true
+    const formData = new FormData()
+    formData.set('intent', 'get-payments')
+    paymentsSubmit(formData, { method: 'POST', action: '/user-settings' })
+  }, [activeTab, user?.id, paymentsSubmit])
+
+  const payments = useMemo(() => {
+    if (paymentsFetcher.data?.success && paymentsFetcher.data.data) {
+      return paymentsFetcher.data.data as UserPayment[]
+    }
+    return null
+  }, [paymentsFetcher.data])
+  const paymentsError =
+    paymentsFetcher.state === 'idle' ? paymentsFetcher.data?.error : undefined
+  const isPaymentsLoading = !payments && !paymentsError
+
+  const onRetryPayments = useCallback(() => {
+    const formData = new FormData()
+    formData.set('intent', 'get-payments')
+    paymentsSubmit(formData, { method: 'POST', action: '/user-settings' })
+  }, [paymentsSubmit])
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
@@ -2672,6 +2718,171 @@ const UserSettings = () => {
                             : t('billing.sessionReplayAddonBuy')}
                           <ArrowRightIcon className='size-4' />
                         </Button>
+                      </div>
+                    </SettingsSection>
+
+                    <SettingsSection
+                      title={t('billing.invoicesTitle')}
+                      description={t('billing.invoicesDesc')}
+                    >
+                      <div className='border-t border-gray-200 pt-4 dark:border-slate-800'>
+                        {isPaymentsLoading ? (
+                          <div className='space-y-2' aria-hidden='true'>
+                            {[0, 1, 2].map((index) => (
+                              <div
+                                key={index}
+                                className='h-12 animate-pulse rounded-lg bg-gray-100 dark:bg-slate-800/60'
+                              />
+                            ))}
+                          </div>
+                        ) : paymentsError ? (
+                          <Alert
+                            variant='error'
+                            title={t('billing.invoicesLoadError')}
+                          >
+                            <button
+                              type='button'
+                              onClick={onRetryPayments}
+                              className='font-medium underline underline-offset-4 hover:no-underline'
+                            >
+                              {t('billing.invoicesRetry')}
+                            </button>
+                          </Alert>
+                        ) : _isEmpty(payments) ? (
+                          <div className='flex flex-col items-center rounded-lg border border-dashed border-gray-300 px-6 py-10 text-center dark:border-slate-700'>
+                            <ReceiptIcon
+                              className='size-8 text-gray-400 dark:text-slate-500'
+                              aria-hidden='true'
+                            />
+                            <Text
+                              as='p'
+                              size='base'
+                              weight='semibold'
+                              className='mt-3'
+                            >
+                              {t('billing.invoicesEmpty')}
+                            </Text>
+                            <Text
+                              as='p'
+                              size='sm'
+                              colour='secondary'
+                              className='mt-1 max-w-sm'
+                            >
+                              {t('billing.invoicesEmptyDesc')}
+                            </Text>
+                          </div>
+                        ) : (
+                          <>
+                            <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+                              <div className='overflow-x-auto'>
+                                <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+                                  <thead className='bg-gray-50 dark:bg-slate-900'>
+                                    <tr>
+                                      <th
+                                        scope='col'
+                                        className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                      >
+                                        {t('billing.invoicesTableDate')}
+                                      </th>
+                                      <th
+                                        scope='col'
+                                        className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                      >
+                                        {t('billing.invoicesTableDescription')}
+                                      </th>
+                                      <th
+                                        scope='col'
+                                        className='px-4 py-3 text-right text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                      >
+                                        {t('billing.invoicesTableAmount')}
+                                      </th>
+                                      <th
+                                        scope='col'
+                                        aria-label={t('ariaLabels.actions')}
+                                        className='px-4 py-3'
+                                      />
+                                    </tr>
+                                  </thead>
+                                  <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
+                                    {_map(payments, (payment) => (
+                                      <tr
+                                        key={payment.id}
+                                        onClick={
+                                          payment.receiptUrl
+                                            ? (event) => {
+                                                if (
+                                                  (
+                                                    event.target as HTMLElement
+                                                  ).closest('a')
+                                                ) {
+                                                  return
+                                                }
+                                                window.open(
+                                                  payment.receiptUrl as string,
+                                                  '_blank',
+                                                  'noopener,noreferrer',
+                                                )
+                                              }
+                                            : undefined
+                                        }
+                                        className={cx({
+                                          'cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-slate-900/50':
+                                            !!payment.receiptUrl,
+                                        })}
+                                      >
+                                        <td className='px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-gray-50'>
+                                          {formatBillingDate(payment.date)}
+                                        </td>
+                                        <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-700 dark:text-gray-300'>
+                                          {payment.isOneOff
+                                            ? t('billing.invoicesOneOffCharge')
+                                            : t(
+                                                'billing.invoicesSubscriptionPayment',
+                                              )}
+                                        </td>
+                                        <td className='px-4 py-3 text-right text-sm font-medium whitespace-nowrap text-gray-900 tabular-nums dark:text-gray-50'>
+                                          {formatCurrencyAmount(
+                                            payment.amount,
+                                            payment.currency,
+                                            language,
+                                            {
+                                              minimumFractionDigits: 2,
+                                              maximumFractionDigits: 2,
+                                            },
+                                          )}
+                                        </td>
+                                        <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
+                                          {payment.receiptUrl ? (
+                                            <a
+                                              href={payment.receiptUrl}
+                                              target='_blank'
+                                              rel='noopener noreferrer'
+                                              className='inline-flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                                            >
+                                              {t('billing.invoicesViewReceipt')}
+                                              <ArrowSquareOutIcon
+                                                className='size-4'
+                                                aria-hidden='true'
+                                              />
+                                            </a>
+                                          ) : null}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                            <Text
+                              as='p'
+                              size='xs'
+                              colour='secondary'
+                              className='mt-3'
+                            >
+                              {t('billing.invoicesPaddleNote')}
+                            </Text>
+                          </>
+                        )}
                       </div>
                     </SettingsSection>
                   </>
