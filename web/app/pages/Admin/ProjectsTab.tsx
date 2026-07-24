@@ -521,7 +521,7 @@ export const ProjectsTab = ({
               sort={topSort.sort}
               onSort={topSort.onSort}
             >
-              {topSort.sortRows(topProjects.projects).map((project, index) => (
+              {topSort.sortRows(topProjects.projects).map((project) => (
                 <tr
                   key={project.id}
                   onClick={() => onProjectSelect(project.id)}
@@ -536,7 +536,7 @@ export const ProjectsTab = ({
                   className='cursor-pointer transition-colors hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:-outline-offset-2 dark:hover:bg-slate-900/60 dark:focus-visible:bg-slate-900/60'
                 >
                   <Td className='text-gray-500 tabular-nums dark:text-gray-400'>
-                    {index + 1}
+                    {topProjects.projects.indexOf(project) + 1}
                   </Td>
                   <Td>
                     <span className='font-medium'>
