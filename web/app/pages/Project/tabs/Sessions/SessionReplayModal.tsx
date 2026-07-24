@@ -1087,10 +1087,30 @@ const SessionReplayModal = ({
   const speedRef = useRef(1)
   const skipInactiveRef = useRef(true)
 
-  const events = useMemo(
+  const rawEvents = useMemo(
     () => (payload?.events || []) as ReplayEvent[],
     [payload?.events],
   )
+  // A replay is only renderable from its first full snapshot. Leading
+  // incremental events belong to a snapshot chunk that was lost in transit,
+  // so trim to the snapshot (keeping the Meta event that precedes it).
+  const events = useMemo(() => {
+    const snapshotIndex = rawEvents.findIndex(
+      (event) => event.type === EVENT_FULL_SNAPSHOT,
+    )
+
+    if (snapshotIndex === -1) return []
+    if (snapshotIndex === 0) return rawEvents
+
+    const start =
+      rawEvents[snapshotIndex - 1]?.type === EVENT_META
+        ? snapshotIndex - 1
+        : snapshotIndex
+
+    return rawEvents.slice(start)
+  }, [rawEvents])
+  const isReplayIncomplete =
+    Boolean(payload) && rawEvents.length > 0 && events.length === 0
   const replayStartTimestamp = getTimestamp(events[0])
   const timelineSteps = useMemo(
     () => buildTimelineSteps(events, t),
@@ -2007,9 +2027,29 @@ const SessionReplayModal = ({
               ) : null}
               {!isPreparing && !error && payload && !hasEvents ? (
                 <div className='absolute inset-0 z-20 flex items-center justify-center px-6 text-center'>
-                  <Text colour='primary' weight='semibold' className='dark'>
-                    {t('project.sessionReplay.empty')}
-                  </Text>
+                  {isReplayIncomplete ? (
+                    <div className='max-w-md'>
+                      <WarningOctagonIcon
+                        className='mx-auto mb-3 size-8 text-amber-400'
+                        weight='duotone'
+                      />
+                      <Text colour='primary' weight='semibold' className='dark'>
+                        {t('project.sessionReplay.incompleteTitle')}
+                      </Text>
+                      <Text
+                        as='p'
+                        size='sm'
+                        colour='secondary'
+                        className='dark mt-1'
+                      >
+                        {t('project.sessionReplay.incompleteDescription')}
+                      </Text>
+                    </div>
+                  ) : (
+                    <Text colour='primary' weight='semibold' className='dark'>
+                      {t('project.sessionReplay.empty')}
+                    </Text>
+                  )}
                 </div>
               ) : null}
 

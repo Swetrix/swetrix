@@ -23,12 +23,17 @@ interface RrwebRecordOptions {
   [key: string]: unknown
 }
 
+interface RrwebRecordFn {
+  (options: RrwebRecordOptions): (() => void) | undefined
+  takeFullSnapshot?: (isCheckout?: boolean) => void
+}
+
 interface RrwebGlobal {
-  record?: (options: RrwebRecordOptions) => (() => void) | undefined
+  record?: RrwebRecordFn
   Replayer?: unknown
 }
 
-type RrwebModule = RrwebGlobal & {
+type RrwebRecordModule = RrwebGlobal & {
   default?: RrwebGlobal
 }
 
@@ -41,7 +46,10 @@ interface SessionReplayStartResponse {
 
 declare global {
   interface Window {
+    // Legacy global set by full rrweb bundles (self-hosted or custom rrwebUrl).
     rrweb?: RrwebGlobal
+    // Global set by the @rrweb/record UMD bundle we ship.
+    rrwebRecord?: RrwebGlobal | RrwebRecordFn
     __SWETRIX_RRWEB_LOADING__?: Promise<void>
   }
 }
@@ -321,6 +329,10 @@ const DEFAULT_SESSION_REPLAY_SLIM_DOM_OPTIONS = {
   headMetaAuthorship: true,
   headMetaVerification: true,
 }
+const RRWEB_EVENT_FULL_SNAPSHOT = 2
+// Chunk indices are reserved server-side, so retrying with the same index is
+// idempotent — the backend dedupes on (replayId, chunkIndex).
+const SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS = [2_000, 5_000, 15_000]
 const SESSION_REPLAY_ACTIVITY_EVENTS = [
   'click',
   'keydown',
@@ -874,8 +886,8 @@ export class Lib {
       return defaultSessionReplayActions
     }
 
-    const rrweb = window.rrweb
-    if (!rrweb?.record) {
+    const record = this.getRrwebRecorder()
+    if (!record) {
       return defaultSessionReplayActions
     }
 
@@ -937,15 +949,27 @@ export class Lib {
 
       flushing = flushing
         .catch(() => undefined)
-        .then(() =>
-          this.sendSessionReplayChunk(
+        .then(async () => {
+          const delivered = await this.sendSessionReplayChunk(
             replayId,
             privacy,
             currentChunkIndex,
             chunk,
             useBeacon,
-          ),
-        )
+          )
+
+          // Losing a full snapshot makes every later event unrenderable, so
+          // re-seed the stream instead of recording into the void.
+          if (
+            !delivered &&
+            !stopped &&
+            chunk.some((event) => event.type === RRWEB_EVENT_FULL_SNAPSHOT)
+          ) {
+            try {
+              record.takeFullSnapshot?.()
+            } catch {}
+          }
+        })
 
       await flushing
     }
@@ -991,7 +1015,7 @@ export class Lib {
       options.maskAllText,
     )
 
-    const stopRecording = rrweb.record(recordOptions)
+    const stopRecording = record(recordOptions)
     const timer = setInterval(() => void flush(), flushIntervalMs)
     const flushOnPageExit = () => void flush(true)
     const flushOnHidden = () => {
@@ -1242,12 +1266,33 @@ export class Lib {
     return trackerScript
   }
 
+  private getRrwebRecorder(): RrwebRecordFn | undefined {
+    if (!isInBrowser()) {
+      return undefined
+    }
+
+    if (typeof window.rrweb?.record === 'function') {
+      return window.rrweb.record
+    }
+
+    const globalRecord = window.rrwebRecord
+    if (typeof globalRecord === 'function') {
+      return globalRecord
+    }
+
+    if (globalRecord && typeof globalRecord.record === 'function') {
+      return globalRecord.record
+    }
+
+    return undefined
+  }
+
   private preloadSessionReplay(): Promise<void> {
     if (!isInBrowser()) {
       return Promise.resolve()
     }
 
-    if (window.rrweb?.record) {
+    if (this.getRrwebRecorder()) {
       return Promise.resolve()
     }
 
@@ -1301,14 +1346,14 @@ export class Lib {
 
   private async loadSessionReplayPackage(): Promise<boolean> {
     try {
-      const rrwebModule = (await import('rrweb')) as RrwebModule
-      const rrweb = rrwebModule.record ? rrwebModule : rrwebModule.default
+      const rrwebModule = (await import('@rrweb/record')) as RrwebRecordModule
+      const record = rrwebModule.record || rrwebModule.default?.record
 
-      if (!rrweb?.record) {
+      if (typeof record !== 'function') {
         return false
       }
 
-      window.rrweb = rrweb
+      window.rrwebRecord = { record }
       return true
     } catch {
       return false
@@ -1520,7 +1565,7 @@ export class Lib {
     chunkIndex: number,
     events: RrwebEvent[],
     useBeacon: boolean,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const apiBase = this.getApiBase()
     const url = `${apiBase}/log/session-replay/chunk`
     const payload = JSON.stringify({
@@ -1532,23 +1577,56 @@ export class Lib {
     })
 
     if (useBeacon && typeof navigator.sendBeacon === 'function') {
+      // sendBeacon refuses payloads over its ~64 KB quota; fall through to
+      // fetch when it does.
       const sent = navigator.sendBeacon(
         url,
         new Blob([payload], { type: 'application/json' }),
       )
-      if (sent) return
+      if (sent) return true
     }
 
-    try {
-      await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        keepalive: useBeacon,
-        body: payload,
-      })
-    } catch {}
+    // On the beacon path the page is unloading, so there is no time to retry.
+    const attempts = useBeacon
+      ? 1
+      : SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS.length + 1
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      if (attempt > 0) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS[attempt - 1]),
+        )
+      }
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // Browsers reject keepalive bodies over ~64 KB, so oversized
+          // payloads go through a regular request instead.
+          keepalive: useBeacon && payload.length < 60_000,
+          body: payload,
+        })
+
+        if (response.ok) {
+          return true
+        }
+
+        // Client errors (except timeouts and rate limits) won't succeed on
+        // retry.
+        if (
+          response.status < 500 &&
+          response.status !== 408 &&
+          response.status !== 429
+        ) {
+          return false
+        }
+      } catch {}
+    }
+
+    return false
   }
 
   private async sendRequest(path: string, body: object): Promise<void> {

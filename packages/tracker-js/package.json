@@ -45,7 +45,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
-    "rrweb": "2.0.1"
+    "@rrweb/record": "2.1.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^29.0.3",

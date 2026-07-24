@@ -200,7 +200,7 @@ clearExperimentsCache()
 
 Start recording a session replay. Session replays use `total` privacy by default, which masks text and inputs and blocks media/canvas capture unless you explicitly choose another mode.
 
-If you use the npm package, rrweb is dynamically imported from your installed dependencies only when the recorder is preloaded or started. If you use the CDN/script-tag build, the standalone replay recorder is loaded with an async script tag.
+If you use the npm package, the recorder (`@rrweb/record`) is dynamically imported from your installed dependencies only when the recorder is preloaded or started. If you use the CDN/script-tag build, the standalone replay recorder is loaded with an async script tag.
 
 ```javascript
 const replay = await startSessionReplay({

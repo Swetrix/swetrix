@@ -1,5 +1,8 @@
 import billboard, { type Chart, type ChartOptions } from 'billboard.js'
+import cx from 'clsx'
 import React, { useEffect, useMemo, useRef } from 'react'
+
+import { trackError } from '~/utils/analytics'
 
 interface BillboardChartProps {
   options: ChartOptions
@@ -112,10 +115,26 @@ const BillboardChart = ({
       }
     }
 
-    const chart = billboard.generate(wrappedOptions)
+    // Translation tools (Google Translate, Immersive Translate etc.) can
+    // rewrite the SVG internals mid-session, which makes billboard.js throw
+    // during re-render. Keep the page alive instead of crashing to the
+    // route-level ErrorBoundary, but still report the error.
+    let chart: Chart | null = null
+    try {
+      chart = billboard.generate(wrappedOptions)
+    } catch (reason) {
+      containerRef.current.replaceChildren()
+      trackError({
+        name: `BillboardChart: ${reason instanceof Error ? reason.message : String(reason)}`,
+        message: reason instanceof Error ? reason.message : String(reason),
+        lineno: 0,
+        colno: 0,
+        stackTrace: reason instanceof Error ? reason.stack || '' : '',
+      })
+    }
     chartRef.current = chart
 
-    if (dataNames) {
+    if (chart && dataNames) {
       try {
         chart.data.names(dataNames)
       } catch {
@@ -151,7 +170,15 @@ const BillboardChart = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, mergedDeps)
 
-  return <div ref={containerRef} className={className} />
+  // translate='no' + notranslate: page translators rewriting SVG <text> nodes
+  // break billboard.js's tick measurement (getBBox on a non-SVG element)
+  return (
+    <div
+      ref={containerRef}
+      translate='no'
+      className={cx('notranslate', className)}
+    />
+  )
 }
 
 export default BillboardChart

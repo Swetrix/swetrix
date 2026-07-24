@@ -9,9 +9,17 @@ import { dirname, join } from 'node:path'
 
 const require = createRequire(import.meta.url)
 const rrwebDistFile = 'replaylibrary.min.js'
-const rrwebPackageFile = 'rrweb.umd.min.cjs'
-const rrwebDistPath = join(dirname(require.resolve('rrweb')), rrwebPackageFile)
-const external = ['rrweb']
+const rrwebPackageFile = 'record.umd.min.cjs'
+const rrwebDistPath = join(
+  dirname(require.resolve('@rrweb/record')),
+  rrwebPackageFile,
+)
+// Older published trackers look for the recorder on `window.rrweb`, which the
+// full rrweb bundle used to define. The @rrweb/record UMD only defines
+// `window.rrwebRecord`, so alias it for scripts loaded via the shared CDN URL.
+const rrwebCompatFooter =
+  '\n;if (typeof window !== "undefined" && !window.rrweb) { window.rrweb = window.rrwebRecord; }\n'
+const external = ['@rrweb/record']
 
 const copyRrweb = () => ({
   name: 'copy-rrweb',
@@ -19,7 +27,7 @@ const copyRrweb = () => ({
     this.emitFile({
       type: 'asset',
       fileName: rrwebDistFile,
-      source: readFileSync(rrwebDistPath),
+      source: readFileSync(rrwebDistPath, 'utf8') + rrwebCompatFooter,
     })
   },
 })

@@ -3187,7 +3187,13 @@ export class AnalyticsService {
       },
     )
 
-    const events = chunkEvents.flat()
+    // Chunk index order is upload order, which can diverge from event time
+    // order (e.g. two tabs recording into the same replay). The replayer
+    // expects a monotonic timeline, so stable-sort by timestamp — the same
+    // normalisation the MP4 export applies.
+    const events = chunkEvents
+      .flat()
+      .sort((a, b) => (Number(a?.timestamp) || 0) - (Number(b?.timestamp) || 0))
 
     return {
       replay,

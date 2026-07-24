@@ -406,8 +406,12 @@ const OpenStartup = ({ stats }: OpenStartupProps) => {
   useEffect(() => {
     const bbSettings = getSettings()
 
-    // @ts-expect-error
-    billboard.generate(bbSettings)
+    try {
+      // @ts-expect-error
+      billboard.generate(bbSettings)
+    } catch {
+      // billboard.js can throw when page translators rewrite the SVG internals
+    }
   }, [])
 
   return (
@@ -433,7 +437,11 @@ const OpenStartup = ({ stats }: OpenStartupProps) => {
           {t('open.finance.desc')}
         </Text>
 
-        <div className='mt-4 h-80' id='open-startup' />
+        <div
+          className='notranslate mt-4 h-80'
+          id='open-startup'
+          translate='no'
+        />
 
         <Text as='h2' size='2xl' weight='bold' className='mt-8 tracking-tight'>
           {t('open.usage.title')}

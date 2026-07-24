@@ -10,7 +10,7 @@
     "outDir": "dist/esnext",
     "baseUrl": ".",
     "paths": {
-      "rrweb": ["src/types/rrweb-shim.d.ts"]
+      "@rrweb/record": ["src/types/rrweb-shim.d.ts"]
     },
     "types": []
   },

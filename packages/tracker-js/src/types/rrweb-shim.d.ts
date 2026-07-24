@@ -1,11 +1,9 @@
-declare module 'rrweb' {
+declare module '@rrweb/record' {
   export const record: unknown
-  export const Replayer: unknown
 
-  const rrweb: {
+  const rrwebRecord: {
     record?: unknown
-    Replayer?: unknown
   }
 
-  export default rrweb
+  export default rrwebRecord
 }

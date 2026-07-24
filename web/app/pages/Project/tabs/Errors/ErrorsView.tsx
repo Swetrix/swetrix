@@ -1128,6 +1128,7 @@ const ErrorsViewInner = () => {
                           value={activeError.details.count || 0}
                         />
                       ),
+                      valueClassName: 'text-xl sm:text-2xl',
                     },
                     {
                       key: 'users',
@@ -1137,6 +1138,7 @@ const ErrorsViewInner = () => {
                           value={activeError.details.users || 0}
                         />
                       ),
+                      valueClassName: 'text-xl sm:text-2xl',
                     },
                     {
                       key: 'firstSeen',
@@ -1147,7 +1149,8 @@ const ErrorsViewInner = () => {
                           language,
                         ) || '-',
                       // A relative date is a sentence, not a figure — at the
-                      // numeric card size it dwarfs the rest of the row.
+                      // default card size it dwarfs the row, so all four stats
+                      // share this smaller size.
                       valueClassName: 'text-xl sm:text-2xl',
                     },
                     {

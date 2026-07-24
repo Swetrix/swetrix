@@ -7,7 +7,7 @@ const PROJECT_ID = 'test-project-id'
 const RRWEB_URL = 'https://cdn.jsdelivr.net/npm/swetrix@latest/dist/replaylibrary.min.js'
 const mockRrwebRecord = jest.fn()
 
-jest.mock('rrweb', () => ({
+jest.mock('@rrweb/record', () => ({
   record: mockRrwebRecord,
 }))
 
@@ -18,6 +18,7 @@ const loadTracker = async () => {
 
 const resetReplayGlobals = () => {
   delete (window as any).rrweb
+  delete (window as any).rrwebRecord
   delete (window as any).__SWETRIX_RRWEB_LOADING__
   document.head.innerHTML = ''
   document.body.innerHTML = ''
@@ -67,7 +68,7 @@ describe('Session replay tracking', () => {
     init(PROJECT_ID, { devMode: true, preloadSessionReplay: true })
     await (window as any).__SWETRIX_RRWEB_LOADING__
 
-    expect((window as any).rrweb.record).toBe(mockRrwebRecord)
+    expect((window as any).rrwebRecord.record).toBe(mockRrwebRecord)
     expect(document.querySelector(`script[src="${RRWEB_URL}"]`)).toBeNull()
     expect(mockRrwebRecord).not.toHaveBeenCalled()
     expect(fetchMock).not.toHaveBeenCalled()
@@ -596,5 +597,67 @@ describe('Session replay tracking', () => {
     expect(fetchMock).not.toHaveBeenCalled()
     expect(document.querySelector(`script[src="${RRWEB_URL}"]`)).toBeNull()
     expect(mockRrwebRecord).not.toHaveBeenCalled()
+  })
+
+  test('failed chunk uploads are retried with the same chunk index', async () => {
+    const { recordOptions } = usePackageRrweb()
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const actions = await startSessionReplay({ flushIntervalMs: 60_000 })
+
+    jest.useFakeTimers()
+    let chunkAttempts = 0
+    fetchMock.mockImplementation((url) => {
+      if (String(url).includes('/session-replay/chunk')) {
+        chunkAttempts += 1
+        return Promise.resolve({ ok: chunkAttempts > 1, status: 503 })
+      }
+
+      return Promise.resolve({ ok: true })
+    })
+
+    recordOptions().emit({ type: 2, timestamp: 100 })
+    const flushPromise = actions.flush()
+    await jest.advanceTimersByTimeAsync(2_000)
+    await flushPromise
+
+    expect(chunkAttempts).toBe(2)
+    const chunkCalls = fetchMock.mock.calls.filter(([url]) =>
+      String(url).includes('/session-replay/chunk'),
+    )
+    expect(JSON.parse(chunkCalls[0][1].body as string).chunkIndex).toBe(0)
+    expect(JSON.parse(chunkCalls[1][1].body as string).chunkIndex).toBe(0)
+
+    await actions.stop()
+  })
+
+  test('a permanently dropped snapshot chunk requests a fresh full snapshot', async () => {
+    const takeFullSnapshot = jest.fn()
+    ;(mockRrwebRecord as any).takeFullSnapshot = takeFullSnapshot
+    const { recordOptions } = usePackageRrweb()
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const actions = await startSessionReplay({ flushIntervalMs: 60_000 })
+
+    fetchMock.mockImplementation((url) => {
+      if (String(url).includes('/session-replay/chunk')) {
+        return Promise.resolve({ ok: false, status: 400 })
+      }
+
+      return Promise.resolve({ ok: true })
+    })
+
+    recordOptions().emit({ type: 2, timestamp: 100 })
+    await actions.flush()
+    expect(takeFullSnapshot).toHaveBeenCalledTimes(1)
+
+    recordOptions().emit({ type: 3, timestamp: 200 })
+    await actions.flush()
+    expect(takeFullSnapshot).toHaveBeenCalledTimes(1)
+
+    await actions.stop()
+    delete (mockRrwebRecord as any).takeFullSnapshot
   })
 })

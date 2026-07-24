@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignoreDependencies": ["@types/ioredis", "rrweb"],
+  "ignoreDependencies": ["@types/ioredis", "@rrweb/replay"],
   "ignore": [],
   "exclude": ["enumMembers"],
   "entry": ["./apps/cloud/src/main.ts", "./apps/community/src/main.ts"],

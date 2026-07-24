@@ -14,6 +14,14 @@ type HeaderMap = Record<string, string>
 type PutObjectBody = Buffer | Readable
 
 const SESSION_REPLAY_STORAGE_TIMEOUT_MS = 30_000
+// Hetzner object storage intermittently returns 503s; dropped replay chunks
+// are unrecoverable, so transient failures get a couple of retries.
+const SESSION_REPLAY_STORAGE_MAX_ATTEMPTS = 3
+const SESSION_REPLAY_STORAGE_RETRY_BASE_DELAY_MS = 300
+const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504])
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms))
 
 const sha256Hex = (value: Buffer | string) =>
   crypto.createHash('sha256').update(value).digest('hex')
@@ -208,6 +216,55 @@ export class SessionReplayS3Service {
   }
 
   private async signedFetch(
+    method: 'PUT' | 'GET' | 'DELETE',
+    key: string,
+    body?: PutObjectBody,
+    extraHeaders: HeaderMap = {},
+    payloadHashOverride?: string,
+    queryParams: Record<string, string | undefined> = {},
+  ): Promise<Response> {
+    // Stream bodies can only be read once, so they get a single attempt.
+    const attempts =
+      body instanceof Readable ? 1 : SESSION_REPLAY_STORAGE_MAX_ATTEMPTS
+    let lastError: unknown
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      if (attempt > 0) {
+        await sleep(
+          SESSION_REPLAY_STORAGE_RETRY_BASE_DELAY_MS * 2 ** (attempt - 1),
+        )
+      }
+
+      try {
+        const response = await this.signedFetchOnce(
+          method,
+          key,
+          body,
+          extraHeaders,
+          payloadHashOverride,
+          queryParams,
+        )
+
+        if (
+          RETRYABLE_STATUS_CODES.has(response.status) &&
+          attempt < attempts - 1
+        ) {
+          lastError = new Error(
+            `Hetzner S3 ${method} failed with status ${response.status}`,
+          )
+          continue
+        }
+
+        return response
+      } catch (reason) {
+        lastError = reason
+      }
+    }
+
+    throw lastError
+  }
+
+  private async signedFetchOnce(
     method: 'PUT' | 'GET' | 'DELETE',
     key: string,
     body?: PutObjectBody,

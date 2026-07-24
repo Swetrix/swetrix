@@ -1919,6 +1919,8 @@
       "deleteConfirmMessage": "This permanently deletes the session replay recording. The analytics session data stays available.",
       "playerError": "Could not initialise replay player",
       "empty": "No replay events were found.",
+      "incompleteTitle": "This replay is incomplete",
+      "incompleteDescription": "The recording is missing its initial page snapshot, so it can't be played back. This usually means some recording data failed to upload from the visitor's browser.",
       "back10": "Back 10 seconds",
       "forward10": "Forward 10 seconds",
       "play": "Play",

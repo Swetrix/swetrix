@@ -5,7 +5,7 @@ const packagePath = require.resolve('rrvideo/package.json')
 const packageDir = path.dirname(packagePath)
 const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
 
-if (packageJson.version !== '2.0.1') {
+if (packageJson.version !== '2.1.1') {
   throw new Error(`Unsupported rrvideo version: ${packageJson.version}`)
 }
 
@@ -14,11 +14,12 @@ let source = fs.readFileSync(filePath, 'utf8')
 
 const playerBundle =
   "require.resolve('rrweb-player'), '../../dist/rrweb-player.umd.cjs'"
-const rrwebBundle = "require.resolve('rrweb'), '../../dist/rrweb.umd.cjs'"
+const replayBundle =
+  "require.resolve('@rrweb/replay'), '../../dist/replay.umd.cjs'"
 
 if (source.includes(playerBundle)) {
-  source = source.replace(playerBundle, rrwebBundle)
-} else if (!source.includes(rrwebBundle)) {
+  source = source.replace(playerBundle, replayBundle)
+} else if (!source.includes(replayBundle)) {
   throw new Error('Could not find rrvideo player bundle path')
 }
 
@@ -119,7 +120,7 @@ const blockReplacement = [
   '      const userConfig = ${JSON.stringify((config === null || config === void 0 ? void 0 : config.rrwebPlayer) || {})};',
   '      try {',
   '        const insertStyleRules = Array.isArray(userConfig.insertStyleRules) ? userConfig.insertStyleRules : [];',
-  '        window.replayer = new rrweb.Replayer(events, {',
+  '        window.replayer = new rrwebReplay.Replayer(events, {',
   '          ...userConfig,',
   '          root: document.body,',
   '          insertStyleRules: [...insertStyleRules, \'html, body { background-color: #fff; }\'],',
@@ -149,5 +150,5 @@ if (patched === fs.readFileSync(filePath, 'utf8')) {
   console.log('rrvideo patch already applied')
 } else {
   fs.writeFileSync(filePath, patched)
-  console.log('Patched rrvideo to render with rrweb Replayer')
+  console.log('Patched rrvideo to render with @rrweb/replay Replayer')
 }
