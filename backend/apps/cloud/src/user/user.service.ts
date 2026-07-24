@@ -61,6 +61,7 @@ import {
   SubscriptionDunning,
   SubscriptionDunningStatus,
 } from './entities/subscription-dunning.entity'
+import { UserSubscription } from './entities/user-subscription.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY, redis } from '../common/constants'
@@ -300,6 +301,8 @@ export class UserService {
     private readonly userAddonChargeRepository: Repository<UserAddonCharge>,
     @InjectRepository(SubscriptionDunning)
     private readonly subscriptionDunningRepository: Repository<SubscriptionDunning>,
+    @InjectRepository(UserSubscription)
+    private readonly userSubscriptionRepository: Repository<UserSubscription>,
     private readonly organisationService: OrganisationService,
   ) {}
 
@@ -1064,16 +1067,62 @@ export class UserService {
     return data.response || {}
   }
 
-  // Payments (receipts) for the currently authenticated user only: the
-  // subscription id is always read from the user's own DB record and is never
-  // accepted from the client
+  private async fetchPaddleSubscriptionPayments(
+    subID: string,
+  ): Promise<UserPayment[]> {
+    const numericSubID = Number(subID)
+    const body = new URLSearchParams()
+    body.set('vendor_id', String(Number(PADDLE_VENDOR_ID)))
+    body.set('vendor_auth_code', PADDLE_API_KEY)
+    body.set(
+      'subscription_id',
+      Number.isFinite(numericSubID) ? String(numericSubID) : subID,
+    )
+    body.set('is_paid', '1')
+
+    const res = await fetch(
+      'https://vendors.paddle.com/api/2.0/subscription/payments',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+        signal: AbortSignal.timeout(PAYMENTS_FETCH_TIMEOUT_MS),
+      },
+    )
+    const data = await res.json()
+
+    if (!res.ok || !data?.success) {
+      throw new Error(
+        `Paddle payments request failed: ${JSON.stringify(data?.error || data)}`,
+      )
+    }
+
+    return (data.response || []).map((payment: Record<string, any>) => ({
+      id: Number(payment.id),
+      date: String(payment.payout_date || ''),
+      amount: Number(payment.amount) || 0,
+      currency: String(payment.currency || 'USD'),
+      isOneOff: Boolean(payment.is_one_off_charge),
+      receiptUrl: payment.receipt_url ? String(payment.receipt_url) : null,
+    }))
+  }
+
+  // Payments (receipts) for the currently authenticated user only: subscription
+  // ids are always read from the user's own DB records and are never accepted
+  // from the client. Receipts are collected across every subscription the user
+  // has ever had, since `user.subID` is cleared on cancellation and a
+  // resubscribe always gets a new subscription id
   async getPayments(userId: string): Promise<UserPayment[]> {
+    if (!PADDLE_VENDOR_ID || !PADDLE_API_KEY) {
+      return []
+    }
+
     const user = await this.findOne({
       where: { id: userId },
       select: ['id', 'subID'],
     })
 
-    if (!user?.subID || !PADDLE_VENDOR_ID || !PADDLE_API_KEY) {
+    if (!user) {
       return []
     }
 
@@ -1088,56 +1137,60 @@ export class UserService {
       }
     }
 
-    const body = new URLSearchParams()
-    body.set('vendor_id', String(Number(PADDLE_VENDOR_ID)))
-    body.set('vendor_auth_code', PADDLE_API_KEY)
-    body.set('subscription_id', String(Number(user.subID)))
-    body.set('is_paid', '1')
+    const subIDs = await this.getUserSubscriptionIDs(user.id, user.subID)
 
-    let res: Response
-    let data: any
+    if (_isEmpty(subIDs)) {
+      return []
+    }
 
-    try {
-      res = await fetch(
-        'https://vendors.paddle.com/api/2.0/subscription/payments',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body,
-          signal: AbortSignal.timeout(PAYMENTS_FETCH_TIMEOUT_MS),
-        },
-      )
-      data = await res.json()
-    } catch (reason) {
-      console.error(
-        '[ERROR] (getPayments) Paddle payments request failed:',
-        reason,
-      )
+    const results = await Promise.allSettled(
+      subIDs.map((subID) => this.fetchPaddleSubscriptionPayments(subID)),
+    )
+
+    const payments: UserPayment[] = []
+    const seenPaymentIds = new Set<number>()
+    let failedCount = 0
+
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        failedCount += 1
+        console.error(
+          `[ERROR] (getPayments) Failed to load payments for subscription ${subIDs[index]}:`,
+          result.reason,
+        )
+        return
+      }
+
+      result.value.forEach((payment) => {
+        if (seenPaymentIds.has(payment.id)) {
+          return
+        }
+
+        seenPaymentIds.add(payment.id)
+        payments.push(payment)
+      })
+    })
+
+    // one unreachable subscription must not hide the receipts that did load;
+    // only a complete failure is worth surfacing to the user
+    if (failedCount === _size(subIDs)) {
       throw new ServiceUnavailableException('Failed to load payment history')
     }
 
-    if (!res.ok || !data?.success) {
-      console.error(
-        '[ERROR] (getPayments) Paddle payments request failed:',
-        JSON.stringify(data?.error || data),
-      )
-      throw new ServiceUnavailableException('Failed to load payment history')
+    payments.sort((a, b) => b.date.localeCompare(a.date))
+
+    // a partial result is not worth caching for an hour - the next request
+    // should get another chance at the subscriptions that failed
+    if (failedCount === 0) {
+      await redis
+        .set(
+          cacheKey,
+          JSON.stringify(payments),
+          'EX',
+          PAYMENTS_CACHE_TTL_SECONDS,
+        )
+        .catch(() => null)
     }
-
-    const payments: UserPayment[] = (data.response || [])
-      .map((payment: Record<string, any>) => ({
-        id: Number(payment.id),
-        date: String(payment.payout_date || ''),
-        amount: Number(payment.amount) || 0,
-        currency: String(payment.currency || 'USD'),
-        isOneOff: Boolean(payment.is_one_off_charge),
-        receiptUrl: payment.receipt_url ? String(payment.receipt_url) : null,
-      }))
-      .sort((a: UserPayment, b: UserPayment) => b.date.localeCompare(a.date))
-
-    await redis
-      .set(cacheKey, JSON.stringify(payments), 'EX', PAYMENTS_CACHE_TTL_SECONDS)
-      .catch(() => null)
 
     return payments
   }
@@ -2821,6 +2874,11 @@ export class UserService {
     }
 
     await this.update(id, updateParams)
+    await this.recordUserSubscription({
+      userId: id,
+      subID,
+      planId: planID,
+    })
     await this.refreshWebsiteAddonEntitlements(id)
     await this.refreshSessionReplayAddonEntitlements(id)
   }
@@ -2910,6 +2968,138 @@ export class UserService {
 
     const bytes = CryptoJS.Rabbit.decrypt(base64, EMAIL_ACTION_ENCRYPTION_KEY)
     return bytes.toString(CryptoJS.enc.Utf8)
+  }
+
+  // Records a Paddle subscription id against a user so it survives the user's
+  // `subID` being cleared on cancellation. Safe to call repeatedly: Paddle
+  // retries webhooks and `subscription_updated` fires many times per
+  // subscription. Never throws - losing a history row must not fail the
+  // subscription flow that triggered it
+  async recordUserSubscription(params: {
+    userId: string
+    subID: string | number | null | undefined
+    paddleUserId?: string | number | null
+    planId?: string | number | null
+    startedAt?: Date | null
+  }): Promise<void> {
+    const { userId } = params
+    const subID = params.subID ? String(params.subID) : null
+
+    if (!userId || !subID) {
+      return
+    }
+
+    const paddleUserId = params.paddleUserId
+      ? String(params.paddleUserId)
+      : null
+    const planId = params.planId ? String(params.planId) : null
+
+    try {
+      const existing = await this.userSubscriptionRepository.findOne({
+        where: { subID },
+      })
+
+      if (existing) {
+        const update: Partial<UserSubscription> = {}
+
+        // a subscription id belongs to exactly one Paddle checkout, so a
+        // mismatch means the webhook resolved to a different user than we
+        // recorded before - the webhook wins, but it is worth knowing about
+        if (existing.userId !== userId) {
+          console.error(
+            `[ERROR] (recordUserSubscription) Subscription ${subID} moved from user ${existing.userId} to ${userId}`,
+          )
+          update.userId = userId
+        }
+
+        if (!existing.paddleUserId && paddleUserId) {
+          update.paddleUserId = paddleUserId
+        }
+
+        if (!existing.planId && planId) {
+          update.planId = planId
+        }
+
+        if (!existing.startedAt && params.startedAt) {
+          update.startedAt = params.startedAt
+        }
+
+        if (!_isEmpty(update)) {
+          await this.userSubscriptionRepository.update(existing.id, update)
+        }
+
+        return
+      }
+
+      await this.userSubscriptionRepository.save(
+        this.userSubscriptionRepository.create({
+          userId,
+          subID,
+          paddleUserId,
+          planId,
+          startedAt: params.startedAt || null,
+          endedAt: null,
+        }),
+      )
+    } catch (reason) {
+      // a concurrent webhook retry may have inserted the same row in between
+      const duplicate = await this.userSubscriptionRepository
+        .findOne({ where: { subID } })
+        .catch(() => null)
+
+      if (duplicate) {
+        return
+      }
+
+      console.error(
+        `[ERROR] (recordUserSubscription) Failed to record subscription ${subID} for user ${userId}:`,
+        reason,
+      )
+    }
+  }
+
+  async markUserSubscriptionEnded(
+    subID: string,
+    endedAt: Date | null,
+  ): Promise<void> {
+    if (!subID) {
+      return
+    }
+
+    try {
+      await this.userSubscriptionRepository.update(
+        { subID },
+        { endedAt: endedAt || new Date() },
+      )
+    } catch (reason) {
+      console.error(
+        `[ERROR] (markUserSubscriptionEnded) Failed to mark subscription ${subID} as ended:`,
+        reason,
+      )
+    }
+  }
+
+  // Every Paddle subscription id known for a user, current one first
+  async getUserSubscriptionIDs(
+    userId: string,
+    currentSubID?: string | null,
+  ): Promise<string[]> {
+    const subscriptions = await this.userSubscriptionRepository.find({
+      where: { userId },
+      select: ['subID', 'startedAt', 'createdAt'],
+      order: {
+        startedAt: 'DESC',
+        createdAt: 'DESC',
+      },
+    })
+
+    return Array.from(
+      new Set(
+        [currentSubID, ...subscriptions.map(({ subID }) => subID)].filter(
+          Boolean,
+        ),
+      ),
+    )
   }
 
   getOpenSubscriptionDunning(
