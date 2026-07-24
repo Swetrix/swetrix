@@ -121,6 +121,8 @@ const isValidLocale = (lc: string): boolean => {
 }
 
 // 2 minutes
+const hasTimeComponent = (date: string): boolean => /\d{2}:\d{2}/.test(date)
+
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
 // The concurrency sweep materializes one row per minute of the requested window,
 // so cap how far back it can be reconstructed to keep the query bounded
@@ -893,8 +895,16 @@ export class AnalyticsService {
       } else {
         groupFrom = dayjs.utc(from)
         groupTo = dayjs.utc(to)
-        groupFromUTC = groupFrom.utc().startOf(timeBucket).format(formatFrom)
-        groupToUTC = groupTo.utc().endOf(timeBucket).format(formatTo)
+        // Only date-only inputs are expanded to whole buckets; exact
+        // timestamps keep their bounds — rounding them to UTC buckets would
+        // widen a single local day picked in a non-UTC timezone into up to
+        // 48 hours of data
+        groupFromUTC = hasTimeComponent(from)
+          ? groupFrom.format(formatFrom)
+          : groupFrom.startOf(timeBucket).format(formatFrom)
+        groupToUTC = hasTimeComponent(to)
+          ? groupTo.format(formatTo)
+          : groupTo.endOf(timeBucket).format(formatTo)
       }
     } else if (!_isEmpty(period)) {
       if (period === 'today') {
