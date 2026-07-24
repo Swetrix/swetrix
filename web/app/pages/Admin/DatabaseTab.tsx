@@ -1,7 +1,14 @@
 import { Text } from '~/ui/Text'
 import { nFormatter, nLocaleFormatter } from '~/utils/generic'
 
-import { AdminTable, formatBytes, StatCard, Td, UsageBar } from './components'
+import {
+  AdminTable,
+  formatBytes,
+  StatCard,
+  Td,
+  UsageBar,
+  useAdminSort,
+} from './components'
 import type { AdminDatabaseInfo } from './types'
 
 interface DatabaseTabProps {
@@ -10,6 +17,32 @@ interface DatabaseTabProps {
 
 export const DatabaseTab = ({ database }: DatabaseTabProps) => {
   const { clickhouse, mysql } = database
+
+  const clickhouseSort = useAdminSort<
+    AdminDatabaseInfo['clickhouse']['tables'][number]
+  >([], { by: 'compressedBytes', order: 'DESC' }, () => {}, {
+    table: (table) => table.table,
+    rows: (table) => table.rows,
+    compressedBytes: (table) => table.compressedBytes,
+    uncompressedBytes: (table) => table.uncompressedBytes,
+    ratio: (table) =>
+      table.compressedBytes > 0
+        ? table.uncompressedBytes / table.compressedBytes
+        : 0,
+    parts: (table) => table.parts,
+  })
+
+  const mysqlSort = useAdminSort<AdminDatabaseInfo['mysql']['tables'][number]>(
+    [],
+    { by: 'dataBytes', order: 'DESC' },
+    () => {},
+    {
+      tableName: (table) => table.tableName,
+      estimatedRows: (table) => table.estimatedRows,
+      dataBytes: (table) => table.dataBytes,
+      indexBytes: (table) => table.indexBytes,
+    },
+  )
 
   const compressionRatio =
     clickhouse.totalCompressedBytes > 0
@@ -68,18 +101,20 @@ export const DatabaseTab = ({ database }: DatabaseTabProps) => {
         </div>
 
         <AdminTable
-          headers={[
-            'Table',
-            'Rows',
-            'Compressed',
-            'Uncompressed',
-            'Ratio',
-            'Parts',
+          columns={[
+            { key: 'table', label: 'Table', sortable: true },
+            { key: 'rows', label: 'Rows', sortable: true },
+            { key: 'compressedBytes', label: 'Compressed', sortable: true },
+            { key: 'uncompressedBytes', label: 'Uncompressed', sortable: true },
+            { key: 'ratio', label: 'Ratio', sortable: true },
+            { key: 'parts', label: 'Parts', sortable: true },
           ]}
+          sort={clickhouseSort.sort}
+          onSort={clickhouseSort.onSort}
         >
-          {clickhouse.tables.map((table) => (
+          {clickhouseSort.sortRows(clickhouse.tables).map((table) => (
             <tr key={table.table}>
-              <Td className='font-mono'>{table.table}</Td>
+              <Td>{table.table}</Td>
               <Td className='tabular-nums'>{nLocaleFormatter(table.rows)}</Td>
               <Td className='tabular-nums'>
                 {formatBytes(table.compressedBytes)}
@@ -113,10 +148,19 @@ export const DatabaseTab = ({ database }: DatabaseTabProps) => {
           </Text>
         </div>
 
-        <AdminTable headers={['Table', 'Est. rows', 'Data', 'Indexes']}>
-          {mysql.tables.map((table) => (
+        <AdminTable
+          columns={[
+            { key: 'tableName', label: 'Table', sortable: true },
+            { key: 'estimatedRows', label: 'Est. rows', sortable: true },
+            { key: 'dataBytes', label: 'Data', sortable: true },
+            { key: 'indexBytes', label: 'Indexes', sortable: true },
+          ]}
+          sort={mysqlSort.sort}
+          onSort={mysqlSort.onSort}
+        >
+          {mysqlSort.sortRows(mysql.tables).map((table) => (
             <tr key={table.tableName}>
-              <Td className='font-mono'>{table.tableName}</Td>
+              <Td>{table.tableName}</Td>
               <Td className='tabular-nums'>
                 {nLocaleFormatter(table.estimatedRows)}
               </Td>

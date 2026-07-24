@@ -1,9 +1,106 @@
 export type AdminTab =
   | 'overview'
+  | 'billing'
   | 'users'
   | 'projects'
   | 'organisations'
+  | 'feedback'
+  | 'bot-blocks'
   | 'database'
+
+export interface AdminBillingUser {
+  id: string
+  email: string
+  planCode: string
+  planType: string | null
+  billingFrequency: string | null
+  created: string
+  trialEndDate: string | null
+  nextBillDate: string | null
+  cancellationEffectiveDate: string | null
+  dashboardBlockReason: string | null
+  isAccountBillingSuspended: boolean
+  monthlyRevenueUsd: number | null
+}
+
+export interface AdminPayment {
+  id: number
+  date: string
+  amount: number
+  currency: string
+  isOneOff: boolean
+  receiptUrl: string | null
+  subscriptionId: number
+  user: { id: string; email: string; planCode: string } | null
+}
+
+export interface AdminBilling {
+  trialsEndingSoon: (AdminBillingUser & {
+    projectCount: number
+    monthlyEvents: number
+  })[]
+  cancellationPipeline: AdminBillingUser[]
+  suspended: AdminBillingUser[]
+  churnRisk: {
+    atRisk: (AdminBillingUser & {
+      events30d: number
+      eventsPrev30d: number
+      dropPercent: number
+    })[]
+    analyzed: number
+  }
+  payments: {
+    available: boolean
+    recent: AdminPayment[]
+    upcoming: AdminPayment[]
+    fetchedAt?: string
+  }
+}
+
+export interface AdminBotBlocks {
+  days: number
+  totals: { total: number; last24h: number }
+  byReason: { reason: string; count: number }[]
+  series: { date: string; reason: string; count: number }[]
+  topProjects: {
+    id: string
+    name: string | null
+    botsProtectionLevel: string | null
+    admin: { id: string; email: string } | null
+    blocked: number
+    accepted: number
+    blockRatio: number
+    topReason: string | null
+  }[]
+}
+
+interface AdminActivationFunnel {
+  signups: number
+  verified: number
+  createdProject: number
+  sentData: number
+  paid: number
+}
+
+export type AdminFeedbackType = 'user' | 'cancellation' | 'deletion'
+
+export interface AdminFeedbackItem {
+  id: string
+  message: string | null
+  createdAt: string
+  attachmentUrls?: string[]
+  email?: string | null
+  planCode?: string | null
+  userId?: string
+  user?: { id: string; email: string; planCode: string } | null
+}
+
+export interface AdminFeedbackList {
+  total: number
+  pageSize: number
+  items: AdminFeedbackItem[]
+  counts: { user: number; cancellation: number; deletion: number }
+}
 
 export interface SeriesPoint {
   date: string
@@ -21,6 +118,7 @@ export interface AdminOverview {
     signups24h: number
     signups7d: number
     signups30d: number
+    signupsPrev30d: number
   }
   projects: {
     total: number
@@ -34,6 +132,7 @@ export interface AdminOverview {
     last24h: number
     last7d: number
     last30d: number
+    prev30d: number
   }
   mrr: {
     byCurrency: { USD: number; EUR: number; GBP: number }
@@ -44,11 +143,45 @@ export interface AdminOverview {
   planDistribution: { planCode: string; count: number }[]
 }
 
+interface RevenueBucket {
+  byCurrency: Record<string, number>
+  approxUsd: number
+  payments: number
+  oneOffPayments: number
+  payers: number
+}
+
+export interface AdminRevenue {
+  available: boolean
+  currentMonth?: RevenueBucket
+  previousMonth?: RevenueBucket
+  previousMonthToDate?: RevenueBucket
+  upcoming?: RevenueBucket
+  fetchedAt?: string
+}
+
+interface WindowTotals {
+  current: number
+  previous: number
+}
+
 export interface AdminCharts {
   signups: SeriesPoint[]
   projects: SeriesPoint[]
   organisations: SeriesPoint[]
   events: SeriesPoint[]
+  totals: {
+    signups: WindowTotals
+    projects: WindowTotals
+    organisations: WindowTotals
+    events: WindowTotals
+  }
+  funnel: AdminActivationFunnel
+}
+
+export interface SortState {
+  by: string
+  order: 'ASC' | 'DESC'
 }
 
 export interface AdminUser {
@@ -141,6 +274,50 @@ export interface AdminTopProjects {
   projects: AdminTopProject[]
 }
 
+export interface AdminProjectDetails {
+  project: AdminProject & {
+    origins: string[] | null
+    ipBlacklist: string[] | null
+  }
+  series: SeriesPoint[]
+  typeBreakdown: { type: string; last30d: number; total: number }[]
+  shares: {
+    id: string
+    role: string
+    confirmed: boolean
+    created: string
+    user: { id: string; email: string } | null
+  }[]
+}
+
+export interface AdminOrganisationDetails {
+  organisation: {
+    id: string
+    name: string
+    created: string
+    memberCount: number
+    projectCount: number
+  }
+  members: {
+    id: string
+    role: string
+    confirmed: boolean
+    created: string
+    user: { id: string; email: string } | null
+  }[]
+  projects: {
+    id: string
+    name: string
+    active: boolean
+    isArchived: boolean
+    created: string
+    admin: { id: string; email: string } | null
+    events24h: number
+    events30d: number
+    totalEvents: number
+  }[]
+}
+
 interface AdminOrganisation {
   id: string
   name: string
@@ -198,10 +375,16 @@ export interface AdminLoaderData {
   overview?: AdminOverview
   charts?: AdminCharts
   chartDays?: number
+  revenue?: AdminRevenue | null
   users?: AdminUsersList
   userDetails?: AdminUserDetails | null
   projects?: AdminProjectsList
   topProjects?: AdminTopProjects
+  projectDetails?: AdminProjectDetails | null
   organisations?: AdminOrganisationsList
+  organisationDetails?: AdminOrganisationDetails | null
+  feedback?: AdminFeedbackList
+  billing?: AdminBilling
+  botBlocks?: AdminBotBlocks
   database?: AdminDatabaseInfo
 }

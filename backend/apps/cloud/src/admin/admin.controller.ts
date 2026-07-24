@@ -10,7 +10,12 @@ import {
 import { ApiExcludeController } from '@nestjs/swagger'
 
 import { PlanType } from '../user/entities/user.entity'
-import { AdminService, ProjectsFilter, UsersFilter } from './admin.service'
+import {
+  AdminService,
+  FeedbackType,
+  ProjectsFilter,
+  UsersFilter,
+} from './admin.service'
 import { AdminAuth } from './decorators/admin-auth.decorator'
 
 const USERS_FILTERS: UsersFilter[] = [
@@ -100,6 +105,21 @@ export class AdminController {
   @Get('overview')
   async getOverview() {
     return this.adminService.getOverview()
+  }
+
+  @Get('revenue')
+  async getRevenue() {
+    return this.adminService.getRevenue()
+  }
+
+  @Get('billing')
+  async getBilling() {
+    return this.adminService.getBilling()
+  }
+
+  @Get('bot-blocks')
+  async getBotBlocks(@Query('days') days?: string) {
+    return this.adminService.getBotBlocks(parseDays(days, [7, 30, 90], 7))
   }
 
   @Get('charts')
@@ -197,14 +217,47 @@ export class AdminController {
     )
   }
 
+  @Get('projects/:id')
+  async getProjectDetails(@Param('id') id: string) {
+    return this.adminService.getProjectDetails(id)
+  }
+
   @Get('organisations')
   async getOrganisations(
     @Query('page') page?: string,
     @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('order') order?: string,
   ) {
     return this.adminService.getOrganisations(
       parsePage(page),
       parseSearch(search),
+      parseOneOf(sortBy, ['created', 'name'] as const, 'created'),
+      parseOneOf(order, ['ASC', 'DESC'] as const, 'DESC'),
+    )
+  }
+
+  @Get('organisations/:id')
+  async getOrganisationDetails(@Param('id') id: string) {
+    return this.adminService.getOrganisationDetails(id)
+  }
+
+  @Get('feedback')
+  async getFeedback(
+    @Query('type') type?: string,
+    @Query('page') page?: string,
+    @Query('search') search?: string,
+    @Query('order') order?: string,
+  ) {
+    return this.adminService.getFeedback(
+      parseOneOf(
+        type,
+        ['user', 'cancellation', 'deletion'] as FeedbackType[],
+        'user',
+      ),
+      parsePage(page),
+      parseSearch(search),
+      parseOneOf(order, ['ASC', 'DESC'] as const, 'DESC'),
     )
   }
 
