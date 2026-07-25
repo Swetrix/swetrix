@@ -16,6 +16,7 @@ import NotFound from '~/pages/NotFound'
 // lives in this stylesheet - without it the admin charts render with
 // billboard defaults
 import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
+import { TREND_MONTHS_OPTIONS } from '~/pages/Admin/types'
 import type {
   AdminActionData,
   AdminBilling,
@@ -30,6 +31,7 @@ import type {
   AdminProjectDetails,
   AdminProjectsList,
   AdminRevenue,
+  AdminRevenueTrends,
   AdminTab,
   AdminTopProjects,
   AdminUserDetails,
@@ -146,9 +148,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     if (tab === 'billing') {
-      const billing = await adminFetch<AdminBilling>('admin/billing')
+      const trendMonths = TREND_MONTHS_OPTIONS.includes(
+        Number(searchParams.get('months')),
+      )
+        ? Number(searchParams.get('months'))
+        : 12
 
-      return { tab, billing }
+      const [billing, revenueTrends] = await Promise.all([
+        adminFetch<AdminBilling>('admin/billing'),
+        // A cold Paddle history fetch is slow - the rest of the tab should not
+        // wait on it, nor disappear if Paddle is down
+        adminFetch<AdminRevenueTrends>(
+          `admin/revenue-trends?months=${trendMonths}`,
+        ).catch(() => null),
+      ])
+
+      return { tab, billing, revenueTrends, trendMonths }
     }
 
     if (tab === 'bot-blocks') {

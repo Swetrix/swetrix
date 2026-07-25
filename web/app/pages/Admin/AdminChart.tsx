@@ -1,5 +1,5 @@
 import type { ChartOptions } from 'billboard.js'
-import { area } from 'billboard.js'
+import { area, bar, line } from 'billboard.js'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
@@ -9,11 +9,27 @@ import { nFormatter } from '~/utils/generic'
 
 import type { SeriesPoint } from './types'
 
+type AdminChartType = 'area' | 'bar' | 'line'
+
+const CHART_TYPES = { area, bar, line }
+
 export interface AdminChartSeries {
   id: string
   name: string
   color: string
   data: SeriesPoint[]
+  type?: AdminChartType
+}
+
+interface AdminChartFormat {
+  // Tick label under each point ('%b %d' for daily, '%b %Y' for monthly)
+  xTick?: string
+  // Heading of the tooltip
+  xTooltip?: string
+  // Exact value shown in the tooltip
+  value?: (value: number) => string
+  // Abbreviated value shown on the y axis
+  axis?: (value: number) => string
 }
 
 // Same palette as the main analytics dashboard chart
@@ -25,11 +41,14 @@ export const ADMIN_CHART_COLORS = {
   green: '#10B981',
 } as const
 
-const tooltipDateFormat = d3.timeFormat('%a, %b %d, %Y')
+const DEFAULT_TOOLTIP_FORMAT = '%a, %b %d, %Y'
 
 // Chart options mirroring the main dashboard's look (gradient areas, circle
 // legend, custom tooltip) instead of billboard.js defaults
-const buildOptions = (series: AdminChartSeries[]): ChartOptions => {
+const buildOptions = (
+  series: AdminChartSeries[],
+  format: AdminChartFormat,
+): ChartOptions => {
   const dates = Array.from(
     new Set(series.flatMap(({ data }) => data.map(({ date }) => date))),
   ).sort()
@@ -43,16 +62,32 @@ const buildOptions = (series: AdminChartSeries[]): ChartOptions => {
     columns.push([id, ...dates.map((date) => countByDate.get(date) || 0)])
   }
 
+  const tooltipDateFormat = d3.timeFormat(
+    format.xTooltip || DEFAULT_TOOLTIP_FORMAT,
+  )
+  const formatValue =
+    format.value || ((value: number) => value.toLocaleString('en-US'))
+
   return {
     data: {
       x: 'x',
       columns,
-      types: Object.fromEntries(series.map(({ id }) => [id, area()])),
+      types: Object.fromEntries(
+        series.map(({ id, type }) => [id, CHART_TYPES[type || 'area']()]),
+      ),
       colors: Object.fromEntries(series.map(({ id, color }) => [id, color])),
       names: Object.fromEntries(series.map(({ id, name }) => [id, name])),
     },
     area: {
       linearGradient: true,
+    },
+    bar: {
+      width: {
+        ratio: 0.6,
+      },
+      radius: {
+        ratio: 0.15,
+      },
     },
     grid: {
       y: {
@@ -72,12 +107,14 @@ const buildOptions = (series: AdminChartSeries[]): ChartOptions => {
         clipPath: false,
         tick: {
           fit: false,
-          format: '%b %d',
+          format: format.xTick || '%b %d',
         },
       },
       y: {
         tick: {
-          format: (d: number) => (Number.isInteger(d) ? nFormatter(d, 1) : ''),
+          format:
+            format.axis ||
+            ((d: number) => (Number.isInteger(d) ? nFormatter(d, 1) : '')),
         },
         show: true,
         inner: true,
@@ -110,7 +147,7 @@ const buildOptions = (series: AdminChartSeries[]): ChartOptions => {
                   <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0' style='background-color:${color(item.id)}'></div>
                   <span class='truncate'>${item.name || item.id}</span>
                 </div>
-                <span class='tabular-nums whitespace-nowrap'>${Number(item.value).toLocaleString('en-US')}</span>
+                <span class='tabular-nums whitespace-nowrap'>${formatValue(Number(item.value))}</span>
               </li>`,
           )
           .join('')
@@ -124,16 +161,26 @@ const buildOptions = (series: AdminChartSeries[]): ChartOptions => {
   }
 }
 
+// Module-level so the default does not change identity between renders and
+// re-generate the chart
+const NO_FORMAT: AdminChartFormat = {}
+
 export const AdminChart = ({
   series,
   className,
+  format = NO_FORMAT,
 }: {
   series: AdminChartSeries[]
   className?: string
+  format?: AdminChartFormat
 }) => {
-  const options = useMemo(() => buildOptions(series), [series])
+  const options = useMemo(() => buildOptions(series, format), [series, format])
 
   return (
-    <BillboardChart options={options} className={className} deps={[series]} />
+    <BillboardChart
+      options={options}
+      className={className}
+      deps={[series, format]}
+    />
   )
 }

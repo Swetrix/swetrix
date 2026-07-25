@@ -7,8 +7,16 @@ import { Text } from '~/ui/Text'
 import { nFormatter, nLocaleFormatter } from '~/utils/generic'
 
 import { AdminTable, EmptyState, formatDate, StatCard, Td } from './components'
+import { RevenueTrends } from './RevenueTrends'
 import { adminLinkClassName } from './UsersTab'
-import type { AdminBilling, AdminBillingUser, AdminPayment } from './types'
+import type {
+  AdminBilling,
+  AdminBillingMrr,
+  AdminBillingUser,
+  AdminPayment,
+  AdminRevenueTrends,
+  AdminTrialOutcome,
+} from './types'
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$',
@@ -81,6 +89,145 @@ const DeadlineBadge = ({ date }: { date: string | null }) => {
         size='sm'
       />
     </span>
+  )
+}
+
+// What became of a trial. `trialing` is still in flight; everything else is a
+// resolved outcome worth reading at a glance.
+const TRIAL_OUTCOMES: Record<
+  AdminTrialOutcome,
+  { label: string; colour: 'green' | 'red' | 'yellow' | 'sky' | 'slate' }
+> = {
+  trialing: { label: 'trialing', colour: 'sky' },
+  converted: { label: 'converted', colour: 'green' },
+  cancelling: { label: 'cancelled', colour: 'yellow' },
+  expired: { label: 'did not convert', colour: 'red' },
+  payment_issue: { label: 'payment issue', colour: 'red' },
+}
+
+const OutcomeBadge = ({ outcome }: { outcome: AdminTrialOutcome }) => {
+  const config = TRIAL_OUTCOMES[outcome] || TRIAL_OUTCOMES.trialing
+
+  return <Badge colour={config.colour} label={config.label} size='sm' />
+}
+
+// Shared bar row for the MRR breakdowns
+const MixRow = ({
+  label,
+  amount,
+  accounts,
+  share,
+}: {
+  label: string
+  amount: number
+  accounts: number
+  share: number
+}) => (
+  <div className='flex items-center gap-3'>
+    <Text as='span' size='sm' className='w-20 shrink-0' truncate>
+      {label}
+    </Text>
+    <div className='h-4 flex-1 overflow-hidden rounded-sm bg-gray-200 dark:bg-slate-800'>
+      <div
+        className='h-full rounded-sm bg-indigo-500'
+        style={{ width: `${share}%` }}
+      />
+    </div>
+    <Text
+      as='span'
+      size='sm'
+      colour='secondary'
+      className='w-28 shrink-0 text-right tabular-nums'
+    >
+      ${nLocaleFormatter(Math.round(amount))}/mo · {accounts}
+    </Text>
+  </div>
+)
+
+const RevenueMix = ({ mrr }: { mrr: AdminBillingMrr }) => {
+  const maxGroup = Math.max(
+    ...mrr.byPlanType.map(({ usd }) => usd),
+    ...mrr.byFrequency.map(({ usd }) => usd),
+    1,
+  )
+
+  return (
+    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+      <div className='rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+        <Text as='h3' size='lg' weight='semibold'>
+          Where the MRR comes from
+        </Text>
+        <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
+          USD list price per account, trials excluded. Yearly plans counted at a
+          twelfth of their price.
+        </Text>
+        {[
+          { title: 'By plan', groups: mrr.byPlanType },
+          { title: 'By billing', groups: mrr.byFrequency },
+        ].map(({ title, groups }) => (
+          <div key={title} className='mt-4 flex flex-col gap-2'>
+            <Text as='p' size='xs' colour='secondary' className='uppercase'>
+              {title}
+            </Text>
+            {groups.map(({ key, accounts, usd }) => (
+              <MixRow
+                key={key}
+                label={key}
+                amount={usd}
+                accounts={accounts}
+                share={(usd / maxGroup) * 100}
+              />
+            ))}
+          </div>
+        ))}
+        {mrr.unpricedSubscriptions > 0 ? (
+          <Text as='p' size='xs' colour='secondary' className='mt-3'>
+            {mrr.unpricedSubscriptions} subscription
+            {mrr.unpricedSubscriptions === 1 ? '' : 's'} on a plan with no list
+            price (legacy or custom) are not counted.
+          </Text>
+        ) : null}
+      </div>
+
+      <div className='rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
+        <Text as='h3' size='lg' weight='semibold'>
+          Biggest accounts
+        </Text>
+        <Text as='p' size='sm' colour='secondary' className='mt-0.5'>
+          {mrr.topAccountsPercent}% of the MRR sits with these{' '}
+          {mrr.topAccounts.length} accounts.
+        </Text>
+        <div className='mt-4 flex flex-col gap-2'>
+          {mrr.topAccounts.length === 0 ? (
+            <Text as='p' size='sm' colour='secondary'>
+              No priced subscriptions yet.
+            </Text>
+          ) : (
+            mrr.topAccounts.map((account) => (
+              <div
+                key={account.id}
+                className='flex items-center justify-between gap-3'
+              >
+                <span className='min-w-0 truncate'>
+                  <UserLink user={account} />
+                  <span className='ml-2 text-xs text-gray-500 dark:text-gray-400'>
+                    {account.planCode}
+                  </span>
+                </span>
+                <Text
+                  as='span'
+                  size='sm'
+                  weight='medium'
+                  className='shrink-0 tabular-nums'
+                >
+                  ${nLocaleFormatter(Math.round(account.usd))}/mo
+                </Text>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -167,11 +314,21 @@ const PaymentsTable = ({
 
 interface BillingTabProps {
   billing: AdminBilling
+  revenueTrends: AdminRevenueTrends | null | undefined
+  trendMonths: number
+  onTrendMonthsChange: (months: number) => void
 }
 
-export const BillingTab = ({ billing }: BillingTabProps) => {
+export const BillingTab = ({
+  billing,
+  revenueTrends,
+  trendMonths,
+  onTrendMonthsChange,
+}: BillingTabProps) => {
   const {
     trialsEndingSoon,
+    trialStats,
+    mrr,
     cancellationPipeline,
     suspended,
     churnRisk,
@@ -190,11 +347,28 @@ export const BillingTab = ({ billing }: BillingTabProps) => {
 
   return (
     <div className='flex flex-col gap-8'>
+      <RevenueTrends
+        trends={revenueTrends}
+        months={trendMonths}
+        onMonthsChange={onTrendMonthsChange}
+      />
+
+      <RevenueMix mrr={mrr} />
+
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4'>
         <StatCard
-          label='Trials ending (±14d)'
-          value={trialsEndingSoon.length}
-          hint='Expiring within 14 days or expired within 30'
+          label='Trials running'
+          value={trialStats.activeNow}
+          hint={`Worth $${nLocaleFormatter(Math.round(mrr.trialUsd))}/mo if they all convert`}
+        />
+        <StatCard
+          label={`Trial conversion (${trialStats.windowDays}d)`}
+          value={
+            trialStats.conversionRate === null
+              ? '—'
+              : `${trialStats.conversionRate}%`
+          }
+          hint={`${trialStats.converted} of ${trialStats.resolved} finished trials converted`}
         />
         <StatCard
           label='Churn risk'
@@ -202,28 +376,25 @@ export const BillingTab = ({ billing }: BillingTabProps) => {
           hint={`Usage dropped ≥50% · ${churnRisk.analyzed} paying accounts analyzed`}
         />
         <StatCard
-          label='Cancelling'
-          value={cancellationPipeline.length}
-          hint='Subscriptions with a cancellation date'
-        />
-        <StatCard
           label='At-risk MRR (est.)'
           value={`$${nLocaleFormatter(Math.round(atRiskMrr))}`}
-          hint='Churn-risk + cancelling accounts, USD list price'
+          hint={`Churn-risk + ${cancellationPipeline.length} cancelling account${cancellationPipeline.length === 1 ? '' : 's'}, USD list price`}
         />
       </div>
 
       <Section
-        title='Trials ending soon'
-        hint='Sorted by trial end date. High usage + imminent expiry = worth a personal email.'
+        title='Trials'
+        hint={`Ending within 14 days or ended in the last 30. High usage + imminent expiry = worth a personal email.`}
       >
         {trialsEndingSoon.length === 0 ? (
-          <EmptyState message='No trials ending in the next 14 days' />
+          <EmptyState message='No trials ending or recently ended' />
         ) : (
           <AdminTable
             columns={[
               { key: 'email', label: 'User' },
+              { key: 'outcome', label: 'Status' },
               { key: 'trialEnd', label: 'Trial ends' },
+              { key: 'plan', label: 'Plan' },
               { key: 'monthlyEvents', label: 'Events this month' },
               { key: 'projects', label: 'Projects' },
               { key: 'registered', label: 'Registered' },
@@ -235,7 +406,13 @@ export const BillingTab = ({ billing }: BillingTabProps) => {
                   <UserLink user={user} />
                 </Td>
                 <Td>
+                  <OutcomeBadge outcome={user.outcome} />
+                </Td>
+                <Td>
                   <DeadlineBadge date={user.trialEndDate} />
+                </Td>
+                <Td>
+                  <PlanCell user={user} />
                 </Td>
                 <Td className='tabular-nums'>
                   <span

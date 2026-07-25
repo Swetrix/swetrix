@@ -34,11 +34,48 @@ export interface AdminPayment {
   user: { id: string; email: string; planCode: string } | null
 }
 
+export type AdminTrialOutcome =
+  | 'trialing'
+  | 'converted'
+  | 'cancelling'
+  | 'expired'
+  | 'payment_issue'
+
+interface AdminMrrGroup {
+  key: string
+  accounts: number
+  usd: number
+}
+
+export interface AdminBillingMrr {
+  usd: number
+  payingAccounts: number
+  arpuUsd: number
+  trialingAccounts: number
+  trialUsd: number
+  unpricedSubscriptions: number
+  byPlanType: AdminMrrGroup[]
+  byFrequency: AdminMrrGroup[]
+  topAccounts: { id: string; email: string; planCode: string; usd: number }[]
+  topAccountsPercent: number
+}
+
 export interface AdminBilling {
   trialsEndingSoon: (AdminBillingUser & {
     projectCount: number
     monthlyEvents: number
+    outcome: AdminTrialOutcome
   })[]
+  trialStats: {
+    windowDays: number
+    activeNow: number
+    resolved: number
+    converted: number
+    conversionRate: number | null
+    cancelledDuringTrial: number
+    paymentIssues: number
+  }
+  mrr: AdminBillingMrr
   cancellationPipeline: AdminBillingUser[]
   suspended: AdminBillingUser[]
   churnRisk: {
@@ -55,6 +92,50 @@ export interface AdminBilling {
     upcoming: AdminPayment[]
     fetchedAt?: string
   }
+}
+
+// Window sizes the revenue-trends picker offers - the loader validates the
+// query param against the same list. Mirrors REVENUE_TREND_MONTHS on the API.
+export const TREND_MONTHS_OPTIONS = [6, 12, 24]
+
+export interface AdminRevenueTrendMonth {
+  month: string
+  cashUsd: number
+  recognisedUsd: number
+  oneOffUsd: number
+  byCurrency: Record<string, number>
+  payments: number
+  payers: number
+  activeSubs: number
+  newSubs: number
+  churnedSubs: number
+}
+
+export interface AdminRevenueTrends {
+  available: boolean
+  months?: AdminRevenueTrendMonth[]
+  currentMonth?: {
+    month: string
+    cashUsd: number
+    payments: number
+    payers: number
+    dayOfMonth: number
+    daysInMonth: number
+    projectedUsd: number
+  }
+  summary?: {
+    lastCompleteMonth: string | null
+    recognisedUsd: number
+    momPercent: number | null
+    cashMomPercent: number | null
+    avgMomPercent: number | null
+    ttmCashUsd: number
+    runRateUsd: number
+    netNewSubs: number
+    streak: number
+    bestMonth: { month: string; cashUsd: number } | null
+  }
+  fetchedAt?: string
 }
 
 export interface AdminBotBlocks {
@@ -138,6 +219,8 @@ export interface AdminOverview {
     byCurrency: { USD: number; EUR: number; GBP: number }
     usdEquivalent: number
     payingUsers: number
+    trialingUsers: number
+    trialUsdEquivalent: number
     unpricedSubscriptions: number
   }
   planDistribution: { planCode: string; count: number }[]
@@ -385,6 +468,8 @@ export interface AdminLoaderData {
   organisationDetails?: AdminOrganisationDetails | null
   feedback?: AdminFeedbackList
   billing?: AdminBilling
+  revenueTrends?: AdminRevenueTrends | null
+  trendMonths?: number
   botBlocks?: AdminBotBlocks
   database?: AdminDatabaseInfo
 }
