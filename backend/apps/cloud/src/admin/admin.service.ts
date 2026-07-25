@@ -15,10 +15,12 @@ import { DeleteFeedback } from '../user/entities/delete-feedback.entity'
 import {
   ACCOUNT_PLANS,
   BillingFrequency,
+  DashboardBlockReason,
   getEffectiveAccountLimits,
   getEffectivePlanType,
   PlanCode,
   PlanType,
+  TRIAL_DURATION,
   User,
 } from '../user/entities/user.entity'
 import { UserFeedback } from '../user/entities/user-feedback.entity'
@@ -39,6 +41,25 @@ const CAPTCHA_PASS_CONDITION =
 const BILLABLE_COUNT_IF = `countIf(type IN ('pageview', 'custom_event', 'error') OR (${CAPTCHA_PASS_CONDITION}))`
 
 const FREE_PLAN_CODES = [PlanCode.none, PlanCode.free, PlanCode.trial]
+
+// Plans a trial cannot be on. `PlanCode.trial` is deliberately absent: it is
+// the legacy card-less trial, which is a trial too
+const LAPSED_PLAN_CODES = [PlanCode.none, PlanCode.free]
+
+// Since trials became card-first, `planCode` holds the real paid plan for the
+// whole trial and `trialEndDate` is the only thing that says "not paying yet".
+// Reading trial state off `planCode = PlanCode.trial` (the legacy card-less
+// flow) silently matches nobody.
+const isTrialing = (user: {
+  planCode: PlanCode
+  trialEndDate: Date | string | null
+}): boolean =>
+  Boolean(user.trialEndDate) &&
+  new Date(user.trialEndDate).getTime() > Date.now() &&
+  !LAPSED_PLAN_CODES.includes(user.planCode)
+
+const TRIALING_CONDITION =
+  'user.trialEndDate IS NOT NULL AND user.trialEndDate > :now AND user.planCode NOT IN (:...lapsedPlans)'
 
 const USERS_PAGE_SIZE = 25
 const PROJECTS_PAGE_SIZE = 25
@@ -181,6 +202,28 @@ const { PADDLE_VENDOR_ID, PADDLE_API_KEY } = process.env
 const REVENUE_CACHE_KEY = 'admin:paddle-payments:v2'
 // Paddle's vendor API is rate limited; the numbers do not move fast anyway
 const REVENUE_CACHE_TTL_SECONDS = 3600
+const PADDLE_FETCH_TIMEOUT_MS = 15000
+
+const REVENUE_HISTORY_CACHE_KEY = 'admin:paddle-payments-history:v1'
+// History only changes when a new payment lands, and the trends are a
+// month-level view - a stale-by-hours cache is fine
+const REVENUE_HISTORY_CACHE_TTL_SECONDS = 6 * 60 * 60
+// Longer than the longest chart window on purpose: a yearly payment made
+// before the window still has to be recognised inside it
+const REVENUE_HISTORY_MONTHS = 36
+// Paddle returns the whole range in one response - keep each one small
+const REVENUE_HISTORY_CHUNK_MONTHS = 3
+const REVENUE_HISTORY_CONCURRENCY = 4
+export const REVENUE_TREND_MONTHS = [6, 12, 24]
+// A subscription billing this far apart is a yearly one, so its payment is
+// spread over 12 months instead of landing in a single one
+const YEARLY_PERIOD_MIN_GAP_DAYS = 300
+const MONTHS_IN_YEAR = 12
+
+const TRIAL_LOOKAHEAD_DAYS = TRIAL_DURATION
+const TRIAL_LOOKBACK_DAYS = 30
+const TRIAL_STATS_DAYS = 90
+const TOP_ACCOUNTS_LIMIT = 5
 
 // Rough, static FX rates used only to produce a single comparable USD number
 const APPROX_USD_RATES: Record<string, number> = {
@@ -200,6 +243,36 @@ interface PaddlePayment {
   receipt_url?: string
 }
 
+// Trimmed-down payment - a few years of them are cached in redis
+interface HistoricPayment {
+  subscriptionId: number
+  amount: number
+  currency: string
+  date: string
+  isOneOff: boolean
+}
+
+interface MonthBucket {
+  // Money that actually landed in the month
+  cashUsd: number
+  // Money the month is entitled to, with yearly payments spread across the
+  // year they buy - the closest thing to an MRR series we can reconstruct
+  recognisedUsd: number
+  oneOffUsd: number
+  byCurrency: Record<string, number>
+  payments: number
+  payers: Set<number>
+  activeSubs: Set<number>
+}
+
+type TrendRow = Omit<MonthBucket, 'payers' | 'activeSubs'> & {
+  month: string
+  payers: number
+  activeSubs: number
+  newSubs: number
+  churnedSubs: number
+}
+
 const CHURN_RISK_MIN_PREV_EVENTS = 100
 const CHURN_RISK_MIN_DROP = 0.5
 
@@ -217,6 +290,13 @@ interface MrrSubscription {
   billingFrequency: BillingFrequency | null
   tierCurrency: string | null
 }
+
+type TrialOutcome =
+  | 'trialing'
+  | 'converted'
+  | 'cancelling'
+  | 'expired'
+  | 'payment_issue'
 
 export type UsersFilter =
   | 'all'
@@ -239,6 +319,28 @@ export type ProjectsFilter =
 
 const dateToChDateTime = (date: Date): string =>
   date.toISOString().slice(0, 19).replace('T', ' ')
+
+const toDateString = (date: Date): string => date.toISOString().slice(0, 10)
+
+// Everything in the revenue trends is bucketed by UTC calendar month
+const monthKey = (date: Date | string): string =>
+  new Date(date).toISOString().slice(0, 7)
+
+const shiftMonthKey = (key: string, offset: number): string => {
+  const [year, month] = key.split('-').map(Number)
+
+  return monthKey(new Date(Date.UTC(year, month - 1 + offset, 1)))
+}
+
+const round2 = (value: number): number => Math.round(value * 100) / 100
+
+const percentChange = (current: number, previous: number): number | null =>
+  previous > 0
+    ? Math.round(((current - previous) / previous) * 1000) / 10
+    : null
+
+const daysBetween = (from: number, to: number): number =>
+  (to - from) / (24 * 60 * 60 * 1000)
 
 @Injectable()
 export class AdminService {
@@ -303,6 +405,7 @@ export class AdminService {
         'planType',
         'billingFrequency',
         'tierCurrency',
+        'trialEndDate',
       ],
     })
 
@@ -313,6 +416,9 @@ export class AdminService {
     }
     let usdEquivalent = 0
     let unpricedSubscriptions = 0
+    let payingUsers = 0
+    let trialingUsers = 0
+    let trialUsdEquivalent = 0
 
     for (const user of paidUsers) {
       const revenue = this.getMonthlyRevenue(user)
@@ -322,6 +428,15 @@ export class AdminService {
         continue
       }
 
+      // Card-first trials sit on a real plan code without having paid a penny
+      // yet - counting them as MRR would inflate it by a whole trial cohort
+      if (isTrialing(user)) {
+        trialingUsers += 1
+        trialUsdEquivalent += revenue.usdAmount
+        continue
+      }
+
+      payingUsers += 1
       byCurrency[revenue.currency] += revenue.amount
       usdEquivalent += revenue.usdAmount
     }
@@ -333,8 +448,10 @@ export class AdminService {
         GBP: Math.round(byCurrency.GBP * 100) / 100,
       },
       // Every subscription valued at its USD list price; an estimate, not accounting data
-      usdEquivalent: Math.round(usdEquivalent * 100) / 100,
-      payingUsers: paidUsers.length,
+      usdEquivalent: round2(usdEquivalent),
+      payingUsers,
+      trialingUsers,
+      trialUsdEquivalent: round2(trialUsdEquivalent),
       unpricedSubscriptions,
     }
   }
@@ -359,6 +476,7 @@ export class AdminService {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body,
+        signal: AbortSignal.timeout(PADDLE_FETCH_TIMEOUT_MS),
       },
     )
 
@@ -426,8 +544,6 @@ export class AdminService {
     if (!PADDLE_VENDOR_ID || !PADDLE_API_KEY) {
       return null
     }
-
-    const toDateString = (date: Date) => date.toISOString().slice(0, 10)
 
     const now = new Date()
     const previousMonthStart = new Date(
@@ -522,6 +638,384 @@ export class AdminService {
     }
   }
 
+  // -------------------- Revenue trends --------------------
+
+  // Several years of payments in one request would be a single huge response,
+  // so the range is walked in chunks and stored in a compact shape
+  private async fetchPaddleHistory(): Promise<HistoricPayment[]> {
+    const now = new Date()
+    const windowStart = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth() - (REVENUE_HISTORY_MONTHS - 1),
+        1,
+      ),
+    )
+
+    const ranges: [string, string][] = []
+
+    for (
+      let cursor = windowStart;
+      cursor <= now;
+      cursor = new Date(
+        Date.UTC(
+          cursor.getUTCFullYear(),
+          cursor.getUTCMonth() + REVENUE_HISTORY_CHUNK_MONTHS,
+          1,
+        ),
+      )
+    ) {
+      // Day 0 of the month after the chunk = last day of the chunk, so the
+      // ranges never overlap
+      const chunkEnd = new Date(
+        Date.UTC(
+          cursor.getUTCFullYear(),
+          cursor.getUTCMonth() + REVENUE_HISTORY_CHUNK_MONTHS,
+          0,
+        ),
+      )
+
+      ranges.push([toDateString(cursor), toDateString(chunkEnd)])
+    }
+
+    const seenIds = new Set<number>()
+    const payments: HistoricPayment[] = []
+
+    for (
+      let index = 0;
+      index < ranges.length;
+      index += REVENUE_HISTORY_CONCURRENCY
+    ) {
+      const batch = await Promise.all(
+        ranges
+          .slice(index, index + REVENUE_HISTORY_CONCURRENCY)
+          .map(([from, to]) => this.fetchPaddlePayments(from, to, 1)),
+      )
+
+      for (const chunk of batch) {
+        for (const payment of chunk) {
+          if (seenIds.has(payment.id)) {
+            continue
+          }
+
+          seenIds.add(payment.id)
+          payments.push({
+            subscriptionId: Number(payment.subscription_id),
+            amount: Number(payment.amount) || 0,
+            currency: payment.currency || 'USD',
+            date: String(payment.payout_date).slice(0, 10),
+            isOneOff: Boolean(payment.is_one_off_charge),
+          })
+        }
+      }
+    }
+
+    return payments
+  }
+
+  private async getCachedPaddleHistory(): Promise<{
+    payments: HistoricPayment[]
+    fetchedAt: string
+  } | null> {
+    const cached = await redis.get(REVENUE_HISTORY_CACHE_KEY).catch(() => null)
+
+    if (cached) {
+      try {
+        return JSON.parse(cached)
+      } catch {
+        // fall through to a fresh fetch
+      }
+    }
+
+    if (!PADDLE_VENDOR_ID || !PADDLE_API_KEY) {
+      return null
+    }
+
+    let result: { payments: HistoricPayment[]; fetchedAt: string }
+
+    try {
+      result = {
+        payments: await this.fetchPaddleHistory(),
+        fetchedAt: new Date().toISOString(),
+      }
+    } catch (error) {
+      console.error('[ERROR] (admin getCachedPaddleHistory):', error)
+      return null
+    }
+
+    await redis
+      .set(
+        REVENUE_HISTORY_CACHE_KEY,
+        JSON.stringify(result),
+        'EX',
+        REVENUE_HISTORY_CACHE_TTL_SECONDS,
+      )
+      .catch(() => null)
+
+    return result
+  }
+
+  // A yearly payment buys twelve months of service. Recognising all of it in
+  // the month it landed would spike the trend line and flatline the rest of
+  // the year, so each payment needs to know the period it covers.
+  private buildBillingPeriods(
+    payments: HistoricPayment[],
+    yearlySubIds: Set<number>,
+  ): Map<number, number> {
+    const timestampsBySub = new Map<number, number[]>()
+
+    for (const payment of payments) {
+      if (payment.isOneOff) {
+        continue
+      }
+
+      const timestamps = timestampsBySub.get(payment.subscriptionId) || []
+
+      timestamps.push(new Date(payment.date).getTime())
+      timestampsBySub.set(payment.subscriptionId, timestamps)
+    }
+
+    const periods = new Map<number, number>()
+
+    for (const [subscriptionId, timestamps] of timestampsBySub) {
+      timestamps.sort((a, b) => a - b)
+
+      const gaps: number[] = []
+
+      for (let index = 1; index < timestamps.length; index += 1) {
+        gaps.push(daysBetween(timestamps[index - 1], timestamps[index]))
+      }
+
+      gaps.sort((a, b) => a - b)
+
+      // How the account actually billed beats the current DB flag - it also
+      // covers subscriptions that have since been cancelled or changed plan
+      const isYearly =
+        gaps.length > 0
+          ? gaps[Math.floor(gaps.length / 2)] >= YEARLY_PERIOD_MIN_GAP_DAYS
+          : yearlySubIds.has(subscriptionId)
+
+      periods.set(subscriptionId, isYearly ? MONTHS_IN_YEAR : 1)
+    }
+
+    return periods
+  }
+
+  async getRevenueTrends(months: number) {
+    const history = await this.getCachedPaddleHistory()
+
+    if (!history) {
+      return { available: false as const }
+    }
+
+    const subIds = Array.from(
+      new Set(history.payments.map(({ subscriptionId }) => subscriptionId)),
+    ).map(String)
+
+    const yearlyUsers =
+      subIds.length > 0
+        ? await this.userRepository.find({
+            where: {
+              subID: In(subIds),
+              billingFrequency: BillingFrequency.Yearly,
+            },
+            select: ['subID'],
+          })
+        : []
+
+    const periods = this.buildBillingPeriods(
+      history.payments,
+      new Set(yearlyUsers.map(({ subID }) => Number(subID))),
+    )
+
+    const now = new Date()
+    const currentKey = monthKey(now)
+    const buckets = new Map<string, MonthBucket>()
+
+    // Buckets span the whole fetched history, not just the displayed window,
+    // so yearly payments made before it still get recognised inside it
+    for (let offset = REVENUE_HISTORY_MONTHS - 1; offset >= 0; offset -= 1) {
+      buckets.set(shiftMonthKey(currentKey, -offset), {
+        cashUsd: 0,
+        recognisedUsd: 0,
+        oneOffUsd: 0,
+        byCurrency: {},
+        payments: 0,
+        payers: new Set(),
+        activeSubs: new Set(),
+      })
+    }
+
+    for (const payment of history.payments) {
+      const key = monthKey(payment.date)
+      const bucket = buckets.get(key)
+
+      if (!bucket) {
+        continue
+      }
+
+      const usd = payment.amount * (APPROX_USD_RATES[payment.currency] ?? 1)
+
+      bucket.cashUsd += usd
+      bucket.byCurrency[payment.currency] =
+        (bucket.byCurrency[payment.currency] || 0) + payment.amount
+      bucket.payments += 1
+      bucket.payers.add(payment.subscriptionId)
+
+      if (payment.isOneOff) {
+        bucket.oneOffUsd += usd
+        continue
+      }
+
+      const period = periods.get(payment.subscriptionId) || 1
+      const perMonth = usd / period
+
+      for (let offset = 0; offset < period; offset += 1) {
+        const covered = buckets.get(shiftMonthKey(key, offset))
+
+        if (!covered) {
+          break
+        }
+
+        covered.recognisedUsd += perMonth
+        covered.activeSubs.add(payment.subscriptionId)
+      }
+    }
+
+    // The current month is deliberately left out: it is always mid-collection,
+    // so it would render as a cliff on the chart
+    const displayedKeys: string[] = []
+
+    for (let offset = months; offset >= 1; offset -= 1) {
+      displayedKeys.push(shiftMonthKey(currentKey, -offset))
+    }
+
+    const rows = displayedKeys.map((key) => {
+      const bucket = buckets.get(key)
+      const previous = buckets.get(shiftMonthKey(key, -1))
+      const activeSubs = Array.from(bucket.activeSubs)
+
+      return {
+        month: key,
+        cashUsd: round2(bucket.cashUsd),
+        recognisedUsd: round2(bucket.recognisedUsd),
+        oneOffUsd: round2(bucket.oneOffUsd),
+        byCurrency: Object.fromEntries(
+          Object.entries(bucket.byCurrency).map(([currency, amount]) => [
+            currency,
+            round2(amount),
+          ]),
+        ),
+        payments: bucket.payments,
+        payers: bucket.payers.size,
+        activeSubs: activeSubs.length,
+        newSubs: previous
+          ? activeSubs.filter((id) => !previous.activeSubs.has(id)).length
+          : 0,
+        churnedSubs: previous
+          ? Array.from(previous.activeSubs).filter(
+              (id) => !bucket.activeSubs.has(id),
+            ).length
+          : 0,
+      }
+    })
+
+    const current = buckets.get(currentKey)
+    const dayOfMonth = now.getUTCDate()
+    const daysInMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0),
+    ).getUTCDate()
+
+    return {
+      available: true as const,
+      months: rows,
+      currentMonth: {
+        month: currentKey,
+        cashUsd: round2(current.cashUsd),
+        payments: current.payments,
+        payers: current.payers.size,
+        dayOfMonth,
+        daysInMonth,
+        // Straight-line pace, not a forecast - useful to answer "are we ahead
+        // of last month or just early in the cycle?"
+        projectedUsd: round2((current.cashUsd / dayOfMonth) * daysInMonth),
+      },
+      summary: this.summariseTrends(rows),
+      fetchedAt: history.fetchedAt,
+    }
+  }
+
+  private summariseTrends(rows: TrendRow[]) {
+    const last = rows[rows.length - 1]
+    const previous = rows[rows.length - 2]
+
+    const changes: number[] = []
+
+    for (let index = 1; index < rows.length; index += 1) {
+      const change = percentChange(
+        rows[index].recognisedUsd,
+        rows[index - 1].recognisedUsd,
+      )
+
+      if (change !== null) {
+        changes.push(change)
+      }
+    }
+
+    const recentChanges = changes.slice(-3)
+
+    // Signed run of consecutive months moving the same way, counted back from
+    // the most recent one
+    let streak = 0
+
+    for (let index = rows.length - 1; index > 0; index -= 1) {
+      const delta = rows[index].recognisedUsd - rows[index - 1].recognisedUsd
+      const direction = Math.sign(delta)
+
+      if (
+        direction === 0 ||
+        (streak !== 0 && Math.sign(streak) !== direction)
+      ) {
+        break
+      }
+
+      streak += direction
+    }
+
+    const best = rows.reduce<TrendRow | null>(
+      (winner, row) => (!winner || row.cashUsd > winner.cashUsd ? row : winner),
+      null,
+    )
+
+    return {
+      lastCompleteMonth: last?.month || null,
+      recognisedUsd: last?.recognisedUsd ?? 0,
+      momPercent:
+        last && previous
+          ? percentChange(last.recognisedUsd, previous.recognisedUsd)
+          : null,
+      cashMomPercent:
+        last && previous ? percentChange(last.cashUsd, previous.cashUsd) : null,
+      avgMomPercent: recentChanges.length
+        ? round2(
+            recentChanges.reduce((total, value) => total + value, 0) /
+              recentChanges.length,
+          )
+        : null,
+      ttmCashUsd: round2(
+        rows
+          .slice(-MONTHS_IN_YEAR)
+          .reduce((total, row) => total + row.cashUsd, 0),
+      ),
+      // Yearly plans are recognised monthly, so this is a run rate rather than
+      // a promise of next month's cash
+      runRateUsd: round2((last?.recognisedUsd ?? 0) * MONTHS_IN_YEAR),
+      netNewSubs: (last?.newSubs ?? 0) - (last?.churnedSubs ?? 0),
+      streak,
+      bestMonth: best ? { month: best.month, cashUsd: best.cashUsd } : null,
+    }
+  }
+
   // -------------------- Billing health --------------------
 
   private formatBillingUser(user: User) {
@@ -546,43 +1040,103 @@ export class AdminService {
     }
   }
 
+  // What happened to a trial, read off the columns the Paddle webhooks and the
+  // trial crons write. A card-first trial that converts keeps its plan and
+  // rolls its nextBillDate forward; one that does not falls back to `none`.
+  private getTrialOutcome(user: User): TrialOutcome {
+    if (
+      LAPSED_PLAN_CODES.includes(user.planCode) ||
+      user.dashboardBlockReason === DashboardBlockReason.trial_ended
+    ) {
+      return 'expired'
+    }
+
+    if (
+      user.isAccountBillingSuspended ||
+      user.dashboardBlockReason === DashboardBlockReason.payment_failed
+    ) {
+      return 'payment_issue'
+    }
+
+    if (user.cancellationEffectiveDate) {
+      return 'cancelling'
+    }
+
+    return isTrialing(user) ? 'trialing' : 'converted'
+  }
+
   async getBilling() {
     const now = new Date()
-    const in14d = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
-    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const trialWindowEnd = new Date(
+      now.getTime() + TRIAL_LOOKAHEAD_DAYS * 24 * 60 * 60 * 1000,
+    )
+    const trialWindowStart = new Date(
+      now.getTime() - TRIAL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000,
+    )
+    const trialStatsStart = new Date(
+      now.getTime() - TRIAL_STATS_DAYS * 24 * 60 * 60 * 1000,
+    )
 
-    const [trialUsers, cancellingUsers, suspendedUsers, payingUsers, paddle] =
-      await Promise.all([
-        // Recently-expired trials are as interesting as expiring ones - they
-        // are the ones worth a personal follow-up email
-        this.userRepository
-          .createQueryBuilder('user')
-          .loadRelationCountAndMap('user.projectCount', 'user.projects')
-          .where('user.planCode = :trial', { trial: PlanCode.trial })
-          .andWhere('user.trialEndDate IS NOT NULL')
-          .andWhere('user.trialEndDate <= :in14d', { in14d })
-          .andWhere('user.trialEndDate >= :monthAgo', { monthAgo })
-          .orderBy('user.trialEndDate', 'ASC')
-          .take(100)
-          .getMany(),
-        this.userRepository.find({
-          where: { cancellationEffectiveDate: Not(IsNull()) },
-          order: { cancellationEffectiveDate: 'ASC' },
-          take: 100,
-        }),
-        this.userRepository
-          .createQueryBuilder('user')
-          .where(
-            '(user.isAccountBillingSuspended = true OR user.dashboardBlockReason IS NOT NULL)',
-          )
-          .orderBy('user.created', 'DESC')
-          .take(100)
-          .getMany(),
-        this.userRepository.find({
-          where: { planCode: Not(In(FREE_PLAN_CODES)) },
-        }),
-        this.getCachedPaddlePayments(),
-      ])
+    const [
+      trialUsers,
+      resolvedTrials,
+      cancellingUsers,
+      suspendedUsers,
+      subscribedUsers,
+      paddle,
+    ] = await Promise.all([
+      // Trial state lives in trialEndDate, not planCode - see `isTrialing`.
+      // Recently-expired trials are as interesting as expiring ones: they are
+      // the ones worth a personal follow-up email.
+      this.userRepository
+        .createQueryBuilder('user')
+        .loadRelationCountAndMap('user.projectCount', 'user.projects')
+        .where('user.trialEndDate IS NOT NULL')
+        .andWhere('user.trialEndDate <= :trialWindowEnd', { trialWindowEnd })
+        .andWhere('user.trialEndDate >= :trialWindowStart', {
+          trialWindowStart,
+        })
+        .orderBy('user.trialEndDate', 'ASC')
+        .take(100)
+        .getMany(),
+      // Every trial that has already run its course in the stats window, for
+      // the conversion rate. Only the columns getTrialOutcome reads.
+      this.userRepository
+        .createQueryBuilder('user')
+        .select([
+          'user.id',
+          'user.planCode',
+          'user.trialEndDate',
+          'user.cancellationEffectiveDate',
+          'user.dashboardBlockReason',
+          'user.isAccountBillingSuspended',
+        ])
+        .where('user.trialEndDate IS NOT NULL')
+        .andWhere('user.trialEndDate <= :now', { now })
+        .andWhere('user.trialEndDate >= :trialStatsStart', { trialStatsStart })
+        .getMany(),
+      this.userRepository.find({
+        where: { cancellationEffectiveDate: Not(IsNull()) },
+        order: { cancellationEffectiveDate: 'ASC' },
+        take: 100,
+      }),
+      this.userRepository
+        .createQueryBuilder('user')
+        .where(
+          '(user.isAccountBillingSuspended = true OR user.dashboardBlockReason IS NOT NULL)',
+        )
+        .orderBy('user.created', 'DESC')
+        .take(100)
+        .getMany(),
+      this.userRepository.find({
+        where: { planCode: Not(In(FREE_PLAN_CODES)) },
+      }),
+      this.getCachedPaddlePayments(),
+    ])
+
+    // Accounts still inside their trial have not paid anything yet - keeping
+    // them out of the revenue maths is what makes these numbers real money
+    const payingUsers = subscribedUsers.filter((user) => !isTrialing(user))
 
     const [trialUsage, churnRisk, payments] = await Promise.all([
       this.getMonthlyEventsForUsers(trialUsers.map((user) => user.id)),
@@ -590,20 +1144,131 @@ export class AdminService {
       this.buildPaymentsFeed(paddle),
     ])
 
+    const outcomes = resolvedTrials.map((user) => this.getTrialOutcome(user))
+    const converted = outcomes.filter(
+      (outcome) => outcome === 'converted',
+    ).length
+
     return {
       trialsEndingSoon: trialUsers.map(
         (user: User & { projectCount?: number }) => ({
           ...this.formatBillingUser(user),
           projectCount: user.projectCount || 0,
           monthlyEvents: trialUsage[user.id] || 0,
+          outcome: this.getTrialOutcome(user),
         }),
       ),
+      trialStats: {
+        windowDays: TRIAL_STATS_DAYS,
+        activeNow: subscribedUsers.filter((user) => isTrialing(user)).length,
+        resolved: resolvedTrials.length,
+        converted,
+        conversionRate: resolvedTrials.length
+          ? Math.round((converted / resolvedTrials.length) * 100)
+          : null,
+        cancelledDuringTrial: outcomes.filter(
+          (outcome) => outcome === 'cancelling',
+        ).length,
+        paymentIssues: outcomes.filter((outcome) => outcome === 'payment_issue')
+          .length,
+      },
+      mrr: this.summariseSubscriptionMrr(subscribedUsers),
       cancellationPipeline: cancellingUsers.map((user) =>
         this.formatBillingUser(user),
       ),
       suspended: suspendedUsers.map((user) => this.formatBillingUser(user)),
       churnRisk,
       payments,
+    }
+  }
+
+  // Where the recurring revenue actually comes from: plan tier, billing
+  // frequency, and how much of it rides on the largest few accounts
+  private summariseSubscriptionMrr(subscribedUsers: User[]) {
+    const byPlanType: Record<string, { accounts: number; usd: number }> = {}
+    const byFrequency: Record<string, { accounts: number; usd: number }> = {}
+    const accounts: {
+      id: string
+      email: string
+      planCode: PlanCode
+      usd: number
+    }[] = []
+
+    let usd = 0
+    let trialUsd = 0
+    let trialingAccounts = 0
+    let unpriced = 0
+
+    for (const user of subscribedUsers) {
+      const revenue = this.getMonthlyRevenue(user)
+
+      if (!revenue) {
+        unpriced += 1
+        continue
+      }
+
+      if (isTrialing(user)) {
+        trialingAccounts += 1
+        trialUsd += revenue.usdAmount
+        continue
+      }
+
+      const planType = getEffectivePlanType(user) || PlanType.standard
+      const frequency = user.billingFrequency || BillingFrequency.Monthly
+
+      byPlanType[planType] = byPlanType[planType] || { accounts: 0, usd: 0 }
+      byPlanType[planType].accounts += 1
+      byPlanType[planType].usd += revenue.usdAmount
+
+      byFrequency[frequency] = byFrequency[frequency] || { accounts: 0, usd: 0 }
+      byFrequency[frequency].accounts += 1
+      byFrequency[frequency].usd += revenue.usdAmount
+
+      accounts.push({
+        id: user.id,
+        email: user.email,
+        planCode: user.planCode,
+        usd: revenue.usdAmount,
+      })
+      usd += revenue.usdAmount
+    }
+
+    const topAccounts = accounts
+      .sort((a, b) => b.usd - a.usd)
+      .slice(0, TOP_ACCOUNTS_LIMIT)
+
+    const topUsd = topAccounts.reduce(
+      (total, account) => total + account.usd,
+      0,
+    )
+
+    const toBreakdown = (
+      grouped: Record<string, { accounts: number; usd: number }>,
+    ) =>
+      Object.entries(grouped)
+        .map(([key, value]) => ({
+          key,
+          accounts: value.accounts,
+          usd: round2(value.usd),
+        }))
+        .sort((a, b) => b.usd - a.usd)
+
+    return {
+      usd: round2(usd),
+      payingAccounts: accounts.length,
+      arpuUsd: accounts.length ? round2(usd / accounts.length) : 0,
+      trialingAccounts,
+      // What the trials currently running are worth if they all convert
+      trialUsd: round2(trialUsd),
+      unpricedSubscriptions: unpriced,
+      byPlanType: toBreakdown(byPlanType),
+      byFrequency: toBreakdown(byFrequency),
+      topAccounts: topAccounts.map((account) => ({
+        ...account,
+        usd: round2(account.usd),
+      })),
+      // Concentration risk: how much of the MRR walks out with five customers
+      topAccountsPercent: usd > 0 ? Math.round((topUsd / usd) * 100) : 0,
     }
   }
 
@@ -953,10 +1618,20 @@ export class AdminService {
     ] = await Promise.all([
       this.userRepository.count(),
       this.userRepository.count({ where: { isActive: true } }),
-      this.userRepository.count({
-        where: { planCode: Not(In(FREE_PLAN_CODES)) },
-      }),
-      this.userRepository.count({ where: { planCode: PlanCode.trial } }),
+      this.userRepository
+        .createQueryBuilder('user')
+        .where('user.planCode NOT IN (:...freePlans)', {
+          freePlans: FREE_PLAN_CODES,
+        })
+        .andWhere(`NOT (${TRIALING_CONDITION})`, {
+          now,
+          lapsedPlans: LAPSED_PLAN_CODES,
+        })
+        .getCount(),
+      this.userRepository
+        .createQueryBuilder('user')
+        .where(TRIALING_CONDITION, { now, lapsedPlans: LAPSED_PLAN_CODES })
+        .getCount(),
       this.userRepository.count({
         where: { cancellationEffectiveDate: Not(IsNull()) },
       }),
@@ -1301,12 +1976,18 @@ export class AdminService {
     } else if (filter === 'inactive') {
       query = query.andWhere('user.isActive = false')
     } else if (filter === 'paid') {
-      query = query.andWhere('user.planCode NOT IN (:...freePlans)', {
-        freePlans: FREE_PLAN_CODES,
-      })
+      query = query
+        .andWhere('user.planCode NOT IN (:...freePlans)', {
+          freePlans: FREE_PLAN_CODES,
+        })
+        .andWhere(`NOT (${TRIALING_CONDITION})`, {
+          now: new Date(),
+          lapsedPlans: LAPSED_PLAN_CODES,
+        })
     } else if (filter === 'trial') {
-      query = query.andWhere('user.planCode = :planCode', {
-        planCode: PlanCode.trial,
+      query = query.andWhere(TRIALING_CONDITION, {
+        now: new Date(),
+        lapsedPlans: LAPSED_PLAN_CODES,
       })
     } else if (filter === 'free') {
       query = query.andWhere('user.planCode IN (:...freePlans)', {

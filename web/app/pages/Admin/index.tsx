@@ -267,7 +267,14 @@ const AdminPage = () => {
             ) : null}
 
             {activeTab === 'billing' && data.billing ? (
-              <BillingTab billing={data.billing} />
+              <BillingTab
+                billing={data.billing}
+                revenueTrends={data.revenueTrends}
+                trendMonths={data.trendMonths || 12}
+                onTrendMonthsChange={(months) =>
+                  updateParams({ months: months.toString() })
+                }
+              />
             ) : null}
 
             {activeTab === 'bot-blocks' && data.botBlocks ? (

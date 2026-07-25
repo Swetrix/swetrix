@@ -14,6 +14,7 @@ import {
   AdminService,
   FeedbackType,
   ProjectsFilter,
+  REVENUE_TREND_MONTHS,
   UsersFilter,
 } from './admin.service'
 import { AdminAuth } from './decorators/admin-auth.decorator'
@@ -117,6 +118,13 @@ export class AdminController {
   @Get('billing')
   async getBilling() {
     return this.adminService.getBilling()
+  }
+
+  @Get('revenue-trends')
+  async getRevenueTrends(@Query('months') months?: string) {
+    return this.adminService.getRevenueTrends(
+      parseDays(months, REVENUE_TREND_MONTHS, 12),
+    )
   }
 
   @Get('bot-blocks')

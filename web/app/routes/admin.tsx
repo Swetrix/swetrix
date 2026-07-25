@@ -30,6 +30,7 @@ import type {
   AdminProjectDetails,
   AdminProjectsList,
   AdminRevenue,
+  AdminRevenueTrends,
   AdminTab,
   AdminTopProjects,
   AdminUserDetails,
@@ -74,6 +75,7 @@ const TABS: AdminTab[] = [
 ]
 
 const CHART_DAYS = [30, 90, 180, 365]
+const TREND_MONTHS = [6, 12, 24]
 
 const notFound = () => new Response('Not Found', { status: 404 })
 
@@ -146,9 +148,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     if (tab === 'billing') {
-      const billing = await adminFetch<AdminBilling>('admin/billing')
+      const trendMonths = TREND_MONTHS.includes(
+        Number(searchParams.get('months')),
+      )
+        ? Number(searchParams.get('months'))
+        : 12
 
-      return { tab, billing }
+      const [billing, revenueTrends] = await Promise.all([
+        adminFetch<AdminBilling>('admin/billing'),
+        // A cold Paddle history fetch is slow - the rest of the tab should not
+        // wait on it, nor disappear if Paddle is down
+        adminFetch<AdminRevenueTrends>(
+          `admin/revenue-trends?months=${trendMonths}`,
+        ).catch(() => null),
+      ])
+
+      return { tab, billing, revenueTrends, trendMonths }
     }
 
     if (tab === 'bot-blocks') {
