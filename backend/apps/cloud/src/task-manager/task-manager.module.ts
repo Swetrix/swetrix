@@ -14,6 +14,7 @@ import { DiscordModule } from '../integrations/discord/discord.module'
 import { SlackModule } from '../integrations/slack/slack.module'
 import { GoalModule } from '../goal/goal.module'
 import { RevenueModule } from '../revenue/revenue.module'
+import { AdsModule } from '../ads/ads.module'
 import { NotificationChannelModule } from '../notification-channel/notification-channel.module'
 import { NotificationChannel } from '../notification-channel/entity/notification-channel.entity'
 import { DemoDataModule } from '../demo-data/demo-data.module'
@@ -32,6 +33,7 @@ import { DemoDataModule } from '../demo-data/demo-data.module'
     SlackModule,
     GoalModule,
     RevenueModule,
+    AdsModule,
     NotificationChannelModule,
     DemoDataModule,
   ],

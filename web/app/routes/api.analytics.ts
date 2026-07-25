@@ -26,6 +26,9 @@ import {
   getJourneysServer,
   getJourneySessionsServer,
   getGSCKeywordsServer,
+  getAdsDashboardServer,
+  getAdsCampaignsServer,
+  getAdsCampaignMapServer,
   getRevenueStatusServer,
   getRevenueDataServer,
   getOverallStatsServer,
@@ -50,6 +53,9 @@ import {
   type JourneysResponse,
   type JourneySessionsResponse,
   type GSCKeywordsResponse,
+  type AdsDashboardResponse,
+  type AdsCampaign,
+  type AdsCampaignMapEntry,
   type RevenueStatus,
   type RevenueDataResponse,
   type OverallObject,
@@ -95,6 +101,9 @@ interface ProxyRequest {
     | 'getJourneys'
     | 'getJourneySessions'
     | 'getGSCKeywords'
+    | 'getAdsDashboard'
+    | 'getAdsCampaigns'
+    | 'getAdsCampaignMap'
     | 'getRevenueStatus'
     | 'getRevenueData'
     | 'getOverallStats'
@@ -615,6 +624,66 @@ export async function action({ request }: ActionFunctionArgs) {
           password: password || undefined,
         })
         return data<ProxyResponse<GSCKeywordsResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getAdsDashboard': {
+        const result = await getAdsDashboardServer(request, projectId, {
+          period: params.period,
+          from: formatDateForBackend(params.from),
+          to: formatDateForBackend(params.to),
+          timezone: params.timezone,
+          timeBucket: params.timeBucket,
+          password: password || undefined,
+        })
+        return data<ProxyResponse<AdsDashboardResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getAdsCampaigns': {
+        const result = await getAdsCampaignsServer(request, projectId, {
+          period: params.period,
+          from: formatDateForBackend(params.from),
+          to: formatDateForBackend(params.to),
+          timezone: params.timezone,
+          password: password || undefined,
+        })
+        return data<ProxyResponse<{ campaigns: AdsCampaign[] }>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'getAdsCampaignMap': {
+        const result = await getAdsCampaignMapServer(request, projectId, {
+          period: params.period,
+          from: formatDateForBackend(params.from),
+          to: formatDateForBackend(params.to),
+          timezone: params.timezone,
+          password: password || undefined,
+        })
+        return data<
+          ProxyResponse<{
+            map: Record<string, AdsCampaignMapEntry>
+            currency: string
+          }>
+        >({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

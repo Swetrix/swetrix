@@ -1,0 +1,76 @@
+---
+title: Ads
+slug: /analytics-dashboard/ads
+---
+
+The Ads dashboard shows your ad campaign performance next to your analytics, powered by the [Google Ads](/integrations/google-ads) integration. It combines campaign metrics from Google (spend, clicks, impressions, conversions) with your Swetrix data (sessions, revenue) to answer the question ad platforms can't: what did each campaign actually bring in?
+
+<Callout type="info">
+
+The Ads tab requires a connected Google Ads account. If you haven't set this up yet, see [how to connect Google Ads](/integrations/google-ads). The integration is currently available on Swetrix Cloud only.
+
+</Callout>
+
+## Performance Overview
+
+At the top of the Ads dashboard, metric cards summarise your ad performance for the selected period:
+
+- **Spend** — Total ad spend across campaigns, converted to your reporting currency.
+- **Ad clicks** — Clicks on your ads, as reported by Google.
+- **CPC** — Average cost per click (spend ÷ clicks).
+- **CTR** — Click-through rate (clicks ÷ impressions).
+- **Ad sessions** — Sessions on your site that arrived via paid Google traffic with a matched campaign.
+- **Attributed revenue** — Revenue from sessions attributed to your campaigns (requires [Revenue Tracking](/analytics-dashboard/revenue-tracking)).
+- **ROAS** — Return on ad spend (attributed revenue ÷ spend).
+- **CPA** — Cost per acquisition (spend ÷ attributed purchases).
+
+Spend, clicks, sessions, and revenue show comparison badges against the previous period.
+
+### Trend Chart
+
+Below the metrics, a chart visualises spend (area, left axis) alongside ad clicks and ad sessions (lines, right axis) over time. A widening gap between clicks and sessions can indicate tracking problems — for example, a missing final URL suffix or landing pages without the Swetrix script.
+
+## Campaigns
+
+The campaigns panel breaks performance down per campaign. Hover over a row for the full picture, or expand the panel for a sortable table:
+
+| Column                 | Source  | Description                                       |
+| ---------------------- | ------- | ------------------------------------------------- |
+| **Spend**              | Google  | Campaign cost in your reporting currency          |
+| **CPC**                | Google  | Average cost per click                            |
+| **Ad sessions**        | Swetrix | Sessions on your site attributed to this campaign |
+| **Attributed revenue** | Swetrix | Revenue from sessions this campaign drove         |
+| **ROAS**               | Both    | Attributed revenue ÷ spend                        |
+
+Impressions, CTR, conversions (Google-reported), and CPA are shown in the row tooltip.
+
+## How attribution works
+
+Swetrix matches campaigns to your traffic through the `utm_campaign` parameter:
+
+1. A visitor clicks your ad and lands with `utm_source=google&utm_medium=cpc&utm_campaign={campaignid}` (set via the [final URL suffix](/integrations/google-ads#set-up-campaign-attribution)).
+2. Swetrix matches the `utm_campaign` value against your synced campaigns, by campaign **ID or name** (case-insensitive).
+3. The session — and any revenue it generates — is credited to that campaign (first-touch: the campaign of the session's first event).
+
+Sessions only count as ad traffic when their source or medium looks paid (`utm_source=google` or `utm_medium=cpc`/`ppc`/`paid`). Google's auto-tagging (`gclid`) is recognised as `google / cpc` automatically, but campaign-level matching needs the `utm_campaign` parameter.
+
+<Callout type="info">
+
+**Attributed revenue** requires two things: [Revenue Tracking](/analytics-dashboard/revenue-tracking) connected, and the Swetrix session ID passed with your transactions (`swetrix_session_id` metadata for Stripe/Paddle, `sessionId` on the revenue API). Purchases without a session link can't be traced back to a campaign, so attributed revenue is a floor, not the full total.
+
+</Callout>
+
+## Ad data across the dashboard
+
+Once connected, campaign context appears beyond the Ads tab:
+
+- **Session details** — Sessions that arrived via a matched campaign show a Google Ads badge with the campaign name.
+- **Profiles** — A profile's detail view shows which campaign originally acquired the user ("Acquired via").
+- **Traffic tab** — In the Campaign panel of the traffic sources breakdown, matched campaigns show their spend and CPC inline.
+
+## Data freshness & granularity
+
+- Campaign metrics sync from Google Ads several times a day. You can trigger a manual re-sync from **Project Settings > Integrations**.
+- Each sync re-fetches the last 35 days, because Google restates conversion metrics for up to ~30 days after a click. Recent conversion numbers may shift slightly between syncs.
+- Google reports campaign data per **day** (in your ads account's timezone), so the Ads tab has no hourly granularity and short periods like "Today" or "Last hour" are unavailable.
+- Spend is converted from your ads account currency to your project's reporting currency (the same one used by Revenue Tracking), so ROAS compares like with like.

@@ -37,6 +37,7 @@ export const deriveKey = (
     | 'access-token'
     | 'gsc-token'
     | 'ga4-token'
+    | 'google-ads-token'
     | 'revenue',
   length = 32,
 ) => {

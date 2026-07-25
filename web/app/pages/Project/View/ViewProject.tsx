@@ -25,6 +25,7 @@ import {
   MonitorPlayIcon,
   ToggleRightIcon,
   MagnifyingGlassIcon,
+  MegaphoneIcon,
 } from '@phosphor-icons/react'
 import React, {
   useState,
@@ -131,6 +132,7 @@ const ProfilesView = lazy(() => import('../tabs/Profiles/ProfilesView'))
 const ReplaysView = lazy(() => import('../tabs/Replays/ReplaysView'))
 const SessionsView = lazy(() => import('../tabs/Sessions/SessionsView'))
 const SEOView = lazy(() => import('../tabs/SEO/SEOView'))
+const AdsView = lazy(() => import('../tabs/Ads/AdsView'))
 const TrafficView = lazy(() => import('../tabs/Traffic/TrafficView'))
 
 interface ViewProjectContextType {
@@ -197,6 +199,7 @@ interface RefreshTriggersContextType {
   featureFlagsRefreshTrigger: number
   journeysRefreshTrigger: number
   replaysRefreshTrigger: number
+  adsRefreshTrigger: number
 }
 
 const defaultViewProjectContext: ViewProjectContextType = {
@@ -259,6 +262,7 @@ const defaultRefreshTriggersContext: RefreshTriggersContextType = {
   featureFlagsRefreshTrigger: 0,
   journeysRefreshTrigger: 0,
   replaysRefreshTrigger: 0,
+  adsRefreshTrigger: 0,
 }
 
 const ViewProjectContext = createContext<ViewProjectContextType>(
@@ -344,6 +348,7 @@ const ViewProjectContent = () => {
     useState(0)
   const [journeysRefreshTrigger, setJourneysRefreshTrigger] = useState(0)
   const [replaysRefreshTrigger, setReplaysRefreshTrigger] = useState(0)
+  const [adsRefreshTrigger, setAdsRefreshTrigger] = useState(0)
   const customMetrics = useMemo<ProjectViewCustomEvent[]>(() => {
     const raw = searchParams.get('metrics')
     if (!raw) return []
@@ -794,6 +799,11 @@ const ViewProjectContent = () => {
         : [
             ...baseTabs,
             {
+              id: PROJECT_TABS.ads,
+              label: t('dashboard.ads'),
+              icon: MegaphoneIcon,
+            },
+            {
               id: PROJECT_TABS.ai,
               label: t('dashboard.askAi'),
               icon: SparkleIcon,
@@ -928,6 +938,11 @@ const ViewProjectContent = () => {
 
       if (activeTab === PROJECT_TABS.replays) {
         setReplaysRefreshTrigger((prev) => prev + 1)
+        return
+      }
+
+      if (activeTab === PROJECT_TABS.ads) {
+        setAdsRefreshTrigger((prev) => prev + 1)
         return
       }
     },
@@ -1268,6 +1283,7 @@ const ViewProjectContent = () => {
       featureFlagsRefreshTrigger,
       journeysRefreshTrigger,
       replaysRefreshTrigger,
+      adsRefreshTrigger,
     }),
     [
       goalsRefreshTrigger,
@@ -1275,6 +1291,7 @@ const ViewProjectContent = () => {
       featureFlagsRefreshTrigger,
       journeysRefreshTrigger,
       replaysRefreshTrigger,
+      adsRefreshTrigger,
     ],
   )
 
@@ -1558,6 +1575,9 @@ const ViewProjectContent = () => {
                               ) : null}
                               {activeTab === PROJECT_TABS.seo ? (
                                 <SEOView projectId={id} tnMapping={tnMapping} />
+                              ) : null}
+                              {activeTab === PROJECT_TABS.ads ? (
+                                <AdsView projectId={id} tnMapping={tnMapping} />
                               ) : null}
                               {activeTab === PROJECT_TABS.funnels ? (
                                 <FunnelsView tnMapping={tnMapping} />

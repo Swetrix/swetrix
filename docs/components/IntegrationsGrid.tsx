@@ -105,6 +105,11 @@ const INTEGRATIONS: {
     iconClassName: "dark:text-white",
   },
   {
+    name: "Google Ads",
+    href: "/integrations/google-ads",
+    customIcon: GoogleGIcon,
+  },
+  {
     name: "Search Console",
     href: "/integrations/google-search-console",
     customIcon: GoogleGIcon,

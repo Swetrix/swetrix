@@ -14,6 +14,7 @@ const SLUG_MAP: Record<string, string[]> = {
   // Integration special cases
   "integrations/google-tag-manager": ["gtm-integration"],
   "integrations/google-search-console": ["integrations", "google-search-console"],
+  "integrations/google-ads": ["integrations", "google-ads"],
 
   // API files → flat URLs
   "api/stats": ["statistics-api"],
