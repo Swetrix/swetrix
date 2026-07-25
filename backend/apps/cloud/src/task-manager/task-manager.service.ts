@@ -1729,9 +1729,6 @@ export class TaskManagerService {
             ...sent,
             [step.key]: now.toISOString(),
           },
-          ...(step.key === TrialLifecycleEmailKey.EndsTomorrow
-            ? { trialReminderSent: true }
-            : {}),
         })
       } catch (reason) {
         this.logger.error(

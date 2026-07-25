@@ -301,7 +301,6 @@ const UserDetails = ({
   const infoRows: { label: string; value: React.ReactNode }[] = [
     { label: 'ID', value: user.id },
     { label: 'Email', value: user.email },
-    { label: 'Nickname', value: user.nickname || '—' },
     { label: 'Registered', value: formatDateTime(user.created) },
     { label: 'Plan', value: <PlanCell user={user} /> },
     { label: 'Currency', value: user.tierCurrency || '—' },
@@ -521,7 +520,7 @@ export const UsersTab = ({
           label='Search users'
           className='sm:max-w-xs sm:flex-1'
           leadingIcon={<MagnifyingGlassIcon className='size-4 text-gray-400' />}
-          placeholder='Search by email, ID or nickname'
+          placeholder='Search by email or ID'
           defaultValue={search}
           onChange={(event) => onSearchChange(event.target.value)}
         />
@@ -572,11 +571,6 @@ export const UsersTab = ({
                     <span className='font-medium'>{user.email}</span>
                     <UserStatusBadges user={user} />
                   </div>
-                  {user.nickname ? (
-                    <span className='text-xs text-gray-500 dark:text-gray-400'>
-                      {user.nickname}
-                    </span>
-                  ) : null}
                 </Td>
                 <Td>
                   <PlanCell user={user} />

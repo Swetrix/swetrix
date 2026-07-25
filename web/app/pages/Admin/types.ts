@@ -270,7 +270,6 @@ export interface SortState {
 export interface AdminUser {
   id: string
   email: string
-  nickname: string | null
   planCode: string
   planType: string | null
   billingFrequency: string | null

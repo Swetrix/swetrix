@@ -2056,7 +2056,7 @@ export class AdminService {
 
     if (search) {
       query = query.andWhere(
-        '(LOWER(user.email) LIKE :search OR LOWER(user.id) LIKE :search OR LOWER(user.nickname) LIKE :search)',
+        '(LOWER(user.email) LIKE :search OR LOWER(user.id) LIKE :search)',
         { search: `%${search.toLowerCase()}%` },
       )
     }
@@ -2083,7 +2083,6 @@ export class AdminService {
     return {
       id: user.id,
       email: user.email,
-      nickname: user.nickname,
       planCode: user.planCode,
       planType: getEffectivePlanType(user),
       billingFrequency: user.billingFrequency,

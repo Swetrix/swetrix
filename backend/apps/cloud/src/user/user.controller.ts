@@ -774,18 +774,6 @@ export class UserController {
         )
       }
 
-      if (userDTO.slackWebhookUrl === null) {
-        await this.userService.update(id, {
-          slackWebhookUrl: null,
-        })
-      }
-
-      if (userDTO.discordWebhookUrl === null) {
-        await this.userService.update(id, {
-          discordWebhookUrl: null,
-        })
-      }
-
       if (userDTO.timeFormat && user.timeFormat !== userDTO.timeFormat) {
         await this.userService.update(id, {
           timeFormat: userDTO.timeFormat,
@@ -793,14 +781,10 @@ export class UserController {
       }
 
       const userToUpdate = _pick(userDTO, [
-        'nickname',
         'password',
         'reportFrequency',
         'timezone',
-        'theme',
         'showLiveVisitorsInTitle',
-        'slackWebhookUrl',
-        'discordWebhookUrl',
         'telegramChatId',
         'receiveLoginNotifications',
         'timeFormat',
