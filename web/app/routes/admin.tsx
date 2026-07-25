@@ -16,6 +16,7 @@ import NotFound from '~/pages/NotFound'
 // lives in this stylesheet - without it the admin charts render with
 // billboard defaults
 import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
+import { TREND_MONTHS_OPTIONS } from '~/pages/Admin/types'
 import type {
   AdminActionData,
   AdminBilling,
@@ -75,7 +76,6 @@ const TABS: AdminTab[] = [
 ]
 
 const CHART_DAYS = [30, 90, 180, 365]
-const TREND_MONTHS = [6, 12, 24]
 
 const notFound = () => new Response('Not Found', { status: 404 })
 
@@ -148,7 +148,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     if (tab === 'billing') {
-      const trendMonths = TREND_MONTHS.includes(
+      const trendMonths = TREND_MONTHS_OPTIONS.includes(
         Number(searchParams.get('months')),
       )
         ? Number(searchParams.get('months'))

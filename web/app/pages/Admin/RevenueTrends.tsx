@@ -1,15 +1,16 @@
 import dayjs from 'dayjs'
+import { useMemo } from 'react'
 
 import { Badge } from '~/ui/Badge'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 import { cn, nFormatter, nLocaleFormatter } from '~/utils/generic'
 
+import type { AdminChartSeries } from './AdminChart'
 import { AdminChart, ADMIN_CHART_COLORS } from './AdminChart'
 import { AdminTable, EmptyState, StatCard, Td } from './components'
 import type { AdminRevenueTrends, AdminRevenueTrendMonth } from './types'
-
-const TREND_MONTHS_OPTIONS = [6, 12, 24]
+import { TREND_MONTHS_OPTIONS } from './types'
 
 const usd = (amount: number): string =>
   `$${nLocaleFormatter(Math.round(amount))}`
@@ -79,7 +80,40 @@ export const RevenueTrends = ({
   months,
   onMonthsChange,
 }: RevenueTrendsProps) => {
-  if (!trends?.available || !trends.months?.length || !trends.summary) {
+  const rows = trends?.months
+
+  // A stable series identity keeps unrelated parent re-renders from
+  // regenerating the billboard.js chart
+  const series = useMemo<AdminChartSeries[]>(
+    () =>
+      rows
+        ? [
+            {
+              id: 'cash',
+              name: 'Cash collected',
+              color: ADMIN_CHART_COLORS.blue,
+              type: 'bar',
+              data: rows.map((row) => ({
+                date: `${row.month}-01`,
+                count: row.cashUsd,
+              })),
+            },
+            {
+              id: 'recognised',
+              name: 'Recurring revenue',
+              color: ADMIN_CHART_COLORS.green,
+              type: 'line',
+              data: rows.map((row) => ({
+                date: `${row.month}-01`,
+                count: row.recognisedUsd,
+              })),
+            },
+          ]
+        : [],
+    [rows],
+  )
+
+  if (!trends?.available || !rows?.length || !trends.summary) {
     return (
       <section>
         <Text as='h3' size='lg' weight='semibold'>
@@ -93,7 +127,6 @@ export const RevenueTrends = ({
   }
 
   const { summary, currentMonth } = trends
-  const rows = trends.months
   const rowsDesc = [...rows].reverse()
 
   const paceVsLastMonth =
@@ -174,28 +207,7 @@ export const RevenueTrends = ({
         <AdminChart
           className='mt-4 h-72'
           format={CHART_FORMAT}
-          series={[
-            {
-              id: 'cash',
-              name: 'Cash collected',
-              color: ADMIN_CHART_COLORS.blue,
-              type: 'bar',
-              data: rows.map((row) => ({
-                date: `${row.month}-01`,
-                count: row.cashUsd,
-              })),
-            },
-            {
-              id: 'recognised',
-              name: 'Recurring revenue',
-              color: ADMIN_CHART_COLORS.green,
-              type: 'line',
-              data: rows.map((row) => ({
-                date: `${row.month}-01`,
-                count: row.recognisedUsd,
-              })),
-            },
-          ]}
+          series={series}
         />
       </div>
 

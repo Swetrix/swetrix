@@ -94,6 +94,10 @@ export interface AdminBilling {
   }
 }
 
+// Window sizes the revenue-trends picker offers - the loader validates the
+// query param against the same list. Mirrors REVENUE_TREND_MONTHS on the API.
+export const TREND_MONTHS_OPTIONS = [6, 12, 24]
+
 export interface AdminRevenueTrendMonth {
   month: string
   cashUsd: number

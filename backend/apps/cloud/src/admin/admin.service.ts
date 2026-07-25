@@ -713,6 +713,13 @@ export class AdminService {
     return payments
   }
 
+  // A cold history crawl takes a while - concurrent requests that miss the
+  // cache share the one in flight instead of each starting their own
+  private paddleHistoryFetch: Promise<{
+    payments: HistoricPayment[]
+    fetchedAt: string
+  } | null> | null = null
+
   private async getCachedPaddleHistory(): Promise<{
     payments: HistoricPayment[]
     fetchedAt: string
@@ -731,6 +738,21 @@ export class AdminService {
       return null
     }
 
+    if (!this.paddleHistoryFetch) {
+      this.paddleHistoryFetch = this.fetchAndCachePaddleHistory().finally(
+        () => {
+          this.paddleHistoryFetch = null
+        },
+      )
+    }
+
+    return this.paddleHistoryFetch
+  }
+
+  private async fetchAndCachePaddleHistory(): Promise<{
+    payments: HistoricPayment[]
+    fetchedAt: string
+  } | null> {
     let result: { payments: HistoricPayment[]; fetchedAt: string }
 
     try {
@@ -883,10 +905,12 @@ export class AdminService {
     }
 
     // The current month is deliberately left out: it is always mid-collection,
-    // so it would render as a cliff on the chart
+    // so it would render as a cliff on the chart. The clamp keeps a caller
+    // from asking for months that have no bucket behind them.
+    const displayedMonths = Math.min(months, REVENUE_HISTORY_MONTHS - 1)
     const displayedKeys: string[] = []
 
-    for (let offset = months; offset >= 1; offset -= 1) {
+    for (let offset = displayedMonths; offset >= 1; offset -= 1) {
       displayedKeys.push(shiftMonthKey(currentKey, -offset))
     }
 
@@ -920,6 +944,16 @@ export class AdminService {
       }
     })
 
+    // Cash collected over the last twelve complete months, read off the full
+    // bucket map rather than the displayed window, so a 6-month view still
+    // reports a true trailing-twelve-month total
+    let ttmCashUsd = 0
+
+    for (let offset = MONTHS_IN_YEAR; offset >= 1; offset -= 1) {
+      ttmCashUsd +=
+        buckets.get(shiftMonthKey(currentKey, -offset))?.cashUsd ?? 0
+    }
+
     const current = buckets.get(currentKey)
     const dayOfMonth = now.getUTCDate()
     const daysInMonth = new Date(
@@ -940,12 +974,12 @@ export class AdminService {
         // of last month or just early in the cycle?"
         projectedUsd: round2((current.cashUsd / dayOfMonth) * daysInMonth),
       },
-      summary: this.summariseTrends(rows),
+      summary: this.summariseTrends(rows, ttmCashUsd),
       fetchedAt: history.fetchedAt,
     }
   }
 
-  private summariseTrends(rows: TrendRow[]) {
+  private summariseTrends(rows: TrendRow[], ttmCashUsd: number) {
     const last = rows[rows.length - 1]
     const previous = rows[rows.length - 2]
 
@@ -1002,11 +1036,7 @@ export class AdminService {
               recentChanges.length,
           )
         : null,
-      ttmCashUsd: round2(
-        rows
-          .slice(-MONTHS_IN_YEAR)
-          .reduce((total, row) => total + row.cashUsd, 0),
-      ),
+      ttmCashUsd: round2(ttmCashUsd),
       // Yearly plans are recognised monthly, so this is a run rate rather than
       // a promise of next month's cash
       runRateUsd: round2((last?.recognisedUsd ?? 0) * MONTHS_IN_YEAR),
@@ -1059,7 +1089,21 @@ export class AdminService {
     }
 
     if (user.cancellationEffectiveDate) {
-      return 'cancelling'
+      // Cancelling during the trial ends the subscription on the trial end
+      // date itself; a converted account that cancels later ends on a bill
+      // date at least one billing period after that. The day of grace absorbs
+      // date-only columns and timezone truncation.
+      const cancellationAt = new Date(user.cancellationEffectiveDate).getTime()
+      const trialEnd = user.trialEndDate
+        ? new Date(user.trialEndDate).getTime()
+        : null
+
+      if (
+        trialEnd === null ||
+        cancellationAt <= trialEnd + 24 * 60 * 60 * 1000
+      ) {
+        return 'cancelling'
+      }
     }
 
     return isTrialing(user) ? 'trialing' : 'converted'
