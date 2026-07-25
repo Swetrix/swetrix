@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 import { useMemo } from 'react'
 
 import BillboardChart from '~/ui/BillboardChart'
-import { nFormatter } from '~/utils/generic'
+import { cn, nFormatter } from '~/utils/generic'
 
 import type { SeriesPoint } from './types'
 
@@ -179,7 +179,10 @@ export const AdminChart = ({
   return (
     <BillboardChart
       options={options}
-      className={className}
+      // admin-chart scopes the ProjectViewStyle.css overrides (solid bars, no
+      // stroke) - admin series ids never match the project view's per-target
+      // stroke rules, so without it bars render with a black outline
+      className={cn('admin-chart', className)}
       deps={[series, format]}
     />
   )

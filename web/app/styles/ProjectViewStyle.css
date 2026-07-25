@@ -340,6 +340,15 @@ body.dark .bb-chart-arc path {
   stroke: var(--color-slate-900);
 }
 
+/* Admin panel charts: same problem as the AI charts below - series ids
+   ('cash', 'recognised', ...) don't match the per-target stroke rules above,
+   so bars would render washed out with a stray dark outline. */
+.admin-chart .bb-bar {
+  fill-opacity: 0.85 !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+}
+
 /* AI chat charts: keep bars/areas opaque since their series names don't match
    the project view's stroke rules; without this they'd inherit the global
    .bb-bar { fill-opacity: 0.3 } and look washed out. */

@@ -204,7 +204,9 @@ const REVENUE_CACHE_KEY = 'admin:paddle-payments:v2'
 const REVENUE_CACHE_TTL_SECONDS = 3600
 const PADDLE_FETCH_TIMEOUT_MS = 15000
 
-const REVENUE_HISTORY_CACHE_KEY = 'admin:paddle-payments-history:v1'
+// v2: v1 was fetched with inclusive-looking chunk ends and is missing every
+// boundary-day payment - never serve it again
+const REVENUE_HISTORY_CACHE_KEY = 'admin:paddle-payments-history:v2'
 // History only changes when a new payment lands, and the trends are a
 // month-level view - a stale-by-hours cache is fine
 const REVENUE_HISTORY_CACHE_TTL_SECONDS = 6 * 60 * 60
@@ -549,6 +551,9 @@ export class AdminService {
     const previousMonthStart = new Date(
       Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1),
     )
+    // Paddle's `to` is exclusive, so the paid range must end tomorrow for
+    // today's payments to be included
+    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
     const upcomingUntil = new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000)
 
     let result
@@ -557,7 +562,7 @@ export class AdminService {
       const [paid, upcoming] = await Promise.all([
         this.fetchPaddlePayments(
           toDateString(previousMonthStart),
-          toDateString(now),
+          toDateString(tomorrow),
           1,
         ),
         this.fetchPaddlePayments(
@@ -665,17 +670,19 @@ export class AdminService {
         ),
       )
     ) {
-      // Day 0 of the month after the chunk = last day of the chunk, so the
-      // ranges never overlap
-      const chunkEnd = new Date(
+      // Paddle's `to` is EXCLUSIVE (verified against the live API: payments
+      // whose payout_date equals `to` are not returned), so each chunk must
+      // end on the first day of the next one - ending on the chunk's own last
+      // day silently drops every payment landing exactly on that day
+      const nextChunkStart = new Date(
         Date.UTC(
           cursor.getUTCFullYear(),
           cursor.getUTCMonth() + REVENUE_HISTORY_CHUNK_MONTHS,
-          0,
+          1,
         ),
       )
 
-      ranges.push([toDateString(cursor), toDateString(chunkEnd)])
+      ranges.push([toDateString(cursor), toDateString(nextChunkStart)])
     }
 
     const seenIds = new Set<number>()
