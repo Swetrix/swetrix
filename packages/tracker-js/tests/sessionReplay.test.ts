@@ -660,4 +660,33 @@ describe('Session replay tracking', () => {
     await actions.stop()
     delete (mockRrwebRecord as any).takeFullSnapshot
   })
+
+  test('snapshot re-seeding gives up instead of looping forever', async () => {
+    const takeFullSnapshot = jest.fn()
+    ;(mockRrwebRecord as any).takeFullSnapshot = takeFullSnapshot
+    const { recordOptions } = usePackageRrweb()
+    const { init, startSessionReplay } = await loadTracker()
+
+    init(PROJECT_ID, { devMode: true })
+    const actions = await startSessionReplay({ flushIntervalMs: 60_000 })
+
+    // A hop that rejects large bodies rejects every re-seeded snapshot too.
+    fetchMock.mockImplementation((url) => {
+      if (String(url).includes('/session-replay/chunk')) {
+        return Promise.resolve({ ok: false, status: 400 })
+      }
+
+      return Promise.resolve({ ok: true })
+    })
+
+    for (let attempt = 0; attempt < 6; attempt++) {
+      recordOptions().emit({ type: 2, timestamp: 100 + attempt })
+      await actions.flush()
+    }
+
+    expect(takeFullSnapshot).toHaveBeenCalledTimes(3)
+
+    await actions.stop()
+    delete (mockRrwebRecord as any).takeFullSnapshot
+  })
 })

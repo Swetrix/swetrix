@@ -331,8 +331,12 @@ const DEFAULT_SESSION_REPLAY_SLIM_DOM_OPTIONS = {
 }
 const RRWEB_EVENT_FULL_SNAPSHOT = 2
 // Chunk indices are reserved server-side, so retrying with the same index is
-// idempotent — the backend dedupes on (replayId, chunkIndex).
+// idempotent - the backend dedupes on (replayId, chunkIndex).
 const SESSION_REPLAY_CHUNK_RETRY_DELAYS_MS = [2_000, 5_000, 15_000]
+// Snapshots are the largest payload we send, so a hop that rejects big bodies
+// rejects every re-seed too. Cap the attempts rather than re-uploading a
+// multi-megabyte snapshot on a loop for the rest of the session.
+const SESSION_REPLAY_MAX_SNAPSHOT_RESEEDS = 3
 const SESSION_REPLAY_ACTIVITY_EVENTS = [
   'click',
   'keydown',
@@ -932,6 +936,7 @@ export class Lib {
         : null
 
     let chunkIndex = started.nextChunkIndex
+    let snapshotReseeds = 0
     let stopped = false
     let events: RrwebEvent[] = []
     let eventsByteLength = 0
@@ -963,8 +968,10 @@ export class Lib {
           if (
             !delivered &&
             !stopped &&
+            snapshotReseeds < SESSION_REPLAY_MAX_SNAPSHOT_RESEEDS &&
             chunk.some((event) => event.type === RRWEB_EVENT_FULL_SNAPSHOT)
           ) {
+            snapshotReseeds += 1
             try {
               record.takeFullSnapshot?.()
             } catch {}
