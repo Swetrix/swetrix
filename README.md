@@ -103,6 +103,10 @@ Prefer to run it yourself? Swetrix Community Edition (CE) ships the same core an
 
 - **[Self-hosting guide →](https://docs.swetrix.com/selfhosting/how-to)**
 
+Don't want to manage a server? A community-maintained [Railway](https://railway.com) template deploys CE (frontend, API, Redis and ClickHouse) with an HTTPS URL in one click:
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/swetrix)
+
 #### Cloud vs Community Edition
 
 |                                                                              | Swetrix Cloud                                                                                                                                                                     | Swetrix Community Edition                                                                                                                                       |
