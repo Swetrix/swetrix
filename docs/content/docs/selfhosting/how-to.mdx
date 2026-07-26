@@ -10,14 +10,6 @@ The easiest way to get started with Swetrix is by [using our cloud service](http
 
 </Callout>
 
-## One-click deploy
-
-If you'd rather not manage a server yourself, a community-maintained [Railway](https://railway.com) template provisions the frontend, API, Redis and ClickHouse, wires them together, and gives you an HTTPS URL:
-
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/swetrix)
-
-The template is built from the same images as the self-hosting repository, and its source is at [osbytes/template-swetrix](https://github.com/osbytes/template-swetrix). The rest of this page covers running Swetrix with Docker Compose on your own server.
-
 ## Prerequisites
 
 To self-host Swetrix you need to have the following:
@@ -152,3 +144,21 @@ swetrix-api labels:
 
 If you are using proxy for your self-hosted Swetrix instance, you should set the `CLIENT_IP_HEADER` environment variable. For example, if your proxy is Cloudflare, then you should set `CLIENT_IP_HEADER` to `cf-connecting-ip`.
 If you are using Traefik (or another reverse proxy) and are not behind Cloudflare, `CLIENT_IP_HEADER=x-forwarded-for` is usually the correct value.
+
+## Community integrations
+
+If you'd rather not run Docker Compose on a server yourself, the community maintains templates that deploy Swetrix Community Edition on managed hosting platforms.
+
+<Callout type="warn">
+  These templates are built and maintained by the community, not by the Swetrix team. We don't
+  control their contents or release schedule, so please report any issues with them to their
+  maintainers.
+</Callout>
+
+### Railway
+
+[Railway](https://railway.com) provisions and runs the containers for you. The community-maintained template deploys the Swetrix frontend, API, Redis and ClickHouse, wires them together and gives you an HTTPS URL:
+
+[![Deploy on Railway](/img/integrations/railway-button.svg)](https://railway.com/deploy/swetrix)
+
+The template's source lives at [osbytes/template-swetrix](https://github.com/osbytes/template-swetrix).
