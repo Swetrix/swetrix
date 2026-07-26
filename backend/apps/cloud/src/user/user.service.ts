@@ -3007,7 +3007,10 @@ export class UserService {
         // recorded before - the webhook wins, but it is worth knowing about
         if (existing.userId !== userId) {
           console.error(
-            `[ERROR] (recordUserSubscription) Subscription ${subID} moved from user ${existing.userId} to ${userId}`,
+            '[ERROR] (recordUserSubscription) Subscription %s moved from user %s to %s',
+            subID,
+            existing.userId,
+            userId,
           )
           update.userId = userId
         }
@@ -3052,7 +3055,9 @@ export class UserService {
       }
 
       console.error(
-        `[ERROR] (recordUserSubscription) Failed to record subscription ${subID} for user ${userId}:`,
+        '[ERROR] (recordUserSubscription) Failed to record subscription %s for user %s:',
+        subID,
+        userId,
         reason,
       )
     }
@@ -3073,7 +3078,8 @@ export class UserService {
       )
     } catch (reason) {
       console.error(
-        `[ERROR] (markUserSubscriptionEnded) Failed to mark subscription ${subID} as ended:`,
+        '[ERROR] (markUserSubscriptionEnded) Failed to mark subscription %s as ended:',
+        subID,
         reason,
       )
     }
@@ -3096,7 +3102,7 @@ export class UserService {
     return Array.from(
       new Set(
         [currentSubID, ...subscriptions.map(({ subID }) => subID)].filter(
-          Boolean,
+          (subID): subID is string => !!subID,
         ),
       ),
     )
