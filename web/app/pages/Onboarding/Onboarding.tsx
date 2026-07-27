@@ -439,6 +439,7 @@ const Onboarding = () => {
     deviceInfo,
     metainfo,
     onboardingStep: loaderStep,
+    prefill,
   } = useLoaderData<OnboardingLoaderData>()
   const { user, loadUser, logout } = useAuth()
   const navigate = useNavigate()
@@ -455,8 +456,12 @@ const Onboarding = () => {
     return index !== -1 ? index : 0
   })
   const [direction, setDirection] = useState(0)
-  const [projectName, setProjectName] = useState('')
-  const [projectWebsiteUrl, setProjectWebsiteUrl] = useState('')
+  // Prefilled from the landing hero when the visitor already told us their
+  // website there - see `prefill` in the onboarding loader.
+  const [projectName, setProjectName] = useState(prefill?.name || '')
+  const [projectWebsiteUrl, setProjectWebsiteUrl] = useState(
+    prefill?.websiteUrl || '',
+  )
   const [projectTimezone, setProjectTimezone] = useState(() => {
     const userTimezone = user?.timezone
 

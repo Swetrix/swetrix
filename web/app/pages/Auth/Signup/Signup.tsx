@@ -28,6 +28,7 @@ import { useTheme } from '~/providers/ThemeProvider'
 import type { SignupActionData } from '~/routes/signup'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
+import FaviconGlyph from '~/ui/FaviconGlyph'
 import Input from '~/ui/Input'
 import PasswordStrength from '~/ui/PasswordStrength'
 import { Text } from '~/ui/Text'
@@ -53,7 +54,30 @@ const featureKeys = [
   'intuitive',
 ] as const
 
-const Signup = () => {
+/**
+ * The website the visitor typed on the landing hero, shown back to them with
+ * its own favicon - "yes, we know what you're here to track". Rendered through
+ * <Trans>, so the domain sits wherever the sentence needs it.
+ */
+const SiteChip = ({
+  domain,
+  children,
+}: {
+  domain: string
+  children?: React.ReactNode
+}) => (
+  <span className='inline-flex items-center gap-1.5 align-[-3px] font-medium text-gray-900 dark:text-gray-50'>
+    <FaviconGlyph value={domain} className='size-4' />
+    {children}
+  </span>
+)
+
+interface SignupProps {
+  /** The website typed on the landing hero, if the visitor came in that way. */
+  site?: string | null
+}
+
+const Signup = ({ site = null }: SignupProps) => {
   const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
   const navigate = useNavigate()
@@ -246,7 +270,18 @@ const Signup = () => {
             </Text>
             {isSelfhosted ? null : (
               <Text as='p' colour='muted' className='mt-2'>
-                {t('auth.signup.trialSubtitle')}
+                {site ? (
+                  <Trans
+                    t={t}
+                    i18nKey='auth.signup.siteSubtitle'
+                    values={{ site }}
+                    components={{
+                      site: <SiteChip domain={site} />,
+                    }}
+                  />
+                ) : (
+                  t('auth.signup.trialSubtitle')
+                )}
               </Text>
             )}
           </div>

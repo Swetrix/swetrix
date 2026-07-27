@@ -31,6 +31,7 @@ import useBreakpoint from '~/hooks/useBreakpoint'
 import Button from '~/ui/Button'
 import {
   LIVE_DEMO_URL,
+  isDevelopment,
   isSelfhosted,
   isDisableMarketingPages,
   localisePath,
@@ -41,10 +42,17 @@ import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { FeaturesGrid } from '~/components/marketing/FeaturesGrid'
+import HeroSignupForm from '~/components/marketing/HeroSignupForm'
 import { LogoCloud } from '~/components/marketing/LogoCloud'
 import { ScrollReveal } from '~/components/marketing/ScrollReveal'
 import { WhySwitch } from '~/components/marketing/WhySwitch'
 import { Text } from '~/ui/Text'
+import {
+  getExperimentVariant,
+  HERO_SIGNUP_EXPERIMENT_ID,
+} from '~/utils/analytics.server'
+import { trackCustom } from '~/utils/analytics'
+import { HERO_SIGNUP_EXPERIMENT } from '~/utils/experiments'
 
 export const meta: MetaFunction = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -66,14 +74,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
   }
-  const [metainfoResult, stats] = await Promise.all([
+  const [metainfoResult, stats, heroVariant] = await Promise.all([
     serverFetch<Metainfo>(request, 'user/metainfo', { skipAuth: true }),
     getGeneralStats(request),
+    // Resolved here so the hero is server-rendered in its final form - the
+    // visitor never sees the control arm flash before the variant swaps in.
+    getExperimentVariant(
+      request,
+      HERO_SIGNUP_EXPERIMENT_ID,
+      HERO_SIGNUP_EXPERIMENT.control,
+    ),
   ])
 
   return {
     metainfo: metainfoResult.data ?? DEFAULT_METAINFO,
     stats,
+    // `?heroVariant=variant` forces an arm locally so both can be eyeballed
+    // without waiting to be bucketed into one. Never honoured in production.
+    heroVariant: isDevelopment
+      ? new URL(request.url).searchParams.get('heroVariant') || heroVariant
+      : heroVariant,
   }
 }
 
@@ -401,6 +421,59 @@ const HeroParallaxBackground = () => {
   )
 }
 
+const HeroCTA = () => {
+  const { t } = useTranslation('common')
+  const { heroVariant } = useLoaderData<typeof loader>()
+
+  const liveDemoButton = (
+    <Button
+      to={LIVE_DEMO_URL}
+      linkProps={{
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      }}
+      variant='secondary'
+      size='xl'
+      className='flex h-12 items-center justify-center border-white/25 bg-white/10 px-5 text-center text-base font-semibold text-white shadow-none ring-white/25 backdrop-blur-md hover:bg-white/20 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
+      aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
+    >
+      {t('common.liveDemo')}
+    </Button>
+  )
+
+  if (heroVariant === HERO_SIGNUP_EXPERIMENT.siteInput) {
+    return (
+      <div className='flex w-full flex-col items-center'>
+        <HeroSignupForm />
+        <div className='mt-3 flex w-full flex-col items-stretch sm:w-auto'>
+          {liveDemoButton}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className='mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center'>
+      <Link
+        to={routesPath.signup}
+        onClick={() =>
+          trackCustom('HERO_CTA_CLICK', {
+            variant: HERO_SIGNUP_EXPERIMENT.control,
+          })
+        }
+        className='inline-flex h-12 items-center justify-center rounded-md bg-white px-5 text-slate-950 shadow-lg ring-1 shadow-slate-950/20 ring-white/30 transition-colors hover:bg-gray-100'
+        aria-label={t('titles.signup')}
+      >
+        <span className='text-center text-base font-semibold'>
+          {t('main.startAXDayFreeTrial', { amount: 14 })}
+        </span>
+        <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-5' />
+      </Link>
+      {liveDemoButton}
+    </div>
+  )
+}
+
 const Hero = () => {
   const { t } = useTranslation('common')
 
@@ -430,31 +503,7 @@ const Hero = () => {
             >
               {t('main.description')}
             </Text>
-            <div className='mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center'>
-              <Link
-                to={routesPath.signup}
-                className='inline-flex h-12 items-center justify-center rounded-md bg-white px-5 text-slate-950 shadow-lg ring-1 shadow-slate-950/20 ring-white/30 transition-colors hover:bg-gray-100'
-                aria-label={t('titles.signup')}
-              >
-                <span className='text-center text-base font-semibold'>
-                  {t('main.startAXDayFreeTrial', { amount: 14 })}
-                </span>
-                <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-5' />
-              </Link>
-              <Button
-                to={LIVE_DEMO_URL}
-                linkProps={{
-                  target: '_blank',
-                  rel: 'noopener noreferrer',
-                }}
-                variant='secondary'
-                size='xl'
-                className='flex h-12 items-center justify-center border-white/25 bg-white/10 px-5 text-center text-base font-semibold text-white shadow-none ring-white/25 backdrop-blur-md hover:bg-white/20 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
-                aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
-              >
-                {t('common.liveDemo')}
-              </Button>
-            </div>
+            <HeroCTA />
             <div className='mt-8 flex max-w-4xl flex-wrap justify-center gap-x-16 gap-y-3 text-gray-50'>
               <div className='flex items-center gap-2 text-sm whitespace-nowrap'>
                 <GaugeIcon className='size-5 shrink-0' />
