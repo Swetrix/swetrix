@@ -587,6 +587,8 @@
     "description": "Swetrix is a privacy-first Google Analytics alternative that helps you understand visitors, traffic sources and website performance with simple, cookieless, GDPR-compliant insights - no cookie banners or invasive tracking.",
     "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
     "startAXDayFreeTrial": "Start a {{amount}}-day free trial",
+    "addMyWebsite": "Add my website",
+    "yourWebsite": "Your website",
     "metric": "Metric",
     "heroBenefits": {
       "trial": "Free trial {{days}} days",
@@ -745,6 +747,7 @@
       "create": "Create your account",
       "trial": "Start your free {{amount}} day trial",
       "trialSubtitle": "Try all features free. Cancel anytime before your trial ends.",
+      "siteSubtitle": "Create your account and start tracking <site>{{site}}</site> in minutes.",
       "changePlanLater": "You can change your plan later or at any time.",
       "alreadyAMember": "Already a member? <url>Sign in</url>",
       "createAnAccount": "Create an account",
