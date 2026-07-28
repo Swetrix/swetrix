@@ -233,6 +233,15 @@ const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 const DEFAULT_API_BASE = 'https://api.swetrix.com'
 
 /**
+ * Events carry the raw, site-supplied profileId; the server stores them behind
+ * this prefix. Mirrored here so getProfileId() can report the ID events are
+ * actually stored under without an extra round trip.
+ */
+const USER_PROFILE_PREFIX = 'usr_'
+
+const toStoredProfileId = (profileId: string) => `${USER_PROFILE_PREFIX}${profileId.trim()}`
+
+/**
  * Server-side implementation of Swetrix tracking library.
  *
  * @param projectID Your project ID (you can find it in the project settings)
@@ -472,9 +481,10 @@ export class Swetrix {
   }
 
   /**
-   * Gets the anonymous profile ID for a visitor.
-   * If profileId was set via constructor options, returns that.
-   * Otherwise, requests server to generate one from IP/UA hash.
+   * Gets the profile ID a visitor's events are stored under.
+   * If profileId was set via constructor options, returns the identified
+   * (usr_-prefixed) form of it. Otherwise, requests server to generate an
+   * anonymous one from IP/UA hash.
    *
    * This ID can be used for revenue attribution with payment providers like Paddle.
    *
@@ -491,9 +501,11 @@ export class Swetrix {
    * ```
    */
   public async getProfileId(ip: string, userAgent: string): Promise<string | null> {
-    // If profileId is already set in options, return it
+    // A profileId set via the constructor is sent raw on events and prefixed
+    // server-side, so return the prefixed form here too - returning the raw
+    // value would not match anything in the dashboard
     if (this.options?.profileId) {
-      return this.options.profileId
+      return toStoredProfileId(this.options.profileId)
     }
 
     try {

@@ -310,6 +310,16 @@ export const defaultSessionReplayActions: SessionReplayActions = {
 
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 const DEFAULT_API_BASE = 'https://api.swetrix.com'
+
+/**
+ * Events carry the raw, site-supplied profileId; the server stores them behind
+ * this prefix. Mirrored here so getProfileId() can report the ID events are
+ * actually stored under without an extra round trip.
+ */
+const USER_PROFILE_PREFIX = 'usr_'
+
+const toStoredProfileId = (profileId: string) => `${USER_PROFILE_PREFIX}${profileId.trim()}`
+
 const DEFAULT_RRWEB_FILE = 'replaylibrary.min.js'
 const DEFAULT_RRWEB_URL = `https://cdn.jsdelivr.net/npm/swetrix@latest/dist/${DEFAULT_RRWEB_FILE}`
 const DEFAULT_SESSION_REPLAY_FLUSH_INTERVAL = 5000
@@ -851,9 +861,10 @@ export class Lib {
   }
 
   /**
-   * Gets the anonymous profile ID for the current visitor.
-   * If profileId was set via init options, returns that.
-   * Otherwise, requests server to generate one from IP/UA hash.
+   * Gets the profile ID the current visitor's events are stored under.
+   * If the visitor was identified via identify(), or a profileId was set via
+   * init options, returns the identified (usr_-prefixed) ID. Otherwise,
+   * requests server to generate an anonymous one from IP/UA hash.
    *
    * This ID can be used for revenue attribution with payment providers.
    *
@@ -880,9 +891,11 @@ export class Lib {
       return this.identifiedProfileId
     }
 
-    // If profileId is already set in options, return it
+    // A profileId set via init() (or a failed identify() call) is sent raw on
+    // events and prefixed server-side, so return the prefixed form here too -
+    // returning the raw value would not match anything in the dashboard
     if (this.options?.profileId) {
-      return this.options.profileId
+      return toStoredProfileId(this.options.profileId)
     }
 
     if (!isInBrowser()) {

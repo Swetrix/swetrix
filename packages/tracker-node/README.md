@@ -431,7 +431,7 @@ const profileId = await swetrix.getProfileId('192.155.52.12', 'Mozilla/5.0...')
 // e.g., Paddle Checkout customData: { swetrix_profile_id: profileId }
 ```
 
-If you set a `profileId` in the constructor options, it will be returned directly instead of generating one.
+If you set a `profileId` in the constructor options, its identified form (`usr_`-prefixed, the way events are stored) is returned instead of generating an anonymous one. Always attribute revenue with the value this returns, not the raw ID you passed in.
 
 ## Identifying users
 

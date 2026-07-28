@@ -1,6 +1,6 @@
 {
   "name": "@swetrix/node",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "description": "Swetrix NodeJS server-side tracking module",
   "keywords": [
     "analytics",

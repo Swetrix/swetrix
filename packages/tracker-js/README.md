@@ -294,6 +294,8 @@ const sessionId = await getSessionId()
 
 These are useful for revenue attribution with payment providers like Paddle.
 
+`getProfileId()` returns the ID the visitor's events are actually stored under — `usr_`-prefixed once they're identified (via `identify()` or a `profileId` on `init()`), `anon_`-prefixed otherwise. Attribute revenue with this value, not the raw ID you passed in.
+
 ## Self-Hosting
 
 If you're running a self-hosted [Swetrix API](https://github.com/Swetrix/swetrix-api) instance, point the `apiURL` to your server:

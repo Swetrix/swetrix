@@ -514,7 +514,13 @@ swetrix.clearExperimentsCache();
 
 ## getProfileId()
 
-Gets the profile ID for the current visitor. If the visitor was identified via [identify()](#identify), returns the identified (`usr_`-prefixed) profile ID events are stored under. If `profileId` was set via `init`, returns that. Otherwise, requests server to generate an anonymous one from IP/UA hash.
+Gets the profile ID the current visitor's events are stored under. If the visitor was identified via [identify()](#identify), or a `profileId` was set via `init`, returns the identified (`usr_`-prefixed) profile ID. Otherwise, requests server to generate an anonymous (`anon_`-prefixed) one from IP/UA hash.
+
+<Callout type="info">
+  The prefix matters: your own user ID is stored behind `usr_`, so a raw `user-12345` won't match
+  anything in the dashboard. Always attribute revenue with the value `getProfileId()` returns rather
+  than the ID you passed to `init()` / `identify()`.
+</Callout>
 
 This ID is commonly used for [revenue attribution](/analytics-dashboard/revenue-tracking#user-attribution) — pass it to your payment provider (`swetrix_profile_id` in Stripe metadata or Paddle `customData`) or include it in the request body when posting to [`/log/revenue`](/events-api#post-logrevenue) to link transactions to specific visitors.
 
