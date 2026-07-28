@@ -609,6 +609,11 @@ export const ProfileDetails = ({
     [details?.lastSeen],
   )
 
+  const traits = useMemo(
+    () => Object.entries(details?.traits || {}),
+    [details?.traits],
+  )
+
   if (!details) return <Loader />
 
   const avgDurationStr = details.avgDuration
@@ -982,6 +987,20 @@ export const ProfileDetails = ({
               ) : null}
             </div>
           </PanelSection>
+
+          {_isEmpty(traits) ? null : (
+            <PanelSection title={t('project.userTraits')}>
+              <div>
+                {traits.map(([key, value]) => (
+                  <InfoRow
+                    key={key}
+                    label={key}
+                    value={<span title={value}>{value}</span>}
+                  />
+                ))}
+              </div>
+            </PanelSection>
+          )}
 
           <PanelSection title={t('project.locationAndDevice')}>
             <div>

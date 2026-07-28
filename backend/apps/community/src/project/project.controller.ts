@@ -1027,6 +1027,14 @@ export class ProjectController {
         query: `ALTER TABLE error_statuses DELETE WHERE pid={pid:FixedString(12)}`,
         query_params: { pid: id },
       })
+      await clickhouse.command({
+        query: `ALTER TABLE profile_aliases DELETE WHERE pid={pid:FixedString(12)}`,
+        query_params: { pid: id },
+      })
+      await clickhouse.command({
+        query: `ALTER TABLE profile_traits DELETE WHERE pid={pid:FixedString(12)}`,
+        query_params: { pid: id },
+      })
       await deleteProjectRedis(id)
       return 'Project deleted successfully'
     } catch (e) {

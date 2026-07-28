@@ -2795,6 +2795,9 @@ export class AnalyticsController {
    * previously recorded for the anonymous profile get attributed to the
    * identified profile at query time; the tracker stamps all subsequent
    * events with the supplied profileId directly.
+   *
+   * Optional traits (email, plan, ...) are stored against the identified
+   * profile and shown on its dashboard page.
    */
   @Post('identify')
   @Public()
@@ -2823,7 +2826,9 @@ export class AnalyticsController {
       return BOT_RESPONSE
     }
 
-    this.analyticsService.validateUserSuppliedProfileId(dto.profileId)
+    const profileId = this.analyticsService.validateUserSuppliedProfileId(
+      dto.profileId,
+    )
 
     await this.analyticsService.validate(dto, origin, ip)
 
@@ -2831,8 +2836,16 @@ export class AnalyticsController {
       dto.pid,
       userAgent,
       ip,
-      dto.profileId,
+      profileId,
     )
+
+    if (!_isEmpty(dto.traits)) {
+      await this.analyticsService.saveProfileTraits(
+        dto.pid,
+        userProfileId,
+        dto.traits,
+      )
+    }
 
     const anonProfileId = await this.analyticsService.generateProfileId(
       dto.pid,

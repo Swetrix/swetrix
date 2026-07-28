@@ -46,6 +46,12 @@ declare global {
   }
 }
 
+/**
+ * Key / value metadata describing an identified user (email, plan, signup
+ * date, ...). Values are stored as strings; `null` removes a trait.
+ */
+export type Traits = Record<string, string | number | boolean | null>
+
 export interface LibOptions {
   /**
    * When set to `true`, localhost events will be sent to server.
@@ -661,10 +667,13 @@ export class Lib {
    * load while the user is logged in. Call reset() when they log out.
    *
    * @param profileId A unique, stable identifier of the user, e.g. an internal
-   * user ID. Don't use emails or other mutable / personally identifiable
-   * values. The ID is hashed server-side and never stored in raw form.
+   * user ID. It's stored as you provide it, so don't pass values you wouldn't
+   * want to see in your dashboard.
+   * @param traits Optional key / value metadata to show on the user's profile,
+   * e.g. their email, plan or signup date. Traits are merged with the ones
+   * already stored; pass `null` to remove one.
    */
-  async identify(profileId: string): Promise<void> {
+  async identify(profileId: string, traits?: Traits): Promise<void> {
     if (typeof profileId !== 'string' || !profileId.trim()) {
       console.error('[Swetrix] identify() expects a non-empty string profileId')
       return
@@ -677,11 +686,14 @@ export class Lib {
       profileId: trimmed,
     }
 
-    if (!this.canTrack() || this.lastIdentifySent === trimmed) {
+    // Traits are part of the payload, so re-send when only they changed
+    const identifyKey = `${trimmed}:${traits ? JSON.stringify(traits) : ''}`
+
+    if (!this.canTrack() || this.lastIdentifySent === identifyKey) {
       return
     }
 
-    this.lastIdentifySent = trimmed
+    this.lastIdentifySent = identifyKey
 
     // The profile changed, so cached flags / experiments may no longer apply
     this.clearFeatureFlagsCache()
@@ -693,7 +705,7 @@ export class Lib {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ pid: this.projectID, profileId: trimmed }),
+        body: JSON.stringify({ pid: this.projectID, profileId: trimmed, traits }),
       })
 
       if (!response.ok) {
@@ -706,6 +718,27 @@ export class Lib {
       // Keep the profileId set locally even if the identify request failed -
       // events will still be attributed to the identified profile
     }
+  }
+
+  /**
+   * Updates the traits of the already identified visitor without having to
+   * repeat their user ID. Only the keys you pass are touched; pass `null` to
+   * remove a trait.
+   */
+  async setTraits(traits: Traits): Promise<void> {
+    const profileId = this.options?.profileId
+
+    if (!profileId) {
+      console.error('[Swetrix] setTraits() requires the visitor to be identified via identify() first')
+      return
+    }
+
+    if (!traits || typeof traits !== 'object' || Array.isArray(traits)) {
+      console.error('[Swetrix] setTraits() expects an object of traits')
+      return
+    }
+
+    await this.identify(profileId, traits)
   }
 
   /**

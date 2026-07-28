@@ -14,6 +14,7 @@ import {
   SessionReplayOptions,
   SessionReplayActions,
   defaultSessionReplayActions,
+  Traits,
 } from './Lib.js'
 
 export let LIB_INSTANCE: Lib | null = null
@@ -289,22 +290,44 @@ export function clearExperimentsCache(): void {
  * while the user is logged in. Call reset() when they log out.
  *
  * @param profileId A unique, stable identifier of the user, e.g. an internal
- * user ID. Don't use emails or other mutable / personally identifiable values.
- * The ID is hashed server-side and never stored in raw form.
+ * user ID. It's stored as you provide it, so don't pass values you wouldn't
+ * want to see in your dashboard.
+ * @param traits Optional key / value metadata to show on the user's profile,
+ * e.g. their email, plan or signup date. Traits are merged with the ones
+ * already stored; pass `null` to remove one.
  *
  * @example
  * ```typescript
  * // After the user logs in (or on page load if they're already logged in)
- * swetrix.identify('user-12345')
+ * swetrix.identify('user-12345', {
+ *   email: 'john@example.com',
+ *   plan: 'premium',
+ * })
  *
  * // On logout
  * swetrix.reset()
  * ```
  */
-export async function identify(profileId: string): Promise<void> {
+export async function identify(profileId: string, traits?: Traits): Promise<void> {
   if (!LIB_INSTANCE) return
 
-  await LIB_INSTANCE.identify(profileId)
+  await LIB_INSTANCE.identify(profileId, traits)
+}
+
+/**
+ * Updates the traits of the already identified visitor without having to
+ * repeat their user ID. Only the keys you pass are touched; pass `null` to
+ * remove a trait.
+ *
+ * @example
+ * ```typescript
+ * swetrix.setTraits({ plan: 'enterprise', trialEndsAt: null })
+ * ```
+ */
+export async function setTraits(traits: Traits): Promise<void> {
+  if (!LIB_INSTANCE) return
+
+  await LIB_INSTANCE.setTraits(traits)
 }
 
 /**
@@ -387,4 +410,5 @@ export {
   IPageViewPayload,
   FeatureFlagsOptions,
   ExperimentOptions,
+  Traits,
 }

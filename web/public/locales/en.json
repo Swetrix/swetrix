@@ -1965,6 +1965,7 @@
     },
     "pageflow": "Page flow",
     "userSessions": "Sessions",
+    "userTraits": "User traits",
     "noSessions": "No sessions found for this user.",
     "unknown": "Unknown",
     "backToErrors": "Back to errors list",

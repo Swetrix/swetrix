@@ -96,6 +96,21 @@ const CLICKHOUSE_INIT_QUERIES = [
   ENGINE = ReplacingMergeTree()
   ORDER BY (pid, anonProfileId, userProfileId);`,
 
+  // Profile traits table: arbitrary key/value metadata (email, plan, ...) set
+  // for identified profiles via the identify API. One row per key so traits
+  // merge across calls; the latest value of each key wins and an empty value
+  // means the trait was removed.
+  `CREATE TABLE IF NOT EXISTS ${dbName}.profile_traits
+  (
+    pid FixedString(12),
+    profileId String CODEC(ZSTD(3)),
+    key String CODEC(ZSTD(3)),
+    value String CODEC(ZSTD(3)),
+    created DateTime64(3, 'UTC') CODEC(Delta(4), LZ4)
+  )
+  ENGINE = ReplacingMergeTree(created)
+  ORDER BY (pid, profileId, key);`,
+
   // Feature flag evaluations table
   `CREATE TABLE IF NOT EXISTS ${dbName}.feature_flag_evaluations
   (

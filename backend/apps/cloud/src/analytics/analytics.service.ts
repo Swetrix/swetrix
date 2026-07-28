@@ -116,6 +116,7 @@ import {
 import { ErrorDto } from './dto/error.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { DATA_DELETION_EVENT_TYPES } from './dto/data-deletion.dto'
+import { MAX_USER_PROFILE_ID_LENGTH } from './dto/identify.dto'
 import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
 import { UAParser } from '@ua-parser-js/pro-business'
@@ -2399,11 +2400,14 @@ export class AnalyticsService {
     userSupplied?: string,
   ): Promise<string> {
     if (userSupplied) {
-      const cleanId = userSupplied
-        .replace(AnalyticsService.PROFILE_PREFIX_ANON, '')
-        .replace(AnalyticsService.PROFILE_PREFIX_USER, '')
-      const hash = this.hashToNumericString(`${cleanId}${pid}`)
-      return `${AnalyticsService.PROFILE_PREFIX_USER}${hash}`
+      const normalised = this.normaliseUserSuppliedProfileId(userSupplied)
+
+      if (normalised) {
+        return `${AnalyticsService.PROFILE_PREFIX_USER}${normalised}`
+      }
+
+      // Unusable identifier - fall back to the anonymous fingerprint rather
+      // than fusing every visitor sending it into one profile.
     }
 
     const salt = await this.saltService.getSaltForProfile()
@@ -2444,14 +2448,54 @@ export class AnalyticsService {
     '[object object]',
   ])
 
-  validateUserSuppliedProfileId(userSupplied: string): void {
-    const normalised = userSupplied.trim().toLowerCase()
+  // Control (\p{Cc}) and format (\p{Cf}) characters never appear in a genuine
+  // identifier, but would corrupt log lines and let a profile masquerade as
+  // another one in the dashboard (e.g. via a right-to-left override).
+  private static readonly UNPRINTABLE_REGEX = /[\p{Cc}\p{Cf}]/u
 
-    if (AnalyticsService.ILLEGAL_USER_PROFILE_IDS.has(normalised)) {
+  // Traits accumulate across identify() calls, so the number of distinct keys
+  // a profile ends up with is bounded on read rather than on write.
+  static readonly MAX_PROFILE_TRAITS = 100
+
+  /**
+   * Normalises a profile ID supplied by the site (via identify() or the
+   * `profileId` field of an event). The value is stored as-is behind the
+   * `usr_` prefix - it belongs to the site, and hashing it would only make
+   * the dashboard unreadable.
+   *
+   * @returns the identifier to store, or null when it can't be used as one.
+   */
+  normaliseUserSuppliedProfileId(userSupplied: string): string | null {
+    if (typeof userSupplied !== 'string') {
+      return null
+    }
+
+    const trimmed = userSupplied.trim()
+
+    if (
+      !trimmed ||
+      trimmed.length > MAX_USER_PROFILE_ID_LENGTH ||
+      AnalyticsService.UNPRINTABLE_REGEX.test(trimmed) ||
+      AnalyticsService.ILLEGAL_USER_PROFILE_IDS.has(trimmed.toLowerCase())
+    ) {
+      return null
+    }
+
+    return trimmed
+  }
+
+  validateUserSuppliedProfileId(userSupplied: string): string {
+    const normalised = this.normaliseUserSuppliedProfileId(userSupplied)
+
+    if (!normalised) {
+      const echoed = String(userSupplied ?? '').slice(0, 64)
+
       throw new BadRequestException(
-        `"${userSupplied}" is not a valid profileId. Pass a unique, stable identifier of the user (e.g. an internal user ID), see https://docs.swetrix.com/visitor-identification`,
+        `"${echoed}" is not a valid profileId. Pass a unique, stable identifier of the user (e.g. an internal user ID) of up to ${MAX_USER_PROFILE_ID_LENGTH} characters, see https://docs.swetrix.com/visitor-identification`,
       )
     }
+
+    return normalised
   }
 
   private getProfileAliasKey(pid: string, anonProfileId: string): string {
@@ -2556,6 +2600,110 @@ export class AnalyticsService {
     }
 
     return true
+  }
+
+  private getProfileTraitsKey(pid: string, profileId: string): string {
+    return `pft:${pid}:${profileId}`
+  }
+
+  /**
+   * Stores the traits (arbitrary key/value metadata a site attaches to a user -
+   * email, plan, signup date, ...) of an identified profile.
+   *
+   * Traits are merged per key: a later call only overwrites the keys it
+   * carries, and an empty value removes a trait. Storing one row per key lets
+   * ClickHouse handle that without a read-modify-write cycle.
+   */
+  async saveProfileTraits(
+    pid: string,
+    profileId: string,
+    traits: Record<string, string>,
+  ): Promise<void> {
+    const keys = _sortBy(_keys(traits))
+
+    if (_isEmpty(keys)) {
+      return
+    }
+
+    // identify() is called on every page load, so the same traits arrive over
+    // and over again - skip the insert when nothing changed since the last one.
+    const cacheKey = this.getProfileTraitsKey(pid, profileId)
+    const fingerprint = this.hashToNumericString(
+      JSON.stringify(_map(keys, (key) => [key, traits[key]])),
+    )
+
+    try {
+      if ((await redis.get(cacheKey)) === fingerprint) {
+        return
+      }
+
+      // Millisecond precision: `created` is the ReplacingMergeTree version, so
+      // two updates of the same trait within a second must still be ordered.
+      const created = dayjs.utc().format('YYYY-MM-DD HH:mm:ss.SSS')
+
+      await clickhouse.insert({
+        table: 'profile_traits',
+        format: 'JSONEachRow',
+        values: _map(keys, (key) => ({
+          pid,
+          profileId,
+          key,
+          value: traits[key],
+          created,
+        })),
+        clickhouse_settings: { async_insert: 1 },
+      })
+
+      await redis.set(cacheKey, fingerprint, 'EX', 3600)
+    } catch (error) {
+      this.logger.error(`[saveProfileTraits] Failed to save traits: ${error}`)
+    }
+  }
+
+  /**
+   * Latest value of every trait set for the given profiles. Traits whose value
+   * was cleared are dropped.
+   */
+  async getProfileTraits(
+    pid: string,
+    profileIds: string[],
+  ): Promise<Record<string, string>> {
+    if (_isEmpty(profileIds)) {
+      return {}
+    }
+
+    const query = `
+      SELECT key, argMax(value, created) AS value
+      FROM profile_traits
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId IN {profileIds:Array(String)}
+      GROUP BY key
+      HAVING value != ''
+      ORDER BY key ASC
+      LIMIT {limit:UInt32}
+    `
+
+    try {
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: {
+            pid,
+            profileIds,
+            limit: AnalyticsService.MAX_PROFILE_TRAITS,
+          },
+        })
+        .then((resultSet) => resultSet.json<{ key: string; value: string }>())
+
+      return _reduce(
+        data,
+        (acc, { key, value }) => ({ ...acc, [key]: value }),
+        {} as Record<string, string>,
+      )
+    } catch (error) {
+      this.logger.error(`[getProfileTraits] Failed to load traits: ${error}`)
+      return {}
+    }
   }
 
   /**
@@ -8815,6 +8963,7 @@ export class AnalyticsService {
       errorsResult,
       detailsResult,
       revenueResult,
+      traits,
     ] = await Promise.all([
       clickhouse
         .query({ query: querySessionCount, query_params: params })
@@ -8837,6 +8986,7 @@ export class AnalyticsService {
       clickhouse
         .query({ query: queryRevenue, query_params: params })
         .then((resultSet) => resultSet.json()),
+      this.getProfileTraits(pid, profileIds),
     ])
 
     const sessionCount = (sessionCountResult.data[0] || {}) as Record<
@@ -8853,6 +9003,7 @@ export class AnalyticsService {
     return {
       profileId: canonicalId,
       isIdentified: this.isUserSuppliedProfile(canonicalId),
+      traits,
       sessionsCount: sessionCount.sessionsCount || 0,
       pageviewsCount: pageviews.pageviewsCount || 0,
       eventsCount: events.eventsCount || 0,

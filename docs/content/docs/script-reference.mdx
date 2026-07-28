@@ -181,12 +181,24 @@ swetrix.identify("user-12345");
 
 Swetrix stores nothing in the browser (no cookies, no `localStorage`), so the identification only lasts for the current page life. Call `identify()` on every page load while the user is logged in — repeated calls with the same ID are deduplicated and cost you nothing extra.
 
+You can also pass **traits** — arbitrary key / value metadata shown in the "User traits" section of the user's profile:
+
+```javascript
+swetrix.identify("user-12345", {
+  email: "john@example.com",
+  name: "John Doe",
+  plan: "premium",
+});
+```
+
+Traits are merged per key, so a later call only overwrites the keys it carries and `null` removes a trait. Per call you can send up to 50 keys, keys of up to 128 characters, and 2000 characters for all keys and values combined; values must be strings, numbers, booleans or `null` and are stored as strings.
+
 <Callout type="warn">
   Use a unique, **stable** identifier — your application's internal user ID is the best choice.
-  Don't use email addresses (they're personal data and can change) or values like `null`,
-  `undefined` or `"guest"` (the API rejects those, as they would fuse unrelated visitors into a
-  single profile). The ID you pass is hashed together with your project ID server-side and is never
-  stored in its raw form.
+  Don't use values like `null`, `undefined` or `"guest"`: the API rejects those, as they would fuse
+  unrelated visitors into a single profile. The ID you pass is stored as provided (behind a `usr_`
+  prefix) and shown in your dashboard, so if you want a user's email on their profile, send it as a
+  trait rather than using it as the ID.
 </Callout>
 
 A few things to know about how linking works:
@@ -194,6 +206,16 @@ A few things to know about how linking works:
 - An anonymous profile is linked to the **first** identified profile that claims it. If a second person logs in with a different account on the same device and network, their identity is stamped on their own events going forward, but the shared anonymous history stays with the first account.
 - Anonymous profiles rotate monthly (see [visitor identification](/visitor-identification)), so `identify()` links the visitor's recent anonymous activity — up to about a month back on that device and network.
 - Identification works across devices: call `identify()` with the same ID on any device and all of that activity is unified under one profile.
+
+## setTraits()
+
+Updates the traits of an already identified visitor without repeating their user ID. Only the keys you pass are touched; pass `null` to remove a trait.
+
+```javascript
+swetrix.setTraits({ plan: "enterprise", trialEndsAt: null });
+```
+
+Requires [`identify()`](#identify) (or a `profileId` on `init()`) to have been called first — otherwise there's no profile to attach the traits to and the call is a no-op. The same per-call limits as `identify()` apply.
 
 ## reset()
 

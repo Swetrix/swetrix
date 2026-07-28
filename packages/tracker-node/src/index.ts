@@ -223,6 +223,12 @@ export interface ExperimentOptions {
   profileId?: string
 }
 
+/**
+ * Key / value metadata describing an identified user (email, plan, signup
+ * date, ...). Values are stored as strings; `null` removes a trait.
+ */
+export type Traits = Record<string, string | number | boolean | null>
+
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 const DEFAULT_API_BASE = 'https://api.swetrix.com'
 
@@ -572,12 +578,15 @@ export class Swetrix {
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
    * @param profileId A unique, stable identifier of the user, e.g. an internal
-   * user ID. Don't use emails or other mutable / personally identifiable
-   * values. The ID is hashed server-side and never stored in raw form.
+   * user ID. It's stored as you provide it, so don't pass values you wouldn't
+   * want to see in your dashboard.
+   * @param traits Optional key / value metadata to show on the user's profile,
+   * e.g. their email, plan or signup date. Traits are merged with the ones
+   * already stored; pass `null` to remove one.
    * @returns A promise that resolves to the identified (usr_-prefixed) profile
    * ID events are stored under, or null on error.
    */
-  public async identify(ip: string, userAgent: string, profileId: string): Promise<string | null> {
+  public async identify(ip: string, userAgent: string, profileId: string, traits?: Traits): Promise<string | null> {
     if (!this.canTrack()) {
       return null
     }
@@ -596,7 +605,7 @@ export class Swetrix {
           'X-Client-IP-Address': ip,
           'User-Agent': userAgent,
         },
-        body: JSON.stringify({ pid: this.projectID, profileId: profileId.trim() }),
+        body: JSON.stringify({ pid: this.projectID, profileId: profileId.trim(), traits }),
       })
 
       if (!response.ok) {
