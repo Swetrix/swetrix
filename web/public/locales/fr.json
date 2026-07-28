@@ -1970,6 +1970,7 @@
     },
     "pageflow": "Parcours de pages",
     "userSessions": "Sessions",
+    "userTraits": "Traits utilisateur",
     "noSessions": "Aucune session trouvée pour cet utilisateur.",
     "unknown": "Inconnu",
     "backToErrors": "Retour à la liste des erreurs",
