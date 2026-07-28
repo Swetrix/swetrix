@@ -58,6 +58,10 @@ const featureKeys = [
  * The website the visitor typed on the landing hero, shown back to them with
  * its own favicon - "yes, we know what you're here to track". Rendered through
  * <Trans>, so the domain sits wherever the sentence needs it.
+ *
+ * The domain stays plain inline text so it shares the sentence's baseline (an
+ * inline-flex wrapper would synthesise its own and float the whole chip); only
+ * the icon is nudged, in em units so it tracks the surrounding font size.
  */
 const SiteChip = ({
   domain,
@@ -66,8 +70,10 @@ const SiteChip = ({
   domain: string
   children?: React.ReactNode
 }) => (
-  <span className='inline-flex items-center gap-1.5 align-[-3px] font-medium text-gray-900 dark:text-gray-50'>
-    <FaviconGlyph value={domain} className='size-4' />
+  <span className='font-medium whitespace-nowrap text-gray-900 dark:text-gray-50'>
+    <span className='mr-1.5 inline-flex size-[1.05em] align-[-0.16em]'>
+      <FaviconGlyph value={domain} className='size-full' />
+    </span>
     {children}
   </span>
 )
@@ -269,7 +275,7 @@ const Signup = ({ site = null }: SignupProps) => {
                   })}
             </Text>
             {isSelfhosted ? null : (
-              <Text as='p' colour='muted' className='mt-2'>
+              <Text as='p' colour='secondary' className='mt-2'>
                 {site ? (
                   <Trans
                     t={t}
@@ -325,7 +331,7 @@ const Signup = ({ site = null }: SignupProps) => {
             <div className='relative flex justify-center text-sm'>
               <Text
                 as='span'
-                colour='muted'
+                colour='secondary'
                 size='sm'
                 className='inline-flex items-center gap-2 bg-gray-50 px-4 dark:bg-slate-950'
               >
@@ -456,7 +462,12 @@ const Signup = ({ site = null }: SignupProps) => {
             </Button>
           </Form>
 
-          <Text as='p' size='sm' colour='muted' className='mt-6 text-center'>
+          <Text
+            as='p'
+            size='sm'
+            colour='secondary'
+            className='mt-6 text-center'
+          >
             <Trans
               t={t}
               i18nKey='auth.signup.alreadyAMember'
