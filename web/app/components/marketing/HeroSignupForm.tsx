@@ -51,9 +51,13 @@ const HeroSignupForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className='mt-8 flex w-full max-w-xl flex-col items-stretch gap-3 sm:flex-row'
+      className='mt-8 flex w-full max-w-sm flex-col items-stretch gap-3'
     >
-      <div className='flex h-12 flex-1 items-center rounded-md bg-white/10 pl-3 ring-1 ring-white/25 backdrop-blur-md transition-colors focus-within:bg-white/15 focus-within:ring-2 focus-within:ring-white/60'>
+      {/* The same shape as <Input>, in the hero's palette: inset ring, brighter
+          on hover, doubled on focus. The wrapper owns the focus treatment, so
+          the inner input drops both its outline and the blue ring
+          @tailwindcss/forms puts on every bare input. */}
+      <div className='flex h-12 items-center rounded-md bg-white/10 pl-3 ring-1 ring-white/20 backdrop-blur-md transition-shadow duration-150 ease-out ring-inset focus-within:ring-2 focus-within:ring-white hover:ring-white/40'>
         <span className='grid size-5 shrink-0 place-items-center text-gray-200'>
           <FaviconGlyph value={website} className='size-5' />
         </span>
@@ -64,12 +68,12 @@ const HeroSignupForm = () => {
           aria-label={t('main.yourWebsite')}
           autoComplete='url'
           inputMode='url'
-          className='h-full min-w-0 flex-1 border-0 bg-transparent px-2.5 text-base text-white outline-none placeholder:text-gray-300'
+          className='h-full min-w-0 flex-1 border-0 bg-transparent px-3 text-base text-white outline-hidden placeholder:text-gray-300 focus:ring-0'
         />
       </div>
       <button
         type='submit'
-        className='inline-flex h-12 shrink-0 items-center justify-center rounded-md bg-white px-5 text-slate-950 shadow-lg ring-1 shadow-slate-950/20 ring-white/30 transition-colors hover:bg-gray-100'
+        className='inline-flex h-12 items-center justify-center rounded-md bg-white px-5 text-slate-950 shadow-lg ring-1 shadow-slate-950/20 ring-white/30 transition-colors hover:bg-gray-100'
       >
         <span className='text-center text-base font-semibold'>
           {t('main.addMyWebsite')}

@@ -921,6 +921,7 @@ const Onboarding = () => {
                           />
                           <Input
                             name='websiteUrl'
+                            variant='website'
                             label={t('project.settings.websiteUrl')}
                             hint={t('project.settings.websiteUrlHint')}
                             value={projectWebsiteUrl}

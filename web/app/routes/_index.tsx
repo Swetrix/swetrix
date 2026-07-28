@@ -422,31 +422,12 @@ const HeroCTA = () => {
   const { t } = useTranslation('common')
   const { heroVariant } = useLoaderData<typeof loader>()
 
-  const liveDemoButton = (
-    <Button
-      to={LIVE_DEMO_URL}
-      linkProps={{
-        target: '_blank',
-        rel: 'noopener noreferrer',
-      }}
-      variant='secondary'
-      size='xl'
-      className='flex h-12 items-center justify-center border-white/25 bg-white/10 px-5 text-center text-base font-semibold text-white shadow-none ring-white/25 backdrop-blur-md hover:bg-white/20 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
-      aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
-    >
-      {t('common.liveDemo')}
-    </Button>
-  )
-
+  // The variant arm is deliberately a single path: one field, one button. The
+  // live demo link stays in the control arm (and in the header) - putting a
+  // second CTA next to the field is exactly the split attention we're testing
+  // our way out of.
   if (heroVariant === HERO_SIGNUP_EXPERIMENT.siteInput) {
-    return (
-      <div className='flex w-full flex-col items-center'>
-        <HeroSignupForm />
-        <div className='mt-3 flex w-full flex-col items-stretch sm:w-auto'>
-          {liveDemoButton}
-        </div>
-      </div>
-    )
+    return <HeroSignupForm />
   }
 
   return (
@@ -466,7 +447,19 @@ const HeroCTA = () => {
         </span>
         <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-5' />
       </Link>
-      {liveDemoButton}
+      <Button
+        to={LIVE_DEMO_URL}
+        linkProps={{
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        }}
+        variant='secondary'
+        size='xl'
+        className='flex h-12 items-center justify-center border-white/25 bg-white/10 px-5 text-center text-base font-semibold text-white shadow-none ring-white/25 backdrop-blur-md hover:bg-white/20 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20'
+        aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
+      >
+        {t('common.liveDemo')}
+      </Button>
     </div>
   )
 }
