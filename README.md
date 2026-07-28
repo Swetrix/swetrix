@@ -15,7 +15,7 @@
     <br />
     <a href="https://swetrix.com">Website</a>
     ·
-    <a href="https://docs.swetrix.com">Docs</a>
+    <a href="https://swetrix.com/docs">Docs</a>
     ·
     <a href="https://github.com/Swetrix/swetrix/issues">Issues</a>
     ·
@@ -27,7 +27,7 @@
 
 <p align="center">
   <a href="https://swetrix.com"><img src="https://img.shields.io/badge/Try%20Swetrix%20Cloud-free%20trial-1d4ed8" alt="Try Swetrix Cloud"></a>
-  <a href="https://docs.swetrix.com/selfhosting/how-to"><img src="https://img.shields.io/badge/Self--host-with%20Docker-555" alt="Self-host with Docker"></a>
+  <a href="https://swetrix.com/docs/selfhosting/how-to"><img src="https://img.shields.io/badge/Self--host-with%20Docker-555" alt="Self-host with Docker"></a>
   <a href="https://github.com/Swetrix/swetrix/stargazers"><img src="https://img.shields.io/github/stars/Swetrix/swetrix?style=flat&label=Stars" alt="GitHub stars"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-AGPLv3-green" alt="License"></a>
 </p>
@@ -45,7 +45,7 @@ It goes beyond pageviews: alongside traffic stats you get **error tracking**, **
 
 Open source since 2021, bootstrapped, and funded entirely by our subscribers. Made in the 🇬🇧 UK, hosted on Hetzner in 🇩🇪 Germany.
 
-👉 **[Try it free on Swetrix Cloud](https://swetrix.com)** or **[self-host with Docker](https://docs.swetrix.com/selfhosting/how-to)**.
+👉 **[Try it free on Swetrix Cloud](https://swetrix.com)** or **[self-host with Docker](https://swetrix.com/docs/selfhosting/how-to)**.
 
 ## ✨ Features
 
@@ -60,7 +60,7 @@ Open source since 2021, bootstrapped, and funded entirely by our subscribers. Ma
 - **Error tracking** — capture client-side errors with details and aggregated views.
 - **Session replays** *(Cloud)* — replay sessions to see exactly where visitors get stuck.
 - **Sharing & teams** — public or password-protected dashboards; invite teammates with roles, or manage access with organisations.
-- **Data portability** — export to CSV and access everything via the [developer API](https://docs.swetrix.com/statistics-api).
+- **Data portability** — export to CSV and access everything via the [developer API](https://swetrix.com/docs/statistics-api).
 - **More** — alerts & notifications, feature flags, A/B experiments, revenue analytics and Ask AI *(Cloud)*.
 
 ## Swetrix vs Google Analytics vs Plausible
@@ -93,7 +93,7 @@ We handle hosting, maintenance, backups and a worldwide CDN — you keep full ow
 
 - **[Start free →](https://swetrix.com)** — free trial, then from $19/mo
 - **[Live demo →](https://swetrix.com/demo)**
-- **[Docs →](https://docs.swetrix.com)**
+- **[Docs →](https://swetrix.com/docs)**
 
 Your subscription directly funds maintenance and development of the open-source project.
 
@@ -101,7 +101,7 @@ Your subscription directly funds maintenance and development of the open-source 
 
 Prefer to run it yourself? Swetrix Community Edition (CE) ships the same core analytics: privacy-friendly traffic stats, custom events, sessions, funnels, performance and error tracking. Deploy the API and UI with Docker, connect MySQL / ClickHouse / Redis, and you're live.
 
-- **[Self-hosting guide →](https://docs.swetrix.com/selfhosting/how-to)**
+- **[Self-hosting guide →](https://swetrix.com/docs/selfhosting/how-to)**
 
 #### Cloud vs Community Edition
 

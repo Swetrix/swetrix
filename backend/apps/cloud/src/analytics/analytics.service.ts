@@ -2501,7 +2501,7 @@ export class AnalyticsService {
       const echoed = String(userSupplied ?? '').slice(0, 64)
 
       throw new BadRequestException(
-        `"${echoed}" is not a valid profileId. Pass a unique, stable identifier of the user (e.g. an internal user ID) of up to ${MAX_USER_PROFILE_ID_LENGTH} characters, see https://docs.swetrix.com/visitor-identification`,
+        `"${echoed}" is not a valid profileId. Pass a unique, stable identifier of the user (e.g. an internal user ID) of up to ${MAX_USER_PROFILE_ID_LENGTH} characters, see https://swetrix.com/docs/visitor-identification`,
       )
     }
 

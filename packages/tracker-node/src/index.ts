@@ -244,7 +244,7 @@ export class Swetrix {
   }
 
   /**
-   * This function is used to send custom events (implements https://docs.swetrix.com/events-api#post-logcustom).
+   * This function is used to send custom events (implements https://swetrix.com/docs/events-api#post-logcustom).
    *
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
@@ -265,7 +265,7 @@ export class Swetrix {
   }
 
   /**
-   * This function is used to send pageview events (implements https://docs.swetrix.com/events-api#post-log).
+   * This function is used to send pageview events (implements https://swetrix.com/docs/events-api#post-log).
    *
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
@@ -280,7 +280,7 @@ export class Swetrix {
     const data = {
       pid: this.projectID,
       profileId: pageview?.profileId ?? this.options?.profileId,
-      ...(pageview || {}),
+      ...pageview,
     }
 
     await this.sendRequest('', ip, userAgent, data)
@@ -302,14 +302,14 @@ export class Swetrix {
 
     const data = {
       pid: this.projectID,
-      ...(error || {}),
+      ...error,
     }
 
     await this.sendRequest('error', ip, userAgent, data)
   }
 
   /**
-   * This function is used to send heartbeat events (implements https://docs.swetrix.com/events-api#post-loghb).
+   * This function is used to send heartbeat events (implements https://swetrix.com/docs/events-api#post-loghb).
    * Heartbeat events are used to determine if the user session is still active.
    * This allows you to see the 'Live Visitors' counter in the Dashboard panel.
    * It's recommended to send heartbeat events every 30 seconds.
@@ -565,7 +565,7 @@ export class Swetrix {
 
   /**
    * Identify a visitor with your own user ID (e.g. after they log in),
-   * implements https://docs.swetrix.com/events-api#post-logidentify.
+   * implements https://swetrix.com/docs/events-api#post-logidentify.
    *
    * The visitor's current anonymous profile (derived from their IP and user
    * agent) gets linked to the identified profile server-side, so their

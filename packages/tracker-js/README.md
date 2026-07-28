@@ -306,7 +306,7 @@ init('YOUR_PROJECT_ID', {
 
 ## Documentation
 
-Full reference and guides are available at [docs.swetrix.com](https://docs.swetrix.com).
+Full reference and guides are available at [docs.swetrix.com](https://swetrix.com/docs).
 
 ## Contributing
 

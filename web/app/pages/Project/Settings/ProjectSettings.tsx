@@ -1221,7 +1221,7 @@ const ProjectSettings = () => {
                         ),
                         url: (
                           <a
-                            href='https://docs.swetrix.com/selfhosting/google-search-console'
+                            href='https://swetrix.com/docs/selfhosting/google-search-console'
                             aria-label={t(
                               'ariaLabels.openGoogleSearchConsoleSelfHostingGuide',
                             )}

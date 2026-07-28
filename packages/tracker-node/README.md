@@ -78,7 +78,7 @@ swetrix.trackPageView(ip, userAgent, { pg: '/home' })
 ## Tracking pageviews
 
 **To track pageviews, custom events and heartbeat events you have to pass your website visitors IP address and user agent, otherwise functionality like unique visitors or live visitors tracking will not work!**\
-You can read about it in details on our [Events API](https://docs.swetrix.com/events-api#unique-visitors-tracking) documentation page.
+You can read about it in details on our [Events API](https://swetrix.com/docs/events-api#unique-visitors-tracking) documentation page.
 
 Tracking pageviews can be done by calling the following function:
 
