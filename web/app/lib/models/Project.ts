@@ -154,6 +154,7 @@ export interface Profile {
 
 export interface ProfileDetails extends Profile {
   avgDuration: number
+  traits?: Record<string, string>
   region: string | null
   city: string | null
   locale: string | null

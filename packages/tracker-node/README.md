@@ -433,6 +433,29 @@ const profileId = await swetrix.getProfileId('192.155.52.12', 'Mozilla/5.0...')
 
 If you set a `profileId` in the constructor options, it will be returned directly instead of generating one.
 
+## Identifying users
+
+Link a visitor's anonymous profile to your own user ID (e.g. after they log in), so their pre-login activity is attributed to the identified profile:
+
+```javascript
+const identifiedProfileId = await swetrix.identify('192.155.52.12', 'Mozilla/5.0...', 'user-12345')
+```
+
+Use a unique, stable identifier (e.g. an internal user ID). Surrounding whitespace is trimmed; otherwise the ID is stored as provided and shown in your dashboard, so don't pass values you wouldn't want to see there.
+
+You can also pass **traits** — key / value metadata displayed on the user's profile. Traits are merged per key, and `null` removes one:
+
+```javascript
+await swetrix.identify('192.155.52.12', 'Mozilla/5.0...', 'user-12345', {
+  email: 'john@example.com',
+  plan: 'premium',
+})
+```
+
+Per call: max 50 keys, 128 characters per key, and 2000 characters for all keys and values combined.
+
+Note: unlike the browser tracker, `identify()` does not set a default `profileId` for subsequent calls — a `Swetrix` instance is shared across all visitors of your server. Keep passing `profileId` per `track()` / `trackPageView()` call.
+
 ## Session ID
 
 Get the current session ID for the visitor. Session IDs are generated server-side based on IP and user agent.

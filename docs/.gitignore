@@ -3,3 +3,4 @@ node_modules/
 .static-archive/
 .source/
 out/
+.static-archive/

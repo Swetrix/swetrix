@@ -83,6 +83,34 @@ const CLICKHOUSE_INIT_QUERIES = [
   ORDER BY (pid, psid)
   PARTITION BY toYYYYMM(firstSeen);`,
 
+  // Profile aliases table: maps anonymous (anon_) profile IDs to identified (usr_)
+  // profile IDs created via the identify API. Resolved at query time with
+  // argMin(userProfileId, created) so the first identification wins.
+  `CREATE TABLE IF NOT EXISTS ${dbName}.profile_aliases
+  (
+    pid FixedString(12),
+    anonProfileId String CODEC(ZSTD(3)),
+    userProfileId String CODEC(ZSTD(3)),
+    created DateTime('UTC') CODEC(Delta(4), LZ4)
+  )
+  ENGINE = ReplacingMergeTree()
+  ORDER BY (pid, anonProfileId, userProfileId);`,
+
+  // Profile traits table: arbitrary key/value metadata (email, plan, ...) set
+  // for identified profiles via the identify API. One row per key so traits
+  // merge across calls; the latest value of each key wins and an empty value
+  // means the trait was removed.
+  `CREATE TABLE IF NOT EXISTS ${dbName}.profile_traits
+  (
+    pid FixedString(12),
+    profileId String CODEC(ZSTD(3)),
+    key String CODEC(ZSTD(3)),
+    value String CODEC(ZSTD(3)),
+    created DateTime64(3, 'UTC') CODEC(Delta(4), LZ4)
+  )
+  ENGINE = ReplacingMergeTree(created)
+  ORDER BY (pid, profileId, key);`,
+
   // Feature flag evaluations table
   `CREATE TABLE IF NOT EXISTS ${dbName}.feature_flag_evaluations
   (

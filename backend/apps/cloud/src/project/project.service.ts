@@ -514,6 +514,8 @@ export class ProjectService {
     const queries = [
       'ALTER TABLE events DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
       'ALTER TABLE error_statuses DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+      'ALTER TABLE profile_aliases DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+      'ALTER TABLE profile_traits DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
     ]
 
     await Promise.all(

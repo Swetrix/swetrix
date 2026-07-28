@@ -23,6 +23,7 @@ export type BotEndpoint =
   | 'error'
   | 'feature_flag'
   | 'heartbeat'
+  | 'identify'
   | 'noscript'
 
 interface BotDetectionInput {

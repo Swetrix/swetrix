@@ -260,6 +260,31 @@ await startSessionReplay({
 })
 ```
 
+### `identify(profileId, traits?)` / `setTraits(traits)` / `reset()`
+
+Identify the current visitor with your own user ID (e.g. after they log in). Their current anonymous profile gets linked to the identified profile server-side, so pre-login activity is attributed to it, and all subsequent events are tracked under the identified profile.
+
+```javascript
+// After the user logs in (or on page load if they're already logged in)
+identify('user-12345')
+
+// On logout
+reset()
+```
+
+Use a unique, stable identifier (e.g. an internal user ID). The ID is stored as provided and shown in your dashboard, so don't pass values you wouldn't want to see there. Swetrix stores nothing in the browser, so call `identify()` on every page load while the user is logged in.
+
+Optionally pass **traits** — key / value metadata displayed on the user's profile:
+
+```javascript
+identify('user-12345', { email: 'john@example.com', plan: 'premium' })
+
+// Later, without repeating the user ID. null removes a trait
+setTraits({ plan: 'enterprise', trialEndsAt: null })
+```
+
+Traits are merged per key. Per call: max 50 keys, 128 characters per key, and 2000 characters for all keys and values combined.
+
 ### Session & Profile IDs
 
 ```javascript
