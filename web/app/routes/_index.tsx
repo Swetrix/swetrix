@@ -47,10 +47,7 @@ import { LogoCloud } from '~/components/marketing/LogoCloud'
 import { ScrollReveal } from '~/components/marketing/ScrollReveal'
 import { WhySwitch } from '~/components/marketing/WhySwitch'
 import { Text } from '~/ui/Text'
-import {
-  getExperimentVariant,
-  HERO_SIGNUP_EXPERIMENT_ID,
-} from '~/utils/analytics.server'
+import { getExperimentVariant } from '~/utils/analytics.server'
 import { trackCustom } from '~/utils/analytics'
 import { HERO_SIGNUP_EXPERIMENT } from '~/utils/experiments'
 
@@ -81,7 +78,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // visitor never sees the control arm flash before the variant swaps in.
     getExperimentVariant(
       request,
-      HERO_SIGNUP_EXPERIMENT_ID,
+      'hero-signup',
       HERO_SIGNUP_EXPERIMENT.control,
     ),
   ])

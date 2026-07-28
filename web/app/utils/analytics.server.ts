@@ -12,15 +12,6 @@ const swetrix = new Swetrix(SWETRIX_PID, {
 
 const EXPERIMENT_FETCH_TIMEOUT_MS = 5_000
 
-/**
- * Hero signup CTA experiment (control: trial button, variant: website input).
- * Create the experiment in the Swetrix dashboard, link a feature flag to it,
- * then paste its UUID here or set the env var - an empty value keeps every
- * visitor on the control arm.
- */
-export const HERO_SIGNUP_EXPERIMENT_ID =
-  process.env.HERO_SIGNUP_EXPERIMENT_ID || ''
-
 export async function getExperimentVariant(
   request: Request,
   experimentId: string,
