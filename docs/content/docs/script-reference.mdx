@@ -196,9 +196,9 @@ Traits are merged per key, so a later call only overwrites the keys it carries a
 <Callout type="warn">
   Use a unique, **stable** identifier — your application's internal user ID is the best choice.
   Don't use values like `null`, `undefined` or `"guest"`: the API rejects those, as they would fuse
-  unrelated visitors into a single profile. The ID you pass is stored as provided (behind a `usr_`
-  prefix) and shown in your dashboard, so if you want a user's email on their profile, send it as a
-  trait rather than using it as the ID.
+  unrelated visitors into a single profile. Surrounding whitespace is trimmed; otherwise the ID you
+  pass is stored as provided (behind a `usr_` prefix) and shown in your dashboard, so if you want a
+  user's email on their profile, send it as a trait rather than using it as the ID.
 </Callout>
 
 A few things to know about how linking works:

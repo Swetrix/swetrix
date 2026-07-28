@@ -2,7 +2,7 @@ import _keys from 'lodash/keys'
 import _some from 'lodash/some'
 import _values from 'lodash/values'
 import { ApiProperty } from '@nestjs/swagger'
-import { Transform } from 'class-transformer'
+import { Transform, Type } from 'class-transformer'
 import {
   IsNotEmpty,
   IsObject,
@@ -33,8 +33,9 @@ class TraitsKeysQuantity implements ValidatorConstraintInterface {
   }
 }
 
-// Control / format characters never appear in a genuine trait name, but would
-// corrupt the dashboard rendering them.
+// Control / format characters never appear in a genuine trait name or value,
+// but would corrupt the dashboard rendering them (e.g. via a right-to-left
+// override).
 const UNPRINTABLE_REGEX = /[\p{Cc}\p{Cf}]/u
 
 @ValidatorConstraint()
@@ -53,7 +54,10 @@ class TraitsKeyFormat implements ValidatorConstraintInterface {
 @ValidatorConstraint()
 class TraitsValueType implements ValidatorConstraintInterface {
   validate(traits: Record<string, string>) {
-    return !_some(_values(traits), (value) => typeof value !== 'string')
+    return !_some(
+      _values(traits),
+      (value) => typeof value !== 'string' || UNPRINTABLE_REGEX.test(value),
+    )
   }
 }
 
@@ -137,6 +141,11 @@ export class IdentifyDto {
   })
   @IsOptional()
   @IsObject()
+  // Pins the target type of the nested object. Without it class-transformer
+  // guesses one from `value.constructor`, which a `{"constructor": "..."}`
+  // trait turns into a string and blows up with a TypeError (a 500 on this
+  // public endpoint) before any validation below runs.
+  @Type(() => Object)
   @Transform(({ value }) => transformTraits(value))
   @Validate(TraitsKeysQuantity, {
     message: `Traits object can't have more than ${MAX_TRAITS_KEYS} keys`,
@@ -145,7 +154,8 @@ export class IdentifyDto {
     message: `Traits keys must be non-empty and no longer than ${MAX_TRAIT_KEY_LENGTH} characters`,
   })
   @Validate(TraitsValueType, {
-    message: 'All of traits object values must be primitive JSON values',
+    message:
+      'All of traits object values must be primitive JSON values without control characters',
   })
   @Validate(TraitsSizeLimit, {
     message: `Traits object can't have keys and values with total length more than ${MAX_TRAITS_TOTAL_LENGTH} characters`,

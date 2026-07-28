@@ -143,10 +143,11 @@ swetrix.identify("user-12345");
 swetrix.reset();
 ```
 
-Your user ID is stored exactly as you send it, behind a `usr_` prefix —
-so the profile that shows up in your dashboard is `usr_user-12345`, and
-you can look a user up by the same ID you use in your own database.
-Only send identifiers you're comfortable seeing in the dashboard.
+Your user ID is stored as you send it — bar surrounding whitespace,
+which is trimmed — behind a `usr_` prefix, so the profile that shows up
+in your dashboard is `usr_user-12345`, and you can look a user up by the
+same ID you use in your own database. Only send identifiers you're
+comfortable seeing in the dashboard.
 
 Alternatively, you can pass `profileId` to individual tracking methods —
 it's supported on `init()`, `track()`, `pageview()`,
@@ -210,10 +211,11 @@ choices:
   a webview.
 
 <Callout type="warn">
-  The `profileId` is stored as provided — Swetrix doesn't hash or otherwise transform it. Prefer an
-  opaque internal ID over email addresses, full names or phone numbers, and pseudonymise on your
-  side if your privacy policy requires it. If you do want a user's email on their profile, attach it
-  as a [trait](#user-traits) instead of using it as the ID.
+  The `profileId` is stored as provided, apart from surrounding whitespace, which is trimmed —
+  Swetrix doesn't hash or otherwise transform it. Prefer an opaque internal ID over email addresses,
+  full names or phone numbers, and pseudonymise on your side if your privacy policy requires it. If
+  you do want a user's email on their profile, attach it as a [trait](#user-traits) instead of using
+  it as the ID.
 </Callout>
 
 ### User traits

@@ -441,7 +441,7 @@ Link a visitor's anonymous profile to your own user ID (e.g. after they log in),
 const identifiedProfileId = await swetrix.identify('192.155.52.12', 'Mozilla/5.0...', 'user-12345')
 ```
 
-Use a unique, stable identifier (e.g. an internal user ID). The ID is stored as provided and shown in your dashboard, so don't pass values you wouldn't want to see there.
+Use a unique, stable identifier (e.g. an internal user ID). Surrounding whitespace is trimmed; otherwise the ID is stored as provided and shown in your dashboard, so don't pass values you wouldn't want to see there.
 
 You can also pass **traits** — key / value metadata displayed on the user's profile. Traits are merged per key, and `null` removes one:
 

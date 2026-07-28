@@ -4007,14 +4007,7 @@ export class AnalyticsService {
     )
 
     const query = `
-      WITH profile_alias_map AS (
-        SELECT
-          anonProfileId,
-          argMin(userProfileId, created) AS userProfileId
-        FROM profile_aliases
-        WHERE pid = {pid:FixedString(12)}
-        GROUP BY anonProfileId
-      ),
+      WITH ${this.buildProfileAliasMapCTE()},
       funnel_qualified AS (
         SELECT psid
         FROM (
@@ -4176,14 +4169,7 @@ export class AnalyticsService {
       : ''
 
     const query = `
-      WITH profile_alias_map AS (
-        SELECT
-          anonProfileId,
-          argMin(userProfileId, created) AS userProfileId
-        FROM profile_aliases
-        WHERE pid = {pid:FixedString(12)}
-        GROUP BY anonProfileId
-      ),
+      WITH ${this.buildProfileAliasMapCTE()},
       journey_qualified AS (
         SELECT psid
         FROM (
@@ -8073,14 +8059,7 @@ export class AnalyticsService {
     )
 
     const query = `
-      WITH profile_alias_map AS (
-        SELECT
-          anonProfileId,
-          argMin(userProfileId, created) AS userProfileId
-        FROM profile_aliases
-        WHERE pid = {pid:FixedString(12)}
-        GROUP BY anonProfileId
-      ),
+      WITH ${this.buildProfileAliasMapCTE()},
       distinct_sessions_filtered AS (
         SELECT
           psidCasted,
@@ -8329,14 +8308,7 @@ export class AnalyticsService {
       )`
 
     const query = `
-      WITH profile_alias_map AS (
-        SELECT
-          anonProfileId,
-          argMin(userProfileId, created) AS userProfileId
-        FROM profile_aliases
-        WHERE pid = {pid:FixedString(12)}
-        GROUP BY anonProfileId
-      ),
+      WITH ${this.buildProfileAliasMapCTE()},
       ${filteredSessionsCTE},
       replay_summary AS (
         SELECT
