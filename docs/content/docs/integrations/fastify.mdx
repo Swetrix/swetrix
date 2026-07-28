@@ -3,7 +3,7 @@ title: Fastify
 slug: /fastify-integration
 ---
 
-Integrate Swetrix with your [Fastify](https://fastify.dev/) application using the [`@swetrix/node`](https://github.com/swetrix/swetrix-node) server-side SDK to track page views, monitor errors, and capture custom events — all while staying privacy-friendly and GDPR-compliant.
+Integrate Swetrix with your [Fastify](https://fastify.dev/) application using the [`@swetrix/node`](https://github.com/Swetrix/swetrix/tree/main/packages/tracker-node) server-side SDK to track page views, monitor errors, and capture custom events — all while staying privacy-friendly and GDPR-compliant.
 
 Unlike client-side integrations that inject a tracking script into the browser, `@swetrix/node` sends analytics data directly from your server. This means tracking works even when visitors have JavaScript disabled or use ad blockers, and no third-party scripts are loaded in the browser.
 
@@ -444,6 +444,6 @@ const swetrix = new Swetrix("YOUR_PROJECT_ID", {
 
 ## Further reading
 
-- [`@swetrix/node` source code](https://github.com/swetrix/swetrix-node) — full source and documentation for the server-side SDK.
+- [`@swetrix/node` source code](https://github.com/Swetrix/swetrix/tree/main/packages/tracker-node) — full source and documentation for the server-side SDK.
 - [Events API](/events-api) — API documentation for direct event submission.
 - [Fastify documentation](https://fastify.dev/docs/latest/) — official Fastify docs.
