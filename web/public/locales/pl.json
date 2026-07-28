@@ -587,6 +587,8 @@
     "description": "Swetrix to zorientowana na prywatność alternatywa dla Google Analytics, która pomaga zrozumieć odwiedzających, źródła ruchu i wydajność strony dzięki prostym statystykom bez użycia plików cookie i zgodnym z RODO - bez banerów cookie i inwazyjnego śledzenia.",
     "understandTheirUsers": "<0>{{amount}}</0> osób rozumie swoich użytkowników",
     "startAXDayFreeTrial": "{{amount}} dni za darmo",
+    "addMyWebsite": "Dodaj moją witrynę",
+    "yourWebsite": "Twoja witryna",
     "metric": "Metryka",
     "heroBenefits": {
       "trial": "Bezpłatny okres próbny przez {{days}} dni",
@@ -745,6 +747,7 @@
       "create": "Utwórz konto",
       "trial": "Rozpocznij {{amount}} dniowy, bezpłatny okres próbny",
       "trialSubtitle": "Wypróbuj wszystkie funkcje za darmo. Anuluj w dowolnym momencie przed zakończeniem okresu próbnego.",
+      "siteSubtitle": "Utwórz konto i zacznij śledzić <site>{{site}}</site> w kilka minut.",
       "changePlanLater": "Możesz zmienić swój plan później lub w dowolnym momencie.",
       "alreadyAMember": "Już jesteś członkiem? <url>Zaloguj się</url>",
       "createAnAccount": "Utwórz konto",
@@ -2021,8 +2024,8 @@
       "desc": "Nie zarejestrowano jeszcze żadnych zdarzeń. Postępuj zgodnie z poniższymi krokami instalacji, aby rozpocząć zbieranie danych. Nadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc w konfiguracji."
     },
     "waitingCaptcha": {
-      "title": "Brak zdarzeń CAPTCHA",
-      "desc": "Nie zarejestrowano jeszcze żadnych zdarzeń CAPTCHA.\nZapoznaj się z <guideurl>poradnikiem integracji</guideurl>, aby dodać CAPTCHA do swojej aplikacji.\n\nNadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc w konfiguracji.",
+      "title": "Ochrona CAPTCHA nie jest jeszcze skonfigurowana",
+      "desc": "Ta witryna nie jest jeszcze chroniona przed botami przez Swetrix CAPTCHA.\\nPostępuj zgodnie z poniższymi krokami lub <guideurl>przewodnikiem po integracji</guideurl>, aby dodać ją do swoich formularzy. Kiedy CAPTCHA zacznie weryfikować odwiedzających, jej aktywność pojawi się tutaj.\\n\\nJuż ją skonfigurowałeś? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc w konfiguracji.",
       "setup": {
         "tabs": {
           "script": "Skrypt",
@@ -3086,7 +3089,20 @@
     "sessionReplayAddonNextRenewal": "następnego odnowienia",
     "sessionReplayAddonPendingChange": "Zaplanowana zmiana dodatku nagrywania sesji wejdzie w życie z dniem {{date}}. Wybierz nową ilość lub zaktualizuj bieżące ustawienia, aby ją zastąpić.",
     "sessionReplayAddonSave": "Aktualizuj dodatek",
-    "sessionReplayAddonComingSoon": "Samodzielne zarządzanie dodatkami nagrywania sesji będzie wkrótce dostępne."
+    "sessionReplayAddonComingSoon": "Samodzielne zarządzanie dodatkami nagrywania sesji będzie wkrótce dostępne.",
+    "invoicesTitle": "Faktury",
+    "invoicesDesc": "Rachunki za każdą płatność dokonaną na Twoim koncie.",
+    "invoicesTableDate": "Data",
+    "invoicesTableDescription": "Opis",
+    "invoicesTableAmount": "Kwota",
+    "invoicesSubscriptionPayment": "Płatność za subskrypcję",
+    "invoicesOneOffCharge": "Jednorazowa opłata",
+    "invoicesViewReceipt": "Wyświetl rachunek",
+    "invoicesEmpty": "Brak faktur",
+    "invoicesEmptyDesc": "Gdy zostanie pobrana opłata za subskrypcję, rachunki pojawią się tutaj.",
+    "invoicesLoadError": "Nie udało się załadować faktur. Spróbuj ponownie później.",
+    "invoicesRetry": "Spróbuj ponownie",
+    "invoicesPaddleNote": "Płatności są przetwarzane przez Paddle, naszego autoryzowanego sprzedawcę. Rachunki otwierają się na stronie paddle.com."
   },
   "modals": {
     "paidFeature": {

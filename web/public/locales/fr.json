@@ -587,6 +587,8 @@
     "description": "Swetrix est une alternative à Google Analytics axée sur la confidentialité qui vous aide à comprendre les visiteurs, les sources de trafic et les performances du site Web grâce à des analyses simples, sans cookies et conformes au RGPD - sans bannières de cookies ni suivi invasif.",
     "understandTheirUsers": "<0>{{amount}}</0> personnes comprennent leurs utilisateurs",
     "startAXDayFreeTrial": "Essai gratuit de {{amount}} jours",
+    "addMyWebsite": "Ajouter mon site web",
+    "yourWebsite": "Votre site web",
     "metric": "Métrique",
     "heroBenefits": {
       "trial": "Essai gratuit de {{days}} jours",
@@ -745,6 +747,7 @@
       "create": "Créez votre compte",
       "trial": "Démarrez votre essai gratuit de {{amount}} jours",
       "trialSubtitle": "Essayez toutes les fonctionnalités gratuitement. Annulez à tout moment avant la fin de votre essai.",
+      "siteSubtitle": "Créez votre compte et commencez à suivre <site>{{site}}</site> en quelques minutes.",
       "changePlanLater": "Vous pouvez modifier votre forfait plus tard ou à tout moment.",
       "alreadyAMember": "Déjà membre ? <url>Connectez-vous</url>",
       "createAnAccount": "Créer un compte",
@@ -2021,8 +2024,8 @@
       "desc": "Aucun événement n'a encore été suivi. Suivez les étapes d'installation ci-dessous pour commencer à collecter des données. Cela ne fonctionne toujours pas ? Essayez de <turl>dépanner</turl> votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide sur la configuration."
     },
     "waitingCaptcha": {
-      "title": "Aucun événement CAPTCHA pour le moment",
-      "desc": "Aucun événement CAPTCHA n'a encore été suivi.\nConsultez le <guideurl>guide d'intégration</guideurl> pour ajouter un CAPTCHA à votre application.\n\nCela ne fonctionne toujours pas ? Essayez de <turl>dépanner</turl> votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide sur la configuration.",
+      "title": "La protection CAPTCHA n'est pas encore configurée",
+      "desc": "Ce site web n'est pas encore protégé des bots par le CAPTCHA Swetrix.\nSuivez les étapes ci-dessous ou le <guideurl>guide d'intégration</guideurl> pour l'ajouter à vos formulaires. Une fois que le CAPTCHA commencera à vérifier vos visiteurs, son activité s'affichera ici.\n\nDéjà configuré ? Essayez le <turl>dépannage</turl> de votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide.",
       "setup": {
         "tabs": {
           "script": "Script",
@@ -3086,7 +3089,20 @@
     "sessionReplayAddonNextRenewal": "le prochain renouvellement",
     "sessionReplayAddonPendingChange": "Un changement programmé de l'extension de replays de session prendra effet le {{date}}. Sélectionnez une nouvelle quantité ou mettez à jour les paramètres actuels pour le remplacer.",
     "sessionReplayAddonSave": "Mettre à jour l'extension",
-    "sessionReplayAddonComingSoon": "Les extensions de replays de session en libre-service seront bientôt disponibles."
+    "sessionReplayAddonComingSoon": "Les extensions de replays de session en libre-service seront bientôt disponibles.",
+    "invoicesTitle": "Factures",
+    "invoicesDesc": "Reçus pour chaque paiement effectué sur votre compte.",
+    "invoicesTableDate": "Date",
+    "invoicesTableDescription": "Description",
+    "invoicesTableAmount": "Montant",
+    "invoicesSubscriptionPayment": "Paiement d'abonnement",
+    "invoicesOneOffCharge": "Frais uniques",
+    "invoicesViewReceipt": "Voir le reçu",
+    "invoicesEmpty": "Pas encore de factures",
+    "invoicesEmptyDesc": "Une fois que vous serez facturé pour votre abonnement, les reçus apparaîtront ici.",
+    "invoicesLoadError": "Nous n'avons pas pu charger vos factures. Veuillez réessayer plus tard.",
+    "invoicesRetry": "Réessayer",
+    "invoicesPaddleNote": "Les paiements sont traités par Paddle, notre marchand officiel. Les reçus s'ouvrent sur paddle.com."
   },
   "modals": {
     "paidFeature": {

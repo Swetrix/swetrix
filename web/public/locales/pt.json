@@ -587,6 +587,8 @@
     "description": "O Swetrix é uma alternativa ao Google Analytics focada em privacidade, que ajuda você a entender visitantes, fontes de tráfego e o desempenho do site com insights simples, sem cookies e em conformidade com a GDPR - sem banners de cookies ou rastreamento invasivo.",
     "understandTheirUsers": "<0>{{amount}}</0> pessoas entendem seus usuários",
     "startAXDayFreeTrial": "Comece um teste grátis de {{amount}} dias",
+    "addMyWebsite": "Adicionar meu site",
+    "yourWebsite": "Seu site",
     "metric": "Métrica",
     "heroBenefits": {
       "trial": "Avaliação gratuita de {{days}} dias",
@@ -745,6 +747,7 @@
       "create": "Crie sua conta",
       "trial": "Comece seu teste gratuito de {{amount}} dias",
       "trialSubtitle": "Teste todos os recursos de graça. Cancele a qualquer momento antes do fim do seu teste.",
+      "siteSubtitle": "Crie sua conta e comece a rastrear <site>{{site}}</site> em minutos.",
       "changePlanLater": "Você pode mudar de plano mais tarde ou a qualquer momento.",
       "alreadyAMember": "Já é membro? <url>Entrar</url>",
       "createAnAccount": "Criar uma conta",
@@ -2021,8 +2024,8 @@
       "desc": "Nenhum evento foi rastreado ainda. Siga os passos de instalação abaixo para começar a coletar dados. Ainda não está funcionando? Tente <turl>solucionar problemas</turl> na sua integração ou <curl>entre em contato</curl> para obter ajuda na configuração."
     },
     "waitingCaptcha": {
-      "title": "Nenhum evento de CAPTCHA ainda",
-      "desc": "Nenhum evento do CAPTCHA foi rastreado ainda.\nVeja o <guideurl>guia de integração</guideurl> para adicionar o CAPTCHA ao seu aplicativo.\n\nAinda não está funcionando? Tente <turl>solucionar problemas</turl> na sua integração ou <curl>entre em contato</curl> para obter ajuda na configuração.",
+      "title": "A proteção CAPTCHA ainda não está configurada",
+      "desc": "Este site ainda não está protegido contra bots pelo Swetrix CAPTCHA.\\nSiga as etapas abaixo ou o <guideurl>guia de integração</guideurl> para adicioná-lo aos seus formulários. Assim que o CAPTCHA começar a verificar seus visitantes, sua atividade aparecerá aqui.\\n\\nJá configurou? Tente a <turl>solução de problemas</turl> da sua integração ou <curl>entre em contato conosco</curl> para obter ajuda na configuração.",
       "setup": {
         "tabs": {
           "script": "Script",
@@ -3086,7 +3089,20 @@
     "sessionReplayAddonNextRenewal": "a próxima renovação",
     "sessionReplayAddonPendingChange": "Uma alteração agendada de add-on de gravação de sessão entrará em vigor no dia {{date}}. Selecione uma nova quantidade ou atualize as configurações atuais para substituí-la.",
     "sessionReplayAddonSave": "Atualizar add-on",
-    "sessionReplayAddonComingSoon": "Os add-ons self-service de gravação de sessão chegarão em breve."
+    "sessionReplayAddonComingSoon": "Os add-ons self-service de gravação de sessão chegarão em breve.",
+    "invoicesTitle": "Faturas",
+    "invoicesDesc": "Recibos para todos os pagamentos feitos na sua conta.",
+    "invoicesTableDate": "Data",
+    "invoicesTableDescription": "Descrição",
+    "invoicesTableAmount": "Valor",
+    "invoicesSubscriptionPayment": "Pagamento de assinatura",
+    "invoicesOneOffCharge": "Cobrança única",
+    "invoicesViewReceipt": "Ver recibo",
+    "invoicesEmpty": "Nenhuma fatura ainda",
+    "invoicesEmptyDesc": "Assim que você for cobrado pela sua assinatura, os recibos aparecerão aqui.",
+    "invoicesLoadError": "Não conseguimos carregar suas faturas. Por favor, tente novamente mais tarde.",
+    "invoicesRetry": "Tentar novamente",
+    "invoicesPaddleNote": "Os pagamentos são processados pela Paddle, nossa parceira de faturamento. Os recibos abrem em paddle.com."
   },
   "modals": {
     "paidFeature": {
