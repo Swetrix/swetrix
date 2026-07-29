@@ -1,4 +1,5 @@
 import type { ToolActionData } from './freeTools.server'
+import { guardedFetch } from './ssrfGuard.server'
 
 export type SeoToolSlug =
   | 'indexability-checker'
@@ -134,8 +135,6 @@ async function fetchWithTimeout(
   init: RequestInit = {},
   timeout = 10000,
 ): Promise<Response> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeout)
   const headers = new Headers(init.headers)
 
   if (!headers.has('user-agent')) headers.set('User-Agent', USER_AGENT)
@@ -146,15 +145,7 @@ async function fetchWithTimeout(
     )
   }
 
-  try {
-    return await fetch(url, {
-      ...init,
-      headers,
-      signal: controller.signal,
-    })
-  } finally {
-    clearTimeout(timeoutId)
-  }
+  return guardedFetch(url, { ...init, headers }, { timeout })
 }
 
 async function readTextWithLimit(

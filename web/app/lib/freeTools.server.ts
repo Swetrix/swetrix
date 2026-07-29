@@ -1,4 +1,8 @@
+import { redirect } from 'react-router'
+
+import { isSelfhosted } from './constants'
 import { runSeoToolAction, type SeoToolSlug } from './seoTools.server'
+import { assertHostAllowed, guardedFetch } from './ssrfGuard.server'
 
 export type ToolActionData = {
   error: string | null
@@ -69,28 +73,26 @@ function extractHost(value: string): string {
   return host
 }
 
+// Goes through guardedFetch, which rejects private/reserved targets on the
+// initial URL and on every redirect hop. See ssrfGuard.server.ts.
 async function fetchWithTimeout(
   url: string,
   init: RequestInit = {},
   timeout = 15000,
 ): Promise<Response> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeout)
-
-  try {
-    return await fetch(url, {
+  return guardedFetch(
+    url,
+    {
       ...init,
-      signal: controller.signal,
       headers: {
         'User-Agent': USER_AGENT,
         Accept:
           'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         ...init.headers,
       },
-    })
-  } finally {
-    clearTimeout(timeoutId)
-  }
+    },
+    { timeout },
+  )
 }
 
 function formatBytes(bytes: number): string {
@@ -119,6 +121,10 @@ async function lookupDns(formData: FormData): Promise<ToolActionData> {
   let domain: string
   try {
     domain = extractHost(value)
+    // requireResolvable: false - a domain with only MX/TXT records and no
+    // A/AAAA is a legitimate thing to inspect here. Addresses we do get back
+    // are still checked, so internal names cannot be enumerated through this.
+    await assertHostAllowed(domain, { requireResolvable: false })
   } catch (error) {
     return { error: getErrorMessage(error), result: null }
   }
@@ -317,8 +323,10 @@ async function checkSslCertificate(
   }
 
   let host: string
+  let addresses: string[]
   try {
     host = extractHost(value)
+    addresses = await assertHostAllowed(host)
   } catch (error) {
     return { error: getErrorMessage(error), result: null }
   }
@@ -331,7 +339,13 @@ async function checkSslCertificate(
         let settled = false
         const socket = tls.connect(
           {
-            host,
+            // Connect to the address we already validated rather than to the
+            // name. Re-resolving here would reopen the window for a hostile
+            // resolver to answer with an internal address the second time
+            // around, and this socket is a raw TCP connection - it would reach
+            // any internal port, not just an HTTP one. Falls back to the name
+            // when validation was skipped and there is no address to pin to.
+            host: addresses[0] || host,
             port: 443,
             servername: host,
             rejectUnauthorized: false,
@@ -1047,6 +1061,15 @@ export async function runTechnicalToolAction(
   slug: ToolSlug,
   formData: FormData,
 ): Promise<ToolActionData> {
+  // The tool pages redirect to /login on self-hosted, but a loader gate is not
+  // access control: on a document POST the action runs *before* the loader
+  // redirect is produced, and the single-fetch endpoint (/tools/x.data) hands
+  // the action payload straight back. The gate has to sit where the outbound
+  // requests are actually made.
+  if (isSelfhosted) {
+    throw redirect('/login', 302)
+  }
+
   if (slug === 'dns-lookup') return lookupDns(formData)
   if (slug === 'http-headers-checker') return checkHttpHeaders(formData)
   if (slug === 'ssl-certificate-checker') return checkSslCertificate(formData)

@@ -14,6 +14,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
 import { getOgImageUrl, isSelfhosted } from '~/lib/constants'
+import { guardedFetch } from '~/lib/ssrfGuard.server'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
@@ -140,6 +141,14 @@ function getText(value: unknown): string | undefined {
 }
 
 export async function action({ request }: { request: Request }) {
+  // The loader above redirects to /login on self-hosted, but that does not stop
+  // this action: on a document POST the action runs before the loader redirect,
+  // and the single-fetch endpoint returns the action payload directly. Gate the
+  // work itself, not just the page.
+  if (isSelfhosted) {
+    throw redirect('/login', 302)
+  }
+
   const formData = await request.formData()
   const sitemapUrl = formData.get('url') as string | null
 
@@ -169,18 +178,17 @@ export async function action({ request }: { request: Request }) {
   const startTime = Date.now()
 
   try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000)
-
-    const response = await fetch(normalizedUrl, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Swetrix-Sitemap-Validator/1.0',
-        Accept: 'application/xml, text/xml, */*',
+    // guardedFetch rejects private/reserved targets, including on redirect hops.
+    const response = await guardedFetch(
+      normalizedUrl,
+      {
+        headers: {
+          'User-Agent': 'Swetrix-Sitemap-Validator/1.0',
+          Accept: 'application/xml, text/xml, */*',
+        },
       },
-    })
-
-    clearTimeout(timeoutId)
+      { timeout: 30000 },
+    )
 
     const fetchTime = Date.now() - startTime
 

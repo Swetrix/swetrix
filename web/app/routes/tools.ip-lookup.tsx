@@ -64,6 +64,13 @@ export async function loader({ request }: { request: Request }) {
 }
 
 export async function action({ request }: { request: Request }) {
+  // Same reason as the loader gate above, which this action does not inherit:
+  // on a document POST the action runs before the loader redirect, and the
+  // single-fetch endpoint returns the action payload directly.
+  if (isSelfhosted) {
+    throw redirect('/login', 302)
+  }
+
   const formData = await request.formData()
   const ip = formData.get('ip') as string | null
 
