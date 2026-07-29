@@ -56,6 +56,13 @@ const defaultVariants: ExperimentVariant[] = [
   { name: 'Variant', key: 'variant', rolloutPercentage: 50, isControl: false },
 ]
 
+// Planning defaults. The MDE is deliberately loose: a 10% relative lift needs
+// ~31k exposures per variant, which is out of reach for most projects and made
+// the runtime guardrail fire before anyone had entered their own numbers.
+const DEFAULT_BASELINE_CONVERSION_RATE = 5
+const DEFAULT_MINIMUM_DETECTABLE_EFFECT = 20
+const DEFAULT_DAILY_EXPOSURES = 500
+
 type GoalDirection = 'increase' | 'decrease'
 
 const ExperimentSettingsModal = ({
@@ -88,9 +95,16 @@ const ExperimentSettingsModal = ({
   const [goalId, setGoalId] = useState<string>('')
   const [goalDirection, setGoalDirection] = useState<GoalDirection>('increase')
   const [variants, setVariants] = useState<ExperimentVariant[]>(defaultVariants)
-  const [baselineConversionRate, setBaselineConversionRate] = useState(5)
-  const [minimumDetectableEffect, setMinimumDetectableEffect] = useState(10)
-  const [dailyExposures, setDailyExposures] = useState(500)
+  const [baselineConversionRate, setBaselineConversionRate] = useState(
+    DEFAULT_BASELINE_CONVERSION_RATE,
+  )
+  const [minimumDetectableEffect, setMinimumDetectableEffect] = useState(
+    DEFAULT_MINIMUM_DETECTABLE_EFFECT,
+  )
+  const [dailyExposures, setDailyExposures] = useState(DEFAULT_DAILY_EXPOSURES)
+  // The planning inputs are seeded with placeholders, so the estimate is only
+  // worth raising guardrails about once the user has supplied their own numbers.
+  const [isPlanningTouched, setIsPlanningTouched] = useState(false)
 
   const [showPlanning, setShowPlanning] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -122,9 +136,10 @@ const ExperimentSettingsModal = ({
     setGoalId('')
     setGoalDirection('increase')
     setVariants(defaultVariants)
-    setBaselineConversionRate(5)
-    setMinimumDetectableEffect(10)
-    setDailyExposures(500)
+    setBaselineConversionRate(DEFAULT_BASELINE_CONVERSION_RATE)
+    setMinimumDetectableEffect(DEFAULT_MINIMUM_DETECTABLE_EFFECT)
+    setDailyExposures(DEFAULT_DAILY_EXPOSURES)
+    setIsPlanningTouched(false)
     setShowPlanning(false)
     setShowAdvanced(false)
     setExposureTrigger('feature_flag')
@@ -138,9 +153,10 @@ const ExperimentSettingsModal = ({
   const loadExperiment = async () => {
     if (!experimentId) return
     setShowPlanning(false)
-    setBaselineConversionRate(5)
-    setMinimumDetectableEffect(10)
-    setDailyExposures(500)
+    setBaselineConversionRate(DEFAULT_BASELINE_CONVERSION_RATE)
+    setMinimumDetectableEffect(DEFAULT_MINIMUM_DETECTABLE_EFFECT)
+    setDailyExposures(DEFAULT_DAILY_EXPOSURES)
+    setIsPlanningTouched(false)
     setIsLoading(true)
     try {
       const experiment = await experimentProxy.fetchExperiment(experimentId)
@@ -560,14 +576,18 @@ const ExperimentSettingsModal = ({
       })
     }
 
-    if (sampleEstimate.estimatedDays && sampleEstimate.estimatedDays > 56) {
+    if (
+      isPlanningTouched &&
+      sampleEstimate.estimatedDays &&
+      sampleEstimate.estimatedDays > 56
+    ) {
       items.push({
         severity: 'warning',
         message: t('experiments.settings.guardrails.longEstimate'),
       })
     }
 
-    if (sampleEstimate.perVariant < 100) {
+    if (isPlanningTouched && sampleEstimate.perVariant < 100) {
       items.push({
         severity: 'warning',
         message: t('experiments.settings.guardrails.smallEstimate'),
@@ -598,6 +618,7 @@ const ExperimentSettingsModal = ({
     goalId,
     hypothesis,
     isPercentageValid,
+    isPlanningTouched,
     maxAllocation,
     minAllocation,
     multipleVariantHandling,
@@ -1154,7 +1175,8 @@ const ExperimentSettingsModal = ({
                               }
                               inputMode='decimal'
                               value={baselineConversionRate}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                setIsPlanningTouched(true)
                                 setBaselineConversionRate(
                                   Math.min(
                                     99,
@@ -1164,7 +1186,7 @@ const ExperimentSettingsModal = ({
                                     ),
                                   ),
                                 )
-                              }
+                              }}
                               classes={{ input: 'px-2.5 py-1.5' }}
                             />
                             <Input
@@ -1185,14 +1207,15 @@ const ExperimentSettingsModal = ({
                               }
                               inputMode='decimal'
                               value={minimumDetectableEffect}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                setIsPlanningTouched(true)
                                 setMinimumDetectableEffect(
                                   Math.min(
                                     500,
                                     Math.max(1, Number(e.target.value) || 1),
                                   ),
                                 )
-                              }
+                              }}
                               classes={{ input: 'px-2.5 py-1.5' }}
                             />
                             <Input
@@ -1201,11 +1224,12 @@ const ExperimentSettingsModal = ({
                               )}
                               inputMode='numeric'
                               value={dailyExposures}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                setIsPlanningTouched(true)
                                 setDailyExposures(
                                   Math.max(0, Number(e.target.value) || 0),
                                 )
-                              }
+                              }}
                               classes={{ input: 'px-2.5 py-1.5' }}
                             />
                           </div>
