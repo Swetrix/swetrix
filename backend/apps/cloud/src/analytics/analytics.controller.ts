@@ -66,6 +66,7 @@ import {
   REDIS_TRIALS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
+  ONLINE_VISITORS_WINDOW_MINUTES,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { checkRateLimit, getIPDetails, getIPFromHeaders } from '../common/utils'
@@ -127,8 +128,6 @@ const DEFAULT_MEASURE = 'median'
 // Silent 200 response for bots
 // https://github.com/Swetrix/swetrix/issues/371
 const BOT_RESPONSE = { message: 'Bot traffic detected, request is ignored' }
-
-const ONLINE_VISITORS_WINDOW_MINUTES = 5 // minutes
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5

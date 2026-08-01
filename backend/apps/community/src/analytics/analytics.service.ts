@@ -40,6 +40,7 @@ import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
   redis,
   UNIQUE_SESSION_LIFE_TIME,
+  ONLINE_VISITORS_WINDOW_MINUTES,
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
   ERROR_COLUMNS,
@@ -125,9 +126,6 @@ const isValidLocale = (lc: string): boolean => {
 const hasTimeComponent = (date: string): boolean => /\d{2}:\d{2}/.test(date)
 
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
-// The concurrency sweep materializes one row per minute of the requested window,
-// so cap how far back it can be reconstructed to keep the query bounded
-const MAX_CONCURRENCY_WINDOW_MINUTES = 366 * 24 * 60
 const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
 // Journeys keep only the first {steps} distinct pages of a session, but the
@@ -5020,12 +5018,19 @@ export class AnalyticsService {
     }
   }
 
-  // Reconstructs the number of concurrent (live) visitors for each display bucket
-  // from the sessions table intervals [firstSeen, lastSeen] using a sweep-line:
-  // +1 at each session's start minute, -1 right after its end minute, a zero-delta
-  // "spine" row for every minute in the requested window, then a running sum gives
-  // exact per-minute concurrency. Buckets larger than a minute report the peak
-  // concurrency within the bucket.
+  // Reconstructs the number of concurrent (live) visitors for each display bucket.
+  // A visitor is live at a given minute if they fired a pageview or custom event
+  // within the preceding ONLINE_VISITORS_WINDOW_MINUTES - the exact rule the
+  // real-time live visitors counter applies. Every active minute is stretched
+  // across that window, visitors are deduplicated per minute, and each bucket
+  // reports its peak.
+  //
+  // This deliberately reads from `events` rather than from the `sessions` table:
+  // a psid is derived from a salt that only rotates daily, so a single psid
+  // covers every visit a person makes in a day. Treating its
+  // [firstSeen, lastSeen] range as one continuous presence counted returning
+  // visitors as live for the hours they were away, and `sessions` additionally
+  // records activity for requests that never become a countable event.
   generateConcurrencyAggregationQuery(timeBucket: TimeBucketType): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
@@ -5035,45 +5040,34 @@ export class AnalyticsService {
         parseDateTimeBestEffort({groupFrom:String}) AS fromTs,
         parseDateTimeBestEffort({groupTo:String}) AS toTs,
         toStartOfMinute(fromTs) AS fromMinute,
-        toStartOfMinute(toTs) AS toMinute,
-        session_intervals AS (
-          SELECT
-            greatest(min(firstSeen), fromTs) AS sessionStart,
-            least(max(lastSeen), toTs) AS sessionEnd
-          FROM sessions
-          WHERE
-            pid = {pid:FixedString(12)}
-            AND firstSeen <= toTs
-            AND lastSeen >= fromTs
-          GROUP BY psid
-        )
+        toStartOfMinute(toTs) AS toMinute
       SELECT
         ${selector},
-        toInt32(max(concurrency)) AS concurrency
+        toInt32(max(live)) AS concurrency
       FROM (
         SELECT
           ${timeBucketFunc}(toTimeZone(m, {timezone:String})) AS tz_created,
-          concurrency
+          uniqExact(psid) AS live
         FROM (
           SELECT
-            m,
-            sum(minute_delta) OVER (ORDER BY m ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS concurrency
+            psid,
+            activeMinute + toIntervalMinute(arrayJoin(range(0, ${ONLINE_VISITORS_WINDOW_MINUTES}))) AS m
           FROM (
-            SELECT m, sum(delta) AS minute_delta
-            FROM (
-              SELECT toStartOfMinute(sessionStart) AS m, toInt32(1) AS delta
-              FROM session_intervals
-              UNION ALL
-              SELECT toStartOfMinute(sessionEnd) + INTERVAL 1 MINUTE AS m, toInt32(-1) AS delta
-              FROM session_intervals
-              UNION ALL
-              SELECT fromMinute + toIntervalMinute(number) AS m, toInt32(0) AS delta
-              FROM numbers(least(toUInt64(dateDiff('minute', fromMinute, toMinute)) + 1, ${MAX_CONCURRENCY_WINDOW_MINUTES}))
-            )
-            GROUP BY m
+            SELECT DISTINCT
+              psid,
+              toStartOfMinute(created) AS activeMinute
+            FROM events
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND type IN ('pageview', 'custom_event')
+              AND psid IS NOT NULL
+              AND psid != 0
+              AND created > fromTs - toIntervalMinute(${ONLINE_VISITORS_WINDOW_MINUTES})
+              AND created <= toTs
           )
         )
         WHERE m BETWEEN fromMinute AND toMinute
+        GROUP BY tz_created, m
       )
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
@@ -5119,16 +5113,11 @@ export class AnalyticsService {
     )
 
     // Concurrency is only computed when explicitly requested (the live visitors
-    // metric is off by default) and within a bounded window — the sweep-line
-    // query materializes a row per minute. The sessions table also has no
-    // dimension columns, so concurrency cannot respect dashboard filters —
-    // return zeros instead of misleading unfiltered data
+    // metric is off by default). It is also not wired up to the dashboard
+    // filters yet, so return zeros rather than misleading unfiltered data
+    // whenever a filter is active
     const shouldComputeConcurrency =
-      includeConcurrency &&
-      !customEVFilterApplied &&
-      !filtersQuery &&
-      dayjs.utc(to).diff(dayjs.utc(from), 'minute') <=
-        MAX_CONCURRENCY_WINDOW_MINUTES
+      includeConcurrency && !customEVFilterApplied && !filtersQuery
 
     const [{ data }, concurrency] = await Promise.all([
       clickhouse
@@ -6106,8 +6095,6 @@ export class AnalyticsService {
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {
-    const ONLINE_VISITORS_WINDOW_MINUTES = 5
-
     const since = dayjs
       .utc()
       .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')

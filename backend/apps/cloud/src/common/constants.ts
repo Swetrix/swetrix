@@ -61,6 +61,11 @@ const redisUserUsageinfoCacheTimeout = 300
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
 
+// A visitor counts as live for this long after their last pageview or custom
+// event. Shared by the real-time live visitors counter and the historical live
+// visitors chart series so the two can never disagree.
+const ONLINE_VISITORS_WINDOW_MINUTES = 5
+
 // send email warning when 85% of events in tier are used
 const SEND_WARNING_AT_PERC = 85
 
@@ -238,6 +243,7 @@ export {
   getRedisProjectKey,
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
+  ONLINE_VISITORS_WINDOW_MINUTES,
   getRedisUserCountKey,
   redisProjectCountCacheTimeout,
   REDIS_USERS_COUNT_KEY,
