@@ -180,6 +180,11 @@ interface RedisWithSessionScripts {
 const sessionScripts = redis as unknown as RedisWithSessionScripts
 
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
+// The concurrency sweep fans every active minute out into a row per minute of
+// the liveness window, so cap how far back it can be reconstructed to keep the
+// scan bounded — period=all on an old project would otherwise read the entire
+// event history
+const MAX_CONCURRENCY_WINDOW_MINUTES = 366 * 24 * 60
 const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
 // Journeys keep only the first {steps} distinct pages of a session, but the
@@ -2523,7 +2528,7 @@ export class AnalyticsService {
         clickhouse_settings: { async_insert: 1 },
       })
     } catch (error) {
-      console.error('Failed to record session:', error)
+      this.logger.error(`Failed to record session: ${error}`)
     }
   }
 
@@ -2960,7 +2965,7 @@ export class AnalyticsService {
         SELECT
           psidCasted,
           pid,
-          sum(session_duration) as avg_duration,
+          sum(session_duration) as total_duration,
           argMax(sessionProfileId, lastActivity) as profileId
         FROM (
           SELECT
@@ -3000,7 +3005,7 @@ export class AnalyticsService {
         dsf.sessionStart,
         dsf.lastActivity,
         if(dateDiff('second', toTimeZone(dsf.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        sda.avg_duration AS sdur,
+        sda.total_duration AS sdur,
         sda.profileId AS profileId,
         if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
         if(fsp.firstPsid = dsf.psidCasted, 1, 0) AS isFirstSession
@@ -3128,7 +3133,7 @@ export class AnalyticsService {
         SELECT
           psidCasted,
           pid,
-          sum(session_duration) as avg_duration,
+          sum(session_duration) as total_duration,
           argMax(sessionProfileId, lastActivity) as profileId
         FROM (
           SELECT
@@ -3168,7 +3173,7 @@ export class AnalyticsService {
         dsf.sessionStart,
         dsf.lastActivity,
         if(dateDiff('second', toTimeZone(dsf.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        sda.avg_duration AS sdur,
+        sda.total_duration AS sdur,
         sda.profileId AS profileId,
         if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
         if(fsp.firstPsid = dsf.psidCasted, 1, 0) AS isFirstSession
@@ -3494,7 +3499,7 @@ export class AnalyticsService {
               SELECT avgOrNull(duration) as sdur
               FROM (
                 SELECT
-                  psid,
+                  sid,
                   dateDiff('second', min(firstSeen), max(lastSeen)) as duration
                 FROM sessions
                 WHERE pid = {pid:FixedString(12)}
@@ -3506,7 +3511,7 @@ export class AnalyticsService {
                       AND psid IS NOT NULL
                       ${filtersQuery}
                   )
-                GROUP BY psid
+                GROUP BY sid
               )
             ),
             bounce_counts AS (
@@ -3664,7 +3669,7 @@ export class AnalyticsService {
                     AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
                     ${currentFiltersQuery}
                 )
-              GROUP BY psid
+              GROUP BY sid
             )
           ),
           bounce_counts AS (
@@ -3729,7 +3734,7 @@ export class AnalyticsService {
                     AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
                     ${previousFiltersQuery}
                 )
-              GROUP BY psid
+              GROUP BY sid
             )
           ),
           bounce_counts AS (
@@ -5167,8 +5172,16 @@ export class AnalyticsService {
       customEVFilterApplied,
     )
 
+    // Concurrency is only computed when explicitly requested (the live visitors
+    // metric is off by default) and within a bounded window. It is derived from
+    // an unfiltered per-minute sweep over the events table, so it cannot respect
+    // dashboard filters — return zeros instead of misleading unfiltered data
     const shouldComputeConcurrency =
-      includeConcurrency && !customEVFilterApplied && !filtersQuery
+      includeConcurrency &&
+      !customEVFilterApplied &&
+      !filtersQuery &&
+      dayjs.utc(to).diff(dayjs.utc(from), 'minute') <=
+        MAX_CONCURRENCY_WINDOW_MINUTES
 
     const [{ data }, concurrency] = await Promise.all([
       clickhouse
@@ -6598,7 +6611,7 @@ export class AnalyticsService {
         SELECT
           psidCasted,
           pid,
-          sum(session_duration) as avg_duration,
+          sum(session_duration) as total_duration,
           argMax(sessionProfileId, lastActivity) as profileId
         FROM (
           SELECT
@@ -6638,7 +6651,7 @@ export class AnalyticsService {
           COALESCE(errc.count, 0) AS errors,
           dsf.sessionStart AS sessionStart,
           dsf.lastActivity AS lastActivity,
-          sda.avg_duration AS sdur,
+          sda.total_duration AS sdur,
           coalesce(nullIf(sda.profileId, ''), dsf.profileId) AS profileId
         FROM distinct_sessions_filtered dsf
         LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
@@ -8138,7 +8151,7 @@ export class AnalyticsService {
         SELECT
           psidCasted,
           pid,
-          sum(session_duration) as avg_duration
+          sum(session_duration) as total_duration
         FROM (
           SELECT
             CAST(psid, 'String') AS psidCasted,
@@ -8163,7 +8176,7 @@ export class AnalyticsService {
         ps.sessionStart,
         ps.lastActivity,
         if(dateDiff('second', toTimeZone(ps.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        sda.avg_duration AS sdur
+        sda.total_duration AS sdur
       FROM profile_sessions ps
       LEFT JOIN pageview_counts pc ON ps.psidCasted = pc.psidCasted AND ps.pid = pc.pid
       LEFT JOIN event_counts ec ON ps.psidCasted = ec.psidCasted AND ps.pid = ec.pid

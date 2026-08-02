@@ -204,7 +204,7 @@ curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/timeseries?per
 }
 ```
 
-The `concurrency` metric returns the number of concurrent live visitors over time (the "live visitors" series in the dashboard's traffic chart). A visitor counts as live for 5 minutes after their last pageview or custom event, which is the same rule the real-time live visitor counter uses. It is only computed when explicitly requested, and it cannot be segmented: when `filters` are applied the series is zero-filled. For the `minute` time bucket it is the exact number of visitors active during that minute; for larger buckets it is the peak within the bucket.
+The `concurrency` metric returns the number of concurrent live visitors over time (the "live visitors" series in the dashboard's traffic chart). A visitor counts as live for 5 minutes after their last pageview or custom event, which is the same rule the real-time live visitor counter uses. It is only computed when explicitly requested, and it cannot be segmented: when `filters` are applied, or the requested range exceeds one year, the series is zero-filled. For the `minute` time bucket it is the exact number of visitors active during that minute; for larger buckets it is the peak within the bucket.
 
 ### GET /v2/projects/:pid/traffic/breakdown
 

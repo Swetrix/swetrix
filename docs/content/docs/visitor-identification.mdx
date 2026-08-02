@@ -49,7 +49,7 @@ unlinkable to the new ones. This design is what allows Swetrix to
 operate without persistent identifiers on the visitor's device.
 
 A **session** is a separate thing from either salt: it starts on a
-visitor's first pageview and ends after **30 minutes of inactivity**. Someone who
+visitor's first tracked event and ends after **30 minutes of inactivity**. Someone who
 reads a page in the morning and comes back in the evening counts as one
 visitor and **two sessions**. Because a session is bounded by inactivity
 rather than by the salt, a session that is still running at UTC midnight

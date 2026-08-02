@@ -1661,6 +1661,9 @@ export class AnalyticsController {
 
       perfTransformed = eventTransformer({
         type: 'performance',
+        psid,
+        sid,
+        profileId,
         pid: logDTO.pid,
         host: this.analyticsService.getHostFromOrigin(headers.origin),
         pg: logDTO.pg,

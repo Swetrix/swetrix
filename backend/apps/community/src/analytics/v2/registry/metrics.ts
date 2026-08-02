@@ -29,10 +29,7 @@ export const V2_METRICS: V2MetricDef[] = [
   {
     api: 'sessions',
     types: ['traffic'],
-    sqlExpr: ({ customEVFilterApplied }) =>
-      customEVFilterApplied
-        ? 'count(*)'
-        : 'count(DISTINCT coalesce(sid, psid))',
+    sqlExpr: () => 'count(DISTINCT coalesce(sid, psid))',
     format: 'integer',
     description:
       'Session count. A session ends after 30 minutes of inactivity, so one visitor can have several in a day',
