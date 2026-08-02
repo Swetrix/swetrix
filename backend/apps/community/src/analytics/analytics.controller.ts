@@ -1339,7 +1339,7 @@ export class AnalyticsController {
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
 
-    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
+    const [, psid, sid] = await this.analyticsService.generateAndStoreSessionId(
       eventsDTO.pid,
       userAgent,
       ip,
@@ -1353,6 +1353,7 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       eventsDTO.pid,
       profileId,
@@ -1363,6 +1364,7 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'custom_event',
       psid,
+      sid,
       profileId,
       pid: eventsDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
@@ -1515,13 +1517,13 @@ export class AnalyticsController {
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
-    const { exists, psid } = await this.analyticsService.getSessionId(
+    const { exists, psid, sid } = await this.analyticsService.getSessionId(
       pid,
       userAgent,
       ip,
     )
 
-    if (!exists) {
+    if (!exists || !sid) {
       throw new ForbiddenException(
         'The heartbeat was not saved because there is no session for this request. Please, send a pageview or custom event request first to initialise the session.',
       )
@@ -1535,7 +1537,7 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.extendSessionTTL(psid)
-    await this.analyticsService.recordSessionActivity(psid, pid, profileId)
+    await this.analyticsService.recordSessionActivity(sid, psid, pid, profileId)
 
     this.logger.log(`pid: ${pid}, psid: ${psid}`, 'POST /analytics/hb')
 
@@ -1565,7 +1567,7 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
-    const [unique, psid] =
+    const [unique, psid, sid] =
       await this.analyticsService.generateAndStoreSessionId(
         logDTO.pid,
         userAgent,
@@ -1580,6 +1582,7 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       logDTO.pid,
       profileId,
@@ -1614,6 +1617,7 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'pageview',
       psid,
+      sid,
       profileId,
       pid: logDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
@@ -1746,7 +1750,7 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
-    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
+    const [, psid, sid] = await this.analyticsService.generateAndStoreSessionId(
       logDTO.pid,
       userAgent,
       ip,
@@ -1761,6 +1765,7 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       logDTO.pid,
       profileId,
@@ -1787,6 +1792,7 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'pageview',
       psid,
+      sid,
       profileId,
       pid: logDTO.pid,
       host: this.analyticsService.getHostFromOrigin(headers.origin),
@@ -2136,7 +2142,7 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(errorDTO, origin, ip)
 
-    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
+    const [, psid, sid] = await this.analyticsService.generateAndStoreSessionId(
       errorDTO.pid,
       userAgent,
       ip,
@@ -2150,6 +2156,7 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.recordSessionActivity(
+      sid,
       psid,
       errorDTO.pid,
       profileId,
@@ -2182,6 +2189,7 @@ export class AnalyticsController {
     const transformed = eventTransformer({
       type: 'error',
       psid,
+      sid,
       profileId,
       eid: this.analyticsService.getErrorID(errorDTO),
       pid: errorDTO.pid,
@@ -2863,14 +2871,15 @@ export class AnalyticsController {
     // identified profile (e.g. a second account on a shared device) - the
     // session stays with the current identity until new events re-stamp it.
     if (linked) {
-      const { exists, psid } = await this.analyticsService.getSessionId(
+      const { exists, psid, sid } = await this.analyticsService.getSessionId(
         dto.pid,
         userAgent,
         ip,
       )
 
-      if (exists) {
+      if (exists && sid) {
         await this.analyticsService.recordSessionActivity(
+          sid,
           psid,
           dto.pid,
           userProfileId,

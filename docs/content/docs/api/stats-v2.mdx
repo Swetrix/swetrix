@@ -59,7 +59,7 @@ Every endpoint returns the same envelope:
 
 | Data type   | Metrics                                                                                                                                                                                                                                                                             |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| traffic     | `visitors` (unique sessions), `pageviews`, `users` (unique profiles; breakdown/summary only), `session_duration` (timeseries/summary only), `bounce_rate` (timeseries/summary only), `concurrency` (live visitors over time; timeseries only, zero-filled when filters are applied) |
+| traffic     | `visitors` (unique visitors, counted once per day), `sessions` (a session ends after 30 minutes of inactivity, so one visitor can have several per day), `pageviews`, `users` (unique profiles; breakdown/summary only), `session_duration` (timeseries/summary only), `bounce_rate` (timeseries/summary only), `concurrency` (live visitors over time; timeseries only, zero-filled when filters are applied) |
 | performance | `load_time`, `ttfb`, `dns`, `tls`, `connection`, `response`, `render`, `dom_load` — all in seconds, aggregated by `measure`                                                                                                                                                         |
 | errors      | `occurrences`, `affected_users`                                                                                                                                                                                                                                                     |
 | captcha     | `events` (breakdown), `generated`, `passed`, `failed`, `validation_failed`, `replayed` (timeseries/summary)                                                                                                                                                                         |
@@ -204,7 +204,7 @@ curl 'https://api.swetrix.com/v2/projects/YOUR_PROJECT_ID/traffic/timeseries?per
 }
 ```
 
-The `concurrency` metric returns the number of concurrent live visitors over time (the "live visitors" series in the dashboard's traffic chart), reconstructed from session activity. It is only computed when explicitly requested. Because it is derived from session intervals — which carry no dimension data — it cannot be segmented: when `filters` are applied, or the requested range exceeds one year, the series is zero-filled. For the `minute` time bucket it is the exact number of visitors active during that minute; for larger buckets it is the peak concurrency within the bucket.
+The `concurrency` metric returns the number of concurrent live visitors over time (the "live visitors" series in the dashboard's traffic chart). A visitor counts as live for 5 minutes after their last pageview or custom event, which is the same rule the real-time live visitor counter uses. It is only computed when explicitly requested, and it cannot be segmented: when `filters` are applied the series is zero-filled. For the `minute` time bucket it is the exact number of visitors active during that minute; for larger buckets it is the peak within the bucket.
 
 ### GET /v2/projects/:pid/traffic/breakdown
 

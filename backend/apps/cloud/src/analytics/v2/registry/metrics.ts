@@ -24,7 +24,18 @@ export const V2_METRICS: V2MetricDef[] = [
       customEVFilterApplied ? 'count(*)' : 'count(DISTINCT psid)',
     isDefault: true,
     format: 'integer',
-    description: 'Unique sessions',
+    description: 'Unique visitors (a visitor is counted once per day)',
+  },
+  {
+    api: 'sessions',
+    types: ['traffic'],
+    sqlExpr: ({ customEVFilterApplied }) =>
+      customEVFilterApplied
+        ? 'count(*)'
+        : 'count(DISTINCT coalesce(sid, psid))',
+    format: 'integer',
+    description:
+      'Session count. A session ends after 30 minutes of inactivity, so one visitor can have several in a day',
   },
   {
     api: 'pageviews',

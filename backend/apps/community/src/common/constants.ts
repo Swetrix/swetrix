@@ -83,9 +83,6 @@ const redisProjectCacheTimeout = 3600
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
 
-// A visitor counts as live for this long after their last pageview or custom
-// event. Shared by the real-time live visitors counter and the historical live
-// visitors chart series so the two can never disagree.
 const ONLINE_VISITORS_WINDOW_MINUTES = 5
 
 // Funnels
