@@ -2041,13 +2041,8 @@ export class AnalyticsService {
     return `ses:${psid}`
   }
 
-  private generateSid(psid: string): string {
-    return crypto
-      .createHash('sha256')
-      .update(`${psid}:${Date.now()}:${crypto.randomBytes(16).toString('hex')}`)
-      .digest()
-      .readBigUInt64BE(0)
-      .toString()
+  private generateSid(): string {
+    return crypto.randomBytes(8).readBigUInt64BE(0).toString()
   }
 
   async getSessionId(
@@ -2061,7 +2056,7 @@ export class AnalyticsService {
 
     const sid = (await sessionScripts.swetrixPeekSession(
       sessionKey,
-      this.generateSid(psid),
+      this.generateSid(),
       UNIQUE_SESSION_LIFE_TIME,
       LEGACY_SESSION_FLAG,
     )) as string
@@ -2080,7 +2075,7 @@ export class AnalyticsService {
 
     const [sid, isNewFlag] = (await sessionScripts.swetrixResolveSession(
       sessionKey,
-      this.generateSid(psid),
+      this.generateSid(),
       UNIQUE_SESSION_LIFE_TIME,
       LEGACY_SESSION_FLAG,
     )) as [string, string]
