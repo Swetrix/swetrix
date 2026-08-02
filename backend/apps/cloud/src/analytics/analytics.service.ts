@@ -8920,14 +8920,14 @@ export class AnalyticsService {
           avgOrNull(session_duration) AS avgDuration
         FROM (
           SELECT
-            psid,
+            coalesce(sid, psid) AS sessionId,
             dateDiff('second', min(created), max(created)) AS session_duration
           FROM events
           WHERE pid = {pid:FixedString(12)}
             AND type = 'pageview'
             AND profileId IN {profileIds:Array(String)}
             AND psid IS NOT NULL
-          GROUP BY psid
+          GROUP BY sessionId
           HAVING session_duration > 0
         )
       ),
@@ -8936,12 +8936,12 @@ export class AnalyticsService {
           avgOrNull(session_duration) AS avgDuration
         FROM (
           SELECT
-            psid,
+            sid,
             dateDiff('second', min(firstSeen), max(lastSeen)) AS session_duration
           FROM sessions FINAL
           WHERE pid = {pid:FixedString(12)}
             AND profileId IN {profileIds:Array(String)}
-          GROUP BY psid
+          GROUP BY sid
           HAVING session_duration > 0
         )
       )

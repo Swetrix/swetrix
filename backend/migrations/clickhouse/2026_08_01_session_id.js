@@ -21,7 +21,8 @@ const queries = [
   `INSERT INTO ${dbName}.sessions_v2 (sid, psid, pid, profileId, firstSeen, lastSeen)
    SELECT psid AS sid, psid, pid, profileId, firstSeen, lastSeen
    FROM ${dbName}.sessions
-   WHERE firstSeen <= lastSeen`,
+   WHERE firstSeen <= lastSeen
+     AND lastSeen > toDateTime(0)`,
 
   `RENAME TABLE ${dbName}.sessions TO ${dbName}.sessions_by_visitor_day, ${dbName}.sessions_v2 TO ${dbName}.sessions`,
 ]
