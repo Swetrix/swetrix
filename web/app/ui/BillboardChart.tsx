@@ -1,4 +1,9 @@
-import billboard, { type Chart, type ChartOptions } from 'billboard.js'
+import billboard, {
+  grid,
+  regions,
+  type Chart,
+  type ChartOptions,
+} from 'billboard.js'
 import cx from 'clsx'
 import React, { useEffect, useMemo, useRef } from 'react'
 
@@ -48,6 +53,8 @@ const BillboardChart = ({
 
     // Wrap callbacks to guard against destroyed chart access
     const wrappedOptions: ChartOptions = {
+      ...grid(),
+      ...regions(),
       ...options,
       bindto: containerRef.current as unknown as HTMLElement,
     }
