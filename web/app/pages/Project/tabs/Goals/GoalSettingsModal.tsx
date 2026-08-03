@@ -86,8 +86,9 @@ const conditionOperatorToV2Operator = (
   return 'is'
 }
 
-const getMetadataConditionDimension = (eventType: GoalCondition['eventType']) =>
-  eventType === 'custom_event' ? 'event_metadata' : 'page_property'
+const getMetadataConditionDimension = (
+  eventType: GoalCondition['eventType'],
+) => (eventType === 'custom_event' ? 'event_metadata' : 'page_property')
 
 const filterToCondition = (filter: V2Filter): GoalCondition | null => {
   const value = typeof filter.value === 'string' ? filter.value : ''

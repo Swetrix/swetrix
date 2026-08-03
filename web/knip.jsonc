@@ -1,9 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "ignoreDependencies": [
-    "@tailwindcss/forms",
-    "@tailwindcss/typography",
-    "tailwindcss",
     "@rrweb/replay",
     "@rrweb/types",
     "dom-player",
@@ -12,7 +9,7 @@
   // "ignore": [
   //   "./app/utils/analytics.server.ts",
   // ],
-  "project": ["./app/**/*.{js,ts,tsx,jsx,cjs}"],
+  "project": ["./app/**/*.{js,ts,tsx,jsx,cjs,css}"],
   "paths": {
     "~/*": ["./app/*"],
   },

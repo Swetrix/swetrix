@@ -23,7 +23,7 @@ const logoBuffer = readFileSync(
   join(process.cwd(), 'public', 'assets', 'logo', 'dark.svg'),
 )
 
-const persistentImages = [
+const images = [
   {
     src: 'swetrix-logo',
     data: logoBuffer.buffer.slice(
@@ -362,9 +362,8 @@ function renderImage(element: React.JSX.Element, cacheSeconds = 1_210_000) {
     width: WIDTH,
     height: HEIGHT,
     format: 'png',
-    persistentImages,
+    images,
     fonts,
-    loadDefaultFonts: true,
     headers: {
       'Cache-Control': `public, immutable, no-transform, s-maxage=${cacheSeconds}, max-age=${cacheSeconds}`,
     },

@@ -357,6 +357,7 @@ export class AiService {
   ): Promise<
     StreamTextResult<
       typeof this.buildTools extends (...args: any[]) => infer R ? R : never,
+      any,
       never
     >
   > {

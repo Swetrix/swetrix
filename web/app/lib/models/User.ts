@@ -2,10 +2,10 @@ import { OrganisationMembership } from './Organisation'
 import { SharedProject } from './SharedProject'
 
 export enum DashboardBlockReason {
-  'exceeding_plan_limits' = 'exceeding_plan_limits',
-  'trial_ended' = 'trial_ended',
-  'payment_failed' = 'payment_failed',
-  'subscription_cancelled' = 'subscription_cancelled',
+  exceeding_plan_limits = 'exceeding_plan_limits',
+  trial_ended = 'trial_ended',
+  payment_failed = 'payment_failed',
+  subscription_cancelled = 'subscription_cancelled',
 }
 
 enum PlanCode {

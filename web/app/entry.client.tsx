@@ -5,7 +5,6 @@ import { startTransition, StrictMode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { I18nextProvider, initReactI18next } from 'react-i18next'
 import { HydratedRouter } from 'react-router/dom'
-import { getInitialNamespaces } from 'remix-i18next/client'
 
 import { I18N_CACHE_BREAKER, getLangFromPath } from '~/lib/constants'
 
@@ -70,7 +69,6 @@ async function hydrate() {
     .use(HTTPBackend)
     .init({
       ...i18n,
-      ns: getInitialNamespaces(),
       ...(pathLang ? { lng: pathLang } : {}),
       backend: { loadPath: `/locales/{{lng}}.json?cv=${I18N_CACHE_BREAKER}` },
       detection: {
