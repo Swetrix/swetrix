@@ -80,6 +80,19 @@ dayjs.extend(timezonePlugin)
 // Max length of annotation text displayed on chart (truncated with "...")
 const ANNOTATION_CHART_TEXT_MAX_LENGTH = 25
 
+export const getAnnotationGridLines = (
+  annotations?: Annotation[],
+): GridLineOptions[] =>
+  _map(annotations || [], (annotation) => ({
+    value: dayjs(annotation.date).toDate(),
+    text:
+      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
+        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
+        : annotation.text,
+    class: `annotation-line annotation-id-${annotation.id}`,
+    position: 'start',
+  }))
+
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
   return total / _size(arr)
@@ -626,17 +639,7 @@ const getSettings = (
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
-  // Convert annotations to grid lines
-  // Each annotation gets a unique class identifier for DOM-based lookup
-  const lines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
-    value: dayjs(annotation.date).toDate(),
-    text:
-      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
-        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
-        : annotation.text,
-    class: `annotation-line annotation-id-${annotation.id}`,
-    position: 'start',
-  }))
+  const lines = getAnnotationGridLines(annotations)
   const modifiedChart = { ...chart }
   let regions
   const customEventsToArray = customEvents
@@ -1521,20 +1524,7 @@ const getSettingsError = (
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
-  // Convert annotations to grid lines
-  // Each annotation gets a unique class identifier for DOM-based lookup
-  const annotationLines: GridLineOptions[] = _map(
-    annotations || [],
-    (annotation) => ({
-      value: dayjs(annotation.date).toDate(),
-      text:
-        annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
-          ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
-          : annotation.text,
-      class: `annotation-line annotation-id-${annotation.id}`,
-      position: 'start',
-    }),
-  )
+  const annotationLines = getAnnotationGridLines(annotations)
 
   // Build columns with both occurrences and affectedUsers if available
   const columns: any[] = [
@@ -2023,20 +2013,7 @@ const getSettingsPerf = (
   const xAxisSize = _size(chart.x)
   const columns = getColumnsPerf(chart, activeChartMetrics, compareChart)
 
-  // Convert annotations to grid lines
-  // Each annotation gets a unique class identifier for DOM-based lookup
-  const annotationLines: GridLineOptions[] = _map(
-    annotations || [],
-    (annotation) => ({
-      value: dayjs(annotation.date).toDate(),
-      text:
-        annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
-          ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
-          : annotation.text,
-      class: `annotation-line annotation-id-${annotation.id}`,
-      position: 'start',
-    }),
-  )
+  const annotationLines = getAnnotationGridLines(annotations)
 
   return {
     data: {

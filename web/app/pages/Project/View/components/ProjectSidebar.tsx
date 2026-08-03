@@ -245,7 +245,7 @@ const CollapsibleGroup: React.FC<{
 
         <div
           className={cn(
-            'overflow-hidden transition-all duration-200 ease-in-out',
+            'overflow-hidden transition-[max-height,opacity] duration-150 ease-out-quint motion-reduce:transition-none',
             {
               'max-h-96 opacity-100': isExpanded,
               'max-h-0 opacity-0': !isExpanded,
@@ -480,11 +480,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         isMobileOpen
           ? 'h-screen w-64 border-r border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-950'
           : cn(
-              'duration-300 ease-in-out',
               isEmbedded
-                ? 'h-[calc(100vh-1rem)] transition-[width]'
+                ? 'h-[calc(100vh-1rem)]'
                 : cn(
-                    'transition-[width,height]',
                     isScrolled
                       ? 'h-[calc(100vh-var(--banner-height)-1.5rem)]'
                       : 'h-[calc(100vh-var(--header-total-height)-1rem)]',
@@ -724,11 +722,11 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     return (
       <div className='pointer-events-auto fixed inset-0 z-50 md:hidden'>
         <div
-          className='animate-fade-in absolute inset-0 bg-black/50'
+          className='animate-fade-in absolute inset-0 bg-black/50 motion-reduce:animate-none'
           onClick={onMobileClose}
           aria-hidden='true'
         />
-        <div className='animate-slide-in-left relative h-full w-fit'>
+        <div className='animate-slide-in-left relative h-full w-fit motion-reduce:animate-none'>
           {sidebarContent}
         </div>
       </div>
@@ -754,7 +752,7 @@ export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({
       <button
         type='button'
         onClick={onClick}
-        className='flex items-center justify-center rounded-md border border-gray-300 p-2 text-gray-700 transition-all ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden dark:border-slate-700/80 dark:text-gray-200 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
+        className='flex items-center justify-center rounded-md border border-gray-300 p-2 text-gray-700 transition-[background-color,color,box-shadow,transform] duration-150 ease-out-quint ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-slate-900 focus:outline-hidden active:scale-[0.97] motion-reduce:active:scale-100 dark:border-slate-700/80 dark:text-gray-200 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
         aria-label={t('common.openMenu')}
       >
         <ListIcon className='h-5 w-5' />

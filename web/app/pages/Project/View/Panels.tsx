@@ -31,7 +31,6 @@ import {
   ArrowLineLeftIcon,
   MagnifyingGlassIcon,
 } from '@phosphor-icons/react'
-import { motion } from 'motion/react'
 import React, {
   memo,
   useState,
@@ -39,7 +38,6 @@ import React, {
   useMemo,
   useCallback,
   Fragment,
-  useId,
   useRef,
 } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -110,19 +108,13 @@ const getPercentage = (value: number, total: number, precision = 2) => {
 }
 
 const panelBarStyle = (pct: number) =>
-  ({ '--panel-bar-width': `${pct}%` }) as React.CSSProperties
+  ({
+    '--panel-bar-scale': Math.max(0, Math.min(100, pct)) / 100,
+  }) as React.CSSProperties
 
-/**
- * Active-tab underline shared between a panel's tab buttons: rendering it
- * with a common layoutId makes it glide from the old tab to the new one.
- * The layoutId must be unique per panel instance — multiple panels render
- * their tab bars simultaneously.
- */
-const PanelTabUnderline = ({ layoutId }: { layoutId: string }) => (
-  <motion.span
+const PanelTabUnderline = () => (
+  <span
     aria-hidden
-    layoutId={layoutId}
-    transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
     className='absolute inset-x-0 -bottom-0.5 h-0.5 bg-slate-900 dark:bg-gray-50'
   />
 )
@@ -256,8 +248,6 @@ const PanelContainer = ({
   isLoading,
 }: PanelContainerProps) => {
   const { t } = useTranslation('common')
-  const underlineId = useId()
-
   return (
     <div
       className={cx(
@@ -322,9 +312,7 @@ const PanelContainer = ({
                           headless
                           chevron='mini'
                         />
-                        {activeDropdownTab ? (
-                          <PanelTabUnderline layoutId={underlineId} />
-                        ) : null}
+                        {activeDropdownTab ? <PanelTabUnderline /> : null}
                       </div>
                     )
                   }
@@ -348,9 +336,7 @@ const PanelContainer = ({
                       )}
                     >
                       {tab.label}
-                      {activeTabId === tab.id ? (
-                        <PanelTabUnderline layoutId={underlineId} />
-                      ) : null}
+                      {activeTabId === tab.id ? <PanelTabUnderline /> : null}
                     </button>
                   )
                 })}
@@ -363,7 +349,6 @@ const PanelContainer = ({
         className={cx(
           contentClassName ??
             'relative flex h-[19.6rem] flex-col overflow-hidden',
-          isRefetching && 'opacity-75 transition-opacity duration-200',
         )}
       >
         {isLoading ? <PanelLoadingState /> : children}
@@ -1859,8 +1844,6 @@ const CombinedMetadataPanel = ({
 
   const [canShowDetails, setCanShowDetails] = useState(false)
   const [detailsTrigger, setDetailsTrigger] = useState(0)
-  const underlineId = useId()
-
   const activeDropdownTab = dropdownItems.find(
     (item) => item.id === activeSection.activeKey,
   )
@@ -1897,9 +1880,7 @@ const CombinedMetadataPanel = ({
               )}
             >
               {tab.label}
-              {activeMode === tab.id ? (
-                <PanelTabUnderline layoutId={underlineId} />
-              ) : null}
+              {activeMode === tab.id ? <PanelTabUnderline /> : null}
             </button>
           ))}
           {!_isEmpty(dropdownItems) ? (

@@ -1,11 +1,7 @@
 import dayjs from 'dayjs'
-import { motion } from 'motion/react'
 import { Link } from 'react-router'
 
-import {
-  MetricCard,
-  metricCardsContainerVariants,
-} from '~/pages/Project/tabs/Traffic/MetricCards'
+import { MetricCard } from '~/pages/Project/tabs/Traffic/MetricCards'
 import { Badge } from '~/ui/Badge'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
@@ -283,12 +279,7 @@ export const OverviewTab = ({
             menuClassName='right-0 w-max min-w-full'
           />
         </div>
-        <motion.div
-          initial='hidden'
-          animate='visible'
-          variants={metricCardsContainerVariants}
-          className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'
-        >
+        <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
           <MetricCard
             label='Signups'
             value={totals.signups.current}
@@ -312,7 +303,7 @@ export const OverviewTab = ({
             goodChangeDirection='down'
             valueMapper={countMetricMapper}
           />
-        </motion.div>
+        </div>
         <AdminChart
           className='h-72'
           series={[
@@ -342,12 +333,7 @@ export const OverviewTab = ({
         <Text as='h3' size='lg' weight='semibold' className='mb-4'>
           Events processed
         </Text>
-        <motion.div
-          initial='hidden'
-          animate='visible'
-          variants={metricCardsContainerVariants}
-          className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'
-        >
+        <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
           <MetricCard
             label={`Events (${chartDays}d)`}
             value={totals.events.current}
@@ -355,7 +341,7 @@ export const OverviewTab = ({
             goodChangeDirection='down'
             valueMapper={countMetricMapper}
           />
-        </motion.div>
+        </div>
         <AdminChart
           className='h-72'
           series={[

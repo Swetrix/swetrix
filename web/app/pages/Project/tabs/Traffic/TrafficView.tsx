@@ -19,7 +19,6 @@ import React, {
   Suspense,
 } from 'react'
 import { createPortal } from 'react-dom'
-import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
@@ -46,7 +45,6 @@ import CustomMetrics from '~/pages/Project/tabs/Traffic/CustomMetrics'
 import {
   MetricCard,
   MetricCards,
-  metricCardsContainerVariants,
 } from '~/pages/Project/tabs/Traffic/MetricCards'
 import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
@@ -1166,15 +1164,8 @@ const TrafficViewInner = ({
               <HasImportedIndicator />
             </Suspense>
           </div>
-          {/* Always rendered: the cards read zero until the summary lands and
-              then roll up to it, so the row holds its height instead of
-              appearing late and shoving the chart and panels down. */}
-          <motion.div
-            initial='hidden'
-            animate='visible'
-            variants={metricCardsContainerVariants}
-            className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'
-          >
+          {/* Always rendered so the row holds its height while data loads. */}
+          <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
             <MetricCards
               overall={overallForCards}
               overallCompare={overallCompare}
@@ -1207,7 +1198,7 @@ const TrafficViewInner = ({
                   ),
                 )
               : null}
-          </motion.div>
+          </div>
           {isChartLoading ? (
             // Same box as TrafficChart below (incl. its mobile mt-5) so the
             // chart drops straight into the spinner's place.
@@ -1395,6 +1386,6 @@ const TrafficViewInner = ({
   )
 }
 
-const TrafficView = TrafficViewWrapper
+const TrafficView = React.memo(TrafficViewWrapper)
 
 export default TrafficView

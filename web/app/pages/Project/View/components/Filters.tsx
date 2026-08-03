@@ -2,7 +2,6 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _truncate from 'lodash/truncate'
 import { FunnelIcon, XIcon } from '@phosphor-icons/react'
-import { AnimatePresence, motion } from 'motion/react'
 import { memo, MouseEvent, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from '~/ui/Link'
@@ -306,39 +305,24 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
       <div className='flex min-w-0 flex-1 items-center gap-1'>
         <FunnelIcon className='size-5 shrink-0 text-gray-500 dark:text-gray-400' />
         <div className='flex flex-wrap'>
-          <AnimatePresence mode='popLayout' initial={false}>
-            {_map(supported, (filter) => (
-              <motion.span
-                key={getFilterKey(filter)}
-                layout
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.92 }}
-                transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
-                className='inline-flex'
-              >
-                <Filter
-                  tnMapping={tnMapping}
-                  canChangeExclusive
-                  removable
-                  filter={filter}
-                />
-              </motion.span>
-            ))}
-            {_map(unsupported, (filter) => (
-              <motion.span
-                key={`unsupported-${getFilterKey(filter)}`}
-                layout
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 0.6, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.92 }}
-                transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
-                className='inline-flex'
-              >
-                <Filter tnMapping={tnMapping} removable filter={filter} />
-              </motion.span>
-            ))}
-          </AnimatePresence>
+          {_map(supported, (filter) => (
+            <span key={getFilterKey(filter)} className='inline-flex'>
+              <Filter
+                tnMapping={tnMapping}
+                canChangeExclusive
+                removable
+                filter={filter}
+              />
+            </span>
+          ))}
+          {_map(unsupported, (filter) => (
+            <span
+              key={`unsupported-${getFilterKey(filter)}`}
+              className='inline-flex opacity-60'
+            >
+              <Filter tnMapping={tnMapping} removable filter={filter} />
+            </span>
+          ))}
         </div>
         {unsupported.length > 0 ? (
           <span className='ml-1 shrink-0 rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 ring-1 ring-amber-200 ring-inset dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20'>

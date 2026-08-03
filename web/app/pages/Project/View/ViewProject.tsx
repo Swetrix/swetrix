@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import cx from 'clsx'
 import dayjs from 'dayjs'
-import { AnimatePresence, motion } from 'motion/react'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'
@@ -146,13 +145,8 @@ interface ViewProjectContextType {
   dataLoading: boolean
   activeTab: keyof typeof PROJECT_TABS
   filters: V2Filter[]
-  projectViews: ProjectView[]
-  projectViewsLoading: boolean | null
-  loadProjectViews: (forced?: boolean) => void
-  setProjectViewToUpdate: (view: ProjectView | undefined) => void
-  setIsAddAViewOpened: (value: boolean) => void
-
   isActiveCompare: boolean
+
   dateRangeCompare: Date[] | null
   activePeriodCompare: string
   setIsActiveCompare: (value: boolean) => void
@@ -191,6 +185,14 @@ interface ViewProjectContextType {
   setIsMapFullscreen: (value: boolean) => void
 }
 
+interface ProjectViewsContextType {
+  projectViews: ProjectView[]
+  projectViewsLoading: boolean | null
+  loadProjectViews: (forced?: boolean) => void
+  setProjectViewToUpdate: (view: ProjectView | undefined) => void
+  setIsAddAViewOpened: (value: boolean) => void
+}
+
 interface RefreshTriggersContextType {
   goalsRefreshTrigger: number
   experimentsRefreshTrigger: number
@@ -212,13 +214,8 @@ const defaultViewProjectContext: ViewProjectContextType = {
   dataLoading: false,
   activeTab: PROJECT_TABS.traffic,
   filters: [],
-  projectViews: [],
-  projectViewsLoading: null,
-  loadProjectViews: () => {},
-  setProjectViewToUpdate: () => {},
-  setIsAddAViewOpened: () => {},
-
   isActiveCompare: false,
+
   dateRangeCompare: null,
   activePeriodCompare: '',
   setIsActiveCompare: () => {},
@@ -253,6 +250,14 @@ const defaultViewProjectContext: ViewProjectContextType = {
   setIsMapFullscreen: () => {},
 }
 
+const defaultProjectViewsContext: ProjectViewsContextType = {
+  projectViews: [],
+  projectViewsLoading: null,
+  loadProjectViews: () => {},
+  setProjectViewToUpdate: () => {},
+  setIsAddAViewOpened: () => {},
+}
+
 const defaultRefreshTriggersContext: RefreshTriggersContextType = {
   goalsRefreshTrigger: 0,
   experimentsRefreshTrigger: 0,
@@ -264,12 +269,36 @@ const defaultRefreshTriggersContext: RefreshTriggersContextType = {
 const ViewProjectContext = createContext<ViewProjectContextType>(
   defaultViewProjectContext,
 )
+const ProjectViewsContext = createContext<ProjectViewsContextType>(
+  defaultProjectViewsContext,
+)
 const RefreshTriggersContext = createContext<RefreshTriggersContextType>(
   defaultRefreshTriggersContext,
 )
 
+const ProjectViewAuxiliaryProviders = ({
+  projectViewsContextValue,
+  refreshTriggersValue,
+  children,
+}: {
+  projectViewsContextValue: ProjectViewsContextType
+  refreshTriggersValue: RefreshTriggersContextType
+  children: React.ReactNode
+}) => (
+  <ProjectViewsContext.Provider value={projectViewsContextValue}>
+    <RefreshTriggersContext.Provider value={refreshTriggersValue}>
+      {children}
+    </RefreshTriggersContext.Provider>
+  </ProjectViewsContext.Provider>
+)
+
 export const useViewProjectContext = () => {
   const context = useContext(ViewProjectContext)
+  return context
+}
+
+export const useProjectViewsContext = () => {
+  const context = useContext(ProjectViewsContext)
   return context
 }
 
@@ -357,7 +386,7 @@ const ViewProjectContent = () => {
     return parseFiltersFromUrl(searchParams)
   }, [searchParams])
 
-  const tnMapping = typeNameMapping(t)
+  const tnMapping = useMemo(() => typeNameMapping(t), [t])
   const refCalendar = useRef(null)
   const refCalendarCompare = useRef(null)
   const activeTab = useMemo(() => {
@@ -557,7 +586,7 @@ const ViewProjectContent = () => {
     () => user?.timeFormat || TimeFormat['12-hour'],
     [user],
   )
-  const [ref, size] = useSize()
+  const [ref, size] = useSize({ trackHeight: false })
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
   const [chartType, setChartType] = useState<keyof typeof chartTypes>(
     (getItem('chartType') as keyof typeof chartTypes) || chartTypes.line,
@@ -1176,11 +1205,6 @@ const ViewProjectContent = () => {
       dataLoading,
       activeTab,
       filters,
-      projectViews,
-      projectViewsLoading,
-      loadProjectViews,
-      setProjectViewToUpdate,
-      setIsAddAViewOpened,
 
       isActiveCompare,
       dateRangeCompare,
@@ -1228,9 +1252,6 @@ const ViewProjectContent = () => {
       dataLoading,
       activeTab,
       filters,
-      projectViews,
-      projectViewsLoading,
-      loadProjectViews,
       isActiveCompare,
       dateRangeCompare,
       activePeriodCompare,
@@ -1259,6 +1280,17 @@ const ViewProjectContent = () => {
       isMapFullscreen,
       setIsMapFullscreen,
     ],
+  )
+
+  const projectViewsContextValue = useMemo(
+    () => ({
+      projectViews,
+      projectViewsLoading,
+      loadProjectViews,
+      setProjectViewToUpdate,
+      setIsAddAViewOpened,
+    }),
+    [projectViews, projectViewsLoading, loadProjectViews],
   )
 
   const refreshTriggersValue = useMemo(
@@ -1440,7 +1472,10 @@ const ViewProjectContent = () => {
     <ClientOnly>
       {() => (
         <ViewProjectContext.Provider value={contextValue}>
-          <RefreshTriggersContext.Provider value={refreshTriggersValue}>
+          <ProjectViewAuxiliaryProviders
+            projectViewsContextValue={projectViewsContextValue}
+            refreshTriggersValue={refreshTriggersValue}
+          >
             <>
               <div
                 className={cx(
@@ -1519,74 +1554,74 @@ const ViewProjectContent = () => {
                             />
                           </div>
                         ) : null}
-                        <AnimatePresence mode='wait'>
-                          <motion.div
-                            key={activeTab}
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{
-                              opacity: 0,
-                              transition: { duration: 0.1 },
-                            }}
-                            transition={{
-                              duration: 0.15,
-                              ease: [0.23, 1, 0.32, 1],
-                            }}
-                          >
-                            {/* Reserve roughly a screenful while the tab chunk
+                        <div key={activeTab}>
+                          {/* Reserve roughly a screenful while the tab chunk
                                 downloads, otherwise the page is briefly short
                                 enough to pull the footer into view and then
                                 jumps once the tab renders. */}
-                            <Suspense
-                              fallback={
-                                <Loader className='min-h-including-header items-start' />
-                              }
-                            >
-                              {activeTab === PROJECT_TABS.ai ? (
-                                <AskAIView projectId={id} />
-                              ) : null}
-                              {activeTab === PROJECT_TABS.traffic ? (
-                                <TrafficView
-                                  tnMapping={tnMapping}
-                                  customMetrics={customMetrics}
-                                  onRemoveCustomMetric={onRemoveCustomMetric}
-                                  resetCustomMetrics={resetCustomMetrics}
-                                />
-                              ) : null}
-                              {activeTab === PROJECT_TABS.performance ? (
-                                <PerformanceView tnMapping={tnMapping} />
-                              ) : null}
-                              {activeTab === PROJECT_TABS.seo ? (
-                                <SEOView projectId={id} tnMapping={tnMapping} />
-                              ) : null}
-                              {activeTab === PROJECT_TABS.funnels ? (
-                                <FunnelsView tnMapping={tnMapping} />
-                              ) : null}
-                              {activeTab === PROJECT_TABS.journeys ? (
-                                <JourneysView tnMapping={tnMapping} />
-                              ) : null}
-                              {activeTab === PROJECT_TABS.profiles ? (
-                                <ProfilesView tnMapping={tnMapping} />
-                              ) : null}
-                              {activeTab === PROJECT_TABS.sessions ? (
-                                <SessionsView
-                                  tnMapping={tnMapping}
-                                  rotateXAxis={rotateXAxis}
-                                />
-                              ) : null}
-                              {activeTab === PROJECT_TABS.replays ? (
-                                replaysAccess.hasAccess ? (
-                                  <ReplaysView tnMapping={tnMapping} />
-                                ) : (
-                                  <PlanFeatureLocked feature='replays' />
-                                )
-                              ) : null}
-                              {activeTab === PROJECT_TABS.errors ? (
-                                <ErrorsView />
-                              ) : null}
-                              {activeTab === PROJECT_TABS.goals ? (
-                                <GoalsView
-                                  tnMapping={tnMapping}
+                          <Suspense
+                            fallback={
+                              <Loader className='min-h-including-header items-start' />
+                            }
+                          >
+                            {activeTab === PROJECT_TABS.ai ? (
+                              <AskAIView projectId={id} />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.traffic ? (
+                              <TrafficView
+                                tnMapping={tnMapping}
+                                customMetrics={customMetrics}
+                                onRemoveCustomMetric={onRemoveCustomMetric}
+                                resetCustomMetrics={resetCustomMetrics}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.performance ? (
+                              <PerformanceView tnMapping={tnMapping} />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.seo ? (
+                              <SEOView projectId={id} tnMapping={tnMapping} />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.funnels ? (
+                              <FunnelsView tnMapping={tnMapping} />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.journeys ? (
+                              <JourneysView tnMapping={tnMapping} />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.profiles ? (
+                              <ProfilesView tnMapping={tnMapping} />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.sessions ? (
+                              <SessionsView
+                                tnMapping={tnMapping}
+                                rotateXAxis={rotateXAxis}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.replays ? (
+                              replaysAccess.hasAccess ? (
+                                <ReplaysView tnMapping={tnMapping} />
+                              ) : (
+                                <PlanFeatureLocked feature='replays' />
+                              )
+                            ) : null}
+                            {activeTab === PROJECT_TABS.errors ? (
+                              <ErrorsView />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.goals ? (
+                              <GoalsView
+                                tnMapping={tnMapping}
+                                period={period}
+                                from={
+                                  dateRange ? getFormatDate(dateRange[0]) : ''
+                                }
+                                to={
+                                  dateRange ? getFormatDate(dateRange[1]) : ''
+                                }
+                                timezone={timezone}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.experiments ? (
+                              experimentsAccess.hasAccess ? (
+                                <ExperimentsView
                                   period={period}
                                   from={
                                     dateRange ? getFormatDate(dateRange[0]) : ''
@@ -1596,53 +1631,31 @@ const ViewProjectContent = () => {
                                   }
                                   timezone={timezone}
                                 />
-                              ) : null}
-                              {activeTab === PROJECT_TABS.experiments ? (
-                                experimentsAccess.hasAccess ? (
-                                  <ExperimentsView
-                                    period={period}
-                                    from={
-                                      dateRange
-                                        ? getFormatDate(dateRange[0])
-                                        : ''
-                                    }
-                                    to={
-                                      dateRange
-                                        ? getFormatDate(dateRange[1])
-                                        : ''
-                                    }
-                                    timezone={timezone}
-                                  />
-                                ) : (
-                                  <PlanFeatureLocked feature='experiments' />
-                                )
-                              ) : null}
-                              {activeTab === PROJECT_TABS.featureFlags ? (
-                                featureFlagsAccess.hasAccess ? (
-                                  <FeatureFlagsView
-                                    period={period}
-                                    from={
-                                      dateRange
-                                        ? getFormatDate(dateRange[0])
-                                        : ''
-                                    }
-                                    to={
-                                      dateRange
-                                        ? getFormatDate(dateRange[1])
-                                        : ''
-                                    }
-                                    timezone={timezone}
-                                  />
-                                ) : (
-                                  <PlanFeatureLocked feature='featureFlags' />
-                                )
-                              ) : null}
-                              {activeTab === PROJECT_TABS.captcha ? (
-                                <CaptchaView projectId={id} />
-                              ) : null}
-                            </Suspense>
-                          </motion.div>
-                        </AnimatePresence>
+                              ) : (
+                                <PlanFeatureLocked feature='experiments' />
+                              )
+                            ) : null}
+                            {activeTab === PROJECT_TABS.featureFlags ? (
+                              featureFlagsAccess.hasAccess ? (
+                                <FeatureFlagsView
+                                  period={period}
+                                  from={
+                                    dateRange ? getFormatDate(dateRange[0]) : ''
+                                  }
+                                  to={
+                                    dateRange ? getFormatDate(dateRange[1]) : ''
+                                  }
+                                  timezone={timezone}
+                                />
+                              ) : (
+                                <PlanFeatureLocked feature='featureFlags' />
+                              )
+                            ) : null}
+                            {activeTab === PROJECT_TABS.captcha ? (
+                              <CaptchaView projectId={id} />
+                            ) : null}
+                          </Suspense>
+                        </div>
 
                         {isEmbedded || isMapFullscreen ? null : (
                           <>
@@ -1798,7 +1811,7 @@ const ViewProjectContent = () => {
                 viewType={projectViewCreateType}
               />
             </>
-          </RefreshTriggersContext.Provider>
+          </ProjectViewAuxiliaryProviders>
         </ViewProjectContext.Provider>
       )}
     </ClientOnly>

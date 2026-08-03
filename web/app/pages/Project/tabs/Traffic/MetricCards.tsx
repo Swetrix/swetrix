@@ -3,7 +3,6 @@ import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
 import _round from 'lodash/round'
-import { motion, type Variants } from 'motion/react'
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -16,23 +15,6 @@ import {
   getStringFromTime,
   getTimeFromSeconds,
 } from '~/utils/generic'
-
-// Entrance animation: parent containers set initial='hidden' animate='visible'
-// to stagger the cards in. Standalone usage (no motion parent) stays static.
-export const metricCardsContainerVariants: Variants = {
-  visible: {
-    transition: { staggerChildren: 0.04 },
-  },
-}
-
-const metricCardVariants: Variants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] },
-  },
-}
 
 interface MetricCardProps {
   label: string
@@ -108,10 +90,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   valueMapper,
   classes,
 }) => (
-  <motion.div
-    variants={metricCardVariants}
-    className={cx('flex flex-col', classes?.container)}
-  >
+  <div className={cx('flex flex-col', classes?.container)}>
     <Text
       size='4xl'
       weight='bold'
@@ -140,7 +119,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         valueMapper={valueMapper}
       />
     </div>
-  </motion.div>
+  </div>
 )
 
 interface MetricCardsProps {
@@ -299,12 +278,7 @@ export const PerformanceMetricCards = memo(
     }
 
     return (
-      <motion.div
-        initial='hidden'
-        animate='visible'
-        variants={metricCardsContainerVariants}
-        className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'
-      >
+      <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
         <MetricCard
           label={t('dashboard.frontend')}
           value={overall.current?.frontend}
@@ -344,7 +318,7 @@ export const PerformanceMetricCards = memo(
             )
           }
         />
-      </motion.div>
+      </div>
     )
   },
 )

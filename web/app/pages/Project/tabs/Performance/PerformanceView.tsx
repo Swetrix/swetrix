@@ -707,6 +707,6 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
   )
 }
 
-const PerformanceView = PerformanceViewWrapper
+const PerformanceView = React.memo(PerformanceViewWrapper)
 
 export default PerformanceView

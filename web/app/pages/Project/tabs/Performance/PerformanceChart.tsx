@@ -6,7 +6,10 @@ import { Annotation } from '~/lib/models/Project'
 import type { ChartDataPointClick } from '~/pages/Project/View/utils/chartPoint'
 
 import { MainChart } from '../../View/components/MainChart'
-import { getSettingsPerf } from '../../View/ViewProject.helpers'
+import {
+  getAnnotationGridLines,
+  getSettingsPerf,
+} from '../../View/ViewProject.helpers'
 
 interface PerformanceChartProps {
   chart: Record<string, string[]>
@@ -46,6 +49,11 @@ export const PerformanceChart = ({
     [onDataPointClick, t],
   )
 
+  const annotationLines = useMemo(
+    () => getAnnotationGridLines(annotations),
+    [annotations],
+  )
+
   const options: ChartOptions = useMemo(() => {
     return getSettingsPerf(
       chart,
@@ -57,7 +65,7 @@ export const PerformanceChart = ({
       compareChart,
       onZoom,
       enableZoom,
-      annotations,
+      undefined,
       onDataPointClick,
       dataPointClickLabel,
     )
@@ -71,7 +79,6 @@ export const PerformanceChart = ({
     compareChart,
     onZoom,
     enableZoom,
-    annotations,
     onDataPointClick,
     dataPointClickLabel,
   ])
@@ -87,7 +94,6 @@ export const PerformanceChart = ({
       compareChart,
       onZoom,
       enableZoom,
-      annotations,
       onDataPointClick,
       dataPointClickLabel,
     ],
@@ -101,7 +107,6 @@ export const PerformanceChart = ({
       compareChart,
       onZoom,
       enableZoom,
-      annotations,
       onDataPointClick,
       dataPointClickLabel,
     ],
@@ -114,6 +119,7 @@ export const PerformanceChart = ({
       dataNames={dataNames}
       className={className}
       deps={deps}
+      xGridLines={annotationLines}
     />
   )
 }
