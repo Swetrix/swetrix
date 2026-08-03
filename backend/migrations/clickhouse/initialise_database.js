@@ -10,6 +10,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     type LowCardinality(String),
     pid FixedString(12),
     psid Nullable(UInt64),
+    sid Nullable(UInt64),
     profileId Nullable(String) CODEC(ZSTD(3)),
     host Nullable(String) CODEC(ZSTD(3)),
     pg Nullable(String) CODEC(ZSTD(3)),
@@ -68,19 +69,21 @@ const CLICKHOUSE_INIT_QUERIES = [
   ENGINE = ReplacingMergeTree()
   PRIMARY KEY (eid, pid);`,
 
-  // Sessions table with ReplacingMergeTree for tracking session state
+  // Sessions table with ReplacingMergeTree for tracking session state.
+  // Keyed on sid (one row per browsing session, 30 min of inactivity ends it),
+  // not psid (one value per visitor per day) — see the 2026_08_01_session_id
+  // migration, which this definition has to stay in sync with.
   `CREATE TABLE IF NOT EXISTS ${dbName}.sessions
   (
+    sid UInt64 DEFAULT psid,
     psid UInt64,
     pid FixedString(12),
     profileId Nullable(String) CODEC(ZSTD(3)),
     firstSeen DateTime('UTC') CODEC(Delta(4), LZ4),
-    lastSeen DateTime('UTC') CODEC(Delta(4), LZ4),
-    pageviews UInt32 DEFAULT 1,
-    events UInt32 DEFAULT 0
+    lastSeen DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = ReplacingMergeTree(lastSeen)
-  ORDER BY (pid, psid)
+  ORDER BY (pid, sid)
   PARTITION BY toYYYYMM(firstSeen);`,
 
   // Profile aliases table: maps anonymous (anon_) profile IDs to identified (usr_)

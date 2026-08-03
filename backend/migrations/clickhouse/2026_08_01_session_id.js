@@ -5,8 +5,6 @@ const STATE_TABLE = 'sessions_sid_migration_state'
 
 const ADD_SID_COLUMN_QUERIES = [
   `ALTER TABLE ${dbName}.events ADD COLUMN IF NOT EXISTS sid Nullable(UInt64) AFTER psid`,
-  `ALTER TABLE ${dbName}.customEV ADD COLUMN IF NOT EXISTS sid Nullable(UInt64) AFTER psid`,
-  `ALTER TABLE ${dbName}.errors ADD COLUMN IF NOT EXISTS sid Nullable(UInt64) AFTER psid`,
 ]
 
 const BACKFILL_QUERIES = [

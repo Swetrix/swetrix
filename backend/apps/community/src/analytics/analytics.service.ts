@@ -2482,11 +2482,37 @@ export class AnalyticsService {
     return `ses:fs:${pid}:${sid}`
   }
 
+  // Recovers the start of an already-running session after its Redis key was
+  // lost. sid leads the sessions ORDER BY, so this is a primary key lookup.
+  private async getSessionFirstSeenFromClickHouse(
+    sid: string,
+    pid: string,
+  ): Promise<string | null> {
+    const query = `
+      SELECT minOrNull(firstSeen) AS firstSeen
+      FROM sessions
+      WHERE sid = {sid:UInt64}
+        AND pid = {pid:FixedString(12)}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { sid, pid },
+      })
+      .then((resultSet) => resultSet.json<{ firstSeen: string | null }>())
+
+    const firstSeen = data[0]?.firstSeen
+
+    return firstSeen ? dayjs.utc(firstSeen).format('YYYY-MM-DD HH:mm:ss') : null
+  }
+
   async recordSessionActivity(
     sid: string,
     psid: string,
     pid: string,
     profileId: string,
+    isNewSession = false,
   ): Promise<void> {
     const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
     const cacheKey = this.getSessionFirstSeenKey(pid, sid)
@@ -2505,6 +2531,19 @@ export class AnalyticsService {
       if (stored !== 'OK') {
         firstSeen = (await redis.get(cacheKey)) || now
         await redis.expire(cacheKey, UNIQUE_SESSION_LIFE_TIME)
+      } else if (!isNewSession) {
+        // We created the key, yet the session predates this request — Redis
+        // dropped it (restart, eviction). Leaving firstSeen at `now` would be
+        // silently destructive: sessions is a ReplacingMergeTree(lastSeen), so
+        // this row wins the merge and the real start is lost for good.
+        // Unreachable while Redis holds the key, so it costs nothing in the
+        // normal path.
+        const recovered = await this.getSessionFirstSeenFromClickHouse(sid, pid)
+
+        if (recovered) {
+          firstSeen = recovered
+          await redis.set(cacheKey, firstSeen, 'EX', UNIQUE_SESSION_LIFE_TIME)
+        }
       }
 
       await clickhouse.insert({
@@ -3512,7 +3551,7 @@ export class AnalyticsService {
             bounce_counts AS (
               SELECT count() AS bounces
               FROM (
-                SELECT psid
+                SELECT coalesce(sid, psid) AS sessionId
                 FROM events
                 WHERE pid = {pid:FixedString(12)}
                   AND type = 'pageview'
@@ -3527,7 +3566,7 @@ export class AnalyticsService {
                       AND psid != 0
                       ${filtersQuery}
                   )
-                GROUP BY psid
+                GROUP BY sessionId
                 HAVING count() = 1
               )
             )
@@ -3670,7 +3709,7 @@ export class AnalyticsService {
           bounce_counts AS (
             SELECT count() AS bounces
             FROM (
-              SELECT psid
+              SELECT coalesce(sid, psid) AS sessionId
               FROM events
               WHERE pid = {pid:FixedString(12)}
                 AND type = 'pageview'
@@ -3687,7 +3726,7 @@ export class AnalyticsService {
                     AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
                     ${currentFiltersQuery}
                 )
-              GROUP BY psid
+              GROUP BY sessionId
               HAVING count() = 1
             )
           )
@@ -3735,7 +3774,7 @@ export class AnalyticsService {
           bounce_counts AS (
             SELECT count() AS bounces
             FROM (
-              SELECT psid
+              SELECT coalesce(sid, psid) AS sessionId
               FROM events
               WHERE pid = {pid:FixedString(12)}
                 AND type = 'pageview'
@@ -3752,7 +3791,7 @@ export class AnalyticsService {
                     AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
                     ${previousFiltersQuery}
                 )
-              GROUP BY psid
+              GROUP BY sessionId
               HAVING count() = 1
             )
           )
@@ -4593,7 +4632,7 @@ export class AnalyticsService {
         ${selector},
         avgOrNull(sessions_data.duration) as sdur,
         count() as pageviews,
-        count(DISTINCT subquery.psid) as uniques,
+        count(DISTINCT subquery.sessionId) as uniques,
         countIf(session_counts.pageviews = 1) as bounces
       FROM (
         SELECT
@@ -4755,7 +4794,7 @@ export class AnalyticsService {
       SELECT
         ${selector},
         count() as count,
-        countDistinct(subquery.psid) as uniques,
+        countDistinct(subquery.sessionId) as uniques,
         avgOrNull(sessions_data.duration) as sdur
       FROM (
         SELECT
@@ -6361,18 +6400,22 @@ export class AnalyticsService {
       LIMIT 1;
     `
 
+    // A psid covers a whole day, so it can span several sessions — sum their
+    // individual durations instead of measuring first-to-last, which would
+    // count the idle gaps between them. Matches the sessions list's sdur.
     const querySessionDuration = `
       SELECT
-        dateDiff('second', firstSeen, lastSeen) as duration,
-        lastSeen
+        sumOrNull(duration) as duration,
+        maxOrNull(sessionEnd) as lastSeen
       FROM (
         SELECT
-          minOrNull(firstSeen) AS firstSeen,
-          maxOrNull(lastSeen) AS lastSeen
+          dateDiff('second', min(firstSeen), max(lastSeen)) as duration,
+          max(lastSeen) AS sessionEnd
         FROM sessions
         WHERE
           pid = {pid:FixedString(12)}
           AND psid = toUInt64OrNull({psid:String})
+        GROUP BY sid
       )
     `
 

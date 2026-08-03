@@ -1339,11 +1339,12 @@ export class AnalyticsController {
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
 
-    const [, psid, sid] = await this.analyticsService.generateAndStoreSessionId(
-      eventsDTO.pid,
-      userAgent,
-      ip,
-    )
+    const [isNewSession, psid, sid] =
+      await this.analyticsService.generateAndStoreSessionId(
+        eventsDTO.pid,
+        userAgent,
+        ip,
+      )
 
     const profileId = await this.analyticsService.generateProfileId(
       eventsDTO.pid,
@@ -1357,6 +1358,7 @@ export class AnalyticsController {
       psid,
       eventsDTO.pid,
       profileId,
+      isNewSession,
     )
 
     enrichTrafficSource(eventsDTO)
@@ -1586,6 +1588,7 @@ export class AnalyticsController {
       psid,
       logDTO.pid,
       profileId,
+      unique,
     )
 
     if (!unique && logDTO.unique) {
@@ -1753,11 +1756,12 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
-    const [, psid, sid] = await this.analyticsService.generateAndStoreSessionId(
-      logDTO.pid,
-      userAgent,
-      ip,
-    )
+    const [isNewSession, psid, sid] =
+      await this.analyticsService.generateAndStoreSessionId(
+        logDTO.pid,
+        userAgent,
+        ip,
+      )
 
     // For noscript requests, we generate an anonymous profile ID since
     // user-supplied profileId is not available without JavaScript
@@ -1772,6 +1776,7 @@ export class AnalyticsController {
       psid,
       logDTO.pid,
       profileId,
+      isNewSession,
     )
 
     const {
@@ -2145,11 +2150,12 @@ export class AnalyticsController {
 
     const project = await this.analyticsService.validate(errorDTO, origin, ip)
 
-    const [, psid, sid] = await this.analyticsService.generateAndStoreSessionId(
-      errorDTO.pid,
-      userAgent,
-      ip,
-    )
+    const [isNewSession, psid, sid] =
+      await this.analyticsService.generateAndStoreSessionId(
+        errorDTO.pid,
+        userAgent,
+        ip,
+      )
 
     const profileId = await this.analyticsService.generateProfileId(
       errorDTO.pid,
@@ -2163,6 +2169,7 @@ export class AnalyticsController {
       psid,
       errorDTO.pid,
       profileId,
+      isNewSession,
     )
 
     const {
