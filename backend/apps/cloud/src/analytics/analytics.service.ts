@@ -9532,6 +9532,7 @@ export class AnalyticsService {
           error_name AS name,
           error_message AS message,
           error_filename AS filename,
+          sid,
           psid,
           profileId,
           toTimeZone(created, {timezone:String}) AS created
