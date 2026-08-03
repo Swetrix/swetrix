@@ -40,6 +40,7 @@ import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
   redis,
   UNIQUE_SESSION_LIFE_TIME,
+  ONLINE_VISITORS_WINDOW_MINUTES,
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
   ERROR_COLUMNS,
@@ -124,9 +125,65 @@ const isValidLocale = (lc: string): boolean => {
 // 2 minutes
 const hasTimeComponent = (date: string): boolean => /\d{2}:\d{2}/.test(date)
 
+const LEGACY_SESSION_FLAG = '1'
+
+redis.defineCommand('swetrixResolveSession', {
+  numberOfKeys: 1,
+  lua: `
+    local existing = redis.call('GET', KEYS[1])
+    if existing and existing ~= ARGV[3] then
+      redis.call('EXPIRE', KEYS[1], ARGV[2])
+      return {existing, '0'}
+    end
+    redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[2])
+    if existing == ARGV[3] then
+      return {ARGV[1], '0'}
+    end
+    return {ARGV[1], '1'}
+  `,
+})
+
+redis.defineCommand('swetrixPeekSession', {
+  numberOfKeys: 1,
+  lua: `
+    local existing = redis.call('GET', KEYS[1])
+    if not existing then
+      return ''
+    end
+    if existing == ARGV[3] then
+      local ttl = redis.call('TTL', KEYS[1])
+      if ttl < 0 then
+        ttl = tonumber(ARGV[2])
+      end
+      redis.call('SET', KEYS[1], ARGV[1], 'EX', ttl)
+      return ARGV[1]
+    end
+    return existing
+  `,
+})
+
+interface RedisWithSessionScripts {
+  swetrixResolveSession(
+    key: string,
+    candidateSid: string,
+    ttlSeconds: number,
+    legacyFlag: string,
+  ): Promise<[string, string]>
+  swetrixPeekSession(
+    key: string,
+    candidateSid: string,
+    ttlSeconds: number,
+    legacyFlag: string,
+  ): Promise<string>
+}
+
+const sessionScripts = redis as unknown as RedisWithSessionScripts
+
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
-// The concurrency sweep materializes one row per minute of the requested window,
-// so cap how far back it can be reconstructed to keep the query bounded
+// The concurrency sweep fans every active minute out into a row per minute of
+// the liveness window, so cap how far back it can be reconstructed to keep the
+// scan bounded — period=all on an old project would otherwise read the entire
+// event history
 const MAX_CONCURRENCY_WINDOW_MINUTES = 366 * 24 * 60
 const MAX_FILTERS = 100
 const MAX_FILTER_VALUES = 100
@@ -1984,55 +2041,52 @@ export class AnalyticsService {
     return `ses:${psid}`
   }
 
+  private generateSid(): string {
+    return crypto.randomBytes(8).readBigUInt64BE(0).toString()
+  }
+
   async getSessionId(
     pid: string,
     userAgent: string,
     ip: string,
-  ): Promise<{ exists: boolean; psid: string }> {
-    const salt = await this.saltService.getSaltForProject(pid)
+  ): Promise<{ exists: boolean; psid: string; sid: string | null }> {
+    const salt = await this.saltService.getSaltForSession()
     const psid = this.derivePsidFromInputs(pid, userAgent, ip, salt)
     const sessionKey = this.getSessionKey(psid)
 
-    const exists = Boolean(await redis.exists(sessionKey))
+    const sid = (await sessionScripts.swetrixPeekSession(
+      sessionKey,
+      this.generateSid(),
+      UNIQUE_SESSION_LIFE_TIME,
+      LEGACY_SESSION_FLAG,
+    )) as string
 
-    return { exists, psid }
+    return { exists: Boolean(sid), psid, sid: sid || null }
   }
 
   async generateAndStoreSessionId(
     pid: string,
     userAgent: string,
     ip: string,
-  ): Promise<[boolean, string]> {
-    const salt = await this.saltService.getSaltForProject(pid)
+  ): Promise<[boolean, string, string]> {
+    const salt = await this.saltService.getSaltForSession()
     const psid = this.derivePsidFromInputs(pid, userAgent, ip, salt)
     const sessionKey = this.getSessionKey(psid)
 
-    // Use SET with NX (only set if not exists) for atomic "new session" detection
-    // This prevents race conditions where multiple workers could both see the key
-    // doesn't exist and both think they're creating a "new session"
-    const result = await redis.set(
+    const [sid, isNewFlag] = (await sessionScripts.swetrixResolveSession(
       sessionKey,
-      '1',
-      'EX',
+      this.generateSid(),
       UNIQUE_SESSION_LIFE_TIME,
-      'NX',
-    )
+      LEGACY_SESSION_FLAG,
+    )) as [string, string]
 
-    // If SET NX succeeded (returned 'OK'), this is a new session
-    // If it returned null, the session already existed
-    const isNew = result === 'OK'
-
-    if (!isNew) {
-      // Session already exists, extend TTL
-      await this.extendSessionTTL(psid)
-    }
-
-    return [isNew, psid]
+    return [isNewFlag === '1', psid, sid]
   }
 
+  // EXPIRE, not SET: the value is the sid and must survive a heartbeat.
   async extendSessionTTL(psid: string): Promise<void> {
     const sessionKey = this.getSessionKey(psid)
-    await redis.set(sessionKey, '1', 'EX', UNIQUE_SESSION_LIFE_TIME)
+    await redis.expire(sessionKey, UNIQUE_SESSION_LIFE_TIME)
   }
 
   private hashToNumericString(value: string): string {
@@ -2424,46 +2478,72 @@ export class AnalyticsService {
       )`
   }
 
-  private getSessionFirstSeenKey(pid: string, psid: string): string {
-    return `ses:fs:${pid}:${psid}`
+  private getSessionFirstSeenKey(pid: string, sid: string): string {
+    return `ses:fs:${pid}:${sid}`
+  }
+
+  // Recovers the start of an already-running session after its Redis key was
+  // lost. sid leads the sessions ORDER BY, so this is a primary key lookup.
+  private async getSessionFirstSeenFromClickHouse(
+    sid: string,
+    pid: string,
+  ): Promise<string | null> {
+    const query = `
+      SELECT minOrNull(firstSeen) AS firstSeen
+      FROM sessions
+      WHERE sid = {sid:UInt64}
+        AND pid = {pid:FixedString(12)}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { sid, pid },
+      })
+      .then((resultSet) => resultSet.json<{ firstSeen: string | null }>())
+
+    const firstSeen = data[0]?.firstSeen
+
+    return firstSeen ? dayjs.utc(firstSeen).format('YYYY-MM-DD HH:mm:ss') : null
   }
 
   async recordSessionActivity(
+    sid: string,
     psid: string,
     pid: string,
     profileId: string,
+    isNewSession = false,
   ): Promise<void> {
     const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-    const cacheKey = this.getSessionFirstSeenKey(pid, psid)
+    const cacheKey = this.getSessionFirstSeenKey(pid, sid)
 
     try {
-      let firstSeen = await redis.get(cacheKey)
+      const stored = await redis.set(
+        cacheKey,
+        now,
+        'EX',
+        UNIQUE_SESSION_LIFE_TIME,
+        'NX',
+      )
 
-      if (!firstSeen) {
-        const query = `
-          SELECT minOrNull(firstSeen) AS firstSeen
-          FROM sessions
-          WHERE psid = {psid:UInt64}
-            AND pid = {pid:FixedString(12)}
-        `
+      let firstSeen = now
 
-        const { data } = await clickhouse
-          .query({
-            query,
-            query_params: { psid, pid },
-          })
-          .then((resultSet) =>
-            resultSet.json<{
-              firstSeen: string | null
-            }>(),
-          )
+      if (stored !== 'OK') {
+        firstSeen = (await redis.get(cacheKey)) || now
+        await redis.expire(cacheKey, UNIQUE_SESSION_LIFE_TIME)
+      } else if (!isNewSession) {
+        // We created the key, yet the session predates this request — Redis
+        // dropped it (restart, eviction). Leaving firstSeen at `now` would be
+        // silently destructive: sessions is a ReplacingMergeTree(lastSeen), so
+        // this row wins the merge and the real start is lost for good.
+        // Unreachable while Redis holds the key, so it costs nothing in the
+        // normal path.
+        const recovered = await this.getSessionFirstSeenFromClickHouse(sid, pid)
 
-        const existingSession = data[0]
-        firstSeen = existingSession?.firstSeen
-          ? dayjs.utc(existingSession.firstSeen).format('YYYY-MM-DD HH:mm:ss')
-          : now
-
-        await redis.set(cacheKey, firstSeen, 'EX', UNIQUE_SESSION_LIFE_TIME)
+        if (recovered) {
+          firstSeen = recovered
+          await redis.set(cacheKey, firstSeen, 'EX', UNIQUE_SESSION_LIFE_TIME)
+        }
       }
 
       await clickhouse.insert({
@@ -2471,6 +2551,7 @@ export class AnalyticsService {
         format: 'JSONEachRow',
         values: [
           {
+            sid,
             psid,
             pid,
             profileId,
@@ -2481,8 +2562,7 @@ export class AnalyticsService {
         clickhouse_settings: { async_insert: 1 },
       })
     } catch (error) {
-      this.logger.error('Failed to record session:', error)
-      throw error
+      this.logger.error(`Failed to record session: ${error}`)
     }
   }
 
@@ -2917,14 +2997,24 @@ export class AnalyticsService {
       ),
       session_duration_agg AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          psidCasted,
           pid,
-          dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
-          argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as profileId
-        FROM sessions AS s
-        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
-        WHERE pid = {pid:FixedString(12)}
-          AND psid IN (SELECT psid FROM funnel_qualified)
+          sum(session_duration) as total_duration,
+          argMax(sessionProfileId, lastActivity) as profileId
+        FROM (
+          SELECT
+            CAST(psid, 'String') AS psidCasted,
+            pid,
+            sid,
+            dateDiff('second', min(firstSeen), max(lastSeen)) as session_duration,
+            max(lastSeen) as lastActivity,
+            argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as sessionProfileId
+          FROM sessions AS s
+          LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
+          WHERE pid = {pid:FixedString(12)}
+            AND psid IN (SELECT psid FROM funnel_qualified)
+          GROUP BY psidCasted, pid, sid
+        )
         GROUP BY psidCasted, pid
       ),
       first_session_per_profile AS (
@@ -2949,7 +3039,7 @@ export class AnalyticsService {
         dsf.sessionStart,
         dsf.lastActivity,
         if(dateDiff('second', toTimeZone(dsf.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        sda.avg_duration AS sdur,
+        sda.total_duration AS sdur,
         sda.profileId AS profileId,
         if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
         if(fsp.firstPsid = dsf.psidCasted, 1, 0) AS isFirstSession
@@ -3075,14 +3165,24 @@ export class AnalyticsService {
       ),
       session_duration_agg AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          psidCasted,
           pid,
-          dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
-          argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as profileId
-        FROM sessions AS s
-        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
-        WHERE pid = {pid:FixedString(12)}
-          AND psid IN (SELECT psid FROM journey_qualified)
+          sum(session_duration) as total_duration,
+          argMax(sessionProfileId, lastActivity) as profileId
+        FROM (
+          SELECT
+            CAST(psid, 'String') AS psidCasted,
+            pid,
+            sid,
+            dateDiff('second', min(firstSeen), max(lastSeen)) as session_duration,
+            max(lastSeen) as lastActivity,
+            argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as sessionProfileId
+          FROM sessions AS s
+          LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
+          WHERE pid = {pid:FixedString(12)}
+            AND psid IN (SELECT psid FROM journey_qualified)
+          GROUP BY psidCasted, pid, sid
+        )
         GROUP BY psidCasted, pid
       ),
       first_session_per_profile AS (
@@ -3107,7 +3207,7 @@ export class AnalyticsService {
         dsf.sessionStart,
         dsf.lastActivity,
         if(dateDiff('second', toTimeZone(dsf.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        sda.avg_duration AS sdur,
+        sda.total_duration AS sdur,
         sda.profileId AS profileId,
         if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
         if(fsp.firstPsid = dsf.psidCasted, 1, 0) AS isFirstSession
@@ -3421,7 +3521,7 @@ export class AnalyticsService {
             WITH analytics_counts AS (
               SELECT
                 count(*) AS all,
-                count(DISTINCT psid) AS unique,
+                count(DISTINCT coalesce(sid, psid)) AS unique,
                 count(DISTINCT profileId) AS users
               FROM events
               WHERE
@@ -3433,7 +3533,7 @@ export class AnalyticsService {
               SELECT avgOrNull(duration) as sdur
               FROM (
                 SELECT
-                  psid,
+                  sid,
                   dateDiff('second', min(firstSeen), max(lastSeen)) as duration
                 FROM sessions
                 WHERE pid = {pid:FixedString(12)}
@@ -3445,13 +3545,13 @@ export class AnalyticsService {
                       AND psid IS NOT NULL
                       ${filtersQuery}
                   )
-                GROUP BY psid
+                GROUP BY sid
               )
             ),
             bounce_counts AS (
               SELECT count() AS bounces
               FROM (
-                SELECT psid
+                SELECT coalesce(sid, psid) AS sessionId
                 FROM events
                 WHERE pid = {pid:FixedString(12)}
                   AND type = 'pageview'
@@ -3466,7 +3566,7 @@ export class AnalyticsService {
                       AND psid != 0
                       ${filtersQuery}
                   )
-                GROUP BY psid
+                GROUP BY sessionId
                 HAVING count() = 1
               )
             )
@@ -3577,7 +3677,7 @@ export class AnalyticsService {
             SELECT
               1 AS sortOrder,
               count(*) AS all,
-              count(DISTINCT psid) AS unique,
+              count(DISTINCT coalesce(sid, psid)) AS unique,
               count(DISTINCT profileId) AS users
             FROM events
             WHERE
@@ -3590,7 +3690,7 @@ export class AnalyticsService {
             SELECT avgOrNull(duration) as sdur
             FROM (
               SELECT
-                psid,
+                sid,
                 dateDiff('second', min(firstSeen), max(lastSeen)) as duration
               FROM sessions
               WHERE pid = {pid:FixedString(12)}
@@ -3603,13 +3703,13 @@ export class AnalyticsService {
                     AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
                     ${currentFiltersQuery}
                 )
-              GROUP BY psid
+              GROUP BY sid
             )
           ),
           bounce_counts AS (
             SELECT count() AS bounces
             FROM (
-              SELECT psid
+              SELECT coalesce(sid, psid) AS sessionId
               FROM events
               WHERE pid = {pid:FixedString(12)}
                 AND type = 'pageview'
@@ -3626,7 +3726,7 @@ export class AnalyticsService {
                     AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
                     ${currentFiltersQuery}
                 )
-              GROUP BY psid
+              GROUP BY sessionId
               HAVING count() = 1
             )
           )
@@ -3642,7 +3742,7 @@ export class AnalyticsService {
             SELECT
               2 AS sortOrder,
               count(*) AS all,
-              count(DISTINCT psid) AS unique,
+              count(DISTINCT coalesce(sid, psid)) AS unique,
               count(DISTINCT profileId) AS users
             FROM events
             WHERE
@@ -3655,7 +3755,7 @@ export class AnalyticsService {
             SELECT avgOrNull(duration) as sdur
             FROM (
               SELECT
-                psid,
+                sid,
                 dateDiff('second', min(firstSeen), max(lastSeen)) as duration
               FROM sessions
               WHERE pid = {pid:FixedString(12)}
@@ -3668,13 +3768,13 @@ export class AnalyticsService {
                     AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
                     ${previousFiltersQuery}
                 )
-              GROUP BY psid
+              GROUP BY sid
             )
           ),
           bounce_counts AS (
             SELECT count() AS bounces
             FROM (
-              SELECT psid
+              SELECT coalesce(sid, psid) AS sessionId
               FROM events
               WHERE pid = {pid:FixedString(12)}
                 AND type = 'pageview'
@@ -3691,7 +3791,7 @@ export class AnalyticsService {
                     AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
                     ${previousFiltersQuery}
                 )
-              GROUP BY psid
+              GROUP BY sessionId
               HAVING count() = 1
             )
           )
@@ -4532,12 +4632,13 @@ export class AnalyticsService {
         ${selector},
         avgOrNull(sessions_data.duration) as sdur,
         count() as pageviews,
-        count(DISTINCT subquery.psid) as uniques,
+        count(DISTINCT subquery.sessionId) as uniques,
         countIf(session_counts.pageviews = 1) as bounces
       FROM (
         SELECT
           pid,
           psid,
+          coalesce(sid, psid) as sessionId,
           ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM events
         PREWHERE pid = {pid:FixedString(12)} AND type = 'pageview'
@@ -4547,37 +4648,40 @@ export class AnalyticsService {
       LEFT JOIN (
         SELECT
           pid,
-          psid,
+          sid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as duration
         FROM sessions
         WHERE pid = {pid:FixedString(12)}
-        GROUP BY pid, psid
+        GROUP BY pid, sid
       ) as sessions_data
       ON subquery.pid = sessions_data.pid
-      AND subquery.psid = sessions_data.psid
+      AND subquery.sessionId = sessions_data.sid
       LEFT JOIN (
         SELECT
           pid,
-          psid,
+          sessionId,
           count() as pageviews
-        FROM events
-        PREWHERE pid = {pid:FixedString(12)} AND type = 'pageview'
-        WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
-          AND psid IS NOT NULL
-          AND psid != 0
-          AND psid IN (
-            SELECT DISTINCT psid
-            FROM events
-            PREWHERE pid = {pid:FixedString(12)} AND type = 'pageview'
-            WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
-              AND psid IS NOT NULL
-              AND psid != 0
-              ${filtersQuery}
-          )
-        GROUP BY pid, psid
+        FROM (
+          SELECT pid, coalesce(sid, psid) as sessionId, psid
+          FROM events
+          PREWHERE pid = {pid:FixedString(12)} AND type = 'pageview'
+          WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
+            AND psid IS NOT NULL
+            AND psid != 0
+            AND psid IN (
+              SELECT DISTINCT psid
+              FROM events
+              PREWHERE pid = {pid:FixedString(12)} AND type = 'pageview'
+              WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
+                AND psid IS NOT NULL
+                AND psid != 0
+                ${filtersQuery}
+            )
+        )
+        GROUP BY pid, sessionId
       ) as session_counts
       ON subquery.pid = session_counts.pid
-      AND subquery.psid = session_counts.psid
+      AND subquery.sessionId = session_counts.sessionId
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
@@ -4690,12 +4794,13 @@ export class AnalyticsService {
       SELECT
         ${selector},
         count() as count,
-        countDistinct(subquery.psid) as uniques,
+        countDistinct(subquery.sessionId) as uniques,
         avgOrNull(sessions_data.duration) as sdur
       FROM (
         SELECT
           pid,
           psid,
+          coalesce(sid, psid) as sessionId,
           ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM events
         WHERE pid = {pid:FixedString(12)}
@@ -4706,14 +4811,14 @@ export class AnalyticsService {
       LEFT JOIN (
         SELECT
           pid,
-          psid,
+          sid,
           dateDiff('second', min(firstSeen), max(lastSeen)) as duration
         FROM sessions
         WHERE pid = {pid:FixedString(12)}
-        GROUP BY pid, psid
+        GROUP BY pid, sid
       ) as sessions_data
       ON subquery.pid = sessions_data.pid
-      AND subquery.psid = sessions_data.psid
+      AND subquery.sessionId = sessions_data.sid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
       `
@@ -5020,12 +5125,6 @@ export class AnalyticsService {
     }
   }
 
-  // Reconstructs the number of concurrent (live) visitors for each display bucket
-  // from the sessions table intervals [firstSeen, lastSeen] using a sweep-line:
-  // +1 at each session's start minute, -1 right after its end minute, a zero-delta
-  // "spine" row for every minute in the requested window, then a running sum gives
-  // exact per-minute concurrency. Buckets larger than a minute report the peak
-  // concurrency within the bucket.
   generateConcurrencyAggregationQuery(timeBucket: TimeBucketType): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
@@ -5035,45 +5134,34 @@ export class AnalyticsService {
         parseDateTimeBestEffort({groupFrom:String}) AS fromTs,
         parseDateTimeBestEffort({groupTo:String}) AS toTs,
         toStartOfMinute(fromTs) AS fromMinute,
-        toStartOfMinute(toTs) AS toMinute,
-        session_intervals AS (
-          SELECT
-            greatest(min(firstSeen), fromTs) AS sessionStart,
-            least(max(lastSeen), toTs) AS sessionEnd
-          FROM sessions
-          WHERE
-            pid = {pid:FixedString(12)}
-            AND firstSeen <= toTs
-            AND lastSeen >= fromTs
-          GROUP BY psid
-        )
+        toStartOfMinute(toTs) AS toMinute
       SELECT
         ${selector},
-        toInt32(max(concurrency)) AS concurrency
+        toInt32(max(live)) AS concurrency
       FROM (
         SELECT
           ${timeBucketFunc}(toTimeZone(m, {timezone:String})) AS tz_created,
-          concurrency
+          uniqExact(psid) AS live
         FROM (
           SELECT
-            m,
-            sum(minute_delta) OVER (ORDER BY m ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS concurrency
+            psid,
+            activeMinute + toIntervalMinute(arrayJoin(range(0, ${ONLINE_VISITORS_WINDOW_MINUTES}))) AS m
           FROM (
-            SELECT m, sum(delta) AS minute_delta
-            FROM (
-              SELECT toStartOfMinute(sessionStart) AS m, toInt32(1) AS delta
-              FROM session_intervals
-              UNION ALL
-              SELECT toStartOfMinute(sessionEnd) + INTERVAL 1 MINUTE AS m, toInt32(-1) AS delta
-              FROM session_intervals
-              UNION ALL
-              SELECT fromMinute + toIntervalMinute(number) AS m, toInt32(0) AS delta
-              FROM numbers(least(toUInt64(dateDiff('minute', fromMinute, toMinute)) + 1, ${MAX_CONCURRENCY_WINDOW_MINUTES}))
-            )
-            GROUP BY m
+            SELECT DISTINCT
+              psid,
+              toStartOfMinute(created) AS activeMinute
+            FROM events
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND type IN ('pageview', 'custom_event')
+              AND psid IS NOT NULL
+              AND psid != 0
+              AND created > fromTs - toIntervalMinute(${ONLINE_VISITORS_WINDOW_MINUTES})
+              AND created <= toTs
           )
         )
         WHERE m BETWEEN fromMinute AND toMinute
+        GROUP BY tz_created, m
       )
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
@@ -5119,10 +5207,9 @@ export class AnalyticsService {
     )
 
     // Concurrency is only computed when explicitly requested (the live visitors
-    // metric is off by default) and within a bounded window — the sweep-line
-    // query materializes a row per minute. The sessions table also has no
-    // dimension columns, so concurrency cannot respect dashboard filters —
-    // return zeros instead of misleading unfiltered data
+    // metric is off by default) and within a bounded window. It is derived from
+    // an unfiltered per-minute sweep over the events table, so it cannot respect
+    // dashboard filters — return zeros instead of misleading unfiltered data
     const shouldComputeConcurrency =
       includeConcurrency &&
       !customEVFilterApplied &&
@@ -6106,8 +6193,6 @@ export class AnalyticsService {
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {
-    const ONLINE_VISITORS_WINDOW_MINUTES = 5
-
     const since = dayjs
       .utc()
       .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')
@@ -6315,18 +6400,22 @@ export class AnalyticsService {
       LIMIT 1;
     `
 
+    // A psid covers a whole day, so it can span several sessions — sum their
+    // individual durations instead of measuring first-to-last, which would
+    // count the idle gaps between them. Matches the sessions list's sdur.
     const querySessionDuration = `
       SELECT
-        dateDiff('second', firstSeen, lastSeen) as duration,
-        lastSeen
+        sumOrNull(duration) as duration,
+        maxOrNull(sessionEnd) as lastSeen
       FROM (
         SELECT
-          minOrNull(firstSeen) AS firstSeen,
-          maxOrNull(lastSeen) AS lastSeen
+          dateDiff('second', min(firstSeen), max(lastSeen)) as duration,
+          max(lastSeen) AS sessionEnd
         FROM sessions
         WHERE
           pid = {pid:FixedString(12)}
           AND psid = toUInt64OrNull({psid:String})
+        GROUP BY sid
       )
     `
 
@@ -6558,13 +6647,23 @@ export class AnalyticsService {
       ),
       session_duration_agg AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          psidCasted,
           pid,
-          dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
-          argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as profileId
-        FROM sessions AS s
-        LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
-        WHERE pid = {pid:FixedString(12)}
+          sum(session_duration) as total_duration,
+          argMax(sessionProfileId, lastActivity) as profileId
+        FROM (
+          SELECT
+            CAST(psid, 'String') AS psidCasted,
+            pid,
+            sid,
+            dateDiff('second', min(firstSeen), max(lastSeen)) as session_duration,
+            max(lastSeen) as lastActivity,
+            argMax(coalesce(nullIf(pam.userProfileId, ''), s.profileId), lastSeen) as sessionProfileId
+          FROM sessions AS s
+          LEFT JOIN profile_alias_map pam ON s.profileId = pam.anonProfileId
+          WHERE pid = {pid:FixedString(12)}
+          GROUP BY psidCasted, pid, sid
+        )
         GROUP BY psidCasted, pid
       ),
       first_session_per_profile AS (
@@ -6590,7 +6689,7 @@ export class AnalyticsService {
           COALESCE(errc.count, 0) AS errors,
           dsf.sessionStart AS sessionStart,
           dsf.lastActivity AS lastActivity,
-          sda.avg_duration AS sdur,
+          sda.total_duration AS sdur,
           coalesce(nullIf(sda.profileId, ''), dsf.profileId) AS profileId
         FROM distinct_sessions_filtered dsf
         LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
@@ -6762,7 +6861,7 @@ export class AnalyticsService {
         count(*) as count,
         max(created) as last_seen,
         count(DISTINCT profileId) as users,
-        count(DISTINCT psid) as sessions,
+        count(DISTINCT coalesce(sid, psid)) as sessions,
         status.status
       FROM (
         SELECT
@@ -6968,7 +7067,7 @@ export class AnalyticsService {
 
     // Get total sessions from all matching events for the time range
     const queryTotalSessions = `
-      SELECT count(DISTINCT psid) as totalSessions
+      SELECT count(DISTINCT coalesce(sid, psid)) as totalSessions
       FROM events
       WHERE pid = {pid:FixedString(12)}
         AND type IN ('pageview', 'custom_event', 'error')
@@ -7676,14 +7775,14 @@ export class AnalyticsService {
           avgOrNull(session_duration) AS avgDuration
         FROM (
           SELECT
-            psid,
+            coalesce(sid, psid) AS sessionId,
             dateDiff('second', min(created), max(created)) AS session_duration
           FROM events
           WHERE pid = {pid:FixedString(12)}
             AND type = 'pageview'
             AND profileId IN {profileIds:Array(String)}
             AND psid IS NOT NULL
-          GROUP BY psid
+          GROUP BY sessionId
           HAVING session_duration > 0
         )
       ),
@@ -7692,12 +7791,12 @@ export class AnalyticsService {
           avgOrNull(session_duration) AS avgDuration
         FROM (
           SELECT
-            psid,
+            sid,
             dateDiff('second', min(firstSeen), max(lastSeen)) AS session_duration
           FROM sessions FINAL
           WHERE pid = {pid:FixedString(12)}
             AND profileId IN {profileIds:Array(String)}
-          GROUP BY psid
+          GROUP BY sid
           HAVING session_duration > 0
         )
       )
@@ -8088,12 +8187,20 @@ export class AnalyticsService {
       ),
       session_duration_agg AS (
         SELECT
-          CAST(psid, 'String') AS psidCasted,
+          psidCasted,
           pid,
-          dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration
-        FROM sessions
-        WHERE pid = {pid:FixedString(12)}
-          AND profileId IN {profileIds:Array(String)}
+          sum(session_duration) as total_duration
+        FROM (
+          SELECT
+            CAST(psid, 'String') AS psidCasted,
+            pid,
+            sid,
+            dateDiff('second', min(firstSeen), max(lastSeen)) as session_duration
+          FROM sessions
+          WHERE pid = {pid:FixedString(12)}
+            AND profileId IN {profileIds:Array(String)}
+          GROUP BY psidCasted, pid, sid
+        )
         GROUP BY psidCasted, pid
       )
       SELECT
@@ -8107,7 +8214,7 @@ export class AnalyticsService {
         ps.sessionStart,
         ps.lastActivity,
         if(dateDiff('second', toTimeZone(ps.lastActivity, 'UTC'), toTimeZone(now(), 'UTC')) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        sda.avg_duration AS sdur
+        sda.total_duration AS sdur
       FROM profile_sessions ps
       LEFT JOIN pageview_counts pc ON ps.psidCasted = pc.psidCasted AND ps.pid = pc.pid
       LEFT JOIN event_counts ec ON ps.psidCasted = ec.psidCasted AND ps.pid = ec.pid
