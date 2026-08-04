@@ -3355,19 +3355,6 @@
       "tooManyImages": "Vous pouvez joindre jusqu'à {{count}} images"
     }
   },
-  "open": {
-    "desc": "Swetrix est une Startup Ouverte, nous partageons nos métriques, telles que les revenus, les pertes, le nombre d'utilisateurs, etc. avec le public.",
-    "updated": "Cette page est mise à jour régulièrement.",
-    "finance": {
-      "title": "Métriques financières",
-      "desc": "Nos métriques financières, telles que les revenus, les pertes, etc."
-    },
-    "usage": {
-      "title": "Métriques d'utilisation",
-      "desc": "Nos métriques d'utilisateurs, telles que le nombre d'utilisateurs actifs, les sites web connectés.",
-      "live": "Vous pouvez voir nos métriques en direct sur notre <livedemo>tableau de bord public</livedemo>. Vous pouvez également rendre vos propres tableaux de bord Swetrix publics et les ajuster à vos besoins."
-    }
-  },
   "checkout": {
     "title": "Commencez votre essai gratuit",
     "subtitle": "Essayez Swetrix gratuitement pendant {{days}} jours. Annulez à tout moment.",
@@ -3469,7 +3456,6 @@
     "contact": "Contact",
     "main": "Swetrix - une alternative à Google Analytics sans cookies",
     "socialisation": "Comptes liés",
-    "open": "Startup ouverte",
     "passwordProtected": "Mot de passe requis",
     "performance": "Contrôle des performances de l'utilisateur final afin de fournir des sites web rapides",
     "errors": "Outil de suivi des erreurs des utilisateurs finaux pour offrir des expériences sans bug",
@@ -3490,7 +3476,6 @@
     "signup": "Créez votre compte Swetrix et commencez à suivre le trafic de votre site avec des analyses sans cookies et respectueuses de la vie privée – configuration simple, statistiques en temps réel.",
     "checkout": "Choisissez un forfait Swetrix et finalisez votre abonnement — des analyses sans cookies, axées sur la confidentialité et avec des données en temps réel.",
     "onboarding": "Démarrez avec Swetrix (alternative à Google Analytics, sans cookies et respectueuse de la vie privée) en quelques étapes.",
-    "open": "Indicateurs publics de la startup : découvrez nos principaux indicateurs financiers et opérationnels.",
     "recovery": "Mot de passe oublié ? Utilisez notre fonctionnalité de récupération de mot de passe pour rétablir l’accès à votre compte.",
     "performance": "Surveillez la vitesse du site pour les utilisateurs réels avec Swetrix – chargement de page, TTFB, temps DNS/TLS et percentiles. Respectueux de la vie privée et sans cookies. Essai gratuit de 14 jours, sans carte bancaire.",
     "project": "Consultez les analyses web publiques de {{name}}. Suivi respectueux de la vie privée, propulsé par Swetrix – sans cookies ni suivi utilisateur intrusif.",
@@ -3578,7 +3563,6 @@
     "status": "Statut",
     "supportUs": "Soutenez‑nous",
     "captcha": "CAPTCHA",
-    "open": "Startup ouverte",
     "about": "À propos de nous",
     "features": "Fonctionnalités",
     "imprint": "Mention légale",

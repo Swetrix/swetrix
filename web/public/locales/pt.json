@@ -3355,19 +3355,6 @@
       "tooManyImages": "Você pode anexar até {{count}} imagens"
     }
   },
-  "open": {
-    "desc": "O Swetrix é uma Open Startup, nós compartilhamos nossas métricas, como receita, perdas, quantidade de usuários, etc., com o público.",
-    "updated": "Esta página é atualizada regularmente.",
-    "finance": {
-      "title": "Métricas financeiras",
-      "desc": "Nossas métricas financeiras, como receita, perdas, etc."
-    },
-    "usage": {
-      "title": "Métricas de uso",
-      "desc": "Nossas métricas de usuários, como quantidade de usuários ativos e sites conectados.",
-      "live": "Você pode ver nossas métricas ao vivo em nosso <livedemo>dashboard público</livedemo>. Você também pode tornar seus próprios dashboards do Swetrix públicos e ajustá-los às suas necessidades."
-    }
-  },
   "checkout": {
     "title": "Comece seu teste grátis",
     "subtitle": "Experimente o Swetrix grátis por {{days}} dias. Cancele a qualquer momento.",
@@ -3469,7 +3456,6 @@
     "contact": "Tem algo a perguntar?",
     "main": "Swetrix - Alternativa ao Google Analytics sem cookies",
     "socialisation": "Contas sociais",
-    "open": "Open startup",
     "passwordProtected": "Senha obrigatória",
     "performance": "Monitoramento de desempenho do usuário final para entregar sites rápidos",
     "errors": "Ferramenta de rastreamento de erros do usuário final para entregar experiências sem bugs",
@@ -3490,7 +3476,6 @@
     "signup": "Crie sua conta Swetrix e comece a rastrear o tráfego do site com análises sem cookies e amigáveis à privacidade - configuração simples, estatísticas em tempo real.",
     "checkout": "Escolha um plano do Swetrix e conclua sua assinatura — analytics sem cookies, que prioriza a privacidade e com insights em tempo real.",
     "onboarding": "Comece a usar o Swetrix (alternativa ao Google Analytics sem cookies e focada na privacidade) em apenas alguns passos.",
-    "open": "Métricas abertas de startup: saiba mais sobre nossas principais métricas financeiras e operacionais.",
     "recovery": "Esqueceu sua senha? Use nossa funcionalidade de recuperação de senha para restaurar o acesso à sua conta.",
     "performance": "Monitore a velocidade do site para usuários reais com o Swetrix - carregamento de página, TTFB, tempos de DNS/TLS e percentis. Focado em privacidade e sem cookies. Teste grátis de 14 dias, sem necessidade de cartão.",
     "project": "Veja as análises da web públicas para {{name}}. Rastreamento focado em privacidade desenvolvido pelo Swetrix - sem cookies ou rastreamento invasivo de usuários.",
@@ -3578,7 +3563,6 @@
     "status": "Status",
     "supportUs": "Apoie-nos",
     "captcha": "CAPTCHA",
-    "open": "Open startup",
     "about": "Sobre nós",
     "features": "Recursos",
     "imprint": "Aviso legal",

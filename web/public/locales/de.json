@@ -3355,19 +3355,6 @@
       "tooManyImages": "Du kannst bis zu {{count}} Bilder anhängen"
     }
   },
-  "open": {
-    "desc": "Swetrix ist ein Open Startup, wir teilen unsere Metriken wie Einnahmen, Verlust, Menge der Benutzer usw. mit der Öffentlichkeit.",
-    "updated": "Diese Seite wird regelmäßig aktualisiert.",
-    "finance": {
-      "title": "Finanzmetriken",
-      "desc": "Unsere finanziellen Kennzahlen wie Einnahmen, Verluste usw."
-    },
-    "usage": {
-      "title": "Verwendungsmetriken",
-      "desc": "Unsere Benutzermetriken, wie die Anzahl der aktiven Benutzer, verbundene Webseiten.",
-      "live": "Sie können unsere Live-Metriken auf unserem <livedemo>öffentlichen Dashboard</livedemo>sehen. Sie können auch Ihre eigenen Swetrix Dashboards öffentlich machen und sie an Ihre Bedürfnisse anpassen."
-    }
-  },
   "checkout": {
     "title": "Starten Sie Ihre kostenlose Testversion",
     "subtitle": "Testen Sie Swetrix {{days}} Tage lang kostenlos. Jederzeit kündbar.",
@@ -3469,7 +3456,6 @@
     "contact": "Haben Sie etwas zu fragen?",
     "main": "Swetrix - Cookielose Google-Analytics-Alternative",
     "socialisation": "Social-Login",
-    "open": "Open startup",
     "passwordProtected": "Passwort erforderlich",
     "performance": "Endbenutzer Leistungsüberwachung um schnelle Webseiten zu liefern",
     "errors": "Endbenutzer Fehler bei der Verfolgung von Werkzeug, um fehlerfreie Erfahrungen zu liefern",
@@ -3490,7 +3476,6 @@
     "signup": "Erstellen Sie Ihr Swetrix-Konto und beginnen Sie, Website-Traffic mit cookielosen, datenschutzfreundlichen Analysen zu tracken – einfache Einrichtung, Echtzeit-Statistiken.",
     "checkout": "Wählen Sie einen Swetrix-Plan und schließen Sie Ihr Abonnement ab — cookiefreie, datenschutzorientierte Analysen mit Echtzeit-Einblicken.",
     "onboarding": "Starten Sie mit Swetrix (cookielose & datenschutzorientierte Google-Analytics-Alternative) in nur wenigen Schritten.",
-    "open": "Offene Startup-Kennzahlen: Erfahren Sie mehr über unsere wichtigsten finanziellen und operativen Kennzahlen.",
     "recovery": "Passwort vergessen? Nutzen Sie unsere Passwort-Wiederherstellung, um wieder Zugriff auf Ihr Konto zu erhalten.",
     "performance": "Überwachen Sie die Website-Geschwindigkeit echter Nutzer mit Swetrix – Seitenladezeit, TTFB, DNS/TLS-Zeiten und Perzentile. Datenschutzorientiert und cookielos. 14 Tage kostenlos testen, keine Karte erforderlich.",
     "project": "Öffentliche Web-Analysen für {{name}} ansehen. Datenschutzfreundliches Tracking powered by Swetrix – keine Cookies oder invasives Nutzer-Tracking.",
@@ -3578,7 +3563,6 @@
     "status": "Status",
     "supportUs": "Unterstützen Sie uns",
     "captcha": "CAPTCHA",
-    "open": "Open startup",
     "about": "Über uns",
     "features": "Funktionen",
     "imprint": "Impressum",
