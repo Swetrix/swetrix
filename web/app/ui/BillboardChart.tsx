@@ -3,6 +3,7 @@ import billboard, {
   regions,
   type Chart,
   type ChartOptions,
+  type GridLineOptions,
 } from 'billboard.js'
 import cx from 'clsx'
 import React, { useEffect, useMemo, useRef } from 'react'
@@ -15,6 +16,7 @@ interface BillboardChartProps {
   className?: string
   onReady?: (chart: Chart | null) => void
   deps?: any[]
+  xGridLines?: GridLineOptions[]
 }
 
 const BillboardChart = ({
@@ -23,10 +25,12 @@ const BillboardChart = ({
   className,
   onReady,
   deps,
+  xGridLines,
 }: BillboardChartProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<Chart | null>(null)
   const isDestroyingRef = useRef(false)
+  const appliedXGridLinesRef = useRef<GridLineOptions[] | undefined>(undefined)
 
   const mergedDeps = useMemo(
     () => deps || [options, dataNames],
@@ -56,6 +60,16 @@ const BillboardChart = ({
       ...grid(),
       ...regions(),
       ...options,
+      grid:
+        xGridLines === undefined
+          ? options.grid
+          : {
+              ...options.grid,
+              x: {
+                ...options.grid?.x,
+                lines: xGridLines,
+              },
+            },
       bindto: containerRef.current as unknown as HTMLElement,
     }
 
@@ -140,6 +154,7 @@ const BillboardChart = ({
       })
     }
     chartRef.current = chart
+    appliedXGridLinesRef.current = chart ? xGridLines : undefined
 
     if (chart && dataNames) {
       try {
@@ -176,6 +191,25 @@ const BillboardChart = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, mergedDeps)
+
+  useEffect(() => {
+    const chart = chartRef.current
+
+    if (
+      !chart ||
+      xGridLines === undefined ||
+      appliedXGridLinesRef.current === xGridLines
+    ) {
+      return
+    }
+
+    try {
+      chart.xgrids(xGridLines)
+      appliedXGridLinesRef.current = xGridLines
+    } catch {
+      return
+    }
+  }, [xGridLines])
 
   // translate='no' + notranslate: page translators rewriting SVG <text> nodes
   // break billboard.js's tick measurement (getBBox on a non-SVG element)

@@ -819,7 +819,7 @@ const getSettings = (
       },
     },
     transition: {
-      duration: 200,
+      duration: 0,
     },
     resize: {
       auto: true,
@@ -2154,7 +2154,7 @@ const getSettingsPerf = (
       },
     },
     transition: {
-      duration: 200,
+      duration: 0,
     },
     resize: {
       auto: true,

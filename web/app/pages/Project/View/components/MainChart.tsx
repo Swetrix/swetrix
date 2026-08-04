@@ -1,5 +1,5 @@
 import { Chart, ChartOptions, GridLineOptions } from 'billboard.js'
-import React, { useEffect, useRef, useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 import BillboardChart from '~/ui/BillboardChart'
 
@@ -23,7 +23,6 @@ export const MainChart = ({
   xGridLines,
 }: MainChartProps) => {
   const { registerChart, unregisterChart } = useChartManager()
-  const chartRef = useRef<Chart | null>(null)
 
   const mergedDeps = useMemo(
     () => deps || [options, dataNames],
@@ -31,21 +30,8 @@ export const MainChart = ({
   )
 
   const handleChartReady = (chart: Chart | null) => {
-    chartRef.current = chart
     registerChart(chartId, chart)
-
-    if (chart && xGridLines) {
-      chart.xgrids(xGridLines)
-    }
   }
-
-  useEffect(() => {
-    if (!chartRef.current || !xGridLines) {
-      return
-    }
-
-    chartRef.current.xgrids(xGridLines)
-  }, [xGridLines])
 
   useEffect(() => {
     return () => {
@@ -60,6 +46,7 @@ export const MainChart = ({
       className={className}
       onReady={handleChartReady}
       deps={mergedDeps}
+      xGridLines={xGridLines}
     />
   )
 }
