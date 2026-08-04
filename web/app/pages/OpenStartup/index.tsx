@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import billboard, { bar, line } from 'billboard.js'
+import billboard, { bar, grid, line } from 'billboard.js'
 import { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
@@ -311,6 +311,7 @@ const groups = [
 
 const getSettings = () => {
   return {
+    ...grid(),
     data: {
       x: 'x',
       xFormat: '%b %Y',
