@@ -39,7 +39,6 @@ Swetrix is built with Nest.js backend (MySQL + ClickHouse databases) and Remix f
 
 - [Privacy Policy](https://swetrix.com/privacy): Details on data handling and privacy practices
 - [Terms of Service](https://swetrix.com/terms): Legal terms and conditions
-- [Open Startup Metrics](https://swetrix.com/open): Public business metrics including revenue and user statistics
 - [Blog](https://swetrix.com/blog): Articles about web analytics, privacy, and performance optimisation
 - [Discord Community](https://discord.gg/ZVK8Tw2E8j): Community support and discussions
 - [Twitter](https://x.com/swetrix): Official Twitter account

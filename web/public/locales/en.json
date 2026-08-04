@@ -3355,19 +3355,6 @@
       "tooManyImages": "You can attach up to {{count}} images"
     }
   },
-  "open": {
-    "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
-    "updated": "This page is updated regularly.",
-    "finance": {
-      "title": "Finance metrics",
-      "desc": "Our financial metrics, such as revenue, losses, etc."
-    },
-    "usage": {
-      "title": "Usage metrics",
-      "desc": "Our user metrics, such as amount of active users, connected websites.",
-      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
-    }
-  },
   "checkout": {
     "title": "Start your free trial",
     "subtitle": "Try Swetrix free for {{days}} days. Cancel anytime.",
@@ -3469,7 +3456,6 @@
     "contact": "Have something to ask?",
     "main": "Swetrix - Cookieless Google Analytics Alternative",
     "socialisation": "Socialisation",
-    "open": "Open startup",
     "passwordProtected": "Password required",
     "performance": "End user performance monitoring to deliver fast websites",
     "errors": "End user error tracking tool to deliver bug-free experiences",
@@ -3490,7 +3476,6 @@
     "signup": "Create your Swetrix account and start tracking website traffic with cookieless, privacy-friendly analytics - simple setup, real-time stats.",
     "checkout": "Choose a Swetrix plan and complete your subscription — cookieless, privacy-first analytics with real-time insights.",
     "onboarding": "Get started with Swetrix (cookieless & privacy-first Google Analytics alternative) in just a few steps.",
-    "open": "Open startup metrics: learn more about our key financial & operational metrics.",
     "recovery": "Forgot your password? Use our password recovery functionality to restore access to your account.",
     "performance": "Monitor real-user website speed with Swetrix - page load, TTFB, DNS/TLS timings and percentiles. Privacy-first and cookieless. Free 14-day trial, no card required.",
     "project": "View public web analytics for {{name}}. Privacy-friendly tracking powered by Swetrix - no cookies or invasive user tracking.",
@@ -3578,7 +3563,6 @@
     "status": "Status",
     "supportUs": "Support us",
     "captcha": "CAPTCHA",
-    "open": "Open startup",
     "about": "About us",
     "features": "Features",
     "imprint": "Legal notice",

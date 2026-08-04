@@ -36,7 +36,6 @@ const routes = Object.freeze({
   socialised: '/socialised',
   gsc_connected: '/gsc-connected',
   ga4_import_connected: '/ga4-import-connected',
-  open: '/open',
   blog: '/blog',
   glossary: '/glossary',
   imprint: '/imprint',
