@@ -36,7 +36,10 @@ import {
   BreakdownPanel,
   BreakdownSubTab,
 } from '~/pages/Project/View/v2/BreakdownPanel'
-import { RefetchIndicator } from '~/pages/Project/View/v2/loading'
+import {
+  ChartErrorState,
+  RefetchIndicator,
+} from '~/pages/Project/View/v2/loading'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
   panelIconMapping,
@@ -204,15 +207,15 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
 
   const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
-  // Queries keep previous data across period/filter changes, so `isLoading` only
-  // ever means "nothing cached to show yet" — exactly when a spinner is wanted.
-  const isChartLoading = summaryQuery.isLoading || timeseriesQuery.isLoading
+  // Keep the chart slot occupied through initial loading and retry delays.
+  const isChartLoading = summaryQuery.isPending || timeseriesQuery.isPending
+  const isChartError = summaryQuery.isError || timeseriesQuery.isError
 
   // The counterpart: stale data is on screen while a refresh is in flight, so
   // the panel gets the same progress bar the breakdown panels use.
   const isChartRefetching =
-    (summaryQuery.isFetching && !summaryQuery.isLoading) ||
-    (timeseriesQuery.isFetching && !timeseriesQuery.isLoading)
+    (summaryQuery.isFetching && !summaryQuery.isPending) ||
+    (timeseriesQuery.isFetching && !timeseriesQuery.isPending)
 
   const handleDataPointClick = useCallback(
     (d: { x: Date; index: number; xValue?: string }) => {
@@ -562,7 +565,14 @@ const PerformanceViewInner = ({ tnMapping }: PerformanceViewProps) => {
             overall={overall}
             overallCompare={overallCompare}
           />
-          {isChartLoading ? (
+          {isChartError ? (
+            <ChartErrorState
+              onRetry={() => {
+                summaryQuery.refetch()
+                timeseriesQuery.refetch()
+              }}
+            />
+          ) : isChartLoading ? (
             // Same box as PerformanceChart below (incl. its mobile mt-5) so the
             // chart drops straight into the spinner's place.
             <div className='mt-5 flex h-80 items-center justify-center md:mt-0'>
