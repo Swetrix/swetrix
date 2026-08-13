@@ -273,10 +273,11 @@ const ProjectAlertsInner = ({
   const pageAmount = Math.ceil(total / DEFAULT_ALERTS_TAKE)
 
   const limits = PLAN_LIMITS[user?.planCode || 'trial']
-  const isLimitReached = isAuthenticated && total >= limits?.maxAlerts
+  const isLimitReached =
+    projectRole === 'owner' && isAuthenticated && total >= limits?.maxAlerts
 
-  // Check if user has permission to view alerts
-  const canManageAlerts = projectRole === 'owner' && isAuthenticated
+  const canManageAlerts =
+    (projectRole === 'owner' || projectRole === 'admin') && isAuthenticated
 
   // Get active alert from URL params
   const activeAlertId = searchParams.get('alertId')

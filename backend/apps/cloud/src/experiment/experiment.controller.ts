@@ -242,12 +242,7 @@ export class ExperimentController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.findOne({
-      where: {
-        id: experimentDto.pid,
-      },
-      relations: ['experiments', 'admin'],
-    })
+    const project = await this.projectService.getFullProject(experimentDto.pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')

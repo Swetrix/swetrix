@@ -66,7 +66,15 @@ export class FeatureFlagService {
   findOneWithRelations(id: string): Promise<FeatureFlag | null> {
     return this.featureFlagRepository.findOne({
       where: { id },
-      relations: ['project', 'project.admin'],
+      relations: [
+        'project',
+        'project.admin',
+        'project.share',
+        'project.share.user',
+        'project.organisation',
+        'project.organisation.members',
+        'project.organisation.members.user',
+      ],
     })
   }
 

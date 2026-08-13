@@ -59,6 +59,11 @@ export class ExperimentService {
       relations: [
         'project',
         'project.admin',
+        'project.share',
+        'project.share.user',
+        'project.organisation',
+        'project.organisation.members',
+        'project.organisation.members.user',
         'variants',
         'goal',
         'featureFlag',

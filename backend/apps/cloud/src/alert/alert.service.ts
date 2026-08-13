@@ -39,7 +39,16 @@ export class AlertService {
   findOneWithRelations(id: string): Promise<Alert | null> {
     return this.alertsReporsitory.findOne({
       where: { id },
-      relations: ['project', 'project.admin', 'channels'],
+      relations: [
+        'project',
+        'project.admin',
+        'project.share',
+        'project.share.user',
+        'project.organisation',
+        'project.organisation.members',
+        'project.organisation.members.user',
+        'channels',
+      ],
     })
   }
 

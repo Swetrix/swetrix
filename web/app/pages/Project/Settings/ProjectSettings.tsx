@@ -295,7 +295,9 @@ const ProjectSettings = () => {
             description: t('project.settings.tabs.alertsDesc'),
             icon: BellRingingIcon,
             iconColor: 'text-cyan-500',
-            visible: !isSelfhosted && project?.role === 'owner',
+            visible:
+              !isSelfhosted &&
+              (project?.role === 'owner' || project?.role === 'admin'),
           },
           {
             id: 'channels',
@@ -303,7 +305,9 @@ const ProjectSettings = () => {
             description: t('project.settings.tabs.channelsDesc'),
             icon: BellRingingIcon,
             iconColor: 'text-pink-500',
-            visible: !isSelfhosted && project?.role === 'owner',
+            visible:
+              !isSelfhosted &&
+              (project?.role === 'owner' || project?.role === 'admin'),
           },
           {
             id: 'revenue',
