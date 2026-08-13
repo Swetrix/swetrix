@@ -133,11 +133,11 @@ We welcome contributions! See the [contributing guide](./CONTRIBUTING.MD) and br
 
 If Swetrix is useful to you, **star the repo** — it genuinely helps a bootstrapped team and motivates us a lot 😊
 
-<a href="https://www.star-history.com/#swetrix/swetrix&type=date&legend=top-left">
+<a href="https://star-history.dera.page/#swetrix/swetrix&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=swetrix/swetrix&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=swetrix/swetrix&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=swetrix/swetrix&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=swetrix/swetrix&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=swetrix/swetrix&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=swetrix/swetrix&type=date&legend=top-left" />
  </picture>
 </a>
 
