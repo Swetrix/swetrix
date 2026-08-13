@@ -231,12 +231,7 @@ export class GoalController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.findOne({
-      where: {
-        id: goalDto.pid,
-      },
-      relations: ['goals', 'admin'],
-    })
+    const project = await this.projectService.getFullProject(goalDto.pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
@@ -252,14 +247,14 @@ export class GoalController {
       where: { project: { id: goalDto.pid } },
     })
 
-    if (user.planCode === PlanCode.none) {
+    if (project.admin?.planCode === PlanCode.none) {
       throw new HttpException(
         'You cannot create new goals due to no active subscription. Please upgrade your account plan to continue.',
         HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
-    if (user.isAccountBillingSuspended) {
+    if (project.admin?.isAccountBillingSuspended) {
       throw new HttpException(
         'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
         HttpStatus.PAYMENT_REQUIRED,
