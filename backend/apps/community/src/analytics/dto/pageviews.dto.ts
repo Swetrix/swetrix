@@ -52,6 +52,8 @@ export class PageviewsDto {
     example: '/articles/my-awesome-article-1',
     description: 'A page that user sent data from',
   })
+  @IsOptional()
+  @IsString()
   pg?: string
 
   @ApiProperty({
