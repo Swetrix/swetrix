@@ -3841,7 +3841,7 @@ export class AnalyticsService {
       _map(pages, (value, index) => {
         pageParams[`v${index}`] = value
 
-        return `value={v${index}:String}`
+        return `ifNull(value={v${index}:String}, false)`
       }),
       ',',
     )
@@ -3908,7 +3908,7 @@ export class AnalyticsService {
     const pagesStr = _join(
       _map(pages, (value, index) => {
         pageParams[`v${index}`] = value
-        return `value={v${index}:String}`
+        return `ifNull(value={v${index}:String}, false)`
       }),
       ',',
     )
@@ -4083,7 +4083,7 @@ export class AnalyticsService {
     const pagesStr = _join(
       _map(pages, (value, index) => {
         pageParams[`v${index}`] = value
-        return `value={v${index}:String}`
+        return `ifNull(value={v${index}:String}, false)`
       }),
       ',',
     )
@@ -4439,7 +4439,7 @@ export class AnalyticsService {
     const pagesStr = _join(
       _map(pages, (value, index) => {
         pageParams[`v${index}`] = value
-        return `value={v${index}:String}`
+        return `ifNull(value={v${index}:String}, false)`
       }),
       ',',
     )
