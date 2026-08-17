@@ -36,6 +36,7 @@ import {
   RevenueStatus,
   RevenueType,
 } from '../revenue/interfaces/revenue.interface'
+import { RankPineBlogService } from './rankpine-blog.service'
 
 const BILLING_URL = 'https://swetrix.com/user-settings?tab=billing'
 const BILLING_DUNNING_GRACE_DAYS = 7
@@ -52,6 +53,7 @@ export class WebhookController {
     private readonly mailerService: MailerService,
     private readonly revenueService: RevenueService,
     private readonly currencyService: CurrencyService,
+    private readonly rankPineBlogService: RankPineBlogService,
   ) {}
 
   private getPaddleField(
@@ -569,6 +571,16 @@ export class WebhookController {
         'Failed to track Swetrix revenue from Paddle webhook',
       )
     }
+  }
+
+  @Post('/rankpine')
+  @HttpCode(200)
+  async rankPineWebhook(
+    @Body() body: Buffer,
+    @Headers('x-rankpine-signature') signature?: string,
+    @Headers('x-rankpine-event') event?: string,
+  ) {
+    return this.rankPineBlogService.handle(body, signature, event)
   }
 
   // AWS SNS webhook
