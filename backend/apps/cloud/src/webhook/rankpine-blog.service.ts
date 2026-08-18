@@ -1,4 +1,7 @@
 import crypto from 'crypto'
+import { execFile } from 'child_process'
+import path from 'path'
+import { promisify } from 'util'
 import {
   BadGatewayException,
   BadRequestException,
@@ -9,6 +12,7 @@ import {
 import { z } from 'zod'
 
 import { AppLoggerService } from '../logger/logger.service'
+import { BlogService } from '../blog/blog.service'
 
 const GITHUB_API_URL = 'https://api.github.com'
 const GITHUB_API_VERSION = '2026-03-10'
@@ -21,6 +25,9 @@ const DEFAULT_AUTHOR = 'Andrii Romasiun'
 const DEFAULT_TWITTER_HANDLE = 'andrii_rom'
 const DEFAULT_COMMITTER_NAME = 'Swetrix Content Bot'
 const DEFAULT_COMMITTER_EMAIL = 'content-bot@swetrix.com'
+const DEFAULT_REFRESH_DELAY_MS = 30_000
+const MAX_REFRESH_DELAY_MS = 300_000
+const execFileAsync = promisify(execFile)
 
 const verificationSchema = z.object({
   event: z.literal('verification'),
@@ -60,6 +67,7 @@ interface PublisherConfig {
     name: string
     email: string
   }
+  refreshDelayMs: number
 }
 
 interface GitHubContent {
@@ -191,6 +199,27 @@ function validDate(value: string | null | undefined): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
+function refreshDelay(value: string | undefined): number {
+  const delay = value === undefined ? DEFAULT_REFRESH_DELAY_MS : Number(value)
+
+  if (!Number.isInteger(delay) || delay < 0 || delay > MAX_REFRESH_DELAY_MS) {
+    throw new Error(
+      `RANKPINE_BLOG_REFRESH_DELAY_MS must be an integer between 0 and ${MAX_REFRESH_DELAY_MS}`,
+    )
+  }
+
+  return delay
+}
+
+function backendRoot(): string {
+  return path.resolve(
+    __dirname,
+    ['development', 'test'].includes(process.env.NODE_ENV || '')
+      ? '../../../..'
+      : '../..',
+  )
+}
+
 function articleMarkdown(
   article: z.infer<typeof publishedArticleSchema>['article'],
   publishedDate: Date,
@@ -227,7 +256,12 @@ function articleMarkdown(
 
 @Injectable()
 export class RankPineBlogService {
-  constructor(private readonly logger: AppLoggerService) {}
+  private refreshTimer: NodeJS.Timeout | null = null
+
+  constructor(
+    private readonly logger: AppLoggerService,
+    private readonly blogService: BlogService,
+  ) {}
 
   private getConfig(): PublisherConfig {
     const secret = process.env.RANKPINE_BLOG_WEBHOOK_SECRET?.trim()
@@ -264,6 +298,53 @@ export class RankPineBlogService {
         email:
           process.env.RANKPINE_BLOG_COMMITTER_EMAIL || DEFAULT_COMMITTER_EMAIL,
       },
+      refreshDelayMs: refreshDelay(process.env.RANKPINE_BLOG_REFRESH_DELAY_MS),
+    }
+  }
+
+  private scheduleLocalRefresh(delayMs: number): void {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer)
+    }
+
+    this.refreshTimer = setTimeout(() => {
+      this.refreshTimer = null
+      void this.refreshLocalBlogPosts()
+    }, delayMs)
+    this.refreshTimer.unref()
+  }
+
+  private async refreshLocalBlogPosts(): Promise<void> {
+    const cwd = backendRoot()
+
+    try {
+      const { stdout, stderr } = await execFileAsync(
+        'npm',
+        ['run', 'refresh-submodules'],
+        {
+          cwd,
+          timeout: 120_000,
+          maxBuffer: 1_000_000,
+        },
+      )
+      await this.blogService.clearSitemapCache()
+      this.logger.log(
+        {
+          stdout: stdout.trim() || undefined,
+          stderr: stderr.trim() || undefined,
+        },
+        'RankPine blog submodule refresh',
+        true,
+      )
+    } catch (error) {
+      this.logger.error(
+        {
+          reason: error instanceof Error ? error.message : String(error),
+          cwd,
+        },
+        'RankPine blog submodule refresh',
+        true,
+      )
     }
   }
 
@@ -475,6 +556,7 @@ export class RankPineBlogService {
       'POST /webhook/rankpine',
       true,
     )
+    this.scheduleLocalRefresh(config.refreshDelayMs)
 
     return {
       ok: true,

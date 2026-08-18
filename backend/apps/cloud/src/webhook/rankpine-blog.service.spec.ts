@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { UnauthorizedException } from '@nestjs/common'
 
 import { AppLoggerService } from '../logger/logger.service'
+import { BlogService } from '../blog/blog.service'
 import { RankPineBlogService } from './rankpine-blog.service'
 
 const SECRET = 'rankpine-test-secret'
@@ -17,6 +18,7 @@ const ENV_KEYS = [
   'RANKPINE_BLOG_TWITTER_HANDLE',
   'RANKPINE_BLOG_COMMITTER_NAME',
   'RANKPINE_BLOG_COMMITTER_EMAIL',
+  'RANKPINE_BLOG_REFRESH_DELAY_MS',
 ] as const
 const ORIGINAL_ENV = Object.fromEntries(
   ENV_KEYS.map((key) => [key, process.env[key]]),
@@ -38,7 +40,10 @@ describe('RankPineBlogService', () => {
     error: jest.fn(),
     log: jest.fn(),
   } as unknown as AppLoggerService
-  const service = new RankPineBlogService(logger)
+  const blogService = {
+    clearSitemapCache: jest.fn(),
+  } as unknown as BlogService
+  const service = new RankPineBlogService(logger, blogService)
 
   beforeEach(() => {
     process.env.RANKPINE_BLOG_WEBHOOK_SECRET = SECRET
@@ -52,6 +57,7 @@ describe('RankPineBlogService', () => {
     process.env.RANKPINE_BLOG_TWITTER_HANDLE = 'andrii_rom'
     process.env.RANKPINE_BLOG_COMMITTER_NAME = 'Swetrix Content Bot'
     process.env.RANKPINE_BLOG_COMMITTER_EMAIL = 'content-bot@swetrix.com'
+    process.env.RANKPINE_BLOG_REFRESH_DELAY_MS = '30000'
     jest.clearAllMocks()
   })
 
@@ -91,6 +97,15 @@ describe('RankPineBlogService', () => {
   })
 
   it('creates one idempotent bot-authored post and strips the duplicate H1', async () => {
+    jest.useFakeTimers()
+    const refreshSpy = jest
+      .spyOn(
+        service as unknown as {
+          refreshLocalBlogPosts: () => Promise<void>
+        },
+        'refreshLocalBlogPosts',
+      )
+      .mockResolvedValue()
     const files = new Map<string, string>([
       [
         'posts/2026-08-01-older-automated-post.md',
@@ -221,7 +236,13 @@ describe('RankPineBlogService', () => {
         '',
       ].join('\n'),
     )
+    jest.advanceTimersByTime(29_999)
+    expect(refreshSpy).not.toHaveBeenCalled()
+    jest.advanceTimersByTime(1)
+    expect(refreshSpy).toHaveBeenCalledTimes(1)
 
+    refreshSpy.mockRestore()
     fetchMock.mockRestore()
+    jest.useRealTimers()
   })
 })
