@@ -84,12 +84,13 @@ export const useCompareSummaryQuery = <T extends V2DataType>(
   const params = compare
     ? { ...compareOverride(common, compare), measure: opts.measure }
     : null
+  const enabled = Boolean(params) && opts.enabled !== false
 
   return useQuery({
     queryKey: ['v2', pid, dataType, 'summary', params],
     queryFn: ({ signal }) => v2.getSummary(pid, dataType, params!, signal),
-    placeholderData: keepPreviousData,
-    enabled: Boolean(params) && opts.enabled !== false,
+    placeholderData: enabled ? keepPreviousData : undefined,
+    enabled,
   })
 }
 
@@ -141,12 +142,13 @@ export const useCompareTimeseriesQuery = (
         measure: opts.measure,
       }
     : null
+  const enabled = Boolean(params) && opts.enabled !== false
 
   return useQuery({
     queryKey: ['v2', pid, dataType, 'timeseries', params],
     queryFn: ({ signal }) => v2.getTimeseries(pid, dataType, params!, signal),
-    placeholderData: keepPreviousData,
-    enabled: Boolean(params) && opts.enabled !== false,
+    placeholderData: enabled ? keepPreviousData : undefined,
+    enabled,
   })
 }
 
