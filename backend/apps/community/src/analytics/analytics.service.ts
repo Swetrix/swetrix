@@ -332,6 +332,20 @@ export const getLowestPossibleTimeBucket = (
   return _head(tbMap.tb)
 }
 
+// getAnalyticsSummary may be called without an explicit timeBucket (the v2
+// traffic summary endpoint never sends one). getGroupFromTo rounds the
+// window's lower boundary down to the bucket, so the fallback must be the
+// lowest bucket the period allows — a fixed DAY fallback would turn
+// `period=1h` into "since midnight"
+export const getSummaryTimeBucket = (
+  timeBucket?: string,
+  period?: string,
+  from?: string,
+  to?: string,
+): TimeBucketType =>
+  (timeBucket as TimeBucketType) ||
+  getLowestPossibleTimeBucket(period, from, to)
+
 const checkIfTBAllowed = (
   timeBucket: TimeBucketType,
   from: string,
@@ -3489,12 +3503,12 @@ export class AnalyticsService {
   ): Promise<IOverall> {
     const safeTimezone = this.getSafeTimezone(timezone)
 
-    // Determine the time bucket for chart data
-    const effectiveTimeBucket = ['today', 'yesterday', 'custom'].includes(
+    const effectiveTimeBucket = getSummaryTimeBucket(
+      timeBucket,
       period,
+      from,
+      to,
     )
-      ? TimeBucketType.HOUR
-      : (timeBucket as TimeBucketType) || TimeBucketType.DAY
 
     const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
       this.getGroupFromTo(
