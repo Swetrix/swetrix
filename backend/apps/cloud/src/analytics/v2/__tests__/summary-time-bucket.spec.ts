@@ -60,6 +60,20 @@ describe('traffic summary window (no explicit timeBucket)', () => {
     expect(groupFromUTC).toBe('2026-08-22 14:00:00')
   })
 
+  it('period=1d keeps the local hour boundary when converted to UTC for non-whole-hour offsets', () => {
+    // Asia/Kathmandu is UTC+05:45: the local 20:00 boundary is 14:15 UTC and
+    // must not be rounded again to 14:00 after the conversion
+    const { bucket, groupFrom, groupFromUTC, groupToUTC } = getSummaryWindow(
+      '1d',
+      'Asia/Kathmandu',
+    )
+
+    expect(bucket).toBe(TimeBucketType.HOUR)
+    expect(groupFrom).toBe('2026-08-22 20:00:00')
+    expect(groupFromUTC).toBe('2026-08-22 14:15:00')
+    expect(groupToUTC).toBe('2026-08-23 14:37:42')
+  })
+
   it('period=7d starts six days ago on an hour boundary', () => {
     const { bucket, groupFrom, groupFromUTC } = getSummaryWindow(
       '7d',

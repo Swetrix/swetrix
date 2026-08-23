@@ -1226,7 +1226,10 @@ export class AnalyticsService {
         )
       }
 
-      groupFromUTC = groupFrom.utc().startOf(timeBucket).format(formatFrom)
+      // groupFrom is already rounded to the bucket in the project's timezone;
+      // rounding again after the UTC conversion would shift the boundary for
+      // timezones with a non-whole-hour offset (e.g. Asia/Kathmandu)
+      groupFromUTC = groupFrom.utc().format(formatFrom)
       groupToUTC = groupTo.utc().format(formatFrom)
     } else {
       throw new BadRequestException(
