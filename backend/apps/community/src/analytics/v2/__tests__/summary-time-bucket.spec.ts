@@ -49,6 +49,28 @@ describe('traffic summary window (no explicit timeBucket)', () => {
     expect(groupTo).toBe('2026-08-23 14:37:42')
   })
 
+  it('period=1d starts one day ago on an hour boundary, not at midnight', () => {
+    const { bucket, groupFrom, groupFromUTC } = getSummaryWindow(
+      '1d',
+      'Etc/GMT',
+    )
+
+    expect(bucket).toBe(TimeBucketType.HOUR)
+    expect(groupFrom).toBe('2026-08-22 14:00:00')
+    expect(groupFromUTC).toBe('2026-08-22 14:00:00')
+  })
+
+  it('period=7d starts six days ago on an hour boundary', () => {
+    const { bucket, groupFrom, groupFromUTC } = getSummaryWindow(
+      '7d',
+      'Etc/GMT',
+    )
+
+    expect(bucket).toBe(TimeBucketType.HOUR)
+    expect(groupFrom).toBe('2026-08-17 14:00:00')
+    expect(groupFromUTC).toBe('2026-08-17 14:00:00')
+  })
+
   it('period=today still starts at midnight', () => {
     const { bucket, groupFrom, groupFromUTC } = getSummaryWindow(
       'today',
@@ -64,5 +86,29 @@ describe('traffic summary window (no explicit timeBucket)', () => {
     expect(getSummaryTimeBucket('day', '1h', undefined, undefined)).toBe(
       TimeBucketType.DAY,
     )
+  })
+
+  it('partial and invalid custom ranges keep the legacy fallback and are left to getGroupFromTo to validate', () => {
+    // Ranges must not be interpreted by getLowestPossibleTimeBucket: its NaN
+    // diff would throw a misleading range-length error before getGroupFromTo
+    // returns the correct validation error
+    expect(
+      getSummaryTimeBucket(undefined, undefined, '2026-08-20', undefined),
+    ).toBe(TimeBucketType.DAY)
+    expect(
+      getSummaryTimeBucket(undefined, 'custom', 'not-a-date', '2026-08-23'),
+    ).toBe(TimeBucketType.HOUR)
+
+    expect(() =>
+      getGroupFromTo(
+        'not-a-date',
+        '2026-08-23',
+        getSummaryTimeBucket(undefined, 'custom', 'not-a-date', '2026-08-23'),
+        'custom',
+        'Etc/GMT',
+        undefined,
+        false,
+      ),
+    ).toThrow("The timeframe 'from' parameter is invalid")
   })
 })

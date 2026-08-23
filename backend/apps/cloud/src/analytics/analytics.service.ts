@@ -579,17 +579,30 @@ export const getLowestPossibleTimeBucket = (
 
 // getAnalyticsSummary may be called without an explicit timeBucket (the v2
 // traffic summary endpoint never sends one). getGroupFromTo rounds the
-// window's lower boundary down to the bucket, so the fallback must be the
-// lowest bucket the period allows — a fixed DAY fallback would turn
-// `period=1h` into "since midnight"
+// window's lower boundary down to the bucket, so the period-only fallback
+// must be the lowest bucket the period allows — a fixed DAY fallback would
+// turn `period=1h` into "since midnight"
 export const getSummaryTimeBucket = (
   timeBucket?: string,
   period?: string,
   from?: string,
   to?: string,
-): TimeBucketType =>
-  (timeBucket as TimeBucketType) ||
-  getLowestPossibleTimeBucket(period, from, to)
+): TimeBucketType => {
+  if (timeBucket) {
+    return timeBucket as TimeBucketType
+  }
+
+  // Preserve the legacy fallback for custom or partial ranges: passing them
+  // to getLowestPossibleTimeBucket could throw a misleading range-length
+  // error before getGroupFromTo runs its own validation
+  if (from || to || !period) {
+    return ['today', 'yesterday', 'custom'].includes(period ?? '')
+      ? TimeBucketType.HOUR
+      : TimeBucketType.DAY
+  }
+
+  return getLowestPossibleTimeBucket(period)
+}
 
 const EXCLUDE_NULL_FOR = [
   'so',
