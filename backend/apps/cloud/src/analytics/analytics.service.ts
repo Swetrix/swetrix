@@ -553,11 +553,14 @@ export const getLowestPossibleTimeBucket = (
       return TimeBucketType.HOUR
     }
 
-    if (period === '4w') {
+    // The finest buckets must match the frontend's per-period options
+    // (tbPeriodPairs), otherwise summary cards and the chart cover
+    // different boundaries
+    if (period === '4w' || period === '3M' || period === '12M') {
       return TimeBucketType.DAY
     }
 
-    if (period === '3M' || period === '12M' || period === '24M') {
+    if (period === '24M') {
       return TimeBucketType.MONTH
     }
 
@@ -1202,17 +1205,10 @@ export class AnalyticsService {
         groupFrom = djsNow.subtract(diff - 1, 'day').startOf(timeBucket)
         groupTo = djsNow
       } else {
-        if (period === '1d' || period === '1h') {
-          groupFrom = djsNow.subtract(
-            parseInt(period, 10),
-            _last(period) as dayjs.ManipulateType,
-          )
-        } else {
-          groupFrom = djsNow.subtract(
-            parseInt(period, 10) - 1,
-            _last(period) as dayjs.ManipulateType,
-          )
-        }
+        groupFrom = djsNow.subtract(
+          parseInt(period, 10),
+          _last(period) as dayjs.ManipulateType,
+        )
 
         groupFrom = groupFrom.startOf(timeBucket)
         groupTo = djsNow
