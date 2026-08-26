@@ -553,11 +553,14 @@ export const getLowestPossibleTimeBucket = (
       return TimeBucketType.HOUR
     }
 
-    if (period === '4w') {
+    // The finest buckets must match the frontend's per-period options
+    // (tbPeriodPairs), otherwise summary cards and the chart cover
+    // different boundaries
+    if (period === '4w' || period === '3M' || period === '12M') {
       return TimeBucketType.DAY
     }
 
-    if (period === '3M' || period === '12M' || period === '24M') {
+    if (period === '24M') {
       return TimeBucketType.MONTH
     }
 
@@ -575,6 +578,33 @@ export const getLowestPossibleTimeBucket = (
   }
 
   return _head(tbMap.tb)
+}
+
+// getAnalyticsSummary may be called without an explicit timeBucket (the v2
+// traffic summary endpoint never sends one). getGroupFromTo rounds the
+// window's lower boundary down to the bucket, so the period-only fallback
+// must be the lowest bucket the period allows — a fixed DAY fallback would
+// turn `period=1h` into "since midnight"
+export const getSummaryTimeBucket = (
+  timeBucket?: string,
+  period?: string,
+  from?: string,
+  to?: string,
+): TimeBucketType => {
+  if (timeBucket) {
+    return timeBucket as TimeBucketType
+  }
+
+  // Preserve the legacy fallback for custom or partial ranges: passing them
+  // to getLowestPossibleTimeBucket could throw a misleading range-length
+  // error before getGroupFromTo runs its own validation
+  if (from || to || !period) {
+    return ['today', 'yesterday', 'custom'].includes(period ?? '')
+      ? TimeBucketType.HOUR
+      : TimeBucketType.DAY
+  }
+
+  return getLowestPossibleTimeBucket(period)
 }
 
 const EXCLUDE_NULL_FOR = [
@@ -1175,17 +1205,10 @@ export class AnalyticsService {
         groupFrom = djsNow.subtract(diff - 1, 'day').startOf(timeBucket)
         groupTo = djsNow
       } else {
-        if (period === '1d' || period === '1h') {
-          groupFrom = djsNow.subtract(
-            parseInt(period, 10),
-            _last(period) as dayjs.ManipulateType,
-          )
-        } else {
-          groupFrom = djsNow.subtract(
-            parseInt(period, 10) - 1,
-            _last(period) as dayjs.ManipulateType,
-          )
-        }
+        groupFrom = djsNow.subtract(
+          parseInt(period, 10),
+          _last(period) as dayjs.ManipulateType,
+        )
 
         groupFrom = groupFrom.startOf(timeBucket)
         groupTo = djsNow
@@ -1199,7 +1222,10 @@ export class AnalyticsService {
         )
       }
 
-      groupFromUTC = groupFrom.utc().startOf(timeBucket).format(formatFrom)
+      // groupFrom is already rounded to the bucket in the project's timezone;
+      // rounding again after the UTC conversion would shift the boundary for
+      // timezones with a non-whole-hour offset (e.g. Asia/Kathmandu)
+      groupFromUTC = groupFrom.utc().format(formatFrom)
       groupToUTC = groupTo.utc().format(formatFrom)
     } else {
       throw new BadRequestException(
@@ -4885,12 +4911,12 @@ export class AnalyticsService {
   ): Promise<IOverall> {
     const safeTimezone = this.getSafeTimezone(timezone)
 
-    // Determine the time bucket for chart data
-    const effectiveTimeBucket = ['today', 'yesterday', 'custom'].includes(
+    const effectiveTimeBucket = getSummaryTimeBucket(
+      timeBucket,
       period,
+      from,
+      to,
     )
-      ? TimeBucketType.HOUR
-      : (timeBucket as TimeBucketType) || TimeBucketType.DAY
 
     const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
       this.getGroupFromTo(
