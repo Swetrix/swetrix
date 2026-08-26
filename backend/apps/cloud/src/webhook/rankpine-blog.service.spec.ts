@@ -3,6 +3,7 @@ import { UnauthorizedException } from '@nestjs/common'
 
 import { AppLoggerService } from '../logger/logger.service'
 import { BlogService } from '../blog/blog.service'
+import { IndexNowService } from './indexnow.service'
 import { RankPineBlogService } from './rankpine-blog.service'
 
 const SECRET = 'rankpine-test-secret'
@@ -43,7 +44,10 @@ describe('RankPineBlogService', () => {
   const blogService = {
     clearSitemapCache: jest.fn(),
   } as unknown as BlogService
-  const service = new RankPineBlogService(logger, blogService)
+  const indexNowService = {
+    submit: jest.fn(),
+  } as unknown as IndexNowService
+  const service = new RankPineBlogService(logger, blogService, indexNowService)
 
   beforeEach(() => {
     process.env.RANKPINE_BLOG_WEBHOOK_SECRET = SECRET
@@ -101,7 +105,7 @@ describe('RankPineBlogService', () => {
     const refreshSpy = jest
       .spyOn(
         service as unknown as {
-          refreshLocalBlogPosts: () => Promise<void>
+          refreshLocalBlogPosts: (urls: string[]) => Promise<void>
         },
         'refreshLocalBlogPosts',
       )
@@ -239,7 +243,9 @@ describe('RankPineBlogService', () => {
     jest.advanceTimersByTime(29_999)
     expect(refreshSpy).not.toHaveBeenCalled()
     jest.advanceTimersByTime(1)
-    expect(refreshSpy).toHaveBeenCalledTimes(1)
+    expect(refreshSpy).toHaveBeenCalledWith([
+      'https://swetrix.com/blog/automated-post',
+    ])
 
     refreshSpy.mockRestore()
     fetchMock.mockRestore()

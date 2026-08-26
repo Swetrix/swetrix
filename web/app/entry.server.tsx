@@ -13,6 +13,7 @@ import { isSelfhosted, MAIN_URL } from './lib/constants'
 
 // Reject/cancel all pending promises after 5 seconds
 const streamTimeout = 5000
+const INDEXNOW_KEY_PATTERN = /^[A-Za-z0-9-]{8,128}$/
 
 const { sitemap } = createSitemapGenerator({
   siteUrl: MAIN_URL,
@@ -47,6 +48,20 @@ export default async function handleRequest(
   routerContext: RouterContextProvider,
 ) {
   const url = new URL(request.url)
+  const indexNowKey = process.env.INDEXNOW_KEY?.trim()
+
+  if (
+    indexNowKey &&
+    INDEXNOW_KEY_PATTERN.test(indexNowKey) &&
+    url.pathname === `/${indexNowKey}.txt`
+  ) {
+    return new Response(indexNowKey, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
+      },
+    })
+  }
 
   if (!isSelfhosted && url.pathname === '/sitemap.xml') {
     return getSitemapIndexResponse()

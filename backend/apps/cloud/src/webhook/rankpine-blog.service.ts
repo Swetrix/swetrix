@@ -13,6 +13,7 @@ import { z } from 'zod'
 
 import { AppLoggerService } from '../logger/logger.service'
 import { BlogService } from '../blog/blog.service'
+import { IndexNowService } from './indexnow.service'
 
 const GITHUB_API_URL = 'https://api.github.com'
 const GITHUB_API_VERSION = '2026-03-10'
@@ -257,10 +258,12 @@ function articleMarkdown(
 @Injectable()
 export class RankPineBlogService {
   private refreshTimer: NodeJS.Timeout | null = null
+  private pendingIndexNowUrls = new Set<string>()
 
   constructor(
     private readonly logger: AppLoggerService,
     private readonly blogService: BlogService,
+    private readonly indexNowService: IndexNowService,
   ) {}
 
   private getConfig(): PublisherConfig {
@@ -302,19 +305,23 @@ export class RankPineBlogService {
     }
   }
 
-  private scheduleLocalRefresh(delayMs: number): void {
+  private scheduleLocalRefresh(delayMs: number, url: string): void {
+    this.pendingIndexNowUrls.add(url)
+
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer)
     }
 
     this.refreshTimer = setTimeout(() => {
       this.refreshTimer = null
-      void this.refreshLocalBlogPosts()
+      const urls = [...this.pendingIndexNowUrls]
+      this.pendingIndexNowUrls.clear()
+      void this.refreshLocalBlogPosts(urls)
     }, delayMs)
     this.refreshTimer.unref()
   }
 
-  private async refreshLocalBlogPosts(): Promise<void> {
+  private async refreshLocalBlogPosts(urls: string[]): Promise<void> {
     const cwd = backendRoot()
 
     try {
@@ -343,6 +350,20 @@ export class RankPineBlogService {
           cwd,
         },
         'RankPine blog submodule refresh',
+        true,
+      )
+      return
+    }
+
+    try {
+      await this.indexNowService.submit(urls)
+    } catch (error) {
+      this.logger.error(
+        {
+          reason: error instanceof Error ? error.message : String(error),
+          urls,
+        },
+        'IndexNow URL submission',
         true,
       )
     }
@@ -556,12 +577,16 @@ export class RankPineBlogService {
       'POST /webhook/rankpine',
       true,
     )
-    this.scheduleLocalRefresh(config.refreshDelayMs)
+    const publicUrl = new URL(`/blog/${slug}`, expectedOrigin).toString()
+
+    if (result.changed) {
+      this.scheduleLocalRefresh(config.refreshDelayMs, publicUrl)
+    }
 
     return {
       ok: true,
       id: path,
-      url: new URL(`/blog/${slug}`, expectedOrigin).toString(),
+      url: publicUrl,
       changed: result.changed,
     }
   }
